@@ -2,9 +2,9 @@
 
 import numpy as np
 
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core.surface_calcium_energy_transport_spec import ACCOUNTING
 from cells.legacy.processes.cell_zone_transport import LAW_ID
-from cells.processes.electrochemistry import F, R
 
 AXES = {
     "cycles_fmol": ["world", "route"],

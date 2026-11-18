@@ -69,7 +69,7 @@ controls are not additional independent biological cases.
 The native BETSE CPU-to-GPU plan recorded in checkpoint `7e9873a` is superseded:
 BETSE is an external reference only (see `AGENTS.md`). GPU work targets the Cells
 engine model that runs BETSE's default world, compared against saved output
-from plain BETSE. Reuse `src/cells/core/runner.py` (device placement, compiled
+from plain BETSE. Reuse `src/cells/execution/runner.py` (device placement, compiled
 `lax.scan` rollouts, bounded recording), the CPU/GPU and restart patterns in
 `tests/unit/test_gpu_execution.py`, and the ensemble runner's stable case
 IDs/seeds. Model-specific tolerances do not transfer automatically.

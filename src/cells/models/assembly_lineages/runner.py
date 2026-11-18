@@ -50,7 +50,7 @@ from time import perf_counter
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import (
     EVERY_DESCENDANT,
     MODE,
@@ -236,7 +236,7 @@ def run_lanes(specs, *, starts=None, stop=None, calls=None):
     (LineageRun.checkpoint), from which a later batch resumes it bitwise."""
     import jax
 
-    from cells.core.devices import execution_device
+    from cells.execution.devices import execution_device
 
     if any(s.execution.mode != MODE for s in specs):
         raise ConfigError(f"run_lanes runs {MODE} worlds; every_descendant runs run_population")
@@ -501,7 +501,7 @@ def fission_pass(spec, parents, lineages):
 
     import jax
 
-    from cells.core.devices import execution_device
+    from cells.execution.devices import execution_device
 
     if spec.execution.mode != MODE:
         raise ConfigError("The fission pass is run on single-lineage definitions")
@@ -567,7 +567,7 @@ def run_population(spec):
     """Every descendant of one world's founder (mode every_descendant), generation by generation."""
     import jax
 
-    from cells.core.devices import execution_device
+    from cells.execution.devices import execution_device
 
     if spec.execution.mode != EVERY_DESCENDANT:
         raise ConfigError(f"run_population runs {EVERY_DESCENDANT} worlds")

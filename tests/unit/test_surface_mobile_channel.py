@@ -12,20 +12,20 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import voltage_gates
+from cells.laws.electrochemistry import R
 from cells.legacy.models import surface_mobile_channel as model
 from cells.legacy.models import surface_mobile_pump as prior
 from cells.legacy.processes import mobile_channel_gates as gates
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step, rk4_step
-from cells.processes import voltage_gates
-from cells.processes.electrochemistry import R
+from cells.records.io import load_snapshot
+from cells.registry.models import get_model
 from validation.tissue import kv1_reference
 from validation.tissue import surface_mobile_channel_fixtures as fixtures
 from validation.tissue import surface_mobile_channel_reference as reference

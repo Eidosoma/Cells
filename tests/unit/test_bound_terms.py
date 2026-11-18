@@ -12,10 +12,10 @@ import dataclasses
 
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.laws.electrochemistry import F, R
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
-from cells.processes.electrochemistry import F, R
 from validation.tissue import secreted_species_fixtures as sf
 
 P_NEUTRAL = 1e-9  # m/s, S on the junction (finding 3's case)

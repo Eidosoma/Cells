@@ -816,7 +816,7 @@ replacement, division, or later growth or migration. It is a new operator, provi
 
 | Item | Specification |
 | --- | --- |
-| Law | `delayed_first_order_junction_formation@1` (`processes/junction_formation.py`), reused unchanged: A(age) = 1 − (1 − A₀) exp(−max(0, age − lag)/τ), advanced exactly |
+| Law | `delayed_first_order_junction_formation@1` (`laws/junctions/junction_formation.py`), reused unchanged: A(age) = 1 − (1 − A₀) exp(−max(0, age − lag)/τ), advanced exactly |
 | Contact age | State per contact slot: the lag remaining and the deficit 1 − A, both 0 for a formed contact, plus a recorded arrival step. Age = (count − arrival step) × dt |
 | Abundance | A = 1 − deficit, a factor on @3's `junction` availability, exactly 1 for a formed contact |
 | Initialisation | Arrival rules declared per arrival kind: a contact mapped from a parent contact; a contact new at a birth (between sisters); a replacement newcomer's contact. Each rule declares A₀, lag and τ. The start state of a division-born contact is the user's decision (§3.5) |
@@ -1129,8 +1129,8 @@ waits until the division sources are read.
 ## 7. Milestone 1 as built (14 November 2026)
 
 Milestone 1, the contract fit (§4.4's M1), is in the checkout:
-- the operator, `models/operators/species_regulated_availability.py`;
-- the neutral Hill helper, `processes/hill_factors.py`;
+- the operator, `operators/species_regulated_availability.py`;
+- the neutral Hill helper, `laws/reactions/hill_factors.py`;
 - the worlds, `validation/tissue/regulated_availability_fixtures.py`;
 - eight test files, `tests/unit/test_hill_factors.py` and
   `tests/unit/test_species_regulated_availability*.py`.
@@ -1200,7 +1200,7 @@ runs from frozen snapshots, P1's record (`p1.json`) and the crossrev.
 9. **The `factors` manifest entry** (ruling 6) is not built.
    - The manifest writer is in files the D156 agent works in, so the entry waits for the lead's
      coordination.
-   - Milestone 1 changes one shared file, the operator registry (`models/operators/__init__.py`).
+   - Milestone 1 changes one shared file, the operator registry (`operators/__init__.py`).
 10. **The Hill helper** agrees with D152's inline expression bit for bit on the host.
     - Jitted, its log factor agrees within 4 ε, since XLA's `log` and `logaddexp` are not NumPy's.
     - D152's code is untouched. Its live rates are the guard; there is no source-text check.

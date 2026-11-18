@@ -12,23 +12,23 @@ import jax
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.batch_windows import iter_batch_windows
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.batch_windows import iter_batch_windows
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline
+from cells.execution.schedule import control_values
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine as assembly
 from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.legacy.models import surface_calcium as model
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_assembly_cluster import ensemble_definition, event_histories, same
 from tests.unit.test_spatial_calcium import same as same_pool
 from tests.unit.test_surface_kinetic import assert_states, exact

@@ -53,7 +53,7 @@ jax.config.update("jax_enable_x64", True)
 
 from cells import __version__  # noqa: E402
 from cells.analysis import stationary as sa  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.stationary import reduced, targets, worlds  # noqa: E402
 
 SHEET_RADIUS = 6  # 127 cells, 342 junctions
@@ -85,7 +85,7 @@ def units():
     mg0b = json.loads(targets.MG0B_THEORY.read_text())
     g_fast = mg0b["slope_conductance_S"]["H"]
     g_open_fast = th.junction_conductance_S(p, mg0b["composition_mM"], j["area_m2"], perm)
-    from cells.processes import junction_gate
+    from cells.laws.junctions import junction_gate
 
     gate = junction_gate.Parameters(j["threshold_voltage_V"], j["minimum_open_fraction"])
     d = fx.HEREDITY_STATES["D"]
@@ -605,7 +605,7 @@ def _fast_start(case_slow, disc):
     k_row = case_slow.pb.spec.model.species_ids.index("K")
     amount = next(b for b in case_slow.pb.blocks if b.field == "amount_increment")
     cells = np.asarray(case_slow.pb.p.active).size
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     for j, node in enumerate(charge.flat):
         dq = parts_fast["node_charge"][j] * charge.unit[j]

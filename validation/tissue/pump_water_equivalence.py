@@ -33,8 +33,8 @@ jax.config.update("jax_enable_x64", True)
 
 import numpy as np  # noqa: E402
 
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
 from cells.models import surface_pump_v3, surface_pump_water  # noqa: E402
 from cells.numerics import surface_imex as imex  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402

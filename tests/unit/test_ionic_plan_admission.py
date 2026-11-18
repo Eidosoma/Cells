@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from cells.core.specs import parse_spec as parse_simulation
+from cells.definitions.specs import parse_spec as parse_simulation
 from cells.ensemble import plan as planner
 from cells.ensemble.families import output_bound, parse_definition
 from cells.ensemble.ionic import validate_population

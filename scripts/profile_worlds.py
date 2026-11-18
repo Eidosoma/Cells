@@ -19,11 +19,11 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import write_batch_run  # noqa: E402
-from cells.core.batch import run_batch  # noqa: E402
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.io import runtime_identity, source_hashes, write_run  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.batch import run_batch  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.records.batch_io import write_batch_run  # noqa: E402
+from cells.records.io import runtime_identity, source_hashes, write_run  # noqa: E402
 from tests.batch_fixtures import definition, short_spec  # noqa: E402
 
 

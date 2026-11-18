@@ -9,23 +9,23 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import branch_checkpoint, run, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
-from cells.core.windows import WindowPolicy, iter_windows, plan_windows
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
+from cells.execution.windows import WindowPolicy, iter_windows, plan_windows
 from cells.legacy.core import membrane_profile_phase_handoff as handoff
 from cells.legacy.core import surface_profile_epoch_spec as epoch
 from cells.legacy.core.excision import excise
 from cells.legacy.models import surface_profile_epoch as model
 from cells.legacy.models import surface_profile_interventions as scheduled
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.phase_fixtures import prepared, request
 from tests.unit.test_windows import assert_windows
 
@@ -115,7 +115,7 @@ def test_evolved_epoch_snapshot_restores_in_a_fresh_process(tmp_path):
     exact(loaded.checkpoint.state, point.state)
     code = """
 import json,sys
-from cells.io import load_snapshot
+from cells.records.io import load_snapshot
 from cells.legacy.models.surface_profile_epoch import handoff_record
 saved=load_snapshot(sys.argv[1])
 print(json.dumps(dict(model=saved.spec.to_dict()['model']['id'],

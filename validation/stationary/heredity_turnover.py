@@ -92,7 +92,7 @@ import numpy as np
 jax.config.update("jax_enable_x64", True)
 
 from cells import __version__  # noqa: E402
-from cells.processes import junction_gate  # noqa: E402
+from cells.laws.junctions import junction_gate  # noqa: E402
 from validation.stationary import heredity_conversion as hc  # noqa: E402
 from validation.stationary import heredity_prescreen as hp  # noqa: E402
 from validation.stationary import targets, worlds  # noqa: E402
@@ -797,7 +797,7 @@ class FrozenDisc(hp.Case):
 
     def __init__(self, sheet_radius, disc_radius, composition):
         from cells.analysis import stationary as sa
-        from cells.core.specs import parse_spec
+        from cells.definitions.specs import parse_spec
 
         self.cells, self.edges = worlds.hexagon(sheet_radius)
         states = hc._states()
@@ -837,12 +837,12 @@ class FrozenDisc(hp.Case):
 def junction_conductance(case, u, scale, edge):
     """One junction at u: Vj, gate and slope conductance dI/dVj of constant_field@1.
 
-    The engine's constant-field law (cells.processes.electrochemistry.ghk_leak) with the
+    The engine's constant-field law (cells.laws.electrochemistry.ghk_leak) with the
     junction's area and permeabilities x scale, the two cells' frozen concentrations and
     the state's Vj; the slope is a central difference (1e-5 V). Open = gate 1; effective =
     times the state's gate (availability 1).
     """
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL, ghk_leak
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL, ghk_leak
 
     j, (a, b) = worlds.e07_junction(), case.edges[edge]
     ids = [s for s, _ in worlds.SPECIES if s != "P"]
@@ -1069,7 +1069,7 @@ class SingleCell:
 
     def __init__(self):
         from cells.analysis import stationary as sa
-        from cells.core.specs import parse_spec
+        from cells.definitions.specs import parse_spec
 
         raw = worlds.e07_sheet_definition([hc._states()["H"]], [], gated=True, dt=DT)
         self.pb = pb = sa.problem(parse_spec(worlds.ionic_background(raw)), mode="slow")

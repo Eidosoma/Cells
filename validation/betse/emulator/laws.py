@@ -13,10 +13,10 @@ static per run, so jit compiles them as constants:
   of Cells' own physics from BETSE's order, switched on alone to size it for a
   difference budget. BETSE's order has none of them.
 
-The laws below are the arithmetic of cells.processes.electrochemistry
-(electrochemical_potential, ghk_leak), cells.coupling.selective.selective_flux,
-cells.processes.kinetic_pump (chemical_drive, kinetics, domain_valid) and the
-plasma-membrane Ca-ATPase kernel cells.processes.plasma_calcium.pump_rates with F
+The laws below are the arithmetic of cells.laws.electrochemistry
+(electrochemical_potential, ghk_leak), cells.laws.junctions.selective.selective_flux,
+cells.laws.pumps.kinetic_pump (chemical_drive, kinetics, domain_valid) and the
+plasma-membrane Ca-ATPase kernel cells.laws.reactions.plasma_calcium.pump_rates with F
 and R passed explicitly. With CODATA constants they are the same operations in the
 same order as those engine laws; tests/unit/test_betse_emulator_laws.py checks
 bitwise equality, so the qualified variant is unchanged by the move out of the engine.
@@ -26,8 +26,9 @@ from typing import NamedTuple
 
 import jax.numpy as jnp
 
-from cells.processes import electrochemistry, kinetic_pump
-from cells.processes.electrochemistry import MOL_PER_FMOL, bernoulli
+from cells.laws import electrochemistry
+from cells.laws.electrochemistry import MOL_PER_FMOL, bernoulli
+from cells.laws.pumps import kinetic_pump
 
 
 class Variant(NamedTuple):
@@ -65,7 +66,7 @@ MODEL_DIFFERENCES = {
     # Physical-time junction gate (once per step for every ion) and no membrane
     # concentration lag (membranes see the bulk cell concentration).
     "gate_once_no_lag": ("gate_once", "no_membrane_lag"),
-    # Cells' plasma-membrane Ca-ATPase law (cells.processes.calcium_atpase, with Cells'
+    # Cells' plasma-membrane Ca-ATPase law (cells.laws.pumps.calcium_atpase, with Cells'
     # constants and the 1 M standard energy deltaGATP + R T ln(1000) that the adapter maps)
     # in place of BETSE's pumpCaATP, evaluated at BETSE's point in the update.
     "cells_calcium_pump_law": ("cells_calcium_law",),

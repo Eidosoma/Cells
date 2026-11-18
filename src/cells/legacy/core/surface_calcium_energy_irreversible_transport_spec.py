@@ -5,13 +5,13 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _integer, _number
+from cells.definitions.specs import ConfigError, _fields, _integer, _number
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core import surface_calcium_energy_spec as prior
 from cells.legacy.core import surface_calcium_energy_transport_spec as legacy
 from cells.legacy.core.bioelectric_spec import signed_number
 from cells.legacy.core.surface_energy_spec import identifier
 from cells.legacy.processes import cell_zone_transport as process
-from cells.processes.electrochemistry import F, R
 
 MODEL_ID = "resolved_calcium_energy_irreversible_transport@1"
 ACCOUNTING = "irreversible_species_transport_explicit_physical_work@1"

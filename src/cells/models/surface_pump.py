@@ -18,9 +18,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.core.surface_pump_spec import MODEL_ID
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_pump_spec import MODEL_ID
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions import junction_gate
+from cells.laws.pumps import kinetic_pump as pump
+from cells.laws.pumps import kinetic_pump_binding as pumps
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_tissue as tissue
 from cells.numerics import surface_field as field
@@ -28,10 +32,6 @@ from cells.numerics import surface_imex as imex
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.processes import junction_gate
-from cells.processes import kinetic_pump as pump
-from cells.processes import kinetic_pump_binding as pumps
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = kinetic.OBSERVER_ID
 OBSERVATION_SAMPLING = kinetic.OBSERVATION_SAMPLING
@@ -360,7 +360,7 @@ def bind_step_checks(spec):
 
 def accepted_observations(spec):
     """Refuse an observation time that is not an accepted boundary of the event grid."""
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     grid = EventGrid(spec)
     for t in spec.experiment.observation_times:
@@ -754,7 +754,7 @@ def check_values(state, spec, steps=None):
 
 
 # Device checks: compiled windows evaluate check_values' tests per accepted row
-# (cells.core.vector_windows). Failure codes are in host order; the diagnostics
+# (cells.execution.vector_windows). Failure codes are in host order; the diagnostics
 # are check_values' keys, reduced by maximum over a world's accepted rows.
 DEVICE_CHECKS = ("domain", *LEDGERS, "dissipation")
 DEVICE_DIAGNOSTICS = (
@@ -837,7 +837,7 @@ def summarize(history, diagnostics, spec):
 
 def rebind(spec, **execution):
     """The same definition with changed execution fields, re-parsed strictly."""
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     return parse_spec(replace(spec, execution=replace(spec.execution, **execution)).to_dict())
 

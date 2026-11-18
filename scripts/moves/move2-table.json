@@ -1,0 +1,1040 @@
+{
+ "kind": "cells.source_moves.path_table@1",
+ "move": "d188-move-2",
+ "rows": [
+  {
+   "old": "src/cells/batch_io.py",
+   "new": "src/cells/records/batch_io.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.batch_io",
+   "new_module": "cells.records.batch_io"
+  },
+  {
+   "old": "src/cells/batch_window_io.py",
+   "new": "src/cells/records/batch_window_io.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.batch_window_io",
+   "new_module": "cells.records.batch_window_io"
+  },
+  {
+   "old": "src/cells/continuity.py",
+   "new": "src/cells/execution/continuity.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.continuity",
+   "new_module": "cells.execution.continuity"
+  },
+  {
+   "old": "src/cells/core/apical_vertex_spec.py",
+   "new": "src/cells/definitions/apical_vertex_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.apical_vertex_spec",
+   "new_module": "cells.definitions.apical_vertex_spec"
+  },
+  {
+   "old": "src/cells/core/batch.py",
+   "new": "src/cells/execution/batch.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.batch",
+   "new_module": "cells.execution.batch"
+  },
+  {
+   "old": "src/cells/core/batch_windows.py",
+   "new": "src/cells/execution/batch_windows.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.batch_windows",
+   "new_module": "cells.execution.batch_windows"
+  },
+  {
+   "old": "src/cells/core/blas_threads.py",
+   "new": "src/cells/execution/blas_threads.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.blas_threads",
+   "new_module": "cells.execution.blas_threads"
+  },
+  {
+   "old": "src/cells/core/cell_replacement_spec.py",
+   "new": "src/cells/definitions/cell_replacement_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.cell_replacement_spec",
+   "new_module": "cells.definitions.cell_replacement_spec"
+  },
+  {
+   "old": "src/cells/core/devices.py",
+   "new": "src/cells/execution/devices.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.devices",
+   "new_module": "cells.execution.devices"
+  },
+  {
+   "old": "src/cells/core/errors.py",
+   "new": "src/cells/execution/errors.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.errors",
+   "new_module": "cells.execution.errors"
+  },
+  {
+   "old": "src/cells/core/grid.py",
+   "new": "src/cells/execution/grid.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.grid",
+   "new_module": "cells.execution.grid"
+  },
+  {
+   "old": "src/cells/core/inventory_species.py",
+   "new": "src/cells/registry/inventory_species.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.inventory_species",
+   "new_module": "cells.registry.inventory_species"
+  },
+  {
+   "old": "src/cells/core/kind_registry.py",
+   "new": "src/cells/registry/kind_registry.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.kind_registry",
+   "new_module": "cells.registry.kind_registry"
+  },
+  {
+   "old": "src/cells/core/kinetic_pump_spec.py",
+   "new": "src/cells/definitions/kinetic_pump_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.kinetic_pump_spec",
+   "new_module": "cells.definitions.kinetic_pump_spec"
+  },
+  {
+   "old": "src/cells/core/legacy_entry.py",
+   "new": "src/cells/registry/legacy_entry.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.legacy_entry",
+   "new_module": "cells.registry.legacy_entry"
+  },
+  {
+   "old": "src/cells/core/output_paths.py",
+   "new": "src/cells/execution/output_paths.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.output_paths",
+   "new_module": "cells.execution.output_paths"
+  },
+  {
+   "old": "src/cells/core/partition_spec.py",
+   "new": "src/cells/definitions/partition_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.partition_spec",
+   "new_module": "cells.definitions.partition_spec"
+  },
+  {
+   "old": "src/cells/core/phases.py",
+   "new": "src/cells/execution/phases.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.phases",
+   "new_module": "cells.execution.phases"
+  },
+  {
+   "old": "src/cells/core/projective.py",
+   "new": "src/cells/execution/projective.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.projective",
+   "new_module": "cells.execution.projective"
+  },
+  {
+   "old": "src/cells/core/projective_spec.py",
+   "new": "src/cells/definitions/projective_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.projective_spec",
+   "new_module": "cells.definitions.projective_spec"
+  },
+  {
+   "old": "src/cells/core/pump_composite_spec.py",
+   "new": "src/cells/definitions/pump_composite_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.pump_composite_spec",
+   "new_module": "cells.definitions.pump_composite_spec"
+  },
+  {
+   "old": "src/cells/core/rate_junction_spec.py",
+   "new": "src/cells/definitions/rate_junction_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.rate_junction_spec",
+   "new_module": "cells.definitions.rate_junction_spec"
+  },
+  {
+   "old": "src/cells/core/resources.py",
+   "new": "src/cells/execution/resources.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.resources",
+   "new_module": "cells.execution.resources"
+  },
+  {
+   "old": "src/cells/core/row_checks.py",
+   "new": "src/cells/execution/row_checks.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.row_checks",
+   "new_module": "cells.execution.row_checks"
+  },
+  {
+   "old": "src/cells/core/runner.py",
+   "new": "src/cells/execution/runner.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.runner",
+   "new_module": "cells.execution.runner"
+  },
+  {
+   "old": "src/cells/core/schedule.py",
+   "new": "src/cells/execution/schedule.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.schedule",
+   "new_module": "cells.execution.schedule"
+  },
+  {
+   "old": "src/cells/core/spec_values.py",
+   "new": "src/cells/definitions/spec_values.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.spec_values",
+   "new_module": "cells.definitions.spec_values"
+  },
+  {
+   "old": "src/cells/core/species_registry.py",
+   "new": "src/cells/registry/species_registry.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.species_registry",
+   "new_module": "cells.registry.species_registry"
+  },
+  {
+   "old": "src/cells/core/specs.py",
+   "new": "src/cells/definitions/specs.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.specs",
+   "new_module": "cells.definitions.specs"
+  },
+  {
+   "old": "src/cells/core/state.py",
+   "new": "src/cells/execution/state.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.state",
+   "new_module": "cells.execution.state"
+  },
+  {
+   "old": "src/cells/core/surface_kinetic_spec.py",
+   "new": "src/cells/definitions/surface_kinetic_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_kinetic_spec",
+   "new_module": "cells.definitions.surface_kinetic_spec"
+  },
+  {
+   "old": "src/cells/core/surface_pump_spec.py",
+   "new": "src/cells/definitions/surface_pump_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_pump_spec",
+   "new_module": "cells.definitions.surface_pump_spec"
+  },
+  {
+   "old": "src/cells/core/surface_pump_v2_spec.py",
+   "new": "src/cells/definitions/surface_pump_v2_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_pump_v2_spec",
+   "new_module": "cells.definitions.surface_pump_v2_spec"
+  },
+  {
+   "old": "src/cells/core/surface_pump_v3_spec.py",
+   "new": "src/cells/definitions/surface_pump_v3_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_pump_v3_spec",
+   "new_module": "cells.definitions.surface_pump_v3_spec"
+  },
+  {
+   "old": "src/cells/core/surface_pump_water_spec.py",
+   "new": "src/cells/definitions/surface_pump_water_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_pump_water_spec",
+   "new_module": "cells.definitions.surface_pump_water_spec"
+  },
+  {
+   "old": "src/cells/core/surface_pump_water_v2_spec.py",
+   "new": "src/cells/definitions/surface_pump_water_v2_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_pump_water_v2_spec",
+   "new_module": "cells.definitions.surface_pump_water_v2_spec"
+  },
+  {
+   "old": "src/cells/core/surface_tissue_spec.py",
+   "new": "src/cells/definitions/surface_tissue_spec.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.surface_tissue_spec",
+   "new_module": "cells.definitions.surface_tissue_spec"
+  },
+  {
+   "old": "src/cells/core/vector_windows.py",
+   "new": "src/cells/execution/vector_windows.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.vector_windows",
+   "new_module": "cells.execution.vector_windows"
+  },
+  {
+   "old": "src/cells/core/vertex_preparation.py",
+   "new": "src/cells/definitions/vertex_preparation.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.vertex_preparation",
+   "new_module": "cells.definitions.vertex_preparation"
+  },
+  {
+   "old": "src/cells/core/windows.py",
+   "new": "src/cells/execution/windows.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.core.windows",
+   "new_module": "cells.execution.windows"
+  },
+  {
+   "old": "src/cells/coupling/__init__.py",
+   "new": "src/cells/laws/junctions/__init__.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.coupling",
+   "new_module": "cells.laws.junctions"
+  },
+  {
+   "old": "src/cells/coupling/passive.py",
+   "new": "src/cells/laws/junctions/passive.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.coupling.passive",
+   "new_module": "cells.laws.junctions.passive"
+  },
+  {
+   "old": "src/cells/coupling/selective.py",
+   "new": "src/cells/laws/junctions/selective.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.coupling.selective",
+   "new_module": "cells.laws.junctions.selective"
+  },
+  {
+   "old": "src/cells/io.py",
+   "new": "src/cells/records/io.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.io",
+   "new_module": "cells.records.io"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/__init__.py",
+   "new": "src/cells/kinds/__init__.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds",
+   "new_module": "cells.kinds"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/passive_routes.py",
+   "new": "src/cells/kinds/passive_routes.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds.passive_routes",
+   "new_module": "cells.kinds.passive_routes"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/patch_damage.py",
+   "new": "src/cells/kinds/patch_damage.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds.patch_damage",
+   "new_module": "cells.kinds.patch_damage"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/ph_condition.py",
+   "new": "src/cells/kinds/ph_condition.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds.ph_condition",
+   "new_module": "cells.kinds.ph_condition"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/proton_buffer.py",
+   "new": "src/cells/kinds/proton_buffer.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds.proton_buffer",
+   "new_module": "cells.kinds.proton_buffer"
+  },
+  {
+   "old": "src/cells/models/inner_kinds/transporter.py",
+   "new": "src/cells/kinds/transporter.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.inner_kinds.transporter",
+   "new_module": "cells.kinds.transporter"
+  },
+  {
+   "old": "src/cells/models/operators/__init__.py",
+   "new": "src/cells/operators/__init__.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators",
+   "new_module": "cells.operators"
+  },
+  {
+   "old": "src/cells/models/operators/bath_schedule.py",
+   "new": "src/cells/operators/bath_schedule.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.bath_schedule",
+   "new_module": "cells.operators.bath_schedule"
+  },
+  {
+   "old": "src/cells/models/operators/bridge_closure.py",
+   "new": "src/cells/operators/bridge_closure.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.bridge_closure",
+   "new_module": "cells.operators.bridge_closure"
+  },
+  {
+   "old": "src/cells/models/operators/cell_replacement.py",
+   "new": "src/cells/operators/cell_replacement.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.cell_replacement",
+   "new_module": "cells.operators.cell_replacement"
+  },
+  {
+   "old": "src/cells/models/operators/cell_replacement_v2.py",
+   "new": "src/cells/operators/cell_replacement_v2.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.cell_replacement_v2",
+   "new_module": "cells.operators.cell_replacement_v2"
+  },
+  {
+   "old": "src/cells/models/operators/compartments.py",
+   "new": "src/cells/operators/compartments.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.compartments",
+   "new_module": "cells.operators.compartments"
+  },
+  {
+   "old": "src/cells/models/operators/contract.py",
+   "new": "src/cells/operators/contract.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.contract",
+   "new_module": "cells.operators.contract"
+  },
+  {
+   "old": "src/cells/models/operators/current_injection.py",
+   "new": "src/cells/operators/current_injection.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.current_injection",
+   "new_module": "cells.operators.current_injection"
+  },
+  {
+   "old": "src/cells/models/operators/k_anion_symport.py",
+   "new": "src/cells/operators/k_anion_symport.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.k_anion_symport",
+   "new_module": "cells.operators.k_anion_symport"
+  },
+  {
+   "old": "src/cells/models/operators/membrane_insertion.py",
+   "new": "src/cells/operators/membrane_insertion.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.membrane_insertion",
+   "new_module": "cells.operators.membrane_insertion"
+  },
+  {
+   "old": "src/cells/models/operators/membrane_insertion_v2.py",
+   "new": "src/cells/operators/membrane_insertion_v2.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.membrane_insertion_v2",
+   "new_module": "cells.operators.membrane_insertion_v2"
+  },
+  {
+   "old": "src/cells/models/operators/membrane_state.py",
+   "new": "src/cells/operators/membrane_state.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.membrane_state",
+   "new_module": "cells.operators.membrane_state"
+  },
+  {
+   "old": "src/cells/models/operators/osmotic_water.py",
+   "new": "src/cells/operators/osmotic_water.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.osmotic_water",
+   "new_module": "cells.operators.osmotic_water"
+  },
+  {
+   "old": "src/cells/models/operators/partition.py",
+   "new": "src/cells/operators/partition.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.partition",
+   "new_module": "cells.operators.partition"
+  },
+  {
+   "old": "src/cells/models/operators/restricted_lumen.py",
+   "new": "src/cells/operators/restricted_lumen.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.restricted_lumen",
+   "new_module": "cells.operators.restricted_lumen"
+  },
+  {
+   "old": "src/cells/models/operators/restricted_lumen_v2.py",
+   "new": "src/cells/operators/restricted_lumen_v2.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.restricted_lumen_v2",
+   "new_module": "cells.operators.restricted_lumen_v2"
+  },
+  {
+   "old": "src/cells/models/operators/site_occupancy.py",
+   "new": "src/cells/operators/site_occupancy.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.site_occupancy",
+   "new_module": "cells.operators.site_occupancy"
+  },
+  {
+   "old": "src/cells/models/operators/species_common.py",
+   "new": "src/cells/operators/species_common.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.species_common",
+   "new_module": "cells.operators.species_common"
+  },
+  {
+   "old": "src/cells/models/operators/species_exchange.py",
+   "new": "src/cells/operators/species_exchange.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.species_exchange",
+   "new_module": "cells.operators.species_exchange"
+  },
+  {
+   "old": "src/cells/models/operators/species_reactions.py",
+   "new": "src/cells/operators/species_reactions.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.species_reactions",
+   "new_module": "cells.operators.species_reactions"
+  },
+  {
+   "old": "src/cells/models/operators/species_regulated_availability.py",
+   "new": "src/cells/operators/species_regulated_availability.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.species_regulated_availability",
+   "new_module": "cells.operators.species_regulated_availability"
+  },
+  {
+   "old": "src/cells/models/operators/species_turnover.py",
+   "new": "src/cells/operators/species_turnover.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.operators.species_turnover",
+   "new_module": "cells.operators.species_turnover"
+  },
+  {
+   "old": "src/cells/models/registry.py",
+   "new": "src/cells/registry/models.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.models.registry",
+   "new_module": "cells.registry.models"
+  },
+  {
+   "old": "src/cells/observers.py",
+   "new": "src/cells/records/observers.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.observers",
+   "new_module": "cells.records.observers"
+  },
+  {
+   "old": "src/cells/processes/atp_transporter.py",
+   "new": "src/cells/laws/pumps/atp_transporter.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.atp_transporter",
+   "new_module": "cells.laws.pumps.atp_transporter"
+  },
+  {
+   "old": "src/cells/processes/calcium_activated_catalog.py",
+   "new": "src/cells/laws/channels/calcium_activated_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.calcium_activated_catalog",
+   "new_module": "cells.laws.channels.calcium_activated_catalog"
+  },
+  {
+   "old": "src/cells/processes/calcium_activated_potassium.py",
+   "new": "src/cells/laws/channels/calcium_activated_potassium.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.calcium_activated_potassium",
+   "new_module": "cells.laws.channels.calcium_activated_potassium"
+  },
+  {
+   "old": "src/cells/processes/calcium_atpase.py",
+   "new": "src/cells/laws/pumps/calcium_atpase.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.calcium_atpase",
+   "new_module": "cells.laws.pumps.calcium_atpase"
+  },
+  {
+   "old": "src/cells/processes/calcium_catalog_extra.py",
+   "new": "src/cells/laws/channels/calcium_catalog_extra.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.calcium_catalog_extra",
+   "new_module": "cells.laws.channels.calcium_catalog_extra"
+  },
+  {
+   "old": "src/cells/processes/calcium_gates.py",
+   "new": "src/cells/laws/channels/calcium_gates.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.calcium_gates",
+   "new_module": "cells.laws.channels.calcium_gates"
+  },
+  {
+   "old": "src/cells/processes/cav_channels.py",
+   "new": "src/cells/laws/channels/cav_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.cav_channels",
+   "new_module": "cells.laws.channels.cav_channels"
+  },
+  {
+   "old": "src/cells/processes/electrochemistry.py",
+   "new": "src/cells/laws/electrochemistry.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.electrochemistry",
+   "new_module": "cells.laws.electrochemistry"
+  },
+  {
+   "old": "src/cells/processes/er_calcium.py",
+   "new": "src/cells/laws/reactions/er_calcium.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.er_calcium",
+   "new_module": "cells.laws.reactions.er_calcium"
+  },
+  {
+   "old": "src/cells/processes/hcn_channels.py",
+   "new": "src/cells/laws/channels/hcn_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.hcn_channels",
+   "new_module": "cells.laws.channels.hcn_channels"
+  },
+  {
+   "old": "src/cells/processes/hcn_extra_catalog.py",
+   "new": "src/cells/laws/channels/hcn_extra_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.hcn_extra_catalog",
+   "new_module": "cells.laws.channels.hcn_extra_catalog"
+  },
+  {
+   "old": "src/cells/processes/hcn_extra_channels.py",
+   "new": "src/cells/laws/channels/hcn_extra_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.hcn_extra_channels",
+   "new_module": "cells.laws.channels.hcn_extra_channels"
+  },
+  {
+   "old": "src/cells/processes/hill_factors.py",
+   "new": "src/cells/laws/reactions/hill_factors.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.hill_factors",
+   "new_module": "cells.laws.reactions.hill_factors"
+  },
+  {
+   "old": "src/cells/processes/junction_formation.py",
+   "new": "src/cells/laws/junctions/junction_formation.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.junction_formation",
+   "new_module": "cells.laws.junctions.junction_formation"
+  },
+  {
+   "old": "src/cells/processes/junction_gate.py",
+   "new": "src/cells/laws/junctions/junction_gate.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.junction_gate",
+   "new_module": "cells.laws.junctions.junction_gate"
+  },
+  {
+   "old": "src/cells/processes/k_anion_symport.py",
+   "new": "src/cells/laws/routes/k_anion_symport.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.k_anion_symport",
+   "new_module": "cells.laws.routes.k_anion_symport"
+  },
+  {
+   "old": "src/cells/processes/kinetic_pump.py",
+   "new": "src/cells/laws/pumps/kinetic_pump.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.kinetic_pump",
+   "new_module": "cells.laws.pumps.kinetic_pump"
+  },
+  {
+   "old": "src/cells/processes/kinetic_pump_binding.py",
+   "new": "src/cells/laws/pumps/kinetic_pump_binding.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.kinetic_pump_binding",
+   "new_module": "cells.laws.pumps.kinetic_pump_binding"
+  },
+  {
+   "old": "src/cells/processes/kv1_channels.py",
+   "new": "src/cells/laws/channels/kv1_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.kv1_channels",
+   "new_module": "cells.laws.channels.kv1_channels"
+  },
+  {
+   "old": "src/cells/processes/leak_channels.py",
+   "new": "src/cells/laws/channels/leak_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.leak_channels",
+   "new_module": "cells.laws.channels.leak_channels"
+  },
+  {
+   "old": "src/cells/processes/mass_action.py",
+   "new": "src/cells/laws/reactions/mass_action.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.mass_action",
+   "new_module": "cells.laws.reactions.mass_action"
+  },
+  {
+   "old": "src/cells/processes/morris_lecar_catalog.py",
+   "new": "src/cells/laws/channels/morris_lecar_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.morris_lecar_catalog",
+   "new_module": "cells.laws.channels.morris_lecar_catalog"
+  },
+  {
+   "old": "src/cells/processes/morris_lecar_channels.py",
+   "new": "src/cells/laws/channels/morris_lecar_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.morris_lecar_channels",
+   "new_module": "cells.laws.channels.morris_lecar_channels"
+  },
+  {
+   "old": "src/cells/processes/passive_permeation.py",
+   "new": "src/cells/laws/routes/passive_permeation.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.passive_permeation",
+   "new_module": "cells.laws.routes.passive_permeation"
+  },
+  {
+   "old": "src/cells/processes/patch_damage.py",
+   "new": "src/cells/laws/transport/patch_damage.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.patch_damage",
+   "new_module": "cells.laws.transport.patch_damage"
+  },
+  {
+   "old": "src/cells/processes/patch_electrodiffusion.py",
+   "new": "src/cells/laws/routes/patch_electrodiffusion.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.patch_electrodiffusion",
+   "new_module": "cells.laws.routes.patch_electrodiffusion"
+  },
+  {
+   "old": "src/cells/processes/ph_condition.py",
+   "new": "src/cells/laws/reactions/ph_condition.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.ph_condition",
+   "new_module": "cells.laws.reactions.ph_condition"
+  },
+  {
+   "old": "src/cells/processes/plasma_calcium.py",
+   "new": "src/cells/laws/reactions/plasma_calcium.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.plasma_calcium",
+   "new_module": "cells.laws.reactions.plasma_calcium"
+  },
+  {
+   "old": "src/cells/processes/potassium_catalog.py",
+   "new": "src/cells/laws/channels/potassium_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.potassium_catalog",
+   "new_module": "cells.laws.channels.potassium_catalog"
+  },
+  {
+   "old": "src/cells/processes/potassium_channels.py",
+   "new": "src/cells/laws/channels/potassium_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.potassium_channels",
+   "new_module": "cells.laws.channels.potassium_channels"
+  },
+  {
+   "old": "src/cells/processes/proton_leak.py",
+   "new": "src/cells/laws/transport/proton_leak.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.proton_leak",
+   "new_module": "cells.laws.transport.proton_leak"
+  },
+  {
+   "old": "src/cells/processes/proton_pump.py",
+   "new": "src/cells/laws/pumps/proton_pump.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.proton_pump",
+   "new_module": "cells.laws.pumps.proton_pump"
+  },
+  {
+   "old": "src/cells/processes/rapid_proton_buffer.py",
+   "new": "src/cells/laws/reactions/rapid_proton_buffer.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.rapid_proton_buffer",
+   "new_module": "cells.laws.reactions.rapid_proton_buffer"
+  },
+  {
+   "old": "src/cells/processes/reactions.py",
+   "new": "src/cells/laws/reactions/reactions.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.reactions",
+   "new_module": "cells.laws.reactions.reactions"
+  },
+  {
+   "old": "src/cells/processes/shared_channel_catalog.py",
+   "new": "src/cells/laws/channels/shared_channel_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.shared_channel_catalog",
+   "new_module": "cells.laws.channels.shared_channel_catalog"
+  },
+  {
+   "old": "src/cells/processes/shared_channel_catalog_v2.py",
+   "new": "src/cells/laws/channels/shared_channel_catalog_v2.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.shared_channel_catalog_v2",
+   "new_module": "cells.laws.channels.shared_channel_catalog_v2"
+  },
+  {
+   "old": "src/cells/processes/sodium_catalog.py",
+   "new": "src/cells/laws/channels/sodium_catalog.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.sodium_catalog",
+   "new_module": "cells.laws.channels.sodium_catalog"
+  },
+  {
+   "old": "src/cells/processes/sodium_channels.py",
+   "new": "src/cells/laws/channels/sodium_channels.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.sodium_channels",
+   "new_module": "cells.laws.channels.sodium_channels"
+  },
+  {
+   "old": "src/cells/processes/vertex_mechanics.py",
+   "new": "src/cells/laws/mechanics/vertex_mechanics.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.vertex_mechanics",
+   "new_module": "cells.laws.mechanics.vertex_mechanics"
+  },
+  {
+   "old": "src/cells/processes/voltage_gates.py",
+   "new": "src/cells/laws/channels/voltage_gates.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.processes.voltage_gates",
+   "new_module": "cells.laws.channels.voltage_gates"
+  },
+  {
+   "old": "src/cells/run_view.py",
+   "new": "src/cells/records/run_view.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.run_view",
+   "new_module": "cells.records.run_view"
+  },
+  {
+   "old": "src/cells/source_layout.py",
+   "new": "src/cells/records/source_layout.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.source_layout",
+   "new_module": "cells.records.source_layout"
+  },
+  {
+   "old": "src/cells/window_io.py",
+   "new": "src/cells/records/window_io.py",
+   "kind": "move",
+   "to_legacy": false,
+   "old_module": "cells.window_io",
+   "new_module": "cells.records.window_io"
+  },
+  {
+   "old": null,
+   "new": "src/cells/definitions/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.definitions"
+  },
+  {
+   "old": null,
+   "new": "src/cells/execution/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.execution"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/channels/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.channels"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/mechanics/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.mechanics"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/pumps/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.pumps"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/reactions/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.reactions"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/routes/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.routes"
+  },
+  {
+   "old": null,
+   "new": "src/cells/laws/transport/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.laws.transport"
+  },
+  {
+   "old": null,
+   "new": "src/cells/records/__init__.py",
+   "kind": "created",
+   "to_legacy": false,
+   "old_module": null,
+   "new_module": "cells.records"
+  },
+  {
+   "old": "src/cells/core/__init__.py",
+   "new": null,
+   "kind": "dissolved",
+   "to_legacy": false,
+   "old_module": "cells.core",
+   "new_module": null
+  },
+  {
+   "old": "src/cells/processes/__init__.py",
+   "new": null,
+   "kind": "dissolved",
+   "to_legacy": false,
+   "old_module": "cells.processes",
+   "new_module": null
+  }
+ ],
+ "already_moved": [],
+ "identifiers_changed": []
+}

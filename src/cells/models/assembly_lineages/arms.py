@@ -19,7 +19,7 @@ runner entry when seam F's next step builds that (CORE_SEAMS_DESIGN §15), not h
 import dataclasses
 from dataclasses import dataclass
 
-from cells.core.specs import ConfigError, bounded_integer, parse_spec
+from cells.definitions.specs import ConfigError, bounded_integer, parse_spec
 from cells.models.assembly_lineages import MODE, keys, runner, streams
 
 FORMAT = "cells.assembly_lineages.arm@1"

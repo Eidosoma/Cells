@@ -36,11 +36,11 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.batch import BatchSpec, WorldSpec  # noqa: E402
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.vector_windows import run_vector_windowed  # noqa: E402
-from cells.core.windows import WindowPolicy, run_windowed  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.batch import BatchSpec, WorldSpec  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.execution.vector_windows import run_vector_windowed  # noqa: E402
+from cells.execution.windows import WindowPolicy, run_windowed  # noqa: E402
 from cells.models import cell_replacement as model  # noqa: E402
 from cells.models import surface_pump_v3  # noqa: E402
 from validation.tissue import cell_replacement_fixtures as fx  # noqa: E402
@@ -200,7 +200,7 @@ def w37_raw(backend=None):
 
 def w37_case(out, rim, inner, step, backend=None):
     """W37: the 127-cell D->H swap world of cell_replacement_cost swap (3000 steps)."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.stationary import worlds
 
     raw = w37_raw(backend)
@@ -516,9 +516,9 @@ ITEMS = dict(Q1=q1_q3_q4, Q2=q2, Q5=q5, Q6=q6, Q7=q7)
 
 def provenance():
     """The item record's provenance: invocation, host, source, and the numerical environment
-    the engine's run records keep (cells.io.runtime_identity's numerical_environment:
+    the engine's run records keep (cells.records.io.runtime_identity's numerical_environment:
     XLA_FLAGS and JAX_DISABLE_JIT), so a run under an XLA setting is identified by its record."""
-    from cells.io import runtime_identity
+    from cells.records.io import runtime_identity
 
     git = ["git", "-C", str(ROOT)]
     return dict(

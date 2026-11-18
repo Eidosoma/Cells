@@ -200,7 +200,7 @@ implicit membrane–cleft term would then be a new solver version (division desi
 1. Prerequisite (c): the approved fix to the electrode-ledger drift, built with its guards
    (a 420 s run reproduces the drift in 40 s).
 2. The lumen operator and its guards. Built and accepted 13 November
-   (`src/cells/models/operators/restricted_lumen.py`).
+   (`src/cells/operators/restricted_lumen.py`).
 3. The engine definition, and `compare` against R-full's build. Built 13 November
    (`validation/division/cleft_egg_engine.py`): 30 fields, 26 exactly R-full's, 2 within
    10⁻¹², 2 declared (the cytosol charge anchor's egg-scale granularity). Then, approved the

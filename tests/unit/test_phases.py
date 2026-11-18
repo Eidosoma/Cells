@@ -1,4 +1,4 @@
-"""Live phase markers (cells.core.phases) on vectorized windows, and the phase totals.
+"""Live phase markers (cells.execution.phases) on vectorized windows, and the phase totals.
 
 The markers are log records on "cells.phases": silent without a handler, and in order
 when one is attached (each world's plan, the plan, binding, compile, the first window;
@@ -15,11 +15,11 @@ import logging
 import jax
 import pytest
 
-from cells.core import phases
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import iter_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import parse_spec
+from cells.execution import phases
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.vector_windows import iter_vector_windows, run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.numerics import surface_imex as imex
 from validation.tissue import surface_pump_fixtures
 

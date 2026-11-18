@@ -26,7 +26,7 @@ jax.config.update("jax_enable_x64", True)
 
 import numpy as np  # noqa: E402
 
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.tissue import pump_water_fixtures as fixtures  # noqa: E402
 from validation.tissue import pump_water_qualification as w1  # noqa: E402
 
@@ -68,7 +68,7 @@ def guess(pb, reference):
 
 def judge_arm(predictions, arm, bounds):
     from cells.analysis import stationary as sa
-    from cells.core.surface_pump_water_v2_spec import Control, control_values
+    from cells.definitions.surface_pump_water_v2_spec import Control, control_values
     from cells.models import surface_pump_water_v2 as model
 
     spec = parse_spec(definition(predictions, arm))

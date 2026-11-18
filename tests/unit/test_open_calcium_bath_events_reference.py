@@ -13,9 +13,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_open_calcium_bath_events import OWNERS, control, setup
 from validation.tissue import open_calcium_bath_fixtures as fixtures

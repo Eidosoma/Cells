@@ -25,23 +25,23 @@ import math
 
 import numpy as np
 
-from cells.core import surface_kinetic_spec
-from cells.core.surface_pump_v3_spec import (
+from cells.definitions import surface_kinetic_spec
+from cells.definitions.surface_pump_v3_spec import (
     KIR2P1_LAW_ID,
     KLEAK_LAW_ID,
     KV1P5_LAW_ID,
     NALEAK_LAW_ID,
     NAV1P2_LAW_ID,
 )
-from cells.processes import (
-    junction_gate,
+from cells.laws.channels import (
     potassium_catalog,
     potassium_channels,
     sodium_catalog,
     sodium_channels,
     voltage_gates,
 )
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.junctions import junction_gate
 from validation.tissue import surface_pump_v2_fixtures as second
 
 ARMS = second.first.ARMS

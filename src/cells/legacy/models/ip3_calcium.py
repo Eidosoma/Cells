@@ -6,11 +6,11 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import control_values
+from cells.execution.schedule import control_values
 from cells.legacy.core.ip3_calcium_spec import MODEL_ID, base_spec
 from cells.legacy.models import gated_calcium as base
 from cells.legacy.processes import ip3_release as process
-from cells.observers import sample_hermite_history
+from cells.records.observers import sample_hermite_history
 
 State = STATE_TYPE = base.State
 Layout = NamedTuple(

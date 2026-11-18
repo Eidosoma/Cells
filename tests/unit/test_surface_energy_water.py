@@ -7,14 +7,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_energy_water_spec import energy_spec
 from cells.legacy.models import surface_energy as energy
 from cells.legacy.models import surface_energy_water as model
 from cells.legacy.models import surface_water as water
-from cells.processes.electrochemistry import R
 from validation.chemistry import finite_energy_reference as chemistry
 from validation.tissue import surface_energy_water_fixtures as fixtures
 from validation.tissue import surface_energy_water_reference as reference

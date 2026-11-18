@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
 from cells.numerics.fixed_step import rk4_step
 from tests.betse_physiology.unit.test_physiology_permeability_view import (
     KINDS,

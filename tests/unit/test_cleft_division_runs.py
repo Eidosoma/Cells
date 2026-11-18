@@ -21,8 +21,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from tests import partition_fixtures as fx
 
 END = 0.004
@@ -129,9 +129,9 @@ def test_the_furrow_world_through_one_to_two_to_four_with_second_onsets():
 
 
 def vector_batch(specs):
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     worlds = tuple(WorldSpec(i + 1, s) for i, s in enumerate(specs))
     return run_vector_windowed(

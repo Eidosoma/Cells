@@ -1,0 +1,17 @@
+{
+ "format": "ool_references.run2@1",
+ "id": "ol2_shared_run",
+ "world": "ol2_shared",
+ "registered": "2026-11-18",
+ "mode": "population",
+ "slots": 4,
+ "t_end_s": 600.0,
+ "max_events": 200000,
+ "schedules": [],
+ "streams": {
+  "world_selection": "domain 5, three uniforms per draw (population)",
+  "lineage_events": "domain 1, OL1's two per draw, the age counter (single lineage)",
+  "fission": "domain 2, the parent's key, one block of N + k + N_L per attempt",
+  "schedules": "domain 6, the declared index as the key, one draw per gap or per living assembly"
+ }
+}

@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import calcium_catalog_extra as calcium
-from cells.processes import cav_channels
+from cells.laws.channels import calcium_catalog_extra as calcium
+from cells.laws.channels import cav_channels
 from validation.channels import calcium_catalog_extra_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

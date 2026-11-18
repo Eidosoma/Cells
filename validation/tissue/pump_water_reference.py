@@ -4,8 +4,8 @@ It reads a plain resolved_pump_water@1 definition (the JSON dict) and writes the
 declared laws as one smooth ODE system, integrated with scipy's Radau or DOP853 at
 tight tolerances. Nothing in src/cells is imported. The channel, junction-gate and
 constant-field laws are transcribed from the laws resolved_pump_tissue@3 declares
-(processes/sodium_channels.py, potassium_channels.py, junction_gate.py,
-coupling/selective.py). The pump is mg0b_theory's transcription of
+(laws/channels/sodium_channels.py, potassium_channels.py, junction_gate.py,
+laws/junctions/selective.py). The pump is mg0b_theory's transcription of
 kinetic_pump.LAW_ID, already judged against the engine. The water law is written
 from docs/WATER_VOLUME_REFERENCE.md and docs/PUMP_WATER_MODEL.md:
 
@@ -48,7 +48,7 @@ def logistic(x):
 
 
 def nav_kinetics(v):
-    """NaV1.2 (m, h) targets and time constants (s); processes/sodium_channels.py."""
+    """NaV1.2 (m, h) targets and time constants (s); laws/channels/sodium_channels.py."""
     shifted = (v + 0.025) / 0.009
     a = 0.182 * 9 * bernoulli(-shifted)
     b = 0.124 * 9 * bernoulli(shifted)
@@ -60,7 +60,7 @@ def nav_kinetics(v):
 
 
 def kir_kinetics(v):
-    """Kir2.1 (m, h) targets and time constants (s); processes/potassium_channels.py."""
+    """Kir2.1 (m, h) targets and time constants (s); laws/channels/potassium_channels.py."""
     target = np.array([logistic(-(v + 0.09648) / 0.02326), logistic((v + 0.16828) / 0.04413)])
     tau = np.array(
         [
@@ -72,7 +72,7 @@ def kir_kinetics(v):
 
 
 def junction_rates(vj, threshold, minimum):
-    """alpha, beta (1/s) of junction_voltage_relaxation@1 (processes/junction_gate.py)."""
+    """alpha, beta (1/s) of junction_voltage_relaxation@1 (laws/junctions/junction_gate.py)."""
     shift = np.abs(vj) - threshold
     alpha = 1.3 * np.exp(-77.0 * shift)
     beta = 20.0 / (1.0 + np.exp(-(math.log(0.065) + 140.0 * shift)))
@@ -80,7 +80,7 @@ def junction_rates(vj, threshold, minimum):
 
 
 def ghk_outward(c_from, c_to, dv, z, temperature, area_permeability):
-    """Constant-field flux from `from` to `to` (fmol/s), coupling/selective.py's form."""
+    """Constant-field flux from `from` to `to` (fmol/s), laws/junctions/selective.py's form."""
     x = z * F * dv / (R * temperature)
     return area_permeability / MOL_PER_FMOL * (c_from * bernoulli(-x) - c_to * bernoulli(x))
 

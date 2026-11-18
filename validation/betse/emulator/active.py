@@ -21,7 +21,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import er_calcium, kinetic_pump, voltage_gates
+from cells.laws.channels import voltage_gates
+from cells.laws.pumps import kinetic_pump
+from cells.laws.reactions import er_calcium
 from validation.betse.emulator import laws
 from validation.betse.emulator import spatial as passive
 
@@ -176,8 +178,8 @@ def step(state, p, dt, *, xp=jnp, variant=laws.QUALIFIED, membrane_inputs=None):
         seen_ca, _ = passive.membrane_view(after_ecm[ca, t.outside_owner], vm, membrane_inputs, ca)
         inputs = (old.cell_concentration[ca, t.cell_owner], seen_ca, vm)
         if variant.cells_calcium_law:  # Model difference: Cells' law and constants.
-            from cells.processes import calcium_atpase
-            from cells.processes.electrochemistry import R
+            from cells.laws.electrochemistry import R
+            from cells.laws.pumps import calcium_atpase
 
             q = p.calcium.parameters
             law = calcium_atpase.Parameters(

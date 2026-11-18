@@ -150,7 +150,7 @@ def ion_world(
     its cytosol at `owner` (probe I's Na 10, K 140, Cl 20 mM), a K permeability on its wall, at
     rest at E_K through its charge anchor; at event_s, KCl replaces NaCl by step_mM (negative:
     NaCl replaces KCl). events=False declares the operator with no event (W2's control)."""
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 
     owner = dict(ION_OWNER_mM if owner is None else owner)
     raw = fx.world(
@@ -187,7 +187,7 @@ def ledger_world():
 def truncated(raw, end):
     """W5's first piece: raw ended at `end` (its events before `end`, its observations up to it
     and `end` itself), with raw's own execution block, so the full definition may resume from its
-    checkpoint (cells.core.runner.branch_checkpoint keeps the execution block fixed)."""
+    checkpoint (cells.execution.runner.branch_checkpoint keeps the execution block fixed)."""
     out = copy.deepcopy(raw)
     x = out["experiment"]
     x["end_time"] = end
@@ -205,7 +205,7 @@ def batch_worlds(*, dt=DECLARED_DT):
 def water_world(offsets):
     """W6: milestone 1's water world, a heredity cell beside water@1 with its held bath bath_0,
     scheduled at 0.05 s by `offsets` over the units NaM and KM (M an anion)."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import pump_water_fixtures as wfx
 
     raw = cs.frozen_definition(
@@ -261,7 +261,7 @@ def bound_permeability():
     bound, F^2/RT P A max(c) over the cell's capacitance (surface_pump.explicit_rate_bound's
     membrane term), times 1 ms, equals BOUND_RATIO_AT_1MS at the worst composition (the bath's K at
     50 mM above the cytosol's 10 mM); so the declared composition gives a fifth of it."""
-    from cells.processes.electrochemistry import F, R
+    from cells.laws.electrochemistry import F, R
 
     worst_mM = fx.BATH_mM["K"] + ION_STEP_mM
     slope = F * F / (R * 310.0)

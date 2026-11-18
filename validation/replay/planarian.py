@@ -30,8 +30,8 @@ The amplitude, settling periods and tolerance are provisional until the first de
 import math
 from dataclasses import dataclass
 
-from cells import run_view
-from cells.core import pump_composite_spec as cs
+from cells.definitions import pump_composite_spec as cs
+from cells.records import run_view
 from validation.stationary import worlds
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 

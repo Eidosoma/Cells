@@ -1,6 +1,8 @@
 """39 shared channel laws in ordinary resolved tissue."""
 
-from cells.core.surface_kinetic_spec import EXTENDED_CATALOG_MODEL_ID as MODEL_ID  # noqa: F401
+from cells.definitions.surface_kinetic_spec import (
+    EXTENDED_CATALOG_MODEL_ID as MODEL_ID,  # noqa: F401
+)
 from cells.legacy.models.surface_cav import (  # noqa: F401
     BATCH_CAPACITIES,
     OBSERVATION_FIELDS,

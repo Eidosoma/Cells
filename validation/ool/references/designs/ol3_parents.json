@@ -1,0 +1,105 @@
+{
+ "format": "ool_references.ol3_parents@1",
+ "registered": "2026-11-18",
+ "authority": "\u00a70.2c rules 9 and 10",
+ "attempts_per_parent": 4000,
+ "parents": [
+  {
+   "id": "eq_N5_k3",
+   "counts": [
+    2,
+    1,
+    2
+   ],
+   "k_area": [
+    1,
+    1,
+    1
+   ],
+   "lumen": [
+    30,
+    6
+   ],
+   "k": 3
+  },
+  {
+   "id": "eq_N8_k3",
+   "counts": [
+    4,
+    4
+   ],
+   "k_area": [
+    1,
+    1
+   ],
+   "lumen": [
+    40
+   ],
+   "k": 3
+  },
+  {
+   "id": "eq_N7_k2",
+   "counts": [
+    4,
+    3
+   ],
+   "k_area": [
+    1,
+    1
+   ],
+   "lumen": [
+    25,
+    5
+   ],
+   "k": 2
+  },
+  {
+   "id": "eq_N6_k3",
+   "counts": [
+    3,
+    3
+   ],
+   "k_area": [
+    1,
+    1
+   ],
+   "lumen": [
+    12
+   ],
+   "k": 3
+  },
+  {
+   "id": "uneq_N7_k3",
+   "counts": [
+    3,
+    2,
+    2
+   ],
+   "k_area": [
+    1,
+    2,
+    3
+   ],
+   "lumen": [
+    20
+   ],
+   "k": 3
+  },
+  {
+   "id": "uneq_N5_k2",
+   "counts": [
+    3,
+    2
+   ],
+   "k_area": [
+    1,
+    2
+   ],
+   "lumen": [
+    12,
+    3
+   ],
+   "k": 2
+  }
+ ]
+}

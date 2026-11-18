@@ -21,13 +21,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.windows import WindowPolicy, run_windowed  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
-from cells.window_io import write_windowed_run  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.execution.windows import WindowPolicy, run_windowed  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
+from cells.records.window_io import write_windowed_run  # noqa: E402
 from scripts.profile_worlds import workload  # noqa: E402
 
 

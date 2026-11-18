@@ -186,10 +186,10 @@ def native_worker(registered, output):
 def cells_worker(registered, output):
     import jax
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import runtime_identity
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
     from cells.legacy.models import finite_extracellular as model
+    from cells.records.io import runtime_identity
 
     c.require(
         jax.default_backend() == "cpu"

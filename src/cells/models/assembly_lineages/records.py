@@ -34,7 +34,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.models.assembly_lineages import (
     EXCHANGE_LAW,
     MODEL_ID,
@@ -355,7 +355,7 @@ def _law(run):
 
 
 def _source():
-    from cells.run_view import _engine_source
+    from cells.records.run_view import _engine_source
 
     source = _engine_source()
     if source is None:
@@ -670,16 +670,16 @@ def _arrays(run):
 
 
 def _write_json(path, value):
-    from cells.io import _write_json as write
+    from cells.records.io import _write_json as write
 
     write(Path(path), value)
 
 
 def write_run(directory, run, *, provenance=None):
     """Write one run's bundle into a new directory; returns its summary."""
-    from cells.core import blas_threads
-    from cells.core.devices import execution_device
-    from cells.io import _sha256, runtime_identity, source_hashes
+    from cells.execution import blas_threads
+    from cells.execution.devices import execution_device
+    from cells.records.io import _sha256, runtime_identity, source_hashes
 
     directory = Path(directory)
     world = world_record(run.spec.model.world)
@@ -779,7 +779,7 @@ def write_pair(directory, runs, *, provenance=None):
 
 def read(directory):
     """(world record, run record, arrays) of a bundle, checking its manifest's checksums."""
-    from cells.io import _sha256
+    from cells.records.io import _sha256
 
     directory = Path(directory)
     manifest = json.loads((directory / "manifest.json").read_text())

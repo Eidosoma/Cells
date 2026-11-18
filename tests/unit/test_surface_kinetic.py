@@ -10,19 +10,19 @@ import jax
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch, run_batch
-from cells.core.batch_windows import iter_batch_windows
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, run_batch
+from cells.execution.batch_windows import iter_batch_windows
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline
+from cells.execution.schedule import control_values
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.models import surface_kinetic as model
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from validation.tissue import surface_kinetic_fixtures as fixtures
 from validation.tissue import surface_kinetic_reference as reference
 
@@ -247,7 +247,7 @@ def test_kinetic_definition_errors_reject(fault):
 
 
 def test_patch_gates_blocking_and_same_patch_addition():
-    from cells.processes import voltage_gates
+    from cells.laws.channels import voltage_gates
 
     raw = fixtures.definition("clamped")
     # Two independently gated populations on one physical patch must add.
@@ -359,7 +359,7 @@ def test_pump_charge_and_three_energy_sources(reverse):
 
 
 def test_passive_reduction_and_absent_routes():
-    from cells.core.surface_kinetic_spec import passive_spec
+    from cells.definitions.surface_kinetic_spec import passive_spec
     from cells.models import surface_tissue
 
     raw = fixtures.definition("clamped")

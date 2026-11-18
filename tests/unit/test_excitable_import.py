@@ -14,8 +14,8 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions.specs import parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import excitable_import as imp
 from validation.tissue import excitable_probe as probe
 

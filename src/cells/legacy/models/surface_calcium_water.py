@@ -12,8 +12,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_calcium_water_spec import MODEL_ID as MODEL_ID
 from cells.legacy.core.surface_calcium_water_spec import minimum_volume_spec, prior_spec, water_spec
 from cells.legacy.models import surface_calcium as calcium
@@ -23,7 +24,6 @@ from cells.models import surface_tissue as passive
 from cells.numerics import osmotic_water as water
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import R
 
 STATE_AXES = prior.STATE_AXES | water_model.EXTRA_AXES
 STATE_TYPE = NamedTuple("SurfaceCalciumWaterState", [(k, object) for k in STATE_AXES])
@@ -78,7 +78,7 @@ def prior_layout(p):
 
 
 def base_control(control):
-    from cells.core.schedule import SurfaceCalciumControl
+    from cells.execution.schedule import SurfaceCalciumControl
 
     return SurfaceCalciumControl(*(getattr(control, k) for k in SurfaceCalciumControl._fields))
 
@@ -241,7 +241,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     table = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -373,7 +373,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)

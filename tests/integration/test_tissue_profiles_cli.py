@@ -8,10 +8,10 @@ import numpy as np
 import pytest
 
 from cells.__main__ import main
-from cells.core.specs import digest, parse_spec
+from cells.definitions.specs import digest, parse_spec
 from cells.legacy.processes import tissue_target_selectors as native
 from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request, read_preparation
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.integration.test_cli import cli
 from validation.topology import tissue_profile_preparation_fixtures as fixtures
 from validation.topology import tissue_profile_preparation_reference as reference

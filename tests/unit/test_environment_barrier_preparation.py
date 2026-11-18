@@ -10,8 +10,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy.core import environment_barrier_preparation as bridge
 from cells.models import surface_tissue as model
 from validation.tissue import surface_dynamics_reference as physical

@@ -12,10 +12,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
 from cells.legacy.models import surface_calcium_energy as fuel
 from cells.legacy.models import surface_calcium_energy_water_hcn_extra as water_parent
 from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as repair_parent

@@ -10,14 +10,14 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import SimulationSpec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import SimulationSpec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import Checkpoint
+from cells.laws.electrochemistry import F
 from cells.models import surface_tissue
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import F
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.models import physiology_permeability_view as permeability

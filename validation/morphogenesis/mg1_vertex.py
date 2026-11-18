@@ -62,7 +62,7 @@ HORIZON = {4: 400.0, 8: 800.0, 12: 1200.0, 16: 2000.0}
 
 
 def honeycomb(n, *, line_tension=LAMBDA, contractility=GAMMA, area=None, sigma=0.0, seed=0):
-    from cells.core import vertex_preparation as prep
+    from cells.definitions import vertex_preparation as prep
 
     if area is None:
         area = theory.ground_state(line_tension, contractility)[0]
@@ -79,10 +79,10 @@ def honeycomb(n, *, line_tension=LAMBDA, contractility=GAMMA, area=None, sigma=0
 
 def stable_dt(model, solver="rk4"):
     """The largest power of two with dt * rho(initial) <= STEP_FRACTION x the bound."""
-    from cells.core import vertex_preparation as prep
-    from cells.core.specs import parse_spec
+    from cells.definitions import vertex_preparation as prep
+    from cells.definitions.specs import parse_spec
+    from cells.laws.mechanics import vertex_mechanics as vm
     from cells.models import apical_vertex as av
-    from cells.processes import vertex_mechanics as vm
 
     spec = parse_spec(prep.definition(model, end_time=1.0, observation_times=[0.0], dt=1e-6))
     state, layout = av.initial_values(spec)
@@ -94,7 +94,7 @@ def stable_dt(model, solver="rk4"):
 
 
 def definition(model, *, end, observe, dt=None, solver="rk4", controls=None):
-    from cells.core import vertex_preparation as prep
+    from cells.definitions import vertex_preparation as prep
 
     dt = stable_dt(model, solver) if dt is None else dt
     return prep.definition(
@@ -159,8 +159,8 @@ def cut_control(model, junction, fraction, time):
 
 def run_engine(defn, window_steps=WINDOW_STEPS):
     """Windowed engine run (bounded memory); observations concatenated across windows."""
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     spec = parse_spec(defn)
     collected = []
@@ -347,8 +347,8 @@ def part_ground(args):
         **_diagnostics(result),
     }
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core import vertex_preparation as prep
-    from cells.core.specs import parse_spec
+    from cells.definitions import vertex_preparation as prep
+    from cells.definitions.specs import parse_spec
 
     model = honeycomb(
         4 if quick else 8, area=a_star * inp.box_stretch**2, sigma=0.02, seed=inp.box_seed
@@ -388,8 +388,8 @@ def part_ground(args):
 
 def _staddon_problem(n, r, p0, *, sigma=0.02, seed=0):
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core import vertex_preparation as prep
-    from cells.core.specs import parse_spec
+    from cells.definitions import vertex_preparation as prep
+    from cells.definitions.specs import parse_spec
 
     model = staddon_model(n, r, p0, sigma=sigma, seed=seed)
     spec = parse_spec(prep.definition(model, end_time=1.0, observation_times=[0.0], dt=0.001))
@@ -550,7 +550,7 @@ def part_barrier(args):
     counts as vanishing only if all of its paths converged with |barrier| <= 1e-10.
     """
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
 
     quick, inp = args.quick, inputs(args)
     n = 4 if quick else 8
@@ -658,9 +658,9 @@ def part_barrier(args):
 
 def part_recoil(args):
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.laws.mechanics import vertex_mechanics as vm
     from cells.models import apical_vertex as av
-    from cells.processes import vertex_mechanics as vm
 
     quick, inp = args.quick, inputs(args)
     n = 4 if quick else 12
@@ -839,7 +839,7 @@ def part_inference(args):
 
     from cells.analysis import junction_tension_inference as jti
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     quick, inp = args.quick, inputs(args)
     levels = tuple(args.noise_levels)
@@ -934,10 +934,10 @@ def part_numerics(args):
     import jax
     import jax.numpy as jnp
 
-    from cells.core.errors import NumericalError
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.laws.mechanics import vertex_mechanics as vm
     from cells.models import apical_vertex as av
-    from cells.processes import vertex_mechanics as vm
 
     quick, inp = args.quick, inputs(args)
     model = honeycomb(4, sigma=0.05, seed=inp.numerics_seed)
@@ -1016,7 +1016,7 @@ def part_numerics(args):
 
 def part_tyssue(args):
     from cells.analysis import mechanical_equilibrium as me
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from validation.morphogenesis import mg1_tyssue as ty
 
     quick, inp = args.quick, inputs(args)

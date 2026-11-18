@@ -10,8 +10,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core import surface_calcium_energy_regulated_spec as schema
 from cells.legacy.models import surface_calcium_energy as base
 from cells.legacy.models import surface_calcium_energy_regulated as model

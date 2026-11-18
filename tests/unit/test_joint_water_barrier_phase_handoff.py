@@ -6,9 +6,9 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.legacy.core import joint_water_barrier_phase_handoff as bridge
 from tests.joint_water_barrier_phase_fixtures import (
     DT,

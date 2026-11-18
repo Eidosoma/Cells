@@ -38,7 +38,7 @@ def model_id(spec):
 
 def _older(model):
     """An older assembly family's hooks (D188 R1), through the core's one legacy entry."""
-    from cells.core.legacy_entry import legacy
+    from cells.registry.legacy_entry import legacy
 
     return legacy().ensemble(model)
 

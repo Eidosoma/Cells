@@ -1,6 +1,6 @@
 """MG0b: a bistable voltage domain wall on resolved_pump_tissue@3.
 
-Engine model run: resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py,
+Engine model run: resolved_pump_tissue@3 (src/cells/definitions/surface_pump_v3_spec.py,
 src/cells/models/surface_pump_v3.py), unmodified, IMEX ARS(2,2,2), CPU, float64.
 Each cell is a heredity cell (validation/tissue/surface_pump_v3_fixtures.py:
 heredity_cells) facing its own held bath: BETSE-default membrane coefficients
@@ -284,8 +284,8 @@ def reduced_run(protocol, t):
 
 def run_windows(raw, *, window_s=2.0):
     """Run in horizon windows (runner branches); keep voltages and cell amounts."""
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
 
     end, dt = raw["experiment"]["end_time"], raw["execution"]["dt"]
     observe = sorted(raw["experiment"]["observation_times"])

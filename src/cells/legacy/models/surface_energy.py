@@ -12,8 +12,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
+from cells.laws.pumps import kinetic_pump as pump
 from cells.legacy.core.surface_energy_spec import (
     MODEL_ID,  # noqa: F401
     SurfaceEnergyMorrisLecarModel,
@@ -27,8 +29,6 @@ from cells.models import surface_kinetic as kinetic
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import R
 
 OBSERVER_ID = "resolved_finite_energy_accepted_grid_readouts@1"
 STAGE_DOMAIN_ID = "positive_ions_and_finite_cellular_atp_actual_controls@1"
@@ -111,7 +111,7 @@ def prior_layout(layout):
 
 
 def prior_control(control):
-    from cells.core.schedule import SurfaceKineticControl
+    from cells.execution.schedule import SurfaceKineticControl
 
     return SurfaceKineticControl(*(getattr(control, k) for k in SurfaceKineticControl._fields))
 
@@ -333,7 +333,7 @@ def check_definition(spec):
         ),
     )
     state, p = initial_values(compact)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(compact, [c.time for c in compact.experiment.changes])
     with np.errstate(all="ignore"):
@@ -352,7 +352,7 @@ def check_steps(spec, steps, controls):
     prior.check_steps(ionic, steps, controls)
     state, p = initial_values(spec)
     amount = np.where(p.active, energy_amounts(state, p), 1.0)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [c.time for c in spec.experiment.changes])
     for i in range(len(spec.experiment.changes)):
@@ -491,7 +491,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -544,7 +544,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [time])
     control = type(table)(*(v[0] for v in table))

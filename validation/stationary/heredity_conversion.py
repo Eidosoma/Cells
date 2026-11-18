@@ -62,7 +62,7 @@ jax.config.update("jax_enable_x64", True)
 
 from cells import __version__  # noqa: E402
 from cells.analysis import stationary as sa  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.stationary import heredity_prescreen as hp  # noqa: E402
 from validation.stationary import targets, worlds  # noqa: E402
 

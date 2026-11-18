@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
 from tests import owned_calcium_profile_barrier_phase_fixtures as fixtures
 from validation.topology import owned_calcium_profile_barrier_phase_handoff_reference as reference
 

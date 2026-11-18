@@ -9,17 +9,17 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.core import owned_calcium_profile_barrier_phase_handoff as bridge
 from cells.legacy.tissue_phase import _source_adapter, read_preparation
-from cells.models.registry import get_model
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.owned_calcium_profile_barrier_phase_fixtures import (
     DT,
     OWNERS,

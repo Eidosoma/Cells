@@ -12,9 +12,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.mechanics import vertex_mechanics as vm
 from cells.models import apical_vertex as av
-from cells.processes import vertex_mechanics as vm
 from tests.apical_vertex_fixtures import (
     A_STAR,
     E_STAR,

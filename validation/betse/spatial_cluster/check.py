@@ -29,9 +29,9 @@ def reference_worker(root):
 
 
 def production(root, backend):
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_run, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_run, write_snapshot
 
     protocol, definitions = x.inputs(root)
     reports = []
@@ -136,8 +136,8 @@ def production(root, backend):
             gc.collect()
     # Exercise the same world-ID and full snapshot path used by GPU scheduling.
     # Two different physical worlds verify isolation; this is not a throughput claim.
-    from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-    from cells.core.batch import BatchSpec, WorldSpec, run_batch
+    from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+    from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 
     worlds = []
     for identity, arm in ((41, "baseline"), (79, "blocked")):

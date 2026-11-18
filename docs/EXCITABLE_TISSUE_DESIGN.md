@@ -554,7 +554,7 @@ The first qualification is **on the generic cell (0.01 F/m², candidate A of §1
   `resolved_tissue@5`–`@12`, `resolved_calcium*` and `resolved_calcium_energy*` families.
   - They are RK4-only, at 298.15 K, with steps of 2.5 µs or less for sodium and 1.25 µs for
     CaV.
-  - They share `processes/sodium_channels.py`, `potassium_channels.py`, `voltage_gates.py`
+  - They share `laws/channels/sodium_channels.py`, `potassium_channels.py`, `voltage_gates.py`
     and the constant-field transport with @3.
   - They can serve as a cross-integrator consistency check of the generic cell's equations at
     298.15 K: `surface_pump_v3_fixtures.catalog_reference` rewrites an @3 world as

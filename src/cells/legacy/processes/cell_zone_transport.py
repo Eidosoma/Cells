@@ -18,8 +18,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 
 LAW_ID = "cell_zone_transporter@1"
 ACTIVATE, INDEPENDENT_ACTIVATE, DIRECT_ACTIVATE, INHIBIT, DIRECT_INHIBIT = range(1, 6)

@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from scripts import check_e02_protocol as check
 
 

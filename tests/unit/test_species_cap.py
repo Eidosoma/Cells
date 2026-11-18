@@ -20,11 +20,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import parse_spec
+from cells.execution.state import initialise
 from cells.models import pump_composite as pc
 from cells.models import surface_tissue as tissue
-from cells.models.operators import species_common
+from cells.operators import species_common
 from tests.species_cap_fixtures import charged_nine
 
 

@@ -41,8 +41,8 @@ import numpy as np
 from cells import __version__
 from cells.analysis import continuation as cont
 from cells.analysis import stationary as sa
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, load_spec, read_json
+from cells.definitions.specs import ConfigError, load_spec, read_json
+from cells.execution.errors import NumericalError
 
 FIELDS = {
     "schema_version",
@@ -85,7 +85,7 @@ def _world(raw, base):
         raise ConfigError("world names exactly one definition or snapshot")
     if "definition" in raw:
         return load_spec(base / raw["definition"]), None, None, None
-    from cells.io import load_snapshot
+    from cells.records.io import load_snapshot
 
     saved = load_snapshot(base / raw["snapshot"])
     c = saved.checkpoint
@@ -100,7 +100,7 @@ def _guess_state(raw, base, pb):
         spec = load_spec(base / raw["definition"])
         state, layout = pb.model.initial_values(spec)
     elif "snapshot" in raw:
-        from cells.io import load_snapshot
+        from cells.records.io import load_snapshot
 
         saved = load_snapshot(base / raw["snapshot"])
         state, layout = saved.checkpoint.state, saved.checkpoint.layout

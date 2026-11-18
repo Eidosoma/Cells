@@ -6,8 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError
 from cells.legacy.core.excision import (
     excise,
     is_active,
@@ -20,6 +19,7 @@ from cells.legacy.core.excision import (
     is_calcium_energy_transport,
     is_calcium_energy_water,
 )
+from cells.records.io import load_snapshot, write_snapshot
 
 KIND = "cells.passive_tissue_excision@1"
 ACTIVE_KIND = "cells.active_tissue_excision@1"

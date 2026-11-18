@@ -12,7 +12,7 @@ SET/WORLD.json holds the definition run) or as a definition file:
 2. **Inside the host check:** cProfile of one check_values call on the last window's rows (the
    functions under it by total and cumulative time).
 3. **The model's device checks on the same rows** (model.device_checks, as
-   core/vector_windows.py runs them for each world): compiled once vmapped over the rows and
+   execution/vector_windows.py runs them for each world): compiled once vmapped over the rows and
    once as a scan over the rows reduced to per-check first failing rows and diagnostic maxima
    (the summary a device window would return); compile seconds and warm seconds per row.
 4. **Parity, row by row:** check_values on each row alone (its row tests, with the row's step
@@ -218,8 +218,8 @@ def device_part(model, spec, layout, history, steps, repeats):
 
 def parity(model, spec, history, steps, failed, values):
     """check_values on each row alone against the device row (its own row tests)."""
-    from cells.core.errors import NumericalError
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
+    from cells.execution.errors import NumericalError
 
     names = model.DEVICE_DIAGNOSTICS
     rows = len(steps)
@@ -273,10 +273,10 @@ def parity(model, spec, history, steps, failed, values):
 def probe_world(name, raw, window_steps, windows, repeats):
     import jax
 
-    from cells.core.errors import NumericalError
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.core.windows import WindowPolicy, iter_windows
-    from cells.models.registry import get_model
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, iter_windows
+    from cells.registry.models import get_model
 
     record = dict(name=name)
     started = perf_counter()
@@ -358,7 +358,7 @@ def probe_world(name, raw, window_steps, windows, repeats):
         steps = np.arange(len(history.amount_increment)) if steps is None else np.asarray(steps)
         record["profile"] = profile_check(model, history, spec, steps)
         if record["device_hooks"]:
-            from cells.core.state import initialise
+            from cells.execution.state import initialise
 
             layout = initialise(spec).layout
             layout = type(layout)(*(np.asarray(v) for v in layout))
@@ -446,13 +446,13 @@ def long_run(name, raw, window_steps, sample_every, max_windows):
     """Every window by the runner's compiled rollout, with the device ratio scan after each."""
     import jax
 
-    from cells.core.devices import execution_device
-    from cells.core.runner import _compiled_window_rollout, integration_steps
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
-    from cells.core.windows import WindowPolicy, plan_windows
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.devices import execution_device
+    from cells.execution.runner import _compiled_window_rollout, integration_steps
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.execution.windows import WindowPolicy, plan_windows
+    from cells.registry.models import get_model
 
     started = perf_counter()
     spec = parse_spec(raw)

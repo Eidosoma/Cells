@@ -13,8 +13,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ChannelChange, ConfigError
+from cells.definitions.specs import ChannelChange, ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_calcium_energy_regulated_spec import (
     COMPOSITION,
     MODEL_ID,

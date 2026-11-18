@@ -1,8 +1,8 @@
 """Explicit family dispatch for conservative cell removal."""
 
-from cells.core.specs import ConfigError
-from cells.core.surface_kinetic_spec import SurfaceHCNExtraModel
-from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_kinetic_spec import SurfaceHCNExtraModel
+from cells.definitions.surface_tissue_spec import SurfaceTissueModel
 from cells.legacy.core.surface_active_excision_spec import SurfaceActiveExcisionModel
 from cells.legacy.core.surface_calcium_energy_atp_transport_excision_spec import (
     SurfaceCalciumEnergyATPTransportExcisionModel,

@@ -132,7 +132,7 @@ def test_resource_receipt_corruptions_rejected(inputs, corruption):
     elif corruption == "runtime":
         result["runtime"] = {}
     elif corruption == "source":
-        result["source_hashes"]["src/cells/core/runner.py"] = "0" * 64
+        result["source_hashes"]["src/cells/execution/runner.py"] = "0" * 64
     else:
         result["integration_calls"] = 1
     with pytest.raises(ValueError):

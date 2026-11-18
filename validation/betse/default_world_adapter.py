@@ -61,13 +61,13 @@ from validation.betse import cells_betse_compare as compare  # noqa: E402
 PHASES = ("init", "sim")
 # The engine modules a run executes.
 ENGINE_MODULES = (
-    "src/cells/processes/electrochemistry.py",
-    "src/cells/processes/junction_gate.py",
-    "src/cells/processes/kinetic_pump.py",
-    "src/cells/processes/er_calcium.py",
-    "src/cells/processes/plasma_calcium.py",
-    "src/cells/processes/calcium_atpase.py",
-    "src/cells/processes/voltage_gates.py",
+    "src/cells/laws/electrochemistry.py",
+    "src/cells/laws/junctions/junction_gate.py",
+    "src/cells/laws/pumps/kinetic_pump.py",
+    "src/cells/laws/reactions/er_calcium.py",
+    "src/cells/laws/reactions/plasma_calcium.py",
+    "src/cells/laws/pumps/calcium_atpase.py",
+    "src/cells/laws/channels/voltage_gates.py",
 )
 
 
@@ -480,7 +480,7 @@ def resolved_layout_phase(world, definition, observations):
     ``observations`` maps RESOLVED_OBSERVED names to stacked arrays, amounts being
     (S, species, slots). The t = 0 row is dropped.
     """
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     model = definition["model"]
     n, o, m = (len(model[k]) for k in ("cells", "extracellular", "membranes"))
@@ -556,7 +556,8 @@ def provenance(extra, executed=EXECUTED):
 
 def emulator_inputs(world, phase, start, variant):
     """Emulator layout and state for one phase (all ions moving, no Kv1p5 population)."""
-    from cells.processes import junction_gate, kinetic_pump
+    from cells.laws.junctions import junction_gate
+    from cells.laws.pumps import kinetic_pump
     from validation.betse.emulator import active, junction, spatial
 
     n, m, s = world["cell_volume_m3"].size, world["membrane_area_m2"].size, len(world["species"])
@@ -607,7 +608,7 @@ def emulator_inputs(world, phase, start, variant):
     na, k = world["species"].index("Na"), world["species"].index("K")
     calcium = None
     if world["calcium_pump"] is not None:
-        from cells.processes import er_calcium
+        from cells.laws.reactions import er_calcium
 
         c = world["calcium_pump"]
         calcium = active.CalciumPump(
@@ -882,7 +883,7 @@ def calcium_standard_energy(world):
     with the same R both give the same chemical drive. Cells' (CODATA) R is used, so
     only the constants differ, as for every other law.
     """
-    from cells.processes.electrochemistry import R
+    from cells.laws.electrochemistry import R
 
     c = world["calcium_pump"]
     return c["delta_g_mM_quotient_J_mol"] + R * world["temperature_K"] * math.log(1000.0)
@@ -919,7 +920,7 @@ def resolved_definition(
     """
     if field_solver not in RESOLVED_FIELD_SOLVERS:
         raise AdapterError(f"field solver {field_solver!r} is not one of {RESOLVED_FIELD_SOLVERS}")
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     species = world["species"]
     valence = world["valence"]
@@ -1167,7 +1168,7 @@ def resolved_handoff(definition, checkpoint):
     n, o = len(model_def["cells"]), len(model_def["extracellular"])
     state = type(checkpoint.state)(*(np.asarray(v) for v in checkpoint.state))
     layout = type(checkpoint.layout)(*(np.asarray(v) for v in checkpoint.layout))
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     cell, outside = (np.asarray(v) for v in model.physical_amounts(state, layout))
     valence = np.array([row["valence"] for row in model_def["species"]], dtype=np.float64)
@@ -1205,7 +1206,7 @@ def _isolated_sites(definition):
 
 def _resolved_checks(definition, obs, newton):
     """Field, charge and isolated-square behaviour of one resolved phase (no BETSE data)."""
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     model = definition["model"]
     valence = np.array([row["valence"] for row in model["species"]], dtype=np.float64)
@@ -1257,7 +1258,7 @@ def _window_sink(observed, newton, control, model):
 
     ``model`` is the definition's model module (resolved_pump_tissue@1 or @2).
     """
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     def sink(window):
         for k in RESOLVED_OBSERVED:
@@ -1373,10 +1374,10 @@ def run_resolved(
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.registry.models import get_model
 
     backend = DEFAULT_RESOLVED if backend is None else backend
     world = backend.world(case, blind=True)

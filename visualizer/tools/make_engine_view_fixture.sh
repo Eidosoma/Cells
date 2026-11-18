@@ -75,7 +75,7 @@ MAIN="$(dirname "$(git -C "$TOP" rev-parse --path-format=absolute --git-common-d
 WRAPPER="${CELLS_WRAPPER:-$MAIN/scripts/run_detached.sh}"
 [ -x "$WRAPPER" ] || { echo "no run_detached.sh at $WRAPPER: set CELLS_WRAPPER" >&2; exit 1; }
 
-if [ ! -f "$EXPORT/src/cells/run_view.py" ]; then
+if [ ! -f "$EXPORT/src/cells/records/run_view.py" ]; then
   mkdir -p "$EXPORT"
   git -C "$TOP" archive "$REVISION" src tests validation | tar -x -C "$EXPORT"
 fi
@@ -93,12 +93,12 @@ from pathlib import Path
 
 import pytest
 
-from cells import run_view
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy
-from cells.io import write_run
-from cells.window_io import write_windowed_run
+from cells.records import run_view
+from cells.execution.runner import run
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy
+from cells.records.io import write_run
+from cells.records.window_io import write_windowed_run
 from tests import partition_fixtures as pf
 from tests.run_view_fixtures import declare_division, secretion
 

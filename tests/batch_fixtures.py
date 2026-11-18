@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import load_spec, parse_spec
+from cells.definitions.specs import load_spec, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 
 ROOT = Path(__file__).resolve().parents[1]
 MODELS = (

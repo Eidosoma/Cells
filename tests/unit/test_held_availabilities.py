@@ -11,8 +11,8 @@ replaced experiment builds its own, and that fields, equality and hashing ignore
 import pickle
 from dataclasses import fields, replace
 
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values, event_index
 from cells.numerics import surface_imex as imex
 from validation.tissue import cell_replacement_fixtures as replacement
 from validation.tissue import pump_water_fixtures as water

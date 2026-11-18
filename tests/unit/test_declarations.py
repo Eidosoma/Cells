@@ -28,10 +28,9 @@ import pytest
 
 import cells
 from cells.__main__ import main
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as composite_spec
-from cells.models.operators import OPERATORS, contract
-from cells.registry import declarations
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.operators import OPERATORS, contract
+from cells.registry import declarations, kind_registry
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
 

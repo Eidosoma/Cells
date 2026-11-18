@@ -13,10 +13,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import parse_spec
-from cells.models.operators import site_occupancy as so
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.operators import site_occupancy as so
+from cells.registry.models import get_model
 from validation.tissue import site_occupancy_fixtures as sfx
 
 jax.config.update("jax_enable_x64", True)

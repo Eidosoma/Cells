@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from cells.core import surface_tissue_spec as prior
-from cells.core.specs import ConfigError, SpatialExtracellularExecutionSpec
+from cells.definitions import surface_tissue_spec as prior
+from cells.definitions.specs import ConfigError, SpatialExtracellularExecutionSpec
 from cells.legacy.core import surface_water_spec as water
 from validation.tissue import surface_dynamics_fixtures
 

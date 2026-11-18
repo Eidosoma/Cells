@@ -8,10 +8,10 @@ import copy
 
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT, GARD_SINGLE_EVENT, MODEL_ID
 from cells.models.assembly_lineages import spec as lineage_spec
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.assembly_lineage_fixtures import definition, world
 
 

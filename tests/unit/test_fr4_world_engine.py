@@ -18,9 +18,9 @@ import copy
 
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry.models import get_model
 from validation.compartment_ph_engine import definitions as defs
 
 STEPS = 5
@@ -124,11 +124,11 @@ def test_k2s_planted_slope_follows_the_patch_voltage_in_its_exchanged_frame():
 
     import numpy as np
 
-    from cells.core import kind_registry
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.kinds import proton_buffer, transporter
+    from cells.laws.electrochemistry import F, R
     from cells.models import surface_pump_v3
-    from cells.models.inner_kinds import proton_buffer, transporter
-    from cells.processes.electrochemistry import F, R
+    from cells.registry import kind_registry
     from validation.compartment_ph_engine import planted
 
     kind = planted.reversed_pump()
@@ -174,11 +174,11 @@ def test_a_pump_past_its_head_is_refused_at_the_face_free_lumens_row():
 
     import numpy as np
 
-    from cells.core import kind_registry
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.kinds import proton_buffer, transporter
+    from cells.laws.electrochemistry import F, R
     from cells.models import surface_pump_v3
-    from cells.models.inner_kinds import proton_buffer, transporter
-    from cells.processes.electrochemistry import F, R
+    from cells.registry import kind_registry
     from validation.compartment_ph_engine import planted
 
     spec = parse_spec(defs.development_world(defs.fr4_world()))

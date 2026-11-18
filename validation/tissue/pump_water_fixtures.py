@@ -27,7 +27,7 @@ keeping the full water code path), or a schedule [(time, availability), ...].
 import copy
 
 MOLAR_VOLUME_WATER_M3_MOL = 18.07e-6  # 18.015 g/mol / 0.997 g/cm^3 (25 C).
-GAS_CONSTANT = 8.314462618  # J/(mol K), as cells.processes.electrochemistry.R.
+GAS_CONSTANT = 8.314462618  # J/(mol K), as cells.laws.electrochemistry.R.
 NO_AQUAPORIN_PF_M_S = 3e-5  # 3e-3 cm/s
 AQUAPORIN_PF_M_S = (3e-4, 8e-4)  # 0.03-0.08 cm/s
 BULK_MODULUS_PA = 60.0

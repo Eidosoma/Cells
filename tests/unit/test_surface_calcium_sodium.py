@@ -9,16 +9,16 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import sodium_channels
 from cells.legacy.models import surface_calcium_channels as prior
 from cells.legacy.models import surface_calcium_sodium as model
 from cells.models import surface_kinetic
-from cells.models.registry import get_model
-from cells.processes import sodium_channels
+from cells.records.io import load_snapshot, write_run
+from cells.registry.models import get_model
 from tests.unit import test_surface_calcium as shared
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_calcium_channel_fixtures as prior_fixtures

@@ -27,9 +27,9 @@ import jax
 import numpy as np
 from scipy.linalg import expm
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry.models import get_model
 from validation.reactions import chain_reference as cr
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx

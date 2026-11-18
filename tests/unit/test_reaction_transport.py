@@ -7,10 +7,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import (
+from cells.definitions.specs import (
     ConfigError,
     ContactChange,
     GraphContactChange,
@@ -18,12 +15,15 @@ from cells.core.specs import (
     load_spec,
     parse_spec,
 )
-from cells.core.state import ReactionTransportState, initialise
-from cells.coupling.passive import ContactParameters, edge_flux, scatter_exchange
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import ReactionTransportState, initialise
+from cells.laws.junctions.passive import ContactParameters, edge_flux, scatter_exchange
+from cells.laws.reactions.reactions import reversible_rate
 from cells.models import reaction_transport as model
-from cells.observers import sample_history
-from cells.processes.reactions import reversible_rate
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.records.observers import sample_history
 from tests.reference_reaction_transport import generator, reference
 
 ROOT = Path(__file__).resolve().parents[2]

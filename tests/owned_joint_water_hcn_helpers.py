@@ -7,8 +7,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
 from cells.legacy.core import surface_calcium_energy_water_hcn_extra_spec as water_spec
 from cells.legacy.core import surface_calcium_energy_water_repair_hcn_extra_spec as repair_spec
 from cells.legacy.models import surface_calcium_energy_water_hcn_extra as water

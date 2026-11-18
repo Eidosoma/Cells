@@ -22,11 +22,11 @@ import copy
 
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.specs import ConfigError, parse_spec
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
+from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 
@@ -57,7 +57,7 @@ def release():
 
 def replacement():
     """composite_crossrev's replacement_padded, built as it builds it, made a composite."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as rfx
 
     padded = v3fx.definition("release", solver=IMEX)

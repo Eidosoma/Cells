@@ -10,7 +10,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.processes import kinetic_pump
+from cells.laws.pumps import kinetic_pump
 from tests.unit import test_betse_spatial_trajectory as short
 from tests.unit.test_betse_tissue_contact import load_capture
 from validation.betse.emulator import active as model

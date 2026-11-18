@@ -15,21 +15,21 @@ from time import monotonic, sleep
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot  # noqa: E402
-from cells.batch_window_io import write_windowed_batch  # noqa: E402
-from cells.core.runner import branch_checkpoint, run  # noqa: E402
-from cells.core.specs import ChannelChange, ConfigError, read_json  # noqa: E402
-from cells.core.windows import WindowPolicy  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import (  # noqa: E402
+from cells.definitions.specs import ChannelChange, ConfigError, read_json  # noqa: E402
+from cells.execution.runner import branch_checkpoint, run  # noqa: E402
+from cells.execution.windows import WindowPolicy  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot  # noqa: E402
+from cells.records.batch_window_io import write_windowed_batch  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import (  # noqa: E402
     load_snapshot,
     runtime_identity,
     source_hashes,
     write_run,
     write_snapshot,
 )
-from cells.window_io import write_windowed_run  # noqa: E402
+from cells.records.window_io import write_windowed_run  # noqa: E402
 from scripts import spatial_extracellular_acceptance_plan as plan  # noqa: E402
 from scripts.audit_preserved_spatial_extracellular_reference import (  # noqa: E402
     ARCHIVE_SHA,

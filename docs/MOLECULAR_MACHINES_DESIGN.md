@@ -34,7 +34,7 @@ anticipate (§7; the options and the recommendation are in §8):
 
 | Layer | What the core hosts | What is missing |
 | --- | --- | --- |
-| **Aggregate:** copy numbers, rates, ledgers | [main] Channel populations with an abundance and mean gate fractions (`core/surface_kinetic_spec.py`:84–92); @3's junction law and two pumps (`models/inner_laws.py`:131, :146); no exchanger on @3; the transporter kind, one population per patch, n of 1–4 (`models/inner_kinds/transporter.py`:41, :164); abundance as state, with its own ledger (`models/operators/membrane_state.py`:1–30); D152's reactions, with a Michaelis–Menten law that reads a catalyst row (`models/operators/species_reactions.py`:21–24). [designed] Seam A: any integer stoichiometry, many populations per host, finite fuel. Seam B: capacity as extensive state | Copies made from, and returned to, subunit rows: units appear today from an operator's booked supply. A host for soluble machines, which have one end, not two |
+| **Aggregate:** copy numbers, rates, ledgers | [main] Channel populations with an abundance and mean gate fractions (`definitions/surface_kinetic_spec.py`:84–92); @3's junction law and two pumps (`models/inner_laws.py`:131, :146); no exchanger on @3; the transporter kind, one population per patch, n of 1–4 (`kinds/transporter.py`:41, :164); abundance as state, with its own ledger (`operators/membrane_state.py`:1–30); D152's reactions, with a Michaelis–Menten law that reads a catalyst row (`operators/species_reactions.py`:21–24). [designed] Seam A: any integer stoichiometry, many populations per host, finite fuel. Seam B: capacity as extensive state | Copies made from, and returned to, subunit rows: units appear today from an operator's booked supply. A host for soluble machines, which have one end, not two |
 | **Cycle:** the states of the working cycle | [designed] Seam A's §16: Hill cycles, Wegscheider's condition at parse, Σ J·ΔG ≤ 0, one-way fluxes. These are lumped steady-state fluxes, and a law holds no cycle state | A law that declares the cycle's states and edges. The individual chain, the occupancies and the lumped flux all follow from it |
 | **Assembly:** subunits, stoichiometry, order | [main] `capsid_graph@1`: one prescribed 20-site cage of one subunit type in a held bath (`assembly/graph.py`:7–9; `assembly/spec.py`:18–23). `finite_bond_assembly@1`: the same graph with a finite pool. The lineages family: a bag of label-only types (`models/assembly_lineages/family.py`:1–17). D152's passive mass action, which holds a small pathway with subunits as moieties (`species_reactions.py`:26–28, :37) | A general assembly map: typed subunits, declared intermediates and steps, in three representations |
 
@@ -45,20 +45,20 @@ anticipate (§7; the options and the recommendation are in §8):
 - **What exists [main].** The engine's membrane laws act on functional units, not on gene products
   (PROTEIN_CATALOGUE_PLAN, stage 2).
   - A channel population has a patch, a law, an abundance and mean gate fractions
-    (`core/surface_kinetic_spec.py`:84–92).
+    (`definitions/surface_kinetic_spec.py`:84–92).
   - Kinds book what they move into the ledgers by role: material per node, a `produced` record for
-    chemistry, heat, work and stored energy (`core/kind_registry.py`:264, the `ledger_terms` hook).
+    chemistry, heat, work and stored energy (`registry/kind_registry.py`:264, the `ledger_terms` hook).
   - @3 runs a junction law and two pumps on maintained fuel (`models/inner_laws.py`:131, :146). No
     exchanger runs on @3.
 - **Only in `legacy/`** (D196): finite energy (`legacy/processes/finite_energy.py`), mitochondria
   (`legacy/processes/mitochondrial_passive.py`), pumps whose abundance is state
   (`legacy/models/surface_redistribution.py`), the Na⁺/Ca²⁺ exchanger (its law,
-  `processes/plasma_calcium.py`:16, runs only in older families) and the assembly–cell coupling.
+  `laws/reactions/plasma_calcium.py`:16, runs only in older families) and the assembly–cell coupling.
 - **Copy number as state [main].** `membrane_entity_state@1` holds each population's abundance in
   units, under an entity ledger (`membrane_state.py`:1–30).
   - Each population also carries a functional-unit ID and a catalogue reference (:62–67).
   - Its writer, insertion, adds units and books them in its own `inserted_units`; no material is
-    consumed (`models/operators/membrane_insertion.py`:428, :490).
+    consumed (`operators/membrane_insertion.py`:428, :490).
 - **What is missing (S).** Units are not made from subunit rows, so a cell cannot spend material on
   new pumps. Seam E's moieties [designed] can state what a complex is made of, but nothing ties a
   population's capacity to an amount on the inventory. FR-7 asks for the same link.
@@ -215,7 +215,7 @@ rates set by the free concentrations c and the voltage V it sees.
 | **(b) Per region or compartment,** from a declared focus: individuals in one cell, the aggregate in its neighbours | Each region closes its own ledgers. Regions meet only on shared inventory rows, and no machine crosses a boundary | As (a), per region | The focus is in the definition, so in its fingerprint | Declared per scope | (a), plus a representation per scope and synchronised accounting (ARCHITECTURE: "static mixed-detail regions") |
 | **(c) Adaptive switching** during a run, as the focus moves | Restriction (individuals to counts) is exact. Prolongation draws individuals from counts. Bound ligands are released or drawn (§3.3) | Prolongation is exact in distribution only from a count-level stochastic aggregate; from deterministic fractions it needs a declared rounding. Hidden history, such as a ribosome's place on its mRNA, cannot be rebuilt | Draws on a `lod` stream keyed by region and switch count. The focus must be a declared schedule, never the live camera, or results depend on who watched | Last: "automatic promotion and demotion is a later milestone" (ARCHITECTURE) | (b), maps both ways, §3.3's bookings, hysteresis |
 | **(d) In the viewer only:** a stored run drawn at different detail | None: nothing runs | Counts drawn equal the run's. Individuals drawn from an aggregate are illustration | Drawing seeded by machine ID and time | No engine change | Partly exists: `cells.visualizer.machine@1` has three drawing levels and states "Cells has no model of this motor" (`visualizer/data/machines/ecoli.flagellar-motor.json`) |
-| **(e) Zoom by branching (S):** looking closer starts a new run from a stored checkpoint, with a declared focus | One prolongation at the start, booked as in (c); then as (b) | As (b) | The parent run is unchanged. The new run is recorded and judged on its own (D153); its inputs are its focus and start time | Declared by the new run | (b), and a tool that imports the parent's state through a declared map. `cells branch` refuses a changed model (`core/runner.py`:117–122), and a checkpoint's state type is checked (:80). D153 lets a new run start from imported state, with the tool listed as exempt (`tests/unit/test_continuity_bypass.py`:44) |
+| **(e) Zoom by branching (S):** looking closer starts a new run from a stored checkpoint, with a declared focus | One prolongation at the start, booked as in (c); then as (b) | As (b) | The parent run is unchanged. The new run is recorded and judged on its own (D153); its inputs are its focus and start time | Declared by the new run | (b), and a tool that imports the parent's state through a declared map. `cells branch` refuses a changed model (`execution/runner.py`:117–122), and a checkpoint's state type is checked (:80). D153 lets a new run start from imported state, with the tool listed as exempt (`tests/unit/test_continuity_bypass.py`:44) |
 
 ### 3.3 Bound material and free energy at a switch
 
@@ -240,7 +240,7 @@ rates set by the free concentrations c and the voltage V it sees.
 
 - **The rule's origin.** D135 makes coarse time modes optional, with the qualified fine engine as
   the default. The projective mode is opt-in in code: absent, a definition and its run are unchanged
-  (`core/projective_spec.py`:1–3).
+  (`definitions/projective_spec.py`:1–3).
 - **It does not carry over directly.** No machine model exists, and today's membrane machines are
   deterministic aggregates. Individuals by default would be unworkable at a cell's copy numbers and
   would change every existing world.
@@ -260,7 +260,7 @@ rates set by the free concentrations c and the voltage V it sees.
 
 | Machine | Substrates in the modular engine | Free-to-read data for a judged check | Targets that need it | Verdict |
 | --- | --- | --- | --- | --- |
-| **ATP synthase** | **Yes:** ATP, ADP and Pi rows (D176's F2; `core/species_registry.py`:5–6), H⁺ with buffering (FR-4), patch voltage [main]. Moving them through a synthesis cycle needs seam A [designed]: `proton_coupled_atp_synthesis_cycle@1` (MITOCHONDRIA_DESIGN §1.2, §4). FR-4's proton law already reverses past its static head, on held fuel | Thermodynamic H⁺/ATP of about 4.0 for the *E. coli* and chloroplast enzymes (Steigmiller et al. 2008, PNAS, PMC2268821). Yeast mitochondria 2.9 ± 0.2, against 3.3 from its 10-subunit ring (Petersen et al. 2012, PNAS, PMC3396544). The bovine ring has 8 c subunits (Watt et al. 2010, PNAS, PMC2947889) | 4 of 4: Syn3A, where its reconstruction runs it in the hydrolysis direction (viewer `syn3a.json`); mitochondria in the three animals | **First** |
+| **ATP synthase** | **Yes:** ATP, ADP and Pi rows (D176's F2; `registry/species_registry.py`:5–6), H⁺ with buffering (FR-4), patch voltage [main]. Moving them through a synthesis cycle needs seam A [designed]: `proton_coupled_atp_synthesis_cycle@1` (MITOCHONDRIA_DESIGN §1.2, §4). FR-4's proton law already reverses past its static head, on held fuel | Thermodynamic H⁺/ATP of about 4.0 for the *E. coli* and chloroplast enzymes (Steigmiller et al. 2008, PNAS, PMC2268821). Yeast mitochondria 2.9 ± 0.2, against 3.3 from its 10-subunit ring (Petersen et al. 2012, PNAS, PMC3396544). The bovine ring has 8 c subunits (Watt et al. 2010, PNAS, PMC2947889) | 4 of 4: Syn3A, where its reconstruction runs it in the hydrolysis direction (viewer `syn3a.json`); mitochondria in the three animals | **First** |
 | **Ribosome** | **No:** no amino-acid, tRNA, GTP or mRNA rows, no polymers (F10), 16 species | In-cell structures: 101,696 ribosomes from 356 tomograms of *M. pneumoniae*, sorted into 13 ribosome classes (Xue et al. 2022, *Nature*, PMC9534751, open access). About 500 per Syn3A cell, from cryo-electron tomograms (viewer `syn3a.json`; PAPER_REVIEW_WHOLE_CELL §2.6) | 4 of 4 | Needed everywhere, but blocked by F8, F10 and F11; crosses D145's hold |
 | **RNA polymerase** | **No:** NTPs, the DNA template and transcripts are absent | Not searched | 4 of 4 | With the ribosome |
 | **Proteasome** | **Partly:** ATP yes; protein substrates and peptides as rows, no | Mouse 26S proteasomes: 50–80 ATP per ubiquitinated DHFR, 90–140 when folate stabilises it, 100–160 per ubiquitinated Sic1 (Peth, Nathan and Goldberg 2013, *JBC*, PMC3790020, Table 1; read, §10.3). Assembly kinetics not searched | 3 of 4: not Syn3A, whose annotation lists the proteases FtsH and Lon (viewer `syn3a.json`) | **Second:** D140's named case, a node machine and an assembly case |
@@ -316,12 +316,12 @@ its @2 is designed, not built). The viewer's Machines tab binds to it once it ex
   families is D142's and D143's rule: new combinations are definitions. D191 rules how a composition
   reads a field. And inheritance is used today:
   - `scheduled_cell_replacement@2` subclasses @1's operator class, extends its writes and calls @1's
-    parser (`models/operators/cell_replacement_v2.py`:346–380);
+    parser (`operators/cell_replacement_v2.py`:346–380);
   - `membrane_insertion_v2.py`:202 subclasses @1's step checks;
-  - specifications inherit version over version (`core/surface_kinetic_spec.py`:50;
-    `core/surface_pump_v3_spec.py`:101);
+  - specifications inherit version over version (`definitions/surface_kinetic_spec.py`:50;
+    `definitions/surface_pump_v3_spec.py`:101);
   - kinds are frozen records of hooks, varied by `dataclasses.replace`, as `bound` does
-    (`core/kind_registry.py`:383–392).
+    (`registry/kind_registry.py`:383–392).
 - **Agreed absent:** a declared "extends" link, inherited checks, and version rules between parent
   and child. Two more points:
   - `moved_from`, the nearest precedent, is designed (CORE_SEAMS §8.6) but appears only in a
@@ -509,7 +509,7 @@ e^{−ΔG°/RT}, far from 1 for ATP hydrolysis. §16 refuses it; an edge test wi
    - The step's applied rate uses the tableau's weights (`models/surface_pump_v3.py`:1157–1160).
      With ARS(2,2,2) one weight is negative (CORE_SEAMS §6.1), so a one-way flux that falls sharply
      within a step would give a negative increment.
-   - `book` sees those increments (`core/kind_registry.py`:253–255). They are each tag's hazard.
+   - `book` sees those increments (`registry/kind_registry.py`:253–255). They are each tag's hazard.
 5. The capacity read from an extensive state that N3 writes and seam B splits at division, not
    only a layout value.
 6. A test that plants a law with a shifted zero, which must be caught. The judged check (§10.3)
@@ -582,15 +582,15 @@ substrates on the inventory, and need in all four targets.
 **Kinds do not accept integer state fields today** (found by reading; no run was made).
 - Kinds use integer arrays only as layout (`transporter.py`:404–405); their state is float
   (:436–441). No test in `tests/unit/test_kind_rules.py` exercises an integer state field.
-- The kind record declares no types (`core/kind_registry.py`:281–317).
+- The kind record declares no types (`registry/kind_registry.py`:281–317).
 - @3 gives every kind field a derivative, zero where the kind gives none
   (`models/surface_pump_v3.py`:500–512).
 - Every stage adds (w·dt)·d to every field (`models/surface_pump.py`:235–240), which makes an int64
   field float64 inside the stages. `book` writes at the step's end (`models/surface_pump_v3.py`:
   1197–1199), so the field's type at the end depends on what `book` returns.
 
-**Operators do.** `STATE_DTYPES` names non-float fields (`models/operators/contract.py`:11–12,
-:214). Replacement@2 uses it (`models/operators/cell_replacement_v2.py`:349). The composite
+**Operators do.** `STATE_DTYPES` names non-float fields (`operators/contract.py`:11–12,
+:214). Replacement@2 uses it (`operators/cell_replacement_v2.py`:349). The composite
 collects it (`models/pump_composite.py`:759) and refuses it only under coupled RK4 (:1146–1158).
 
 **Options for N5:**
@@ -599,7 +599,7 @@ collects it (`models/pump_composite.py`:759) and refuses it only under coupled R
   observations and checkpoints keep the type was not checked.
 - **(ii):** tags as an operator, which may hold integer state today, if an operator can read the
   cycle kind's one-way cycles (not checked). A separate kind cannot: no kind reads another kind's
-  fields (`core/kind_registry.py`:182).
+  fields (`registry/kind_registry.py`:182).
 - **(iii):** whole-number float64 fields, exact below 2⁵³. A stopgap that hides the type.
 
 **M1a's tags are whole-cycle tags,** inside the cycle kind (S).
@@ -672,7 +672,7 @@ wait for D193's law.
   MITOCHONDRIA_DESIGN.md (§1.1, §1.2, §1.4, §3.2, §4–§8); CORE_SEAMS_STEP0.md (§1.4, §7);
   `visualizer/docs/CELL_STRUCTURES.md`.
 - **Code read at e5edba97:** the files cited above, under `src/cells/` (`registry/`, `core/`,
-  `models/`, `assembly/`, `processes/plasma_calcium.py`, `io.py`), and
+  `models/`, `assembly/`, `laws/reactions/plasma_calcium.py`, `io.py`), and
   `tests/unit/test_continuity_bypass.py`.
 - **Branches read:** `relations-writer` at 35a5bbb9 (`src/cells/records/relations.py`, and the
   lead's rulings in its RELATIONSHIPS_DESIGN.md); the `visualizer` branch's species list.

@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-16 UTC.
+Last updated: 2026-11-18 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -24,6 +24,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
       `fr<n>-...-qualified-<date>`.
   - **Landed for development, not judged:** the phase start and failure records, Track E's M1
     development work, and independent references for the passive law.
+    On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
+    against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -31,6 +33,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     fr45-next (FR-5's source kinds and refusals among them), the run-view writer, core-fixes and the
     test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
     crossrev's new record). The next steps are D194's order, starting with D188's moves.
+    D188's move 2 landed on 18 November (merge d5d56d1b, tag `d188-move2-landed-2026-11-18`).
+    The core-seams pass's code follows it.
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
@@ -39,6 +43,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     [FR-7's abundance to function and the closed loop's unit](docs/ABUNDANCE_TO_FUNCTION_DESIGN.md),
     [FR-2's membrane retrieval](docs/MEMBRANE_RETRIEVAL_DESIGN.md), and
     [FR-8's long-duration mode](docs/LONG_DURATION_MODE_DESIGN.md).
+    The [OL2/OL3 design check](docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md) (lipids in and out, and
+    fission; D212), with the lead's rulings in
+    [§0.2c](docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md#02c-the-leads-rulings-on-ol2s-and-ol3s-design-check-18-november-2026).
+    Code follows D188's move 2.
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
@@ -93,6 +101,126 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **D188's move 2 landed on main (18 November 2026).** Merge d5d56d1b (d188-m2-prep e0a3e6a3),
+  tagged `d188-move2-landed-2026-11-18`. The tree before it is tagged `pre-d188-move2-2026-11-18`.
+  The evidence is in `/mnt/workspaces/Cells/d188-m2-move-20261118/`: the gate is `gate-e0a3e6a3/`,
+  and the first gate is `gate-f8a09e59/`.
+  - **What moved.** `scripts/source_moves.py apply scripts/moves/move2.json` moved 117 modules into
+    the target folders, with no hand edits in the move commit (dd8a56f2):
+    - `laws/`, with seven groups: channels, junctions, mechanics, pumps, reactions, routes and
+      transport;
+    - `kinds/`, `operators/`, `definitions/`, `execution/`, `registry/` and `records/`.
+
+    Two folders dissolved: `processes/` (D198) and `core/`. The BLAS pin's one home is now
+    `cells/__init__.py` (R6′). No law, kind, operator or model ID changed. `models/`, `numerics/`,
+    `analysis/`, `assays/`, `assembly/`, `assembly_pool/` and `ensemble/` stay where they are.
+  - **No checkpoint crosses the move (D195).** `cells.records.source_layout.MOVES` declares the move.
+    Both loaders and the continuity probe refuse an older checkpoint and name the tag. GARD's
+    frozen @1 lineage reader also refuses cleanly, without naming it. The user accepted that
+    exception on 18 November, and `docs/GARD_DESIGN.md` §5.1 names the tag.
+  - **The first gate, at f8a09e59, failed. That is disclosed here.**
+    - Tiers 1+2 changed six test files.
+    - R1's 274 saved definitions: 8 were refused at parse.
+    - The tier-3 continuity acceptance test failed 1 of 13.
+    - **The causes:**
+      - the move's dotted-name rule had rewritten five strings that are recorded data, not live
+        module references: a tissue-preparation provenance entry, FR-4/5's execution-path text,
+        and three MG0c `engine_models` lines;
+      - four files built moved paths from separate parts, which the text rules could not see.
+    - **The fixes,** each in its own follow-up commit:
+      - the five strings restored to their pre-move bytes, and marked with a new per-line
+        `source-moves: keep` marker (bd36c331, c75c288e), so a later application of the map
+        leaves them alone;
+      - the four paths fixed (53bd4566).
+    - **All 191 string-literal hunks the move made** in `src/` and `validation/` were reviewed and
+      decided, with 5 recorded and restored.
+  - **The landing gate, at e0a3e6a3:**
+    - tiers 1+2: 528 files, 0 changed against the record;
+    - G1: 113 of 113;
+    - crossrev: 9 of 9 identical, head against base and against the record;
+    - the collected IDs: the same tests through the map, 28 renamed;
+    - R1's 274 definitions: every fingerprint equal, with all 1857 control arrays bitwise;
+    - the 33 red files keep every outcome and failure line;
+    - FR's bitwise set passed;
+    - the pin holds for every module, 556 of 556;
+    - the D195 refusal rehearsal holds;
+    - the tier-3 continuity acceptance test: 13 of 13;
+    - GARD's @1 invariance: the freeze test, 3 passed; the 12 part-1 references with 0
+      differences; @1's 4,216 probe files with 0 arrays differing, JSON equal but for provenance;
+      G2's rows, 10 PASS. This was run through an adapted copy of the reference tool, which
+      imported a pre-move name;
+    - OL1's probe set at the moved head against probes-3e39bcc5: 0 arrays differing, and JSON equal
+      but for provenance and the file-hash index;
+    - R1's guard; the tool's selftests, 50 and 32; and `verify` of the move commit: 0 problems.
+  - **A weaker earlier record.** R1's original fingerprint harness recorded each digest's type, not
+    its value. Its "274 identical" for move 1, and for R1 itself, therefore compared less than it
+    says. The adapter in the move's evidence compares the values.
+  - **The carry-overs:**
+    - **packed-gpu-planner** carries cleanly with the map extended by its two modules. Its owner
+      has a note.
+    - **core-fixes** carries with one semantic fix: main renamed `LAWS` to `VERSION_1_LAWS` (seam F
+      step 1). It lands next, with its own gate.
+  - **Not covered by any gate:**
+    - the BETSE evidence verifiers, which compare saved module paths and hashes, so source identity
+      cannot survive the move;
+    - the frozen release verifiers;
+    - `reports/*.json` closeouts;
+    - `validation/geometry`'s source maps.
+
+    The two tier-3 pin tests now fail first at `src/cells/__init__.py`, where the frozen tier-3
+    record has `src/cells/core/er_spec.py`. R6′ caused that, not the move. After the move, 103 of
+    181 and 90 of 152 of their pinned paths are missing. Tier 3 is re-frozen later.
+  - **The visualizer:** main's fixture script imports the new homes. 36 `visualizer/` files name
+    moved modules, and CellsViz takes the rename list when it merges main.
+- **OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026).**
+  Merges 3e6410fe (ol1-laws 3e39bcc5) and b4522c77 (OL5's references, ool-references a9f40130),
+  tagged `ol1-landed-2026-11-18`. This is the foundation of D212's programme. It is the event-pair
+  contract over places (pool, membrane, lumen), with OL1's four laws:
+  - `cells.stochastic_mass_action@1`;
+  - `cells.transition_state_factor@1`;
+  - `cells.ideal_mixing@1`;
+  - `cells.regular_mixing@1`.
+
+  It follows the lead's rulings in ORIGIN_OF_LIFE_ENGINE_DESIGN §0.2a and §0.2b.
+  - **Verified against code-blind references.** OL5 wrote `validation/ool/references`, registered
+    before any engine output; its five amendments all came before it too. The references passed
+    6 of 6 rows on the probe set at 3e39bcc5, with inputs pinned at ab3dd700:
+    - local detailed balance: Kolmogorov 2.8e-14 over 483 cycles;
+    - the closed world's stationary law: total variation 1.0e-15;
+    - catalysis kinetic only: total variation 1.7e-15, and the rate-doubled pair bitwise rescaled;
+    - mass action: forward form 1.9e-14; 16 large-system z-tests at |z| ≤ 2.26 against 4.003; the
+      SSA replay exact; moieties conserved; 10 refusals;
+    - ledgers: closure 1.4e-12 over 2,000 events;
+    - streams: a bitwise replay.
+
+    Four planted errors applied to the engine's own records were all caught.
+  - **The first harness run failed one row on a record rule.** The ladder's stream identities
+    repeated across rungs, though the row's physics parts passed. The references were not amended.
+    Instead the driver was fixed, with a planted test (efb3c739), and the probe set regenerated.
+    Both verdicts are kept.
+  - **Rulings first.** Two of OL5's readings were ruled on the physics (bbcbec69) before the
+    builder was asked what its kernel did:
+    - `last_molecule: kept` zeroes only a step that changes the membrane's count. The kernel had
+      zeroed every channel with an empty end state, freezing pool steps at such probe states. It
+      was fixed in 622d87d4, with a planted test.
+    - Rule 8's singular step is one and the same membrane species on both sides. It matched.
+  - **The gates:**
+    - lane A at 7688e9f4, whose src/ is identical to 3e39bcc5's: crossrev identical, G1 113 of 113,
+      tiers 1+2 over 519 files with 0 changed, and IDs only OL1's new ones;
+    - GARD's @1 invariance: the freeze test, the 12 part-1 references, @1's 4,216 probe files with
+      arrays bitwise, and G2 10 of 10;
+    - FR's bitwise landing set;
+    - at the merged head b4522c77: OL1's and OL5's test files, 132 passed; test IDs 18,192 → 18,318,
+      none missing, the 126 new ones all in their files.
+  - **Scope:** the stochastic family with general stoichiometry over places, regular mixing,
+    catalysis on the common state and exact ledgers. Geometry, an osmotic lumen and division come in
+    OL2 and OL3. Nothing is judged under a registered protocol, and nothing is compared with
+    experiment.
+  - **Evidence:**
+    - `/mnt/workspaces/Cells/ol1-laws-20261117/README.md`;
+    - the verdicts in `/mnt/workspaces/Cells/ool-references-harness-20261118/` (`result/` and
+      `result-3e39bcc5/`);
+    - the merged-head check in `/mnt/workspaces/Cells/ol1-landing-20261118/`.
 - **FR-6's A5″ judged: passed (18 November 2026, 03:39–03:47 UTC).** The registered protocol
   `fr6-a5pp-v1` was judged once from the clean snapshot of its registration commit 555d8771, on
   lane B (CPUs 8-11 and 24-27, under its lock). It takes FR-6's items 1 and 3 together: two cells'

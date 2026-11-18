@@ -13,7 +13,7 @@ harness measures the pieces, on the backend JAX selects (JAX_PLATFORMS, XLA_FLAG
   solve       the model's field values (one field solve) of every world at its
               checkpoint state, vmapped: seconds inside the call against seconds
               until ready, repeated
-  window      vectorized windows (cells.core.vector_windows) from the checkpoints: per
+  window      vectorized windows (cells.execution.vector_windows) from the checkpoints: per
               window, seconds inside the executable call against seconds until its
               results are ready, and a digest of every window's outputs; --stop-time runs
               to a time and records a refusal; --save keeps every window's checkpoints
@@ -23,7 +23,7 @@ harness measures the pieces, on the backend JAX selects (JAX_PLATFORMS, XLA_FLAG
               smallest current_floor at which each state's field solve converges,
               batched and unbatched
   phases      the vectorized run path itself for --windows windows: its live phase
-              markers (cells.core.phases, with times) and its timings grouped into
+              markers (cells.execution.phases, with times) and its timings grouped into
               preparation, execution, observation and output (a step profile to repeat
               on the CPU, the L4 and GH200 with the same arguments)
   compare     saved window runs against a repeated baseline pair (within its spread,
@@ -66,15 +66,15 @@ import numpy as np  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core import phases, vector_windows  # noqa: E402
-from cells.core.batch import BatchSpec, WorldSpec  # noqa: E402
-from cells.core.grid import EventGrid  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.state import Checkpoint, initialise  # noqa: E402
-from cells.core.windows import WindowPolicy  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution import phases, vector_windows  # noqa: E402
+from cells.execution.batch import BatchSpec, WorldSpec  # noqa: E402
+from cells.execution.grid import EventGrid  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
+from cells.execution.state import Checkpoint, initialise  # noqa: E402
+from cells.execution.windows import WindowPolicy  # noqa: E402
 from cells.numerics import surface_field, surface_transport  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 
 MASKED_TRIP = 16  # surface_field.solve's loop bounds: max_iterations 16, max_backtracks 12.
 

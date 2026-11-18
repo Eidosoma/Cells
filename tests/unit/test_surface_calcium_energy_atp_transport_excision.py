@@ -9,11 +9,11 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import calcium_energy_atp_transport_tissue_excision as cut_model
 from cells.legacy.core import surface_calcium_energy_atp_transport_excision_spec as schema
 from cells.legacy.models import surface_calcium_energy_atp_transport as parent

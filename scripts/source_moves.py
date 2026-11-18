@@ -21,8 +21,12 @@ may name that package afterwards. cells.modules is reserved: no map moves into o
 
 Scope: tracked files under src/, tests/, validation/, scripts/ and examples/ (Python, and the
 shell, TOML and config files there), and pyproject.toml. Left alone: everything else (docs,
-reports, records, JSON and Markdown anywhere, agent-work/, visualizer/), the map files, and the
-paths a map lists under "keep".
+reports, records, JSON and Markdown anywhere, agent-work/, visualizer/), the map files, the
+paths a map lists under "keep", and every line marked to keep: a line with a comment holding
+`source-moves: keep` (in Python, a comment token; in a shell, TOML or config file, anywhere on
+the line). The marker is for recorded text in code, a string that saved data repeats and code
+compares, replays or regenerates (a preparation recipe's provenance, a registered protocol's
+disclosure): an identifier that is never resolved as a module, so no move may change it.
 
 The verifier replays the map on the base commit's tracked files in memory and requires the
 head commit's tracked files to equal the result, byte for byte and mode for mode, so every
@@ -374,6 +378,42 @@ def rewrite_text(text, mp, top, edits_out=None, base=0):
     return text
 
 
+KEEP_MARK = "source-moves: keep"
+
+
+def kept_lines(text, python):
+    """The lines (from 1) marked to keep: in Python, those with a comment holding KEEP_MARK (in a
+    string it marks nothing); in other text, those holding it anywhere."""
+    if KEEP_MARK not in text:
+        return set()
+    if not python:
+        return {i for i, line in enumerate(text.splitlines(), 1) if KEEP_MARK in line}
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except tokenize.TokenError:
+        return set()
+    return {t.start[0] for t in tokens if t.type == tokenize.COMMENT and KEEP_MARK in t.string}
+
+
+def _rewrite_text_keeping(text, mp, top, edits_out, kept):
+    """rewrite_text line by line, the kept lines as they are (every text rule is line-local)."""
+    out, base = [], 0
+    for i, line in enumerate(text.splitlines(keepends=True), 1):
+        out.append(line if i in kept else rewrite_text(line, mp, top, edits_out, base))
+        base += len(line)
+    return "".join(out)
+
+
+def _line_of(text, offset):
+    return text.count("\n", 0, offset) + 1
+
+
+def _hazard_line(h):
+    """A Python hazard's line ("file:line" in its where), or None."""
+    tail = str(h.get("where", "")).rsplit(":", 1)[-1]
+    return int(tail) if tail.isdigit() else None
+
+
 def hazards_in_text(text, mp, where):
     """Package prefixes that run-time code completes, for packages holding moved modules."""
     out = []
@@ -631,6 +671,14 @@ def rewrite_python(text, mp, own_old, own_new, modules, top, report):
                 if h["where"] == where and h["kind"] == "prefix":
                     h["kind"], h["reaches"] = "f-string", None  # Completed at run time.
 
+    kept = kept_lines(text, python=True)
+    if kept:  # A marked line keeps every byte: its edits and its hazards are dropped.
+        edits = [
+            x
+            for x in edits
+            if not kept & set(range(_line_of(text, x[0]), _line_of(text, max(x[0], x[1] - 1)) + 1))
+        ]
+        hazards = [h for h in hazards if _hazard_line(h) not in kept]
     edits.sort()
     for (s1, e1, *_), (s2, *_rest) in zip(edits, edits[1:], strict=False):
         if s2 < e1:
@@ -715,8 +763,19 @@ def transform(files, mp):
             if new != text:
                 new = sort_imports(new, path)
         else:
-            new = rewrite_text(text, mp, top, edits)
-            hazards += [dict(h, file=old_path) for h in hazards_in_text(text, mp, old_path)]
+            kept = kept_lines(text, python=False)
+            if kept:
+                new = _rewrite_text_keeping(text, mp, top, edits, kept)
+                lines = text.splitlines(keepends=True)
+                text_for_hazards = "".join(
+                    "\n" if i in kept else line for i, line in enumerate(lines, 1)
+                )
+            else:
+                new = rewrite_text(text, mp, top, edits)
+                text_for_hazards = text
+            hazards += [
+                dict(h, file=old_path) for h in hazards_in_text(text_for_hazards, mp, old_path)
+            ]
         if new != text:
             out[path] = (mode, new.encode())
             report["files"][path] = edits
@@ -772,8 +831,14 @@ def worktree_files(root):
 
 
 def unresolved_imports(files):
-    """Static `cells.*` imports in scope that name no module (or no name) in the tree."""
+    """Static `cells.*` imports in scope that name no module (or no name) in the tree. A folder
+    of modules without a package file is a namespace package (PEP 420), as Python imports it
+    (cells/records/ held relations.py alone before move 2): its submodules resolve, and it
+    defines no other name."""
     modules = {dotted_of(p): p for p in files if dotted_of(p)}
+    namespaces = {
+        ".".join(m.split(".")[:k]) for m in modules for k in range(1, m.count(".") + 1)
+    } - set(modules)
     names = {}
     out = []
 
@@ -802,7 +867,11 @@ def unresolved_imports(files):
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for a in node.names:
-                    if a.name.startswith(PACKAGE + ".") and a.name not in modules:
+                    if (
+                        a.name.startswith(PACKAGE + ".")
+                        and a.name not in modules
+                        and a.name not in namespaces
+                    ):
                         out.append(f"{path}:{node.lineno}: import {a.name}")
             elif isinstance(node, ast.ImportFrom):
                 if node.level:
@@ -813,12 +882,12 @@ def unresolved_imports(files):
                     base = node.module or ""
                 if not (base == PACKAGE or base.startswith(PACKAGE + ".")):
                     continue
-                if base not in modules:
+                if base not in modules and base not in namespaces:
                     out.append(f"{path}:{node.lineno}: from {base}")
                     continue
                 for a in node.names:
                     if a.name != "*" and f"{base}.{a.name}" not in modules:
-                        if a.name not in defined(base):
+                        if base in namespaces or a.name not in defined(base):
                             out.append(f"{path}:{node.lineno}: from {base} import {a.name}")
     return out
 
@@ -965,8 +1034,20 @@ def _hazards_reaching(report, mp):
     to a module path under the parent package of a moved module; whether it reaches a moved
     module cannot be decided statically ("reaches" lists the file's own constants that
     complete it, a hint only). Each file holding one is either refactored to full module names
-    before the move or listed under the map's "reviewed" with the reason it cannot reach."""
-    return [h for h in report["hazards"] if not mp.kept(h["file"]) and h["file"] not in mp.reviewed]
+    before the move or listed under the map's "reviewed" with the reason it cannot reach. A
+    reviewed file that the map moves keeps its review at its new path, so a second application,
+    or a branch's own application after the move, finds it reviewed."""
+    reviewed = set(mp.reviewed) | {_moved_path(p, mp) for p in mp.reviewed}
+    return [h for h in report["hazards"] if not mp.kept(h["file"]) and h["file"] not in reviewed]
+
+
+def _moved_path(path, mp):
+    """A src/cells module file's path after the map (itself if the map does not move it)."""
+    dotted = dotted_of(path)
+    if not dotted or dotted not in mp.pairs:
+        return path
+    tail = "/__init__.py" if path.endswith("/__init__.py") else ".py"
+    return "src/" + mp.pairs[dotted].replace(".", "/") + tail
 
 
 def cmd_apply(args):
@@ -1076,10 +1157,15 @@ def verify(mp, base, head, cwd=ROOT):
     for path, (_, data) in expected.items():
         if in_scope(path) and not mp.kept(path) and path.endswith(".py"):
             text = data.decode(errors="replace")
+            kept = kept_lines(text, python=True)  # Recorded text keeps its old names.
             for m in DOTTED.finditer(text):
+                if kept and _line_of(text, m.start()) in kept:
+                    continue
                 if mp.resolve(m.group(0)) or mp.stale(m.group(0)):
                     still.append(f"{path}: {m.group(0)}")
             for m in PATH.finditer(text) if gone else ():
+                if kept and _line_of(text, m.start()) in kept:
+                    continue
                 if m.group(2) in gone:
                     still.append(f"{path}: {m.group(0)}")
     problems += [dict(path=s.split(":")[0], why=f"old reference left: {s}") for s in still[:50]]
@@ -1244,6 +1330,61 @@ SELFTEST_MAP = {
         "cells.legacy.models": "",
     },
 }
+
+
+def _selftest_kept_lines(mp, files, checks):
+    """The keep marker, a registered record's scope and namespace packages (18 November 2026)."""
+    marked = dict(files)
+    recorded = (
+        '"""Recorded text."""\n\n'
+        "PROVENANCE = dict(\n"
+        '    flux="cells.core.old_spec.parse, as recorded",  # source-moves: keep (recorded)\n'
+        '    live="cells.core.old_spec.parse",\n'
+        ")\n"
+        'IN_A_STRING = "cells.core.old_spec # source-moves: keep"\n'
+    )
+    marked["src/cells/models/recorded.py"] = ("100644", recorded.encode())
+    marked["scripts/kept.sh"] = (
+        "100644",
+        b"python -m cells.core.old_spec  # source-moves: keep\npython -m cells.core.old_spec\n",
+    )
+    protocol = b'{"engine": "cells.core.old_spec (src/cells/core/old_spec.py)"}\n'
+    marked["validation/pkg/pkg_protocol.json"] = ("100644", protocol)
+    out, _ = transform(marked, mp)
+    got = out["src/cells/models/recorded.py"][1].decode()
+    checks["keep marker: the marked line keeps its old name, the next line is rewritten"] = (
+        'flux="cells.core.old_spec.parse, as recorded",  # source-moves: keep' in got
+        and 'live="cells.legacy.core.old_spec.parse"' in got
+    )
+    checks["keep marker: in a string it marks nothing"] = (
+        'IN_A_STRING = "cells.legacy.core.old_spec # source-moves: keep"' in got
+    )
+    checks["keep marker: a shell line"] = out["scripts/kept.sh"][1] == (
+        b"python -m cells.core.old_spec  # source-moves: keep\n"
+        b"python -m cells.legacy.core.old_spec\n"
+    )
+    checks["a registered protocol's JSON is never rewritten"] = (
+        out["validation/pkg/pkg_protocol.json"][1] == protocol
+    )
+    again, _ = transform(out, mp)
+    checks["keep marker: a second application changes nothing"] = again == out
+    # Non-vacuous: the moved tree holds cells.core.old_spec on the marked line, which verify's
+    # old-reference scan would report but for the marker.
+    checks["keep marker: verify holds, no old reference reported on a marked line"] = (
+        verify(mp, marked, out)["verdict"] == "holds"
+    )
+    spaced = dict(out)
+    spaced["src/cells/ns/mod.py"] = ("100644", b"X = 1\n")  # A namespace package (PEP 420).
+    spaced["tests/test_ns.py"] = (
+        "100644",
+        b"from cells.ns import mod\nimport cells.ns.mod\nfrom cells.ns import X\n"
+        b"from cells.nothing import mod\n",
+    )
+    missing = [m for m in unresolved_imports(spaced) if m.startswith("tests/test_ns.py")]
+    checks["namespace package: its submodule resolves, other names and absent folders do not"] = (
+        missing
+        == ["tests/test_ns.py:3: from cells.ns import X", "tests/test_ns.py:4: from cells.nothing"]
+    )
 
 
 def cmd_selftest(args):
@@ -1481,6 +1622,39 @@ def cmd_selftest(args):
             )["problems"]
         )
     )
+    # D188 move 2: a reviewed hazard file that the map moves keeps its review at its new path, so
+    # a second application (and a branch's own, after the move) is not refused for it.
+    hz_tree = {
+        "src/cells/__init__.py": "",
+        "src/cells/core/__init__.py": "",
+        "src/cells/core/hz.py": 'NAME = "cells.core." + "y"\n',
+        "src/cells/core/y.py": "Y = 1\n",
+    }
+    hz_tree = {p: ("100644", t.encode()) for p, t in hz_tree.items()}
+    hz_map = MoveMap(
+        dict(
+            kind=MAP_KIND,
+            move="hz",
+            modules=[["cells.core.hz", "cells.other.hz"], ["cells.core.y", "cells.other.y"]],
+            packages={"cells.other": ""},
+            reviewed=[dict(path="src/cells/core/hz.py", reason="planted: a prefix, reviewed")],
+        )
+    )
+    first, rep1 = transform(hz_tree, hz_map)
+    _, rep2 = transform(first, hz_map)
+    real_moved_path = _moved_path
+    try:
+        globals()["_moved_path"] = lambda path, mp: path  # The planted control: no mapping.
+        planted_reaching = _hazards_reaching(rep2, hz_map)
+    finally:
+        globals()["_moved_path"] = real_moved_path
+    checks["a reviewed file that moves keeps its review at its new path (second application)"] = (
+        any(h["file"] == "src/cells/core/hz.py" for h in rep1["hazards"])
+        and any(h["file"] == "src/cells/other/hz.py" for h in rep2["hazards"])
+        and not _hazards_reaching(rep1, hz_map)
+        and not _hazards_reaching(rep2, hz_map)
+        and bool(planted_reaching)
+    )
     # D188 move 2: a from-import in free text (a program string with escapes, a comment) maps
     # each moved submodule by its own new home, not by its package's.
     escaped = dict(files)
@@ -1573,6 +1747,7 @@ def cmd_selftest(args):
         [head_ids[1]],
     )
     checks["ids: two tests that the map makes one are caught"] = len(collide["collisions"]) == 1
+    _selftest_kept_lines(mp, files, checks)
     failed = [k for k, v in checks.items() if not v]
     print(json.dumps(dict(checks=len(checks), failed=failed), indent=1))
     if failed and args.verbose:

@@ -11,8 +11,8 @@ import pytest
 
 from cells.legacy.assembly_cluster import engine
 from cells.legacy.assembly_cluster.spec import parse_spec
-from cells.models.registry import get_model
 from cells.numerics import extracellular_field as field
+from cells.registry.models import get_model
 from validation.ensemble import parallel_cluster as screen
 from validation.ensemble import parallel_kernel as candidate
 

@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.legacy.processes import cell_zone_transport as transport
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 from validation.transport import betse_network_transport_reference as reference
 from validation.transport.betse_network_transport_fixtures import (
     SPECIES,

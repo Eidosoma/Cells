@@ -55,7 +55,7 @@ TOLERANCE = 1e-12
 
 def worlds():
     """{name: raw definition}: the division world and the replacement worlds (module docstring)."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.division import egg_division_world as egg
     from validation.tissue import cell_replacement_fixtures as rfx
 
@@ -218,9 +218,9 @@ def draw(directory, out):
 def main(argv=None):
     import jax
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import write_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.records.io import write_run
 
     argv = sys.argv[1:] if argv is None else argv
     if len(argv) != 1:

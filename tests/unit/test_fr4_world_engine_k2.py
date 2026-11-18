@@ -19,7 +19,7 @@ def test_k2_the_reversed_pump_closes_every_ledger_and_alkalinizes_the_lumen():
     flipped alone (guard (a)) are refused by the engine's material ledger."""
     import dataclasses
 
-    from cells.models.inner_kinds import transporter
+    from cells.kinds import transporter
     from validation.compartment_ph_engine import engine_records, planted
 
     record = engine_records.run(

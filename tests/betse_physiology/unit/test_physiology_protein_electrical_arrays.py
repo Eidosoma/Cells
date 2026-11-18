@@ -10,9 +10,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
-from cells.processes.electrochemistry import F
+from cells.definitions.specs import parse_spec
+from cells.execution.state import Checkpoint
+from cells.laws.electrochemistry import F
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import (
     active_nodes,
     changed_protein,

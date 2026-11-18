@@ -280,7 +280,7 @@ field-sampling item.
 | Uptake | D150 exchange; the passive law (A5) in the round | A regulated rate: the routing door (FR-6 item 2) | Yes (FR-5, FR-7) |
 | Regulated synthesis | D152 source reactions with Hill factors (**S**) | **The gene-regulation layer** (held, D145); transcription and translation (F10, held) | Yes, held |
 | Delays | Chains of species (**S**). D152 v1 refuses delays; only the junction-formation law has a lag | A delay law or a declared chain | Yes |
-| Temperature cue | `temperature_K` is fixed (`core/surface_tissue_spec.py`); no Q10 or Arrhenius law in `src/cells` (grep) | **Scheduled temperature with temperature-dependent rates** | Yes: channel Q10s, MG5–6's clock |
+| Temperature cue | `temperature_K` is fixed (`definitions/surface_tissue_spec.py`); no Q10 or Arrhenius law in `src/cells` (grep) | **Scheduled temperature with temperature-dependent rates** | Yes: channel Q10s, MG5–6's clock |
 | Fitness | Prescribed division only | Growth and state-triggered division (lifecycle milestone 2) | Yes, planned |
 | Evolution | None (ROADMAP, "Other research options"; E11's rules) | Variation, selection, reproduction | Defer; analyse evolved strains as data |
 | Hours | Fixed steps | FR-8 | Yes |

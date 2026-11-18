@@ -14,9 +14,9 @@ import time
 import traceback
 from pathlib import Path
 
-from cells.core.output_paths import configure_caches, within_output_root
 from cells.ensemble.plan import balance, plan
 from cells.ensemble.telemetry import Monitor, devices, utilization
+from cells.execution.output_paths import configure_caches, within_output_root
 
 
 def read(path):
@@ -88,7 +88,7 @@ def aggregate(rows):
     if clusters:
         if len(clusters) != len(rows):
             raise ValueError("An ensemble cannot mix cluster and other result families")
-        from cells.core.legacy_entry import legacy  # An older family's (D188 R1).
+        from cells.registry.legacy_entry import legacy  # An older family's (D188 R1).
 
         aggregate_cluster = legacy().ensemble("assembly_regulated_cluster@1").aggregate()
         return aggregate_cluster(clusters)

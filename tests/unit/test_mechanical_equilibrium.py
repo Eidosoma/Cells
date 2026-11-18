@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from cells.analysis import mechanical_equilibrium as me
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from tests.apical_vertex_fixtures import A_STAR, E_STAR, GAMMA, LAMBDA, honeycomb
 from validation.morphogenesis import mg1_theory as theory
 

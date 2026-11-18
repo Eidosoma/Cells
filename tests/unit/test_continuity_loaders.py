@@ -1,20 +1,20 @@
 """Checkpoint continuity at the two loaders (docs/CHECKPOINT_CONTINUITY_DESIGN.md, section 10).
 
 1. Refusal stays the default. Without a record, every refusal of io.load_snapshot and
-   batch_io.load_batch_snapshot is today's, message for message, and cells.continuity is
+   batch_io.load_batch_snapshot is today's, message for message, and cells.execution.continuity is
    never called (section 10.1).
 2. No record relaxes case 3: a corrupted fingerprint or state, a renamed model ID (D146), a
    version-3 definition over a version-2 checkpoint (D147) and a changed layout value are
    refused with a valid record (section 10.2).
 3. A record binds one manifest and one pair of identities, and the first landing's scope
    (section 10.3).
-4. No checkpoint crosses a source move (D195 item 4, cells.source_layout): a checkpoint written
+4. No checkpoint crosses a source move (D195 item 4, cells.records.source_layout): a checkpoint written
    before a made move is refused on both routes, a valid record included, naming the tag where it
    restores; one written after the move is not refused for it.
 Then the admitted loads, scalar and cohort, and the module's host-only imports. Snapshots are
 step-0 checkpoints and the records are hand-built (validation/continuity/admit.py writes the
 real ones), so nothing here compiles a model program.
-"""
+"""  # noqa: E501
 
 import ast
 import copy
@@ -28,15 +28,16 @@ import numpy as np
 import pytest
 
 import cells
-from cells import batch_io, continuity, io, source_layout
-from cells.core.batch import parse_batch
-from cells.core.specs import ConfigError, digest, parse_spec, read_json
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec, read_json
+from cells.execution import continuity
+from cells.execution.batch import parse_batch
+from cells.execution.state import initialise
+from cells.records import batch_io, io, source_layout
 from tests.batch_fixtures import definition, short_spec
 
 ROOT = Path(__file__).resolve().parents[2]
 POLICY = {"window_steps": 8, "recording": "checkpoints"}
-CHANGED = "core/phases.py"  # The file a simulated host-only landing changes.
+CHANGED = "execution/phases.py"  # The file a simulated host-only landing changes.
 
 
 # ---------------------------------------------------------------- helpers
@@ -196,10 +197,10 @@ def refused(load, message):
 
 @pytest.fixture
 def untouched(monkeypatch):
-    """cells.continuity must not be reached without a record."""
+    """cells.execution.continuity must not be reached without a record."""
 
     def forbidden(*args, **kwargs):
-        raise AssertionError("cells.continuity was called without a record")
+        raise AssertionError("cells.execution.continuity was called without a record")
 
     for name in ("bind", "parse_record", "seal", "provenance"):
         monkeypatch.setattr(continuity, name, forbidden)
@@ -400,7 +401,7 @@ def test_a_record_admits_a_cohort_source_change(cohort, monkeypatch, tmp_path):
 
 
 def test_a_window_policy_object_is_declared_as_its_dict(scalar, monkeypatch, tmp_path):
-    from cells.core.windows import WindowPolicy
+    from cells.execution.windows import WindowPolicy
 
     change_source(monkeypatch)
     path = write_record(tmp_path, build_record(scalar))
@@ -525,7 +526,7 @@ def test_the_record_binds_one_manifest_and_both_sources(scalar, monkeypatch, tmp
             "to.source_hashes_sha256": digest(manifest_of(scalar)["source_hashes"])
         },
         "Continuity record's changed_files are not the files that differ": {
-            "changed_files": ["core/runner.py"]
+            "changed_files": ["execution/runner.py"]
         },
         "Continuity record binds a cells_independent_world_checkpoint, "
         "not a cells_complete_numerical_checkpoint": {
@@ -602,7 +603,7 @@ def test_the_declared_scope_is_the_records(scalar, monkeypatch, tmp_path):
     )
     with pytest.raises(ConfigError, match="Unknown execution path"):
         continuity.Request(tmp_path / "record.json", path="projective", policy=POLICY)
-    with pytest.raises(ConfigError, match="must be a cells.continuity.Request"):
+    with pytest.raises(ConfigError, match="must be a cells.execution.continuity.Request"):
         io.load_snapshot(scalar, continuity={"record": str(tmp_path / "record.json")})
 
 
@@ -846,7 +847,7 @@ def test_a_scalar_record_does_not_load_a_cohort_child(cohort, monkeypatch, tmp_p
 
 def test_the_continuity_module_imports_neither_jax_nor_subprocess():
     code = (
-        "import sys; import cells.continuity; "
+        "import sys; import cells.execution.continuity; "
         "print(sorted(m for m in ('jax', 'jaxlib', 'numpy', 'subprocess') if m in sys.modules))"
     )
     found = subprocess.run(
@@ -857,7 +858,7 @@ def test_the_continuity_module_imports_neither_jax_nor_subprocess():
         check=True,
     ).stdout.strip()
     assert found == "[]"
-    tree = ast.parse((ROOT / "src/cells/continuity.py").read_text())
+    tree = ast.parse((ROOT / "src/cells/execution/continuity.py").read_text())
     imported = {
         node.module if isinstance(node, ast.ImportFrom) else alias.name
         for node in ast.walk(tree)
@@ -871,7 +872,7 @@ def test_the_continuity_module_imports_neither_jax_nor_subprocess():
         "dataclasses",
         "pathlib",
         "typing",
-        "cells.core.specs",
+        "cells.definitions.specs",
     }
 
 

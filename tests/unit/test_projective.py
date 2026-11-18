@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.numerics import projective as method
 from validation.tissue import projective_fixtures as fixtures
 
@@ -150,9 +150,9 @@ def test_definitions_without_the_block_are_unchanged():
 
 
 def test_fine_only_paths_refuse_and_branches_keep_the_block(parsed):
-    from cells.core import runner, windows
-    from cells.core.batch import BatchSpec, WorldSpec, plan_batch
-    from cells.core.state import initialise
+    from cells.execution import runner, windows
+    from cells.execution.batch import BatchSpec, WorldSpec, plan_batch
+    from cells.execution.state import initialise
 
     with pytest.raises(ConfigError, match="projective"):
         runner.timeline(parsed)

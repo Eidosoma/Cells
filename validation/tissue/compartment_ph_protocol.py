@@ -854,8 +854,10 @@ DECLARED_WORLD_FR5 = (
     "dev-e73e4afd-declared/), and FR-5's world is checked the same way once its kinds are wired"
 )
 EXECUTION_PATH = (
+    # Recorded text: the registered FR-4 and FR-5 protocols hold this ruling word for word, so no
+    # move changes it (D188 move 2). Its module name is never resolved as a module.
     "pre-run correction, 15 November 2026, the lead's ruling on the execution path: every engine "
-    "part runs its world as the one world of a vector window (cells.core.vector_windows; the "
+    "part runs its world as the one world of a vector window (cells.core.vector_windows; the "  # noqa: E501  source-moves: keep
     "generator's judged runs, validation/compartment_ph/engine_records.run with path 'vector'), "
     "which checks every accepted row on the device with the host checks' own functions and bounds "
     "(the domain with the kinds' domains and B4's read; the ten ledgers with the kinds' terms "

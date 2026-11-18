@@ -2,7 +2,7 @@
 
 from dataclasses import asdict, dataclass, fields
 
-from cells.core.specs import ConfigError, SimulationSpec, _fields, _integer
+from cells.definitions.specs import ConfigError, SimulationSpec, _fields, _integer
 from cells.legacy.core import gated_calcium_spec as base
 from cells.legacy.core.multispecies_spec import identifier
 from cells.legacy.core.reaction_spec import bounded

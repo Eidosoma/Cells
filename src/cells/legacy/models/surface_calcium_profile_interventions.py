@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core import owned_calcium_profile_binding as binding
 from cells.legacy.core.surface_calcium_profile_interventions_spec import (
     MODEL_ID,
@@ -149,7 +149,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     clocks = sorted(
@@ -173,8 +173,8 @@ def check_definition(spec):
 
 
 def check_steps(spec, steps, controls):
+    from cells.laws.channels import calcium_gates
     from cells.legacy.models import surface_calcium as calcium
-    from cells.processes import calcium_gates
 
     complete = accounting_spec(spec)
     base.check_steps(complete, steps, controls)
@@ -280,7 +280,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     y = STATE_TYPE(*(np.asarray(v) for v in state))

@@ -13,9 +13,9 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest, parse_spec, read_json
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_snapshot
+from cells.definitions.specs import ConfigError, digest, parse_spec, read_json
+from cells.execution.errors import NumericalError
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_snapshot
 from validation.betse.physiology.core import physiology_protein_charge_interval as interval
 from validation.betse.physiology.core import physiology_random_streams as streams
 from validation.betse.physiology.core import physiology_tissue_binding as units

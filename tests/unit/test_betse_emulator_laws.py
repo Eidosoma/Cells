@@ -5,8 +5,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.coupling.selective import selective_flux
-from cells.processes import electrochemistry, er_calcium, kinetic_pump, plasma_calcium
+from cells.laws import electrochemistry
+from cells.laws.junctions.selective import selective_flux
+from cells.laws.pumps import kinetic_pump
+from cells.laws.reactions import er_calcium, plasma_calcium
 from validation.betse.emulator import laws
 
 CODATA = laws.QUALIFIED

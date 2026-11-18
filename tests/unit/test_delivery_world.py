@@ -16,10 +16,10 @@ One compile: not tier 1.
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import pump_composite_adapter as adapter
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.tissue import delivery_fixtures as dfx
 
 jax.config.update("jax_enable_x64", True)

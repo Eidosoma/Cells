@@ -14,10 +14,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.operators import site_occupancy as so
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.operators import site_occupancy as so
 from validation.tissue import site_occupancy_fixtures as sfx
 
 jax.config.update("jax_enable_x64", True)

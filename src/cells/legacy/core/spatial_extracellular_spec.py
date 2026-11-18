@@ -2,7 +2,7 @@
 
 from dataclasses import asdict
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     SPATIAL_EXTRACELLULAR_ID,
     ChannelChange,
     ConfigError,

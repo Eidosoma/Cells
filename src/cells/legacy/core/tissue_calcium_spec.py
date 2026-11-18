@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import ip3_calcium_spec as base
 from cells.legacy.core import tissue_spec
 

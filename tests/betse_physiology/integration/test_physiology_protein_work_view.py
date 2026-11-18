@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import event_index
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import event_index
+from cells.execution.state import Checkpoint
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import (
     active_nodes,
     changed_protein,

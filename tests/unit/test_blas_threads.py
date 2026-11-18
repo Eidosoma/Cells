@@ -1,4 +1,4 @@
-"""One BLAS thread for every run (D190; core/blas_threads.py).
+"""One BLAS thread for every run (D190; execution/blas_threads.py).
 
 `import cells` loads scipy's LAPACK (jaxlib's) and sets every loaded BLAS to 1 thread. Each run
 entry point pins again and reads the count back, refusing the run if any loaded BLAS is not at 1,
@@ -16,14 +16,14 @@ from pathlib import Path
 import pytest
 import threadpoolctl
 
-from cells.core import blas_threads
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.batch_windows import iter_batch_windows, run_batch_windowed
-from cells.core.runner import run
-from cells.core.specs import ConfigError, load_spec
-from cells.core.vector_windows import iter_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy, iter_windows, run_windowed
-from cells.io import write_run
+from cells.definitions.specs import ConfigError, load_spec
+from cells.execution import blas_threads
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.batch_windows import iter_batch_windows, run_batch_windowed
+from cells.execution.runner import run
+from cells.execution.vector_windows import iter_vector_windows, run_vector_windowed
+from cells.execution.windows import WindowPolicy, iter_windows, run_windowed
+from cells.records.io import write_run
 
 ROOT = Path(__file__).resolve().parents[2]
 POLICY = WindowPolicy(5, "checkpoints")

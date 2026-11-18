@@ -11,9 +11,9 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import runtime_identity, source_hashes
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.execution.errors import NumericalError
+from cells.records.io import runtime_identity, source_hashes
 from validation.betse.physiology import physiology_protein_checkpoint as origin_io
 from validation.betse.physiology.core import physiology_permeability_schedule as schedules
 from validation.betse.physiology.core import physiology_protein_loop as loop

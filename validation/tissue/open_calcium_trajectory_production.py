@@ -9,9 +9,9 @@ from validation.tissue import open_calcium_trajectory_common as artifact
 def run(bundle, job_id, output):
     import numpy as np
 
-    from cells.core.grid import EventGrid, checked_grid
-    from cells.core.resources import trace_bytes
-    from cells.core.schedule import control_values
+    from cells.execution.grid import EventGrid, checked_grid
+    from cells.execution.resources import trace_bytes
+    from cells.execution.schedule import control_values
     from cells.numerics.fixed_step import rk4_step
     from validation.tissue import open_calcium_reference as reference
 

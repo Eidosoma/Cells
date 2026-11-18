@@ -1,6 +1,6 @@
 """Expanded pinned sodium/potassium/leak populations in ordinary resolved tissue."""
 
-from cells.core.surface_kinetic_spec import CATALOG_MODEL_ID as MODEL_ID  # noqa: F401
+from cells.definitions.surface_kinetic_spec import CATALOG_MODEL_ID as MODEL_ID  # noqa: F401
 from cells.legacy.models.surface_cav import (  # noqa: F401
     BATCH_CAPACITIES,
     OBSERVATION_FIELDS,

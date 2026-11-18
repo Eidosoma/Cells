@@ -120,8 +120,8 @@ def test_half_block_has_no_multicall_physical_time_limit():
 
 
 def test_registered_half_block_clocks_keep_exact_restart_boundary():
-    from cells.core.runner import timeline
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import timeline
 
     c, _, _, _, _ = witness("half_block")
     p = check.u.read(HERE / "protocol.json")

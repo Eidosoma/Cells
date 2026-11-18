@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 
 ROOT = Path(__file__).resolve().parents[1]
 

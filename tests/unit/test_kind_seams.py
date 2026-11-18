@@ -14,13 +14,13 @@ Through the runner, the IMEX step:
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.runner import run
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures
 from validation.tissue import pump_water_fixtures as water_fixtures
 
@@ -70,7 +70,7 @@ def test_a_planted_kind_snapshot_round_trips_in_a_fresh_process(tmp_path):
     import subprocess
     import sys
 
-    from cells.io import write_snapshot
+    from cells.records.io import write_snapshot
 
     with kind_registry.scope(kind_fixtures.registry()):
         spec = parse_spec(world())
@@ -79,8 +79,8 @@ def test_a_planted_kind_snapshot_round_trips_in_a_fresh_process(tmp_path):
         moved = float(result.final.state.exchange_moved_fmol[0])
     script = (
         "import sys\n"
-        "from cells.core import kind_registry\n"
-        "from cells.io import load_snapshot\n"
+        "from cells.registry import kind_registry\n"
+        "from cells.records.io import load_snapshot\n"
         "from tests import kind_fixtures\n"
         "with kind_registry.scope(kind_fixtures.registry()):\n"
         "    snapshot = load_snapshot(sys.argv[1])\n"
@@ -119,8 +119,8 @@ def test_a_charged_planted_kind_closes_charge_field_and_ledgers():
       stage potentials (chemical and electrical);
     - the planted error (the electrical part of the work left out) fails the energy ledger.
     """
-    from cells.core.errors import NumericalError
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.execution.errors import NumericalError
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.tissue.surface_pump_v3_fixtures import HEREDITY_CAPACITANCE_F
 
     with kind_registry.scope(kind_fixtures.registry(kind_fixtures.carrier())):
@@ -160,9 +160,9 @@ def test_a_charged_planted_kind_closes_charge_field_and_ledgers():
 
 
 def test_a_planted_kind_runs_on_the_vector_window_path():
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution import vector_windows
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     steps, big = 4, 2**53 - 1
     with kind_registry.scope(kind_fixtures.registry(kind_fixtures.carrier())):

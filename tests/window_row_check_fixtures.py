@@ -6,12 +6,12 @@ checkpoints are bitwise; diagnostics agree to rounding, under the host's keys in
 
 import numpy as np
 
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.models import surface_pump
-from cells.models.operators import osmotic_water as water
+from cells.operators import osmotic_water as water
 
 # Each rounding residual's smallest bound (tests/unit/test_surface_pump_device_checks.py), and
-# the water operator's own ledgers' floors (models/operators/osmotic_water.py).
+# the water operator's own ledgers' floors (operators/osmotic_water.py).
 FLOORS = {
     "max_capacitor_charge_error_C": 3e-25,
     "max_electrode_charge_error_C": 3e-25,

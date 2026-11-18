@@ -1,4 +1,4 @@
-"""Vectorized worlds (core/vector_windows.py) against independent single-world runs.
+"""Vectorized worlds (execution/vector_windows.py) against independent single-world runs.
 
 A batch of heterogeneous resolved-pump worlds must reproduce each world's own
 windowed run. With default XLA flags, the vmapped program is compiled
@@ -14,23 +14,23 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.batch_windows import run_batch_windowed
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.vector_windows import (
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.batch_windows import run_batch_windowed
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
+from cells.execution.vector_windows import (
     WorldCheckError,
     held_controls,
     iter_vector_windows,
     run_vector_windowed,
 )
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.execution.windows import WindowPolicy, run_windowed
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
 from validation.tissue import surface_pump_fixtures, surface_pump_v2_fixtures
 
 POLICY = WindowPolicy(5, "checkpoints")

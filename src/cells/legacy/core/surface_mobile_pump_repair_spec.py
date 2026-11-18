@@ -4,7 +4,7 @@ from bisect import bisect_right
 from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 
-from cells.core.specs import ConfigError, _integer
+from cells.definitions.specs import ConfigError, _integer
 from cells.legacy.core import surface_mobile_pump_spec as pumps
 from cells.legacy.core import surface_mobile_repair_spec as prior
 from cells.legacy.core.spatial_calcium_spec import project

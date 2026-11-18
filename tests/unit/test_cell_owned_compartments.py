@@ -20,20 +20,20 @@ from types import SimpleNamespace
 
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.operators import compartments as comp
-from cells.models.operators.contract import (
+from cells.operators import OPERATORS
+from cells.operators import compartments as comp
+from cells.operators.contract import (
     DECLARATION_MAY_DEFINE,
     Operator,
     check_declarations,
     declaration_errors,
 )
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.registry.models import get_model
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -453,7 +453,7 @@ def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
     (cells.passive_routes@1) and its K+ permeability on the bounding patch, and B4's stage read; a
     compartment in a world declaring a kind refusal 4 does not know is refused (fails closed). A
     permeability in a world without kinds stays refused (REFUSALS), as do pumps and channels."""
-    from cells.core import kind_registry
+    from cells.registry import kind_registry
     from tests import kind_fixtures
     from validation.compartment_ph_engine import definitions as defs
 
@@ -615,7 +615,7 @@ def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
     definition-time term (bound_rate: the proton law's, the passive neutral law's); the known read
     kind is a stage read that moves nothing and has no rates. If a hook goes, refusal 4's
     admission loses its premise and this fails."""
-    from cells.core import kind_registry
+    from cells.registry import kind_registry
 
     registry = kind_registry.active()
     for kind_id in comp.ROUTE_KINDS:
@@ -646,9 +646,9 @@ def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartme
     it is accepted. The declared world (with the operator) is admitted at both."""
     import numpy as np
 
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
+    from cells.laws.electrochemistry import F, R
     from cells.models import surface_pump_v3
-    from cells.processes.electrochemistry import F, R
     from validation.compartment_ph_engine import definitions as defs
 
     def scaled(k, world):

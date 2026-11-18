@@ -71,9 +71,9 @@ from pathlib import Path
 sys.path.insert(0, sys.argv[1])
 import matched_work as work
 import numpy as np
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.io import load_snapshot, write_run
+from cells.execution.runner import run
+from cells.definitions.specs import parse_spec
+from cells.records.io import load_snapshot, write_run
 r = work.prepared()
 definition = work.cells_adapter(r["protocol"]).ctx.definition(r["cases"]["pump_leak"], 5e-5)
 spec = parse_spec(definition)

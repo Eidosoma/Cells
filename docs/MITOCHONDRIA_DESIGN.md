@@ -193,7 +193,7 @@ lets them back from P to N and makes ATP on the N side.
 | Nucleotide exchange | Electrogenic antiport: ATP⁴⁻ out of N, ADP³⁻ in; "involves the displacement of one negative charge from the matrix to the IM space" [full] | None | A cycle with two roles in opposite directions, no fuel (the cardiac exchanger's sibling) | `electrogenic_nucleotide_exchange@1` |
 | Phosphate carrier | Electroneutral H₂PO₄⁻/H⁺ symport, one proton per phosphate [full] | None | A cycle with two roles in one direction | `phosphate_proton_symport@1` |
 | K⁺/H⁺ exchange | Electroneutral antiport. The source keeps matrix pH "nearly constant" with it [full] | None | A cycle with two roles | `potassium_proton_exchange@1` |
-| Proton leak | Constant-field H⁺ route [full: Nernst–Goldman] | `proton_constant_field_leak@1` (FR-4; `processes/proton_leak.py`), in `cells.passive_routes@1` | Exists | — |
+| Proton leak | Constant-field H⁺ route [full: Nernst–Goldman] | `proton_constant_field_leak@1` (FR-4; `laws/transport/proton_leak.py`), in `cells.passive_routes@1` | Exists | — |
 | Matrix buffering | Rapid protonation of buffers and of ATP, ADP and Pi | `cells.rapid_proton_buffer@1`: one ligand (H⁺), two-form rows; a law that moves a two-form row is refused (`species_registry.check_two_form_rows`) | An extension: multi-form rows and a second ligand (Mg²⁺), with laws that declare the forms they move (§1.3) | `rapid_binding_closure@1` |
 | NADH/NAD⁺ | The redox couple, rows at the N side | Rows exist; no law | Held, or finite with a driven supply (§3.3) | `driven_redox_supply@1` |
 | O₂ | A neutral row, held or finite | Exists as a row | — | — |
@@ -348,7 +348,7 @@ The mitochondria review (PAPER_REVIEW_MITOCHONDRIA.md) sets three requirements.
 - **Standard states.**
   - Every potential comes from the registry at its one standard concentration c0. The source's
     standard energies are at 1 M [full: its kJ/mol values], and enter with the registry's own
-    conversion, ΔG° = RT (Σ ν μ°/RT + (Σ ν) ln(1000 mM/c0)) (`core/species_registry.py`).
+    conversion, ΔG° = RT (Σ ν μ°/RT + (Σ ν) ln(1000 mM/c0)) (`registry/species_registry.py`).
   - FR-4's closure term keeps @3's 1 mM convention for stored rows (FR-4/FR-5 note §4.4).
   - No law carries its own ΔG°. A world whose source disagrees with the registry is refused, as
     INNER_MODEL_V4_DESIGN §10.2 rules for pumps (§5.4, C2).
@@ -468,7 +468,7 @@ The mitochondria review (PAPER_REVIEW_MITOCHONDRIA.md) sets three requirements.
   booking for cycles. One seam would serve both.
 
 **The implicit patch is not there yet.**
-- `processes/patch_electrodiffusion.py` (`bounding_patch_constant_field@1`) holds the Newton stage
+- `laws/routes/patch_electrodiffusion.py` (`bounding_patch_constant_field@1`) holds the Newton stage
   solve for constant-field routes only.
 - It has no caller in `src/cells` at the base, on `core-next` or on `fr45-next` (a search).
 - A local implicit block for a compartment's cycles would be new, a new IMEX ID under D147, and its
@@ -1106,7 +1106,7 @@ now, the check soon, the doors after the core-seams pass, and M8 before M7 (E).
 
 **A.1 What `cell_owned_compartments@1` admits today** (code read, not run).
 - **N compartments per owner: admitted.** Refusal 3 reads "one compartment per node (an owner may
-  own several)" (`models/operators/compartments.py`:16, :332–335). Each needs its own node and its
+  own several)" (`operators/compartments.py`:16, :332–335). Each needs its own node and its
   own bounding patch (refusal 2, :296–305). Nothing counts compartments per owner.
 - **Shown by a parse only.** `tests/unit/test_cell_owned_compartments.py`:196–232 parses two
   compartments in one cell. A search of `validation/` and `tests/` found no stepped world with two
@@ -1134,7 +1134,7 @@ now, the check soon, the doors after the core-seams pass, and M8 before M7 (E).
 
 | Divided by N (extensive) | Unchanged (intensive) |
 | --- | --- |
-| Volume; patch area and capacitance; every row's amount, buffers included; fixed charge and charge anchor; the transporter's `capacity_fmol_s` (`models/inner_kinds/transporter.py`:24 says so); exchange's flux J and first-order export k_e, per route on the cell's pool | Permeabilities (m/s; `inner_kinds/passive_routes.py`:150); exchange's uptake velocity, V_max per area and K_M (`operators/species_exchange.py`:13–20); the transporter's n, K and K_ATP; the buffer's constants; turnover's clearance k (`operators/species_turnover.py`:12); specific capacitance |
+| Volume; patch area and capacitance; every row's amount, buffers included; fixed charge and charge anchor; the transporter's `capacity_fmol_s` (`kinds/transporter.py`:24 says so); exchange's flux J and first-order export k_e, per route on the cell's pool | Permeabilities (m/s; `inner_kinds/passive_routes.py`:150); exchange's uptake velocity, V_max per area and K_M (`operators/species_exchange.py`:13–20); the transporter's n, K and K_ATP; the buffer's constants; turnover's clearance k (`operators/species_turnover.py`:12); specific capacitance |
 
 - **At definition time** (host only): the members' extensive anchors sum (`math.fsum`) to the lumped
   ones, bitwise when N is a power of two; intensive values match bitwise. Each member's
@@ -1163,8 +1163,8 @@ now, the check soon, the doors after the core-seams pass, and M8 before M7 (E).
 **A.3 The field solve's node cap.**
 - **Compartment nodes count.** A compartment is an outside node (FR-1 §1.1). Parsing refuses more
   cells and outside nodes than the bound, and padded capacities above it
-  (`core/surface_tissue_spec.py`:190–191, :318–319). The pump family parses with field solver 2 or 3
-  (`core/surface_pump_spec.py`:175–178), whose bound is 2,048 (`numerics/surface_field.py`:65–71);
+  (`definitions/surface_tissue_spec.py`:190–191, :318–319). The pump family parses with field solver 2 or 3
+  (`definitions/surface_pump_spec.py`:175–178), whose bound is 2,048 (`numerics/surface_field.py`:65–71);
   `bind` checks again (:132–138).
 - **Mitochondria per cell (S).** K cells of N compartments, with B other outside nodes, need
   K(1 + N) + B ≤ 2,048, so N ≤ ⌊(2,048 − B)/K⌋ − 1: 2,046 for one cell in one bath, 126 for 16
@@ -1251,7 +1251,7 @@ mitochondrion at a given time is a connected component of the open routes.
   becomes a graph query (D200).
 - **It needs** a route between two compartments of one owner, which refusal 1 refuses
   (`compartments.py`:289–294); a control on it, which faces lack (the base spec controls membranes
-  and junctions only, `core/surface_tissue_spec.py`:123, :269); and condensation per owner.
+  and junctions only, `definitions/surface_tissue_spec.py`:123, :269); and condensation per owner.
 - **Its limits:** fission only at segment ends, and sizes in whole segments. Removal and biogenesis
   still need their doors.
 

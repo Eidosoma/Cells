@@ -12,15 +12,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.runner import timeline
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.families import parse_definition, population
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.models import surface_energy as model
+from cells.records.io import load_snapshot, write_snapshot
 from tests.unit.test_integrated_ensemble import experiment
 from validation.tissue import surface_energy_fixtures as fixtures
 from validation.tissue import surface_energy_replay as replay

@@ -12,10 +12,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import load_spec, read_json
-from cells.io import _sha256 as sha
-from cells.io import load_snapshot, runtime_identity, source_hashes
+from cells.definitions.specs import load_spec, read_json
 from cells.legacy.models import spatial_extracellular as model
+from cells.records.io import _sha256 as sha
+from cells.records.io import load_snapshot, runtime_identity, source_hashes
 from tests import spatial_extracellular_fields as fields
 from tests import spatial_extracellular_numerical_checks as checks
 from tests import spatial_extracellular_numerical_data as data

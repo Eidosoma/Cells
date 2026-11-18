@@ -75,7 +75,7 @@ def measure(chunk, lanes):
 
 def run(out):
     import cells
-    from cells.core import blas_threads
+    from cells.execution import blas_threads
 
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)

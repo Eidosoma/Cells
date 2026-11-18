@@ -63,8 +63,8 @@ def check_definition(spec):
 
 
 def check_carried_pool_turnover(spec, step):
-    from cells.core.schedule import control_values
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
+    from cells.execution.schedule import control_values
     from cells.legacy.models import surface_calcium_energy as fuel
 
     if not np.isfinite(step) or step < 0:
@@ -150,7 +150,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 
 def summarize(history, diagnostics, spec):
-    from cells.core.specs import digest
+    from cells.definitions.specs import digest
 
     record = handoff_record(spec)
     return scheduled.summarize(history, diagnostics, scheduled_spec(spec)) | dict(

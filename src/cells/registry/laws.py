@@ -46,7 +46,7 @@ interfaces as `cells.*` in its row of the static model table (registry/model_tab
 what they are, and a declaration of one is a type built on `Law` whose own `errors()` checks its own
 fields. An outside package's interfaces are in its own namespace.
 
-**The registry (§8.3)** is build-scoped, as the kinds' is (core/kind_registry.py):
+**The registry (§8.3)** is build-scoped, as the kinds' is (registry/kind_registry.py):
 - one registration call, `registry.register(law)`. It checks the declaration against the
   template and refuses a second law under one namespaced ID, whatever the spelling;
 - BUILTIN holds the built-in laws, each registered from its own home through that call. The homes
@@ -73,7 +73,7 @@ from dataclasses import KW_ONLY, dataclass
 from types import MappingProxyType
 from typing import ClassVar, NamedTuple
 
-from cells.core.kind_registry import NAMESPACE, qualified
+from cells.registry.kind_registry import NAMESPACE, qualified
 from cells.registry.model_table import MODELS
 
 __all__ = (

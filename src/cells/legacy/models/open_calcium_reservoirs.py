@@ -11,9 +11,9 @@ from typing import NamedTuple
 import jax
 import jax.numpy as jnp
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field as electrical
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 LAW_ID = "complete_owned_calcium_static_reservoir_material_electrode_work@1"
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import FINITE_EXTRACELLULAR_ID, parse_spec
+from cells.definitions.specs import FINITE_EXTRACELLULAR_ID, parse_spec
 from tests import finite_extracellular_numerical_data as data
 from tests import finite_extracellular_numerical_data_v2 as v2
 

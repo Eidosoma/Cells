@@ -41,11 +41,11 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.cell_replacement_spec import exact_event_times  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.cell_replacement_spec import exact_event_times  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
 from cells.models import cell_replacement as replacement  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 from validation.tissue import cell_replacement_fixtures as fx  # noqa: E402
 from validation.tissue import surface_pump_v3_study as study  # noqa: E402
 
@@ -162,7 +162,7 @@ def part_eventmap(args):
 
 
 def part_sheet(args):
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     seconds = args.steps * DT
     raw = fx.heredity_sheet(8, 2, scale=0.3, dt=DT, end_time=seconds)
@@ -194,7 +194,7 @@ def part_parse(args):
     solve in check_definition. Shared: one template for every event. event_index and
     control_values are timed per call over a 1024-step window, as held_controls uses them.
     """
-    from cells.core.schedule import event_index
+    from cells.execution.schedule import event_index
 
     raw = fx.heredity_sheet(6, 3, scale=0.3, dt=DT, end_time=3000.0)
     raw["experiment"]["observation_times"] = [0.0, 3000.0]
@@ -246,7 +246,7 @@ def part_swap(args):
     template at step 200. core/runner.run applies every host row check; this part
     then reports, per row, each ledger's largest |residual| / bound (electrode first).
     """
-    from cells.core.runner import run
+    from cells.execution.runner import run
     from cells.models import surface_pump as first
     from validation.stationary import worlds
 
@@ -323,7 +323,7 @@ def part_swap(args):
 
 def part_inheritance(args):
     """Donor copy against isolated template in the disc interior (development check)."""
-    from cells.core.runner import run
+    from cells.execution.runner import run
     from validation.stationary import worlds
 
     seconds = args.steps * DT

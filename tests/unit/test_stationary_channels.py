@@ -15,7 +15,7 @@ import pytest
 
 from cells.analysis import continuation as cont
 from cells.analysis import stationary as sa
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.morphogenesis import mg0b_domain_wall as wall
 from validation.morphogenesis import mg0b_theory as theory
 from validation.stationary import reduced

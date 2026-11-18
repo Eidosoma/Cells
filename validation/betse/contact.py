@@ -270,7 +270,7 @@ def validate_provenance(registration, upstream, cells):
     require(
         cells["accepted_runtime"] == registration["cells_runtime"], "Cells runtime evidence differs"
     )
-    module = ROOT / "src/cells/processes/electrochemistry.py"
+    module = ROOT / "src/cells/laws/electrochemistry.py"
     require(
         Path(cells["module_path"]) == module and cells["module_sha256"] == sha(module),
         "Cells source evidence differs",
@@ -352,8 +352,8 @@ def cells_worker(registration):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.io import runtime_identity
-    from cells.processes import electrochemistry as process
+    from cells.laws import electrochemistry as process
+    from cells.records.io import runtime_identity
 
     require(jax.default_backend() == "cpu" and jax.config.x64_enabled, "Require CPU float64")
     require(not jax.config.jax_disable_jit, "JIT has been disabled")
@@ -362,7 +362,7 @@ def cells_worker(registration):
         "Cells runtime differs from accepted build",
     )
     require(
-        Path(process.__file__).resolve() == ROOT / "src/cells/processes/electrochemistry.py",
+        Path(process.__file__).resolve() == ROOT / "src/cells/laws/electrochemistry.py",
         "Unexpected Cells import path",
     )
     require(

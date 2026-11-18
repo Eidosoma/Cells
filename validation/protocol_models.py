@@ -2,7 +2,7 @@
 
 Scans every protocol file under validation/ (JSON files whose name contains "protocol", and the
 parity protocols in validation/betse/protocols/) for the engine model IDs it names (any string
-equal to a model ID in cells.models.registry, or a composite or operator law ID that
+equal to a model ID in cells.registry.models, or a composite or operator law ID that
 registry models declare), and reports each file's status line and the models. A protocol is
 affected by D172 when it names resolved_pump_tissue@3 or a model built on it (an operator
 composition, water, replacement, division, species, reactions, coupling); the older families

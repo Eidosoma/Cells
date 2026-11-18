@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.legacy.processes import cotransport as transport
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 from validation.transport import cotransport_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

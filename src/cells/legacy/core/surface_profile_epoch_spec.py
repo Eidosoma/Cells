@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import ConfigError, _fields, digest
+from cells.definitions.specs import ConfigError, _fields, digest
 from cells.legacy.core import surface_profile_interventions_spec as scheduled
 
 MODEL_ID = "resolved_membrane_profile_epoch@1"

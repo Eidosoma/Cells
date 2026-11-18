@@ -16,7 +16,7 @@ import cells
 from cells.assembly.cli import output_path, utc
 from cells.assembly.io import digest, runtime, write_json
 from cells.assembly.spec import AssemblyError
-from cells.core.output_paths import configure_caches
+from cells.execution.output_paths import configure_caches
 from cells.legacy.assembly_cell.io import (
     flatten,
     implementation,

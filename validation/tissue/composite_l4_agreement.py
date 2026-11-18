@@ -195,7 +195,7 @@ def judged_protocol(part, path):
 def on_backend(tree, backend):
     """A copy of a predictions tree with every definition's execution backend set to
     `backend` (counted). The registered definitions declare the CPU, and a definition's
-    declared backend selects its device (cells.core.devices.execution_device), so an L4 run
+    declared backend selects its device (cells.execution.devices.execution_device), so an L4 run
     must declare the GPU; nothing else changes."""
     count = 0
 

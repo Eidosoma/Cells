@@ -11,7 +11,7 @@ the lumen's H_eq -n and the cytosol's +n per cycle, heat -J dG_cyc and the maint
 -J d_rG'_ATP. Every ledger closes, so only J4 against the independent reference catches it.
 
 It is cells.transporter@1 with its rates, stage term, ledger terms and readouts replaced: the
-proton kernel (processes/proton_pump.py, unedited) evaluated with the inside and outside free
+proton kernel (laws/pumps/proton_pump.py, unedited) evaluated with the inside and outside free
 protons exchanged and the patch voltage negated, its moves and ledger terms reversed. The fuel
 band stays the cytosol's (the kernel checks it at its inside proton, here the lumen's, so it is
 switched off there and checked at h_c). A planted law of a control, registered only inside its
@@ -25,8 +25,8 @@ import dataclasses
 
 def _reversed(state, potentials, availability, p, *, xp):
     """(cycles, dG_cyc, drive, valid) per membrane slot of the reversed pump."""
-    from cells.models.inner_kinds import transporter as t
-    from cells.processes import proton_pump as proton
+    from cells.kinds import transporter as t
+    from cells.laws.pumps import proton_pump as proton
 
     c_in, c_out, fuel = t.gather(state, p, xp=xp)
     voltage = t.patch_voltage(potentials, p, xp=xp)
@@ -48,7 +48,7 @@ def _reversed(state, potentials, availability, p, *, xp):
 
 
 def _rates(state, potentials, control, p, *, xp):
-    from cells.models.inner_kinds import transporter as t
+    from cells.kinds import transporter as t
     from cells.models.surface_pump_v3 import KindRates
     from cells.numerics.extracellular_field import scatter
 
@@ -81,7 +81,7 @@ def _rates(state, potentials, control, p, *, xp):
 
 
 def _ledger_terms(state, p, *, xp):
-    from cells.models.inner_kinds import transporter as t
+    from cells.kinds import transporter as t
 
     terms = t.ledger_terms(state, p, xp=xp)
     return dict(terms, cell=-terms["cell"], outside=-terms["outside"])
@@ -92,9 +92,9 @@ def _stage_term(read, potentials, control, p, *, xp):
     at both of the patch's ends (cells, then outside nodes): at the stage's patch voltage, negated
     into the law's frame (the true slope, past its static head included), or at the reversed
     law's static head when membrane_rate passes no potentials."""
-    from cells.models.inner_kinds import transporter as t
+    from cells.kinds import transporter as t
+    from cells.laws.pumps import proton_pump as proton
     from cells.models.surface_pump_v3 import patch_node_conductance
-    from cells.processes import proton_pump as proton
 
     if not p.transporter_proton.shape[-1]:
         return xp.zeros(p.active.size + p.outside_active.size)
@@ -119,7 +119,7 @@ def _readouts(state, read, potentials, control, p, *, xp):
 
 def reversed_pump():
     """K2(b)'s planted transporter kind (module docstring)."""
-    from cells.models.inner_kinds import transporter as t
+    from cells.kinds import transporter as t
 
     return dataclasses.replace(
         t.TRANSPORTER,
@@ -132,8 +132,8 @@ def reversed_pump():
 
 def registry(kind):
     """The built-in kinds with `kind` in place of the transporter, for one control's block."""
-    from cells.core import kind_registry
-    from cells.models.inner_kinds import transporter as t
+    from cells.kinds import transporter as t
+    from cells.registry import kind_registry
 
     out = kind_registry.KindRegistry()
     for known in kind_registry.active().model_keys().values():

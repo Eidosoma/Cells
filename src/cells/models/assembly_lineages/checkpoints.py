@@ -37,7 +37,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.models.assembly_lineages import MODE, kernel, keys, streams
 
 FORMAT = "cells.assembly_lineages.checkpoint@1"
@@ -116,7 +116,7 @@ def _differs(a, b, prefix=""):
 def admit(spec, checkpoint):
     """(the start record, the restored lane as host arrays) of a run of `spec` from `checkpoint`;
     refuses what may not change, and a lineage with no future."""
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     parent = parse_spec(checkpoint.definition)
     if parent.fingerprint != checkpoint.fingerprint:
@@ -181,8 +181,8 @@ def admit(spec, checkpoint):
 
 def write(directory, checkpoint):
     """Write a checkpoint into a new directory."""
-    from cells.core.specs import parse_spec
-    from cells.io import _sha256, _write_json, runtime_identity, source_hashes
+    from cells.definitions.specs import parse_spec
+    from cells.records.io import _sha256, _write_json, runtime_identity, source_hashes
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
@@ -208,8 +208,8 @@ def write(directory, checkpoint):
 def read(directory):
     """A checkpoint from its directory; refuses a changed source or runtime, a changed file, or a
     state that does not match its digest."""
-    from cells.core.specs import parse_spec
-    from cells.io import _sha256, runtime_identity, source_hashes
+    from cells.definitions.specs import parse_spec
+    from cells.records.io import _sha256, runtime_identity, source_hashes
 
     directory = Path(directory)
     record = json.loads((directory / "checkpoint.json").read_text())

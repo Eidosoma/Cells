@@ -16,15 +16,15 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import runner
-from cells.core.grid import EventGrid
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, merge_diagnostics
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution import runner
+from cells.execution.grid import EventGrid
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.execution.windows import WindowPolicy, iter_windows, merge_diagnostics
 from cells.legacy.models import surface_cotransport_water as model
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import cotransport_material_coordinates as material
 from validation.tissue import surface_cotransport_water_reference as reference
 from validation.tissue import surface_cotransport_water_response as panel

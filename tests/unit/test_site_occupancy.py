@@ -19,14 +19,14 @@ import math
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.operators import site_occupancy as so
-from cells.models.operators.contract import check_declarations
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators import site_occupancy as so
+from cells.operators.contract import check_declarations
+from cells.registry.models import get_model
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx

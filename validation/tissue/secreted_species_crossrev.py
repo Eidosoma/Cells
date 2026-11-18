@@ -179,9 +179,9 @@ def bindings(directory, names=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)

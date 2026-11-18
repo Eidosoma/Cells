@@ -1,7 +1,7 @@
 """Scalar windowed runs with host and device row checks: wall time, handbacks and outputs.
 
 Development evidence for docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.6: C5 (the measured speedups)
-and C1 on long runs. Each world runs through cells.core.windows.run_windowed, the production
+and C1 on long runs. Each world runs through cells.execution.windows.run_windowed, the production
 path, in each requested mode (WindowPolicy row_checks), at the given window size and recording.
 Per run it records:
 - the wall time, the WindowedResult's timings and resources (in device mode the row-check
@@ -110,8 +110,8 @@ def state_digest(checkpoint):
 
 
 def run_one(name, raw, mode, args):
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     record = dict(name=name, mode=mode, window_steps=args.window_steps, recording=args.recording)
     started = perf_counter()

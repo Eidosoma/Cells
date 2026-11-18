@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.legacy.processes import geometry_operator_binding as geometry
 from cells.models import surface_tissue
 

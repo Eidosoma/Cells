@@ -6,10 +6,10 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.schedule import event_index
-from cells.core.specs import ConfigError, digest, parse_spec, read_json
-from cells.core.state import Checkpoint
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, digest, parse_spec, read_json
+from cells.execution.schedule import event_index
+from cells.execution.state import Checkpoint
+from cells.registry.models import get_model
 from tests.betse_physiology.integration.test_physiology_checkpoint import (
     assert_same_component,
     write_json,

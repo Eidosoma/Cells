@@ -146,8 +146,8 @@ def git_blob(data):
 
 
 def admit(raw):
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.runner import timeline
 
     try:
         spec = parse_spec(raw)
@@ -158,7 +158,7 @@ def admit(raw):
 
 
 def ids_of(spec):
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     d = spec.to_dict()
     m, x = d["model"], d["execution"]
@@ -220,8 +220,8 @@ def records_of(result):
 
 
 def engine_run(world, dt, *, label):
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
 
     started = time.perf_counter()
     raw = af.build(world, dt=dt)

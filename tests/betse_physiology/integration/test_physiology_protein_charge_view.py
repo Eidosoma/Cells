@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes.electrochemistry import F
+from cells.laws.electrochemistry import F
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree, fingerprints
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, case, control
 from validation.betse.physiology.core import physiology_perturbation_step as component_step

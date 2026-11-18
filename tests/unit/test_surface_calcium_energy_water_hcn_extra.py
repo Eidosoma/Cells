@@ -6,12 +6,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.channels import hcn_extra_catalog as catalog
 from cells.legacy.core import surface_calcium_energy_water_hcn_extra_spec as schema
 from cells.legacy.models import surface_calcium_energy as energy
 from cells.legacy.models import surface_calcium_energy_water_hcn_extra as model
-from cells.processes import hcn_extra_catalog as catalog
 from tests.owned_joint_water_hcn_helpers import changed, evidence, initial, refinement, stage
 
 

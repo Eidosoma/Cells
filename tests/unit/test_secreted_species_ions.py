@@ -22,8 +22,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -74,7 +74,7 @@ def worlds(**operators):
 
 
 def test_scalar_runs_and_restarts_leave_every_ion_field_bitwise(tmp_path):
-    from cells.io import load_snapshot, write_snapshot
+    from cells.records.io import load_snapshot, write_snapshot
 
     ions, secreted = worlds()
     a, b = run(ions), run(secreted)  # Host checks on every accepted row of both.
@@ -101,9 +101,9 @@ def test_scalar_runs_and_restarts_leave_every_ion_field_bitwise(tmp_path):
 
 
 def test_a_vector_batch_leaves_every_ion_row_bitwise():
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     rates = (dict(secrete=0.1), dict(secrete=0.3, uptake=2e6), dict(secrete=0.05, ku=3e-6))
     secreted = [worlds(**r)[1] for r in rates]

@@ -7,9 +7,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.runner import timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values
 from cells.legacy.models import surface_cotransport_water as model
 from validation.tissue import surface_cotransport_water_fixtures as short
 from validation.tissue import surface_cotransport_water_response as panel

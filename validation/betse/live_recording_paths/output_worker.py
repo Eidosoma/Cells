@@ -12,11 +12,11 @@ def worker(output, registration, phase):
     destinations = {key: plan.case_paths(output, key) for key in keys}
     import jax
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.io import load_snapshot, write_run
-    from cells.window_io import write_windowed_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.records.io import load_snapshot, write_run
+    from cells.records.window_io import write_windowed_run
 
     ctx.need(
         jax.default_backend() == "cpu"

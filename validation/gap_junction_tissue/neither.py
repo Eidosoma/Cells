@@ -34,12 +34,12 @@ first the bracket's ends and its bisection points 1e-13 / 2^k (k = 1..); then, w
 finishes, its worker takes a new point inside the current bracket (search, place). Outcomes are
 assumed monotone in D; a non-monotone set is reported, not repaired. After convergence, the final
 bracket's two ends are rerun at half their step: reported, not used to move the threshold. Each
-run is windowed (cells.core.windows, recording observations, device row checks; every engine
+run is windowed (cells.execution.windows, recording observations, device row checks; every engine
 check still runs). Every point's result is appended to OUTDIR/points.jsonl (the half-step reruns
 to OUTDIR/half_step.jsonl) and the search state written to OUTDIR/search.json as points finish.
 
 Records for the viewer (--record): stage 1, then the coupled stage at each given D written by the
-engine's windowed writer (cells.window_io.write_windowed_run, observed rows every RECORD_EVERY_S)
+engine's windowed writer (cells.records.window_io.write_windowed_run, observed rows every RECORD_EVERY_S)
 under OUTDIR/viewer/neither-d<D>/ with its run view (cells.run_view@1: the line of cells as touching
 spheres) and run.json; a refused view is recorded and the run written without one.
 
@@ -47,7 +47,7 @@ Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu
     python -B validation/gap_junction_tissue/neither.py OUTDIR --cpus 0,1,2,3,16,17,18,19
     python -B validation/gap_junction_tissue/neither.py OUTDIR --points 1e-14 --end 600  (a probe)
     python -B validation/gap_junction_tissue/neither.py OUTDIR --record 6e-15,7.2e-15,9e-15
-"""
+"""  # noqa: E501
 
 import argparse
 import json
@@ -264,8 +264,8 @@ def execute(raw, n_cells):
     rows of u and m, the steps, diagnostics and timings."""
     import numpy as np
 
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, iter_windows
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, iter_windows
 
     spec = parse_spec(raw)
     ids = list(spec.model.species_ids)
@@ -445,10 +445,10 @@ GEOMETRY_SOURCE = dict(
 
 def record(out_dir, d, start, *, end=COUPLED_S, label="", log_rows=0, shape="line"):
     """The coupled stage at d written as a run record with its run view (module docstring)."""
-    from cells import run_view
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy
-    from cells.window_io import write_windowed_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy
+    from cells.records import run_view
+    from cells.records.window_io import write_windowed_run
 
     arm_id = f"{ARM_PREFIX[shape]}{d:.6g}"
     directory = Path(out_dir) / "viewer" / arm_id
@@ -548,7 +548,7 @@ def final_units(directory, species_ids, n_cells=N_CELLS):
     engine's loader (io.load_snapshot): a read, nothing continues from it."""
     import numpy as np
 
-    from cells import io
+    from cells.records import io
 
     checkpoint = io.load_snapshot(Path(directory) / "checkpoint_final").checkpoint
     amount = np.asarray(checkpoint.layout.amount_reference) + np.asarray(
@@ -633,7 +633,7 @@ def observed_units(directory, species_ids, n_cells=N_CELLS):
     record's own observed amounts (its chunks) and the layout's volumes, read through the loader."""
     import numpy as np
 
-    from cells import io
+    from cells.records import io
 
     directory = Path(directory)
     layout = io.load_snapshot(directory / "checkpoint_initial").checkpoint.layout  # A read.

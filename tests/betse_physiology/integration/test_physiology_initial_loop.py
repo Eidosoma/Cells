@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from tests.betse_physiology.unit.test_physiology_initial_preparation import (
     request as original_request,
 )

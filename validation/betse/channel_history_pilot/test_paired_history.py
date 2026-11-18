@@ -260,9 +260,9 @@ def test_normative_native_fixture_view_changes_only_declared_gates(views):
 def test_short_real_production_run_checks_full_state_and_checkpoint(views, tmp_path, name, backend):
     import feedback_cells
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.records.io import load_snapshot, write_snapshot
 
     view = copy.deepcopy(views[name])
     dt = 0.00005

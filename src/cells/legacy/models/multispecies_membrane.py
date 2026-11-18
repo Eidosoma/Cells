@@ -10,12 +10,11 @@ from dataclasses import dataclass
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
-from cells.core.state import MultispeciesLayout, MultispeciesState
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import (
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.execution.state import MultispeciesLayout, MultispeciesState
+from cells.laws.electrochemistry import (
     CHARGE_PER_FMOL,
     MOL_PER_FMOL,
     F,
@@ -24,6 +23,7 @@ from cells.processes.electrochemistry import (
     ghk_leak,
     reversible_pump,
 )
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 STATE_TYPE = MultispeciesState
 LAYOUT_TYPE = MultispeciesLayout

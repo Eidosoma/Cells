@@ -15,9 +15,9 @@ import math
 
 import pytest
 
-from cells import run_view
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.records import run_view
+from cells.registry.models import get_model
 from validation.replay import driver, planarian
 
 SOURCE = {"revision": "planted-by-the-test", "dirty": False, "from": "a test"}

@@ -3,8 +3,8 @@
 import math
 from dataclasses import asdict, fields
 
-from cells.core.spec_values import fraction
-from cells.core.specs import (
+from cells.definitions.spec_values import fraction
+from cells.definitions.specs import (
     MULTISPECIES_ID,
     VOLTAGE_GATED_ID,
     ChannelChange,
@@ -21,8 +21,8 @@ from cells.core.specs import (
     _integer,
     _number,
 )
+from cells.laws.channels.voltage_gates import LAW_ID, TEMPERATURE_K, VOLTAGE_DOMAIN_V
 from cells.legacy.core import multispecies_spec as ionic
-from cells.processes.voltage_gates import LAW_ID, TEMPERATURE_K, VOLTAGE_DOMAIN_V
 
 
 def project(value, target):

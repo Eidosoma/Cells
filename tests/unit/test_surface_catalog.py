@@ -9,18 +9,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
+from cells.laws.channels import cav_channels, leak_channels, potassium_catalog, sodium_catalog
+from cells.laws.channels import shared_channel_catalog as channels
 from cells.legacy.models import surface_catalog as model
 from cells.legacy.models import surface_cav as prior
-from cells.models.registry import get_model
-from cells.processes import cav_channels, leak_channels, potassium_catalog, sodium_catalog
-from cells.processes import shared_channel_catalog as channels
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_catalog_fixtures as fixtures
 from validation.tissue import surface_kinetic_reference as reference

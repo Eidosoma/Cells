@@ -680,7 +680,7 @@ either retires, its history in the partition's record (§2, §3.4).
   - S3's judged world and its registered protocol.
 - **Other agents' files.** S5 needs no change to:
   - `cell_replacement*.py`, `osmotic_water.py`, `current_injection.py` and
-    `core/cell_replacement_spec.py`;
+    `definitions/cell_replacement_spec.py`;
   - the checkpoint code;
   - `surface_tissue.py`, `surface_pump*.py` and `numerics/`.
 - **Files S5 touches:**

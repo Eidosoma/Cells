@@ -17,9 +17,9 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.models.operators import OPERATORS
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.operators import OPERATORS
+from cells.registry.models import get_model
 from validation.tissue import regulated_availability_controls as controls
 from validation.tissue import regulated_availability_dt_study as generator
 from validation.tissue import regulated_availability_fixtures as rf

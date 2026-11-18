@@ -21,13 +21,13 @@ import pytest
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core import runner  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.state import initialise  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution import runner  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
+from cells.execution.state import initialise  # noqa: E402
 from cells.models import pump_composite_adapter as adapter  # noqa: E402
 from cells.models import surface_tissue as tissue  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 from validation.tissue import injection_rm1 as rm1  # noqa: E402
 
 STEPS = 300

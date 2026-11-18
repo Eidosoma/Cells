@@ -69,7 +69,7 @@ the Laws library's five needs from each manifest entry (§4.1).
   - the composite, `cells.resolved_pump_composite@1`;
   - the three compositions that `frozen_definition` rewrites: `resolved_pump_water@1`,
     `resolved_pump_water@2` and `resolved_pump_replacement@1` (**code**:
-    `core/pump_composite_spec.py`).
+    `definitions/pump_composite_spec.py`).
 
   They come from @2's `models` section (§7).
 - **No page:**
@@ -513,7 +513,7 @@ here and not filled in by hand on the pages.
    value) with `CONFLICTS_VIEW` (the declared value). The water operator's `membrane_area` is the
    second kind (**code**: `osmotic_water.py`:502).
 9. **Kernels are named by their wrappers.** Kv1.5's is `cells.models.inner_laws._kv1p5_kinetics`,
-   which calls `processes/voltage_gates.py`. CORE_SEAMS §8.2's one module per law removes the
+   which calls `laws/channels/voltage_gates.py`. CORE_SEAMS §8.2's one module per law removes the
    wrapper.
 10. **Kv1.5's only check of its kernel sits in an older family's tier-3 test file.**
     - The file is `tests/unit/test_voltage_gated_membrane.py`, which imports `cells.legacy`.
@@ -903,7 +903,7 @@ Not stated: no record states a level for this piece.
 
 <!-- generated: links -->
 
-- Declared in [`src/cells/models/inner_kinds/transporter.py`](../../../../src/cells/models/inner_kinds/transporter.py) (`cells.models.inner_kinds.transporter`).
+- Declared in [`src/cells/kinds/transporter.py`](../../../../src/cells/kinds/transporter.py) (`cells.kinds.transporter`).
 - Hosts [`cells.atp_driven_transporter_mass_action_positive@1`](../laws/atp_driven_transporter_mass_action_positive@1.md) and [`cells.proton_atp_mass_action_positive@1`](../laws/proton_atp_mass_action_positive@1.md); runs in [`cells.resolved_pump_tissue@3`](../models/resolved_pump_tissue@3.md).
 - Manifest entry: (kind, `cells.transporter@1`) ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.transporter@1`.
@@ -1068,7 +1068,7 @@ Not stated: no record states a level for this piece.
 
 <!-- generated: links -->
 
-- Declared in [`src/cells/models/operators/osmotic_water.py`](../../../../src/cells/models/operators/osmotic_water.py), class `OsmoticWater` (`cells.models.operators.osmotic_water`).
+- Declared in [`src/cells/operators/osmotic_water.py`](../../../../src/cells/operators/osmotic_water.py), class `OsmoticWater` (`cells.operators.osmotic_water`).
 - Runs in [`cells.resolved_pump_composite@1`](../models/resolved_pump_composite@1.md).
 - Manifest entry: (operator, `cells.ideal_osmosis_linear_compliance_water@1`) ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.ideal_osmosis_linear_compliance_water@1`.
@@ -1112,12 +1112,12 @@ Further reading: [the water guide](../../../PUMP_WATER_MODEL.md);
     `transporter.py`);
   - `src/cells/models/operators/` (`__init__.py`, the header of `contract.py`, the header of
     `osmotic_water.py`);
-  - `src/cells/core/kind_registry.py` (the `Kind` fields);
-  - `src/cells/processes/voltage_gates.py` and `atp_transporter.py`;
+  - `src/cells/registry/kind_registry.py` (the `Kind` fields);
+  - `src/cells/laws/channels/voltage_gates.py` and `atp_transporter.py`;
   - `src/cells/numerics/osmotic_water.py` (its header);
   - `src/cells/models/surface_pump_v3.py` (`channel_rates`);
-  - `src/cells/io.py` (`source_hashes`, `load_snapshot`);
-  - `src/cells/run_view.py` (the suffix rule's names).
+  - `src/cells/records/io.py` (`source_hashes`, `load_snapshot`);
+  - `src/cells/records/run_view.py` (the suffix rule's names).
 - **Tests:** the test names and docstrings of `tests/unit/test_declarations.py`,
   `test_law_registry.py`, `test_voltage_gated_membrane.py`, `test_transporter_kind.py` and
   `test_osmotic_water.py`; `tests/test_tiers.json` and `tests/tier3_record.json` for the Kv1.5 file.

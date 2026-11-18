@@ -11,9 +11,9 @@ the parent, so the partition maps a contact; and a bridge between the daughters
 (cytoplasmic_bridge_closure@1, add_bridge) with sigma_cyt at its declared default.
 """
 
-from cells.core import partition_spec as ps
-from cells.core import pump_composite_spec as cs
-from cells.models.operators.contract import Operator
+from cells.definitions import partition_spec as ps
+from cells.definitions import pump_composite_spec as cs
+from cells.operators.contract import Operator
 from tests import membrane_insertion_fixtures as ifx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3f
@@ -465,7 +465,7 @@ def with_follower(spec):
     """spec's composition with FollowsSplit appended (built directly; the spec does not name
     it, and it owns no state, layout or schedule)."""
     from cells.models import pump_composite, pump_composite_adapter
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     operators = tuple(OPERATORS[d.law] for d in spec.model.operators)
     return pump_composite.Composition(pump_composite_adapter, (*operators, FollowsSplit()))

@@ -3,10 +3,10 @@
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.core.state import CellLayout, CellState, identity_arrays
-from cells.observers import observe
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.state import CellLayout, CellState, identity_arrays
+from cells.records.observers import observe
 
 STATE_TYPE = CellState
 LAYOUT_TYPE = CellLayout

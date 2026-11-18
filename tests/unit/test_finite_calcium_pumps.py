@@ -8,10 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import R
+from cells.laws.pumps import kinetic_pump
+from cells.laws.reactions import er_calcium, plasma_calcium
 from cells.legacy.processes import finite_calcium_pumps as process
 from cells.legacy.processes import finite_energy as energy
-from cells.processes import er_calcium, kinetic_pump, plasma_calcium
-from cells.processes.electrochemistry import R
 from validation.chemistry import finite_calcium_pump_reference as reference
 from validation.chemistry import finite_energy_reference as pool_reference
 

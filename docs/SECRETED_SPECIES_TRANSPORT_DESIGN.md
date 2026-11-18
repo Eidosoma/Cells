@@ -772,7 +772,7 @@ lumen.
 - the template's declared pool, or a donor's, is supplied (D139's two routes).
 
 Its free-energy booking uses @3's terms over every species. So the species is replaced with no
-new code. Checked in `core/cell_replacement_spec.py`:
+new code. Checked in `definitions/cell_replacement_spec.py`:
 - a template must name every declared species' amount, each positive: the trace, or a loaded
   pool such as a granule-loaded newcomer;
 - a donor copy takes the donor's amounts, the species' included;

@@ -5,14 +5,14 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from cells.core.runner import timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values
 from cells.legacy.core import surface_energy_spec as energy
 from cells.legacy.core import surface_energy_water_spec as schema
 from cells.legacy.models import surface_energy_water as model
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.tissue import surface_energy_water_fixtures as fixtures
 
 

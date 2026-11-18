@@ -8,7 +8,7 @@ D176's round). One frozen declaration per law ID, with a fixed registry code:
 * the junction conductance law (every junction declares it today);
 * the two pump laws, on today's maintained fuel kind.
 
-The kernels stay where they are, unchanged: processes/voltage_gates.py, potassium_channels.py,
+The kernels stay where they are, unchanged: laws/channels/voltage_gates.py, potassium_channels.py,
 sodium_channels.py, junction_gate.py, kinetic_pump.py and calcium_atpase.py. Older families
 import those modules and their shared dispatchers (sodium_channels.kinetics and opening), so a
 declaration only points at a law's own kernel. Each opening keeps today's operation order, which
@@ -28,9 +28,8 @@ which closes over the structure and never over a value (P5).
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from cells.core.kind_registry import qualified
-from cells.core.kinetic_pump_spec import METABOLISM_ID
-from cells.core.surface_pump_v3_spec import (
+from cells.definitions.kinetic_pump_spec import METABOLISM_ID
+from cells.definitions.surface_pump_v3_spec import (
     KIR2P1_LAW_ID,
     KLEAK_LAW_ID,
     KV1P5_LAW_ID,
@@ -38,15 +37,11 @@ from cells.core.surface_pump_v3_spec import (
     NALEAK_LAW_ID,
     NAV1P2_LAW_ID,
 )
-from cells.processes import (
-    calcium_atpase,
-    junction_gate,
-    kinetic_pump,
-    potassium_channels,
-    sodium_channels,
-    voltage_gates,
-)
+from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
+from cells.laws.junctions import junction_gate
+from cells.laws.pumps import calcium_atpase, kinetic_pump
 from cells.registry import laws as law_registry
+from cells.registry.kind_registry import qualified
 from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
 
 HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).

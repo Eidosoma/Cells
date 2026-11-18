@@ -3,7 +3,7 @@
 validation/tissue/compartment_ph_qualification.engine_run calls `run(definition)`: it parses the
 development world (definitions.development_world: the declared world without FR-1's compartment
 operator, the lead's ruling of 15 November 2026), runs it on the windowed runner
-(cells.core.windows.run_windowed, every accepted row checked on the host, the CPU backend in
+(cells.execution.windows.run_windowed, every accepted row checked on the host, the CPU backend in
 float64), and keeps one row per record from each window's observations (ENGINE_READOUTS):
 - `record_s` and `series`: the closure's pH at the cytosol and the lumen (B4's readout), the
   bounding patch's voltage, the H and K rows at both nodes, the pump's cumulative cycles, the
@@ -21,7 +21,7 @@ A refusal (at the definition or in the run) is recorded with its message: a refu
 A refusal at the definition is attributed to the envelope (`refusal_reason`, K3's catch: the lead's
 ruling) when the same development world is admitted with B4's stage check alone removed.
 
-`run(..., path="vector")` runs the same world as the one world of a cells.core.vector_windows
+`run(..., path="vector")` runs the same world as the one world of a cells.execution.vector_windows
 window instead: every accepted row is checked on the device (the model's device_checks, with the
 kinds' check hooks), and the observed rows reach Records through `one_world`, since a vector
 window's observations are keyed by world ID. The records are the same fields; `path` names which.
@@ -75,7 +75,7 @@ class Records:
         conditions = [c.id for c in kinds.get("cells.ph_condition@1", ())]
         self.condition = conditions.index(defs.CONDITION) if defs.CONDITION in conditions else None
         _, self.p = model.initial_values(spec)
-        from cells.core import kind_registry
+        from cells.registry import kind_registry
 
         self.pump = kind_registry.active().lookup("cells.transporter@1")  # Planted or not.
         self.tol = np.asarray(spec.execution.material_balance_atol_fmol)
@@ -214,9 +214,9 @@ def envelope_reason(definition):
     stage check alone removed (every other built-in kind as registered), else None."""
     import dataclasses
 
-    from cells.core import kind_registry
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.models.inner_kinds import proton_buffer
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.kinds import proton_buffer
+    from cells.registry import kind_registry
 
     registry = kind_registry.KindRegistry()
     for kind in kind_registry.active().model_keys().values():
@@ -254,12 +254,12 @@ def one_world(sink, world_id=VECTOR_WORLD_ID):
 
 
 def _run_vector(spec, sink, window_steps):
-    """The one world through cells.core.vector_windows (every accepted row checked on the device:
+    """The one world through cells.execution.vector_windows (every accepted row checked on the device:
     the model's device_checks, the kinds' check hooks included): (steps, diagnostics, timings,
-    resources, final checkpoint), the windowed runner's result fields."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    resources, final checkpoint), the windowed runner's result fields."""  # noqa: E501
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     batch = BatchSpec((WorldSpec(VECTOR_WORLD_ID, spec),), 1, VECTOR_LIMIT, VECTOR_LIMIT)
     result = run_vector_windowed(
@@ -275,21 +275,21 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
         world="development", checkpoint_dir=None):
     """The engine part's record of `definition`'s development world (module docstring). With
     `registry` the build runs inside kind_registry.scope(registry) (a planted control's). `path`
-    is "host" (cells.core.windows.run_windowed: every accepted row checked on the host) or
-    "vector" (one world in a cells.core.vector_windows window: every accepted row checked on the
+    is "host" (cells.execution.windows.run_windowed: every accepted row checked on the host) or
+    "vector" (one world in a cells.execution.vector_windows window: every accepted row checked on the
     device, the observations through `one_world`); the records are the same fields. `world` is
     "development" (definitions.development_world: without FR-1's compartment operator) or
     "declared" (definitions.declared_world: the composite with it, which must give the same
     records bitwise, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1). With `checkpoint_dir` (FR-5's
     start part) a run that completes also writes the engine's snapshot of its final state there
-    (cells.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`
+    (cells.records.io.write_snapshot) and returns FR-5's start under `start_nodes` and `start_readouts`
     (Records.start, from its last record: the run ends on a record), for
-    definitions.start_extract."""
-    from cells.core import kind_registry
-    from cells.core.errors import NumericalError
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.models.registry import get_model
+    definitions.start_extract."""  # noqa: E501
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.registry import kind_registry
+    from cells.registry.models import get_model
 
     if world not in WORLDS:
         raise ValueError(f"world is one of {WORLDS}, not {world!r}")
@@ -337,7 +337,7 @@ def run(definition, *, registry=None, window_steps=WINDOW_STEPS, path="host",
             out["steps"] = int(round(sink.record_s[-1] / spec.execution.dt)) if sink.record_s else 0
             return out
         if checkpoint_dir is not None:  # FR-5's start: the snapshot, then the start's parts.
-            from cells.io import write_snapshot
+            from cells.records.io import write_snapshot
 
             if sink.record_s[-1] != final.time:
                 raise ValueError("FR-5's start needs a record at the run's end")

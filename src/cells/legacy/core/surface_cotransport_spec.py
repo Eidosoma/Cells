@@ -7,7 +7,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.specs import ChannelChange, ConfigError, _fields, _integer, _number
+from cells.definitions.specs import ChannelChange, ConfigError, _fields, _integer, _number
 from cells.legacy.core import surface_energy_spec as prior
 from cells.legacy.core.multispecies_spec import identifier
 from cells.legacy.core.voltage_gated_spec import fraction

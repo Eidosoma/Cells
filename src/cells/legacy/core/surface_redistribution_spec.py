@@ -3,8 +3,8 @@
 import copy
 from dataclasses import asdict, dataclass, replace
 
-from cells.core import surface_tissue_spec as base
-from cells.core.specs import (
+from cells.definitions import surface_tissue_spec as base
+from cells.definitions.specs import (
     ConfigError,
     SpatialExtracellularExecutionSpec,
     _fields,

@@ -86,7 +86,7 @@ class Adapter:
         )
 
     def summarize(self, history, diagnostics, spec):
-        from cells.core.specs import digest
+        from cells.definitions.specs import digest
 
         record = self.handoff_record(spec)
         return self.scheduled.summarize(

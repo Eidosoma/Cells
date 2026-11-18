@@ -12,7 +12,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.errors import NumericalError
+from cells.execution.errors import NumericalError
 from validation.betse import global_controls as source
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.models import physiology_permeability_view as permeability

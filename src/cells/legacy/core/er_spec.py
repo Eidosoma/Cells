@@ -2,11 +2,11 @@
 
 from dataclasses import asdict, dataclass, fields
 
-from cells.core.specs import ConfigError, SimulationSpec, _fields, _integer
+from cells.definitions.specs import ConfigError, SimulationSpec, _fields, _integer
+from cells.laws.reactions.er_calcium import METABOLISM, PUMP_LAW, RELEASE_LAW
 from cells.legacy.core import reaction_spec as chemistry
 from cells.legacy.core.bioelectric_spec import signed_number
 from cells.legacy.core.multispecies_spec import identifier
-from cells.processes.er_calcium import METABOLISM, PUMP_LAW, RELEASE_LAW
 
 MODEL_ID = "er_calcium@1"
 

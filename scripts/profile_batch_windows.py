@@ -20,15 +20,15 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot, write_batch_run  # noqa: E402
-from cells.batch_window_io import write_windowed_batch  # noqa: E402
-from cells.core.batch import plan_batch, run_batch  # noqa: E402
-from cells.core.batch_windows import plan_batch_windows, run_batch_windowed  # noqa: E402
-from cells.core.windows import WindowPolicy, plan_windows, run_windowed  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.window_io import write_windowed_run  # noqa: E402
+from cells.execution.batch import plan_batch, run_batch  # noqa: E402
+from cells.execution.batch_windows import plan_batch_windows, run_batch_windowed  # noqa: E402
+from cells.execution.windows import WindowPolicy, plan_windows, run_windowed  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot, write_batch_run  # noqa: E402
+from cells.records.batch_window_io import write_windowed_batch  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.records.window_io import write_windowed_run  # noqa: E402
 from scripts.profile_windows import definition as scalar_definition  # noqa: E402
 from scripts.profile_windows import stream_digest  # noqa: E402
 from tests.batch_fixtures import definition  # noqa: E402

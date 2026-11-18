@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
+from cells.execution.errors import NumericalError
 from cells.legacy.core import surface_calcium_energy_water_repair_hcn_extra_spec as schema
 from cells.legacy.models import surface_calcium_energy_water_hcn_extra as parent
 from cells.legacy.models import surface_calcium_energy_water_repair_hcn_extra as model

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from cells.processes import kinetic_pump
+from cells.laws.pumps import kinetic_pump
 from validation.betse.emulator import active as model
 from validation.betse.emulator import spatial as passive
 from validation.betse.spatial_trajectory import fixtures as spatial

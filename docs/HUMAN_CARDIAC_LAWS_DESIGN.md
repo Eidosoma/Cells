@@ -102,14 +102,14 @@ stands at 3c10b833 (code read for this note; **S** where it is our reading).
 
 | Need | As built at 3c10b833 | Where |
 | --- | --- | --- |
-| Ca²⁺ (and, for ToR-ORd, Cl⁻) as channel ions | Channel ions are Na⁺ and K⁺ only | `core/surface_pump_v3_spec.py`: `SPECIES_VALENCE = {"Na": 1, "K": 1}`, `LAW_PERMEABILITIES` |
+| Ca²⁺ (and, for ToR-ORd, Cl⁻) as channel ions | Channel ions are Na⁺ and K⁺ only | `definitions/surface_pump_v3_spec.py`: `SPECIES_VALENCE = {"Na": 1, "K": 1}`, `LAW_PERMEABILITIES` |
 | Gating that reads concentrations: subspace Ca²⁺ (ICaL's Ca²⁺-dependent inactivation), cytosolic Ca²⁺ (IKs), extracellular K⁺ (IK1, IKr), and the CaMKII state | `ChannelLaw.kinetics(voltage, *, xp)`: voltage only. `reads` and `loop_term` are reserved and empty for every law | `models/inner_laws.py` (`ChannelLaw`); `surface_pump_v3.potential_kinetics` |
 | Laws with more than two gates, and different gate counts in one world | `gate_rows` is the larger of 2 and the largest declared count, and a gated law whose count differs from it raises `NotImplementedError` | `surface_pump_v3.channel_kinetics` |
 | Each law's own voltage domain | Declared per law (`ChannelLaw.voltage_domain_V`, −0.120 to +0.060 V for all five), but checked as one domain for every active population, leaks included | `surface_pump_v3.channel_domain_valid` (`VOLTAGE_DOMAIN_V`) |
 | A linear driving force, G(V − E) | Every population's flux is the constant-field (GHK) flux | `surface_pump_v3.channel_rates` → `coupling/selective.selective_flux` |
 | Kinetic coefficients as data, so cell types and source models are parameter sets | Coefficients are kernel literals. A population carries its law, P_max, abundance, initial gates and permeant ions only | `core/surface_kinetic_spec.ChannelPopulation` |
-| An exchanger with no fuel (Na⁺/Ca²⁺ exchange), and the source model's Na⁺/K⁺ pump | The transporter kind's laws hydrolyse one ATP per cycle and move one role across a patch, one population per patch in version 1 | `models/inner_kinds/transporter.py` |
-| Rapid Ca²⁺ buffering | B4's closure, for protons only; its declaration admits one read in version 1 | `models/inner_kinds/proton_buffer.py` |
+| An exchanger with no fuel (Na⁺/Ca²⁺ exchange), and the source model's Na⁺/K⁺ pump | The transporter kind's laws hydrolyse one ATP per cycle and move one role across a patch, one population per patch in version 1 | `kinds/transporter.py` |
+| Rapid Ca²⁺ buffering | B4's closure, for protons only; its declaration admits one read in version 1 | `kinds/proton_buffer.py` |
 | Intracellular pools at the cell's potential (dyadic subspace, network and junctional SR) | A cell is one well-mixed node. FR-1's compartments are capacitor nodes with one bounding patch, V_b = −q/C_b | CLOSED_COMPARTMENT_DESIGN §3.1 |
 | SR release; CaMKII | None | — |
 | Markov-form laws; subspace calcium | Closed in version 1 | INNER_MODEL_V4_DESIGN §13.1 |
@@ -141,7 +141,7 @@ The table is written for O'Hara–Rudy 2011's endocardial cell (ORd), the recomm
 
 **The "moved" test** (D167): a catalogue law moves only if its functional form can carry the
 paper's parameters. The catalogue's gated channel laws are parity laws that hold their sources'
-coefficients in the kernels: @3's three (BETSE v1.5.0's, in `processes/sodium_channels.py`,
+coefficients in the kernels: @3's three (BETSE v1.5.0's, in `laws/channels/sodium_channels.py`,
 `potassium_channels.py` and `voltage_gates.py`), and the rest of the catalogue as read for this
 note (literals in `sodium_catalog.py`, `potassium_catalog.py` and `cav_channels.py`, module tables
 for Morris–Lecar's tanh and cosh forms in `morris_lecar_channels.py`). None of them can carry ORd's gating. What moves
@@ -174,7 +174,7 @@ EXCITABLE_TISSUE_DESIGN §7.3) [sec].
 | IK1, inward rectifier | `inward_rectifier_potassium@1`, a time-dependent gate times an instantaneous rectification | New. `kir_ml_instantaneous@1` and `kir2p1_mh2@1` hold BETSE's coefficients | 1: x_K1; instantaneous R_K1. Reads K⁺ outside, through √K_o | Linear, G 0.1908 mS/µF → linear | Text S1 [full] |
 | IKb, background K⁺ | A K⁺ current with an instantaneous voltage factor: `potassium_instantaneous_factor@1` | New | 0; x_Kb(V) | Linear, G 0.003 mS/µF → linear | Text S1 [full] |
 | INab, background Na⁺ | A constant-field Na⁺ leak | **Moved:** `naleak_always_open@1`, already in @3 | 0 | GHK, P 3.75·10⁻¹⁰ cm/s, no activity coefficients → the same, exactly | Equations: the moved law's constant-field flux, ORd's form; parameter: Text S1 [full] |
-| ICab, background Ca²⁺ | A constant-field Ca²⁺ leak | **Moved:** `caleak_always_open@1` (`processes/calcium_catalog_extra.py`) | 0 | GHK, P 2.5·10⁻⁸ cm/s, γ 1.0 inside and 0.341 outside → as ICaL's: the same window, against bulk Ca²⁺, as the leak's domain; the symmetric factor as the fallback | Equations: the moved law's constant-field flux with the activity factors; parameters: Text S1 [full] |
+| ICab, background Ca²⁺ | A constant-field Ca²⁺ leak | **Moved:** `caleak_always_open@1` (`laws/channels/calcium_catalog_extra.py`) | 0 | GHK, P 2.5·10⁻⁸ cm/s, γ 1.0 inside and 0.341 outside → as ICaL's: the same window, against bulk Ca²⁺, as the leak's domain; the symmetric factor as the fallback | Equations: the moved law's constant-field flux with the activity factors; parameters: Text S1 [full] |
 | IpCa, sarcolemmal Ca²⁺ pump | A saturable ATP-driven Ca²⁺ pump | **Moved:** `ca_atp_mass_action_positive@1`, already in @3 | 0; reads cytosolic Ca²⁺ | One-way, 0.0005·Ca_i/(0.0005 + Ca_i) µA/µF → the law's saturation times (1 − e^{ΔG_cyc/RT}), a completion (§3.8) | Equations: the moved law's ([PLASMA_CALCIUM.md](PLASMA_CALCIUM.md)); parameters: Text S1 [full] |
 | INaCa, Na⁺/Ca²⁺ exchange (80% facing the bulk, 20% the subspace) | A four-state exchange cycle at steady state, after Kang and Hilgemann: `sodium_calcium_exchange_cycle@1`, a fuel-free transporter | New. The catalogue's `ncx_3na_1ca_symmetric_barrier@1` is a synthetic law of another form | 0; reads Na⁺ and Ca²⁺ on both sides at its pool, with an allosteric Ca²⁺ activation (constant 150·10⁻⁶ mM) | The cycle includes the observed Na⁺ leak mode, but the concentration equations book 3·I_NaCa to Na⁺ and −2·I_NaCa to Ca²⁺, not the cycle's own fluxes (Text S1 pp. 13, 18). So the zero current need not lie at the 3:1 equilibrium: **to be screened** (§3.8). → the cycle's own Na⁺ and Ca²⁺ fluxes, booked as the cycle moves them, a declared change | Text S1 and Fig. S1A [full] |
 | INaK, Na⁺/K⁺ pump | A lumped four-state pump cycle after Smith and Crampin: `sodium_potassium_pump_cycle@1`, on held fuel | New. The form of `nak_atp_mass_action_positive@1` (Hill saturations, with voltage only through the cycle's free energy) cannot carry ORd's | 0; reads Na⁺ and K⁺ on both sides; MgATP 9.8, MgADP 0.05, total phosphate 4.2 and H⁺ 10⁻⁷ mM, held | A cycle → the same cycle, screened (§3.8). Its rate constants imply a hydrolysis free energy, which must agree with the species registry's fuel potentials, or the transporter kind refuses it (INNER_MODEL_V4_DESIGN §7.4 (h)). Two reported errors in the printed cycle (a β₂ that should be β₃, and an H⁺ of 10⁻⁷ mM, which is pH 10) are carried as ORd prints them, and stated; the comment finds neither significant at baseline [sec: a PLOS reader comment, 7 March 2024] | Text S1, Fig. S6 [full] |
@@ -324,7 +324,7 @@ voltage [full; code: TP06's 2006 code]. Three representations were weighed (**S*
 
 - **A fuel-free exchanger:** per forward cycle 3 Na⁺ in and 1 Ca²⁺ out, net one charge in, with no
   ATP. For ORd, the cycle's own Na⁺ and Ca²⁺ fluxes are booked, its Na⁺-leak mode included (§2).
-- **What the transporter kind must admit** (`models/inner_kinds/transporter.py` today: one ATP per
+- **What the transporter kind must admit** (`kinds/transporter.py` today: one ATP per
   cycle, one moved role, one population per patch in version 1):
   - several roles per cycle, and no fuel;
   - two populations on one membrane facing two pools (80% bulk, 20% subspace).
@@ -591,7 +591,7 @@ Decker et al. 2009's open article page:
 
 - **Recommended: 310 K, the temperature of all three sources** [full]. The engine's declared
   temperature enters the constant-field fluxes, the Nernst potentials and the pumps, and the
-  gates carry none (`core/surface_pump_v3_spec.py`'s docstring), so 310 K reproduces the source.
+  gates carry none (`definitions/surface_pump_v3_spec.py`'s docstring), so 310 K reproduces the source.
 - **Another temperature** (room-temperature clamp data, say) needs a Q10 law on the gates' rates,
   a general feature of its own. Not proposed now.
 

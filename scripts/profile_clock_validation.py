@@ -56,13 +56,13 @@ import numpy as np  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core import grid as grid_module  # noqa: E402
-from cells.core.grid import EventGrid, checked_grid  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution import grid as grid_module  # noqa: E402
+from cells.execution.grid import EventGrid, checked_grid  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
 from cells.models import surface_tissue  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
 from cells.numerics import surface_field  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 
 
 def provenance():
@@ -257,9 +257,9 @@ def profile(raw, args):
 
 def profile_cohort(paths):
     """plan_vector_windows of one world per definition (200-step checkpoint windows)."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import plan_vector_windows
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import plan_vector_windows
+    from cells.execution.windows import WindowPolicy
 
     start = perf_counter()
     worlds = tuple(

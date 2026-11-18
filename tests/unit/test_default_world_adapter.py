@@ -487,11 +487,11 @@ def calcium_case(tmp_path_factory):
 
 
 def test_calcium_profile_maps_the_ca_atpase_to_the_second_identity(case, calcium_case):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.laws.electrochemistry import R
+    from cells.laws.pumps import calcium_atpase
     from cells.models import surface_pump_v2
-    from cells.models.registry import get_model
-    from cells.processes import calcium_atpase
-    from cells.processes.electrochemistry import R
+    from cells.registry.models import get_model
 
     assert adapter.betse_world(case)["calcium_pump"] is None
     world = adapter.betse_world(calcium_case)

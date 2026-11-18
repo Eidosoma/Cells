@@ -271,8 +271,8 @@ def test_refinement_cannot_be_replaced_by_fine_pair_agreement(protocol, case):
 @pytest.fixture(scope="module")
 def synthetic_cells_case(protocol):
     """Same padded interface, different declared -35 mV test state and 100 us horizon."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     r = {
         "protocol": copy.deepcopy(protocol),
@@ -322,8 +322,8 @@ def test_actual_production_short_trajectory_records_and_full_state(synthetic_cel
 
 
 def test_actual_complete_checkpoint_resume(synthetic_cells_case, tmp_path):
-    from cells.core.runner import run
-    from cells.io import load_snapshot, write_snapshot
+    from cells.execution.runner import run
+    from cells.records.io import load_snapshot, write_snapshot
 
     _r, key, definition, result = synthetic_cells_case
     checkpoint = result.checkpoint_at(0.00005)
@@ -385,8 +385,8 @@ def test_sampled_constitutive_readout_must_match_own_state(synthetic_cells_case,
 
 
 def test_production_eager_and_jit_use_the_same_full_state(synthetic_cells_case, tmp_path):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     _r, key, definition, result = synthetic_cells_case
     eager_definition = copy.deepcopy(definition)
@@ -462,7 +462,7 @@ def test_native_fresh_constitutive_probe_only_mutates_copies():
 
 
 def test_missing_bath_countercharge_is_not_silently_repaired(synthetic_cells_case):
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions.specs import ConfigError, parse_spec
 
     _r, _key, definition, _result = synthetic_cells_case
     bad = copy.deepcopy(definition)

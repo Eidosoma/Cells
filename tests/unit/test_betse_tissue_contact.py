@@ -12,8 +12,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.coupling.selective import selective_flux
-from cells.processes.electrochemistry import ghk_leak
+from cells.laws.electrochemistry import ghk_leak
+from cells.laws.junctions.selective import selective_flux
 from validation.betse.tissue_contact import reference
 
 ROOT = Path(__file__).resolve().parents[2]

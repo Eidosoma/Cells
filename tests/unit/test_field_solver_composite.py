@@ -19,9 +19,9 @@ events), without stepping (the runs are test_field_solver_composite_runs.py):
 import jax
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.state import initialise
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from tests.field_solver_fixtures import (
     minimal,

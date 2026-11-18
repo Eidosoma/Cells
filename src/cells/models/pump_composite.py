@@ -1,9 +1,9 @@
 """resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.
 
 Design: docs/CELL_DIVISION_DESIGN.md §3 (D142, D143). Definition:
-core/pump_composite_spec.py. The inner model's names live only in the entity
+definitions/pump_composite_spec.py. The inner model's names live only in the entity
 adapter (models/pump_composite_adapter.py); operators implement the contract of
-models/operators/contract.py. implementation(inner, laws) builds one object per
+operators/contract.py. implementation(inner, laws) builds one object per
 inner identity and ordered operator list (cached, so its state, layout and
 control types and its step functions are stable jit inputs); registry.get_model
 returns it for a composite definition. Object structure lives in that object and
@@ -52,16 +52,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import kind_registry, species_registry
-from cells.core import pump_composite_spec as composite_spec
-from cells.core.errors import NumericalError
-from cells.core.pump_composite_spec import MODEL_ID, entries, identity, projection
-from cells.core.specs import ChannelChange, ConfigError
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions.pump_composite_spec import MODEL_ID, entries, identity, projection
+from cells.definitions.specs import ChannelChange, ConfigError
+from cells.execution.errors import NumericalError
 from cells.models import pump_composite_adapter as pump3
-from cells.models.operators.contract import COMMUTING
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.operators.contract import COMMUTING
+from cells.registry import kind_registry, species_registry
 
 OBSERVER_ID = "resolved_pump_composite_accepted_grid_readouts@1"
 STAGE_DOMAIN_ID = "positive_resolved_inventory_gates_atp_operator_domains@1"
@@ -106,7 +106,7 @@ def implementation(inner_model, laws, structure=None):
 
 @cache
 def _implementation(inner_model, laws, structure, registry):
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     if inner_model not in INNERS:
         raise ConfigError("Composite inner model must be one of " + ", ".join(INNERS))
@@ -839,7 +839,7 @@ class Composition:
     def batch_signature(self, model):
         """The run identity and array axes of `model` (any composition: batches compare
         every world's signature with the first world's)."""
-        from cells.models.operators import OPERATORS
+        from cells.operators import OPERATORS
 
         laws = composite_spec.operator_laws(model)
         parts = tuple(part for d in model.operators for part in OPERATORS[d.law].batch_signature(d))
@@ -1137,7 +1137,7 @@ class Composition:
 
         The species registry's checks run next, ahead of every other check of the definition: the
         inner parser's hook sees the inner definition only, so an operator's in-step mover of a
-        two-form row, or an operator that names one, is refused here (core/species_registry.py;
+        two-form row, or an operator that names one, is refused here (registry/species_registry.py;
         D176).
 
         Beside declared kinds, an operator's in-step process (moves_in_step) that writes a row a

@@ -6,12 +6,12 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import R
-from cells.processes.mass_action import reversible_flux
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import R
+from cells.laws.reactions.mass_action import reversible_flux
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 OBSERVER_ID = "closed_compartment_chemistry@1"
 OBSERVATION_SAMPLING = "read_only_control_local_cubic_hermite_chemical_enclosed@1"

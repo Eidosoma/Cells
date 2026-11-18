@@ -2,7 +2,7 @@
 
 The ionic model is resolved_pump_tissue@3 (models/surface_pump_v3.py),
 unchanged and called, never copied. Water is the law
-numerics/osmotic_water.LAW_ID on the membranes (core/surface_pump_water_spec.py):
+numerics/osmotic_water.LAW_ID on the membranes (definitions/surface_pump_water_spec.py):
 the flow across a patch is Q = 1e15 A Lp a (psi_cell - psi_outside) pL/s with
 psi = P - Pi, Pi = R T (sum of declared amounts + neutral impermeants) / V and
 P = K (V / Vref - 1) + P0. Finite nodes change volume; a held bath keeps its
@@ -41,7 +41,7 @@ by about 1 ulp (bitwise again with XLA's algsimp and fusion passes disabled).
 
 Implementation (D143, docs/PUMP_COMPOSITE.md). This identity is a thin
 composition: resolved_pump_composite@1 with the single operator
-ideal_osmosis_linear_compliance_water@1 (models/operators/osmotic_water.py, which
+ideal_osmosis_linear_compliance_water@1 (operators/osmotic_water.py, which
 holds the water law, its Heun half-steps and its ledgers, moved there unchanged).
 The composite's step is the splitting above, with @3's step behind the same
 barrier. Before this module became thin, the composition was bitwise equal to
@@ -55,15 +55,16 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-from cells.core import pump_composite_spec as composite_spec
-from cells.core import surface_pump_v3_spec as ionic_spec
-from cells.core.surface_pump_v2_spec import Control as IonicControl
-from cells.core.surface_pump_water_spec import MODEL_ID, projection
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import surface_pump_v3_spec as ionic_spec
+from cells.definitions.surface_pump_v2_spec import Control as IonicControl
+from cells.definitions.surface_pump_water_spec import MODEL_ID, projection
 from cells.models import pump_composite
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
-from cells.models.operators import osmotic_water as operator
-from cells.models.operators.osmotic_water import (  # noqa: F401  (the water law, re-exported)
+from cells.numerics import osmotic_water as water
+from cells.operators import osmotic_water as operator
+from cells.operators.osmotic_water import (  # noqa: F401  (the water law, re-exported)
     MAX_WATER_RELAXATION_PER_STEP,
     VOLUME_ATOL_PL,
     WATER_DIAGNOSTICS,
@@ -90,7 +91,6 @@ from cells.models.operators.osmotic_water import (  # noqa: F401  (the water law
     water_rates,
     water_step,
 )
-from cells.numerics import osmotic_water as water
 
 OBSERVER_ID = "resolved_pump_water_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = ionic.OBSERVATION_SAMPLING

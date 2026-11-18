@@ -16,11 +16,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint, initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint, initialise
 from cells.legacy.core import calcium_energy_regulated_v2_tissue_excision as cut
 from cells.legacy.core import surface_calcium_energy_regulated_v2_excision_spec as schema
 from cells.legacy.core import surface_calcium_energy_regulated_v2_spec as parent_schema
@@ -28,8 +28,8 @@ from cells.legacy.core.excision import excise
 from cells.legacy.excision_io import CALCIUM_ENERGY_REGULATED_V2_KIND, load_excision, write_excision
 from cells.legacy.models import surface_calcium_energy_regulated_v2 as parent
 from cells.legacy.models import surface_calcium_energy_regulated_v2_excision as model
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.registry.models import get_model
 from validation.regulation import integrated_network_regulation_v2_fixtures as floating_fixture
 from validation.tissue import calcium_energy_excision_fixtures as inherited_fixtures
 

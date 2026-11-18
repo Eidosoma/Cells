@@ -15,12 +15,12 @@ deliberately tier 3 (the lead's ruling, 14 November 2026), beside _guards:
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy, run_windowed
 from validation.tissue import regulated_availability_fixtures as rf
 
 # ------------------------------------------------------------------ the moving world
@@ -33,8 +33,8 @@ import json, sys
 import jax
 jax.config.update("jax_enable_x64", True)
 import numpy as np
-from cells.core.runner import run
-from cells.io import load_snapshot
+from cells.execution.runner import run
+from cells.records.io import load_snapshot
 loaded = load_snapshot(sys.argv[1])
 result = run(loaded.spec, loaded.checkpoint)
 np.savez(sys.argv[2], **{k: np.asarray(v) for k, v in result.history._asdict().items()})
@@ -99,7 +99,7 @@ def test_a_vector_batch_reproduces_each_worlds_own_run():
 
 def test_windowed_and_unwindowed_runs_agree_bit_for_bit():
     """The moving world run in one scan and in 4-step windows (which do not divide 30)."""
-    from cells.core.windows import iter_windows
+    from cells.execution.windows import iter_windows
 
     spec = parse_spec(rf.dynamic_world(end=DYNAMIC_END))
     whole = run(spec)
@@ -122,7 +122,7 @@ def test_a_snapshot_resumed_in_a_fresh_process_is_bitwise(tmp_path):
     import sys
     from pathlib import Path
 
-    from cells.io import write_snapshot
+    from cells.records.io import write_snapshot
 
     root = Path(__file__).resolve().parents[2]
     spec = parse_spec(rf.dynamic_world(end=DYNAMIC_END))

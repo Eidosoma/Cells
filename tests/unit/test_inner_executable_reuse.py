@@ -11,12 +11,12 @@ import copy
 
 import numpy as np
 
-from cells.core import vector_windows
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.windows import WindowPolicy
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution import vector_windows
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.state import initialise
+from cells.execution.windows import WindowPolicy
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 STEPS = 8

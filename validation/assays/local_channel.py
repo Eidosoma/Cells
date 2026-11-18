@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import channel_compensation as previous
 from validation.assays import local_channel_design as design
 from validation.assays import two_task

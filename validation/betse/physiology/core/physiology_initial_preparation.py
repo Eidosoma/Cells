@@ -10,10 +10,10 @@ from dataclasses import dataclass, fields
 
 import numpy as np
 
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy import tissue_profiles as static
 from cells.legacy.processes import tissue_target_selectors as selectors
 from validation.betse.physiology import native_noise as perturb

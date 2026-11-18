@@ -15,11 +15,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import phases
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import WorldCheckError, run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import parse_spec
+from cells.execution import phases
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.vector_windows import WorldCheckError, run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.models import surface_pump
 from cells.numerics import surface_imex as imex
 from validation.tissue import surface_pump_fixtures

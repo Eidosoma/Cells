@@ -130,7 +130,7 @@ declare"):
 ### Reads and their modes
 
 A read says which value of a field the piece takes, in the words of the operator contract's door
-S (`src/cells/models/operators/contract.py`).
+S (`src/cells/operators/contract.py`).
 - **`current`:** the value as the step has made it so far.
 - **`fixed`:** the declared value, taken as the physical one; no operator may provide it.
 - **`reference`:** the bound value as data, an anchor.

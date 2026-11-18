@@ -61,7 +61,7 @@ masks, sentinel IDs, and safe endpoint indices. Inactive edges and edges inciden
 to inactive cells contribute nothing. Cell and edge dimensions are checked
 separately in checkpoints and estimated trace-storage budgets.
 
-The [coupling module](../src/cells/coupling/passive.py) calculates each flux once
+The [coupling module](../src/cells/laws/junctions/passive.py) calculates each flux once
 and scatters equal-and-opposite amount changes into the cell vector. Repeated
 endpoints accumulate all their contributions. JAX documents this accumulation
 behaviour, but not a universal order for conflicting updates; cross-device

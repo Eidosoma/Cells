@@ -45,9 +45,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.models.operators import species_regulated_availability as sra
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.operators import species_regulated_availability as sra
 from validation.coupling import cells_reference as rc
 from validation.coupling import factor_reference as fr
 from validation.tissue import regulated_availability_controls as controls

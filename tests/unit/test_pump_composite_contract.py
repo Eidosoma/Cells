@@ -17,10 +17,10 @@ import copy
 import jax
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.schedule import control_values as scheduled_controls
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.schedule import control_values as scheduled_controls
 from cells.models import (
     cell_replacement,
     pump_composite,
@@ -29,9 +29,9 @@ from cells.models import (
     surface_pump_water_v2,
 )
 from cells.models import pump_composite_adapter as pump3
-from cells.models.operators import OPERATORS
-from cells.models.operators.contract import Operator, check_declarations
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators.contract import Operator, check_declarations
+from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
 

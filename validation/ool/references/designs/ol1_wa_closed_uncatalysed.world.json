@@ -1,0 +1,343 @@
+{
+ "format": "ool_references.world@1",
+ "id": "ol1_wa_closed_uncatalysed",
+ "registered": "2026-11-17",
+ "description": "ol1_wa_closed with every catalyst removed (row OL1-3a).",
+ "units": {
+  "time": "s",
+  "energy": "k_BT",
+  "concentration": "mM",
+  "volume": "L"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_mM": {
+  "exact": "1",
+  "float": 1.0
+ },
+ "avogadro_per_mol": {
+  "exact": "602214076000000000000000",
+  "float": 6.02214076e+23
+ },
+ "phases": {
+  "membrane": {
+   "kind": "condensed"
+  },
+  "pool": {
+   "kind": "dilute",
+   "volume_L": {
+    "exact": "1/75276759500000000000",
+    "float": 1.3284312537390773e-20
+   },
+   "X": "8"
+  }
+ },
+ "species": [
+  {
+   "id": "A",
+   "moieties": {
+    "a": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "1",
+     "float": -0.0
+    },
+    "solution": {
+     "exp_minus": "1/8",
+     "float": 2.0794415416798357
+    }
+   }
+  },
+  {
+   "id": "B",
+   "moieties": {
+    "b": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "1",
+     "float": -0.0
+    }
+   }
+  },
+  {
+   "id": "C",
+   "moieties": {
+    "a": 1,
+    "b": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "2",
+     "float": -0.6931471805599453
+    }
+   }
+  },
+  {
+   "id": "D",
+   "moieties": {
+    "a": 2
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "1/2",
+     "float": 0.6931471805599453
+    }
+   }
+  },
+  {
+   "id": "E",
+   "moieties": {
+    "a": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "3/2",
+     "float": -0.4054651081081645
+    }
+   }
+  },
+  {
+   "id": "S",
+   "moieties": {
+    "s": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "4",
+     "float": -1.3862943611198906
+    },
+    "solution": {
+     "exp_minus": "1/2",
+     "float": 0.6931471805599453
+    }
+   }
+  },
+  {
+   "id": "T",
+   "moieties": {
+    "s": 2
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1/2",
+     "float": 0.6931471805599453
+    }
+   }
+  }
+ ],
+ "places": [
+  {
+   "species": "A",
+   "phase": "membrane"
+  },
+  {
+   "species": "B",
+   "phase": "membrane"
+  },
+  {
+   "species": "C",
+   "phase": "membrane"
+  },
+  {
+   "species": "D",
+   "phase": "membrane"
+  },
+  {
+   "species": "E",
+   "phase": "membrane"
+  },
+  {
+   "species": "S",
+   "phase": "membrane"
+  },
+  {
+   "species": "S",
+   "phase": "pool"
+  },
+  {
+   "species": "T",
+   "phase": "pool"
+  }
+ ],
+ "regular_mixing_chi": [
+  {
+   "pair": [
+    "A",
+    "B"
+   ],
+   "chi": "1"
+  },
+  {
+   "pair": [
+    "A",
+    "C"
+   ],
+   "chi": "1/2"
+  },
+  {
+   "pair": [
+    "B",
+    "D"
+   ],
+   "chi": "-1"
+  },
+  {
+   "pair": [
+    "C",
+    "E"
+   ],
+   "chi": "2"
+  },
+  {
+   "pair": [
+    "D",
+    "E"
+   ],
+   "chi": "-1/2"
+  },
+  {
+   "pair": [
+    "S",
+    "A"
+   ],
+   "chi": "-1"
+  },
+  {
+   "pair": [
+    "S",
+    "E"
+   ],
+   "chi": "1/2"
+  }
+ ],
+ "steps": [
+  {
+   "id": "x2",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "S@pool": 1
+   },
+   "products": {
+    "S@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/2",
+    "float": 0.5
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "p1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "pool",
+   "reactants": {
+    "S@pool": 2
+   },
+   "products": {
+    "T@pool": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1",
+    "float": 1.0
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "r1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 1,
+    "B@membrane": 1
+   },
+   "products": {
+    "C@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1",
+    "float": 1.0
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "r2",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 2
+   },
+   "products": {
+    "D@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/2",
+    "float": 0.5
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "r3",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 1
+   },
+   "products": {
+    "E@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1",
+    "float": 1.0
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "r4",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "A@membrane": 1,
+    "B@membrane": 1,
+    "E@membrane": 1
+   },
+   "products": {
+    "C@membrane": 1,
+    "E@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "2",
+    "float": 2.0
+   },
+   "transition_state_factor": []
+  }
+ ],
+ "initial_state": {
+  "A@membrane": 6,
+  "B@membrane": 3,
+  "C@membrane": 0,
+  "D@membrane": 0,
+  "E@membrane": 0,
+  "S@membrane": 0,
+  "S@pool": 4,
+  "T@pool": 0
+ },
+ "conventions_required": [
+  "free_energy_form",
+  "condensed_measure",
+  "membrane_kinetics",
+  "lumen_volume",
+  "empty_catalyst_phase",
+  "last_molecule"
+ ],
+ "world_role": "probe",
+ "world_role_reason": "As ol1_wa_closed: r4 keeps E@membrane on both sides; N >= 5 > r = 3 throughout."
+}

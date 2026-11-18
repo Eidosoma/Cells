@@ -8,8 +8,8 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _number
-from cells.processes import junction_gate
+from cells.definitions.specs import ConfigError, _fields, _number
+from cells.laws.junctions import junction_gate
 from validation.betse.emulator import junction as kernel
 from validation.betse.emulator import spatial_spec as base
 

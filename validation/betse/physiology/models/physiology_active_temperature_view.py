@@ -10,7 +10,7 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
 from validation.betse.physiology.core import physiology_active_temperature as contract
 from validation.betse.physiology.models import physiology_permeability_view as ordinary
 from validation.betse.physiology.models import physiology_temperature_view as original

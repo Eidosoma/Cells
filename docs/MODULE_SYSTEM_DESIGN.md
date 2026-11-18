@@ -30,8 +30,8 @@ column cites `integration-d172`); **planned** (staged here); **not designed**.
 
 | Level | Contract on main | Round | External | Closed point; v1 limit |
 | --- | --- | --- | --- | --- |
-| Registration | The `get_model` isinstance chain (`models/registry.py`:139–779; "no dynamic plugins", :1); the `parse_spec` chain on ID strings (`core/specs.py`:1469); the import-time `OPERATORS` dict (`models/operators/__init__.py`:29); `INNER_MODEL_IDS`, `INNERS` (`pump_composite_spec.py`:41; `pump_composite.py`:67) | A build-scoped kind registry (seams 1–4 below) | Kinds: holds, since the round. Laws, operators: planned | Module-level tables and chains |
-| Definitions, parameters | JSON with exact key sets (`specs.py`:74, :1470); values are data; no organism definition (ARCHITECTURE.md:52) | The species registry (`core/species_registry.py`) | **Holds** for definitions and builders on built-in IDs | — |
+| Registration | The `get_model` isinstance chain (`registry/models.py`:139–779; "no dynamic plugins", :1); the `parse_spec` chain on ID strings (`definitions/specs.py`:1469); the import-time `OPERATORS` dict (`operators/__init__.py`:29); `INNER_MODEL_IDS`, `INNERS` (`pump_composite_spec.py`:41; `pump_composite.py`:67) | A build-scoped kind registry (seams 1–4 below) | Kinds: holds, since the round. Laws, operators: planned | Module-level tables and chains |
+| Definitions, parameters | JSON with exact key sets (`specs.py`:74, :1470); values are data; no organism definition (ARCHITECTURE.md:52) | The species registry (`registry/species_registry.py`) | **Holds** for definitions and builders on built-in IDs | — |
 | Laws | Five channel laws in literal tables, all others refused (`surface_pump_v3_spec.py`:53, :113) | Declarations (`inner_laws.py`:132, :171, :183); per-law dispatch; the structure in the compile key | Planned: stage 1 | Module-level tables; codes "next free, never reused" (integration-d172 `inner_laws.py`:6–7); the RK4 bound by law-ID literal (core-d172 `surface_pump_v3.py`:1042); two gates only (:233) |
 | Stateful mechanisms | The operator contract (`contract.py`:103–335), checked at registration (:379) | Kinds: fields and optional hooks (§7.4 (k); 20 in the landed `Kind`); door S; `USES_INNER` | Planned: stage 2 | The composite is cached by law-ID strings (`pump_composite.py`:92–102), with one instance per law (:150). Kinds: rules (a)–(c) |
 | Composite models | One inner model plus ordered operators (`pump_composite_spec.py`:1–27); FR-1's compartments | The compartment identity map (B2) | Not designed; §3 | Nested compartments "not now" (ARCHITECTURE.md:152) |
@@ -40,12 +40,12 @@ column cites `integration-d172`); **planned** (staged here); **not designed**.
 | Observations, analysis | `observe`, `READOUT_COLUMNS`, `REPLACES` (`contract.py`:51–58) | `VIEW_LAYERS`, `view_events` (integration-d172 `contract.py`:210–220) | Planned: stage 2. **Holds** on saved outputs | Kinds: rule (b) |
 | Resolution, LOD | — | B8's four fields, reserved (`inner_laws.py`:95–99) | Planned: stage 3 | No "represents" key (ARCHITECTURE.md:244–246) |
 | Numerics, coupling | A closed integrator tuple (`surface_pump_spec.py`:32); the field solver by layout type; `STEP_ID`, `RK4` (`contract.py`:107, :112); the splitting ID (`pump_composite.py`:66) | Reserved: the implicit slot (§7.4 (g) 4) and the step context (B1) | Not designed; §5 | `get_model` never sees the execution block (§7.4 (a)) |
-| Backends | JAX on CPU or GPU, float64 (`core/devices.py`:22–35) | — | Not designed; §5 | — |
+| Backends | JAX on CPU or GPU, float64 (`execution/devices.py`:22–35) | — | Not designed; §5 | — |
 
 **What the round commits to for modules.** These are the core owner's answers and the lead's
 rulings, relayed on 15 November and now in §7.4 (j)–(k). They were ruled before any kind module or
 kind registry existed, and they landed with the round on 16 November: the kind registry
-(`core/kind_registry.py`) and three built-in kinds (`models/inner_kinds/`) are on main.
+(`registry/kind_registry.py`) and three built-in kinds (`models/inner_kinds/`) are on main.
 
 **Seams:**
 1. Core imports no kind module. Every kind, built-in or not, registers through one call into a
@@ -66,9 +66,9 @@ kind registry existed, and they landed with the round on 16 November: the kind r
 
 | Point | Where | Blocks | Opened by |
 | --- | --- | --- | --- |
-| Compile key | `compile_window` keys on functions, rows, tree and shapes (`core/vector_windows.py`:343–352); core-d172 adds `structure_key` (:354) | No external identity | §2.5 |
+| Compile key | `compile_window` keys on functions, rows, tree and shapes (`execution/vector_windows.py`:343–352); core-d172 adds `structure_key` (:354) | No external identity | §2.5 |
 | Composition matrix | Pairwise over `OPERATORS` (`composition_matrix.py`:36, :45); untagged refusals fail its test (`test_composition_matrix.py`:27) | Cannot list unseen modules | Admission per composition; a per-registry report (§6) |
-| Snapshot and checkpoint identity | `source_hashes()` covers only Cells' `.py` files (`io.py`:30–35), refused on change (:159); exact manifest keys (:135–146); `type(state) is STATE_TYPE` (`core/runner.py`:80); random state refused (`io.py`:156) | A changed module restores silently; nowhere to record it | §2.5; RNG §5 |
+| Snapshot and checkpoint identity | `source_hashes()` covers only Cells' `.py` files (`io.py`:30–35), refused on change (:159); exact manifest keys (:135–146); `type(state) is STATE_TYPE` (`execution/runner.py`:80); random state refused (`io.py`:156) | A changed module restores silently; nowhere to record it | §2.5; RNG §5 |
 | Freeze tool | Git-listed checkout paths only (`source_snapshot.py`:26, :93, :229); the base snapshot holds `src`, `tests`, `validation`, `pyproject.toml` | Cannot hold an installed module | §6 |
 | Tree guards | Scan `src/` or the checkout (`test_engine_betse_boundary.py`:13–21; `test_continuity_bypass.py`:251) | Blind to outside packages | §6 |
 | Packaging | `plastic-heredity-cells` builds from `src` (`pyproject.toml`:6–22), but runs use `PYTHONPATH=src` (`scripts/test_tiers.py`:79) | An installed Cells is untested | S9. Debt: `processes/stable_seed_partition_*` import `validation` (`…_trajectory.py`:15–17) |
@@ -190,7 +190,7 @@ resolution, the structure and the record hold only what the definition uses.
 **The guarantee's scope.** I1–I4 show invariance for the example module, not for every module.
 - **Why Cells can't guarantee it:** explicit registration still imports the package, and an
   import can change process-wide JAX settings.
-- **What Cells re-asserts:** x64, at every run (`execution_device`, `core/devices.py`:25). It does
+- **What Cells re-asserts:** x64, at every run (`execution_device`, `execution/devices.py`:25). It does
   not re-assert settings such as the default matmul precision or the PRNG implementation.
 - **So two things hold:**
   - the build checks a declared set of process-wide settings against Cells' required values, and

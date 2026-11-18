@@ -10,8 +10,8 @@ def side_probes(view, definition, record):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.core.schedule import PhysicalIonicGraphControl, control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import PhysicalIonicGraphControl, control_values
     from cells.legacy.models import finite_extracellular as model
 
     spec = parse_spec(definition)

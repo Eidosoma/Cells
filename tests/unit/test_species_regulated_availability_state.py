@@ -22,8 +22,8 @@ import numpy as np
 import pytest
 from scipy.integrate import quad, solve_ivp
 
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy, iter_windows
 from validation.tissue import regulated_availability_fixtures as rf
 from validation.tissue import secreted_species_fixtures as sfx
 

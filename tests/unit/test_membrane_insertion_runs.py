@@ -24,14 +24,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
-from cells.io import load_snapshot, write_run, write_snapshot
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as fx
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import composite_guard as guard
@@ -139,7 +139,7 @@ def test_a_resolved_access_books_the_onsets_charging_heat():
       cover it, so a 1 ms run is refused.
     * 0.1 us steps resolve the charging: the access books the heat, and the host energy
       check holds far below it."""
-    from cells.core.errors import NumericalError
+    from cells.execution.errors import NumericalError
 
     def onset_world(dt, onset_steps, end_steps):
         onset, end = onset_steps * dt, end_steps * dt  # Exact multiples of dt.

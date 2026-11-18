@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.environment_barrier_interventions_spec import MODEL_ID, base_spec, bindings
 from cells.legacy.processes import tissue_target_selectors as native
 from cells.models import surface_tissue as base
@@ -246,7 +246,7 @@ def check_definition(spec):
     state, p = initial_values(compact)
     if not np.isfinite(p.barrier_union_factor).all():
         raise ConfigError("ECM accounting support exceeds finite float64")
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     clocks = {0.0, spec.experiment.end_time, *(c.time for c in spec.experiment.changes)}
     if event is not None:
@@ -363,7 +363,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(base_spec(spec), [time])
     u = type(table)(*(v[0] for v in table))

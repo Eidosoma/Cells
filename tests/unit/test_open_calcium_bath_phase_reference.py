@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.schedule import control_values
 from cells.numerics.fixed_step import rk4_step
 from tests.unit.test_open_calcium_bath_phase_handoff import setup
 from validation.topology import open_calcium_bath_phase_fixtures as fixtures

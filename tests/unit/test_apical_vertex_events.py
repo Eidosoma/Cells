@@ -9,10 +9,10 @@ dt * rho exceeds the solver bound is refused without changing the state.
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.io import load_snapshot, write_run
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import apical_vertex as av
+from cells.records.io import load_snapshot, write_run
 from tests.apical_vertex_fixtures import (
     GAMMA,
     LAMBDA,
@@ -78,7 +78,7 @@ def test_restart_from_a_written_snapshot_is_bitwise(tmp_path):
 
 
 def test_windowed_run_equals_the_whole_run():
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     definition = honeycomb(
         displacement=0.05, seed=9, end_time=4.0, observation_times=[0.0, 1.0, 2.5, 4.0], dt=0.125

@@ -6,16 +6,16 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
-from cells.io import load_snapshot, write_run
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.laws.channels import morris_lecar_catalog as catalog
 from cells.legacy.assembly_cell.io import load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine as assembly
 from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.legacy.ensemble.cluster import aggregate
 from cells.legacy.models import surface_calcium_energy_water as model
-from cells.processes import morris_lecar_catalog as catalog
+from cells.records.io import load_snapshot, write_run
 from tests.unit.test_surface_calcium_energy_water import changed
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact

@@ -1,8 +1,8 @@
 """The operator section of the build's registry (docs/CORE_SEAMS_DESIGN.md §8.4).
 
-Operators register the way kinds do (core/kind_registry.py):
+Operators register the way kinds do (registry/kind_registry.py):
 - one registration call, `registry.register(operator)`, with an operator class or its one
-  instance. It runs the operator contract's check_declarations (models/operators/contract.py) at
+  instance. It runs the operator contract's check_declarations (operators/contract.py) at
   registration, and refuses a second operator under one namespaced ID, whatever the spelling;
 - namespaced IDs: an operator's LAW_ID, a bare ID being in `cells`;
 - the built-in operators register on BUILTIN from their own homes, the static model table's
@@ -40,8 +40,8 @@ from dataclasses import KW_ONLY, dataclass
 from types import MappingProxyType
 from typing import ClassVar
 
-from cells.core.kind_registry import NAMESPACE, qualified
 from cells.registry import laws as law_registry
+from cells.registry.kind_registry import NAMESPACE, qualified
 from cells.registry.model_table import MODELS
 
 __all__ = (
@@ -119,7 +119,7 @@ class OperatorRegistry:
         if isinstance(operator, FamilyOperator):
             return self._register_family(operator, sys._getframe(1).f_globals.get("__name__"))
         # Imported here: the built-in package's __init__ registers its operators on this module.
-        from cells.models.operators.contract import check_declarations
+        from cells.operators.contract import check_declarations
 
         cls = operator if isinstance(operator, type) else type(operator)
         check_declarations(cls)
@@ -258,7 +258,7 @@ class _ActiveOperators(MutableMapping):
 
 BUILTIN = OperatorRegistry()
 _ACTIVE = ContextVar("cells_operator_registry", default=None)
-BUILTIN_PACKAGE = "cells.models.operators"  # The composite's operators: registered first.
+BUILTIN_PACKAGE = "cells.operators"  # The composite's operators: registered first.
 # Every model's `operator_homes` in the static model table (registry/model_table.py), in its order,
 # after the composite's package.
 BUILTIN_HOMES = tuple(

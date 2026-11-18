@@ -240,7 +240,7 @@ def test_emulator_shares_init_and_runs_sim_per_case(cases, tmp_path):
 
 
 def test_resolved_definition_maps_events_to_controls_and_leaks(cases):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     world = ewa.event_world(cases["both"], blind=True)
     sim = ewa.resolved_event_definition(
@@ -296,8 +296,8 @@ def test_resolved_definition_refuses_what_cells_cannot_express(tmp_path):
 
 def test_leak_population_equals_the_added_passive_permeability(cases):
     """The Na/K mem mapping: passive P plus an always-open leak m P is passive (1 + m) P."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     world = ewa.event_world(cases["na"], blind=True)
     start = adapter.phase_start(world, "init")

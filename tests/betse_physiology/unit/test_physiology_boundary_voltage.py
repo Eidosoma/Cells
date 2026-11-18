@@ -9,11 +9,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
 from tests.betse_physiology.unit.test_physiology_permeability_view import (
     KINDS,

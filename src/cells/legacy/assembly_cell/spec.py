@@ -8,8 +8,8 @@ from pathlib import Path
 
 from cells.assembly.spec import AssemblyError
 from cells.assembly_pool.spec import parse_spec as parse_pool
-from cells.core.specs import KineticFiniteExtracellularSpec
-from cells.core.specs import parse_spec as parse_ionic
+from cells.definitions.specs import KineticFiniteExtracellularSpec
+from cells.definitions.specs import parse_spec as parse_ionic
 from cells.legacy.assembly_cell import MODEL_ID
 
 
@@ -112,7 +112,7 @@ def parse_spec(data):
         or spec.working_bytes > 2 * 1024**3
     ):
         raise AssemblyError("Coupled tick/working-memory budget exceeded")
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
     from cells.legacy.models.kinetic_finite_extracellular import check_steps
 
     check_steps(ionic, [ionic.execution.dt], control_values(ionic, [0.0]))

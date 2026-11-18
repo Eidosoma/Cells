@@ -78,7 +78,7 @@ def valid(state, p, _active=None, *, xp):
 
 
 def rhs(state, control, p, _active=None, *, xp):
-    from cells.processes.electrochemistry import ghk_leak
+    from cells.laws.electrochemistry import ghk_leak
 
     ci, co, voltage = chemistry(state, p, xp)
     mu = R * p["temperature_K"] * (xp.log(ci) - xp.log(co)) + F * voltage[:, None] * p["valence"]

@@ -12,10 +12,10 @@ test_bath_schedule_idle.py).
 
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models.surface_pump import ENERGY_RTOL
+from cells.registry.models import get_model
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
 

@@ -4,7 +4,7 @@ All values are synthetic. The base world is the seven-cell heredity sheet
 (cell_replacement_fixtures.heredity_sheet, radius 1, its centre cell written D): pumps, Kir and
 NaV populations, gated junctions and a held bath per cell, so the ions move and junction and
 channel availabilities matter electrically. A neutral regulator R is declared by the engine's helper
-(cells.core.inventory_species) at a resolved level, far above its resolution floor: five species.
+(cells.registry.inventory_species) at a resolved level, far above its resolution floor: five species.
 
 * sheet: the composite definition with no operator;
 * with_coupling: the operator's block and its two schedules;
@@ -13,12 +13,12 @@ channel availabilities matter electrically. A neutral regulator R is declared by
 * schedule_junction, schedule_channel: one element's availability held at a value from time 0;
 * differing: the @3 state fields and observation columns in which two runs are not bitwise equal;
 * with_turnover: D150's turnover clearing R in one cell (a moving, impermeant source).
-"""
+"""  # noqa: E501
 
 import copy
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
+from cells.definitions import pump_composite_spec as cs
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import secreted_species_fixtures as sfx
 

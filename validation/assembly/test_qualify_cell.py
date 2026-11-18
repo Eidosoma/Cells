@@ -24,8 +24,8 @@ def gated_definition(tmp_path, *, trace_mib=1280, event_time=None):
 
 
 def test_refinement_preflight_rejects_original_finest_trace_limit(tmp_path):
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, load_spec
+    from cells.definitions.specs import ConfigError, load_spec
+    from cells.execution.runner import timeline
 
     path, protocol = gated_definition(tmp_path, trace_mib=1024)
     # The old default-only preflight passed; the registered finest grid must fail.
@@ -54,7 +54,7 @@ def test_refinement_preflight_covers_actual_grids_without_changing_inputs(tmp_pa
 
 
 def test_refinement_preflight_preserves_step_domain_rejection(tmp_path):
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
 
     path, protocol = gated_definition(tmp_path)
     protocol["steps_s"] = [0.001]

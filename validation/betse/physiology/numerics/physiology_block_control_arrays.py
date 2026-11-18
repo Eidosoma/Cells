@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.schedule import control_values
+from cells.execution.schedule import control_values
 from validation.betse import global_controls as source
 from validation.betse.physiology.models import physiology_block_control_view as host
 from validation.betse.physiology.models import physiology_permeability_view as view

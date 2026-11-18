@@ -23,11 +23,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
-from cells.models.inner_kinds import passive_routes as pr
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.kinds import passive_routes as pr
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests.unit.test_passive_routes_kind import P, closed_pair, host_step, route
 
 ONE = None  # closed_pair's default: one route, leak_S.

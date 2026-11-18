@@ -9,9 +9,9 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.numerics.fixed_step import rk4_step
 from tests.betse_physiology.unit.test_physiology_tissue_binding import (
     arguments,

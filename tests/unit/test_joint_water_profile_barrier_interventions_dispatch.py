@@ -12,16 +12,16 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.grid import EventGrid
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.io import load_snapshot, write_snapshot
-from cells.models.registry import get_model
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.grid import EventGrid
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.joint_water_profile_barrier_dispatch_fixtures import DT, OWNERS, definition
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import exact
@@ -91,8 +91,8 @@ def test_joint_water_combined_profile_barrier_snapshot_retains_every_physical_fi
     # provenance; a parent-only serializer would silently lose these fields.
     script = """
 import json,sys,numpy as np
-from cells.io import load_snapshot
-from cells.core.specs import digest
+from cells.records.io import load_snapshot
+from cells.definitions.specs import digest
 x=load_snapshot(sys.argv[1])
 arrays={k:np.asarray(v).tolist() for k,v in x.checkpoint.state._asdict().items()}
 print(json.dumps(dict(definition=x.spec.fingerprint, state=digest(arrays),

@@ -24,7 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
-| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed on branch `passive-share-band`: the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\| | Land `passive-share-band`, and renew crossrev's kinds record at its landing |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -805,7 +805,7 @@ explored.
 ## FR-19 — The passive routes' heat-share sign test at rounding level
 
 - **The finding.** `passive_neutral_permeation@1`'s exact heat booking
-  (`src/cells/models/inner_kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
+  (`src/cells/kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
   exact route's heat share is negative, with no tolerance. The raw-sum check beside it does allow
   `RAW_SUM_FACTOR` eps.
 - **Where it showed.** The gap-junction replication's 1D tissue line has healthy cells that start
@@ -828,7 +828,7 @@ explored.
     `@2` stays the user's alternative.
   - **The replays:** the replication's previously refused points now run the full 20,000 s
     (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/`).
-- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band`.**
+- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band` and landed by merge a7122a43 on 18 November.**
   - **Why.** Near 1 mM the first floor still closed, since its terms scaled with |μ̄| while the
     potential keeps the ulp of ln c + 1.
   - **The fix.** The floor's scale adds the potential's evaluation rounding, (|μ̄_in| + |μ̄_out| +

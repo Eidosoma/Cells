@@ -48,7 +48,7 @@ def freeze(out):
 
 def run(out, *, fissions, matrix_seed, founder_seed, seed):
     import cells
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import (
         GARD_PAIR_CONSISTENT,
         GARD_SINGLE_EVENT,

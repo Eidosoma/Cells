@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import asdict, dataclass, fields, replace
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import owned_calcium_profile_barrier_binding as binding
 from cells.legacy.core import surface_calcium_barrier_interventions_spec as barrier
 from cells.legacy.core import surface_calcium_spec as parent

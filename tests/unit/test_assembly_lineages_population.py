@@ -18,7 +18,7 @@ import copy
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages import keys, runner
 from tests.assembly_lineage_fixtures import definition, world
 

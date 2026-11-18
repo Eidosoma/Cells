@@ -158,7 +158,7 @@ def test_complete_production_initial_numpy_state_rhs_and_candidates(data, compar
 
 
 def test_eager_and_compiled_full_initial_rates_without_integration(data, plan, monkeypatch):
-    import cells.core.runner as runner
+    import cells.execution.runner as runner
 
     def forbidden(*args, **kwargs):
         raise AssertionError("Preparation must not integrate")

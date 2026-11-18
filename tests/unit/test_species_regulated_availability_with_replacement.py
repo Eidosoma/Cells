@@ -14,10 +14,10 @@ complement of a state of Na in cell_0 and cell_3 on both sides. One program; the
 
 import numpy as np
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as crfx
 from validation.tissue import regulated_availability_fixtures as rf
 from validation.tissue import secreted_species_fixtures as sfx

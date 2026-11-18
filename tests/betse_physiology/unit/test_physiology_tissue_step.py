@@ -10,11 +10,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree, fingerprints
 from tests.betse_physiology.unit.test_physiology_tissue_binding import (

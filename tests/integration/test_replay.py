@@ -5,9 +5,9 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.runner import branch_checkpoint, run, validate_checkpoint
-from cells.core.specs import ConfigError, InputChange, digest
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions.specs import ConfigError, InputChange, digest
+from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
+from cells.records.io import load_snapshot, write_run, write_snapshot
 
 
 @pytest.mark.parametrize("time", [0.0, 2.03, 5.07, 6.0, 12.0])

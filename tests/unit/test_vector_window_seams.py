@@ -15,18 +15,18 @@ from dataclasses import replace
 import jax
 import pytest
 
-from cells.core import vector_windows
-from cells.core.batch import (
+from cells.definitions.specs import ConfigError
+from cells.execution import vector_windows
+from cells.execution.batch import (
     BatchSpec,
     MemoryRefusal,
     WorldRefusal,
     checkpoint_batch_limits,
     plan_batch,
 )
-from cells.core.errors import NumericalError
-from cells.core.resources import trace_bytes
-from cells.core.specs import ConfigError
-from cells.core.vector_windows import (
+from cells.execution.errors import NumericalError
+from cells.execution.resources import trace_bytes
+from cells.execution.vector_windows import (
     compile_window,
     iter_vector_windows,
     plan_vector_windows,

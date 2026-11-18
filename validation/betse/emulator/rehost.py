@@ -2,7 +2,7 @@
 
 On 8 November 2026 (D131) the BETSE-order kernel family left the engine and became
 this emulator. The engine registry, spec parser and control schedule no longer
-dispatch to it, so tests and assays that executed it through cells.core.runner,
+dispatch to it, so tests and assays that executed it through cells.execution.runner,
 batch, windows or checkpoints cannot run until they are re-hosted on a Cells
 physical model. Each such test module sets
 

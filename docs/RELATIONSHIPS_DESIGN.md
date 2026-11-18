@@ -79,10 +79,10 @@ reads the tables back into a run.
 
 | Mechanism | What it writes | Where | Missing |
 | --- | --- | --- | --- |
-| The partition, `isopotential_partition@1` | One record per carrier: `carrier_id`, `slot`, `kind` (founder or daughter), `parent_carrier`, `sibling`, `birth_s`, `death_s`, a `successors` list, `route`, `division`, `volume_fraction` (`models/operators/partition.py`:1139–1175) | `summary.json` under `lineage`, rebuilt on the host from the declaration, the schedule and the final `division_applied` (:1004–1034) | An end reason; generation and root; numeric keys (S5 §6.1 left them to milestone 2); the run view's declarations |
-| Replacement, `scheduled_cell_replacement@1` and `@2` | One record per carrier: `carrier_id`, `slot`, a `founder` flag, `birth_s`, `death_s`, `newcomer`, `inheritance_route`, `template`, `donor`, `donor_carrier`, `predecessor`, a scalar `successor` (`core/cell_replacement_spec.py`:569–611) | `summary.json` under `lineage` (`models/operators/cell_replacement.py`:744–763), rebuilt from the schedule and the final `generation` | As above, and any view declaration |
-| The secreted-species operators | Each slot's occupants: the founder, then newcomers with their kind, template and donor (`models/operators/species_common.py`:351–367) | Host only, for building controls | It is a third derivation of the same lifecycle |
-| The run view | Per-slot lifetimes, and birth and retirement events, from `living_intervals` (`run_view.py`:664–669, :714, :1256–1284). An event may name `from` (:1286–1292) | `view.json` | Parents: the default events give no `from` (`models/operators/contract.py`:387–408). Carriers: the sets are slots |
+| The partition, `isopotential_partition@1` | One record per carrier: `carrier_id`, `slot`, `kind` (founder or daughter), `parent_carrier`, `sibling`, `birth_s`, `death_s`, a `successors` list, `route`, `division`, `volume_fraction` (`operators/partition.py`:1139–1175) | `summary.json` under `lineage`, rebuilt on the host from the declaration, the schedule and the final `division_applied` (:1004–1034) | An end reason; generation and root; numeric keys (S5 §6.1 left them to milestone 2); the run view's declarations |
+| Replacement, `scheduled_cell_replacement@1` and `@2` | One record per carrier: `carrier_id`, `slot`, a `founder` flag, `birth_s`, `death_s`, `newcomer`, `inheritance_route`, `template`, `donor`, `donor_carrier`, `predecessor`, a scalar `successor` (`definitions/cell_replacement_spec.py`:569–611) | `summary.json` under `lineage` (`operators/cell_replacement.py`:744–763), rebuilt from the schedule and the final `generation` | As above, and any view declaration |
+| The secreted-species operators | Each slot's occupants: the founder, then newcomers with their kind, template and donor (`operators/species_common.py`:351–367) | Host only, for building controls | It is a third derivation of the same lifecycle |
+| The run view | Per-slot lifetimes, and birth and retirement events, from `living_intervals` (`run_view.py`:664–669, :714, :1256–1284). An event may name `from` (:1286–1292) | `view.json` | Parents: the default events give no `from` (`operators/contract.py`:387–408). Carriers: the sets are slots |
 | GARD's G1 (`gard-g1`, fb652315) | The fission table: time, slot, parent, both daughters, the followed one, the split, H and the partition counter; the occupant and generation per row; the event trace; discarded totals (`models/assembly_lineages/records.py`:84–246) | Its own bundle (`run.json`, `records.npz`). The view's version 1 refuses the family | Population mode (refused, `spec.py`:301–302); keys unique across a world |
 
 **Findings:**
@@ -231,7 +231,7 @@ evidence of material replacement").
     `channel_transferred`: `models/surface_pump_v3.py`:97–100), and pump cycles with their
     stoichiometry.
   - @3 lists every mover with its entities (`surface_pump_v3.py`:2211). Kinds give their moved
-    rows (`core/kind_registry.py`:193–194). Each operator books its writes in accumulators
+    rows (`registry/kind_registry.py`:193–194). Each operator books its writes in accumulators
     (`ENTITY_WRITES`).
   - The material ledgers close on exactly these terms.
 - **What labels add is the ends.** Each booked term is resolved at build, through seam A's host
@@ -468,7 +468,7 @@ a sparse solve; that is decided on the probe's numbers.
   - a dose's `bath_dose_fmol` (`bath_schedule.py`:108–110);
   - turnover's production (`species_turnover.py`:79–82);
   - injection's supply (`current_injection.py`:56–58);
-  - replacement's supply (`models/operators/cell_replacement.py`:83–94);
+  - replacement's supply (`operators/cell_replacement.py`:83–94);
   - GARD's G1 `joined_total`.
 
   A reader must know each operator's field names to find them, and a template or a donor is named
@@ -508,9 +508,9 @@ a sparse solve; that is decided on the probe's numbers.
 **Today:**
 - `cells branch snapshot config` continues a saved world with changed future inputs
   (`__main__.py`:55–57).
-- The model, the execution and the past schedule must be unchanged (`core/runner.py`:111–135).
+- The model, the execution and the past schedule must be unchanged (`execution/runner.py`:111–135).
 - The run's provenance records the parent snapshot, the parent definition and the branch time
-  (`__main__.py`:236–251). Batches branch per world (`core/batch.py`:274–290).
+  (`__main__.py`:236–251). Batches branch per world (`execution/batch.py`:274–290).
 - Continuity records chain admissions across source changes (`continuity.py`), not branches.
 - GARD's G1 folds a branch word into every stream (`streams.py`:37–45).
 - There is no branch id, no table of branches, and no statement that entities continue.
@@ -534,7 +534,7 @@ a sparse solve; that is decided on the probe's numbers.
 - **What it gives:** pulse–chase on a prepared state, without re-preparing it (ARCHITECTURE.md, "no
   silent equilibration on resume or branch").
 - **Where the block lives:** a top-level `tracking` block, beside `model`, `experiment` and
-  `execution`. The parser's top-level fields (`core/specs.py`:967) gain it as optional. It is in
+  `execution`. The parser's top-level fields (`definitions/specs.py`:967) gain it as optional. It is in
   the fingerprint and changes no physics. **A definition without it is today's, byte for byte, and
   so is its fingerprint.**
 - **What must change for a branch to add it.** `branch_checkpoint`'s check of model and execution
@@ -548,7 +548,7 @@ a sparse solve; that is decided on the probe's numbers.
 **Is the donor copy general? No: it is a tissue-only, same-world copy** (findings).
 - **It is replacement's event map over @3's state.** The newcomer takes the donor's amounts and its
   channel gates by law. The donor keeps its contents, so material is created and booked as supply
-  (`models/operators/cell_replacement.py`:7–14; `core/cell_replacement_spec.py`:31–39).
+  (`operators/cell_replacement.py`:7–14; `definitions/cell_replacement_spec.py`:31–39).
 - **The donor must match the slot:** a shared junction, the same volume and fixed charge, and one
   population per gated law.
 - **It is refused where it would not be a copy:**

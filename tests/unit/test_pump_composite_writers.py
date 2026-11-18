@@ -23,15 +23,15 @@ from typing import NamedTuple
 import jax
 import pytest
 
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.kinds import passive_routes
 from cells.models import pump_composite
-from cells.models.inner_kinds import passive_routes
-from cells.models.operators import OPERATORS, contract
-from cells.models.registry import get_model
 from cells.models.surface_pump_v3 import MembraneProcess
+from cells.operators import OPERATORS, contract
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import secreted_species_fixtures as fx

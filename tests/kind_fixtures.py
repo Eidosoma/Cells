@@ -20,7 +20,9 @@ from dataclasses import replace
 
 import numpy as np
 
-from cells.core.kind_registry import (
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.numerics.species_sums import entity_sum, species_sum
+from cells.registry.kind_registry import (
     ConfigError,
     Kind,
     KindRegistry,
@@ -29,8 +31,6 @@ from cells.core.kind_registry import (
     parse_series,
     series_to_dict,
 )
-from cells.numerics.species_sums import entity_sum, species_sum
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 KIND_ID = "tests.exchange@1"
 MODEL_KEY = "test_exchange"
@@ -397,7 +397,7 @@ def declare_carrier(raw, *, species="K", rate=1e-3, membrane=None):
 
 # ------------------------------------------------------------------ the scheduled relaxation
 # docs/INNER_MODEL_V4_DESIGN.md §7.4 (l) 5: `tests.relaxation@1`, FR-5's damage law in miniature
-# (processes/patch_damage.py, the FR-4/FR-5 note §9): per cell, d relaxes as
+# (laws/transport/patch_damage.py, the FR-4/FR-5 note §9): per cell, d relaxes as
 #     dd/dt = k_inj u_inj(t) (1 - d) - k_res u_res(t) d,
 # with u_inj and u_res piecewise-constant schedules in [0, 1] under the experiment key
 # `test_relaxation_controls`, {"injury": [{time, value}], "resealing": [{time, value}]} (FR-5's
@@ -466,8 +466,8 @@ def _relaxation_controls(spec, declaration, times):
 
 
 def _relaxation_rates(state, potentials, control, p, *, xp):
+    from cells.laws.transport import patch_damage
     from cells.models.surface_pump_v3 import KindRates
-    from cells.processes import patch_damage
 
     rate, _, _ = patch_damage.rates(
         state.relaxation_damage,
@@ -487,7 +487,7 @@ def _relaxation_rates(state, potentials, control, p, *, xp):
 
 
 def _relaxation_book(applied, start, end, control, p, dt, *, xp):
-    from cells.processes import patch_damage
+    from cells.laws.transport import patch_damage
 
     exact = patch_damage.exact_step(
         start.relaxation_damage,

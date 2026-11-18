@@ -7,13 +7,13 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.specs import ChannelChange, ConfigError, _fields, _integer, _number
+from cells.definitions.specs import ChannelChange, ConfigError, _fields, _integer, _number
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core import surface_calcium_energy_spec as prior
 from cells.legacy.core.bioelectric_spec import signed_number
 from cells.legacy.core.surface_energy_spec import _project, identifier
 from cells.legacy.core.voltage_gated_spec import fraction
 from cells.legacy.processes import cell_zone_transport as process
-from cells.processes.electrochemistry import F, R
 
 MODEL_ID = "resolved_calcium_energy_transport@1"
 ACCOUNTING = "reversible_pure_transport_maintained_drive@1"

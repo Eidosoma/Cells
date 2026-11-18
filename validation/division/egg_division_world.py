@@ -38,7 +38,7 @@ Checks, written to OUTPUT_DIR/egg_division.json:
 * Q11: the recorded rows, written and replayed. check_values closes every ledger, the record is
   carried after each partition, and the negative control (the record zeroed) fails the local
   ledger.
-The run is windowed (cells.core.windows), because a whole trace would need about 4.2 GiB.
+The run is windowed (cells.execution.windows), because a whole trace would need about 4.2 GiB.
 
 Usage: python -m validation.division.egg_division_world OUTPUT_DIR [--scale X]. X < 1 compresses
 every time, for a trial of the mechanics; 1 is the world. Run it through scripts/run_detached.sh:
@@ -56,8 +56,8 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from cells.core import partition_spec as ps
-from cells.core import pump_composite_spec as cs
+from cells.definitions import partition_spec as ps
+from cells.definitions import pump_composite_spec as cs
 from validation.tissue import egg_scale_smoke as egg
 
 STATUS = "Development run of S5's egg-scale accounting world (Q1, Q11); not judged"
@@ -242,11 +242,11 @@ def verdict(report):
 
 
 def main(argv=None):
-    from cells.core.errors import NumericalError
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.models.operators import partition
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.operators import partition
+    from cells.registry.models import get_model
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output")

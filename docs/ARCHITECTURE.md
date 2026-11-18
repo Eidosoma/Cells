@@ -50,10 +50,10 @@ Where older sections of this document differ, this section applies.
 | Part | Responsibility | Where it lives today |
 | --- | --- | --- |
 | Physical state and entities | The authoritative amounts, volumes, membrane properties, populations, contacts and identities | @3's state, plus fields owned by operators (`ENTITY_WRITES`) and by declared kinds |
-| Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). Since the landing, @3's laws are frozen declarations (`models/inner_laws.py`), with one implementation built per declared structure, and kinds register through the build-scoped kind registry (`core/kind_registry.py`; the built-in kinds are in `models/inner_kinds/`) |
+| Mechanism declarations | Each law's inputs, the quantities it changes, its conservation and energy role, its domain of validity | The operator contract (`contract.py`). Since the landing, @3's laws are frozen declarations (`models/inner_laws.py`), with one implementation built per declared structure, and kinds register through the build-scoped kind registry (`registry/kind_registry.py`; the built-in kinds are in `kinds/`) |
 | Numerical plan | Evaluation order, explicit or implicit treatment, splitting, event boundaries, error checks | @3's IMEX and RK4 steps, the operators' split parts, `StepChecks`, schedules |
 | Biological definitions | Organism, strain, conditions, parameter values, evidence references | World builders and fixtures. No organism definition yet; the [Syn3A note](SYN3A_MINIMAL_CELL_TRACK.md) proposes one |
-| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, whose interface in the operator contract (`VIEW_LAYERS`, `view_events`) is on main, and so are the operators' declarations and the writer (`src/cells/run_view.py`), since 16 November |
+| Execution and outputs | Binding, device windows, checkpoints, observations, the shared run view | The runner, batch and window paths; D153's checkpoints; D154's run view, whose interface in the operator contract (`VIEW_LAYERS`, `view_events`) is on main, and so are the operators' declarations and the writer (`src/cells/records/run_view.py`), since 16 November |
 
 - **Arrays in the loop.** The composite builder assembles these parts into one bound array program.
   Python objects and modular interfaces belong to definition, validation and binding, and the
@@ -131,7 +131,7 @@ Where older sections of this document differ, this section applies.
     elsewhere.
   - So a nominal refusal in the composition matrix meant that the slots were disjoint. It did not
     mean the pair was safe to admit under that adapter.
-- **Holds today, since the landing: what each mechanism declares** (`models/operators/contract.py`).
+- **Holds today, since the landing: what each mechanism declares** (`operators/contract.py`).
   - The fields and entity slots it reads, and whether it reads reference values, a fixed declared
     value or the current composed view (`SCOPED_READS`).
   - The slots it changes, and whether its contribution adds, multiplies or replaces; a closer's is
@@ -183,7 +183,7 @@ Where older sections of this document differ, this section applies.
   different arrays, but they resolve to one species identity and one conserved total.
 - **Species identity and the background and trace policy are consolidated at the definition
   boundary. Holds today, since the landing.** New laws then add no pairwise identity checks between
-  operators. The species registry (`core/species_registry.py`) is one authority for each species'
+  operators. The species registry (`registry/species_registry.py`) is one authority for each species'
   identity, standard potential and background, and a landed test refuses any pairwise identity
   check left in `src` (`tests/unit/test_species_registry.py`). Before the landing, the coupling
   operator checked species identity against D150's and D152's declarations.
@@ -226,7 +226,7 @@ Where older sections of this document differ, this section applies.
   numerical machinery. First it was checked which admissible topology is closed for the test species,
   since FR-1's compartments sit in worlds with a held bath.
 - **The law landed with the round:** `passive_neutral_permeation@1`, a law of the passive-routes
-  kind (`cells.passive_routes@1`, `models/inner_kinds/passive_routes.py`). It is implemented and
+  kind (`cells.passive_routes@1`, `kinds/passive_routes.py`). It is implemented and
   guarded. On a closed pair, FR-1's face-free world, it relaxes as the independent closed form
   says, conserves material, and books as heat the engine's own free-energy decrease, to rounding
   (`tests/unit/test_passive_routes_kind.py`). It is not numerically qualified, and its composition
@@ -444,7 +444,7 @@ and the definition parser are module-level tables. Any package can already ship 
 builders that use built-in IDs.
 
 **Holds today, since D172's round** ([INNER_MODEL_V4_DESIGN.md](INNER_MODEL_V4_DESIGN.md) §7.4
-(j)–(k); `core/kind_registry.py`, with the built-in kinds in `models/inner_kinds/`).
+(j)–(k); `registry/kind_registry.py`, with the built-in kinds in `kinds/`).
 - **The seams:**
   - kinds register through a build-scoped registry, and built-in kinds use the same call;
   - IDs are namespaced, and the canonical order is the sorted namespaced ID;
@@ -853,7 +853,7 @@ On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`)
 - A 1-CPU allocation cannot reach the multi-thread class.
 
 **As built (D190, the lean form the user ruled): the engine sets both libraries to 1 thread.**
-- `core/blas_threads.py` loads scipy's LAPACK first, since jaxlib loads it only at its first
+- `execution/blas_threads.py` loads scipy's LAPACK first, since jaxlib loads it only at its first
   LAPACK call and a limit reaches only loaded libraries. It then sets every loaded BLAS to 1
   thread through threadpoolctl (BSD, `threadpoolctl==3.8.0`).
 - The import pin is taken at the first import of `cells.core`, not in `cells/__init__.py`, whose
@@ -861,7 +861,7 @@ On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`)
   `cells.core` before any linear algebra: parse, the models, the runs and the analysis tools.
   A BLAS that loads later starts at 1 thread, because OpenBLAS
   reads `OPENBLAS_NUM_THREADS` when it loads and both builds honour it. One already loaded, when
-  numpy came first, is set at once. So a light module such as `cells.continuity`, imported
+  numpy came first, is set at once. So a light module such as `cells.execution.continuity`, imported
   fresh, still loads neither numpy nor scipy (its own rule).
 - Each run entry point (run, run_windowed and iter_windows,
   run_batch, run_batch_windowed and iter_batch_windows, run_vector_windowed and
@@ -982,7 +982,7 @@ is insufficient for memory experiments.
   - the scale.
 - It is kept out of the definition, so definitions, bindings and crossrev are unaffected.
 - Its exact form is in the design note, [RUN_VIEW_DESIGN.md](RUN_VIEW_DESIGN.md) (proposed). The
-  writer is on main since 16 November (`src/cells/run_view.py`).
+  writer is on main since 16 November (`src/cells/records/run_view.py`).
 
 ## Technical references
 

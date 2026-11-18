@@ -10,8 +10,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import F, R
 from cells.legacy.numerics import membrane_redistribution as model
-from cells.processes.electrochemistry import F, R
 
 
 def layout():

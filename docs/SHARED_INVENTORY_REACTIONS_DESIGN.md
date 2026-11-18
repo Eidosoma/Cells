@@ -2057,7 +2057,7 @@ Milestone 3 adds no engine code: `src/` is unchanged since the landed head a4e2f
 **The code** (after the merge d5738a1):
 - `validation/morphogenesis/mg0c_turing.py`, MG0c's driver.
   - Its own closed chain, from §6.4 and the usage note's convention: h = ℓ/2, face area V/h,
-    length h, quiescent ions, U and V through `cells.core.inventory_species`.
+    length h, quiescent ions, U and V through `cells.registry.inventory_species`.
   - Runs go through `run_windowed` with every host check. The energy residual is reported over the
     composite's own bound.
   - Deviations are (anchor − reference) + increment, carrying none of the representation's

@@ -16,9 +16,9 @@ in the milestone-3 evidence).
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.models.operators import species_regulated_availability as sra
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.operators import species_regulated_availability as sra
+from cells.registry.models import get_model
 from validation.coupling import cells_reference as rc
 from validation.tissue import regulated_availability_references as rr
 

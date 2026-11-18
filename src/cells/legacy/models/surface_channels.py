@@ -4,7 +4,7 @@ All physics and ordinary execution reuse the resolved kinetic model. Only this
 version accepts a per-population channel law; earlier model layouts stay intact.
 """
 
-from cells.core.surface_kinetic_spec import CHANNEL_MODEL_ID as MODEL_ID  # noqa: F401
+from cells.definitions.surface_kinetic_spec import CHANNEL_MODEL_ID as MODEL_ID  # noqa: F401
 from cells.models import surface_kinetic as base
 from cells.models.surface_kinetic import (  # noqa: F401
     BATCH_CAPACITIES,

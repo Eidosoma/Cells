@@ -100,7 +100,7 @@ def _egg():
 
 
 def _qualification():
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import surface_pump_v3_study as study
 
     worlds = _crossrev().qualification_worlds()
@@ -177,7 +177,7 @@ def _device_rows(spec, result, chunk=512):
     import jax
     import jax.numpy as jnp
 
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     if not hasattr(model, "device_checks"):
@@ -221,7 +221,7 @@ def _electrode_ledger(spec, result):
     """Host electrode ledger of every row (transferred - held plate charges), recomputed."""
     from cells.models import pump_composite_adapter as adapter
     from cells.models import surface_tissue as tissue
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     layout = model.initial_values(spec)[1]
@@ -237,8 +237,8 @@ def _electrode_ledger(spec, result):
 
 
 def _scalar(name, raw, out, *, device, recorded=False):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     spec = parse_spec(raw)
     started = time.perf_counter()
@@ -266,8 +266,8 @@ def _scalar(name, raw, out, *, device, recorded=False):
 
 
 def _windowed(name, raw, out, window_steps=4000):
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     spec = parse_spec(raw)
     seen = []
@@ -292,10 +292,10 @@ def _windowed(name, raw, out, window_steps=4000):
 
 
 def _cohort(name, raws, out):
-    from cells.core.batch import BatchSpec, WorldSpec, run_batch
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     specs = [parse_spec(copy.deepcopy(r)) for r in raws]
     cohort = BatchSpec(

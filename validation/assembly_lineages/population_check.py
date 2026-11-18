@@ -50,7 +50,7 @@ def path_records(run):
 
 
 def run(out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import (
         GARD_PAIR_CONSISTENT,
         GARD_SINGLE_EVENT,

@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy.core import geometry_tissue_preparation as bridge
 
 

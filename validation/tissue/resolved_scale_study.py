@@ -33,9 +33,9 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.runner import run  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
 from cells.models import surface_kinetic as kinetic  # noqa: E402
 from cells.models import surface_pump as model  # noqa: E402
 from cells.numerics import surface_imex as imex  # noqa: E402
@@ -521,8 +521,8 @@ def part_energy(args):
 
 def part_charge(args):
     """Global-charge residual-to-bound ratio over a whole given definition (windowed)."""
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     if not args.definition:
         raise ValueError("The charge part requires --definition")

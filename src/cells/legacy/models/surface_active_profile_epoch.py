@@ -51,8 +51,8 @@ def rhs(state, control, layout, active, **kwargs):
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
-    from cells.core.specs import ConfigError
+    from cells.definitions.specs import ConfigError
+    from cells.execution.schedule import control_values
 
     state, layout = initial_values(spec)
     m = spec.model
@@ -109,7 +109,7 @@ def ensemble_voltage(state, layout, spec, time):
 
 
 def summarize(history, diagnostics, spec):
-    from cells.core.specs import digest
+    from cells.definitions.specs import digest
 
     record = handoff_record(spec)
     return scheduled.summarize(history, diagnostics, scheduled_spec(spec)) | dict(

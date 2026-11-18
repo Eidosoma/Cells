@@ -14,12 +14,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.legacy.core import surface_bath_events_binding as binding
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 EXTRA_AXES = {
     "reservoir_chemical_work_pJ": ["extracellular_slot"],
@@ -281,7 +281,7 @@ class Adapter:
         )
 
     def check_definition(self, spec):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         state, p = self.initial_values(spec)
         clocks = {0.0, spec.experiment.end_time, *(v.time for v in spec.experiment.changes)}
@@ -466,7 +466,7 @@ class Adapter:
         )
 
     def ensemble_voltage(self, state, layout, spec, time):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         controls = control_values(self.schema.owner_spec(spec), [time])
         control = type(controls)(*(v[0] for v in controls))

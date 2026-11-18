@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass, fields, replace
 
-from cells.core import surface_kinetic_spec as parent
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions import surface_kinetic_spec as parent
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import surface_barrier_interventions_binding as native
 
 MODEL_ID = "resolved_active_extracellular_barriers@1"

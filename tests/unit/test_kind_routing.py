@@ -19,13 +19,13 @@ its exact booking, with heat equal to the free-energy decrease, at the rate the 
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import control_values
-from cells.models.inner_kinds import passive_routes
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import R
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.runner import run
+from cells.kinds import passive_routes
+from cells.laws.electrochemistry import R
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from tests.unit.test_passive_routes_kind import AREA, P, closed_pair, route
 from validation.passive import passive_reference as reference

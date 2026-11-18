@@ -13,8 +13,8 @@ import importlib
 from types import SimpleNamespace
 
 import cells.modules as surface
-from cells.core import kind_registry
 from cells.models import surface_pump_v3
+from cells.registry import kind_registry
 
 HOMES = {  # Each name's own module: where it is defined.
     "cells.registry.laws": (
@@ -27,7 +27,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "CitedWork",
     ),
     "cells.registry.operators": ("FamilyOperator",),
-    "cells.core.kind_registry": (
+    "cells.registry.kind_registry": (
         "Kind",
         "KindFields",
         "KindView",
@@ -38,8 +38,8 @@ HOMES = {  # Each name's own module: where it is defined.
         "qualified",
         "declared_schedule",
     ),
-    "cells.core.specs": ("ConfigError", "require_fields", "finite_number", "bounded_integer"),
-    "cells.processes.electrochemistry": ("R", "F", "CHARGE_PER_FMOL"),
+    "cells.definitions.specs": ("ConfigError", "require_fields", "finite_number", "bounded_integer"),  # noqa: E501
+    "cells.laws.electrochemistry": ("R", "F", "CHARGE_PER_FMOL"),
     "cells.models.surface_pump": ("EXPLICIT_STEP_BOUND",),
     "cells.numerics.extracellular_field": ("scatter",),
     "cells.numerics.species_sums": ("species_sum", "entity_sum"),
@@ -80,6 +80,6 @@ def test_the_surface_is_provisional_where_contributors_read_it():
 
 
 def test_kind_rates_lives_in_the_kind_contract():
-    assert kind_registry.KindRates.__module__ == "cells.core.kind_registry"
+    assert kind_registry.KindRates.__module__ == "cells.registry.kind_registry"
     assert surface_pump_v3.KindRates is kind_registry.KindRates
     assert "KindRates" in kind_registry.__all__

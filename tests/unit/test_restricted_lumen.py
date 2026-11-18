@@ -23,14 +23,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import F, R
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import membrane_insertion as insertion
-from cells.models.operators import restricted_lumen as lumen
-from cells.models.operators.contract import Operator, check_declarations
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import F, R
+from cells.operators import membrane_insertion as insertion
+from cells.operators import restricted_lumen as lumen
+from cells.operators.contract import Operator, check_declarations
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as fx
 
 WIDTH = 2e-6  # m: the cleft cell's 0.01 pL is w A_on / 2 over its 1e-11 m^2 furrow.

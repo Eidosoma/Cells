@@ -19,10 +19,11 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import (
     reaction_transport,
     surface_pump,
@@ -30,10 +31,9 @@ from cells.models import (
     surface_pump_v3,
     surface_tissue,
 )
-from cells.models.registry import get_model
 from cells.numerics import surface_field
 from cells.numerics import surface_imex as imex
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.registry.models import get_model
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 EPS = np.finfo(float).eps
@@ -383,10 +383,10 @@ def stepped_spec():
 
 def test_host_windows_check_each_row_with_its_global_step_count(monkeypatch):
     """Windowed host checks pass every row its index from t = 0, across windows."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.batch_windows import run_batch_windowed
-    from cells.core.grid import EventGrid
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.batch_windows import run_batch_windowed
+    from cells.execution.grid import EventGrid
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     spec, seen = stepped_spec(), []
     original = surface_pump.check_values
@@ -419,10 +419,10 @@ def test_host_windows_check_each_row_with_its_global_step_count(monkeypatch):
 
 def test_device_window_checks_see_global_step_counts(monkeypatch):
     """The device check of row j of a window gets the window's start step + j."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.grid import EventGrid
-    from cells.core.vector_windows import WorldCheckError, run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.grid import EventGrid
+    from cells.execution.vector_windows import WorldCheckError, run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     spec = stepped_spec()
     last = len(EventGrid(spec)) - 1
@@ -462,7 +462,7 @@ def projective_world(row_checks):
 
 def test_projective_checks_see_global_step_counts(monkeypatch):
     """Bursts pass consecutive indices, a jump its two rows' indices; the device too."""
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     seen, original = [], surface_pump.check_values
 
@@ -525,7 +525,7 @@ def test_representatives_are_the_gauge_and_each_floating_component_owner():
 
 def test_field_convergence_leaves_out_the_representative_net_charge():
     """A representative's charge enters no potential: it is reported, not converged on."""
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
 
     spec = parse_spec(pump_fixture("release"))
     p, layout = field_layout_of(spec)
@@ -735,7 +735,7 @@ def chain(minimum, *, dt):
 
 def test_pinned_junction_gate_sets_no_gate_step_bound():
     """Minimum open fraction 1 pins the gate at 1 (zero rate); 0.5 keeps the bound."""
-    from cells.core.runner import timeline
+    from cells.execution.runner import timeline
 
     pinned = parse_spec(chain(1.0, dt=8e-3))
     assert surface_pump.junction_gate_rate_bound(pinned) == 0.0

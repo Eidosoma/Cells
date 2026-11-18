@@ -12,11 +12,11 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import digest
-from cells.core.state import Checkpoint
+from cells.definitions.specs import digest
+from cells.execution.errors import NumericalError
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import Checkpoint
 from validation.betse.physiology.core import physiology_boundary_voltage as boundary
 from validation.betse.physiology.models import (
     physiology_boundary_voltage_transition_algebra as algebra,

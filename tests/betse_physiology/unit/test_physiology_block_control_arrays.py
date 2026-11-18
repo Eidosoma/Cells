@@ -10,8 +10,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.schedule import control_values
 from tests.betse_physiology.unit.test_physiology_block_control_view import fixture, plain
 from tests.betse_physiology.unit.test_physiology_permeability_view import KINDS, exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_binding import arguments

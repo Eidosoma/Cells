@@ -12,8 +12,8 @@ Operators register the way kinds do, each claim with a planted error it must cat
 
 import pytest
 
-from cells.models.operators import OPERATORS, contract
-from cells.models.operators.osmotic_water import OsmoticWater
+from cells.operators import OPERATORS, contract
+from cells.operators.osmotic_water import OsmoticWater
 from cells.registry import operators
 
 TODAY = (  # The built-in package's registration order: today's dictionary's order.

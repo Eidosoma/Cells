@@ -38,7 +38,7 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from validation.division import cleft_egg_reference as ref  # noqa: E402
 from validation.tissue import egg_scale_smoke as smoke  # noqa: E402
 
@@ -252,8 +252,8 @@ def start_state(args):
 
 def part_check(args):
     """Parse each definition, then apply the runner's step checks (core/runner.timeline)."""
-    from cells.core.runner import timeline
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import timeline
 
     egg, _ = static_egg(args.record)
     out = dict(cases=[])
@@ -292,8 +292,8 @@ def observed(result):
 
 
 def part_run(args):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     egg, _ = static_egg(args.record)
     raw, inputs = definition(
@@ -328,10 +328,10 @@ def rollout(spec):
 
     import jax as _jax
 
-    from cells.core import runner
-    from cells.core.schedule import control_values
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.execution import runner
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     times = runner.timeline(spec)
@@ -355,7 +355,7 @@ def rollout(spec):
 def part_diagnose(args):
     """Every row's ledger residual over its bound (the smoke driver's device rows), so a refusal
     by the host checks is quantified rather than only named."""
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     egg, _ = static_egg(args.record)
     raw, inputs = definition(
@@ -379,7 +379,7 @@ def observed_rows(spec, result, times):
     (the model's observer and the checks' own balance and limit functions, on the host)."""
     import jax.numpy as jnp
 
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
     from cells.models import surface_pump as first
     from cells.models import surface_pump_v3 as v3
 

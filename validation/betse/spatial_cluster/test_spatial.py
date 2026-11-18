@@ -7,17 +7,17 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
 from cells.legacy.models import junction_finite_extracellular as local
 from cells.legacy.models import spatial_extracellular as passive
 from cells.legacy.models import spatial_junction as model
-from cells.models.registry import get_model
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 
 
 def private(name, filename):

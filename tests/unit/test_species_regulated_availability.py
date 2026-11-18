@@ -17,15 +17,15 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.operators import species_regulated_availability as sra
-from cells.models.operators.contract import check_declarations
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators import species_regulated_availability as sra
+from cells.operators.contract import check_declarations
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as crfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
@@ -755,7 +755,7 @@ def _lumen(version):
 
 
 def _replacement_over_water():
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
 
     raw = crfx.heredity_sheet(1, 0, dt=1e-3, end_time=0.02)
     raw["experiment"]["observation_times"] = [0.0, 0.02]
@@ -788,7 +788,7 @@ def test_a7_a_changing_volume_is_refused_at_the_definition(name):
 
 
 def test_a9_a_batch_refuses_worlds_of_another_structure():
-    from cells.core.batch import BatchSpec, WorldSpec, parse_batch
+    from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
 
     def batch(*raws):
         worlds = tuple(WorldSpec(i + 1, parse_spec(r)) for i, r in enumerate(raws))

@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import surface_calcium_energy_spec as old_fuel
 from cells.legacy.core import surface_calcium_spec as old_calcium
 from cells.numerics.fixed_step import rk4_step
@@ -105,7 +105,7 @@ def test_empty_reservoir_world_reduces_exactly_to_ordinary_definition_and_full_R
 
 
 def control_values_for(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     return control_values(spec, [0.0])
 

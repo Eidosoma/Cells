@@ -6,21 +6,21 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PlasmaControl, control_values
-from cells.core.specs import ConfigError
-from cells.legacy.core.gated_calcium_spec import MODEL_ID, base_spec
-from cells.legacy.models import plasma_calcium as base
-from cells.legacy.models import spatial_calcium as spatial
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes import calcium_gates as gates
-from cells.processes.electrochemistry import (
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PlasmaControl, control_values
+from cells.laws.channels import calcium_gates as gates
+from cells.laws.electrochemistry import (
     CHARGE_PER_FMOL,
     F,
     R,
     electrochemical_potential,
     ghk_leak,
 )
+from cells.legacy.core.gated_calcium_spec import MODEL_ID, base_spec
+from cells.legacy.models import plasma_calcium as base
+from cells.legacy.models import spatial_calcium as spatial
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 EXTRA_FIELDS = (
     "calcium_gate",

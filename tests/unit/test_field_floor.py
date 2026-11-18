@@ -13,10 +13,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.models import surface_tissue as tissue
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex
@@ -56,8 +56,8 @@ def test_version_3_is_bitwise_version_2_where_version_2_converges(fixtures, arm)
 
 def test_version_3_checkpoint_round_trips_and_resumes_bitwise(tmp_path):
     """A version 3 snapshot loads with its own layout type and resumes as run."""
-    from cells.core.runner import branch_checkpoint
-    from cells.io import load_snapshot, write_snapshot
+    from cells.execution.runner import branch_checkpoint
+    from cells.records.io import load_snapshot, write_snapshot
 
     raw = definition(surface_pump_fixtures, "clamped", field.FLOOR_SOLVER_ID)
     whole = run(parse_spec(raw))

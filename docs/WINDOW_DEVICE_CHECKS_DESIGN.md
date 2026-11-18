@@ -308,7 +308,7 @@ class fails. Its test covers one class at a time.
 
 ```python
 @dataclass(frozen=True)
-class WindowPolicy:  # cells.core.windows
+class WindowPolicy:  # cells.execution.windows
     window_steps: int = 256
     recording: str = "observations"
     row_checks: str = "host"  # "host" | "device"
@@ -332,7 +332,7 @@ class WindowPolicy:  # cells.core.windows
     diagnostic moves at rounding.
   - Flipping the default later is its own gated change, after mode on has run long and on the GPU.
 
-### 4.2 The check program (new `cells/core/row_checks.py`)
+### 4.2 The check program (new `cells/execution/row_checks.py`)
 
 - **Its inputs:**
   - the window's start state, as row 0. Row 0 is its own predecessor, as vector windows re-check a
@@ -384,7 +384,7 @@ class WindowPolicy:  # cells.core.windows
 - One check program shared with projective bursts.
 - The default flip.
 
-## 5. Ask 2: the packed planner's seams (`cells.core.vector_windows`)
+## 5. Ask 2: the packed planner's seams (`cells.execution.vector_windows`)
 
 ### 5.1 Constraints
 
@@ -703,7 +703,7 @@ The lead approved step (c) after reading §1.4, under five conditions:
   That is fail-closed, and continuity is unchanged.
 - **The CLI's scalar `windowed` commands** gain `--row-checks {host,device}`.
 
-### 9.3 The check program (`cells/core/row_checks.py`)
+### 9.3 The check program (`cells/execution/row_checks.py`)
 
 - **The form: a `lax.scan`** over the window's full-width device history. This is the form §1.4
   measured, and the projections rest on it.
@@ -855,7 +855,7 @@ headline figures compare both modes on the same cores; the records' figures are 
 ## Sources
 
 - **Code** at 3c10b833:
-  - `src/cells/core/vector_windows.py`, `windows.py`, `runner.py` (`_window_rollout`, `_segment`,
+  - `src/cells/execution/vector_windows.py`, `windows.py`, `runner.py` (`_window_rollout`, `_segment`,
     `_analyse_segment`), `batch.py`, `batch_windows.py` and `projective.py` (`_burst_checks`);
   - `src/cells/models/surface_pump.py` (`checked_rows`, `ledger_limits`, the messages),
     `surface_pump_checks.py` and `pump_composite.py` (`Composition.check_values`,

@@ -1,0 +1,39 @@
+{
+ "format": "ool_references.probe_states@1",
+ "registered": "2026-11-17",
+ "amendment": true,
+ "world": "ol1_boundary",
+ "places": [
+  "A@membrane"
+ ],
+ "steps": [
+  "x1",
+  "x3",
+  "x4"
+ ],
+ "generator": {
+  "function": "A@membrane = 0..5"
+ },
+ "report": "a_plus and a_minus at every listed state (as the kernel probe)",
+ "count": 6,
+ "states": [
+  [
+   0
+  ],
+  [
+   1
+  ],
+  [
+   2
+  ],
+  [
+   3
+  ],
+  [
+   4
+  ],
+  [
+   5
+  ]
+ ]
+}

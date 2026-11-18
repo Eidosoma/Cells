@@ -10,9 +10,9 @@ import numpy as np
 import pytest
 
 from cells.assembly.engine import device_for
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
 from cells.legacy.models import surface_energy as model
 from cells.models import surface_tissue as passive
 from cells.numerics.fixed_step import rk4_checked_step

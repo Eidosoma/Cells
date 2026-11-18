@@ -9,7 +9,7 @@ from cells.assembly.engine import device_for
 from cells.assembly.spec import AssemblyError
 from cells.assembly_pool import engine as pool
 from cells.assembly_pool.spec import AVOGADRO
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
 from cells.legacy.assembly_cell import MODEL_ID
 from cells.legacy.assembly_cell.kernel import CoupledState, advance
 from cells.legacy.assembly_cell.spec import parse_spec, tick_at

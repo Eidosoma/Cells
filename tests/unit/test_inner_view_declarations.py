@@ -19,18 +19,18 @@ VIEW_LAYERS (with RECORD_NOTES), which replace the run-view writer's interim tab
 
 import numpy as np
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import parse_spec
-from cells.core.surface_pump_v3_spec import control_values
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
 from cells.models import inner_laws
 from cells.models import surface_pump_v3 as v3
-from cells.models.registry import get_model
 from cells.numerics.extracellular_field import scatter
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 RECORD_KINDS = ("level", "amount", "cumulative", "rate")
 REPRESENTATIONS = ("simulated", "modelled", "prescribed")
-# The run view's set roles (cells/run_view.py, SET_ROLES), by the record's entity axis.
+# The run view's set roles (cells/records/run_view.py, SET_ROLES), by the record's entity axis.
 ROLES = {
     "membrane_slot": {"inside", "outside"},
     "channel_slot": {"inside", "outside"},
@@ -126,7 +126,7 @@ def test_a_positive_flux_leaves_the_patchs_cell_or_the_junctions_sender():
     assert np.max(np.abs(junction)) > 0  # The junction term is exercised.
 
 
-INNER_AXES = {  # The run view's inner axis sets (cells/run_view.py, AXIS_SETS).
+INNER_AXES = {  # The run view's inner axis sets (cells/records/run_view.py, AXIS_SETS).
     "species",
     "cell_slot",
     "extracellular_slot",
@@ -221,8 +221,8 @@ def test_a_kind_world_folds_the_kinds_record_roles():
     it has not."""
     import dataclasses
 
-    from cells.core import kind_registry
-    from cells.models.inner_kinds import passive_routes, proton_buffer
+    from cells.kinds import passive_routes, proton_buffer
+    from cells.registry import kind_registry
     from validation.compartment_ph_engine import definitions as defs
 
     raw = defs.development_world(defs.fr4_world())

@@ -11,7 +11,7 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
+from cells.execution.errors import NumericalError
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_step as step
 from validation.betse.physiology.core import physiology_protein_packet_provider as provider

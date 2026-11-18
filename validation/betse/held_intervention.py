@@ -23,7 +23,7 @@ CONDITIONS = ("baseline", "zero_amplitude", "static_blocked", "suppression_recov
 FORBIDDEN = {
     "betse.science.sim",
     "betse.science.simrunner",
-    "cells.core.runner",
+    "cells.execution.runner",
     "cells.numerics.fixed_step",
 }
 
@@ -219,9 +219,9 @@ def native_probe(p):
 def cells_probe(p):
     import numpy as np
 
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
 
     rows = []
     for h in p["control_probe_steps_s"]:

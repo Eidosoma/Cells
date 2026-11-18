@@ -22,9 +22,9 @@ import math
 
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.processes import ph_condition as phc
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.laws.reactions import ph_condition as phc
 from validation.compartment_ph_engine import definitions as defs
 
 STEPS = 40

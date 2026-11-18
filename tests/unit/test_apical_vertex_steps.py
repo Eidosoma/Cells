@@ -9,9 +9,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.laws.mechanics import vertex_mechanics as vm
 from cells.models import apical_vertex as av
-from cells.processes import vertex_mechanics as vm
 from tests.apical_vertex_fixtures import honeycomb
 
 jax.config.update("jax_enable_x64", True)

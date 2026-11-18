@@ -38,8 +38,8 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.cell_replacement_spec import exact_event_times  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.cell_replacement_spec import exact_event_times  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from cells.models import cell_replacement as model  # noqa: E402
 from cells.models import surface_pump_v3 as ionic  # noqa: E402
 from cells.models import surface_tissue as tissue  # noqa: E402

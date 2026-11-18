@@ -9,8 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import baseline_transfer_diagnostic as reference_reader
 from validation.assays import cue_separation as previous
 from validation.assays import two_task

@@ -7,7 +7,7 @@ b2cb370 (cited source; no BITSEY code).
 
 from dataclasses import asdict
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     SOURCE_PAIR_ID,
     ConfigError,
     ContactChange,

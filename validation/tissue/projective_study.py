@@ -1,4 +1,4 @@
-"""Development studies of the projective mode (core/projective.py) against fine stepping.
+"""Development studies of the projective mode (execution/projective.py) against fine stepping.
 
 Each case runs one definition twice from the same initial state: projective
 (execution.projective, the ordinary runner) and fine (the same definition
@@ -26,12 +26,12 @@ case's absolute caps (criteria.absolute_caps) are judged or, for Q1L, reported
 (REPORTED_CAPS); validation/tissue/projective_judge.py evaluates them. Cases
 this driver cannot build are refused. A protocol run is one part
 of one case per process (--part):
-  projective  the definition through cells.core.runner.run (every accepted row
+  projective  the definition through cells.execution.runner.run (every accepted row
               checked); saves the projective report, the error coordinates at
               every observation, fine-row switch times and wall time.
   reference   the checked fine reference (protocol reference.fine): the same
               definition without execution.projective through
-              cells.core.windows.run_windowed, every row checked; saves the
+              cells.execution.windows.run_windowed, every row checked; saves the
               coordinates at every observation, its wall time, fine-row switch
               times and, for every row, max over patches of |dVm/dt| (the
               backward difference over the step ending at that row; amendment 1)
@@ -64,16 +64,16 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.core.grid import EventGrid  # noqa: E402
-from cells.core.projective import ROW_FINE, _Bursts  # noqa: E402
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.state import initialise  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.grid import EventGrid  # noqa: E402
+from cells.execution.projective import ROW_FINE, _Bursts  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.execution.state import initialise  # noqa: E402
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 from cells.models import surface_pump_projective as readouts  # noqa: E402
 from cells.models import surface_tissue as tissue  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
 from cells.numerics import surface_field as field  # noqa: E402
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 from validation.tissue import projective_fixtures as fixtures  # noqa: E402
 
 ESTIMATE_FACTOR = 2.0  # Allowance / summed first-order local-error estimates.
@@ -155,7 +155,7 @@ def _heredity(args, cells, *, cue=None):
     cue: optional (start, stop) of a 9x Na-leak cue on cell 0 (a NaLeak channel
     switched on and off by its schedule), as in surface_pump_v3_study.
     """
-    from cells.core.surface_pump_v3_spec import NALEAK_LAW_ID
+    from cells.definitions.surface_pump_v3_spec import NALEAK_LAW_ID
     from validation.tissue import surface_pump_v3_fixtures as heredity
 
     end = args.end
@@ -404,7 +404,7 @@ def _observed(model, spec, p, times, rows, kinds=None):
 
 def protocol_reference(protocol, case_id, *, f2_scale=None):
     """The checked fine reference of a protocol run (one process, detached)."""
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     raw, case = protocol_definition(protocol, case_id, f2_scale=f2_scale)
     fine = fine_definition(raw)
@@ -537,7 +537,7 @@ def run_protocol_part(protocol, part, case_id, output, *, f2_scale=None, prescan
 
 def fine_reference(spec, times):
     """States at the given grid times from unchecked fine bursts (development harness)."""
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     model = get_model(spec.model)
     checkpoint = initialise(spec)

@@ -942,13 +942,16 @@ def draft(output, paths, guards=None, basis=None):
             "dominant mode and growth rate, the staircase of fastest modes against the domain's "
             "length, decay below the critical ratio, and closed accounting?"
         ),
+        # Recorded text: the registered MG0c protocol (protocols/mg0c_turing_v1.json) holds these
+        # lines word for word, so no move changes them (D188 move 2). Their paths and module names
+        # are never resolved.
         engine_models=[
             "resolved_pump_composite@1 (src/cells/models/pump_composite.py)",
-            "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, "
+            "resolved_pump_tissue@3 (src/cells/core/surface_pump_v3_spec.py, "  # noqa: E501  source-moves: keep
             "src/cells/models/surface_pump_v3.py), IMEX ARS(2,2,2), CPU, float64",
-            "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven "
+            "local_species_reactions@1 (src/cells/models/operators/species_reactions.py): driven "  # noqa: E501  source-moves: keep
             "mass action; ideal_detailed_balance_mass_action@1 in guard 2's passive world",
-            "cells.core.inventory_species (D150) declares the network's species",
+            "cells.core.inventory_species (D150) declares the network's species",  # noqa: E501  source-moves: keep
         ],
         scope=SCOPE,
         driver="validation/morphogenesis/mg0c_turing.py",

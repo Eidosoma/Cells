@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import changed_protein
 from tests.betse_physiology.integration.test_physiology_protein_work_view import reservoir_transfer
 from tests.betse_physiology.unit.test_physiology_protein_electrical_arrays import (

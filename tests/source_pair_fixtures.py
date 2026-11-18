@@ -4,7 +4,7 @@ import copy
 
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from tests import reference_source_pair_numerics as ref
 
 

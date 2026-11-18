@@ -88,7 +88,7 @@ is still refused.
   change registered definitions for nothing.
 
 A switched definition is a new definition. It cannot resume or start from a version-2
-checkpoint: `validate_checkpoint` (`core/runner.py`) refuses a layout without the floor
+checkpoint: `validate_checkpoint` (`execution/runner.py`) refuses a layout without the floor
 leaf, and the hold's driver refuses a resume snapshot that holds other definitions. For
 the running hold, a refusal of this class on the L4 would mean a rerun from t = 0 (start,
 preparation and run) under version 3, not a resume.

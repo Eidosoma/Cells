@@ -13,9 +13,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.coupling.selective import selective_flux
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.channels import calcium_gates as gates
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions.selective import selective_flux
+from cells.laws.reactions import plasma_calcium as process
 from cells.legacy.core.surface_calcium_spec import (
     MODEL_ID,  # noqa: F401 - public model identity used by ordinary execution
     SurfaceCalciumActivatedCatalogModel,
@@ -41,9 +44,6 @@ from cells.models import surface_kinetic as kinetic
 from cells.models import surface_tissue as base
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes import calcium_gates as gates
-from cells.processes import plasma_calcium as process
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 STATE_AXES = (
     kinetic.STATE_AXES
@@ -361,7 +361,7 @@ class IonicStage(NamedTuple):
 
 def ionic_stage(state, control, p, *, xp=jnp):
     """Evaluate the original ionic prefix separately from calcium/ER completion."""
-    from cells.core.schedule import SurfaceKineticControl
+    from cells.execution.schedule import SurfaceKineticControl
 
     view = ionic_layout(state, p, xp=xp)
     prior = kinetic.readouts(ionic_state(state), SurfaceKineticControl(*control[:4]), view, xp=xp)
@@ -652,7 +652,7 @@ def chemical_loss_bound(spec):
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     controls = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -854,7 +854,7 @@ Observations = make_dataclass(
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)

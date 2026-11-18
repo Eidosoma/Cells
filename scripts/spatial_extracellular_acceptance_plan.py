@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from cells.core.batch import BatchSpec, WorldSpec
+from cells.execution.batch import BatchSpec, WorldSpec
 from tests.spatial_extracellular_fixtures import load_reference, spec_for
 
 ROOT = Path(__file__).resolve().parents[1]

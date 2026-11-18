@@ -12,16 +12,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import SPATIAL_JUNCTION_ID, ConfigError
-from cells.core.state import SpatialJunctionLayout, SpatialJunctionState
+from cells.definitions.specs import SPATIAL_JUNCTION_ID, ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import SpatialJunctionLayout, SpatialJunctionState
 from cells.legacy.core.spatial_junction_spec import local_spec, passive_spec
 from cells.legacy.models import finite_extracellular as finite
 from cells.legacy.models import junction_finite_extracellular as cluster
 from cells.legacy.models import spatial_extracellular as spatial
 from cells.numerics import extracellular_field as field
-from cells.observers import hermite_bounds
+from cells.records.observers import hermite_bounds
 
 STATE_TYPE = SpatialJunctionState
 LAYOUT_TYPE = SpatialJunctionLayout

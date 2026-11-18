@@ -19,9 +19,9 @@ Validation tooling (D131), not an engine model. It adds BETSE's network channels
 
 Laws (BETSE channel type -> kind, opening m^a h^b):
 
-* Kv1p5 (vg_k.py)   -> kv1p5,  m h,    cells.processes.voltage_gates.kinetics
-* Kir2p1 (vg_k.py)  -> kir2p1, m h^2,  cells.processes.potassium_channels.kir2p1_kinetics
-* Nav1p2 (vg_na.py) -> nav1p2, m^3 h,  cells.processes.sodium_channels.nav1p2_kinetics
+* Kv1p5 (vg_k.py)   -> kv1p5,  m h,    cells.laws.channels.voltage_gates.kinetics
+* Kir2p1 (vg_k.py)  -> kir2p1, m h^2,  cells.laws.channels.potassium_channels.kir2p1_kinetics
+* Nav1p2 (vg_na.py) -> nav1p2, m^3 h,  cells.laws.channels.sodium_channels.nav1p2_kinetics
 * KLeak (vg_k.py), NaLeak (vg_na.py) -> kleak, naleak: always open (gates fixed at 1)
 
 The gated laws are the Cells process laws, whose targets, time constants and gate clock
@@ -37,7 +37,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.processes import potassium_channels, sodium_channels, voltage_gates
+from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
 from validation.betse.emulator import junction, laws
 from validation.betse.emulator import spatial as passive
 

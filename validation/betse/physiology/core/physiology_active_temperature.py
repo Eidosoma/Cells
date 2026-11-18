@@ -11,7 +11,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.specs import digest
+from cells.definitions.specs import digest
 from validation.betse import global_controls as source
 from validation.betse.physiology.core import physiology_temperature as original
 

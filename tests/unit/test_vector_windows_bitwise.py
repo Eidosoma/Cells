@@ -20,8 +20,8 @@ SCRIPT = textwrap.dedent(
     jax.config.update("jax_enable_x64", True)
     sys.path.insert(0, sys.argv[1])
     from tests.unit.test_vector_windows import POLICY, heterogeneous
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import run_windowed
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import run_windowed
     spec = heterogeneous()
     batch = run_vector_windowed(spec, POLICY)
     equal = []

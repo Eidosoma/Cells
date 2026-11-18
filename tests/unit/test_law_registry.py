@@ -18,9 +18,9 @@ import dataclasses
 import jax
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.kinds import passive_routes, proton_buffer, transporter
 from cells.models import inner_laws, surface_pump_v3
-from cells.models.inner_kinds import passive_routes, proton_buffer, transporter
 from cells.registry import laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
 from tests.unit.test_transporter_kind import held_world, population

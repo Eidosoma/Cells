@@ -344,8 +344,8 @@ world gave compile and execution times.
 | Path | On the device, every row | On the host, every accepted row | On the host, observed rows only |
 | --- | --- | --- | --- |
 | Scalar and windowed runs (`runner._run_segment`, `windows.iter_windows`) | The step's own refusals: domain, controls, the stage rule, the field solve's residual | **All of `check_values`**: @3's row checks, the operators' terms and own ledgers, the retiring operators' actual-domain check (`Composition.check_values`, `_check_actual_domains`) | Observers (`observe_history`); continuity checks (`windows._observation_tail`) |
-| Guarded batch (`core/batch.py`) | As above, per world under `lax.map` | **All of `check_values`**, per world | Observers |
-| Vector windows (`core/vector_windows.py`) | The step's refusals, and the device row checks (`device_checks`): domain, every ledger (operators' own included, `Composition.DEVICE_CHECKS`), dissipation | **None.** Only per-window summaries leave the device | Observers and continuity checks; the window endpoint |
+| Guarded batch (`execution/batch.py`) | As above, per world under `lax.map` | **All of `check_values`**, per world | Observers |
+| Vector windows (`execution/vector_windows.py`) | The step's refusals, and the device row checks (`device_checks`): domain, every ledger (operators' own included, `Composition.DEVICE_CHECKS`), dissipation | **None.** Only per-window summaries leave the device | Observers and continuity checks; the window endpoint |
 | Every path, at the definition | — | Parsing, operator refusals, `check_definition`, `StepChecks` (once per clock, by chunk) | — |
 
 **By operator** (their declarations at f2ada38d). Every operator's in-step refusals run inside the
@@ -604,7 +604,7 @@ registry code.
   - `surface_pump_v3.model_for(model)` = `implementation(structure(model))`.
 - **Who calls them:**
   - `registry.get_model` returns `model_for(model)` for a plain @3 definition: one line in the @3
-    branch of `models/registry.py`, a file in no stream's list (the lead to confirm).
+    branch of `registry/models.py`, a file in no stream's list (the lead to confirm).
   - INT keys the composite on the inner structure as well as the operator list, and its adapter
     forwards the inner protocol from that object (§15.6, I2).
 - **The selection inside,** one kernel per declared law (P2's form):
@@ -786,7 +786,7 @@ registry code.
        the energy ledger. So the kind books the term in @3's convention: the kernel's
        `declared_term_pJ` less that standard part, which is zero at every unbuffered node, with
        H_eq-derivative RT ln(h/H̄). The kernel stays unedited and convention-neutral; the kind
-       owns the engine's 1 mM convention (`models/inner_kinds/proton_buffer.py`);
+       owns the engine's 1 mM convention (`kinds/proton_buffer.py`);
      - the slot masks padding, as @3 masks its own padded slots. Before `evaluate`, an inactive
        node's amounts are replaced by a benign value, as `physical_amounts`' padding reads
        concentration 1. After it, that node's validity is ignored, and its values and energy term
@@ -803,7 +803,7 @@ registry code.
      - **its c0,** from the registry's declared standard concentration, and the pair's two standard
        potentials, from the registry.
    - **Owners:** the slot is CORE's, in `surface_pump_v3`. The closure module
-     (`processes/rapid_proton_buffer.py`) and its declaration are FR45's.
+     (`laws/reactions/rapid_proton_buffer.py`) and its declaration are FR45's.
    - **On FR-4's open question 2:** the general slot, now. Three consumers in one stage read the
      same h (the pump, the proton leak and the pH-band check), and one evaluation per stage keeps
      them consistent.
@@ -916,7 +916,7 @@ registry code.
      condensed solver replaces them behind the same calls. Under the decision below the faces stay
      where they are, and CORE's slot is the local stage solve.
    - **Which form the slot runs (decided 15 November, after reading the module).** FR45's module
-     (`processes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the global
+     (`laws/routes/patch_electrodiffusion.py`, `fr45-physics` 4f267ef4) gives two forms: the global
      pieces above (frozen weights with a non-negative conductance; the patch's block, symmetric,
      with zero row sums, positive semidefinite; an implicit-plus-explicit split that recombines
      exactly to the full constant-field flux), and a per-compartment Newton stage solve,
@@ -976,7 +976,7 @@ registry code.
   operators declaring `USES_INNER = True` receive it as a static `inner=` keyword in their event,
   half_step and rates calls; host methods use `model.inner`; operators stay registry singletons.
   Until the first API commit lands, `inner=` passes today's adapter, which has the same surface.
-- **Files:** `core/surface_pump_v3_spec.py` and the registry's @3 line are the core's;
+- **Files:** `definitions/surface_pump_v3_spec.py` and the registry's @3 line are the core's;
   `compartments.py`'s refusal 4 and the charged-buffering closure are FR45's; FR-3's integrator
   consolidation is outside the round. The thin families (`models/cell_replacement.py`,
   `surface_pump_water.py`, `surface_pump_water_v2.py`) import only structure-free names from @3,
@@ -1010,7 +1010,7 @@ the insertion point is CORE's. Its conventions, fixed here:
   A dt-study criterion covers accuracy. Exact booking closes the ledger up to h = 2, so it no
   longer signals an overshoot by itself (§7.5).
 - **As built (core-d172 6a43f189, 7af1382f; the lead's ruling: one kind, laws by contract):** the
-  kind `cells.passive_routes@1` (`models/inner_kinds/passive_routes.py`), model key
+  kind `cells.passive_routes@1` (`kinds/passive_routes.py`), model key
   `passive_routes` in FR-4's form (`validation/compartment_ph_engine/definitions.py`): a list of
   {id, patch | junction, law, permeability_m_per_s (one number), species (the neutral law's row;
   the leak's defaults to H), factors (empty: FR-5's damage and pH condition come with FR-5's
@@ -1022,7 +1022,7 @@ the insertion point is CORE's. Its conventions, fixed here:
     (1e57af61): a route sharing a row with a tableau-booked passive route is tableau-booked too,
     so every exact row is moved by exact routes alone. The operators' writers (`moved_in_step`)
     join at the composite's admission (INT).
-  - `proton_constant_field_leak@1` (`processes/proton_leak.py`): an H⁺ constant-field route on a
+  - `proton_constant_field_leak@1` (`laws/transport/proton_leak.py`): an H⁺ constant-field route on a
     membrane patch at the patch voltage, reading free h through B4's read at buffered nodes;
     tableau-booked (charged: never exact); its max-side slope conductance is its `stage_term`
     (B7, gap 5) and its flux joins the membrane current (gap 9); its row must be B4's proton row
@@ -1041,7 +1041,7 @@ fields and no others ((d), the "Schema" level).
 - **Snapshots** are npz archives keyed by the state's and layout's field names. Reading requires
   the archive's key set to equal `model.STATE_TYPE._fields` plus the layout's, and builds
   `model.STATE_TYPE(*…)` (`io.py`). A restart requires `type(checkpoint.state) is
-  model.STATE_TYPE` (`core/runner.py`).
+  model.STATE_TYPE` (`execution/runner.py`).
 - **Results and the acceptance owner's baseline** flatten histories, observations, diagnostics and
   final states by field name (`results_baseline.py`'s `flatten`). D176's gate compares key sets as
   well as bits.
@@ -1261,10 +1261,10 @@ canonical kind order (sorted ID) that schema A's types use:
 
 **The hooks the core calls, as built** (schema A, `core-d172` e71dac25, with the stage check and
 the bookings' validity from 307daf3a and 6c850d91; the authoritative list is the `Kind` docstring
-in `core/kind_registry.py`). Each is optional; a kind supplies the ones it needs. `p` is the
+in `registry/kind_registry.py`). Each is optional; a kind supplies the ones it needs. `p` is the
 world's layout and `state`, `control` are in the structure's own types. **Built-in kinds**
 register on `BUILTIN` from their own package: `kind_registry.active()` imports
-`cells.models.inner_kinds` by name once, so the core imports no kind module and a registered,
+`cells.kinds` by name once, so the core imports no kind module and a registered,
 undeclared built-in changes nothing:
 1. **`stage_read(state, p, *, xp)` → (the state whose amount fields hold the amounts the stage's
    rates read, valid),** at the concentration entry of every stage: `readouts` (so `rhs`),
@@ -1367,8 +1367,8 @@ undeclared built-in changes nothing:
 - **The parsing surface (core-d172 d4b3c01f; D180):** a kind's `parse` and `check_definition`
   refuse with `ConfigError` and may use `require_fields(value, expected, name)`,
   `finite_number(value, name, *, positive=False)` and `bounded_integer(value, name, *,
-  minimum, maximum)`, all exported by `cells.core.kind_registry` (public names in
-  `cells.core.specs`, whose underscored helpers stay as aliases for today's callers). Kinds and
+  minimum, maximum)`, all exported by `cells.registry.kind_registry` (public names in
+  `cells.definitions.specs`, whose underscored helpers stay as aliases for today's callers). Kinds and
   external modules use these, never the private names.
 - **Ledger lists stay the shared literals in this round** (rule (a)). Reading them from the
   implementation object would change @1's and @2's shared check code, so it follows the landing,
@@ -1398,7 +1398,7 @@ undeclared built-in changes nothing:
 - In version 1 a kind's controls are constant over the run: `control_values(spec, declaration,
   times)` gives one value at every time (the transporter's availability 1).
 - A kind must be able to declare piecewise-constant control schedules. FR-5 is the first consumer.
-  - Its damage state on a bounding patch (`bounding_patch_damage@1`, `processes/patch_damage.py`)
+  - Its damage state on a bounding patch (`bounding_patch_damage@1`, `laws/transport/patch_damage.py`)
     follows dd/dt = k_inj u_inj(t)(1 − d) − k_res u_res(t) d, with u_inj and u_res declared
     schedules in [0, 1] (the FR-4/FR-5 note, §9).
   - Its step, d(h) = d_eq + (d − d_eq) e^{−(a+b)h}, is exact only where the schedules are
@@ -2213,7 +2213,7 @@ Not in R's total.
     disagree,** so one quantity never has two values (the check lands with the transporter kind,
     once the registry exists).
 - **Effort** (**S**): identity and trace policy are part of A7 (in R). **Refreshed (D176):** the
-  operators stream's species registry (`core/species_registry.py`, approved) carries each
+  operators stream's species registry (`registry/species_registry.py`, approved) carries each
   species' `standard_mu_RT` at one declared standard concentration in R, host-side. So B3's field
   lands in R; D152's move to read it is one small change in its owner's file, which the lead
   coordinates. FR-4's held-row fuel reads it.
@@ -2800,7 +2800,7 @@ Refreshed against main f791294 (15 November):
 | --- | --- | --- | --- |
 | The law declarations and the implementation object (§7.4) | CORE | Published with this table | OPS, INT, FR45 |
 | Door S ([SCOPED_COMPOSITION_DESIGN.md](SCOPED_COMPOSITION_DESIGN.md) §2–§6): `VIEW_CHANGES`, `SCOPED_READS`, `changed_slots`, `read_slots`; the `reference`, `fixed` and `current` modes; admission; the merge | INT | On main (7b9aeb1) | OPS and D152's owner (slot declarations, as each narrows), FR45 (§6) |
-| The species registry, `core/species_registry.py`, with one hook line in @3's parser (PLAN.md §2.2; approved) | OPS | Planned | CORE (the hook), FR45 (potentials, held fuel rows), the identity readers |
+| The species registry, `registry/species_registry.py`, with one hook line in @3's parser (PLAN.md §2.2; approved) | OPS | Planned | CORE (the hook), FR45 (potentials, held fuel rows), the identity readers |
 | The results baseline at the tag | ACC | Saving since 11:08 UTC, 15 November (`acceptance/baseline-44227075`) | CORE, OPS and INT, for every bitwise commit |
 | The required-results list and its comparator (A3), with §3's padding rule | ACC | Planned | Every bitwise check, and the final gate |
 
@@ -2839,7 +2839,7 @@ apart, on the shared machine (8 cores, 31 GB).
 | --- | --- | --- | --- | --- | --- |
 | F1 | The charged-patch feasibility test CP: FR-1's probe P1, extended to FR-4's counterions and protons and FR-5's pores (D176: early) | FR45 | Owner to supply | The tag's snapshot | Running since 15 November |
 | F2 | FR-4's design note: §10.5's boundary; the counterion pathways; the pump law against §7.4's transporter shape; charged buffering's design and criterion; the patch treatment from F1 | FR45 | Owner to supply | F1; §7.4; SCOPED §6 | From day 1 |
-| F3 | **Charged buffering (D176):** FR-4's note chooses a rapid-buffer closure, a per-stage algebraic read (its §4), in a new module `processes/rapid_proton_buffer.py`. D152's charged slow reactions are a separate route, off FR-4's critical path (its §11, item 4) | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot (C6) | Owner to supply | F2; O1's potentials; C6's slot | After F2 |
+| F3 | **Charged buffering (D176):** FR-4's note chooses a rapid-buffer closure, a per-stage algebraic read (its §4), in a new module `laws/reactions/rapid_proton_buffer.py`. D152's charged slow reactions are a separate route, off FR-4's critical path (its §11, item 4) | FR45 (the closure, as its note proposes; the lead to confirm), on CORE's stage-read slot (C6) | Owner to supply | F2; O1's potentials; C6's slot | After F2 |
 | C6 | FR-4's insertion points (§7.4 (g)): the transporter kind (B5), the stage-read slot (B4), B7's two halves and the implicit-route slot with faces behind it | CORE | 3.5–5 (**S**); re-estimated after the rulings at 5.5–7 for the three that open in the round (§7.4 (h)) | C2, F1, F2 | After C5: day 9–13 → 12.5–18, unless the lead moves it before C3 |
 | F4 | FR-4's first case on maintained, held-row fuel: the law module, the world, its references (REF) and its protocol | FR45, REF | Owner to supply | C6, I1, O1, F2, F3 | Develops on `integration-d172` once C2 and I1 merge; merges after I4 |
 
@@ -2974,7 +2974,7 @@ their answers.
    note's stage factors still wait for a named consumer and its P3.
 8. **New (§7.4 (h), §15.6), for the lead:** the owners of charged buffering (F3: FR45's closure, as
    its note proposes), of FR-1's refusal 4 (FR45 claims `compartments.py` in its §11), of FR-3's
-   integrator consolidation (§14), of the registry's @3 line and of `core/surface_pump_v3_spec.py`;
+   integrator consolidation (§14), of the registry's @3 line and of `definitions/surface_pump_v3_spec.py`;
    whether FR-4's insertion points (C6) go before A5; and whether today's pumps keep their
    parameter form (§10.2).
 
@@ -3030,10 +3030,10 @@ run; host only, from the tag's snapshot, 2.5 s).
 - The design notes and decisions cited by section.
 - ARCHITECTURE.md, "The modular core"; D172; D174.
 - The code read at f2ada38d:
-  - `models/surface_pump_v3.py`, `core/surface_pump_v3_spec.py`, `models/surface_pump.py`;
-  - `models/pump_composite.py`, `models/pump_composite_adapter.py`, `core/pump_composite_spec.py`;
+  - `models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py`, `models/surface_pump.py`;
+  - `models/pump_composite.py`, `models/pump_composite_adapter.py`, `definitions/pump_composite_spec.py`;
   - `models/operators/`, and FR-1's `compartments.py` on its branch;
-  - `core/runner.py`, `core/windows.py`, `core/batch.py`, `core/vector_windows.py`;
+  - `execution/runner.py`, `execution/windows.py`, `execution/batch.py`, `execution/vector_windows.py`;
   - `numerics/surface_imex.py`;
   - `processes/` (the channel kernels, `junction_gate.py`, `kinetic_pump.py`, `finite_energy.py`);
   - `legacy/core/kinetic_finite_spec.py`, `legacy/core/surface_energy_spec.py`, `io.py`;

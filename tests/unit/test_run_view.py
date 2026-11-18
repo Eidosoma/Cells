@@ -1,4 +1,4 @@
-"""The run view (D154; docs/RUN_VIEW_DESIGN.md; cells/run_view.py): write_run, write_batch_run,
+"""The run view (D154; docs/RUN_VIEW_DESIGN.md; cells/records/run_view.py): write_run, write_batch_run,
 the plan, its refusals and the reader's check. The windowed paths: test_run_view_windows.py.
 
 * The shared paths write a view only when asked (view=): without it write_run writes what it
@@ -17,7 +17,7 @@ the plan, its refusals and the reader's check. The windowed paths: test_run_view
   requested seams) only shrink.
 
 Declarations an operator does not carry yet are planted for a test's duration only.
-"""
+"""  # noqa: E501
 
 import json
 import os
@@ -26,17 +26,17 @@ import resource
 import numpy as np
 import pytest
 
-from cells import run_view
-from cells.batch_io import write_batch_run
-from cells.core.batch import run_batch
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.io import write_run
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import run_batch
+from cells.execution.runner import run
+from cells.execution.state import initialise
 from cells.models import surface_pump_v3 as tissue3
-from cells.models.operators import OPERATORS
-from cells.models.operators.contract import Operator
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators.contract import Operator
+from cells.records import run_view
+from cells.records.batch_io import write_batch_run
+from cells.records.io import write_run
+from cells.registry.models import get_model
 from tests.batch_fixtures import definition
 from tests.run_view_fixtures import (
     EXCHANGE,

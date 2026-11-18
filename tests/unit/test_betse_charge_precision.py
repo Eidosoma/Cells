@@ -9,7 +9,7 @@ import jax
 import numpy as np
 import pytest
 
-from cells.processes.electrochemistry import F
+from cells.laws.electrochemistry import F
 from tests.unit import test_betse_junction_runtime as reference
 from validation.assays import source_order_precision as repair
 from validation.betse.emulator import junction_spec
