@@ -302,14 +302,16 @@ positive up to the stored amount.
   - the zero-power list updated: the two blind spots now name their remedies, and the amendment's
     own weak cells are listed;
   - two tests added.
-- The tests' tier rows follow once measured on the timed lane.
+- The tests' tier rows were folded the same day, after amendment 1 (see Tests).
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
 ## Tests
 
-All three files are tier 1. Their rows are measured on the timed lane, one thread per core, and
-folded with `scripts/test_tiers.py tiers --base`.
+All three files are tier 1. Their rows were measured at 1b607df4 on the timed lane (CPU 4, one
+thread per core, under its lock) and folded with `scripts/test_tiers.py tiers --base`: binding 2.22
+s, cycles 0.67 s, registration 0.92 s. The record is
+`/mnt/workspaces/Cells/core-seams-references-20261118/gate-1b607df4/tiers/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
