@@ -1,0 +1,778 @@
+"""Writes the core-seams references' registered design and values (``designs/``) from the inputs.
+
+    python -m validation.core_seams.references.design            # write
+    python -m validation.core_seams.references.design --check    # regenerate and compare
+
+``reference_inputs.json`` (written by ``worlds.py``) holds the laws, states, systems and nodes.
+``core_seams_reference_values.json`` holds the references on every registered state, one record
+per line. ``core_seams_reference_design.json`` holds the claims, each planted control's power (its
+largest deviation over the registered states, where it is largest, and the states where it is
+weak), the zero-power cases and the readings. All of it is written before any engine output for
+seams A and C (CORE_SEAMS_DESIGN §19 item 7). Generating takes about a minute of one CPU.
+"""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import hashlib
+import json
+import math
+import sys
+from pathlib import Path
+
+from . import api, exact, worlds
+from . import cycles as C
+from . import diagrams as D
+
+HERE = Path(__file__).resolve().parent
+DESIGNS = HERE / "designs"
+DESIGN_FILE = DESIGNS / "core_seams_reference_design.json"
+VALUES_FILE = DESIGNS / "core_seams_reference_values.json"
+MIN_MARGIN = 10.0
+BAND_EPS = 64.0          # "a few tens of eps of the terms' absolute sum" (§19 item 2), for verdicts
+NEAR_EQ = 1e-3           # |ΔG/RT| below which a one-way plant is expected to be weak
+FLOOR_OPS = 8.0          # a few operations' rounding beside ΔG/RT's terms, in eps
+
+
+def floor_J(mode) -> float:
+    """The honest absolute floor on a mode's J (fmol/s): (J⁺ + J⁻) × (ΔG/RT's terms + a few) eps.
+
+    An honest float64 kernel's ΔG/RT is off by about its terms' absolute sum times eps, so its J is
+    off by about (J⁺ + J⁻) times that; near equilibrium no relative floor exists."""
+    return mode["J_scale"] * (mode["dG_RT_terms_abs"] + FLOOR_OPS) * exact.EPS
+
+
+def rel_floor(terms) -> float:
+    """The honest relative floor on a one-way flux or a slope at a state."""
+    return (terms + FLOOR_OPS) * exact.EPS
+
+
+def git_blob_id(path) -> str:
+    data = Path(path).read_bytes()
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def _ok(x):
+    return x is not None and isinstance(x, (int, float)) and math.isfinite(x)
+
+
+def _rel(a, b):
+    if b == 0:
+        return None
+    return abs(a - b) / abs(b)
+
+
+def summarise(tags, devs, weak=MIN_MARGIN) -> dict:
+    """A plant's power over the registered states, each deviation in floors: its largest margin
+    and where, its smallest, and the states where it is weak (below ``weak`` floors)."""
+    pairs = [(t, d) for t, d in zip(tags, devs, strict=True) if _ok(d)]
+    if not pairs:
+        return {"max": None}
+    tmax, dmax = max(pairs, key=lambda p: p[1])
+    tmin, dmin = min(pairs, key=lambda p: p[1])
+    return {"max": dmax, "at": tmax, "min": dmin, "min_at": tmin,
+            "weak_at": [t for t, d in pairs if d < weak]}
+
+
+# --------------------------------------------------------------------------------------------
+# Seam A
+# --------------------------------------------------------------------------------------------
+
+def _laws(inputs):
+    A = inputs["seam_a"]
+    return A, A["registry"], {law["id"]: law for law in A["laws"]}
+
+
+def wegscheider_verdict(law, reg, law_states) -> tuple:
+    """The reference's verdict on a diagram law (§16: the full set of Hill cycles, each with an
+    identically zero residual) and the per-cycle residuals for the values file."""
+    comp = D.cycle_set_complete(law)
+    w = api.wegscheider(law, reg, law_states)
+    reasons = []
+    if not comp["complete"]:
+        reasons.append(f"the declared cycles are not the diagram's full set (missing "
+                       f"{comp['missing']})")
+        if D.basis_shares_an_edge(law):
+            reasons.append("a declared basis whose cycles share an edge")
+    for cid, row in w.items():
+        cyc = next(c for c in law["cycles"] if c["id"] == cid)
+        if not row["structurally_zero"]:
+            reasons.append(f"cycle {cid}: the residual varies with "
+                           f"{sorted(row['b']) + (['psi'] if row['b_psi'] else [])}")
+        terms = 0.0
+        for eid, _d in cyc["edges"]:
+            e = next(x for x in law["edges"] if x["id"] == eid)
+            terms += abs(math.log(e["fwd"]["k0_per_s"])) + abs(math.log(e["bwd"]["k0_per_s"]))
+        for s, _e, n in cyc["nu"]:
+            terms += abs(n * reg["species"][s]["mu0_RT"])
+        row["r0_over_terms_eps"] = abs(row["r0"]) / (terms * exact.EPS)
+        if row["r0_over_terms_eps"] > BAND_EPS:
+            reasons.append(f"cycle {cid}: a constant residual {row['r0']:.3g}")
+    return {"verdict": "refused" if reasons else "admitted", "reasons": reasons,
+            "cycle_set": comp}, w
+
+
+def layout_plants(law, pop, reg, st, vol) -> dict:
+    """Errors only the general layout can make, and n ± 1, the fuel frame, the work's sign and a
+    dropped voltage term: each one's relative deviation of J, the rows, heat and work."""
+    ref = api.cycle_state(law, pop, reg, st, vol, with_slopes=False)
+    n = law["parameters"]["n"]
+    moved = "H" if law["law_id"].startswith("cells.proton") else "Z"
+
+    def run(lw=law, pp=pop, rg=reg, s=st):
+        return api.cycle_state(lw, pp, rg, s, vol, with_slopes=False)
+
+    RT = float(exact.RT_J_per_mol(reg["temperature_K"]))
+    q = ref["modes"]["cyc"]
+    fJ = floor_J(q)
+    J = abs(q["J"])
+    rel = rel_floor(q["dG_RT_terms_abs"])
+    g_held = abs(ref["work_pJ_per_s"]) * 1000 / (J * RT) if J > 0 else 0.0
+    f_heat = (fJ * abs(q["dG_RT"]) + J * rel) * RT / 1000
+    f_work = (fJ * g_held + J * rel) * RT / 1000
+
+    def dev(r):
+        """Each deviation over its honest floor (J, rows, heat, work)."""
+        rows = [abs(r["rows_fmol_per_s"].get(k, 0.0) - v) / (n * fJ)
+                for k, v in ref["rows_fmol_per_s"].items()]
+        return {"J": abs(r["modes"]["cyc"]["J"] - q["J"]) / fJ,
+                "rows": max(rows) if rows else None,
+                "heat": abs(r["heat_pJ_per_s"] - ref["heat_pJ_per_s"]) / f_heat,
+                "work": abs(r["work_pJ_per_s"] - ref["work_pJ_per_s"]) / f_work}
+
+    out = {}
+    held_b = [["ATP", "b"], ["ADP", "b"], ["Pi", "b"]]
+    out["orientation_swapped"] = dev(run(pp=dict(pop, orientation={"N": "b"}, held_rows=held_b)))
+    lw = copy.deepcopy(law)
+    for row in lw["modes"][0]["nu"]:
+        if row[0] in ("ATP", "ADP", "Pi"):
+            row[1] = "P"
+    for t in lw["modes"][0]["saturation"]:
+        if t["species"] == "ATP":
+            t["end"] = "P"
+    out["fuel_end_misplaced"] = dev(run(lw=lw, pp=dict(pop, held_rows=held_b)))
+    twice = dict(pop, capacity_fmol_per_s=2 * pop["capacity_fmol_per_s"])
+    out["capacity_twice"] = dev(run(pp=twice))
+    b_row = ref["rows_fmol_per_s"][f"{moved}@b"]
+    out["rows_scattered"] = {"rows": abs(b_row) / (n * fJ)}
+    for k in (n + 1, n - 1):
+        if k < 1:
+            continue
+        lw = copy.deepcopy(law)
+        m = lw["modes"][0]
+        m["nu"] = [[s, e, (-k if v < 0 else k) if s == moved else v] for s, e, v in m["nu"]]
+        for t in m["saturation"]:
+            if t["species"] == moved:
+                t["hill"] = k
+        out[f"n_{'plus' if k > n else 'minus'}_one"] = dev(run(lw=lw))
+    rg = copy.deepcopy(reg)
+    for s in ("ATP", "ADP", "Pi"):
+        rg["species"][s]["mu0_RT"] += math.log(1000.0)
+    out["fuel_frame_1mM"] = dev(run(rg=rg))
+    out["work_sign"] = {"work": 2 * abs(ref["work_pJ_per_s"]) / f_work}
+    s0 = copy.deepcopy(st)
+    s0["phi_V"]["a"] = s0["phi_V"]["b"]
+    out["voltage_dropped"] = {"J": abs(run(s=s0)["modes"]["cyc"]["J"] - q["J"]) / fJ}
+    return out
+
+
+def slope_plants(law, pop, reg, rec, vol) -> dict:
+    """Planted slopes' relative deviations from the exact conductance and dJ/dV."""
+    G = rec["slopes"]["conductance_pS"]
+    out = {}
+    F = float(exact.FARADAY)
+    RT = float(exact.RT_J_per_mol(reg["temperature_K"]))
+    k = pop["capacity_fmol_per_s"] * pop.get("availability", 1.0)
+    if law["kind"] == "factored":
+        m = law["modes"][0]
+        nq = C.parse_checks(m["nu"], reg)["n_q"]
+        S, g = rec["modes"]["cyc"]["S"], rec["modes"]["cyc"]["dG_RT"]
+        if nq != 0:
+            out["static_head_formula"] = _rel(nq * nq * F * F * k * S / RT * 1e-3, G)
+            out["n_q_not_squared"] = _rel(abs(nq) * F * F * k * S * math.exp(g) / RT * 1e-3, abs(G))
+    else:
+        worst = None
+        for c in law["cycles"]:
+            nq = C.parse_checks(c["nu"], reg)["n_q"]
+            row = rec["modes"][c["id"]]
+            frozen = row["J_plus"] * math.exp(row["dG_RT"]) * nq * F / RT
+            r = _rel(frozen, rec["slopes"]["dJ_dV"][c["id"]])
+            if _ok(r):
+                worst = r if worst is None else max(worst, r)
+        out["S_frozen"] = worst
+    if G != 0:
+        out["half_RT"] = 0.5
+    if rec["slopes"]["material"]:
+        out["wrong_volume"] = abs(vol["a"] / vol["b"] - 1.0)
+    rf = rel_floor(max(m["dG_RT_terms_abs"] for m in rec["modes"].values()))
+    return {k: (v / rf if _ok(v) else None) for k, v in out.items()}
+
+
+def seam_a(inputs) -> tuple:
+    """(values, diagnostics): the references per state, and what the design summarises."""
+    A, reg, laws = _laws(inputs)
+    vol = A["volumes_pL"]
+    val = {"laws": {}, "wegscheider": {}, "parse": {}}
+    dia = {"methods": {}, "slope_check": {}, "oneway": {}, "basis": {}, "standin": {},
+           "layout": {}, "slopes": {}, "weg": {}}
+    for law in A["laws"]:
+        pop = A["populations"][law["id"]]
+        sts = A["states"][law["id"]]
+        recs = [api.cycle_state(law, pop, reg, st, vol, with_slopes=law["kind"] != "net_flow")
+                for st in sts]
+        val["laws"][law["id"]] = {"population": pop, "states": recs}
+        val["parse"][law["id"]] = {m["id"]: C.parse_checks(m["nu"], reg) for m in C.modes(law)}
+        admitted = not law["id"].startswith("planted") and law["kind"] != "net_flow"
+        if law["kind"] == "diagram":
+            lsts = api.law_states_of(pop, sts)
+            verdict, w = wegscheider_verdict(law, reg, lsts)
+            val["wegscheider"][law["id"]] = _weg_values(verdict, w)
+            dia["weg"][law["id"]] = w
+            dia["methods"][law["id"]] = [api.method_agreement(law, pop, reg, st) for st in sts]
+            dia["oneway"][law["id"]] = [api.oneway_plants(law, pop, reg, st) for st in sts]
+            if law["id"] in ("d2_slip_exchanger", "d4_parallel_branches"):
+                dia["basis"][law["id"]] = [api.basis_signs(law, pop, reg, st) for st in sts]
+        if admitted:
+            dia["standin"][law["id"]] = [api.guard_standin(law, pop, reg, st) for st in sts]
+            dia["slope_check"][law["id"]] = [api.slope_agreement(law, pop, reg, st, vol)
+                                             for st in sts[:4]]
+            dia["slopes"][law["id"]] = [slope_plants(law, pop, reg, r, vol) for r in recs]
+        if law["kind"] == "factored" and admitted:
+            dia["layout"][law["id"]] = [layout_plants(law, pop, reg, st, vol) for st in sts]
+    for law in A["planted_laws"]:
+        base = A["plant_states"][law["id"]]
+        lsts = api.law_states_of(A["populations"][base], A["states"][base])
+        verdict, w = wegscheider_verdict(law, reg, lsts)
+        val["wegscheider"][law["id"]] = _weg_values(verdict, w)
+        dia["weg"][law["id"]] = w
+    for plant in A["parse_plants"]:
+        r = reg if plant["registry"] == "A" else _registry_c_as_rows(inputs)
+        val["parse"][plant["id"]] = C.parse_checks(plant["nu"], r)
+    return val, dia
+
+
+def _weg_values(verdict, w) -> dict:
+    keep = ("r0", "b", "b_psi", "b_psi_exact", "n_q", "structurally_zero", "r0_over_terms_eps",
+            "residual_at_states")
+    return dict(verdict, cycles={cid: {k: row[k] for k in keep} for cid, row in w.items()})
+
+
+def _registry_c_as_rows(inputs) -> dict:
+    """Seam C's registry seen as rows: ligands with their valences, binders at base valences."""
+    rc = inputs["seam_c"]["registry"]
+    sp = {k: dict(v) for k, v in rc["species"].items()}
+    for b, v in rc["binders"].items():
+        sp[b] = {"valence": v["base_valence"], "mu0_RT": v["forms"][0]["mu0_RT"]}
+    return {"species": sp, "moieties": rc["moieties"]}
+
+
+# --------------------------------------------------------------------------------------------
+# Seam C
+# --------------------------------------------------------------------------------------------
+
+def seam_c(inputs) -> tuple:
+    Cc = inputs["seam_c"]
+    reg = Cc["registry"]
+    val = {"systems": {}, "p1": {}, "movers": {}, "parse": {}}
+    dia = {"systems": {}}
+    for name, sysd in Cc["systems"].items():
+        spec = {"ligands": sysd["ligands"], "binders": sysd["binders"]}
+        V = sysd["volume_pL"]
+        rows, drows = [], []
+        for k, st in enumerate(Cc["manufactured_states"][name]):
+            extra = k < 2 or not st["tag"].startswith("random")
+            rec, sp, sy = api.binding_state(spec, reg, st["totals"], V, extra_checks=extra)
+            with exact.context():
+                man = max(abs((sp["x_mM"][L] / exact.dec(st["free_mM"][L])).ln())
+                          for L in sy.ligands)
+            rec = dict({"tag": st["tag"]}, **rec)
+            rec["manufactured_dln"] = exact.fl(man)
+            d = {"tag": st["tag"],
+                 "plants": api.binding_plants(spec, reg, st["totals"], V, sysd["designated"]),
+                 "gradient_plant": api.gradient_plant(spec, reg, st["totals"], V),
+                 "nonminimum_plant": api.nonminimum_plant(spec, reg, st["totals"], V,
+                                                          sysd["designated"])}
+            B_of = next(B for B in sysd["binders"] if any(f["id"] == sysd["designated"]
+                                                          for f in reg["binders"][B]["forms"]))
+            d["charge_plant_fmol_e"] = rec["forms_mM"][B_of][sysd["designated"]] * V
+            if "parts" in sysd:
+                worst = 0.0
+                for part in sysd["parts"]:
+                    tot = {"ligands_fmol": {L: st["totals"]["ligands_fmol"][L]
+                                            for L in part["ligands"]},
+                           "binders_fmol": {B: st["totals"]["binders_fmol"][B]
+                                            for B in part["binders"]}}
+                    r2, _sp2, _sy2 = api.binding_state(part, reg, tot, V)
+                    for L in part["ligands"]:
+                        worst = max(worst, abs(r2["x_mM"][L] / rec["x_mM"][L] - 1.0))
+                d["joint_vs_separate_rel"] = worst
+            rows.append(rec)
+            drows.append(d)
+        val["systems"][name] = {"spec": spec, "volume_pL": V, "states": rows}
+        dia["systems"][name] = drows
+    for name, node in Cc["p1_nodes"].items():
+        val["p1"][name] = api.p1(node, reg)
+    for mv in Cc["movers"]:
+        val["movers"][mv["id"]] = api.mover_verdict(mv, reg)
+    val["parse"]["form_valences"] = {
+        B: {f["id"]: int(b["base_valence"]) + sum(int(n) * int(reg["species"][L]["valence"])
+                                                  for L, n in f.get("counts", {}).items())
+            for f in b["forms"]} for B, b in reg["binders"].items()}
+    val["parse"]["planted_declared_valence"] = {
+        "form": "nuc4_Mg", "declared": -1,
+        "derived": val["parse"]["form_valences"]["nuc4"]["nuc4_Mg"], "verdict": "refused"}
+    return val, dia
+
+
+# --------------------------------------------------------------------------------------------
+# The design: claims, power, zero power and readings
+# --------------------------------------------------------------------------------------------
+
+def power_a(inputs, va, da) -> dict:
+    A, reg, laws = _laws(inputs)
+    RT = float(exact.RT_J_per_mol(reg["temperature_K"]))
+    power = {}
+
+    # A1: sign and zero, and the diagrams' own backward fluxes against the contract's
+    a1 = {}
+    for lid, rec in va["laws"].items():
+        if laws[lid]["kind"] == "net_flow":
+            continue
+        sts = rec["states"]
+        jdg = [max(s["modes"][m]["J"] * s["modes"][m]["dG_RT"] for m in s["modes"]) for s in sts]
+        row = {"max_J_dG_RT": max(jdg), "at": sts[jdg.index(max(jdg))]["tag"]}
+        if laws[lid]["kind"] == "diagram":
+            row["max_abs_ln_diagram_over_contract_backward"] = max(
+                abs(math.log(s["modes"][m]["J_minus_diagram"] / s["modes"][m]["J_minus"]))
+                for s in sts for m in s["modes"] if s["modes"][m]["J_minus"] > 0)
+        a1[lid] = row
+    neg = va["laws"]["planted_negative_S_n1"]["states"]
+    a1["planted_negative_S_n1"]["states_with_S_below_zero"] = [
+        s["tag"] for s in neg if s["modes"]["cyc"]["S"] < 0]
+    a1["planted_negative_S_n1"]["min_J_dG_RT_there"] = min(
+        s["modes"]["cyc"]["J"] * s["modes"]["cyc"]["dG_RT"] for s in neg
+        if s["modes"]["cyc"]["S"] < 0)
+    # over the guard's allowance there: J ΔG/RT against BAND_EPS eps of (J⁺ + J⁻) × ΔG's terms
+    a1["planted_negative_S_n1"]["min_over_allowance_there"] = min(
+        s["modes"]["cyc"]["J"] * s["modes"]["cyc"]["dG_RT"] /
+        (BAND_EPS * exact.EPS * s["modes"]["cyc"]["J_scale"] * s["modes"]["cyc"]["dG_RT_terms_abs"])
+        for s in neg if s["modes"]["cyc"]["S"] < 0)
+    power["A1_sign_and_zero"] = a1
+
+    # A2: Wegscheider (and the generic states' affine independence in ln a and ψ)
+    import numpy as np
+    generic = {}
+    for lid in A["generic_states"]:
+        law, pop = laws[lid], A["populations"][lid]
+        keys = sorted({(s, e) for c in law["cycles"] for s, e, _n in c["nu"]} |
+                      {(s, e) for ed in law["edges"] for side in ("fwd", "bwd")
+                       for s, e, _o in ed[side].get("orders", [])})
+        rows = []
+        for st in A["states"][lid][:A["generic_states"][lid]]:
+            ls = C.law_state(pop, st)
+            rows.append([1.0] + [math.log(ls["c_mM"][e][s] / 1000.0) for s, e in keys] +
+                        [ls["phi_V"]["N"] - ls["phi_V"]["P"]])
+        generic[lid] = {"variables": [f"{s}@{e}" for s, e in keys] + ["psi", "constant"],
+                        "rank": int(np.linalg.matrix_rank(np.array(rows))),
+                        "states": len(rows)}
+    weg = {"generic_sets": generic}
+    for lid, w in da["weg"].items():
+        base = A["plant_states"].get(lid, lid)
+        tags = [s["tag"] for s in A["states"][base]]
+        unit = tags.index("unit_activity_zero_voltage")
+        ng = A["generic_states"][base]
+        cyc = {}
+        for cid, c in w.items():
+            rel = c["residual_over_terms_eps"]
+            others = [(t, x) for i, (t, x) in enumerate(zip(tags, rel, strict=True)) if i != unit]
+            cyc[cid] = {"structurally_zero": c["structurally_zero"], "b": c["b"],
+                        "b_psi": c["b_psi"], "r0": c["r0"],
+                        "residual_eps": summarise([t for t, _x in others], [x for _t, x in others],
+                                                  weak=BAND_EPS * MIN_MARGIN),
+                        "min_residual_eps_over_generic": min(rel[:ng]),
+                        "residual_eps_at_unit_state": rel[unit],
+                        "standin_max_eps": max(max(c["standin_sum_of_logs_eps"]),
+                                               max(c["standin_log_of_ratio_eps"])),
+                        "r0_over_terms_eps": c["r0_over_terms_eps"]}
+        weg[lid] = {"verdict": va["wegscheider"][lid]["verdict"],
+                    "reasons": va["wegscheider"][lid]["reasons"], "cycles": cyc}
+    power["A2_wegscheider"] = weg
+
+    # A3: the population guard (its rounding scale from the one-way magnitudes and ΔG's terms)
+    guard = {}
+    for gid in ("fb_shift", "fb_masked", "fb_basis"):
+        rows = []
+        for s in va["laws"][gid]["states"]:
+            scale = sum(s["modes"][m]["J_scale"] * s["modes"][m]["dG_RT_terms_abs"]
+                        for m in s["modes"]) * RT / 1000 * exact.EPS
+            tot = s["guard_total_pJ_per_s"]
+            against = [m for m in s["modes"]
+                       if s["modes"][m]["J"] * s["modes"][m]["dG_RT"] * RT / 1000 >
+                       BAND_EPS * scale]
+            rows.append({"tag": s["tag"], "total_pJ_per_s": tot, "scale_pJ_per_s": scale,
+                         "fires": tot > BAND_EPS * scale, "modes_against_dG": against})
+        fires = [r for r in rows if r["fires"]]
+        # the stated band (in eps) for which each verdict holds: a firing state fires while the
+        # band is below total/(scale/eps); a silent state with a positive total stays silent while
+        # the band is above it; a total ≤ 0 is silent for any band
+        in_eps = [r["total_pJ_per_s"] / r["scale_pJ_per_s"] if r["scale_pJ_per_s"] > 0 else None
+                  for r in rows]
+        fire_below = [x for r, x in zip(rows, in_eps, strict=True) if r["fires"] and _ok(x)]
+        silent_above = [x for r, x in zip(rows, in_eps, strict=True)
+                        if not r["fires"] and _ok(x) and x > 0]
+        guard[gid] = {"fires_at": [r["tag"] for r in fires],
+                      "verdicts_hold_for_a_band_in_eps": [max(silent_above, default=0.0),
+                                                          min(fire_below, default=None)],
+                      "conditional_on_the_band": [r["tag"] for r, x in zip(rows, in_eps,
+                                                                          strict=True)
+                                                  if r["fires"] and _ok(x) and x < 1e6],
+                      "silent_at": [r["tag"] for r in rows if not r["fires"]],
+                      "a_mode_against_its_dG_at": [r["tag"] for r in rows if r["modes_against_dG"]],
+                      "min_total_over_allowance_where_fires":
+                          min((r["total_pJ_per_s"] / (BAND_EPS * r["scale_pJ_per_s"])
+                               for r in fires), default=None),
+                      "max_total_over_allowance_where_silent":
+                          max((r["total_pJ_per_s"] / (BAND_EPS * r["scale_pJ_per_s"])
+                               for r in rows if not r["fires"] and r["scale_pJ_per_s"] > 0),
+                              default=None)}
+    guard["admitted_laws"] = {lid: {"standin_difference_max_eps": max(x["difference_over_scale_eps"]
+                                                                       for x in rows),
+                                    "standin_expm1_max_total": max(x["expm1_total"] for x in rows)}
+                              for lid, rows in da["standin"].items()}
+    power["A3_population_guard"] = guard
+
+    # A4: one-way fluxes
+    ow = {}
+    for lid, rows in da["oneway"].items():
+        sts = va["laws"][lid]["states"]
+        tags = [s["tag"] for s in sts]
+        per = {}
+        for cid in rows[0]:
+            per[cid] = {}
+            floors = [rel_floor(s["modes"][cid]["dG_RT_terms_abs"]) for s in sts]
+            for plant in ("exponent_flipped", "edge_in_place_of_cycle", "sigma_omitted",
+                          "basis_in_place_of_hill"):
+                devs = [r[cid].get(plant) / f if _ok(r[cid].get(plant)) else None
+                        for r, f in zip(rows, floors, strict=True)]
+                if any(_ok(x) for x in devs):
+                    per[cid][plant] = summarise(tags, devs)
+        meth = da["methods"][lid]
+        ow[lid] = {"plants": per,
+                   "trees_vs_minors_max_rel": max(m["trees_vs_minors_rel"] for m in meth),
+                   "occupancy_trees_vs_solve_max_abs": max(m["occupancy_trees_vs_solve_abs"]
+                                                           for m in meth),
+                   "edge_cycle_consistency_max_rel": max(m["edge_cycle_consistency_rel"]
+                                                         for m in meth)}
+    for lid, rows in da["basis"].items():
+        tags = [s["tag"] for s in va["laws"][lid]["states"]]
+        ow[lid]["basis_readout"] = {
+            "states_with_a_basis_mode_against_its_dG": [
+                t for t, r in zip(tags, rows, strict=True)
+                if r["mode_A_against_dG"] or r["mode_B_against_dG"]],
+            "total_basis_vs_hill_max_rel": max(r["basis_vs_hill_rel"] for r in rows)}
+    power["A4_one_way_fluxes"] = ow
+
+    # A5: two layouts
+    lay = {}
+    for lid, rows in da["layout"].items():
+        tags = [s["tag"] for s in va["laws"][lid]["states"]]
+        lay[lid] = {plant: {key: summarise(tags, [(r[plant] or {}).get(key) for r in rows])
+                            for key in ("J", "rows", "heat", "work")
+                            if any(_ok((r[plant] or {}).get(key)) for r in rows)}
+                    for plant in rows[0]}
+    power["A5_two_layouts"] = lay
+
+    # A6: slopes
+    sl = {}
+    for lid, rows in da["slopes"].items():
+        tags = [s["tag"] for s in va["laws"][lid]["states"]]
+        plants = sorted(set().union(*[set(r) for r in rows]))
+        sl[lid] = {"plants": {p: summarise(tags, [r.get(p) for r in rows]) for p in plants},
+                   "exact_vs_differences_max_rel": max(da["slope_check"][lid])}
+    power["A6_slopes"] = sl
+
+    # A7: parse-time checks
+    power["A7_parse_checks"] = {p["id"]: va["parse"][p["id"]] for p in A["parse_plants"]}
+    return power
+
+
+def power_c(inputs, vc, dc) -> dict:
+    power = {}
+    cp = {}
+    for name, srec in vc["systems"].items():
+        rows, drows = srec["states"], dc["systems"][name]
+        tags = [r["tag"] for r in rows]
+        floors = [max(list(r["floor_residual_1e-13"]["x"].values()) +
+                      list(r["floor_residual_1e-13"]["forms"].values())) for r in rows]
+        per = {}
+        for plant in ("K_1pct", "K_1e-6", "form_dropped", "count_off_by_one",
+                      "conservation_1e-10"):
+            over = [d["plants"][plant]["max_abs_dln"] / f for d, f in zip(drows, floors,
+                                                                         strict=True)]
+            per[plant] = summarise(tags, over, weak=MIN_MARGIN)
+            per[plant]["note"] = "deviation over the residual-bound floor at each state"
+        grad = [r["gradient_vs_differences_rel"] for r in rows
+                if "gradient_vs_differences_rel" in r]
+        bis = [r["newton_vs_bisection_rel"] for r in rows if "newton_vs_bisection_rel" in r]
+        spec_part = [r["speciation_part_pJ"] for r in rows if r["speciation_part_pJ"] is not None]
+        cp[name] = {
+            "plants": per,
+            "floor_residual_max": max(floors),
+            "floor_input_max": max(max(list(r["floor_input_rounding"]["x"].values()) +
+                                       list(r["floor_input_rounding"]["forms"].values()))
+                                   for r in rows),
+            "manufactured_max_dln": max(r["manufactured_dln"] for r in rows),
+            "residual_max_rel": max(max(r["residual_rel"].values()) for r in rows),
+            "conservation_max_rel": max(max(r["conservation_rel"].values()) for r in rows),
+            "charge_max_abs_fmol_e": max(abs(r["charge"]["difference_fmol_e"]) for r in rows),
+            "gradient_vs_differences_max_rel": max(grad) if grad else None,
+            "newton_vs_bisection_max_rel": max(bis) if bis else None,
+            "joint_vs_separate_max_rel": max([d.get("joint_vs_separate_rel", 0.0) for d in drows]),
+            "gradient_plant": summarise(tags, [d["gradient_plant"]["max_abs_J_per_mol"]
+                                               for d in drows], weak=1.0),
+            "nonminimum_plant_min_excess_pJ": min(d["nonminimum_plant"]["excess_pJ"]
+                                                  for d in drows),
+            "charge_plant_min_fmol_e": min(d["charge_plant_fmol_e"] for d in drows),
+            "speciation_part_max_pJ": max(spec_part) if spec_part else None,
+            "states_with_a_total_not_positive": [r["tag"] for r in rows
+                                                 if not r["every_total_positive"]],
+        }
+    power["C1_C2_C4_binding"] = cp
+    power["C3_movers"] = vc["movers"]
+    power["C2_parse"] = vc["parse"]["planted_declared_valence"]
+    power["C5_p1"] = {k: {kk: v[kk] for kk in ("threshold_free_fmol", "threshold_stored_fmol",
+                                               "threshold_linearised_free_fmol",
+                                               "ratio_stored_over_free",
+                                               "ratio_linearised_over_free",
+                                               "admissible_floor_fmol")}
+                      for k, v in vc["p1"].items()}
+    return power
+
+
+CLAIMS = [
+    {"row": "A1", "claim": ("Each mode's flux has the sign of −ΔG and is zero at its equilibrium: "
+                            "J = k a S (1 − e^{ΔG/RT}) with S ≥ 0"),
+     "reference": "the exact fluxes at every registered state (values: seam_a.laws)",
+     "plants": ["planted_negative_S_n1 (S − 0.05): J ΔG > 0 where S < 0"]},
+    {"row": "A2", "claim": ("Wegscheider's condition holds on every declared Hill cycle at the "
+                            "engine's potentials, decided exactly (the residual is affine in ln a "
+                            "and ψ); a law that fails, or declares a basis sharing an edge, is "
+                            "refused (§16, §19 item 2)"),
+     "reference": ("the residual's exact affine coefficients and its 50-digit value at every "
+                   "state; the honest float64 stand-in in eps of its terms' absolute sum"),
+     "plants": ["k ×1.01 and ×(1 + 1e-6)", "a voltage exponent moving 0.2 more charge",
+                "a missing concentration factor", "a species read at the wrong end",
+                "D2 declared as the basis {A, B}, D4 as {K1, K2}"]},
+    {"row": "A3", "claim": ("The population's Σ J ΔG ≤ 0 at run time, beyond a rounding bound "
+                            "from its terms; per-mode bookings are readouts (§16)"),
+     "reference": "Σ J ΔG and each mode's term at every guard state",
+     "plants": ["fb_shift must fire in its band", "fb_masked: the guard cannot see it",
+                "fb_basis must not fire (a false-refusal control)",
+                "the admitted laws' float64 stand-in, inside the bound"]},
+    {"row": "A4", "claim": ("Every admitted Hill cycle exposes J⁺ and J⁻ = J⁺ e^{ΔG/RT}, and the "
+                            "declared set is the diagram's full set (§16, D202)"),
+     "reference": ("j± by spanning trees and by the matrix-tree minors, the master equation's "
+                   "steady state, and the edge-cycle consistency"),
+     "plants": ["the exponent's sign flipped", "an edge's one-way fluxes", "Σ_κ omitted",
+                "the basis's one-way fluxes"]},
+    {"row": "A5", "claim": ("A version-1-form world gives the same rates in either layout; the "
+                            "expected rates hold for any selector (§19 item 5)"),
+     "reference": ("J, rows per host end, held supply, heat, work, the stored rate and the charge "
+                   "flux for proton_atp_mass_action_positive@1 (n = 2) and the neutral law "
+                   "(n = 1, 2)"),
+     "plants": ["N/P swapped", "the fuel end misplaced", "capacity counted twice",
+                "rows scattered to one end", "n ± 1", "the fuel's 1 mM frame (RT ln 1000)",
+                "the work's sign", "the voltage term dropped"]},
+    {"row": "A6", "claim": ("The electrogenic conductance and each moved row's material slope, "
+                            "exact, against central differences (§3.3, taken by §19)"),
+     "reference": "exact slopes by forward-mode duals at every state",
+     "plants": ["the static-head formula off static head", "n_q not squared",
+                "∂S/∂V ignored (diagrams)", "F/(2RT)", "the wrong node's volume"]},
+    {"row": "A7", "claim": "Parse-time charge and moiety balance per mode; n_q derived (§3.2)",
+     "reference": "the integer sums per declared mode",
+     "plants": ["X+ not conserved (charge +1)", "ATP -> ADP without Pi (phosphate −1)",
+                "base-form hydrolysis without its proton (charge −1)"]},
+    {"row": "C1", "claim": ("The closure's free forms satisfy every binding's equilibrium and "
+                            "every conservation, to its residual |g|/T ≤ 1e-13 (§19 item 2)"),
+     "reference": ("Newton on the convex dual at 60 digits, nested bisection (≤ 2 ligands) and "
+                   "manufactured solutions; floors from the inputs' rounding and from the "
+                   "residual's bound"),
+     "plants": ["a K off by 1% and by 1e-6", "a dropped form", "a count off by one",
+                "conservation off by 1e-10"]},
+    {"row": "C2", "claim": "Charge from totals only: Σ z n = Σ z_L T_L + Σ z_B T_B, exactly",
+     "reference": "the species' charge against the totals' at 60 digits",
+     "plants": ["a form declared at a valence other than z_B + Σ n z_L"]},
+    {"row": "C3", "claim": ("Only movers that declare their stoichiometry in base forms, every "
+                            "ligand written out, move a multi-form row (§5.2)"),
+     "reference": "a verdict per registered mover",
+     "plants": ["the scalar proton omitted", "a form moved as a row", "an undeclared mover"]},
+    {"row": "C4", "claim": ("G* is the speciation minimum and ∂G*/∂T is each row's free base "
+                            "form's potential; the booked term follows its ruling (§19 item 3)"),
+     "reference": "G* at 60 digits; its gradient analytically and by central differences",
+     "plants": ["the rows' own ideal potentials as the gradient", "a non-minimum speciation"]},
+    {"row": "C5", "claim": ("P1's buffered node: a predictor must read the quantity it "
+                            "differentiates (§17, §18)"),
+     "reference": ("rate-normalised thresholds (the free amount, the stored equivalents above "
+                   "their admissible floor, the linearised free amount) and the equilibrated "
+                   "free amount on a ladder of draws"),
+     "plants": ["today's predictor: the free amount against the stored derivative"]},
+]
+
+ZERO_POWER = [
+    {"control": "the voltage-exponent plant at ψ = 0", "why": "its residual is 0.2 ψ",
+     "remedy": "every state with V ≠ 0; the unit state shows it (residual_eps_at_unit_state)"},
+    {"control": "the concentration-exponent plant at c = c°", "why": "its residual is ± ln a",
+     "remedy": "every registered state but the unit state"},
+    {"control": "the swapped-end plant where both ends' activities are equal",
+     "why": "its residual is ln(a_N/a_P); a neutral uniport at equilibrium has equal ends",
+     "remedy": "the random states (unequal ends)"},
+    {"control": "a one-state Wegscheider check",
+     "why": ("at the unit state (a = 1, ψ = 0) only the constant is left, so the charge, "
+             "concentration and swap plants pass"),
+     "remedy": "§19 item 2: algebraic, or d + 1 generic states (seam_a.generic_states)"},
+    {"control": "the exponent-flip plant at a cycle's exact equilibrium",
+     "why": ("J⁻ = J⁺ there either way (the near_*_+0 states, and the unit state, where a "
+             "transport cycle's standard potentials cancel); at |ΔG/RT| = 1e-9 it is already "
+             "about 3e5 floors"),
+     "remedy": "every other state"},
+    {"control": "Σ_κ omitted, on a cycle through every state (D1's A, D2's A, D4's K1 and K2)",
+     "why": "Σ_κ = 1", "remedy": "D2's B and C, D3's α and β, D4's K3"},
+    {"control": "the basis's one-way fluxes where the dependent cycle barely turns",
+     "why": "J_C⁺ ≪ J_A⁺ (D2's A at far_A_+25)",
+     "remedy": "every other state of D2 and D4"},
+    {"control": "the population guard on fb_masked",
+     "why": "the leak's dissipation masks the exchange's wrong sign in the total",
+     "remedy": "none at run time: in a diagram law Wegscheider at parse catches the same error"},
+    {"control": "the guard on any factored or admitted diagram law",
+     "why": "J ΔG ≤ 0 by construction, and its sign is exact in doubles with expm1",
+     "remedy": "the net-flow plants fb_shift and planted_negative_S_n1"},
+    {"control": ("capacity counted twice, rows scattered to one end, and the work's sign, at "
+                 "static head"),
+     "why": "J ≈ 0 there, so there is no flux to double, scatter or book",
+     "remedy": "every other state (at least 1e11 floors off static head)"},
+    {"control": "the voltage-dropped plant on the neutral law", "why": "n_q = 0",
+     "remedy": "the proton law (at least 6e5 floors at every state)"},
+    {"control": "the static-head formula at static head", "why": "it is exact there",
+     "remedy": "the random and far states"},
+    {"control": "∂S/∂V ignored at a cycle's equilibrium", "why": "(1 − e^{ΔG/RT}) = 0 kills it",
+     "remedy": "every state off equilibrium"},
+    {"control": "n_q not squared with |n_q| = 1", "why": "n_q² = |n_q|",
+     "remedy": "the proton law at n = 2"},
+    {"control": "conductance plants on neutral modes (the neutral law)", "why": "no charge moves",
+     "remedy": "the material slopes"},
+    {"control": "a dropped standard potential of a transported species",
+     "why": "it cancels between the ends of a transport mode",
+     "remedy": "the fuel rows' potentials (hydrolysis) and seam C's forms"},
+    {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
+     "remedy": "the engine's own test; the references give the rates both must meet"},
+    {"control": "a K plant on a form that holds little of its ligand",
+     "why": "the free amounts barely move", "remedy": "that form's own concentration"},
+    {"control": "today's P1 predictor while θ dt |J| < n_free", "why": "both predictors agree",
+     "remedy": "the ladder's draws beyond the free amount"},
+    {"control": "a declared form valence",
+     "why": "if the engine derives valences and never reads a declared one, the plant cannot occur",
+     "remedy": "the parse identity z_form = z_base + Σ n z_L (seam_c.parse.form_valences)"},
+]
+
+READINGS = [
+    ("Doubles carry rounding into the residual. Every passing cycle's constant term is about "
+     "1e-16, not 0, because a ratio of published k0 is irrational. A load fraction that is not "
+     "dyadic leaves the voltage coefficient off by about 5e-17. So an algebraic Wegscheider check "
+     "needs "
+     "§19's rounding band as well. The registered loads are dyadic, so every passing law's "
+     "structural coefficients are exactly zero."),
+    ("A diagram's own backward flux Π⁻Σ_κ/Σ differs from the contract's J⁺ e^{ΔG/RT} by e^{−r}. "
+     "The residual r is about 1e-16 for the passing laws "
+     "(power.A1_sign_and_zero.*.max_abs_ln_diagram_over_contract_backward). Booked with its own "
+     "backward flux, an admitted diagram law shows J ΔG > 0 within |ΔG/RT| < |r| of equilibrium, "
+     "at about 1e-37 here. The contract's J⁻ keeps the sign exact."),
+    ("A form below its base (pi2_PO4) can make a ligand's total equivalents legitimately negative "
+     "(S4's high-pH state, T_H = −1.86 fmol). The admissible floor is Σ_B T_B min_f n_{L,f}, not "
+     "zero. Then @3's per-row ideal term RT n (ln(n/V) − 1) on the H row is undefined, and so is "
+     "'G* less the stored rows' own terms'. The booked term's ruling (§19 item 3) and any "
+     "positivity guard on that row must account for it. P1b's floor is −0.5 fmol."),
+    ("The guard's teeth show only on net-flow laws, since factored and admitted diagram laws "
+     "cannot trip it. So its plants are published as net-flow test laws."),
+]
+
+NOTES = [
+    "Every constant, range and diagram is synthetic (D152 §2.4).",
+    ("Hill 1989 and King and Altman 1956 are cited as CORE_SEAMS_DESIGN cites them, unread. The "
+     "decomposition is self-verified by two routes and the edge-cycle consistency."),
+    "The booked closure term is registered by a dated amendment once ruled (§19 item 3).",
+    "The two composed worlds come later, with composition's references (§19).",
+    ("Every deviation is in floors at its state. For seam A the floor is honest float64 rounding: "
+     "on J (and rows, heat, work) (J⁺ + J⁻) × (ΔG/RT's terms + 8) eps, absolute, since near "
+     "equilibrium no relative floor exists; on one-way fluxes and slopes (terms + 8) eps "
+     "relative. For seam C it is the solution error that |g|/T ≤ 1e-13 admits. 'weak_at' lists "
+     "the states below ten floors; a plant has power where its largest margin clears ten "
+     "tolerances and the tolerance clears ten floors."),
+]
+
+
+# --------------------------------------------------------------------------------------------
+
+def build() -> tuple:
+    inputs = json.loads(worlds.INPUTS.read_text())
+    va, da = seam_a(inputs)
+    vc, dc = seam_c(inputs)
+    vals = {"kind": "cells.core_seams_reference_values@1", "registered": worlds.REGISTERED,
+            "inputs_git_blob": git_blob_id(worlds.INPUTS), "seam_a": va, "seam_c": vc}
+    des = {
+        "kind": "cells.core_seams_reference_design@1",
+        "registered": worlds.REGISTERED,
+        "status": ("registered before any engine output for seams A and C (CORE_SEAMS_DESIGN §19 "
+                   "item 7: the kinds and binding owners had not started)"),
+        "inputs": {"path": "validation/core_seams/references/reference_inputs.json",
+                   "git_blob": git_blob_id(worlds.INPUTS)},
+        "min_margin": MIN_MARGIN, "verdict_band_eps": BAND_EPS, "weak_below_floors": MIN_MARGIN,
+        "claims": CLAIMS,
+        "power": dict(power_a(inputs, va, da), **power_c(inputs, vc, dc)),
+        "zero_power": ZERO_POWER, "readings": READINGS, "notes": NOTES,
+    }
+    return des, vals
+
+
+def dump(o, compact=("states", "residual_at_states", "ladder")) -> str:
+    """JSON with indent 1, except that each element of a ``compact`` list sits on one line."""
+    def enc(x, ind, key=None):
+        pad = " " * ind
+        if isinstance(x, dict):
+            if not x:
+                return "{}"
+            items = [f'{pad} {json.dumps(k)}: {enc(v, ind + 1, k)}' for k, v in x.items()]
+            return "{\n" + ",\n".join(items) + "\n" + pad + "}"
+        if isinstance(x, list):
+            if key in compact and x:
+                inner = [pad + " " + json.dumps(v, separators=(",", ":"), allow_nan=False)
+                         for v in x]
+                return "[\n" + ",\n".join(inner) + "\n" + pad + "]"
+            if x and any(isinstance(v, (dict, list)) for v in x):
+                inner = [pad + " " + enc(v, ind + 1) for v in x]
+                return "[\n" + ",\n".join(inner) + "\n" + pad + "]"
+            return json.dumps(x, allow_nan=False)
+        return json.dumps(x, allow_nan=False)
+    return enc(o, 0) + "\n"
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--check", action="store_true")
+    args = ap.parse_args(argv)
+    d, v = build()
+    if args.check:
+        same_d = DESIGN_FILE.read_text() == dump(d)
+        same_v = VALUES_FILE.read_text() == dump(v)
+        print(f"design: {'identical' if same_d else 'DIFFERS'}; "
+              f"values: {'identical' if same_v else 'DIFFER'}")
+        return 0 if same_d and same_v else 1
+    DESIGNS.mkdir(exist_ok=True)
+    DESIGN_FILE.write_text(dump(d))
+    VALUES_FILE.write_text(dump(v))
+    print(f"wrote {DESIGN_FILE.name} and {VALUES_FILE.name}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
