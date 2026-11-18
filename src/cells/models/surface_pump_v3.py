@@ -1295,7 +1295,7 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
     """Each junction's dissipation (pJ/s) at the given node potentials.
 
     The junction part of numerics/surface_transport.transport: constant-field
-    flux (coupling/selective.selective_flux) at the gated opening times the
+    flux (laws/junctions/selective.selective_flux) at the gated opening times the
     species' electrochemical potential difference, summed over species.
     """
     s = tissue.field_layout(p).surface
