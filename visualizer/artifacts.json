@@ -553,6 +553,19 @@
           "note": "Version 1 (version id 1794954065-aab9). For the user's choice of how fine a machine's Shape level is, the level they agreed to on 17 November 2026: three settings of the smooth surface the viewer works out from a Protein Data Bank entry's coordinates (A: a chain spread at 0.8 nm, B: 1.0 nm, C: 1.4 nm), shown on E. coli's ATP synthase (6OQR) and ribosome (7K00), each beside the measure's ellipsoids, with what each costs. B is built (the finest inside the budget). Made by the shape tool's author with tools/shape_particle.py; every one of its eight stills was opened before it was published. The page says the ribosome reads less well than the ATP synthase at every setting, and that a solid surface for each subunit is to be tried next."
         }
       ]
+    },
+    "experiments_options": {
+      "title": "Experiments Landing Options",
+      "url": "https://claude.ai/artifact/EiN38VHhqcvF22xYetRzEy",
+      "page": "out/publish-previews/experiments-landing-options.html (not tracked: 281 KB with eight stills inlined; made by out/scratch-coordinator/make_experiments_page.py from the viewer's catalogue, the lead's inventory of 18 November 2026 and stills of today's views)",
+      "note": "An options page for the user, after their word of 18 November 2026 that the Experiments view be improved, that what is there be marked as examples, perhaps on a landing page, and that everything we have go in. Three layouts sketched in the page itself (a landing page of cards, recommended; one list beside the picture; a table of the record), the list of what would go in with each standing in the record's words, and three questions: the layout, what the tab opens on (it stays on the tumour tissue until they answer), and whether the lead reruns the judged feature-request worlds through the run-view writer. Nothing of it is built in the viewer.",
+      "sharing": "private; the owner shares it from the page's Share menu",
+      "versions": [
+        {
+          "date": "2026-11-18",
+          "note": "Version 1 (version id 1795026448-65ef). Before it was drawn: a trial page that listed every held experiment was built and each one's view loaded (E07-v1, the turnover pre-screen, the secreted-species run, the planarian loop, the example sheet, the assembly, the networks, the tissue: none with a console error or a missing file; seven stills opened); the file count of listing everything as packaged today was taken (687 against the limit of 511); and the origin-of-life laws' saved runs were read (check states and short verification runs). Looked at whole before the publish, wide, on a phone and in the dark theme: no sideways scroll, no console error; the wide and the phone stills opened."
+        }
+      ]
     }
   }
 }
