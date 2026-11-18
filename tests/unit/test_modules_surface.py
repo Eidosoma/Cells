@@ -42,6 +42,12 @@ HOMES = {  # Each name's own module: where it is defined.
         "JunctionLaw",
         "Citation",
         "CitedWork",
+        "hosted_laws",
+        "CHANNEL_LAW",
+        "CYCLE_LAW",
+        "ROUTE_LAW",
+        "BINDING_LAW",
+        "JUNCTION_LAW",
     ),
     "cells.registry.operators": ("FamilyOperator",),
     "cells.registry.kind_registry": (
@@ -52,6 +58,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "Schedule",
         "EnergyRole",
         "PartitionRole",
+        "AxisHost",
         "parse_series",
         "series_to_dict",
         "qualified",
@@ -63,6 +70,19 @@ HOMES = {  # Each name's own module: where it is defined.
     "cells.numerics.extracellular_field": ("scatter",),
     "cells.numerics.species_sums": ("species_sum", "entity_sum"),
     "cells.models.surface_tissue": ("physical_amounts",),
+    "cells.models.surface_pump_v3": (
+        "HOST_KINDS",
+        "HostTable",
+        "Host",
+        "host_table",
+        "host_ends",
+        "host_voltage",
+        "host_scatter",
+        "host_node_conductance",
+        "node_concentrations",
+        "declared_hosts",
+        "host_index",
+    ),
 }
 # What the kinds import today, from @3's module: the same objects as the surface's.
 VIA_INNER_MODEL = ("KindRates", "EXPLICIT_STEP_BOUND", "physical_amounts")
