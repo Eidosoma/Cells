@@ -7113,8 +7113,8 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
 - **The authors' model** (Zenodo, CC BY 4.0) is to run unmodified in GNU Octave, out of process, as a
   reference.
   - Octave 9.4.0 is installed system-wide from the distribution's packages, with the user's leave.
-  - **It has not run yet** (18 November 2026, evening). This build has no SUNDIALS, so its `ode15s`
-    cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
+  - **Debian's build could not run it** (18 November 2026, evening). That build has no SUNDIALS, so
+    its `ode15s` cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
     authors' MATLAB call passes. The attempt is recorded in the replication note's §5.4, and the
     route (U5, L11) is put to the user.
   - **U5 and L11 answered** (the same evening). The user: "1. yes, install it 2. Yes, fine".
@@ -7127,6 +7127,10 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
       - It is disclosed and qualified by two checks: it passes a test equation through bit for
         bit, and the run's concentrations stay real and non-negative.
       - The second check is needed because Octave ignores the code's `NonNegative` option.
+    - **It ran** at 20:04–20:05 UTC, all 250 cases, with both adapter checks passing. M0–M6 all
+      pass as registered (the replication note's §5.4).
+      - One difference is unexplained: Supplementary Fig. 124's top row.
+      - The values are good to about three significant figures.
   - Its outputs are numbers, cited.
   - Its code is never copied into Cells.
 - **The perturbation-and-recovery experiment** suggested in the user's reading summary is registered
