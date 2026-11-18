@@ -104,7 +104,8 @@ What follows:
     products' rule's is off by 0.031.
 - **No new reverse path in the kernel.** The V(m) factor joins g(m) as a factor on m, and F_osm is
   one more excess term.
-  - Both read A(m) exactly, from the integer W(m) = W(n) − Σ_e k_e (n_e − m_e).
+  - Both read their areas exactly from integers: the factor and the encounter extents at
+    W(m) = W(n) − Σ_e k_e (n_e − m_e), and F_osm at the two end states.
   - So the forward at n and the reverse at n′ compute the same s(m), bit for bit.
 - **The `declared` path is untouched.**
   - The layout keeps OL1's ln X = ln(N_A V c0), and there is no factor and no F_osm.
@@ -232,7 +233,7 @@ unequal integer weights (1:2, 1:3, 2:3, 1:2:3; k = 2, 3). The daughters' target 
 | C3 | Cut at the prefixes nearest t·W/k, ties low, blocks in label order | ✓ | ✗ | ✗: 4/15–1 | 4/15–4/5 | Yes |
 | C3c | C3 with a fair coin at each tie | ✓ | ✗ | ✓ at k = 2; ✗ at k = 3 (1/5–1) | As C3 | Yes |
 | **C3x** | C3, with the blocks given to the daughters in a uniformly random order | ✓ | ✓ | ✓ | 4/15–4/5, under w_max/2 per cut | **Yes:** G1's ranks, an integer prefix sum, an argmin per cut, and k uniforms |
-| C4 | Uniform over labelled assignments at the most balanced achievable areas | ✓ | ✓ | ✓ | 0 wherever exact halves exist | No: a constrained sampler (a dynamic programme over areas); host only |
+| C4 | Uniform over labelled assignments at the most balanced achievable areas | ✓ | ✓ | ✓ | 0 wherever the targets can be met exactly | No: a constrained sampler (a dynamic programme over areas); host only |
 | C5 | A random order, cut where a prefix's area is exactly W/2, otherwise redraw | ✓ | ✓ | ✓ (defined in 5 of 12) | 0 | No: unbounded redraws, and undefined when W/2 cannot be reached |
 | Plant | Binomial labels (G1's `binomial`) | ✓ | ✗ | ✓ | — | — |
 | Plant | Independent samples of floor(N/k) | ✗ | ✗ | ✓ | — | — |
@@ -372,7 +373,8 @@ Every work field names its payer, and an unnamed one is refused (RELATIONSHIPS �
 | A reaction's product | Species origin, `production/<step>` (RELATIONSHIPS §2.5) |
 | From a held place | The source's label, with no draw |
 | A fission | Places listed by label within each species, so the split's uniforms are unchanged and no draw is needed (RELATIONSHIPS §2.7) |
-| Lysis; a transfer | The content returns to the pool places with its labels; the fresh pool takes the transfer's label (pulse and chase) |
+| Lysis | The content returns to the pool places with its labels |
+| A transfer | The kept assemblies keep their labels. The removed content and the old pool leave for the sink with theirs. The fresh pool takes the transfer's label (pulse and chase) |
 
 ### 3.4 The four relationship checks (D199)
 
