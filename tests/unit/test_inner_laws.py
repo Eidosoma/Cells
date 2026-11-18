@@ -415,17 +415,44 @@ KERNELS = {
 }
 
 
+# The gated channel laws' declarations, whose kernels a structure's dispatch calls directly: since
+# the per-law extraction (CORE_SEAMS §8.2) each declaration holds its own module's kernel, so a
+# spy on the older kernel module (KERNELS) sees only today's catalogue dispatch.
+DECLARED_KERNELS = {
+    spec3.KV1P5_LAW_ID: "kv1p5",
+    spec3.KIR2P1_LAW_ID: "kir2p1",
+    spec3.NAV1P2_LAW_ID: "nav1p2",
+}
+
+
 def traced_kernels(monkeypatch, model, spec):
-    """How often each law's kernel is called while the checked step is traced (no compile)."""
+    """How often each law's kernel is called while the checked step is traced (no compile):
+    through its module, as today's catalogue dispatch calls it, and through its declaration, at
+    both places @3's dispatch reads one (InnerStructure.channel_laws and CHANNEL_LAWS)."""
     calls = dict.fromkeys(KERNELS, 0)
+
+    def spy(name, original):
+        def wrapped(*args, **kwargs):
+            calls[name] += 1
+            return original(*args, **kwargs)
+
+        return wrapped
+
     for name, (module, attribute) in KERNELS.items():
-        original = getattr(module, attribute)
-
-        def spy(*args, _name=name, _original=original, **kwargs):
-            calls[_name] += 1
-            return _original(*args, **kwargs)
-
-        monkeypatch.setattr(module, attribute, spy)
+        monkeypatch.setattr(module, attribute, spy(name, getattr(module, attribute)))
+    spied = {
+        law_id: dataclasses.replace(law, kinetics=spy(DECLARED_KERNELS[law_id], law.kinetics))
+        if law_id in DECLARED_KERNELS
+        else law
+        for law_id, law in inner_laws.CHANNEL_LAWS.items()
+    }
+    declared = inner_laws.InnerStructure.channel_laws.fget
+    monkeypatch.setattr(
+        inner_laws.InnerStructure,
+        "channel_laws",
+        property(lambda self: tuple(spied[law.law_id] for law in declared(self))),
+    )
+    monkeypatch.setattr(inner_laws, "CHANNEL_LAWS", spied)
     jaxpr_text(model, spec)
     monkeypatch.undo()
     return calls

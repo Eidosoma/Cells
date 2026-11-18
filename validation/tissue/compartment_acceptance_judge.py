@@ -8,7 +8,10 @@ metrics below under the protocol's `judge.derivation`, and evaluates its machine
 missing metric fails its criterion) into OUT_DIR/verdict.json.
 
 **The arithmetic is FR-4's and FR-5's,** imported read-only from validation/tissue/
-compartment_ph_judge.py (that judge serves registered protocols and is never edited): the classes
+compartment_ph_judge.py (that judge serves registered protocols. On 18 November 2026, at 9a67ce89,
+it gained harness 1.1's entry checks only, incomplete() and harnessed() called by its main(); an
+AST diff shows its arithmetic unchanged, and the v1 verdicts are read from the frozen judged
+snapshots): the classes
 rule for orders with each difference's floor N eps max|q|, the ladder, the Richardson error
 (4/3) D(dt, dt/2), max-norm differences on shared records, admission, the merge and its refusals,
 and compare. That judge keys records by round(t), integer seconds; FR-1's ladder and reference
@@ -62,8 +65,16 @@ from pathlib import Path
 
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
+from validation.tissue import judge_harness as harness
 
 RECORD_UNIT_S = 0.01
+INPUTS = (Path(__file__).resolve().parents[2] / "validation" / "fr1" / "references"
+          / "reference_inputs.json")
+# Each references world the judge compares at shared records: its registered inputs' world.
+REGISTERED = {"C3_flux": ("R_closed", "C3_flux"), "C3_first_order": ("R_closed", "C3_first_order"),
+              "C4": ("R_closed", "C4_two_way"), "C5": ("R_closed", "C5_saturable"),
+              "C6": ("R_linear", "C6_load_and_degrade"), "C7": ("R_linear", "C7_load_and_react"),
+              "C8": ("R_linear", "C8_uptake_path")}
 EPS = base.EPS
 ROUNDING_FACTOR = 10.0
 NEWTON_RTOL = 1e-12
@@ -432,6 +443,52 @@ def verdict(parts, protocol):
     return derived, evaluated
 
 
+def keyed(times):
+    """The records' keys as the base arithmetic aligns them: round(t / RECORD_UNIT_S)."""
+    return None if times is None else [round(t / RECORD_UNIT_S) for t in times]
+
+
+def incomplete(parts, protocol):
+    """The harness's completeness check (judge_harness, the external review's finding 4):
+    - every part the judge compares at shared records (C3's and C5's parts, the C4, C6, C7 and C8
+      ladders and their K1 and K2 controls), and each references world with its floor, holds the
+      world's registered record grid (the code-blind references' inputs), keyed as the judge
+      keys it;
+    - every registered refusal class of C1 has a refused and an admitted example.
+    C11's every-step parts are compared record by record already (against_by_step: None, so
+    failed, when their times differ).
+    """
+    d = protocol["judge"]["derivation"]
+    inputs = json.loads(INPUTS.read_text())
+    refs = (parts.get("references") or {}).get("worlds") or {}
+    compared = {"C3_flux": ["C3_flux"], "C3_first_order": ["C3_first_order"],
+                "C5": [d["C5"]["part"]], "C4": [*d["C4"]["ladder_parts"], "K1_one_way"],
+                "C6": [*d["C6"]["ladder_parts"], "K2_no_clearance"],
+                "C7": list(d["C7"]["ladder_parts"]), "C8": list(d["C8"]["ladder_parts"])}
+    problems = []
+    for world, names in compared.items():
+        form, key = REGISTERED[world]
+        registered = keyed(inputs[form]["worlds"][key]["record_times_s"])
+        for ref in (world, f"{world}_floor"):
+            found = keyed((refs.get(ref) or {}).get("record_s"))
+            problems += harness.grid(f"references/{ref}", found, registered)
+        for name in names:
+            found = keyed((parts.get(name) or {}).get("record_s"))
+            problems += harness.grid(name, found, registered)
+    classes = (parts.get("C1_refusals") or {}).get("classes") or {}
+    return problems + harness.classes(classes, d["C1"]["checks"])
+
+
+def harnessed(parts, protocol):
+    """verdict's derivation and evaluation with the harness's checks before scoring: refused,
+    as a harness failure, when the evidence is incomplete."""
+    harness.refuse(incomplete(parts, protocol))  # Before any derivation.
+    derived = derive(parts, protocol)
+    criteria = protocol["judge"]["criteria"]
+    harness.refuse(harness.metrics(criteria, dict(parts=parts, derived=derived)))
+    return derived, evaluate(dict(criteria=criteria), dict(parts=parts, derived=derived))
+
+
 def main(argv):
     if argv and argv[0] == "compare":
         return base.compare(*argv[1:])
@@ -450,8 +507,17 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = verdict(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += harness.metrics(protocol["judge"]["criteria"],
+                                dict(parts=parts, derived=derived))
+    report = dict(version=harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)

@@ -1,8 +1,20 @@
-"""Versioned assembly adapters; scientific families are explicit in every task."""
+"""Versioned assembly adapters; scientific families are explicit in every task.
+
+**A family joins `cells ensemble` with no edit here** (docs/CORE_SEAMS_DESIGN.md §15's follow-up;
+the lead's ruling (a), 18 November 2026): its row of the static model table names its
+EnsembleAdapter (`ensemble`, "module:object"), loaded by name. MODELS holds the adapters' kinds,
+then today's five; each hook below dispatches to the adapter of the spec's or definition's model,
+falling back to today's chains for today's five families.
+"""
 
 import copy
+import importlib
+from collections.abc import Callable, Mapping
+from typing import NamedTuple
 
-MODELS = {
+from cells.registry import model_table
+
+TODAY = {
     "assembly_ensemble@1": "capsid_graph@1",
     "finite_bond_ensemble@1": "finite_bond_assembly@1",
     "assembly_cell_ensemble@1": "assembly_regulated_cell@1",
@@ -11,7 +23,103 @@ MODELS = {
 }
 
 
+class EnsembleAdapter(NamedTuple):
+    """A model family's hooks into `cells ensemble` (module docstring): its ensemble kind and the
+    model its arms parse as, and the eight hooks today's families take here, each with today's
+    signature: bind_definition(data, *, worlds, world_id_start, seed, reject_owned) -> data;
+    population(spec) -> the part holding `recording` and `end_time_s`; output_bound(spec) ->
+    bytes; parse_definition(data) -> spec; runtime(spec) -> (run, load_checkpoint,
+    write_checkpoint); first_completion(spec, state) -> times or None; progress(spec, state) ->
+    {name: value}; failure_state(spec, state) -> {name: array}."""
+
+    kind: str
+    model: str
+    bind_definition: Callable
+    population: Callable
+    output_bound: Callable
+    parse_definition: Callable
+    runtime: Callable
+    first_completion: Callable
+    progress: Callable
+    failure_state: Callable
+
+
+def adapter_errors(models):
+    """Where the model table's `ensemble` entries break the protocol (empty: none do): each names
+    an importable EnsembleAdapter, one per ensemble kind and per model, apart from today's five."""
+    out, kinds = [], {}
+    for model_id, row in models.items():
+        if row.ensemble is None:
+            continue
+        module, _, name = row.ensemble.partition(":")
+        try:
+            adapter = getattr(importlib.import_module(module), name)
+        except (ImportError, AttributeError, ValueError) as error:
+            out.append(f"{model_id}: ensemble {row.ensemble!r} does not resolve ({error})")
+            continue
+        if not isinstance(adapter, EnsembleAdapter):
+            out.append(f"{model_id}: ensemble {row.ensemble!r} is not an EnsembleAdapter")
+        elif adapter.kind in kinds or adapter.kind in TODAY or adapter.model in TODAY.values():
+            out.append(f"{model_id}: ensemble kind {adapter.kind} is taken")
+        else:
+            kinds[adapter.kind] = adapter
+    return out
+
+
+def adapters():
+    """{ensemble kind: adapter} of the model table's rows that name one, in the table's order."""
+    problems = adapter_errors(model_table.MODELS)
+    if problems:
+        raise ValueError("; ".join(problems))
+    out = {}
+    for row in model_table.MODELS.values():
+        if row.ensemble is not None:
+            module, _, name = row.ensemble.partition(":")
+            adapter = getattr(importlib.import_module(module), name)
+            out[adapter.kind] = adapter
+    return out
+
+
+class _Models(Mapping):
+    """{ensemble kind: model} of the adapters' rows, then today's five (module docstring)."""
+
+    def _models(self):
+        return {**{kind: a.model for kind, a in adapters().items()}, **TODAY}
+
+    def __getitem__(self, kind):
+        return self._models()[kind]
+
+    def __iter__(self):
+        return iter(self._models())
+
+    def __len__(self):
+        return len(self._models())
+
+
+MODELS = _Models()
+
+
+def _model_of(model):
+    """A definition's or a spec's model ID: today's families write a string, others {id, ...}."""
+    return model.get("id") if isinstance(model, dict) else model
+
+
+def _adapter(model):
+    """The adapter of a model ID, or None for today's families."""
+    model = _model_of(model)
+    return next((a for a in adapters().values() if a.model == model), None)
+
+
 def bind_definition(data, *, worlds, world_id_start, seed, reject_owned=False):
+    adapter = _adapter(data.get("model") if isinstance(data, dict) else None)
+    if adapter is not None:
+        return adapter.bind_definition(
+            data,
+            worlds=worlds,
+            world_id_start=world_id_start,
+            seed=seed,
+            reject_owned=reject_owned,
+        )
     result = copy.deepcopy(data)
     if result.get("model") == "assembly_regulated_cluster@1":
         for binding in result["pools"]:
@@ -44,6 +152,9 @@ def _older(model):
 
 
 def population(spec):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.population(spec)
     return (
         spec.pool
         if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1")
@@ -52,6 +163,9 @@ def population(spec):
 
 
 def output_bound(spec):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.output_bound(spec)
     if model_id(spec) == "assembly_regulated_cell@1":
         working_size = _older("assembly_regulated_cell@1").working_size()
 
@@ -60,6 +174,9 @@ def output_bound(spec):
 
 
 def parse_definition(data):
+    adapter = _adapter(data.get("model"))
+    if adapter is not None:
+        return adapter.parse_definition(data)
     if data.get("model") == "assembly_regulated_cluster@1":
         parse_spec = _older("assembly_regulated_cluster@1").parse_spec()
     elif data.get("model") == "assembly_regulated_cell@1":
@@ -74,6 +191,9 @@ def parse_definition(data):
 
 
 def runtime_for(spec):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.runtime(spec)
     if model_id(spec) == "assembly_regulated_cluster@1":
         run, load_checkpoint, write_checkpoint = _older("assembly_regulated_cluster@1").runtime()
     elif model_id(spec) == "assembly_regulated_cell@1":
@@ -90,6 +210,9 @@ def runtime_for(spec):
 
 
 def first_completion(spec, state):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.first_completion(spec, state)
     if model_id(spec) == "assembly_regulated_cluster@1":
         # Each cell has its own assembly outcome; do not turn two pools into
         # twice as many independent worlds or an implicit cluster outcome.
@@ -104,6 +227,9 @@ def first_completion(spec, state):
 
 
 def progress(spec, state):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.progress(spec, state)
     if model_id(spec) == "ionic_worlds@1":
         return {
             "world_steps": sum(cp.step_index for cp in state.values()),
@@ -121,6 +247,9 @@ def progress(spec, state):
 
 
 def failure_state(spec, state):
+    adapter = _adapter(model_id(spec))
+    if adapter is not None:
+        return adapter.failure_state(spec, state)
     if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1"):
         flatten = _older("assembly_regulated_cell@1").flatten()  # One flatten for both.
 

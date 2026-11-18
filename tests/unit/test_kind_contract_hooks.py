@@ -1,0 +1,214 @@
+"""The kind contract's seam declarations and seam D's static switch (docs/CORE_SEAMS_DESIGN.md
+§4.2, §6.1, §7.3; CORE_SEAMS §18's hand-offs to the @3 owner; seam F). On the host, each claim
+with a planted error it must catch (D187):
+
+- a kind's energy roles, admitted heat bookings, partition roles and ledgers are checked at
+  registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
+  declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
+  without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds);
+  today's built-in kinds declare none and register as before;
+- an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
+  heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
+- a kind's missing partition roles are its state, layout and control fields with none, on a bound
+  kind too (planted: one field left out is named);
+- a kind's own ledgers are checked when read (planted: a ledger named for a ledger_terms role, a
+  repeated name, a malformed result);
+- InnerStructure.heat_bookings defaults to (), so today's structures are unchanged, and admits a
+  sorted pair per mover class whose class admits it (planted, each refused: unsorted pairs, a
+  repeated class, the tableau listed, channels, membranes, pumps or calcium pumps on the exact
+  booking, junctions against
+  junction_heat_booking, an undeclared kind, a kind that does not admit the booking, a
+  malformed pair).
+"""
+
+import math
+from dataclasses import replace
+from types import MappingProxyType
+
+import pytest
+
+from cells.definitions import surface_pump_v3_spec as spec3
+from cells.definitions.specs import parse_spec
+from cells.models import inner_laws, surface_pump_v3
+from cells.registry import kind_registry
+from cells.registry.kind_registry import EnergyRole, Kind, PartitionRole
+from validation.tissue import pump_water_fixtures as water_fixtures
+
+TRAPEZOID, EXACT = spec3.TRAPEZOID_JUNCTION_HEAT, "exact_free_energy_heat@1"
+PLANTED_ID = "tests.booked_routes@1"
+
+
+def planted(**declarations):
+    """A planted kind with one state field of each energy suffix, one other, a layout field and a
+    control, and the given seam declarations."""
+    return Kind(
+        kind_id=PLANTED_ID,
+        model_key="booked_routes",
+        state_axes=(
+            ("booked_dissipated_energy_pJ", ("cell_slot",)),
+            ("booked_work_pJ", ("cell_slot",)),
+            ("booked_moved_fmol", ("cell_slot",)),
+        ),
+        layout_fields=("booked_host",),
+        control_fields=("booked_availability",),
+        **declarations,
+    )
+
+
+ROLES = MappingProxyType(
+    {
+        "booked_dissipated_energy_pJ": PartitionRole("history"),
+        "booked_work_pJ": PartitionRole("history"),
+        "booked_moved_fmol": PartitionRole("extensive"),
+        "booked_host": PartitionRole("structural", 0),
+        "booked_availability": PartitionRole("intensive"),
+    }
+)
+
+
+def test_seam_declarations_are_checked_at_registration():
+    good = planted(
+        energy_roles={"booked_dissipated_energy_pJ": EnergyRole("heat", False)},
+        heat_bookings=(EXACT,),
+        partition_roles=ROLES,
+        ledgers=lambda declaration: (("booked_moiety", "booked_moiety_residual"),),
+        ledger_bounds=lambda row, p, tol, steps, *, xp: (tol,),
+    )
+    assert kind_registry.declaration_errors(good) == []
+    assert kind_registry.KindRegistry().register(good) is good
+    plants = {
+        "unknown role": dict(energy_roles={"booked_moved_fmol": EnergyRole("light", True)}),
+        "non-bool monotone": dict(energy_roles={"booked_moved_fmol": EnergyRole("stored", 1)}),
+        "suffix contradicted": dict(energy_roles={"booked_work_pJ": EnergyRole("heat", True)}),
+        "stray energy field": dict(energy_roles={"other_field": EnergyRole("stored", False)}),
+        "tableau listed": dict(heat_bookings=(spec3.DEFAULT_JUNCTION_HEAT,)),
+        "repeated booking": dict(heat_bookings=(EXACT, EXACT)),
+        "structural without a fill": dict(
+            partition_roles=dict(ROLES, booked_host=PartitionRole("structural"))
+        ),
+        "intensive with a fill": dict(
+            partition_roles=dict(ROLES, booked_availability=PartitionRole("intensive", 1.0))
+        ),
+        "non-finite fill": dict(
+            partition_roles=dict(ROLES, booked_host=PartitionRole("structural", math.nan))
+        ),
+        "stray partition field": dict(partition_roles=dict(ROLES, other=PartitionRole("history"))),
+        "ledgers without bounds": dict(ledgers=lambda declaration: ()),
+    }
+    for name, declarations in plants.items():
+        kind = planted(**declarations)
+        assert kind_registry.declaration_errors(kind), name
+        with pytest.raises(ValueError, match=PLANTED_ID):
+            kind_registry.KindRegistry().register(kind)
+    # Today's built-in kinds declare none, and register on BUILTIN as before.
+    for kind in kind_registry.active().model_keys().values():
+        assert kind_registry.declaration_errors(kind) == [], kind.kind_id
+        assert kind.energy_roles == {} and kind.heat_bookings == () and kind.ledgers is None
+
+
+def test_an_undeclared_field_takes_the_suffix_rule_and_a_declaration_overrides_it():
+    kind = planted(energy_roles={"booked_dissipated_energy_pJ": EnergyRole("heat", False)})
+    role = kind_registry.energy_role
+    assert role(kind, "booked_dissipated_energy_pJ") == EnergyRole("heat", False)  # Declared.
+    plain = planted()
+    assert role(plain, "booked_dissipated_energy_pJ") == EnergyRole("heat", True)  # The rule.
+    assert role(plain, "booked_work_pJ") == EnergyRole("work", False)
+    assert role(plain, "booked_moved_fmol") is None
+    stored = planted(energy_roles={"booked_moved_fmol": EnergyRole("stored", False)})
+    assert role(stored, "booked_moved_fmol") == EnergyRole("stored", False)
+
+
+def test_missing_partition_roles_name_each_field_left_undeclared():
+    assert kind_registry.missing_partition_roles(planted(partition_roles=ROLES)) == ()
+    fields = kind_registry.partition_fields(planted())
+    assert kind_registry.missing_partition_roles(planted()) == fields
+    partial = {k: v for k, v in ROLES.items() if k != "booked_host"}
+    assert kind_registry.missing_partition_roles(planted(partition_roles=partial)) == (
+        "booked_host",
+    )
+    # A kind whose fields follow its entry is read bound: the entry's fields alone.
+    per_entry = replace(
+        planted(partition_roles=partial),
+        declared_fields=lambda entry: kind_registry.KindFields(
+            (("booked_moved_fmol", ("cell_slot",)),), (), (), ()
+        ),
+    )
+    assert kind_registry.declaration_errors(per_entry) == []
+    assert kind_registry.missing_partition_roles(kind_registry.bound(per_entry, ())) == ()
+
+
+def test_a_kind_s_own_ledgers_are_checked_when_read():
+    def kind(result):
+        return planted(ledgers=lambda declaration: result, ledger_bounds=lambda *a, **k: ())
+
+    assert kind_registry.kind_ledgers(planted(), ()) == ()
+    pairs = (("booked_moiety", "booked_moiety_residual"),)
+    assert kind_registry.kind_ledgers(kind(pairs), ()) == pairs
+    for result, match in (
+        ((("produced", "produced_residual"),), "ledger_terms' roles"),
+        ((("booked_moiety", "booked_moiety"),), "distinct names"),
+        ((("booked_moiety",),), "returns"),
+        ([("booked_moiety", "booked_moiety_residual")], "returns"),
+    ):
+        with pytest.raises(ValueError, match=match):
+            kind_registry.kind_ledgers(kind(result), ())
+
+
+BASE = dict(
+    declared_channel_laws=(),
+    junction_laws=(),
+    pump_laws=(),
+    fuel_kinds=(),
+    junction_heat_booking=spec3.DEFAULT_JUNCTION_HEAT,
+)
+
+
+def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
+    today = inner_laws.InnerStructure(**BASE)
+    assert today.heat_bookings == () and today == inner_laws.InnerStructure(
+        **BASE, heat_bookings=()
+    )
+    world = parse_spec(water_fixtures.heredity_cell("D", end_time=0.01))
+    assert surface_pump_v3.structure(world.model).heat_bookings == ()  # Today's worlds.
+    channels = ((inner_laws.CHANNELS, TRAPEZOID),)
+    assert inner_laws.InnerStructure(**BASE, heat_bookings=channels).heat_bookings == channels
+    trapezoid = dict(BASE, junction_heat_booking=TRAPEZOID)
+    both = ((inner_laws.CHANNELS, TRAPEZOID), (inner_laws.JUNCTIONS, TRAPEZOID))
+    assert inner_laws.InnerStructure(**trapezoid, heat_bookings=both).heat_bookings == both
+    # Each of @3's own classes admits the trapezoid, whose power is never negative (the lead).
+    own = tuple(sorted((mover, TRAPEZOID) for mover in inner_laws.OWN_HEAT_BOOKINGS))
+    assert {mover for mover, _ in own} == {
+        "calcium_pumps",
+        "channels",
+        "junctions",
+        "membranes",
+        "pumps",
+    }
+    assert inner_laws.InnerStructure(**trapezoid, heat_bookings=own).heat_bookings == own
+    registry = kind_registry.KindRegistry()
+    registry.register(planted(heat_bookings=(EXACT,)))
+    kinds = ((PLANTED_ID, ()),)
+    with kind_registry.scope(registry):
+        booked = ((inner_laws.CHANNELS, TRAPEZOID), (PLANTED_ID, EXACT))  # Sorted by class.
+        assert inner_laws.InnerStructure(**BASE, kinds=kinds, heat_bookings=booked)
+        plants = {  # Each with the words of its own refusal.
+            "sorted, one pair": booked[::-1],
+            "one pair per mover class": (
+                (inner_laws.CHANNELS, TRAPEZOID),
+                (inner_laws.CHANNELS, TRAPEZOID),
+            ),
+            "never listed": ((inner_laws.CHANNELS, spec3.DEFAULT_JUNCTION_HEAT),),
+            "channels admit": ((inner_laws.CHANNELS, EXACT),),
+            "membranes admit": ((inner_laws.MEMBRANES, EXACT),),
+            "pumps admit": ((inner_laws.PUMPS, EXACT),),
+            "calcium_pumps admit": ((inner_laws.CALCIUM_PUMPS, EXACT),),
+            "junctions book": ((inner_laws.JUNCTIONS, TRAPEZOID),),
+            "nor a declared kind": (("tests.undeclared@1", EXACT),),
+            "admits no heat booking": ((PLANTED_ID, TRAPEZOID),),
+            "pairs of names": ((inner_laws.CHANNELS,),),
+        }
+        for words, bookings in plants.items():
+            with pytest.raises(ValueError, match="Heat bookings"):
+                inner_laws.InnerStructure(**BASE, kinds=kinds, heat_bookings=bookings)
+            errors = inner_laws.heat_booking_errors(bookings, (PLANTED_ID,))
+            assert any(words in error for error in errors), (words, errors)
