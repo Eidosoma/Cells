@@ -246,7 +246,9 @@ def test_registered_drivers_and_judges_never_pass_a_record():
 
 
 def test_engine_call_sites_pass_no_record():
-    """No engine call site passes a record in the first landing; batch_io binds children."""
+    """No engine call site passes a record in the first landing; batch_io binds children.
+
+    Modules are named by their dotted names, which a source move rewrites (D188)."""
     passing = {}
     for path in sorted((ROOT / "src" / "cells").rglob("*.py")):
         tree = ast.parse(path.read_text())
@@ -256,9 +258,9 @@ def test_engine_call_sites_pass_no_record():
             if isinstance(c, ast.Call) and any(k.arg == "continuity" for k in c.keywords)
         ]
         if calls:
-            passing[path.relative_to(ROOT / "src" / "cells").as_posix()] = calls
-    assert sorted(passing) == ["batch_io.py"]
-    (call,) = passing["batch_io.py"]
+            passing[".".join(path.relative_to(ROOT / "src").with_suffix("").parts)] = calls
+    assert sorted(passing) == ["cells.batch_io"]
+    (call,) = passing["cells.batch_io"]
     assert _name(call) == "load_snapshot"
     (value,) = [k.value for k in call.keywords if k.arg == "continuity"]
     assert ast.unparse(value) == "binding.child(world.world_id)"

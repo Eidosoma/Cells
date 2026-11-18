@@ -240,6 +240,22 @@ def require_entry_points():
         raise CannotDecide("the tree lacks the probe's entry points: " + ", ".join(missing))
 
 
+LAYOUT = "cells.source_layout"  # The loaders' layout rule (D195 item 4), in trees that have it.
+
+
+def require_layout(manifest, what):
+    """The loaders' layout check under this tree (D195 item 4): a checkpoint written before a
+    source move that this tree declares is refused. A tree without the module, or without its
+    package, predates the rule and declares no move."""
+    try:
+        source_layout = importlib.import_module(LAYOUT)
+    except ModuleNotFoundError as exc:
+        if exc.name is None or not (LAYOUT == exc.name or LAYOUT.startswith(exc.name + ".")):
+            raise
+        return
+    source_layout.require(manifest["source_hashes"], what)
+
+
 def read_scalar(path):
     """io.load_snapshot without its two identity comparisons; every other check is kept."""
     import jax
@@ -275,6 +291,7 @@ def read_scalar(path):
         raise ConfigError("Not a complete Cells numerical checkpoint")
     if manifest["random_state"] is not None:
         raise ConfigError("These deterministic models have no random state")
+    require_layout(manifest, "Checkpoint")
     spec = parse_spec(manifest["spec"])
     model = get_model(spec.model)
     if spec.fingerprint != manifest["spec_sha256"]:
@@ -415,6 +432,7 @@ def read_cohort(path):
         raise ConfigError("Batch checkpoint manifest checksum mismatch")
     if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
         raise ConfigError("Unsupported batch checkpoint schema")
+    require_layout(manifest, "Batch checkpoint")
     spec, _ = checkpoint_batch_limits(parse_batch(manifest["spec"]))
     if require_scope(spec) == "gpu":  # Before any child is read: initialise places states.
         patch_execution_device()
