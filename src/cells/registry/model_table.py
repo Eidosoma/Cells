@@ -57,8 +57,23 @@ MODELS = MappingProxyType(
         "resolved_pump_tissue@3": Model(
             type="inner",
             module="cells.definitions.surface_pump_v3_spec",
-            # Its own laws, and its kinds' package, whose modules declare theirs.
-            law_homes=("cells.models.inner_laws", "cells.kinds"),
+            # Its own laws, each an inert law module (CORE_SEAMS §8.2), its passive kind's two,
+            # and its kinds' package, whose modules declare the rest of theirs.
+            law_homes=(
+                "cells.laws.channels.kv1p5_mh",
+                "cells.laws.channels.kir2p1_mh2",
+                "cells.laws.channels.nav1p2_m3h_regularized",
+                "cells.laws.channels.kleak_always_open",
+                "cells.laws.channels.naleak_always_open",
+                "cells.laws.junctions.junction_voltage_relaxation",
+                "cells.laws.pumps.nak_atp_mass_action_positive",
+                "cells.laws.pumps.ca_atp_mass_action_positive",
+                "cells.laws.routes.constant_field",
+                "cells.laws.routes.logmean_electrodiffusion",
+                "cells.laws.routes.passive_permeation",
+                "cells.laws.transport.proton_leak",
+                "cells.kinds",
+            ),
         ),
         "resolved_pump_composite@1": Model(
             type="composite",

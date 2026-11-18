@@ -3,45 +3,49 @@
 Design: docs/INNER_MODEL_V4_DESIGN.md §7.1 (a law's declaration) and §7.4 (the interface for
 D176's round). One frozen declaration per law ID, with a fixed registry code:
 
-* channel laws (today's five, codes 0-4: core/surface_pump_v3_spec.LAW_CODES). A new law takes
+* channel laws (codes 0-4 today: definitions/surface_pump_v3_spec.LAW_CODES). A new law takes
   the next free code; no code is reused;
 * the junction conductance law (every junction declares it today);
-* the two pump laws, on today's maintained fuel kind.
+* the two pump laws, on today's maintained fuel kind;
+* the two route laws every membrane, junction and face declares (provenance for the run view).
 
-The kernels stay where they are, unchanged: laws/channels/voltage_gates.py, potassium_channels.py,
-sodium_channels.py, junction_gate.py, kinetic_pump.py and calcium_atpase.py. Older families
-import those modules and their shared dispatchers (sodium_channels.kinetics and opening), so a
-declaration only points at a law's own kernel. Each opening keeps today's operation order, which
-per-law dispatch needs to stay bitwise (probe P2 of the note): Kv1.5 m h, Kir2.1 (m h) h,
-NaV1.2 m^3 h.
+**Each law's declaration lives in its own module** (docs/CORE_SEAMS_DESIGN.md §8.2; the lead's
+ruling R1, 18 November 2026), with its kernels and its docstring, and the law registry's loader
+registers it (registry/laws.py), so @3 finds its laws in the active law registry by interface and
+host, never in a table here: InnerStructure validates against it (§8.3). The modules:
+laws/channels/{kv1p5_mh, kir2p1_mh2, nav1p2_m3h_regularized, kleak_always_open,
+naleak_always_open}.py, laws/junctions/junction_voltage_relaxation.py,
+laws/pumps/{nak_atp_mass_action_positive, ca_atp_mass_action_positive}.py and
+laws/routes/{constant_field, logmean_electrodiffusion}.py. The older kernel modules
+(voltage_gates, potassium_channels, sodium_channels, junction_gate, kinetic_pump and
+calcium_atpase) re-import the moved names for the older families. Each opening keeps today's
+operation order, which per-law dispatch needs to stay bitwise (probe P2 of the note): Kv1.5 m h,
+Kir2.1 (m h) h, NaV1.2 m^3 h.
 
-Each declaration is an instance of the law template (registry/laws.py; docs/CORE_SEAMS_DESIGN.md
-§8.1), hosted by @3 itself (HOST), and registers on the law registry's BUILTIN here, its home until
-each law moves to its own module (§8.2). The tables below keep today's names. @3 finds its laws in
-the active law registry by interface and host: InnerStructure validates against it (§8.3).
+The tables below keep today's names for their readers. CHANNEL_LAWS is the active registry's
+channel laws that @3 runs, in code order, so a channel law registered later is in it with no
+edit here; the junction, pump and route tables name version 1's laws, which its layout runs each
+by name, in today's order (the pumps' order is the structure's: models/surface_pump_v3.structure).
 
 InnerStructure is what one definition declares, as Python values with no parameter value in it:
 the inner model builds one implementation per structure (models/surface_pump_v3.implementation),
 which closes over the structure and never over a value (P5).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
 from cells.definitions.kinetic_pump_spec import METABOLISM_ID
 from cells.definitions.surface_pump_v3_spec import (
     DEFAULT_JUNCTION_HEAT,
-    KIR2P1_LAW_ID,
-    KLEAK_LAW_ID,
-    KV1P5_LAW_ID,
     MODEL_ID,
-    NALEAK_LAW_ID,
-    NAV1P2_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
 )
-from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
-from cells.laws.junctions import junction_gate
-from cells.laws.pumps import calcium_atpase, kinetic_pump
+from cells.laws.channels import kv1p5_mh, nav1p2_m3h_regularized
+from cells.laws.junctions import junction_voltage_relaxation
+from cells.laws.pumps import ca_atp_mass_action_positive, nak_atp_mass_action_positive
+from cells.laws.routes import constant_field, logmean_electrodiffusion
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 from cells.registry.kind_registry import qualified
@@ -49,13 +53,14 @@ from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # no
 
 HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.py: `host`).
 MAINTAINED_FUEL_ID = METABOLISM_ID  # maintained_chemical_reservoirs@1, today's pumps' fuel kind.
-MEMBRANE_ROUTE_LAW_ID = "constant_field@1"  # The passive membrane and junction route law.
-FACE_ROUTE_LAW_ID = "logmean_electrodiffusion@1"
+MEMBRANE_ROUTE_LAW_ID = constant_field.LAW_ID  # The passive membrane and junction route law.
+FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
 BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows where declared.
 # Reference RK4 step bounds of the resolved channel family (surface_kinetic.check_steps): 2.5 us
-# with NaV1.2, 25 us with Kv1.5 or Kir2.1. surface_pump_v3's RK4_*_STEP are these.
-RK4_SODIUM_STEP_S = 2.5e-6
-RK4_POTASSIUM_STEP_S = 25e-6
+# with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations hold them. surface_pump_v3's
+# RK4_*_STEP are these.
+RK4_SODIUM_STEP_S = nav1p2_m3h_regularized.RK4_STEP_S
+RK4_POTASSIUM_STEP_S = kv1p5_mh.RK4_STEP_S
 # Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default
 # and is never listed; @3's own mover classes, and the bookings each admits beyond it (the
 # trapezoid for channels, as ruled there, and for junctions, today's junction_heat_booking). A
@@ -67,142 +72,43 @@ OWN_HEAT_BOOKINGS = MappingProxyType(
 )
 
 
-def _open_mh(gates, *, xp):
-    return gates[..., 0, :] * gates[..., 1, :]
+class _HostedChannelLaws(Mapping):
+    """The active law registry's channel laws that @3 runs, by law ID as declared, in code order
+    (the module docstring): a live view, so a channel law registered later needs no edit here."""
+
+    def _laws(self):
+        laws = sorted(_hosted(law_registry.CHANNEL_LAW), key=lambda law: law.code)
+        return {law.law_id: law for law in laws}
+
+    def __getitem__(self, law_id):
+        return self._laws()[law_id]
+
+    def __iter__(self):
+        return iter(self._laws())
+
+    def __len__(self):
+        return len(self._laws())
+
+    def __repr__(self):
+        return f"CHANNEL_LAWS({list(self)!r})"
 
 
-def _open_mh2(gates, *, xp):
-    m, h = gates[..., 0, :], gates[..., 1, :]
-    return m * h * h  # (m h) h, today's order (potassium_channels.opening).
-
-
-def _open_m3h(gates, *, xp):
-    return gates[..., 0, :] ** 3 * gates[..., 1, :]  # Today's order (sodium_channels.opening).
-
-
-def _kv1p5_kinetics(voltage, *, xp):
-    return voltage_gates.kinetics(voltage, xp=xp)
-
-
-def _kir2p1_kinetics(voltage, *, xp):
-    return potassium_channels.kir2p1_kinetics(voltage, xp=xp)
-
-
-def _nav1p2_kinetics(voltage, *, xp):
-    return sodium_channels.nav1p2_kinetics(voltage, xp=xp)
-
-
-_DOMAIN = voltage_gates.VOLTAGE_DOMAIN_V
-CHANNEL_LAWS = MappingProxyType(
-    {
-        law.law_id: law_registry.BUILTIN.register(law)
-        for law in (
-            ChannelLaw(
-                KV1P5_LAW_ID,
-                0,
-                ("m", "h"),
-                (("K", 1, 1.0),),
-                _DOMAIN,
-                RK4_POTASSIUM_STEP_S,
-                _kv1p5_kinetics,
-                _open_mh,
-                host=HOST,
-            ),
-            ChannelLaw(
-                KIR2P1_LAW_ID,
-                1,
-                ("m", "h"),
-                (("K", 1, 1.0),),
-                _DOMAIN,
-                RK4_POTASSIUM_STEP_S,
-                _kir2p1_kinetics,
-                _open_mh2,
-                host=HOST,
-            ),
-            ChannelLaw(
-                NAV1P2_LAW_ID,
-                2,
-                ("m", "h"),
-                (("Na", 1, 1.0),),
-                _DOMAIN,
-                RK4_SODIUM_STEP_S,
-                _nav1p2_kinetics,
-                _open_m3h,
-                host=HOST,
-            ),
-            ChannelLaw(KLEAK_LAW_ID, 3, (), (("K", 1, 1.0),), _DOMAIN, None, host=HOST),
-            ChannelLaw(NALEAK_LAW_ID, 4, (), (("Na", 1, 1.0),), _DOMAIN, None, host=HOST),
-        )
-    }
-)
+CHANNEL_LAWS = _HostedChannelLaws()
 JUNCTION_LAWS = MappingProxyType(
+    {junction_voltage_relaxation.LAW_ID: junction_voltage_relaxation.LAW}
+)
+PUMP_LAWS = MappingProxyType(  # Today's order: the structure's.
     {
-        junction_gate.LAW_ID: law_registry.BUILTIN.register(
-            JunctionLaw(
-                junction_gate.LAW_ID,
-                True,
-                junction_gate.kinetics,
-                junction_gate.rhs,
-                junction_gate.domain_valid,
-                junction_gate.MAX_ABS_VOLTAGE_V,
-                host=HOST,
-            )
-        )
+        nak_atp_mass_action_positive.LAW_ID: nak_atp_mass_action_positive.LAW,
+        ca_atp_mass_action_positive.LAW_ID: ca_atp_mass_action_positive.LAW,
     }
 )
-PUMP_LAWS = MappingProxyType(
-    {
-        kinetic_pump.LAW_ID: law_registry.BUILTIN.register(
-            PumpLaw(
-                kinetic_pump.LAW_ID,
-                (
-                    ("sodium", kinetic_pump.SODIUM_PER_CYCLE),
-                    ("potassium", kinetic_pump.POTASSIUM_PER_CYCLE),
-                ),
-                (MAINTAINED_FUEL_ID,),
-                kinetic_pump.kinetics,
-                kinetic_pump.domain_valid,
-                host=HOST,
-            )
-        ),
-        calcium_atpase.LAW_ID: law_registry.BUILTIN.register(
-            PumpLaw(
-                calcium_atpase.LAW_ID,
-                (("calcium", calcium_atpase.CALCIUM_PER_CYCLE),),
-                (MAINTAINED_FUEL_ID,),
-                calcium_atpase.kinetics,
-                calcium_atpase.domain_valid,
-                host=HOST,
-            )
-        ),
-    }
-)
-
-
 # The passive route laws every membrane, junction and face declares (provenance for the run view,
-# D154): moved unchanged into @3 with its families (parity, not calibrated); `basis` says what
-# each is, in its own sources' words.
+# D154): moved unchanged into @3 with its families (parity, not calibrated).
 ROUTE_LAWS = MappingProxyType(
     {
-        MEMBRANE_ROUTE_LAW_ID: law_registry.BUILTIN.register(
-            RouteLaw(
-                MEMBRANE_ROUTE_LAW_ID,
-                ("membrane", "junction"),
-                "the Goldman-Hodgkin-Katz constant-field flux of each permeant species "
-                "(coupling/selective.selective_flux)",
-                host=HOST,
-            )
-        ),
-        FACE_ROUTE_LAW_ID: law_registry.BUILTIN.register(
-            RouteLaw(
-                FACE_ROUTE_LAW_ID,
-                ("face",),
-                "Cells' own discrete electrodiffusion between two well-mixed outside nodes: the "
-                "Nernst-Planck flux at the species' logarithmic-mean concentration "
-                "(docs/SPATIAL_EXTRACELLULAR_SPEC.md: a design, not a reproduction of a paper)",
-                host=HOST,
-            )
-        ),
+        constant_field.LAW_ID: constant_field.LAW,
+        logmean_electrodiffusion.LAW_ID: logmean_electrodiffusion.LAW,
     }
 )
 
