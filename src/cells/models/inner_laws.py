@@ -30,16 +30,19 @@ from types import MappingProxyType
 
 from cells.definitions.kinetic_pump_spec import METABOLISM_ID
 from cells.definitions.surface_pump_v3_spec import (
+    DEFAULT_JUNCTION_HEAT,
     KIR2P1_LAW_ID,
     KLEAK_LAW_ID,
     KV1P5_LAW_ID,
     MODEL_ID,
     NALEAK_LAW_ID,
     NAV1P2_LAW_ID,
+    TRAPEZOID_JUNCTION_HEAT,
 )
 from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
 from cells.laws.junctions import junction_gate
 from cells.laws.pumps import calcium_atpase, kinetic_pump
+from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 from cells.registry.kind_registry import qualified
 from cells.registry.laws import ChannelLaw, JunctionLaw, PumpLaw, RouteLaw  # noqa: F401
@@ -53,6 +56,15 @@ BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows
 # with NaV1.2, 25 us with Kv1.5 or Kir2.1. surface_pump_v3's RK4_*_STEP are these.
 RK4_SODIUM_STEP_S = 2.5e-6
 RK4_POTASSIUM_STEP_S = 25e-6
+# Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default
+# and is never listed; @3's own mover classes, and the bookings each admits beyond it (the
+# trapezoid for channels, as ruled there, and for junctions, today's junction_heat_booking). A
+# declared kind's routes are the class its namespaced ID names, admitting its heat_bookings.
+TABLEAU_HEAT_BOOKING = DEFAULT_JUNCTION_HEAT
+CHANNELS, JUNCTIONS = "channels", "junctions"
+OWN_HEAT_BOOKINGS = MappingProxyType(
+    {CHANNELS: (TRAPEZOID_JUNCTION_HEAT,), JUNCTIONS: (TRAPEZOID_JUNCTION_HEAT,)}
+)
 
 
 def _open_mh(gates, *, xp):
@@ -205,6 +217,47 @@ def _hosted(interface):
     return law_registry.active().laws(interface, HOST)
 
 
+def heat_booking_errors(bookings, kinds, junction_heat_booking=DEFAULT_JUNCTION_HEAT):
+    """Why an InnerStructure's heat_bookings break seam D's switch (empty: they keep it), for a
+    structure whose declared kinds are `kinds` (namespaced IDs): pairs of non-empty names,
+    strictly sorted by mover class, none on the tableau; each class one of @3's own, admitting
+    the booking (OWN_HEAT_BOOKINGS), or a declared kind whose heat_bookings admit it, found in the
+    active kind registry; a JUNCTIONS pair equal to junction_heat_booking. Today's empty switch
+    reads nothing."""
+    if bookings == ():
+        return []
+    if not (
+        isinstance(bookings, tuple)
+        and all(
+            isinstance(pair, tuple)
+            and len(pair) == 2
+            and all(isinstance(name, str) and name for name in pair)
+            for pair in bookings
+        )
+    ):
+        return ["they are (mover class, booking ID) pairs of names"]
+    out, classes = [], [mover for mover, _ in bookings]
+    if classes != sorted(set(classes)):
+        out.append("they are sorted, one pair per mover class")
+    for mover, booking in bookings:
+        if booking == TABLEAU_HEAT_BOOKING:
+            out.append(f"{mover}: the tableau is the default and is never listed")
+        elif mover in OWN_HEAT_BOOKINGS:
+            if booking not in OWN_HEAT_BOOKINGS[mover]:
+                admitted = ", ".join(OWN_HEAT_BOOKINGS[mover])
+                out.append(f"{mover} admit {admitted} beyond the tableau, not {booking}")
+            elif mover == JUNCTIONS and booking != junction_heat_booking:
+                out.append(f"junctions book {junction_heat_booking}, not {booking}")
+        elif mover not in kinds:
+            own = ", ".join(OWN_HEAT_BOOKINGS)
+            out.append(
+                f"{mover} is neither one of @3's own mover classes ({own}) nor a declared kind"
+            )
+        elif booking not in kind_registry.active().lookup(mover).heat_bookings:
+            out.append(f"kind {mover} admits no heat booking {booking}")
+    return out
+
+
 @dataclass(frozen=True)
 class InnerStructure:
     """What one definition declares (§7.4 (a)): Python values only, never a parameter value.
@@ -231,11 +284,20 @@ class InnerStructure:
     # The routing door's table (§7.4 (n)), resolved at binding: ((sink kind ID, control field,
     # slot, ((source kind ID, position), ...)), ...), value-free; () without a sink (A4).
     routes: tuple = ()
+    # Seam D's static switch (docs/CORE_SEAMS_DESIGN.md §6.1): ((mover class, booking ID), ...),
+    # sorted, one pair per mover class whose heat the tableau does not book: @3's own CHANNELS or
+    # JUNCTIONS, or a declared kind's namespaced ID for its routes. The tableau, the default, is
+    # never listed, so () for every definition of today's and no structure or fingerprint moves.
+    # A JUNCTIONS pair agrees with junction_heat_booking.
+    heat_bookings: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
         if ids != sorted(set(ids)):
             raise ValueError("Declared kinds must be distinct and in canonical (sorted ID) order")
+        problems = heat_booking_errors(self.heat_bookings, ids, self.junction_heat_booking)
+        if problems:
+            raise ValueError("Heat bookings of an inner structure: " + "; ".join(problems))
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.
         unknown = []
         for interface, declared in (

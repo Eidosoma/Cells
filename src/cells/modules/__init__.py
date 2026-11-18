@@ -16,7 +16,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   law interfaces are built, and its ChannelLaw, CycleLaw, RouteLaw and BindingLaw, with Citation,
   the source a cited law gives, and CitedWork, a work it names (registry/laws.py); the operator
   template of a family's own operators, FamilyOperator (registry/operators.py); and the kind
-  contract's Kind, KindFields, KindView, KindRates and Schedule (registry/kind_registry.py);
+  contract's Kind, KindFields, KindView, KindRates and Schedule, with the roles its fields declare,
+  EnergyRole and PartitionRole (registry/kind_registry.py);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (registry/kind_registry.py);
@@ -42,10 +43,12 @@ from cells.models.surface_tissue import physical_amounts
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry.kind_registry import (
+    EnergyRole,
     Kind,
     KindFields,
     KindRates,
     KindView,
+    PartitionRole,
     Schedule,
     declared_schedule,
     parse_series,
@@ -78,6 +81,8 @@ __all__ = (
     "KindView",
     "KindRates",
     "Schedule",
+    "EnergyRole",
+    "PartitionRole",
     # The parsing helpers.
     "ConfigError",
     "require_fields",

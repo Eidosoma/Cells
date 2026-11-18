@@ -33,6 +33,8 @@ HOMES = {  # Each name's own module: where it is defined.
         "KindView",
         "KindRates",
         "Schedule",
+        "EnergyRole",
+        "PartitionRole",
         "parse_series",
         "series_to_dict",
         "qualified",
