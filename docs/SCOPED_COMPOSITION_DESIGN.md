@@ -111,21 +111,35 @@ overlapping slots in every refusal.
      the declared order, which is fixed and recorded in the field map as a chain, as control
      factors are.
    - Every other overlap is refused: `replace` with anything, and `add` with `multiply`.
-3. **A `current` read** requires a changer of its field to exist, and every changer of a slot it
-   reads to precede it in the declared order. This is today's `VIEW_READS` rule (a read with no
-   earlier provider is refused), now per slot.
-   - It is needed when the reader is itself a changer, since its `view` reads the accumulated view
-     at its own place in the merge.
-   - Between split parts it fixes the numerical order. The first halves run in declared order, so
-     a split reader sees an earlier split changer's first-half update.
+3. **A `current` read** follows every change of a slot it reads that is made at the reader's own
+   stage. *Amended by composition's M1 (18 November 2026; OPERATOR_COMPOSITION_DESIGN.md §4.1,
+   §5 and §17, C1 and C2), replacing "requires a changer of its field to exist, and every changer
+   of a slot it reads to precede it in the declared order":*
+   - **No changer:** the read is admitted and reads the declared value, and its part receives no
+     view (C1, the fallback; D150 §5.1). `VIEW_READS`' old rule, a read with no earlier provider is
+     refused, is gone.
+   - **A change at another stage** is seen whatever the declared order. The events run before the
+     split parts' first halves, and an event reads the previous step's end.
+   - **A change at the reader's stage** must precede it in the declared order, or the reader is
+     refused rather than given a lagged value (C2). Between split parts this fixes the numerical
+     order: the first halves run in declared order, so a split reader sees an earlier split
+     changer's first-half update. A pair of scoped ones is decided per slot, for the provider's
+     own declared stage only.
+   - **The changes** are the composite's table (`pump_composite.view_changes`): each provider's,
+     at its declared stage (an undeclared change by an operator with an event map and a split part
+     at both); a closer's of what its closure reaches (rule 6); and a writer's of a provider's
+     accepted state, as a change of what the provider provides.
+   - A read may be `current` at one stage and `reference` at another (C3).
 4. **A `fixed` read** is refused if any changer, a closer included, changes a slot it reads, at
-   any stage.
+   any stage. A closer changes what its closure reaches (rule 6), not only the masks it names.
 5. **A `reference` read** has no constraint.
 6. **Closers.**
    - A closer's changed slots on the masks include their descendants in the entity hierarchy: a
      cell's patches, those patches' populations and the cell's contacts; a node's patches and
      faces. They are computed at the definition, and a `fixed` read of a mask at an intersecting
-     slot is refused (rule 4).
+     slot is refused (rule 4). The fields each closed mask reaches, its descendants' masks and the
+     padded fields of all those slots, are the adapter's `CLOSURE_REACH`, read by the composite's
+     table of changes (amended by composition's M1).
    - A mask still has closers or providers, never both.
    - **Padded fields keep today's rule in R:** no provider of a field in `PADDED_FIELDS`
      (`extracellular_amount_reference` among them) beside any closer. The lead ruled the bath

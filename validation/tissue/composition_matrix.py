@@ -103,6 +103,9 @@ MASK = re.compile(r"^(\S+) has closers or a provider, never both \((\S+) provide
 PROVIDERS = re.compile(r"^two providers of the view field (\S+)$")
 OWNERS = re.compile(r"^two owners of one (state|layout|control) field$")
 COLUMN = re.compile(r"^(\S+) adds the column (\S+), which (\S+) owns$")
+# The order of a current read (docs/OPERATOR_COMPOSITION_DESIGN.md §5, C2): a change at the
+# reader's own stage by a later operator.
+ORDER = re.compile(r"^(\S+) reads the view (\S+) at stage (\S+) before (\S+) changes it there$")
 OWNED = {"state": "STATE_AXES", "layout": "LAYOUT_FIELDS", "control": "CONTROL_FIELDS"}
 
 
@@ -130,11 +133,14 @@ def refusals(laws, messages):
                         found.add(("owners", *in_order(a.LAW_ID, b.LAW_ID), m.group(1)))
         elif m := COLUMN.match(message):
             found.add(("column", m.group(1), m.group(3), None))
+        elif m := ORDER.match(message):
+            reader, name, _, changer = m.groups()
+            found.add(("order", reader, changer, name))
         else:
             raise ValueError(f"Unrecognised composition error {message!r} in {laws}")
     out = set()  # Two versions of one law own the same fields, columns and views: one refusal.
     for kind, a, b, name in found:
-        if kind in ("mask", "providers", "owners", "column") and family(a) == family(b):
+        if kind in ("mask", "providers", "owners", "column", "order") and family(a) == family(b):
             out.add(("versions", *in_order(a, b), None))
         else:
             out.add((kind, a, b, name))
@@ -506,6 +512,89 @@ def _tags():
         "is a door (the site-occupancy design §5.1)",
         (),
     )
+    # The order of a current read (docs/OPERATOR_COMPOSITION_DESIGN.md §5, C2): a lumen's split
+    # part reads its patch through membrane state before the other insertion version's split part
+    # writes or opens it. Only beside the other version, which the composition refuses anyway.
+    order = (
+        "The lumen's split part reads its patch's {what} before the later insertion's split part "
+        "{does}, a read lagged by half a step (C2's order rule); two insertions are two versions "
+        "of one law in any case"
+    )
+    tags[("order", LUMEN_1, INSERTION_2, "membrane_area")] = (
+        REAL,
+        order.format(what="area", does="writes it through membrane state"),
+        (),
+    )
+    tags[("order", LUMEN_2, INSERTION_1, "membrane_area")] = tags[
+        ("order", LUMEN_1, INSERTION_2, "membrane_area")
+    ]
+    tags[("order", LUMEN_2, INSERTION_1, "membrane_active")] = (
+        REAL,
+        order.format(what="mask", does="opens it"),
+        (),
+    )
+    # A closer changes what close() changes for the masks it closes (CLOSURE_REACH), the masks
+    # below them in the entity hierarchy and the padded fields of the slots closed, so a reader
+    # of those as declared meets it too (docs/OPERATOR_COMPOSITION_DESIGN.md §17).
+    propagates = (
+        "; closure propagates from the retired cell to its patches, populations and contacts"
+    )
+    for name in ("membrane_active", "channel_active", "junction_active"):
+        tags[("reads-closed", REPLACEMENT_2, PARTITION, name)] = (
+            REAL,
+            CELL_MASK[REPLACEMENT_2] + propagates,
+            (),
+        )
+        tags[("reads-closed", COMPARTMENTS, PARTITION, name)] = (
+            REAL,
+            tags[("reads-closed", COMPARTMENTS, PARTITION, "active")][1] + propagates,
+            (),
+        )
+    for reader in (EXCHANGE, COUPLING):
+        tags[("reads-closed", reader, PARTITION, "membrane_active")] = (
+            REAL,
+            CELL_MASK[reader] + propagates,
+            (),
+        )
+    tags[("reads-closed", SITES, PARTITION, "membrane_active")] = (
+        REAL,
+        tags[("reads-closed", SITES, PARTITION, "active")][1] + propagates,
+        (),
+    )
+    tags[("reads-closed", TURNOVER, PARTITION, "membrane_active")] = (
+        NOMINAL,
+        TURNOVER_NO_PATCH,
+        TURNOVER_RUNTIME,
+    )
+    onset_populations = (
+        "insertion@2 closes only onset patches and nodes, and refuses a channel population on an "
+        "onset patch (check_onsets), so no population it closes exists"
+    )
+    for reader in (REPLACEMENT_2, COMPARTMENTS):
+        tags[("reads-closed", reader, INSERTION_2, "channel_active")] = (
+            NOMINAL,
+            onset_populations[0].upper() + onset_populations[1:],
+            (ONSET_CHANNELS[INSERTION_2],),
+        )
+    tags[("reads-closed", COMPARTMENTS, INSERTION_2, "face_active")] = (
+        NOMINAL,
+        "No face names a compartment's node (refusal 1, parse_declaration), and insertion@2's "
+        "closure closes only faces at its onset nodes (closures): the slots are disjoint",
+        (OPS + "compartments.py::parse_declaration", OPS + "membrane_insertion_v2.py::closures"),
+    )
+    anchors = "Insertion@2's closure pads the anchors of its onset nodes until their onset"
+    tags[("reads-closed", REACTIONS, INSERTION_2, "extracellular_amount_reference")] = (
+        REAL,
+        "D152 reads finite nodes' anchors (BATH_SCHEDULE_DESIGN.md §3.1); "
+        + anchors[0].lower()
+        + anchors[1:],
+        (),
+    )
+    tags[("reads-closed", SITES, INSERTION_2, "extracellular_amount_reference")] = (
+        REAL,
+        anchors + "; a population's facing pool may be one (not shown nominal)",
+        (),
+    )
     return tags
 
 
@@ -821,6 +910,8 @@ def describe(kind, a, b, names):
         return f"{named(a)} and {named(b)} are two versions of one law"
     if kind == "owners":
         return f"{named(a)} and {named(b)} both own {', '.join(names)} fields"
+    if kind == "order":
+        return f"{named(a)} reads the view {fields(names)} before {named(b)} changes {them}"
     return f"{named(a)} adds columns that {named(b)} owns"
 
 
