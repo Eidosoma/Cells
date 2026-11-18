@@ -102,6 +102,15 @@ def design_document() -> dict:
                      "expectation is +inf at r4's singular pair under multinomial_less_one. (c) runs declare an "
                      "end_reason, and a registered run that ends stalled fails its row",
              "why": "the lead's rulings of 17 November (§0.2a amended; §0.2b rule 8)"},
+            {"date": "2026-11-18", "after_commit": "2128fe8c", "before_engine_output": True,
+             "what": "amendment 5, text only: kept's meaning reworded to the lead's ruling (main bbcbec69): rate zero "
+                     "only for a pair whose step changes the membrane's count and one of whose end states has an "
+                     "empty membrane; a step in which the membrane takes no part, and a pool step at an empty-membrane "
+                     "probe state, fire at their own rates; rule 8's condition cited as the same membrane species on "
+                     "both sides. The reference law and float path test the count condition explicitly; every "
+                     "registered expected value is unchanged (checked bitwise on every registered probe, all four "
+                     "token pairs)",
+             "why": "the lead confirmed both of OL5's readings (bbcbec69)"},
         ],
         "worlds": {
             "registered": ["ol1_wa", "ol1_wa_closed", "ol1_wa_closed_uncatalysed", "ol1_wa_closed_x2",
@@ -206,8 +215,12 @@ TOKEN_MEANINGS = {
                                         "state; extent N(m) - c + 1 on the common state m"},
     "lumen_volume": {"declared": "the lumen's volume_L is a constant (no lumen in OL1's registered worlds)"},
     "empty_catalyst_phase": {"uncatalysed": "g = 1 where the membrane (the only catalysing phase) is empty at m"},
-    "last_molecule": {"kept": "rate zero only for a pair one of whose end states has an empty membrane (amendment "
-                              "4, §0.2a as amended): the membrane never empties and nothing else is frozen",
+    "last_molecule": {"kept": "rate zero only for a pair whose step changes the membrane's count and one of whose "
+                              "end states has an empty membrane; a step in which the membrane takes no part fires at "
+                              "its own rate under every token, and a pool step at a probe state with an empty "
+                              "membrane fires at the pool's mass action (amendment 5, 18 November 2026: §0.2a as "
+                              "reworded by the lead, main bbcbec69; amendment 4's wording read literally also "
+                              "zeroed those pool steps). The membrane never empties and nothing else is frozen",
                       "reversible": "c = 0 only: the empty membrane is an ordinary state",
                       "extinct": "c = 1 only: a channel whose result empties the membrane fires at the pair rule's "
                                  "cancelled form, 1/ff(N - 1, r - 1) for E(m)/ff(N - 1, r), in either direction "
@@ -219,6 +232,9 @@ EMPTY_COMMON_STATE = ("§0.2a as amended (amendment 4): wherever the membrane fa
                       "joining), or under extinct a channel whose result empties the membrane - it takes its continuous "
                       "extension 1/ff(N - 1, r - 1), under every last_molecule token; detailed balance holds there")
 SINGULAR_RATE = ("§0.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides "
+                 "(one and the same membrane species among both the step's reactants and its products, as E is in "
+                 "A + B + E -> C + E: the lead's confirmation, main bbcbec69, 18 November 2026; a step whose membrane "
+                 "species differ between its sides meets §0.2a's 0/0 at N = r and takes the cancelled form) "
                  "is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only "
                  "value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, "
                  "which fails its row")

@@ -250,7 +250,8 @@ def _place_state(w, **counts):
 
 def test_amendment_4_the_empty_common_state_takes_the_cancelled_form(wa):
     """§0.2a as amended: a lone molecule changing form, or two joining, has its 0/0 membrane factor
-    cancelled under every token; kept zeroes only pairs with an empty end state."""
+    cancelled under every token; kept zeroes only pairs whose step changes the membrane's count and
+    one of whose end states has an empty membrane (main bbcbec69)."""
     w, _ = wa
     r1, r2, r3 = w.step("r1"), w.step("r2"), w.step("r3")
     eA, eAB, e2A = _place_state(w, A_m=1), _place_state(w, A_m=1, B_m=1), _place_state(w, A_m=2)
@@ -315,3 +316,28 @@ def test_amendment_4_superseded_reading_is_caught_by_the_forward_form(wa, conv):
         assert res["kolmogorov"].passed and res["identity"].passed  # singular pairs are skipped there
         assert not res["forward_form"].passed and res["forward_form"].detail["singular_pattern_mismatches"] == 1
         assert not res["reverse_rates"].passed and res["reverse_rates"].detail["singular_pattern_mismatches"] == 1
+
+
+def test_amendment_5_a_pool_step_at_an_empty_membrane_fires_under_every_token(wa):
+    """§0.2a as reworded (main bbcbec69): a step in which the membrane takes no part fires at its own
+    rate under every token; a pool step at a probe state with an empty membrane fires at the pool's
+    mass action. Planted: an engine that freezes every channel at an empty membrane under kept."""
+    w, states = wa
+    states = np.asarray(states)
+    p1 = w.step("p1")
+    iS, iT = w.index("S@pool"), w.index("T@pool")
+    X = w.X("pool")
+    two_S = tuple(2 if i == iS else 0 for i in range(w.dim))
+    one_T = tuple(1 if i == iT else 0 for i in range(w.dim))
+    for conv in PAIRS:
+        law = Law(w, conv)
+        assert law.forward(p1, two_S) == RatExp(p1.rate.exact * 2 / X)  # k X ff(2, 2)/X^2
+        assert law.reverse(p1, one_T) == RatExp(law.k_minus(p1))        # k- X (1/X)
+    honest = Law(w, PHYSICAL)
+    ref = DB.reference_table(honest, states)
+    ap, am = ref["a_plus"].copy(), ref["a_minus"].copy()
+    empty = np.array([sum(v for v, m in zip(s, w.membrane_mask()) if m) == 0 for s in states])
+    ap[empty], am[empty] = 0.0, 0.0
+    res = DB.check_kernel_table(honest, states, ap, am, ref)
+    assert not res["forward_form"].passed and res["forward_form"].detail["zero_pattern_mismatches"] >= 1
+    assert not res["reverse_rates"].passed

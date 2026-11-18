@@ -75,7 +75,7 @@ There are no defaults.
 | `membrane_kinetics` | `count_on_m` | Membrane activities Π ff(n_i, α_i)/ff(N − c, r) at the firing state; extent N(m) − c + 1 on m |
 | `lumen_volume` | `declared` | Accepted; OL1's worlds have no lumen |
 | `empty_catalyst_phase` | `uncatalysed` | g = 1 where the membrane is empty at m. Only the membrane catalyses (§0.2a); a dilute catalyst is refused |
-| `last_molecule` | `kept`, `reversible` (with c = 0), `extinct` (with c = 1) | `kept` (amendment 4): rate zero only for a pair one of whose end states has an empty membrane. `extinct`: a channel whose result empties the membrane fires at the pair rule's cancelled form, E(m)/ff(N − 1, r) → 1/ff(N − 1, r − 1), in either direction. It is one-way, and its heat is booked against F_mem(empty) = 0. Under every token, a 0/0 membrane factor takes the same cancelled form (amendment 4) |
+| `last_molecule` | `kept`, `reversible` (with c = 0), `extinct` (with c = 1) | `kept` (amendments 4 and 5): rate zero only for a pair whose step changes the membrane's count and one of whose end states has an empty membrane. A step in which the membrane takes no part fires at its own rate under every token, and a pool step at a probe state with an empty membrane fires at the pool's mass action (§0.2a as reworded, main bbcbec69). `extinct`: a channel whose result empties the membrane fires at the pair rule's cancelled form, E(m)/ff(N − 1, r) → 1/ff(N − 1, r − 1), in either direction. It is one-way, and its heat is booked against F_mem(empty) = 0. Under every token, a 0/0 membrane factor takes the same cancelled form (amendment 4) |
 
 - **Dilute phases** use mass action scaled by X = N_A V c0: activity ff(n, α)/X^α and extent X.
 - **Coverage.** The references cover all four admissible (measure, last-molecule) pairs.
@@ -159,7 +159,8 @@ row passes.
 ## Amendments
 
 **17 November 2026, after the registering commit 08870ef6 and before any engine output.**
-Amendments 1–3 follow from a review of the registered design; amendment 4 follows the lead's rulings.
+Amendments 1–3 follow from a review of the registered design; amendments 4 and 5 (the latter on 18
+November) follow the lead's rulings.
 
 1. **The extinct rule is now probed in the forward direction.**
    - `ol1_wa` reaches the extinct boundary only through the reverse of a join, while §0.2a rules both
@@ -193,6 +194,8 @@ Amendments 1–3 follow from a review of the registered design; amendment 4 foll
        applies, under every `last_molecule` token. That happens when a step's common state has an
        empty membrane while neither end state does: a lone molecule changing form, or two joining.
      - `kept` gives rate zero only to a pair one of whose end states has an empty membrane.
+       (Amendment 5 rewords this to the lead's ruling: only for a pair whose step changes the
+       membrane's count.)
      - The values, derived from the reference's own F and rules, with k each step's forward
        constant:
        - r3 at a lone A fires at k under every token pair.
@@ -245,6 +248,29 @@ Amendments 1–3 follow from a review of the registered design; amendment 4 foll
      include each dilute place alone, with the membrane empty. There a pool step's rate is the
      pool's mass action under every token (the last-molecule rules concern membrane-locus steps),
      and a join's rate is set by `last_molecule`.
+
+5. **Amendment 5, text only** (18 November 2026, after 2128fe8c; before any engine output). The
+   lead confirmed both of OL5's readings in the design note (main bbcbec69).
+   - **`kept`, reworded.** It gives rate zero only to a pair whose step changes the membrane's count
+     and one of whose end states has an empty membrane. A step in which the membrane takes no part
+     fires at its own rate under every token. A pool step at a probe state with an empty membrane
+     fires at the pool's mass action. Amendment 4's wording, read literally, also zeroed those pool
+     steps. The reference never did: its `kept` acted on membrane-locus steps only.
+   - **Rule 8's condition, cited.** "A membrane place on both sides" means one and the same
+     membrane species among both the step's reactants and its products, as E is in
+     A + B + E → C + E. A step whose membrane species differ between its sides meets §0.2a's 0/0
+     at N = r and takes the cancelled form. That is how amendment 4 read it.
+   - **What changed:**
+     - the token meanings in `ol1_conventions.json` and the amendment record in
+       `ol1_design.json` (text);
+     - the law and the float path now state the count condition explicitly.
+   - **No registered input changed.** The worlds, the probe states and the planted controls'
+     numbers are as at 2128fe8c. Every expected value is bitwise unchanged on every registered
+     probe, under all four token pairs (`evidence/amendment5_*`).
+   - **The pool-step case gets a planted test but no registered number.** It is an engine that
+     freezes every channel at an empty membrane under `kept`. The forward-form check's zero
+     pattern catches it at the probe's empty-membrane states that hold pool molecules
+     (`test_ool_references_laws.py`).
 
 **The same day, on the stand-in only (not the design).** Honest stand-in probes are now
 evaluated by the float path (`FloatRates`), as a float64 engine would report them. A test holds

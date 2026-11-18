@@ -175,7 +175,10 @@ class FloatRates:
         return 1.0 + sum(b * m[j] for j, b in self.cats[r]) / N
 
     def _kept_zero(self, r, n, p) -> bool:
-        return self.last == "kept" and self.locus_X[r] is None and (self.N(n) == 0 or self.N(p) == 0)
+        """``kept``: zero only for a membrane step that changes the membrane's count with an empty
+        end state (main bbcbec69)."""
+        Nn, Np = self.N(n), self.N(p)
+        return self.last == "kept" and self.locus_X[r] is None and (Nn == 0 or Np == 0) and Nn != Np
 
     def forward(self, r, n) -> float:
         n = np.asarray(n)

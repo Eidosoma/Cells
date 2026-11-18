@@ -54,7 +54,7 @@
    "uncatalysed": "g = 1 where the membrane (the only catalysing phase) is empty at m"
   },
   "last_molecule": {
-   "kept": "rate zero only for a pair one of whose end states has an empty membrane (amendment 4, \u00a70.2a as amended): the membrane never empties and nothing else is frozen",
+   "kept": "rate zero only for a pair whose step changes the membrane's count and one of whose end states has an empty membrane; a step in which the membrane takes no part fires at its own rate under every token, and a pool step at a probe state with an empty membrane fires at the pool's mass action (amendment 5, 18 November 2026: \u00a70.2a as reworded by the lead, main bbcbec69; amendment 4's wording read literally also zeroed those pool steps). The membrane never empties and nothing else is frozen",
    "reversible": "c = 0 only: the empty membrane is an ordinary state",
    "extinct": "c = 1 only: a channel whose result empties the membrane fires at the pair rule's cancelled form, 1/ff(N - 1, r - 1) for E(m)/ff(N - 1, r), in either direction (k- for the last molecule's leave); it is one-way, and a literal zero is an error"
   }
@@ -75,7 +75,7 @@
  ],
  "covered_pairs": "all four admissible (condensed_measure, last_molecule) pairs",
  "empty_common_state": "\u00a70.2a as amended (amendment 4): wherever the membrane factor E(m)/ff(N - c, r) is 0/0 - the common state's membrane is empty while neither end state's is (a lone molecule changing form, two joining), or under extinct a channel whose result empties the membrane - it takes its continuous extension 1/ff(N - 1, r - 1), under every last_molecule token; detailed balance holds there",
- "singular_rate": "\u00a70.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, which fails its row",
+ "singular_rate": "\u00a70.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides (one and the same membrane species among both the step's reactants and its products, as E is in A + B + E -> C + E: the lead's confirmation, main bbcbec69, 18 November 2026; a step whose membrane species differ between its sides meets \u00a70.2a's 0/0 at N = r and takes the cancelled form) is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, which fails its row",
  "world_role": {
   "key": "optional",
   "values": [

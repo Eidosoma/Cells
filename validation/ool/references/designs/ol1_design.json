@@ -81,6 +81,13 @@
    "before_engine_output": true,
    "what": "amendment 4: (a) \u00a70.2a as amended: the cancelled form wherever the membrane factor is 0/0, under every last_molecule token, and kept zeroing only pairs with an empty end state; the kernel probe gains each membrane step's reactant-only and product-only states (592 states); the superseded reading is planted (empty_m_zero). (b) \u00a70.2b rule 8: world_role = probe on the worlds holding r4 (ol1_wa, ol1_wa_closed and its two variants); a tenth refusal; the probe's expectation is +inf at r4's singular pair under multinomial_less_one. (c) runs declare an end_reason, and a registered run that ends stalled fails its row",
    "why": "the lead's rulings of 17 November (\u00a70.2a amended; \u00a70.2b rule 8)"
+  },
+  {
+   "date": "2026-11-18",
+   "after_commit": "2128fe8c",
+   "before_engine_output": true,
+   "what": "amendment 5, text only: kept's meaning reworded to the lead's ruling (main bbcbec69): rate zero only for a pair whose step changes the membrane's count and one of whose end states has an empty membrane; a step in which the membrane takes no part, and a pool step at an empty-membrane probe state, fire at their own rates; rule 8's condition cited as the same membrane species on both sides. The reference law and float path test the count condition explicitly; every registered expected value is unchanged (checked bitwise on every registered probe, all four token pairs)",
+   "why": "the lead confirmed both of OL5's readings (bbcbec69)"
   }
  ],
  "worlds": {

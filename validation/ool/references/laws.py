@@ -42,8 +42,11 @@ so ln a+(n) - ln a-(n') = -(F(n') - F(n)) + w on every pair, by construction.
   every other pair. Where only the normaliser vanishes (``multinomial_less_one``, a membrane place
   on both sides, N = r) the rate is +inf: such a step is admitted only in a world declaring
   ``world_role: probe``, whose probes report +inf, and a run that reaches it stops ``stalled``.
-- **The last molecule.** ``kept``: rate zero only for a pair one of whose end states has an empty
-  membrane, so the membrane never empties and nothing else is frozen. ``reversible`` (c = 0): the
+- **The last molecule.** ``kept``: rate zero only for a pair whose step changes the membrane's count
+  and one of whose end states has an empty membrane, so the membrane never empties and nothing else
+  is frozen: a step in which the membrane takes no part fires at its own rate under every token, and
+  a pool step at a probe state with an empty membrane fires at the pool's mass action (§0.2a as
+  reworded by the lead, main bbcbec69, 18 November 2026; amendment 5). ``reversible`` (c = 0): the
   empty membrane is an ordinary state (E = 1 there). ``extinct`` (c = 1): a channel whose result
   empties the membrane fires at the pair rule's cancelled form, in either direction (k- for the last
   molecule's leave); the empty state is absorbing, so that channel is one-way and is excluded from
@@ -283,8 +286,11 @@ class Law:
         return st.locus == "membrane" and (self.N(n) == 0 or self.N(p) == 0)
 
     def _kept_zero(self, st: Step, n, p) -> bool:
-        """``kept`` gives rate zero only to a pair one of whose end states has an empty membrane."""
-        return self.conv.last_molecule == "kept" and self.end_empty(st, n, p)
+        """``kept`` gives rate zero only to a pair whose step changes the membrane's count and one of
+        whose end states has an empty membrane (main bbcbec69). A pool step is never zeroed, nor a
+        step in which the membrane takes no part."""
+        return (self.conv.last_molecule == "kept" and self.end_empty(st, n, p)
+                and self.N(n) != self.N(p))
 
     def forward(self, st: Step, n) -> RatExp:
         """a+(n): the rate of n -> n + nu (zero when impossible; INF when singular)."""
