@@ -98,6 +98,17 @@ class Identity:
 
 
 @dataclass(frozen=True)
+class NamedRow:
+    """A species an operator names, moves or reads with no identity claim at all, which its
+    species_identities may give beside identity items. The registry's row checks see it
+    (check_two_form_rows, check_stage_read_rows); identity resolution and check_identities skip
+    it, so it sets no species' identity and no resolved source (current injection's carriers;
+    the second review's finding 3)."""
+
+    id: str
+
+
+@dataclass(frozen=True)
 class Background:
     trace_mM: float
     floor_fmol: float
@@ -410,6 +421,8 @@ def identities(spec):
         ordered[role].append((op.LAW_ID, operator_identities(op, declaration)))
     for law, items in ordered["author"] + ordered["user"]:
         for item in items:
+            if isinstance(item, NamedRow):  # A row it names, with no identity claim.
+                continue
             resolved.setdefault(item.id, (law, Identity(item.catalogue, item.evidence)))
     return resolved
 
@@ -419,6 +432,8 @@ def check_identities(spec, law, items):
     identity, naming the source that set it."""
     resolved = identities(spec)
     for item in items:
+        if isinstance(item, NamedRow):  # No identity claim to compare.
+            continue
         source, identity = resolved.get(item.id, (law, None))
         if source == law or identity is None:
             continue

@@ -176,3 +176,79 @@ def test_the_lumen_fill_beside_a_buffered_outside_node_is_refused(monkeypatch):
         ConfigError, match=rf"restricted_cleft_lumen@1's fill .* outside node {fr.LUMEN}"
     ):
         registry.check_stage_read_rows(spec)
+
+
+def injected_fr4(carrier):
+    """FR-4's development world as a composite, with an electrode at its buffered cell carrying
+    its current by `carrier` (the binding owner's planted injection, runs/injection-01: carried by
+    H+, the energy ledger refuses the run; carried by K+, it closes)."""
+    raw = cs.frozen_definition(fr.development_world(fr.fr4_world()))
+    raw["model"].setdefault("operators", []).append(
+        dict(law="electrode_current_injection@1",
+             electrodes=[dict(cell_id=fr.CELL, carriers={carrier: 1.0})])
+    )  # fmt: skip
+    raw["experiment"]["injection_controls"] = [
+        dict(cell_id=fr.CELL, schedule=[dict(time=0.0, current_A=2e-12)])
+    ]
+    return raw
+
+
+def test_an_injection_carried_by_a_held_species_is_refused_at_definition():
+    """The current injection names its carriers (NamedRow, no identity claim), so an injection
+    carried by H+ into a buffered cell is refused at the definition, as every mover of a held row
+    is, where the run would refuse at its energy ledger. The K+-carried control is admitted."""
+    parse_spec(injected_fr4("K"))
+    with pytest.raises(
+        ConfigError,
+        match=r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
+        "electrode_current_injection@1 names or moves it",
+    ):
+        parse_spec(injected_fr4("H"))
+
+
+def injection_worlds():
+    """Existing worlds with the injection: its own test world (K and M carriers, a heredity cell),
+    the same composed with a regulated availability reading K, and FR-4's K-carried composite."""
+    from tests.unit.test_current_injection_runs import definition
+
+    alone = definition([(0, 1e-12)])
+    coupled = copy.deepcopy(alone)
+    cell = coupled["model"]["cells"][0]["id"]
+    coupled = rf.with_coupling(
+        coupled, species=["K"],
+        states=[rf.state("s", [cell], [("hill_activation", "K", 140.0, 4.0)], on=20.0, off=5.0,
+                         initial=0.5)],
+    )  # fmt: skip
+    return [parse_spec(alone), parse_spec(coupled), parse_spec(injected_fr4("K"))]
+
+
+def test_the_injections_named_carriers_change_no_identity_and_meet_the_two_form_check(
+    monkeypatch,
+):
+    """The three effects of the injection's named carriers, on existing worlds:
+    - every species' resolved identity, and its source, is the same as with no names at all: a
+      NamedRow sets none, and check_identities compares none;
+    - check_two_form_rows passes: the carriers are ions;
+    - planted: a carrier that is a two-form row is refused by check_two_form_rows, naming the
+      injection, so the check does see the carriers."""
+    from cells.operators import current_injection
+
+    for spec in injection_worlds():
+        named = registry.identities(spec)
+        monkeypatch.setattr(
+            current_injection.ElectrodeCurrentInjection, "species_identities", lambda s, d: ()
+        )
+        assert registry.identities(spec) == named
+        monkeypatch.undo()
+        registry.check_two_form_rows(spec)
+        ops = [op for op, d in registry._entries(spec) if op.LAW_ID == current_injection.LAW_ID]
+        assert ops and all(
+            isinstance(item, registry.NamedRow)
+            for op, d in registry._entries(spec)
+            if op.LAW_ID == current_injection.LAW_ID
+            for item in registry.operator_identities(op, d)
+        )
+    with pytest.raises(
+        ConfigError, match=r"species B_c has two forms .*: electrode_current_injection@1 names it"
+    ):
+        parse_spec(injected_fr4("B_c"))
