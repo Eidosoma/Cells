@@ -5,10 +5,13 @@
 - **§0.2b–c are the authority.** OL5 builds from them, never from this note. Where this note and
   §0.2c differ, §0.2c holds.
 - **§0.2d.** The lead's rulings on OL5's questions are §0.2d (branch `ol-rulings-20261118` at
-  7fb8816f, landing after move 2). Items 2 and 5–7 bind this builder, and the note is amended to
-  them.
-  - Item 6's provisional draw maps and schedule streams are **confirmed** against the stream
-    layout, with one proposed extension (§2.1).
+  c8b22371, landing after move 2). Items 2, 5–7, 9 and 10 bind this builder, and the note is
+  amended to them.
+  - **Item 6:** the draw maps and schedule streams, confirmed against the stream layout, with the
+    occupant stream's clock rule.
+  - **Item 9:** threefry's partitionable flag.
+  - **Item 10:** the replay conventions, OL5's seven readings as confirmed, the followed-daughter
+    record and the diagnostic record.
 - **The probes that rule 9 and the rulings asked for were added after them** (§2.2, §1.6 and
   §1.3). None disagrees with a ruling.
 - **Scope.** Docs only until the lead says move 2 has landed. Branch `ol2-design-check` from main
@@ -49,7 +52,7 @@
 | The floor | Ruled to count area (rule 5). Probe: closure and the stationary law stay exact under either floor; only the reachable count changes, and a step that keeps the area fires below the floor (§1.3) |
 | D199's debts | Every descendant: the shared pool's slots, with relations rows. External help: a sources row for every supply and every payer. Labels come in OL3 (rule 17) (§3) |
 | Questions | Q1–Q21 are ruled (§7). U1, the estimate, is for the user |
-| Estimate | OL2 7–11 and OL3 6–9.5 agent-days, labels included, after rules 8, 16 and 17. §8 gave 5–8 and 2.5–4 (§8 here) |
+| Estimate | OL2 7.5–12 and OL3 6–9.5 agent-days, 13.5–21.5 in all, labels included, after rules 8, 16 and 17 and §0.2d item 10. §8 gave 5–8 and 2.5–4 (§8 here) |
 
 ## 1. OL2 in OL1's kernel
 
@@ -216,9 +219,11 @@ What follows (S):
 ### 1.8 The shared pool (R5; §0.2b rules 2 and 5; rule 14)
 
 - **F is additive over the pool and the assemblies** (S, since they are separate phases).
-- **Channels:**
-  - each slot has its steps' 2R channels;
-  - the pool's own steps (pool locus) form the pool group.
+- **Channels** (§0.2d item 10.7):
+  - a group's channels are its declared steps forward, then the same steps reverse;
+  - a step with any membrane or lumen place belongs to every slot's group, and a pool-locus step to
+    the pool group;
+  - every counter starts at 0 (item 10.6).
 - **The selection map (rule 14):**
   - groups in order: the pool, then slots 0 to K − 1 in slot order, never in key order (after a
     fission the two differ);
@@ -255,7 +260,7 @@ What follows (S):
 
   Each schedule draws on the `schedule` domain (6) under its own key, its declared index, with the
   counter at its own draw count.
-- **Item 6 against the stream layout (S): confirmed.**
+- **The stream layout behind §0.2d items 6 and 9 (S, the builder's check).**
   - **The schedule's key.** G1's derivation folds the base key, then a 64-bit carrier word, then
     the domain, then the counter. A schedule's declared index takes the carrier word in domain 6,
     so no new fold is needed. No other stream draws in domain 6, so no key collides.
@@ -266,26 +271,23 @@ What follows (S):
     - That holds whether or not JAX's threefry is partitionable.
   - **Blocks.** A block draw, such as the partition's one draw per attempt (rule 12), is
     size-independent only because threefry is partitionable. It is here: JAX 0.11.1, with the flag
-    true by default, and an 8-uniform block's prefix equals a 5-uniform block.
-    - **P:** the stream identity records the flag, and a run refuses without it. Then rule 9's and
-      rule 10's positions within the block replay bitwise at any block size.
-- **One extension (P):** a single-lineage world with schedules (OL3).
-  - The occupant's own event stream (domain 1, OL1's `age`) follows the same clock rule: its counter
-    counts the occupant's draws, and a draw that crosses a schedule time is discarded.
-  - Without schedules, draws and events coincide, so OL1's worlds are unchanged.
-- **At an event,** each living assembly is tested in slot order (rule 12). It needs:
-  1. τ ≥ τ_crit (declared, with its source);
-  2. v ≤ k^(−1/2), that is, 36πkV² ≤ A³ (S);
-  3. then the split (§2.2, §2.3);
-  4. then every daughter at or above the floor, in area (rule 5). Otherwise the fission is refused
-     and recorded, and the parent stays (rule 12).
+    true by default, and an 8-uniform block's prefix equals a 5-uniform block. Item 9 makes the
+    flag a run condition, stated in the environment record.
+  - **The occupant's own event stream** in a single-lineage world with a schedule (domain 1, OL1's
+    `age`) follows the world's clock rule (item 6).
+- **At an event** (§0.2d item 10.1–10.2):
+  - the event acts on the assemblies alive at its start, in slot order;
+  - each attempt runs in item 10.2's order: the stress and v ≤ k^(−1/2) tests (36πkV² ≤ A³, S),
+    the slots test, the draw, the split and floor test (rule 5), then the fission applied or
+    refused and recorded;
+  - the fission counter counts draws.
 - **k** is declared per schedule (rule 11).
 - **Unequal daughters hold at least what equal ones hold** (S, Jensen). A^(3/2) is convex, so
   Σ_j V_sph(A_j) ≥ k·V_sph(A/k) whenever Σ_j A_j = A. The equal-sphere test is therefore
   conservative for C3x's unequal areas.
-- **A daughter born beyond σ_max lyses at birth** (§0.2b rule 3).
-- **The draws:** domain 2, in rule 9's and rule 10's order. The counter counts the parent's
-  attempts (rule 12).
+- **A daughter born beyond σ_max lyses at birth** (§0.2b rule 3), booked as item 10.3 rules it.
+- **The draws:** domain 2, in rule 9's and rule 10's order, from counter 0 (items 10.2 and 10.6).
+- **The first Poisson shear time** is t₁ = −ln(u₀)/λ, from t = 0 (item 10.4).
 
 ### 2.2 Rule 7: the membrane split (rule 9; probe `probe_rule7.py`)
 
@@ -386,19 +388,25 @@ The difference is made of:
 - each daughter's excess terms;
 - the lumens' terms, at each daughter's own V_j(n_j).
 
-It is booked to `source:shear/<schedule>` (kind `schedule`, class `energy`). A daughter that lyses
-at birth books its release as heat, after the split.
+It is booked to `source:shear/<schedule>` (kind `schedule`, class `energy`).
+- A daughter that lyses at birth counts as born in this sum, at its own V and with its closure
+  cost.
+- Its release is then booked as a lysis row (§0.2d item 10.3).
 
 ### 2.5 Continuation and every daughter
 
 - **A single lineage** (OL1's mode): G1's `daughter_continuation@1`, generalised to k daughters
   (`first`, or `uniform` over k, with its rule for an empty daughter). The others end
   `not_followed`, and their material and F go to the sink.
+  - Every attempt records the daughter it follows. A missing field is a replay error (§0.2d
+    item 10).
 - **A shared pool:** every daughter lives.
   - Daughter 0 takes the parent's slot, and the others take free slots in slot order.
-  - With too few free slots, the run stops `slots_full` before the split, and every life is
-    censored (rule 13).
-- **Keys** follow relations@1 §1.3.
+  - Each daughter takes its slot before any lysis at birth, which then frees it (item 10.3).
+  - With too few free slots, the run stops `slots_full` before the draw, and every life is
+    censored (rule 13; item 10.2).
+- **Keys** follow relations@1 §1.3. A new sub-lineage's starting key counter is read from the
+  `lives` table (item 10.6).
 
 ### 2.6 Serial transfer: `cells.serial_transfer@1`
 
@@ -544,7 +552,8 @@ error. Symbols:
 | S2 | The declared map replays every event (§1.8) | The host oracle, with common uniforms | Groups folded in key order after a fission |
 | S3 | P(channel j) = a_j/a0 | Exact rationals over the map | The group chosen uniformly |
 | S4 | A world with K = 1 has the single assembly's rate table | Rate tables | — |
-| S5 | §0.2d item 6's clock. The `world` counter counts draws. A draw that crosses a declared schedule time is discarded, the event applies at that time, and the next draw takes the next counter. A schedule-free world's draws and events coincide | The host oracle, with common uniforms, across a schedule time | The discarded draw read again (τ biased); the counter left at the event count |
+| S5 | §0.2d item 6's clock. The `world` counter counts draws, and so does the occupant's stream in a single-lineage world with a schedule. A draw that crosses a declared schedule time is discarded, the event applies at that time, and the next draw takes the next counter. A schedule-free world's draws and events coincide | The host oracle, with common uniforms, across a schedule time | The discarded draw read again (τ biased); the counter left at the event count |
+| S6 | §0.2d item 10's conventions, as listed there (event sets, the attempt's order, birth lysis, the first Poisson time, counters from 0, group channels). The diagnostic record holds every draw's address, uniforms and fate, and each event's changes and ledger terms by payer | The host oracle replays a diagnostic run from its record alone | A daughter tested again in its own event; a draw before the slots test; a discarded draw missing from the record |
 | D1 | Admitted only if τ ≥ τ_crit, 36πkV² ≤ A³ and every daughter is at or above the floor in area (rule 5), with k declared (rule 11) | Closed forms at the thresholds | The threshold at k^(−1/3) |
 | D2 | Rule 9's C3x. P1 on counts. P2: at equal a_L, the hypergeometric on the balanced size vector in a random order. P3: the joint pmf invariant under relabelling | Exact pmfs by enumeration at small N, including N mod k = 2 (as `probe_rule7.py`); χ² at N = 80 with registered power | Floor-to-first (P2, P3); G1's sizes in a random order at N mod k = 2 (P2); binomial labels (P2); independent samples (P1) |
 | D3 | Rule 10. The lumen: multinomial at weights V_sph(A_j)/Σ V_sph, with the ruled uniform order, conserving and jointly exchangeable | Enumeration | Sequential binomials at p = 1/k with k = 3; independent binomials; weights by block position |
@@ -565,7 +574,7 @@ error. Symbols:
 | `test_assembly_lineages_v2_geometry.py` | G1–G3; conditional parsing and refusals | 1 |
 | `test_assembly_lineages_v2_exchange.py` | X1–X3, P1 | 2 |
 | `test_assembly_lineages_v2_lumen.py` | L1–L5, Y1–Y2 | 2 |
-| `test_assembly_lineages_v2_pool.py` | S1–S5 | 2 |
+| `test_assembly_lineages_v2_pool.py` | S1–S6 | 2 |
 | `test_assembly_lineages_v2_division.py` | D1–D4. Exact pmfs in tier 2; χ² at N = 80 in tier 3 | 2 and 3 |
 | `test_assembly_lineages_v2_transfer.py` | T1, E1 | 1 |
 | `test_assembly_lineages_v2_labels.py` | B1–B4, R1 | 2 |
@@ -616,18 +625,21 @@ the questions to its rules.
 - Items 2 (rate form and units), 3 (the lumen's F), 4 (an entry's θ⁺), 5 (the two-level map with
   its guard) and 7 (shear work and lysis's single row) agree with this note as amended.
 - Item 8 makes labels the engine's own tests.
-- **Item 6 is confirmed** against the stream layout (§2.1), with two proposals (P):
-  - the occupant's stream in a single-lineage world with schedules counts draws, as `world` does;
-  - the stream identity records threefry's partitionable flag, which a run requires, so that block
-    draws such as rule 12's partition replay at any block size.
+- **Item 6** holds the draw maps as confirmed against the stream layout (§2.1), and the builder's
+  first addition, the occupant stream's clock rule.
+- **Item 9** holds the second: a run requires threefry's partitionable flag, and its environment
+  record states it.
+- **Item 10** holds OL5's seven readings, which this builder confirmed with no changes and with the
+  precisions listed there. It also holds the followed-daughter record and the diagnostic record.
 
 **For the user (marked):**
-- **U1 (for the user, through the lead): the estimate.** OL2 and OL3 come to about 13–20.5
+- **U1 (for the user, through the lead): the estimate.** OL2 and OL3 come to about 13.5–21.5
   agent-days, labels included, against §8's 7.5–12. The difference comes from:
   - D215's shared run loop;
   - D199's relations and labels (rule 17);
   - the next relations version (rule 8);
-  - rule 3's lysis.
+  - rule 3's lysis;
+  - OL5's engine needs: the diagnostic record and four probe roles (§8).
 
   The programme was approved whole (U8, 33–51).
 
@@ -646,6 +658,19 @@ committed yet, so no post-move path is guessed here.
 | Validation | `validation/assembly_lineages_v2/`: `FORMAT.md`, `probes.py`, `registered.py`; @1's probe-set comparison, moved into the checkout with OL2's invariance gate (rule 16) |
 | Tests | `tests/assembly_lineage_v2_fixtures.py`; §6's eight files; `tests/test_tiers.json` |
 
+**OL5's engine needs** (§0.2d item 10). This builder writes the probe driver and FORMAT, as OL1
+did.
+
+| Need | Where |
+| --- | --- |
+| Kernel probes for four registered worlds, the largest about 12,432 states: a⁺ and a⁻ for every channel at every state, from the kernel's own rate function on the host, as OL1's `kernel_probe` | A role in `probes.py` |
+| A partition probe of 6 parents × 4,000 attempts, from the engine's own split, with the uniforms it used | A role in `probes.py`; a split function in `division.py` that the host can call |
+| Six runs in the diagnostic mode (item 10.5), with every draw's address, uniforms and fate, the channel table, and each event's changes and ledger terms by payer | A role in `probes.py`. The mode's experiment key is absent by default (`spec.py`); `kernel.py` emits it, `runner.py` collects it, and `records.py` declares its arrays. OL1's `event_uniforms` is unchanged |
+| Refusals for 22 registered declarations, each with the parser's message | A role in `probes.py` |
+| Item 9's run condition and environment record | `runner.py` |
+| OL5's world keys for OL2 and OL3, mapped field by field | `registered.py` |
+| The bundles' and probes' formats | `FORMAT.md`: OL2's and OL3's sections |
+
 **The estimate** (agent-days, S):
 
 | Milestone | Item | Days |
@@ -656,10 +681,11 @@ committed yet, so no post-move path is guessed here.
 | | The osmotic term, static dispatch and lysis | 1–1.5 |
 | | The shared pool: K slots, the world stream, two-level selection, the oracle | 1.5–2.5 |
 | | Probe worlds, the ledger, records, FORMAT and OL5's roles; the c_ext refusal and drift report (rule 6) | 1–1.5 |
+| | OL5's engine needs: the diagnostic record and the four probe roles (item 10) | 0.5–1 |
 | | The invariance gate, with @1's probe-set comparison moved into the checkout (rule 16) | 0.5–1 |
 | | The next relations version, with `lysed` (rule 8) | 0.5–1 |
 | | Tests and tier rows | 1 |
-| | **OL2** | **7–11** |
+| | **OL2** | **7.5–12** |
 | OL3 | The shared run loop, behind @1's gate (rule 16) | 1.5–2.5 |
 | | Shear fission: admission, C3x, the lumen split, shear work | 1.5–2 |
 | | Continuation in both modes, slots, keys, relations rows and sources | 1–1.5 |
@@ -672,7 +698,7 @@ committed yet, so no post-move path is guessed here.
 
 - **Read:**
   - AGENTS.md;
-  - `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` (the whole note at bbcbec69; §0.2b–c at 5f2d16ed);
+  - `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` (the whole note at bbcbec69; §0.2b–c at 5f2d16ed; §0.2d at c8b22371);
   - DECISIONS.md: D188, D195, D199, D200, D202, D212, D215;
   - GARD_DESIGN.md;
   - CORE_SEAMS_DESIGN.md §3 and §16;
