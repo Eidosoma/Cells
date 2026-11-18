@@ -14,7 +14,8 @@
 # - the gates' own copies, for example
 #   /mnt/workspaces/Cells/review-fixes-20261118/tools/gate-laneB-fr.sh.
 # Run it from a unit that is not pinned to lane B (the holder's lane check ignores its own unit
-# anyway). OUT/done holds the verdict's exit status.
+# anyway). OUT/done holds the verdict's exit status, or 2 when the holder did not run to its end
+# (its flock killed while waiting, or its own refusal), in which case nothing is judged.
 #
 # Usage: fr_landing_set.sh REV OUT   (REPO, the checkout, defaults to this script's repository)
 set -u
@@ -33,9 +34,18 @@ WT=$OUT/fr-worktree FS=$OUT/fr-snapshot
 git -C "$REPO" worktree add --detach "$WT" "$REV" >> "$OUT/fr-landing-set.log" 2>&1 \
   || { log "worktree failed"; echo 2 > "$OUT/done"; exit 2; }
 log "the holder: $WT ($(git -C "$WT" rev-parse HEAD)) -> $FS, under $LOCK"
+# The command form: the holder runs only once flock holds the lock, so a flock killed while it waits
+# runs nothing. Its status is checked as well: unless the holder ran to its end (exit 0), the set
+# refuses without a verdict (a killed flock, or the holder's own refusal).
 /usr/bin/flock "$LOCK" bash "$G/fr_landing_holder.sh" "$WT" "$FS" "$START" "$OUT/fr-landing"
-log "the holder exit $?: $(tail -n 2 "$OUT/fr-landing/run.log" 2>/dev/null | tr '\n' ' ' | cut -c1-300)"
+held=$?
+log "the holder exit $held: $(tail -n 2 "$OUT/fr-landing/run.log" 2>/dev/null | tr '\n' ' ' | cut -c1-300)"
 [ -d "$WT" ] && git -C "$REPO" worktree remove --force "$WT" >> "$OUT/fr-landing-set.log" 2>&1
+if [ $held -ne 0 ]; then
+  log "refused: the holder did not run to its end under the lock (exit $held); no verdict"
+  echo 2 > "$OUT/done"
+  exit 2
+fi
 "$PY" -I "$G/fr_landing_verdict.py" "$FS" "$OUT/fr-landing" "$BEFORE" "$OUT/fr-landing/verdict.json" \
   > "$OUT/fr-landing/verdict.stdout" 2>&1
 rc=$?

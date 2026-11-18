@@ -144,3 +144,59 @@ def test_a_dirty_file_makes_the_selection_unclean(repo, tmp_path):
     (repo / "src" / "cells" / "a.py").write_text("A = 1\n")
     code, guards = freeze(repo, tmp_path / "guards", "--scope", "guards", "--require-clean")
     assert code == 0 and guards["clean"]
+
+
+# ------------------------------------------------------------- the set's lock: a killed flock
+
+
+SET = ROOT / "scripts" / "gates" / "fr_landing_set.sh"
+
+
+def flock_child(parent, lock, timeout=20.0):
+    """The flock process the set started on the lock (its argument), once it waits."""
+    import os
+    import time
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            try:
+                argv = (entry / "cmdline").read_bytes().split(b"\0")
+                ppid = int((entry / "stat").read_text().rsplit(")", 1)[1].split()[1])
+            except (OSError, ValueError, IndexError):
+                continue
+            if (os.path.basename(argv[0].decode()) == "flock" and str(lock).encode() in argv
+                    and ppid == parent):
+                return int(entry.name)
+        time.sleep(0.05)
+    raise AssertionError("the set's flock did not start")
+
+
+def test_a_killed_flock_refuses_the_set_and_runs_nothing(repo, tmp_path):
+    """The plant: the lane's lock is held, the set waits in flock, and the flock is killed. The set
+    must refuse (exit 2, done 2) without running the holder or the verdict, and remove its worktree.
+    The gate scripts built as `exec 9> LOCK; flock 9` ran on unlocked when that happened."""
+    import fcntl
+    import os
+    import signal
+
+    lock, out = tmp_path / "lane.lock", tmp_path / "out"
+    rev = git(repo, "rev-parse", "HEAD").strip()
+    env = dict(os.environ, REPO=str(repo), LANE_LOCK=str(lock), PY=sys.executable)
+    with open(lock, "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        run = subprocess.Popen(["bash", str(SET), rev, str(out)], env=env)
+        try:
+            os.kill(flock_child(run.pid, lock), signal.SIGTERM)
+            code = run.wait(timeout=60)
+        finally:
+            if run.poll() is None:
+                run.kill()
+    assert code == 2 and (out / "done").read_text().strip() == "2"
+    log = (out / "fr-landing-set.log").read_text()
+    assert "refused: the holder did not run to its end" in log
+    assert not (out / "fr-landing" / "run.log").exists()  # The holder never ran.
+    assert not (out / "fr-landing" / "verdict.json").exists()  # Nor the verdict.
+    assert not (out / "fr-worktree").exists()  # Its worktree removed.

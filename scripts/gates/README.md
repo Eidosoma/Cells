@@ -17,6 +17,12 @@ tests with planted failures (`tests/unit/test_gates_*.py`, `tests/unit/test_tier
 | `fingerprints.py` | R1's definition-fingerprint check through a move map: every saved definition's digest value, harness rows and control arrays, compared through the map. It carries the harness parts it uses. | `d188-m2-move-20261118/tools/fingerprints.py` |
 | `fingerprints_landing.sh` | That check at a landing after a move: main's snapshot against the head, and the head against the move's pre-move record. | `d188-m2-move-20261118/tools/fingerprints-landing.sh` |
 
+**Locks.** Every lock taken in `scripts/gates/` uses flock's command form, which runs the locked
+work only once flock holds the lock, and its exit status is checked. A flock killed while it waits
+therefore runs nothing (`tests/unit/test_gates_fr_landing_set.py`). The workspace gate scripts built
+as `exec 9> LOCK; flock 9` without a check run unlocked when their flock dies. Stop a unit with
+`systemctl --user stop`, never by killing a flock.
+
 `scripts/test_tiers.py` holds the tier record's tools. Two of them changed with D222:
 - `measure --only`: a tier the only-list does not hold now selects nothing (it raised `KeyError`),
   and a listed file that is not a test file is refused.
