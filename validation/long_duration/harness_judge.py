@@ -189,7 +189,8 @@ def load_arm(directory):
 
     directory = Path(directory)
     record = json.loads((directory / "run.json").read_text())
-    data = np.load(directory / "rows.npz")
+    with np.load(directory / "rows.npz") as archive:  # Each array once: an indexed npz
+        data = {k: archive[k] for k in archive.files}  # decompresses per access.
     times = data["times"]
     spec = parse_spec(worlds.h2(record["dt_s"], development_end=record["development_end_s"]))
     model = get_model(spec.model)

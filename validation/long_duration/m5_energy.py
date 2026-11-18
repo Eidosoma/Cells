@@ -188,7 +188,8 @@ def observed_classes(directory, record):
     from cells.models import surface_pump_projective as projective
     from cells.registry.models import get_model
 
-    data = np.load(Path(directory) / "energy.npz")
+    with np.load(Path(directory) / "energy.npz") as archive:  # Each array once: an indexed
+        data = {k: archive[k] for k in archive.files}  # npz decompresses per access.
     if "row_times" not in data:
         return None
     development = None if record["run_of_record"] else record["timing_s"]
