@@ -17,7 +17,8 @@ doi:[10.1038/s41929-025-01409-3](https://doi.org/10.1038/s41929-025-01409-3) ("t
   mutations under tuneable photocatalytic cofactor function", Zenodo record 15104674, 4 February
   2025 (concept doi:[10.5281/zenodo.15104673](https://doi.org/10.5281/zenodo.15104673)).
   - It is one MATLAB file, `FAMonomers5d.m`, under CC BY 4.0.
-  - It is never copied into Cells. §5.1 and §5.4 say why it has not run.
+  - It is never copied into Cells. §5.4.1 records its run as a reference, through a disclosed
+    adapter; §5.1 and §5.4.2 record the earlier attempts.
 
 **Status: a replication note, its criteria registered before any run.** First task of a new
 track, 18 November 2026.
@@ -31,7 +32,7 @@ track, 18 November 2026.
 - **from the workbooks**, by sheet;
 - **read** off a plotted figure;
 - **derived** here (**S**: this note's own arithmetic, with the script that generated it);
-- **from the code** (it has not run: §5.1, §5.4).
+- **from the code**, or **from its run** (§5.4.1).
 
 **Evidence.** The scripts that read the workbooks use the standard library alone, run with
 `python -I`, and write their outputs beside them:
@@ -66,12 +67,17 @@ kinetic model runs out of process, as a reference, only if its licence allows.
   - planted controls P1–P3;
   - criteria M0–M6 for the authors' model.
 - **The reference** (§5).
-  - The authors' code (CC BY 4.0, MATLAB) has not run.
-    - First, this agent's install of Octave was refused.
-    - Then, in the lead's Octave 9.4.0 (D221), the unmodified code stopped at its `ode15s` call
-      (§5.4). Octave's `ode15s` does not pass extra parameters as MATLAB's does, and this build
-      has no SUNDIALS at all.
-    - The SI's plotted model outputs stand in for it.
+  - **The authors' code** (CC BY 4.0, MATLAB) ran, unmodified, in conda-forge's Octave 9.4.0
+    (D221; §5.4.1). It went through a disclosed calling-convention adapter, which supplies
+    MATLAB's way of passing parameters to the solver.
+  - **The checks.** Both of the adapter's checks pass: bit-for-bit pass-through, and every
+    concentration real and non-negative.
+  - **The criteria.** M0–M2 match the SI's figures within the registered tolerances: A₆/B₆ = 1.00,
+    1.55 and 1.24–1.25, to the three figures the solver supports. M3–M4's grids are monotone,
+    with their corners exact.
+  - **One disagreement.** On Supplementary Fig. 124's top row the run gives 2.0 where the figure
+    reads about 2.6. The 100 h horizon does not explain it.
+  - **The earlier attempts** stopped short (§5.1, §5.4.2).
   - The model is not admissible in Cells' origin-of-life family (half orders, irreversible steps,
     no oxidant). So Cells' first model is its own: R0, three hexamer types in stacks under flow
     in the dark, then R1 with light.
@@ -82,12 +88,13 @@ kinetic model runs out of process, as a reference, only if its licence allows.
     (D212).
 - **Questions** (§7.3).
   - The user answered all four (D221): development first; R0 and R1 to start, after OL3.
-  - Ten are open for the lead: eight on physics, the owners (L10), and how to run the authors'
-    model (L11, new). D220 answers L9.
-  - One is new for the user: whether a parameter-forwarding shim counts as unmodified (U5).
+  - Nine are open for the lead: eight on physics, and the owners (L10). D220 answers L9, and
+    D221 answers L11.
+  - The user's U5 is answered too (D221): a disclosed calling-convention adapter counts as
+    unmodified.
 
 **Engine models run: none.** Docs only. The milestones in §7 name the models they would run. The
-authors' model has not run (§5.1, §5.4).
+authors' model, which is not an engine model, ran out of process as a reference (§5.4.1).
 
 ## 1. What the paper shows
 
@@ -334,6 +341,8 @@ equally from any fibre's activity, and no selection could follow (the paper's ar
      (about 1.245, read), only lower than the bias-2 case. Fig. 124's own no-cofactor column
      reads about 1.6–1.8 at B₆ mutation 0.9, and about 2.5–2.8 at 1.0 (read), above Fig. 122's
      1.55. So the negative claim holds only below a B₆ mutation of about 0.9.
+     - **The run** (18 November, §5.4.1) puts the edge at about 0.76. It gives 1.738 at 0.9 and
+       1.995 at 1.0. The figure's top row reads higher than the run there.
    - A modest cofactor suffices even under high A₆ mutation (Supplementary Fig. 125).
 
 **The code differs from the SI's equations in two ways:**
@@ -396,6 +405,9 @@ equally from any fibre's activity, and no selection could follow (the paper's ar
 10. **SI Figs. 124 and 125's bottom rows share their parameters** (SI Table 4 with cofactor X). At
     X = 4 their colours read about 2.3–2.5 (Fig. 124, on a scale of 1–4) and about 2.7 (Fig. 125,
     on a scale of 1–3).
+    - **Corrected 18 November, after the run** (§5.4.1). The run gives 2.72 there. Fig. 124,
+      re-read at 200 dpi, shows about 2.6–2.7. So the difference was this note's misreading, not
+      the SI's.
 11. **The fibres' spacing.**
     - **The SI's value.** Supplementary Fig. 101's workbook gives a radius per fibre of 715 nm at
       0.2 mM, for 100 nm fibres.
@@ -437,7 +449,8 @@ equally from any fibre's activity, and no selection could follow (the paper's ar
   - **Its constants:** they were chosen to reproduce the observed behaviour (SI
     section 16.1), so its agreement is not a prediction.
   - **Its negative claim** (mutation alone does not give the shift) holds only within a range:
-    below a B₆ mutation of about 0.9 in Fig. 124, and for SI Table 6's rates (§1.7).
+    below a B₆ mutation of about 0.9 in Fig. 124, and for SI Table 6's rates (§1.7). In the run
+    the edge is about 0.76 (§5.4.1).
 - **Evolution beyond the fed set.** The mutant set is fixed by the building blocks fed, so no
   mutant can arise beyond those compositions.
 
@@ -685,7 +698,7 @@ references agent to derive independently):
 
 ### 5.1 The authors' model was not run
 
-*History, as written before the user's D221. §5.4 records the run in the lead's Octave 9.4.0.*
+*History, as written before the user's D221. §5.4 records the runs; the reference is §5.4.1.*
 
 - **Its licence allows it.** CC BY 4.0, from the Zenodo record's metadata: it may be run and
   cited, with attribution.
@@ -773,7 +786,172 @@ which every later world needs. **Then R1,** then:
 
 R2–R5 need F6's ring family; R0 and R1 need only its minimal subset.
 
-### 5.4 The run in Octave 9.4.0 (D221; 18 November 2026, evening): stopped at the solver
+### 5.4 The authors' model in Octave (D221; 18 November 2026, evening)
+
+**The result.** The authors' model ran, unmodified, through a disclosed calling-convention adapter
+(D221, U5), in conda-forge's GNU Octave 9.4.0. Both of the adapter's checks pass, and so does
+every criterion registered in §2.5. Its outputs are now the authors' reference, in place of §5.1's
+readings of the SI's plots, within three limits:
+- **What was matched.** M0–M2 match the published Supplementary Figs. 121–123. The grids match
+  only as registered: at their corners and in their monotonicity.
+- **Where the figure disagrees.** On Supplementary Fig. 124's top row (B₆ mutation 1.0) the run
+  disagrees with the figure: 1.995 at a cofactor of 1, against a colour that reads about 2.6.
+  - **The horizon does not account for it.** That case's tail is saturating, and its limit is about
+    2.02 (`runs/tail-check-01-M3-X1-Y1`).
+  - **The cause is not known.**
+- **Precision.** The code runs at the solver's default tolerances (relative 10⁻³), in Octave's
+  SUNDIALS-based `ode15s`, not MATLAB's. Octave's `ode15s` was off by 3.4 × 10⁻⁴ relative on
+  dy/dt = −y.
+  - So the values hold to about three significant figures: A₆/B₆ = 1.00, 1.55 and 1.24–1.25.
+  - The fourth digit is the run's, not the authors'.
+
+The first attempt, in Debian's Octave, stopped at the solver. It is kept below as history (§5.4.2).
+
+#### 5.4.1 The run of record (20:04–20:05 UTC)
+
+- **The environment.** conda-forge's GNU Octave 9.4.0 (build h3f45bdf_1, with SUNDIALS 7.3.0).
+  - **The install.** The lead installed it through micromamba 2.0.5, whose sha256 matches the
+    release's, into a folder of its own (`octave-conda/`, with `MANIFEST.txt` and the package
+    list).
+  - **The wrapper.** It runs only through that folder's wrapper, `octave-cli.sh` (sha256
+    741fcbc504c5194153d51bef7c807c419c9fb9423e7cd816f7063279d07a1c1b). The wrapper sets `OCTAVE_HOME` as the environment's activation does, and adds
+    `--norc --no-history --quiet --no-window-system`.
+  - **The build.** SUNDIALS_IDA is 1. Its own `ode15s` solves dy/dt = −y over [0, 1], giving
+    0.3677546 against e⁻¹ = 0.3678794 at the default tolerances (`runs/interpreter-check-02-conda`).
+  - **The machine.** CPUs 6 and 7, nice 10, under a 2 GB memory cap.
+- **The code.** `FAMonomers5d.m`, byte for byte as downloaded.
+  - md5 8fdd5a351dbbec8db95e70770454a5f7, the Zenodo record's; the driver compares it before any
+    call.
+  - sha256 6c4cbf4a7c704e804c35e5bddbd100ede6db5a19b381bf89c18cbd7deecbab9a.
+- **The adapter** (this track's own code, disclosed as D221 requires). It is the file `ode15s.m`,
+  alone in `scripts/adapter/`, sha256 dee8f54da45372763e3436253a4df8442fcade2194373e5c4a42dcb5db183960:
+
+  ```
+  function varargout = ode15s (fcn, trange, y0, varargin)
+    if (numel (varargin) > 1)
+      params = varargin(2:end);
+      args = {@(t, y) fcn (t, y, params{:}), trange, y0, varargin{1}};
+    else
+      args = [{fcn, trange, y0}, varargin];
+    endif
+    here = fileparts (mfilename ("fullpath"));
+    rmpath (here);
+    unwind_protect
+      if (nargout == 0)
+        ode15s (args{:});
+      else
+        [varargout{1:nargout}] = ode15s (args{:});
+      endif
+    unwind_protect_cleanup
+      addpath (here);
+    end_unwind_protect
+  endfunction
+  ```
+
+  The file's header comment is omitted here; it says the same as this paragraph. The sha256 covers
+  the whole file, and a copy is at `runs/reference-01/adapter_ode15s.m`.
+  - **What it does.** It binds the parameters after the options into a two-input handle, the
+    MATLAB convention, and calls Octave's own `ode15s` with the options unchanged. Without such
+    parameters it passes its arguments through.
+  - **How it reaches Octave's `ode15s`.** It takes its own folder off the path for the call and
+    puts it back after.
+  - **What it touches.** Only the ODE function receives the parameters. The authors' options hold
+    `NonNegative` alone, so no other function needs them.
+  - **The driver** puts the adapter's folder ahead of the code's on the path, and silences only
+    Octave's notice that the adapter shadows `ode15s` (`Octave:shadowed-function`).
+- **Check 1, pass-through: passed** (`runs/adapter-check-01`; `scripts/adapter_check.m`).
+  - **The test equation:** three components, with a vector, a matrix and a scalar parameter, and a
+    square root of a product, as in the authors' oxidation. It is solved with the authors' option
+    set (`NonNegative` on every component) and the default tolerances, over 101 output times.
+  - **The comparison:**
+    - the MATLAB-form call through the adapter, `ode15s (@f, t, y0, options, p1, p2, p3)`;
+    - and its plain form, called with the bound handle;
+    - each against Octave's own `ode15s`, called directly with the parameters bound by hand.
+  - **The result.**
+    - Both equal the direct call bit for bit: the times, and all 303 values' 64 bits.
+    - The adapter resolves ahead of Octave's `ode15s`, and the path is restored after each call.
+- **The driver,** `scripts/famonomers_reference.m` (sha256
+  1c5e68aa5812b63f9282cae7a5baec3dc48849252f8ebc5c7389c7f87eda3663, with every input's hash in
+  `runs/reference-01/inputs.sha256`; a copy is in the run folder), was tested before the run, as
+  the lead asked:
+  - **listing mode:** 250 cases (3, plus M3's 13 × 10, plus M4's 13 × 9), with M3's and M4's
+    rows as registered (`runs/driver-test-01-list`);
+  - **one case:** the default call, M1, with its readouts, check 2 and its CSV
+    (`runs/driver-test-02-first`);
+  - **one grid case:** M3 at (2, 0.1), whose parameters are M1's. Its trajectory equals M1's bit
+    for bit (`runs/driver-test-03-grid-case`).
+- **The command** (`runs/reference-01`; paths relative to the evidence folder):
+
+  `systemd-run --user --scope -p MemoryMax=2G --quiet taskset -c 6,7 nice -n 10 timeout 1200
+  octave-conda/octave-cli.sh scripts/famonomers_reference.m downloads/zenodo-15104674-code
+  scripts/adapter runs/reference-01 all`
+- **The run.**
+  - All 250 calls returned, in 62.5 s of wall time (61.9 s by the function's own timer).
+  - The log holds only the code's own `beep`, once per call, and the adapter's path notice. There
+    is no solver warning.
+  - **The outputs are numbers:**
+    - `summary.csv`, one row per case;
+    - the whole trajectories of M0–M2, as CSV;
+    - `results/model_criteria.json`, from `scripts/model_criteria.py`.
+- **Check 2, real and non-negative: passed.**
+  - In all 250 cases, every one of the 14,014 returned values (1,001 times × 14 concentrations) is
+    real, and none is negative.
+  - The lowest is exactly 0: the monomer's initial value, at t = 0.
+  - Nothing was clipped or altered. The solver's internal stages between the returned times are
+    not observed.
+- **The criteria** (§2.5, as registered at 3c9572bf). The tolerances are the registered ones.
+
+  | Criterion | The run | Registered | Verdict |
+  | --- | --- | --- | --- |
+  | M0, symmetry (bias 1, SI Table 4) | A₆/B₆ = 1 − 9 × 10⁻¹⁶ | 1 within 10⁻³ | Pass |
+  | M0, fractions | A₃B₃ 0.6185; A₆ = B₆ = 0.0691 | 0.62 ± 0.02; 0.07 ± 0.01 each | Pass |
+  | M1, the default (bias 2, SI Table 4) | A₆/B₆ = 1.5539 | 1.55 ± 0.05 | Pass |
+  | M1, fractions | A₃B₃ 0.6049; A₆ 0.0825; B₆ 0.0531 | 0.60 ± 0.02; 0.08 ± 0.01; 0.05 ± 0.01 | Pass |
+  | M2 (bias 1, SI Table 6) | A₆/B₆ = 1.2447, below M1's | 1.245 ± 0.03, and below M1 | Pass |
+  | M3, monotone | No fall in X at any Y, nor in Y at any X | Monotone in both | Pass |
+  | M3, corners | (1, 0.1) equals M0, and (2, 0.1) equals M1, bit for bit | Equal | Pass |
+  | M3, (1, 0.5) against M2 | 1.3238 against 1.2447, 0.079 higher | Reported; expected to differ | As expected |
+  | M4, monotone | No fall in X, no rise in Y | As registered | Pass |
+  | M4, bottom row | Equals M3's, bit for bit | Equal | Pass |
+  | M4, (4, 0.1) | 2.7208 | Reported against both figures' colours (below) | Reported |
+  | M5, A over B in the hexamers, bias 2 against bias 1 | 1.0827 | Reported beside SI Table 5's 1.42; expected about 1.09 | As expected |
+  | M6, A₆/B₆'s change from 90 to 100 h | M1 +0.20%; M0 0; M2 +0.19%; the largest over all 250 cases +2.1% (M3 at (4, 1.0)) | Reported | Reported |
+
+- **The model counts as having run** (§2.5).
+  - The function returned with the code unmodified, called through its five arguments and the
+    disclosed adapter.
+  - M0's symmetry holds, M1 and M2 hold within their tolerances, and both checks pass.
+- **What the run adds** (descriptive, not registered).
+  - **The negative claim's range** (§1.7; §2.6, amendment 1).
+    - With no cofactor, raising B₆'s mutation alone lifts A₆/B₆ past the bias-2 value (1.554)
+      from a B₆ mutation of about 0.76. That is interpolated between 1.488 at 0.7 and 1.593 at 0.8.
+      The value is 1.738 at 0.9 and 1.995 at 1.0.
+    - So the SI's claim holds for its Table 6 (1.245), and in Fig. 124's grid below a B₆ mutation
+      of about 0.76. This note's §1.7 reading put that edge at about 0.9.
+  - **"Only a modest cofactor"** (Supplementary Fig. 125). The cofactor factor needed to reach the
+    bias-2 value rises with A₆'s mutation: 2.0 at 0.1, 2.9 at 0.3 and 4.0 at 0.5 (interpolated in
+    X).
+  - **SI Table 5** (§1.8, item 7). The model's own analogue is 1.083. The experiment gives 1.42.
+    The SI compared the experiment with the model's input bias of 2, not with its output.
+  - **The figures' colours against the run.**
+    - **At (4, 0.1),** 2.72 matches Fig. 125's colour (about 2.7).
+    - **Fig. 124, re-read** from a 200 dpi rendering (`work/fig124_crop-131.png`), also shows
+      light green there, about 2.6–2.7. So §1.8 item 10's 2.3–2.5 was this note's misreading, not
+      an inconsistency in the SI.
+    - **Fig. 124's top row** (B₆ mutation 1.0) reads higher than the run at low cofactor: about
+      2.6 at X = 1, against 1.995. Its next row down roughly agrees: a colour of about 1.8,
+      against the run's 1.738 at 0.9. The figure's row spacing is not read exactly.
+    - **The horizon does not account for it.** The figure says "at steady state", while the code
+      stops at 100 h, where that case still rises 0.66% per 10 h.
+      - Its run alone (`runs/tail-check-01-M3-X1-Y1`, through the tested single-case path) shows
+        the tail saturating. Each 10 h increment is 0.64–0.69 of the one before (0.100, 0.069,
+        0.046, 0.031, 0.020, 0.013 from 40 h).
+      - So the limit is about 2.02, against the figure's 2.6. The cause of the difference is not
+        known.
+  - **T8a and T8b in the authors' model.** An activity ratio of 2 gives 1.554 (T8a's analogue). SI
+    Table 6's fidelity loss alone gives 1.245. So T8b's ordering, s(T8b) < s(T8a), holds there.
+
+#### 5.4.2 The first attempt: Debian's Octave 9.4.0, stopped at the solver (19:44 UTC; history)
 
 - **The environment.** GNU Octave 9.4.0, the Debian package 9.4.0-1, installed system-wide by the
   lead with the user's leave (D221; `octave-install.log` in the evidence folder).
@@ -883,7 +1061,7 @@ user to decide:
 - **(c) Against the authors' model's outputs:**
   - only T8a and T8b, and only in kind;
   - the model is not admissible in this family (§5.2), has three types and a fixed 1:1 feed;
-  - it needs the model to run (§5.1, U3).
+  - it needs the model to run: it has run, as a reference (§5.4.1).
 
   **Recommended** as a reported reference, not judged.
 - **(d) Against both,** with (c)'s numbers reported beside (b)'s verdicts.
@@ -895,7 +1073,7 @@ user to decide:
 | Milestone | Content | Engine models it runs | Needs | Agent-days (**S**) |
 | --- | --- | --- | --- | --- |
 | **SR0** Desk | This note; the lead's rulings and the user's answers on §7.3's questions | None (design) | — | Done; 0.5 for the amendments |
-| **SR1** Reference | The authors' model run out of process against M0–M6. Tried on 18 November, evening, in Octave 9.4.0, and stopped at the solver (§5.4) | None. It is tooling (D138; AGENTS.md), and D220 and D221 approve it as a reference | An Octave with SUNDIALS IDA, and the lead's ruling on a shim (L11) | 0.5 |
+| **SR1** Reference | The authors' model run out of process against M0–M6. **Done** on 18 November, evening, in conda-forge's Octave 9.4.0 through the disclosed adapter: both checks and every criterion pass (§5.4.1). The Debian attempt stopped at the solver (§5.4.2) | None. It is tooling (D138; AGENTS.md), and D220 and D221 approve it as a reference | — | 0.5, spent |
 | **OL10** Stacks and flow (new) | F1, F2, F4 and F5, behind OL2's invariance gate; tests and tier rows | `cells.assembly_lineages@2` with `cells.linear_stack_geometry@1`, `cells.phase_exchange@1` (`end_capture`), the side-binding law, `cells.shear_fission@1` (stack breaks) and the flow operator | OL3 landed | 8–13 |
 | **OL4b** Light | F3 | The photon source, with `cells.stochastic_mass_action@1` | OL4 | 2–3 |
 | **Ring family** | F6 | `cells.stochastic_mass_action@1` over the family | OL8's family machinery | 2.5–4 |
@@ -916,7 +1094,7 @@ user to decide:
 - **OL10 follows OL3,** by the OL2/OL3 builder, or by a second builder after a hand-off the lead
   rules.
 - **OL4b goes with OL4,** beside OL6.
-- **SR1 can run at any time once approved.** It is out of process and touches no engine file.
+- **SR1 ran on 18 November, evening** (§5.4.1). It was out of process and touched no engine file.
 - **Elapsed:** about 10–16 working days after OL3 lands, with two builders and the references
   agent (**S**). No dates are given (D194).
 - **Staffing:** within the cap of seven (D171), beside the core pass and the programme's other
@@ -1033,7 +1211,9 @@ asked.
       `validation/self_replicator_selection/`, by this track.
     - **The index:** an index line in `docs/README.md` and a row in `docs/PAPER_BACKLOG.md`. The
       lead added both (5c9f9038).
-11. **L11, how to run the authors' model (new, §5.4).**
+11. **L11, how to run the authors' model (new, §5.4). Answered by D221.** The lead installed
+    conda-forge's Octave 9.4.0, with SUNDIALS, through micromamba into a folder of its own. The run
+    used the adapter and its two checks (§5.4.1). The question stays below as it was asked.
     - **The options:**
       - (a) an Octave with SUNDIALS IDA (conda-forge's 10.3.0, or a SUNDIALS-enabled 9.4) and a
         shim that forwards the parameters, a separate `ode15s.m`, qualified by its pass-through
@@ -1065,7 +1245,10 @@ asked.
      plotted outputs as the reference?
 4. **U4, an extension beyond the replication.** Perturbation and recovery, as the reading
    summary's experiment (§7.2), registered on its own after the replication?
-5. **U5, what "unmodified" means (new, §5.4).**
+5. **U5, what "unmodified" means (new, §5.4). Answered by D221:** a run through a separate,
+   disclosed calling-convention adapter, with the authors' file byte for byte as downloaded,
+   counts as unmodified once the adapter passes its two checks. The question stays below as it was
+   asked.
    - **The case.** The authors' file cannot run in Octave 9.4 without a shim, a separate
      `ode15s.m` that forwards its six parameters. Version 10's source was not read. Their file
      stays byte for byte as downloaded.
@@ -1088,9 +1271,10 @@ asked.
 | Supplementary Data File 1 (MOESM3) | Read: the sheets for Supplementary Figs. 96–101 and 104–120 |
 | Source Data for Figs. 2–5 (MOESM7–MOESM10) | Read whole |
 | Supplementary Videos 1–3; the Reporting Summary | Not downloaded |
-| Zenodo record 15104674: metadata and `FAMonomers5d.m` | Read. CC BY 4.0. Not run: no interpreter at first (§5.1); in Octave 9.4.0 it stopped at its solver call (§5.4) |
+| Zenodo record 15104674: metadata and `FAMonomers5d.m` | Read. CC BY 4.0. Run, unmodified, through the disclosed adapter in conda-forge's Octave 9.4.0 (§5.4.1). The earlier attempts are in §5.1 and §5.4.2 |
 | micromamba 2.10.0 (conda-forge) | Downloaded; not extracted or run, since the command was refused |
 | GNU Octave 9.4.0 (Debian 9.4.0-1), installed by the lead (D221) | Its `ode15s.m`, `check_default_input.m` and `odeset.m` read; its build features checked (SUNDIALS disabled) |
+| conda-forge's GNU Octave 9.4.0 (build h3f45bdf_1, SUNDIALS 7.3.0), installed by the lead (D221) | Ran the reference through its wrapper (§5.4.1) |
 | conda-forge's octave package metadata | Read for the dependencies of its 9.4.0 and 10.3.0 builds: SUNDIALS 7 |
 
 **Engine documents read:**
