@@ -6,6 +6,12 @@ Each operator implements the contract of operators/contract.py for one law
 operators on the operator section's BUILTIN (registry/operators.py; docs/CORE_SEAMS_DESIGN.md
 §8.4) through the call an outside package uses, which runs check_declarations. OPERATORS is the
 active section as a mapping.
+
+**A new operator module joins with no edit here** (docs/CORE_SEAMS_DESIGN.md §18, the further
+hand-offs). The package registers every operator its modules define (registry/operators.
+register_package): a class a module of this package defines, a subclass of the contract's
+Operator, with a LAW_ID of its own. FIRST keeps the section's registration order as today's
+dictionary held it; any other operator follows, by module name and then in its module's order.
 """
 
 from cells.operators.bath_schedule import ScheduledBathComposition
@@ -27,9 +33,9 @@ from cells.operators.species_exchange import ScheduledSpeciesExchange
 from cells.operators.species_reactions import LocalSpeciesReactions
 from cells.operators.species_regulated_availability import SpeciesRegulatedAvailability
 from cells.operators.species_turnover import ScheduledSpeciesTurnover
-from cells.registry.operators import BUILTIN, OPERATORS  # noqa: F401  (the active section)
+from cells.registry.operators import BUILTIN, OPERATORS, register_package  # noqa: F401
 
-for _operator in (  # Today's order: the section's registration order.
+FIRST = (  # The section's first operators, in the order today's dictionary held them.
     OsmoticWater,
     KAnionSymport,
     ScheduledReplacement,
@@ -49,6 +55,5 @@ for _operator in (  # Today's order: the section's registration order.
     ScheduledBathComposition,
     CellOwnedCompartments,
     SiteOccupancy,
-):
-    BUILTIN.register(_operator)
-del _operator
+)
+register_package(BUILTIN, __name__, first=FIRST)

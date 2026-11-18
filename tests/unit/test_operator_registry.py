@@ -7,11 +7,22 @@ Operators register the way kinds do, each claim with a planted error it must cat
   another section, whose compositions the composite caches by law ID (planted: a second class
   under a built-in's namespaced ID, in BUILTIN's copy and in a fresh section);
 - OPERATORS is the active section: today's keys, order and exact-key lookup, scoped to the build
-  (planted: an operator registered only in a scoped section).
+  (planted: an operator registered only in a scoped section);
+- a package registers every operator its modules define, so a new operator module joins with no
+  edit to the package's __init__ (CORE_SEAMS §18's further hand-offs): the composite's package
+  defines exactly its FIRST, in today's order, and a planted package's later module joins it
+  (planted: classes imported from this package and from another, an intermediate base, an
+  inherited LAW_ID and a non-operator, none of which is an operator; and, each refused, an
+  operator that breaks the contract, a module that fails to import, a subpackage, and a FIRST
+  naming a class the package does not define).
 """
+
+import importlib
+import sys
 
 import pytest
 
+import cells.operators as package
 from cells.operators import OPERATORS, contract
 from cells.operators.osmotic_water import OsmoticWater
 from cells.registry import operators
@@ -20,6 +31,25 @@ TODAY = (  # The built-in package's registration order: today's dictionary's ord
     "ideal_osmosis_linear_compliance_water@1",
     "k_anion_symport_mass_action@1",
     "scheduled_cell_replacement@1",
+)
+HEADER = "from cells.operators.contract import Operator\n\n\n"
+EXISTING = HEADER + (
+    "class Existing(Operator):\n    LAW_ID = 'tests.existing_operator@1'\n    EVENT = True\n"
+)
+NEW = HEADER + (
+    "from cells.operators.osmotic_water import OsmoticWater  # Imported from another package.\n"
+    "from {package}.a_existing import Existing  # Imported: its own module's, not this one's.\n\n\n"
+    "class Base(Operator):  # An intermediate base: no LAW_ID of its own.\n    EVENT = True\n\n\n"
+    "class New(Base):\n    LAW_ID = 'tests.new_operator@1'\n\n\n"
+    "class Inherits(New):  # It only inherits New's LAW_ID: not a second operator.\n    pass\n\n\n"
+    "class Helper:  # Not an Operator.\n    LAW_ID = 'tests.not_an_operator@1'\n"
+)
+NEWER = HEADER + (
+    "class Newer(Operator):\n    LAW_ID = 'tests.newer_operator@1'\n    EVENT = True\n"
+)
+UNBOOKED = HEADER + (  # The contract's planted error below, in a module of its own.
+    "class Unbooked(Operator):\n    LAW_ID = 'tests.unbooked_operator@1'\n    EVENT = True\n"
+    "    STATE_AXES = {'unbooked_dissipated_energy_pJ': ('cell_slot',)}\n"
 )
 
 
@@ -87,3 +117,76 @@ def test_operators_is_the_active_section_with_todays_keys():
     finally:
         del OPERATORS[Planted.LAW_ID]  # ... and deletion unregisters it.
     assert Planted.LAW_ID not in operators.BUILTIN and len(OPERATORS) == count
+
+
+def test_the_composite_s_package_registers_each_operator_its_modules_define():
+    defined = operators.package_operators("cells.operators")
+    assert sorted(defined, key=lambda c: c.LAW_ID) == sorted(package.FIRST, key=lambda c: c.LAW_ID)
+    assert tuple(c.LAW_ID for c in package.FIRST)[: len(TODAY)] == TODAY  # Today's order.
+    registered = tuple(type(op) for op in operators.BUILTIN.operators())
+    assert registered[: len(package.FIRST)] == package.FIRST
+    assert tuple(OPERATORS)[: len(package.FIRST)] == tuple(c.LAW_ID for c in package.FIRST)
+
+
+@pytest.fixture
+def planted_packages(tmp_path, monkeypatch):
+    """A writer of planted operator packages under tmp_path, importable by name; their modules
+    leave sys.modules afterwards."""
+    monkeypatch.syspath_prepend(str(tmp_path))
+    names = []
+
+    def write(name, modules):
+        root = tmp_path / name
+        root.mkdir()
+        (root / "__init__.py").write_text("")
+        for leaf, text in modules.items():
+            (root / f"{leaf}.py").write_text(text.replace("{package}", name))
+        importlib.invalidate_caches()
+        names.append(name)
+        return root
+
+    yield write
+    for key in [k for k in sys.modules if k.split(".", 1)[0] in names]:
+        del sys.modules[key]
+
+
+def test_a_new_operator_module_joins_its_package_with_no_edit_there(planted_packages):
+    root = planted_packages("planted_operators", {"a_existing": EXISTING, "b_new": NEW})
+    existing = importlib.import_module("planted_operators.a_existing").Existing
+    new = importlib.import_module("planted_operators.b_new").New
+    # The imported class, the base, the inherited LAW_ID and the non-operator are not operators.
+    assert operators.package_operators("planted_operators") == (existing, new)
+    section = operators.OperatorRegistry()
+    registered = operators.register_package(section, "planted_operators", first=(new,))
+    assert (
+        [type(op) for op in registered]
+        == [new, existing]
+        == [type(op) for op in section.operators()]
+    )
+    # A module written later joins, with no edit to the package's __init__ (still empty).
+    (root / "c_newer.py").write_text(NEWER)
+    importlib.invalidate_caches()
+    later = operators.OperatorRegistry()
+    operators.register_package(later, "planted_operators", first=(existing,))
+    newer = importlib.import_module("planted_operators.c_newer").Newer
+    assert [type(op) for op in later.operators()] == [existing, new, newer]
+    assert (root / "__init__.py").read_text() == ""
+    # Planted: each refused, and nothing registered by the refused call.
+    with pytest.raises(ValueError, match="names each of its own operators once"):
+        operators.register_package(
+            operators.OperatorRegistry(), "planted_operators", first=(OsmoticWater,)
+        )
+    planted_packages("planted_unbooked", {"a_existing": EXISTING, "b_unbooked": UNBOOKED})
+    unbooked = operators.OperatorRegistry()
+    with pytest.raises(ValueError, match="declared as heat or work"):
+        operators.register_package(unbooked, "planted_unbooked")
+    assert "tests.unbooked_operator@1" not in unbooked
+    planted_packages("planted_broken", {"a_broken": "raise RuntimeError('a planted failure')\n"})
+    with pytest.raises(RuntimeError, match="a planted failure"):
+        operators.package_operators("planted_broken")
+    nested = planted_packages("planted_nested", {"a_existing": EXISTING})
+    (nested / "inner").mkdir()
+    (nested / "inner" / "__init__.py").write_text(NEWER)
+    importlib.invalidate_caches()
+    with pytest.raises(ValueError, match="holds modules, not subpackages"):
+        operators.package_operators("planted_nested")
