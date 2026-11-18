@@ -704,7 +704,14 @@ def check_closure_rows(spec):
     - an operator that names a held species (its species_identities) or moves one in the step is
       refused. Operators that name no row (replacement, division, a lumen's fill, water) are
       admitted: the closure re-solves from the totals they leave.
-    Version 1's closure declares no closure_rows, so its worlds are not checked here."""
+    Version 1's closure declares no closure_rows, so its worlds are not checked here.
+
+    Why here and not in the closure's kind: the rule reads each kind move's law from the law
+    registry (_law_reads), which the import surface cells.modules does not export, and kinds/ is
+    held to the F owner's recorded import guard, where a new import would be a new entry. The
+    registry already refuses the movers of two-form and multi-form rows, so the movers' rule for
+    a closure's rows sits beside it (the lead, 18 November 2026). It also sees a composite's
+    operators, which the kinds' own checks, on the inner spec, do not."""
     if not any(hasattr(d, "closure_rows") for _, d in getattr(spec.model, "kinds", ())):
         return  # No general closure: nothing to check, and no projection is built.
     m = _inner_model(spec)
