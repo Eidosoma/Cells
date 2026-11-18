@@ -19,8 +19,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
       operator `local_species_reactions@1` (55 of 55);
     - D216's FR lane, each against code-blind independent references: FR-4 (21 of 21) and FR-5
       (51 of 51) on 17 November; FR-10's dose schedule (31 of 31) on 17 November; FR-1's closed
-      compartment (44 of 44) and FR-3's site occupancy (51 of 51) on 18 November. Each is tagged
-      `fr<n>-v1-qualified-<date>`.
+      compartment (44 of 44), FR-3's site occupancy (51 of 51) and FR-6's A5″, the channel target
+      driven through a per-cell prior (18 of 18), on 18 November. Each is tagged
+      `fr<n>-...-qualified-<date>`.
   - **Landed for development, not judged:** the phase start and failure records, Track E's M1
     development work, and independent references for the passive law.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
