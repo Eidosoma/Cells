@@ -22,7 +22,7 @@ import re
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
@@ -42,7 +42,10 @@ __all__ = (
     "PARTITION_ROLES",
     "WORK_SUFFIX",
     "ConfigError",
+    "AXIS_HOST_KINDS",
+    "AxisHost",
     "EnergyRole",
+    "HOOKS",
     "Kind",
     "KindFields",
     "KindRates",
@@ -58,6 +61,7 @@ __all__ = (
     "energy_role",
     "finite_number",
     "kind_ledgers",
+    "kind_standard_free_energies",
     "missing_partition_roles",
     "parse_series",
     "partition_fields",
@@ -308,6 +312,16 @@ class Kind:
       structural with its fill, for each field a split, a retirement or a close acts on
       (partition_fields: state, layout and control). A kind with a field left undeclared stays
       refused beside closers (§4.2, fail-closed; missing_partition_roles);
+    - `field_axes`, {layout or control field: (axis, ...)}: the axes of each, as state_axes gives
+      a state field's (CORE_SEAMS §18, B1's lift); `axis_hosts`, {own axis: AxisHost(kind,
+      index)}: for each axis of its own (an entity axis that is not one of @3's), the kind of host
+      its entities sit on (AXIS_HOST_KINDS) and the layout field holding each entity's host index.
+      The composite lifts its refusal beside closers only for a kind that declares these and all
+      its roles;
+    - `standard_free_energies(declaration)` -> ((((species, nu), ...), dG°/RT, c0 in mM), ...), the
+      reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
+      signed, products positive; () when it declares none. The species registry's check compares
+      each with its own sum of nu mu°/RT (kind_standard_free_energies checks the form);
     - `ledgers(declaration)` -> ((ledger, diagnostic), ...), the kind's own conserved quantities
       (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
       and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
@@ -360,6 +374,11 @@ class Kind:
     partition_roles: object = MappingProxyType({})  # {field: PartitionRole}
     ledgers: Callable | None = None  # (declaration) -> ((ledger, diagnostic), ...)
     ledger_bounds: Callable | None = None  # (row, p, tol, steps, *, xp) -> their bounds
+    field_axes: object = MappingProxyType({})  # {layout or control field: (axis, ...)}
+    axis_hosts: object = MappingProxyType({})  # {own axis: AxisHost}
+    standard_free_energies: Callable | None = (
+        None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
+    )
 
     @property
     def state_fields(self):
@@ -367,13 +386,23 @@ class Kind:
         return tuple(field for field, _ in self.state_axes)
 
 
+# The kind contract's hooks: every field of Kind that holds a callable or None.
+HOOKS = tuple(
+    f.name for f in fields(Kind) if f.type == Callable | None and f.name != "declared_fields"
+)
+
+
 class KindFields(NamedTuple):
-    """A kind's fields for one structure entry (§7.4 (n) 5): its declared_fields(entry)."""
+    """A kind's fields for one structure entry (§7.4 (n) 5): its declared_fields(entry); and
+    `without`, the hooks that entry does not have (HOOKS' names), which bound() sets to None, so a
+    hook a later layout adds (material_term, say) never reaches an earlier entry's programs (the
+    kinds owner's request, design statement 1 §6)."""
 
     state_axes: tuple  # ((field, (axis, ...)), ...)
     layout_fields: tuple
     control_fields: tuple
     readout_columns: tuple
+    without: tuple = ()
 
 
 class KindRates(NamedTuple):
@@ -457,6 +486,67 @@ class PartitionRole(NamedTuple):
 
     role: str
     fill: object = None
+
+
+# The kinds of host a kind's own entities sit on, each with the slot axis of @3's that indexes them
+# (models/surface_pump_v3: HOST_KINDS' patch and junction, and the nodes).
+AXIS_HOST_KINDS = MappingProxyType(
+    {
+        "cell": "cell_slot",
+        "outside_node": "extracellular_slot",
+        "patch": "membrane_slot",
+        "junction": "edge_slot",
+    }
+)
+
+
+class AxisHost(NamedTuple):
+    """The host of a kind's own axis (Kind.axis_hosts): `kind`, one of AXIS_HOST_KINDS, and
+    `index`, the kind's layout field holding each entity's host index on that kind's slot axis."""
+
+    kind: str
+    index: str
+
+
+def _named(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def kind_standard_free_energies(kind, declaration):
+    """A kind's reaction-level standard free energies (Kind.standard_free_energies), checked to be
+    the operators' form: ((((species, nu), ...), dG°/RT, c0 in mM), ...), each stoichiometry of
+    distinct named species with signed nonzero coefficients, dG°/RT finite, c0 finite and positive.
+    () for a kind that declares none."""
+    if kind.standard_free_energies is None:
+        return ()
+    declared = kind.standard_free_energies(declaration)
+    form = (
+        "((((species, nu), ...), dG°/RT, c0 in mM), ...), with distinct species, nu nonzero, "
+        "dG°/RT finite and c0 positive"
+    )
+    if not isinstance(declared, tuple):
+        raise ValueError(f"Kind {kind.kind_id}'s standard_free_energies returns {form}")
+    for entry in declared:
+        ok = isinstance(entry, tuple) and len(entry) == 3
+        stoichiometry, energy, c0 = entry if ok else ((), None, None)
+        ok = ok and isinstance(stoichiometry, tuple) and bool(stoichiometry)
+        ok = ok and all(
+            isinstance(pair, tuple)
+            and len(pair) == 2
+            and _named(pair[0])
+            and _finite(pair[1])
+            and pair[1] != 0
+            for pair in stoichiometry
+        )
+        ok = ok and len({pair[0] for pair in stoichiometry}) == len(stoichiometry)
+        ok = ok and _finite(energy) and _finite(c0) and c0 > 0
+        if not ok:
+            raise ValueError(f"Kind {kind.kind_id}'s standard_free_energies returns {form}")
+    return declared
 
 
 def _suffix_role(field):
@@ -584,6 +674,49 @@ def declaration_errors(kind):
         h is not None and not callable(h) for h in hooks
     ):
         out.append("it declares ledgers and ledger_bounds together, each a callable")
+    if kind.standard_free_energies is not None and not callable(kind.standard_free_energies):
+        out.append("its standard_free_energies is a callable, or None")
+    return out + _axis_errors(kind, static)
+
+
+def _axis_errors(kind, static):
+    """Why a kind's field_axes and axis_hosts break the contract (declaration_errors' part)."""
+    out, axes = [], kind.field_axes
+    if not isinstance(axes, Mapping) or not all(
+        _named(field)
+        and isinstance(names, tuple)
+        and bool(names)
+        and all(map(_named, names))
+        and len(set(names)) == len(names)
+        for field, names in axes.items()
+    ):
+        out.append("its field_axes map layout and control fields to tuples of distinct axis names")
+        axes = {}
+    elif static:
+        stray = sorted(set(axes) - {*kind.layout_fields, *kind.control_fields})
+        if stray:
+            out.append(f"field_axes name fields that are not its layout or control fields: {stray}")
+    hosts = kind.axis_hosts
+    if not isinstance(hosts, Mapping) or not all(
+        _named(axis) and isinstance(host, AxisHost) for axis, host in hosts.items()
+    ):
+        return [*out, "its axis_hosts map its own axes to AxisHost(kind, index)"]
+    used = {a for _, names in kind.state_axes for a in names} | {
+        a for names in axes.values() for a in names
+    }
+    for axis, host in hosts.items():
+        if host.kind not in AXIS_HOST_KINDS:
+            out.append(f"axis {axis}: its host kind is one of {', '.join(AXIS_HOST_KINDS)}")
+        if axis in AXIS_HOST_KINDS.values():
+            out.append(f"axis {axis}: @3's own slot axis, not one of the kind's")
+        if static and axis not in used:
+            out.append(f"axis {axis}: no field of the kind's is on it")
+        if static and host.index not in kind.layout_fields:
+            out.append(
+                f"axis {axis}: its host index {host.index!r} is not one of its layout fields"
+            )
+        elif host.index in axes and axes[host.index] != (axis,):
+            out.append(f"axis {axis}: its host index {host.index!r} is on {axes[host.index]}")
     return out
 
 
@@ -617,6 +750,12 @@ def bound(kind, entry):
     fields = kind.declared_fields(entry)
     if type(fields) is not KindFields:
         raise ValueError(f"Kind {kind.kind_id}'s declared_fields must return a KindFields")
+    without = fields.without
+    if not isinstance(without, tuple) or any(name not in HOOKS for name in without):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s declared_fields' `without` names its hooks only, not "
+            f"{sorted(set(without) - set(HOOKS)) if isinstance(without, tuple) else without!r}"
+        )
     return replace(
         kind,
         state_axes=tuple(fields.state_axes),
@@ -624,6 +763,7 @@ def bound(kind, entry):
         control_fields=tuple(fields.control_fields),
         readout_columns=tuple(fields.readout_columns),
         declared_fields=None,
+        **dict.fromkeys(without),
     )
 
 

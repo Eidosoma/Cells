@@ -16,9 +16,18 @@ with a planted error it must catch (D187):
 - InnerStructure.heat_bookings defaults to (), so today's structures are unchanged, and admits a
   sorted pair per mover class whose class admits it (planted, each refused: unsorted pairs, a
   repeated class, the tableau listed, channels, membranes, pumps or calcium pumps on the exact
-  booking, junctions against
-  junction_heat_booking, an undeclared kind, a kind that does not admit the booking, a
-  malformed pair).
+  booking, junctions against junction_heat_booking, an undeclared kind, a kind that does not admit
+  the booking, a malformed pair);
+- a kind's field axes and its own axes' hosts are checked at registration (CORE_SEAMS §18, B1's
+  lift; planted, each refused: an axis on a state field, a malformed axis tuple, a host of an
+  unknown kind, a host on @3's own slot axis, an axis no field is on, a host index that is not a
+  layout field, and one on another axis);
+- an entry's `without` removes those hooks from the kind bound to it, so a hook a later layout
+  adds never reaches an earlier entry (the kinds owner's design statement 1 §6; planted: a name
+  that is no hook, refused at binding);
+- a kind's standard free energies are () by default and checked to the operators' form when read
+  (planted, each refused: a bare species, a zero coefficient, a repeated species, a non-finite
+  energy, a non-positive c0, a list).
 """
 
 import math
@@ -31,7 +40,7 @@ from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import parse_spec
 from cells.models import inner_laws, surface_pump_v3
 from cells.registry import kind_registry
-from cells.registry.kind_registry import EnergyRole, Kind, PartitionRole
+from cells.registry.kind_registry import AxisHost, EnergyRole, Kind, KindFields, PartitionRole
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 TRAPEZOID, EXACT = spec3.TRAPEZOID_JUNCTION_HEAT, "exact_free_energy_heat@1"
@@ -212,3 +221,89 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
                 inner_laws.InnerStructure(**BASE, kinds=kinds, heat_bookings=bookings)
             errors = inner_laws.heat_booking_errors(bookings, (PLANTED_ID,))
             assert any(words in error for error in errors), (words, errors)
+
+
+def test_field_axes_and_own_axes_hosts_are_checked_at_registration():
+    # A kind on its own axis "booked_route", each route hosted on a patch through booked_host.
+    on_routes = replace(
+        planted(),
+        state_axes=(("booked_dissipated_energy_pJ", ("booked_route",)),),
+    )
+    good = replace(
+        on_routes,
+        field_axes={"booked_host": ("booked_route",), "booked_availability": ("booked_route",)},
+        axis_hosts={"booked_route": AxisHost("patch", "booked_host")},
+    )
+    assert kind_registry.declaration_errors(good) == []
+    assert kind_registry.KindRegistry().register(good) is good
+    assert kind_registry.AXIS_HOST_KINDS["patch"] == "membrane_slot"
+    plants = {
+        "not its layout or control fields": dict(field_axes={"booked_work_pJ": ("cell_slot",)}),
+        "tuples of distinct axis names": dict(field_axes={"booked_host": ("a", "a")}),
+        "its host kind is one of": dict(
+            axis_hosts={"booked_route": AxisHost("planet", "booked_host")}
+        ),
+        "@3's own slot axis": dict(axis_hosts={"cell_slot": AxisHost("cell", "booked_host")}),
+        "no field of the kind's is on it": dict(
+            axis_hosts={"other_axis": AxisHost("cell", "booked_host")}
+        ),
+        "is not one of its layout fields": dict(
+            axis_hosts={"booked_route": AxisHost("patch", "booked_availability")}
+        ),
+        "is on": dict(field_axes={**good.field_axes, "booked_host": ("cell_slot",)}),
+        "AxisHost(kind, index)": dict(axis_hosts={"booked_route": ("patch", "booked_host")}),
+    }
+    for words, changes in plants.items():
+        kind = replace(good, **changes)
+        errors = kind_registry.declaration_errors(kind)
+        assert any(words in e for e in errors), (words, errors)
+        with pytest.raises(ValueError, match=PLANTED_ID):
+            kind_registry.KindRegistry().register(kind)
+
+
+def test_an_entry_s_without_removes_those_hooks_from_its_bound_kind():
+    def rates(*args, **kwargs):
+        raise AssertionError("a planted hook is never called here")
+
+    fields = planted()
+    entries = {
+        "general": KindFields(fields.state_axes, fields.layout_fields, fields.control_fields, ()),
+        "version 1": KindFields(
+            fields.state_axes, fields.layout_fields, fields.control_fields, (), ("material_term",)
+        ),
+    }
+    kind = replace(fields, material_term=rates, view_sets=rates, declared_fields=entries.get)
+    assert kind_registry.bound(kind, "general").material_term is rates
+    one = kind_registry.bound(kind, "version 1")
+    assert one.material_term is None and one.view_sets is rates and one.declared_fields is None
+    assert set(kind_registry.HOOKS) >= {"material_term", "view_sets", "rates", "book"}
+    assert "declared_fields" not in kind_registry.HOOKS and "view" not in kind_registry.HOOKS
+    # Planted: a name that is no hook.
+    stray = replace(
+        kind,
+        declared_fields=lambda entry: KindFields((), (), (), (), ("state_axes",)),
+        kind_id="tests.stray_without@1",
+    )
+    with pytest.raises(ValueError, match="names its hooks only"):
+        kind_registry.bound(stray, "any")
+
+
+def test_standard_free_energies_are_none_by_default_and_checked_when_read():
+    assert kind_registry.kind_standard_free_energies(planted(), ()) == ()
+    hydrolysis = ((("ATP", -1), ("ADP", 1), ("Pi", 1)), -12.3, 1000.0)
+    kind = planted(standard_free_energies=lambda declaration: (hydrolysis,))
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.kind_standard_free_energies(kind, ()) == (hydrolysis,)
+    for declared in (  # Each a tuple of entries, one entry broken.
+        ((("ATP",), -12.3, 1000.0),),
+        (((("ATP", 0), ("ADP", 1)), -12.3, 1000.0),),
+        (((("ATP", -1), ("ATP", 1)), -12.3, 1000.0),),
+        (((("ATP", -1), ("ADP", 1)), math.inf, 1000.0),),
+        (((("ATP", -1), ("ADP", 1)), -12.3, 0.0),),
+        [hydrolysis],
+    ):
+        planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
+        with pytest.raises(ValueError, match="standard_free_energies returns"):
+            kind_registry.kind_standard_free_energies(planted_kind, ())
+    with pytest.raises(ValueError, match=PLANTED_ID):
+        kind_registry.KindRegistry().register(planted(standard_free_energies="not a hook"))
