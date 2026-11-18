@@ -115,6 +115,7 @@ class Structure(NamedTuple):
     chunk: int
     unroll: int
     uniforms: bool  # Diagnostic: the draws are outputs too (the events are the same).
+    geometry: str | None = None  # OL2: the geometry law's ID, or None (OL1's programs, unchanged).
 
 
 class Layout(NamedTuple):
@@ -144,6 +145,8 @@ class Layout(NamedTuple):
     base_key: object  # uint32[2]
     horizon: object  # float64: the time horizon (s)
     event_limit: object  # int64: the event guard
+    # OL2: () without a geometry (no leaf, so OL1's programs are unchanged), else GEOMETRY_FIELDS.
+    geometry: object = ()
 
 
 class Lane(NamedTuple):
@@ -198,6 +201,7 @@ class View(NamedTuple):
     membrane_total: object  # int64: N at the firing state
     log_factorial: object
     offset: int  # c (static)
+    log_encounter: object = None  # OL2: [R] ln(E(m)·ρ0) of the geometric laws, or None.
 
 
 class Tables(NamedTuple):
@@ -256,9 +260,12 @@ def log_parts(counts, totals, factor_state, term_states, layout, structure, xp=j
     rate without its rate constant, which rates() multiplies after the exponential."""
     factor, terms = laws(structure)
     kinetics = reactions(structure)
+    footprint = None if structure.geometry is None else footprint_of(counts, layout, xp)
     out = []
     for forward in (True, False):
         v = view(counts, totals, layout, structure.offset, forward, xp)
+        if structure.geometry is not None:
+            v = v._replace(log_encounter=encounter_extent(footprint, layout, v, xp))
         log_a = xp.full(layout.step_law.shape, -xp.inf)
         for k, law in enumerate(kinetics):  # Each step's own law: one pass per law, selected.
             log_k = law.log_direction(
@@ -273,11 +280,50 @@ def log_parts(counts, totals, factor_state, term_states, layout, structure, xp=j
             change = layout.entry_alpha - layout.entry_beta
             for term, state, term_layout in zip(terms, term_states, layout.terms, strict=True):
                 log_a = log_a - term.delta(state, term_layout, v, change, xp)
+        if structure.geometry is not None:  # §0.2c rule 5: the vesicle floor, in quanta.
+            moved = layout.geometry[2] if forward else -layout.geometry[2]
+            log_a = xp.where(floor_zero(footprint, moved, layout.geometry[6]), -xp.inf, log_a)
         if structure.last_molecule == "kept":
             moves = layout.step_moves if forward else -layout.step_moves
             log_a = xp.where(kept_zero(totals[MEMBRANE], moves), -xp.inf, log_a)
         out.append(xp.where(layout.step_active, log_a, -xp.inf))
     return xp.concatenate(out)
+
+
+# OL2's geometry layout (model.layout; geometry.py): the order of Layout.geometry's arrays.
+GEOMETRY_FIELDS = (
+    "place_quanta",  # [P] int64: k_i at a finite membrane place, 0 elsewhere
+    "entry_quanta",  # [R, K] int64: the entry's place's k
+    "step_quanta",  # [R] int64: the forward's change of W
+    "step_encounter",  # [R] int32: 0 none (OL1's extent), 1 an area, 2 a radius
+    "log_area",  # float64: c_area, ln(A ρ0) = c_area + ln W
+    "log_radius",  # float64: c_radius, ln(4πR ρ0) = c_radius + ½ ln W
+    "floor_quanta",  # int64: W_floor
+)
+
+
+def footprint_of(counts, layout, xp=jnp):
+    """W(n) = Σ_p n_p k_p quanta, an exact integer (§0.2c rule 4)."""
+    return xp.sum(counts * layout.geometry[0])
+
+
+def encounter_extent(footprint, layout, view, xp=jnp):
+    """ln(E(m)·ρ0) of each step's geometric encounter on its common state m (§0.2d item 2), from
+    the exact integer W(m) = W(n) − Σ_e k_e (n_e − m_e), so both directions of a pair compute the
+    same value; −inf where W(m) = 0, and 0 for a step without a geometric encounter."""
+    consumed = xp.where(view.membrane, view.consumed, 0)
+    w_m = footprint - mass_action.entry_sum(layout.geometry[1] * consumed, xp)
+    log_w = mass_action.safe_log(w_m.astype(np.float64), xp)
+    code = layout.geometry[3]
+    area = layout.geometry[4] + log_w
+    radius = layout.geometry[5] + 0.5 * log_w
+    return xp.where(code == 1, area, xp.where(code == 2, radius, 0.0))
+
+
+def floor_zero(footprint, moved, floor):
+    """The pairs §0.2c rule 5 gives rate zero: the step changes W (moved ≠ 0, the direction's
+    change) and the firing state or the result is below the floor. A step that keeps W fires."""
+    return (moved != 0) & ((footprint < floor) | (footprint + moved < floor))
 
 
 def kept_zero(total, moves):

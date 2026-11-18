@@ -45,6 +45,7 @@ def structure(spec):
         chunk=x.chunk_events,
         unroll=x.unroll,
         uniforms=e.uniforms,
+        geometry=None if world.geometry is None else world.geometry[0],
     )
 
 
@@ -172,6 +173,35 @@ def layout(spec):
         base_key=streams.base_key_data(x.seed, x.environment, x.lineage, x.branch),
         horizon=np.float64(e.time_horizon_s),
         event_limit=np.int64(e.event_limit),
+        geometry=geometry_layout(world, P, R, place) if world.geometry is not None else (),
+    )
+
+
+def geometry_layout(world, P, R, place):
+    """OL2's geometry arrays, in kernel.GEOMETRY_FIELDS' order (geometry.py)."""
+    from cells.models.assembly_lineages_v2 import MEMBRANE_PERMEATION, PHASE_EXCHANGE
+    from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+    quanta = geometry_rules.place_quanta(world, P)
+    entry_quanta = quanta[place]
+    _, alpha, beta = entries(world, R)
+    step_quanta = np.sum(entry_quanta * (beta - alpha), axis=1).astype(np.int64)
+    encounter = np.zeros(R, dtype=np.int32)
+    radius = world.conventions.exchange_encounter == "diffusion_radius"
+    for r, step in enumerate(world.steps):
+        if step.law == PHASE_EXCHANGE:
+            encounter[r] = 2 if radius else 1
+        elif step.law == MEMBRANE_PERMEATION:
+            encounter[r] = 1  # permeation_area, whatever the exchange token (§0.2b rule 6)
+    c_area, c_radius = geometry_rules.log_constants(world)
+    return (
+        quanta,
+        entry_quanta.astype(np.int64),
+        step_quanta,
+        encounter,
+        np.float64(c_area),
+        np.float64(c_radius),
+        np.int64(geometry_rules.floor_quanta(world)),
     )
 
 
@@ -202,4 +232,6 @@ def components(spec):
     laws += [law_id for law_id, _ in world.terms]
     if world.rate_factor is not None:
         laws.append(world.rate_factor[0])
+    if world.geometry is not None:
+        laws.append(world.geometry[0])
     return {"model": MODEL_ID, "laws": laws, "operators": []}

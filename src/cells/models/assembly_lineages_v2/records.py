@@ -107,6 +107,36 @@ RECORDS = {
 }
 
 
+# OL2's records, written only by a world that declares a geometry (OL1's bundles are unchanged).
+GEOMETRY_RECORDS = {
+    "membrane_footprint_quanta": _record(
+        "row",
+        ["row"],
+        "quanta",
+        "level",
+        "W(n) = sum_i n_i k_i, the membrane's footprint at the row; the bilayer's area is q W / 2",
+    ),
+}
+
+
+def _geometry_derived(world):
+    """The geometry's derived constants (world.json's `derived`), only when it is declared."""
+    if world.geometry is None:
+        return {}
+    from cells.models.assembly_lineages_v2 import geometry
+
+    c_area, c_radius = geometry.log_constants(world)
+    return {
+        "geometry": {
+            "rho0_per_m3": geometry.rho0(world),
+            "log_area_constant": c_area,
+            "log_radius_constant": c_radius,
+            "floor_quanta": geometry.floor_quanta(world),
+            "closure_kT": geometry.closure_kT(world),
+        }
+    }
+
+
 def world_record(world):
     body = world_spec.world_to_dict(world)
     return {
@@ -118,6 +148,7 @@ def world_record(world):
             "offset": world.conventions.offset,
             "kT_J": world.units.kT_J,
             "log_extent": {p: model.log_extent(world, p) for p, _ in world.volumes},
+            **_geometry_derived(world),
         },
     }
 
@@ -208,7 +239,10 @@ def run_record(run, world_id):
         },
         "places": places_table(world),
         "channels": kernel.channel_table(world),
-        "records": {name: {"file": ARRAYS, "array": name, **RECORDS[name]} for name in arrays},
+        "records": {
+            name: {"file": ARRAYS, "array": name, **{**RECORDS, **GEOMETRY_RECORDS}[name]}
+            for name in arrays
+        },
         "diagnostics": {"uniforms": spec.experiment.uniforms},
     }
 

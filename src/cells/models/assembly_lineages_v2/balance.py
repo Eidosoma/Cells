@@ -27,8 +27,11 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages_v2 import (
+    BILAYER_GEOMETRY,
     IDEAL_MIXING,
     MASS_ACTION,
+    MEMBRANE_PERMEATION,
+    PHASE_EXCHANGE,
     MODEL_ID,
     REGULAR_MIXING,
     TRANSITION_STATE,
@@ -286,3 +289,135 @@ def world_report(spec, *, states=STATES):
 
 
 assert world_rules.MEMBRANE == "membrane"
+
+
+# ------------------------------------------------------------------ OL2: worlds with a geometry
+
+
+def geometry_probe_world(rng, measure, encounter, *, regular, catalysis):
+    """A generic world with a bilayer geometry (OL2): joins by phase exchange (one from a held
+    species), an entry by permeation, a membrane isomerisation that changes the footprint and a
+    dimerisation that keeps it, a pool reaction, random potentials, rates and volumes."""
+    species = []
+    for name, moiety in (("A", {"m": 1}), ("B", {"m": 1}), ("C", {"m": 2}), ("H", {"h": 1}),
+                         ("S", {"s": 1})):  # fmt: skip
+        potentials = {"solution": float(rng.normal(0, 2))}
+        if name in ("A", "B", "C", "H"):
+            potentials["bilayer"] = float(rng.normal(-1, 2))
+        species.append({"id": name, "moieties": moiety, "standard_mu_RT": potentials,
+                        "catalogue": None, "evidence": None})  # fmt: skip
+    k = lambda: float(np.exp(rng.normal(0, 1)))  # noqa: E731
+    key = "insertion_velocity_m_per_s" if encounter == "insertion_area" else "diffusivity_m2_per_s"
+    scale = 1e-8 if encounter == "insertion_area" else 1e-17
+    steps = [
+        {"id": "join_a", "locus": "membrane", "reactants": {"A@pool": 1},
+         "products": {"A@membrane": 1}, "law": PHASE_EXCHANGE, key: scale * k()},
+        {"id": "join_h", "locus": "membrane", "reactants": {"H@pool": 1},
+         "products": {"H@membrane": 1}, "law": PHASE_EXCHANGE, key: scale * k()},
+        {"id": "entry_s", "locus": "membrane", "reactants": {"S@pool": 1},
+         "products": {"S@lumen": 1}, "law": MEMBRANE_PERMEATION,
+         "permeability_m_per_s": 1e-8 * k()},
+        {"id": "iso", "phase": "membrane", "reactants": {"A": 1}, "products": {"B": 1},
+         "law": MASS_ACTION, "forward_rate_per_s": k()},
+        {"id": "dimer", "phase": "membrane", "reactants": {"A": 1, "B": 1},
+         "products": {"C": 1}, "law": MASS_ACTION, "forward_rate_per_s": k()},
+        {"id": "pool_dimer", "phase": "pool", "reactants": {"A": 2}, "products": {"C": 1},
+         "law": MASS_ACTION, "forward_rate_per_s": k()},
+    ]  # fmt: skip
+    terms = [{"law": IDEAL_MIXING}]
+    if regular:
+        terms.append({"law": REGULAR_MIXING, "chi_kT": [
+            {"pair": ["A", "B"], "chi": float(rng.normal(0, 1))},
+            {"pair": ["B", "C"], "chi": float(rng.normal(0, 1))}]})  # fmt: skip
+    q = 5e-21
+    quanta = {"A": 60, "B": 140, "C": 200, "H": 90}  # C = A + B: the dimerisation keeps W.
+    world = {
+        "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": 1000.0},
+        "conventions": {
+            "free_energy_form": "discrete", "condensed_measure": measure,
+            "membrane_kinetics": "count_on_m", "lumen_volume": "declared",
+            "empty_catalyst_phase": "uncatalysed", "last_molecule": "kept",
+            "exchange_encounter": encounter,
+        },
+        "species": species,
+        "phases": {
+            "pool": {"volume_L": float(np.exp(rng.normal(-52, 1))), "species": [
+                {"id": "A", "kind": "finite"}, {"id": "C", "kind": "finite"},
+                {"id": "S", "kind": "finite"},
+                {"id": "H", "kind": "held", "held_mM": float(np.exp(rng.normal(0, 1)))}]},
+            "membrane": {"species": ["A", "B", "C", "H"]},
+            "lumen": {"volume_L": float(np.exp(rng.normal(-54, 1))), "species": ["S"]},
+        },
+        "steps": steps,
+        "free_energy": terms,
+        "founder": {"A@pool": 3, "C@pool": 1, "S@pool": 2, "A@membrane": 2, "B@membrane": 1,
+                    "C@membrane": 1, "H@membrane": 1, "S@lumen": 1},
+        "geometry": {
+            "law": BILAYER_GEOMETRY, "area_quantum_m2": q,
+            "area_per_leaflet": {s: {"quanta": n, "sourced_m2": n * q, "source": "probe"}
+                                 for s, n in quanta.items()},
+            "vesicle_floor_quanta": {"value": 60, "provenance": "unsourced"},
+            "closure_cost_kT": {"value": float(abs(rng.normal(0, 10))), "provenance": "unsourced"},
+        },
+    }  # fmt: skip
+    if catalysis:
+        world["rate_factor"] = {"law": TRANSITION_STATE, "catalysing_phase": "membrane",
+                                "entries": [{"catalyst": "C", "step": "iso",
+                                             "ddG_kT": float(rng.normal(0, 1.5))},
+                                            {"catalyst": "B", "step": "join_a",
+                                             "ddG_kT": float(rng.normal(0, 1.5))}]}  # fmt: skip
+    return {
+        "schema_version": 1,
+        "model": {"id": MODEL_ID, "world": world},
+        "experiment": {"time_horizon_s": 1.0, "event_limit": 1, "row_every_events": 1,
+                       "observation_times_s": [], "trace": False, "uniforms": False},
+        "execution": {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
+                      "stream": {"seed": 0, "environment": 0, "lineage": 0, "branch": 0},
+                      "molecule_capacity": 64},
+    }  # fmt: skip
+
+
+GEOMETRY_PROBES = tuple(
+    (measure, encounter, regular, catalysis)
+    for measure in ("multinomial", "multinomial_less_one")
+    for encounter in ("insertion_area", "diffusion_radius")
+    for regular in (False, True)
+    for catalysis in (False, True)
+)
+
+
+@functools.cache
+def geometry_verdict():
+    """The check's verdict on OL2's generic geometry worlds (GEOMETRY_PROBES), as for verdict():
+    refuses (ConfigError) if any pair fails the identity. OL1's verdict() is left as it was, so
+    OL1's records do not move."""
+    from cells.definitions.specs import parse_spec
+
+    rng = np.random.default_rng(PROBE_SEED + 2)
+    worst, pairs = 0.0, 0
+    for measure, encounter, regular, catalysis in GEOMETRY_PROBES:
+        world = geometry_probe_world(rng, measure, encounter, regular=regular, catalysis=catalysis)
+        found = np.abs(deviations(parse_spec(world), rng))
+        pairs += found.size
+        worst = max(worst, float(np.max(found)) if found.size else 0.0)
+    if not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: the kernel's rates fail ln a+ - ln a- = -dF + w on the geometry probe: "
+            f"the largest deviation is {worst:.3g} > {ATOL:g}. Refused"
+        )
+    return {
+        "identity": "ln a+(n) - ln a-(n + nu) + F(n + nu) - F(n) - w = 0",
+        "holds": True,
+        "probe": {
+            "worlds": [
+                {"condensed_measure": m, "exchange_encounter": e, "regular_mixing": g,
+                 "rate_factor": c}
+                for m, e, g, c in GEOMETRY_PROBES
+            ],  # fmt: skip
+            "states_per_world": STATES,
+            "seed": PROBE_SEED + 2,
+            "pairs": pairs,
+            "tolerance_ln": ATOL,
+            "max_abs_deviation_ln": worst,
+        },
+    }

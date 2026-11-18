@@ -37,7 +37,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import keys
-from cells.models.assembly_lineages_v2 import MODE, balance, kernel, ledger, model
+from cells.models.assembly_lineages_v2 import MODE, balance, geometry, kernel, ledger, model
 from cells.models.assembly_lineages_v2.spec import world_id
 
 ROW_KINDS = ("start", "periodic", "end", "observed")
@@ -188,7 +188,9 @@ def run_lanes(specs):
     if len({s.execution.backend for s in specs}) != 1:
         raise ConfigError("Lanes share one backend")
     kernel.refuse_unknown(structure)
-    verdict = balance.verdict()  # Refuses a kernel that fails the identity on its probe.
+    # Refuses a kernel that fails the identity on its probe; a world with a geometry (OL2) takes
+    # the geometric probe's verdict, and OL1's worlds the probe they always had.
+    verdict = balance.geometry_verdict() if structure.geometry is not None else balance.verdict()
     by_world = {}  # The world's own report, once per distinct world (lanes often share one).
     for s in specs:
         key = world_id(s.model.world)
@@ -286,6 +288,8 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     f = np.asarray(
         [ledger.free_energy(c, tables, world.terms, layout.terms) for c in counts], dtype=np.float64
     )
+    if world.geometry is not None:  # C_close, once for the one living vesicle (§0.2c rule 8).
+        f = f + geometry.closure_kT(world)
     heat = np.asarray([r[4] for r in rows], dtype=np.float64)
     heat_mag = np.asarray([r[5] for r in rows], dtype=np.float64)
     work = np.asarray([r[6] for r in rows], dtype=np.float64)
@@ -325,6 +329,10 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
     }
+    if world.geometry is not None:  # OL2: the membrane's footprint W at each row (quanta).
+        row_arrays["membrane_footprint_quanta"] = counts[:, :places] @ geometry.place_quanta(
+            world, places
+        )
     trace = {}
     if spec.experiment.trace:
         trace = {
