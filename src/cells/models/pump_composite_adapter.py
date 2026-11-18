@@ -28,12 +28,18 @@ layout. This adapter is the only place that knows @3's names:
   capacitor_free_energy_pJ (balances' own terms), view_capacitor_terms (the energy
   rule: @3's term on the declared layout brought to the physical capacitor energy at
   the view, with the clamps' plate charges) and fixed_charge_change (one capacitance
-  change at fixed free-node charges: potentials, image charge and heat).
+  change at fixed free-node charges: potentials, image charge and heat);
+* the split and the merge of membrane between patches, the charges following the patches
+  (charge_following_transfer, R2 of docs/MEMBRANE_RETRIEVAL_DESIGN.md §2.2), with the carriers of
+  its moved plate charges (check_carriers, carrier_scale, carrier_amounts): FR-2's retrieval and
+  recycling and door F's one kernel (D217).
 """
 
+import math
 import sys
 from functools import cache
 from types import MappingProxyType
+from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -41,7 +47,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.definitions.surface_pump_v2_spec import Control
-from cells.laws.electrochemistry import R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_tissue as tissue
@@ -789,3 +795,125 @@ def fixed_charge_change(state, q, dc, bound, *, xp):
     share = xp.where(positive, (total + second) / xp.where(positive, total, 1.0), 0.0)
     after = patch_voltages(phi + delta, q1, xp=xp)
     return q1, xp.where(bound.reservoir, image, 0.0), first * share, first, second, v, after
+
+
+# The split and the merge of membrane between patches, the charges following the patches
+# (docs/MEMBRANE_RETRIEVAL_DESIGN.md §2.2, R2; docs/CORE_SEAMS_DESIGN.md §4.6's merge; D217): one
+# kernel for FR-2's retrieval and recycling, door F's fission and fusion and mitochondria's.
+
+
+class ChargeTransfer(NamedTuple):
+    """What one charge-following transfer of membrane does (charge_following_transfer)."""
+
+    view: object  # q with the capacitances moved, its field arrays refreshed
+    plate_C: object  # [T] each piece's inside plate charge, dc V_s (C); its outside one is -plate_C
+    charge_C: object  # [cells, then outside nodes] each free node's charge change (C)
+    supplied_C: object  # [outside] the charge each held node's reservoir supplies (C)
+    electrode_C: object  # [outside] each held node's plate-charge change after the re-solve (C)
+    heat_pJ: object  # the merge heat (pJ), >= 0
+    before_V: object  # [membrane] the patch voltages before
+    after_V: object  # [membrane] the patch voltages after
+
+
+def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
+    """Move capacitance dc[t] >= 0 from patch source[t] to patch target[t], the charges following
+    the patches (R2, docs/MEMBRANE_RETRIEVAL_DESIGN.md §2.2).
+
+    Each piece leaves its source at the source's voltage V_s with both of its plate charges:
+    +dc V_s on its inside face, from the source's cell to the target's (nothing moves within one
+    cell), and -dc V_s on its outside face, from the source's outside node to the target's. So the
+    rest of the network keeps its potentials as the piece leaves, and a piece is neutral. At a free
+    node a plate charge changes the node's charge (what declared carriers carry); at a held node
+    (a bath) the node's reservoir supplies it or takes it in (supplied_C). The potentials are then
+    re-solved at the new capacitances and charges, the held nodes at their potentials, whose clamps
+    change their plate charges (electrode_C). Where a held node loses a piece and supplies its
+    carriers the two charges cancel.
+
+    The heat is what attaching the pieces dissipates, the two-capacitor loss, with no bulk energy
+    subtracted (**S**): with r = sum_t dc_t (V_s - V_t) e_t, e_t the target's (inside cell) minus
+    (outside node) on the free nodes, and delta = K'^-1 r the free potentials' change,
+        H = 1/2 sum_t dc_t (V_s - V_t)^2 - 1/2 delta . r  >= 0,
+    exactly 0 where every piece meets its target's voltage. Into a free face-free node j that one
+    patch b bounds, from a patch k of b's cell, only phi_j moves: V_b' = (C_b V_b + dc V_k)/(C_b +
+    dc), and H = C_b dc (V_b - V_k)^2 / (2 (C_b + dc)), CORE_SEAMS §4.6's merge loss. The heat
+    with the clamps' and reservoirs' work closes the capacitor energy: H = sum_h phi_h (electrode_h
+    + supplied_h) - (U' - U), U = 1/2 sum C V^2 (the test's ledger).
+
+    q: @3's layout at the current view, its field arrays refreshed; bound: the declared layout,
+    refresh_field's reference; source, target: [T] active patch slots, distinct for each t; dc: [T]
+    capacitances moved (F), each at most what its source holds (the caller refuses more, by a
+    declared area floor). A pure function: it writes no state; the caller books the charges as
+    carriers (carrier_amounts) and the heat.
+    """
+    n, o = q.active.size, q.outside_active.size
+    charge = xp.concatenate((q.initial_cell_charge_C, q.initial_outside_charge_C))
+    charge = charge + tissue.charge_increment(state, q, xp=xp)
+    phi = node_potentials(state, q, xp=xp)
+    v = patch_voltages(phi, q, xp=xp)
+    plate = dc * v[source]  # Each piece's inside plate charge; its outside one is its negative.
+    capacitance = q.membrane_capacitance + scatter(dc, q.membrane_capacitance, (target,), xp=xp)
+    capacitance = capacitance - scatter(dc, q.membrane_capacitance, (source,), xp=xp)
+    q1 = refresh_field(q._replace(membrane_capacitance=capacitance), bound, xp=xp)
+    nodes = xp.zeros(n + o)
+    moved = (  # Each node: the plate charges arriving less those leaving.
+        scatter(plate, nodes, (q.membrane_cell[target],), xp=xp)
+        - scatter(plate, nodes, (q.membrane_cell[source],), xp=xp)
+        - scatter(plate, nodes, (n + q.membrane_outside[target],), xp=xp)
+        + scatter(plate, nodes, (n + q.membrane_outside[source],), xp=xp)
+    )
+    held = xp.concatenate((xp.zeros(n, dtype=bool), q.reservoir))
+    changed = xp.where(held, 0.0, moved)
+    boundary = xp.concatenate((xp.zeros(n), q.boundary_V))
+    after = field._capacitor_solve(charge + changed, boundary, tissue.field_layout(q1), xp=xp)
+    delta = xp.where(held, 0.0, after - phi)
+    jump = v[source] - v[target]  # Each piece's voltage less its target's.
+    port = scatter(dc * jump, nodes, (q.membrane_cell[target],), xp=xp)
+    port = port - scatter(dc * jump, nodes, (n + q.membrane_outside[target],), xp=xp)
+    residual = xp.where(held, 0.0, port)
+    heat = 0.5e12 * (xp.sum(dc * jump**2) - xp.sum(delta * residual))
+    electrode = (q1.field_capacitor_matrix @ after - q.field_capacitor_matrix @ phi)[n:]
+    return ChargeTransfer(
+        view=q1,
+        plate_C=plate,
+        charge_C=changed,
+        supplied_C=xp.where(q.reservoir, -moved[n:], 0.0),
+        electrode_C=xp.where(q.reservoir, electrode, 0.0),
+        heat_pJ=heat,
+        before_V=v,
+        after_V=patch_voltages(after, q1, xp=xp),
+    )
+
+
+def check_carriers(rows, transference, valence, what):
+    """Refuse declared carriers of a moved plate charge (host, at the definition): distinct
+    species rows, each charged (a neutral species carries no charge), with transference numbers
+    t_s > 0 that sum to 1 within rounding."""
+    rows, transference = tuple(rows), tuple(transference)
+    if not rows or len(set(rows)) != len(rows) or len(rows) != len(transference):
+        raise ConfigError(f"{what}: carriers are distinct species rows, one transference each")
+    neutral = [r for r in rows if valence[r] == 0]
+    if neutral:
+        raise ConfigError(
+            f"{what}: a carrier of charge has a nonzero valence; row {neutral[0]} is neutral"
+        )
+    if any(not (math.isfinite(t) and t > 0) for t in transference) or not math.isclose(
+        math.fsum(transference), 1.0, rel_tol=0.0, abs_tol=4 * len(rows) * 2.0**-52
+    ):
+        raise ConfigError(f"{what}: transference numbers are positive and sum to 1")
+
+
+def carrier_scale(rows, transference, valence, species):
+    """[species] the amount (fmol) each row carries per coulomb of a moved plate charge: t_s / (z_s
+    F) at a carrier, 0 elsewhere (host, at binding, after check_carriers): layout data, so a change
+    of carriers or transference reuses the executable."""
+    scale = np.zeros(species)
+    for row, t in zip(rows, transference, strict=True):
+        scale[row] = t / (valence[row] * CHARGE_PER_FMOL)
+    return scale
+
+
+def carrier_amounts(charge_C, scale, *, xp):
+    """[species, nodes] the carriers' amounts (fmol) that carry charge_C [nodes] (C): carrier s
+    takes t_s of each node's charge, delta_s = t_s charge / (z_s F), the partition's rule
+    (operators/partition.py); every other row moves nothing. scale: carrier_scale's."""
+    return xp.asarray(scale)[:, None] * charge_C[None, :]
