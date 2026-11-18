@@ -26,21 +26,27 @@ programs on identical inputs run identically on a CPU. Outputs written before co
 were recorded (13 November 2026) have no .consts.json files: compare says so, and its
 verdict then covers the texts and bindings only.
 
-Six world sets: base (small worlds of every structure: routes, sheets, RK4, events,
+Seven world sets: base (small worlds of every structure: routes, sheets, RK4, events,
 donors, padding), qualification (the guarded qualification worlds themselves:
 W1's trajectories, W2's arms and G2-Q1's cases), injection (electrode injection
 without a field-input provider, the Rm1 egg included), volume (replacement@2 over
 water, v2 design §2; recorded from its first revision on, with constants), kinds
 (kind-declaring worlds, D187 rule 2: FR-4's development and declared worlds and FR-5's arm
-T; recorded from 16 November 2026, after D172's landing) and acceptances (quick worlds of the
+T; recorded from 16 November 2026, after D172's landing), acceptances (quick worlds of the
 judged acceptances of 17 and 18 November 2026, FR-1's, FR-3's, FR-10's and FR-6's A5'', from
-their protocols' own generators: docs/CORE_SEAMS_DESIGN.md §18; recorded from 18 November 2026).
+their protocols' own generators: docs/CORE_SEAMS_DESIGN.md §18; recorded from 18 November 2026) and
+replication (quick worlds of the gap-junction replication, from its driver's own generators: the
+linear model in both forms and the neither condition's line, sheet and a ladder point, D219;
+recorded from 18 November 2026). The replication set has its own record: its bindings add every
+step's controls and each schedule change's step, and its device row checks are traced on a
+transition, the previous and current states independent inputs, beside production's window check
+program (replication_bindings, replication_jaxprs).
 For the qualification set, bindings are also saved at every step size of the dt studies the
 guards did not repeat (W1's and Q5's), since dt enters the bound inputs (step counts,
 event steps) as well as the traced program.
 
 Usage (PYTHONPATH at the revision under test; SET is base, the default, qualification,
-injection, volume, kinds or acceptances):
+injection, volume, kinds, acceptances or replication):
   python -m validation.tissue.composite_crossrev jaxprs DIR [SET]
   python -m validation.tissue.composite_crossrev bindings DIR [SET]
   python -m validation.tissue.composite_crossrev compare A B
@@ -313,6 +319,183 @@ def acceptances_worlds():
     }
 
 
+REPLICATION = (
+    "linear_norton",
+    "linear_as_written",
+    "neither_line",
+    "neither_sheet",
+    "neither_ladder",
+)
+REPLICATION_LADDER_D_M2_S = 5e-14  # The ladder's top point (gap-junction-20261117/runs/ladder-01).
+
+
+def replication_world(name, *, junction_scale=1.0, d=None):
+    """One world of the replication set (replication_worlds), built by its driver's own generator at
+    its registered horizon and cut to its first five steps. junction_scale multiplies every junction
+    permeability of the linear model (the driver's planted control, K1); d is a neither world's
+    junction diffusion constant (m^2/s), by default its registered one."""
+    from validation.gap_junction_tissue import neither
+    from validation.gap_junction_tissue import worlds as gj
+
+    if name in ("linear_norton", "linear_as_written"):
+        chain = gj.chain(3, 0.5)
+        if name == "linear_norton":
+            raw = gj.linear_network(
+                chain.cells, chain.edges, chain.probes, junction_scale=junction_scale
+            )
+        else:
+            raw = gj.as_written(chain, junction_scale=junction_scale)
+        return _first_steps(raw)
+    registered = {
+        "neither_line": (neither.X2_M2_S, "line"),
+        "neither_sheet": (neither.X2_M2_S, "sheet"),
+        "neither_ladder": (REPLICATION_LADDER_D_M2_S, "line"),
+    }
+    default, shape = registered[name]
+    d = default if d is None else d
+    return _first_steps(neither.coupled_world(d, neither.STAGE1_END_UNITS, shape=shape))
+
+
+def replication_worlds():
+    """Quick worlds of the gap-junction replication (docs/GAP_JUNCTION_CANCER_REPLICATION.md, D219),
+    each built by its driver's generator (validation/gap_junction_tissue/) and cut to its first five
+    steps. They carry the replication's two neutral transport laws: @3's neutral permeant species
+    and the passive routes' neutral law on a junction host.
+
+    * The linear model on Figure 8's chain of three cells, G_GJ = G_eq, its port loaded by a
+      reservoir held at 0.5 (the first of the two loads its Norton conductance is measured from),
+      in both of its forms:
+      - linear_norton: resolved_pump_tissue@3's own constant_field@1 membranes and junctions for
+        one neutral permeant species, with held reservoirs (worlds.linear_network);
+      - linear_as_written: resolved_pump_composite@1 over @3, local_species_reactions@1's source
+        and decay in each cell, and passive_neutral_permeation@1 routes on the junctions and on
+        the probe's patch (worlds.as_written).
+    * The neither condition's coupled stage (neither.coupled_world): the EMT switch as
+      local_species_reactions@1 reactions, with miR200 on passive_neutral_permeation@1 junction
+      routes. Each starts from stage 1's pinned end state (neither.STAGE1_END_UNITS), since
+      crossrev runs nothing:
+      - neither_line: BITSEY's 1x1x25 line at the 1D search's threshold x2 (step 1/8 s);
+      - neither_sheet: the 9x9 sheet of section 7.6 at x2 (1/16 s);
+      - neither_ladder: the line at the ladder's top point, 5e-14 m^2/s (1/32 s).
+    Every junction gate is junction_voltage_relaxation@1, pinned open.
+
+    The set has its own record (replication_jaxprs, replication_bindings), which closes two blind
+    spots of the other sets' (an external review, 18 November 2026): it records each schedule
+    change's step and every step's controls, so a change one step later moves the record; and it
+    traces the device row checks of a transition, the previous and the current state independent
+    inputs, beside production's window check program."""
+    return {name: replication_world(name) for name in REPLICATION}
+
+
+def _replication_traced(spec, model, arrays):
+    """Closed jaxprs of the replication set's programs, each traced on the inputs production gives
+    it: the checked step and the right-hand side (as _traced); the device row checks of one
+    transition, with the previous and the current state independent inputs and the accepted-step
+    count traced, margins off and on (row_checks' scalar windows run them on); and production's own
+    window check program, row_checks._window_checks, over a window of two rows. A change that makes
+    the checks compare a row with itself therefore changes the record."""
+    import functools
+
+    import jax
+    import jax.numpy as jnp
+
+    from cells.execution import row_checks
+
+    s, c, p = arrays
+    dt = jnp.asarray(spec.execution.dt)  # Traced, as in the runner's rollout.
+    first = jnp.asarray(0, dtype=jnp.int64)  # The accepted-step count, traced as the windows do.
+    count = jnp.asarray(1, dtype=jnp.int64)
+    constants = model.device_check_constants(spec)
+    history = jax.tree.map(lambda x: jnp.stack([x, x]), s)
+
+    def step(s, dt, c, q):
+        return model.checked_step(s, dt, c, q, q.active)
+
+    def rhs(s, c, q):
+        return model.rhs(s, c, q, q.active)
+
+    def checks(previous, row, q, steps):
+        return model.device_checks(previous, row, q, constants, steps)
+
+    def checks_margins(previous, row, q, steps):
+        return model.device_checks(previous, row, q, constants, steps, margins=True)
+
+    window = functools.partial(row_checks._window_checks, checks=model.device_checks)
+    return dict(
+        checked_step=jax.make_jaxpr(step)(s, dt, c, p),
+        rhs=jax.make_jaxpr(rhs)(s, c, p),
+        device_checks=jax.make_jaxpr(checks)(s, s, p, first),
+        device_checks_margins=jax.make_jaxpr(checks_margins)(s, s, p, first),
+        window_checks=jax.make_jaxpr(window)(s, history, count, first, p, constants),
+    )
+
+
+def replication_jaxprs(directory):
+    """jaxprs for the replication set: _replication_traced's five programs of each world."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    for name, raw in replication_worlds().items():
+        for kind, closed in _replication_traced(*_setup(raw)).items():
+            (directory / f"{name}.{kind}.txt").write_text(str(closed))
+            (directory / f"{name}.{kind}.consts.json").write_text(const_record(closed))
+        print(name, flush=True)
+
+
+def replication_bindings(directory):
+    """bindings for the replication set. As bindings, each world's initial state, layout and
+    device-check constants (state., layout., check.); in place of the controls at the change times,
+    the schedule's timing:
+    * steps.control.FIELD: every control array at the start of every integration step, as the
+      runner binds them (control_values at the EventGrid's boundaries), so that a change one step
+      later moves a row;
+    * steps.dt: each step's size (runner.integration_steps);
+    * timing.grid: the EventGrid's boundaries; timing.change_time and timing.change_step: each
+      schedule change's time and its boundary's index (EventGrid.exact_index); timing.event_index:
+      the change in force at each step's start (schedule.event_index)."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.execution.grid import EventGrid
+    from cells.execution.runner import integration_steps
+    from cells.execution.schedule import control_values, event_index
+    from cells.registry.models import get_model
+
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    for name, raw in replication_worlds().items():
+        spec = parse_spec(raw)
+        model = get_model(spec.model)
+        state, layout = model.initial_values(spec)
+        grid = EventGrid(spec)
+        times = np.array([grid[i] for i in range(len(grid))], dtype=np.float64)
+        changes = [change.time for change in spec.experiment.changes]
+        arrays = {}
+        for prefix, tree in (
+            ("state.", state),
+            ("layout.", layout),
+            ("steps.control.", control_values(spec, times[:-1])),
+        ):
+            for key, value in tree._asdict().items():
+                arrays[prefix + key] = np.asarray(value)
+        arrays["steps.dt"] = np.asarray(integration_steps(spec, times), dtype=np.float64)
+        arrays["timing.grid"] = times
+        arrays["timing.change_time"] = np.asarray(changes, dtype=np.float64)
+        arrays["timing.change_step"] = np.asarray(
+            [grid.exact_index(t) for t in changes], dtype=np.int64
+        )
+        arrays["timing.event_index"] = np.asarray(
+            [event_index(spec, float(t)) for t in times[:-1]], dtype=np.int64
+        )
+        for key, value in check_constants(model, spec):
+            arrays["check." + key] = value
+        np.savez(directory / f"{name}.npz", **arrays)
+        print(name, len(arrays), flush=True)
+
+
 def _worlds(world_set, all_steps):
     if world_set == "base":
         return worlds()
@@ -326,9 +509,11 @@ def _worlds(world_set, all_steps):
         return kinds_worlds()
     if world_set == "acceptances":
         return acceptances_worlds()
+    if world_set == "replication":
+        return replication_worlds()
     raise SystemExit(
         f"Unknown world set {world_set!r} "
-        "(base, qualification, injection, volume, kinds or acceptances)"
+        "(base, qualification, injection, volume, kinds, acceptances or replication)"
     )
 
 
@@ -349,6 +534,8 @@ def _setup(raw):
 
 
 def jaxprs(directory, world_set="base"):
+    if world_set == "replication":  # Its own programs (replication_jaxprs).
+        return replication_jaxprs(directory)
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -443,6 +630,8 @@ def check_constants(model, spec):
 
 
 def bindings(directory, world_set="base"):
+    if world_set == "replication":  # Its own record, with the schedule's timing.
+        return replication_bindings(directory)
     import jax
 
     jax.config.update("jax_enable_x64", True)

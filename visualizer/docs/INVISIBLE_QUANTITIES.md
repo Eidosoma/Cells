@@ -56,7 +56,9 @@ the viewer's replays (`out/runs/`). I did not read the saved arrays of other exp
 | Fuel | Earlier model families: a finite pool. Composite model: held constant. The rework: shared species, planned | cell | | No |
 | Arrival of an electrical wave | Excitable tissue is designed; its first milestone landed as validation code only | cell | s | No. Records are 10 s apart; a wave needs milliseconds |
 
-Where each claim comes from, in the main checkout:
+Where each claim comes from, in the main checkout on 15 November 2026 (the note recorded no
+revision; its engine paths are that day's, before the engine's two source moves of D188, whose
+tables in the engine's `scripts/moves/` give each file's home since):
 
 - The fields: `src/cells/models/surface_tissue.py` (`STATE_AXES`, `OBSERVATION_FIELDS`)
   and `src/cells/models/surface_kinetic.py` (`OBSERVATION_FIELDS`), which the tissue

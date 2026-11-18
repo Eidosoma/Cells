@@ -29,6 +29,8 @@ export default {
       line: (options) => ctx.neutralLine(options),
       add: (object, id) => (id ? ctx.scenery(object, id) : ctx.illustrate(object)),
     });
-    return { scenery };
+    // Scenery the structures drew that can be chosen (an animal cell's centrosome) stands first in the list the lens describes.
+    const drawn = built.structures?.scenery || [];
+    return { scenery: drawn.length ? { ...scenery, items: [...drawn, ...scenery.items] } : scenery };
   },
 };

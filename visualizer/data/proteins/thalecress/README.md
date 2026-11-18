@@ -57,7 +57,7 @@ Nothing of the plant is in the engine. This is reference data for the viewer.
 - 4,699 InterPro families hold 18,668 proteins: 2,037 of one, 1,729 of two to four, 933 of five or more. 8,700 proteins have no family.
 - 4,110 lines of 2,662 families; the 2,037 only members of their families stand in 153 parts; the proteins with no family in 666 lines.
 - The largest: Cytochrome P450, E-class, group I (225); Pentatricopeptide repeat-containing protein At4g14850-like, plant (205); SCF complex F-box component (165); Vacuole Formation Regulator (127); F-box/LRR-repeat protein 13/AtMIF1-like (124); Disease resistance protein, plants (120); GDSL lipase/esterase-like, plant (91); UDP-glucuronosyl/UDP-glucosyltransferase (84).
-- 19 proteins carry the family signature of one of Cells' machines and name its units.
+- 19 proteins carry the family signature of one of Cells' units and name it.
 
 ## What rests on tools and rule systems of other owners
 

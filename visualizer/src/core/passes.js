@@ -13,9 +13,14 @@
 // multiplied onto the screen. Glass takes no part: only what is solid darkens and is
 // darkened. A part that is cut open is cut here too, by its own material's cut.
 //
-// Bloom: what was marked with glow() is drawn once more, small, on black, with the solid
-// parts in front of it drawn black; the pass blurs it; the blur is added onto the screen.
-// So only what was marked shines, never the highlights of the scene. Off unless asked for.
+// Bloom: what was marked with glow() is drawn once more, on black, where no solid part lies in
+// front of it; the pass blurs it; the blur is added onto the screen. So only what was marked
+// shines, never the highlights of the scene, and never through a solid part. Off unless asked
+// for. Where contact shade is on, its picture already holds the solid parts' depth, drawn by the
+// same camera in the same frame: the marked things are drawn against that depth, and the solid
+// parts are not drawn a second time (the cost of a frame with flux, 16 November 2026: that
+// second drawing was about a fifth of the frame on the card). Without contact shade, the solid
+// parts are drawn black in front of the marked things, as before.
 // A marked thing is drawn there without the scene's lamps: an unlit material shines by its
 // own colour, a lit one by the light it gives off itself and by its surroundings. How
 // bright it is there is how much it glows; `floor` leaves out what is dimmer than that.
@@ -79,7 +84,9 @@ export class Finish {
     this.contact = { size: 0, strength: 0.6, reach: 1, power: 1, pass: null, picture: null, sized: "" };
     // Bloom. Off at 0. `radius` and `floor` are the pass's own: how wide the glow spreads,
     // and how bright a marked thing must be to shine at all.
-    this.bloom = { strength: 0, radius: 0.55, floor: 0, pass: null, picture: null, sized: "" };
+    // `shared`: draw the marked things over the contact shade's depth where it is on (false draws the solid parts
+    // again, the way it was before 16 November 2026; kept so that the two can be measured side by side).
+    this.bloom = { strength: 0, radius: 0.55, floor: 0, pass: null, picture: null, sized: "", over: null, overFor: null, shared: true };
     this.sources = new Set();
     this.facing = new StandIns(() => new THREE.MeshNormalMaterial({ blending: THREE.NoBlending }));
     this.dark = new StandIns(() => new THREE.MeshBasicMaterial({ color: 0x000000, toneMapped: false }));
@@ -122,9 +129,11 @@ export class Finish {
 
   /**
    * Draw the scene once more into `picture`, each visible thing as `as(object)` says: a
-   * material to stand in for its own, true for its own, or null to leave it out.
+   * material to stand in for its own, true for its own, or null to leave it out. With
+   * `keepDepth` the picture's depth is kept as it is (only its colour is cleared), so that
+   * what is drawn is hidden where a depth already there lies in front of it.
    */
-  redraw(scene, camera, picture, layer, as, colour, alpha) {
+  redraw(scene, camera, picture, layer, as, colour, alpha, keepDepth = false) {
     const { renderer, swapped } = this;
     swapped.length = 0;
     scene.traverseVisible((object) => {
@@ -147,7 +156,10 @@ export class Finish {
     renderer.shadowMap.autoUpdate = false;
     renderer.setRenderTarget(picture);
     renderer.setClearColor(colour, alpha);
-    renderer.autoClear = true;
+    if (keepDepth) {
+      renderer.autoClear = false;
+      renderer.clear(true, false, false);
+    } else renderer.autoClear = true;
     renderer.render(scene, camera);
     renderer.autoClear = auto;
     renderer.setClearColor(this.clear, clearAlpha);
@@ -186,9 +198,25 @@ export class Finish {
     return contact.pass;
   }
 
-  bloomPass() {
+  /**
+   * The picture the marked things are drawn into over the contact shade's depth: the contact
+   * picture's size, its depth texture shared (nothing drawn here writes depth: the marks do
+   * not, and the solid parts are not drawn). Made again when the contact picture changes.
+   */
+  overContact() {
+    const bloom = this.bloom, contact = this.contact.picture;
+    const key = contact ? `${contact.width}x${contact.height}` : null;
+    if (bloom.over && bloom.overFor === contact && bloom.overKey === key) return bloom.over;
+    bloom.over?.dispose();
+    bloom.over = new THREE.WebGLRenderTarget(contact.width, contact.height, { type: THREE.HalfFloatType, depthBuffer: true, stencilBuffer: true, depthTexture: contact.depthTexture });
+    bloom.overFor = contact;
+    bloom.overKey = key;
+    return bloom.over;
+  }
+
+  bloomPass(size = null) {
     const bloom = this.bloom;
-    const width = Math.max(2, this.width), height = Math.max(2, this.height);
+    const width = Math.max(2, size ? size.width : this.width), height = Math.max(2, size ? size.height : this.height);
     if (!bloom.pass) {
       bloom.picture = new THREE.WebGLRenderTarget(width, height, { type: THREE.HalfFloatType });
       bloom.pass = new UnrealBloomPass(new THREE.Vector2(width, height), bloom.strength, bloom.radius, bloom.floor);
@@ -250,9 +278,17 @@ export class Finish {
       this.ready.contact = true;
     }
     if (this.bloom.strength > 0 && this.sources.size) {
-      const pass = this.bloomPass();
-      this.redraw(scene, camera, this.bloom.picture, GLOW, (object) => (this.shines(object) ? true : object.isMesh && solid(object.material) ? this.dark.for(object.material) : null), 0x000000, 0);
-      pass.render(renderer, null, this.bloom.picture, 0, false);
+      if (this.ready.contact && this.bloom.shared) {
+        // The solid parts' depth is in the contact picture: the marked things alone are drawn, against it.
+        const over = this.overContact();
+        const pass = this.bloomPass(over);
+        this.redraw(scene, camera, over, GLOW, (object) => (this.shines(object) ? true : null), 0x000000, 0, true);
+        pass.render(renderer, null, over, 0, false);
+      } else {
+        const pass = this.bloomPass();
+        this.redraw(scene, camera, this.bloom.picture, GLOW, (object) => (this.shines(object) ? true : object.isMesh && solid(object.material) ? this.dark.for(object.material) : null), 0x000000, 0);
+        pass.render(renderer, null, this.bloom.picture, 0, false);
+      }
       this.ready.bloom = true;
     }
     renderer.setRenderTarget(null);
@@ -285,6 +321,7 @@ export class Finish {
     this.contact.picture?.depthTexture?.dispose();
     this.bloom.pass?.dispose();
     this.bloom.picture?.dispose();
+    this.bloom.over?.dispose();
     this.add?.material.dispose();
     this.add?.dispose();
   }

@@ -1,0 +1,299 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6U5Z": {
+   "entry": "6U5Z",
+   "title": "Cryo-EM structure of E. coli LonA S679A",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.5",
+   "left_out": [],
+   "whole": {
+    "atoms": 24606,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     15.8,
+     11.9,
+     10.1
+    ],
+    "farthest_nm": [
+     14.6,
+     13.9,
+     10.7
+    ],
+    "middle_98_percent_nm": [
+     12.6,
+     11.0,
+     8.7
+    ],
+    "radius_of_gyration_nm": 4.97
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      -3.6,
+      -2.94,
+      0.08
+     ],
+     "axes": [
+      [
+       0.7783,
+       -0.1919,
+       0.5978
+      ],
+      [
+       -0.6023,
+       0.0411,
+       0.7972
+      ],
+      [
+       -0.1776,
+       -0.9805,
+       -0.0836
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      -3.63,
+      0.19,
+      1.31
+     ],
+     "axes": [
+      [
+       0.5984,
+       -0.3052,
+       0.7408
+      ],
+      [
+       -0.2692,
+       0.7943,
+       0.5447
+      ],
+      [
+       -0.7546,
+       -0.5253,
+       0.3932
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    },
+    {
+     "chain": "C",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      -1.47,
+      2.75,
+      0.72
+     ],
+     "axes": [
+      [
+       0.4482,
+       -0.1907,
+       0.8734
+      ],
+      [
+       0.3666,
+       0.9303,
+       0.015
+      ],
+      [
+       -0.8153,
+       0.3134,
+       0.4868
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    },
+    {
+     "chain": "D",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      1.59,
+      2.75,
+      -0.68
+     ],
+     "axes": [
+      [
+       0.4138,
+       0.0537,
+       0.9088
+      ],
+      [
+       0.844,
+       0.3517,
+       -0.405
+      ],
+      [
+       -0.3413,
+       0.9346,
+       0.1002
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    },
+    {
+     "chain": "E",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      3.63,
+      0.18,
+      -1.34
+     ],
+     "axes": [
+      [
+       0.5325,
+       0.2467,
+       0.8097
+      ],
+      [
+       0.7766,
+       -0.5229,
+       -0.3514
+      ],
+      [
+       0.3367,
+       0.8159,
+       -0.4701
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    },
+    {
+     "chain": "F",
+     "entity": "1",
+     "description": "Lon protease",
+     "atoms": 4101,
+     "centre_nm": [
+      3.48,
+      -2.93,
+      -0.09
+     ],
+     "axes": [
+      [
+       0.7253,
+       0.2496,
+       0.6416
+      ],
+      [
+       -0.1934,
+       0.9683,
+       -0.1581
+      ],
+      [
+       -0.6608,
+       -0.0094,
+       0.7505
+      ]
+     ],
+     "across_nm": [
+      11.2,
+      6.3,
+      4.4
+     ],
+     "farthest_nm": [
+      10.4,
+      6.9,
+      5.3
+     ],
+     "radius_of_gyration_nm": 3.03
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Lon protease",
+     "copies": 6,
+     "sequence_length": 784,
+     "residues_modelled_per_copy": 529.0,
+     "modelled_share": 0.675,
+     "atoms_per_modelled_residue": 7.75
+    }
+   ]
+  }
+ }
+}

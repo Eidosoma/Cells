@@ -1,0 +1,24 @@
+{
+ "format": "cells.experiment_summary@1",
+ "note": "A made-up experiment summary with invented numbers, in the shape the viewer's chart reads (schema/RUN_VIEW.md, \"A sweep's chart\"). Its arms are named after the synthetic world's runs that tools/make_run_fixture.py writes (run-world/), so that the adapter joins three of them to a run and leaves one without. Nothing here was run or measured.",
+ "experiment": "synthetic-world",
+ "sweeps": [
+  {
+   "id": "coupling",
+   "label": "Made-up sweep over a coupling",
+   "plain": "Invented numbers for the viewer's tests: four arms over a coupling, two readouts each, and a made-up reference.",
+   "parameter": { "id": "g", "label": "Coupling", "unit": "made-up unit" },
+   "readouts": [
+    { "id": "first", "label": "Amount in the first cell", "unit": "mM" },
+    { "id": "second", "label": "Amount in the second cell", "unit": "mM" }
+   ],
+   "reference": { "label": "the made-up reference" },
+   "arms": [
+    { "arm": "secreting", "parameter": 0.5, "readouts": { "first": 6.2, "second": 8.8 }, "reference": { "first": 6.25, "second": 8.75 } },
+    { "arm": "viewed", "parameter": 2, "readouts": { "first": 7.1, "second": 7.9 }, "reference": { "first": 7.14, "second": 7.86 } },
+    { "arm": "retiring", "parameter": 8, "readouts": { "first": 7.4, "second": 7.6 } },
+    { "arm": "not-run", "parameter": 32, "readouts": { "first": 7.5, "second": 7.5 }, "reference": { "first": 7.5, "second": 7.5 } }
+   ]
+  }
+ ]
+}

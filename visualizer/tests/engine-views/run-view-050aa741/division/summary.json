@@ -1,0 +1,233 @@
+{
+  "active_cells": 3,
+  "boundary": "held chemical/electrical reservoirs",
+  "calcium_pump_law": "ca_atp_mass_action_positive@1",
+  "capacity": 3,
+  "channel_laws": {
+    "kir_0": "kir2p1_mh2@1",
+    "kir_0_d1": "kir2p1_mh2@1",
+    "kir_0_d2": "kir2p1_mh2@1",
+    "nav_0": "nav1p2_m3h_regularized@1",
+    "nav_0_d1": "nav1p2_m3h_regularized@1",
+    "nav_0_d2": "nav1p2_m3h_regularized@1"
+  },
+  "closure_law": "resolved_capacitor_components_current_continuity@1",
+  "composition": {
+    "inner_model": "resolved_pump_tissue@3",
+    "model": "resolved_pump_composite@1",
+    "operators": [
+      "membrane_entity_state@1",
+      "isopotential_partition@1"
+    ]
+  },
+  "composition_status": "development composition: integration grants no acceptance; judged status only from a registered protocol for this composition",
+  "end_time": 0.004,
+  "executed_steps": 4,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "gate_integrator": "exponential_mean_rate_linear_target_gates@1",
+  "global_step_index": 4,
+  "inner_model": "resolved_pump_tissue@3",
+  "junction_heat_booking": "explicit_tableau",
+  "junction_law": "junction_voltage_relaxation@1",
+  "lineage": [
+    {
+      "birth_s": 0.0,
+      "carrier_id": "cell_0",
+      "death_s": 0.002,
+      "kind": "founder",
+      "slot": "cell_0",
+      "successors": [
+        "c1",
+        "c2"
+      ]
+    },
+    {
+      "birth_s": 0.002,
+      "carrier_id": "c1",
+      "death_s": null,
+      "division": "first",
+      "kind": "daughter",
+      "parent_carrier": "cell_0",
+      "route": "division",
+      "sibling": "c2",
+      "slot": "d1",
+      "successors": [],
+      "volume_fraction": 0.5
+    },
+    {
+      "birth_s": 0.002,
+      "carrier_id": "c2",
+      "death_s": null,
+      "division": "first",
+      "kind": "daughter",
+      "parent_carrier": "cell_0",
+      "route": "division",
+      "sibling": "c1",
+      "slot": "d2",
+      "successors": [],
+      "volume_fraction": 0.5
+    }
+  ],
+  "max_balance_error_fmol": 3.3881317890172014e-21,
+  "max_capacitor_charge_error_C": 2.0194839173657902e-28,
+  "max_electrode_charge_error_C": 2.0194839173657902e-28,
+  "max_electrode_work_error_pJ": 0.0,
+  "max_energy_balance_error_pJ": 2.1950009135120197e-11,
+  "max_energy_balance_relative": 2.9604721440938204e-08,
+  "max_extracellular_balance_error_fmol": 3.3881317890172014e-21,
+  "max_global_balance_error_fmol": 0.0,
+  "max_global_charge_bound_ratio": 0.0006725616701123271,
+  "max_global_charge_error_C": 2.0194839173657902e-28,
+  "max_membrane_area_balance_error_m2": 0.0,
+  "max_membrane_capacitance_balance_error_F": 0.0,
+  "max_metabolic_work_error_pJ": 0.0,
+  "max_partition_area_error_m2": 0.0,
+  "max_partition_capacitance_error_F": 0.0,
+  "max_partition_material_error_fmol": 0.0,
+  "max_partition_units_error": 0.0,
+  "max_population_abundance_balance_error": 0.0,
+  "max_reservoir_work_error_pJ": 5.421010862427522e-20,
+  "membrane_populations": {
+    "kir_0": {
+      "catalogue": null,
+      "functional_unit": "kir",
+      "reference_density_per_m2": 10000000000000.0
+    },
+    "kir_0_d1": {
+      "catalogue": null,
+      "functional_unit": "kir",
+      "reference_density_per_m2": 10000000000000.0
+    },
+    "kir_0_d2": {
+      "catalogue": null,
+      "functional_unit": "kir",
+      "reference_density_per_m2": 10000000000000.0
+    },
+    "nav_0": {
+      "catalogue": null,
+      "functional_unit": "nav",
+      "reference_density_per_m2": 10000000000000.0
+    },
+    "nav_0_d1": {
+      "catalogue": null,
+      "functional_unit": "nav",
+      "reference_density_per_m2": 10000000000000.0
+    },
+    "nav_0_d2": {
+      "catalogue": null,
+      "functional_unit": "nav",
+      "reference_density_per_m2": 10000000000000.0
+    }
+  },
+  "membrane_state_law": "membrane_entity_state@1",
+  "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
+  "model": "resolved_pump_composite@1",
+  "observation_scope": "accepted integration boundaries only",
+  "operator_steps": {
+    "isopotential_partition@1": null,
+    "membrane_entity_state@1": null
+  },
+  "operators": [
+    "membrane_entity_state@1",
+    "isopotential_partition@1"
+  ],
+  "partition_divisions": {
+    "first": {
+      "area_fractions": {
+        "membrane_0": 0.5
+      },
+      "daughters": [
+        "d1",
+        "d2"
+      ],
+      "mismatch_carriers": {},
+      "parent": "cell_0",
+      "volume_fraction": 0.5
+    }
+  },
+  "partition_history_totals": {
+    "channel_dissipated_energy_pJ": {
+      "live": 8.548135656092173e-06,
+      "record": 8.49202552028714e-06,
+      "total": 1.7040161176379314e-05
+    },
+    "channel_transferred": {
+      "live": 1.0049786188614054e-05,
+      "record": 1.0019345294617795e-05,
+      "total": 2.0069131483231848e-05
+    },
+    "junction_dissipated_energy_pJ": {
+      "live": 0.0,
+      "record": 0.0,
+      "total": 0.0
+    },
+    "junction_transferred": {
+      "live": 0.0,
+      "record": 0.0,
+      "total": 0.0
+    },
+    "membrane_dissipated_energy_pJ": {
+      "live": 0.000251595712292403,
+      "record": 0.00025172228280888033,
+      "total": 0.0005033179951012834
+    },
+    "membrane_transferred": {
+      "live": -1.5260290496660123e-05,
+      "record": -1.5265250673346023e-05,
+      "total": -3.052554117000615e-05
+    }
+  },
+  "partition_law": "isopotential_partition@1",
+  "pump_law": "nak_atp_mass_action_positive@1",
+  "species_ids": [
+    "Na",
+    "K",
+    "M",
+    "P"
+  ],
+  "splitting": "events_then_symmetric_operator_halves@1",
+  "start_time": 0.0,
+  "state_fields": [
+    "amount_increment",
+    "extracellular_amount_increment",
+    "membrane_transferred",
+    "junction_transferred",
+    "face_transferred",
+    "reservoir_supplied",
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "electrode_charge_transferred_C",
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "channel_gate",
+    "channel_transferred",
+    "channel_dissipated_energy_pJ",
+    "junction_gate",
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+    "membrane_area_increment_m2",
+    "membrane_capacitance_increment_F",
+    "population_abundance_increment",
+    "division_applied",
+    "partition_moved_fmol",
+    "partition_area_moved_m2",
+    "partition_capacitance_moved_F",
+    "partition_units_moved",
+    "partition_retired_membrane_transferred_fmol",
+    "partition_retired_membrane_heat_pJ",
+    "partition_retired_junction_transferred_fmol",
+    "partition_retired_junction_heat_pJ",
+    "partition_retired_channel_transferred_fmol",
+    "partition_retired_channel_heat_pJ",
+    "partition_image_charge_C",
+    "partition_work_pJ",
+    "partition_energy_magnitude_pJ"
+  ],
+  "status": "complete",
+  "time_integrator": "imex_ars222_face_electromigration@1"
+}

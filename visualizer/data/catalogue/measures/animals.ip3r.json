@@ -1,0 +1,221 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "6DQJ": {
+   "entry": "6DQJ",
+   "title": "Human type 3 1,4,5-inositol trisphosphate receptor in a ligand-free state",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.49",
+   "left_out": [],
+   "whole": {
+    "atoms": 138473,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     21.6,
+     21.6,
+     17.4
+    ],
+    "farthest_nm": [
+     23.8,
+     23.8,
+     18.1
+    ],
+    "middle_98_percent_nm": [
+     20.5,
+     20.5,
+     15.8
+    ],
+    "radius_of_gyration_nm": 7.87
+   },
+   "parts": {},
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "atoms": 34618,
+     "centre_nm": [
+      0.16,
+      5.48,
+      0.0
+     ],
+     "axes": [
+      [
+       0.1929,
+       -0.4229,
+       0.8854
+      ],
+      [
+       0.8709,
+       0.4895,
+       0.0441
+      ],
+      [
+       -0.4521,
+       0.7626,
+       0.4627
+      ]
+     ],
+     "across_nm": [
+      18.9,
+      13.3,
+      10.3
+     ],
+     "farthest_nm": [
+      17.8,
+      16.2,
+      11.0
+     ],
+     "radius_of_gyration_nm": 5.65
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "atoms": 34619,
+     "centre_nm": [
+      -5.48,
+      0.16,
+      0.0
+     ],
+     "axes": [
+      [
+       0.4225,
+       0.1926,
+       0.8857
+      ],
+      [
+       -0.4894,
+       0.8709,
+       0.0441
+      ],
+      [
+       -0.7629,
+       -0.4521,
+       0.4622
+      ]
+     ],
+     "across_nm": [
+      18.9,
+      13.3,
+      10.3
+     ],
+     "farthest_nm": [
+      17.8,
+      16.2,
+      11.0
+     ],
+     "radius_of_gyration_nm": 5.65
+    },
+    {
+     "chain": "C",
+     "entity": "1",
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "atoms": 34618,
+     "centre_nm": [
+      -0.16,
+      -5.48,
+      0.0
+     ],
+     "axes": [
+      [
+       -0.1927,
+       0.4223,
+       0.8857
+      ],
+      [
+       0.8709,
+       0.4894,
+       -0.0439
+      ],
+      [
+       -0.452,
+       0.763,
+       -0.4621
+      ]
+     ],
+     "across_nm": [
+      18.9,
+      13.3,
+      10.3
+     ],
+     "farthest_nm": [
+      17.8,
+      16.2,
+      11.0
+     ],
+     "radius_of_gyration_nm": 5.65
+    },
+    {
+     "chain": "D",
+     "entity": "1",
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "atoms": 34618,
+     "centre_nm": [
+      5.48,
+      -0.16,
+      0.0
+     ],
+     "axes": [
+      [
+       -0.4224,
+       -0.1929,
+       0.8856
+      ],
+      [
+       -0.4895,
+       0.8709,
+       -0.0438
+      ],
+      [
+       -0.7629,
+       -0.452,
+       -0.4623
+      ]
+     ],
+     "across_nm": [
+      18.9,
+      13.3,
+      10.3
+     ],
+     "farthest_nm": [
+      17.8,
+      16.2,
+      11.0
+     ],
+     "radius_of_gyration_nm": 5.65
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Inositol 1,4,5-trisphosphate receptor type 3",
+     "copies": 4,
+     "sequence_length": 2671,
+     "residues_modelled_per_copy": 2181.0,
+     "modelled_share": 0.817,
+     "atoms_per_modelled_residue": 15.87
+    }
+   ]
+  }
+ }
+}

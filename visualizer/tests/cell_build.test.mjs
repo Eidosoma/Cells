@@ -61,6 +61,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { buildCell, buildMolecules, buildTissue } from "../src/lenses/cell_parts.js";
 import { CellLens } from "../src/lenses/cell.js";
+import { cellTypeOf } from "../src/scene/entries.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const NUMBERS = path.join(ROOT, "tests", "cell-build", "numbers.json");
@@ -294,7 +295,7 @@ class Keeper {
 /** The lens as far as its plan needs it, for one species of the scene (cell.js: plan and draws). */
 function planned(species) {
   const lens = {
-    species, sizeMode: "schematic",
+    species, cellType: cellTypeOf(species), sizeMode: "schematic", // its default cell type, as the lens shows it first
     model: { ofKind: (kind) => (kind === "capability" ? capabilities : []), get: (id) => scene.entities.find((item) => item.id === id) || null, raw: scene },
     capabilityByPart: new Map(capabilities.map((entity) => [entity.part, entity])),
     leftOut: new Set((scene.left_out || []).map((item) => item.part).filter(Boolean)),
@@ -343,7 +344,8 @@ function buildAll() {
 function buildSpecies(species, builds) {
   {
     const lens = planned(species);
-    const cell = { shape: lens.levels.cell.shape, parts: species.cell.parts || {}, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: notesOf(lens.levels.cell) };
+    // As the lens builds it: the parts of the cell type shown, the species' default (schema/CELL_TYPES.md).
+    const cell = { shape: lens.levels.cell.shape, parts: cellTypeOf(species).parts || {}, has: lens.draws, neighbours: Boolean(lens.levels.tissue), notes: notesOf(lens.levels.cell) };
     let first = null;
     for (const mode of lens.modes) {
       const keep = new Keeper(lens);

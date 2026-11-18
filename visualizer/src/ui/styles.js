@@ -46,7 +46,6 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .bar > * { pointer-events: auto; }
 .brand { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
 .brand b { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
-.brand span { font-family: var(--font-display); font-size: 14px; font-weight: 500; color: var(--muted); }
 .switch { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line); }
 .switch button { padding: 6px 14px; border-radius: 999px; font-weight: 500; color: var(--muted); }
 .switch button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
@@ -57,7 +56,10 @@ canvas { display: block; width: 100%; height: 100%; outline-offset: -4px; }
 .pill-button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 
 /* ---------------------------------------------------------------- cards */
-.card { background: color-mix(in srgb, var(--bg-raised) 94%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; backdrop-filter: blur(8px); }
+/* A card has no backdrop blur: over a picture that is drawn anew every frame the blur is made anew every frame too. Measured on the
+   project's graphics card (16 November 2026), it halved the frames a second while a card lay over the moving picture, for a backdrop
+   that showed through by 6%. The card is a little more opaque instead. */
+.card { background: color-mix(in srgb, var(--bg-raised) 96%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); border-radius: 12px; }
 /* A card or list that scrolls inside itself shows that it does: a shade along an edge that has more beyond it.
    The covers scroll with the content and hide the shade where nothing is beyond (no script, both themes). */
 cells-legend.card, .view.card, .panel-body, .tl-speeds, .index-list, .species-list {
@@ -108,16 +110,19 @@ cells-legend { position: absolute; left: max(16px, env(safe-area-inset-left, 0px
 /* ---------------------------------------------------------------- panel */
 cells-panel { position: absolute; top: 64px; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(360px, calc(100% - 32px)); display: flex; flex-direction: column; overflow: hidden; }
 .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; padding: 16px 16px 10px; }
+/* A long word (an identifier, a file's path) wraps inside the panel: unwrapped, it widened the head past the close
+   button and the body past the panel's edge, where the rest was cut. */
+.panel-head > div { min-width: 0; }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
-.panel-head h2 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; font-weight: 600; text-wrap: balance; margin-top: 2px; }
+.panel-head h2 { font-family: var(--font-display); font-size: 21px; line-height: 1.2; font-weight: 600; text-wrap: balance; margin-top: 2px; overflow-wrap: anywhere; }
 .icon-button { width: 30px; height: 30px; flex: none; border-radius: 50%; font-size: 20px; line-height: 1; color: var(--muted); }
 .icon-button:hover { background: color-mix(in srgb, var(--fg) 9%, transparent); color: var(--fg); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 500; box-shadow: inset 0 0 0 1px var(--line); }
 .chip-plain { color: var(--muted); }
-.panel-body { overflow-y: auto; padding: 0 16px 18px; display: grid; gap: 12px; align-content: start; min-height: 0; }
-.panel-plain { font-size: 15px; line-height: 1.5; }
-.panel-note { font-size: 13px; color: var(--muted); padding-left: 10px; border-left: 2px solid var(--line); }
+.panel-body { overflow-y: auto; padding: 0 16px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-height: 0; }
+.panel-plain { font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.panel-note { font-size: 13px; color: var(--muted); padding-left: 10px; border-left: 2px solid var(--line); overflow-wrap: anywhere; }
 .panel-detail { font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); line-height: 1.5; overflow-wrap: anywhere; }
 .panel-body h3 { font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
 .panel-body h4 { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
@@ -207,6 +212,41 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .run-row { display: grid; gap: 1px; text-align: left; padding: 5px 8px; border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); }
 .run-row + .run-row { margin-top: 3px; }
 .run-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+/* A sweep's chart in the experiment's card (replay/sweep.js): each arm a column of points, a button over it. */
+.sweep { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-top: 8px; min-width: 0; }
+.sweep-numbers { overflow-x: auto; }
+.view.run-card { grid-template-columns: minmax(0, 1fr); }
+.sweep-choose { display: grid; gap: 2px; min-width: 0; }
+.sweep-choose select { max-width: 100%; }
+.sweep-card { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 104px; width: 280px; padding: 4px 12px 10px; max-height: calc(100% - 104px - 150px); overflow-y: auto; }
+.has-panel .sweep-card { display: none; }
+.sweep-chart { position: relative; min-width: 0; width: 100%; }
+.sweep-svg { display: block; width: 100%; max-width: 100%; height: auto; overflow: visible; }
+.sweep-axis { stroke: var(--line); stroke-width: 1; }
+.sweep-tick { font-size: 8.5px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.sweep-axis-label { font-size: 9px; fill: var(--muted); }
+.sweep-shown { fill: color-mix(in srgb, var(--accent) 16%, transparent); }
+.sweep-line polyline { stroke-width: 1.4; opacity: 0.7; }
+.sweep-line-0 { color: var(--accent); stroke: var(--accent); fill: var(--accent); }
+.sweep-line-1 { color: #d9822b; stroke: #d9822b; fill: #d9822b; }
+.sweep-line-2 { color: #3b9c6e; stroke: #3b9c6e; fill: #3b9c6e; }
+.sweep-line-3 { color: #8a63c9; stroke: #8a63c9; fill: #8a63c9; }
+.sweep-line polyline { fill: none; }
+.sweep-point.is-shown { stroke: var(--fg); stroke-width: 1.4; }
+.sweep-ref { fill: none; stroke-width: 1.2; stroke-dasharray: 2 1.6; }
+.sweep-arm { position: absolute; width: 22px; border-radius: 6px; background: transparent; cursor: pointer; padding: 0; }
+.sweep-arm:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.sweep-arm:disabled { cursor: default; }
+.sweep-arm[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--accent); }
+.sweep-key { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; color: var(--muted); margin: 0; }
+.sweep-key-item { display: inline-flex; align-items: center; gap: 4px; }
+.sweep-swatch { display: inline-block; width: 12px; height: 3px; border-radius: 2px; background: currentColor; }
+.sweep-ring { width: 9px; height: 9px; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1.2px var(--muted); }
+.sweep-note { font-size: 11.5px; color: var(--muted); }
+.sweep-table { border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; width: 100%; }
+.sweep-table th, .sweep-table td { text-align: right; padding: 2px 4px; border-bottom: 1px solid var(--line); }
+.sweep-table th[scope="row"], .sweep-table thead th:first-child { text-align: left; }
+.sweep-table tr.is-shown { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .run-row[aria-pressed="true"] { background: color-mix(in srgb, var(--fg) 10%, transparent); box-shadow: inset 0 0 0 1.5px var(--fg); }
 .run-name { font-family: var(--font-mono); font-size: 11.5px; overflow-wrap: anywhere; }
 .run-sub { font-size: 11.5px; color: var(--muted); }
@@ -228,9 +268,17 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .exp-name { font-family: var(--font-display); font-weight: 600; font-size: 13px; }
 .exp-found { display: flex; flex-wrap: wrap; gap: 3px 10px; color: var(--muted); }
 .exp-found .fact { font-size: 11.5px; font-weight: 400; }
+/* While a part of the example is shown: its short name under the example's row, a corner mark joining them. */
+.exp-within { position: relative; padding-left: 15px; font-size: 11.5px; font-weight: 600; color: var(--fg); }
+.exp-within-chosen { margin: 4px 0 0 2px; }
+.exp-within::before { content: ""; position: absolute; left: 3px; top: 1px; width: 7px; height: 7px; border-left: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); }
 .found { display: grid; gap: 4px; }
 .found-facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .run-ended { display: flex; align-items: center; gap: 6px; }
+/* Under a scale, whose its quantity is (one an experiment states beside its run); and the line that says an experiment's runs
+   state one quantity in other units (two forms of a model): by the runs, and by the sweep's chart. */
+.legend-scale-said { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.run-units { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 .legend-keys { padding: 2px 8px 4px; font-size: 12px; }
 .legend-keys summary { color: var(--muted); padding: 2px 0; }
 .legend-key-note { color: var(--muted); }
@@ -325,6 +373,16 @@ cells-timeline { position: absolute; left: 268px; right: 244px; bottom: calc(16p
 .tl-fill { width: 0; height: 100%; background: var(--accent); }
 .tl-marks { position: absolute; left: 0; top: 7px; width: 100%; height: 24px; overflow: visible; pointer-events: none; }
 .tl-tick { stroke: var(--muted); stroke-width: 1; vector-effect: non-scaling-stroke; }
+/* Stops (a binding's events with words, src/ui/timeline.js): a mark to press for each, and the previous and next beside play. */
+cells-timeline.has-stops { grid-template-columns: auto auto auto minmax(0, 1fr) auto; }
+.tl-step { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); }
+.tl-step:hover { border-color: var(--accent); }
+.tl-step svg { width: 16px; height: 16px; fill: currentColor; }
+.tl-stops { position: absolute; inset: 0; pointer-events: none; }
+.tl-stop { position: absolute; top: 3px; width: 12px; height: 26px; margin-left: -6px; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer; }
+.tl-stop::before { content: ""; position: absolute; left: 5px; top: 2px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--accent); }
+.tl-stop:hover::before, .tl-stop:focus-visible::before { left: 3px; width: 6px; }
+.tl-stop:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
 .tl-judged { stroke: var(--fg); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tl-invalid { fill: var(--st-unstated); }
 .tl-flag { position: absolute; top: -3px; transform: translateX(-50%); padding: 0 4px; border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em; color: var(--fg); background: color-mix(in srgb, var(--bg-raised) 90%, transparent); pointer-events: none; white-space: nowrap; }
@@ -405,6 +463,13 @@ cells-trace { display: grid; gap: 4px; }
 .species-option-organism { grid-column: 1 / -1; grid-row: 2; font-size: 12px; font-style: italic; line-height: 1.3; color: var(--muted); overflow-wrap: break-word; }
 .species-option-state { grid-column: 2; grid-row: 1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
 .species-option-state[data-state="proposed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+/* The switch's other entries (schema/ENTRIES.md): a model system's line names what it is, not an organism; a cell type stands under its species. */
+.species-option-state[data-state="planned"], .species-option-state[data-state="designed"], .species-state[data-state="planned"], .species-state[data-state="designed"] { color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.species-option.is-model .species-option-organism { font-style: normal; }
+.species-option.is-type { padding-left: 22px; }
+.species-option.is-type .species-option-name { font-weight: 500; }
+/* On a narrow window the rail's button stands under the bar, however many rows it takes (the viewer sets --bar-height). */
+@media (max-width: 760px) { .frame .rail-toggle { top: max(68px, calc(var(--bar-height, 0px) + 8px)); } .frame .rail { top: max(118px, calc(var(--bar-height, 0px) + 58px)); } }
 .species-option.is-active { background: color-mix(in srgb, var(--fg) 9%, transparent); }
 /* The species in view carries a tick after its name. */
 .species-option[aria-selected="true"] .species-option-name::after { content: ""; display: inline-block; width: 4px; height: 8px; margin: 0 0 1px 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
@@ -421,14 +486,23 @@ cells-trace { display: grid; gap: 4px; }
 .with-species .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .with-species .switch, .with-species .species, .with-species .pill-button { flex: none; }
 .with-species .brand { flex: none; white-space: nowrap; }
-@media (max-width: 1340px) { .with-species .brand span { display: none; } }
-@media (max-width: 1240px) { .with-species .switch .long { display: none; } .with-species .switch .short { display: inline; } }
 @media (max-width: 1180px) { .with-species .stamp { display: none; } }
 /* Where the words are wider than that (more species, or a fallback font), the viewer asks for the same, by measure. */
-.with-species[data-tight="1"] .brand span, .with-species[data-tight="2"] .brand span { display: none; }
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
 .with-species[data-tight="2"] .stamp { display: none; }
+/* A model system shown in the Experiments tab's place: its stamp is shortened clear of the card at the left. On a phone no
+   stamp is shown, and the bar's end holds only the List, which stays whole. */
+@media (min-width: 760px) { .tab-example .bar-end { max-width: calc(100% - 300px); overflow: hidden; } }
+.tab-example .stamp { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* A part of an example shown there (the tissue line): its pictures and their heads reach up to the bar, so the bar stays on
+   one line and the stamp is shortened where the line is short, its first words (the part's standing) kept. A phone shows
+   no stamp and its row of tabs scrolls, as everywhere. */
+@media (min-width: 760px) {
+  .tab-part { flex-wrap: nowrap; }
+  .tab-part .bar-end { flex: 0 1 auto; min-width: 0; max-width: none; overflow: hidden; }
+  .tab-part .switch, .tab-part .brand, .tab-part .pill-button { flex: none; }
+}
 .card-organism { font-size: 12.5px; font-style: italic; margin-top: -3px; }
 /* A species file may hold a long word (a file's name, an identifier): it wraps inside the card. */
 .view-card:not(.run-card) > * { min-width: 0; }
@@ -459,6 +533,10 @@ cells-trace { display: grid; gap: 4px; }
 
 /* ---------------------------------------------------------------- a species' own proteins on shelves */
 .seg.seg-wide button { padding: 5px 4px; font-size: 12px; line-height: 1.2; white-space: normal; text-wrap: balance; }
+.seg.seg-one-row { grid-template-columns: repeat(var(--seg-count, 2), minmax(0, 1fr)); }
+.seg.seg-one-row button { padding: 5px 2px; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* On a phone the card is too narrow for four whole words in a row: two rows of two, none cut. */
+@media (max-width: 560px) { .seg.seg-one-row { grid-template-columns: repeat(min(var(--seg-count, 2), 2), minmax(0, 1fr)); } }
 .card-notice { font-size: 12px; line-height: 1.4; padding: 6px 9px; border-radius: 7px; border-left: 2px solid var(--ghost); background: color-mix(in srgb, var(--fg) 6%, transparent); overflow-wrap: anywhere; }
 .card-open { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 5px 5px 5px 9px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); }
 .card-open-name { min-width: 0; overflow-wrap: anywhere; line-height: 1.3; }
@@ -491,7 +569,7 @@ cells-trace { display: grid; gap: 4px; }
   .card-open { font-size: 12px; }
   .card-marks { display: none; }
   .seg.seg-wide button { padding: 4px 3px; font-size: 11.5px; }
-  .brand span, .stamp { display: none; }
+  .stamp { display: none; }
   .bar { gap: 8px 10px; padding-block: 8px; }
   /* A thing to press is at least 44 px in its smaller dimension on a phone. The names on the picture are
      the exception: they stand for their parts, and the List gives every part as a row to press. */
@@ -586,4 +664,188 @@ cells-trace { display: grid; gap: 4px; }
   .label, .hint, .chevron { transition: none; }
 }
 .is-still .label, .is-still .hint, .is-still .chevron { transition: none; }
+
+/* The protein atlas's own proteins (docs/ATLAS_LOOK.md, decided 16 November 2026): the sides in colour, the two ramps
+   "Colour" offers, the trail with its search, and the map of the stack. Colours are the page's tokens (--own-*). */
+.swatch-own-side-outside, .swatch-own-side-in, .swatch-own-side-inside { border-radius: 0; background: linear-gradient(var(--bio-membrane), var(--bio-membrane)) no-repeat; }
+.swatch-own-side-outside { background-position: 0 8px; background-size: 100% 3px; }
+.swatch-own-side-in { background-position: 0 4px; background-size: 100% 4px; }
+.swatch-own-side-inside { background-position: 0 1px; background-size: 100% 3px; }
+.swatch-own-side-outside::before, .swatch-own-side-in::before, .swatch-own-side-inside::before { content: ""; position: absolute; left: 2px; width: 8px; }
+.swatch-own-side-outside::before { top: 0; height: 7px; border-radius: 50%; background: var(--own-outside); }
+.swatch-own-side-in::before { left: 3px; width: 6px; top: 0; height: 12px; border-radius: 3px; background: var(--own-in); }
+.swatch-own-side-inside::before { top: 5px; height: 7px; border-radius: 50%; background: var(--own-inside); }
+.swatch-own-basis-1, .swatch-own-basis-2, .swatch-own-basis-3, .swatch-own-mark-1, .swatch-own-mark-2, .swatch-own-mark-3 { border-radius: 50%; transform: scale(.85); }
+.swatch-own-basis-1 { background: var(--own-basis-1); } .swatch-own-basis-2 { background: var(--own-basis-2); } .swatch-own-basis-3 { background: var(--own-basis-3); }
+.swatch-own-mark-1 { background: var(--own-mark-1); } .swatch-own-mark-2 { background: var(--own-mark-2); } .swatch-own-mark-3 { background: var(--own-mark-3); }
+/* "Colour" above its select, so that the select has the legend's whole width and its longest choice stands whole beside its arrow. */
+.legend-colour { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 4px 6px 2px; }
+.legend-colour .run-select { min-width: 0; width: 100%; padding-right: 24px; text-overflow: ellipsis; }
+.legend-colour-title { margin-top: 4px; }
+.atlas-trail { position: absolute; top: 64px; left: 324px; right: max(16px, env(safe-area-inset-right, 0px)); max-width: 920px; display: flex; align-items: center; gap: 10px; padding: 5px 6px; z-index: 4; }
+.has-panel .atlas-trail { right: calc(min(360px, 100% - 32px) + 32px); }
+.has-panel .atlas-findbox { flex-basis: 180px; }
+.atlas-findbox { position: relative; flex: 0 0 248px; min-width: 0; }
+.atlas-find { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); }
+.atlas-find:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.atlas-results { position: absolute; top: calc(100% + 6px); left: 0; width: 380px; max-width: calc(100vw - 32px); max-height: min(60vh, 520px); overflow-y: auto; padding: 6px; display: grid; gap: 6px; background: var(--bg-raised); border-radius: 10px; box-shadow: 0 0 0 1px var(--line), 0 12px 30px -16px rgb(0 0 0 / .5); z-index: 6; }
+.atlas-results h4 { margin: 4px 6px 2px; font: 600 10.5px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.atlas-results > * { min-width: 0; }
+.atlas-hit { display: grid; grid-template-columns: 14px minmax(0, 1fr); column-gap: 8px; width: 100%; min-width: 0; box-sizing: border-box; white-space: normal; text-align: left; padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--fg); font: inherit; font-size: 12.5px; cursor: pointer; }
+.atlas-hit:hover, .atlas-hit:focus-visible { background: color-mix(in srgb, var(--fg) 7%, transparent); outline: none; }
+.atlas-hit .swatch { grid-row: span 2; margin-top: 2px; }
+.atlas-hit-name { overflow-wrap: anywhere; }
+.atlas-hit-where { color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.atlas-note { margin: 4px 8px; font-size: 12px; color: var(--muted); }
+.atlas-where { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1 1 auto; }
+.atlas-back { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 15px; cursor: pointer; }
+.atlas-back:disabled { opacity: .35; cursor: default; }
+.atlas-crumbs { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; min-width: 0; flex: 1 1 auto; overflow: hidden; font-size: 12.5px; white-space: nowrap; }
+.atlas-crumbs li { display: flex; align-items: center; gap: 5px; flex: none; }
+.atlas-crumbs li[hidden] { display: none; }
+.atlas-crumbs li + li::before { content: "\\203A"; color: var(--muted); margin: 0 5px; }
+.atlas-crumbs li.is-here { flex: none; }
+.atlas-crumbs.is-tight li.is-here { flex: 0 1 auto; min-width: 9ch; }
+.atlas-crumb { display: inline-flex; align-items: center; font: inherit; color: var(--accent); background: none; border: 0; padding: 4px 2px; cursor: pointer; max-width: 24ch; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.atlas-crumb > span, .is-here .atlas-crumb { display: block; overflow: hidden; text-overflow: ellipsis; line-height: 22px; }
+.is-here .atlas-crumb { max-width: 34ch; }
+.atlas-more .atlas-crumb { color: var(--muted); cursor: default; }
+.is-here .atlas-crumb { color: var(--fg); font-weight: 600; cursor: default; }
+.is-opening .atlas-crumb { color: var(--muted); font-style: italic; cursor: default; }
+.atlas-find-open { display: none; }
+/* The map is a column of bars at the window's right edge; it opens to the shelves' names under the pointer or the keyboard. */
+.atlas-map { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 56px; box-sizing: border-box; padding: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; overflow: hidden; z-index: 3; }
+.atlas-map > * { min-width: 0; }
+.atlas-map:hover, .atlas-map:focus-within { width: 248px; }
+/* Opening it only widens it: every row keeps its height and place, so that a press aimed at a bar lands on its row. */
+.atlas-map:not(:hover):not(:focus-within) .atlas-map-key, .atlas-map:not(:hover):not(:focus-within) .atlas-row-name, .atlas-map:not(:hover):not(:focus-within) .atlas-row-count { visibility: hidden; }
+.atlas-map:not(:hover):not(:focus-within) .atlas-bar { width: 100% !important; }
+.has-panel .atlas-map { right: calc(min(360px, 100% - 32px) + 32px); }
+.atlas-map-title { margin: 0 2px 4px; font: 600 10.5px/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+.atlas-map-key { text-transform: none; letter-spacing: 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.atlas-map-title { overflow: hidden; }
+.atlas-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; gap: 3px 8px; height: 34px; box-sizing: border-box; overflow: hidden; padding: 3px 6px; border: 0; border-radius: 7px; background: transparent; color: var(--fg); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.atlas-row-name, .atlas-row-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atlas-row:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.atlas-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.atlas-row.is-on { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+.atlas-row-count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.atlas-row-open { color: var(--accent); font-weight: 600; }
+.atlas-bar { grid-column: 1 / -1; display: flex; height: 6px; border-radius: 3px; overflow: hidden; }
+.atlas-seg { display: block; height: 100%; }
+.atlas-seg-outside { background: var(--own-outside); } .atlas-seg-in { background: var(--own-in); } .atlas-seg-inside { background: var(--own-inside); }
+.atlas-seg-unknown { background: repeating-linear-gradient(90deg, var(--ghost) 0 2px, transparent 2px 4px); }
+@media (max-width: 760px) {
+  /* On a phone the trail is one row under the bar: the arrow back, the step you are at, and a button that opens the search over it. */
+  .atlas-trail { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); top: 64px; padding: 0 4px; gap: 4px; }
+  .has-panel .atlas-trail { right: max(16px, env(safe-area-inset-right, 0px)); }
+  .atlas-findbox { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); flex: none; }
+  .atlas-trail.is-finding .atlas-findbox { display: block; }
+  .atlas-find { min-height: 44px; font-size: 16px; }
+  .atlas-results { width: 100%; max-width: none; max-height: 52vh; }
+  .atlas-back { width: 44px; height: 44px; border: 0; background: transparent; }
+  .atlas-crumbs li:not(.is-here):not(:nth-last-child(2)) { display: none; }
+  .atlas-crumbs li:nth-last-child(2) { max-width: 30%; }
+  .atlas-crumbs li:nth-last-child(2)::before, .atlas-crumbs li:nth-last-child(2) .swatch { display: none; }
+  .atlas-crumbs li:only-child::before { display: none; }
+  .atlas-crumb { min-height: 44px; }
+  .is-here .atlas-crumb, .atlas-more .atlas-crumb { line-height: 44px; }
+  .atlas-results { box-sizing: border-box; }
+  .atlas-find-open { display: block; flex: none; min-height: 44px; padding: 0 12px; border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
+  .atlas-hit { min-height: 44px; }
+  .has-trail .view, .has-trail cells-index { top: 116px; }
+  /* The legend, open, reaches up to the bar: over the trail, which it hides while it is open. */
+  .has-trail cells-legend.is-open { z-index: 5; }
+  .has-trail .view { max-height: calc(100% - 116px - 160px); }
+  .has-trail.has-panel .view-toggle { top: 116px; }
+  .has-trail.has-panel.view-open .view { top: 166px; max-height: calc(100% - var(--sheet, 56%) - 174px); }
+  .atlas-map { right: 8px; left: auto; bottom: auto; top: 172px; width: 46px; padding: 4px; gap: 4px; }
+  .has-panel .atlas-map { display: none; }
+  .atlas-map-title, .atlas-row-name, .atlas-row-count { display: none; }
+  .atlas-row { height: 44px; padding: 4px; align-content: center; }
+  .atlas-bar { width: 100% !important; height: 10px; }
+}
+
+/* ---------------------------------------------------------------- a phone, its second pass (17 November 2026)
+   Below 760 px only: the phone block above also takes a window 760 px wide, and what is added here leaves that window as it was.
+   The picture first: a view's card folds to one line, the trail stays on one line and never cuts a word, the atlas's caveat
+   stands in the legend's sheet, the map of the stack says a shelf's name when a bar is pressed, and the bar keeps to one row.
+   Nothing here lies over the canvas with a backdrop blur (see .card). */
+.atlas-say { display: none; }
+@media (max-width: 759px) {
+  /* The bar on one row. Every switch is at least 44 px wide as well as tall; where the words would still wrap the bar (a model
+     system's longer name, the stand-in font), the viewer squeezes it in steps (viewer.js fitBar, data-squeeze). */
+  .switch button, .bar-end .pill-button { min-width: 44px; }
+  .bar[data-squeeze~="1"] { gap: 6px; }
+  .bar[data-squeeze~="1"] .switch button { padding-inline: 6px; }
+  .bar[data-squeeze~="1"] .bar-end .pill-button { padding-inline: 8px; }
+  .bar[data-squeeze~="2"] .brand b { font-size: 16px; }
+  .bar[data-squeeze~="2"] .switch button { padding-inline: 5px; font-size: 12.5px; }
+  /* The page's name gives way last; it is still read out. */
+  .bar[data-squeeze~="3"] .brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .bar[data-squeeze~="4"] .switch button { padding-inline: 4px; font-size: 12px; }
+  /* Last, where six tabs and the List still do not fit (a 360 px phone, the stand-in font): the tabs' row scrolls sideways inside
+     the bar, the bar keeps to one row and the List stays whole; each cut edge fades (viewer.js fadeTabs), and the tab of the
+     view shown is brought into sight (showPressedTab). */
+  .bar[data-squeeze~="5"] { flex-wrap: nowrap; }
+  .bar[data-squeeze~="5"] .bar-end { flex: none; }
+  .bar[data-squeeze~="5"] .switch { flex: 0 1 auto; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l, 0px), #000 calc(100% - var(--fade-r, 0px)), transparent 100%); }
+  .bar[data-squeeze~="5"] .switch::-webkit-scrollbar { display: none; }
+  .bar[data-squeeze~="5"] .switch button { flex: none; }
+  /* A view's card (the protein atlas, the Laws library, a model system's) folds to one line under the bar, or under the trail;
+     a press opens it over the picture, and opening the legend folds it again (viewer.js). */
+  .card-folds:not(.view-open) .view { display: none; }
+  .card-folds .view-toggle { display: flex; position: absolute; top: max(68px, calc(var(--bar-height, 0px) + 8px)); left: max(16px, env(safe-area-inset-left, 0px)); max-width: calc(100% - 32px); align-items: center; gap: 12px; padding: 0 14px; font-weight: 500; z-index: 4; }
+  .card-folds.has-map .view-toggle { max-width: calc(100% - 96px); }
+  .card-folds .view-toggle > span:first-child { white-space: nowrap; overflow: hidden; }
+  .card-folds.has-trail .view-toggle { top: max(116px, calc(var(--bar-height, 0px) + 56px)); }
+  .card-folds.view-open .view { top: max(118px, calc(var(--bar-height, 0px) + 58px)); max-height: calc(100% - 118px - 96px); z-index: 4; }
+  /* An example's mark stands in the opened card too: the card may cover the mark on the picture. */
+  .card-folds.view-open .view-notice { display: block; margin: 0 0 6px; }
+  .card-folds.has-trail.view-open .view { top: max(166px, calc(var(--bar-height, 0px) + 106px)); max-height: calc(100% - 166px - 96px); }
+  .card-folds.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 126px); }
+  .card-folds.has-trail.has-panel.view-open .view { max-height: calc(100% - var(--sheet, 56%) - 174px); }
+  /* The trail never cuts a word: the steps in its middle give way to "…", then words from a step's end (atlas_nav.js). */
+  .atlas-crumbs li:not(.is-here):not(:nth-last-child(2)):not([hidden]) { display: flex; }
+  .atlas-crumbs li:nth-last-child(2) { max-width: none; }
+  .atlas-crumbs li:nth-last-child(2)::before { display: inline; }
+  .atlas-crumbs li:nth-last-child(2) .swatch { display: inline-block; }
+  .atlas-crumbs li:first-child::before, .atlas-crumbs li.is-lead::before { display: none; }
+  .atlas-crumb, .is-here .atlas-crumb { max-width: none; text-overflow: clip; }
+  /* The atlas's caveat stands at the head of the legend's sheet, not over the picture (viewer.js renderLegend). */
+  .caveat-in-legend .caveat { display: none; }
+  /* Links in a card's or a panel's lists (sources, a protein's databases) are pressed as often as buttons: a line of 44 px. */
+  .view details li a, .item-links a, .sources a { display: inline-block; min-width: 44px; min-height: 44px; line-height: 44px; }
+  /* The hint (drag, zoom, choose) would lie under a panel's sheet. */
+  .has-panel .hint { display: none; }
+  /* The map of the stack: a column of bars 44 px wide that does not open under a pointer; a press on a bar, or the keyboard on
+     it, brings its shelf near and says its name beside it (atlas_nav.js). */
+  .atlas-map, .atlas-map:hover, .atlas-map:focus-within { width: 52px; }
+  .atlas-say { display: flex; align-items: center; position: absolute; right: calc(max(8px, env(safe-area-inset-right, 0px)) + 58px); transform: translateY(-50%); z-index: 4; max-width: calc(100% - 96px); min-height: 36px; margin: 0; padding: 0 12px; border-radius: 8px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 8px 20px -12px rgb(0 0 0 / .45); font-size: 13px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+  .atlas-say[hidden] { display: none; }
+}
+/* The legend's opening words, where a view gives them (on a phone, the protein atlas's caveat). */
+.legend-lead { margin: 0 0 4px; padding: 4px 8px 8px; font-size: 12.5px; line-height: 1.4; color: var(--muted); border-bottom: 1px solid var(--line); }
+
+/* ---------------------------------------------------------------- the origin-of-life view, a phone's third pass (17 November 2026)
+   A view whose picture reaches the page's top edge (the origin view's water and free molecules: lineage.js drawsUnderBar) gives
+   the bar's words a ground at every width: a fade of the page's own ground inside the bar's box, solid behind the words and gone
+   at the bar's foot, so that nothing under the bar is veiled (the names on the picture keep below it). At 94 % the bar's muted
+   words stand at 4.5 : 1 or more over the view's darkest head in pale water, and over white in dark. A painted gradient costs
+   no frame; a backdrop blur halved the frame rate through Vulkan. */
+.bar-ground .bar { background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 94%, transparent) 0, color-mix(in srgb, var(--bg) 94%, transparent) 65%, transparent); }
+@media (max-width: 759px) {
+  /* A model system's card, opened, shows its choices (the composition's form, the similarity), which a phone keeps from other cards:
+     each its name over its select, which takes the card's width and so its words. */
+  .model-card .view .card-marks { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  /* A timeline stands where the hint (drag, pinch, tap) would be, and over it: the hint gives way. */
+  .has-timeline .hint { display: none; }
+  /* Where the folded line and the rail's button would meet, the button steps under the line, and its levels and the opened card
+     under it (viewer.js fitFolded). */
+  .card-folds.rail-under .rail-toggle { top: max(116px, calc(var(--bar-height, 0px) + 56px)); }
+  .card-folds.rail-under .rail, .card-folds.rail-under.view-open .view { top: max(166px, calc(var(--bar-height, 0px) + 106px)); }
+  .card-folds.rail-under.view-open .view { max-height: calc(100% - 166px - 96px); }
+}
 `;

@@ -10,7 +10,11 @@ For each file in data/machines/:
 - an open paper whose numbers alone are taken (`standing: open paper, numbers only`) is
   saved with a MANIFEST that says it is kept for analysis and not redistributed, and each
   term a number is found by (`read.find`) stands in its text. The file holds no sentence of
-  it, and neither does this tool.
+  it, and neither does this tool;
+- each entry of the Protein Data Bank the file takes a value from (`structures`) is saved,
+  under the folder its `pdb` source names, with the title and organisms the file gives, as
+  that folder's MANIFEST records them from each entry's own record; and the PDB's terms are
+  saved where the source says.
 
 It writes nothing, uses the standard library alone, and parses the saved XML itself: the
 downloads are data, never run.
@@ -96,6 +100,22 @@ def check(machine_file, datasets):
             for value in node:
                 yield from reads(value)
 
+    pdb = machine["sources"].get("pdb")
+    if machine.get("structures"):
+        manifest = datasets / (pdb or {}).get("saved", "")
+        if not pdb or not manifest.is_file():
+            problems.append(f"{where}: values from structures, and no saved MANIFEST of them ({(pdb or {}).get('saved')})")
+        else:
+            saved = {item.get("entry"): item for item in json.loads(manifest.read_text(encoding="utf-8")).get("files", [])}
+            for item in machine["structures"]:
+                record = saved.get(item["entry"])
+                if not record or not (manifest.parent / record["name"]).is_file():
+                    problems.append(f"{where}: the entry {item['entry']} is not saved")
+                elif record.get("title") != item.get("title") or sorted(record.get("organisms", [])) != sorted(item.get("organisms", [])):
+                    problems.append(f"{where}: {item['entry']}'s title or organisms differ from its record as saved")
+                done += 1
+            if not (datasets / pdb.get("terms", "")).is_file():
+                problems.append(f"{where}: the Protein Data Bank's terms are not saved at {pdb.get('terms')}")
     for read in reads(machine):
         for term in read.get("find", []):
             if term not in texts.get(read["source"], ""):

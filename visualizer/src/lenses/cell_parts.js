@@ -30,17 +30,20 @@
 //   schematic  parts enlarged and few, so each can be seen (like a textbook cutaway);
 //   real       sizes and numbers nearer a real cell; what is too small to see at this
 //              zoom is drawn as dots, and appears as shapes when the camera comes close.
-// A cell under 2 µm across is drawn in one size mode for now: the schematic layout scaled
-// down to the cell's own size. Its flagella, fimbriae and ribosomes are drawn at their sizes;
-// its membranes, membrane proteins, ions and small molecules are still enlarged, the more so
-// the larger the cell (in E. coli a membrane is drawn about six times as thick as it is).
+// Every cell is drawn in both modes. In the schematic picture a small cell is the layout scaled
+// down to its own size, so its membranes, membrane proteins, ions and small molecules are enlarged
+// the more the larger the cell (in E. coli a membrane is drawn about five times as thick as it is).
+// To scale, a part is worked out in nanometres and drawn as a shape where it covers two pixels at
+// the cell's stop (cell_layout.js): a bacterium's membranes, proteins and ribosomes are then shapes
+// at their own sizes, its ions and small molecules dots, and its crowd of proteins and chromosome
+// are drawn in a slab under the cut (parts/cytoplasm.js, cell_structures.js).
 //
 // The layout (cell_layout.js) holds where every part stands and the one stream of chance the
 // parts draw from, in a fixed order; the small pieces of geometry are in parts/geometry.js.
 
 import * as THREE from "../three.js";
 import { REF, packing } from "./shapes.js";
-import { CUT, SPOT, beadStep, makeLayout } from "./cell_layout.js";
+import { CUT, SPOT, beadStep, makeLayout, CHANNEL, PUMP, closeUpAngle } from "./cell_layout.js";
 import { seeded, along, turnY, instanced, dots } from "./parts/geometry.js";
 import { CELL_PARTS } from "./parts/index.js";
 
@@ -87,6 +90,9 @@ export function buildCell(ctx, studsCtx, mode, cell, modules = CELL_PARTS) {
   handles.spots = { ...SPOT, junction: junction ? SPOT.junction : null, gap: style.neighbourGap };
   // How far outside the cell membrane each shell outside it stands, in the cell's frame (0 where the cell has none).
   handles.shells = built.shells || { outerGap: 0, wallGap: 0 };
+  // Drawn to scale: the crowd of proteins drawn in the slab under the cut (parts/cytoplasm.js), for the card's words; and the scale itself.
+  handles.crowd = built.crowd || null;
+  handles.scale = frame.scale;
   handles.scenery = scenery.items;
   handles.reach = scenery.reach; // how far from the cell's middle its longest thread goes
   // What the picture says in words beside the cell (the lens writes them under the stop's name).
@@ -100,14 +106,14 @@ export function buildCell(ctx, studsCtx, mode, cell, modules = CELL_PARTS) {
 /**
  * The membrane seen close, at the channel on the near side of the cut edge.
  * Schematic: tails for the lipid beads and ions moving through the pore.
- * Real: the same stretch at true proportions (bilayer about 4.5 nm, channel about 9 nm).
+ * Real: the same stretch at true proportions (bilayer about 4.5 nm; the channel and the pump as cell_layout.js's CHANNEL and PUMP).
  */
 export function buildMolecules(ctx, mode, frame, has = () => true) {
   const outline = frame.outline;
   const NM = 0.001 / frame.u; // one nanometre, in the cell's frame
   // The close-up is of a channel; in a cell that has none, of a pump.
   const pored = has("channels");
-  const angle = pored || !has("pumps") ? SPOT.channels[1] : SPOT.pumps[0];
+  const angle = closeUpAngle(has);
   const patch = outline.point(angle);
   const outward = outline.normal(angle), sideways = outline.tangent(angle);
   const handles = { outward, centre: patch.clone(), pored, ions: [], ionPath: () => patch.clone() };
@@ -131,12 +137,14 @@ export function buildMolecules(ctx, mode, frame, has = () => true) {
       handles.ions = Array.from({ length: 6 }, () => new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), channel.material({ hue: "bioIon", emissive: 0.25, roughness: 0.3 })));
     }
     handles.view = [5.4, 3.6];
+  } else if (frame.scale?.fine) {
+    Object.assign(handles, fineCloseUp(ctx, frame, has, { angle, patch, membrane, channel, tails }));
   } else {
     // True proportions: lipid head groups under a nanometre across, in two leaflets 3.8 nm apart.
     const heads = [];
     for (let index = -70; index <= 70; index++) {
       const base = patch.clone().addScaledVector(sideways, index * 0.85 * NM).setY(CUT + 0.5 * NM);
-      if (Math.abs(index * 0.85) < 5.2 || Math.abs(index * 0.85 - 24) < 6) continue; // the channel and the pump stand here
+      if (Math.abs(index * 0.85) < CHANNEL.across / 2 + 1.5 || Math.abs(index * 0.85 - 24) < PUMP.across / 2 + 1.8) continue; // the channel and the pump stand here
       for (const leaflet of [1.9, -1.9]) {
         const head = base.clone().addScaledVector(outward, leaflet * NM);
         const end = base.clone().addScaledVector(outward, leaflet * 0.12 * NM);
@@ -145,15 +153,15 @@ export function buildMolecules(ctx, mode, frame, has = () => true) {
       }
     }
     membrane.add(instanced(new THREE.SphereGeometry(0.4 * NM, 10, 8), membrane.material({ hue: "bioMembrane", shade: 0.22, roughness: 0.3 }), heads));
-    // A channel: two walls about 3 nm thick and 10 nm long, with a pore between.
-    const wall = new THREE.CapsuleGeometry(1.5 * NM, 7 * NM, 6, 12).rotateZ(Math.PI / 2);
+    // A channel: two walls with a pore between (CHANNEL).
+    const wall = new THREE.CapsuleGeometry(CHANNEL.wall * NM, (CHANNEL.length - 2 * CHANNEL.wall) * NM, 6, 12).rotateZ(Math.PI / 2);
     channel.add(
-      instanced(wall, channel.material({ hue: "bioProtein", roughness: 0.35 }), [-2.2, 2.2].map((offset) => ({ position: patch.clone().addScaledVector(sideways, offset * NM).setY(CUT + 0.5 * NM), turn: turnY(-outline.facing(angle)) })))
+      instanced(wall, channel.material({ hue: "bioProtein", roughness: 0.35 }), [-CHANNEL.apart / 2, CHANNEL.apart / 2].map((offset) => ({ position: patch.clone().addScaledVector(sideways, offset * NM).setY(CUT + 0.5 * NM), turn: turnY(-outline.facing(angle)) })))
     );
     // A pump beside it: larger, with most of its bulk on the cytoplasm side.
     const pump = ctx.part("pumps");
     const lobes = pump.material({ hue: "bioPump", roughness: 0.35 });
-    for (const [inward, size] of [[0, 4.2], [5.5, 3.6], [-3.2, 2.6]]) {
+    for (const [inward, size] of PUMP.lobes) {
       const lobe = new THREE.Mesh(new THREE.SphereGeometry(size * NM, 18, 14), lobes);
       lobe.position.copy(patch).addScaledVector(sideways, 24 * NM).addScaledVector(outward, -inward * NM).setY(CUT + 0.5 * NM);
       pump.add(lobe);
@@ -168,6 +176,79 @@ export function buildMolecules(ctx, mode, frame, has = () => true) {
   strands.setAttribute("position", new THREE.Float32BufferAttribute(tails, 3));
   ctx.illustrate(new THREE.LineSegments(strands, ctx.neutralLine({ opacity: 0.8, colour: "ghost" })));
   return handles;
+}
+
+/**
+ * The close-up drawn to scale in a cell whose molecules are shapes at its stop (a bacterium). As in a
+ * large cell, but the membrane follows the cell's own curve (a straight stretch would leave a cell
+ * 0.4 µm across by about 9 nm at its ends); a cell with no channels shows its pump in the middle, and
+ * no channel; and a cell whose file gives its envelope shows the whole of it: the cell membrane, the
+ * wall and the outer membrane at their measured widths (the two outer ones as scenery).
+ */
+function fineCloseUp(ctx, frame, has, { angle, patch, membrane, channel, tails }) {
+  const outline = frame.outline, { nm, envelope, membraneNm } = frame.scale;
+  const pored = has("channels"), here = outline.reach(angle), y = CUT + 0.5 * nm;
+  const at = (along, out = 0, height = y) => outline.spot(here + along * nm, out * nm, height);
+  const leaflet = membraneNm / 2 - 0.35; // head groups a little inside each face of the membrane
+  const pumpAlong = pored ? 24 : 0;
+  const clear = (x) => (pored && Math.abs(x) < CHANNEL.across / 2 + 1.5) || Math.abs(x - pumpAlong) < PUMP.across / 2 + 1.8;
+  const heads = [];
+  for (let index = -70; index <= 70; index++) {
+    const x = index * 0.85;
+    if (clear(x)) continue; // the channel and the pump stand here
+    for (const side of [1, -1]) {
+      const head = at(x, side * leaflet), end = at(x, side * leaflet * 0.12);
+      heads.push({ position: head });
+      tails.push(head.x, head.y, head.z, end.x, end.y, end.z);
+    }
+  }
+  membrane.add(instanced(new THREE.SphereGeometry(0.4 * nm, 10, 8), membrane.material({ hue: "bioMembrane", shade: 0.22, roughness: 0.3 }), heads));
+  const out = {};
+  if (pored) {
+    // A channel: two walls with a pore between (CHANNEL).
+    const wall = new THREE.CapsuleGeometry(CHANNEL.wall * nm, (CHANNEL.length - 2 * CHANNEL.wall) * nm, 6, 12).rotateZ(Math.PI / 2);
+    channel.add(instanced(wall, channel.material({ hue: "bioProtein", roughness: 0.35 }), [-CHANNEL.apart / 2, CHANNEL.apart / 2].map((offset) => ({ position: at(offset), turn: turnY(-outline.facing(angle, offset * nm)) }))));
+    out.ionPath = (t) => at(0, 11 - t * 22, CUT + 0.9 * nm);
+    out.ions = Array.from({ length: 7 }, () => new THREE.Mesh(new THREE.SphereGeometry(0.22 * nm, 10, 8), channel.material({ hue: "bioIon", emissive: 0.25, roughness: 0.3 })));
+  }
+  // A pump: larger, with most of its bulk on the cytoplasm side.
+  const pump = ctx.part("pumps");
+  const lobes = pump.material({ hue: "bioPump", roughness: 0.35 });
+  for (const [inward, size] of PUMP.lobes) {
+    const lobe = new THREE.Mesh(new THREE.SphereGeometry(size * nm, 18, 14), lobes);
+    lobe.position.copy(at(pumpAlong, -inward));
+    pump.add(lobe);
+  }
+  out.pumpAt = at(pumpAlong);
+  // The envelope beyond the cell membrane, where the file gives it: the wall as a band, the outer membrane as two leaflets of heads.
+  let reach = membraneNm / 2 + 4;
+  if (envelope?.wall) {
+    const { at: middle, thick } = envelope.wall, inner = [], outer = [];
+    for (let x = -72; x <= 72; x += 2) {
+      inner.push(at(x, middle - thick / 2));
+      outer.push(at(x, middle + thick / 2));
+    }
+    const strip = new THREE.BufferGeometry().setFromPoints([...inner, ...outer]);
+    const index = [];
+    for (let k = 0; k + 1 < inner.length; k++) index.push(k, k + 1, inner.length + k, k + 1, inner.length + k + 1, inner.length + k);
+    strip.setIndex(index);
+    strip.computeVertexNormals();
+    ctx.illustrate(new THREE.Mesh(strip, ctx.neutral({ opacity: 0.4, side: THREE.DoubleSide })));
+  }
+  if (envelope?.outer) {
+    const { at: middle, thick } = envelope.outer, side = thick / 2 - 0.35, beads = [];
+    for (let index = -70; index <= 70; index++) for (const face of [1, -1]) beads.push({ position: at(index * 0.85, middle + face * side) });
+    ctx.illustrate(instanced(new THREE.SphereGeometry(0.4 * nm, 10, 8), ctx.neutral({ opacity: 0.85, glass: 0.2 }), beads));
+    reach = middle + thick / 2 + 4;
+  }
+  // The view: 85 nm by 56 nm, or as tall as the envelope asks, from the cell's inside.
+  out.view = [Math.max(85, reach * 2.6) * nm, Math.max(56, reach * 1.8) * nm];
+  out.pored = pored;
+  out.note = envelope?.outer
+    ? `To scale: the inner membrane ${Number(membraneNm.toPrecision(3))} nm thick, the wall ${Number(envelope.wall?.thick.toPrecision(3))} nm and the outer membrane ${Number(envelope.outer.thick.toPrecision(3))} nm, as one paper measured them`
+    : `To scale: the membrane about ${Number(membraneNm.toPrecision(2))} nm thick, ${pored ? `the channel ${CHANNEL.across} nm across` : `the pump ${PUMP.across} nm across`}`;
+  out.fromInside = true;
+  return out;
 }
 
 // ------------------------------------------------------------------ tissue

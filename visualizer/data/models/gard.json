@@ -1,0 +1,155 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "gard",
+ "label": "GARD assembly",
+ "is": "A model, not an organism",
+ "plain": "A model of how heredity could begin before genes: a small assembly of molecules of many types, in which the molecules inside speed the joining and leaving of others, so that a mix of types can grow, split in two and pass something of itself on. It is a model, not an organism: it has no cell, no shape, no place and no clock of real life. The preprint Plastic Heredity uses it.",
+ "group": "Origin of life",
+ "order": 100,
+ "made": "2026-11-16",
+ "modelled": {
+  "state": "modelled",
+  "model": "cells.assembly_lineages@1",
+  "text": "Modelled for comparison only (D197): GARD's two forms are one law set on Cells' stochastic assembly family, on main since 17 November 2026 with its own tests. Its runs so far are development runs, not judged; the comparison is still to come.",
+  "record": [
+   {
+    "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
+    "where": "Its opening: the user's request of 16 November 2026; Decided; and Status"
+   },
+   {
+    "path": "docs/GARD_DESIGN.md",
+    "where": "Status: DECIDED, 16 November 2026 (D192)"
+   },
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D192, the design choices; D194, the order; D197, GARD is one law set, for comparison only"
+   },
+   {
+    "path": "PROGRESS.md",
+    "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)"
+   },
+   {
+    "path": "PROGRESS.md",
+    "where": "GARD's G1, part 2, on main (17 November 2026, evening)"
+   },
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D199: The origin-of-life engine's first decisions, and relationship tracking"
+   }
+  ],
+  "design": "docs/GARD_DESIGN.md"
+ },
+ "view": {
+  "kind": "assembly"
+ },
+ "levels": [
+  {
+   "id": "molecules",
+   "label": "Molecules",
+   "shows": "The model's molecule types, and the fixed table by which each type speeds the joining and leaving of every other. That table and the supply of molecules are the environment: no assembly writes them."
+  },
+  {
+   "id": "assembly",
+   "label": "One assembly",
+   "shows": "One assembly growing molecule by molecule and splitting in two, drawn as lipids in a protocell (or a micelle or a cluster, as the card chooses), which is the picture's choice, with its mix of types beside it. Molecule by molecule only where a run saved each event; otherwise from one fission to the next."
+  },
+  {
+   "id": "population",
+   "label": "Population",
+   "shows": "Many assemblies at once, in a fixed number of places, each fission taking the place of one removed.",
+   "waits": "a run of a population: one lineage comes first"
+  },
+  {
+   "id": "lineage",
+   "label": "Lineages",
+   "shows": "Generations across fissions: the line of daughters that carry on, and at each fission how alike the parent and that daughter are. Where a run's analysis states a threshold (0.9 in the preprint), its line is drawn on that comparison only."
+  }
+ ],
+ "clock": {
+  "base": "fission",
+  "says": "Its runs count fissions, not seconds: GARD has no clock of real life."
+ },
+ "runs": [
+  {
+   "file": "data/origin/gard-pair-consistent-7132e50a.json",
+   "label": "A development run of the engine: the pair-consistent form",
+   "kind": "development"
+  },
+  {
+   "file": "data/origin/gard-single-event-709b243e.json",
+   "label": "A development run of the engine: the preprint's single-event form",
+   "kind": "development"
+  }
+ ],
+ "facts": [
+  {
+   "label": "Molecule types",
+   "value": "100",
+   "sources": [
+    "preprint"
+   ]
+  },
+  {
+   "label": "In the preprint, an assembly grows to",
+   "value": "80 molecules, then splits in two",
+   "sources": [
+    "preprint"
+   ]
+  },
+  {
+   "label": "In the preprint, a fission is inherited when",
+   "value": "the similarity H between the parent just before the fission and the daughter that carries on is above 0.9; 0.9 itself is a break",
+   "sources": [
+    "preprint"
+   ]
+  }
+ ],
+ "sources": {
+  "preprint": {
+   "text": "Plastic heredity: Predicting and steering how inheritance breaks, returns, and persists. Preprint, version 5.0. Read for the viewer's note docs/ORIGIN_OF_LIFE.md, whose section 1.1 gives these values from its common experimental framework and its appendix F.",
+   "doi": "10.5281/zenodo.22143269",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ },
+ "notes": [
+  {
+   "id": "law",
+   "label": "The law's two forms, in the engine's design (D192)",
+   "text": "As D192 records the checked finding: in a closed two-type world, the preprint's single-event kernel generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception); the original authors' kernel is not established either way; the preprint's vector-Poisson contracts were not tested; the preprint's driven runs are not affected; the pair-consistent form is exactly reversible. The engine builds both forms, and its first experiment measures the difference. The viewer shows the two side by side only for two runs of the engine of one world, and judges neither.",
+   "record": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D192: the reversibility finding, as checked"
+    }
+   ]
+  },
+  {
+   "id": "own",
+   "label": "Cells' own origin-of-life engine (D197)",
+   "text": "On 17 November 2026 the user decided that Cells builds its own first-principles engine, with GARD kept only for comparison (D197). GARD becomes one declared law set on general machinery: exact stochastic events, assemblies exchanging with a held phase, fission and lineage, a thermodynamic ledger and the run records. Cells' own engine takes its laws from physical chemistry: catalysis that is thermodynamically consistent, physical assemblies, and explicit sources of free energy. Its first choices were decided the same day (D199); nothing of it is built.",
+   "record": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D197: Cells builds its own first-principles origin-of-life engine; GARD is for comparison only"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D199: The origin-of-life engine's first decisions, and relationship tracking"
+    }
+   ]
+  },
+  {
+   "id": "matrix",
+   "label": "GARD's matrix and reservoir, in the record",
+   "text": "The record of main says that “the preprint's GARD catalytic matrix and reservoir are fixed environmental constraints”.",
+   "record": [
+    {
+     "path": "docs/SCIENTIFIC_BASIS.md",
+     "where": "The preprint's GARD catalytic matrix and reservoir are fixed environmental constraints; the GARD F12 definition"
+    }
+   ]
+  }
+ ]
+}

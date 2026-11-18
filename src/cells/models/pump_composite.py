@@ -60,7 +60,7 @@ from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.operators.contract import COMMUTING
+from cells.operators.contract import COMMUTING, READ_STAGES, part_stages, reads_of
 from cells.registry import kind_registry, species_registry
 
 OBSERVER_ID = "resolved_pump_composite_accepted_grid_readouts@1"
@@ -273,14 +273,17 @@ def held_schedules(base, control, names):
     return replace(base, experiment=replace(e, **held))
 
 
-def _both_scoped(changer, other, name):
-    """Door S: whether a change of `name` by `changer` and other's change or read of it are both
-    scoped, so they meet only on the slots both name (decided at the definition, scope_errors)."""
-    if not changer.view_change(name).scoped:
+def _both_scoped(changer, other, name, read=None):
+    """Door S: whether a change of `name` by `changer` and other's change or read of it (`read`,
+    else its one read of it) are both scoped, so they meet only on the slots both name (decided
+    at the definition, scope_errors). Only a provider's own change can be scoped: a closer's,
+    and a writer's of a provider's state, cover every slot."""
+    if name not in changer.VIEW_FIELDS or not changer.view_change(name).scoped:
         return False
     if name in other.VIEW_FIELDS and other is not changer:
         return other.view_change(name).scoped
-    read = other.scoped_read(name)
+    if read is None:
+        read = other.scoped_read(name)
     return read is not None and read.scoped
 
 
@@ -336,10 +339,11 @@ def scope_errors(inner, entries, spec):
                 slots = declared(op, declaration, name, op.changed_slots)
                 changes.setdefault(name, []).append((i, op, slots))
         for name in dict.fromkeys((*op.VIEW_READS, *op.CONFLICTS_VIEW, *op.SCOPED_READS)):
-            read = op.scoped_read(name)
-            if read is not None and read.scoped and read.mode != "reference":
+            scoped = [r for r in reads_of(op, name) if r.scoped and r.mode != "reference"]
+            if scoped:  # Its slots once per field, whatever the number of stages it reads at.
                 slots = declared(op, declaration, name, op.read_slots)
-                reads.setdefault(name, []).append((i, op, read, slots))
+                for read in scoped:
+                    reads.setdefault(name, []).append((i, op, read, slots))
     for name, listed in changes.items():
         for k, (_, a, slots_a) in enumerate(listed):
             for _, b, slots_b in listed[k + 1 :]:
@@ -358,10 +362,11 @@ def scope_errors(inner, entries, spec):
                         f"{reader.LAW_ID} reads {name} as declared at "
                         f"{shared(slots_r, slots_c, name)}, which {changer.LAW_ID} changes"
                     )
-                elif i > j:
+                elif i > j and changer.view_change(name).stage == read.stage:  # C2: one stage.
                     errors.append(
                         f"{reader.LAW_ID} reads the view {name} at "
-                        f"{shared(slots_r, slots_c, name)} before {changer.LAW_ID} changes it"
+                        f"{shared(slots_r, slots_c, name)} at stage {read.stage} before "
+                        f"{changer.LAW_ID} changes it there"
                     )
     return errors
 
@@ -468,6 +473,94 @@ def exact_row_errors(entries, spec, p):
     return errors
 
 
+class ViewChange(NamedTuple):
+    """One change of a view field in a composition (view_changes): the changer's position in the
+    declared order, the changer, the stage, and whether that stage is the changer's own declared
+    change of the field (door S's per-slot check covers that one where both sides are scoped)."""
+
+    position: int
+    operator: object
+    stage: str
+    own: bool
+
+
+def _change_stages(op, names):
+    """The stages at which op's own change of `names` is made: those its VIEW_CHANGES declares;
+    for an undeclared change, every stage its parts run at (an event map and a split part may both
+    change it), or split for a part-less state owner, Operator.view_change's default."""
+    declared = {op.VIEW_CHANGES[k].stage for k in names if k in op.VIEW_CHANGES}
+    if any(k not in op.VIEW_CHANGES for k in names):
+        declared |= set(part_stages(op)) or {op.view_change(names[0]).stage}
+    return declared
+
+
+def closure_reach(inner, op):
+    """The view fields op's closures change (close()): for each mask it closes, the inner model's
+    CLOSURE_REACH, in its order; a mask the inner model gives no reach changes only itself."""
+    reach = getattr(inner, "CLOSURE_REACH", {})
+    return tuple(dict.fromkeys(k for name in op.CLOSES for k in reach.get(name, (name,))))
+
+
+def view_changes(inner, operators):
+    """{view field: (ViewChange, ...)}: every change of a view field in an ordered operator list,
+    in declared order, once per stage it is made at (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and
+    §5, C2). The order rule of current reads (structure_errors), its fallback (C1) and the
+    composite's view readers read it.
+
+    * A provider changes each field it provides at its change's stages (_change_stages: an
+      undeclared change counts at every stage its parts run at), and also at the stages of the
+      earlier changes of what it reads current, since its view takes the view the providers before
+      it accumulated. Only the declared stage is its own (ViewChange.own).
+    * A closer changes, at the stages of its closures, what close() changes for the masks it
+      closes (the inner model's CLOSURE_REACH): the masks below them in the entity hierarchy (a
+      closed cell closes its patches) and the padded fields of the slots closed.
+    * A writer of an earlier owner's accepted state (ACCEPTS_WRITES) changes every field that owner
+      provides, at each stage its own parts run at (contract.part_stages).
+    """
+    out, owners = {}, {}
+    for i, op in enumerate(operators):
+        found = {}  # {field: {stage: own}}
+        for name in op.VIEW_FIELDS:
+            stages = dict.fromkeys(_change_stages(op, (name,)), True)
+            for read in op.VIEW_READS:
+                for change in out.get(read, ()):
+                    if change.operator is not op:
+                        stages.setdefault(change.stage, False)
+            found[name] = stages
+        if op.CLOSES:
+            closures = _change_stages(op, op.CLOSES)
+            for name in closure_reach(inner, op):
+                stages = found.setdefault(name, {})
+                for stage in closures:
+                    stages.setdefault(stage, False)
+        for owner in dict.fromkeys(owners[k] for k in op.ENTITY_WRITES if k in owners):
+            for name in owner.VIEW_FIELDS:
+                stages = found.setdefault(name, {})
+                for stage in part_stages(op):
+                    stages.setdefault(stage, False)
+        for name, stages in found.items():
+            for stage in sorted(stages, key=READ_STAGES.index):
+                out.setdefault(name, []).append(ViewChange(i, op, stage, stages[stage]))
+        owners.update(dict.fromkeys(op.ACCEPTS_WRITES, op))
+    return {name: tuple(changes) for name, changes in out.items()}
+
+
+def _part_reads(op):
+    """The fields op's event map or half-step reads current, in declared order: door S's
+    SCOPED_READS, its opt-in to receive the merged view (a VIEW_READS default does not opt in)."""
+    return tuple(
+        k
+        for k in op.SCOPED_READS
+        if any(r.mode == "current" and r.stage in ("event", "split") for r in reads_of(op, k))
+    )
+
+
+@cache
+def reader_view_type(fields):
+    """The view a door S current reader's part receives: its read fields only (C4)."""
+    return NamedTuple("ReaderView", [(k, object) for k in fields])
+
+
 def structure_errors(inner, operators):
     """Contract violations of an ordered operator list on an inner model (empty: none)."""
     errors = []
@@ -513,14 +606,14 @@ def structure_errors(inner, operators):
             if name not in getattr(inner, "MASK_FIELDS", ()):
                 errors.append(f"{op.LAW_ID} closes {name}, which is not an inner activity mask")
             closed.setdefault(name, op.LAW_ID)
+    padded = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
     if closed:  # Propagation rewrites every mask and pads closed slots: no provider of them.
-        padded = (*getattr(inner, "MASK_FIELDS", ()), *getattr(inner, "PADDED_FIELDS", ()))
         for name in set(providers) & set(padded):
             errors.append(
                 f"{name} has closers or a provider, never both ({providers[name]} provides it)"
             )
-    accepted, provided, columns = {}, set(), {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
-    for i, op in enumerate(operators):
+    accepted, columns = {}, {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
+    for op in operators:
         # Writers follow owners: an entity write targets inner state or a field an
         # earlier operator accepts.
         for name in op.ENTITY_WRITES:
@@ -530,22 +623,6 @@ def structure_errors(inner, operators):
                     "by an earlier operator"
                 )
         accepted.update(dict.fromkeys(op.ACCEPTS_WRITES, op.LAW_ID))
-        for name in op.VIEW_READS:
-            if name not in provided:
-                errors.append(f"{op.LAW_ID} reads the view {name}; no earlier operator provides it")
-            # A current read follows every changer of what it reads. A later replacement on every
-            # slot is already refused (two providers, or a provider beside a closer), so this
-            # names a later scoped or commuting change, which door S admits beside an earlier one.
-            for changer in operators[i + 1 :]:
-                if name not in changer.VIEW_FIELDS or _both_scoped(changer, op, name):
-                    continue
-                change = changer.view_change(name)
-                if change.scoped or change.contribution != "replace":
-                    errors.append(
-                        f"{op.LAW_ID} reads the view {name} before {changer.LAW_ID} changes it"
-                    )
-        provided.update(op.VIEW_FIELDS)
-        provided.update(op.CLOSES)
         # One owner per observation column; replacement is a declared chain in order.
         for name in op.observed_columns():
             if name in columns:
@@ -557,6 +634,12 @@ def structure_errors(inner, operators):
                 columns[name].append(op.LAW_ID)
             else:
                 errors.append(f"{op.LAW_ID} replaces {name}, which no earlier owner observes")
+    # A closer changes what close() changes for the masks it closes (closure_reach: the masks
+    # below them in the entity hierarchy and the padded fields of the slots closed), so a fixed read
+    # of any of those beside another operator's closer is refused, not only of the masks it names
+    # (door S's rule 4; docs/OPERATOR_COMPOSITION_DESIGN.md §17). The closer named is the first that
+    # closes the field itself, else the first whose closures reach it.
+    reached = [(op, closure_reach(inner, op)) for op in operators if op.CLOSES]
     for op in operators:
         for name in op.CONFLICTS_VIEW:
             for changer in changers.get(name, ()):
@@ -564,12 +647,40 @@ def structure_errors(inner, operators):
                     errors.append(
                         f"{op.LAW_ID} reads {name} as declared, but {changer.LAW_ID} provides it"
                     )
-            if closed.get(name, op.LAW_ID) != op.LAW_ID:
-                errors.append(f"{op.LAW_ID} reads {name} as declared, but {closed[name]} closes it")
-    for i, op in enumerate(operators):  # A mask's reader follows every closer of it.
-        for name in set(op.VIEW_READS) & set(closed):
-            if any(name in later.CLOSES for later in operators[i:]):
-                errors.append(f"{op.LAW_ID} reads {name} before a closer of it")
+            others = [c for c, reach in reached if c is not op and name in reach]
+            if others:
+                closer = next((c for c in others if name in c.CLOSES), others[0])
+                errors.append(
+                    f"{op.LAW_ID} reads {name} as declared, but {closer.LAW_ID} closes it"
+                )
+    # The order of a current read (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1 and §5, C1 and C2),
+    # against every change of its field (view_changes): a field no operator changes is read at
+    # its declared value, the fallback; a change at another stage of the step is seen whatever
+    # the declared order (the events run before the split parts' first halves, and an event reads
+    # the previous step's end); a change at the reader's own stage precedes it, door S's rule 3,
+    # else the reader is refused rather than given a lagged value. A pair of scoped ones meets
+    # only on the slots both name, decided at the definition (scope_errors).
+    changes, refused = view_changes(inner, operators), set()
+    for i, op in enumerate(operators):
+        for name in dict.fromkeys((*op.VIEW_READS, *op.SCOPED_READS)):
+            current = [r for r in reads_of(op, name) if r.mode == "current"]
+            if current and name not in inner.VIEW_FIELDS:
+                errors.append(
+                    f"{op.LAW_ID} reads the view {name}, which is not an inner view field"
+                )
+            for read in current:
+                for change in changes.get(name, ()):
+                    if change.position <= i or change.stage != read.stage:
+                        continue
+                    # Only a scoped provider's own declared stage is decided per slot.
+                    if change.own and _both_scoped(change.operator, op, name, read):
+                        continue
+                    refused.add((i, name, read.stage, change.operator.LAW_ID))
+    for i, name, stage, changer in sorted(refused):
+        errors.append(
+            f"{operators[i].LAW_ID} reads the view {name} at stage {stage} before {changer} "
+            "changes it there"
+        )
     for i, op in enumerate(operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
@@ -733,15 +844,13 @@ class Composition:
         self.scoped_changers = tuple(
             op for op in operators if any(op.view_change(k).scoped for k in op.VIEW_FIELDS)
         )
-        changed = {k for op in operators for k in (*op.VIEW_FIELDS, *op.CLOSES)}
+        self.view_changes = view_changes(inner, operators)
         self.view_readers = tuple(
-            op
-            for op in operators
-            if any(
-                r.mode == "current" and r.stage in ("event", "split") and k in changed
-                for k, r in op.SCOPED_READS.items()
-            )
+            op for op in operators if any(k in self.view_changes for k in _part_reads(op))
         )
+        # C4 (docs/OPERATOR_COMPOSITION_DESIGN.md §4.1, §11): each view reader's part receives its
+        # current-read fields only (reader_view), never the full view's field refresh.
+        self.reader_fields = {op: _part_reads(op) for op in self.view_readers}
         # Topology (S5 design §2, §3.5). With a closer the composite owns the capacitor-energy
         # correction at the view, referenced to the view of the initial state through two
         # bound layout arrays (COMPOSITE_LAYOUT_FIELDS); with a retiring operator its row
@@ -923,6 +1032,23 @@ class Composition:
             return self.inner.view(p, state, self.providers, self._live_closers(p), xp=xp)
         return self.inner.view(p, state, self.providers, xp=xp)
 
+    def reader_view(self, op, p, state, *, xp=jnp):
+        """A door S current reader's view (C4, docs/OPERATOR_COMPOSITION_DESIGN.md §4.1, §11):
+        the full view's merge of every provider and closer at `state`, bitwise its fields, but
+        without the field refresh, which no read field holds; it carries op's read fields only,
+        so a part reads nothing else from it."""
+        closers = self._live_closers(p) if self.closers else ()
+        q = self.inner.view(p, state, self.providers, closers, xp=xp, refresh=False)
+        fields = self.reader_fields[op]
+        return reader_view_type(fields)(*(getattr(q, k) for k in fields))
+
+    def _view_for(self, op, p, *, xp):
+        """The view function op's part receives (static): the full view for one that books at
+        the view when a field input is provided, as before; a door S reader's view otherwise."""
+        if op.BOOKS_AT_VIEW and self.field_inputs:
+            return lambda s: self.view(p, s, xp=xp)
+        return lambda s: self.reader_view(op, p, s, xp=xp)
+
     def control_view(self, control, state, p, *, xp=jnp):
         return self.inner.control_view(control, state, p, self.factors, xp=xp)
 
@@ -960,7 +1086,7 @@ class Composition:
             if op in active:
                 keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
                 if self._passes_view(op):  # Static: S5's partition; door S's current readers.
-                    keywords["view"] = lambda s: self.view(p, s, xp=xp)
+                    keywords["view"] = self._view_for(op, p, xp=xp)
                 current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
         h = 0.5 * dt
@@ -1024,11 +1150,11 @@ class Composition:
 
     def _half_step(self, op, state, h, control, p, *, xp):
         """op's half-step; one that books at the view gets the current view when a field
-        input is provided, and a door S current reader gets the merged view (static: otherwise
+        input is provided, and a door S current reader gets its reader view (static: otherwise
         the call is unchanged)."""
         keywords = self._inner_keyword(op)
         if self._passes_view(op):
-            keywords["view"] = self.view(p, state, xp=xp)
+            keywords["view"] = self._view_for(op, p, xp=xp)(state)
         return op.half_step(state, h, control, p, xp=xp, **keywords)
 
     def _end_domain(self, state, p, operators, *, xp):

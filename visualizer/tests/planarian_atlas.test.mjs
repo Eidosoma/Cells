@@ -33,7 +33,9 @@ const SIDES = ["outside", "in", "inside", "not known"];
 const BASES = ["stated", "predicted", "by function", "none"];
 
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
-const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
+// The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
+const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
+const ENTRIES = ["reviewed", "unreviewed", "genome annotation"];
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
 // How a source may be used (the project's rule of 15 November 2026): only a permissive one
 // may stand behind a value or a statement; the others are pointers.
@@ -64,7 +66,7 @@ const units = Object.entries(atlas.units);
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
 
 test("the file says what it is: format, species, date, method, and what was not copied", () => {
-  assert.equal(atlas.format, "cells.visualizer.species_atlas@1");
+  assert.equal(atlas.format, "cells.visualizer.species_atlas@2");
   assert.deepEqual(Object.keys(atlas), ["format", "species", "made", "method", "sources", "not_copied", "units", "extra"]);
   assert.equal(atlas.species.id, "planarian");
   assert.equal(path.basename(ATLAS), `${atlas.species.id}.json`);
@@ -114,7 +116,9 @@ test("each product names entries of known databases and says how it was found", 
     assert.ok(product.gene === null || product.gene.trim(), label);
     assert.ok(product.role === null || product.role.trim(), label);
     assert.ok(Number.isInteger(product.length) && product.length > 0, `${label}: length`);
-    assert.ok(EVIDENCE_WORDS.includes(product.evidence), `${label}: ${product.evidence}`);
+    assert.ok(FOUND_BY.includes(product.found_by) && ENTRIES.includes(product.entry) && !("evidence" in product), `${label}: ${product.found_by}, ${product.entry}`);
+    // Its record is the database it was read from: a UniProtKB entry, or a gene model of the genome annotation.
+    assert.equal(product.entry === "genome annotation", product.ids[0].db === "wormbase_parasite", `${label}: ${product.entry}`);
     assert.ok(product.evidence_note?.trim(), `${label}: no evidence note`);
     assert.ok(product.ids.length, `${label}: no id`);
     for (const { db, id } of product.ids) {
@@ -127,10 +131,10 @@ test("each product names entries of known databases and says how it was found", 
 });
 
 test("a product named in a publication carries its citation, and no other product carries one", () => {
-  const named = products.filter(([, product]) => product.evidence === "named in a publication");
+  const named = products.filter(([, product]) => product.found_by === "named in a publication");
   assert.ok(named.length);
   for (const [where, product] of products) {
-    if (product.evidence === "named in a publication") {
+    if (product.found_by === "named in a publication") {
       assert.ok(product.citation?.text?.trim(), `${where}: ${product.name} has no citation`);
       assert.ok(product.citation.doi || product.citation.pmid, `${where}: ${product.name}: no doi or pmid`);
     } else {
@@ -163,7 +167,7 @@ test("a different family is named with the one it replaces, on the search of sig
     assert.match(unit.note, /[Bb]y (its|their) signatures/, id);
     assert.match(unit.note, /gene models carry the innexin signature and none the connexin one/, id);
     assert.match(unit.note, /More is to be read in \D+ \d{4}, on which animals have each family, and in \D+ \d{4}, on that innexin; neither states an open licence, so nothing is taken from them\./, id);
-    assert.ok(unit.products.some((product) => product.evidence === "named in a publication"), id);
+    assert.ok(unit.products.some((product) => product.found_by === "named in a publication"), id);
   }
 });
 
@@ -180,7 +184,8 @@ test("a find by signature is a candidate: no ortholog, no counterpart claimed, a
   assert.ok(!/\b(engine|Cells models|is modelled|simulat)/i.test(said), "the units say something of the engine");
   assert.ok(!/\bis the counterpart\b|\bare the counterparts\b/i.test(said.replace(/says that it is the counterpart/g, "")), "a counterpart is claimed");
   assert.ok(atlas.method.some((line) => /candidate, never an established counterpart/.test(line)));
-  const kinds = new Set(products.map(([, product]) => product.evidence));
+  assert.ok(atlas.method.some((line) => /no candidate for the machine's own work/.test(line)));
+  const kinds = new Set(products.map(([, product]) => product.found_by));
   assert.ok(!kinds.has("similarity search") || atlas.method.some((line) => /similarity/.test(line)));
 });
 
