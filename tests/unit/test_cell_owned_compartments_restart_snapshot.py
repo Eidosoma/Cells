@@ -12,8 +12,8 @@ tier 1.
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import compartment_fixtures as cfx
 
 jax.config.update("jax_enable_x64", True)
@@ -26,7 +26,7 @@ def world(**kwargs):
 
 
 def test_a_restart_through_a_snapshot_is_bitwise_and_silent(tmp_path):
-    from cells.io import load_snapshot, write_snapshot
+    from cells.records.io import load_snapshot, write_snapshot
 
     spec = world()
     result = run(spec)

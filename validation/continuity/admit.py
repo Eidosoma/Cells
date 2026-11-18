@@ -7,7 +7,7 @@ propose   runs the continuity probe (probe.py) under the checkpoint's tree S0 an
           proposed record (proposed.json), with the probe outputs and the comparison as its
           evidence, in the new run's folder.
 finalise  admits a proposed record after review: names the admitter, seals record_sha256
-          (cells.continuity.seal), verifies it (parse_record) and writes record.json. Case 1 is
+          (cells.execution.continuity.seal), verifies it (parse_record) and writes record.json. Case 1 is
           decided by the probe and recorded by the lead; any registered run is the user's.
 
 First landing: case 1 on the vector-windows path, definitions with jit: true. A runtime
@@ -31,7 +31,7 @@ Usage:
                    [--python PY] [--launcher subprocess|detached] [--cpus LIST] [--memory 3G]
   admit.py finalise --proposed NEW_RUN/continuity/proposed.json --admitted-by NAME --role ROLE
 Exit status: 0 proposed (or finalised), 2 refused, 3 cannot decide.
-"""
+"""  # noqa: E501
 
 import argparse
 import hashlib
@@ -43,8 +43,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cells import continuity
-from cells.core.specs import digest, read_json
+from cells.definitions.specs import digest, read_json
+from cells.execution import continuity
 
 ROOT = Path(__file__).resolve().parents[2]
 PROBE = "validation.continuity.probe"

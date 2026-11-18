@@ -1,4 +1,4 @@
-"""Worlds and planted declarations for the run view's tests (cells/run_view.py).
+"""Worlds and planted declarations for the run view's tests (cells/records/run_view.py).
 
 The worked example's world, short: one cell secreting S into a finite node that leaks to its held
 bath (validation/tissue/secreted_species_fixtures; scheduled_species_turnover@1 and
@@ -11,10 +11,10 @@ import json
 
 import numpy as np
 
-from cells import run_view
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models import pump_composite
-from cells.models.operators import OPERATORS
+from cells.operators import OPERATORS
+from cells.records import run_view
 from validation.tissue import secreted_species_fixtures as fx
 
 DT = 1e-3
@@ -64,7 +64,7 @@ def injection_world(currents, *, end=0.004, every=None):
     """One heredity cell facing its held bath, with an electrode in it
     (tests/unit/test_current_injection_runs.py's world): currents ((step, current_A), ...), each
     change at an exact step; observed at 0 and the end, or every `every` seconds."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import pump_water_fixtures as water
 
     base = water.heredity_cell("H", dt=DT, end_time=end)

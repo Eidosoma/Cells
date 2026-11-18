@@ -159,10 +159,10 @@ def host_run(spec, state, steps, *, start_step=0, cap_ulps=None):
 
     cap_ulps: another current floor for the layout (a positive control of the checks).
     """
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     start = initialise(spec)
@@ -188,10 +188,10 @@ def jitted_run(spec, steps):
     """The state after `steps` jitted checked steps from the definition's start (CPU)."""
     import jax
 
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     start = initialise(spec)
@@ -210,9 +210,9 @@ def jitted_run(spec, steps):
 
 def ledger_ratios(history, spec, *, start_step=0):
     """Largest |ledger| / bound over the rows, per ledger (the host check's own bounds)."""
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
     from cells.models import surface_pump as first
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     start = initialise(spec)
@@ -241,7 +241,7 @@ def device_failures(history, spec, *, start_step=0):
     import jax
     import jax.numpy as jnp
 
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     p = jax.tree.map(jnp.asarray, model.initial_values(spec)[1])
@@ -273,7 +273,7 @@ def compare(spec, state, steps, *, start_step=0, fraction=0.95, kind="uniform", 
     cap_ulps: hold under another cap (the layout's current floor), a positive control:
     how far a solve must be from its root before a row check or ledger refuses.
     """
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     rows = list(range(start_step, start_step + steps + 1))
@@ -314,7 +314,7 @@ def main(argv=None):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("out", type=Path)
@@ -343,7 +343,7 @@ def main(argv=None):
     raw["execution"]["backend"] = "cpu"
     raw["execution"]["field_solver"] = field.FLOOR_SOLVER_ID
     spec = parse_spec(raw)
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     start_step = args.warm
@@ -355,7 +355,7 @@ def main(argv=None):
         if args.warm:
             raise SystemExit("--warm starts from the definition's own start, not --state")
     else:
-        from cells.core.state import initialise
+        from cells.execution.state import initialise
 
         state = jitted_run(spec, args.warm) if args.warm else initialise(spec).state
     record = dict(

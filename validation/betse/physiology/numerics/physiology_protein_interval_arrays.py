@@ -12,6 +12,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.legacy.models import compartment_reactions as chemistry
 from cells.legacy.models import surface_calcium as calcium
 from cells.legacy.models import surface_calcium_energy as fuel
@@ -19,7 +20,6 @@ from cells.models import surface_kinetic as kinetic
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 from validation.betse.physiology.models import physiology_permeability_view as view
 from validation.betse.physiology.models import physiology_protein_charge_rhs as charged
 

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, replace
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import open_calcium_bath_binding as binding
 from cells.legacy.core import surface_bath_events_binding as bath
 from cells.legacy.core import surface_open_calcium_energy_spec as parent

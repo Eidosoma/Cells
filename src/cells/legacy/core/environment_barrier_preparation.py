@@ -14,8 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.definitions.surface_tissue_spec import SurfaceTissueModel
 from cells.legacy.processes import extracellular_face_transport as native
 from cells.models import surface_tissue
 

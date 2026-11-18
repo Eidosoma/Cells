@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.specs import ConfigError, read_json
+from cells.definitions.specs import ConfigError, read_json
+from cells.execution.grid import EventGrid
 from tests.betse_physiology.integration.test_physiology_checkpoint import assert_same_component
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree
 from tests.betse_physiology.unit.test_physiology_tissue_step import case
@@ -311,7 +311,7 @@ def test_publication_failure_preserves_failure_artifact_and_original_source(tmp_
 
 @pytest.mark.parametrize("when", ["during_step", "during_numeric_publication"])
 def test_source_drift_cannot_relabel_an_already_computed_step(tmp_path, monkeypatch, when):
-    from cells import io
+    from cells.records import io
 
     spec, point, binding, component = inputs()
     source = save(tmp_path / "source", spec, point, binding, component)

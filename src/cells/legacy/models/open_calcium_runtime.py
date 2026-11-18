@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.models import open_calcium_admission as admission
 from cells.legacy.models import open_calcium_reservoirs as closure
 from cells.legacy.models import surface_calcium as calcium
@@ -161,7 +161,7 @@ class Adapter:
         )
 
     def check_definition(self, spec):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         actual = self.schema.equation_spec(spec)
         if not any(row.reservoir for row in spec.model.extracellular):
@@ -187,7 +187,7 @@ class Adapter:
             raise ConfigError("Open calcium steps require finite nonnegative values")
         admission.check_steps(actual, steps, controls, self.loss_bound(spec))
         if self.finite_fuel:
-            from cells.core.schedule import control_values
+            from cells.execution.schedule import control_values
 
             state, p = self.initial_values(spec)
             amount = np.where(p.active, self.base.energy_amounts(state, p), 1.0)
@@ -252,7 +252,7 @@ class Adapter:
         )
 
     def observe_history(self, times, history, layout, requested, spec):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         self.check_values(history, spec)
         p = self.LAYOUT_TYPE(*(np.asarray(v) for v in layout))
@@ -302,7 +302,7 @@ class Adapter:
         )
 
     def ensemble_voltage(self, state, layout, spec, time):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         controls = control_values(self.schema.equation_spec(spec), [time])
         value = self.readouts(state, type(controls)(*(v[0] for v in controls)), layout, xp=np)

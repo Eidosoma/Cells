@@ -11,11 +11,11 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.runner import branch_checkpoint, run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import branch_checkpoint, run
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.models import surface_mobile_repair as model
+from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import surface_mobile_repair_fixtures as fixtures
 
 

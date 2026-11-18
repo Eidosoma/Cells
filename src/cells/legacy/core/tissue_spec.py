@@ -3,7 +3,7 @@
 import copy
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     ConfigError,
     JunctionFiniteExtracellularSpec,
     SimulationSpec,

@@ -7,8 +7,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_cotransport_spec import MODEL_ID, energy_spec, route_stoichiometry
 from cells.legacy.models import surface_energy as prior
 from cells.legacy.processes import cotransport
@@ -262,7 +262,7 @@ def check_definition(spec):
         ),
     )
     state, p = initial_values(compact)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(compact, [c.time for c in compact.experiment.changes])
     with np.errstate(all="ignore"):
@@ -281,7 +281,7 @@ def check_steps(spec, steps, controls):
     t = topology(p)
     amounts = np.concatenate(physical_amounts(state, p), axis=-1)
     safe = np.where(t.compartment_active, amounts, 1)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [c.time for c in spec.experiment.changes])
     for i in range(len(spec.experiment.changes)):
@@ -371,7 +371,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -414,7 +414,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [time])
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))

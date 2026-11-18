@@ -13,10 +13,10 @@ import jax.numpy as jnp
 import jax.scipy.linalg
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import logmean
 from cells.numerics.tissue_field import _bernoulli_derivative
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 LAW_ID = "resolved_capacitor_components_current_continuity@1"
 SOLVER_ID = "capacitive_reduction_gauged_damped_newton@1"

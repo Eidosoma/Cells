@@ -7,8 +7,8 @@ from decimal import Decimal, localcontext
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import parse_spec
+from cells.execution.state import Checkpoint
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import changed_protein
 from tests.betse_physiology.unit.test_physiology_permeability_view import fingerprints
 from tests.betse_physiology.unit.test_physiology_tissue_binding import arguments, component_state

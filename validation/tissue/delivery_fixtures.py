@@ -25,7 +25,7 @@ neutral species' own.
   in comp_0).
 """
 
-from cells.core.inventory_species import add_inventory_species
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx

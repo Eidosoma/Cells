@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from cells.core.grid import EventGrid
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
 from validation.tissue import surface_cotransport_water_response as panel
 
 

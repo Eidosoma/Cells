@@ -4,7 +4,14 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 
-from cells.core.specs import ConfigError, ExecutionSpec, SimulationSpec, _fields, _integer, _number
+from cells.definitions.specs import (
+    ConfigError,
+    ExecutionSpec,
+    SimulationSpec,
+    _fields,
+    _integer,
+    _number,
+)
 from cells.legacy.core.bioelectric_spec import positive, signed_number
 from cells.legacy.core.multispecies_spec import identifier
 

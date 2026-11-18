@@ -24,7 +24,7 @@ def decimal_flux(ca, cb, dv, z, temperature, area, diffusion, length, opening, c
 
 
 def check(directory):
-    from cells.coupling.selective import selective_flux
+    from cells.laws.junctions.selective import selective_flux
 
     directory = Path(directory)
     prepared = json.loads((directory / "preparation.json").read_text())

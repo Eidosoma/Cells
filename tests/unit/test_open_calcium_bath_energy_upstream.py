@@ -61,13 +61,13 @@ def test_invalid_linear_system_refuses(a, b):
 
 
 def test_overrides_restore_after_failure_and_keep_exact_constants():
-    from cells.processes import electrochemistry as physical
+    from cells.laws import electrochemistry as physical
 
     solve, r = np.linalg.solve, physical.R
     with pytest.raises(RuntimeError, match="intentional"):
         with wider_arithmetic(constants=True) as names:
             assert np.linalg.solve is decimal_solve
-            assert "cells.processes.electrochemistry.R" in names
+            assert "cells.laws.electrochemistry.R" in names
             assert rational(physical.R) == rational(r)
             assert isinstance(physical.R, np.longdouble)
             raise RuntimeError("intentional")

@@ -56,8 +56,8 @@ def rfull():
 
 def definition(dt=1e-3):
     """The engine egg (R-full's) with one electrode and pulses 0 and 1, as a composition."""
-    from cells.core import pump_composite_spec as cs
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.definitions import pump_composite_spec as cs
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.division import cleft_egg_reference as ref
     from validation.tissue import egg_scale_smoke as smoke
 
@@ -172,8 +172,8 @@ def study(dt):
     import numpy as np
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     raw = definition(dt)
     spec = parse_spec(raw)

@@ -10,7 +10,7 @@ from dataclasses import fields
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.legacy.core import open_calcium_declarations as admission
 from cells.legacy.core import surface_bath_events_binding as bath
 from cells.legacy.models import open_calcium_admission as domain

@@ -18,17 +18,17 @@ rate times its availability. At the definition, on the host (test_kind_schedules
 
 import pytest
 
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core import surface_pump_v2_spec as second
-from cells.core import surface_pump_v3_spec as ionic
-from cells.core.inventory_species import add_inventory_species
-from cells.core.runner import timeline
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
-from cells.core.surface_pump_v3_spec import control_values
-from cells.core.vector_windows import spec_world_key
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions import surface_pump_v2_spec as second
+from cells.definitions import surface_pump_v3_spec as ionic
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.runner import timeline
+from cells.execution.state import initialise
+from cells.execution.vector_windows import spec_world_key
+from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from validation.tissue import pump_water_fixtures as water_fixtures
 

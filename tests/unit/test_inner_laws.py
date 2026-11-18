@@ -23,18 +23,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import surface_pump_v3_spec as spec3
-from cells.core.specs import parse_spec
+from cells.definitions import surface_pump_v3_spec as spec3
+from cells.definitions.specs import parse_spec
+from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
+from cells.laws.junctions import junction_gate
+from cells.laws.pumps import calcium_atpase, kinetic_pump
 from cells.models import inner_laws, surface_pump_v3
-from cells.models.registry import get_model
-from cells.processes import (
-    calcium_atpase,
-    junction_gate,
-    kinetic_pump,
-    potassium_channels,
-    sodium_channels,
-    voltage_gates,
-)
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
@@ -354,7 +349,7 @@ def padded(spec, extra=2):
 
 
 def initial(spec, model):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = model.initial_values(spec)
     controls = control_values(spec, [0.0])

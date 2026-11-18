@@ -16,11 +16,11 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   law interfaces are built, and its ChannelLaw, CycleLaw, RouteLaw and BindingLaw, with Citation,
   the source a cited law gives, and CitedWork, a work it names (registry/laws.py); the operator
   template of a family's own operators, FamilyOperator (registry/operators.py); and the kind
-  contract's Kind, KindFields, KindView, KindRates and Schedule (core/kind_registry.py);
+  contract's Kind, KindFields, KindView, KindRates and Schedule (registry/kind_registry.py);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
-  (core/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
-  (core/kind_registry.py);
-- the constants: R, F and CHARGE_PER_FMOL (processes/electrochemistry.py), and
+  (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
+  (registry/kind_registry.py);
+- the constants: R, F and CHARGE_PER_FMOL (laws/electrochemistry.py), and
   EXPLICIT_STEP_BOUND (models/surface_pump.py);
 - the array helpers kinds use: scatter (numerics/extracellular_field.py), species_sum and
   entity_sum (numerics/species_sums.py), and physical_amounts (models/surface_tissue.py).
@@ -35,7 +35,13 @@ Built-ins do not yet import only this surface. The AST guard that makes them do 
 step.
 """
 
-from cells.core.kind_registry import (
+from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.models.surface_pump import EXPLICIT_STEP_BOUND
+from cells.models.surface_tissue import physical_amounts
+from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import entity_sum, species_sum
+from cells.registry.kind_registry import (
     Kind,
     KindFields,
     KindRates,
@@ -46,12 +52,6 @@ from cells.core.kind_registry import (
     qualified,
     series_to_dict,
 )
-from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
-from cells.models.surface_pump import EXPLICIT_STEP_BOUND
-from cells.models.surface_tissue import physical_amounts
-from cells.numerics.extracellular_field import scatter
-from cells.numerics.species_sums import entity_sum, species_sum
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.registry.laws import (
     BindingLaw,
     ChannelLaw,

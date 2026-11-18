@@ -15,13 +15,13 @@ import copy
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
-from cells.core.vector_windows import spec_world_key
-from cells.io import write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.state import initialise
+from cells.execution.vector_windows import spec_world_key
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
+from cells.records.io import write_snapshot
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 TYPE_NAMES = surface_pump_v3.KindTypes._fields

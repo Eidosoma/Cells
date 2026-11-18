@@ -1,5 +1,5 @@
 """The older families' one entry point (D188 R1): nothing in src/cells outside cells/legacy/ names
-the legacy package, except core/legacy_entry.py's constant LEGACY, which legacy() imports.
+the legacy package, except registry/legacy_entry.py's constant LEGACY, which legacy() imports.
 
 The scan reads every module's syntax tree: imports in every form (absolute, `from cells import
 legacy`, relative), importlib and __import__ calls, attribute chains from `cells`, and every string
@@ -14,7 +14,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "src" / "cells"
 PACKAGE = "cells.legacy"
-ENTRY = "core/legacy_entry.py"
+ENTRY = "registry/legacy_entry.py"
 
 
 def _names_legacy(dotted):
@@ -96,8 +96,8 @@ def test_nothing_outside_legacy_names_it():
 
 
 def test_the_entry_imports_the_one_constant():
-    from cells.core import legacy_entry
     from cells.legacy import registration
+    from cells.registry import legacy_entry
 
     assert legacy_entry.LEGACY == registration.__name__
     assert legacy_entry.legacy() is registration
@@ -107,20 +107,20 @@ def test_the_entry_imports_the_one_constant():
 @pytest.mark.parametrize(
     "relative, source",
     [
-        ("core/specs.py", "import cells.legacy\n"),
-        ("core/specs.py", "import cells.legacy.registration as r\n"),
-        ("core/specs.py", "from cells.legacy import registration\n"),
-        ("core/specs.py", "from cells.legacy.registration import model_for\n"),
-        ("core/specs.py", "from cells import legacy\n"),
-        ("models/registry.py", "def f():\n    from cells.legacy import registration\n"),
+        ("definitions/specs.py", "import cells.legacy\n"),
+        ("definitions/specs.py", "import cells.legacy.registration as r\n"),
+        ("definitions/specs.py", "from cells.legacy import registration\n"),
+        ("definitions/specs.py", "from cells.legacy.registration import model_for\n"),
+        ("definitions/specs.py", "from cells import legacy\n"),
+        ("registry/models.py", "def f():\n    from cells.legacy import registration\n"),
         ("__main__.py", "from .legacy import registration\n"),
-        ("core/schedule.py", "from ..legacy.registration import control_values\n"),
+        ("execution/schedule.py", "from ..legacy.registration import control_values\n"),
         ("ensemble/cli.py", "from .. import legacy\n"),
-        ("core/specs.py", "import importlib\nm = importlib.import_module('cells.legacy.x')\n"),
-        ("core/specs.py", "m = __import__('cells.legacy.registration')\n"),
-        ("core/specs.py", "import sys\nm = sys.modules['cells.legacy.registration']\n"),
-        ("core/specs.py", "import cells\nm = cells.legacy.registration\n"),
-        ("core/specs.py", "NAME = 'cells.legacy' + '.registration'\n"),
+        ("definitions/specs.py", "import importlib\nm = importlib.import_module('cells.legacy.x')\n"),  # noqa: E501
+        ("definitions/specs.py", "m = __import__('cells.legacy.registration')\n"),
+        ("definitions/specs.py", "import sys\nm = sys.modules['cells.legacy.registration']\n"),
+        ("definitions/specs.py", "import cells\nm = cells.legacy.registration\n"),
+        ("definitions/specs.py", "NAME = 'cells.legacy' + '.registration'\n"),
         (ENTRY, 'LEGACY = "cells.legacy.registration"\nOTHER = "cells.legacy.registration"\n'),
     ],
 )
@@ -131,16 +131,17 @@ def test_each_planted_reference_is_caught(relative, source):
 def test_the_allowed_forms_are_not_flagged():
     entry = (SRC / ENTRY).read_text()
     assert findings(entry, ENTRY) == []
-    assert findings('"""Mentions cells.legacy in prose."""\nx = 1\n', "core/specs.py") == []
-    assert findings('LEGACY = "cells.legacy.registration"\n', "core/specs.py")  # Not the entry.
+    assert findings('"""Mentions cells.legacy in prose."""\nx = 1\n', "definitions/specs.py") == []
+    # Not the entry.
+    assert findings('LEGACY = "cells.legacy.registration"\n', "definitions/specs.py")
 
 
 def test_a_planted_module_in_a_copied_tree_is_caught(tmp_path):
-    for relative in ("core/specs.py", ENTRY, "legacy/registration.py"):
+    for relative in ("definitions/specs.py", ENTRY, "legacy/registration.py"):
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text((SRC / relative).read_text())
     assert scan(tmp_path) == {}
-    planted = tmp_path / "core/specs.py"  # One path, which a source move rewrites (D188).
+    planted = tmp_path / "definitions/specs.py"  # One path, which a source move rewrites (D188).
     planted.write_text(planted.read_text() + "\nfrom cells.legacy.registration import parse\n")
-    assert list(scan(tmp_path)) == ["core/specs.py"]
+    assert list(scan(tmp_path)) == ["definitions/specs.py"]

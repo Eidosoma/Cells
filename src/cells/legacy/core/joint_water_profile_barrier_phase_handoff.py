@@ -14,10 +14,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, _fields, digest, read_json
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, _fields, digest, read_json
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import joint_water_profile_interventions_binding as membranes
 from cells.legacy.core import surface_active_profile_barrier_binding as declarations
 from cells.legacy.core import surface_barrier_interventions_binding as exterior

@@ -3,7 +3,7 @@
 from bisect import bisect_right
 from dataclasses import dataclass, fields
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     ConfigError,
     PhysicalIonicGraphChange,
     PhysicalIonicGraphExperimentSpec,

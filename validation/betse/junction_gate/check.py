@@ -12,7 +12,7 @@ import jax.numpy as jnp
 import numpy as np
 import reference
 
-from cells.processes import junction_gate as gate
+from cells.laws.junctions import junction_gate as gate
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
 import common as u  # noqa: E402

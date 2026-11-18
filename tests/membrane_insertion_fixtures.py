@@ -14,7 +14,7 @@ with_operators adds the membrane state (every population declared) and an insert
 import copy
 import math
 
-from cells.core import pump_composite_spec as cs
+from cells.definitions import pump_composite_spec as cs
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 

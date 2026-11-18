@@ -60,7 +60,7 @@ import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 # Exact SI products (N_A e, N_A k_B) for the reference arithmetic. The definition's charge
@@ -352,7 +352,7 @@ def observed(result):
 
 
 def part_anchor(args):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     raw, inputs = egg_definition(end_time=args.end, anchor="fixture")
     out = dict(
@@ -374,8 +374,8 @@ def part_anchor(args):
 
 
 def _run(raw, inputs, part):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     out = dict(part=part, inputs=inputs, model=raw["model"]["id"])
     started = time.perf_counter()

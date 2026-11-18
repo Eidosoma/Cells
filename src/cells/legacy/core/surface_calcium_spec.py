@@ -3,8 +3,8 @@
 from bisect import bisect_right
 from dataclasses import asdict, dataclass
 
-from cells.core import surface_kinetic_spec as ionic
-from cells.core.specs import (
+from cells.definitions import surface_kinetic_spec as ionic
+from cells.definitions.specs import (
     ChannelChange,
     ChannelSpec,
     ConfigError,
@@ -12,6 +12,9 @@ from cells.core.specs import (
     _fields,
     _integer,
 )
+from cells.laws.channels import calcium_gates
+from cells.laws.reactions import plasma_calcium
+from cells.laws.reactions.er_calcium import METABOLISM
 from cells.legacy.core import er_spec
 from cells.legacy.core.bioelectric_spec import signed_number
 from cells.legacy.core.ip3_calcium_spec import IP3Release
@@ -20,8 +23,6 @@ from cells.legacy.core.plasma_calcium_spec import Exchanger, PlasmaRoute, RouteC
 from cells.legacy.core.reaction_spec import bounded
 from cells.legacy.core.spatial_calcium_spec import project, store_spec
 from cells.legacy.processes import ip3_release
-from cells.processes import calcium_gates, plasma_calcium
-from cells.processes.er_calcium import METABOLISM
 
 MODEL_ID = "resolved_calcium@1"
 CHANNEL_MODEL_ID = "resolved_calcium@2"

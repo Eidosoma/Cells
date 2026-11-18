@@ -10,18 +10,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_worlds
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.core import environment_barrier_interventions_spec as schema
 from cells.legacy.models import environment_barrier_interventions as model
 from cells.models import surface_tissue as parent
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.environment_barrier_fixtures import definition
 from validation.transport import environment_barrier_interventions_fixtures as fixtures
 from validation.transport import environment_barrier_interventions_reference as reference

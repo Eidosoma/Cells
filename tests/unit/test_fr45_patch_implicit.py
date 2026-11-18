@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
-from cells.processes import passive_permeation as passive
-from cells.processes import patch_electrodiffusion as pe
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R, bernoulli, ghk_leak
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R, bernoulli, ghk_leak
+from cells.laws.routes import passive_permeation as passive
+from cells.laws.routes import patch_electrodiffusion as pe
 
 T = 310.0
 V_I = 4 / 3 * math.pi * (5e-6) ** 3 * 1e15

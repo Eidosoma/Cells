@@ -14,11 +14,11 @@ not tier 1.
 import jax
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from validation.tissue import site_occupancy_fixtures as sfx
 
 jax.config.update("jax_enable_x64", True)

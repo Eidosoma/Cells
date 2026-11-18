@@ -10,10 +10,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import WorldRefusal
-from cells.core.specs import ConfigError
-from cells.core.vector_windows import plan_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import ConfigError
+from cells.execution.batch import WorldRefusal
+from cells.execution.vector_windows import plan_vector_windows, run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.models import surface_pump
 from tests.unit.test_vector_windows import cohort, definition
 

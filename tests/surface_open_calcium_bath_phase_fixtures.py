@@ -9,10 +9,10 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import open_calcium_bath_phase_handoff as bridge
 from cells.legacy.core import surface_open_calcium_bath_epoch_spec as calcium_schema
 from cells.legacy.core import surface_open_calcium_energy_bath_epoch_spec as energy_schema

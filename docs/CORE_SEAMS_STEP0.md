@@ -23,7 +23,7 @@ criteria, written before they run.
   them.
 - The planner's pin inventory ran once at ef9fc1a8 without a report (40 live pins on 19 files,
   in 14 pinning modules): the inventory only, no intersection.
-- Code read: refusal 4 (`models/operators/compartments.py`), the transporter kind's header, and
+- Code read: refusal 4 (`operators/compartments.py`), the transporter kind's header, and
   `models/inner_laws.py`.
 
 ## 1. The cycle-law screen (D195's condition on seams A and C)
@@ -386,7 +386,7 @@ at ef9fc1a8 with `PYTHONPATH=src:.`, once per set. Each set is written as a synt
    tables, or a kind's law tuple, calls or names. These are found from the declaring modules'
    imports and their call sites;
 2. the defining modules of the passive route laws' kernels, as named in `ROUTE_LAWS`' basis;
-3. `models/inner_laws.py`, whose central tables leave, and `models/operators/__init__.py`, the
+3. `models/inner_laws.py`, whose central tables leave, and `operators/__init__.py`, the
    operators' registration.
 
 **Set G, the files the `cells.modules` guard (§8.5) would rewrite:** every module that move 2's
@@ -398,7 +398,7 @@ regeneration at ef9fc1a8, read without editing, the difference is flagged.
 1. a live pin whose pinned file is in the set (`pins_whose_file_is_touched`);
 2. a pinning module in the set (`pinning_modules_touched`);
 3. one of the six files that must keep their bytes in the set (SOURCE_LAYOUT_MOVES_DESIGN §17
-   item 2): `processes/electrochemistry.py`, `numerics/fixed_step.py`,
+   item 2): `laws/electrochemistry.py`, `numerics/fixed_step.py`,
    `numerics/extracellular_field.py`, `cells/__init__.py`, `numerics/__init__.py` and
    `processes/__init__.py`;
 4. a law kernel defined in a file that must keep its bytes, since an extraction that re-imports
@@ -425,10 +425,10 @@ pins are keyed by path.
 **The two sets:**
 - **Set F, by the rule:** 17 files. These are the kernel modules the declarations name:
   - `processes/{voltage_gates,potassium_channels,sodium_channels,junction_gate,kinetic_pump,calcium_atpase,atp_transporter,proton_pump,proton_leak,passive_permeation,rapid_proton_buffer,ph_condition,patch_damage}.py`;
-  - `coupling/selective.py`;
+  - `laws/junctions/selective.py`;
   - `numerics/surface_transport.py`;
 
-  with `models/inner_laws.py` and `models/operators/__init__.py`. Adding the calcium pump's
+  with `models/inner_laws.py` and `operators/__init__.py`. Adding the calcium pump's
   delegated kernels, `er_calcium.py` and `plasma_calcium.py`, makes 19 (set F+).
 - **Set G:** 32 files. The two move-2 drafts map the same modules into `kinds/` and `laws/`, except
   R3's `kinetic_pump_binding`, which exists only from ef9fc1a8 on.
@@ -852,7 +852,7 @@ times, or until it is refused.
 
 **The reference** is this note's own integration of the same world. The ODE in the lumen's charge and
 the two nodes' proton equivalents is solved with Radau at rtol 1e-12, with the law's equations as
-`processes/proton_pump.py` and the buffers' equilibria give them.
+`laws/pumps/proton_pump.py` and the buffers' equilibria give them.
 - Its author has read the engine, so it is not independent.
 - It checks the integration, not the law.
 

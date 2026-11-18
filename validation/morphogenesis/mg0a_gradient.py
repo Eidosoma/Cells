@@ -259,8 +259,8 @@ def run_segmented(raw, *, segment_steps=SEGMENT_STEPS):
     (core/runner.branch_checkpoint): model, execution, past controls unchanged.
     Window ends are multiples of dt, so they lie on the shared grid.
     """
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
 
     end, dt = raw["experiment"]["end_time"], raw["execution"]["dt"]
     observe = sorted(raw["experiment"]["observation_times"])

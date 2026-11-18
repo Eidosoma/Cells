@@ -101,8 +101,8 @@ def pulses(egg, end):
 
 def definition(dt=JUDGED_DT, *, end=None):
     """The engine egg (R-full's) as a resolved_pump_composite@1 definition (raw)."""
-    from cells.core import pump_composite_spec as cs
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.definitions import pump_composite_spec as cs
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
     from validation.division import cleft_egg_reference as ref
 
     egg, _, d = rfull()
@@ -433,7 +433,7 @@ def anchor_granularity(raw):
     """2 ulp(background) / |background + sum z n|: the cytosol anchor's relative precision."""
     import numpy as np
 
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     cell = raw["model"]["cells"][0]
     charge = cell["initial_charge_C"] / CHARGE_PER_FMOL
@@ -476,12 +476,12 @@ def check(dts=STUDY_DTS):
     checks (core/grid's chunks call the same bound checks), accepted or refused."""
     import numpy as np
 
-    from cells.core import pump_composite_spec as cs
-    from cells.core import surface_pump_v3_spec as ionic_spec
-    from cells.core.specs import ConfigError, parse_spec
+    from cells.definitions import pump_composite_spec as cs
+    from cells.definitions import surface_pump_v3_spec as ionic_spec
+    from cells.definitions.specs import ConfigError, parse_spec
     from cells.models import surface_pump as first
-    from cells.models.operators import membrane_insertion as insertion
-    from cells.models.registry import get_model
+    from cells.operators import membrane_insertion as insertion
+    from cells.registry.models import get_model
 
     cases = []
     for dt in dts:
@@ -539,11 +539,11 @@ def probe(dt=JUDGED_DT, after=PROBE_STEPS_AFTER_ONSET, width=PROBE_WINDOW, chunk
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.core import runner
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution import runner
+    from cells.execution.schedule import control_values
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     started = time.perf_counter()
     egg, _, _ = rfull()
@@ -726,8 +726,8 @@ OBSERVED = ("times", "membrane_voltage_V", "lumen_concentration_mM")
 
 def study_batch(spec, window_steps=STUDY_WINDOW):
     """The study's one-world vector-window batch and window policy, admission bounds included."""
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     work = 2 * spec.execution.max_steps + 10**6
     batch = BatchSpec((WorldSpec(1, spec),), 1, work, 2**31)
@@ -741,7 +741,7 @@ def windowed_observations(spec, *, columns=OBSERVED, window_steps=STUDY_WINDOW):
     cannot hold a 2100 s history."""
     import numpy as np
 
-    from cells.core.vector_windows import run_vector_windowed
+    from cells.execution.vector_windows import run_vector_windowed
 
     found = []
 
@@ -762,7 +762,7 @@ def ledger_ratios(spec, state, steps, names=PROBE_LEDGERS):
     import jax.numpy as jnp
     import numpy as np
 
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     p = model.initial_values(spec)[1]
@@ -794,9 +794,9 @@ def admit(dts=STUDY_DTS, window_steps=STUDY_WINDOW):
     """The study's admission on the egg at each step: plan_vector_windows with the study's own
     batch and policy (the cohort limits, the window plan, and the whole clock's checks through
     core/grid's checked_grid). No step is taken and nothing is observed."""
-    from cells.core.errors import NumericalError
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.core.vector_windows import plan_vector_windows
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.vector_windows import plan_vector_windows
 
     cases = []
     for dt in dts:
@@ -834,11 +834,11 @@ def study(dt, *, window_steps=STUDY_WINDOW, keep=None):
     (windowed_observations), with the device checks' diagnostics and, at the horizon (the
     final row), the electrode, reservoir-work, energy and fill residuals against their
     bounds. keep: a folder for the run's observation rows, diagnostics and final checkpoint,
-    written before any post-processing (cells.io.write_snapshot), so a later failure loses no
-    run."""
+    written before any post-processing (cells.records.io.write_snapshot), so a later failure loses no
+    run."""  # noqa: E501
     import time
 
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from validation.division import cleft_egg_reference as ref
 
     started = time.perf_counter()
@@ -851,7 +851,7 @@ def study(dt, *, window_steps=STUDY_WINDOW, keep=None):
     if keep is not None:  # The run's rows and final checkpoint, before any post-processing.
         import numpy as np
 
-        from cells.io import write_snapshot
+        from cells.records.io import write_snapshot
 
         keep = Path(keep)
         keep.mkdir(parents=True, exist_ok=True)
@@ -1174,7 +1174,7 @@ def main(argv=None):
 
         jax.config.update("jax_enable_x64", True)
     if args.action == "compare":
-        from cells.core.specs import parse_spec
+        from cells.definitions.specs import parse_spec
 
         raw = definition()
         parse_spec(raw)  # The composite's definition checks (raises on a refusal).

@@ -233,7 +233,7 @@ def test_comparator_judges_against_a_declared_reference_layout(tmp_path):
 
 
 def test_field_solver_is_declared_and_must_match_the_protocol(tmp_path):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from tests.unit.test_default_world_adapter import DT, MAMMAL, judged_protocol_file, write_case
     from validation.betse import default_world_adapter as adapter
 

@@ -3,14 +3,14 @@
 from bisect import bisect_right
 from dataclasses import asdict, dataclass, fields
 
-from cells.core.specs import ConfigError, SimulationSpec, _fields
+from cells.definitions.specs import ConfigError, SimulationSpec, _fields
+from cells.laws.reactions.er_calcium import METABOLISM
+from cells.laws.reactions.plasma_calcium import EXCHANGER_LAW, PUMP_LAW
 from cells.legacy.core import spatial_calcium_spec as base
 from cells.legacy.core.bioelectric_spec import signed_number
 from cells.legacy.core.er_spec import ERPump
 from cells.legacy.core.multispecies_spec import identifier
 from cells.legacy.core.reaction_spec import bounded
-from cells.processes.er_calcium import METABOLISM
-from cells.processes.plasma_calcium import EXCHANGER_LAW, PUMP_LAW
 
 MODEL_ID = "spatial_calcium@2"
 

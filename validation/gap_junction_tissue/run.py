@@ -51,7 +51,7 @@ local_species_reactions@1, cells.passive_routes@1 with passive_neutral_permeatio
 junction_voltage_relaxation@1 pinned open, resolved_capacitor_components_current_continuity@1 and
 imex_ars222_face_electromigration@1.
 
-Records. Every arm's run of record is written by the engine's own writer, cells.io.write_run,
+Records. Every arm's run of record is written by the engine's own writer, cells.records.io.write_run,
 under OUTDIR/worlds/<arm id>/ (trajectory.npz with every accepted step, resolved_config.json,
 checkpoint_final, summary.json, manifest.json) with view.json, its run view (cells.run_view@1)
 with worlds.geometry's prescribed layout, and run.json (revision, models, what the run represents
@@ -63,7 +63,7 @@ Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu
     python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study]
 results.json is rewritten after every arm. --no-dt-study runs the as-written arms at the step
 rule's dt only, for a rerun that writes their records (with views) and nothing more.
-"""
+"""  # noqa: E501
 
 import json
 import math
@@ -81,9 +81,9 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np  # noqa: E402
 
 import cells  # noqa: E402,F401
-from cells import io, run_view  # noqa: E402
-from cells.core import blas_threads, runner  # noqa: E402
-from cells.core.specs import ConfigError, parse_spec  # noqa: E402
+from cells.definitions.specs import ConfigError, parse_spec  # noqa: E402
+from cells.execution import blas_threads, runner  # noqa: E402
+from cells.records import io, run_view  # noqa: E402
 from validation.gap_junction_tissue import paper, worlds  # noqa: E402
 
 CRITERIA = {
@@ -806,7 +806,7 @@ def part_gate(out, save):
     """F3/F4 measured: the engine's one junction law (its own kinetics, steady target) fitted to
     Figure 1's Cx45 small-ion curve normalized at dV = 0, over the figure's -100..100 mV; then the
     same law, with the same single minimum, against the miRNA curve (floor 0)."""
-    from cells.processes import junction_gate
+    from cells.laws.junctions import junction_gate
 
     dv = np.linspace(-0.1, 0.1, 201)
     peak = paper.chen_izu(0.0, paper.CX45_SMALL_ION_GMIN)

@@ -14,7 +14,7 @@ import json
 import textwrap
 from pathlib import Path
 
-from cells.models.operators import partition
+from cells.operators import partition
 from validation.division import q2_rops_comparison as q2
 from validation.division import q3_tissue_comparison as q3
 from validation.division import q10_sensitivity as q10

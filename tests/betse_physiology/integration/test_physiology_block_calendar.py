@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from tests.betse_physiology.integration.test_physiology_block_step import (
     fixture as ordinary_fixture,
 )

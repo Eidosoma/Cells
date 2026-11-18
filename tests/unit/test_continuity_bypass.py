@@ -174,7 +174,7 @@ def scan(tree):
         continuity=any(k.arg == "continuity" for c in calls for k in c.keywords),
         provenance=any(_name(c) == "provenance" for c in calls),
         imports_continuity=any(
-            name == "cells.continuity" or name.startswith("cells.continuity.") for name in imports
+            name == "cells.execution.continuity" or name.startswith("cells.execution.continuity.") for name in imports  # noqa: E501
         ),
     )
 
@@ -242,7 +242,7 @@ def test_registered_drivers_and_judges_never_pass_a_record():
         for name in (*REGISTERED, *judges)
         if found[name]["continuity"] or found[name]["imports_continuity"]
     ]
-    assert not passing, f"Registered drivers or judges reach cells.continuity: {passing}"
+    assert not passing, f"Registered drivers or judges reach cells.execution.continuity: {passing}"
 
 
 def test_engine_call_sites_pass_no_record():
@@ -259,8 +259,8 @@ def test_engine_call_sites_pass_no_record():
         ]
         if calls:
             passing[".".join(path.relative_to(ROOT / "src").with_suffix("").parts)] = calls
-    assert sorted(passing) == ["cells.batch_io"]
-    (call,) = passing["cells.batch_io"]
+    assert sorted(passing) == ["cells.records.batch_io"]
+    (call,) = passing["cells.records.batch_io"]
     assert _name(call) == "load_snapshot"
     (value,) = [k.value for k in call.keywords if k.arg == "continuity"]
     assert ast.unparse(value) == "binding.child(world.world_id)"
@@ -269,11 +269,11 @@ def test_engine_call_sites_pass_no_record():
 SOURCES = {  # Synthetic modules: does the scan flag them, and do they pass a record?
     "import numpy as np\nnp.load(path / 'state.npz')\n": (True, False),
     "path = run / 'snapshots' / 'x' / 'world-1' / 'state.npz'\n": (True, False),
-    "import numpy as np\nfrom cells.core.state import Checkpoint\n"
+    "import numpy as np\nfrom cells.execution.state import Checkpoint\n"
     "a = np.load(f)\nc = Checkpoint(a['s'], a['l'], 0.0, 0, 0)\n": (True, False),
-    "from cells.core.state import Checkpoint\nc = Checkpoint(s, l, 0.0, 0, 0)\n": (False, False),
-    "from cells.io import load_snapshot\nsaved = load_snapshot(path)\n": (False, False),
-    "from cells.batch_io import load_batch_snapshot\n"
+    "from cells.execution.state import Checkpoint\nc = Checkpoint(s, l, 0.0, 0, 0)\n": (False, False),  # noqa: E501
+    "from cells.records.io import load_snapshot\nsaved = load_snapshot(path)\n": (False, False),
+    "from cells.records.batch_io import load_batch_snapshot\n"
     "saved = load_batch_snapshot(p, continuity=request)\n": (False, True),
     "import numpy as np\nsaved = dict(np.load(out / 'checkpoint.npz'))\n": (True, False),
     "import numpy as np\nlast = np.load(run / 'last-state.npz')\n": (True, False),

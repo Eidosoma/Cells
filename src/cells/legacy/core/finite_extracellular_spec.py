@@ -2,7 +2,7 @@
 
 from dataclasses import asdict
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     FINITE_EXTRACELLULAR_ID,
     ChannelChange,
     ChannelSpec,
@@ -22,11 +22,11 @@ from cells.core.specs import (
     _integer,
     _number,
 )
+from cells.laws.channels.voltage_gates import LAW_ID
 from cells.legacy.core.bioelectric_spec import positive, signed_number
 from cells.legacy.core.multispecies_spec import aligned, identifier
 from cells.legacy.core.physical_ionic_graph_spec import GATE_LAW, _controls, _tuple
 from cells.legacy.core.voltage_gated_spec import fraction
-from cells.processes.voltage_gates import LAW_ID
 
 
 def to_dict(spec):

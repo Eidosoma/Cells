@@ -11,12 +11,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy.core import tissue_profile_composition_preparation as bridge
 from cells.legacy.core import tissue_profile_preparation as direct
 from cells.legacy.processes import tissue_target_selectors as native
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.topology import tissue_profile_composition_fixtures as fixtures
 from validation.topology import tissue_profile_composition_reference as reference
 

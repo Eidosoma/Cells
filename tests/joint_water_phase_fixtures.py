@@ -7,11 +7,11 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
 from cells.legacy.core import joint_water_profile_phase_handoff as handoff
 from cells.legacy.tissue_phase import prepare_request
 from cells.numerics.fixed_step import rk4_step

@@ -13,8 +13,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.legacy.core.surface_calcium_energy_atp_transport_spec import (
     ACCOUNTING,
     MODEL_ID,
@@ -28,7 +29,6 @@ from cells.legacy.processes import cell_zone_transport as process
 from cells.legacy.processes import finite_energy as fuel
 from cells.models import surface_tissue as surface
 from cells.numerics.extracellular_field import ordered_scatter, scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 EXTRA_AXES = {
     "network_cycles_fmol": ["network_transport_slot"],
@@ -401,7 +401,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     table = control_values(spec, [change.time for change in spec.experiment.changes])
@@ -411,7 +411,7 @@ def check_definition(spec):
 
 
 def check_steps(spec, steps, controls):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     prior.check_steps(replace(base_spec(spec), experiment=spec.experiment), steps, controls)
     state, p = initial_values(spec)
@@ -523,7 +523,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(x) for x in layout))
     requested = np.asarray(requested, dtype=float)

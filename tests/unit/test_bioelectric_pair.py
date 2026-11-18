@@ -7,16 +7,22 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, validate_checkpoint
-from cells.core.schedule import PairControl, control_values
-from cells.core.specs import ConfigError, ContactChange, ExperimentSpec, load_spec, parse_spec
-from cells.core.state import BioelectricPairState, initialise
-from cells.coupling.selective import gate_target, selective_flux
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions.specs import (
+    ConfigError,
+    ContactChange,
+    ExperimentSpec,
+    load_spec,
+    parse_spec,
+)
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
+from cells.execution.schedule import PairControl, control_values
+from cells.execution.state import BioelectricPairState, initialise
+from cells.laws.junctions.selective import gate_target, selective_flux
 from cells.legacy.models import bioelectric_pair as model
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.observers import hermite_bounds, sample_hermite_history, sample_history
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.records.observers import hermite_bounds, sample_hermite_history, sample_history
 from tests import reference_bioelectric_pair as ref
 from tests.bioelectric_pair_fixtures import (
     ROOT,

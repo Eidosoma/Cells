@@ -33,7 +33,7 @@ import math
 
 import numpy as np
 
-from cells.core.specs import ConfigError, require_fields
+from cells.definitions.specs import ConfigError, require_fields
 from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import MODEL_ID, TRANSITION_STATE
 from cells.models.assembly_lineages_v2.interfaces import CATALYSING, RateFactorLaw

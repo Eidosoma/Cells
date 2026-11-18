@@ -4,10 +4,10 @@ import copy
 
 import pytest
 
-from cells.core.output_paths import output_root, within_output_root
 from cells.ensemble.cli import wilson
 from cells.ensemble.plan import balance, plan
 from cells.ensemble.telemetry import utilization
+from cells.execution.output_paths import output_root, within_output_root
 
 
 def experiment():

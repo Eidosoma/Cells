@@ -274,7 +274,7 @@ def test_rejects_cells_corruptions(path, value):
 
 
 def test_preparations_are_new_valid_initial_states_not_invented_histories():
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.legacy.models import finite_extracellular as model
 
     _, _, local = synthetic()

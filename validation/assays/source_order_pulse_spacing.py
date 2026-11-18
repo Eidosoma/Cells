@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import source_order_observation_design as geometry
 from validation.assays import source_order_selected as previous
 from validation.assays import two_task

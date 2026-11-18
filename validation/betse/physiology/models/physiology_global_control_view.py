@@ -6,8 +6,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.runner import validate_checkpoint
-from cells.core.state import Checkpoint
+from cells.execution.runner import validate_checkpoint
+from cells.execution.state import Checkpoint
 from validation.betse.physiology.core import physiology_global_control_view as controls
 from validation.betse.physiology.models import physiology_active_temperature_view as active
 from validation.betse.physiology.models import physiology_permeability_view as ordinary

@@ -426,7 +426,7 @@ cross-check, using numbers from the open paper under D186.
 ## 5. Run records and the run view
 
 This section is in the terms of `docs/RUN_VIEW_DESIGN.md` and the writer on main since 16 November
-(`cells/run_view.py`; the contract's `RECORD_KINDS`, `view_events`, `living_intervals`,
+(`cells/records/run_view.py`; the contract's `RECORD_KINDS`, `view_events`, `living_intervals`,
 `time.event_rows` and `resets`).
 
 ### 5.1 What a run saves of an assembly
@@ -451,6 +451,14 @@ leaves are saved only on request; the totals carry them.
 - `fission`: two rows per fission;
 - an optional `cadence` base (every k events or a nominal interval);
 - the unit is nominal, not seconds (§1.7).
+
+**Checkpoints from before D188's move 2 (D195 item 4, its one exception, accepted by the user on
+18 November 2026).**
+- `cells.assembly_lineages@1`'s lineage checkpoints written before move 2 are refused by the
+  family's frozen reader (`models/assembly_lineages/checkpoints.read`, unchanged under D215).
+- The reader refuses any changed engine source, so the refusal is clean, but it names no tag.
+- These checkpoints restore in the tree tagged `pre-d188-move2-2026-11-18`, the last tree before
+  the move.
 
 ### 5.2 How a fission is recorded
 

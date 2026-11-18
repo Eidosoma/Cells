@@ -12,16 +12,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run, timeline, validate_checkpoint
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run, timeline, validate_checkpoint
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import initialise
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.junctions import junction_gate as gate
 from cells.legacy.models import junction_finite_extracellular as model
-from cells.models.registry import get_model
-from cells.processes import junction_gate as gate
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -289,9 +289,9 @@ def test_coupled_block_release_matches_independent_odes(tmp_path):
 LEGACY_PROBE = """
 import json, sys
 import numpy as np
-from cells.core.specs import parse_spec
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.registry.models import get_model
 results=[]
 for raw in json.load(sys.stdin):
     spec=parse_spec(raw)

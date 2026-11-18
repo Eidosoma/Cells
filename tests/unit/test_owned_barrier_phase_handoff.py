@@ -6,9 +6,9 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.state import initialise
 from cells.legacy.core import owned_barrier_phase_handoff as bridge
 from cells.legacy.tissue_phase import prepare_request, replay
 from tests.owned_barrier_phase_fixtures import (

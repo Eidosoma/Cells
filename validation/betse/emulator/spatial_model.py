@@ -11,9 +11,9 @@ from typing import NamedTuple
 import jax
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.processes import kinetic_pump
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.pumps import kinetic_pump
 from validation.betse.emulator import active
 from validation.betse.emulator import spatial as passive
 from validation.betse.emulator.spatial_spec import MODEL_ID, SOLVER_ID, Control, definition_arrays

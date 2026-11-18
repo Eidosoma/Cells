@@ -8,9 +8,9 @@ composition and program), must break S1 and S2. One compile: not tier 1.
 
 import jax
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.operators import compartments as comp
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.operators import compartments as comp
 from validation.tissue import compartment_fixtures as cfx
 
 jax.config.update("jax_enable_x64", True)

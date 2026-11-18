@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
 MOBILE = ("Na", "K", "Cl")
 VM0_SOURCE = Path(
@@ -301,8 +301,8 @@ def run_case(raw, dt, vm0, *, readout_times_s=None):
     """Run one raw definition at dt; returns (record, cell voltages at the readout times)."""
     from time import perf_counter
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     spec = parse_spec(resolved_definition(raw, dt=dt, vm0=vm0))
     started = perf_counter()

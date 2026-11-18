@@ -8,19 +8,19 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch, plan_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.resources import trace_bytes
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError, ContactChange, parse_spec
-from cells.core.state import initialise
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import ConfigError, ContactChange, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch, plan_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.resources import trace_bytes
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import initialise
+from cells.execution.windows import WindowPolicy, iter_windows
 from cells.legacy.models import multispecies_membrane as ionic
 from cells.legacy.models import physical_ionic_graph as model
 from cells.legacy.models import voltage_gated_membrane as gated
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.records.io import load_snapshot, write_snapshot
 from tests import physical_ionic_graph_numerical_checks as checks
 from tests import physical_ionic_graph_numerical_data as graph_data
 from tests import reference_physical_ionic_graph as reference

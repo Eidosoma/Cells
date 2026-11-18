@@ -12,8 +12,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from validation.betse.physiology.core import physiology_tissue_step as tissue
 from validation.betse.physiology.models import physiology_permeability_view as permeability
 from validation.betse.physiology.models import physiology_protein_charge_view as charge

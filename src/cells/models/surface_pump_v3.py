@@ -1,6 +1,6 @@
 """resolved_pump_tissue@3: resolved_pump_tissue@2 with voltage-gated channel populations.
 
-A channel population (core/surface_pump_v3_spec.py) is one more membrane process
+A channel population (definitions/surface_pump_v3_spec.py) is one more membrane process
 at its patch: the constant-field flux of its law's ion with permeability
 P * abundance * opening(gates) * availability, the shared-gate population
 equations of resolved_tissue@5 and later (surface_kinetic.readouts). It moves
@@ -60,10 +60,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core import kind_registry
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.core.surface_pump_v3_spec import (
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_pump_v3_spec import (
     GATED_CODES,
     LAW_CODES,
     MODEL_ID,
@@ -72,7 +70,14 @@ from cells.core.surface_pump_v3_spec import (
     Control,
     projection,
 )
-from cells.coupling.selective import selective_flux
+from cells.execution.errors import NumericalError
+from cells.laws.channels import sodium_channels, voltage_gates
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions import junction_gate
+from cells.laws.junctions.selective import selective_flux
+from cells.laws.pumps import calcium_atpase
+from cells.laws.pumps import kinetic_pump as pump
+from cells.laws.pumps import kinetic_pump_binding as pumps
 from cells.models import inner_laws
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
@@ -85,10 +90,7 @@ from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.numerics.species_sums import entity_sum, species_sum
-from cells.processes import calcium_atpase, junction_gate, sodium_channels, voltage_gates
-from cells.processes import kinetic_pump as pump
-from cells.processes import kinetic_pump_binding as pumps
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.registry import kind_registry
 
 OBSERVER_ID = kinetic.OBSERVER_ID
 OBSERVATION_SAMPLING = kinetic.OBSERVATION_SAMPLING
@@ -599,7 +601,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     membrane_process: the opt-in extra membrane process (module docstring). structure: the
     declared structure (§7.4), or None for today's dispatch over the full catalogue.
     """
-    from cells.core.schedule import SurfaceControl
+    from cells.execution.schedule import SurfaceControl
 
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
@@ -1282,7 +1284,7 @@ def checked_step(state, dt, control, p, active, *, structure=None):
 
 
 def check_definition(spec, *, structure=None):
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
 
     m = spec.model
     compact = replace(
@@ -1737,7 +1739,7 @@ def dissipation_fields(structure):
     return tuple(k for k in axes if k.endswith("_dissipated_energy_pJ"))
 
 
-# Device checks (cells.core.vector_windows, core/projective.py): check_values'
+# Device checks (cells.execution.vector_windows, execution/projective.py): check_values'
 # tests per accepted row, compiled. They are the host tests with the same
 # functions and bounds: domain_valid (channel laws and padding, gates in [0, 1],
 # no gate state on gate-free leaks or padding, no transfer or heat on an absent
@@ -1809,7 +1811,7 @@ Observations = make_dataclass(
 
 # ------------------------------------------------------------------ the run view's declarations
 # docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
-# only by the run-view writer (cells/run_view.py), so none changes a program, a binding or a
+# only by the run-view writer (cells/records/run_view.py), so none changes a program, a binding or a
 # checkpoint. They replace the writer's interim table for resolved_pump_tissue@3. Each state
 # field and observation column has its unit, record kind and layer; each readout its axes (the
 # state's are STATE_AXES). Orientations name the roles of the record's entity set: a flow's
@@ -2041,7 +2043,7 @@ RECORD_NOTES = MappingProxyType(
 
 
 def observe_history(times, history, layout, requested, spec, *, structure=None):
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
 
     p = type(layout)(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -2120,7 +2122,7 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
 
 
 def ensemble_voltage(state, layout, spec, time, *, structure=None):
-    from cells.core.surface_pump_v3_spec import control_values
+    from cells.definitions.surface_pump_v3_spec import control_values
 
     controls = control_values(spec, [time])
     types = kind_types(structure) if structure is not None else TODAYS_TYPES
@@ -2199,7 +2201,7 @@ def _closes_slots(model):
     declared = getattr(model, "operators", ())
     if not declared:
         return False
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     return any(OPERATORS[d.law].CLOSES for d in declared)
 

@@ -8,8 +8,8 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.specs import digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import digest, parse_spec
+from cells.execution.state import Checkpoint
 from tests.betse_physiology.integration.test_physiology_protein_charge_view import (
     active_nodes,
     changed_protein,

@@ -158,7 +158,7 @@ Not stated: no record states a level for this piece.
 
 <!-- generated: links -->
 
-- Declared in [`src/cells/models/operators/osmotic_water.py`](../../../../src/cells/models/operators/osmotic_water.py), class `OsmoticWater` (`cells.models.operators.osmotic_water`).
+- Declared in [`src/cells/operators/osmotic_water.py`](../../../../src/cells/operators/osmotic_water.py), class `OsmoticWater` (`cells.operators.osmotic_water`).
 - Runs in `cells.resolved_pump_composite@1`.
 - Manifest entry: (operator, `cells.ideal_osmosis_linear_compliance_water@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.ideal_osmosis_linear_compliance_water@1`.

@@ -43,10 +43,10 @@ import math
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from cells.core import species_registry
-from cells.core.spec_values import identifier
-from cells.core.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.definitions.spec_values import identifier
+from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
 from cells.models.assembly_lineages_v2 import conventions as conventions_rules
+from cells.registry import species_registry
 
 POOL, MEMBRANE, LUMEN = "pool", "membrane", "lumen"
 PHASES = (POOL, MEMBRANE, LUMEN)  # The place order, and the phase index of each.

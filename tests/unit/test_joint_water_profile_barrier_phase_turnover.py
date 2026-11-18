@@ -6,7 +6,7 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.legacy.tissue_phase import prepare_request
 from tests import joint_water_profile_barrier_phase_fixtures as fixtures
 from tests.unit.test_joint_water_profile_barrier_phase_reference import evidence, setup

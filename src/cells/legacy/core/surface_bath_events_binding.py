@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass, fields
 
 import numpy as np
 
-from cells.core.specs import ConfigError, _fields, _number, digest
+from cells.definitions.specs import ConfigError, _fields, _number, digest
 from cells.legacy.processes.extracellular_face_transport import BathEvent, compile_baths
 
 TIMING_POLICY = "phase_clock_rk_stage_native_logistic@1"

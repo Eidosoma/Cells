@@ -6,7 +6,7 @@ The complete water/fuel/repair model retains every physical declaration.
 
 from copy import deepcopy
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy.core import owned_calcium_profile_binding as native
 
 TIMING_POLICY = native.TIMING_POLICY

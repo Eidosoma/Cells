@@ -3,12 +3,12 @@
 from bisect import bisect_right
 from dataclasses import asdict, dataclass, fields
 
-from cells.core.specs import ChannelChange, ChannelSpec, ConfigError, SimulationSpec, _fields
+from cells.definitions.specs import ChannelChange, ChannelSpec, ConfigError, SimulationSpec, _fields
+from cells.laws.channels.calcium_gates import LAW_ID, TEMPERATURE_K
 from cells.legacy.core import plasma_calcium_spec as base
 from cells.legacy.core.multispecies_spec import identifier
 from cells.legacy.core.reaction_spec import bounded
 from cells.legacy.core.spatial_calcium_spec import project
-from cells.processes.calcium_gates import LAW_ID, TEMPERATURE_K
 
 MODEL_ID = "spatial_calcium@3"
 

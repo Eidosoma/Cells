@@ -7,7 +7,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     ChannelChange,
     ConfigError,
     KineticPumpSpec,
@@ -16,12 +16,12 @@ from cells.core.specs import (
     _fields,
     _integer,
 )
+from cells.laws.reactions import er_calcium, plasma_calcium
 from cells.legacy.core import er_spec
 from cells.legacy.core import surface_calcium_spec as prior
 from cells.legacy.core import surface_energy_spec as fuel
 from cells.legacy.processes import finite_calcium_pumps as calcium
 from cells.legacy.processes import finite_energy as energy
-from cells.processes import er_calcium, plasma_calcium
 
 MODEL_ID = "resolved_calcium_energy@1"
 CATALOG_MODEL_ID = "resolved_calcium_energy@2"

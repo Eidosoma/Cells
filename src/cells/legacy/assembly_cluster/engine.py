@@ -15,7 +15,7 @@ from cells.legacy.assembly_cluster import MODEL_ID, mobile_channels, mobile_pump
 from cells.legacy.assembly_cluster.controls import extra_boundaries, prepare
 from cells.legacy.assembly_cluster.kernel import advance
 from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 
 def initial_state(spec):

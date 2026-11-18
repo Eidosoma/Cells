@@ -29,10 +29,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core import cell_replacement_spec as replacement_spec
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.pump_composite_spec import entries
-from cells.core.specs import parse_spec
+from cells.definitions import cell_replacement_spec as replacement_spec
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.pump_composite_spec import entries
+from cells.definitions.specs import parse_spec
 from cells.records import relations as rel
 from tests import partition_fixtures as pf
 from validation.relationships import lineage_summaries as adapter

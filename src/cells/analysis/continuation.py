@@ -38,7 +38,7 @@ import numpy as np
 import scipy.linalg
 
 from cells.analysis import stationary as sa
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 
 CORRECTOR_ITERATIONS = 8
 MIN_TANGENT_COSINE = 0.95

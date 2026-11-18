@@ -1,4 +1,4 @@
-"""The run view's loop block (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2, §3; cells/run_view.py).
+"""The run view's loop block (FR-11; docs/LOOPING_REPLAY_DESIGN.md §2, §3; cells/records/run_view.py).
 
 * Refused before any output: a species or cell type that is not a word, a cell the definition
   does not declare, a period or tolerance not above zero, follows (the cycle's, after its probe),
@@ -20,21 +20,21 @@
 
 The run: one heredity cell under a biphasic current train (an injection world), observed over its
 second period.
-"""
+"""  # noqa: E501
 
 import json
 
 import numpy as np
 import pytest
 
-from cells import run_view
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy
-from cells.io import write_run
-from cells.models.operators import OPERATORS
-from cells.models.registry import get_model
-from cells.window_io import write_windowed_run
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.execution.windows import WindowPolicy
+from cells.operators import OPERATORS
+from cells.records import run_view
+from cells.records.io import write_run
+from cells.records.window_io import write_windowed_run
+from cells.registry.models import get_model
 from tests.run_view_fixtures import DT, INJECTION, injection_world, load
 
 PERIOD, HALF = 0.004, 2  # +1 pA for two steps, then -1 pA for two: one period is 4 ms.

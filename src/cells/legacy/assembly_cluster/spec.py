@@ -9,9 +9,9 @@ import numpy as np
 
 from cells.assembly.spec import AssemblyError
 from cells.assembly_pool.spec import parse_spec as parse_pool
-from cells.core.schedule import control_values
-from cells.core.specs import SpatialJunctionSpec
-from cells.core.specs import parse_spec as parse_ionic
+from cells.definitions.specs import SpatialJunctionSpec
+from cells.definitions.specs import parse_spec as parse_ionic
+from cells.execution.schedule import control_values
 from cells.legacy.assembly_cell.spec import tick_at
 from cells.legacy.assembly_cluster import MODEL_ID
 from cells.legacy.assembly_cluster.controls import ChannelOwners, extra_boundaries, storage_bytes
@@ -60,7 +60,7 @@ from cells.legacy.core.surface_mobile_pump_repair_spec import SurfaceMobilePumpR
 from cells.legacy.core.surface_mobile_repair_spec import SurfaceMobileRepairModel
 from cells.legacy.core.surface_repair_spec import SurfaceMorrisLecarRepairModel, SurfaceRepairModel
 from cells.legacy.core.tissue_calcium_spec import TissueCalciumModel
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 
 
 @dataclass(frozen=True)

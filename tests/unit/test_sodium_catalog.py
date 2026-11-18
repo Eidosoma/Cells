@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.processes import sodium_catalog as sodium
-from cells.processes import sodium_channels as accepted
+from cells.laws.channels import sodium_catalog as sodium
+from cells.laws.channels import sodium_channels as accepted
 from validation.channels import sodium_catalog_reference as reference
 
 ROOT = Path(__file__).resolve().parents[2]

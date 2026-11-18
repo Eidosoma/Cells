@@ -13,8 +13,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy.core import geometry_profile_preparation as bridge
 from cells.legacy.processes import tissue_target_selectors as native
 from cells.models import surface_tissue as model

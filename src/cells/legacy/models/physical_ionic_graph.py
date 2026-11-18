@@ -11,15 +11,15 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError
-from cells.core.state import PhysicalIonicGraphLayout, PhysicalIonicGraphState
-from cells.coupling.selective import gate_target, selective_flux
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import PhysicalIonicGraphControl, control_values
+from cells.execution.state import PhysicalIonicGraphLayout, PhysicalIonicGraphState
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.laws.junctions.selective import gate_target, selective_flux
 from cells.legacy.models import multispecies_membrane as ionic
 from cells.legacy.models import voltage_gated_membrane as gated
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 STATE_TYPE = PhysicalIonicGraphState
 LAYOUT_TYPE = PhysicalIonicGraphLayout

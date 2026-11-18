@@ -4,9 +4,9 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import NumericalError, run
-from cells.core.specs import ExperimentSpec, InputChange
-from cells.core.state import initialise
+from cells.definitions.specs import ExperimentSpec, InputChange
+from cells.execution.runner import NumericalError, run
+from cells.execution.state import initialise
 from cells.legacy.models.source_decay import rhs
 from tests.reference import exact_amount
 

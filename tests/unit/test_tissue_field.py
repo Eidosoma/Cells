@@ -247,7 +247,7 @@ def test_invalid_physical_inputs_never_pass(kind):
 
 def test_analytic_newton_jacobian_matches_autodifferentiation():
     jax.config.update("jax_enable_x64", True)
-    from cells.processes.electrochemistry import bernoulli
+    from cells.laws.electrochemistry import bernoulli
 
     points = jnp.asarray([-40, -1, -1e-4, -1e-6, 0, 1e-6, 1e-4, 1, 40.0])
     device = jax.devices(BACKEND)[0]

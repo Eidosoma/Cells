@@ -26,8 +26,8 @@ import json
 import sys
 from pathlib import Path
 
-from cells import continuity
-from cells.core.specs import digest, read_json
+from cells.definitions.specs import digest, read_json
+from cells.execution import continuity
 
 
 def sha256(path):

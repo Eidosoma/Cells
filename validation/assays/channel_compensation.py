@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 
 from cells.assays.readout import score_predictions
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import baseline_transfer_diagnostic as reference
 from validation.assays import channel_compensation_design as design
 from validation.assays import source_order_coupling_transfer as coupling

@@ -26,8 +26,8 @@ not suitable simulation defaults. Tissue, organism, assay and intervention
 would need their own primary evidence before choosing parameters or endpoints.
 
 The immediate gap in Cells is concrete: the current
-[Na/K ATPase](../src/cells/processes/kinetic_pump.py) and
-[calcium pump laws](../src/cells/processes/er_calcium.py) use maintained
+[Na/K ATPase](../src/cells/laws/pumps/kinetic_pump.py) and
+[calcium pump laws](../src/cells/laws/reactions/er_calcium.py) use maintained
 ATP/ADP/Pi concentrations. Their work is recorded, but pump activity does not
 deplete a shared cellular energy supply. The
 [resolved calcium model](../src/cells/legacy/models/surface_calcium.py) already has

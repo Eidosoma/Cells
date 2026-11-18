@@ -111,7 +111,7 @@ def probe(mode, packet):
         from transport_workers import cells_worker
 
         import cells
-        from cells.io import runtime_identity, source_hashes
+        from cells.records.io import runtime_identity, source_hashes
 
         try:
             cells_worker(requested, missing_input)

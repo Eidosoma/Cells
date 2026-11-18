@@ -11,9 +11,9 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.registry.models import get_model
 from tests.unit.test_current_injection_runs import DT, definition
 
 
@@ -207,7 +207,7 @@ def test_injection_across_a_masked_furrow_and_its_onset():
 
 
 def test_the_view_reaches_injection_only_with_a_field_input():
-    from cells.models.operators import OPERATORS
+    from cells.operators import OPERATORS
 
     assert OPERATORS[LAW].BOOKS_AT_VIEW
     alone = get_model(parse_spec(definition([(0, 1e-12)])).model)
@@ -219,7 +219,7 @@ def test_injection_over_water_is_refused():
     """Injection books @3's free-energy change on the declared volume, but not water's dilution
     term -RT N_tot log(V/V0) of the injected amounts, so a volume owner is refused (CONFLICTS_VIEW
     volume; v2 design §2.10, question 6: a probe left exactly that term unbooked)."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import pump_water_fixtures as wfx
 
     base = wfx.heredity_cell("H", dt=DT, end_time=4 * DT)

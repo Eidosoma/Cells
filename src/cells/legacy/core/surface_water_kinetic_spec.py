@@ -5,8 +5,8 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
 from typing import NamedTuple
 
-from cells.core import surface_kinetic_spec as prior
-from cells.core.specs import ConfigError, _fields
+from cells.definitions import surface_kinetic_spec as prior
+from cells.definitions.specs import ConfigError, _fields
 from cells.legacy.core import surface_water_spec as water
 
 MODEL_ID = "resolved_water@2"

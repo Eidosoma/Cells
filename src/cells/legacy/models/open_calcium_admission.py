@@ -8,12 +8,12 @@ guard continue to apply at each stage. This is not unconditional RK positivity.
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.laws.electrochemistry import F, R
 from cells.legacy.core import owned_calcium_profile_binding as background
 from cells.legacy.models import er_calcium as er
 from cells.legacy.models import surface_calcium as calcium
 from cells.models import surface_kinetic as kinetic
-from cells.processes.electrochemistry import F, R
 
 
 def ionic_moieties(state, p, *, xp):

@@ -10,7 +10,7 @@ ionic solver, protein transitions, temperature/voltage events or observations.
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 
-from cells.core.errors import NumericalError
+from cells.execution.errors import NumericalError
 from validation.betse.physiology.core import physiology_block_control_step as intervals
 from validation.betse.physiology.core import physiology_native_calendar as clocks
 from validation.betse.physiology.models import physiology_block_control_view as blocks

@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import source_order as previous
 from validation.assays import two_task
 from validation.assays.source_order import archived_segment as archived_segment

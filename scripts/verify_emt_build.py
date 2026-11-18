@@ -13,11 +13,11 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import load_spec, read_json
-from cells.core.state import EMTState, cpu_device
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run
+from cells.definitions.specs import load_spec, read_json
+from cells.execution.runner import run
+from cells.execution.state import EMTState, cpu_device
 from cells.legacy.models import emt_mirna
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run
 
 ROOT = Path(__file__).resolve().parents[1]
 TOLERANCES = {

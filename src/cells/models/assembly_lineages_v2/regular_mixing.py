@@ -22,7 +22,7 @@ one column of χ per entry moved. The ledger recomputes F_reg exactly at every s
 
 import numpy as np
 
-from cells.core.specs import ConfigError, require_fields
+from cells.definitions.specs import ConfigError, require_fields
 from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import MODEL_ID, REGULAR_MIXING
 from cells.models.assembly_lineages_v2.interfaces import FreeEnergyTerm

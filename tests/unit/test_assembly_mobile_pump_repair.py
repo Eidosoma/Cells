@@ -14,9 +14,9 @@ import pytest
 
 from cells.assembly.io import digest
 from cells.assembly.spec import AssemblyError
-from cells.core.schedule import control_values
 from cells.ensemble.families import bind_definition
 from cells.ensemble.plan import jupiter_plan, plan
+from cells.execution.schedule import control_values
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import controls, engine
 from cells.legacy.assembly_cluster.mobile_channels import AXES

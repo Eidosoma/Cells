@@ -55,23 +55,23 @@ MODELS = MappingProxyType(
     {
         "resolved_pump_tissue@3": Model(
             type="inner",
-            module="cells.core.surface_pump_v3_spec",
+            module="cells.definitions.surface_pump_v3_spec",
             # Its own laws, and its kinds' package, whose modules declare theirs.
-            law_homes=("cells.models.inner_laws", "cells.models.inner_kinds"),
+            law_homes=("cells.models.inner_laws", "cells.kinds"),
         ),
         "resolved_pump_composite@1": Model(
             type="composite",
-            module="cells.core.pump_composite_spec",
-            operator_homes=("cells.models.operators",),
+            module="cells.definitions.pump_composite_spec",
+            operator_homes=("cells.operators",),
         ),
         "resolved_pump_water@1": Model(
             type="composition",
-            module="cells.core.surface_pump_water_spec",
+            module="cells.definitions.surface_pump_water_spec",
             composition=("resolved_pump_tissue@3", ("ideal_osmosis_linear_compliance_water@1",)),
         ),
         "resolved_pump_water@2": Model(
             type="composition",
-            module="cells.core.surface_pump_water_v2_spec",
+            module="cells.definitions.surface_pump_water_v2_spec",
             composition=(
                 "resolved_pump_tissue@3",
                 ("ideal_osmosis_linear_compliance_water@1", "k_anion_symport_mass_action@1"),
@@ -79,7 +79,7 @@ MODELS = MappingProxyType(
         ),
         "resolved_pump_replacement@1": Model(
             type="composition",
-            module="cells.core.cell_replacement_spec",
+            module="cells.definitions.cell_replacement_spec",
             composition=("resolved_pump_tissue@3", ("scheduled_cell_replacement@1",)),
         ),
         "cells.assembly_lineages@1": Model(
@@ -118,9 +118,9 @@ MODELS = MappingProxyType(
         ),
         # The older active families (D189): their laws are tables inside them, and they declare
         # no piece.
-        "apical_vertex_mechanics@1": Model(type="family", module="cells.core.apical_vertex_spec"),
-        "reaction_transport@1": Model(type="family", module="cells.core.specs"),
-        "resolved_pump_tissue@1": Model(type="family", module="cells.core.surface_pump_spec"),
-        "resolved_pump_tissue@2": Model(type="family", module="cells.core.surface_pump_v2_spec"),
+        "apical_vertex_mechanics@1": Model(type="family", module="cells.definitions.apical_vertex_spec"),  # noqa: E501
+        "reaction_transport@1": Model(type="family", module="cells.definitions.specs"),
+        "resolved_pump_tissue@1": Model(type="family", module="cells.definitions.surface_pump_spec"),  # noqa: E501
+        "resolved_pump_tissue@2": Model(type="family", module="cells.definitions.surface_pump_v2_spec"),  # noqa: E501
     }
 )

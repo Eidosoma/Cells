@@ -21,7 +21,7 @@ import contact as c  # noqa: E402
 AUDIT = c.ROOT / "runs/num-011-coupled-audit-2026-09-16/audit-01"
 AUDIT_SHA = "9a8500c86464bd487754cc8d4a56c2c30b94f85451b217960aeff7cff7be5fb1"
 EXTRA = (
-    "src/cells/processes/kinetic_pump.py",
+    "src/cells/laws/pumps/kinetic_pump.py",
     "tests/unit/test_kinetic_pump.py",
     "validation/betse/pump_process/process_check.py",
     "validation/betse/pump_process/process_job.py",

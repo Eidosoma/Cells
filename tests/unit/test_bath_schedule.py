@@ -32,13 +32,13 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import R
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import R
+from cells.operators import OPERATORS
+from cells.registry.models import get_model
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
 

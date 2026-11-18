@@ -8,14 +8,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_run, write_batch_snapshot
-from cells.core import batch
-from cells.core.batch import branch_batch_checkpoints, parse_batch, plan_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import ConfigError, InputChange, parse_spec
-from cells.core.state import CellState, initialise
-from cells.io import _write_json, load_snapshot
+from cells.definitions.specs import ConfigError, InputChange, parse_spec
+from cells.execution import batch
+from cells.execution.batch import branch_batch_checkpoints, parse_batch, plan_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.state import CellState, initialise
+from cells.records.batch_io import load_batch_snapshot, write_batch_run, write_batch_snapshot
+from cells.records.io import _write_json, load_snapshot
 from tests.batch_fixtures import MODELS, assert_parity, definition, short_spec, synthetic_pair
 
 
@@ -292,7 +292,7 @@ def test_observation_requests_and_timing_repetitions_do_not_advance_biology():
 def test_snapshot_checksums_world_mapping_and_output_refusal(tmp_path):
     import json
 
-    from cells.core.specs import digest
+    from cells.definitions.specs import digest
 
     result = run_batch(synthetic_pair())
     with pytest.raises(ConfigError, match="accepted time"):

@@ -868,3 +868,86 @@ The user chose (R): retire the pinning legacy laws and their tests, and move wha
   (D190's first wording), on 2 CPUs, with a planted control.
 - **Handoff:** move 2's owner finishes through M2's landing. A fresh owner then takes tier 3, G3
   and G4 on the final tree.
+
+## 21. Move 2 made (18 November 2026, on d188-m2-prep at main bb69abd4)
+
+*Not landed until the lead merges. Evidence: `/mnt/workspaces/Cells/d188-m2-move-20261118/`.*
+
+**The map** (`scripts/moves/move2.json`, with its path table):
+- **117 modules move.** 108 come from the planner's rule table (§9); the 9 it leaves unplaced are
+  placed in the map's `placement`, each with its reason.
+- **Ten packages are created,** each with its text: `definitions/`, `execution/`, `laws/` with six
+  of its groups, and `records/`. `laws/junctions/` is `coupling/`'s package file, moved.
+- **`processes/` (D198) and `core/` (R6′, the BLAS pin's one home in `cells/__init__.py`)
+  dissolve.** Their package files go, by the map's `dissolve`.
+- **`laws/mechanics/` is a seventh law group** beyond D188's six, approved by the lead on 17
+  November. It holds `vertex_mechanics` (MG1's law), and later tissue mechanics.
+- **The other placements:**
+  - `electrochemistry` goes to `laws/`;
+  - `calcium_gates` to `laws/channels/`;
+  - `patch_electrodiffusion` to `laws/routes/`;
+  - `legacy_entry` to `registry/`;
+  - `spec_values` and `vertex_preparation` to `definitions/`;
+  - `source_layout` to `records/`.
+- **Hazards:** every one of the scan's 128, in 111 files, is reviewed. The set is the one dry run
+  4 read.
+
+**The move commit** is `apply` alone: 1270 files rewritten. `verify` holds with 0 problems.
+- **A second `apply` changes nothing.** It needed one tool fix after the move: a reviewed hazard
+  file that the map moves keeps its review at its new path. Two had moved.
+- **The declaration** follows in its own commit: `cells.records.source_layout.MOVES` names the two
+  dissolved folders and the restore tag `pre-d188-move2-2026-11-18`.
+
+**Outside the rewriter's scope:**
+- **`visualizer/tools/make_engine_view_fixture.sh`.** Its six imports and one path check get a
+  follow-up commit with the same old-to-new list, which CellsViz applies to the visualizer
+  branch's copy.
+- **The docs.** Commit by the rules of §19: 56 files, the library pages among them, whose
+  generated blocks name the moved files.
+
+**The two tier-3 pin tests** (`test_joint_water_profile_interventions`,
+`test_owned_calcium_profile_interventions`) fail first at a different pin than the tier-3 record
+says:
+- the record has `src/cells/core/er_spec.py`;
+- the tree has `src/cells/__init__.py`, both before the move and after it, because R6′ edited that
+  file;
+- after the move, 103 of 181 and 90 of 152 of their pinned paths are missing, against 67 and 54.
+
+No hash is updated (D187).
+
+**Open branches:**
+- **core-fixes and packed-gpu-planner carry over by §10's procedure,** each starting from the
+  branch merged with main:
+  - the tier record re-folded with `tiers --base`;
+  - the branch's tests run on the merged head;
+  - then the map applied and `verify` run.
+- **packed-gpu-planner's own modules.** It adds `core/packed_runner.py` and `core/packing.py`,
+  which exist only on the branch. The committed map refuses the branch for them, as §10 intends,
+  so its owner applies the map extended by those two modules (to `execution/`).
+- **windows-next and fr45-transporter** are superseded on main, and are pruned after the move.
+
+**What the gate found after M2, fixed in follow-up commits (the move commit stays the tool's
+output):**
+- **Recorded text.** The dotted-name rule rewrote strings that saved data repeats and code
+  compares:
+  - a preparation recipe's provenance (`cells_flux`), which R1's 274-definition harness caught
+    as 8 refused definitions;
+  - the FR-4/5 protocols' execution-path ruling;
+  - the registered MG0c protocol's engine lines.
+  The registered JSON was never touched, because JSON is outside the scope. The code strings are
+  back to their pre-move bytes, each marked with a comment holding `source-moves: keep`. That is
+  a per-line keep, which the tool honours in apply, in `verify`'s old-reference scan and in a
+  second application. It is for an identifier that is never resolved as a module. A live
+  reference keeps its rewrite: an import, a dispatch name, a package to scan, a source path to
+  hash or read, a message.
+- **Paths the text rules cannot see,** each fixed by hand:
+  - components joined at run time (`root / "core" / "x.py"`, `MODELS / "operators"`);
+  - a folder prefix completed by concatenation (`"src/cells/models/operators/" + name`);
+  - a moved module's bare file name inside a message.
+- **Move 1's map on a merged head (base = head).** The carry-over proofs ran this check, and it
+  was refused twice:
+  - first, because D198's retire batch (330aeb55) removed 20 of move 1's 334 modules, which are
+    in neither place. The proofs now cut those 20 from the map they check;
+  - then, because the import check did not resolve namespace packages. Before the move,
+    `cells/records/` held only `relations.py`. The import check now resolves a folder of modules
+    without a package file, as Python does.

@@ -123,7 +123,7 @@ def _w2_worlds():
 
 
 def _replacement_worlds():
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as fx
 
     dt = 1e-3
@@ -191,8 +191,8 @@ def dump(name, raw, out):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     spec = parse_spec(raw)
     started = time.perf_counter()

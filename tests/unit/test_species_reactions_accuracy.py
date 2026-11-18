@@ -23,10 +23,10 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.operators import species_reactions as sr
-from cells.models.registry import get_model
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.operators import species_reactions as sr
+from cells.registry.models import get_model
 from validation.reactions import dissipation_reference as dr
 from validation.tissue import species_reactions_fixtures as rfx
 

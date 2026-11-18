@@ -24,13 +24,13 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
-from cells.models.operators import membrane_insertion as insertion
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.operators import membrane_insertion as insertion
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as fx
 
 IDLE = {"membrane_0": ({}, None, [(0.0, 0.0)])}
@@ -355,7 +355,7 @@ def test_definition_refusals(raw, message):
 def test_image_charge_on_the_declared_layout_and_the_node_cap_are_refused():
     """Injection books at the view and composes with insertion; an operator that books image
     charge on the declared layout (as replacement's event map does) is refused."""
-    from cells.models.operators.contract import Operator
+    from cells.operators.contract import Operator
 
     raw = fx.with_operators(fx.one_patch(), IDLE)
     cell = raw["model"]["cells"][0]["id"]

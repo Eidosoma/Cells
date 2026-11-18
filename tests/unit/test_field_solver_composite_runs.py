@@ -13,8 +13,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.numerics.surface_field import FACTORED_SOLVER_ID, FLOOR_SOLVER_ID
 from tests.field_solver_fixtures import minimal, refused_across_the_change, with_solver
 from validation.tissue import field_solver_choice as choice

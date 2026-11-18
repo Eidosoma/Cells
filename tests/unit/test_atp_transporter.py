@@ -6,8 +6,8 @@ import math
 import numpy as np
 import pytest
 
-from cells.processes import atp_transporter as tk
-from cells.processes.electrochemistry import R
+from cells.laws.electrochemistry import R
+from cells.laws.pumps import atp_transporter as tk
 
 T = 310.0
 P = tk.Parameters(capacity_fmol_s=0.1, stoichiometry=1.0, km_role_mM=1.0, km_atp_mM=0.1)

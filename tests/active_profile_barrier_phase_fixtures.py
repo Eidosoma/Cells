@@ -5,10 +5,10 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import parse_spec
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import active_profile_barrier_phase_handoff as handoff
 from cells.legacy.core import surface_active_profile_barrier_epoch_spec as epoch
 from cells.legacy.models import surface_active_profile_barrier_interventions as scheduled

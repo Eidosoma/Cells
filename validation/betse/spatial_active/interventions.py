@@ -37,7 +37,7 @@ def baseline():
     current = runtime.protocol()
     assert current.pop("allowed_prior_source_changes") == prior_protocol.pop(
         "allowed_prior_source_changes"
-    ) + ["src/cells/core/schedule.py"]
+    ) + ["src/cells/execution/schedule.py"]
     assert current == prior_protocol
     return report | dict(
         changed_production_files=changed,

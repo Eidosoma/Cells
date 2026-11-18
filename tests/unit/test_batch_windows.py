@@ -7,19 +7,19 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells import batch_window_io
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.batch_window_io import write_windowed_batch
-from cells.core import batch_windows, runner
-from cells.core.batch import branch_batch_checkpoints, run_batch
-from cells.core.batch_windows import iter_batch_windows, plan_batch_windows, run_batch_windowed
-from cells.core.errors import NumericalError
-from cells.core.resources import trace_bytes
-from cells.core.runner import run, timeline
-from cells.core.specs import ConfigError, InputChange, parse_spec
-from cells.core.windows import WindowPolicy, iter_windows, merge_diagnostics
-from cells.io import _sha256
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, InputChange, parse_spec
+from cells.execution import batch_windows, runner
+from cells.execution.batch import branch_batch_checkpoints, run_batch
+from cells.execution.batch_windows import iter_batch_windows, plan_batch_windows, run_batch_windowed
+from cells.execution.errors import NumericalError
+from cells.execution.resources import trace_bytes
+from cells.execution.runner import run, timeline
+from cells.execution.windows import WindowPolicy, iter_windows, merge_diagnostics
+from cells.records import batch_window_io
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.batch_window_io import write_windowed_batch
+from cells.records.io import _sha256
+from cells.registry.models import get_model
 from tests.batch_fixtures import MODELS, definition, short_spec, synthetic_pair
 from tests.unit.test_windows import assert_windows
 
@@ -213,7 +213,7 @@ def test_prepared_parameters_and_compiled_widths_are_reused(monkeypatch):
 
 
 def test_tail_padding_respects_the_existing_padded_work_budget():
-    from cells.core.batch import checkpoint_batch_limits
+    from cells.execution.batch import checkpoint_batch_limits
 
     spec = synthetic_pair()
     _, bound = checkpoint_batch_limits(spec)

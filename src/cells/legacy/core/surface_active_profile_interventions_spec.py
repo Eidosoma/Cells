@@ -5,8 +5,8 @@ from dataclasses import asdict, dataclass, fields, replace
 
 import numpy as np
 
-from cells.core import surface_kinetic_spec as base
-from cells.core.specs import ConfigError, SimulationSpec, _fields, _integer, _number, digest
+from cells.definitions import surface_kinetic_spec as base
+from cells.definitions.specs import ConfigError, SimulationSpec, _fields, _integer, _number, digest
 from cells.legacy.core import surface_profile_interventions_spec as native_spec
 from cells.legacy.core import tissue_profile_preparation as profiles
 from cells.legacy.processes import tissue_target_selectors as native

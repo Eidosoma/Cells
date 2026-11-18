@@ -16,10 +16,10 @@ import numpy as np
 
 from cells.assembly.kernel import AssemblyState
 from cells.assembly.spec import parse_spec
-from cells.core.output_paths import within_output_root
 from cells.ensemble.cli import read, sha, write
 from cells.ensemble.plan import plan
 from cells.ensemble.telemetry import devices
+from cells.execution.output_paths import within_output_root
 
 
 def tree(path):

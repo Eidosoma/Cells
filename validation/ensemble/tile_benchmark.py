@@ -20,9 +20,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from cells.assembly.io import write_json
-from cells.core.output_paths import within_output_root
 from cells.ensemble import cli
 from cells.ensemble.telemetry import devices
+from cells.execution.output_paths import within_output_root
 
 if __package__:
     from . import profile_cluster as profile

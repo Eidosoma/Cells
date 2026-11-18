@@ -10,8 +10,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
 from validation.assays import distributed_cue, template_readout, two_task
 from validation.betse.spatial_active.refinement import digest
 

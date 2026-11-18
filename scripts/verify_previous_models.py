@@ -19,9 +19,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.runner import branch_checkpoint, run  # noqa: E402
-from cells.core.specs import ConfigError, load_spec  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
+from cells.definitions.specs import ConfigError, load_spec  # noqa: E402
+from cells.execution.runner import branch_checkpoint, run  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
 from scripts import verify_first_build, verify_pair_build  # noqa: E402
 
 OLD = ROOT / "runs/model-004-2026-09-08"
@@ -105,8 +105,8 @@ def archived_check(output):
 import json
 from pathlib import Path
 import numpy as np
-from cells.core.runner import run
-from cells.io import load_snapshot, write_run
+from cells.execution.runner import run
+from cells.records.io import load_snapshot, write_run
 import cells
 root=Path("runs/model-004-2026-09-08")
 count=0

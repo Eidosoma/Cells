@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import ConfigError, SimulationSpec
+from cells.definitions.specs import ConfigError, SimulationSpec
 from cells.legacy.core import open_calcium_declarations as admission
 from cells.legacy.core import surface_calcium_spec as parent
 

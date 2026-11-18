@@ -8,12 +8,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
-from cells.core.state import ExchangeLayout, ExchangeState
-from cells.coupling.passive import ContactParameters, edge_flux, scatter_exchange
-from cells.observers import sample_history
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.execution.state import ExchangeLayout, ExchangeState
+from cells.laws.junctions.passive import ContactParameters, edge_flux, scatter_exchange
+from cells.records.observers import sample_history
 
 STATE_TYPE = ExchangeState
 LAYOUT_TYPE = ExchangeLayout

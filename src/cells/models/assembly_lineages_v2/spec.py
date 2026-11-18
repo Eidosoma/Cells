@@ -41,7 +41,7 @@ the channel fold's loop unrolling. None of these changes a value of a run.
 import copy
 from dataclasses import dataclass
 
-from cells.core.specs import (
+from cells.definitions.specs import (
     ConfigError,
     SimulationSpec,
     bounded_integer,

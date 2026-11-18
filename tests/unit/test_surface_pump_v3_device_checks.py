@@ -18,9 +18,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
 from cells.models import surface_pump, surface_pump_v3, surface_tissue
 from cells.numerics import surface_field
 from cells.numerics import surface_imex as imex

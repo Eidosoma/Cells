@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 
-from cells.io import _write_json
+from cells.records.io import _write_json
 from tests.batch_fixtures import ROOT, synthetic_pair
 
 

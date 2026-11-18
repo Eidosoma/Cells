@@ -18,17 +18,17 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.junctions import junction_formation as formation
+from cells.laws.junctions import junction_gate
 from cells.models import cell_replacement as model
 from cells.models import surface_pump_v3
 from cells.models.surface_pump_checks import CheckConstants
 from cells.numerics import surface_imex as imex
-from cells.processes import junction_formation as formation
-from cells.processes import junction_gate
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from validation.tissue import cell_replacement_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 

@@ -13,13 +13,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.core.surface_tissue_spec import MODEL_ID
+from cells.definitions.specs import ConfigError
+from cells.definitions.surface_tissue_spec import MODEL_ID
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.numerics import surface_field as field
 from cells.numerics import surface_transport as surface
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 OBSERVER_ID = "resolved_tissue_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = "read_only_accepted_grid_control_dependent_field@1"
@@ -449,7 +449,7 @@ def check_definition(spec):
         ),
     )
     state, p = initial_values(compact)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     with np.errstate(all="ignore"):
@@ -464,7 +464,7 @@ def check_definition(spec):
 def check_steps(spec, steps, controls):
     if np.max(steps, initial=0) > MAX_STEP + 16 * np.finfo(float).eps:
         raise ConfigError("Resolved tissue RK4 steps must be <= 0.0001 s")
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     grid = EventGrid(spec)
     for t in spec.experiment.observation_times:
@@ -642,7 +642,7 @@ Observations = make_dataclass(
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -693,7 +693,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     controls = control_values(spec, [time])
     control = type(controls)(*(v[0] for v in controls))

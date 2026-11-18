@@ -42,7 +42,7 @@ def paths(output, dt):
 
 
 def part_run(args):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from validation.tissue import e07_v1_run as run
 
     out = Path(args.output)

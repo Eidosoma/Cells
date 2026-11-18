@@ -443,7 +443,7 @@ of the unperturbed reference. E1 catches it (K1).
   (`probes/as-written-01`, from the checkout at eebd608a).
 
 **Records for the viewer** (written by `dev-04`, then by `dev-06`, the viewer's run: see below).
-- Each arm is written by the engine's own writer, `cells.io.write_run`, under `worlds/<arm>`, with
+- Each arm is written by the engine's own writer, `cells.records.io.write_run`, under `worlds/<arm>`, with
   its run view (`cells.run_view@1`, `view.json`) and the driver's `run.json`. The run view carries
   a prescribed 2D layout after the preprint's drawings.
 - `run.json` holds the revision, the models, the definition's hash, what the run represents (for
@@ -486,7 +486,7 @@ qualification before a replication relies on it.
   - Whether that admission is intended is the core's call. The reactions' parser does not ask
     which species @3 or the passive routes move; only `species_regulated_availability@1` does.
 - **Why @3's own constant-field junction route stays refused.**
-  - The code: `species_common.check_impermeant`, at `src/cells/models/operators/species_common.py`
+  - The code: `species_common.check_impermeant`, at `src/cells/operators/species_common.py`
     line 148. It is called by `parse_species` (line 94) for the operators that write species
     amounts: reactions, turnover, exchange and site occupancy. `species_regulated_availability@1`
     calls it (line 370) for instantaneous couplings; a species @3 moves may be read only through a
@@ -913,7 +913,7 @@ This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-ju
    Table 1 with F7, judged by the preprint's orderings with factor tolerances.
 6. **Smaller items.**
    - Figure 5a at 10 G_eq as written: the full-trace record path's 2 GB budget (§4). The windowed
-     writer (`cells.window_io.write_windowed_run`) would run it.
+     writer (`cells.records.window_io.write_windowed_run`) would run it.
    - The D138 question (§6), including (d): whether to run BITSEY itself, unmodified, out of
      process, in `/mnt/workspaces/Cells/venv-bitsey`, to make Cells' own reference outputs at
      b2cb370.

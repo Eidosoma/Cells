@@ -17,10 +17,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.specs import load_spec  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import load_spec  # noqa: E402
 from cells.legacy.models import voltage_gated_membrane as model  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_multispecies_build import canonical as ionic_canonical  # noqa: E402
 from scripts.audit_multispecies_build import held_controls  # noqa: E402
 from scripts.audit_voltage_gated_reference import replay  # noqa: E402
@@ -391,7 +391,7 @@ def audit(path):
         selected = [c for c in cases if c.startswith(prefix)]
         wanted = {i + 1: data[f"jit/{c}"] for i, c in enumerate(selected)}
         cohorts[prefix] = audit_cohort(path / "cohorts" / prefix, wanted)
-        from cells.batch_io import load_batch_snapshot
+        from cells.records.batch_io import load_batch_snapshot
 
         saved = load_batch_snapshot(path / "cohorts" / prefix / "snapshots/round-0000000001")
         cohorts[f"resumed/{prefix}"] = audit_cohort(

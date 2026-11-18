@@ -10,15 +10,15 @@ from dataclasses import dataclass, replace
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, ExperimentSpec, SimulationSpec
-from cells.core.state import BioelectricPairLayout, BioelectricPairState
-from cells.coupling.passive import scatter_exchange
-from cells.coupling.selective import gate_target, selective_flux
+from cells.definitions.specs import ConfigError, ExperimentSpec, SimulationSpec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.execution.state import BioelectricPairLayout, BioelectricPairState
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.laws.junctions.passive import scatter_exchange
+from cells.laws.junctions.selective import gate_target, selective_flux
 from cells.legacy.models import bioelectric_cell as membrane
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 STATE_TYPE = BioelectricPairState
 LAYOUT_TYPE = BioelectricPairLayout

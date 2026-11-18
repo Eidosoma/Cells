@@ -54,7 +54,7 @@ import numpy as np
 
 def worlds():
     """Frozen-format definitions: water@1, water@2 (routes, none, sheets, RK4) and replacement@1."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import pump_water_fixtures as wfx
     from validation.tissue import surface_pump_v3_fixtures as v3fx
@@ -165,7 +165,7 @@ def qualification_worlds(all_steps=False):
 
 def _w37():
     """The W37 world of composite_guard.part_w37: rim and inner replacements."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.stationary import worlds as hexagons
     from validation.tissue import cell_replacement_fixtures as rfx
     from validation.tissue import cell_replacement_judge as judge
@@ -190,7 +190,7 @@ def _w37():
 def injection_worlds():
     """electrode_current_injection@1 without a field-input provider, as its runs use it: the
     heredity cell with both polarities, and the Rm1 egg at its judged step (1 ms)."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from validation.tissue import injection_rm1 as rm1
     from validation.tissue import pump_water_fixtures as wfx
 
@@ -212,7 +212,7 @@ def injection_worlds():
 def volume_worlds():
     """scheduled_cell_replacement@2 over water (v2 design §2): the heredity sheet with templates
     at their own arrival volumes and a copy of the centre into the ring, and without events."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as rfx
 
     dt = 1e-3
@@ -290,9 +290,9 @@ def _setup(raw):
     import jax
     import jax.numpy as jnp
 
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     spec = parse_spec(raw)
     model = get_model(spec.model)
@@ -400,9 +400,9 @@ def bindings(directory, world_set="base"):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)

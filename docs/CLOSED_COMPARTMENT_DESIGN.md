@@ -53,7 +53,7 @@ is an addition, not a change to existing behaviour.
 - The contract: [PUMP_COMPOSITE.md](PUMP_COMPOSITE.md), the [v2 design](PUMP_COMPOSITE_V2_DESIGN.md)
   §1 (energy roles) and §3 (the 64-node cap).
 - The lifecycle: the [S5 design](CELL_DIVISION_S5_DESIGN.md) §2 and §6, and the S3 lumen's
-  accounting ([S3 plan](CELL_DIVISION_S3_PLAN.md) §1; `models/operators/restricted_lumen.py`).
+  accounting ([S3 plan](CELL_DIVISION_S3_PLAN.md) §1; `operators/restricted_lumen.py`).
 - The older family's ER capacitor, [ER_CALCIUM.md](ER_CALCIUM.md).
 
 **Evidence and log:** `/mnt/workspaces/Cells/closed-compartment-20261114-01/`:
@@ -167,7 +167,7 @@ is an addition, not a change to existing behaviour.
 | FR-1 asks for | @3's layout already has | The declaration checks (§1.4) |
 | --- | --- | --- |
 | A finite node | An `extracellular` entry with `reservoir: false` | Not a held bath, not the gauge |
-| No faces to other nodes | Nothing requires an outside node to have a face (`core/surface_tissue_spec.py`) | No face names the node |
+| No faces to other nodes | Nothing requires an outside node to have a face (`definitions/surface_tissue_spec.py`) | No face names the node |
 | Bounded by one patch of its owner | A `membranes` entry whose `outside` is the node and whose `inside` is the owner | Exactly one patch faces the node, and its inside is the declared owner |
 | Its own volume | The node's `volume_pL` | Fixed in version 1 |
 | Its own rows of the one inventory | The node's column of `extracellular_amount_increment` [species, outside] over its anchors | The same species rows as the cytosol |
@@ -298,7 +298,7 @@ lifts that.
 
 **Today, outside nodes are environment.** The compartment's identity rules exist because three
 things would otherwise treat it as extracellular space:
-- **replacement@1 swaps cell rows only** (`models/operators/cell_replacement.py`; D150 §5.2's table).
+- **replacement@1 swaps cell rows only** (`operators/cell_replacement.py`; D150 §5.2's table).
   A newcomer would inherit the previous occupant's compartment content;
 - **D152 admits outside routes beside replacement** (its ruling Q6). A reaction at the compartment
   would run on through the owner's replacement;
@@ -336,9 +336,9 @@ owner, not as extracellular space.
 ### 1.6 Where the declaration lives: one widened admission in the contract
 
 **What the code admits today** (read, not run).
-- `contract.check_declarations` (`models/operators/contract.py`, lines 336–342) refuses an operator
+- `contract.check_declarations` (`operators/contract.py`, lines 336–342) refuses an operator
   with no part unless it has both `ACCEPTS_WRITES` and `VIEW_FIELDS`. Every registered operator
-  passes through it at import (`models/operators/__init__.py`).
+  passes through it at import (`operators/__init__.py`).
 - `membrane_entity_state@1` is today's only part-less operator: of the registered operator classes in
   `models/operators/` at main's ced45c87, it alone declares no event, split or process part (a grep).
   Its three owned fields are exactly its three accepted writes, and it provides three view fields.
@@ -391,7 +391,7 @@ owner, not as extracellular space.
 
 ### 2.1 The lead's mapping holds: `scheduled_species_exchange@1`, unchanged
 
-| Exchange@1 requires (`models/operators/species_exchange.py`) | A compartment |
+| Exchange@1 requires (`operators/species_exchange.py`) | A compartment |
 | --- | --- |
 | The patch's outside node is finite; a held bath is refused | Yes |
 | Neutral species, with zero @3 permeability on every membrane, junction and channel | Yes: D150's inventory species |
@@ -1108,7 +1108,7 @@ criteria of §3.3 were copied there verbatim.
   declarations alone, as it does for the empty composition (option (b) of S5's scope). No existing
   composition contains a declaration, so each takes the branch it took before.
 
-**The declaration:** `models/operators/compartments.py`, `cell_owned_compartments@1`, registered
+**The declaration:** `operators/compartments.py`, `cell_owned_compartments@1`, registered
 with one import and one line.
 - Each compartment names its node, its bounding patch and its owner, with a label and a reference
   as metadata.

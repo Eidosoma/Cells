@@ -69,10 +69,10 @@ def site_free_energy_pJ(bound, free, capacity, k_d_mM, temperature_K):
 def _planted(world_id, edit, identity):
     """The unplanted rows to PLANT_AT_S, the edited row's terms, and the engine's verdict on
     resuming from the edited checkpoint."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
+    from cells.registry.models import get_model
     from validation.tissue import site_occupancy_acceptance_qualification as generator
 
     raw = af.registered_world(world_id)

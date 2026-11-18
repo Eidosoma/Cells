@@ -20,12 +20,12 @@
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.operators.contract import Operator, check_declarations
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators.contract import Operator, check_declarations
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
 # Registered before the run-view declarations: each owner removes its operator when it declares.
@@ -225,7 +225,7 @@ def test_the_injection_declares_its_run_view():
     """electrode_current_injection@1's run view (declared by the run view's owner: ruling 3 of
     docs/LOOPING_REPLAY_DESIGN.md §9): one prescribed layer, every accumulator a total since the
     start, and an event for each scheduled current at its electrode's cell, in time order."""
-    from cells.core import pump_composite_spec as cs
+    from cells.definitions import pump_composite_spec as cs
     from tests.run_view_fixtures import INJECTION, injection_world
 
     op = OPERATORS[INJECTION]

@@ -10,11 +10,11 @@ program's compile: not tier 1.
 
 import jax
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
-from cells.models.operators import compartments as comp
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
+from cells.operators import compartments as comp
 from validation.tissue import compartment_fixtures as cfx
 
 jax.config.update("jax_enable_x64", True)

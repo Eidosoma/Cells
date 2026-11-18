@@ -20,26 +20,26 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot  # noqa: E402
-from cells.batch_window_io import write_windowed_batch  # noqa: E402
-from cells.core.batch import BatchSpec, WorldSpec, load_batch, run_batch  # noqa: E402
-from cells.core.runner import branch_checkpoint, run  # noqa: E402
-from cells.core.specs import ConfigError, PumpChange  # noqa: E402
-from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
-from cells.io import (  # noqa: E402
+from cells.definitions.specs import ConfigError, PumpChange  # noqa: E402
+from cells.execution.batch import BatchSpec, WorldSpec, load_batch, run_batch  # noqa: E402
+from cells.execution.runner import branch_checkpoint, run  # noqa: E402
+from cells.execution.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.legacy.models import multispecies_membrane as model  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot  # noqa: E402
+from cells.records.batch_window_io import write_windowed_batch  # noqa: E402
+from cells.records.io import (  # noqa: E402
     _sha256 as sha,
 )
-from cells.io import (  # noqa: E402
+from cells.records.io import (  # noqa: E402
     _write_json as write_json,
 )
-from cells.io import (  # noqa: E402
+from cells.records.io import (  # noqa: E402
     load_snapshot,
     runtime_identity,
     source_hashes,
     write_run,
     write_snapshot,
 )
-from cells.legacy.models import multispecies_membrane as model  # noqa: E402
 from scripts.audit_multispecies_build import audit, audit_run  # noqa: E402
 from scripts.audit_preserved_multispecies_reference import (  # noqa: E402
     ARCHIVE_SHA,
@@ -75,9 +75,9 @@ ARCHIVED_WORKER = r"""
 import json, sys
 from pathlib import Path
 import numpy as np
-from cells.io import load_snapshot, source_hashes, runtime_identity
-from cells.batch_io import load_batch_snapshot
-from cells.core.runner import run
+from cells.records.io import load_snapshot, source_hashes, runtime_identity
+from cells.records.batch_io import load_batch_snapshot
+from cells.execution.runner import run
 data = json.loads(sys.stdin.read())
 assert source_hashes() == data['source_hashes']
 assert runtime_identity() == data['runtime']
@@ -167,7 +167,7 @@ def old_regressions(output, started):
     # method and observer remains byte-for-byte unchanged.
     current = source_hashes()
     for name, digest in release["source_hashes"].items():
-        if name != "models/registry.py" and (
+        if name != "registry/models.py" and (
             name.startswith(("models/", "processes/", "coupling/", "numerics/"))
             or name == "observers.py"
         ):
@@ -252,8 +252,8 @@ REPLAY_WORKER = r"""
 import json, sys
 from pathlib import Path
 import numpy as np
-from cells.io import load_snapshot, write_run, source_hashes, runtime_identity
-from cells.core.runner import run
+from cells.records.io import load_snapshot, write_run, source_hashes, runtime_identity
+from cells.execution.runner import run
 data=json.loads(sys.stdin.read())
 assert source_hashes() == data['source_hashes'] and runtime_identity() == data['runtime']
 for record in data['runs']:

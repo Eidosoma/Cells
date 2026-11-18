@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
 from tests.unit.test_betse_tissue_contact import load_capture
 from validation.betse.emulator import spatial as model
 

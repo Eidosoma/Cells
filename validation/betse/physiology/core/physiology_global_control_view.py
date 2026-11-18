@@ -11,8 +11,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import digest
+from cells.definitions.specs import digest
+from cells.execution.errors import NumericalError
 from validation.betse import global_controls as source
 from validation.betse.physiology.core import physiology_active_temperature as active
 from validation.betse.physiology.core import physiology_boundary_voltage as voltage

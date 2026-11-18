@@ -6,12 +6,18 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.runner import NumericalError, branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.specs import ConfigError, ContactChange, InputChange, load_spec, parse_spec
-from cells.core.state import initialise
-from cells.coupling.passive import ContactParameters, edge_flux, scatter_exchange
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.definitions.specs import ConfigError, ContactChange, InputChange, load_spec, parse_spec
+from cells.execution.runner import (
+    NumericalError,
+    branch_checkpoint,
+    run,
+    timeline,
+    validate_checkpoint,
+)
+from cells.execution.state import initialise
+from cells.laws.junctions.passive import ContactParameters, edge_flux, scatter_exchange
 from cells.legacy.models import passive_pair
+from cells.records.io import load_snapshot, write_run, write_snapshot
 from tests.reference_pair import exact_pair
 
 ROOT = Path(__file__).resolve().parents[2]

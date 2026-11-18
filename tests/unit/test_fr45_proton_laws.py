@@ -10,11 +10,11 @@ import math
 import numpy as np
 import pytest
 
-from cells.processes import passive_permeation as passive
-from cells.processes import proton_leak as leak
-from cells.processes import proton_pump as pump
-from cells.processes import rapid_proton_buffer as buf
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
+from cells.laws.pumps import proton_pump as pump
+from cells.laws.reactions import rapid_proton_buffer as buf
+from cells.laws.routes import passive_permeation as passive
+from cells.laws.transport import proton_leak as leak
 
 T = 310.0
 LN10 = math.log(10.0)

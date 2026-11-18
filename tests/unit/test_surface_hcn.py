@@ -10,18 +10,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, plan_batch, run_batch
-from cells.core.errors import NumericalError
-from cells.core.resources import trace_bytes
-from cells.core.runner import branch_checkpoint, run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
+from cells.execution.batch import BatchSpec, WorldSpec, plan_batch, run_batch
+from cells.execution.errors import NumericalError
+from cells.execution.resources import trace_bytes
+from cells.execution.runner import branch_checkpoint, run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import hcn_channels as channels
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.legacy.models import surface_hcn as model
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.processes import hcn_channels as channels
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.registry.models import get_model
 from tests.unit import test_surface_channels as shared
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import hcn_reference

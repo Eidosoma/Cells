@@ -12,14 +12,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
 from cells.legacy.core.surface_water_spec import MODEL_ID, prior_spec
 from cells.models import surface_tissue as prior
 from cells.numerics import osmotic_water as water
 from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import R
 
 OBSERVER_ID = "resolved_compliant_water_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = prior.OBSERVATION_SAMPLING
@@ -231,7 +231,7 @@ def check_definition(spec):
             face_capacity=len(m.faces),
         ),
     )
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     try:
         state, p = initial_values(compact)
@@ -341,7 +341,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)
@@ -392,7 +392,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(spec, [time])
     control = type(table)(*(v[0] for v in table))

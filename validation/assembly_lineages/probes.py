@@ -112,7 +112,7 @@ def _json(path, value):
 
 
 def _source():
-    from cells.run_view import _engine_source
+    from cells.records.run_view import _engine_source
 
     return _engine_source() or {"unstated": "the engine ran from a checkout, not a snapshot"}
 
@@ -257,7 +257,7 @@ def forms():
 
 
 def kernel_probe(inputs, out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     path = Path(inputs) / "kernel_probe_inputs.npz"
     data = _load(path)
@@ -303,7 +303,7 @@ def kernel_probe(inputs, out):
 
 
 def closed_world(inputs, out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
@@ -346,7 +346,7 @@ def closed_world(inputs, out):
 
 
 def partition_probe(inputs, out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import runner
 
     path = Path(inputs) / "partition_probe_inputs.json"
@@ -460,7 +460,7 @@ def write_bundle(directory, run, provenance):
 
 
 def lineages(out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import (
         GARD_PAIR_CONSISTENT,
         GARD_SINGLE_EVENT,
@@ -632,7 +632,7 @@ def registered_design(inputs):
 
 
 def beta0_ensemble(inputs, out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import runner
     from validation.assembly_lineages import worlds
 
@@ -685,7 +685,7 @@ def beta0_ensemble(inputs, out):
 
 
 def rescale(out):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT, runner
 
     out = Path(out)

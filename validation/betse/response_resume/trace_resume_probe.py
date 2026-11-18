@@ -14,10 +14,10 @@ GUARD = "Estimated trace working storage exceeds max_trace_bytes"
 def probe(r):
     import jax
 
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.io import runtime_identity
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
+    from cells.records.io import runtime_identity
 
     c.require(
         jax.default_backend() == "cpu"
@@ -70,9 +70,9 @@ def probe(r):
         "source_hashes": {
             n: c.sha(c.ROOT / n)
             for n in (
-                "src/cells/core/resources.py",
-                "src/cells/core/runner.py",
-                "src/cells/core/specs.py",
+                "src/cells/execution/resources.py",
+                "src/cells/execution/runner.py",
+                "src/cells/definitions/specs.py",
                 "validation/betse/response_resume/trace_resume_probe.py",
                 "validation/betse/response_resume/trace_resume_context.py",
             )

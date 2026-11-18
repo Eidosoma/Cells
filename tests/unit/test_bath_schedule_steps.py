@@ -20,8 +20,8 @@ import copy
 
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.operators import bath_schedule as bs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import bath_schedule as bs
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
 

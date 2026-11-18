@@ -13,7 +13,7 @@ import json
 import sys
 import time
 
-from cells.models.inner_kinds import transporter
+from cells.kinds import transporter
 from validation.compartment_ph_engine import definitions as defs
 from validation.compartment_ph_engine import engine_records, planted
 

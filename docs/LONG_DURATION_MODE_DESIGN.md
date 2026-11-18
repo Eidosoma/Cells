@@ -174,7 +174,7 @@ with N_fine = T_fine/dt, the fine windows after interventions counted in c_windo
 | Mode | ID | Reach | Status |
 | --- | --- | --- | --- |
 | E: stationary states and continuation | `stationary_continuation_analysis@1` | `resolved_pump_tissue@1`–`@3` and `resolved_pump_water@1`–`@2` (`analysis/stationary.py`:99–105 **(code)**) | Qualified. It refuses the composite (D150's note §8, §11.1) |
-| C: projective integration | `projective_forward_euler@1` | `resolved_pump_tissue@1`–`@3` (`core/projective_spec.py`:38–43 **(code)**) | Failed qual-01 on the absolute caps |
+| C: projective integration | `projective_forward_euler@1` | `resolved_pump_tissue@1`–`@3` (`definitions/projective_spec.py`:38–43 **(code)**) | Failed qual-01 on the absolute caps |
 | Two clocks | — | Track E's slow world plus assays from frozen snapshots | A pattern under D153's rule (b), "not a long-time method for one coupled trajectory" (FR-8's lead mapping) |
 
 **E's fast mode is an algebraic closure** (`analysis/stationary.py`:21–30 **(code)**): "the
@@ -204,7 +204,7 @@ singular-perturbation fast subsystem. R1 could reuse it, with three changes:
 | **N3. Fully implicit stiff steps** (an L-stable SDIRK or BDF on the whole state) | Method | **Yes** | Steps set by accuracy on the slow manifold | Step control | A Newton on every unknown: about 6–8 × 10³ at 825 nodes with 2,580 channel populations (**S**; PROGRESS's tissue). It needs sparse or Krylov solvers (FR-17, the field-solver interface) |
 | **R1. Quasi-steady electrical elimination** (D135's B): Vm, the field and fast gates algebraic; the slow state at H | Reduction (D175) | **Yes** | Up to 10³–10⁴× in steps, less a Newton per macro-step | Handoff to fine windows, then re-entry | D175's fields (refused at registration today); E's fast mode made composite, scaled and device-side; non-electrical stiffness stays |
 | **R2. E for the composite:** fixed points and continuation | Reduction: no trajectory | — | The end state only | A sequence of steady states | No histories and no crossing times: it fails ARCHITECTURE's list as a mode |
-| **C, re-qualified** with cumulative error control | Method | Yes, partly | Below qual-01's 1.4–3.3× once budgeted (**S**) | Never jumps across an event (`core/projective.py`:9–13 **(code)**) | The requester does not ask for it |
+| **C, re-qualified** with cumulative error control | Method | Yes, partly | Below qual-01's 1.4–3.3× once budgeted (**S**) | Never jumps across an event (`execution/projective.py`:9–13 **(code)**) | The requester does not ask for it |
 
 ### 3.1 N1: multirate operators
 
@@ -306,7 +306,7 @@ in the mode.
 
 | Class | Operators (today's) | Under H |
 | --- | --- | --- |
-| Exact at any step | D150's turnover and first-order exchange; the coupling's state half-step; replacement's formation law (`processes/junction_formation.py`, exact `advance`) | Admitted at H |
+| Exact at any step | D150's turnover and first-order exchange; the coupling's state half-step; replacement's formation law (`laws/junctions/junction_formation.py`, exact `advance`) | Admitted at H |
 | Conditioned | D152's reactions (dt·L ≤ 1); the coupling (dt·(k_on + k_off) ≤ 1); exchange's saturable solve (its residual) | **The condition binds on H.** Refused, or subcycled at the operator's own sub-step, which is N1 |
 | Events | Replacement, the partition, insertion's onsets, regulatory writes, FR-10's doses | Compulsory boundaries (§4.2) |
 | Inside @3's stages | Kinds, including FR-4's per-compartment implicit block | @3's solver ID decides (N2 or R1) |
@@ -343,7 +343,7 @@ in the mode.
 ### 4.4 Checkpoints
 
 - **The mode lives in the definition's execution block from the start,** absent by default, as
-  `execution.projective` does (`core/projective_spec.py`:1–7 **(code)**).
+  `execution.projective` does (`definitions/projective_spec.py`:1–7 **(code)**).
 - **A switch between fine and coarse in mid-run is a definition change:** checkpoint continuity's
   case 3, refused (CHECKPOINT_CONTINUITY_DESIGN §1).
 - **Two-clock style switches** are new runs that import a state under D153's rule (b), claiming no
@@ -356,7 +356,7 @@ in the mode.
 
 - **No per-step host work** (D191's "fast" criterion).
 - **Device Newtons with fixed iteration counts** (seam C's rule for its closure, CORE_SEAMS §5.1).
-- **Fine windows as compiled window rollouts,** as projective's bursts are (`core/projective.py`:4–7
+- **Fine windows as compiled window rollouts,** as projective's bursts are (`execution/projective.py`:4–7
   **(code)**).
 
 ## 5. The qualification plan
@@ -457,10 +457,10 @@ qualification (D135).
 | Piece | Files | Owner | Agent-days (S, rough) |
 | --- | --- | --- | --- |
 | Stage 0's measurements | Scratch and `validation/` | The FR lane, or numerics | 1–2, plus CPU hours |
-| The time contract (N1) | `models/operators/contract.py`, `models/pump_composite.py` | Operators owner (STEP0 §4.2), after the pass | 3–5 |
+| The time contract (N1) | `operators/contract.py`, `models/pump_composite.py` | Operators owner (STEP0 §4.2), after the pass | 3–5 |
 | N2's IMEX ID | `numerics/surface_imex.py` (not byte-kept), with @3's slope terms in `models/surface_pump_v3.py` | Numerics, with the @3 owner for its file | 6–10 |
 | The exact charged booking (seam D's branch X), which N2 needs | `models/surface_pump_v3.py` | @3 owner (CORE_SEAMS §13) | 2–3 |
-| The coarse executor: boundaries, fine windows, records | A new module beside `core/projective.py` | Numerics and execution | 3–5 |
+| The coarse executor: boundaries, fine windows, records | A new module beside `execution/projective.py` | Numerics and execution | 3–5 |
 | References, the protocol, the judged run | `validation/` | A references agent; the FR lane | 3–4, plus tens of CPU-h |
 | **N1 with N2 and branch X, qualified** | | | **about 17–27** |
 | R1, if needed | E's fast mode made composite and device-side; D175's fields (core lane item 4) | Numerics; the core lane | about 10–18 more |

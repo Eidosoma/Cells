@@ -28,13 +28,13 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.operators import OPERATORS, species_reactions
-from cells.models.operators.contract import check_declarations
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.operators import OPERATORS, species_reactions
+from cells.operators.contract import check_declarations
+from cells.registry.models import get_model
 from validation.tissue import species_reactions_fixtures as rfx
 
 getcontext().prec = 50

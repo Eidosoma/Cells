@@ -805,7 +805,7 @@ explored.
 ## FR-19 — The passive routes' heat-share sign test at rounding level
 
 - **The finding.** `passive_neutral_permeation@1`'s exact heat booking
-  (`src/cells/models/inner_kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
+  (`src/cells/kinds/passive_routes.py`, `_raw_sums` and `book`) refuses a step if any
   exact route's heat share is negative, with no tolerance. The raw-sum check beside it does allow
   `RAW_SUM_FACTOR` eps.
 - **Where it showed.** The gap-junction replication's 1D tissue line has healthy cells that start

@@ -5,8 +5,8 @@ from dataclasses import asdict, dataclass, fields, replace
 
 import numpy as np
 
-from cells.core import surface_tissue_spec as base
-from cells.core.specs import (
+from cells.definitions import surface_tissue_spec as base
+from cells.definitions.specs import (
     ConfigError,
     SimulationSpec,
     SpatialExtracellularExecutionSpec,

@@ -58,11 +58,11 @@ jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp  # noqa: E402
 import numpy as np  # noqa: E402
 
-from cells.core.errors import NumericalError  # noqa: E402
-from cells.core.specs import ConfigError, parse_spec  # noqa: E402
-from cells.core.state import initialise  # noqa: E402
-from cells.core.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
-from cells.core.windows import WindowPolicy, iter_windows  # noqa: E402
+from cells.definitions.specs import ConfigError, parse_spec  # noqa: E402
+from cells.definitions.surface_pump_v3_spec import control_values as v3_controls  # noqa: E402
+from cells.execution.errors import NumericalError  # noqa: E402
+from cells.execution.state import initialise  # noqa: E402
+from cells.execution.windows import WindowPolicy, iter_windows  # noqa: E402
 from cells.models import surface_pump_v3 as v3  # noqa: E402
 from validation.stationary import worlds  # noqa: E402
 from validation.tissue import excitable_probe as probe  # noqa: E402

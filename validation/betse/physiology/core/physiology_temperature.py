@@ -12,10 +12,10 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import SimulationSpec, digest
-from cells.core.surface_kinetic_spec import SurfaceHCNExtraModel
-from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.definitions.specs import SimulationSpec, digest
+from cells.definitions.surface_kinetic_spec import SurfaceHCNExtraModel
+from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_calcium_energy_spec import SurfaceCalciumEnergyHCNExtraModel
 from cells.legacy.core.surface_calcium_spec import SurfaceCalciumHCNExtraModel
 from cells.legacy.core.surface_open_calcium_energy_spec import SurfaceOpenCalciumEnergyModel

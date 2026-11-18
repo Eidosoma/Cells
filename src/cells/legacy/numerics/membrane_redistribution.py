@@ -14,8 +14,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import F, R, bernoulli
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import F, R, bernoulli
 
 LAW_ID = "fixed_surface_conservative_drift_diffusion@1"
 MAX_ABS_X = 50.0

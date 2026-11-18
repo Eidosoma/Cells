@@ -5,9 +5,9 @@ from functools import lru_cache
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.state import Checkpoint
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core import surface_active_bath_epoch_spec as active_epoch
 from cells.legacy.core import surface_active_bath_events_spec as active_schema
 from cells.legacy.core import surface_bath_phase_handoff as bridge

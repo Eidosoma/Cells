@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.io import _write_json, runtime_identity, source_hashes  # noqa: E402
+from cells.records.io import _write_json, runtime_identity, source_hashes  # noqa: E402
 from scripts.audit_multispecies_reference import audit  # noqa: E402
 
 RELEASE = ROOT / "runs/core-005b-2026-09-08/release-audit.json"

@@ -144,7 +144,7 @@ def independent_observer_checks(context, vector, time, observed, protocol):
 def run(bundle, job_id, output, dependency_runs):
     import numpy as np
 
-    from cells.core.resources import trace_bytes
+    from cells.execution.resources import trace_bytes
     from validation.tissue import open_calcium_bath_reference as reference
 
     output = Path(output)

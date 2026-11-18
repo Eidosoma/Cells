@@ -14,12 +14,12 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as adapter
-from cells.models.operators import OPERATORS
-from cells.models.operators.contract import check_declarations
-from cells.models.operators.membrane_state import MembraneEntityState
-from cells.models.registry import get_model
+from cells.operators import OPERATORS
+from cells.operators.contract import check_declarations
+from cells.operators.membrane_state import MembraneEntityState
+from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as fx
 
 CATALOGUE = {

@@ -5,13 +5,13 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from cells.core.runner import timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
+from cells.execution.runner import timeline
+from cells.execution.schedule import control_values
 from cells.legacy.core.surface_water_kinetic_spec import prior_spec, water_spec
 from cells.legacy.models import surface_water_kinetic as model
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.tissue import surface_water_kinetic_fixtures as fixtures
 
 

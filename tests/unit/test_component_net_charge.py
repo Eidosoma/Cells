@@ -26,7 +26,7 @@ import copy
 import numpy as np
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import surface_pump_v3, surface_tissue
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex

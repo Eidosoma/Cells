@@ -10,10 +10,10 @@ import numpy as np
 import pytest
 
 from cells.assembly.spec import AssemblyError
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
 from cells.ensemble.families import bind_definition
 from cells.ensemble.plan import jupiter_plan, plan
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.legacy.assembly_cell.io import clock_identity, flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import controls, engine
 from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec

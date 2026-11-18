@@ -1,7 +1,7 @@
 """Strict finite_extracellular@2 host contract; no synthetic-law conversion."""
 
-from cells.core.kinetic_pump_spec import parse_pump, pump_to_dict
-from cells.core.specs import (
+from cells.definitions.kinetic_pump_spec import parse_pump, pump_to_dict
+from cells.definitions.specs import (
     KINETIC_FINITE_EXTRACELLULAR_ID,
     KineticFiniteExtracellularSpec,
     KineticFiniteMembraneSpec,

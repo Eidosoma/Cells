@@ -18,7 +18,7 @@ import json
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages import records, runner
 from tests.assembly_lineage_fixtures import definition, world
 

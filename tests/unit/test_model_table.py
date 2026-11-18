@@ -34,13 +34,13 @@ from pathlib import Path
 import pytest
 
 import cells
-from cells.core import pump_composite_spec as composite_spec
-from cells.core import specs
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import specs
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models.assembly_lineages import model as lineage_model
 from cells.models.assembly_lineages_v2 import model as assembly_model
-from cells.models.operators import OPERATORS
+from cells.operators import OPERATORS
 from cells.registry import declarations, model_table
 from cells.registry import laws as law_registry
 from cells.registry import operators as operator_registry
@@ -140,7 +140,7 @@ def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
 def dispatched(source, namespace):
     """{model ID: the module its branch parses with} of parse_spec's own dispatch: each comparison
     of data['model'].get('id') with a literal or a name of `namespace`, and the module its branch
-    imports parse from (core/specs.py itself for an inline branch). Any other form refuses."""
+    imports parse from (definitions/specs.py itself for an inline branch). Any other form refuses."""  # noqa: E501
     out = {}
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.If):

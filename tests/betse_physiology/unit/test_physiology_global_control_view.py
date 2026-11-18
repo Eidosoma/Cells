@@ -10,13 +10,13 @@ import jax
 import numpy as np
 import pytest
 
-from cells import io as numeric_io
-from cells.core.grid import checked_grid
-from cells.core.runner import validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.grid import checked_grid
+from cells.execution.runner import validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.numerics.fixed_step import rk4_step
+from cells.records import io as numeric_io
 from tests.betse_physiology.unit.test_physiology_active_temperature import setup as active_setup
 from tests.betse_physiology.unit.test_physiology_boundary_voltage import fixture as voltage_fixture
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree

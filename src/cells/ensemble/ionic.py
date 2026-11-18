@@ -5,8 +5,8 @@ add stochastic samples; no random perturbation or biological variation is implie
 
 world_batching selects how a task's worlds execute. "lax_map" (the default)
 maps worlds one after another and checks every accepted row on the host
-(core/batch_windows.py). "vmap" advances the task's worlds as one vectorized
-batch with the model's device checks (core/vector_windows.py); it needs a model
+(execution/batch_windows.py). "vmap" advances the task's worlds as one vectorized
+batch with the model's device checks (execution/vector_windows.py); it needs a model
 with device checks and is not yet qualified for production. The default is
 omitted from definitions, so existing fingerprints and checkpoints are unchanged.
 """
@@ -20,16 +20,16 @@ from time import monotonic
 import numpy as np
 
 from cells.assembly.io import digest, write_json
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.batch_windows import plan_batch_windows, run_batch_windowed
-from cells.core.grid import refinement_times
-from cells.core.resources import trace_bytes
-from cells.core.specs import digest as definition_digest
-from cells.core.specs import parse_spec as parse_ionic
-from cells.core.vector_windows import plan_vector_windows, run_vector_windowed
-from cells.core.windows import WindowPolicy
-from cells.models.registry import get_model
+from cells.definitions.specs import digest as definition_digest
+from cells.definitions.specs import parse_spec as parse_ionic
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.batch_windows import plan_batch_windows, run_batch_windowed
+from cells.execution.grid import refinement_times
+from cells.execution.resources import trace_bytes
+from cells.execution.vector_windows import plan_vector_windows, run_vector_windowed
+from cells.execution.windows import WindowPolicy
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.registry.models import get_model
 
 MODEL_ID = "ionic_worlds@1"
 WORLD_BATCHING = ("lax_map", "vmap")

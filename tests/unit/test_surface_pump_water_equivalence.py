@@ -20,12 +20,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.models import surface_pump_v3, surface_pump_water
 from cells.numerics import surface_imex as imex
 from validation.tissue import pump_water_fixtures as fixtures

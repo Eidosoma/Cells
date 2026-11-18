@@ -12,16 +12,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
+from cells.laws.pumps import kinetic_pump as pump
 from cells.legacy.core.surface_mobile_pump_repair_spec import MODEL_ID, prior_spec
 from cells.legacy.models import surface_calcium as calcium
 from cells.legacy.models import surface_mobile_repair as prior
 from cells.legacy.models import surface_redistribution as surface
 from cells.models import surface_tissue as ionic
 from cells.numerics.extracellular_field import scatter
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 EXTRA_AXES = {
     "mobile_pump_amount_increment": ["pump_population_slot", "membrane_slot"],
@@ -98,7 +98,7 @@ def prior_layout(p):
 
 
 def prior_control(control):
-    from cells.core.schedule import SurfaceMobileRepairControl
+    from cells.execution.schedule import SurfaceMobileRepairControl
 
     return SurfaceMobileRepairControl(
         *(getattr(control, k) for k in SurfaceMobileRepairControl._fields)
@@ -331,7 +331,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     controls = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -402,7 +402,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     original = prior.observe_history(
@@ -444,7 +444,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     controls = control_values(spec, [time])
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))

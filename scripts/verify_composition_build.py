@@ -17,9 +17,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.core.runner import branch_checkpoint, run  # noqa: E402
-from cells.core.specs import GraphContactChange, load_spec, read_json  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
+from cells.definitions.specs import GraphContactChange, load_spec, read_json  # noqa: E402
+from cells.execution.runner import branch_checkpoint, run  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes, write_run  # noqa: E402
 from tests.reference_reaction_transport import reference  # noqa: E402
 
 REFERENCE_TOLERANCE = 4e-8

@@ -12,9 +12,9 @@ def worker(r, output):
     import jax
     import numpy as np
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.records.io import load_snapshot, write_run
 
     c.require(
         jax.default_backend() == "cpu"

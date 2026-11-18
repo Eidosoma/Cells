@@ -14,9 +14,9 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import SimulationSpec, digest
-from cells.processes.electrochemistry import F, R
+from cells.definitions.specs import SimulationSpec, digest
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import F, R
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_protein_loop as loop
 from validation.betse.physiology.core import physiology_protein_packet_provider as provider

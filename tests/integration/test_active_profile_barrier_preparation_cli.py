@@ -7,7 +7,7 @@ from copy import deepcopy
 
 import pytest
 
-from cells.core.specs import ConfigError, digest
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy.tissue_profiles import main, prepare_request, read_preparation, replay
 from tests.active_profile_barrier_dispatch_fixtures import prepared
 from tests.unit.test_surface_catalog import evidence

@@ -61,7 +61,7 @@ def modulo_box(delta, box):
 
 
 def honeycomb(nx, ny, *, displacement, seed, line_tension=0.12, contractility=0.04):
-    from cells.core import vertex_preparation as prep
+    from cells.definitions import vertex_preparation as prep
 
     a = theory.ground_state(line_tension, contractility)[0]
     model = prep.periodic_honeycomb(

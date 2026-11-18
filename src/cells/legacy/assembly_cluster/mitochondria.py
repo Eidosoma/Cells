@@ -2,8 +2,8 @@
 
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.legacy.processes import mitochondrial_passive as process
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 AXES = {
     "amount_fmol": ["world", "species", "cell"],

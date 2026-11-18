@@ -60,7 +60,7 @@ class WindowCheck:
         self.diagnostics, self.windows = {}, 0
 
     def __call__(self, part):
-        from cells.core.windows import merge_diagnostics
+        from cells.execution.windows import merge_diagnostics
 
         start, end = part.start_step, part.final.step_index
         ctx.need(start == self.next_step and 0 <= end - start <= self.width, "Window step coverage")
@@ -135,7 +135,7 @@ def baseline(full, directory):
 def disk_check(directory, full, policy):
     import numpy as np
 
-    from cells.io import load_snapshot
+    from cells.records.io import load_snapshot
 
     arrays = Arrays()
     manifest = ctx.read(directory / "manifest.json")
@@ -146,7 +146,7 @@ def disk_check(directory, full, policy):
     )
     accepted = observed = validated = 0
     diagnostics, windows, next_step = {}, 0, 0
-    from cells.core.windows import merge_diagnostics
+    from cells.execution.windows import merge_diagnostics
 
     with (directory / "windows.jsonl").open() as handle:
         for line in handle:
@@ -238,11 +238,11 @@ def disk_check(directory, full, policy):
 def worker(output, registration):
     import jax
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, run_windowed
-    from cells.io import load_snapshot, write_run
-    from cells.window_io import write_windowed_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from cells.records.io import load_snapshot, write_run
+    from cells.records.window_io import write_windowed_run
 
     ctx.need(
         jax.default_backend() == "cpu"

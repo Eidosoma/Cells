@@ -32,8 +32,8 @@ import copy
 import math
 from typing import NamedTuple
 
-from cells import run_view
-from cells.core.surface_tissue_spec import NODE_BOUNDS
+from cells.definitions.surface_tissue_spec import NODE_BOUNDS
+from cells.records import run_view
 
 SPECIES = "mR"
 R_CELL_M = 5e-6

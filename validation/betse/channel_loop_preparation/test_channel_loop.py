@@ -548,9 +548,9 @@ def test_corrupted_loop_evidence_rejected(registered, fabricated, fault):
 def test_candidate_definition_existing_parser_and_resource_guard(
     registered, fabricated, variant_index, step_index
 ):
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
     from cells.legacy.models import finite_extracellular as model
 
     variant = registered["transport_protocol"]["variants"][variant_index]
@@ -574,8 +574,8 @@ def test_candidate_definition_existing_parser_and_resource_guard(
 def test_independent_continuous_coupling_matches_own_state_rhs(
     registered, fabricated, qscale, index
 ):
-    from cells.core.schedule import PhysicalIonicGraphControl, control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import PhysicalIonicGraphControl, control_values
     from cells.legacy.models import finite_extracellular as model
 
     variant = registered["transport_protocol"]["variants"][index]

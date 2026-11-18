@@ -18,7 +18,7 @@ from cells.assembly.spec import AssemblyError
 from cells.assembly_pool.engine import run
 from cells.assembly_pool.io import load_checkpoint, source_identity, write_checkpoint
 from cells.assembly_pool.spec import load_spec, parse_spec
-from cells.core.output_paths import configure_caches
+from cells.execution.output_paths import configure_caches
 
 
 def execute(output):

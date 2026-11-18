@@ -38,7 +38,7 @@ jax.config.update("jax_enable_x64", True)
 from cells import __version__  # noqa: E402
 from cells.analysis import continuation as cont  # noqa: E402
 from cells.analysis import stationary as sa  # noqa: E402
-from cells.core.specs import parse_spec  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
 from validation.stationary import reduced, worlds  # noqa: E402
 
 PRESCREEN = worlds.PRESCREEN
@@ -590,8 +590,8 @@ def part_default_run(args):
     decay rate are compared with the stationary state and slowest eigenvalue
     of the analysis.
     """
-    from cells.core.errors import NumericalError
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     out = dict(dt_s=RUN_DT, horizon_s=RUN_HORIZON, chunk_steps=RUN_CHUNK_STEPS)
     probe = parse_spec(

@@ -37,7 +37,7 @@ import json
 
 import pytest
 
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT
 from cells.models.assembly_lineages_v2 import MASS_ACTION, MODEL_ID, conventions
 from cells.models.assembly_lineages_v2 import spec as v2_spec

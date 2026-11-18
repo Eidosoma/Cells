@@ -11,11 +11,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
 from cells.legacy import tissue_profiles
 from cells.legacy.core import environment_barrier_composition_preparation as bridge
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from validation.tissue import calcium_energy_water_hcn_extra_reference as water
 from validation.tissue import calcium_energy_water_repair_hcn_extra_reference as repair
 from validation.tissue import surface_calcium_energy_reference as energy

@@ -9,14 +9,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.runner import run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.runner import run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels import sodium_channels as channels
 from cells.legacy.models import surface_sodium as model
-from cells.models.registry import get_model
-from cells.processes import sodium_channels as channels
+from cells.registry.models import get_model
 from tests.unit import test_surface_channels as shared
 from tests.unit.test_surface_kinetic import exact
 from validation.tissue import sodium_reference

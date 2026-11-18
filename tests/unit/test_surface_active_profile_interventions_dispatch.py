@@ -16,23 +16,23 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
-from cells.core.windows import WindowPolicy, plan_windows
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
+from cells.execution.windows import WindowPolicy, plan_windows
 from cells.legacy.core import membrane_profile_phase_handoff as handoff
 from cells.legacy.core import surface_active_profile_interventions_spec as schema
 from cells.legacy.core.excision import excise
 from cells.legacy.models import surface_active_profile_interventions as model
 from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.integration.test_cli import cli
 from tests.unit.test_surface_catalog import evidence
 from validation.topology import surface_active_profile_interventions_fixtures as fixtures
@@ -161,8 +161,8 @@ def test_evolved_active_profile_snapshot_keeps_gates_work_and_phase_in_fresh_pro
     exact(restored.checkpoint.layout, point.layout)
     code = """
 import json,sys,numpy as np
-from cells.io import load_snapshot
-from cells.core.specs import digest
+from cells.records.io import load_snapshot
+from cells.definitions.specs import digest
 x=load_snapshot(sys.argv[1])
 values={k:np.asarray(v).tolist() for k,v in x.checkpoint.state._asdict().items()}
 print(json.dumps(dict(model=x.spec.to_dict()['model']['id'], phase=x.spec.model.phase,

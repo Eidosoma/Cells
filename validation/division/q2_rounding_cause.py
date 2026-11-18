@@ -35,8 +35,8 @@ import sys
 import jax
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
 from validation.division import q2_domain_probe as probe
 from validation.division import q2_rops_comparison as q2

@@ -4,9 +4,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from cells.core.specs import ConfigError, digest
-from cells.io import runtime_identity, source_hashes
+from cells.definitions.specs import ConfigError, digest
 from cells.legacy import tissue_profiles as static
+from cells.records.io import runtime_identity, source_hashes
 from validation.betse.physiology import physiology_checkpoint as durable
 from validation.betse.physiology.core import physiology_target_selection as selection
 from validation.betse.physiology.core import random_tissue_profile_preparation as preparation

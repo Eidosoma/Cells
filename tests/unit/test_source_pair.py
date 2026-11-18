@@ -7,14 +7,20 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, ContactChange, ExperimentSpec, load_spec, parse_spec
-from cells.core.state import initialise
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import (
+    ConfigError,
+    ContactChange,
+    ExperimentSpec,
+    load_spec,
+    parse_spec,
+)
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.models import source_pair as model
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.records.io import load_snapshot, write_snapshot
 from tests import reference_source_pair_numerics as ref
 from tests.source_pair_fixtures import definition, reference_model, spec_for, values
 

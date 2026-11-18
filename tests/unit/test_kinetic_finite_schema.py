@@ -6,13 +6,13 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.resources import trace_bytes
-from cells.core.runner import timeline, validate_checkpoint
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.resources import trace_bytes
+from cells.execution.runner import timeline, validate_checkpoint
+from cells.execution.state import initialise
 from cells.legacy.models import finite_extracellular as old
 from cells.legacy.models import kinetic_finite_extracellular as model
-from cells.models.registry import get_model
+from cells.registry.models import get_model
 from tests.kinetic_finite_fixtures import definition, evidence, spec_for
 
 PLAN, _ = evidence()

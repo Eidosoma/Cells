@@ -13,9 +13,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.coupling.selective import selective_flux
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions.selective import selective_flux
 from cells.legacy.core.surface_repair_spec import MODEL_ID as MODEL_ID
 from cells.legacy.core.surface_repair_spec import accounting_spec, base_spec, model_id
 from cells.legacy.models import surface_calcium as base
@@ -23,7 +24,6 @@ from cells.legacy.models import surface_calcium_cav as prior
 from cells.legacy.processes import membrane_injury as process
 from cells.models import surface_tissue as surface
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 EXTRA_AXES = {
     "damage": ["membrane_slot"],
@@ -89,7 +89,7 @@ def base_layout(p):
 
 
 def base_control(control):
-    from cells.core.schedule import SurfaceCalciumControl
+    from cells.execution.schedule import SurfaceCalciumControl
 
     return SurfaceCalciumControl(*(getattr(control, k) for k in SurfaceCalciumControl._fields))
 
@@ -275,7 +275,7 @@ def injury_loss_bound(spec):
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     controls = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -343,7 +343,7 @@ def check_values(state, spec, steps=None, *, additional_transport=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     layout_type = (
         MORRIS_LECAR_LAYOUT_TYPE if isinstance(layout, MORRIS_LECAR_LAYOUT_TYPE) else LAYOUT_TYPE

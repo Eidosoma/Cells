@@ -47,7 +47,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
     GARD_SINGLE_EVENT,

@@ -15,21 +15,21 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.runner import branch_checkpoint, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
+from cells.execution.runner import branch_checkpoint, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import initialise
 from cells.legacy.core import surface_profile_interventions_spec as schema
 from cells.legacy.core.excision import excise
 from cells.legacy.models import surface_profile_interventions as model
 from cells.legacy.tissue_profiles import REQUEST_KIND, prepare_request
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_snapshot
+from cells.registry.models import get_model
 from tests.integration.test_cli import cli
 from tests.unit.test_surface_catalog import evidence
 from validation.topology import surface_profile_interventions_fixtures as fixtures
@@ -162,7 +162,7 @@ def test_public_evolved_checkpoint_preserves_phase_clock_and_refuses_implicit_re
             sys.executable,
             "-B",
             "-c",
-            "import json,sys; from cells.io import load_snapshot; "
+            "import json,sys; from cells.records.io import load_snapshot; "
             "x=load_snapshot(sys.argv[1]); "
             "print(json.dumps(dict(phase=x.spec.model.phase, time=x.checkpoint.time, "
             "phase_clock=float(x.checkpoint.state.phase_clock_s[0]))))",

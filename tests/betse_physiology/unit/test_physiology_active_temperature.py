@@ -9,11 +9,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
+from cells.definitions.specs import ConfigError, digest, parse_spec
+from cells.execution.schedule import control_values
+from cells.laws.reactions.mass_action import reversible_flux
 from cells.legacy.models import surface_calcium_energy as fuel
 from cells.numerics.fixed_step import rk4_step
-from cells.processes.mass_action import reversible_flux
 from tests.betse_physiology.unit.test_physiology_permeability_view import exact_tree
 from tests.betse_physiology.unit.test_physiology_temperature import setup as original_setup
 from validation.betse import global_controls as setters

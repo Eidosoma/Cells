@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core.surface_profile_interventions_spec import (
     MODEL_ID,
     artifact,
@@ -254,7 +254,7 @@ def check_definition(spec):
         ),
     )
     state, p = initial_values(compact)
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     clocks = sorted(
         {
@@ -388,7 +388,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     table = control_values(base_spec(spec), [time])
     u = type(table)(*(v[0] for v in table))

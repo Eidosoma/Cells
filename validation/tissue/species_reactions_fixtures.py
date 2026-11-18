@@ -4,7 +4,7 @@ All values are synthetic. Every world is D150's quiescent species-only world
 (secreted_species_fixtures.world: passive cells, every node at the bath's ion composition with a
 zero charge anchor, zero ion diffusivity on every face), so no ion moves. Its species S is one of
 the network's species; the others are declared by the engine's helper
-(cells.core.inventory_species), a neutral, membrane-impermeant row each, at a trace background
+(cells.registry.inventory_species), a neutral, membrane-impermeant row each, at a trace background
 with a species-scale material floor and a pre-formed (resolved) profile where the network acts.
 
 * species_world: the base world (one cell, its finite node ecs_0, the held bath; faces optional)
@@ -27,7 +27,7 @@ import math
 
 import numpy as np
 
-from cells.core.inventory_species import add_inventory_species
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 
 REACTIONS = "local_species_reactions@1"
@@ -478,7 +478,7 @@ def reference_sites(raw):
 
 def reference_rt(raw):
     """RT (pJ/fmol) with the engine's R and the declared T, for the references."""
-    from cells.processes.electrochemistry import R
+    from cells.laws.electrochemistry import R
     from validation.reactions import network_reference as nr
 
     return nr.rt_pJ_per_fmol(R, raw["model"]["temperature_K"])
@@ -487,7 +487,7 @@ def reference_rt(raw):
 def engine_network_rows(result):
     """The engine's network amounts [T, S, N] and node fields [T, N] on the combined node axis
     (cells, then outside nodes), and its route extents [T, routes]."""
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     model = get_model(result.spec.model)
     _, p = model.initial_values(result.spec)

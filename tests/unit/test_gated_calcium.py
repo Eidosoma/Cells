@@ -12,23 +12,23 @@ import jax
 import numpy as np
 import pytest
 
-from cells.batch_io import load_batch_snapshot, write_batch_snapshot
-from cells.core.batch import parse_batch, run_batch
-from cells.core.batch_windows import run_batch_windowed
-from cells.core.devices import execution_device
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, timeline, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.windows import WindowPolicy, run_windowed
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble.plan import jupiter_plan, plan
-from cells.io import load_snapshot, write_run
+from cells.execution.batch import parse_batch, run_batch
+from cells.execution.batch_windows import run_batch_windowed
+from cells.execution.devices import execution_device
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.windows import WindowPolicy, run_windowed
+from cells.laws.channels import calcium_gates as process
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine as assembly
 from cells.legacy.assembly_cluster.spec import parse_spec as parse_assembly
 from cells.legacy.core.gated_calcium_spec import base_spec
 from cells.legacy.models import gated_calcium as model
-from cells.processes import calcium_gates as process
+from cells.records.batch_io import load_batch_snapshot, write_batch_snapshot
+from cells.records.io import load_snapshot, write_run
 from tests.batch_fixtures import definition
 from tests.reference_gated_calcium import (
     F,
@@ -258,7 +258,7 @@ def test_stage_ownership_charge_energy_and_calcium_reversal():
     work -= 1e-3 * np.sum(model.base.readouts(state, p, xp=np)[-1] * actual.plasma_pump_cycles)
     residual = physical_energy_derivative(system, y, dy) + diss - work
     assert abs(residual) < 2e-12
-    from cells.processes.electrochemistry import ghk_leak
+    from cells.laws.electrochemistry import ghk_leak
 
     ci, co, t = 0.002, 0.008, 298.15
     reversal = R * t / (2 * F) * np.log(co / ci)

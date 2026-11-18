@@ -523,11 +523,11 @@ sys.path.insert(0, str(Path.cwd() / 'validation/betse/live_recording'))
 import live_context as ctx
 resource.setrlimit(resource.RLIMIT_AS, (ctx.BOUNDS['cells_address_space_bytes'],) * 2)
 import matched_windows as matched
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, run_windowed
-from cells.window_io import write_windowed_run
-from cells.io import load_snapshot
+from cells.execution.runner import run
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy, run_windowed
+from cells.records.window_io import write_windowed_run
+from cells.records.io import load_snapshot
 original = ctx.read(ctx.LEGACY / 'registration.json')
 spec = parse_spec(matched.prior.definition(original['cases']['pump_leak'], 25e-6))
 full = run(spec)

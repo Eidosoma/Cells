@@ -17,8 +17,8 @@ population (kir_0); a neutral Q is declared too. One program; the arms are data:
 
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import pump_composite_adapter as adapter
 from validation.tissue import regulated_availability_fixtures as rf
 

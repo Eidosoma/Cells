@@ -7,8 +7,8 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec, read_json
+from cells.definitions.specs import parse_spec, read_json
+from cells.execution.runner import run
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology import physiology_checkpoint as checkpoint
 from validation.betse.physiology.core import physiology_perturbation_remap as remap

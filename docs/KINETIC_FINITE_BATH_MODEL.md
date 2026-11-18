@@ -181,9 +181,9 @@ junctions, different parameters and longer runs require their own evidence.
 
 | Area | Implementation | Guardrail |
 | --- | --- | --- |
-| `core/specs.py` and new kinetic finite-bath parser | New model/membrane/pump types; v2 parse/serialize route | Old v1 fingerprints and strict rejection behavior unchanged |
-| `core/state.py` | New numeric layout with role indices and metabolic coefficients | Flat named checkpoint arrays; no missing hidden state |
-| `models/registry.py` and new composing model | Explicit v2 dispatch, same-stage rates and conservative ownership | No law branch in RK4 or organism-name selector |
+| `definitions/specs.py` and new kinetic finite-bath parser | New model/membrane/pump types; v2 parse/serialize route | Old v1 fingerprints and strict rejection behavior unchanged |
+| `execution/state.py` | New numeric layout with role indices and metabolic coefficients | Flat named checkpoint arrays; no missing hidden state |
+| `registry/models.py` and new composing model | Explicit v2 dispatch, same-stage rates and conservative ownership | No law branch in RK4 or organism-name selector |
 | Existing shared physical helpers | Reuse or narrowly extract pure binding/scatter/balance operations | Preserve arithmetic order and test old-family behavior |
 | Model domain/observers/resource estimates | Pump stage/interior checks, physical units, extra coefficient storage | No hidden clipping or uncounted padded arrays |
 | Configurations and tests | Data-defined cases, lifecycle and corruption checks | Synthetic fixture values are not experimental calibration |

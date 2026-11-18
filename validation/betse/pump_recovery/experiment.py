@@ -69,9 +69,9 @@ def definition(preparation, arm, protocol, dt, backend):
 
 
 def preflight(preparation, protocol):
-    from cells.core.resources import trace_bytes
-    from cells.core.runner import timeline
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.resources import trace_bytes
+    from cells.execution.runner import timeline
 
     rows = []
     for arm in protocol["arms"]:

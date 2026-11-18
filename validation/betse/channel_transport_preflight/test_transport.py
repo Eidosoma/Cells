@@ -257,8 +257,8 @@ def native(registration):
 
 @pytest.fixture(scope="module")
 def mapped(registration, native):
-    from cells.core.schedule import PhysicalIonicGraphControl, control_values
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import PhysicalIonicGraphControl, control_values
     from cells.legacy.models import finite_extracellular as model
 
     p, definitions, results = registration["protocol"], {}, {}

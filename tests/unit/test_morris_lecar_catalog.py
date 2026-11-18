@@ -7,13 +7,14 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.runner import run, timeline, validate_checkpoint
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.runner import run, timeline, validate_checkpoint
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
+from cells.laws.channels import calcium_activated_catalog as old_catalog
+from cells.laws.channels import morris_lecar_catalog as catalog
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine as assembly
 from cells.legacy.assembly_cluster.controls import modulate
@@ -26,9 +27,8 @@ from cells.legacy.models import (
     surface_morris_lecar,
 )
 from cells.models import surface_kinetic
-from cells.models.registry import get_model
-from cells.processes import calcium_activated_catalog as old_catalog
-from cells.processes import morris_lecar_catalog as catalog
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.channels import morris_lecar_channels_reference as scalar

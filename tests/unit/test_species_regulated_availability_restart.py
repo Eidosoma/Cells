@@ -18,9 +18,9 @@ One window program (7-step windows, which do not divide 30) serves every run:
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.core.windows import WindowPolicy, iter_windows
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.windows import WindowPolicy, iter_windows
+from cells.records.io import load_snapshot, write_snapshot
 from validation.tissue import regulated_availability_fixtures as rf
 
 POLICY = WindowPolicy(7, "full")

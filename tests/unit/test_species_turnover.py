@@ -14,9 +14,9 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.registry import get_model
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
 getcontext().prec = 50

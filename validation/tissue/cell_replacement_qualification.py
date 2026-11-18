@@ -73,8 +73,8 @@ def engine_records(raw, dt):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
 
     spec = parse_spec(at_dt(raw, dt))
     started = time.perf_counter()

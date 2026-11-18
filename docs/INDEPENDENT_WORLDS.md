@@ -35,11 +35,11 @@ Batch execution requires `mapping: lax_map`, `max_worlds`, `max_padded_steps`
 and `max_working_bytes`. The world count is data, not an engine constant.
 
 Python clients use `BatchSpec`, `WorldSpec`, `run_batch` and
-`branch_batch_checkpoints` from `cells.core.batch`. Results are keyed by world
+`branch_batch_checkpoints` from `cells.execution.batch`. Results are keyed by world
 ID, with ordinary `RunResult` values. `result.checkpoint_at(0.5)` selects a common
 accepted boundary; `result.checkpoint_at({101: 0.13, 202: 0.274})` selects separate
 accepted clocks. `write_batch_snapshot` and `load_batch_snapshot` in
-`cells.batch_io` save/restore the complete cohort. Ordinary scalar snapshot
+`cells.records.batch_io` save/restore the complete cohort. Ordinary scalar snapshot
 readers can also load an individual child directory under that cohort.
 Use `branch_batch_checkpoints` before changing a saved cohort's definition;
 raw `Checkpoint` objects alone do not authenticate their originating protocol.

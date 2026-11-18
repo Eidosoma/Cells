@@ -8,8 +8,8 @@ padding stays exactly zero.
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from tests.apical_vertex_fixtures import honeycomb
 
 jax.config.update("jax_enable_x64", True)

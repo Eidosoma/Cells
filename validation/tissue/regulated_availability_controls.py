@@ -20,9 +20,9 @@ import contextlib
 import copy
 from dataclasses import replace
 
-from cells.models.operators import OPERATORS
-from cells.models.operators import species_regulated_availability as sra
-from cells.models.operators.contract import check_declarations
+from cells.operators import OPERATORS
+from cells.operators import species_regulated_availability as sra
+from cells.operators.contract import check_declarations
 
 
 class _Control(sra.SpeciesRegulatedAvailability):

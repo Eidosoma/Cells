@@ -8,8 +8,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes import kinetic_pump as pump
-from cells.processes.electrochemistry import F, R
+from cells.laws.electrochemistry import F, R
+from cells.laws.pumps import kinetic_pump as pump
 
 BASE = pump.Parameters(0.1, 1.5, 0.1, 0.1, 12.0, 0.2, 0.5, -37000.0)
 TEMPERATURE = 298.15

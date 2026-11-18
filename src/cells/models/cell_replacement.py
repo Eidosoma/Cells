@@ -4,8 +4,8 @@ The ionic model is resolved_pump_tissue@3 (models/surface_pump_v3.py), unchanged
 and called, never copied (the precedent of models/surface_pump_water.py). The
 operation scheduled_cell_replacement@1 removes a carrier's contents from its slot
 and supplies a newcomer from a declared template; the junctions at the slot follow
-delayed_first_order_junction_formation@1 (processes/junction_formation.py).
-Definition: core/cell_replacement_spec.py. Design, sources and the probe of @3's
+delayed_first_order_junction_formation@1 (laws/junctions/junction_formation.py).
+Definition: definitions/cell_replacement_spec.py. Design, sources and the probe of @3's
 checks: /mnt/workspaces/Cells/cell-replacement-g2-20261111-01/design-note-G2.md.
 
 Step. checked_step is
@@ -22,7 +22,7 @@ A is held at its step-midpoint value inside @3's step (A is an exogenous input o
 time, so this is second order with ARS(2,2,2)). A refused step returns the state
 before the event, so an event is applied in full or not at all. The accepted row
 at t_e is the departing carrier's last state; t_e + dt is the newcomer's first.
-The event map's bookings are described in models/operators/cell_replacement.py.
+The event map's bookings are described in operators/cell_replacement.py.
 
 Checks. Host and device use @3's own row checks (surface_pump.checked_rows,
 surface_pump_checks.row_checks, surface_pump.ledger_limits) with @3's balances
@@ -36,7 +36,7 @@ does not hold it).
 
 Implementation (D143, docs/PUMP_COMPOSITE.md). This identity is a thin
 composition: resolved_pump_composite@1 with the single operator
-scheduled_cell_replacement@1 (models/operators/cell_replacement.py, which holds
+scheduled_cell_replacement@1 (operators/cell_replacement.py, which holds
 the event map, the formation law's half-steps and the ledgers, moved there
 unchanged). Before this module became thin, the composition was bitwise equal to
 its own implementation on the model's test and qualification worlds (evidence:
@@ -49,9 +49,9 @@ from dataclasses import replace
 
 import numpy as np
 
-from cells.core import pump_composite_spec as composite_spec
-from cells.core import surface_pump_v3_spec as ionic_spec
-from cells.core.cell_replacement_spec import (  # noqa: F401
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import surface_pump_v3_spec as ionic_spec
+from cells.definitions.cell_replacement_spec import (  # noqa: F401
     MODEL_ID,
     OPERATION_LAW_ID,
     Control,
@@ -59,12 +59,13 @@ from cells.core.cell_replacement_spec import (  # noqa: F401
     lineage,
     projection,
 )
-from cells.core.specs import ChannelChange
+from cells.definitions.specs import ChannelChange
+from cells.laws.electrochemistry import CHARGE_PER_FMOL  # noqa: F401  (G2-Q1's judge reads it)
 from cells.models import pump_composite
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
-from cells.models.operators import cell_replacement as operator
-from cells.models.operators.cell_replacement import (  # noqa: F401  (the operation, re-exported)
+from cells.operators import cell_replacement as operator
+from cells.operators.cell_replacement import (  # noqa: F401  (the operation, re-exported)
     INTEGER_FIELDS,
     IONIC_FIELDS,
     REPLACEMENT_LAYOUT_FIELDS,
@@ -87,7 +88,6 @@ from cells.models.operators.cell_replacement import (  # noqa: F401  (the operat
     replaced_charge_magnitude,
     replacement_domain_valid,
 )
-from cells.processes.electrochemistry import CHARGE_PER_FMOL  # noqa: F401  (G2-Q1's judge reads it)
 
 OBSERVER_ID = "resolved_pump_replacement_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = ionic.OBSERVATION_SAMPLING

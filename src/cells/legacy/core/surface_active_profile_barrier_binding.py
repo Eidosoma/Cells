@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.legacy.core import surface_barrier_interventions_binding as barriers
 from cells.legacy.core import surface_profile_interventions_spec as membranes
 from cells.legacy.processes import tissue_target_selectors as native

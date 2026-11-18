@@ -4,7 +4,7 @@ from dataclasses import asdict
 
 import numpy as np
 
-from cells.core.specs import VOLTAGE_GATED_ID, parse_spec
+from cells.definitions.specs import VOLTAGE_GATED_ID, parse_spec
 from tests import multispecies_fixtures as ionic
 
 

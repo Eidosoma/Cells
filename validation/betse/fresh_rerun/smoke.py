@@ -9,9 +9,9 @@ import common as u
 
 
 def cpu(output, preparation):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import write_run
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.records.io import write_run
 
     u.module_path("pump_matched_pilot")
     import pilot_context as ctx

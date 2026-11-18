@@ -1,6 +1,6 @@
 """Cells: explicit models, reproducible experiments, independent numerics."""
 
-from cells.core import blas_threads as _blas_threads  # noqa: E402
+from cells.execution import blas_threads as _blas_threads  # noqa: E402
 
 # D190: every BLAS at 1 thread from `import cells`, so bits do not follow the CPU allocation.
 # Its one home again (D198, R6'): no held law pins this file's bytes since the retire batch, and

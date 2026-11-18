@@ -17,9 +17,9 @@ from cells.assembly.kernel import random_pair
 from cells.assembly.spec import AssemblyError
 from cells.assembly_pool import engine as pool_engine
 from cells.assembly_pool import reference as pool_reference
-from cells.core.errors import NumericalError
 from cells.ensemble.families import bind_definition, first_completion, runtime_for
 from cells.ensemble.plan import balance, jupiter_plan, plan
+from cells.execution.errors import NumericalError
 from cells.legacy.assembly_cell.io import flatten, load_checkpoint, write_checkpoint
 from cells.legacy.assembly_cluster import engine
 from cells.legacy.assembly_cluster.spec import channel_owners, parse_spec

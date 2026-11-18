@@ -103,13 +103,13 @@ def stub_physics(monkeypatch):
         "jax": dict(
             default_backend=lambda: "cpu", config=NS(x64_enabled=True, jax_disable_jit=False)
         ),
-        "cells.core.runner": dict(run=lambda *a: full),
-        "cells.core.specs": dict(parse_spec=lambda spec: spec),
-        "cells.core.windows": dict(
+        "cells.execution.runner": dict(run=lambda *a: full),
+        "cells.definitions.specs": dict(parse_spec=lambda spec: spec),
+        "cells.execution.windows": dict(
             WindowPolicy=Policy, run_windowed=lambda *a, **kw: NS(diagnostics={})
         ),
-        "cells.io": dict(write_run=write, load_snapshot=load),
-        "cells.window_io": dict(write_windowed_run=record),
+        "cells.records.io": dict(write_run=write, load_snapshot=load),
+        "cells.records.window_io": dict(write_windowed_run=record),
     }
     for name in list(modules):  # Each module's parent packages, as empty modules.
         while "." in name:

@@ -1,6 +1,6 @@
 """G2-Q1's judge records the numerical environment the engine's run records keep.
 
-cell_replacement_judge.provenance() adds cells.io.runtime_identity's numerical_environment
+cell_replacement_judge.provenance() adds cells.records.io.runtime_identity's numerical_environment
 (XLA_FLAGS and JAX_DISABLE_JIT), so an item run under an XLA setting (Q7 under the
 deterministic GPU flag, D168) is identified by its record. Record only: the verdicts of
 saved item records are unchanged. No engine run.
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from cells.io import runtime_identity
+from cells.records.io import runtime_identity
 from validation.tissue import cell_replacement_judge as judge
 
 # The composite's L4 judged run C (14 November): every G2-Q1 item record, Q7 failed.

@@ -15,7 +15,7 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.processes.electrochemistry import R
+from cells.laws.electrochemistry import R
 from validation.betse.physiology.core import physiology_protein_projection as projection
 from validation.betse.physiology.core.physiology_perturbation_step import BALANCE_RELATIVE_TOLERANCE
 

@@ -8,7 +8,7 @@ identity and size, its rows and the engine's verdict on them.
 * **move** (C13, a misbooked move): C3's first-order loading under ARS at 1 ms, recorded at every
   step to MOVE_AT_S; there the compartment's S is raised by MOVE_RELATIVE of the route's booked
   move, its accumulator unchanged. The rows before it are the unplanted run's; the planted row is
-  the edited checkpoint, which the engine validates on resuming (cells.core.runner:
+  the edited checkpoint, which the engine validates on resuming (cells.execution.runner:
   validate_checkpoint runs the model's row checks on it).
 * **work** (C13, a misbooked work): C10's RK4 world (first-order loading at 0.1 ms) to WORK_AT_S;
   there the route's booked work is scaled by 1 + WORK_RELATIVE.
@@ -44,8 +44,8 @@ PLANTS = ("move", "work", "route", "anchor")
 
 def _prefix(raw, at):
     """The world run to `at`, recorded at every step: (result, its records)."""
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
     from validation.tissue import compartment_acceptance_qualification as generator
 
     head = copy.deepcopy(raw)
@@ -75,10 +75,10 @@ def _row_ratios(model, spec, state, steps):
 def _planted(raw, at, edit, identity):
     """The unplanted rows to `at`, the edited checkpoint's ratios, and the engine's verdict on
     resuming from it."""
-    from cells.core.errors import NumericalError
-    from cells.core.runner import run
-    from cells.core.specs import ConfigError, parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.errors import NumericalError
+    from cells.execution.runner import run
+    from cells.registry.models import get_model
 
     spec = parse_spec(raw)
     model = get_model(spec.model)
@@ -138,8 +138,8 @@ def work():
 
 def _silence_rows(spec, observations):
     """S1 and S2 at every row (compartment_fixtures.silence's definitions, row by row)."""
-    from cells.models.registry import get_model
     from cells.numerics import surface_field as field
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     state, _ = model.initial_values(spec)
@@ -157,9 +157,9 @@ def _silence_rows(spec, observations):
 
 
 def _k3(planted):
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.models.operators import compartments as comp
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
+    from cells.operators import compartments as comp
 
     comp.refuse_ion_routes = lambda *a: None  # Milestone 1's bypass, in this process only.
     comp.refuse_charge_anchor = lambda *a: None

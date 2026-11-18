@@ -1,6 +1,6 @@
 """resolved_pump_water@2: resolved_pump_water@1 plus KCC-type K+/anion symport routes.
 
-Each route (core/surface_pump_water_v2_spec.py) is the law
+Each route (definitions/surface_pump_water_v2_spec.py) is the law
 processes/k_anion_symport.LAW_ID on its membrane patch: outward cycles
 J = k a f(V) (K_i A_i - K_o A_o), one potassium and one anion per cycle, so it
 carries no current, with heat 1e-3 J A >= 0 and the cell's current volume in
@@ -36,15 +36,15 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 
-from cells.core import pump_composite_spec as composite_spec
-from cells.core import surface_pump_v3_spec as ionic_spec
-from cells.core.surface_pump_water_spec import Control as WaterControl
-from cells.core.surface_pump_water_v2_spec import MODEL_ID, Control, projection  # noqa: F401
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions import surface_pump_v3_spec as ionic_spec
+from cells.definitions.surface_pump_water_spec import Control as WaterControl
+from cells.definitions.surface_pump_water_v2_spec import MODEL_ID, Control, projection  # noqa: F401
 from cells.models import pump_composite
 from cells.models import surface_pump_v3 as ionic
 from cells.models import surface_pump_water as w1
-from cells.models.operators import k_anion_symport as operator
-from cells.models.operators.k_anion_symport import (  # noqa: F401  (the route law, re-exported)
+from cells.operators import k_anion_symport as operator
+from cells.operators.k_anion_symport import (  # noqa: F401  (the route law, re-exported)
     SYMPORT_LAYOUT_FIELDS,
     SYMPORT_READOUTS,
     SYMPORT_STATE_AXES,
@@ -53,7 +53,7 @@ from cells.models.operators.k_anion_symport import (  # noqa: F401  (the route l
     symport_rates,
     transfer,
 )
-from cells.models.operators.osmotic_water import LAW_ID as WATER_LAW_ID
+from cells.operators.osmotic_water import LAW_ID as WATER_LAW_ID
 
 OBSERVER_ID = "resolved_pump_regulated_water_accepted_grid_readouts@1"
 OBSERVATION_SAMPLING = w1.OBSERVATION_SAMPLING

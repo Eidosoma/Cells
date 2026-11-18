@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.tissue import surface_mobile_repair_fixtures as fixtures
 from validation.tissue import surface_mobile_repair_reference as reference
 

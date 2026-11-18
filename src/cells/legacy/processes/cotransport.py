@@ -11,8 +11,8 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.numerics.extracellular_field import ordered_scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
 
 LAW_ID = "electroneutral_symport_reversible_tanh@1"
 KCC_LAW_ID = "kcc_reversible_tanh@1"

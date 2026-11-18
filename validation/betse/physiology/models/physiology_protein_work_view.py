@@ -11,9 +11,9 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import F, R
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import F, R
 from validation.betse.physiology.core import physiology_protein_projection as projection
 from validation.betse.physiology.core import physiology_tissue_binding as units
 from validation.betse.physiology.models import physiology_permeability_view as immutable

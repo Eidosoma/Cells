@@ -19,19 +19,19 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot, write_batch_run  # noqa: E402
-from cells.core.batch import load_batch, run_batch  # noqa: E402
-from cells.core.grid import EventGrid  # noqa: E402
-from cells.core.runner import run, validate_checkpoint  # noqa: E402
-from cells.core.schedule import event_index  # noqa: E402
-from cells.core.specs import ConfigError, load_spec  # noqa: E402
-from cells.core.state import Checkpoint  # noqa: E402
-from cells.core.windows import WindowPolicy  # noqa: E402
-from cells.io import _sha256 as sha  # noqa: E402
-from cells.io import _write_json as write_json  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
-from cells.window_io import write_windowed_run  # noqa: E402
+from cells.definitions.specs import ConfigError, load_spec  # noqa: E402
+from cells.execution.batch import load_batch, run_batch  # noqa: E402
+from cells.execution.grid import EventGrid  # noqa: E402
+from cells.execution.runner import run, validate_checkpoint  # noqa: E402
+from cells.execution.schedule import event_index  # noqa: E402
+from cells.execution.state import Checkpoint  # noqa: E402
+from cells.execution.windows import WindowPolicy  # noqa: E402
+from cells.records.batch_io import load_batch_snapshot, write_batch_run  # noqa: E402
+from cells.records.io import _sha256 as sha  # noqa: E402
+from cells.records.io import _write_json as write_json  # noqa: E402
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.records.window_io import write_windowed_run  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 
 BASE = ROOT / "runs/core-004-2026-09-08"
 RELEASE_SHA = "6a166ea315a33fbb24e85b93b4f548b08c1dabf7ac13766a0f4a82ce74201b96"
@@ -181,8 +181,8 @@ ARCHIVE_WORKER = r"""
 import json, sys
 from pathlib import Path
 import numpy as np
-from cells.io import load_snapshot, source_hashes, write_run
-from cells.core.runner import run
+from cells.records.io import load_snapshot, source_hashes, write_run
+from cells.execution.runner import run
 data = json.loads(sys.stdin.read())
 assert source_hashes() == data['source_hashes']
 for name in data['snapshots']:

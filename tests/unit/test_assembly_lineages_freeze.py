@@ -16,7 +16,7 @@ import json
 
 import numpy as np
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages import (
     EXCHANGE_INTERFACE,
     OPERATOR_INTERFACE,

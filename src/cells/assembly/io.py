@@ -26,7 +26,7 @@ def digest(path):
 
 # The shared output-path policy, relative to the cells package. Its key in the identity is derived
 # from the same string as the file read, so a move of the policy changes both together.
-OUTPUT_POLICY = "core/output_paths.py"
+OUTPUT_POLICY = "execution/output_paths.py"
 
 
 def source_identity():

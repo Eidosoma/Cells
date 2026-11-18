@@ -465,12 +465,12 @@ guard 10).
 
 | File | Change | Qualified code |
 | --- | --- | --- |
-| `src/cells/models/operators/cell_replacement_v2.py` | New: @2, a subclass of @1's operator, with its event map, ledger terms, domain, checks and observation | New |
-| `src/cells/models/operators/__init__.py` | Register @2 | The registry; no program changes |
-| `src/cells/models/operators/osmotic_water.py` | `ACCEPTS_WRITES`, and a new `node_free_energy_pJ` that water itself does not call | Water@1's and @2's module; no existing function changes |
-| `src/cells/models/operators/cell_replacement.py` | `worst_case`'s route maxima applied to a given definition, and `check_definition` and `apply_events` taking the event function, each an optional argument whose default is @1's own code. `apply_events` also runs on the device; with the default its trace is unchanged (guard A) | @1's module |
-| `src/cells/core/cell_replacement_spec.py` | `parse_events` and `check_template_on_slot` take the template-volume rule, with @1's as the default. The file is under this round's core/ restriction, so this needs approval; otherwise @2 duplicates the event parser (open question 2) | @1's parser |
-| `src/cells/models/operators/current_injection.py` | Only if open question 6 is accepted: `volume` added to `CONFLICTS_VIEW`, a declaration that refuses injection over water and changes no program | Injection@1's module (Rm1); covered by guard A |
+| `src/cells/operators/cell_replacement_v2.py` | New: @2, a subclass of @1's operator, with its event map, ledger terms, domain, checks and observation | New |
+| `src/cells/operators/__init__.py` | Register @2 | The registry; no program changes |
+| `src/cells/operators/osmotic_water.py` | `ACCEPTS_WRITES`, and a new `node_free_energy_pJ` that water itself does not call | Water@1's and @2's module; no existing function changes |
+| `src/cells/operators/cell_replacement.py` | `worst_case`'s route maxima applied to a given definition, and `check_definition` and `apply_events` taking the event function, each an optional argument whose default is @1's own code. `apply_events` also runs on the device; with the default its trace is unchanged (guard A) | @1's module |
+| `src/cells/definitions/cell_replacement_spec.py` | `parse_events` and `check_template_on_slot` take the template-volume rule, with @1's as the default. The file is under this round's core/ restriction, so this needs approval; otherwise @2 duplicates the event parser (open question 2) | @1's parser |
+| `src/cells/operators/current_injection.py` | Only if open question 6 is accepted: `volume` added to `CONFLICTS_VIEW`, a declaration that refuses injection over water and changes no program | Injection@1's module (Rm1); covered by guard A |
 | `validation/tissue/composite_crossrev.py` | A new `volume` world set (water with @2) for later baselines, added on top of the extended tool (constants) once it lands on main; the existing sets are unchanged | Tool |
 | `validation/tissue/cell_replacement_fixtures.py`, `tests/replacement_water_fixtures.py` | `over_water`, the [water, @2] definition builder; the test worlds | Fixtures |
 | `tests/unit/test_cell_replacement_v2.py`, `tests/unit/test_cell_replacement_v2_runs.py`, `tests/test_tiers.json` | Tier-1 smoke, compiled runs, and the tier rows (re-measured) | New |
@@ -517,7 +517,7 @@ user's decision. These runs take a few hours of detached CPU time.
     optional argument whose default is @1's own code. `apply_events` also runs on the device;
     with the default its trace is unchanged;
   - `current_injection.py`: `volume` in `CONFLICTS_VIEW`, a structure refusal;
-  - `core/cell_replacement_spec.py`: the template-volume keyword, default @1's rule;
+  - `definitions/cell_replacement_spec.py`: the template-volume keyword, default @1's rule;
   - the registry, the cell-replacement fixtures (one new function) and `composite_crossrev.py`
     (a new `volume` set; the other sets unchanged).
 - **Crossrev.** The after side's jaxprs and bindings of the base, qualification and injection
@@ -616,7 +616,7 @@ ledgers, the analytic checks and the refusals. The compiled runs go in tier 2 or
 
 ### 2.10 Open questions, and the lead's rulings (13 November)
 
-Rulings: 1 refused in this slice; 2 the keyword in `core/cell_replacement_spec.py`; 3
+Rulings: 1 refused in this slice; 2 the keyword in `definitions/cell_replacement_spec.py`; 3
 parameterised, no duplication; 4 a new function beside an unchanged `water_ledgers`, with
 the equality test; 5 the proposal (the entity owns its invariant, D142); 6 refused now, with
 a test and a note; 7 accepted; 8 answered by the constants-aware baseline (§2.9).
@@ -624,7 +624,7 @@ a test and a note; 7 accepted; 8 answered by the constants-aware baseline (§2.9
 1. **`law_steady` over water.** Proposed: refused in this slice. The alternative is for the
    composite to pass its view to event maps that declare it, and for @1's arrival gate to take
    that layout (a composite change and a static branch in @1's event map).
-2. **The template-volume rule in `core/cell_replacement_spec.py`.** Proposed: a keyword whose
+2. **The template-volume rule in `definitions/cell_replacement_spec.py`.** Proposed: a keyword whose
    default is @1's rule (host side, but under the core/ restriction). The alternative is a second
    event parser in @2's module.
 3. **@1's host-side helpers** (`worst_case`, `check_definition`). Proposed: parameterised, with

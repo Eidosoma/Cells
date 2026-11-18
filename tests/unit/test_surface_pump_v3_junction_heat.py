@@ -17,18 +17,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.surface_pump_v3_spec import (
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import (
     DEFAULT_JUNCTION_HEAT,
     NALEAK_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     control_values,
 )
-from cells.core.vector_windows import WorldCheckError, run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.vector_windows import WorldCheckError, run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.models import surface_pump, surface_pump_v3
 from cells.numerics import surface_imex as imex
 from validation.stationary import worlds
@@ -77,7 +77,7 @@ def fixture_raw(booking=None):
 
 def stepped(spec):
     """Every accepted state of a run by the model's own checked step (no row checks)."""
-    from cells.core.grid import EventGrid
+    from cells.execution.grid import EventGrid
 
     state, p = MODEL.initial_values(spec)
     grid = EventGrid(spec)

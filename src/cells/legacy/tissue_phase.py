@@ -6,9 +6,8 @@ import sys
 from copy import deepcopy
 from pathlib import Path
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import load_snapshot
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.execution.errors import NumericalError
 from cells.legacy.core import active_membrane_profile_phase_handoff as active_bridge
 from cells.legacy.core import active_profile_barrier_phase_handoff as combined_bridge
 from cells.legacy.core import joint_water_barrier_phase_handoff as joint_water_barrier_bridge
@@ -30,6 +29,7 @@ from cells.legacy.core import surface_active_profile_interventions_spec as activ
 from cells.legacy.core import surface_bath_phase_handoff as bath_bridge
 from cells.legacy.core import surface_profile_epoch_spec as epoch
 from cells.legacy.core import surface_profile_interventions_spec as scheduled
+from cells.records.io import load_snapshot
 
 
 def _read_json(path):

@@ -11,9 +11,9 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.coupling.selective import selective_flux
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.laws.junctions.selective import selective_flux
 from cells.numerics.extracellular_field import logmean, scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 
 LAW_ID = "resolved_surface_transport_explicit_reservoirs@1"
 VOLTAGE_ID = "cell_charge_area_resolved_capacitors@1"

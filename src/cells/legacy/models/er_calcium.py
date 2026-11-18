@@ -6,13 +6,13 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R, bernoulli, ghk_leak
+from cells.laws.reactions import er_calcium as processes
 from cells.legacy.models import compartment_reactions as chemistry
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes import er_calcium as processes
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R, bernoulli, ghk_leak
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 OBSERVER_ID = "finite_er_chemistry_readouts@1"
 OBSERVATION_SAMPLING = "read_only_control_local_hermite_er_domain_checked@1"

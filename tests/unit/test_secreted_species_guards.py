@@ -30,11 +30,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import secreted_species_radial as radial
 

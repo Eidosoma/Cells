@@ -18,8 +18,8 @@ import copy
 
 import numpy as np
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
+from cells.definitions import pump_composite_spec as cs
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import surface_pump_v3_fixtures as v3fx
 

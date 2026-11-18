@@ -6,10 +6,10 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.io import load_snapshot, write_snapshot
+from cells.definitions.specs import parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.runner import run
+from cells.records.io import load_snapshot, write_snapshot
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "fresh_rerun"))
 import common as u  # noqa: E402

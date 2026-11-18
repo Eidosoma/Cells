@@ -13,11 +13,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.core.grid import EventGrid
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, _fields, parse_spec
-from cells.core.state import Checkpoint
-from cells.core.surface_tissue_spec import SurfaceTissueModel
+from cells.definitions.specs import ConfigError, _fields, parse_spec
+from cells.definitions.surface_tissue_spec import SurfaceTissueModel
+from cells.execution.grid import EventGrid
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.legacy.core.surface_excision_spec import (
     MODEL_ID,
     POLICIES,
@@ -26,8 +27,7 @@ from cells.legacy.core.surface_excision_spec import (
 )
 from cells.legacy.processes import tissue_removal as removal
 from cells.models import surface_tissue as passive
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, R
+from cells.registry.models import get_model
 
 
 @dataclass(frozen=True)

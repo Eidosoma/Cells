@@ -102,7 +102,7 @@ say.
   schedule's); the lead coordinates them (§10).
 
 **As built (16 November 2026).** The operator contract carries these declarations
-(`models/operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
+(`operators/contract.py`, "The run view"): `VIEW_LAYERS`, `view_events` (the default gives
 the births and retirements of `living_intervals`, each at `{"cell": id}`), `view_sets(spec,
 declaration)` for an operator's own axes, `OBSERVATION_AXES`, `UNITS`, `RECORD_KINDS`,
 `ORIENTATION` and `RECORD_LAYERS`, checked at registration against the operator's own fields
@@ -115,7 +115,7 @@ when they reached main, a2af3899).
 
 ## 4. The writer
 
-- **One module, `cells/run_view.py`:** `view(spec, record_files, *, run=None, geometry=None)`
+- **One module, `cells/records/run_view.py`:** `view(spec, record_files, *, run=None, geometry=None)`
   returns the record; `write_view(directory, ...)` writes it.
 - **Its callers are the shared output paths,** all four wired in version 1: `io.write_run`,
   `window_io.write_windowed_run`, `batch_io.write_batch_run` and

@@ -39,8 +39,8 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.core import partition_spec as ps
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.definitions import partition_spec as ps
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from tests import partition_fixtures as fx
 from validation.tissue import composite_crossrev as crossrev
 
@@ -147,9 +147,9 @@ def bindings(directory, names=()):
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)

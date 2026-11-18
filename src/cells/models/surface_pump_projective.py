@@ -1,6 +1,6 @@
 """Projective-integration readouts of the resolved pump family (resolved_pump_tissue@1-@3).
 
-cells.core.projective calls these on accepted host rows (NumPy). They read the
+cells.execution.projective calls these on accepted host rows (NumPy). They read the
 model's own state, laws and ledgers and add none:
 
 coordinates  the error coordinates the jump controller normalizes by the
@@ -20,8 +20,8 @@ linear_ledgers  every other ledger of balances(): material (local, outside,
 
 import numpy as np
 
+from cells.laws.junctions import junction_gate
 from cells.models import surface_tissue as tissue
-from cells.processes import junction_gate
 
 COORDINATES = ("concentration_mM", "membrane_voltage_V", "gate")
 

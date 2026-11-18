@@ -23,11 +23,11 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.registry.models import get_model
 from tests import partition_fixtures as fx
 
 ROOT = Path(__file__).resolve().parents[2]

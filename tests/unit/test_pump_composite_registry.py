@@ -15,10 +15,10 @@ import math
 
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.inventory_species import add_inventory_species
-from cells.core.specs import ConfigError, parse_spec
-from cells.models.operators import k_anion_symport
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import k_anion_symport
+from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
 

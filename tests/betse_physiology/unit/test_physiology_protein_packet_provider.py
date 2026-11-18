@@ -222,7 +222,7 @@ def test_owned_stream_restart_replays_successive_actual_packets(law):
 def test_owner_order_and_padding_preserve_each_original_engine_semantics(law):
     original = None
     for padded, reverse in ((True, False), (False, True)):
-        from cells.core.specs import parse_spec
+        from cells.definitions.specs import parse_spec
 
         spec = parse_spec(definition("passive", padded=padded))
         binding = units.bind_tissue(spec, **arguments(spec, reverse=reverse))

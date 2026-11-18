@@ -14,12 +14,12 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
-from cells.core.surface_pump_v3_spec import control_values
+from cells.definitions.specs import parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
+from cells.laws.channels import voltage_gates
 from cells.models import surface_pump_v3
-from cells.models.registry import get_model
 from cells.numerics import surface_imex as imex
-from cells.processes import voltage_gates
+from cells.registry.models import get_model
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")

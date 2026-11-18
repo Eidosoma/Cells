@@ -13,9 +13,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.coupling.selective import selective_flux
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
+from cells.laws.junctions.selective import selective_flux
 from cells.numerics.extracellular_field import logmean, scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 
 LAW_ID = "capacitive_regions_ghk_return_current@1"
 SOLVER_ID = "gauged_damped_newton@1"

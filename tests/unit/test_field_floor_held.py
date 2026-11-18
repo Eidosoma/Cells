@@ -14,9 +14,9 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import parse_spec
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.models import surface_pump_v3 as model
 from cells.numerics import surface_field as field
 from cells.numerics import surface_imex as imex

@@ -6,17 +6,17 @@ import sys
 from pathlib import Path
 
 from cells import __version__
-from cells.batch_io import load_batch_snapshot, write_batch_run
-from cells.batch_window_io import write_windowed_batch
-from cells.core.batch import branch_batch_checkpoints, load_batch, plan_batch, run_batch
-from cells.core.batch_windows import plan_batch_windows
-from cells.core.legacy_entry import legacy
-from cells.core.runner import NumericalError, branch_checkpoint, run, timeline
-from cells.core.specs import ConfigError, load_spec
-from cells.core.windows import WindowPolicy, plan_windows
-from cells.io import load_snapshot, write_run
-from cells.models.registry import get_model
-from cells.window_io import write_windowed_run
+from cells.definitions.specs import ConfigError, load_spec
+from cells.execution.batch import branch_batch_checkpoints, load_batch, plan_batch, run_batch
+from cells.execution.batch_windows import plan_batch_windows
+from cells.execution.runner import NumericalError, branch_checkpoint, run, timeline
+from cells.execution.windows import WindowPolicy, plan_windows
+from cells.records.batch_io import load_batch_snapshot, write_batch_run
+from cells.records.batch_window_io import write_windowed_batch
+from cells.records.io import load_snapshot, write_run
+from cells.records.window_io import write_windowed_run
+from cells.registry.legacy_entry import legacy
+from cells.registry.models import get_model
 
 # The older families' subcommands, each with its own arguments (D188 R1: legacy().cli).
 LEGACY_COMMANDS = (
@@ -119,7 +119,7 @@ def _parser() -> argparse.ArgumentParser:
             "--row-checks",
             choices=("host", "device"),
             default="host",
-            help="where every accepted row is checked (core/row_checks.py; default host)",
+            help="where every accepted row is checked (execution/row_checks.py; default host)",
         )
         if name != "validate":
             command.add_argument("--output", type=Path, required=True)

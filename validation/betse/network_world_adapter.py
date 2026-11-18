@@ -192,9 +192,9 @@ def resolved_channel_definition(world, phase, start, **kwargs):
 
 def resolved_channel_handoff(definition, checkpoint):
     """The adapter's handoff plus the patch voltages at the INIT end (SIM gates start there)."""
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.schedule import control_values
+    from cells.registry.models import get_model
 
     start = adapter.resolved_handoff(definition, checkpoint)
     spec = parse_spec(definition)

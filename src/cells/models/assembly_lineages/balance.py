@@ -25,7 +25,7 @@ import math
 
 import numpy as np
 
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import factors
 from cells.models.assembly_lineages.kernel import Layout, rates
 

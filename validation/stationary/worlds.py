@@ -18,7 +18,7 @@ import json
 import math
 from pathlib import Path
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
 PRESCREEN = Path("/mnt/workspaces/Cells/heredity-design-20261108-01")
 SPECIES = (("Na", 1), ("K", 1), ("M", -1), ("P", -1))
@@ -284,7 +284,7 @@ def e07_sheet_definition(
     """
     import numpy as np
 
-    from cells.processes import junction_gate
+    from cells.laws.junctions import junction_gate
     from validation.morphogenesis import mg0b_domain_wall as wall
     from validation.tissue import surface_pump_v3_fixtures as fixtures
 

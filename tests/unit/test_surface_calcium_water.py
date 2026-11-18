@@ -8,19 +8,19 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.runner import RunResult, timeline
-from cells.core.schedule import control_values, event_index
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.state import Checkpoint
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.ensemble import ionic
-from cells.io import load_snapshot, write_run
+from cells.execution.errors import NumericalError
+from cells.execution.runner import RunResult, timeline
+from cells.execution.schedule import control_values, event_index
+from cells.execution.state import Checkpoint
 from cells.legacy.core.surface_calcium_water_spec import OSMOTIC_COUPLING_ID, prior_spec
 from cells.legacy.models import surface_calcium_morris_lecar as prior
 from cells.legacy.models import surface_calcium_water as model
-from cells.models.registry import get_model
 from cells.numerics import osmotic_water as water
 from cells.numerics.fixed_step import rk4_step
+from cells.records.io import load_snapshot, write_run
+from cells.registry.models import get_model
 from tests.unit.test_surface_catalog import evidence
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import calcium_water_fixtures as fixtures

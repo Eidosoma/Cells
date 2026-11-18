@@ -5,8 +5,8 @@ from dataclasses import asdict, fields, replace
 import numpy as np
 import pytest
 
+from cells.laws.electrochemistry import F
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import F
 from tests.betse_physiology.unit.test_physiology_tissue_binding import bind, component_state
 from tests.betse_physiology.unit.test_physiology_tissue_step import KINDS, evidence
 from validation.betse.physiology import native_noise as perturb

@@ -9,7 +9,7 @@ c = ctx.c
 
 
 def record_result(result, identifier, definition):
-    from cells.io import runtime_identity
+    from cells.records.io import runtime_identity
 
     array = ctx.audit.preparation.array_record
     return {
@@ -31,10 +31,10 @@ def worker(r, output):
     import jax
     import numpy as np
 
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, runtime_identity, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import run
     from cells.legacy.models import finite_extracellular as model
+    from cells.records.io import load_snapshot, runtime_identity, write_snapshot
 
     c.require(
         jax.default_backend() == "cpu"

@@ -140,7 +140,7 @@ Not stated: no record states a level for this piece.
 
 <!-- generated: links -->
 
-- Declared in [`src/cells/models/inner_kinds/transporter.py`](../../../../src/cells/models/inner_kinds/transporter.py) (`cells.models.inner_kinds.transporter`).
+- Declared in [`src/cells/kinds/transporter.py`](../../../../src/cells/kinds/transporter.py) (`cells.kinds.transporter`).
 - Hosts `cells.atp_driven_transporter_mass_action_positive@1` and `cells.proton_atp_mass_action_positive@1`.
 - Runs in `cells.resolved_pump_tissue@3`.
 - Manifest entry: (kind, `cells.transporter@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).

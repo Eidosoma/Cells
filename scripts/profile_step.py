@@ -56,13 +56,13 @@ import jax.numpy as jnp  # noqa: E402
 import numpy as np  # noqa: E402
 import profile_dispatch as pd  # noqa: E402  (inputs and provenance; the checkout on the path)
 
-from cells.core.grid import EventGrid  # noqa: E402
-from cells.core.schedule import control_values  # noqa: E402
-from cells.core.state import initialise  # noqa: E402
+from cells.execution.grid import EventGrid  # noqa: E402
+from cells.execution.schedule import control_values  # noqa: E402
+from cells.execution.state import initialise  # noqa: E402
 from cells.models import surface_tissue as tissue  # noqa: E402
-from cells.models.registry import get_model  # noqa: E402
 from cells.numerics import surface_field as field  # noqa: E402
 from cells.numerics import surface_imex as imex  # noqa: E402
+from cells.registry.models import get_model  # noqa: E402
 
 
 def checkpoint(args, index=1):

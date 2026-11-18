@@ -29,18 +29,18 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core import pump_composite_spec as cs
-from cells.core.batch import BatchSpec, WorldSpec
-from cells.core.cell_replacement_spec import exact_event_times
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.core.vector_windows import run_vector_windowed
-from cells.core.windows import WindowPolicy
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.cell_replacement_spec import exact_event_times
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.execution.vector_windows import run_vector_windowed
+from cells.execution.windows import WindowPolicy
 from cells.models import cell_replacement
-from cells.models.registry import get_model
 from cells.numerics import surface_imex as imex
+from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as fx
 from validation.tissue import composite_guard as guard
 from validation.tissue import surface_pump_v3_fixtures as v3fx

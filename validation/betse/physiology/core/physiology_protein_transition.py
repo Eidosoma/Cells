@@ -17,8 +17,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.processes.electrochemistry import F, R
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import F, R
 from validation.betse.physiology import native_noise as perturb
 from validation.betse.physiology.core import physiology_perturbation_phases as phases
 from validation.betse.physiology.core import physiology_perturbation_step as component_step

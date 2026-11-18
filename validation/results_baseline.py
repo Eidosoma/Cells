@@ -108,7 +108,7 @@ def _operators():
     """Operator worlds that run at the tag: a law-steady replacement (gate_at_arrival law_steady,
     as tests/unit/test_cell_replacement.py's compiled run; crossrev's replacement_steady is
     refused at the tag, so it gives no output to compare) with an inner schedule change."""
-    from cells.core.cell_replacement_spec import exact_event_times
+    from cells.definitions.cell_replacement_spec import exact_event_times
     from validation.tissue import cell_replacement_fixtures as rfx
 
     dt = 1e-3
@@ -253,8 +253,8 @@ def channel_activity(spec, final=None):
     """The channel slots' activity, for the comparator's padding rule (check K1): static when no
     operator provides channel_active through the view or closes masks (then the layout's mask is
     the run's), with the layout's mask at the start and at the end of the run."""
-    from cells.core.state import initialise
-    from cells.models.registry import get_model
+    from cells.execution.state import initialise
+    from cells.registry.models import get_model
 
     model = get_model(spec.model)
     providers = getattr(model, "providers", ()) or ()
@@ -271,8 +271,8 @@ def channel_activity(spec, final=None):
 def run_world(raw, max_steps):
     """(arrays, steps, channel activity) of the world's first scalar window of at most
     max_steps steps."""
-    from cells.core.specs import parse_spec
-    from cells.core.windows import WindowPolicy, iter_windows
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, iter_windows
 
     spec = parse_spec(raw)
     result = next(iter(iter_windows(spec, WindowPolicy(max_steps, "checkpoints"))))
@@ -281,12 +281,12 @@ def run_world(raw, max_steps):
 
 def run_paths(raw):
     """{path: arrays} of one world through every run path (the batched ones over two copies)."""
-    from cells.core.batch import BatchSpec, WorldSpec, run_batch
-    from cells.core.batch_windows import run_batch_windowed
-    from cells.core.runner import run
-    from cells.core.specs import parse_spec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy, run_windowed
+    from cells.definitions.specs import parse_spec
+    from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+    from cells.execution.batch_windows import run_batch_windowed
+    from cells.execution.runner import run
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy, run_windowed
 
     spec = parse_spec(raw)
     policy = WindowPolicy(MAX_STEPS, "checkpoints")
@@ -351,7 +351,7 @@ def save(directory, sets, worlds, max_steps, origin, append=False):
     baseline from the same source, recording the addition in its manifest."""
     import jax
 
-    from cells.core import blas_threads
+    from cells.execution import blas_threads
 
     jax.config.update("jax_enable_x64", True)
     if append:
@@ -417,7 +417,7 @@ def _save_sets(directory, manifest, sets, worlds, max_steps, origin):
             started, record = perf_counter(), dict(name=name, definition=raw)
             try:
                 if set_name == "run-paths":
-                    from cells.core.specs import parse_spec
+                    from cells.definitions.specs import parse_spec
 
                     arrays = {
                         f"{path}:{k}": v for path, a in run_paths(raw).items() for k, v in a.items()

@@ -21,7 +21,7 @@ and an assembly's random streams follow from its key alone (streams.py).
 
 from dataclasses import dataclass
 
-from cells.core.specs import ConfigError, require_fields
+from cells.definitions.specs import ConfigError, require_fields
 from cells.models.assembly_lineages import CONTINUATION, MODEL_ID
 from cells.models.assembly_lineages.lineage_operators import LineageOperator
 from cells.modules import Citation

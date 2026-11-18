@@ -90,7 +90,7 @@ operator (§2). §6 names what else composes.
 
 ### 1.1 Insertion's law, and its refusal
 
-- **The law** (`models/operators/membrane_insertion.py`:1–24 **(code)**). Per half-step h, on each
+- **The law** (`operators/membrane_insertion.py`:1–24 **(code)**). Per half-step h, on each
   inserted patch with rate r ≥ 0: dA = r h, dC = c_d r h and dN_j = ρ_j r h.
   - These are written to membrane state's increments, "at fixed free-node charges with the
     potentials re-solved (`adapter.fixed_charge_change`): the inserted membrane arrives uncharged".
@@ -502,11 +502,11 @@ Against CORE_SEAMS_STEP0 §4.2's owner table, so that no file has two owners:
 | Piece | File | Owner |
 | --- | --- | --- |
 | The new operator: parse, schedules, half-steps, records, refusals, summary | A new module under `models/operators/` | The FR lane |
-| Its registration | `models/operators/__init__.py`, or F's section built so that no edit is needed | F owner |
+| Its registration | `operators/__init__.py`, or F's section built so that no edit is needed | F owner |
 | The charge-following split and the merge with its heat | `models/pump_composite_adapter.py`, beside `fixed_charge_change` | Operators owner, as seam B's split and merge kernels (B1's operator part; §4.6's merge) |
-| The compartments admission and its `reference` reads | `models/operators/compartments.py` | Operators owner |
+| The compartments admission and its `reference` reads | `operators/compartments.py` | Operators owner |
 | Field roles for kinds; @3's own fields | `kinds/*`; `models/surface_pump_v3.py` | Kinds owner; @3 owner (B1, B2) |
-| FR-3's count as state | `models/operators/site_occupancy.py` | FR-3's owner, the FR lane |
+| FR-3's count as state | `operators/site_occupancy.py` | FR-3's owner, the FR lane |
 | Door C (creation), door F's slot events | — | Seam B and the mitochondria work (D216) |
 | Door V | — | FR-1's door, with composition's current reads (operators owner) |
 | The fuel coupling (E3) | `operators/contract.py` hook; `registry/species_registry.py` potentials | Seam E: operators owner and binding owner |

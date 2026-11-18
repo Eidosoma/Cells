@@ -42,7 +42,7 @@ from pathlib import Path
 
 import numpy as np
 
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from validation.stationary import worlds
 from validation.tissue import field_solver_choice
 
@@ -262,7 +262,7 @@ def assay_definition(
 
 def add_stimulus(raw, stimulus):
     """K and Na leak populations of permeability m_s on the cells, on in the window (in place)."""
-    from cells.core.surface_pump_v3_spec import KLEAK_LAW_ID, NALEAK_LAW_ID
+    from cells.definitions.surface_pump_v3_spec import KLEAK_LAW_ID, NALEAK_LAW_ID
 
     m, e = raw["model"], raw["experiment"]
     on, off = stimulus["window"]

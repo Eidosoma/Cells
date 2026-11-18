@@ -11,9 +11,11 @@ from typing import NamedTuple
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import ERControl, PhysicalIonicGraphControl, control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import ERControl, PhysicalIonicGraphControl, control_values
+from cells.laws.channels.voltage_gates import VOLTAGE_DOMAIN_V
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.legacy.core.spatial_calcium_spec import MODEL_ID, ionic_spec, store_spec
 from cells.legacy.models import compartment_reactions as chemistry
 from cells.legacy.models import er_calcium as er
@@ -21,9 +23,7 @@ from cells.legacy.models import finite_extracellular as finite
 from cells.legacy.models import kinetic_finite_bounds as bounds
 from cells.legacy.models import spatial_extracellular as geometry
 from cells.legacy.models import spatial_junction as spatial
-from cells.observers import hermite_bounds, sample_hermite_history
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
-from cells.processes.voltage_gates import VOLTAGE_DOMAIN_V
+from cells.records.observers import hermite_bounds, sample_hermite_history
 
 ER_FIELDS = (
     "chemical_amount_increment",
@@ -77,7 +77,7 @@ def batch_signature(model):
 
 
 def ionic_model(spec):
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     return get_model(ionic_spec(spec).model)
 

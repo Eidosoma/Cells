@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from validation.tissue import projective_study as study
 
 PROTOCOL = json.loads(
@@ -66,7 +66,7 @@ def test_cases_without_a_driver_world_are_refused(case_id):
 
 def test_q2_is_the_seven_cell_world():
     """U -+2 mV, U -+5 mV, H, D and H + 10 mV, each with its own held bath."""
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
     from cells.models import surface_pump_projective as readouts
     from validation.tissue import surface_pump_v3_fixtures as heredity
 
@@ -106,7 +106,7 @@ def test_f2_needs_its_prescan_scale_and_scales_nav():
 
 def test_q2_five_cell_variant_is_amendment_2s_world():
     """Q2-relax-world-5cell: U -+2 mV, U -+5 mV and D, Q2's parameters otherwise."""
-    from cells.core.state import initialise
+    from cells.execution.state import initialise
     from cells.models import surface_pump_projective as readouts
     from validation.tissue import surface_pump_v3_fixtures as heredity
 

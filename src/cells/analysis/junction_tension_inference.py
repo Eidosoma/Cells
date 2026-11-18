@@ -39,7 +39,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.processes import vertex_mechanics as vm
+from cells.laws.mechanics import vertex_mechanics as vm
 
 ANALYSIS_ID = "junction_tension_inference@1"
 

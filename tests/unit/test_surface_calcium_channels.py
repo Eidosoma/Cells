@@ -13,15 +13,15 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, run_batch
-from cells.core.runner import branch_checkpoint, run, timeline
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, parse_spec
-from cells.io import load_snapshot, write_run
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.batch import BatchSpec, WorldSpec, run_batch
+from cells.execution.runner import branch_checkpoint, run, timeline
+from cells.execution.schedule import control_values
+from cells.laws.channels.potassium_channels import KIR_LAW_ID
 from cells.legacy.models import surface_calcium as legacy
 from cells.legacy.models import surface_calcium_channels as model
-from cells.models.registry import get_model
-from cells.processes.potassium_channels import KIR_LAW_ID
+from cells.records.io import load_snapshot, write_run
+from cells.registry.models import get_model
 from tests.unit import test_surface_calcium as shared
 from tests.unit.test_surface_kinetic import assert_states, exact
 from validation.tissue import surface_calcium_channel_fixtures as fixtures

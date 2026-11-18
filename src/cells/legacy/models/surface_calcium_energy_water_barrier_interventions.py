@@ -12,8 +12,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
 from cells.legacy.core import surface_barrier_interventions_binding as binding
 from cells.legacy.core.surface_calcium_energy_water_barrier_interventions_spec import (
     MODEL_ID,
@@ -158,7 +158,7 @@ domain_valid.with_control = control_domain_valid
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     clocks = {0.0, spec.experiment.end_time, *(c.time for c in spec.experiment.changes)}
@@ -234,7 +234,7 @@ def working_size(spec):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
     from cells.legacy.core.surface_calcium_energy_spec import initial_prior_spec
     from cells.legacy.models import surface_calcium_energy as fuel
     from cells.legacy.models import surface_calcium_water as chemical_water
@@ -345,7 +345,7 @@ def observe_history(times, history, layout, requested, spec):
 
 
 def ensemble_voltage(state, layout, spec, time):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     y = STATE_TYPE(*(np.asarray(v) for v in state))

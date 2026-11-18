@@ -33,9 +33,9 @@ from collections import defaultdict
 from pathlib import Path
 
 from cells.models import pump_composite
-from cells.models.operators import OPERATORS
-from cells.models.operators import compartments as compartments_operator
-from cells.models.operators import partition as partition_operator
+from cells.operators import OPERATORS
+from cells.operators import compartments as compartments_operator
+from cells.operators import partition as partition_operator
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "PUMP_COMPOSITE.md"
@@ -59,7 +59,7 @@ BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
 
-OPS = "src/cells/models/operators/"
+OPS = "src/cells/operators/"
 TESTS = "tests/unit/"
 
 

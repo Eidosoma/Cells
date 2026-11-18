@@ -10,8 +10,9 @@ from itertools import product
 
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.legacy.core import open_calcium_bath_binding as binding
 from cells.legacy.core import surface_bath_events_binding as bath
 from cells.legacy.models import surface_bath_events as controller
@@ -19,7 +20,6 @@ from cells.legacy.models import surface_calcium as calcium
 from cells.legacy.models import surface_calcium_energy as fuel
 from cells.models import surface_tissue as passive
 from cells.numerics import surface_field
-from cells.processes.electrochemistry import CHARGE_PER_FMOL
 
 jnp = controller.jnp
 signal_values = controller.signal_values
@@ -51,7 +51,7 @@ class Adapter(controller.Adapter):
         # Retain the parent's actual-initial-pool gross-turnover test and also
         # test all independent pulse-box corners at every held control. This
         # conservative admission view changes no saved state or physical law.
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         if not self.finite_fuel:
             raise ConfigError("Initial pool turnover belongs to the finite-fuel bath owner")
@@ -193,7 +193,7 @@ class Adapter(controller.Adapter):
         return diagnostics
 
     def observe_history(self, times, history, layout, requested, spec):
-        from cells.core.schedule import control_values
+        from cells.execution.schedule import control_values
 
         self.check_values(history, spec)
         p = self.LAYOUT_TYPE(*(np.asarray(value) for value in layout))

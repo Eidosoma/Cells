@@ -10,12 +10,12 @@ world it repeats once for this module, to keep each file under the tier cap (16 
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core import pump_composite_spec as cs
-from cells.core import surface_pump_v3_spec as ionic
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.registry import get_model
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions import surface_pump_v3_spec as ionic
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests.unit.test_kind_schedules import GRID, MOVED, POINTS, RATE, scheduled, world
 from validation.tissue import composite_guard as guard
 
@@ -42,9 +42,9 @@ def test_an_empty_composition_holds_the_same_controls_bitwise(whole):
 
 
 def test_the_vector_window_path_holds_the_same_controls(whole):
-    from cells.core import vector_windows
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.windows import WindowPolicy
+    from cells.execution import vector_windows
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.windows import WindowPolicy
 
     registry, spec, result = whole
     big = 2**53 - 1

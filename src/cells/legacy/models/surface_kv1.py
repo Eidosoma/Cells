@@ -1,6 +1,6 @@
 """Complete pinned Kv1 family in the shared HCN/NaV/Kv/Kir tissue catalog."""
 
-from cells.core.surface_kinetic_spec import KV1_MODEL_ID as MODEL_ID  # noqa: F401
+from cells.definitions.surface_kinetic_spec import KV1_MODEL_ID as MODEL_ID  # noqa: F401
 from cells.models import surface_kinetic as base
 from cells.models.surface_kinetic import (  # noqa: F401
     BATCH_CAPACITIES,

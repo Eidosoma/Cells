@@ -1,4 +1,4 @@
-"""Door S's merged view in the run view (cells/run_view.py, module docstring; route B).
+"""Door S's merged view in the run view (cells/records/run_view.py, module docstring; route B).
 
 * A provider: the bath schedule's dose (scheduled_bath_composition@1) is recorded through
   write_run in view_extracellular_amount_reference, bitwise the view the host observer formed for
@@ -20,12 +20,12 @@ import json
 import numpy as np
 import pytest
 
-from cells import run_view
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.io import write_run
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from cells.models import pump_composite
-from cells.models.registry import get_model
+from cells.records import run_view
+from cells.records.io import write_run
+from cells.registry.models import get_model
 from tests.run_view_fixtures import (
     capture,
     layers,

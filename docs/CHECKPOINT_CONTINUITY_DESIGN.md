@@ -103,7 +103,7 @@ lineage in the run's provenance instead.
 **Out of scope; these keep refusing.** Other checkpoint systems, each with its own identity
 rule:
 - the stochastic assembly family:
-  - `assembly/io.py` 98–109 hashes its own package and `core/output_paths.py` only;
+  - `assembly/io.py` 98–109 hashes its own package and `execution/output_paths.py` only;
   - `legacy/assembly_cell/io.py` hashes all of `src/cells`;
   - `assembly_pool/io.py`;
 - the held charged-surface backend (`legacy/processes/charged_surface_backend.py`):
@@ -120,7 +120,7 @@ fingerprint differs from the driver's rebuilt definitions.
 
 1. **Which source changes refuse.** `source_hashes()` covers `src/cells` only.
    - Docs, tests, validation drivers and scripts never trigger the refusal.
-   - Host-only engine code does: `core/phases.py`, the `changes` properties of the
+   - Host-only engine code does: `execution/phases.py`, the `changes` properties of the
      experiment specs, `analysis/`, and every model module, used or not.
 2. **The paths.** Besides runner, batch, batch_windows and vector_windows, `core/windows`
    (scalar windows) and `core/projective` also take checkpoints.
@@ -561,7 +561,7 @@ Details are in Appendix B and §13.
     "dirty_diff": "/mnt/workspaces/Cells/<new run>/source-01/checkout.patch",
     "runtime": {"...": "runtime_identity(backend) of the resuming installation"}
   },
-  "changed_files": ["core/phases.py", "core/vector_windows.py"],
+  "changed_files": ["execution/phases.py", "execution/vector_windows.py"],
   "probe": {
     "runtime": {"...": "runtime_identity('cpu') of the probe processes"},
     "host_fields_equal_to_runtime": true
@@ -588,7 +588,7 @@ Details are in Appendix B and §13.
   ],
   "admitted_by": {"name": "<who>", "role": "lead"},
   "admitted_utc": "<UTC time>",
-  "record_sha256": "<cells.core.specs.digest of the record without this field>"
+  "record_sha256": "<cells.definitions.specs.digest of the record without this field>"
 }
 ```
 
@@ -648,7 +648,7 @@ The chain is checked, not trusted:
 ## 6. Where the check lives
 
 **Engine (`src/cells`), host-only. No path changes.**
-- **`cells/continuity.py` (new).**
+- **`cells/execution/continuity.py` (new).**
   - It parses and verifies the record: kind, digest, required fields per case, and a
     non-empty `admitted_by`.
   - `Admission.require(manifest_fingerprint, manifest_sources, manifest_runtime,
@@ -1212,7 +1212,7 @@ The draft decision (number assigned at landing) waits for the user's answers.
   sources and runtimes, and the record that admitted it. The user can still ask for the
   sentences.
 - **Implemented** on the first landing's scope (§13.1), at branch head `bd279e8` (14 November):
-  `src/cells/continuity.py`, the loaders' `continuity=` argument, `validation/continuity/`
+  `src/cells/execution/continuity.py`, the loaders' `continuity=` argument, `validation/continuity/`
   (probe, admit, verify_run and the first consumer's dev_run) and their tests. The evidence,
   the first consumer's admitted and refused resumes included, is in `impl/`.
 
@@ -1301,7 +1301,7 @@ one level up):
 | Comparison | Texts | Programs (jaxpr, constants, StableHLO) | Bindings | Verdict |
 | --- | --- | --- | --- | --- |
 | Checkout, repeated in a second process | 12/12 identical | all identical | 5/5 identical | identical |
-| Host-only edits (`core/phases.py`, `core/vector_windows.py`) | 12/12 identical | all identical | 5/5 identical | identical (today's loader refuses) |
+| Host-only edits (`execution/phases.py`, `execution/vector_windows.py`) | 12/12 identical | all identical | 5/5 identical | identical (today's loader refuses) |
 | Program edit (`models/pump_composite.py`) | 10 of 12 differ | every path program's jaxpr and StableHLO differ; constants equal | 5/5 identical | differs |
 | Comment and docstring edits in traced code (`models/pump_composite.py`, `models/surface_tissue.py`) | 12/12 identical | all identical | 5/5 identical | identical (today's loader refuses) |
 

@@ -15,8 +15,8 @@ from types import MappingProxyType
 
 import numpy as np
 
-from cells.core.specs import ConfigError, digest, read_json
-from cells.io import runtime_identity, source_hashes
+from cells.definitions.specs import ConfigError, digest, read_json
+from cells.records.io import runtime_identity, source_hashes
 from validation.betse.physiology import physiology_protein_loop_io as checkpoint_io
 from validation.betse.physiology.core import physiology_protein_batch_loop as batch
 from validation.betse.physiology.core import physiology_protein_packet_provider as provider

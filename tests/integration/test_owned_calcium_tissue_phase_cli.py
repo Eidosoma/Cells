@@ -7,20 +7,20 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from cells.core.batch import BatchSpec, WorldSpec, parse_batch
-from cells.core.errors import NumericalError
-from cells.core.runner import branch_checkpoint, run, validate_checkpoint
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError, digest, parse_spec
-from cells.core.state import initialise
+from cells.definitions.specs import ConfigError, digest, parse_spec
 from cells.ensemble.ionic import parse_spec as parse_ensemble
-from cells.io import load_snapshot, write_run, write_snapshot
+from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.errors import NumericalError
+from cells.execution.runner import branch_checkpoint, run, validate_checkpoint
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.legacy.core import active_membrane_profile_phase_handoff as active_handoff
 from cells.legacy.core import membrane_profile_phase_handoff as passive_handoff
 from cells.legacy.core import owned_calcium_profile_phase_handoff as handoff
 from cells.legacy.core.excision import excise
 from cells.legacy.tissue_phase import prepare_request, read_preparation, replay
-from cells.models.registry import get_model
+from cells.records.io import load_snapshot, write_run, write_snapshot
+from cells.registry.models import get_model
 from tests.integration.test_cli import cli
 from tests.owned_calcium_phase_fixtures import OWNERS, prepared, request, source_checkpoint
 from tests.unit.test_owned_calcium_profile_interventions_dispatch import exact

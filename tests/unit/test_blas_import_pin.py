@@ -24,14 +24,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PROBES = {
     "cells": "the package file, the pin's home",
-    "cells.core.specs": "parse: the definitions' vocabulary",
-    "cells.core.runner": "runs",
-    "cells.core.kind_registry": "the kinds' registry",
-    "cells.core.output_paths": "the only core module the assembly, pool and ensemble lines import",
+    "cells.definitions.specs": "parse: the definitions' vocabulary",
+    "cells.execution.runner": "runs",
+    "cells.registry.kind_registry": "the kinds' registry",
+    "cells.execution.output_paths": "the only core module the assembly, pool and ensemble lines import",  # noqa: E501
     "cells.registry.laws": "the law registry",
-    "cells.observers": "imports only core's errors",
-    "cells.io": "run records and checkpoints",
-    "cells.continuity": "checkpoint continuity, which imports no numpy",
+    "cells.records.observers": "imports only core's errors",
+    "cells.records.io": "run records and checkpoints",
+    "cells.execution.continuity": "checkpoint continuity, which imports no numpy",
     "cells.models.surface_pump_v3": "models",
 }
 PROBE = """
@@ -78,7 +78,7 @@ def test_each_module_is_pinned_through_the_package_file(module):
 
 
 def test_checkpoint_continuity_still_imports_no_numpy():
-    _, read = probe("cells.continuity", [ROOT / "src"])
+    _, read = probe("cells.execution.continuity", [ROOT / "src"])
     assert read["numpy_by_import"] is False, read
 
 

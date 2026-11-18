@@ -11,9 +11,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.schedule import control_values
-from cells.core.specs import ConfigError
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.execution.schedule import control_values
 from cells.legacy.core.tissue_calcium_spec import MODEL_ID
 from cells.legacy.models import ip3_calcium as base
 from cells.legacy.models import spatial_calcium as chemistry

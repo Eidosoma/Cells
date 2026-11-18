@@ -12,11 +12,15 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from cells.batch_io import load_batch_snapshot, write_batch_run, write_batch_snapshot  # noqa: E402
-from cells.core.batch import branch_batch_checkpoints, load_batch, run_batch  # noqa: E402
-from cells.core.runner import run  # noqa: E402
-from cells.core.specs import load_spec  # noqa: E402
-from cells.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
+from cells.definitions.specs import load_spec  # noqa: E402
+from cells.execution.batch import branch_batch_checkpoints, load_batch, run_batch  # noqa: E402
+from cells.execution.runner import run  # noqa: E402
+from cells.records.batch_io import (  # noqa: E402
+    load_batch_snapshot,
+    write_batch_run,
+    write_batch_snapshot,
+)
+from cells.records.io import load_snapshot, runtime_identity, source_hashes  # noqa: E402
 from scripts.verify_source_pair_build import audit_run, compare  # noqa: E402
 from tests import reference_source_pair_numerics as ref  # noqa: E402
 from tests.batch_fixtures import MODELS, assert_parity, definition, short_spec  # noqa: E402

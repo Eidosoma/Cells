@@ -19,7 +19,7 @@ def test_source_inventory_contains_every_model_and_test():
     sources = job.sources()
     assert len([n for n in sources if n.startswith("src/cells/")]) == 55
     assert set(job.NEW_TESTS + job.OLD_TESTS) <= sources.keys()
-    assert "src/cells/processes/kinetic_pump.py" in sources
+    assert "src/cells/laws/pumps/kinetic_pump.py" in sources
     assert "src/cells/legacy/models/kinetic_finite_bounds.py" in sources
 
 

@@ -12,9 +12,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from cells.core.errors import NumericalError
-from cells.core.specs import ConfigError
-from cells.coupling.selective import selective_flux
+from cells.definitions.specs import ConfigError
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.junctions.selective import selective_flux
 from cells.legacy.core.surface_calcium_energy_water_repair_spec import MODEL_ID as MODEL_ID
 from cells.legacy.core.surface_calcium_energy_water_repair_spec import accounting_spec, base_spec
 from cells.legacy.core.surface_calcium_energy_water_spec import minimum_energy_spec
@@ -24,7 +25,6 @@ from cells.legacy.models import surface_calcium_energy_water as prior
 from cells.legacy.processes import membrane_injury as process
 from cells.models import surface_tissue as surface
 from cells.numerics.extracellular_field import scatter
-from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
 EXTRA_AXES = {
     "damage": ["membrane_slot"],
@@ -272,7 +272,7 @@ def injury_loss_bound(spec):
 
 
 def check_definition(spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     state, p = initial_values(spec)
     controls = control_values(spec, [c.time for c in spec.experiment.changes])
@@ -336,7 +336,7 @@ def check_values(state, spec, steps=None):
 
 
 def observe_history(times, history, layout, requested, spec):
-    from cells.core.schedule import control_values
+    from cells.execution.schedule import control_values
 
     p = LAYOUT_TYPE(*(np.asarray(v) for v in layout))
     requested = np.asarray(requested, dtype=float)

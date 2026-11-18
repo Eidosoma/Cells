@@ -308,7 +308,7 @@ def test_execute_failure_is_durable_and_does_not_retry(tmp_path, monkeypatch):
 def synthetic_provenance(protocol):
     source = {"betse/science/channels/vg_k.py": "synthetic-native-hash"}
     modules = {
-        "src/cells/processes/voltage_gates.py": "synthetic-law-hash",
+        "src/cells/laws/channels/voltage_gates.py": "synthetic-law-hash",
         "src/cells/numerics/fixed_step.py": "synthetic-solver-hash",
     }
     registration = {

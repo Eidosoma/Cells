@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.processes.electrochemistry import R
+from cells.laws.electrochemistry import R
 from tests.betse_physiology.unit.test_physiology_protein_interval_accounting import evidence
 from tests.betse_physiology.unit.test_physiology_protein_projection import protein, transfer
 from tests.betse_physiology.unit.test_physiology_tissue_binding import bind

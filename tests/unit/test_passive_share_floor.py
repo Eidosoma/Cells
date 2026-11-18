@@ -27,13 +27,13 @@ import re
 import numpy as np
 import pytest
 
-from cells.core import kind_registry
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.specs import parse_spec
-from cells.models.inner_kinds import passive_routes
-from cells.models.registry import get_model
-from cells.processes.electrochemistry import R
+from cells.definitions.specs import parse_spec
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.kinds import passive_routes
+from cells.laws.electrochemistry import R
+from cells.registry import kind_registry
+from cells.registry.models import get_model
 from tests.unit.test_passive_routes_kind import closed_pair, host_step
 from validation.tissue import secreted_species_fixtures as fx
 

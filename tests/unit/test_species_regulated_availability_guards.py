@@ -23,8 +23,8 @@ check is bitwise.
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import regulated_availability_fixtures as rf
 
 END = 0.02

@@ -38,8 +38,8 @@ jax.config.update("jax_enable_x64", True)
 
 import numpy as np  # noqa: E402
 
-from cells.core.specs import parse_spec  # noqa: E402
-from cells.core.windows import WindowPolicy, run_windowed  # noqa: E402
+from cells.definitions.specs import parse_spec  # noqa: E402
+from cells.execution.windows import WindowPolicy, run_windowed  # noqa: E402
 
 STEPS_S = (4e-3, 2e-3, 1e-3, 5e-4, 2.5e-4)
 QUANTITIES = ("cell_volume_pL", "membrane_voltage_V", "cell_concentration_mM")
@@ -174,8 +174,8 @@ def dt_study(predictions, parts, progress=None):
 
 def stationary_phase(predictions):
     from cells.analysis import stationary as sa
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
     from cells.models import surface_pump_v3
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL, F, R
 
     raw = predictions["P2"]["definition"]
     spec = parse_spec(raw)
@@ -276,7 +276,7 @@ def stationary_definition(predictions, record, hours, interval_s=600.0):
     cell["initial_amount_fmol"] = dict(arrays["amount_fmol"])
     cell["volume_pL"] = arrays["volume_pL"]
     # The declared charge is F (sum z N + X) with the definition's background X.
-    from cells.processes.electrochemistry import CHARGE_PER_FMOL
+    from cells.laws.electrochemistry import CHARGE_PER_FMOL
 
     cell["initial_charge_C"] = CHARGE_PER_FMOL * (
         sum(z[s] * n for s, n in arrays["amount_fmol"].items())

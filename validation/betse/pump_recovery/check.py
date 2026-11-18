@@ -21,9 +21,9 @@ def same_history(actual, expected):
 
 
 def production(root, backend):
-    from cells.core.runner import branch_checkpoint, run
-    from cells.core.specs import parse_spec
-    from cells.io import load_snapshot, write_snapshot
+    from cells.definitions.specs import parse_spec
+    from cells.execution.runner import branch_checkpoint, run
+    from cells.records.io import load_snapshot, write_snapshot
 
     protocol, preparation = (x.u.read(root / p) for p in ("protocol.json", "preparation.json"))
     reports = []

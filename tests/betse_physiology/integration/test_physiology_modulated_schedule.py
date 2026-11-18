@@ -7,9 +7,9 @@ from functools import lru_cache
 import numpy as np
 import pytest
 
-from cells.core.errors import NumericalError
-from cells.core.grid import EventGrid
-from cells.core.specs import digest
+from cells.definitions.specs import digest
+from cells.execution.errors import NumericalError
+from cells.execution.grid import EventGrid
 from tests.betse_physiology.integration.test_physiology_permeability_schedule import (
     CASES,
     qualify_carried,

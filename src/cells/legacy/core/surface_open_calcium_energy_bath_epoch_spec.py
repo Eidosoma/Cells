@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass, fields, replace
 
-from cells.core.specs import ConfigError, _fields, canonical_json, digest
+from cells.definitions.specs import ConfigError, _fields, canonical_json, digest
 from cells.legacy.core import surface_open_calcium_energy_bath_events_spec as scheduled
 
 MODEL_ID = "resolved_open_calcium_energy_bath_epoch@1"

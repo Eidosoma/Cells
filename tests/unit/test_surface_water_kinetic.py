@@ -10,18 +10,18 @@ import numpy as np
 import pytest
 
 from cells.assembly.engine import device_for
-from cells.core.errors import NumericalError
-from cells.core.runner import run
-from cells.core.schedule import control_values
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
 from cells.ensemble import ionic
+from cells.execution.errors import NumericalError
+from cells.execution.runner import run
+from cells.execution.schedule import control_values
 from cells.legacy.core.surface_water_kinetic_spec import prior_spec, water_spec
 from cells.legacy.models import surface_water as passive_water
 from cells.legacy.models import surface_water_kinetic as model
 from cells.models import surface_kinetic as prior
 from cells.models import surface_tissue as passive
-from cells.models.registry import get_model
 from cells.numerics.fixed_step import rk4_checked_step
+from cells.registry.models import get_model
 from tests.unit.test_surface_repair_full import compare_backend
 from tests.unit.test_surface_tissue import exact
 from validation.tissue import surface_water_kinetic_fixtures as fixtures

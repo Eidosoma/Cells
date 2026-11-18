@@ -48,7 +48,7 @@ def load(stem):
 
 
 def prepare_inputs(bundle):
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
     from cells.legacy.core import environment_barrier_composition_preparation as bridge
     from validation.transport import environment_barrier_composition_fixtures as coefficients
 
@@ -145,11 +145,11 @@ def run_reference(bundle, output, dataset, factor):
 
 
 def run_production(bundle, output, dataset, factor):
-    from cells.core.grid import EventGrid
-    from cells.core.schedule import control_values
-    from cells.core.specs import parse_spec
-    from cells.models.registry import get_model
+    from cells.definitions.specs import parse_spec
+    from cells.execution.grid import EventGrid
+    from cells.execution.schedule import control_values
     from cells.numerics.fixed_step import rk4_step
+    from cells.registry.models import get_model
 
     raw = input_raw(bundle, dataset, "production")
     raw["execution"]["dt"] /= factor

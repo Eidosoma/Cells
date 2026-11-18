@@ -6,8 +6,8 @@ or a loader for the independently frozen reference schema. No test data imports.
 
 from dataclasses import asdict
 
-from cells.core.spec_values import aligned, identifier
-from cells.core.specs import (
+from cells.definitions.spec_values import aligned, identifier
+from cells.definitions.specs import (
     MULTISPECIES_ID,
     ConfigError,
     ExperimentSpec,

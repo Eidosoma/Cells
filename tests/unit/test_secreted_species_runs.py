@@ -21,8 +21,8 @@ import jax
 import numpy as np
 import pytest
 
-from cells.core.runner import run
-from cells.core.specs import parse_spec
+from cells.definitions.specs import parse_spec
+from cells.execution.runner import run
 from validation.tissue import secreted_species_fixtures as fx
 
 jax.config.update("jax_enable_x64", True)
@@ -69,7 +69,7 @@ def same(a, b):
 
 
 def test_a_species_only_world_closes_every_host_check():
-    from cells.models.registry import get_model
+    from cells.registry.models import get_model
 
     spec = parse_spec(secretion())
     result = run(spec)  # Host checks on every accepted row; raise on failure.
@@ -155,7 +155,7 @@ def swapped(template_rate):
 
 @pytest.mark.parametrize("template_rate", [0.1, 0.0])
 def test_restart_across_a_schedule_change_and_an_event_is_bitwise(tmp_path, template_rate):
-    from cells.io import load_snapshot, write_snapshot
+    from cells.records.io import load_snapshot, write_snapshot
 
     spec = parse_spec(swapped(template_rate))
     result = run(spec)
@@ -177,9 +177,9 @@ def test_restart_across_a_schedule_change_and_an_event_is_bitwise(tmp_path, temp
 
 
 def test_a_vector_batch_mixes_per_world_rates_and_law_parameters():
-    from cells.core.batch import BatchSpec, WorldSpec
-    from cells.core.vector_windows import run_vector_windowed
-    from cells.core.windows import WindowPolicy
+    from cells.execution.batch import BatchSpec, WorldSpec
+    from cells.execution.vector_windows import run_vector_windowed
+    from cells.execution.windows import WindowPolicy
 
     specs = [
         parse_spec(secretion(export=0.1, vmax=1e6, km=5e-4, ku=1e-6)),
@@ -213,8 +213,8 @@ def test_a_flux_beyond_the_pool_refuses_the_compiled_step_and_keeps_the_start_st
     refused and returns its start state bit for bit (no clipping, no repair)."""
     import jax.numpy as jnp
 
-    from cells.core import pump_composite_spec as cs
-    from cells.models.registry import get_model
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
 
     raw = fx.secreting_cell(end=0.004)
     raw = fx.with_exchange(

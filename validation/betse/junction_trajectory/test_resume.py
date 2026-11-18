@@ -49,7 +49,7 @@ def test_interrupted_panel_retains_complete_rows_only(witness, tmp_path):
 @pytest.mark.parametrize(
     "name",
     [
-        "src/cells/core/runner.py",
+        "src/cells/execution/runner.py",
         "validation/betse/junction_trajectory/native.py",
         "validation/betse/junction_trajectory/reference.py",
         "validation/betse/junction_trajectory/check.py",
@@ -66,7 +66,7 @@ def test_scientific_change_blocks_resume(name):
 
 
 def test_control_change_allowed_but_added_physics_is_not():
-    previous = {"src/cells/core/runner.py": "physics"}
+    previous = {"src/cells/execution/runner.py": "physics"}
     current = previous | {"validation/betse/junction_trajectory/resume.py": "controller"}
     assert resume.compatible_sources(previous, current)
     with pytest.raises(ValueError, match="scientific source changed"):
@@ -200,7 +200,7 @@ def test_comparison_rejects_incomplete_panel(witness):
 @pytest.mark.parametrize(
     "name",
     [
-        "src/cells/core/runner.py",
+        "src/cells/execution/runner.py",
         "validation/betse/junction_trajectory/native.py",
         "validation/betse/junction_trajectory/reference.py",
         "validation/betse/junction_trajectory/protocol.json",

@@ -187,7 +187,7 @@ def part_arm(args):
         write_json(out / "plan.json", record)
         write_json(out / "definition.json", raw)
     h = lit()
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     spec = parse_spec(raw)
     layout = h.layout_check(spec, record["size"], record["s"])
@@ -601,7 +601,7 @@ def part_e1(args):
     record = schedule(arm, args.seed, dt=args.dt, end_s=end_s, grid_dt=E1_GRID_DT)
     raw, checks = build(record)
     h = lit()
-    from cells.core.specs import parse_spec
+    from cells.definitions.specs import parse_spec
 
     spec = parse_spec(raw)
     tick = time.perf_counter()

@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 
 from cells.assembly.graph import OPEN_CHAIN, RING
-from cells.core.output_paths import within_output_root
 from cells.ensemble.plan import plan
+from cells.execution.output_paths import within_output_root
 
 
 def definition(worlds=32768, batch_worlds=32768):
