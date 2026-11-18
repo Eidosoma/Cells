@@ -1273,7 +1273,14 @@ class SiteOccupancy(Operator):
         )
 
     def working_size(self, spec):
-        return 0
+        """Stored values per accepted step plus a margin, the inner model's convention
+        (surface_pump.working_size): each row holds six arrays per population (the free and bound
+        increments, the bound net, the internalised amount, the work and the energy magnitude)
+        and the two node-indexed dissipation arrays. The stage arrays are transient, so the
+        margin is 2 (the lead's ruling on the external review's finding 1, 18 November 2026)."""
+        (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
+        x = spec.execution
+        return 2 * (6 * len(declaration.populations) + x.capacity + x.extracellular_capacity)
 
     def summary(self, spec, declaration, schedule, history):
         return {"site_occupancy_law": LAW_ID, **identity_block(declaration)}

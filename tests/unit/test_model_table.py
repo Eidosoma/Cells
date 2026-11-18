@@ -4,7 +4,12 @@
 Each claim with a planted error it must catch (D187):
 - every module under src/cells that registers a piece is one of the table's homes, or a module
   that a home package's __init__ imports (planted: an unlisted module that registers a law, and a
-  home package that does not import its registering module);
+  home package that does not import its registering module); and every inert law module, which
+  declares its LAW and registers nothing itself (the lead's R1), is a home (planted: an unlisted
+  one, beside a registering module that also binds LAW);
+- the loader registers an inert home's LAW with that module as its declarer, and importing the
+  module registers nothing (planted: the same module imported but not a home, which a fresh
+  manifest then lacks);
 - the table's models are the ones core/specs.parse_spec dispatches itself, each with the module
   its branch parses with (planted: a dispatch with one more model);
 - the registries load every home, so a fresh process lists every home's pieces and the manifest's
@@ -36,6 +41,7 @@ import pytest
 import cells
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions import specs
+from cells.definitions import surface_pump_v3_spec as inner_spec
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models.assembly_lineages import model as lineage_model
@@ -115,6 +121,32 @@ def unlisted(root, homes):
     return out
 
 
+# Inert law modules held from registration, each with why (the lead's ruling 3, 18 November): the
+# Kv1 pilot's five laws wait until @3's parser reads its channel table from the law registry.
+HELD = {
+    f"cells.laws.channels.{name}": "@3's parser reads its channel table as literals"
+    for name in ("kv1p1_mh2", "kv1p2_mh", "kv1p3_mh", "kv1p4_mh", "kv1p6_mh")
+}
+
+
+def unlisted_inert(root, homes, held=()):
+    """The inert law modules under `root` (each binds a module-level LAW to a call and registers
+    nothing itself) that are neither homes nor held: the loader would never register their laws."""
+    out = []
+    for path in sorted(root.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        binds = any(
+            isinstance(node, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "LAW" for t in node.targets)
+            and isinstance(node.value, ast.Call)
+            for node in tree.body
+        )
+        module = _module_of(root, path)
+        if binds and not _registers(tree) and module not in homes and module not in held:
+            out.append(module)
+    return out
+
+
 def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
     assert unlisted(SRC, HOMES) == []
     for home in HOMES:  # Each home exists, as a module or a package.
@@ -132,6 +164,17 @@ def test_every_module_that_registers_a_piece_is_a_home_of_the_table(tmp_path):
     for leaf in ("listed", "forgotten"):
         (tree / "family" / f"{leaf}.py").write_text("BUILTIN.register(object())\n")
     assert unlisted(tree, {"planted.family"}) == ["planted.family.forgotten", "planted.stray"]
+    # Inert law modules: each is a home. Planted: an unlisted one; a registering module that also
+    # binds LAW is the registering scan's, not this one's.
+    assert unlisted_inert(SRC, HOMES, HELD) == []
+    # A hold keeps its reason: each held module's law is one @3's parser still refuses.
+    for name in HELD:
+        law_id = importlib.import_module(name).LAW.law_id
+        assert name not in HOMES and law_id not in inner_spec.LAW_CODES, name
+    (tree / "family" / "inert.py").write_text("LAW = RouteLaw('tests.x@1', ('membrane',), 'x')\n")
+    (tree / "family" / "both.py").write_text("LAW = BUILTIN.register(RouteLaw('tests.y@1'))\n")
+    assert unlisted_inert(tree, {"planted.family"}) == ["planted.family.inert"]
+    assert unlisted_inert(tree, {"planted.family", "planted.family.inert"}) == []
 
 
 # ------------------------------------------------------------------ the table and the dispatch
@@ -250,6 +293,22 @@ def test_a_fresh_process_lists_every_home_s_pieces_whatever_was_imported_first(t
         (e["piece"], e["id"]) for e in json.loads(missed)["pieces"]
     }
     assert missed != fresh
+
+
+def test_the_loader_registers_an_inert_law_module_with_it_as_its_declarer(tmp_path):
+    (tmp_path / "planted_inert_home.py").write_text(
+        "from cells.modules import RouteLaw\n"
+        "LAW = RouteLaw('tests.planted_inert_route@1', ('membrane',), 'a planted inert law',\n"
+        "    host='cells.passive_routes@1')\n"
+    )
+    home = "planted_inert_home"
+    listed = json.loads(_manifest_bytes(tmp_path, "inert.json", extra_home=home))
+    (entry,) = (e for e in listed["pieces"] if e["id"] == "tests.planted_inert_route@1")
+    assert entry["piece"] == "law" and entry["module"] == home
+    # Planted: imported first but not a home. Importing it registers nothing, so a fresh
+    # manifest lacks it.
+    imported = json.loads(_manifest_bytes(tmp_path, "imported.json", first=[home]))
+    assert "tests.planted_inert_route@1" not in {e["id"] for e in imported["pieces"]}
 
 
 # ------------------------------------------------------------------ interfaces
