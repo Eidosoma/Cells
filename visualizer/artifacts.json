@@ -3,13 +3,8 @@
   "artifacts": {
     "architecture": {
       "title": "Cells",
-      "url": "https://claude.ai/artifact/VmHpJQGUkAMDMDMqoJJQEB",
+      "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
       "previous": [
-        {
-          "url": "https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB",
-          "until": "2026-11-14",
-          "note": "An earlier link to this page, holding an older copy: its version 11, the species atlases. It is no longer updated."
-        },
         {
           "url": "https://claude.ai/artifact/Szv7SqgCkgtAZg4c27fwCb",
           "until": "2026-11-16",
@@ -18,7 +13,7 @@
       ],
       "page": "out/cells-architecture.html",
       "scene": "data/architecture/architecture.scene.json",
-      "sharing": "shared by its owner as anyone with the link (since 17 November 2026, evening): every publish is seen by its viewers at once",
+      "sharing": "private at the present link since the page was published there again on 18 November 2026 (its owner shares it from the page's Share menu); the link of 16 to 18 November is shared as anyone with the link and holds Version 42",
       "versions": [
         {
           "date": "2026-11-14",
@@ -334,9 +329,21 @@
           "date": "2026-11-18",
           "engine_revision": "b5d3faf0",
           "note": "Version 42 at the present link (version id 1795024572-ade0; commit 070085ae on the merge b7de49ed of main b5d3faf0, both pushed before the publish). The viewer is level with main b5d3faf0, after the engine's second source move (D188's move 2: 117 modules moved, two packages dissolved) and the landing of the origin-of-life engine's first laws (OL1). The map's overlay follows the move by script from the engine's own path table; on the map tool's own owner table, 3,245 of the 3,247 files that had a part at 79d23cd5 have the same part and the other 2 are the dissolved package files, and all 117 moved files keep their part. The map is built strictly with no warning: 258 parts and 959 relations (256 and 939 before). Three parts are new, each opening 'Landed for development, not judged' as the record has it and reading 'Implemented and guarded' on tests that are in the engine's tiers 1 and 2: Origin-of-life laws (OL1), Assemblies with phases and reactions (OL1), whose name is the engine package's own, and Origin-of-life references (OL5); no model-system entry, view or run of them is on the page. Source layout by role turned from planned to implemented and guarded, with the move's first failed gate said as the record says it. Other laws is gone, its only file having been the dissolved package's. By status: qualified 48, implemented and guarded 41, established 46, designed 22, planned 30, failed 1, external 4, none stated 66. The Laws wall reads the manifest written at b5d3faf0: 47 pieces, 11 models, seven racks; the four new laws stand under 'Family laws', and a model family's own laws and operators have shelves named for them; all 13 pieces named in a design note stay. The viewer's own references to moved modules follow the move where they are in the present tense and stay where they are records; the five worlds the engine's writer wrote at b5d3faf0 are kept beside the ones from before the move, and a test shows they are the same files apart from a planted label and that the adapter packages both alike. A panel now wraps a long word inside itself: a probe before the change had found the content wider than the panel on 40 of the wall's 71 pieces and models at 1440 by 900 (38 of 66 with Version 41's list, so the fault was live in Version 41), where the rest was cut and the close button pushed out of sight. A composite operator's panel says 'An operator'. Gate on the published code, the patch's hash the same before and after each run: npm test exit 0, 804 tests, 802 pass, 2 skipped. The whole click suite ran twice: the first run 97 of 98 scenarios and 1874 of 1875 checks, its one miss a timing check of shelves-frame (a repaint of every marker's colour at 400 by 780: 10.3 ms against 8 ms, four browsers at once); that scenario alone six more times, 6 of 6, the repaint 0.9 to 4.2 ms; the second run 98 of 98 scenarios, 1875 checks. Every renderer line Vulkan. Looks on the staged page, the same bytes as published: 50 after a warm-up load, at 1280 by 720, 1440 by 900 and 360 by 780, light and dark: none with a console error, a missing file or a sideways scroll; in 34 of them a panel was measured, in every view (Engine, Laws, Proteins, Machines, Scope, the tissue's cell), and each kept its content and its close button inside the panel. Three more looks chose every one of the wall's 71 pieces and models in turn, at 1440 by 900, 360 by 780 and 1280 by 720 in the dark theme: all 71 inside at each. Of the 50 I opened 11 stills (the page's first screen; the Engine view wide; the origin-of-life laws' part; the family's part in the dark theme; Source layout on a phone; the wall at 1440 and on a phone; the transition-state law's panel; the longest law name on a phone; the new rack's panel; a tissue cell's panel) and only loaded the other 39, reading what their scripts told. The 359 files beside the page are byte for byte Version 41's: none was sent. Read back after the publish: the staged page stands whole inside the served page after the service's 531-byte head, with its 15-byte tail. Mended by this version: the panel's overflow; D195's amendment, which read 'to confirm with the user' and now reads as the record has it, confirmed the same day; the origin-of-life engine's 'nothing of it is built yet'; the two record rows that lagged (the lead mended them on main, and the map's sources now find their lines). Not right yet: a long law name breaks where the line ends, not at an underscore; no test reads a run package written after the move that states its source, one with the engine's manifest, or an evidence folder with a source snapshot; the engine's record disagrees with itself on the move (ARCHITECTURE's 'Order' and the moves note's section 21 still say it is not done; the map follows PROGRESS) and the engine README's origin-of-life row is stale; the remap was made by scripts that are not in the tree, while the tracked tool tools/move_paths.py, which exists for this, was used only for its check and exits 1 there because it has no row kind for a dissolved file: the method belongs in that tool; about 19 of the map's 'uses' lines come from package files alone and are no real dependency (57 in all with older ones; removing them is a rule of the map tool); the wall's five small racks crowd their labels and the two assembly racks have no short name; the engine's manifest still has three pre-move paths in its own words, which the wall shows as written; the Cell view's three flux citations are dated at an older revision; main has moved 32 commits past b5d3faf0 since the pin; and of Version 41's list these still stand: the gap-junction part's grey with no legend row, the map's stamp against what was reviewed, capabilities on older code reading Established, First bounded models' words, unit U46's name, the two phrases without a full stop, the atlas's new words held by no test, and the tissue's items."
+        },
+        {
+          "date": "2026-11-18",
+          "engine_revision": "b5d3faf0",
+          "note": "Version 42 again, byte for byte, at the page's first link (https://claude.ai/artifact/7Pnsy6G25c2kRqgwk5TuaB), where the page was published until 14 November 2026 and is published again since the evening of 18 November 2026; no new version of the page. A full send was staged from a clean copy of the head 58a88bfd and compared with Version 42 as staged for its publish: the page and all 359 files beside it are the same bytes, so Version 42's gate covers it and no gate was run. Sent in two uploads of 240 and 119 files; with the second, the 59 run files of 14 November that the page no longer names were removed by name (E07-v1's 38 and the turnover pre-screen's 21, in their packaging of that day), so the link holds the page and its 359 files, 360 in all, as its own listing then showed. The link's own counter reads Version 13 (version id 1795032865-e964); before, it held the page's version 11 of 14 November. Read back: the staged page stands whole inside the served page after the service's 531-byte head, and the served page is the same bytes as the page served at the link of 16 to 18 November (the same SHA-256); five of the files beside it, one from each folder, were read back and are the staged bytes. The link is private. Between the two uploads, about 100 seconds, the link served the new page with a third of its files still to come."
         }
       ],
-      "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)"
+      "files": "out/cells-architecture.files.json lists the files published beside the page: the runs and the species' own proteins (generated, not committed)",
+      "also": [
+        {
+          "url": "https://claude.ai/artifact/VmHpJQGUkAMDMDMqoJJQEB",
+          "since": "2026-11-16",
+          "note": "The page's link from 16 to 18 November 2026, where it reached its Version 42. It still serves that version, shared by its owner as anyone with the link, and is not updated from here since the evening of 18 November 2026. It is not retired: which of the two links is the page's public one is its owner's to say."
+        }
+      ]
     },
     "invisible_quantities": {
       "title": "Invisible Quantities",
@@ -431,7 +438,7 @@
     },
     "laws_preview": {
       "title": "Laws Library Preview",
-      "url": "https://claude.ai/artifact/GiF8xvDnj3R4paQBSx6kZK",
+      "url": "https://claude.ai/artifact/AEwUBK5rhwvjtkkvRMEhTu",
       "page": "built by `node tools/build_view_page.mjs laws --out FILE` (not committed)",
       "note": "The Laws library as built, on a page of its own: every declared piece of the engine on a wall of shelves, with the models that declare them, read from the engine's code. It was published before the view was on the map's page (it is the fifth view there since Version 11) and still says on itself that it is a preview, with the revision the list was read at (main 8e255d45) and that no level is shown that a record does not state. The options page that came before it is laws_library.",
       "sharing": "private; the owner shares it from the page's Share menu",
@@ -459,6 +466,17 @@
         {
           "date": "2026-11-18",
           "note": "Version 6 (version id 1795024923-427b), built from a clean copy of c711b685 (484 KB) with `node tools/build_view_page.mjs laws`: the wall as on the map's Version 42, read from the engine's declarations at main b5d3faf0 (47 pieces, 11 models, seven racks; the origin-of-life family's four laws under Family laws), with the panel that wraps long words inside itself. Republished at the user's word of 18 November 2026. Looked at before the publish, served as the artifact serves it: nine looks after a warm-up load, at 1280 by 720, 1440 by 900 and 360 by 780, light and dark, none with a console error or a missing file; three with a panel open (a new law, the longest law name on a phone, the new rack in the dark theme); and every one of its 71 pieces and models chosen in turn at 1280 by 720 and at 360 by 780, each panel keeping its content and its close button inside. Four stills opened (wide, phone, the rack's panel in the dark theme, a law's panel); the others only loaded. Read back after the publish: the built page stands whole inside the served page after the service's 531-byte head. The page is private: its owner shares it from the page's Share menu."
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Version 6 again at a new link (version id 1795032598-8c40): the same file, byte for byte, as published earlier that day. Read back: the built page stands whole inside the served page, which is the same bytes as the page served at the earlier link (the same SHA-256). Private."
+        }
+      ],
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/GiF8xvDnj3R4paQBSx6kZK",
+          "until": "2026-11-18",
+          "note": "An earlier link to this page, holding its Version 6 there. It is not updated from here."
         }
       ]
     },
@@ -556,7 +574,7 @@
     },
     "experiments_options": {
       "title": "Experiments Landing Options",
-      "url": "https://claude.ai/artifact/EiN38VHhqcvF22xYetRzEy",
+      "url": "https://claude.ai/artifact/Wefb3fHzfJ2t3F5MhgwSBP",
       "page": "out/publish-previews/experiments-landing-options.html (not tracked: 281 KB with eight stills inlined; made by out/scratch-coordinator/make_experiments_page.py from the viewer's catalogue, the lead's inventory of 18 November 2026 and stills of today's views)",
       "note": "An options page for the user, after their word of 18 November 2026 that the Experiments view be improved, that what is there be marked as examples, perhaps on a landing page, and that everything we have go in. Three layouts sketched in the page itself (a landing page of cards, recommended; one list beside the picture; a table of the record), the list of what would go in with each standing in the record's words, and three questions: the layout, what the tab opens on (it stays on the tumour tissue until they answer), and whether the lead reruns the judged feature-request worlds through the run-view writer. Nothing of it is built in the viewer.",
       "sharing": "private; the owner shares it from the page's Share menu",
@@ -564,6 +582,17 @@
         {
           "date": "2026-11-18",
           "note": "Version 1 (version id 1795026448-65ef). Before it was drawn: a trial page that listed every held experiment was built and each one's view loaded (E07-v1, the turnover pre-screen, the secreted-species run, the planarian loop, the example sheet, the assembly, the networks, the tissue: none with a console error or a missing file; seven stills opened); the file count of listing everything as packaged today was taken (687 against the limit of 511); and the origin-of-life laws' saved runs were read (check states and short verification runs). Looked at whole before the publish, wide, on a phone and in the dark theme: no sideways scroll, no console error; the wide and the phone stills opened."
+        },
+        {
+          "date": "2026-11-18",
+          "note": "The same file again at a new link (version id 1795032597-db0a), a few hours after its first publish. Read back: the page stands whole inside the served page. Private."
+        }
+      ],
+      "previous": [
+        {
+          "url": "https://claude.ai/artifact/EiN38VHhqcvF22xYetRzEy",
+          "until": "2026-11-18",
+          "note": "The link this page was first published at, the same day. It is not updated from here."
         }
       ]
     }
