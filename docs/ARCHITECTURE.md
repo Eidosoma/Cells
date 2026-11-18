@@ -397,10 +397,11 @@ note.
   above are finalized during that work.
 - **Then the single restructure round.** It landed on 16 November (tag `d172-landed-2026-11-16`),
   with main tagged before it (`d172-base-2026-11-15`), frozen evidence and the results gate.
-- **Next, the source tree takes the modular layout (D188).** It is decided and not yet done. After
-  core-next lands, a probe and then two scripted moves put the older families in
-  `src/cells/legacy/` and the modular parts in their own folders. The source paths named in this
-  document are today's.
+- **The source tree has the modular layout (D188).** Two scripted moves put the older families in
+  `src/cells/legacy/` (move 1, 17 November) and the modular parts in their own folders (move 2,
+  18 November, tag `d188-move2-landed-2026-11-18`): `laws/`, `kinds/`, `operators/`,
+  `definitions/`, `execution/`, `registry/` and `records/`. The source paths named in this document
+  are post-move.
 - **The accepted feature work continues in its order:** compartments, occupancy and delivery. Their
   real interactions exercise these contracts. The minimal-cell track supplies consumers and
   measured-data tests without displacing FR-4 and FR-5.
@@ -856,9 +857,9 @@ On the 825-node world (`item3/` in `/mnt/workspaces/Cells/core-fixes-20261116/`)
 - `execution/blas_threads.py` loads scipy's LAPACK first, since jaxlib loads it only at its first
   LAPACK call and a limit reaches only loaded libraries. It then sets every loaded BLAS to 1
   thread through threadpoolctl (BSD, `threadpoolctl==3.8.0`).
-- The import pin is taken at the first import of `cells.core`, not in `cells/__init__.py`, whose
-  bytes a held legacy law pins (`legacy/processes/charged_surface_work`). Every engine path imports
-  `cells.core` before any linear algebra: parse, the models, the runs and the analysis tools.
+- The import pin is taken in `cells/__init__.py`, at `import cells` (D198, R6'). Since the retire
+  batch, no held law pins that file's bytes. Every engine path imports the package before any of its
+  modules, and so before any linear algebra: parse, the models, the runs and the analysis tools.
   A BLAS that loads later starts at 1 thread, because OpenBLAS
   reads `OPENBLAS_NUM_THREADS` when it loads and both builds honour it. One already loaded, when
   numpy came first, is set at once. So a light module such as `cells.execution.continuity`, imported

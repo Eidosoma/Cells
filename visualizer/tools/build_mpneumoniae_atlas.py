@@ -49,6 +49,9 @@ from collections import Counter
 from pathlib import Path
 from xml.etree import ElementTree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import ribosome as RIBOSOME  # noqa: E402  the ribosome's size: E. coli's, the viewer's own measure of two PDB entries (schema/SPECIES_SHAPES.md)
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
@@ -58,7 +61,7 @@ CATALOGUE_DIR = ROOT / "data" / "proteins" / "mpneumoniae"
 CATALOGUE_FILE = "proteins.tsv"
 SHELVES_FILE = "shelves.json"
 SPECIES_FORMAT = "cells.visualizer.species@1"
-ATLAS_FORMAT = "cells.visualizer.species_atlas@1"
+ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
 SHELVES_FORMAT = "cells.visualizer.species_proteins@1"
 CLIENT = "atlas-builder/1.0"
 PATHS = re.compile(r"/(?:home|mnt|Users|tmp)/")
@@ -143,7 +146,10 @@ EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
 FAMILIES = {
     "nav_alpha": {"of": "voltage-gated sodium channel alpha subunits", "signatures": ["IPR001696"]},
-    "nav_beta": {"of": "sodium channel beta subunits", "signatures": ["IPR027098", "IPR000920"]},
+    # IPR027098 is InterPro's "Sodium channel subunit beta-1/beta-3". IPR000920, "Myelin P0 protein-related", was given here too
+    # until 16 November 2026: it is broader than the beta subunits (myelin protein zero and its relatives carry it), so it finds no
+    # subunit and is only said in a unit's note, where a species' proteins carry it ("broader").
+    "nav_beta": {"of": "sodium channel beta subunits", "signatures": ["IPR027098"], "broader": ["IPR000920"]},
     "kv1": {"of": "Kv1-type potassium channels", "signatures": ["IPR003972"]},
     "kv2": {"of": "Kv2-type potassium channels", "signatures": ["IPR003973"]},
     "kv3": {"of": "Kv3-type potassium channels", "signatures": ["IPR003974"]},
@@ -1217,7 +1223,7 @@ def build_species(c):
         "cap.grn": {"place": "absent", "why": "It forms no tissue, so there is nothing for gene networks to be coupled across. Gene expression within the one cell belongs with regulatory circuits."},
         "cap.trafficking": {"place": "absent", "why": "It has no endoplasmic reticulum and no Golgi. By its annotation, new membrane proteins are put straight into the cell membrane by the Sec translocon and the YidC insertase."},
         "cap.assembly": {"place": "present", "note": "Its assemblies are its ribosomes, RNA polymerase, the ATP synthase and the internal core of its attachment organelle. The designed protein cage that Cells models is not one of its proteins."},
-        "cap.machines": {"place": "present", "note": f"About {RIBOSOMES} ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon."},
+        "cap.machines": {"place": "present", "note": f"About {RIBOSOMES} ribosomes, with RNA polymerase, the ATP synthase, the protein translocon and the machinery in its attachment organelle that lets it glide. None of its proteins carries the proteasome's signature; its annotation lists the proteases FtsH and Lon.", "left_out": {"since": "2026-11-17", "says": "the barrel drawn for its molecular machines", "reason": "the picture drew it as a proteasome's core, which this cell does not have, and in a cell this small that barrel stood among the largest things drawn", "why": "On 17 November 2026 the user asked for the molecular machines' barrel to be left out of the bacteria's picture for now, as the map's protein assembly was left out of every species on 15 November; it read as an assembly of molecules, and stood among the largest things drawn. Its place and its note stay in this file: take the flag out and the barrel is drawn again."}},
         "cap.secretion": {"place": "present", "note": "It releases lactate and acetate, the end products of its fermentation, and takes its nutrients up. Signalling between its own cells was not looked for."},
         "cap.repair": {"place": "present", "note": "The place would be its bare membrane. No source read for this file describes a membrane injury or its resealing in this organism."},
         "cap.division": {"place": "present", "note": "It divides in two as a single cell. Its attachment organelle is duplicated first and takes part in the division; the division gene ftsZ is in its genome."},
@@ -1243,8 +1249,9 @@ def build_species(c):
         {"label": "Inside", "value": "a small prokaryote, among the smallest organisms that copy themselves: a bacterium, with no nucleus", "sources": ["li2021", "gaspari2020", "genbank"]},
         {"label": "Chromosome", "value": f"one circle of {c.length:,} base pairs", "sources": ["genbank"], "see": ["himmelreich1996"]},
         {"label": "Genes", "value": f"{count} protein products in the genome record frozen here, the re-annotation of 2000; a review counts 687 genes, a re-annotation of 2015 has 694 reading frames, and UniProt has {len(c.entries)} entries", "sources": ["genbank", "parrott2016", "lluchsenar2015", "uniprot"], "see": ["himmelreich1996", "dandekar2000", "wodke2013"]},
+        {"label": "Ribosome's size", "value": f"{RIBOSOME.fact(own=False)}. No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on", "sources": list(RIBOSOME.sources())},
         {"label": "Ribosomes", "value": f"about {RIBOSOMES} in a cell: the proteins of the ribosome were measured at a median of 300 copies in a cell, by mass spectrometry", "sources": ["weber2023"], "see": ["maier2011", "kuhner2009"]},
-        {"label": "Proteins", "value": "about 120,000 protein molecules in a cell, the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
+        {"label": "Proteins", "value": "about 120,000 protein molecules in a cell (120,700 on average over all samples), the sum over 528 kinds of protein measured by mass spectrometry, three quarters of all its kinds", "sources": ["weber2023"], "see": ["maier2011"]},
         {"label": "Doubling time", "value": "about 8 hours in rich medium; 17.6 hours were measured in a serum-free medium", "sources": ["weber2023", "gaspari2020"]},
         {"label": "Essential genes", "value": "342 of 694 genes essential, 93 needed for normal growth and 259 dispensable, by transposon mutagenesis", "sources": ["lluchsenar2015"]},
         {"label": "Energy", "value": "ATP from fermenting glucose, with lactate and acetate as end products; mycoplasmas lack the citric acid cycle", "sources": ["gaspari2020", "awadh2021", "li2021"], "see": ["wodke2013"]},
@@ -1254,7 +1261,7 @@ def build_species(c):
         {"label": "Movement", "value": "glides on surfaces, attachment organelle first, at up to 1 µm a second", "sources": ["nakane2015"]},
         {"label": "Name", "value": f"databases now list it as {c.uniprot_name.split(' (')[0]}; the papers cited call it Mycoplasma pneumoniae", "sources": ["genbank", "uniprot"]},
     ]
-    sources = sources_of_species(c)
+    sources = sources_of_species(c) | RIBOSOME.sources()
     for where, keys in [*capability_sources.items(), *((fact["label"], fact["sources"]) for fact in facts)]:
         if not keys or any(sources[key]["class"] != PERMISSIVE for key in keys):
             raise SystemExit(f"{where} would rest on a source whose terms do not allow it")
@@ -1275,6 +1282,11 @@ def build_species(c):
         "modelled": {
             "state": "proposed",
             "text": "Its public measurements were audited beside the minimal-cell track on JCVI-syn3A (decision D173; the track's note of 15 November 2026), which recommends it to lead a later stage on energy, transport and pH. Nothing of it is in the engine, and no model of it has run.",
+            # The record behind the word (schema/ENTRIES.md): tracked files of main.
+            "record": [
+                {"path": "docs/DECISIONS.md", "where": "D173: M. pneumoniae is audited soon"},
+                {"path": "docs/SYN3A_MINIMAL_CELL_TRACK.md", "where": "9.3 Should M. pneumoniae lead a stage?"},
+            ],
         },
         "levels": [
             {"id": "molecules"},
@@ -1289,7 +1301,8 @@ def build_species(c):
         "no_further_levels": "A single-celled organism: each cell lives on its own, on the cells of its host, so it has no tissue, organ or body of its own.",
         "cell": {
             "facts": facts,
-            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES},
+            # The protein molecules of the cell, for its crowd drawn to scale: the paper's average over all samples, 1.207 × 10^5.
+            "parts": {"membranes": 1, "wall": False, "nucleus": False, "chromosome_kbp": round(c.length / 1000), "ribosomes": RIBOSOMES, "proteins": {"count": 120700, "sources": ["weber2023"]}, "ribosome": RIBOSOME.part("No entry of the Protein Data Bank for its own ribosome is named in the papers its file rests on: it is drawn at E. coli's measure.")},
             "capabilities": capabilities,
         },
         "capability_sources": capability_sources,
@@ -1333,7 +1346,10 @@ def extra_products(c):
             "role": item["role"],
             "ids": [{"db": "uniprot", "id": entry["primaryAccession"]}],
             "length": len(protein["sequence"]),
-            "evidence": "reviewed entry",
+            # The two facts of schema/SPECIES_ATLAS.md: found by the signature named in EXTRA, which the build checks the sequence
+            # carries; its entry a reviewed one, as every entry of this organism read here is (the check in the build).
+            "found_by": "family signature",
+            "entry": "reviewed",
             "evidence_note": f"Locus {item['locus']}, product \"{protein['protein']}\" in the genome record. Its reviewed UniProtKB entry names it \"{entry_name(entry)}\", with UniProt's level of evidence \"{existence(entry)}\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries {item['signature']} ({c.signature_names[item['signature']]}).",
             "citation": None,
             "why": item["why"],
@@ -1363,7 +1379,7 @@ def build_atlas(c):
             "label": LABEL,
             "organism": ORGANISM,
             "taxon": TAXON,
-            "plain": f"A small bacterium of the human airways with {len(c.proteins)} proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are machines of animal cells, and it has none of them.",
+            "plain": f"A small bacterium of the human airways with {len(c.proteins)} proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them.",
         },
         "made": MADE,
         "method": [
@@ -1864,7 +1880,7 @@ def summary(species, atlas, rows, shelves, context):
     lines = [
         f"frozen annotation: GenBank {RECORD}, {context.length:,} bp; features {dict(context.kinds)}; {len(rows)} protein products; RefSeq {REFSEQ} has {context.refseq_kinds['CDS']} coding sequences",
         f"UniProt release {context.uniprot_release}: {len(context.entries)} entries of the strain, {context.archived} archived sequences",
-        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter(p['evidence'] for p in atlas['extra']))})",
+        f"units by finding: {dict(sorted(findings.items()))}; extra: {len(atlas['extra'])} ({dict(Counter((p['found_by'], p['entry']) for p in atlas['extra']))})",
         f"capabilities stated: {dict(sorted(places.items()))} of {len(species['cell']['capabilities'])}",
         f"catalogue: essentiality {dict(Counter(row[10] for row in rows))}; relaxed {dict(Counter(row[11] for row in rows))}; existence {dict(Counter(row[8] for row in rows))}",
         f"shelves: sides {shelves['counts']}; bases {dict(Counter(row[5] for row in shelves['proteins']))}; groups {dict(Counter(row[6] for row in shelves['proteins']))}",

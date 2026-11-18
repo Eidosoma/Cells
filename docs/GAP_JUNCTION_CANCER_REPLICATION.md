@@ -86,6 +86,16 @@ Driver: [`validation/gap_junction_tissue/`](../validation/gap_junction_tissue/).
   (Figure 1). Effective miRNA valence: -1.
 
 **Regulation.** In every cell, the miR200/ZEB EMT switch (Figure 2; its refs. 49-50).
+
+**The switch, in plain words.**
+- Each cell carries a switch made of two molecules that suppress each other: the microRNA miR200
+  blocks the making of the protein ZEB, and ZEB blocks the making of miR200.
+- With miR200 high and ZEB low, the cell is epithelial (E), the healthy state here. With ZEB high and
+  miR200 low, it is mesenchymal (M), the tumour state.
+- Each state sustains itself, which is what makes it a switch.
+- Only miR200 passes through gap junctions, so healthy neighbours can feed it into a tumour cell. With
+  enough coupling, that tips the cell's switch back to E. With too little, the tumour holds. §7's
+  "neither" search finds that threshold.
 - Modified Hill rates (1 + lambda (TF/Km)^n) / (1 + (TF/Km)^n), and miR200-Zeb binding at fast
   equilibrium.
 - Snail is chosen so that only E and M are stable. Only miR200 crosses junctions.
@@ -613,6 +623,21 @@ user to decide:
   - whether to run BITSEY unmodified, out of process, in its own environment
     (`/mnt/workspaces/Cells/venv-bitsey`), to produce Cells' own reference outputs at the
     revision the preprint used (b2cb370), as is done for BETSE.
+
+**The user's answers (18 November 2026; D219).**
+- **(a) and (b) are approved as judged comparisons,** each under a registered protocol with code-blind
+  references.
+- **Figure 8** is judged against independently derived physical balances. The printed recursion's
+  discrepancy stays as a finding.
+- **The threshold's verdict** includes successful refinement and a predeclared convergence condition.
+  - The 1D line's registration discloses that its value was already seen in neither-02. The 2D field
+    is the true pre-registration.
+  - The historical log is named, with the uncertainty about its producing revision. A pinned BITSEY
+    run is an additional reference.
+- **(d) Table 3:** the logged inputs and the executed interventions govern the code-reproduction
+  target, and the printed table is kept as a separate publication target, with the mapping
+  discrepancies reported. Interventions are named by what they do, with the original labels as
+  provenance.
 
 ## 7. The "neither" comparison (b): written before the search
 

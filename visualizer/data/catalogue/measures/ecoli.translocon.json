@@ -1,0 +1,554 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "9RBF": {
+   "entry": "9RBF",
+   "title": "Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "2.44",
+   "left_out": [
+    {
+     "entity": "1",
+     "description": "Large ribosomal subunit protein bL33"
+    },
+    {
+     "entity": "2",
+     "description": "Large ribosomal subunit protein bL34"
+    },
+    {
+     "entity": "3",
+     "description": "Large ribosomal subunit protein bL35"
+    },
+    {
+     "entity": "4",
+     "description": "Large ribosomal subunit protein bL36A"
+    },
+    {
+     "entity": "5",
+     "description": "Large ribosomal subunit protein bL31A"
+    },
+    {
+     "entity": "6",
+     "description": "E-site tRNA"
+    },
+    {
+     "entity": "10",
+     "description": "Membrane protein insertase YidC"
+    },
+    {
+     "entity": "11",
+     "description": "16S rRNA"
+    },
+    {
+     "entity": "12",
+     "description": "Small ribosomal subunit protein uS2"
+    },
+    {
+     "entity": "13",
+     "description": "Small ribosomal subunit protein uS3"
+    },
+    {
+     "entity": "14",
+     "description": "Small ribosomal subunit protein uS4"
+    },
+    {
+     "entity": "15",
+     "description": "Small ribosomal subunit protein uS5"
+    },
+    {
+     "entity": "16",
+     "description": "Small ribosomal subunit protein bS6, fully modified isoform"
+    },
+    {
+     "entity": "17",
+     "description": "Small ribosomal subunit protein uS7"
+    },
+    {
+     "entity": "18",
+     "description": "Small ribosomal subunit protein uS8"
+    },
+    {
+     "entity": "19",
+     "description": "Small ribosomal subunit protein uS9"
+    },
+    {
+     "entity": "20",
+     "description": "Small ribosomal subunit protein uS10"
+    },
+    {
+     "entity": "21",
+     "description": "Small ribosomal subunit protein uS11"
+    },
+    {
+     "entity": "22",
+     "description": "Small ribosomal subunit protein uS12"
+    },
+    {
+     "entity": "23",
+     "description": "Small ribosomal subunit protein uS13"
+    },
+    {
+     "entity": "24",
+     "description": "Small ribosomal subunit protein uS14"
+    },
+    {
+     "entity": "25",
+     "description": "Small ribosomal subunit protein uS15"
+    },
+    {
+     "entity": "26",
+     "description": "Small ribosomal subunit protein bS16"
+    },
+    {
+     "entity": "27",
+     "description": "Small ribosomal subunit protein uS17"
+    },
+    {
+     "entity": "28",
+     "description": "Small ribosomal subunit protein bS18"
+    },
+    {
+     "entity": "29",
+     "description": "Small ribosomal subunit protein uS19"
+    },
+    {
+     "entity": "30",
+     "description": "Small ribosomal subunit protein bS20"
+    },
+    {
+     "entity": "31",
+     "description": "Small ribosomal subunit protein bS21"
+    },
+    {
+     "entity": "32",
+     "description": "NuoK-86 nascent peptide"
+    },
+    {
+     "entity": "33",
+     "description": "mRNA"
+    },
+    {
+     "entity": "34",
+     "description": "A-site tRNA-Pro"
+    },
+    {
+     "entity": "35",
+     "description": "P-site tRNA-Pro"
+    },
+    {
+     "entity": "36",
+     "description": "23S rRNA"
+    },
+    {
+     "entity": "37",
+     "description": "5S rRNA"
+    },
+    {
+     "entity": "38",
+     "description": "Large ribosomal subunit protein uL2"
+    },
+    {
+     "entity": "39",
+     "description": "Large ribosomal subunit protein uL3"
+    },
+    {
+     "entity": "40",
+     "description": "Large ribosomal subunit protein uL4"
+    },
+    {
+     "entity": "41",
+     "description": "Large ribosomal subunit protein uL5"
+    },
+    {
+     "entity": "42",
+     "description": "Large ribosomal subunit protein uL6"
+    },
+    {
+     "entity": "43",
+     "description": "Large ribosomal subunit protein bL9"
+    },
+    {
+     "entity": "44",
+     "description": "Large ribosomal subunit protein uL13"
+    },
+    {
+     "entity": "45",
+     "description": "Large ribosomal subunit protein uL14"
+    },
+    {
+     "entity": "46",
+     "description": "Large ribosomal subunit protein uL15"
+    },
+    {
+     "entity": "47",
+     "description": "50S ribosomal protein L16"
+    },
+    {
+     "entity": "48",
+     "description": "Large ribosomal subunit protein bL17"
+    },
+    {
+     "entity": "49",
+     "description": "Large ribosomal subunit protein uL18"
+    },
+    {
+     "entity": "50",
+     "description": "Large ribosomal subunit protein bL19"
+    },
+    {
+     "entity": "51",
+     "description": "Large ribosomal subunit protein bL20"
+    },
+    {
+     "entity": "52",
+     "description": "Large ribosomal subunit protein bL21"
+    },
+    {
+     "entity": "53",
+     "description": "Large ribosomal subunit protein uL22"
+    },
+    {
+     "entity": "54",
+     "description": "Large ribosomal subunit protein uL23"
+    },
+    {
+     "entity": "55",
+     "description": "Large ribosomal subunit protein uL24"
+    },
+    {
+     "entity": "56",
+     "description": "Large ribosomal subunit protein bL25"
+    },
+    {
+     "entity": "57",
+     "description": "Large ribosomal subunit protein bL27"
+    },
+    {
+     "entity": "58",
+     "description": "Large ribosomal subunit protein bL28"
+    },
+    {
+     "entity": "59",
+     "description": "Large ribosomal subunit protein uL29"
+    },
+    {
+     "entity": "60",
+     "description": "Large ribosomal subunit protein uL30"
+    },
+    {
+     "entity": "61",
+     "description": "Large ribosomal subunit protein bL32"
+    }
+   ],
+   "whole": {
+    "atoms": 4564,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     8.4,
+     6.6,
+     5.1
+    ],
+    "farthest_nm": [
+     9.6,
+     6.8,
+     6.2
+    ],
+    "middle_98_percent_nm": [
+     8.3,
+     5.9,
+     5.1
+    ],
+    "radius_of_gyration_nm": 2.65
+   },
+   "parts": {
+    "secy": {
+     "by": "entities",
+     "ids": [
+      "7"
+     ],
+     "atoms": 3260,
+     "centre_nm": [
+      -0.17,
+      -0.09,
+      0.0
+     ],
+     "axes": [
+      [
+       0.9231,
+       0.3837,
+       0.0247
+      ],
+      [
+       -0.2362,
+       0.5152,
+       0.8239
+      ],
+      [
+       0.3034,
+       -0.7664,
+       0.5663
+      ]
+     ],
+     "across_nm": [
+      8.5,
+      5.3,
+      4.4
+     ],
+     "farthest_nm": [
+      9.2,
+      6.3,
+      5.4
+     ],
+     "radius_of_gyration_nm": 2.45
+    },
+    "sece": {
+     "by": "entities",
+     "ids": [
+      "8"
+     ],
+     "atoms": 873,
+     "centre_nm": [
+      -0.45,
+      1.17,
+      0.3
+     ],
+     "axes": [
+      [
+       -0.5895,
+       0.6601,
+       -0.4655
+      ],
+      [
+       0.8003,
+       0.3993,
+       -0.4473
+      ],
+      [
+       -0.1093,
+       -0.6363,
+       -0.7637
+      ]
+     ],
+     "across_nm": [
+      10.0,
+      6.4,
+      3.1
+     ],
+     "farthest_nm": [
+      8.5,
+      5.3,
+      3.6
+     ],
+     "radius_of_gyration_nm": 2.73
+    },
+    "secg": {
+     "by": "entities",
+     "ids": [
+      "9"
+     ],
+     "atoms": 431,
+     "centre_nm": [
+      2.2,
+      -1.71,
+      -0.6
+     ],
+     "axes": [
+      [
+       0.8791,
+       0.367,
+       0.3041
+      ],
+      [
+       -0.231,
+       -0.2299,
+       0.9454
+      ],
+      [
+       0.4168,
+       -0.9014,
+       -0.1173
+      ]
+     ],
+     "across_nm": [
+      5.8,
+      2.4,
+      1.7
+     ],
+     "farthest_nm": [
+      5.1,
+      2.4,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.45
+    }
+   },
+   "chains": [
+    {
+     "chain": "6",
+     "entity": "7",
+     "description": "Protein translocase subunit SecY",
+     "atoms": 3260,
+     "centre_nm": [
+      -0.17,
+      -0.09,
+      0.0
+     ],
+     "axes": [
+      [
+       0.9231,
+       0.3837,
+       0.0247
+      ],
+      [
+       -0.2362,
+       0.5152,
+       0.8239
+      ],
+      [
+       0.3034,
+       -0.7664,
+       0.5663
+      ]
+     ],
+     "across_nm": [
+      8.5,
+      5.3,
+      4.4
+     ],
+     "farthest_nm": [
+      9.2,
+      6.3,
+      5.4
+     ],
+     "radius_of_gyration_nm": 2.45
+    },
+    {
+     "chain": "7",
+     "entity": "8",
+     "description": "Protein translocase subunit SecE",
+     "atoms": 873,
+     "centre_nm": [
+      -0.45,
+      1.17,
+      0.3
+     ],
+     "axes": [
+      [
+       -0.5895,
+       0.6601,
+       -0.4655
+      ],
+      [
+       0.8003,
+       0.3993,
+       -0.4473
+      ],
+      [
+       -0.1093,
+       -0.6363,
+       -0.7637
+      ]
+     ],
+     "across_nm": [
+      10.0,
+      6.4,
+      3.1
+     ],
+     "farthest_nm": [
+      8.5,
+      5.3,
+      3.6
+     ],
+     "radius_of_gyration_nm": 2.73
+    },
+    {
+     "chain": "8",
+     "entity": "9",
+     "description": "Protein-export membrane protein SecG",
+     "atoms": 431,
+     "centre_nm": [
+      2.2,
+      -1.71,
+      -0.6
+     ],
+     "axes": [
+      [
+       0.8791,
+       0.367,
+       0.3041
+      ],
+      [
+       -0.231,
+       -0.2299,
+       0.9454
+      ],
+      [
+       0.4168,
+       -0.9014,
+       -0.1173
+      ]
+     ],
+     "across_nm": [
+      5.8,
+      2.4,
+      1.7
+     ],
+     "farthest_nm": [
+      5.1,
+      2.4,
+      1.8
+     ],
+     "radius_of_gyration_nm": 1.45
+    }
+   ],
+   "entities": [
+    {
+     "entity": "7",
+     "description": "Protein translocase subunit SecY",
+     "copies": 1,
+     "sequence_length": 443,
+     "residues_modelled_per_copy": 421.0,
+     "modelled_share": 0.95,
+     "atoms_per_modelled_residue": 7.74
+    },
+    {
+     "entity": "8",
+     "description": "Protein translocase subunit SecE",
+     "copies": 1,
+     "sequence_length": 127,
+     "residues_modelled_per_copy": 114.0,
+     "modelled_share": 0.898,
+     "atoms_per_modelled_residue": 7.66
+    },
+    {
+     "entity": "9",
+     "description": "Protein-export membrane protein SecG",
+     "copies": 1,
+     "sequence_length": 110,
+     "residues_modelled_per_copy": 56.0,
+     "modelled_share": 0.509,
+     "atoms_per_modelled_residue": 7.7
+    }
+   ]
+  }
+ }
+}

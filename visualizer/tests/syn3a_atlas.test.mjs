@@ -41,11 +41,12 @@ const absent = !existsSync(path.join(EVIDENCE, "requests.json"))
     : false;
 
 const LEVELS = ["molecules", "cell", "tissue", "organ", "organism"];
-const STATES = ["generic", "proposed", "modelled"];
+const STATES = ["generic", "proposed", "planned", "designed", "modelled"]; // the ladder (schema/ENTRIES.md)
 const CELL_KINDS = { sphere: ["across_um"], capsule: ["length_um", "across_um"], prism: ["sides", "across_um", "radius_um", "height_um", "corner_um", "edge_um"] };
-const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes"];
+const PARTS = ["membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "proteins", "ribosome"];
 const FINDINGS = ["found", "different family", "none found", "nothing to look for"];
-const EVIDENCE_WORDS = ["reviewed entry", "named in a publication", "family signature", "similarity search"];
+// The two facts of a product (schema/SPECIES_ATLAS.md, format @2): how it was found, and what its record is.
+const FOUND_BY = ["family signature", "accessory signature", "named in a publication", "similarity search"];
 const COLUMNS = ["locus_tag", "gene", "product", "length", "protein_id", "origin", "functional_class", "essentiality", "detected", "copies_per_cell", "proteomics_id", "uniparc", "uniprotkb_identical", "interpro"];
 const MACHINE = /\/home\/|\/mnt\/|\/Users\/|\/tmp\//;
 // How a source may be used (the project's rule of 15 November 2026): only a permissive one
@@ -105,12 +106,18 @@ test("it is a single cell: molecules and one cell, with a sentence where the oth
 
 test("what Cells models of it is said plainly: the minimal-cell track by the record's decision, and nothing in the engine", () => {
   assert.ok(STATES.includes(species.modelled.state));
-  assert.equal(species.modelled.state, "proposed");
+  // Planned: D173 adopted it as a track; nothing of it is built (schema/ENTRIES.md, the ladder).
+  assert.equal(species.modelled.state, "planned");
+  assert.match(species.modelled.text, /the decision adopted it as a track/);
   assert.match(species.modelled.text, /minimal-cell track \(decision D173, 14 November 2026\)/);
   assert.match(species.modelled.text, /a note that proposes it as the first whole-cell validation organism/);
   assert.match(species.modelled.text, /Nothing of it is in the engine yet: the project's record holds an evidence audit, capability probes of the engine as it stands, and a proposed first milestone, with no engine code written for it and nothing accepted/);
-  // The note that proposes it is not in the repository, so no file of it is cited.
-  assert.ok(!/SOTA_SYN3A|docs\//.test(speciesText), "the species file cites a path of the repository");
+  // The note that proposes it is not in the repository, so no file of it is cited. The record behind its word cites
+  // tracked files of main, and nothing else in the file names a path of the repository (the entries reader holds them tracked).
+  assert.ok(!/SOTA_SYN3A/.test(speciesText), "the species file cites the note that proposes it");
+  assert.deepEqual(species.modelled.record.map((item) => item.path), ["docs/DECISIONS.md", "docs/SYN3A_MINIMAL_CELL_TRACK.md"]);
+  assert.match(species.modelled.record[0].where, /^D173\b/);
+  assert.ok(!/docs\//.test(JSON.stringify({ ...species, modelled: { ...species.modelled, record: [] } })), "the species file cites a path of the repository outside its record");
 });
 
 test("every fact has a source, and every number drawn has a fact or is called the picture's choice", () => {
@@ -128,6 +135,9 @@ test("every fact has a source, and every number drawn has a fact or is called th
   const cell = species.levels[1];
   const parts = species.cell.parts;
   for (const name of Object.keys(parts)) assert.ok(PARTS.includes(name), `${name} is not a part the viewer can draw`);
+  // Its protein molecules, for the crowd drawn to scale: the paper's estimate and the membrane's share, both in the fact.
+  assert.ok(fact("Proteins").includes(parts.proteins.count.toLocaleString("en-US")) && fact("Proteins").includes(parts.proteins.membrane.toLocaleString("en-US")), fact("Proteins"));
+  assert.deepEqual(parts.proteins.sources, ["breuer2019"]);
   // The sphere's width, the chromosome's length and the one membrane are facts.
   assert.ok(fact("Shape and size").includes(`${cell.shape.across_um * 1000} nm`));
   assert.equal(parts.chromosome_kbp, Math.round(Number(fact("Chromosome").match(/([\d,]+) base pairs/)[1].replace(/,/g, "")) / 1000));
@@ -155,7 +165,8 @@ test("each of the map's capabilities has a place or is said to be absent, with w
   for (const [id, item] of Object.entries(stated)) {
     assert.ok(["absent", "present"].includes(item.place), `${id}: ${item.place}`);
     if (item.place === "absent") assert.deepEqual(Object.keys(item), ["place", "why"], id);
-    else assert.deepEqual(Object.keys(item), ["place", "note"], id);
+    // Its molecular machines keep their place but are left out of its picture for now (the user, 17 November 2026; schema/SPECIES.md).
+    else assert.deepEqual(Object.keys(item), id === "cap.machines" ? ["place", "note", "left_out"] : ["place", "note"], id);
     assert.ok((item.why || item.note).trim(), id);
   }
   // A single cell has no tissue: every capability of tissues is absent.
@@ -215,7 +226,7 @@ const units = Object.entries(atlas.units);
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
 
 test("the atlas says what it is: format, species, date, method, and what was not copied", () => {
-  assert.equal(atlas.format, "cells.visualizer.species_atlas@1");
+  assert.equal(atlas.format, "cells.visualizer.species_atlas@2");
   assert.deepEqual(Object.keys(atlas), ["format", "species", "made", "method", "sources", "not_copied", "units", "extra"]);
   assert.equal(atlas.species.id, species.id);
   assert.equal(atlas.species.taxon, species.taxon);
@@ -277,9 +288,11 @@ test("the extra proteins are few, each says why it is there, names a known datab
       assert.ok(databases.has(key(db)), `${product.name}: ${db} is not a database the atlas names`);
       assert.ok(id && !/https?:|\//.test(id), `${product.name}: ${id}`);
     }
-    assert.ok(EVIDENCE_WORDS.includes(product.evidence), `${product.name}: ${product.evidence}`);
+    assert.ok(FOUND_BY.includes(product.found_by) && !("evidence" in product), `${product.name}: ${product.found_by}`);
+    // A protein of the genome record, with no UniProtKB entry of its own.
+    assert.equal(product.entry, "genome annotation", product.name);
     assert.ok(product.evidence_note?.trim(), `${product.name}: no evidence note`);
-    if (product.evidence === "named in a publication") {
+    if (product.found_by === "named in a publication") {
       assert.ok(product.citation?.text?.trim() && product.citation.doi, `${product.name}: no citation`);
       assert.equal(product.citation.class, "permissive", `${product.name}: named by a paper whose terms do not allow it`);
     } else {

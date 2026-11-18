@@ -1114,3 +1114,388 @@ equivalents. It therefore refuses explicit steps far below the buffer's real cap
 the closure's free amount after equilibration. That fix belongs with C's multi-ligand closure, with
 a planted case. FR-4's and FR-5's declared worlds run at 0.5 ms without meeting it, so their margin
 is checked.
+
+## 18. The pass starts: the lead's rulings at launch (18 November 2026)
+
+Move 2 has landed (`d188-move2-landed-2026-11-18`), and core-fixes is carried across it. Owners cite
+this section for who edits what, as the origin-of-life agents cite that note's §0.2.
+
+**The owner table** is `docs/CORE_SEAMS_STEP0.md` §4.2, re-checked on the landed tree.
+- **The check.** It covered 130 files: no file has two owners, and every path the table names exists
+  at its post-move home (`/mnt/workspaces/Cells/core-pass-kickoff-20261118/owners2.json`).
+- **Amended with the OL2/OL3 builder's files:**
+  - `models/assembly_lineages_v2/` and @1's `models/assembly_lineages/` (its five shared-loop files,
+    by the origin-of-life note's §0.2c rule 16);
+  - `records/relations.py`, for the next relations version;
+  - `validation/assembly_lineages_v2/`;
+  - their tests.
+- **`registry/model_table.py` is the F owner's,** for its structure, its per-law homes and the
+  ensemble's runner dispatch (§15). The one exception is the rows of `cells.assembly_lineages@1`
+  and `@2`, which the OL2/OL3 builder edits. The F owner announces any change of structure to the
+  builder first.
+
+**The note's three readings are confirmed:**
+- the F owner counts inside the seven;
+- the F owner owns `registry/kind_registry.py` whole;
+- the per-law extractions and the guard are the F owner's.
+
+**Option (a) is taken.** The operators owner lands refusal 4 per move (version 1.3, in
+`operators/compartments.py` and its test) before composition's M1. That unblocks mitochondria's M1
+about eight days sooner.
+
+**The two cross-owner hand-offs:**
+- **`KindRates`.** The F owner puts the class in the kind contract, `registry/kind_registry.py`. The
+  @3 owner replaces its definition in `models/surface_pump_v3.py` with the import, in the same
+  merge window.
+- **P1's positivity predictor** (§17). The @3 owner edits `surface_pump_v3.imex_step`, which reads
+  the quantity it differentiates. The binding owner supplies the closure's free-amount function,
+  in its new multi-ligand closure module, and the planted buffered-node case.
+
+**Seats, within seven:**
+- **At launch:**
+  - the F, @3 and operators owners;
+  - the references agent, which registers A's and C's references before either seam's first
+    output;
+  - the OL2/OL3 builder;
+  - a verification owner, for tier 3, G3 and G4 on the final tree;
+  - the FR owner, for the gate worlds below.
+- **The binding owner** starts when the FR owner's gate worlds land.
+- **The kinds owner** starts when the verification owner finishes. Its work waits for F's registry
+  and the host table anyway.
+
+**Gates added before the first landing under `operators/`, `kinds/` or @3:**
+- **The FR worlds.** Quick worlds for last night's judged acceptances join
+  `validation/tissue/composite_crossrev.py` as a new set, compared bitwise at every core landing:
+  - FR-1's compartment, with exchange, turnover and reactions;
+  - FR-3's `site_occupancy@1`;
+  - FR-10's bath schedule;
+  - FR-6's A5″ state.
+
+  FR-4 and FR-5 are already covered by crossrev's kinds set and FR's landing set.
+- **Tier 3** runs once on the final tree, the core-fixes landing, together with G3 and G4 (D194).
+  The tier-3 diff is read through both maps, and `tests/tier3_record.json` is re-frozen from that
+  run, so that a later regression can be told from the moves' fallout.
+
+**FR-18, @3's energy check.**
+- The check is too strict at moderate steps, refusing the replication's junction worlds at
+  dt × rate 0.08–0.31. It is also too loose for small misbookings: FR-1's and FR-3's judges found
+  that it admits a 10⁻⁶ work plant.
+- It is a criterion-first scratch probe for the @3 owner, with no code until the lead rules. The
+  probe reads G1's and the judged worlds' steps and asks whether a tolerance from the step's own
+  error estimate admits FR-18's worlds and refuses the plant.
+
+**Every landing:** the tier record is folded with `scripts/test_tiers.py tiers --base`, and each
+landing is gated at its merged head.
+
+## 19. The lead's rulings for the references agent's plan (18 November 2026)
+
+These are the references agent's eight questions on seams A and C. The builders cite this section
+too.
+
+1. **What A's first outputs run.** The engine runs:
+   - A's two first laws;
+   - synthetic test laws built from the references' published diagram inputs (states, edges, rate
+     expressions and constants). These are inputs, never expected values. They are registered
+     through F's registry in a test-only namespace that is never shipped.
+
+   A factored cycle law declares its diagram's Hill cycles (§16), so the kind can compute each
+   cycle's Π⁺ and Π⁻ as functions of state, for the parse check and the one-way fluxes. A probe
+   records, at the registered states:
+   - each cycle's Π±;
+   - J⁺ and J⁻;
+   - each edge's one-way rates, where the law is a diagram;
+   - S and ΔG.
+
+   The kinds owner designs the API to carry these contents.
+2. **Tolerances.**
+   - **Wegscheider at parse** is decided exactly. For mass-action diagrams the residual is affine
+     in ln c and V, so it is decided algebraically or at d + 1 generic states, never at one
+     reference state.
+     - The admitted band is a rounding bound relative to the residual's terms, a few tens of eps of
+       their absolute sum.
+     - The kinds owner states it, and the references register the honest stand-in's place inside
+       it.
+   - **The population guard's allowance** is also a rounding bound derived from its terms, stated
+     the same way. It is never a fixed tolerance.
+   - **The multi-ligand closure converges on its residual relative to the totals,** as B4 does
+     (|g|/T ≤ 1e-13). The references compare solutions with floors that include the conditioning.
+3. **The closure's energy term when binder rows are moved.** The binding owner's first design
+   statement rules this, before C's first output, and the lead confirms it.
+   - The references' reading avoids double counting:
+     - the closure books the speciation part only;
+     - the cycle kind books each moved row's standard part (§3.4).
+   - The references register G* and its derivative property now, and the booked-term row by a dated
+     amendment once the term is ruled.
+4. **P1's buffered node** is the references' own synthetic node, with rate-normalised thresholds as
+   planned. STEP0 §5.2's world is not read.
+5. **How a version-1-form entry selects the general layout** is the kinds owner's design, stated
+   before A's first output. The references' expected rates hold for any selection mechanism.
+6. **A form below the base,** with a negative ligand count such as PO4³⁻ from HPO4²⁻, is admitted. It
+   is legitimate speciation, provided the conservation and charge identities hold with the negative
+   count (z_form = z_base + Σ n_L z_L).
+7. **No engine output exists yet for A or C.** The kinds and binding owners have not started.
+8. **Synthetic constants throughout,** labelled under D152 §2.4. The diagrams are self-verified by
+   the two methods. Hill and King–Altman are cited as the design cites them, marked unread.
+
+**The offered rows:**
+- **Taken now:** the slopes against finite differences, with a wrong-slope plant, and the
+  parse-time charge and moiety checks. Both are cheap and catch real classes.
+- **Later, with composition's references or when A and C land:** the two composed worlds with
+  Radau, DOP853 and a 50-digit ledger.
+
+**Order.** Register in whichever order fits, before either builder's first output. The binding
+owner's seat comes after the kinds owner's or near it (§18), so C need not go first.
+
+**Amended the same day (the lead, 16:52 UTC), on the operators and @3 owners' first
+hand-backs:**
+- **The operators owner's order follows D195 as amended:**
+  1. refusal 4 per move (version 1.3, built);
+  2. B1's operator part;
+  3. composition's M2–M5.
+
+  Composition's M1 may proceed while B1 waits for F's roles API and the @3 owner's field roles.
+  This corrects the order given above and in the brief. It keeps composition's 12–15 days off the
+  pass's critical path.
+- **The step terms that refusal 4 version 1.3 reads are added to the law registry by the F owner:**
+  - `stage_term`, `material_term`, `charge_bound` and `material_bound` on the cycle and route law
+    types, each a kernel's name or None. The bound is split into two now, while the fields are being
+    added;
+  - the two declarations in `kinds/passive_routes.py`, the leak's `stage_term` and the neutral law's
+    material bound.
+
+  The second is a recorded exception to the owner table, made while the kinds owner has not
+  started. Version 1.3 lands after these, gated with crossrev's kinds and acceptances sets
+  identical.
+- **A source kind's admission trusts that its `moved_rows` lists every move,** as @3's one-writer
+  rule and exact booking already do. The @3 owner adds a later guard that a kind's rates touch only
+  its declared rows.
+- **Composition's questions (its §13.4)** take the operators owner's recommendations, which are
+  §4.5's answers:
+  1. @3's pump rates are gated by the view's `membrane_active`, where a world declares a closer
+     beside a pump law. This is the @3 owner's work.
+  2. At retirement, history-role fields are added back through `adjust_inner`, by field roles.
+  3. @3's built-in pumps stay @3's in this pass.
+  4. Kinds beside closers are handled by declared field roles, with a hook only where no role fits.
+  5. Transporter populations become entities with units on their own axis, in seam A.
+  6. Held fuel at division is split by the anchor rule.
+  7. R5 with growing capacity takes the schedule's largest capacity, in M6.
+- **Ownership added to the operators owner:**
+  - `validation/tissue/composition_matrix.py`, `docs/PUMP_COMPOSITE.md` and
+    `tests/unit/test_composition_matrix.py`;
+  - the amendment or split of `tests/unit/test_secreted_species.py` at M3. Its qualified assertions
+    are kept, and any change is disclosed;
+  - the composition tests that go with its modules.
+- **Composition's program comparison (its §9)** uses the pass's base, e16e26bb, as its baseline.
+- **The composition design's probes** stay as evidence unless a milestone's test uses them.
+- **Composition's references** are the references agent's after A's and C's, as in its brief. If M2
+  gets ahead, a second references agent takes them when a seat frees.
+- **The @3 owner** may make the one-line law-ID fix in `kinds/ph_condition.py:217`. It lands in the
+  same merge window as G's "@" refusal in the run-view writer, a recorded exception while the kinds
+  owner has not started.
+
+**Amended the same evening (the lead, 17:07 UTC), on the F owner's questions:**
+- **Law registration (R1).** Law modules are inert: `LAW = …`, importing only `cells.modules` and
+  `cells.laws.*`. Each is listed as a law home in the model table, and the loader registers it,
+  recording its module. `cells.modules` becomes lazy (PEP 562) and keeps object identity.
+- **The guard.**
+  - `laws/` is enforced now.
+  - `kinds/` is held to a recorded per-file list. A new violation fails, and so does a stale entry.
+  - The kinds and binding owners delete their own entries in the F owner's guard test, a recorded
+    exception, as they rewrite their imports against names the surface adds on request.
+- **The Kv1 port pilot.** The F owner builds the law side, inert until @3's parser reads the
+  registry. That is a hand-off to the @3 owner, which also takes
+  `definitions/cell_replacement_spec.py` for it.
+  - Codes 5–9; `rk4_step_s` = 2.5 µs, from the legacy family's rule.
+  - The citation is BETSE v1.5.0's `vg_k.py` as read (BSD-2-Clause). The primaries are named as
+    BETSE names them, unread. No BETSE code is copied.
+- **The byte-keeping ruling** is superseded by the moves note's §20 (D198, 17 November), and no
+  live pin remains. The F owner's brief had it wrong. The per-law kernels are the single copy, and
+  `kv1_channels.py`'s dispatcher delegates to them (§8.6).
+- **Extended exception.** The F owner moves the passive kind's two declarations from
+  `kinds/passive_routes.py` into their law modules. Its edit there is only the replacement with
+  imports, before the kinds owner starts.
+- **Deferred.** `ph_conditioned_factor@1` and `bounding_patch_damage@1` go to B1. The ensemble's
+  dispatch through the model table comes back as a design note first.
+
+**Amended the same evening (the lead, 17:18 UTC), on the user's go (D217–D220):**
+- **B1′ is admitted** (D218). It stays the operators owner's, after B1 and alongside composition's
+  M2–M5. Each production-feedback loop declares its evaluation timing and operating range, and is
+  verified whole: a reference, timestep refinement and a feedback-cut control. Two refusals are kept:
+  unsupported instantaneous cycles, and a population's availability times its own conducting
+  abundance.
+- **FR-2's split-and-merge kernel** is built inside B1's operator part (D217). That adds about 1–1.5
+  agent-days to the operators owner, which is on the critical path.
+- **The FR-18 energy-check probe** moves to right after B1's @3 part, since it now also gates FR-8's
+  choice of method (D217).
+- **Tier 3 before the first core landing.** What the rule protects is the frozen snapshot of the
+  core-fixes landing (e16e26bb), on which tier 3, G3 and G4 are running. Landings may proceed before
+  their classification finishes. A later tier-3 run compares against the record re-frozen from that
+  snapshot, so a landing's own tier-3 effects stay distinguishable.
+- **The landing order.** The F owner's step terms land first. The operators and @3 owners then merge
+  main before gating, so each gate is at its merged head.
+
+**Amended the same evening (the lead, 17:32 UTC), on the Kv1 extraction's finding:**
+- **XLA on CPU rewrites division by a constant as multiplication by its reciprocal,** in eager and
+  jit alike. Division by a gathered array stays exact.
+- **So delegating `kv1_channels.py`'s dispatcher** to scalar-constant per-law kernels would move the
+  legacy catalogue families' device outputs by up to 32 ulps.
+- **Ruled: one source for the numbers, rather than one copy of the formula.**
+  - The per-law modules hold the coefficients, and the dispatcher builds its gather arrays from the
+    same floats. Every existing record and program stays bitwise (D148).
+  - The per-law kernels are the laws' math. They are held bitwise to the dispatcher under NumPy,
+    and within a stated ulp bound under JAX, with a plant beyond it.
+- **The dispatcher's formula is a recorded temporary second form.** It retires with the legacy
+  catalogue families in the approved legacy-removal batch. A test refuses a sixth law in it.
+
+**§19 amended the same evening (the lead, 17:33 UTC), on the references agent's
+registration:**
+- **J⁻ comes from the contract.** The kind forms J⁻ = J⁺·e^{ΔG/RT} (§16), never a diagram's own
+  backward flux. That flux differs by rounding, and booking it would show J·ΔG > 0 near equilibrium
+  for an admitted law.
+- **Negative ligand totals** arise legitimately from a form below its base (§19 item 6). For the
+  rows a binding closure holds:
+  - the closure owns the whole energy term, and @3 books no per-row ideal term there;
+  - positivity guards use the admissible floor (Σ T_B·min n), not zero.
+
+  The exact booked term is still the binding owner's first design statement (§19 item 3).
+- **A's two first laws** are `proton_atp_mass_action_positive@1` and
+  `atp_driven_transporter_mass_action_positive@1`. The neutral law's version-1 rows may rest on
+  R-fuel's specification.
+- **Two blind spots are registered now,** by a dated amendment before A's first output: a
+  finite-fuel population, so the stored rate has power, and a population with N = b.
+
+**Amended the same evening (the lead, 17:42 UTC), on the @3 owner's second hand-back:**
+- **D's heat-booking classes** gain membranes, pumps and calcium pumps beside channels and
+  junctions. Each admits `trapezoid_nonnegative@1`, since their power is never negative. This is the
+  F owner's switch.
+- **Recorded exceptions for the @3 owner:**
+  - the carried `heat_bookings` line in `definitions/surface_pump_water_spec.py` and
+    `surface_pump_water_v2_spec.py`, two files with no owner;
+  - two lines of `kinds/ph_condition.py`. The kind is the word "factor", and the law ID moves
+    under `laws`.
+- **The moved-rows guard.** Each kind's rates are checked against its `moved_rows` at binding, on the
+  host, at the initial state and at a perturbed one. Programs do not change. A per-stage check
+  follows only if a real case needs it.
+- **The Kv1 pilot's @3 side.** `LAW_CODES`, `GATE_COUNTS` and `LAW_PERMEABILITIES` stay today's five
+  by name, and a later law is checked with its structure. So the code-0 dispatch, the structure-free
+  domain check and the replacement operator's tables are unchanged.
+
+**Amended the same evening (the lead, 17:51 UTC):**
+- **The ensemble's dispatch through the model table (§15's follow-up): option (a).**
+  - A new `ensemble` column, "module:object" or None, names a family's EnsembleAdapter: the
+    ensemble's eight hooks and its kind. `ensemble/families.py` builds its models from the adapter
+    rows and falls back to today's chains.
+  - The F owner edits `ensemble/families.py`, and `plan.py` and `worker.py` only where the dispatch
+    needs them. This is a recorded exception, since `ensemble/` has no owner in the pass.
+  - GARD's adapter comes after, from the OL2/OL3 builder.
+- **`operators/site_occupancy.py`.** The FR owner fixes its memory estimate, from an external review
+  of 18 November, as a recorded assignment. The file then passes to the binding owner, since FR-3's
+  site binding is seam C's (§5.3).
+
+**Amended the same evening (the lead, 18:31 UTC), on the gap-junction bundle's, the operators
+owner's and the FR owner's hand-backs.** The times of this section's earlier amendments were
+corrected to their commits' times on the same evening, since several had been written ahead of the
+clock.
+- **The replication set's baseline is fixed, and every head with a `src/` diff must reproduce it.**
+  - The baseline (`crossrev-replication-20261118/baseline-34a7fe85`) was recorded from main
+    baa45ff0's `src/`, before any core-pass head.
+  - It is never re-recorded to clear a difference. A difference is a finding, and an intended
+    program change is a dated renewal, with its reason, decided before landing.
+  - Before a head with a `src/` diff lands, its trial merge must regenerate the set bit for bit:
+    55 of 55 files identical, with equal file listings, not an exit code alone. While
+    gap-junction-bundle is off main, the trial merge includes it. The lead runs the check
+    (`replication_check.sh`, proved to refuse a planted difference).
+  - Heads are found by their diff, not by their owner.
+  - The set's install at landing re-checks main as a whole, so landing order no longer carries the
+    safety.
+- **M1 lands as `core-pass-operators-b1` at 42ca1c94.**
+  - Its lane-B gate covers 497a97e5, 20c3103c and cd983bad.
+  - It brings the split-and-merge kernel (e12539fc, c7edcf2e), a pure function that nothing calls
+    yet.
+  - 497a97e5's two units were stopped.
+- **Recorded exceptions to the owner table, for crossrev:**
+  - the gap-junction bundle owner edits `validation/tissue/composite_crossrev.py`, the lead's file,
+    for the replication set;
+  - the FR owner edits that file and the four operator crossrev modules (`division_crossrev`,
+    `secreted_species_crossrev`, `species_reactions_crossrev` and
+    `regulated_availability_crossrev`) for the external review's findings 2 and 3.
+
+  No other head touches those five files.
+- **The review's renewal (findings 2 and 3) comes after the replication set's install.**
+  - **One implementation:** the schedule-timing and independent-state helpers take in the
+    replication set's `replication_bindings` and `_replication_traced`, rather than sitting beside
+    them.
+  - **The renewal rule, for every set:** at the renewal's `src/`, each set's old format first
+    reproduces the record of record bit for bit. Only then is the new format recorded, on the same
+    tree. A set whose files do not change is left as it is.
+  - Seam D's first landing follows the renewal.
+
+**§19 amended the same evening (the lead, 19:52 UTC), on the binding owner's design statement 1**
+(core-pass-binding-20261118/design_statement_1.md, sent 19:43 UTC before any output of C). It was
+confirmed with the advisor.
+- **The booked term (item 3):** E_c = G* − Σ_r T_r μ°′_r over the rows a closure holds
+  (= S_c + Σ_r ideal_r, where S_c = G* − Σ_r own_r).
+  - Its derivatives are the free forms' potentials in @3's frame. So the references' reading ("the
+    closure books the speciation part only") and the 17:33 ruling ("the closure owns the whole
+    energy term") are one rule in two splits. Standard parts are never the closure's: modes book
+    them.
+  - Version 1 keeps B4's formula bit for bit. The kernel subtracts ideal-only row terms
+    (`inner_row_energy_pJ`), then the proton's standard part, so B4 books S_c + Σ_B T_B μ°′_B,
+    whose binder part is constant while binder rows are inert. Version 2 drops that binder part.
+- **Phase 1 books in B4's split; the 17:33 split becomes phase 2.**
+  - In phase 1 the closure books S_c, and @3 books its ideal terms on held rows.
+  - Phase 2, in which the closure books E_c whole and @3 no ideal term there, comes when a consumer
+    needs a held total at or below zero. It needs edits in @3's, the operators' and two unowned
+    files, and every planned consumer has positive totals.
+  - **Conditions on phase 1:**
+    - a world-level check that the closure's term plus @3's ideal terms on held rows equals the
+      references' E_c row;
+    - a planted test that a held total at or below zero is refused before any logarithm is taken;
+    - the kernel's functions (G*, E_c, the free amounts and the floors) held to the references at
+      every registered state now, including seam C's S4[10], whose H⁺ total is negative. Only the
+      world path refuses there.
+- **A correction to 17:33:** the per-ligand admissible floor Σ T_B·min n is necessary but not
+  sufficient for mixed-sign counts. The joint condition is the closure's own validity, which its read
+  reports.
+- **Convergence (§19 item 2, changed):** |g_L| ≤ 1e-13 A_L, with A_L = x_L + Σ|n| c. It equals
+  1e-13 |T_L| wherever every count is ≥ 0. The references amend their criterion by a dated
+  amendment.
+- **The envelope:** the first-order lag of the linearised binding network, with k_on per (binder,
+  ligand); it reduces to B4's for one two-form buffer.
+  - Every form must be reachable from its base by unit steps, refused at parse otherwise.
+  - The references register a two-ligand kinetic reference before C's envelope output.
+- **§5.2's admission:** an optional template field `forms` ("base" or None) on CycleLaw and RouteLaw.
+  - It is F's file, so it comes as one F commit after 8e11638a lands, with BindingLaw's fields and
+    the law homes.
+  - Charge and moieties are checked by one registry function, shared with A's parse.
+- **P1's predictor (narrowing §18's line):**
+  - The free-amount predictor applies only where the general layout is declared.
+  - FR-4 and FR-5 keep today's predictor, so §17's gap stays open for them, with its margin check,
+    until they move to the general layout by a dated renewal.
+- **The name:**
+  - The kind stays `cells.rapid_proton_buffer@1`, and every recorded string is kept. It now hosts
+    general binding, a naming debt left to module stage 1's aliases.
+  - The general read is a new law and read ID, `rapid_binding@1`. A mover at a general closure node
+    whose reads lack it is refused at parse, and that is planted.
+- **Gating C's closure (item 3):** three references amendments must be on main before any output of
+  the general closure: the booked-term row, the convergence criterion and the two-ligand kinetic
+  reference. Item 2, the registry's forms, proceeds now.
+- **Recorded limits:** the general layout refuses @3's own routes on every held ligand and binder
+  row at a closure node. Until seam A and the `forms` field exist, version 2 serves speciation and
+  reads only. Transport of Ca²⁺ or Mg²⁺ through a closure node, such as cardiac Ca²⁺ buffering, waits
+  for them.
+- **Amended at 20:09 UTC, on the binding owner's first hand-back.** The limits are widened by what
+  exists today.
+  - **Refused at parse at a general closure node:**
+    - @3's own routes and its pumps: the calcium pump moves its Ca²⁺ row in the step, and the Na/K
+      pump its own rows;
+    - in-step kind moves whose law's reads lack `rapid_binding@1`;
+    - operators that move or name a held row.
+  - **Admitted:** operators that name no row and change totals or volume uniformly. These are
+    replacement, division, the lumen's fill, water, insertion, current injection and the bridge
+    closure. The closure re-solves at the next stage, and an inadmissible total refuses the step
+    there.
+  - **Before any such operator runs at a general closure node** (item 3), it is shown, with one
+    planted dilution, that the energy ledger closes or refuses and never drifts.
+  - **The general parse may come before the three reference amendments:** declaration, admission
+    and refusals, with no closure solve and no number from it. The gate on C's outputs is unchanged.

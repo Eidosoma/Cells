@@ -1,11 +1,11 @@
 {
- "format": "cells.visualizer.species_atlas@1",
+ "format": "cells.visualizer.species_atlas@2",
  "species": {
   "id": "mpneumoniae",
   "label": "M. pneumoniae",
   "organism": "Mycoplasma pneumoniae M129",
   "taxon": 272634,
-  "plain": "A small bacterium of the human airways with 688 proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are machines of animal cells, and it has none of them."
+  "plain": "A small bacterium of the human airways with 688 proteins in its genome record, audited beside JCVI-syn3A for measured data to validate Cells against; the units of the law inventory are channels, pumps and junctions of animal cells, and it has none of them."
  },
  "made": "2026-11-15",
  "method": [
@@ -62,22 +62,22 @@
  "units": {
   "U01": {
    "finding": "none found",
-   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
    "products": []
   },
   "U02": {
    "finding": "none found",
-   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
    "products": []
   },
   "U03": {
    "finding": "none found",
-   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
    "products": []
   },
   "U04": {
    "finding": "none found",
-   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098, IPR000920). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
+   "note": "None of the 688 protein products of its genome carries the signature of voltage-gated sodium channel alpha subunits and sodium channel beta subunits (IPR001696, IPR027098). No UniProtKB entry of any mollicute, the class of bacteria it belongs to, carries them either. The unit's human candidates carry them, so the search finds the family where it exists. No ion channel of any family searched was found in this organism: its ions cross the membrane through transporters and pumps.",
    "products": []
   },
   "U05": {
@@ -318,7 +318,8 @@
     }
    ],
    "length": 518,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_600, product \"ATP synthase alpha chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit alpha\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain).",
    "citation": null,
    "why": "Part of the cell's F-type ATP synthase, which sits in its one membrane; four of its subunits are listed here. A model of the cell's metabolism published in 2020 has this machine run in reverse, spending ATP to pump protons out; that is the model's result, not a measurement. The law inventory has no F-type ATPase."
@@ -334,7 +335,8 @@
     }
    ],
    "length": 475,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_598, product \"ATP synthase beta chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit beta\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000194 (ATPase, F1/V1/A1 complex, alpha/beta subunit, nucleotide-binding domain).",
    "citation": null,
    "why": "The other subunit of the ATP synthase's catalytic head."
@@ -350,7 +352,8 @@
     }
    ],
    "length": 105,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_603, product \"ATP synthase C chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit c\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000454 (ATP synthase, F0 complex, subunit C).",
    "citation": null,
    "why": "The ring of the ATP synthase that carries protons across the membrane."
@@ -366,7 +369,8 @@
     }
    ],
    "length": 293,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_604, product \"ATP synthase A chain\" in the genome record. Its reviewed UniProtKB entry names it \"ATP synthase subunit a\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000568 (ATP synthase, F0 complex, subunit A).",
    "citation": null,
    "why": "The membrane subunit of the ATP synthase beside the ring, where protons enter and leave."
@@ -382,7 +386,8 @@
     }
    ],
    "length": 872,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_209, product \"cation-transporting P-type ATPase\" in the genome record. Its reviewed UniProtKB entry names it \"Probable cation-transporting P-type ATPase\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR001757 (P-type ATPase).",
    "citation": null,
    "why": "A pump of the same superfamily as the sodium-potassium and calcium pumps of animal cells. Its sequence carries the superfamily's signature and none of the signatures of those pumps' branches, so which ion it moves is not known here. It is the only P-type ATPase in the genome."
@@ -398,7 +403,8 @@
     }
    ],
    "length": 565,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_460, product \"KtrB\" in the genome record. Its reviewed UniProtKB entry names it \"Uncharacterized cation transporter MG322 homolog\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR003445 (Cation transporter).",
    "citation": null,
    "why": "The membrane part of what the genome record calls the cell's potassium uptake system, KtrAB. That is how a cell without a sodium-potassium pump or a potassium channel would take up potassium; UniProt's curators leave the protein uncharacterised."
@@ -414,7 +420,8 @@
     }
    ],
    "length": 231,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_461, product \"KtrA, K+ Na+ uptake\" in the genome record. Its reviewed UniProtKB entry names it \"Uncharacterized protein MG323 homolog\", with UniProt's level of evidence \"predicted\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR006037 (Regulator of K+ conductance, C-terminal).",
    "citation": null,
    "why": "The cytoplasmic partner that the genome record gives the potassium uptake system."
@@ -430,7 +437,8 @@
     }
    ],
    "length": 940,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_207, product \"PTS system, glucose-specific IIABC component\" in the genome record. Its reviewed UniProtKB entry names it \"PTS system glucose-specific EIICBA component\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR003352 (Phosphotransferase system, EIIC).",
    "citation": null,
    "why": "The membrane part of the system that brings in glucose, the cell's main fuel. Its ATP comes from fermenting that sugar."
@@ -446,7 +454,8 @@
     }
    ],
    "length": 264,
-   "evidence": "reviewed entry",
+   "found_by": "family signature",
+   "entry": "reviewed",
    "evidence_note": "Locus MPN_043, product \"glycerol uptake facilitator\" in the genome record. Its reviewed UniProtKB entry names it \"Probable glycerol uptake facilitator protein\", with UniProt's level of evidence \"inferred from homology\": the entry is curated, and its function is assigned from its sequence, not measured in this organism. The sequence carries IPR000425 (Major intrinsic protein).",
    "citation": null,
    "why": "The one channel-like protein found here: a member of the family of water and glycerol channels, annotated as the cell's glycerol uptake facilitator. It is not an ion channel, and the law inventory has no unit for it; its water permeability unit is a lumped property with no protein."

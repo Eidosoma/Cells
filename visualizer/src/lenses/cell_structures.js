@@ -20,6 +20,7 @@
 // draws after it does not move when a structure changes.
 
 import * as THREE from "../three.js";
+import STRUCTURES from "../../data/parts/structures.json" with { type: "json" };
 
 const UP = new THREE.Vector3(0, 1, 0);
 const radial = (angle) => new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
@@ -32,16 +33,20 @@ const turned = (random) => new THREE.Quaternion().setFromEuler(new THREE.Euler(r
 const OPEN = Math.PI / 2 - 0.52 - 0.3, WEDGE = Math.PI / 3;
 
 // The structures a capability is drawn at, with what a cell must hold to have it (cell.parts),
-// and the reason given where it does not. Read only where a species' file says nothing of the capability.
-const NEEDS = {
-  nucleus: { holds: (parts) => Boolean(parts.nucleus), why: (parts) => (parts.chromosome_kbp ? "It has no nucleus: its chromosome lies free in the cytoplasm." : "It has no nucleus.") },
-  golgi: { holds: (parts) => organelles(parts).includes("golgi"), why: () => "It has no Golgi apparatus." },
-  vesicles: { holds: (parts) => organelles(parts).includes("golgi"), why: () => "It has no Golgi apparatus for vesicles to carry proteins through." },
-  er: { holds: (parts) => organelles(parts).includes("er"), why: () => "It has no endoplasmic reticulum." },
-  mitochondria: { holds: (parts) => organelles(parts).includes("mitochondria"), why: () => "It has no mitochondria." },
-};
+// and the reason given where it does not: one table, read here and by the species reader
+// (data/parts/structures.json; tools/lib/species.py). Read only where a species' file says
+// nothing of the capability.
+const NEEDS = Object.fromEntries(
+  Object.entries(STRUCTURES.structures).map(([part, need]) => [
+    part,
+    {
+      holds: (parts) => (need.held_when === "nucleus" ? Boolean(parts.nucleus) : organelles(parts).includes(need.held_when.replace(/^organelle:/, ""))),
+      why: (parts) => (need.why_free_chromosome && parts.chromosome_kbp ? need.why_free_chromosome : need.why),
+    },
+  ])
+);
 /** The organelles a cell holds: its file's list, or, where it gives none, an animal cell's where it has a nucleus. */
-export const organelles = (parts) => parts.organelles || (parts.nucleus ? ["er", "golgi", "mitochondria"] : []);
+export const organelles = (parts) => parts.organelles || (parts.nucleus ? STRUCTURES.nucleated_organelles : []);
 
 /**
  * The capabilities that have no place in a species' cell because it does not hold the
@@ -117,9 +122,9 @@ function merged(list) {
  * upward, so that it is `thickness` wide and `height` tall with rounded edges. The path's
  * points lie at y = 0; the wall is centred there.
  */
-function wallAlong(points, thickness, height, closed = false) {
+function wallAlong(points, thickness, height, closed = false, { segments = null, around = 10 } = {}) {
   const curve = new THREE.CatmullRomCurve3(points, closed, "centripetal");
-  const geometry = new THREE.TubeGeometry(curve, Math.max(24, Math.round(curve.getLength() / (thickness * 0.9))), thickness / 2, 10, closed);
+  const geometry = new THREE.TubeGeometry(curve, segments ?? Math.max(24, Math.round(curve.getLength() / (thickness * 0.9))), thickness / 2, around, closed);
   const stretch = height / thickness;
   const position = geometry.attributes.position, normal = geometry.attributes.normal, n = new THREE.Vector3();
   for (let at = 0; at < position.count; at++) {
@@ -146,11 +151,39 @@ function arc(centre, first, second, radius, from, to, steps = 24) {
   });
 }
 
-/** The two subunits of a ribosome: a large one, and a small one that sits on it. Its long way is up. */
-function subunits(radius) {
-  const large = new THREE.SphereGeometry(radius, 12, 9).scale(1, 0.84, 1);
-  const small = new THREE.SphereGeometry(radius * 0.7, 10, 7).scale(1.18, 0.62, 0.92).translate(0, radius * 0.86, 0);
+/**
+ * The two subunits of a ribosome: a large one, and a small one that sits on it. Its long way is up.
+ * `light` draws each with fewer faces (128 triangles in place of 312), for a small cell that holds
+ * thousands of them, each a few pixels across at its stop.
+ */
+function subunits(radius, light = false) {
+  const large = new THREE.SphereGeometry(radius, light ? 8 : 12, light ? 6 : 9).scale(1, 0.84, 1);
+  const small = new THREE.SphereGeometry(radius * 0.7, light ? 6 : 10, light ? 5 : 7).scale(1.18, 0.62, 0.92).translate(0, radius * 0.86, 0);
   return { large, small };
+}
+
+/**
+ * A ribosome as its species' file measures it (`ribosome`, schema/SPECIES_SHAPES.md): each subunit the ellipsoid of the same
+ * spread as its atoms, its centre and its own axes as in the structure, in the particle's own frame (tools/measure_particle.py:
+ * y from the large subunit's centre to the small one's), `scale` units to a nanometre. With `light` each has fewer faces, for a
+ * cell that holds thousands of them (128 triangles a ribosome, 80 and 48); without it, round at the size of an enlarged one, of which
+ * few are drawn (704). Also how far the particle reaches from its middle, in units.
+ */
+function measuredSubunits(shape, scale, light = false) {
+  const make = (part, [around, down]) => {
+    const geometry = new THREE.SphereGeometry(0.5, around, down).scale(...part.across_nm.map((value) => value * scale));
+    const [a, b, c] = part.axes.map((axis) => new THREE.Vector3(...axis));
+    geometry.applyMatrix4(new THREE.Matrix4().makeBasis(a, b, c));
+    return geometry.translate(...part.centre_nm.map((value) => value * scale));
+  };
+  // Each sphere's rings fall on its equator and its meridians on its axes, so each ellipsoid reaches its measured size along its own axes.
+  const large = make(shape.large, light ? [8, 6] : [16, 12]), small = make(shape.small, light ? [8, 4] : [16, 12]);
+  let reach = 0;
+  for (const geometry of [large, small]) {
+    const position = geometry.attributes.position, point = new THREE.Vector3();
+    for (let index = 0; index < position.count; index++) reach = Math.max(reach, point.fromBufferAttribute(position, index).length());
+  }
+  return { large, small, reach };
 }
 
 /** A random walk inside a ball, smoothed: a strand of chromatin, or a free chromosome's thread. */
@@ -190,10 +223,18 @@ export function buildStructures(env) {
     out.chromosome = chromosome(env, random, chromatinPart);
     out.drawn[chromatinPart] = out.chromosome.said;
   }
-  if (env.organelle("er")) out.studs = reticulum(env, random);
+  // An animal cell's Golgi stands beside the nucleus, round its centrosome (cell_layout.js): its ER leaves it a window.
+  if (env.organelle("golgi") && env.nucleusAt && env.centrosomeAt) env.golgiWindow = golgiWindow(env);
+  if (env.organelle("er")) {
+    const er = reticulum(env, random);
+    out.studs = er.studs;
+    out.drawn.er = er.said;
+  }
   if (env.organelle("golgi")) {
-    const golgi = stack(env, random);
+    const golgi = golgiOf(env, random);
     out.drawn.golgi = golgi.said;
+    // An animal cell's centrosome, drawn as scenery that can be chosen: the scenery part lists it (parts/scenery.js).
+    if (golgi.centrosome) out.scenery = [golgi.centrosome];
     if (known("vesicles") && env.has("vesicles")) out.drawn.vesicles = carriers(env, random, golgi);
   }
   const made = ribosomes(env, random, out, known("ribosomes") && env.has("ribosomes"));
@@ -394,6 +435,7 @@ function chromosome(env, random, partName) {
   const { ctx, frame, parts } = env;
   const { at: coreAt, radius: coreRadius, reach: coreReach } = env.core;
   const thread = ctx.part(partName, coreAt.clone().add(new THREE.Vector3(0, coreRadius + 0.3, 0)));
+  if (env.fine) return chromosomeInSlab(env, random, thread);
   // Regulation acts there, so it is where the regulatory circuits are drawn. The thread is a
   // tangle through the cell's middle; its true length would fill the cell far more.
   const turns = Math.round(Math.min(900, Math.max(60, parts.chromosome_kbp / 2)));
@@ -435,41 +477,52 @@ function chromosome(env, random, partName) {
 /**
  * The rough endoplasmic reticulum: one sheet folded to and fro round the nucleus, that runs
  * on from the nucleus's outer membrane, with its lumen joined to the space in the envelope.
- * Returns where the ribosomes on it sit. To scale, tubules reach on through the cell.
+ * Where an animal cell's Golgi stands beside the nucleus (env.golgiWindow, the half-angle it
+ * takes, seen from the nucleus's middle), the sheet is two arms, one each side of it, each
+ * running on from the envelope. Returns where the ribosomes on it sit, where its sheets lie (for
+ * the carriers that leave it) and what the panel says was drawn. To scale, tubules reach on
+ * through the cell.
  */
 function reticulum(env, random) {
-  const { ctx, real, style } = env;
+  const { ctx, real, style, frame } = env;
   const c = env.nucleusAt, shape = style.er, facing = env.erFacing;
-  const er = ctx.part("er", c.clone().addScaledVector(radial(facing), shape.first + shape.gap * 1.5).setY(env.cut + shape.height * 0.45));
+  const spans = Array.from({ length: shape.layers }, (_, layer) => Math.max(0.9, shape.span - layer * shape.shrink));
+  const open = env.golgiWindow || 0;
+  // Each arm turns back at the end where its sheet before stopped; `way` is the way its first sheet runs from the nucleus.
+  // Without a window, one arm, whose first sheet begins at the nucleus on its far side, away from where the nucleus is opened.
+  const arms = open ? [{ start: facing + open, way: 1 }, { start: facing - open, way: -1 }] : [{ start: facing + spans[0] * 0.75, way: -1 }];
+  const spanOf = (layer) => (open ? Math.max(0.35, (spans[layer] - 2 * open) / 2) : spans[layer]);
+  const er = ctx.part("er", c.clone().addScaledVector(radial(open ? facing + open + spanOf(0) / 2 : facing), shape.first + shape.gap * 1.5).setY(env.cut + shape.height * 0.45));
   const sheet = er.material({ hue: "bioEr", roughness: 0.4, side: THREE.DoubleSide, thin: 0.8, texture: "grain" });
   const y = env.cut + shape.height * 0.38; // the middle of the sheet's height: it stands on the cut face, a little below it
-  // Each sheet turns back at the end where the one before it stopped. The first begins at the nucleus, on its far side.
-  const spans = Array.from({ length: shape.layers }, (_, layer) => Math.max(0.9, shape.span - layer * shape.shrink));
-  const sheets = [];
-  let end = facing + spans[0] * 0.75; // the far end, away from where the nucleus is opened
-  for (let layer = 0; layer < shape.layers; layer++) {
-    const from = end, to = layer % 2 ? from + spans[layer] : from - spans[layer];
-    sheets.push({ radius: shape.first + layer * shape.gap, from, to });
-    end = to;
-  }
   const flat = (angle, radius) => c.clone().addScaledVector(radial(angle), radius).setY(0);
-  const path = [];
-  // From inside the outer nuclear membrane, out to the first sheet.
   const nuclear = env.nucleusAt ? style.nucleusRadius : 0;
-  path.push(flat(sheets[0].from + 0.16, nuclear * 0.86), flat(sheets[0].from + 0.08, (nuclear + sheets[0].radius) / 2));
-  sheets.forEach((one, index) => {
-    const steps = Math.max(8, Math.round(Math.abs(one.to - one.from) * one.radius * 3));
-    for (let step = 0; step <= steps; step++) path.push(flat(one.from + ((one.to - one.from) * step) / steps, one.radius));
-    const next = sheets[index + 1];
-    if (next) {
-      // The turn: out past the sheet's end and round to the next one.
-      const beyond = Math.sign(one.to - one.from) * (shape.gap * 0.55) / one.radius;
-      path.push(flat(one.to + beyond, one.radius + shape.gap * 0.5));
+  const sheets = [];
+  for (const arm of arms) {
+    const own = [];
+    let end = arm.start;
+    for (let layer = 0; layer < shape.layers; layer++) {
+      const from = end, to = layer % 2 ? from - arm.way * spanOf(layer) : from + arm.way * spanOf(layer);
+      own.push({ radius: shape.first + layer * shape.gap, from, to });
+      end = to;
     }
-  });
-  const wall = new THREE.Mesh(wallAlong(path, shape.thickness, shape.height), sheet);
-  wall.position.y = y;
-  er.add(wall);
+    const path = [];
+    // From inside the outer nuclear membrane, out to the first sheet.
+    path.push(flat(own[0].from - arm.way * 0.16, nuclear * 0.86), flat(own[0].from - arm.way * 0.08, (nuclear + own[0].radius) / 2));
+    own.forEach((one, index) => {
+      const steps = Math.max(8, Math.round(Math.abs(one.to - one.from) * one.radius * 3));
+      for (let step = 0; step <= steps; step++) path.push(flat(one.from + ((one.to - one.from) * step) / steps, one.radius));
+      if (own[index + 1]) {
+        // The turn: out past the sheet's end and round to the next one.
+        const beyond = Math.sign(one.to - one.from) * (shape.gap * 0.55) / one.radius;
+        path.push(flat(one.to + beyond, one.radius + shape.gap * 0.5));
+      }
+    });
+    const wall = new THREE.Mesh(wallAlong(path, shape.thickness, shape.height), sheet);
+    wall.position.y = y;
+    er.add(wall);
+    sheets.push(...own);
+  }
   // Ribosomes on both faces of each sheet: they make it rough.
   const studs = [];
   for (const one of sheets) {
@@ -501,72 +554,218 @@ function reticulum(env, random) {
     web.setAttribute("position", new THREE.Float32BufferAttribute(tubes, 3));
     er.add(new THREE.LineSegments(web, er.lineMaterial({ hue: "bioEr", opacity: 0.55 })));
   }
-  // Where the reticulum's outer sheet comes nearest the Golgi: where carriers would leave it.
-  const last = sheets.at(-1);
-  env.erExit = c.clone().addScaledVector(radial((last.from + last.to) / 2), last.radius + shape.gap * 0.6).setY(y);
-  return studs;
+  // Where its sheets lie, for the carriers that leave it for the Golgi.
+  env.erSheets = { centre: c, y, sheets };
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
+  const where = open ? `in two arms, one each side of the Golgi, which stands beside the nucleus` : `on one side of the nucleus`;
+  const said = [["Drawn", `Rough endoplasmic reticulum: ${shape.layers} sheets folded to and fro ${where}, running on from the outer membrane of the nuclear envelope; ${um(shape.thickness)} µm thick and ${um(shape.gap)} µm apart${real ? ", with tubules reaching on through the cell" : ", enlarged"}. Their number, size and place are the picture's choice.`]];
+  return { studs, said };
+}
+
+// ------------------------------------------------------------------ the Golgi apparatus
+
+// A stack's cisternae, from the cis face, as widths in the cell's frame; and to scale, an animal cell's ribbon of stacks
+// side by side, each about a micrometre across. The picture's choice (docs/CELL_STRUCTURES.md).
+const CISTERNAE = { real: [1.0, 1.15, 1.2, 1.15, 1.0, 0.85], schematic: [2.2, 2.55, 2.7, 2.5, 2.1] };
+const RIBBON = { count: 4, width: 1.2, gap: 0.3 };
+
+/** The half-angle, seen from the nucleus's middle, that an animal cell's Golgi takes beside it, with room on each side: where its ER leaves a window. */
+function golgiWindow(env) {
+  const c = env.nucleusAt, at = env.golgiAt;
+  const reach = Math.hypot(at.x - c.x, at.z - c.z);
+  const half = env.real ? (RIBBON.count * RIBBON.width + (RIBBON.count - 1) * RIBBON.gap) / 2 : Math.max(...CISTERNAE.schematic) / 2;
+  return half / reach + 0.2;
 }
 
 /**
- * The Golgi apparatus: a stack of curved cisternae, the one nearest the nucleus (the cis
- * face) bowed toward it, each with swollen rims, and vesicles budding from the rims of the
- * far (trans) side. Returns its faces, for the vesicles that would come and go.
+ * The Golgi apparatus, as the cell holds it (the user, 17 November 2026; docs/CELL_STRUCTURES.md):
+ *   an animal cell   beside the nucleus, toward the cell's middle, round its centrosome (drawn as
+ *                    scenery): one stack where parts are enlarged, a ribbon of four stacks to scale;
+ *   a plant cell     many small stacks spread through the thin cytoplasm by the membrane, with no
+ *                    ribbon and no centrosome: 14 where parts are enlarged and few, 40 to scale.
+ * However many stacks there are, they are one shared geometry: each level of cisterna one mesh,
+ * the rims and the buds one instanced mesh each, so a frame draws as many of them as for one
+ * stack. Their number, size and place are the picture's choice, and the panel says so.
+ * Returns the stack the carriers leave from (its cis and trans faces), what the panel says was
+ * drawn, and the centrosome as an item of scenery that can be chosen, where there is one.
  */
-function stack(env, random) {
-  const { ctx, real, style } = env;
-  const g = style.golgi, at = env.golgiAt, c = env.nucleusAt;
+function golgiOf(env, random) {
+  const { real, frame } = env;
+  const g = env.style.golgi;
+  const depth = (g.count - 1) * g.gap + g.half * (real ? 1.6 : 1.9);
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
+  if (env.vacuole) return dispersed(env, random, depth, um);
+  const c = env.nucleusAt, at = env.golgiAt;
+  if (!c) {
+    // A cell that names a Golgi and no nucleus: one stack where the layout puts it, facing the cell's middle.
+    const made = drawStacks(env, [stackPieces(env, random, { at, facing: Math.atan2(at.z, at.x) + Math.PI })], at);
+    return { ...made, said: [["Drawn", `A stack of ${g.count} cisternae: the picture's choice, since the species' file gives no size or number.`]] };
+  }
   const facing = Math.atan2(at.z - c.z, at.x - c.x); // from the nucleus to the Golgi
-  const golgi = ctx.part("golgi", at.clone().add(new THREE.Vector3(0, real ? 0.5 : 0.95, 0)));
-  golgi.priority = 53;
-  const height = real ? 0.42 : 0.95, thickness = g.half * (real ? 1.6 : 1.9);
-  const y = env.cut + height * 0.36;
+  const reach = Math.hypot(at.x - c.x, at.z - c.z);
+  // To scale, a ribbon of four stacks side by side along the nucleus, each about a micrometre across.
+  const ribbon = real ? RIBBON : null;
+  const angles = ribbon ? Array.from({ length: ribbon.count }, (_, index) => facing + ((index - (ribbon.count - 1) / 2) * (ribbon.width + ribbon.gap)) / reach) : [facing];
+  const pieces = angles.map((angle) => stackPieces(env, random, { at: c.clone().addScaledVector(radial(angle), reach).setY(at.y), facing: angle }));
+  const made = drawStacks(env, pieces, at);
+  const centrosome = env.centrosomeAt ? drawCentrosome(env, facing) : null;
+  // The cis face's own surface: the cis point lies half a cisterna's thickness inside it.
+  const cisGap = um(pieces[0].cis.distanceTo(c.clone().setY(pieces[0].cis.y)) + pieces[0].thickness / 2 - env.style.nucleusRadius);
+  const widest = um(Math.max(...pieces[0].widths));
+  const buds = pieces.reduce((sum, piece) => sum + piece.buds.length, 0);
+  const said = ribbon
+    ? `A ribbon of ${ribbon.count} stacks of ${g.count} cisternae, each about ${widest} µm wide, along the nucleus beside its centrosome; the cis face of each, bowed toward the nucleus, about ${cisGap} µm from the envelope, with ${buds} vesicles budding from the rims.`
+    : `A stack of ${g.count} cisternae about ${widest} µm wide beside the nucleus and its centrosome, the cis face bowed toward the nucleus about ${cisGap} µm from the envelope, with ${buds} vesicles budding from the rims, enlarged.`;
+  return { ...made, centrosome, said: [["Drawn", `${said} In an animal cell the Golgi lies beside the nucleus, by the centrosome. Its size, number and place here are the picture's choice, since the species' file gives none.`]] };
+}
+
+/** A plant cell's Golgi: many small stacks in the thin cytoplasm by the membrane. The first stands by the nucleus, where carriers from the ER reach it. */
+function dispersed(env, random, depth, um) {
+  const { real, frame, style } = env;
+  const count = real ? 40 : 14, scale = real ? 0.38 : 0.4, apart = real ? 1.2 : 2.4;
+  const c = env.nucleusAt, places = [];
+  if (c) {
+    // Beside the nucleus, along the wall on the side the ER does not wrap (the ER lies on its inner side).
+    const inward = Math.atan2(-c.z, -c.x), along = inward - Math.PI / 2;
+    for (let step = 0; step < 12 && !places.length; step++) {
+      const at = c.clone().addScaledVector(radial(along), style.nucleusRadius + (0.6 + step * 0.25) * scale * 2 + (depth * scale) / 2);
+      if (env.inCytoplasm(at, 0.1, 0.1)) places.push({ at, facing: along });
+    }
+  }
+  const wide = frame.equator.widest;
+  for (let guard = 0; places.length < count && guard < count * 600; guard++) {
+    const at = new THREE.Vector3((random() * 2 - 1) * wide, frame.base + random() * (env.cut - frame.base), (random() * 2 - 1) * wide);
+    if (!env.inCytoplasm(at, 0.3, 0.25) || places.some((other) => other.at.distanceTo(at) < apart)) continue;
+    places.push({ at, facing: Math.atan2(at.z, at.x) + (random() - 0.5) * 1.2 }); // lying along the wall, more or less
+  }
+  const pieces = places.map(({ at, facing }) => stackPieces(env, random, { at, facing, scale, y: at.y, lean: true }));
+  const made = drawStacks(env, pieces, places[0].at);
+  const across = um(Math.max(...pieces[0].widths));
+  return { ...made, said: [["Drawn", `${pieces.length} small stacks, each about ${across} µm across${real ? "" : ", enlarged"}, spread through the thin cytoplasm by the membrane: a plant cell's Golgi is many separate stacks, with no ribbon and no centrosome. Their number and size are the picture's choice, since the species' file gives none.`]] };
+}
+
+/**
+ * One stack's pieces, to be drawn with the others (drawStacks): its curved cisternae as walls
+ * (the one nearest the nucleus, the cis face, bowed toward it), their swollen rims, and the
+ * vesicles budding from the rims of the far (trans) side. `scale` makes a smaller stack;
+ * `lean` draws it with fewer facets, for a stack that is a few pixels across.
+ */
+function stackPieces(env, random, { at, facing, scale = 1, y = null, lean = false }) {
+  const { real } = env;
+  const base = env.style.golgi;
+  const g = scale === 1 ? base : { ...base, inner: base.inner * scale, gap: base.gap * scale, half: base.half * scale };
+  const height = (real ? 0.42 : 0.95) * scale, thickness = g.half * (real ? 1.6 : 1.9);
+  y ??= env.cut + height * 0.36;
   // The middle of each cisterna's curve lies on the far side, toward the membrane: the cis face bows toward the nucleus.
   const hub = at.clone().addScaledVector(radial(facing), g.inner + g.gap * 2);
-  const widths = (real ? [1.0, 1.15, 1.2, 1.15, 1.0, 0.85] : [2.2, 2.55, 2.7, 2.5, 2.1]).slice(0, g.count);
+  const widths = CISTERNAE[real ? "real" : "schematic"].slice(0, g.count).map((width) => width * scale);
   const sacs = [], rims = [], buds = [];
   widths.forEach((width, index) => {
     const radius = g.inner + (g.count - 1 - index) * g.gap; // the first (cis) is the farthest from the hub
     const half = width / 2 / radius, middle = facing + Math.PI;
-    const points = Array.from({ length: 17 }, (_, step) => hub.clone().addScaledVector(radial(middle - half + (2 * half * step) / 16), radius).setY(0));
-    sacs.push({ geometry: wallAlong(points, thickness, height), shade: 0.22 - index * 0.1 });
+    const points = Array.from({ length: lean ? 7 : 17 }, (_, step, all) => hub.clone().addScaledVector(radial(middle - half + (2 * half * step) / (lean ? 6 : 16)), radius).setY(0));
+    const sac = wallAlong(points, thickness, height, false, lean ? { segments: 10, around: 6 } : {});
+    sac.translate(0, y, 0);
+    sacs.push({ geometry: sac, level: index });
     for (const end of [-1, 1]) {
       const angle = middle + end * half;
       const tip = hub.clone().addScaledVector(radial(angle), radius).setY(y);
-      rims.push({ position: tip, scale: 1 });
+      rims.push({ position: tip, scale });
       // Vesicles bud from the rims, more of them toward the trans face.
       if (index >= g.count - 3 && random() < 0.85) {
         const out = radial(angle + end * Math.PI / 2);
-        buds.push({ position: tip.clone().addScaledVector(out, thickness * 0.95).setY(y + (random() - 0.4) * height * 0.5), scale: 0.8 + random() * 0.4 });
+        buds.push({ position: tip.clone().addScaledVector(out, thickness * 0.95).setY(y + (random() - 0.4) * height * 0.5), scale: scale * (0.8 + random() * 0.4) });
       }
     }
     // And from the top edge of the trans cisternae.
     if (index >= g.count - 2) {
       for (let bud = 0; bud < 2; bud++) {
         const angle = middle + (random() * 2 - 1) * half * 0.7;
-        buds.push({ position: hub.clone().addScaledVector(radial(angle), radius).setY(y + height * 0.5 + thickness * 0.35), scale: 0.75 + random() * 0.3 });
+        buds.push({ position: hub.clone().addScaledVector(radial(angle), radius).setY(y + height * 0.5 + thickness * 0.35), scale: scale * (0.75 + random() * 0.3) });
       }
     }
   });
-  sacs.forEach(({ geometry, shade }) => {
-    const sac = new THREE.Mesh(geometry, golgi.material({ hue: "bioGolgi", shade, roughness: 0.38, side: THREE.DoubleSide, thin: 0.7, texture: "grain" }));
-    sac.position.y = y;
-    golgi.add(sac);
-  });
-  const rimMaterial = golgi.material({ hue: "bioGolgi", shade: 0.05, roughness: 0.35, thin: 0.6 });
-  golgi.add(env.instanced(new THREE.CapsuleGeometry(thickness * 0.64, height * 0.62, 6, 12), rimMaterial, rims));
-  golgi.add(env.instanced(new THREE.SphereGeometry(thickness * 0.62, 14, 10), golgi.material({ hue: "bioGolgi", shade: 0.12, roughness: 0.3, thin: 0.6 }), buds));
   // What a click on the stack reaches.
   const far = g.inner + g.count * g.gap;
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(far * 0.7, far * 0.7, height, 16), golgi.proxyMaterial());
-  body.position.copy(at).setY(y);
-  golgi.add(body);
+  const body = new THREE.CylinderGeometry(far * 0.7, far * 0.7, height, lean ? 8 : 16).translate(at.x, y, at.z);
   const cis = hub.clone().addScaledVector(radial(facing + Math.PI), g.inner + (g.count - 1) * g.gap + thickness).setY(y);
   const trans = hub.clone().addScaledVector(radial(facing + Math.PI), g.inner - thickness).setY(y);
-  const across = (Math.max(...widths) * env.frame.u).toPrecision(2);
+  return { sacs, rims, buds, body, cis, trans, facing, thickness, widths, scale, lean };
+}
+
+/** Stacks drawn as one: each level of cisterna one mesh for every stack, the rims and the buds one instanced mesh each, one body to click. */
+function drawStacks(env, pieces, anchorAt) {
+  const { ctx, real } = env;
+  const first = pieces[0], scale = first.scale, lean = first.lean;
+  const golgi = ctx.part("golgi", anchorAt.clone().setY(first.cis.y).add(new THREE.Vector3(0, (real ? 0.5 : 0.95) * Math.max(scale, 0.5), 0)));
+  golgi.priority = 53;
+  const levels = Math.max(...pieces.flatMap((piece) => piece.sacs.map((sac) => sac.level))) + 1;
+  for (let level = 0; level < levels; level++) {
+    const geometry = merged(pieces.flatMap((piece) => piece.sacs.filter((sac) => sac.level === level).map((sac) => sac.geometry)));
+    golgi.add(new THREE.Mesh(geometry, golgi.material({ hue: "bioGolgi", shade: 0.22 - level * 0.1, roughness: 0.38, side: THREE.DoubleSide, thin: 0.7, texture: "grain" })));
+  }
+  const height = (real ? 0.42 : 0.95), thickness = env.style.golgi.half * (real ? 1.6 : 1.9);
+  const rimMaterial = golgi.material({ hue: "bioGolgi", shade: 0.05, roughness: 0.35, thin: 0.6 });
+  golgi.add(env.instanced(new THREE.CapsuleGeometry(thickness * 0.64, height * 0.62, lean ? 1 : 6, lean ? 5 : 12), rimMaterial, pieces.flatMap((piece) => piece.rims)));
+  golgi.add(env.instanced(new THREE.SphereGeometry(thickness * 0.62, lean ? 6 : 14, lean ? 4 : 10), golgi.material({ hue: "bioGolgi", shade: 0.12, roughness: 0.3, thin: 0.6 }), pieces.flatMap((piece) => piece.buds)));
+  golgi.add(new THREE.Mesh(merged(pieces.map((piece) => piece.body)), golgi.proxyMaterial()));
+  return { cis: first.cis, trans: first.trans, facing: first.facing, thickness: first.thickness, stacks: pieces.length };
+}
+
+/**
+ * An animal cell's centrosome, where its Golgi gathers beside the nucleus: two centrioles, short
+ * barrels of nine rods at right angles, in a faint cloud. Scenery: Cells models no centrosome, so
+ * it is neutral glass with no status, and its panel says so. Its size is the picture's choice.
+ */
+function drawCentrosome(env, facing) {
+  const { ctx, real, frame } = env;
+  const at = env.centrosomeAt;
+  const length = real ? 0.5 : 0.9, radius = real ? 0.1 : 0.19, rod = real ? 0.018 : 0.034;
+  // The first barrel stands upright; the second lies across it, along the nucleus.
+  const across = radial(facing + Math.PI / 2);
+  const barrels = [
+    { centre: at.clone(), axis: new THREE.Vector3(0, 1, 0) },
+    { centre: at.clone().addScaledVector(across, radius * 2.4).setY(at.y - length * 0.25), axis: across.clone() },
+  ];
+  const rods = [];
+  for (const { centre, axis } of barrels) {
+    const side = new THREE.Vector3().crossVectors(axis, Math.abs(axis.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : UP).normalize(), other = new THREE.Vector3().crossVectors(axis, side);
+    for (let index = 0; index < 9; index++) {
+      const angle = (index / 9) * Math.PI * 2;
+      rods.push({ position: centre.clone().addScaledVector(side, Math.cos(angle) * radius).addScaledVector(other, Math.sin(angle) * radius), direction: axis });
+    }
+  }
+  const group = new THREE.Group();
+  group.add(env.instanced(new THREE.CylinderGeometry(rod, rod, length, 6), ctx.neutral({ opacity: 0.9, glass: 0.2, depthWrite: true }), rods));
+  // A faint cloud round both, which is also what a click on it reaches.
+  const cloud = new THREE.Mesh(new THREE.SphereGeometry(length * 0.95, 20, 14), ctx.neutral({ opacity: 0.12, glass: 0.45 }));
+  cloud.position.copy(at).addScaledVector(across, radius * 1.2);
+  group.add(cloud);
+  ctx.scenery(group, "scenery:centrosome");
+  const um = (units) => Number((units * frame.u).toPrecision(2)).toLocaleString("en-US");
   return {
-    cis, trans, facing, thickness,
-    said: [["Drawn", `A stack of ${widths.length} cisternae about ${across} µm wide, the one nearest the nucleus bowed toward it, with ${buds.length} vesicles budding from the rims: the picture's choice, since the species' file gives no size or number.`]],
+    id: "scenery:centrosome", kind: "centrosome", label: "Centrosome", facts: {}, sources: [], drawn: 1, of: 1,
+    sizes: [
+      ["What it is", "The cell's centre for organising its microtubules: two centrioles, short barrels at right angles, in a cloud of protein. In an animal cell the Golgi gathers round it, beside the nucleus. A plant cell has none."],
+      ["Drawn", `Two barrels of nine rods, each ${um(length)} µm long and ${um(radius * 2)} µm across${real ? "" : ", enlarged"}, between the nucleus and the Golgi: the picture's choice. Nothing in the engine stands behind it.`],
+    ],
   };
+}
+
+/** The point of the ER's sheets nearest a place (the Golgi's cis face): where carriers for the Golgi leave the ER. Null without an ER. */
+function erNearest(env, place) {
+  const er = env.erSheets;
+  if (!er) return null;
+  const c = er.centre, toward = Math.atan2(place.z - c.z, place.x - c.x);
+  let best = null;
+  for (const one of er.sheets) {
+    const low = Math.min(one.from, one.to), high = Math.max(one.from, one.to);
+    // The angle of the sheet nearest the place's own, the long way round included.
+    const near = [toward - Math.PI * 2, toward, toward + Math.PI * 2].map((angle) => Math.min(high, Math.max(low, angle))).sort((a, b) => Math.abs(a - toward) - Math.abs(b - toward))[0];
+    const point = c.clone().addScaledVector(radial(near), one.radius).setY(er.y);
+    if (!best || point.distanceTo(place) < best.distanceTo(place)) best = point;
+  }
+  return best;
 }
 
 /** The vesicles that would carry proteins from the ER to the Golgi and on to the membrane: membrane trafficking. */
@@ -579,7 +778,7 @@ function carriers(env, random, golgi) {
   part.priority = 45; // where names clash, the Golgi's own is kept and this one gives way
   const size = golgi.thickness * (real ? 0.55 : 0.62);
   const out = [0.18, 0.4, 0.62, 0.84].map((t) => ({ position: path.getPoint(t), scale: 0.9 + random() * 0.3 }));
-  const from = env.erExit ? env.erExit.clone() : golgi.cis.clone().addScaledVector(radial(golgi.facing + Math.PI), 1);
+  const from = erNearest(env, golgi.cis) || golgi.cis.clone().addScaledVector(radial(golgi.facing + Math.PI), 1);
   const into = [0.25, 0.5, 0.75].map((t) => ({ position: from.clone().lerp(golgi.cis, t).add(new THREE.Vector3(0, Math.sin(Math.PI * t) * 0.15, 0)), scale: 0.65 + random() * 0.2 }));
   const glass = part.material({ hue: "bioGolgi", shade: 0.4, roughness: 0.25, opacity: 0.9, thin: 0.6 });
   part.add(env.instanced(new THREE.SphereGeometry(size, 16, 12), glass, [...out, ...into]));
@@ -592,6 +791,56 @@ function carriers(env, random, golgi) {
 }
 
 /**
+ * A free chromosome drawn to scale (a cell whose molecules are shapes at its stop): DNA is 2 nm
+ * across and 0.34 nm a base pair (textbook figures), so the file's length in base pairs would fill
+ * the cut face of a small cell more than once over (Syn3A's 1.8 times). It is drawn as an electron
+ * tomogram shows it: only in the slab under the cut, as short pieces of a fine line, the share of
+ * its length that the slab holds of the region it fills in the middle of the cell. Where that
+ * region lies and how the line winds are the picture's choice. A body that draws nothing, where
+ * the schematic thread's is, takes a click as before.
+ */
+function chromosomeInSlab(env, random, thread) {
+  const { frame, parts, nm, slab, cut } = env;
+  const { at: coreAt, radius: coreRadius, reach: coreReach } = env.core;
+  const slim = frame.outline.apothem;
+  // The region it fills: a body round the cell's middle, as long as the schematic thread reaches and 0.7 of the cell's half-width across.
+  const across = slim * 0.7, length = Math.max(coreReach, across), centre = new THREE.Vector3(coreAt.x, 0, 0);
+  const inRegion = (point) => ((point.x - centre.x) / length) ** 2 + (point.y / across) ** 2 + (point.z / across) ** 2 < 1 && env.inside(point) > 4 * nm;
+  const low = cut - slab, mid = cut - slab / 2;
+  const share = mid < across ? 0.75 * (1 - (mid / across) ** 2) * (slab / across) : 0; // the slab's share of the region
+  const whole = parts.chromosome_kbp * 1000 * 0.34 * nm, wanted = whole * share; // in the cell's units
+  const step = 4 * nm, lines = [];
+  let drawn = 0;
+  for (let guard = 0; drawn < wanted && guard < 20000; guard++) {
+    // A piece: where the chain crosses the slab, a short way, before it leaves it.
+    const at = new THREE.Vector3(centre.x + (random() * 2 - 1) * length, low + random() * slab, (random() * 2 - 1) * across);
+    if (!inRegion(at)) continue;
+    const heading = new THREE.Vector3(random() - 0.5, (random() - 0.5) * 0.3, random() - 0.5).normalize();
+    const steps = 5 + Math.floor(random() * 25);
+    for (let index = 0; index < steps && drawn < wanted; index++) {
+      heading.add(new THREE.Vector3(random() - 0.5, (random() - 0.5) * 0.3, random() - 0.5).multiplyScalar(0.8)).normalize();
+      const next = at.clone().addScaledVector(heading, step);
+      if (next.y < low || next.y > cut || !inRegion(next)) break;
+      lines.push(at.x, at.y, at.z, next.x, next.y, next.z);
+      drawn += step;
+      at.copy(next);
+    }
+  }
+  const strands = new THREE.BufferGeometry();
+  strands.setAttribute("position", new THREE.Float32BufferAttribute(lines, 3));
+  const line = new THREE.LineSegments(strands, thread.lineMaterial({ hue: "bioNucleus", opacity: 0.95 }));
+  line.userData.unpickable = true; // a line is picked from far round it: the body below takes the click
+  thread.add(line);
+  const reach = new THREE.Mesh(new THREE.SphereGeometry(coreRadius * 0.92, 20, 14), thread.proxyMaterial());
+  reach.position.copy(coreAt);
+  reach.scale.set(coreReach / coreRadius, 1, 1);
+  thread.add(reach);
+  const um = (units) => Number((units * frame.u).toPrecision(units * frame.u >= 100 ? 3 : 2)).toLocaleString("en-US");
+  const said = [["Drawn", `A fine line, in a slab ${Math.round(slab / nm)} nm deep under the cut, as an electron tomogram shows a cell: ${um(drawn)} µm of the ${um(whole)} µm its ${parts.chromosome_kbp.toLocaleString("en-US")} kbp would make as DNA, at 0.34 nm a base pair, 2 nm across (textbook figures). That is the share the slab holds of the region the chromosome fills in the middle of the cell; drawn whole, it would cover most of the cut face. Where that region lies and how the line winds are the picture's choice.`]];
+  return { knots: [], said, drawn: drawn * frame.u, whole: whole * frame.u };
+}
+
+/**
  * Ribosomes: free in the cytoplasm, several in a string on one messenger, and on the rough
  * ER. Where the species' file gives a count, that many are drawn of the part of the cell
  * kept below the cut; else the number is the picture's choice. To scale in a large cell they
@@ -600,13 +849,12 @@ function carriers(env, random, golgi) {
 function ribosomes(env, random, built, bound) {
   const { ctx, real, frame, parts } = env;
   const given = parts.ribosomes;
-  const kept = (point, clear) => env.inside(point) > clear && point.y < env.cut - clear * 0.4;
   const own = bound ? ctx.part("ribosomes", null) : null;
   if (own) own.priority = 52;
   const tone = (shade) => (own ? own.material({ hue: "bioRibosome", shade, roughness: 0.42, drift: 0.06 }) : ctx.neutral({ opacity: 0.6, glass: 0.35, depthWrite: false, drift: 0.06 }));
-  const drawShapes = (placements, radius, shade = 0) => {
+  const drawShapes = (placements, radius, shade = 0, light = false, made = null) => {
     if (!placements.length) return;
-    const { large, small } = subunits(radius);
+    const { large, small } = made || subunits(radius, light);
     const add = (object) => (own ? own.add(object) : ctx.illustrate(object));
     add(env.instanced(large, tone(shade), placements));
     add(env.instanced(small, tone(shade + 0.38), placements));
@@ -636,18 +884,31 @@ function ribosomes(env, random, built, bound) {
     strings.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ends), ends.length * 6, radius * 0.16, 5, false));
     return placements;
   };
-  let free = [], onStrings = [], radius, polysomes = 0, anchor = null;
+  let free = [], onStrings = [], radius, polysomes = 0, anchor = null, kept = 0, spacing = 0;
+  // A small cell whose file counts them, each a shape of its own at this size. Where the file measures the ribosome (`ribosome`),
+  // it is drawn as measured, at the layout's factor for this mode (cell_layout.js, RIBOSOME_RULES); else about 20 nm across, the
+  // picture's choice (no cap in the cell's units: in a cell as thin as 0.2 µm a cap drew them at half that size).
+  const shape = given && !parts.nucleus ? env.ribosome : null, factor = shape ? env.ribosomeFactor ?? 1 : 1;
   if (given && !parts.nucleus) {
-    // A small cell whose file counts them: each about 20 nm across, a shape of its own at this size.
-    // No cap in the cell's units: in a cell as thin as 0.2 µm a cap drew them at half that size.
+    // Where the file's whole count is drawn, few faces each (the ceiling of 130 triangles); enlarged and few, round.
+    const made = shape ? measuredSubunits(shape, env.nm * factor, factor <= 1.05) : null;
     radius = Math.max(0.085, 0.01 / frame.u);
-    const total = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
+    // How far a ribosome reaches from its middle, in units, and the step along a string's helix (polysome's `radius`): its
+    // neighbours' middles 2.05 times that reach apart, so that no two in a string meet, whichever way they turn.
+    const reach = made ? made.reach : 1.3 * radius, step = made ? (2.05 * reach) / 2.3 : radius;
+    kept = Math.round(given * 0.6); // those of the part kept below the cut; the cut takes the rest away with the top of the cell
+    // Enlarged, as many as fill the share of the cell that the kept ones fill at their own size.
+    const total = Math.max(1, Math.round(kept / factor ** 3));
     const strung = Math.round((total * 0.15) / 5) * 5;
-    const centres = scatterIn(strung / 5, (point) => kept(point, radius * 5 + 0.3), { wide, low: frame.base, high: env.cut });
-    for (const centre of centres) onStrings.push(...polysome(centre, 5, radius));
+    // Each wholly below the cut, and a string of five, its helix and the reach of its ends.
+    const below = (point, clear, rise) => env.inside(point) > clear && point.y < env.cut - rise;
+    const string = Math.hypot(3.1 * step, 1.7 * step) + reach;
+    const centres = scatterIn(strung / 5, (point) => below(point, string + 0.3, string), { wide, low: frame.base, high: env.cut });
+    for (const centre of centres) onStrings.push(...polysome(centre, 5, step));
     polysomes = centres.length;
-    free = scatterIn(total - onStrings.length, (point) => kept(point, radius + 0.25), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), scale: 0.85 + random() * 0.3 }));
-    drawShapes([...free, ...onStrings], radius * 0.95);
+    spacing = (2.3 * step) / env.nm / factor; // nanometres of the ribosome's own size between a string's neighbours
+    free = scatterIn(total - onStrings.length, (point) => below(point, reach + 0.25, reach), { wide, low: frame.base, high: env.cut }).map((position) => ({ position, turn: turned(random), ...(made ? {} : { scale: 0.85 + random() * 0.3 }) }));
+    drawShapes([...free, ...onStrings], radius * 0.95, 0, true, made);
     anchor = (centres[0] || free[0]?.position || env.core.at).clone();
   } else if (!real) {
     // A large cell, parts enlarged: a few hundred, the number the picture's choice.
@@ -680,6 +941,17 @@ function ribosomes(env, random, built, bound) {
   own.anchor = (anchor || env.nucleusAt || env.core.at).clone().add(new THREE.Vector3(0, real ? 0.5 : 0.9, 0));
   const studs = built.studs.length;
   const count = free.length + onStrings.length;
+  if (given && !parts.nucleus && shape) {
+    const size = (values) => values.map((value) => Number(value.toPrecision(3))).join(" by ");
+    const whose = `${shape.note ? `the ribosome of ${shape.of}` : "its ribosome"}, as the viewer measured it from the Protein Data Bank's entry ${shape.entry}`;
+    const measured = `Each as its two subunits, each the ellipsoid of the same spread as its atoms: ${whose}, the large subunit ${size(shape.large.across_nm)} nm across and the small one ${size(shape.small.across_nm)} nm, the whole ${size(shape.across_nm)} nm.${shape.note ? ` ${shape.note}` : ""}`;
+    const strung = onStrings.length ? ` ${onStrings.length} of them in ${polysomes} strings on a messenger, their middles ${Math.round(spacing)} nm apart${factor > 1.05 ? " at the ribosome's own size" : ""}, so that no two meet.` : "";
+    if (factor > 1.05) {
+      return [["Drawn", `${count.toLocaleString("en-US")}, standing for the ${kept.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives that are in the part of the cell kept below the cut: each enlarged ${Number(factor.toPrecision(2))} times, as the membrane's proteins are here, so fewer are drawn, as many as fill the same share of the cell.${strung} ${measured}`]];
+    }
+    const own = env.real ? "" : " At their own size, while the membrane's proteins are enlarged here.";
+    return [["Drawn", `${count.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives: those in the part of the cell kept below the cut.${strung}${own} ${measured}`]];
+  }
   if (given && !parts.nucleus) {
     return [["Drawn", `${count.toLocaleString("en-US")} of the ${given.toLocaleString("en-US")} the species' file gives: those in the part of the cell kept below the cut, ${onStrings.length} of them in ${polysomes} strings on a messenger. Each is drawn about 20 nm across, as two subunits: a textbook size and the picture's choice, since the species' file gives none.`]];
   }

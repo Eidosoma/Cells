@@ -7,6 +7,8 @@
 //
 // Events: "time" when the playhead moves, "state" when playing, speed or the run changes.
 
+import { clock, duration } from "./format.js";
+
 /**
  * Seconds of the run per second of watching, slowest first: the ladder every run is offered
  * from. Below true speed a replay is slowed, so that a short run, and a bead of a fast flow,
@@ -68,10 +70,70 @@ export function speedWords(speed) {
   return { short: `1/${slowed}×`, phrase: `slowed ${slowed} times`, says: `Slowed ${slowed} times: one second here is ${span(speed)} of the run` };
 }
 
+/**
+ * A time base: what a run's time is counted in, with the speeds and the words that go with it. A run
+ * says which it keeps (`run.timeBase`); a run that says none keeps seconds, as every replay does.
+ *   speedsFor(length), openingSpeed(length)  the steps a run of that length is offered, and the one it opens at;
+ *   words(speed)                             { short, phrase, says }, as speedWords gives them;
+ *   clock(time), length(span)                the timeline's read-out (null: the replay's clock and duration);
+ *   advance(time, seconds, speed)            where the playhead is after so many seconds of watching
+ *                                            (null: time + seconds × speed).
+ */
+export const SECONDS = Object.freeze({ id: "seconds", speedsFor, openingSpeed, words: speedWords, clock: null, length: null, advance: null });
+
+/**
+ * Where the playhead stands, in the timeline's words: { now, of }. `now` is the run's own time
+ * (the time its records, its events and its panels give); `of` says what that time lies in. A
+ * run whose records start at nought is "of" its length ("0.4 s of 4 s"); one whose records start
+ * later (one period of a longer run, packaged to loop) lies between its first and its last
+ * record ("9.2 s, between 8 s and 10 s"), so that a time and a length that do not belong
+ * together are never set side by side.
+ */
+export function whereWords({ time, start, end, base = SECONDS }) {
+  const clockOf = base.clock || clock, lengthOf = base.length || duration;
+  const now = clockOf(time);
+  return start === 0 ? { now, of: ` of ${lengthOf(end - start)}` } : { now, of: `, between ${clockOf(start)} and ${clockOf(end)}` };
+}
+
+/** The time base a run keeps. */
+export function baseOf(run) {
+  return run?.timeBase || SECONDS;
+}
+
+const FRACTIONS = new Map([[0.25, "¼"], [0.5, "½"], [0.75, "¾"]]);
+const amount = (value) => FRACTIONS.get(value) || (value < 1 ? `1/${count(1 / value)}` : count(value));
+
+/**
+ * A time base that counts steps of the run's own: `unit` and `plural` are the run's words for one
+ * step and for many; `ladder` is in steps for each second of watching, slowest first; `opening` is
+ * the step a run opens at. `fine` (optional) is a slower step of the run's own, offered first, with
+ * its own words and its own advance: { speed, words: { short, phrase, says }, advance(time, seconds) }.
+ * The words never say "true speed": such a run keeps no clock of real life.
+ */
+export function countedBase({ id, unit, plural, ladder, opening, fine = null }) {
+  const words = (speed) => {
+    if (fine && speed === fine.speed) return fine.words;
+    const noun = speed > 1 ? plural : unit;
+    return { short: `${amount(speed)}/s`, phrase: `${amount(speed)} ${noun} a second`, says: `${amount(speed)} ${noun} each second of watching` };
+  };
+  return Object.freeze({
+    id,
+    unit,
+    plural,
+    speedsFor: () => [...(fine ? [fine.speed] : []), ...ladder],
+    openingSpeed: () => opening,
+    words,
+    clock: (time) => (Math.round(time * 10) / 10).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    length: (span) => `${count(span)} ${plural}`,
+    advance: (time, seconds, speed) => (fine && speed === fine.speed ? fine.advance(time, seconds) : time + seconds * speed),
+  });
+}
+
 export class Player extends EventTarget {
   constructor() {
     super();
     this.run = null;
+    this.base = SECONDS; // what the run's time is counted in
     this.time = 0;
     this.start = 0;
     this.end = 0;
@@ -82,15 +144,18 @@ export class Player extends EventTarget {
 
   /** Point the player at a run (or at none), at the run's first record. */
   load(run) {
+    const base = baseOf(run);
+    const sameBase = base.id === this.base.id; // a speed chosen in one time base is not carried into another
     this.run = run;
+    this.base = base;
     this.start = run ? run.start : 0;
     this.end = run ? run.end : 0;
     this.time = this.start;
     this.playing = false;
     if (run) {
-      const length = this.end - this.start, speeds = speedsFor(length);
+      const length = this.end - this.start, speeds = base.speedsFor(length);
       SPEEDS.splice(0, SPEEDS.length, ...speeds);
-      if (!this.chosen || !speeds.includes(this.speed)) this.speed = openingSpeed(length);
+      if (!this.chosen || !sameBase || !speeds.includes(this.speed)) this.speed = base.openingSpeed(length);
     }
     this.emit("state");
     this.emit("time");
@@ -151,7 +216,8 @@ export class Player extends EventTarget {
   /** Advance by a stretch of watching time, in milliseconds. Returns true while playing. */
   tick(milliseconds) {
     if (!this.playing) return false;
-    const next = this.time + (milliseconds / 1000) * this.speed;
+    const seconds = milliseconds / 1000;
+    const next = this.base.advance ? this.base.advance(this.time, seconds, this.speed) : this.time + seconds * this.speed;
     if (next >= this.end) {
       this.time = this.end;
       this.playing = false;
@@ -162,6 +228,11 @@ export class Player extends EventTarget {
     this.time = next;
     this.emit("time");
     return true;
+  }
+
+  /** The speed in use, in the words of the run's time base. */
+  get words() {
+    return this.base.words(this.speed);
   }
 
   emit(name) {

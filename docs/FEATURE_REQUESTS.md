@@ -24,7 +24,7 @@ and a general feature, never one built for one study (D144).
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
-| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed on branch `passive-share-band`: the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\| | Land `passive-share-band`, and renew crossrev's kinds record at its landing |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -216,6 +216,8 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
   FR-1's compartment, and the composition walls (the species operators refuse insertion today).
 
 **The design note (proposed, 18 November 2026):** [MEMBRANE_RETRIEVAL_DESIGN.md](MEMBRANE_RETRIEVAL_DESIGN.md), with the energy source answered once for D150's question 11, D152's question 10 and D151 (D216).
+
+**Answered 18 November (D217):** version 1 is retrieval and recycling, with "no new explicit machinery fuel draw in v1" and one lumped, well-mixed pool per cell. It starts when B1's operator part, with the split-and-merge kernel, lands (the note's §12).
 
 ## FR-3 — The site-occupancy primitive
 
@@ -450,7 +452,7 @@ use Cells' unit choice than ask for its own.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
 
-**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216).
+**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216). **Answered 18 November (D217, D218):** U2 first, then U1; the loop is admitted through B1′; qualification needs a closed loop with a feedback-cut control (the note's §9).
 
 ## FR-8 — A qualified long-duration mode
 
@@ -500,6 +502,8 @@ requester is writing a benchmark specification for its own composition):
   one coupled trajectory.
 
 **The design note (proposed, 18 November 2026):** [LONG_DURATION_MODE_DESIGN.md](LONG_DURATION_MODE_DESIGN.md), the long-time path for composite operators, written before the GH200 numbers and the benchmark specification (D216).
+
+**Answered 18 November (D217):** stage 0 only, that is M1–M5 and a small harness, with criteria declared before comparison. The method follows stage 0 and the FR-18 probe (the note's §11).
 
 ## FR-9 — Raise the 7-species cap
 
@@ -762,7 +766,8 @@ explored.
 - **First step, done:** the reason for `check_impermeant`'s refusal was found (F1 above). What remains
   is F2.
 - **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
-  features.
+  features. (18 November 2026, D219: scheduled with the kinds and @3 owners after their current
+  work. Not started.)
 
 ## FR-16 — Junction gating and availability
 
@@ -774,7 +779,8 @@ explored.
   needs min and mean as well.
 - **Why it is general:** connexin-specific gating and permselectivity are general junction
   physiology.
-- **Status:** requested; awaits the user's go.
+- **Status:** requested; awaits the user's go. (18 November 2026, D219: scheduled with the F owner,
+  after its per-law extractions, and with the @3 owner. Not started.)
 
 ## FR-17 — Field solves beyond 2048 nodes
 
@@ -790,7 +796,9 @@ explored.
   solver ID (D147; [CLOSED_COMPARTMENT_DESIGN](CLOSED_COMPARTMENT_DESIGN.md) §3.6, §8), and it also
   removes the 64-node cap's reason for compartment doors.
 - **Status:** requested; awaits the user's go. Its consumers are the 3D table and, unless
-  condensation serves them, mitochondria.
+  condensation serves them, mitochondria. (18 November 2026, D219: scheduled with numerics. Its
+  owner is named when a seat frees, and FR-1's condensation door is the preferred route. Not
+  started.)
 
 ## FR-18 — The composite's energy check at moderate step sizes
 
@@ -828,7 +836,7 @@ explored.
     `@2` stays the user's alternative.
   - **The replays:** the replication's previously refused points now run the full 20,000 s
     (`/mnt/workspaces/Cells/passive-share-tolerance-20261117/`).
-- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band`.**
+- **Follow-up, the lead's call: the band near 1 mM, closed on branch `passive-share-band` and landed by merge a7122a43 on 18 November.**
   - **Why.** Near 1 mM the first floor still closed, since its terms scaled with |μ̄| while the
     potential keeps the ulp of ln c + 1.
   - **The fix.** The floor's scale adds the potential's evaluation rounding, (|μ̄_in| + |μ̄_out| +

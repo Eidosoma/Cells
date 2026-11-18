@@ -4,7 +4,7 @@
 The protein atlas draws the functional units of the Cells law inventory, and the inventory
 already names the human gene products that would make each unit. This tool makes the other
 half for the human (schema/SPECIES_PROTEINS.md): the species' own proteins, whether or not
-Cells has a law for them, laid out on shelves. A shelf is a membrane, and every protein
+they are listed with a unit of that inventory, laid out on shelves. A shelf is a membrane, and every protein
 sits outside it, in it or inside it.
 
 The catalogue is UniProt's reviewed human proteome: one canonical protein for each
@@ -342,6 +342,36 @@ def unit_products(snapshot):
     return {accession: sorted(found, key=natural) for accession, found in units.items()}, roles
 
 
+# The inventory's roles, in its own words, that name a part going with a unit's machine rather than the part that
+# does its work: an auxiliary subunit ("... auxiliary family; ..."), the sodium pump's beta subunits ("beta"), the
+# uniplex's regulators ("uniplex") and the pump's FXYD regulators ("FXYD", "FXYD (gamma)"). An entry is drawn as
+# going with the machine where every role the inventory gives it is one of these (16 November 2026; the 27 entries
+# the shared table of accessory signatures also names).
+GOES_WITH_ROLES = {"beta", "uniplex", "FXYD", "FXYD (gamma)"}
+ROLES_NOTE = (
+    "The human has no species atlas: a protein's unit is the inventory's own naming of its human entry. Where every role "
+    "the inventory gives the entry names a part that goes with the machine (an auxiliary subunit, the sodium pump's beta "
+    "subunits, the uniplex's regulators, the pump's FXYD regulators), the entry is listed here with its roles, in the "
+    "inventory's words: it is drawn plain, not in the unit's shape, and is no candidate for the machine's own work. "
+    "'families' names the families every one of whose proteins with a unit is listed so."
+)
+
+
+def goes_with(role):
+    """Whether one of the inventory's roles names a part that goes with the machine (GOES_WITH_ROLES)."""
+    return "auxiliary" in role or role in GOES_WITH_ROLES
+
+
+def roles_block(units, roles, lines):
+    """shelves.json's 'inventory_roles': the entries whose every role goes with the machine, and the families of only such."""
+    going = {accession: sorted(roles[accession]) for accession in units if roles[accession] and all(goes_with(role) for role in roles[accession])}
+    families = defaultdict(list)
+    for line in lines:
+        families[line["id"]].extend(line["proteins"])
+    whole = sorted((family for family, members in families.items() if any(member in units for member in members) and all(member in going for member in members if member in units)), key=natural)
+    return {"note": ROLES_NOTE, "proteins": {accession: going[accession] for accession in sorted(going, key=natural)}, "families": whole}
+
+
 def build(datasets_folder, snapshot, terms_folder=None):
     d = Datasets(datasets_folder)
     # The terms that the other species' tools saved: in the folder that holds every species' downloads.
@@ -484,6 +514,7 @@ def build(datasets_folder, snapshot, terms_folder=None):
         "of": {"label": "Stated for", "values": "text", "measured": False, "note": "The named form of the protein that the place is stated for, where the entry states none for the protein as a whole or for its canonical isoform.", "source": "UniProt"},
     }
     closing = {
+        "inventory_roles": roles_block(units, roles, lines),
         "marks": marks,
         "counts": counts,
         "shelf_counts": shelf_counts,

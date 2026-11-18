@@ -662,8 +662,14 @@ VIEW = KindView(
 )
 
 
+# The run view's word for each law's routes (per-entity kinds are words, docs/RUN_VIEW_DESIGN.md;
+# each route's law ID is under "laws", in the form of the view's own sets).
+KIND_WORDS = MappingProxyType({LAW_ID: "permeation", LEAK_LAW_ID: "leak"})
+
+
 def view_sets(spec, declaration):
-    """The view's set of the routes' axis: one entry per route, in the declaration's order."""
+    """The view's set of the routes' axis: one entry per route, in the declaration's order, each
+    with its kind as a word (KIND_WORDS) and its law ID under "laws"."""
     return {
         "passive_route": {
             "id": "passive_route",
@@ -673,7 +679,8 @@ def view_sets(spec, declaration):
                 "outside": "its outside end: its patch's outside node, or its junction's receiver",
             },
             "carries": [[route.species] for route in declaration],
-            "kinds": [route.law for route in declaration],
+            "kinds": [KIND_WORDS[route.law] for route in declaration],
+            "laws": [{"law_id": route.law} for route in declaration],
             "at": [
                 {"membrane" if route.host_kind == "patch" else "junction": route.host}
                 for route in declaration

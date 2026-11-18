@@ -1636,6 +1636,48 @@ def write_members(shelves_folder, out, first=None, last=None):
 # of its other families; a protein with only such a family's signature is no candidate.
 ACCESSORY = {"nav_beta", "kv_beta", "cav_beta", "cav_a2d", "bk_beta", "nka_beta", "fxyd", "emre", "micu"}
 
+# The two facts a species atlas gives of each product (schema/SPECIES_ATLAS.md, format @2), kept
+# apart: how it was found, and what its entry is. How it was found never follows from the entry.
+ATLAS_FORMAT = "cells.visualizer.species_atlas@2"
+FOUND_SIGNATURE = "family signature"       # its own record carries the signature of a family that makes the machine
+FOUND_ACCESSORY = "accessory signature"    # its own record carries only that of a family that goes with the machine
+ENTRY_REVIEWED, ENTRY_UNREVIEWED = "reviewed", "unreviewed"  # a UniProtKB entry a curator reviewed, or one annotated automatically
+FOUND_NAMED = "named in a publication"
+# The shelves' note on a line's units, and their block on how the atlas found the proteins listed with a unit
+# (schema/SPECIES_PROTEINS.md, "How the atlas found a protein"): a protein of a family that only goes with the
+# machine is listed with the unit, and is no candidate for its own work.
+UNITS_NOTE = "The inventory units with which the species' atlas lists a member on this line: as a candidate for the machine, where the member was found by the signature of a family that makes it, or as a part that goes with the machine, where 'found_by' names the member or the line."
+FOUND_BY_NOTE = "How the species' atlas found each protein that it lists with a unit (schema/SPECIES_ATLAS.md, found_by). A protein with a unit is found by the signature of a family that makes the machine unless it is named under 'proteins'; one found only by the signature of a family that goes with the machine (a regulator, or a subunit that makes none by itself) is listed with the unit and is no candidate for its own work, and the page draws it plain. A family is named under 'families' where every protein of it that has a unit was found so."
+
+
+def found_by_block(units, families):
+    """shelves.json's 'found_by': how the atlas found the proteins it lists with a unit, apart from
+    the default (a making family's signature). units: the atlas's units; families: a family's id ->
+    its proteins, on every shelf. None where the atlas lists no protein with a unit."""
+    found = {}
+    for unit in units.values():
+        for product in unit["products"]:
+            for item in product["ids"]:
+                if found.setdefault(item["id"], product["found_by"]) != product["found_by"]:
+                    raise SystemExit(f"{item['id']} is found two ways by the atlas")
+    if not found:
+        return None
+    proteins = {how: sorted((key for key, said in found.items() if said == how), key=natural) for how in (FOUND_ACCESSORY, FOUND_NAMED)}
+    going = sorted((family for family, members in families.items() if any(member in found for member in members) and all(found[member] == FOUND_ACCESSORY for member in members if member in found)), key=natural)
+    return {"note": FOUND_BY_NOTE, "default": FOUND_SIGNATURE, "proteins": {how: ids for how, ids in proteins.items() if ids}, "families": {FOUND_ACCESSORY: going} if going else {}}
+
+
+def line_families(lines):
+    """A family's id -> its proteins, over its lines on every shelf (for found_by_block)."""
+    out = defaultdict(list)
+    for line in lines:
+        out[line["id"]].extend(line["proteins"])
+    return dict(out)
+
+
+# The line of a species atlas's method that says so, for the species whose catalogue is a reference proteome.
+TWO_FACTS = "Each product says, apart, how it was found and what its entry is. Found: by the signature of a family that makes the machine itself, which makes it a candidate by family, or only by that of a family that goes with the machine (a regulator, or a subunit that makes no channel or pump by itself), which makes it no candidate for the machine's own work. Its entry: reviewed by a curator, or annotated automatically; that says how the entry was written, not that the protein does the unit's work."
+
 # The whole note of a unit for which the inventory names no natural gene product.
 NOTHING = {
     "U18": "The inventory gives this unit no gene product: it is a default shape of current, not a named channel.",
@@ -1664,7 +1706,26 @@ def find_units(snapshot, entries, filing, human, families_table, units_table, no
     signature_name = lambda signature: filing.names[signature]["name"]
     carried = lambda family: order(accession for signature in family["signatures"] for accession in carriers.get(signature, []))
     said = lambda families: f"{listed(family['of'] for family in families)} ({', '.join(signature for family in families for signature in family['signatures'])})"
-    units, unit_of, beside = {}, defaultdict(set), {}
+    units, unit_of, beside, found_of = {}, defaultdict(set), {}, {}
+
+    def broader_said(unit, families, listed_here):
+        """A sentence on the proteins that carry a signature broader than a family of the unit
+        ("broader" in the table): they are not listed with the unit, and the note says why."""
+        said_here = ""
+        for key, family in families:
+            for signature in family.get("broader", []):
+                broad = order(accession for accession in carriers.get(signature, []) if accession not in listed_here)
+                if not broad:
+                    continue
+                # The unit's human candidates that carry the broader signature and none of the family's own.
+                humans = [product["gene"] for product in unit.get("products") or [] if product.get("human_uniprot") and signature in human.get(product["human_uniprot"], set()) and not set(family["signatures"]) & human.get(product["human_uniprot"], set())]
+                said_here += f" {plural(len(broad), 'protein')} of its {len(entries):,} carr{'ies' if len(broad) == 1 else 'y'} {signature} ({signature_name(signature)}), a family broader than {family['of']}: {some(by_gene(broad))}."
+                if humans:
+                    said_here += f" The unit's human candidates {listed(humans)} carry it and no signature of {family['of']} of their own, so a search by signature cannot tell such a subunit here from the family's other members, and none of these is listed with the unit."
+                else:
+                    said_here += " None of these is listed with the unit."
+        return said_here
+
     for unit in snapshot["units"]:
         spec = units_table[unit["id"]]
         if spec.get("finding"):
@@ -1684,24 +1745,39 @@ def find_units(snapshot, entries, filing, human, families_table, units_table, no
             finding, shown = "different family", [family for family in other if carried(family)]
         else:
             finding, shown = "none found", []
-        products, listed_here = [], set()
+        products, listed_here, going_here = [], set(), set()
         for family in shown:
+            # How the product was found is the family's part in the machine, never the state of its entry.
+            accessory = any(family is item for item in going_with)
             for accession in carried(family):
                 if accession in listed_here:
                     continue
                 listed_here.add(accession)
                 entry = entries[accession]
                 which = [signature for signature in family["signatures"] if accession in carriers.get(signature, [])]
+                found_by = FOUND_ACCESSORY if accessory else FOUND_SIGNATURE
+                if accessory:
+                    going_here.add(accession)
+                if found_of.setdefault(accession, found_by) != found_by:
+                    raise SystemExit(f"{entry['gene'] or accession} would be found by an accessory family in one unit and by a family that makes the machine in another; read the units' families again")
+                said_of = "That family goes with the machine and makes none by itself, so the protein is no candidate for the machine's own work." if accessory else "A signature says the family, not which member does the unit's work."
                 products.append({
                     "name": entry["name"], "gene": entry["gene"] or None, "role": family["of"], "ids": [{"db": "uniprot", "id": accession}], "length": entry["length"],
-                    "evidence": "reviewed entry" if entry["reviewed"] else "family signature",
-                    "evidence_note": f"Its {'reviewed' if entry['reviewed'] else 'unreviewed'} UniProtKB entry carries {', '.join(which)} ({'; '.join(signature_name(s) for s in which)}). A signature says the family, not which member does the unit's work.",
+                    "found_by": found_by,
+                    "entry": ENTRY_REVIEWED if entry["reviewed"] else ENTRY_UNREVIEWED,
+                    "evidence_note": f"Its {'reviewed' if entry['reviewed'] else 'unreviewed'} UniProtKB entry carries {', '.join(which)} ({'; '.join(signature_name(s) for s in which)}). {said_of}",
                     "citation": None,
                 })
                 unit_of[accession].add(unit["id"])
         hits = order(listed_here)
         if finding == "found":
-            note = f"{plural(len(hits), 'protein')} of its {len(entries):,} carr{'ies' if len(hits) == 1 else 'y'} the signature of {said(shown)}: {some(by_gene(hits))}. Each is a candidate by its family alone: no source read here says which of them does the unit's work in {organism}."
+            # The candidates are the carriers of a family that makes the machine; those of a family that only goes with it are said apart.
+            making, going = order(listed_here - going_here), order(going_here)
+            made_by = [family for family in shown if not any(family is item for item in going_with)]
+            goes_with = [family for family in shown if any(family is item for item in going_with)]
+            note = f"{plural(len(making), 'protein')} of its {len(entries):,} carr{'ies' if len(making) == 1 else 'y'} the signature of {said(made_by)}: {some(by_gene(making))}. Each is a candidate by its family alone: no source read here says which of them does the unit's work in {organism}."
+            if going:
+                note += f" {plural(len(going), 'more protein', 'more proteins')} carr{'ies' if len(going) == 1 else 'y'} only the signature of {said(goes_with)}, which go with the machine and make none by themselves: {some(by_gene(going))}. {'It is' if len(going) == 1 else 'They are'} listed with the unit and {'is no candidate' if len(going) == 1 else 'are no candidates'} for its own work."
         elif finding == "different family":
             note = f"None of its {len(entries):,} proteins carries the signature of {said(own)}, the family the engine's law names. {plural(len(hits), 'protein')} carr{'ies' if len(hits) == 1 else 'y'} that of {said(shown)}, the other family this machine is asked for{other_said}: {some(by_gene(hits))}."
         else:
@@ -1711,6 +1787,7 @@ def find_units(snapshot, entries, filing, human, families_table, units_table, no
             for family, found in only:
                 for accession in found:
                     beside[accession] = family["of"]
+        note += broader_said(unit, families, listed_here)
         if more:
             note = more(unit["id"], families, finding, note)
         units[unit["id"]] = {"finding": finding, "note": note, "products": products}

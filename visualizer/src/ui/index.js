@@ -48,7 +48,8 @@ class CellsIndex extends HTMLElement {
           )
         );
       if (found.length > limit) rows.push(h("p", { class: "index-more" }, `and ${(found.length - limit).toLocaleString("en-US")} more: type a name or an identifier to find one`));
-      if (rows.length) blocks.push(h("section", {}, h("h3", {}, section.label), rows));
+      // A section may say what it is in a line of its own (the Machines catalogue's machines looked for and not found).
+      if (rows.length) blocks.push(h("section", {}, h("h3", {}, section.label), section.note ? h("p", { class: "index-more" }, section.note) : null, rows));
     }
     this.list.replaceChildren(...(blocks.length ? blocks : [h("p", { class: "index-empty" }, "No part matches.")]));
   }

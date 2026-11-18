@@ -12,7 +12,7 @@
 // at height 0, and moved to its place. Its name is always shown; the names of its districts
 // and of its sides only while it is the shelf in focus.
 // A protein that the atlas draws as a unit is drawn as that unit, small; every other protein
-// is a plain marker, for which Cells has no law. A large catalogue stands as families: one
+// is a plain marker, listed with no unit of Cells' law inventory. A large catalogue stands as families: one
 // round marker each, sized by its members. Pressing one opens it: a small set of shelves of
 // its own rises from it, round, with every member on it: in its piece of membrane or on it,
 // on the glass around it, or set apart beyond the rim.
@@ -38,6 +38,9 @@ const OPENING = 620, CLOSING = 320; // milliseconds
 const VEIL = 0.8; // how much of the shelves the page's own colour covers while a family is open
 const RISE = HALF + 20; // how high above the membrane an open family comes to stand, at the least
 const WHITE = new THREE.Color(0xffffff), BLACK = new THREE.Color(0x000000);
+// The marks whose values are an order, surest first, so that a ramp of colour can carry them: essentiality
+// (essential, quasi-essential or fitness, non-essential). A further value past the third takes the third's step.
+export const ORDERED_MARKS = new Set(["essential"]);
 const ease = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 
 let cache = null;
@@ -117,13 +120,17 @@ function fitView(stage, box, { polar, azimuth, free }) {
  * What the page's own furniture covers of the screen, as shares of it: the bar above, the
  * note below, and the card, which stands at the left on a wide window and above on a narrow one.
  */
-export function freeOf(stage, { panel = false } = {}) {
+export function freeOf(stage, { panel = false, trail = true, map = false } = {}) {
   const { width, height } = stage;
   // The panel of a chosen part: the stage shifts its picture by half of what the panel covers, so each side gives that up.
   const beside = panel ? (stage.insets?.right || 0) / 2 : 0, below = panel ? (stage.insets?.bottom || 0) / 2 : 0;
   // On a narrow window the card stands above the picture, and gives way to the panel when one is open.
-  if (width < 760) return below ? { left: 22 / width, right: 22 / width, top: (64 + below) / height, bottom: (12 + below) / height } : { left: 22 / width, right: 22 / width, top: Math.min(0.42, 292 / height), bottom: Math.min(0.24, 124 / height) };
-  return { left: Math.min(0.34, 304 / width) + beside / width, right: (20 + beside) / width, top: 78 / height, bottom: 100 / height };
+  // The trail of the species' own proteins stands under the bar (src/ui/atlas_nav.js): on a phone the card stands under it.
+  // (`trail: false` gives the room as it was before the trail: the stack's shape is chosen from it, so that its layout stays.)
+  const band = trail ? 52 : 0;
+  if (width < 760) return below ? { left: 22 / width, right: 22 / width, top: (64 + band + below) / height, bottom: (12 + below) / height } : { left: 22 / width, right: 22 / width, top: Math.min(0.42 + band / 1000, (292 + band) / height), bottom: Math.min(0.24, 124 / height) };
+  // Of several shelves, the map of the stack stands at the right edge, a column of bars.
+  return { left: Math.min(0.34, 304 / width) + beside / width, right: (20 + beside + (map ? 64 : 0)) / width, top: (78 + (trail ? 40 : 0)) / height, bottom: 100 / height };
 }
 
 // How deep a stack of shelves may be for its width, to fill the free part of a screen seen from the front and above.
@@ -131,7 +138,7 @@ const SHAPES = [0.65, 0.8, 1.25, 2.4];
 
 /** The shape of stack that suits the screen as it is: one of a few, so that a layout is made once for each. */
 export function shapeFor(stage) {
-  const free = freeOf(stage);
+  const free = freeOf(stage, { trail: false });
   const ratio = ((1 - free.top - free.bottom) * stage.height) / Math.max(1, (1 - free.left - free.right) * stage.width);
   const wanted = ratio / 0.75 - 0.1;
   return SHAPES.reduce((best, shape) => (Math.abs(shape - wanted) < Math.abs(best - wanted) ? shape : best));
@@ -228,7 +235,7 @@ export class ShelvesView {
     this.isolate = null; // a side
     this.basis = null; // how a side is known
     this.mark = null; // { name, value }, and `ids` where a door names some proteins of the set
-    this.units = false; // only what Cells has a law for
+    this.units = false; // only what makes a unit of the law inventory
     this.opened = null; // the family, part or gathering that is open
     this.wanted = null; // the one being fetched
     this.status = null; // what the view is doing, or why it could not
@@ -236,18 +243,40 @@ export class ShelvesView {
     this.dish = null;
     this.leaving = null; // the dish that is closing
     this.colours = {};
+    // What colour carries (docs/ATLAS_LOOK.md, decided 16 November 2026): the side of each protein's own membrane
+    // ("side", the default), how that side is known ("basis"), a measured mark with ordered values ("mark", and
+    // `markName`), or Cells' law inventory ("law": one hue for what makes a unit of that inventory, as before).
+    this.colourBy = "side";
+    this.markName = null;
     this.build();
   }
 
   // ------------------------------------------------------------ building
 
-  /** The scene's part for the first of an item's units that the scene has, or null. */
+  /**
+   * The scene's part for the first of an item's units that the scene has, or null. A protein, or a
+   * family, that the atlas lists with a unit only as going with its machine has none: it is drawn plain.
+   */
   unitOf(item) {
+    if (!this.makes(item)) return null;
     for (const id of item.units || []) {
       const entity = this.lens.model.get(this.shelves.units.get(id));
       if (entity?.form) return entity;
     }
     return null;
+  }
+
+  /**
+   * Whether an item is drawn as making a unit of the law inventory: it has a unit, and not only as going with the
+   * machine. Such a one takes the units' tone and its unit's form; one that only goes with it is drawn plain, in grey.
+   */
+  makes(item) {
+    return Boolean(item.units?.length) && !this.shelves.goesWithOnly(item);
+  }
+
+  /** A marker's tone: "more" for what gathers several, "unit" for what makes a machine, "plain" for the rest. */
+  toneOf(item, many = false) {
+    return many ? "more" : this.makes(item) ? "unit" : "plain";
   }
 
   /** A unit's form, copied from one made once: { entity, group, meshes, reach }. */
@@ -350,7 +379,7 @@ export class ShelvesView {
           const unknown = item.side === "not known";
           // A gathering of smaller families, and the only members of their families standing together, are many and not one.
           const many = Boolean(item.holds) || item.type === "l";
-          const node = { item, area: area.id, frame, base, radius: families ? place.radius : BEAD, tone: many ? "more" : item.units.length ? "unit" : "plain", many };
+          const node = { item, area: area.id, frame, base, radius: families ? place.radius : BEAD, tone: this.toneOf(item, many), many };
           const entity = this.unitOf(item);
           if (families) {
             // A family stands as a round box: through the membrane, on a stalk above it, or on the glass.
@@ -362,7 +391,7 @@ export class ShelvesView {
             set(unknown ? "puck-ghost" : "puck", G.puck, unknown ? ghost : solid).push(node);
             if (item.side === "outside") set("stalk", G.stalk, this.materials.stalk).push({ stalk: true, position: new THREE.Vector3(x, membraneTop + 1.3, z), scale: [2.2, 2.6, 2.2] });
             if (entity && !many) {
-              // A family that holds a machine Cells has a law for carries that unit's form, small.
+              // A family that holds a unit of the law inventory carries that unit's form, small.
               const form = this.formFor(entity);
               const fit = Math.min(0.62, (place.radius * 0.92) / form.reach.radius);
               form.group.scale.setScalar(fit);
@@ -588,6 +617,9 @@ export class ShelvesView {
   lit(item) {
     // A family is on a side if any of its members is: the legend counts proteins.
     if (this.isolate && (item.type === "p" ? item.side !== this.isolate : !(item.sides?.[this.isolate] > 0))) return false;
+    // Of several shelves, a side shown alone is that side of the shelf in focus: each shelf's sides are its own
+    // (the lumen, the matrix, the nucleus), and the legend names that shelf's.
+    if (this.isolate && this.shelves.several && this.focused !== undefined && (item.shelf ?? null) !== this.focused) return false;
     if (this.units && !item.units.length) return false;
     if (item.type === "p") {
       if (this.basis && item.basis !== this.basis) return false;
@@ -731,7 +763,7 @@ export class ShelvesView {
         shade = 1 - shade;
         last = member.under;
       }
-      const entry = { item: member, local: new THREE.Vector3(place.dx, 0, place.dz), radius: BEAD, tone: member.units.length ? "unit" : "plain", shade: item.holds ? shade : 0 };
+      const entry = { item: member, local: new THREE.Vector3(place.dx, 0, place.dz), radius: BEAD, tone: this.toneOf(member), shade: item.holds ? shade : 0 };
       const entity = this.unitOf(member);
       const onGlass = place.zone !== "plate";
       if (entity) {
@@ -1041,12 +1073,13 @@ export class ShelvesView {
       const named = this.frames.length === 1 ? all.slice(0, 64) : [...new Set([...this.frames.flatMap((frame) => all.filter((node) => node.frame === frame).slice(0, 40)), ...greatest])];
       for (const [index, node] of greatest.entries()) node.great = index + 1;
       for (const node of named) {
-        const held = node.item.units.length > 0;
+        // A gathering is marked by what it holds; a family by whether it makes a machine (gatherings' pips are as before).
+        const held = node.many ? node.item.units.length > 0 : this.makes(node.item);
         // The only members of their families, standing together: named as a gathering is, by how many they are.
         const text = node.item.type === "l" ? plural(node.item.count, "family of one", "families of one") : node.item.label;
         node.label = labels.add({ id: node.item.key, text, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 20 + Math.log2(node.item.count + 1) + (held ? 6 : 0), kind: "part label-unit", lift: 6, swatch: held ? "map-assigned" : null });
       }
-      // Every family that holds a machine Cells has a law for is named too.
+      // Every family that holds a unit of the law inventory is named too.
       for (const node of this.nodes.values()) {
         if (node.label || !node.form) continue;
         node.label = labels.add({ id: node.item.key, text: node.item.label, anchor: new THREE.Vector3(node.position.x, node.top + 0.4, node.position.z), priority: 30, kind: "part label-unit", lift: 6, swatch: "map-assigned" });
@@ -1075,7 +1108,7 @@ export class ShelvesView {
       const show = (!rest && lit) || hot;
       // What is not shown sinks into what it stands on: the membrane's colour, or the page's.
       const dim = node.area === "plate" ? colours.sunk : colours.dim;
-      if (node.mesh) node.mesh.setColorAt(node.index, show ? colours[node.tone] : dim);
+      if (node.mesh) node.mesh.setColorAt(node.index, show ? this.colourOf(node.item, node.tone) : dim);
       if (node.pip) node.pip.mesh.setColorAt(node.pip.index, show ? colours.unit : dim);
       if (node.foot) node.foot.mesh.setColorAt(node.foot.index, show ? colours.unit : dim);
       if (node.form) for (const mesh of node.form.meshes) mesh.material = tones.get(mesh.userData.tone)[show ? "lit" : "dim"];
@@ -1097,7 +1130,7 @@ export class ShelvesView {
         const hot = entry.item.key === this.selected || entry.item.key === this.hovered;
         const show = (this.lit(entry.item) && (!only || entry.item.under === only)) || hot;
         const dim = entry.zone === "plate" ? colours.sunk : colours.dim;
-        if (entry.mesh) entry.mesh.setColorAt(entry.index, show ? (entry.shade && entry.tone === "plain" ? colours.plainAlt : colours[entry.tone]) : dim);
+        if (entry.mesh) entry.mesh.setColorAt(entry.index, show ? this.colourOf(entry.item, entry.tone, entry.shade) : dim);
         if (entry.foot) entry.foot.mesh.setColorAt(entry.foot.index, show ? colours.unit : dim);
         if (entry.form) for (const mesh of entry.form.meshes) mesh.material = tones.get(mesh.userData.tone)[show ? "lit" : "dim"];
       }
@@ -1113,6 +1146,42 @@ export class ShelvesView {
       }
     }
     this.stage.invalidate();
+  }
+
+  /**
+   * A marker's colour as colour is asked to carry (colourBy). Cells' law inventory: the units' tone for what makes a machine,
+   * grey for the rest, as the shelves were first drawn. The side of its membrane: the side's colour, for a protein
+   * its own and for a family's line the side where most of its members sit (a gathering the same, told by its ring;
+   * a neighbour in an open gathering a shade deeper). How the side is known, or a mark: a protein's own; a family's line states
+   * neither, so it stays grey. What makes a machine keeps the machine's form and its base, whatever colour shows.
+   */
+  colourOf(item, tone, shade = 0) {
+    const colours = this.colours;
+    if (this.colourBy === "law" || !colours.side) return shade && tone === "plain" ? colours.plainAlt : colours[tone];
+    let set = null;
+    if (this.colourBy === "side") set = colours.side[item.side];
+    else if (item.type === "p") set = this.colourBy === "basis" ? colours.basis[item.basis] : this.markColour(item);
+    if (!set) return tone === "more" ? colours.more : shade ? colours.plainAlt : colours.plain;
+    return tone === "more" ? set.more : shade ? set.alt : set.base;
+  }
+
+  /** The colour of a protein by the mark colour carries: the ramp's step for an ordered mark's value, the ramp's first for any value of another. */
+  markColour(item) {
+    const mark = this.shelves.marks?.[this.markName];
+    const value = item.marks?.[this.markName];
+    if (!mark || value === undefined || value === null || value === false) return null;
+    const values = Array.isArray(mark.values) ? mark.values.map(String) : [];
+    if (ORDERED_MARKS.has(this.markName)) return this.colours.mark[Math.min(2, Math.max(0, values.indexOf(String(value))))];
+    return this.colours.mark[0];
+  }
+
+  /** Change what colour carries ("side", "basis", "mark" with the mark's name, "law"). */
+  setColourBy(mode, markName = null) {
+    this.colourBy = ["side", "basis", "mark", "law"].includes(mode) ? mode : "side";
+    // A mark this species does not state (a choice kept from another species) gives way to the side.
+    if (this.colourBy === "mark" && !this.shelves.marks?.[markName]) this.colourBy = "side";
+    this.markName = this.colourBy === "mark" ? markName : null;
+    this.paint();
   }
 
   place(ring, key, label) {
@@ -1165,7 +1234,7 @@ export class ShelvesView {
    */
   frame(of) {
     const stage = this.stage, narrow = stage.width < 760;
-    const free = freeOf(stage, { panel: true });
+    const free = freeOf(stage, { panel: true, map: this.shelves.several });
     let view;
     if (of === "dish" && this.dish) {
       const { to, reach, high } = this.dish, r = reach + 2.5;
@@ -1205,6 +1274,18 @@ export class ShelvesView {
       // On the membrane, towards the membrane's own face.
       sunk: plain.clone().lerp(new THREE.Color(palette.bioMembrane).lerp(palette.dark ? BLACK : WHITE, palette.dark ? 0.42 : 0.3), 0.8),
     };
+    // The side colours and the two ramps, from the page's own tokens (src/page.css: --own-*), each with a deeper
+    // form for a neighbour in an open gathering.
+    const css = typeof getComputedStyle === "function" && this.stage.host ? getComputedStyle(this.stage.host) : null;
+    const token = (name, fallback) => {
+      const base = new THREE.Color(css?.getPropertyValue(`--${name}`).trim() || fallback);
+      // A gathering is told by its dashed ring and its name, not by a paler colour: drawn paler it fell under 3 : 1
+      // against the page in the light theme (16 November 2026), so it takes its side's own.
+      return { base, more: base, alt: base.clone().lerp(palette.dark ? WHITE : BLACK, 0.22) };
+    };
+    this.colours.side = { outside: token("own-outside", "#5a2a4c"), in: token("own-in", "#6f5ae0"), inside: token("own-inside", "#e0650e") };
+    this.colours.basis = { stated: token("own-basis-1", "#241133"), predicted: token("own-basis-2", "#5b327a"), "by function": token("own-basis-3", "#874db2") };
+    this.colours.mark = [token("own-mark-1", "#2c1402"), token("own-mark-2", "#6b3809"), token("own-mark-3", "#9d5513")];
     this.veilMaterial.color.copy(ground);
     this.materials.stalk.color.copy(plain).lerp(ground, 0.35);
     for (const sheet of [...this.sheets, this.dish?.sheet].filter(Boolean)) {

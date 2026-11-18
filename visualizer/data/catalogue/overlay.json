@@ -1,0 +1,213 @@
+{
+  "format": "cells.visualizer.machine_catalogue_overlay@1",
+  "note": "The hand-kept part of the Machines catalogue (schema/MACHINE_CATALOGUE.md): what each kind of machine is and does, which group it stands in, which species' records name it, and where its size, count and proteins are read. tools/build_catalogue.py reads this file, the species files, the species' own proteins and the machine files, and writes data/catalogue/catalogue.json. No number is written here that a source does not give, and no sentence of a paper but the one quoted with its place. The membrane units of the law inventory are not listed here: the page reads them from the scene's protein units, as the Protein atlas does.",
+  "decided": "The tab and its catalogue were asked for on 17 November 2026: a catalogue of molecular machines by species, gathered as the proteins were, in a design of its own. Decided 17 November 2026 (D209): the tab is the first milestone (M0) of the engine's path for machines, a catalogue with drawing levels labelled illustration; no machine is in the engine, and the drawing levels are the viewer's, not simulation detail. The coordinator ruled the same evening that a machine keeps one identity on the page.",
+  "groups": [
+    { "id": "proteins", "label": "Making proteins", "plain": "Machines that read a messenger RNA and build the protein it codes for." },
+    { "id": "genes", "label": "Reading genes", "plain": "Machines that copy a gene's DNA into RNA." },
+    { "id": "dna", "label": "Copying and mending DNA", "plain": "Machines that copy a cell's DNA before it divides, hold its strands and mend them." },
+    { "id": "atp", "label": "Making ATP", "plain": "Machines that make the cell's fuel from a flow of ions across a membrane." },
+    { "id": "light", "label": "Capturing light", "plain": "Machines of the chloroplast that catch light, make ATP and NADPH from it, and fix carbon dioxide." },
+    { "id": "ions", "label": "Moving ions: units of the law inventory", "plain": "Channels, pumps, exchangers and junctions: the units of the engine's law inventory that are protein assemblies, as the Protein atlas lists them. A unit's panel says which of its laws an active model declares." },
+    { "id": "membranes", "label": "Putting proteins into membranes", "plain": "Channels that thread new proteins across a membrane or set them into it." },
+    { "id": "folding", "label": "Folding proteins", "plain": "Cages and rings that give a new protein a closed space to fold in, using ATP." },
+    { "id": "breaking", "label": "Breaking proteins down", "plain": "Proteases that unfold proteins and cut them, using ATP." },
+    { "id": "moving", "label": "Moving, sensing and attaching", "plain": "Machines that move the cell, steer it, or hold it to a surface." },
+    { "id": "traffic", "label": "Carrying cargo", "plain": "Motors that walk along the cell's filaments, carrying cargo from place to place." }
+  ],
+  "records": {
+    "fr13": {
+      "label": "FR-13, Molecular machines, individually and in aggregate",
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-13, line 655",
+      "revision": "7538b0cd87c024ef62e0b469caa93499924afed6",
+      "status": "No model yet (D209)",
+      "names_absent": ["ribosome", "RNA polymerase", "ATP synthase", "proteasome", "translocon", "flagellar motor", "chemoreceptor array", "attachment organelle"]
+    },
+    "d209": {
+      "label": "D209, Molecular machines: M0 now, then M1",
+      "path": "docs/DECISIONS.md",
+      "where": "D209, line 6723",
+      "revision": "7538b0cd87c024ef62e0b469caa93499924afed6"
+    },
+    "cell-structures": {
+      "label": "The Cell view's structures",
+      "path": "visualizer/docs/CELL_STRUCTURES.md",
+      "where": "What each status rests on: Ribosomes",
+      "entity": "cap.ribosomes"
+    }
+  },
+  "units_left_out": {
+    "note": "Units of the law inventory that the catalogue does not hold, because they are not protein assemblies: a leak, a permeability, a lumped conductance, or a law that names no protein. The Protein atlas keeps all its units.",
+    "units": {
+      "unit.U18": "a generic delayed-rectifier current that names no protein",
+      "unit.U23": "an always-open leak",
+      "unit.U34": "always-open leak populations",
+      "unit.U35": "a passive membrane permeability",
+      "unit.U46": "a transporter configured in a run, that names no protein",
+      "unit.U47": "a passive permeability of the mitochondrial inner membrane",
+      "unit.U49": "the membrane's lumped water permeability"
+    }
+  },
+  "kinds": [
+    { "id": "proteasome", "absent_as": "proteasome", "records": ["fr13"] },
+    {
+      "id": "ribosome", "label": "Ribosome", "group": "proteins", "absent_as": "ribosome",
+      "plain": "Reads a messenger RNA and joins amino acids, one at a time, into the protein it codes for.",
+      "cell_part": "cap.ribosomes",
+      "records": ["fr13", "cell-structures"]
+    },
+    {
+      "id": "rna-polymerase", "label": "RNA polymerase", "group": "genes", "absent_as": "RNA polymerase",
+      "plain": "Copies a gene's DNA into RNA, the first step from a gene to a protein.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "atp-synthase", "label": "ATP synthase", "group": "atp", "absent_as": "ATP synthase",
+      "plain": "Turns as ions flow through it across a membrane, and makes ATP as it turns; run the other way, it spends ATP to pump ions out.",
+      "records": [
+        { "ref": "d209", "status": "Planned, first", "says": "Decided 17 November 2026 (D209): the ATP synthase is to be the first machine built in the engine (M1), as general pieces, after the core-seams pass; its law is to be D193's proton_coupled_atp_synthesis_cycle@1, built by the mitochondria lane. There is no model of it yet." },
+        "fr13"
+      ]
+    },
+    {
+      "id": "protein-translocon", "label": "Protein translocon", "group": "membranes", "absent_as": "translocon",
+      "plain": "A channel in the membrane that threads a new protein across it, or opens sideways to set it into the membrane.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "ftsh", "label": "FtsH protease", "group": "breaking",
+      "plain": "A protease that stands in the cell membrane and unfolds and cuts proteins, using ATP.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "lon", "label": "Lon protease", "group": "breaking",
+      "plain": "A protease that unfolds and cuts proteins inside the cell, using ATP.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "hslv", "label": "HslUV protease", "group": "breaking",
+      "plain": "A barrel of HslV that cuts proteins, capped by a ring of HslU that unfolds them and feeds them in, using ATP. HslV's subunits carry the signature of the proteasome's.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "flagellar-motor", "label": "Flagellar motor", "group": "moving", "absent_as": "flagellar motor",
+      "machine_file": "flagellar-motor",
+      "records": ["fr13"]
+    },
+    {
+      "id": "chemoreceptor-array", "label": "Chemoreceptor array", "group": "moving", "absent_as": "chemoreceptor array",
+      "plain": "A lattice of receptor proteins in the membrane that senses chemicals and steers the cell's swimming toward food.",
+      "records": ["fr13"]
+    },
+    {
+      "id": "attachment-organelle", "label": "Attachment organelle", "group": "moving", "absent_as": "attachment organelle",
+      "plain": "A membrane protrusion at one pole with an internal core: it carries the adhesins that hold the cell to a surface, and leads the cell when it glides.",
+      "records": ["fr13"]
+    }
+  ],
+  "species": {
+    "syn3a": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
+      { "kind": "protein-translocon", "named": { "capability": "cap.trafficking", "word": "Sec translocon" } },
+      { "kind": "ftsh", "named": { "capability": "cap.machines", "word": "FtsH" } },
+      { "kind": "lon", "named": { "capability": "cap.machines", "word": "Lon" } }
+    ],
+    "mpneumoniae": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" } },
+      { "kind": "protein-translocon", "named": { "capability": "cap.trafficking", "word": "Sec translocon" } },
+      { "kind": "ftsh", "named": { "capability": "cap.machines", "word": "FtsH" } },
+      { "kind": "lon", "named": { "capability": "cap.machines", "word": "Lon" } },
+      { "kind": "attachment-organelle", "named": { "capability": "cap.machines", "word": "attachment organelle" }, "count": { "fact": "Attachment organelle", "says": "one, at one pole" }, "size": { "fact": "Attachment organelle", "shape": "rod", "long_nm": [250, 300] }, "proteins": { "mark": "where", "value": "attachment organelle" } }
+    ],
+    "ecoli": [
+      { "kind": "ribosome", "named": { "capability": "cap.machines", "word": "ribosomes" }, "count": { "fact": "Ribosomes" }, "size": { "part": "ribosome" }, "proteins": { "mark": "complex", "value": "ribosome" } },
+      { "kind": "rna-polymerase", "named": { "capability": "cap.machines", "word": "RNA polymerase" }, "size": { "measure": "ecoli-rna-polymerase" }, "proteins": { "mark": "complex", "value": "RNA polymerase" } },
+      { "kind": "atp-synthase", "named": { "capability": "cap.machines", "word": "ATP synthase" }, "size": { "measure": "ecoli-atp-synthase" }, "proteins": { "mark": "complex", "value": "ATP synthase" } },
+      { "kind": "protein-translocon", "label": "Protein translocases (Sec and Tat)", "named": { "capability": "cap.trafficking", "word": "Sec and Tat translocases" }, "size": { "measure": "ecoli-translocon" } },
+      { "kind": "hslv", "named": { "capability": "cap.machines", "word": "HslV" }, "size": { "measure": "ecoli-hslv" } },
+      { "kind": "lon", "named": { "protein": "P0A9M0" }, "size": { "measure": "ecoli-lon" } },
+      { "kind": "ftsh", "named": { "protein": "P0AAI3" } },
+      { "kind": "flagellar-motor", "named": { "capability": "cap.machines", "word": "the motor of its flagella" }, "count": { "fact": "Flagella", "says": "one at the foot of each flagellum" }, "proteins": { "mark": "complex", "value": "flagellum" } },
+      { "kind": "chemoreceptor-array", "named": { "capability": "cap.assembly", "word": "chemoreceptor arrays" }, "proteins": { "mark": "complex", "value": "chemoreceptor array" } }
+    ],
+    "human": [
+      { "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } },
+      { "kind": "proteasome", "size": { "measure": "human-proteasome" } },
+      { "kind": "atp-synthase", "size": { "measure": "human-atp-synthase" } },
+      { "kind": "rna-polymerase", "size": { "measure": "human-rna-polymerase" } },
+      { "kind": "rna-polymerase-i", "size": { "measure": "human-rna-polymerase-i" } },
+      { "kind": "rna-polymerase-iii", "size": { "measure": "human-rna-polymerase-iii" } },
+      { "kind": "complex-i", "size": { "measure": "human-complex-i" } },
+      { "kind": "mitochondrial-ribosome", "size": { "measure": "human-mitochondrial-ribosome" } },
+      { "kind": "cmg-helicase", "size": { "measure": "human-cmg-helicase" } },
+      { "kind": "nuclear-pore", "no_size": "Decided 17 November 2026: the nuclear pore stays a card. Its entry, 9AAV, is an integrative model that holds about a third of the proteins its dossier seeks, so no size is drawn from it." }
+    ],
+    "mouse": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }],
+    "planarian": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }],
+    "fruitfly": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }],
+    "thalecress": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }]
+  },
+  "measures": {
+    "note": "Sizes measured by the viewer from a Protein Data Bank entry's coordinates with tools/measure_particle.py: the tool's own output, kept here as written. A species' file that states a part's size of its own (cell.parts.ribosome) is read first, and the measure here is then not used. The Protein Data Bank states no size: each number is the viewer's own.",
+    "ecoli-atp-synthase": { "file": "data/catalogue/measures/ecoli.atp-synthase.json", "entry": "6OQR", "beside": "6OQS", "of": "Escherichia coli", "outline": "parts", "chains": true, "membrane": { "part": "ring", "says": "Where its membrane lies: the entry holds no membrane, so a thin slab stands where the ring stands, an illustration, centred on the ring and as thick as the ring's farthest atoms reach along the machine's axis" }, "parts": { "head": { "label": "Head (α3β3)", "hue": "bioFuel" }, "central-stalk": { "label": "Central stalk (γε)", "hue": "bioMito" }, "peripheral-stalk": { "label": "Peripheral stalk (b2δ)", "hue": "edge" }, "ring": { "label": "Ring in the membrane (c10)", "hue": "bioMembrane" }, "stator-foot": { "label": "Stator's foot in the membrane (a)", "hue": "bioIon" } }, "sources": ["pdb6oqr", "pdb6oqs"] },
+    "ecoli-rna-polymerase": { "file": "data/catalogue/measures/ecoli.rna-polymerase.json", "entry": "6P1K", "of": "Escherichia coli", "outline": "parts", "chains": true, "note": "the σ70 holoenzyme, with no DNA", "chosen": "Decided 17 November 2026: kept over the core enzyme 7MKP (3.41 Å), which the gathering ranked first: the σ70 holoenzyme holds the machine more whole for a visitor.", "parts": { "beta": "β", "beta-prime": "β′", "alpha": "α2", "omega": "ω", "sigma": "σ70" }, "sources": ["pdb6p1k"] },
+    "ecoli-translocon": { "file": "data/catalogue/measures/ecoli.translocon.json", "entry": "9RBF", "of": "Escherichia coli", "outline": "parts", "chains": false, "note": "SecYEG alone, measured from an entry where it holds YidC and sits on a ribosome, both left out; only about half of SecG's sequence stands in its coordinates", "parts": { "secy": "SecY", "sece": "SecE", "secg": "SecG" }, "sources": ["pdb9rbf"] },
+    "ecoli-hslv": { "file": "data/catalogue/measures/ecoli.hslv.json", "entry": "1G4A-assembly1", "beside": "1G4B-assembly1", "of": "Escherichia coli", "outline": "parts", "chains": true, "note": "HslV's barrel of twelve capped by one HslU ring of six, the crystal's biological assembly; capped at both ends beside it", "chosen": "Decided 17 November 2026: kept over 1HT1 (2.8 Å, the barrel capped at both ends), which the gathering ranked first. With a cap at each end the frame from the barrel to a cap is degenerate, as 1G4B's is (the caps' centre sits on the barrel's), so the parts would not stand upright by this measure until the two caps are named by chain; the doubly capped machine stands beside it as a whole.", "parts": { "hslv": "HslV, the barrel", "hslu": "HslU, the cap" }, "sources": ["pdb1g4a", "pdb1g4b"] },
+    "ecoli-lon": { "file": "data/catalogue/measures/ecoli.lon.json", "entry": "6U5Z", "of": "Escherichia coli", "outline": "whole", "chains": true, "note": "the S679A mutant, a hexamer", "parts": {}, "sources": ["pdb6u5z"] },
+    "human-proteasome": {"file": "data/catalogue/measures/human.proteasome.json", "entry": "7QYB", "of": "Homo sapiens", "outline": "parts", "chains": true, "note": "the 26S proteasome with one regulatory particle; the entry's title names ZFAND5, of which it holds no chain; it holds 32 of the 54 proteins its dossier names with the proteasome", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call, its parts grouped as the Gene Ontology's terms on its dossier's rows group them: the core particle (proteasome core complex, GO:0005839), the regulatory particle's base (GO:0008540) and its lid (GO:0008541); the frame from the core to the lid.", "parts": {"core": {"label": "Core particle (20S): the α and β rings", "hue": "bioRibosome", "genes": ["PSMA1", "PSMA2", "PSMA3", "PSMA4", "PSMA5", "PSMA6", "PSMA7", "PSMB1", "PSMB2", "PSMB3", "PSMB4", "PSMB5", "PSMB6", "PSMB7"]}, "base": {"label": "Regulatory particle's base: its six ATPases, Rpn1, Rpn2 and Rpn10", "hue": "bioFuel", "genes": ["PSMC1", "PSMC2", "PSMC3", "PSMC4", "PSMC5", "PSMC6", "PSMD1", "PSMD2", "PSMD4"]}, "lid": {"label": "Regulatory particle's lid", "hue": "bioSignal", "genes": ["PSMD3", "PSMD6", "PSMD7", "PSMD8", "PSMD11", "PSMD12", "PSMD13", "PSMD14", "SEM1"]}}, "sources": ["pdb7qyb"]},
+    "human-atp-synthase": {"file": "data/catalogue/measures/human.atp-synthase.json", "entry": "8H9T", "of": "Homo sapiens", "outline": "parts", "chains": true, "membrane": {"part": "ring", "says": "Where its membrane lies: the entry holds no membrane, so a thin slab stands where the ring stands, an illustration, centred on the ring and as thick as the ring's farthest atoms reach along the machine's axis"}, "note": "the mitochondrial ATP synthase, one monomer; it holds 16 of the 21 proteins its dossier names with it", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call, its parts grouped as UniProt names the subunits on its dossier's rows: F(1) α and β the head; F(1) γ, δ and ε the central stalk; the peripheral stalk's b, d, F6 and OSCP; F(0) c the ring; F(0) a, 8, e, f, g and j the stator's foot, as E. coli's are drawn; the frame from the ring to the head.", "parts": {"head": {"label": "Head (α3β3)", "hue": "bioFuel", "genes": ["ATP5F1A", "ATP5F1B"]}, "central-stalk": {"label": "Central stalk (γδε)", "hue": "bioMito", "genes": ["ATP5F1C", "ATP5F1D", "ATP5F1E"]}, "peripheral-stalk": {"label": "Peripheral stalk (b, d, F6, OSCP)", "hue": "edge", "genes": ["ATP5PB", "ATP5PD", "ATP5PF", "ATP5PO"]}, "ring": {"label": "Ring in the membrane (c8)", "hue": "bioMembrane", "genes": ["ATP5MC1"]}, "stator-foot": {"label": "Stator's foot in the membrane (a, A6L, e, f, g, j)", "hue": "bioIon", "genes": ["MT-ATP6", "MT-ATP8", "ATP5ME", "ATP5MF", "ATP5MG", "ATP5MJ"]}}, "sources": ["pdb8h9t"]},
+    "human-rna-polymerase": {"file": "data/catalogue/measures/human.rna-polymerase.json", "entry": "6DRD", "of": "Homo sapiens", "outline": "whole", "chains": true, "note": "RNA polymerase II with Gdown1 (POLR2M), one of the proteins its dossier names with it", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call. No part is named: its dossier's rows give no sub-assembly of it, so it is drawn as its whole, then each chain.", "parts": {}, "sources": ["pdb6drd"]},
+    "human-rna-polymerase-i": {"file": "data/catalogue/measures/human.rna-polymerase-i.json", "entry": "7OBA", "of": "Homo sapiens", "outline": "whole", "chains": true, "note": "RNA polymerase I with RRN3 bound, which is left out of the measure", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call. No part is named: its dossier's rows give no sub-assembly of it, so it is drawn as its whole, then each chain.", "parts": {}, "sources": ["pdb7oba"]},
+    "human-rna-polymerase-iii": {"file": "data/catalogue/measures/human.rna-polymerase-iii.json", "entry": "7D59", "of": "Homo sapiens", "outline": "whole", "chains": true, "note": "RNA polymerase III with nothing bound", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call. No part is named: its dossier's rows give no sub-assembly of it, so it is drawn as its whole, then each chain.", "parts": {}, "sources": ["pdb7d59"]},
+    "human-complex-i": {"file": "data/catalogue/measures/human.complex-i.json", "entry": "9I4I", "of": "Homo sapiens", "outline": "whole", "chains": true, "note": "in the frame from subunit ND1 to NDUFV1 its matrix arm stands upright, and its membrane arm slopes about 20° below level", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call, with a frame from MT-ND1 to NDUFV1 added. Its two arms are not named yet: its dossier's rows give no sub-assembly of it, and no rule from the measure is settled, so it is drawn as its whole, then each chain.", "parts": {}, "sources": ["pdb9i4i"]},
+    "human-mitochondrial-ribosome": {"file": "data/catalogue/measures/human.mitochondrial-ribosome.json", "entry": "9S7C", "of": "Homo sapiens", "outline": "parts", "chains": true, "note": "translating: its mRNA, its tRNAs (the structural tRNAVal among them) and the nascent chain are left out of the measure", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call: its two subunits as the Gene Ontology's terms on its dossier's rows group them (the mitochondrial large and small ribosomal subunits, GO:0005762 and GO:0005763); the frame from the large subunit to the small one.", "parts": {"large": "Large subunit (39S)", "small": "Small subunit (28S)"}, "sources": ["pdb9s7c"]},
+    "human-cmg-helicase": {"file": "data/catalogue/measures/human.cmg-helicase.json", "entry": "6XTX", "of": "Homo sapiens", "outline": "parts", "chains": true, "note": "bound to DNA, which is left out of the measure", "chosen": "Decided 17 November 2026: the gathering's pick, by the stated ranking of its dossier's rules.structure, measured with its dossier's call, its parts grouped as UniProt names the proteins on its dossier's rows: the six MCM licensing factors, the four GINS proteins, and Cdc45; no frame named: the tool's own axes.", "parts": {"mcm-ring": {"label": "MCM2–7 ring", "hue": "bioNucleus", "genes": ["MCM2", "MCM3", "MCM4", "MCM5", "MCM6", "MCM7"]}, "gins": {"label": "GINS (Psf1, Psf2, Psf3, Sld5)", "hue": "bioFuel", "genes": ["GINS1", "GINS2", "GINS3", "GINS4"]}, "cdc45": {"label": "Cdc45", "hue": "bioSignal", "genes": ["CDC45"]}}, "sources": ["pdb6xtx"]},
+    "animals-ribosome": { "file": "data/catalogue/measures/animals.ribosome.json", "entry": "8YOP", "of": "Homo sapiens", "note": "the whole 80S, with the antibiotic tigecycline bound, which is no polymer and is not measured; RACK1 (entity 70), whose name says neither subunit, stands in the small subunit, where the measure's call places it", "chosen": "Decided 17 November 2026: of three entries of the whole human 80S measured with the tool, 8YOP (2.2 Å) is the best resolved and holds both subunits whole with no tRNA or factor bound. 6QZP (2.9 Å, an E-site tRNA bound) and 4V6X (5.0 Å, ranked first by the gathering for holding the most of the human's ribosome proteins: 79 entities named as ribosome proteins, against 8YOP's 77 and 6QZP's 75, by the names in each entry) give the same whole within 2 nm (29.4 to 29.7 by 23.0 to 23.2 by 20.8 to 22.8 nm). 6QZP's share of each sequence in its coordinates reads 98 to 100% because its deposited sequences hold little more than its modelled residues (its uL4 is 368 residues long; 8YOP's and 4V6X's, 427).", "parts": { "large": "Large subunit (60S)", "small": "Small subunit (40S)" }, "sources": ["pdb8yop"] },
+    "animals-sodium-pump": { "file": "data/catalogue/measures/animals.sodium-pump.json", "entry": "7E1Z", "of": "Homo sapiens", "outline": "parts", "chains": false, "parts": { "alpha": { "label": "α, the pump", "hue": "bioPump" }, "beta": { "label": "β, outside the cell", "hue": "bioIon" }, "gamma": { "label": "γ (FXYD)", "hue": "edge" } }, "sources": ["pdb7e1z"] },
+    "animals-serca": { "file": "data/catalogue/measures/animals.serca.json", "entry": "6LLE", "of": "Homo sapiens", "outline": "whole", "chains": false, "note": "SERCA2b, one chain", "chosen": "Decided 17 November 2026: 6LLE, the human SERCA2b, is the unit's own protein (UniProt P16615, SERCA2); the Protein atlas names rabbit SERCA1a, 1SU4, among the unit's reference structures.", "parts": {}, "sources": ["pdb6lle"] },
+    "animals-ip3r": { "file": "data/catalogue/measures/animals.ip3r.json", "entry": "6DQJ", "of": "Homo sapiens", "outline": "whole", "chains": true, "note": "the type 3 receptor, a tetramer, with no ligand bound", "parts": {}, "sources": ["pdb6dqj"] },
+    "animals-kv1-2": { "file": "data/catalogue/measures/animals.kv1-2.json", "entry": "3LUT-assembly1", "of": "Rattus norvegicus", "outline": "parts", "chains": true, "note": "Kv1.2 with four β2 subunits, the crystal's biological assembly; by its own records, a re-refinement of the diffraction data of entry 2A79", "parts": { "channel": { "label": "The channel (four Kv1.2 subunits)", "hue": "bioIon" }, "beta": { "label": "β2 subunits, inside the cell", "hue": "edge" } }, "sources": ["pdb3lut"] },
+    "animals-connexin-channel": { "file": "data/catalogue/measures/animals.connexin-channel.json", "entry": "7Z22", "of": "Homo sapiens", "outline": "parts", "chains": true, "note": "connexin 43, two docked connexons of six, in a nanodisc", "parts": { "connexon-1": "A connexon, in one cell's membrane", "connexon-2": "A connexon, in the other cell's membrane" }, "sources": ["pdb7z22"] },
+    "animals-innexin-channel": { "file": "data/catalogue/measures/animals.innexin-channel.json", "entry": "5H1R", "of": "Caenorhabditis elegans", "outline": "parts", "chains": true, "note": "innexin-6, two docked hemichannels of eight", "parts": { "hemichannel-1": "A hemichannel, in one cell's membrane", "hemichannel-2": "A hemichannel, in the other cell's membrane" }, "sources": ["pdb5h1r"] }
+  },
+  "unit_sizes": {
+    "note": "Decided 17 November 2026 (step C of the Machines tab): a unit of the law inventory takes a size only from a structure of its own kind, of any organism, and its panel names that organism; where a species' atlas finds the unit built from another family, from a structure of that family. A unit with no such structure stays a card. These sizes stand on the animals' benches; the units of the other species stay cards.",
+    "species": ["human", "mouse", "planarian", "fruitfly", "thalecress"],
+    "units": {
+      "unit.U39": { "found": "animals-sodium-pump" },
+      "unit.U41": { "found": "animals-serca" },
+      "unit.U43": { "found": "animals-ip3r" },
+      "unit.U06": { "found": "animals-kv1-2" },
+      "unit.U36": { "found": "animals-connexin-channel", "different family": "animals-innexin-channel" }
+    }
+  },
+  "sources": {
+    "pdb7qyb": {"text": "Protein Data Bank entry 7QYB: Proteasome-ZFAND5 Complex Z-C state. Electron microscopy, 4.1 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7QYB", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-proteasome-g/7QYB.cif.gz"},
+    "pdb8h9t": {"text": "Protein Data Bank entry 8H9T: Human ATP synthase state 2 (combined). Electron microscopy, 2.77 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/8H9T", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-atp-synthase-g/8H9T.cif.gz"},
+    "pdb6drd": {"text": "Protein Data Bank entry 6DRD: RNA Pol II(G). Electron microscopy, 3.9 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6DRD", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-rna-polymerase-g/6DRD.cif.gz"},
+    "pdb7oba": {"text": "Protein Data Bank entry 7OBA: Cryo-EM structure of human RNA Polymerase I in complex with RRN3. Electron microscopy, 3.1 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7OBA", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-rna-polymerase-i-g/7OBA.cif.gz"},
+    "pdb7d59": {"text": "Protein Data Bank entry 7D59: cryo-EM structure of human RNA polymerase III in apo state. Electron microscopy, 3.1 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7D59", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-rna-polymerase-iii-g/7D59.cif.gz"},
+    "pdb9i4i": {"text": "Protein Data Bank entry 9I4I: High resolution Cryo-EM structure of human complex I in mitochondria. Electron microscopy, 2.63 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/9I4I", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-complex-i-g/9I4I.cif.gz"},
+    "pdb9s7c": {"text": "Protein Data Bank entry 9S7C: Structure of human mitochondrial COX1-translating ribosome nascent chain complex with tRNAs in initial hybrid state (H1). Electron microscopy, 3.2 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/9S7C", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-mitochondrial-ribosome-g/9S7C.cif.gz"},
+    "pdb6xtx": {"text": "Protein Data Bank entry 6XTX: CryoEM structure of human CMG bound to ATPgammaS and DNA. Electron microscopy, 3.29 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6XTX", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-cmg-helicase-g/6XTX.cif.gz"},
+    "pdb8yop": { "text": "Protein Data Bank entry 8YOP: Cryo-EM structure of the human 80S ribosome with 4 um Tigecycline. Electron microscopy, 2.2 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/8YOP", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-ribosome-80s-b/8YOP.cif.gz" },
+    "pdb7e1z": { "text": "Protein Data Bank entry 7E1Z: Cryo EM structure of a Na+-bound Na+,K+-ATPase in the E1 state. Electron microscopy, 3.2 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7E1Z", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-sodium-pump/7E1Z.cif.gz" },
+    "pdb6lle": { "text": "Protein Data Bank entry 6LLE: CryoEM structure of SERCA2b WT in E1-2Ca2+-AMPPCP state. Electron microscopy, 2.9 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6LLE", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-serca/6LLE.cif.gz" },
+    "pdb6dqj": { "text": "Protein Data Bank entry 6DQJ: Human type 3 1,4,5-inositol trisphosphate receptor in a ligand-free state. Electron microscopy, 3.49 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6DQJ", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-ip3r/6DQJ.cif.gz" },
+    "pdb3lut": { "text": "Protein Data Bank entry 3LUT: A Structural Model for the Full-length Shaker Potassium Channel Kv1.2. X-ray diffraction, 2.9 Å; its first biological assembly; Rattus norvegicus, by the entry's own source records.", "url": "https://www.rcsb.org/structure/3LUT", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-kv-channel/3LUT-assembly1.cif.gz" },
+    "pdb7z22": { "text": "Protein Data Bank entry 7Z22: Connexin43 gap junction channel structure in nanodisc. Electron microscopy, 2.95 Å; Homo sapiens, by the entry's own source records.", "url": "https://www.rcsb.org/structure/7Z22", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "human/wwpdb-gap-junction-cx43/7Z22.cif.gz" },
+    "pdb5h1r": { "text": "Protein Data Bank entry 5H1R: C. elegans INX-6 gap junction channel. Electron microscopy, 3.6 Å; Caenorhabditis elegans, by the entry's own source records.", "url": "https://www.rcsb.org/structure/5H1R", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "planarian/wwpdb-innexin-channel/5H1R.cif.gz" },
+    "pdb6oqr": { "text": "Protein Data Bank entry 6OQR: E. coli ATP Synthase ADP State 1a. Electron microscopy, 3.1 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6OQR", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-atp-synthase/6OQR.cif.gz" },
+    "pdb6oqs": { "text": "Protein Data Bank entry 6OQS: E. coli ATP synthase State 1b. Electron microscopy, 3.3 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6OQS", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-atp-synthase/6OQS.cif.gz" },
+    "pdb6p1k": { "text": "Protein Data Bank entry 6P1K: Cryo-EM structure of Escherichia coli sigma70 bound RNAP polymerase holoenzyme. Electron microscopy, 4.05 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6P1K", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-rna-polymerase/6P1K.cif.gz" },
+    "pdb9rbf": { "text": "Protein Data Bank entry 9RBF: Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC. Electron microscopy, 2.44 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/9RBF", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-translocon/9RBF.cif.gz" },
+    "pdb1g4a": { "text": "Protein Data Bank entry 1G4A: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 3.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/1G4A", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-hslv/1G4A-assembly1.cif.gz" },
+    "pdb1g4b": { "text": "Protein Data Bank entry 1G4B: Crystal structures of the HslVU peptidase-ATPase complex reveal an ATP-dependent proteolysis mechanism. X-ray diffraction, 7.0 Å; its first biological assembly; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/1G4B", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-hslv/1G4B-assembly1.cif.gz" },
+    "pdb6u5z": { "text": "Protein Data Bank entry 6U5Z: Cryo-EM structure of E. coli LonA S679A. Electron microscopy, 3.5 Å; Escherichia coli, by the entry's own source records.", "url": "https://www.rcsb.org/structure/6U5Z", "licence": "CC0 1.0", "class": "permissive", "accessed": "2026-11-17", "saved": "ecoli/wwpdb-lon/6U5Z.cif.gz" }
+  }
+}

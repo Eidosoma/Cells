@@ -1,0 +1,88 @@
+{
+ "format": "cells.visualizer.cell_type@1",
+ "species": "brightfin",
+ "id": "ciliated",
+ "label": "Ciliated cell",
+ "order": 20,
+ "plain": "A made-up cell type with a shape of its own.",
+ "modelled": {
+  "state": "planned",
+  "text": "A made-up decision says it will be modelled; nothing of it is in the engine.",
+  "record": [
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D999, made up"
+   }
+  ]
+ },
+ "levels": [
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "capsule",
+    "length_um": 30,
+    "across_um": 8
+   },
+   "note": "Drawn as a rod: the picture's choice.",
+   "sources": [
+    "made"
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 2
+   },
+   "note": "A made-up sheet of these cells."
+  }
+ ],
+ "parts": {
+  "membranes": 1,
+  "wall": false,
+  "nucleus": true,
+  "organelles": [
+   "er",
+   "mitochondria"
+  ]
+ },
+ "capabilities": {
+  "cap.channels": {
+   "place": "present",
+   "state": "planned",
+   "says": "In this cell its currents are carried by made-up laws.",
+   "record": [
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D999, made up"
+    }
+   ]
+  }
+ },
+ "engine": {
+  "definition": "brightfin.ciliated",
+  "parameter_set": "brightfin.ciliated.endo",
+  "says": "A made-up binding, labelled as the lead's provisional reading.",
+  "provisional": true
+ },
+ "loop": null,
+ "proteins": null,
+ "facts": [
+  {
+   "label": "Length",
+   "value": "about 30 µm",
+   "sources": [
+    "made"
+   ]
+  }
+ ],
+ "sources": {
+  "made": {
+   "text": "Made up for the entries reader's tests.",
+   "url": "https://example.org/made-up",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-16"
+  }
+ }
+}

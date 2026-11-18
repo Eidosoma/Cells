@@ -11,7 +11,17 @@
  "made": "2026-11-15",
  "modelled": {
   "state": "generic",
-  "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes. No human cell type, organ or body is modelled yet. Specific cell types are planned: the first is a human ventricular heart cell, whose laws will follow O'Hara and Rudy's model of 2011 (the endocardial cell). That choice is made and nothing of it is built yet (decisions D183 and D184, 16 November 2026). The heart and the body are placeholder outlines."
+  "text": "Cells models a generic cell and a sheet of such cells, with laws whose candidate proteins are named by their human genes; that generic cell is the one drawn. No human cell type, organ or body is modelled yet. The first human cell type is designed, not modelled: a ventricular heart cell, whose laws follow O'Hara and Rudy's model of 2011 (the endocardial cell). Its design note is on main, and its status there reads proposed, with its choices decided by D184 (decisions D183 and D184, 16 November 2026); nothing of it is built yet. The heart and the body are placeholder outlines.",
+  "record": [
+   {
+    "path": "docs/DECISIONS.md",
+    "where": "D183: The human cardiac law set is brought forward; D184: The human cardiac law set's choices"
+   },
+   {
+    "path": "docs/HUMAN_CARDIAC_LAWS_DESIGN.md",
+    "where": "Status: PROPOSED, 16 November 2026; its choices decided by D184"
+   }
+  ]
  },
  "levels": [
   {

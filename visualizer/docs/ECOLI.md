@@ -133,7 +133,7 @@ Two marks pick out the machines of the proposed track. Both come from permissive
 ## Its side of the atlas
 
 - **None of the 49 units is found:** 43 "none found", 6 "nothing to look for". The units
-  are machines of animal cells. The search is the one the other small species use: each
+  are channels, pumps and junctions of animal cells. The search is the one the other small species use: each
   unit's family signatures, looked for among the InterPro entries of the 4,403 proteins,
   with a control count among all bacteria.
 - **One near miss, and a reading of this file's own.** `yfbK` carries the family signature
@@ -154,28 +154,41 @@ Two marks pick out the machines of the proposed track. Both come from permissive
 
 - **A rod 2.5 µm long and 1 µm across,** the picture's choice within the ranges one open
   paper gives (Volkmer and Heinemann 2011). Its second membrane and its wall are drawn
-  as clear shells around the cell membrane.
+  as clear shells around the cell membrane: in the schematic picture at a distance that is
+  the picture's choice, and to scale at the widths Matias and others 2003 measured (the
+  inner membrane 5.84 nm thick, the wall 6.35 nm, the outer membrane 6.87 nm, 20.99 nm
+  between the membranes).
 - **6,800 ribosomes,** the low end of the range another open paper gives (6,800 to
   72,000 by phase of growth; Urich and others 2008), and a chromosome of 4,642 kbp.
+- **Its ribosome's size,** the viewer's own measure from the coordinates of the PDB entry
+  7K00 (`tools/measure_particle.py`; `data/measures/ecoli.ribosome.json`): each subunit the
+  ellipsoid of the same spread as its atoms, the large 20.6 by 18 by 14.3 nm and the small
+  23.5 by 15.2 by 10 nm, their centres 10.4 nm apart, the whole 26.1 by 21.1 by 17.3 nm
+  (its farthest atoms 26.8 by 24.3 by 20.6 nm). The entry 5MDZ gives 25.6 by 21.2 by 18.5
+  nm, within 1.2 nm. The PDB states no size; its entries are CC0. In the schematic picture
+  the ribosomes are enlarged as the membrane's proteins are, about 6 times, and 19 are drawn.
 - **Levels:** molecules and one cell. It lives as single cells.
 - **Capabilities:** each of Cells' capabilities has a place in it or a reason it has
   none, in the same twenty entries as the other single cells. The channels and pumps of
   animal cells have no place; its own channels, its P-type ATPases and its ATP synthase
-  do.
+  do. Its molecular machines keep their place, but the barrel the picture drew for them is
+  left out of its picture since 17 November 2026, at the user's word, as in Syn3A and M.
+  pneumoniae (the flag `left_out` on `cap.machines`, `schema/SPECIES.md`); its ribosomes and
+  its flagellar motor are drawn as themselves.
 
 ### What the cell view cannot draw yet
 
-The cell view was not edited. These are what a picture of this cell lacks:
-
-- **Flagella and fimbriae.** They are now in the species file as appendages, a general
-  part of the contract (the user, 15 November 2026: "lets draw flagella, pili as a
-  general feature"). The drawing is another agent's, in the cell lens, and is not there
-  yet.
+These are what a picture of this cell lacks (the flagella and fimbriae, once listed here,
+are drawn since 15 November 2026):
 - **The chemoreceptor array.** The receptors and the proteins bound to them form a patch
   at the membrane. The view scatters membrane proteins evenly and has no part for a
   patch.
-- **The periplasm as a place.** The two shells are drawn, but nothing stands between
-  them, though 177 proteins are free there.
+- **The periplasm as a place.** The two shells are drawn, to scale at their measured
+  widths, but nothing stands between them, though 177 proteins are free there.
+- **Its crowd of proteins.** To scale, the cell is drawn without its proteins in the
+  slab under the cut: seven studies count from about 95,000 to 11.2 million protein
+  molecules in a cell, a hundredfold apart (compiled in Dolgalev and others 2023, Int J
+  Mol Sci 24:2081, CC BY, Table 1), and no one figure is chosen.
 - **The two membranes as different.** Both shells look alike; the outer membrane's
   porins and the inner membrane's transporters are not told apart.
 
@@ -225,10 +238,17 @@ full text. The build stops if a sentence it rests on is gone.
   are those of `shelves.json`, where 34 proteins carry them; the build and the test
   check it.
 
-## For a closer view of the motor, later
+## The motor, looked at closer
 
-Not built. This lists what such a view would have to draw, for a later decision. It is
-not a design.
+Since 16 November 2026 the motor has a closer view in the Cell view: "Look closer" in the
+foot's panel, or the motor's stop on the scale rail. It is drawn from its own file,
+`data/machines/ecoli.flagellar-motor.json`, by the contract `schema/MACHINES.md`, and it
+turns as rule 13 of `schema/QUANTITY_LAYERS.md` allows: an illustration from papers, at
+real-life speed unless the flux is slowed. Cells has no model of it, and the picture says
+so. The file gives every number with its basis: a saved sentence (with the organism the
+sentence names), an entry of the Protein Data Bank (with the organism its record states),
+or the picture's choice. The table below is what the first look at the motor found; the
+file is now where its numbers are kept.
 
 | Part, as the literature names it | Proteins among the 34 marked `complex: flagellum` | Rough size or number |
 | --- | --- | --- |
@@ -264,8 +284,14 @@ not a design.
   - cap: 5H5V (E. coli FliD).
 - **Only two of these are of E. coli,** and none is stated to be of K-12. A picture drawn
   from them shows the motor of the family, not this strain's own.
-- **The Protein Data Bank's terms were not read for this note.** They are to be read and
-  saved before anything is drawn from a structure.
+- **The Protein Data Bank's terms were read and saved on 16 November 2026**
+  (`/mnt/datasets/Cells/ecoli/wwpdb-terms/`): "Data files contained in the PDB archive are
+  available under the CC0 1.0 Universal (CC0 1.0) Public Domain Dedication." Fourteen
+  entries are saved with their records under `/mnt/datasets/Cells/ecoli/wwpdb-flagellar-motor/`.
+  The motor's file takes some counts from them (the copies each record states, such as the
+  34 FliG and 102 FliN of the C ring in 8UOX, of Salmonella) and some sizes (read from the
+  entries' alpha carbons by the motor agent, not checked against the papers that describe
+  the entries), each with its entry and organism. No shape is drawn from a structure.
 
 ## Sources and terms
 
@@ -339,6 +365,36 @@ nothing is taken from either:
 
 The two pages are saved with the downloads. Neither is a source of the data files, so
 the scene does not carry them.
+
+**Two open papers give numbers alone** (17 November 2026), by the user's ruling for open papers
+(D186: numbers from open papers may be used even where no licence is declared; numbers
+with their citation, never a paper's text, figures or data files). Each was read at PubMed
+Central for a limit on use in its own text; neither states one, and each carries only its
+publisher's copyright. No sentence of either is in a file, and there is no saved copy: the
+open-paper service does not offer their full text; their records and a MANIFEST are in
+`/mnt/datasets/Cells/ecoli/europepmc-envelope-papers-for-analysis/`, outside the repository.
+Both are in the register of `tests/licence_classes.test.mjs`.
+By the user's ruling of 17 November 2026, numbers from papers that are free to read but not open access may be used, each with its citation.
+
+- **Matias and others 2003**, J Bacteriol 185:6112–6118 (American Society for
+  Microbiology): Table 1, the row for strain K-12, gives the envelope's five widths that
+  the cell drawn to scale takes (`cell.parts.envelope`): the inner membrane 5.84 nm, the
+  wall 6.35 nm and the outer membrane 6.87 nm thick, 20.99 nm between the membranes, and
+  5.34 nm from the wall to the outer membrane, each the mean of eight measurements made
+  where the sections were least deformed; and the periplasm's average compression in the
+  sections, 32.47%, which the fact gives in the paper's own term. The paper calls the
+  periplasm the space between the two membranes and does not say between which faces it
+  measured: taking the widths between the facing surfaces is this viewer's reading, and
+  the fact says so.
+- **Berry and others 2010**, Protein Sci 19:1967–1977 (The Protein Society): the legend of
+  Figure 7 gives 25.5 nm at the middle of 31 whole cells of K-12, measured without
+  osmoprotectants or fixation between the outer surface of the inner membrane and the
+  inner surface of the outer membrane, which the fact names as the larger value.
+
+The flagellar motor's own file (`data/machines/ecoli.flagellar-motor.json`) takes a wider
+spacing from a third, permissive paper, measured in whole cells in hyperosmotic conditions.
+By the coordinator's ruling of 17 November 2026 each file keeps its own numbers for now and
+names the other's as a disagreement.
 
 ## Changes to the contracts
 

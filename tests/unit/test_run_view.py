@@ -587,6 +587,9 @@ def test_a_kind_worlds_sets_and_records_come_from_its_kinds(monkeypatch):
     routes = sets["passive_route"]
     assert routes["owner"] == tissue3.MODEL_ID and set(routes["roles"]) == {"inside", "outside"}
     assert routes["ids"] == [r["id"] for r in raw["model"]["passive_routes"]]
+    laws = [r["law"] for r in raw["model"]["passive_routes"]]
+    assert [law["law_id"] for law in routes["laws"]] == laws  # The law IDs pass through...
+    assert all(isinstance(k, str) and "@" not in k for k in routes["kinds"])  # ...kinds are words.
     records = {r["id"]: r for r in view["records"]}
     moved = records["passive_transferred"]
     assert (moved["set"], moved["kind"], moved["unit"]) == ("passive_route", "cumulative", "fmol")

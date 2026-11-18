@@ -28,11 +28,15 @@ export function duration(seconds) {
 }
 
 // A record keeps the unit it was saved in; some read better in another.
-const DISPLAY = { V: { unit: "mV", factor: 1000, decimals: 1 } };
+// A unit written in plain letters is shown in its own sign (uM as µM): the same unit, never converted.
+const DISPLAY = { V: { unit: "mV", factor: 1000, decimals: 1 }, uM: { unit: "µM", factor: 1, decimals: 3 } };
 // An amount or an energy far under one unit reads in a smaller one: the largest in which the record's largest value is at least a tenth.
 const SMALLER = { fmol: [["fmol", 1], ["amol", 1e3], ["zmol", 1e6]], pJ: [["pJ", 1], ["fJ", 1e3], ["aJ", 1e6]] };
 const RATES = { fmol: [["fmol a second", 1], ["amol a second", 1e3], ["zmol a second", 1e6]], pJ: [["pW", 1], ["fW", 1e3], ["aW", 1e6]] };
 const fitting = (steps, most) => (most > 0 ? steps.find(([, factor]) => most * factor >= 0.1) || steps[steps.length - 1] : steps[0]);
+
+/** A unit as the page writes it, where only its sign differs (uM as µM); a unit shown in another size (V as mV) is left as given. */
+export const unitSign = (unit) => (DISPLAY[unit]?.factor === 1 ? DISPLAY[unit].unit : unit);
 
 /** The unit a record is shown in, and how to get there from the stored value. */
 export function display(record) {
@@ -59,6 +63,7 @@ export function rateDisplay(unit, most) {
 /** A recorded value with its unit, or null for a record that may only be drawn. */
 export function reading(record, value) {
   if (!record || record.quantised) return null; // a quantised record is never printed as a recorded number
+  if (Array.isArray(record.words)) return record.words[value] ?? "no value"; // a state, in the words its record gives
   if (!Number.isFinite(value)) return "no value";
   const shown = display(record);
   return `${number(value * shown.factor, shown.decimals)}${shown.unit ? ` ${shown.unit}` : ""}`;
