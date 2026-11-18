@@ -96,8 +96,13 @@ references. Both sides cite this subsection.
     token. That is the case when a step's common state m has an empty membrane while neither end
     state does: a lone molecule changing form, or two joining.
   - **It is the factor's continuous extension,** so detailed balance holds as for every other pair.
-  - **`last_molecule: kept`** gives rate zero only to a pair one of whose end states has an empty
-    membrane. That way the membrane never empties, and nothing else is frozen.
+  - **`last_molecule: kept`** gives rate zero only to a pair whose step changes the membrane's count
+    and one of whose end states has an empty membrane. That way the membrane never empties, and
+    nothing else is frozen.
+    - A step in which the membrane takes no part fires at its own rate under every token. A pool
+      step at a probe state with an empty membrane fires at the pool's mass action.
+    - (Reworded 18 November 2026 by the lead, at OL5's reading. The earlier wording, "a pair one of
+      whose end states has an empty membrane", read literally, also zeroed those pool steps.)
   - **This replaces the earlier wording,** "a pair whose common state has an empty membrane has rate
     0", which froze a lone molecule's reactions for no physical reason.
 - **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
@@ -175,6 +180,17 @@ The lead names each key and value here, so that neither side's draft leads. Thes
    place on both sides, which is +inf at N = r) is admitted only in a world whose declared role is a
    probe (`world_role: probe`). There the probe reports +inf. Any other world declaring such a step is
    refused at parse.
+   - `world_role` is optional, and `probe` is its only value. A world without it is an ordinary world.
+   - A probe world may still be run. A run that reaches N = r stops `stalled`.
+   - **"A membrane place on both sides"** means that one and the same membrane species is among both
+     the step's reactants and its products, as the membrane catalyst E is in A + B + E → C + E
+     (confirmed 18 November 2026 by the lead, at OL5's reading).
+     - Under `multinomial_less_one` the draw's denominator, ff(N − 1, r), vanishes only at N = r,
+       where every membrane molecule is drawn.
+     - Only a step that returns a drawn membrane species keeps a molecule in the common state m
+       there. The extent on m is then positive, and the rate is +inf.
+     - A step whose membrane species differ between its sides leaves m's membrane empty at N = r.
+       That is §0.2a's 0/0, which takes the cancelled form.
 
 ### 0.3 Estimate, order and questions
 

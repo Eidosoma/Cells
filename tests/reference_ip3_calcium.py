@@ -2,7 +2,6 @@
 
 from tests import reference_gated_calcium as base
 from tests.reference_er_calcium import System as ERSystem
-from tests.reference_er_calcium import native_functions  # noqa: F401
 
 F, R = base.F, base.R
 

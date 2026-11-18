@@ -1,7 +1,7 @@
 """Emulator: portable fixed-geometry inputs for the native BETSE active compatibility law.
 
-Moved from the engine (cells.core.betse_spatial_spec) on 8 November 2026 (D131). The
-engine's parse_spec no longer dispatches here; parse() is called directly.
+Moved from the engine's core package (its betse_spatial_spec module) on 8 November 2026 (D131).
+The engine's parse_spec no longer dispatches here; parse() is called directly.
 """
 
 from dataclasses import asdict, dataclass

@@ -141,6 +141,6 @@ def test_a_planted_module_in_a_copied_tree_is_caught(tmp_path):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text((SRC / relative).read_text())
     assert scan(tmp_path) == {}
-    planted = tmp_path / "core" / "specs.py"
+    planted = tmp_path / "core/specs.py"  # One path, which a source move rewrites (D188).
     planted.write_text(planted.read_text() + "\nfrom cells.legacy.registration import parse\n")
     assert list(scan(tmp_path)) == ["core/specs.py"]

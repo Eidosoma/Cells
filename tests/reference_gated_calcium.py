@@ -1,19 +1,16 @@
-"""Independent scalar Cav1.2/constant-field reference and pinned BETSE methods.
+"""Independent scalar Cav1.2/constant-field reference; the pinned Cav1p2 runs out of process.
 
-No Cells or JAX imports. The reference retains both ionic and chemical owners.
+No Cells or JAX imports. The reference retains both ionic and chemical owners. The pinned
+source's Cav1p2 and its clock run unmodified in their own environment (native_cav1p2).
 """
 
-import ast
-import hashlib
 import math
-import os
 from bisect import bisect_right
-from pathlib import Path
-from types import SimpleNamespace
 
 import numpy as np
 
 from tests import reference_plasma_calcium as base
+from tests.reference_er_calcium import native_capture
 
 F, R = base.F, base.R
 NATIVE_HASHES = {
@@ -22,35 +19,21 @@ NATIVE_HASHES = {
 }
 
 
-def native_channel():
-    root = Path(
-        os.environ.get(
-            "CELLS_CAV_NATIVE_SOURCE", "/mnt/workspaces/Cells/betse-v1.5.0/betse/science/channels"
-        )
-    )
-    namespace = {"np": np, "logs": SimpleNamespace(log_info=lambda *args: None)}
-    for name, expected in NATIVE_HASHES.items():
-        source = (root / name).read_bytes()
-        if hashlib.sha256(source).hexdigest() != expected:
-            raise ValueError("Pinned BETSE calcium gate source changed")
-        tree = ast.parse(source)
-        owner = next(
-            node
-            for node in tree.body
-            if isinstance(node, ast.ClassDef)
-            and node.name == ("Cav1p2" if name == "vg_ca.py" else "ChannelsABC")
-        )
-        if name == "vg_ca.py":
-            owner.bases = []
-            selected = [owner]
-        else:
-            selected = [
-                n for n in owner.body if isinstance(n, ast.FunctionDef) and n.name == "update_mh"
-            ]
-        exec(
-            compile(ast.Module(body=selected, type_ignores=[]), str(root / name), "exec"), namespace
-        )
-    return namespace["Cav1p2"](), namespace["update_mh"]
+def native_cav1p2(voltage, gate, steps, duration):
+    """The pinned Cav1p2 at `voltage` (V): its initial gates, targets, time constants (the
+    source's unit), powers, and its semi-implicit clock run for `duration` s from a held `gate`
+    at each step in `steps` (validation/betse/calcium_functions_native.py, out of process)."""
+    request = {
+        "cav1p2": [
+            {
+                "voltage_V": np.asarray(voltage, dtype=float).tolist(),
+                "gate": float(gate),
+                "dt_s": [float(s) for s in steps],
+                "duration_s": float(duration),
+            }
+        ]
+    }
+    return native_capture(request, hashes=NATIVE_HASHES)["cav1p2"][0]
 
 
 def scalar_kinetics(voltage):

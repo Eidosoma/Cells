@@ -385,5 +385,8 @@ def control_values(spec, times):
         kind = kind_registry.bound(registry.lookup(kind_id), entries[kind_id])
         if kind.control_fields:
             held = kind.control_values(spec, declaration, clock)
+            kind_registry.refuse_foreign_writes(
+                kind, "control_values", held, kind.control_fields, "control"
+            )
             extra |= {name: np.asarray(value)[indices] for name, value in held.items()}
     return control(*result, *(extra[name] for name in control._fields[len(result) :]))

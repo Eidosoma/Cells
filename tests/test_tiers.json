@@ -135,6 +135,22 @@
   "/mnt/workspaces/Cells/passive-share-tolerance-20261117/measure-ace7eb3a/measured.json",
   "/mnt/workspaces/Cells/gard-g2-20261117/land/measure-ea8a62a7/measured.json",
   "/mnt/workspaces/Cells/d198-retire-20261117/evidence/measure-mixed/run/measured.json",
+  "/mnt/workspaces/Cells/fr10-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr10-references-20261117/measure-02/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-e8c45bcb/measured.json",
+  "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/tiers-258d2be7/measured.json",
+  "/mnt/workspaces/Cells/core-boundary-checks-20261117/measure-0298b49f/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr1-references-20261117/measure-02/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
+  "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json",
+  "/mnt/workspaces/Cells/d188-m2-prep-20261117/evidence/measure-a085126b/run/measured.json",
+  "/mnt/workspaces/Cells/fr3-references-20261117/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-bc287a20/measure-01/measured.json",
+  "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/tiers-a06d46f0/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-references-20261118/measure-01/measured.json",
+  "/mnt/workspaces/Cells/fr6-a5pp-20261118/tiers-e8f70a44/measure-01/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-429d1f17/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-3e95a76f/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-aeee80b0/measured.json",
@@ -1115,6 +1131,118 @@
    "utc": "2026-11-17T13:11:06+00:00"
   },
   {
+   "git_revision": "7e27b9e12de06531fcf15c25c2b1377a2ffcfef3",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:48:18+00:00"
+  },
+  {
+   "git_revision": "012a3e7edb66c7c673e8c8e0ed6e609b0d8ba26c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:52:45+00:00"
+  },
+  {
+   "git_revision": "e8c45bcb6753c8feca32ad7a45698a5e625ae2d2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:24:30+00:00"
+  },
+  {
+   "git_revision": "258d2be799e17df3abcc5474418c1f419234fcda",
+   "dirty": false,
+   "root": ".claude/worktrees/fr10-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:41:56+00:00"
+  },
+  {
+   "git_revision": "0298b49ff75c46496decae29ad22b7e0f6f16a60",
+   "dirty": false,
+   "root": ".claude/worktrees/core-boundary-checks",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:05:25+00:00"
+  },
+  {
+   "git_revision": "d83f5365751dd7ad40ca582877cbc59a95dc18ac",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:20:05+00:00"
+  },
+  {
+   "git_revision": "707bf3388d7272fa909a8002515c9575bfa56117",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:30:42+00:00"
+  },
+  {
+   "git_revision": "0cbb1acc84c53f14e464b8b8402585d56c3bcee5",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:53:40+00:00"
+  },
+  {
+   "git_revision": "09fa5daf94b5c783984e916522ce02c1c5d377f2",
+   "dirty": false,
+   "root": ".claude/worktrees/fr1-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:39:25+00:00"
+  },
+  {
+   "git_revision": "7ec2d78cb8cfebeeffde88f1ae4bdc2bad8abc9b",
+   "dirty": false,
+   "root": ".claude/worktrees/passive-share-band",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:50:04+00:00"
+  },
+  {
+   "git_revision": "a085126b53f12ebad8b6264251c037500d8f0a68",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/d188-m2-prep-20261117/trees/head-a085126b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:33+00:00"
+  },
+  {
+   "git_revision": "992ce38510770949ffc162ce468ce3e0df2e707c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T23:54:21+00:00"
+  },
+  {
+   "git_revision": "bc287a20ab3b336d487a1bac145648b64748a72a",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:13:18+00:00"
+  },
+  {
+   "git_revision": "a06d46f015181246ec680026856cd6fcfd07f195",
+   "dirty": false,
+   "root": ".claude/worktrees/fr3-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T02:29:51+00:00"
+  },
+  {
+   "git_revision": "ee1d89157e277ca380d9799e626fdde721083aa6",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T00:07:25+00:00"
+  },
+  {
+   "git_revision": "e8f70a44be6e22e10b1bc4f797f609307000b84c",
+   "dirty": false,
+   "root": ".claude/worktrees/fr6-a5pp-protocol",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T03:01:30+00:00"
+  },
+  {
    "git_revision": "429d1f177b6756858f7a6aab446aad2394aa004d",
    "dirty": false,
    "root": ".claude/worktrees/ol1-laws",
@@ -1764,6 +1892,14 @@
     }
    },
    {
+    "file": "tests/unit/test_blas_import_pin.py",
+    "seconds": 6.68,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
     "file": "tests/unit/test_blas_threads.py",
     "seconds": 3.22,
     "exit_code": 0,
@@ -1966,7 +2102,7 @@
    },
    {
     "file": "tests/unit/test_continuity_bypass.py",
-    "seconds": 16.16,
+    "seconds": 10.54,
     "exit_code": 0,
     "counts": {
      "passed": 17
@@ -1974,18 +2110,18 @@
    },
    {
     "file": "tests/unit/test_continuity_loaders.py",
-    "seconds": 15.0,
+    "seconds": 12.6,
     "exit_code": 0,
     "counts": {
-     "passed": 54
+     "passed": 60
     }
    },
    {
     "file": "tests/unit/test_continuity_tools.py",
-    "seconds": 7.99,
+    "seconds": 6.03,
     "exit_code": 0,
     "counts": {
-     "passed": 21
+     "passed": 22
     }
    },
    {
@@ -2257,6 +2393,134 @@
     }
    },
    {
+    "file": "tests/unit/test_fr10_qualification.py",
+    "seconds": 2.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 31
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_reference_inputs.py",
+    "seconds": 1.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_design.py",
+    "seconds": 6.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_faces.py",
+    "seconds": 1.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_harness.py",
+    "seconds": 9.64,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_ion.py",
+    "seconds": 4.58,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr10_references_records.py",
+    "seconds": 3.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_qualification.py",
+    "seconds": 3.67,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_reference_inputs.py",
+    "seconds": 1.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_design.py",
+    "seconds": 11.84,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_forms.py",
+    "seconds": 1.37,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_fr1_references_worlds.py",
+    "seconds": 4.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_acceptance_worlds.py",
+    "seconds": 4.78,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_qualification.py",
+    "seconds": 2.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 57
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_forms.py",
+    "seconds": 5.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
+    "file": "tests/unit/test_fr3_references_worlds.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_fr45_damage_and_worlds.py",
     "seconds": 2.27,
     "exit_code": 0,
@@ -2302,6 +2566,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 36
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_a5pp_qualification.py",
+    "seconds": 1.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_fr6_references_a5pp.py",
+    "seconds": 7.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -2575,6 +2855,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_foreign_writes.py",
+    "seconds": 4.73,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
     "file": "tests/unit/test_kind_rules.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -2640,7 +2928,7 @@
    },
    {
     "file": "tests/unit/test_legacy_entry.py",
-    "seconds": 5.28,
+    "seconds": 3.67,
     "exit_code": 0,
     "counts": {
      "passed": 19
@@ -2977,10 +3265,10 @@
    },
    {
     "file": "tests/unit/test_passive_share_floor.py",
-    "seconds": 18.57,
+    "seconds": 19.86,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 11
     }
    },
    {
@@ -3848,6 +4136,14 @@
     "counts": {
      "failed": 1,
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_vector_failure_mask.py",
+    "seconds": 15.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
     }
    },
    {

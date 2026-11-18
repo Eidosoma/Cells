@@ -6,8 +6,8 @@ import os
 import subprocess
 import sys
 from dataclasses import replace
+from decimal import Decimal
 from pathlib import Path
-from types import SimpleNamespace
 
 import jax
 import numpy as np
@@ -27,7 +27,16 @@ from cells.legacy.core.er_spec import chemistry_spec
 from cells.legacy.models import er_calcium as model
 from cells.processes import er_calcium as process
 from tests.batch_fixtures import definition
-from tests.reference_er_calcium import NATIVE_HASHES, F, R, System, native_functions, reference
+from tests.reference_er_calcium import (
+    NATIVE_HASHES,
+    F,
+    R,
+    System,
+    native_capture,
+    reference,
+    release_open_fraction,
+)
+from validation.chemistry import finite_calcium_pump_reference as pump_reference
 
 ROOT = Path(__file__).resolve().parents[2]
 BACKEND = os.environ.get("CELLS_ER_TEST_BACKEND", "cpu")
@@ -175,12 +184,11 @@ def test_stage_ownership_charge_and_resolved_energy():
 
 
 def test_native_pump_and_calcium_release_functions():
-    native = native_functions()
     p = process.PumpParameters(0.003, 0.001, 0.5, 1.5, 0.1, 0.1, -10000.0)
     cy = np.array([1e-6, 0.0001, 0.002, 0.002, 0.02, 0.002])
     er = np.array([0.2, 0.1, 0.2, 0.2, 0.01, 0.2])
     v = np.array([-0.12, -0.04, 0.0, 0.12, 0.04, 0.05])
-    params = SimpleNamespace(
+    params = dict(
         deltaGATP=p.delta_g0_J_per_mol,
         cATP=p.atp_mM,
         cADP=p.adp_mM,
@@ -191,23 +199,57 @@ def test_native_pump_and_calcium_release_functions():
         KmCa_ATP=p.km_atp_mM,
         serca_max=p.capacity_fmol_per_s * 1e-15 / 1e-9,
     )
-    expected = native["pumpCaER"](er, cy, v, 298.15, params) * 1e-9 / 1e-15
+    ca = np.geomspace(1e-6, 1.0, 25)
+    gate = dict(act_Km_Ca=0.001, act_n_Ca=2, inh_Km_Ca=0.02, inh_n_Ca=2, max_er=1.0)
+    # The pinned source's own functions, run unmodified out of process (AGENTS.md).
+    native = native_capture(
+        {
+            "er_pump": [
+                dict(cCai=er.tolist(), cCao=cy.tolist(), Vm=v.tolist(), T=298.15, parameters=params)
+            ],
+            "er_channels": [
+                dict(source="absent", calcium=ca.tolist(), ip3=None, parameters=gate, base=0.0)
+            ],
+        }
+    )
+    expected = np.asarray(native["er_pump"][0]["flux"]) * 1e-9 / 1e-15
+    # The same law's independent 80-digit form, in the ER orientation; its 1 M standard
+    # energy carries the kernel's numeric-mM one exactly (validation/chemistry).
+    rt = pump_reference.R * Decimal("298.15")
+    delta = Decimal(repr(p.delta_g0_J_per_mol)) + rt * Decimal(1000).ln()
+    independent = np.array(
+        [
+            pump_reference.rates(
+                c,
+                e,
+                x,
+                (p.atp_mM, p.adp_mM, p.pi_mM),
+                1.0,
+                298.15,
+                delta,
+                p.capacity_fmol_per_s,
+                p.km_ca_mM,
+                p.km_atp_mM,
+                1.0,
+                kind="er",
+            )["cycles_fmol_s"]
+            for c, e, x in zip(cy, er, v, strict=True)
+        ]
+    )
     actual, affinity, _ = process.pump_rates(cy, er, v, 298.15, p, 1.0, xp=np)
+    np.testing.assert_allclose(actual, independent, rtol=3e-12, atol=3e-14)
     np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-14)
     assert np.any(actual > 0) and np.any(actual < 0) and np.all(-actual * affinity >= 0)
     with jax.default_device(execution_device(BACKEND)):
         compiled = jax.jit(process.pump_rates)(cy, er, v, 298.15, p, 1.0)
         assert compiled[0].device.platform == BACKEND
         np.testing.assert_allclose(compiled[0], expected, rtol=3e-12, atol=3e-14)
-    ca = np.geomspace(1e-6, 1.0, 25)
-    params = SimpleNamespace(act_Km_Ca=0.001, act_n_Ca=2, inh_Km_Ca=0.02, inh_n_Ca=2, max_er=1.0)
-    sim = SimpleNamespace(cc_cells=[ca], iCa=0, molecules=None, metabo=None, grn=None)
-    er_object = SimpleNamespace(
-        Dm_channels=np.zeros((1, len(ca))), Dm_er_base=np.zeros((1, len(ca)))
-    )
-    native["channels"](er_object, sim, None, params)
+    release_native = np.asarray(native["er_channels"][0]["Dm_channels"])[0]
     opening = process.release_open(ca, 0.001, 2, 0.02, 2, xp=np)
-    np.testing.assert_allclose(opening, er_object.Dm_channels[0], rtol=3e-14, atol=2e-16)
+    np.testing.assert_allclose(
+        opening, release_open_fraction(ca, 0.001, 2, 0.02, 2), rtol=3e-14, atol=2e-16
+    )
+    np.testing.assert_allclose(opening, release_native, rtol=3e-14, atol=2e-16)
     with jax.default_device(execution_device(BACKEND)):
         compiled_opening = jax.jit(process.release_open)(ca, 0.001, 2, 0.02, 2)
         assert compiled_opening.device.platform == BACKEND
@@ -220,6 +262,8 @@ def test_native_pump_and_calcium_release_functions():
             "pump_points": len(cy),
             "release_points": len(ca),
             "native_files_sha256": NATIVE_HASHES,
+            "native_capture": "out of process: validation/betse/calcium_functions_native.py",
+            "independent_pump": "validation/chemistry/finite_calcium_pump_reference.py (er)",
             "scope": (
                 "Pinned functions with harmonized physical constants; "
                 "no native lifecycle/trajectory claim"
@@ -227,8 +271,9 @@ def test_native_pump_and_calcium_release_functions():
         },
         {
             "pump_native": expected,
+            "pump_independent": independent,
             "pump_cells": actual,
-            "release_native": er_object.Dm_channels[0],
+            "release_native": release_native,
             "release_cells": opening,
         },
     )

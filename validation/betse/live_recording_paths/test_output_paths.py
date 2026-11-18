@@ -103,8 +103,6 @@ def stub_physics(monkeypatch):
         "jax": dict(
             default_backend=lambda: "cpu", config=NS(x64_enabled=True, jax_disable_jit=False)
         ),
-        "cells": {},
-        "cells.core": {},
         "cells.core.runner": dict(run=lambda *a: full),
         "cells.core.specs": dict(parse_spec=lambda spec: spec),
         "cells.core.windows": dict(
@@ -113,6 +111,10 @@ def stub_physics(monkeypatch):
         "cells.io": dict(write_run=write, load_snapshot=load),
         "cells.window_io": dict(write_windowed_run=record),
     }
+    for name in list(modules):  # Each module's parent packages, as empty modules.
+        while "." in name:
+            name = name.rpartition(".")[0]
+            modules.setdefault(name, {})
     for name, attrs in modules.items():
         module = ModuleType(name)
         module.__dict__.update(attrs)
