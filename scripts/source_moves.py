@@ -965,8 +965,20 @@ def _hazards_reaching(report, mp):
     to a module path under the parent package of a moved module; whether it reaches a moved
     module cannot be decided statically ("reaches" lists the file's own constants that
     complete it, a hint only). Each file holding one is either refactored to full module names
-    before the move or listed under the map's "reviewed" with the reason it cannot reach."""
-    return [h for h in report["hazards"] if not mp.kept(h["file"]) and h["file"] not in mp.reviewed]
+    before the move or listed under the map's "reviewed" with the reason it cannot reach. A
+    reviewed file that the map moves keeps its review at its new path, so a second application,
+    or a branch's own application after the move, finds it reviewed."""
+    reviewed = set(mp.reviewed) | {_moved_path(p, mp) for p in mp.reviewed}
+    return [h for h in report["hazards"] if not mp.kept(h["file"]) and h["file"] not in reviewed]
+
+
+def _moved_path(path, mp):
+    """A src/cells module file's path after the map (itself if the map does not move it)."""
+    dotted = dotted_of(path)
+    if not dotted or dotted not in mp.pairs:
+        return path
+    tail = "/__init__.py" if path.endswith("/__init__.py") else ".py"
+    return "src/" + mp.pairs[dotted].replace(".", "/") + tail
 
 
 def cmd_apply(args):
@@ -1480,6 +1492,39 @@ def cmd_selftest(args):
                 dmap, dict(pkg_tree, **{"tests/test_stale.py": stale["tests/test_stale.py"]}), stale
             )["problems"]
         )
+    )
+    # D188 move 2: a reviewed hazard file that the map moves keeps its review at its new path, so
+    # a second application (and a branch's own, after the move) is not refused for it.
+    hz_tree = {
+        "src/cells/__init__.py": "",
+        "src/cells/core/__init__.py": "",
+        "src/cells/core/hz.py": 'NAME = "cells.core." + "y"\n',
+        "src/cells/core/y.py": "Y = 1\n",
+    }
+    hz_tree = {p: ("100644", t.encode()) for p, t in hz_tree.items()}
+    hz_map = MoveMap(
+        dict(
+            kind=MAP_KIND,
+            move="hz",
+            modules=[["cells.core.hz", "cells.other.hz"], ["cells.core.y", "cells.other.y"]],
+            packages={"cells.other": ""},
+            reviewed=[dict(path="src/cells/core/hz.py", reason="planted: a prefix, reviewed")],
+        )
+    )
+    first, rep1 = transform(hz_tree, hz_map)
+    _, rep2 = transform(first, hz_map)
+    real_moved_path = _moved_path
+    try:
+        globals()["_moved_path"] = lambda path, mp: path  # The planted control: no mapping.
+        planted_reaching = _hazards_reaching(rep2, hz_map)
+    finally:
+        globals()["_moved_path"] = real_moved_path
+    checks["a reviewed file that moves keeps its review at its new path (second application)"] = (
+        any(h["file"] == "src/cells/core/hz.py" for h in rep1["hazards"])
+        and any(h["file"] == "src/cells/other/hz.py" for h in rep2["hazards"])
+        and not _hazards_reaching(rep1, hz_map)
+        and not _hazards_reaching(rep2, hz_map)
+        and bool(planted_reaching)
     )
     # D188 move 2: a from-import in free text (a program string with escapes, a comment) maps
     # each moved submodule by its own new home, not by its package's.
