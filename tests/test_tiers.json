@@ -163,7 +163,10 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-591adadb/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-6e78883b/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-cbae394b/measured.json",
-  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json"
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-93e45f00/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-94395770/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1341,6 +1344,27 @@
    "root": ".claude/worktrees/ool-references",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T12:16:43+00:00"
+  },
+  {
+   "git_revision": "93e45f0020c17a91bebf6ddb7b082751b349b2ce",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T12:59:01+00:00"
+  },
+  {
+   "git_revision": "94395770e4cec453a9de93e2495948f36927e658",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T14:16:18+00:00"
+  },
+  {
+   "git_revision": "1c5f6435d8206da395eb747e62b977817d9025d5",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T14:32:53+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4298,6 +4322,22 @@
     "counts": {
      "passed": 9
     }
+   },
+   {
+    "file": "tests/unit/test_ool_references_ol2.py",
+    "seconds": 15.29,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_partition.py",
+    "seconds": 1.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
    }
   ],
   "2": [
@@ -5606,6 +5646,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_ol3.py",
+    "seconds": 50.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
     }
    }
   ],
