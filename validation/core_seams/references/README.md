@@ -1,7 +1,8 @@
 # The core seams' independent references: seam A (membrane cycles) and seam C (binding)
 
-**Registered 18 November 2026, before any engine output for seams A or C.** The lead confirmed
-that the kinds and binding owners had not started (CORE_SEAMS_DESIGN §19 item 7). The worlds are
+**Registered 18 November 2026, before any engine output for seams A or C** (registering commit
+f1808037). The lead confirmed that the kinds and binding owners had not started
+(CORE_SEAMS_DESIGN §19 item 7). The worlds are
 registered here. The engine builds its synthetic test laws from these inputs, never from the
 expected values (§19 item 1). `REFERENCES_USAGE.md` is the interface. The model is FR-3's
 references.
@@ -261,12 +262,14 @@ positive up to the stored amount.
 
 ## Amendments
 
-None yet. The booked closure term follows the binding owner's statement by a dated amendment
-(§19 item 3).
+None to the registered inputs, values or design. The same day, before any engine output, a later
+commit added the registering hash to this README and, once measured, the tests' tier rows. The
+booked closure term follows the binding owner's statement by a dated amendment (§19 item 3).
 
 ## Tests
 
-All three files are tier 1.
+All three files are tier 1. Their rows are measured on the timed lane, one thread per core, and
+folded with `scripts/test_tiers.py tiers --base`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
