@@ -455,6 +455,10 @@
         {
           "date": "2026-11-17",
           "note": "Version 5 (version id 1794924162-c947), built from a clean copy of d10596c0 (515 KB): seven model families, as on the map since its Version 21. Not loaded in a browser before this publish: the same build of the view was loaded and looked at inside the map's staged page (the still above). Read back from the artifact service after the publish: the built page stands whole inside the published index.html, byte for byte."
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Version 6 (version id 1795024923-427b), built from a clean copy of c711b685 (484 KB) with `node tools/build_view_page.mjs laws`: the wall as on the map's Version 42, read from the engine's declarations at main b5d3faf0 (47 pieces, 11 models, seven racks; the origin-of-life family's four laws under Family laws), with the panel that wraps long words inside itself. Republished at the user's word of 18 November 2026. Looked at before the publish, served as the artifact serves it: nine looks after a warm-up load, at 1280 by 720, 1440 by 900 and 360 by 780, light and dark, none with a console error or a missing file; three with a panel open (a new law, the longest law name on a phone, the new rack in the dark theme); and every one of its 71 pieces and models chosen in turn at 1280 by 720 and at 360 by 780, each panel keeping its content and its close button inside. Four stills opened (wide, phone, the rack's panel in the dark theme, a law's panel); the others only loaded. Read back after the publish: the built page stands whole inside the served page after the service's 531-byte head. The page is private: its owner shares it from the page's Share menu."
         }
       ]
     },
