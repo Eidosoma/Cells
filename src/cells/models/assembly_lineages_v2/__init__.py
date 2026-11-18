@@ -34,6 +34,12 @@ TRANSITION_STATE = "cells.transition_state_factor@1"
 IDEAL_MIXING = "cells.ideal_mixing@1"
 REGULAR_MIXING = "cells.regular_mixing@1"
 
+# OL2's laws (docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.2; the design note's §0.2b-§0.2d). Each is
+# absent from a world that declares no geometry, so OL1's worlds are unchanged.
+BILAYER_GEOMETRY = "cells.bilayer_geometry@1"
+PHASE_EXCHANGE = "cells.phase_exchange@1"
+MEMBRANE_PERMEATION = "cells.membrane_permeation@1"
+
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule
 # exchange), and a rate factor here is one factor per step pair on its common state (a new major of
@@ -41,6 +47,7 @@ REGULAR_MIXING = "cells.regular_mixing@1"
 REACTION_INTERFACE = "cells.reaction_law@1"
 RATE_FACTOR_INTERFACE = "cells.rate_factor_law@2"
 FREE_ENERGY_INTERFACE = "cells.free_energy_term@1"
+GEOMETRY_INTERFACE = "cells.assembly_geometry@1"  # OL2: a geometry kind (§0.2c rule 15).
 
 MODE = "single_lineage"  # OL1: one assembly per world, no fission (OL3 adds division).
 MODES = (MODE,)

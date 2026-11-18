@@ -39,6 +39,7 @@ the channel fold's loop unrolling. None of these changes a value of a run.
 """
 
 import copy
+import dataclasses
 from dataclasses import dataclass
 
 from cells.definitions.specs import (
@@ -51,9 +52,12 @@ from cells.definitions.specs import (
 )
 from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
+    GEOMETRY_INTERFACE,
     IDEAL_MIXING,
+    MEMBRANE_PERMEATION,
     MODEL_ID,
     MODES,
+    PHASE_EXCHANGE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     streams,
@@ -182,13 +186,16 @@ def parse_terms(raw, world):
 def parse_world(raw):
     _keys(raw, world_rules.WORLD_KEYS, world_rules.WORLD_REQUIRED, "world")
     units = world_rules.parse_units(raw["units"])
-    conventions = conventions_rules.parse(raw["conventions"])
+    conventions = conventions_rules.parse(raw["conventions"], geometry="geometry" in raw)
     species = world_rules.parse_species(raw["species"])
     places, volumes = world_rules.parse_phases(raw["phases"], species)
     if type(raw["steps"]) is not list or not raw["steps"]:
         raise ConfigError("world: steps is a non-empty list")
     reaction_laws = family_laws(REACTION_INTERFACE)
-    steps = tuple(world_rules.parse_step(s, places, species, reaction_laws) for s in raw["steps"])
+    encounter = conventions.exchange_encounter
+    steps = tuple(
+        world_rules.parse_step(s, places, species, reaction_laws, encounter) for s in raw["steps"]
+    )
     if len({s.id for s in steps}) != len(steps):
         raise ConfigError("world: step IDs are unique")
     founder = world_rules.parse_founder(raw["founder"], places)
@@ -213,7 +220,77 @@ def parse_world(raw):
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
     _convention_refusals(world)
+    if "geometry" in raw:
+        block = raw["geometry"]
+        if not isinstance(block, dict) or "law" not in block:
+            raise ConfigError("world: geometry names its law")
+        law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
+        world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
+    _geometry_refusals(world)
     return world
+
+
+def _geometry_refusals(world):
+    """OL2's refusals (§0.2c rules 2, 3 and 5), after OL1's, so no earlier refusal changes."""
+    registry = law_registry.active()
+    by_name = {p.name: p for p in world.places}
+    for step in world.steps:
+        law = registry.lookup(step.law)
+        geometric = getattr(law, "extent", "locus") == "geometric"
+        phases = {by_name[n].phase for n, _ in (*step.reactants, *step.products)}
+        if world.geometry is None:
+            if geometric:
+                raise ConfigError(
+                    f"world: step {step.id}'s law {step.law} takes its encounter from a geometry, "
+                    "and the world declares none (§0.2c rule 3)"
+                )
+            continue
+        if not geometric:
+            if step.locus == world_rules.MEMBRANE and len(phases) > 1:
+                raise ConfigError(
+                    f"world: step {step.id} crosses phases at the membrane; in a world with a "
+                    "geometry a cross-phase step takes a geometric encounter law (phase exchange "
+                    "for a join, permeation for an entry), and other interfaces are refused until "
+                    "one is declared (§0.2c rule 3)"
+                )
+            continue
+        _geometric_shape(step, law, by_name)
+    if world.geometry is None:
+        return
+    if world.conventions.last_molecule != "kept":
+        raise ConfigError(
+            "world: a geometry's vesicle floor requires last_molecule kept (§0.2c rule 5), not "
+            f"{world.conventions.last_molecule!r}"
+        )
+    from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+    quanta = geometry_rules.place_quanta(world, len(world.places))
+    footprint = int(sum(int(c) * int(k) for c, k in zip(world.founder, quanta, strict=True)))
+    if footprint < geometry_rules.floor_quanta(world):
+        raise ConfigError(
+            f"world: the founder's membrane footprint, {footprint} quanta, is below the vesicle "
+            f"floor, {geometry_rules.floor_quanta(world)} (§0.2c rule 5)"
+        )
+
+
+def _geometric_shape(step, law, by_name):
+    """Phase exchange is a join and permeation an entry, one molecule of one species (rule 2)."""
+    want = {PHASE_EXCHANGE: "membrane", MEMBRANE_PERMEATION: "lumen"}.get(law.law_id)
+    ok = want is not None and len(step.reactants) == len(step.products) == 1
+    if ok:
+        (r, a), (p, b) = step.reactants[0], step.products[0]
+        ok = (
+            a == b == 1
+            and by_name[r].phase == world_rules.POOL
+            and by_name[p].phase == want
+            and by_name[r].species == by_name[p].species
+        )
+    if not ok:
+        kind = {"membrane": "a join", "lumen": "an entry"}.get(want, "a geometric step")
+        raise ConfigError(
+            f"world: step {step.id} of {law.law_id} is declared as {kind}: one molecule of one "
+            f"species from the pool to the {want} (§0.2c rule 2)"
+        )
 
 
 def _convention_refusals(world):
@@ -267,6 +344,9 @@ def world_to_dict(world):
         out["rate_factor"] = {"law": law_id, **registry.lookup(law_id).data_to_dict(data)}
     if world.role is not None:
         out["world_role"] = world.role
+    if world.geometry is not None:
+        law_id, data = world.geometry
+        out["geometry"] = {"law": law_id, **registry.lookup(law_id).data_to_dict(data)}
     return out
 
 

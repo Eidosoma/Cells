@@ -65,8 +65,9 @@ WORLD_KEYS = {
     "rate_factor",
     "founder",
     "world_role",
+    "geometry",
 }
-WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role"}
+WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role", "geometry"}
 ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 
@@ -122,7 +123,8 @@ class Step:
     products: tuple
     locus: str
     law: str
-    forward_rate_per_s: float
+    forward_rate_per_s: float  # The step's rate constant k, in its law's unit (rate_key).
+    rate_key: str = "forward_rate_per_s"  # OL2's geometric laws name theirs (§0.2d item 2).
 
 
 @dataclass(frozen=True)
@@ -137,6 +139,7 @@ class World:
     rate_factor: tuple | None  # (law ID, parsed data), or None.
     founder: tuple  # Counts per place (0 for a held place).
     role: str | None = None  # "probe" (§0.2b rule 8), or None: a world to run.
+    geometry: tuple | None = None  # OL2: (law ID, parsed data), or None (geometry.py).
 
     @property
     def place_names(self):
@@ -361,11 +364,12 @@ def _side(raw, step, which, form, phase, by_name):
     return out
 
 
-def parse_step(raw, world_places, species, laws):
+def parse_step(raw, world_places, species, laws, encounter=None):
     if not isinstance(raw, dict):
         raise ConfigError("world: a step is an object")
     form = "phase" if "phase" in raw else "locus"
-    keys = {"id", "reactants", "products", form, "law", "forward_rate_per_s"}
+    rate_key = _rate_key(raw, laws, encounter)
+    keys = {"id", "reactants", "products", form, "law", rate_key}
     require_fields(raw, keys, "world: step")
     step = identifier(raw["id"])
     by_name = {p.name: p for p in world_places}
@@ -421,10 +425,24 @@ def parse_step(raw, world_places, species, laws):
         )
     if raw["law"] not in laws:
         raise ConfigError(f"world: step {step}'s law is one of {', '.join(sorted(laws))}")
-    rate = finite_number(
-        raw["forward_rate_per_s"], f"step {step}: forward_rate_per_s", positive=True
-    )
-    return Step(step, form, reactants, products, where, raw["law"], rate)
+    rate = finite_number(raw[rate_key], f"step {step}: {rate_key}", positive=True)
+    return Step(step, form, reactants, products, where, raw["law"], rate, rate_key)
+
+
+def _rate_key(raw, laws, encounter):
+    """The step's rate-constant key: OL1's `forward_rate_per_s`, unless its law names its own
+    (a mapping by the world's exchange_encounter for OL2's geometric laws, §0.2d item 2)."""
+    name = raw.get("law")
+    law = laws.get(name) if isinstance(name, str) else None
+    key = getattr(law, "rate_key", "forward_rate_per_s")
+    if isinstance(key, str):
+        return key
+    if encounter is None:
+        raise ConfigError(
+            f"world: step {raw.get('id')!r}'s law {name} takes its encounter from a geometry, and "
+            "the world declares none (§0.2c rule 3)"
+        )
+    return key[encounter]
 
 
 def parse_founder(raw, places):
@@ -459,8 +477,8 @@ def steps_to_dict(steps):
             reactants=strip(s.reactants),
             products=strip(s.products),
             law=s.law,
-            forward_rate_per_s=s.forward_rate_per_s,
         )
+        entry[s.rate_key] = s.forward_rate_per_s
         out.append(entry)
     return out
 

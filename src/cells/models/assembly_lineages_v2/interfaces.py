@@ -29,6 +29,7 @@ from typing import Callable, ClassVar
 
 from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
+    GEOMETRY_INTERFACE,
     MODEL_ID,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
@@ -39,6 +40,9 @@ from cells.registry import laws as law_registry
 SPLITS = ("encounter",)  # θ⁺ the reactants' encounter, the reverse from F (§2.1's default split).
 PARTS = ("ideal", "excess")
 CATALYSING = ("membrane",)  # OL1: only the assembly's condensed phase catalyses (§0.2a).
+# A reaction law's extent: `locus` is OL1's (the locus's X, or membrane_kinetics on m); `geometric`
+# is OL2's encounter on m from the world's geometry (§0.2d item 2), which the kernel supplies.
+EXTENTS = ("locus", "geometric")
 
 
 def _host_and_role(law, roles=("passive",)):
@@ -69,6 +73,10 @@ class ReactionLaw(Law):
     split: str
     log_direction: Callable  # The kernel of one direction's log rate (mass_action.py).
     formulas: dict
+    # OL2 (defaults keep OL1's laws as they are): the step's rate-constant key, or a mapping from
+    # the world's exchange_encounter token to it; and the extent's kind (EXTENTS).
+    rate_key: object = "forward_rate_per_s"
+    extent: str = "locus"
 
     interface: ClassVar[str] = REACTION_INTERFACE
 
@@ -78,6 +86,35 @@ class ReactionLaw(Law):
             out.append(f"its split is one of {', '.join(SPLITS)}")
         if not isinstance(self.formulas, dict) or not self.formulas:
             out.append("its formulas state its rates in words and symbols")
+        keys = self.rate_key.values() if isinstance(self.rate_key, dict) else [self.rate_key]
+        if not keys or not all(isinstance(k, str) and k for k in keys):
+            out.append("its rate key is a name, or a mapping from encounter tokens to names")
+        if self.extent not in EXTENTS:
+            out.append(f"its extent is one of {', '.join(EXTENTS)}")
+        return out
+
+
+@dataclass(frozen=True)
+class GeometryLaw(Law):
+    """cells.assembly_geometry@1: a geometry kind of the assembly (OL2; §0.2c rules 4, 5 and 8).
+
+    It reads the membrane's footprint W(n) = Σ n_i k_i in quanta (an exact integer), gives the
+    encounter extents on m to the geometric reaction laws, the floor's test, and its own part of F:
+    a constant per living vesicle (the closure cost), so it changes no rate."""
+
+    data: tuple  # The keys of its world block beside `law`.
+    parse_data: Callable  # (raw block, world) -> parsed data; ConfigError on refusal.
+    data_to_dict: Callable
+    formulas: dict
+
+    interface: ClassVar[str] = GEOMETRY_INTERFACE
+
+    def errors(self):
+        out = super().errors() + _callables(self, ("parse_data", "data_to_dict"))
+        if law_registry.qualified(self.host) != law_registry.qualified(MODEL_ID):
+            out.append(f"a law of {type(self).interface} is hosted by {MODEL_ID}")
+        if not isinstance(self.formulas, dict) or not self.formulas:
+            out.append("its formulas state its quantities in words and symbols")
         return out
 
 
