@@ -4,8 +4,9 @@
 // is slowed."
 //
 // Its place in the data. A packaged replay (schema/RUN_VIEW.md) says that it is a loop in
-// its view, in the shape the engine's run-view writer gives it (docs/LOOPING_REPLAY_DESIGN.md
-// on the engine's side, proposed 16 November 2026):
+// its view, in the shape the engine's run-view writer gives it (`cells.run_view@1`, on the
+// engine's main since 050aa741, 16 November 2026; docs/LOOPING_REPLAY_DESIGN.md there). The
+// first such run is FR-11's planarian loop, a development run of the engine, not judged:
 //   view.loop = { species, cell, period, closes: { within, says, tolerance, zero? }, not_measured?, follows? }
 //     species   the id of the species whose cell the run is
 //     cell      the id of that cell in the run's set of cells
@@ -30,7 +31,8 @@
 // engine's source instead, `run.source.revision` (with its dirty flag, carried).
 //
 // The species names its run from its own side (the species' file, `cell.loop`: the
-// replay's id); until a species does, the Cell view has no run and may show illustration.
+// replay's id, among the runs of the page's catalogue); the Cell view fetches it
+// (layers/cellflux.js, want) and plays it. A species that names none may show illustration.
 //
 // Refused: a run that is an example (rule 6: invented numbers are no species' run), one
 // that names no model of the engine or no revision, one made of another species' cell, one
@@ -194,6 +196,43 @@ export function loopStreams(loop) {
   return { ok: true, streams, busiest, needs: [], why: null };
 }
 
+/** Whether a stream's total ever changes over the run's records: one that never does carried nothing (a channel population's total of an ion it does not pass), and gets no lane. */
+export function everMoves(run, stream) {
+  const first = stream.record.at(0, stream.entity);
+  for (let step = 1; step < run.count; step++) if (stream.record.at(step, stream.entity) !== first) return true;
+  return false;
+}
+
+/**
+ * The interval a loop's rates are means over, in the picture's words, at a slow-down. Where a
+ * record's interval passes in under `readable` seconds of watching, the place of the interval
+ * changes too fast to read: the words then give the interval's length ("means over each 20 ms
+ * between records"), and stay the same from frame to frame. Slowed enough, they give its place
+ * in the loop ("mean of 0.36 s to 0.38 s of the loop"), to as many decimals as the interval needs.
+ */
+export function intervalWords(loop, interval, slow = 1, readable = 1.5) {
+  const gap = interval[1] - interval[0];
+  if (gap * slow < readable) return `means over each ${span(Math.max(...gapsOf(loop)))} between records`;
+  const decimals = Math.min(6, Math.max(1, Math.ceil(-Math.log10(gap))));
+  const at = (time) => `${(time - loop.start).toFixed(decimals)} s`;
+  return `mean of ${at(interval[0])} to ${at(interval[1])} of the loop`;
+}
+
+/** The time between each two records of a loop, in seconds. */
+function gapsOf(loop) {
+  const { run } = loop;
+  const gaps = [];
+  for (let step = 1; step < run.count; step++) gaps.push(run.t[step] - run.t[step - 1]);
+  return gaps.length ? gaps : [loop.length];
+}
+
+/** A short stretch of time in words: "20 ms", "1.5 s". */
+function span(seconds) {
+  if (seconds < 1e-3) return `${Number((seconds * 1e6).toPrecision(2))} µs`;
+  if (seconds < 1) return `${Number((seconds * 1e3).toPrecision(2))} ms`;
+  return `${Number(seconds.toPrecision(3))} s`;
+}
+
 /**
  * One token for the whole loop at a slow-down: how many particles a bead stands for. The
  * Cell view has no timeline, so a loop is slowed from its legend (marks/beads.js, SLOWS); a
@@ -258,13 +297,50 @@ export function planFromLoop(flux, loop, streams, { has, unread = null }) {
 }
 
 /**
- * What the picture says of a loop for as long as it shows: the run's name (and its own label,
- * where it has one), that it loops, its length in the cell's time, and from when it follows
- * another cell after a division.
+ * What the picture says of a loop for as long as it shows: the run's name (its catalogue's
+ * title where the page has one, else its id), that it loops, its length in the cell's time,
+ * and from when it follows another cell after a division. The run's own label is not put on
+ * the picture: it is long, and it is said in the legend and the panel, in the run's words.
  */
 export function loopWords(loop, speciesLabel, clock) {
   const follows = (loop.follows || []).map((step) => ` · from ${clock(step.time)} it follows ${step.to}, a daughter of ${step.from}`).join("");
-  return `${speciesLabel} · the engine's looping run ${loop.name}${loop.label ? ` (${loop.label})` : ""} · a loop of ${clock(loop.length)} of the cell's time${follows}`;
+  // A title that begins with the species' own name says it already.
+  const who = loop.title && speciesLabel && loop.title.startsWith(speciesLabel) ? "" : `${speciesLabel} · `;
+  return `${who}${loop.title || `the engine's looping run ${loop.name}`} · a loop of ${clock(loop.length)} of the cell's time${follows}`;
+}
+
+/**
+ * What the run is, in a few words, from the catalogue's entry for its experiment: a
+ * development run of the engine or not, judged or not. It stands on the picture as the
+ * notice an illustration has (rule 11), in the legend and in a chosen part's panel. Null where
+ * the catalogue says nothing: the page then claims nothing.
+ */
+export function statusWords(experiment) {
+  if (!experiment?.outcome) return null;
+  const what = experiment.development ? "Development run of the engine" : "Run of the engine";
+  return `${what}, ${experiment.outcome.judged ? "judged" : "not judged"}`;
+}
+
+/**
+ * What the Cell view's cell takes from the loop's cell, said plainly: which cell of the run
+ * it is, that the run's cells are lumped with the run's own laws, and what the run prescribes
+ * that the picture does not draw (its prescribed layers that act on this cell, by the run's
+ * events). From the run's own view, never from the species.
+ */
+export function takenWords(loop) {
+  const { run } = loop;
+  const id = run.sets.get("cell")?.ids[loop.cell];
+  const prescribed = (run.view?.layers || []).filter((layer) => layer.representation === "prescribed" && (run.events || []).some((event) => event.layer === layer.id && event.at?.set === "cell" && event.at.index === loop.cell));
+  const drive = prescribed.length ? `, under the run's prescribed ${prescribed.map((layer) => layer.label.toLowerCase()).join(" and ")}, which is not drawn` : "";
+  return `From the run's cell ${id}: a lumped cell with the run's own laws${drive}. Not a measurement of a living cell`;
+}
+
+/** The same in the fewest words, for the picture: [which cell, and what drives it that is not drawn; that it is no measurement]. */
+export function takenShort(loop) {
+  const { run } = loop;
+  const id = run.sets.get("cell")?.ids[loop.cell];
+  const prescribed = (run.view?.layers || []).filter((layer) => layer.representation === "prescribed" && (run.events || []).some((event) => event.layer === layer.id && event.at?.set === "cell" && event.at.index === loop.cell));
+  return [`From the run's lumped cell ${id}${prescribed.length ? `, with a prescribed ${prescribed.map((layer) => layer.label.toLowerCase()).join(" and ")} (not drawn)` : ""}`, "Not a measurement of a living cell"];
 }
 
 /**

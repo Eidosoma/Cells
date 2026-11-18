@@ -1,0 +1,511 @@
+{
+ "format": "cells.visualizer.law_port@1",
+ "note": "The law-port inventory's rows, as the page reads them: each law no active model declares behind the Protein atlas's units, with its units, its mark and its tests' class. Made by tools/extract_law_port.py from the inventory, which it reads and never writes; not edited by hand (schema/LAWS_LIBRARY.md).",
+ "inventory": {
+  "kind": "cells.law_port_inventory@1 (working record, D211)",
+  "made": "2026-11-17",
+  "head": "7240962264aa874c558b0aa08f25b0aa956700f5"
+ },
+ "counts": {
+  "rows": 54,
+  "units": 38,
+  "marks": {
+   "port as is": 47,
+   "fold into an owner's planned law": 5,
+   "not a port": 2
+  },
+  "test_class": {
+   "a": 52,
+   "b": 2
+  }
+ },
+ "rows": [
+  {
+   "law": "kv1p1_mh2@1",
+   "has_id": true,
+   "units": [
+    "U05"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv1p2_mh@1",
+   "has_id": true,
+   "units": [
+    "U06"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv1p3_mh@1",
+   "has_id": true,
+   "units": [
+    "U07"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv1p4_mh@1",
+   "has_id": true,
+   "units": [
+    "U08"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv1p6_mh@1",
+   "has_id": true,
+   "units": [
+    "U10"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv2p1_mh@1",
+   "has_id": true,
+   "units": [
+    "U11"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv2p2_mh@1",
+   "has_id": true,
+   "units": [
+    "U12"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv3p1_m@1",
+   "has_id": true,
+   "units": [
+    "U13"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv3p2_m2@1",
+   "has_id": true,
+   "units": [
+    "U14"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv3p3_m2h_long_tau@1",
+   "has_id": true,
+   "units": [
+    "U15"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv3p4_mh@1",
+   "has_id": true,
+   "units": [
+    "U16"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "k_fast_mh@1",
+   "has_id": true,
+   "units": [
+    "U17"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "nav1p3_m3h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U02"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "navrat2_m3h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U04"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "navrat1_m3h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U04"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "navrat3_m3h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U04"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "nav1p6_persistent_m@1",
+   "has_id": true,
+   "units": [
+    "U03"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn1_m@1",
+   "has_id": true,
+   "units": [
+    "U20"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn2_m@1",
+   "has_id": true,
+   "units": [
+    "U21"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn4_m@1",
+   "has_id": true,
+   "units": [
+    "U22"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn_leak_open@1",
+   "has_id": true,
+   "units": [
+    "U23"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn2_camp_m@1",
+   "has_id": true,
+   "units": [
+    "U21"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn4_camp_m@1",
+   "has_id": true,
+   "units": [
+    "U22"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav1p2_m2h@1",
+   "has_id": true,
+   "units": [
+    "U24"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav1p3_m2h@1",
+   "has_id": true,
+   "units": [
+    "U25"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav2p1_m@1",
+   "has_id": true,
+   "units": [
+    "U28"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav2p2_m2h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U29"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav2p3_mh@1",
+   "has_id": true,
+   "units": [
+    "U30"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav3p1_mh_piecewise_tau_m@1",
+   "has_id": true,
+   "units": [
+    "U31"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav3p3_mh@1",
+   "has_id": true,
+   "units": [
+    "U32"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "ca_l2_m2h@1",
+   "has_id": true,
+   "units": [
+    "U26"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "ca_l3_shift15_m2h@1",
+   "has_id": true,
+   "units": [
+    "U26"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav_g_m2h_regularized@1",
+   "has_id": true,
+   "units": [
+    "U27"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv_ml1_dynamic_m@1",
+   "has_id": true,
+   "units": [
+    "U18"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv2p1_ml_dynamic_m@1",
+   "has_id": true,
+   "units": [
+    "U11"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "kv1p3_ml_dynamic_m@1",
+   "has_id": true,
+   "units": [
+    "U07"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "nav_ml_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U03"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav_l_ml_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U25"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav_l_ml2_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U25"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav_n_ml_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U29"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cav_t_ml_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U31"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn2_ml_depolarization_activated_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U21"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "hcn4_ml_depolarization_activated_instantaneous@1",
+   "has_id": true,
+   "units": [
+    "U22"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cagpotassium_numeric_mM_scale@1",
+   "has_id": true,
+   "units": [
+    "U33"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "er_calcium_pump_positive@1",
+   "has_id": true,
+   "units": [
+    "U41"
+   ],
+   "mark": "fold into an owner's planned law",
+   "test_class": "a"
+  },
+  {
+   "law": "er_calcium_release@1",
+   "has_id": true,
+   "units": [
+    "U43"
+   ],
+   "mark": "fold into an owner's planned law",
+   "test_class": "a"
+  },
+  {
+   "law": "finite_atp_er_1ca_positive@1",
+   "has_id": true,
+   "units": [
+    "U41"
+   ],
+   "mark": "fold into an owner's planned law",
+   "test_class": "a"
+  },
+  {
+   "law": "ip3_er_release@1",
+   "has_id": true,
+   "units": [
+    "U43"
+   ],
+   "mark": "fold into an owner's planned law",
+   "test_class": "a"
+  },
+  {
+   "law": "ncx_3na_1ca_symmetric_barrier@1",
+   "has_id": true,
+   "units": [
+    "U42"
+   ],
+   "mark": "fold into an owner's planned law",
+   "test_class": "a"
+  },
+  {
+   "law": "electroneutral_symport_reversible_tanh@1",
+   "has_id": true,
+   "units": [
+    "U46"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "nkcc_reversible_tanh@1",
+   "has_id": true,
+   "units": [
+    "U45"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "cell_zone_transporter@1",
+   "has_id": true,
+   "units": [
+    "U46"
+   ],
+   "mark": "port as is",
+   "test_class": "a"
+  },
+  {
+   "law": "mitochondrial_passive_continuous_si@1",
+   "has_id": true,
+   "units": [
+    "U47"
+   ],
+   "mark": "not a port",
+   "test_class": "b"
+  },
+  {
+   "law": "junction_flux() of emt_mirna_pair@1 (no ID)",
+   "has_id": false,
+   "units": [
+    "U37",
+    "U38"
+   ],
+   "mark": "not a port",
+   "test_class": "b"
+  }
+ ]
+}

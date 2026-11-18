@@ -1,0 +1,771 @@
+{
+  "constants": [
+    {
+      "axes": [],
+      "from": "the definition (the bound layout)",
+      "id": "temperature",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "K",
+      "values": 310.0
+    },
+    {
+      "axes": [
+        "species"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "valence",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        1.0,
+        1.0,
+        -1.0,
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        1.0
+      ]
+    },
+    {
+      "axes": [
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "extracellular_volume",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "pL",
+      "values": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_area",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m2",
+      "values": [
+        1e-10,
+        1e-11
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_capacitance",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "F",
+      "values": [
+        1e-12,
+        1e-13
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "initial_cell_charge_C",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "C",
+      "values": [
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_abundance",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": []
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": []
+    },
+    {
+      "axes": [
+        "species",
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_permeability",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "m/s",
+      "values": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "calcium_pump_capacity",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol/s",
+      "values": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "axes": [
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true
+      ]
+    },
+    {
+      "axes": [
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "outside_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "membrane"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "membrane_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true,
+        true
+      ]
+    },
+    {
+      "axes": [
+        "channel"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "channel_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": []
+    },
+    {
+      "axes": [
+        "junction"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "junction_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": []
+    },
+    {
+      "axes": [
+        "face"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "face_active",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "1",
+      "values": [
+        true
+      ]
+    },
+    {
+      "axes": [
+        "species",
+        "outside"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "extracellular_amount_reference",
+      "says": "nothing of this composition changes it (checked at every observed row where the composition changes another view field)",
+      "unit": "fmol",
+      "values": [
+        [
+          145.0,
+          145.0
+        ],
+        [
+          5.0,
+          5.0
+        ],
+        [
+          150.0,
+          150.0
+        ],
+        [
+          1e-09,
+          0.0005
+        ]
+      ]
+    },
+    {
+      "axes": [
+        "species",
+        "cell"
+      ],
+      "from": "the definition (the bound layout)",
+      "id": "amount_reference",
+      "says": "the fixed reference that amount_increment is stored over: its quantity is this plus the record",
+      "unit": "fmol",
+      "values": [
+        [
+          145.0
+        ],
+        [
+          5.0
+        ],
+        [
+          150.0
+        ],
+        [
+          0.001
+        ]
+      ]
+    }
+  ],
+  "events": [],
+  "format": "cells.run_view@1",
+  "layers": [
+    {
+      "id": "membrane",
+      "label": "Membrane voltage and ions",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "simulated"
+    },
+    {
+      "id": "channels",
+      "label": "Channel populations and junction gates",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "pumps",
+      "label": "Pump populations",
+      "owner": "resolved_pump_tissue@3",
+      "representation": "modelled"
+    },
+    {
+      "id": "turnover",
+      "label": "Species turnover",
+      "owner": "scheduled_species_turnover@1",
+      "representation": "prescribed"
+    },
+    {
+      "id": "exchange",
+      "label": "Species exchange",
+      "owner": "scheduled_species_exchange@1",
+      "representation": "prescribed"
+    }
+  ],
+  "recording": {
+    "mode": "write_run",
+    "subset": {
+      "elements": {
+        "species": [
+          "S"
+        ]
+      },
+      "every": 2,
+      "fields": [
+        "membrane_voltage_V",
+        "cell_potential_V",
+        "amount",
+        "exchange_moved_fmol"
+      ]
+    }
+  },
+  "records": [
+    {
+      "array": "exchange_moved_fmol",
+      "axes": [
+        "time",
+        "exchange_route"
+      ],
+      "base": "accepted",
+      "field": "exchange_moved_fmol",
+      "id": "exchange_moved_fmol",
+      "kind": "cumulative",
+      "layer": "exchange",
+      "owner": "scheduled_species_exchange@1",
+      "set": "exchange_route",
+      "sign": {
+        "confirmed": "the lead, 16 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the route's patch for that patch's outside node: an export route's total is zero or more, an import route's zero or less",
+        "to": "outside"
+      },
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_amount",
+      "axes": [
+        "time",
+        "species",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "amount",
+      "id": "observed_amount",
+      "kind": "amount",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "fmol"
+    },
+    {
+      "array": "observed_cell_potential_V",
+      "axes": [
+        "time",
+        "cell"
+      ],
+      "base": "observation",
+      "field": "cell_potential_V",
+      "id": "observed_cell_potential_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "cell",
+      "unit": "V"
+    },
+    {
+      "array": "observed_membrane_voltage_V",
+      "axes": [
+        "time",
+        "membrane"
+      ],
+      "base": "observation",
+      "difference": {
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+        "minus": "outside",
+        "plus": "inside",
+        "says": "the potential of the patch's cell less that of its outside node: positive when the cell is at the higher potential"
+      },
+      "field": "membrane_voltage_V",
+      "id": "observed_membrane_voltage_V",
+      "kind": "level",
+      "layer": "membrane",
+      "owner": "resolved_pump_tissue@3",
+      "set": "membrane",
+      "unit": "V"
+    },
+    {
+      "array": "observed_exchange_moved_fmol",
+      "axes": [
+        "time",
+        "exchange_route"
+      ],
+      "base": "observation",
+      "field": "exchange_moved_fmol",
+      "id": "observed_exchange_moved_fmol",
+      "kind": "cumulative",
+      "layer": "exchange",
+      "owner": "scheduled_species_exchange@1",
+      "set": "exchange_route",
+      "sign": {
+        "confirmed": "the lead, 16 November 2026",
+        "from": "inside",
+        "says": "a positive amount leaves the cell of the route's patch for that patch's outside node: an export route's total is zero or more, an import route's zero or less",
+        "to": "outside"
+      },
+      "unit": "fmol"
+    }
+  ],
+  "run": {
+    "composition": {
+      "inner_model": "resolved_pump_tissue@3",
+      "model": "resolved_pump_composite@1",
+      "operators": [
+        "scheduled_species_turnover@1",
+        "scheduled_species_exchange@1"
+      ]
+    },
+    "definition_sha256": "b7d76973cf2dc65ecc25dd3cddf9e5c26f9be2a5759dbaf8b596f5ca54c8ee33",
+    "end": {
+      "status": "complete",
+      "step": 10,
+      "time": 0.01
+    },
+    "engine_models": [
+      "resolved_pump_composite@1",
+      "resolved_pump_tissue@3",
+      "scheduled_species_turnover@1",
+      "scheduled_species_exchange@1"
+    ],
+    "id": "secretion-subset",
+    "label": "the visualizer's fixture of the run view's writer: the short secretion world, a recorded subset",
+    "model": "resolved_pump_composite@1",
+    "scale": "cell"
+  },
+  "sets": [
+    {
+      "id": "species",
+      "ids": [
+        "Na",
+        "K",
+        "Cl",
+        "S"
+      ],
+      "recorded": [
+        3
+      ],
+      "scale": "molecule",
+      "species": [
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": null
+        },
+        {
+          "identity": {
+            "catalogue": null,
+            "evidence": null,
+            "source": "scheduled_species_turnover@1"
+          }
+        }
+      ],
+      "valence": [
+        1,
+        1,
+        -1,
+        0
+      ]
+    },
+    {
+      "geometry": null,
+      "id": "cell",
+      "ids": [
+        "cell_0"
+      ],
+      "lifetimes": [
+        null
+      ],
+      "scale": "cell"
+    },
+    {
+      "geometry": null,
+      "holds": "outside node",
+      "id": "outside",
+      "ids": [
+        "bath",
+        "ecs_0"
+      ],
+      "reservoir": [
+        true,
+        false
+      ],
+      "roles": {
+        "exterior": "beyond the world (a held node's reservoir)",
+        "node": "the node"
+      },
+      "scale": "cell"
+    },
+    {
+      "calcium_pumps": [
+        null,
+        null
+      ],
+      "geometry": {
+        "index": [
+          0,
+          0
+        ],
+        "kind": "on",
+        "set": "cell"
+      },
+      "holds": "membrane patch",
+      "id": "membrane",
+      "ids": [
+        "wall_cell_0",
+        "contact_0"
+      ],
+      "laws": [
+        {
+          "law_id": "constant_field@1"
+        },
+        {
+          "law_id": "constant_field@1"
+        }
+      ],
+      "outside": {
+        "index": [
+          0,
+          1
+        ],
+        "set": "outside"
+      },
+      "pumps": [
+        null,
+        null
+      ],
+      "pumps_are": "columns of this set (version 1)",
+      "roles": {
+        "inside": "the patch's cell",
+        "outside": "the patch's outside node (the set's outside index)"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "cell",
+        "ends": [],
+        "kind": "links"
+      },
+      "id": "junction",
+      "ids": [],
+      "laws": [],
+      "roles": {
+        "receiver": "its second cell (ends[1])",
+        "sender": "the junction's first cell (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "between": "outside",
+        "ends": [
+          [
+            1,
+            0
+          ]
+        ],
+        "kind": "links"
+      },
+      "holds": "face",
+      "id": "face",
+      "ids": [
+        "face_0"
+      ],
+      "laws": [
+        {
+          "law_id": "logmean_electrodiffusion@1"
+        }
+      ],
+      "roles": {
+        "receiver": "its second outside node (ends[1])",
+        "sender": "the face's first outside node (ends[0])"
+      },
+      "scale": "cell"
+    },
+    {
+      "geometry": {
+        "index": [],
+        "kind": "on",
+        "set": "membrane"
+      },
+      "holds": "channel population",
+      "id": "channel",
+      "ids": [],
+      "laws": [],
+      "roles": {
+        "inside": "the cell of the population's patch",
+        "outside": "that patch's outside node"
+      },
+      "scale": "cell"
+    },
+    {
+      "holds": "channel gate row",
+      "id": "gate",
+      "ids": [
+        "gate_0",
+        "gate_1"
+      ],
+      "says": "row i of a population's gates is gates[i] of its law (the channel set)",
+      "scale": "molecule"
+    },
+    {
+      "composed_of": [
+        "cell",
+        "outside"
+      ],
+      "holds": "field node",
+      "id": "node",
+      "ids": [
+        "cell_0",
+        "bath",
+        "ecs_0"
+      ],
+      "scale": "cell"
+    },
+    {
+      "id": "world",
+      "ids": [
+        "world"
+      ],
+      "scale": "cell"
+    },
+    {
+      "holds": "floating capacitor component",
+      "id": "floating_component",
+      "ids": [],
+      "members": [],
+      "scale": "cell"
+    },
+    {
+      "at": [
+        {
+          "cell": "cell_0"
+        },
+        {
+          "outside": "ecs_0"
+        }
+      ],
+      "carries": [
+        "S",
+        "S"
+      ],
+      "holds": "turnover route",
+      "id": "turnover_route",
+      "ids": [
+        "produce",
+        "clear"
+      ],
+      "kinds": [
+        "production",
+        "clearance"
+      ],
+      "owner": "scheduled_species_turnover@1",
+      "scale": "cell"
+    },
+    {
+      "carries": [
+        "S",
+        "S"
+      ],
+      "direction": [
+        "export",
+        "import"
+      ],
+      "geometry": {
+        "index": [
+          1,
+          1
+        ],
+        "kind": "on",
+        "set": "membrane"
+      },
+      "holds": "exchange route",
+      "id": "exchange_route",
+      "ids": [
+        "secrete",
+        "sink"
+      ],
+      "owner": "scheduled_species_exchange@1",
+      "roles": {
+        "inside": "the cell of the route's patch",
+        "outside": "that patch's outside node"
+      },
+      "scale": "cell"
+    }
+  ],
+  "space": null,
+  "time": {
+    "bases": [
+      {
+        "array": "accepted_times",
+        "files": [
+          {
+            "file": "trajectory.npz",
+            "rows": [
+              0,
+              11
+            ]
+          }
+        ],
+        "id": "accepted",
+        "says": "the state's accepted rows"
+      },
+      {
+        "array": "observation_times",
+        "files": [
+          {
+            "file": "trajectory.npz",
+            "rows": [
+              0,
+              3
+            ]
+          }
+        ],
+        "id": "observation",
+        "says": "the observed rows"
+      }
+    ],
+    "event_rows": "Every event here is an operator's event map, which acts at the start of the step that leaves the event's time: the row saved at that time holds the state before the event, the next row the state after it.",
+    "unit": "s"
+  },
+  "unstated": [
+    {
+      "id": "source",
+      "what": "engine source",
+      "why": "the engine runs from a checkout, not an execution snapshot: its revision is the caller's label, if given"
+    },
+    {
+      "id": "geometry",
+      "what": "geometry",
+      "why": "the caller gave no builder geometry: no coordinates, and no space"
+    }
+  ]
+}

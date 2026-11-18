@@ -11,6 +11,10 @@ for the last publish, and splits the files that changed into uploads.
   when it is the `--old` one. Without `--old` every file is sent.
 - A publish takes at most 255 files and 64 MB, and keeps the files it does not send. Each
   upload here stays under 240 files and 55 MB.
+- One version of an artifact holds at most 511 files and 256 MB in all, the page among
+  them. The staging says how much of that the artifact will then hold (the files listed
+  now, the page, and what was published before and is no longer listed, which stays until
+  it is removed by name), and stops when it would be over.
 - `upload-N.json` in the new folder lists an upload's files as the Artifact tool takes
   them, relative to the new folder (its `root`).
 
@@ -26,6 +30,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PAGE = "cells-architecture.html"
 MAX_FILES, MAX_BYTES = 240, 55_000_000
+VERSION_FILES, VERSION_BYTES = 511, 256_000_000
 
 
 def main(argv=None):
@@ -85,6 +90,15 @@ def main(argv=None):
         print(f"  no longer listed: {name}")
     if len(gone) > 8:
         print(f"  and {len(gone) - 8} more")
+    # What the artifact then holds in all: a publish keeps what it does not send, so what is no longer
+    # listed still counts until it is removed by name.
+    held = len(listed) + 1 + len(gone)
+    held_bytes = sum(size(name) for name in listed) + size(PAGE) + sum((old / name).stat().st_size for name in gone)
+    print(f"the artifact then holds {held} of at most {VERSION_FILES} files, the page among them, and {held_bytes / 1e6:.1f} of {VERSION_BYTES / 1e6:.0f} MB")
+    if held > VERSION_FILES or held_bytes > VERSION_BYTES:
+        sys.exit("that is over what one version of an artifact holds: remove what is no longer listed, or publish fewer files")
+    if held > 0.9 * VERSION_FILES or held_bytes > 0.9 * VERSION_BYTES:
+        print("  that is nine tenths of the limit or more")
 
 
 if __name__ == "__main__":

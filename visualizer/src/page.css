@@ -12,6 +12,13 @@
   --bio-signal: #e062a6; --bio-ion: #37b58c; --bio-wound: #e2574c; --bio-cell: #48b9a9; --bio-chloroplast: #7fae35; --bio-golgi: #f2a7b8;
   /* The protein atlas: a generic law, with no protein assigned, is drawn in this grey. */
   --atlas-generic: #8794a2;
+  /* The species' own proteins (docs/ATLAS_LOOK.md, decided 16 November 2026): the side of each protein's own membrane,
+     and the two ramps "Colour" also offers (how the side is known; essentiality). Checked by tests/palette.test.mjs as
+     tokens and by tools/check_shelves.mjs "colours" as drawn: lightness keeps them apart under every kind of
+     colour-vision deficiency, hue for everyone else; none is a status colour. */
+  --own-outside: #57295d; --own-in: #4a4cd0; --own-inside: #a04600;
+  --own-basis-1: #241133; --own-basis-2: #5b327a; --own-basis-3: #874db2;
+  --own-mark-1: #2c1402; --own-mark-2: #6b3809; --own-mark-3: #9d5513;
   /* A magnitude (a replay's voltage): one hue from little to much. Light to dark here, and dark
      to light on a dark page, so "more" always stands out. Both ends stay clear of the page. */
   --seq-0: #6da7ec; --seq-1: #3987e5; --seq-2: #256abf; --seq-3: #184f95; --seq-4: #0d366b;
@@ -31,6 +38,9 @@
     --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
     --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797; --bio-chloroplast: #8dbb45; --bio-golgi: #f4afbf;
     --atlas-generic: #7d8c9c;
+  --own-outside: #efb9e4; --own-in: #7c6cf2; --own-inside: #ef6c1a;
+  --own-basis-1: #e5cff6; --own-basis-2: #c79ae5; --own-basis-3: #a469c5;
+  --own-mark-1: #f8d0a9; --own-mark-2: #ea9c64; --own-mark-3: #bd6c3a;
     --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
     --is-dark: 1;
     color-scheme: dark;
@@ -46,6 +56,9 @@
   --bio-mito: #ea7d3f; --bio-protein: #4a90ea; --bio-pump: #7482ee; --bio-fuel: #eeb02a; --bio-water: #58b4ee;
   --bio-signal: #e268ac; --bio-ion: #35ad86; --bio-wound: #e25c52; --bio-cell: #3aa797; --bio-chloroplast: #8dbb45; --bio-golgi: #f4afbf;
   --atlas-generic: #7d8c9c;
+  --own-outside: #efb9e4; --own-in: #7c6cf2; --own-inside: #ef6c1a;
+  --own-basis-1: #e5cff6; --own-basis-2: #c79ae5; --own-basis-3: #a469c5;
+  --own-mark-1: #f8d0a9; --own-mark-2: #ea9c64; --own-mark-3: #bd6c3a;
   --seq-0: #1c5cab; --seq-1: #2a78d6; --seq-2: #5598e7; --seq-3: #86b6ef; --seq-4: #b7d3f6;
   --is-dark: 1;
   color-scheme: dark;

@@ -1,4 +1,4 @@
-# The species' own proteins: colour and ways around (options)
+# The species' own proteins: colour and ways around
 
 The user, 16 November 2026: "review the look and feel of the All protein pages, the navigation is a bit
 ackward and the look and feel a bit boring, cant we classify more with color, inside outside".
@@ -12,6 +12,51 @@ November 2026.
 to the repository. It is kept, with the copy of the code it was pictured from and the tools that build it, in
 `/mnt/workspaces/Cells/visualizer-atlas-look-20261116-01/` (`atlas-look.html`, and a `README.md` that says what
 each folder is). This note carries its findings, its recommendation and its questions.
+
+## Decided (16 November 2026), and built
+
+The user, the same evening: "lets go with your and adviser recomendartion on the nav questions". So all eight, as
+recommended, and built as the page's own (not the prototypes):
+
+1. **Inside and outside are the side of each protein's own membrane**, as the files state. The legend uses each
+   shelf's own words when one shelf is shown or in focus ("In the mitochondrial matrix"), and words that hold on
+   every shelf for the whole stack ("Beyond its membrane", "In its membrane", "Enclosed by its membrane").
+2. **Look A.** Every marker, family and member takes the colour of its side: a family's line the side where most
+   of its members sit (as the file states it; right for 96% of the human's proteins, 81% of the planarian's); a
+   gathering its side's own colour too (paler, it fell under 3 : 1 as drawn), told by its dashed ring and its
+   name; what has no known side stays hollow and grey. What makes a unit Cells has a law for keeps
+   its machine's shape and its blue base. Light theme: plum `#57295d` beyond, violet `#4a4cd0` in, burnt orange
+   `#a04600` enclosed; dark theme: rose `#efb9e4`, violet `#7c6cf2`, orange `#ef6c1a` (`src/page.css`, `--own-*`).
+3. **"Colour" in the legend** offers the side (the default), how the side is known, essentiality where a species
+   states it (Syn3A, M. pneumoniae), Cells' laws (one hue, as before), and a small catalogue's other marks: the
+   card's "Show by" is folded into it there, and stays for a large catalogue's sets (E. coli's chemotaxis
+   proteins and assemblies). A family's line states no basis and no mark, so under those it stays grey and the
+   legend says to open it.
+4. **The trail, the search in view and the map of the stack** (`src/ui/atlas_nav.js`). The trail says species,
+   shelf, side shown alone, the open family ("Opening …" while its proteins are fetched) and the protein; each
+   step goes back to it, and its arrow one level. The search, in the trail, finds a protein by gene, name or
+   identifier inside a family not yet opened, the families' lines and the shelves; on a phone it opens from
+   "Find". The map, a column of bars at the right edge that opens to the shelves' names, stands in for the
+   legend's list of shelves.
+5. **A names file** beside each large catalogue's members' files (`names.json`, one more published file for each
+   of the six large catalogues), written by the page builder from the members' files. With each protein's side
+   in it they are larger than the review's estimate: 1.32 MB for the human (1.1 estimated) and 1.81 MB for thale
+   cress (1.5), 0.28 to 1.40 MB for the others.
+6. **Escape steps back one level of the trail**, in the atlas only: protein, family, side, shelf, the whole stack.
+   With one shelf (Syn3A), it also brings the shelf back into view after a protein was flown to.
+7. **The light theme's orange and violet were deepened until, as drawn and lit on the graphics card, every side
+   stands at least 3 : 1 against the page** (the human's families: violet 3.35, orange 3.36, its gatherings 3.53
+   and 3.54; Syn3A's markers 3.61 and 3.72). The light theme's two ramps of "Colour" (how the side is known,
+   essentiality) were deepened the same way: as drawn on Syn3A their lightest steps stand 3.39 and 3.38 against
+   the page, and their steps are at least 15 apart for every kind of sight (dark theme: 6.19 and 6.20, at least
+   17). `tests/palette.test.mjs` holds the tokens to the palette check; `tools/check_shelves.mjs colours` holds
+   the sides, the gatherings and the ramps as drawn.
+8. **The ring of the other side's colour** on a mixed family: not built, as decided.
+
+With it: a side shown alone is that side of the shelf in focus only (it used to light that side on every shelf);
+and the human's 27 entries that the law inventory names only as going with a machine (auxiliary subunits, the
+sodium pump's beta subunits, the uniplex's regulators, the pump's FXYD regulators) are drawn plain and say so,
+in the inventory's own words (`inventory_roles`, `schema/SPECIES_PROTEINS.md`).
 
 ## What the page holds
 

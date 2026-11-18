@@ -1,0 +1,214 @@
+{
+ "format": "cells.visualizer.particle@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "7K00": {
+   "entry": "7K00",
+   "title": "Structure of the Bacterial Ribosome at 2 Angstrom Resolution",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "1.98",
+   "left_out": [
+    "A-site tRNA-val",
+    "E-site tRNA",
+    "P-site tRNA-fMet",
+    "mRNA"
+   ],
+   "whole": {
+    "atoms": 137247,
+    "across_nm": [
+     26.1,
+     21.1,
+     17.3
+    ],
+    "farthest_nm": [
+     26.8,
+     24.3,
+     20.6
+    ],
+    "middle_98_percent_nm": [
+     22.3,
+     20.2,
+     16.4
+    ],
+    "radius_of_gyration_nm": 8.45
+   },
+   "large": {
+    "atoms": 85902,
+    "centre_nm": [
+     0.0,
+     -3.87,
+     0.0
+    ],
+    "axes": [
+     [
+      0.9964,
+      0.0801,
+      0.0272
+     ],
+     [
+      -0.0384,
+      0.1419,
+      0.9891
+     ],
+     [
+      0.0754,
+      -0.9866,
+      0.1445
+     ]
+    ],
+    "across_nm": [
+     20.6,
+     18.0,
+     14.3
+    ],
+    "farthest_nm": [
+     22.1,
+     19.8,
+     17.8
+    ],
+    "radius_of_gyration_nm": 6.9
+   },
+   "small": {
+    "atoms": 51345,
+    "centre_nm": [
+     0.0,
+     6.48,
+     0.0
+    ],
+    "axes": [
+     [
+      0.7858,
+      0.1358,
+      -0.6034
+     ],
+     [
+      0.5466,
+      0.3042,
+      0.7802
+     ],
+     [
+      0.2896,
+      -0.9429,
+      0.1648
+     ]
+    ],
+    "across_nm": [
+     23.5,
+     15.2,
+     10.0
+    ],
+    "farthest_nm": [
+     23.2,
+     18.2,
+     12.5
+    ],
+    "radius_of_gyration_nm": 6.65
+   },
+   "between_centres_nm": 10.4
+  },
+  "5MDZ": {
+   "entry": "5MDZ",
+   "title": "Structure of the 70S ribosome (empty A site)",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "3.10",
+   "left_out": [
+    "fMet-NH-tRNA(fMet)",
+    "mRNA"
+   ],
+   "whole": {
+    "atoms": 143723,
+    "across_nm": [
+     25.6,
+     21.2,
+     18.5
+    ],
+    "farthest_nm": [
+     26.6,
+     25.1,
+     23.1
+    ],
+    "middle_98_percent_nm": [
+     22.2,
+     20.3,
+     18.0
+    ],
+    "radius_of_gyration_nm": 8.52
+   },
+   "large": {
+    "atoms": 92027,
+    "centre_nm": [
+     0.0,
+     -3.61,
+     0.0
+    ],
+    "axes": [
+     [
+      0.9394,
+      -0.1624,
+      0.3018
+     ],
+     [
+      -0.3089,
+      -0.02,
+      0.9509
+     ],
+     [
+      -0.1483,
+      -0.9865,
+      -0.069
+     ]
+    ],
+    "across_nm": [
+     21.3,
+     19.2,
+     14.7
+    ],
+    "farthest_nm": [
+     23.1,
+     21.3,
+     17.5
+    ],
+    "radius_of_gyration_nm": 7.2
+   },
+   "small": {
+    "atoms": 51696,
+    "centre_nm": [
+     0.0,
+     6.43,
+     0.0
+    ],
+    "axes": [
+     [
+      0.7483,
+      -0.0958,
+      -0.6564
+     ],
+     [
+      0.6062,
+      -0.3032,
+      0.7353
+     ],
+     [
+      -0.2694,
+      -0.9481,
+      -0.1688
+     ]
+    ],
+    "across_nm": [
+     23.8,
+     15.1,
+     10.0
+    ],
+    "farthest_nm": [
+     23.8,
+     18.2,
+     12.5
+    ],
+    "radius_of_gyration_nm": 6.69
+   },
+   "between_centres_nm": 10.0
+  }
+ }
+}

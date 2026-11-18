@@ -11,7 +11,7 @@ import path from "node:path";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import { buildPage, ROOT, THREE_CDN, DEFAULT_SCENE } from "../tools/lib/build_page.mjs";
-import { validate } from "../src/scene/model.js";
+import { validate, SceneModel } from "../src/scene/model.js";
 
 const scene = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
 const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
@@ -25,6 +25,20 @@ test("the generated scene is structurally valid", () => {
 test("the extractor placed every engine file and raised no warning", () => {
   assert.equal(scene.meta.counts.engine_files_placed, scene.meta.counts.engine_files);
   assert.deepEqual(scene.meta.warnings, []);
+});
+
+test("a source links to the engine at the revision the map was read at, and to the viewer's own files on its branch", () => {
+  // Files move on main (D188), and a published page must keep pointing at what it cited: so no link goes to a branch's tip
+  // of the engine. The scene states its revision in short; the link carries the whole of it.
+  assert.match(scene.meta.source_base_url, /\/blob\/[0-9a-f]{40}\/$/, "the engine's link base is not at a revision");
+  assert.ok(scene.meta.source_base_url.includes(`/blob/${scene.meta.revision}`), "the link's revision is not the one the map states");
+  assert.match(scene.meta.own_source_base_url, /\/blob\/visualizer\/$/, "the viewer's own link base is not its branch");
+  const model = new SceneModel(scene);
+  assert.equal(model.sourceUrl({ path: "docs/DECISIONS.md" }), scene.meta.source_base_url + "docs/DECISIONS.md");
+  assert.equal(model.sourceUrl({ path: "visualizer/docs/MOUSE.md" }), scene.meta.own_source_base_url + "visualizer/docs/MOUSE.md");
+  // An older scene, which gives one base only, links as it always did.
+  const older = new SceneModel({ ...scene, meta: { ...scene.meta, own_source_base_url: undefined } });
+  assert.equal(older.sourceUrl({ path: "visualizer/docs/MOUSE.md" }), scene.meta.source_base_url + "visualizer/docs/MOUSE.md");
 });
 
 test("a cited source that is the viewer's own is a file of this folder", () => {
@@ -95,7 +109,14 @@ test("what an overlay leaves out of the picture is named once in the scene, and 
   assert.ok(Array.isArray(listed), "the scene has no list of what is left out: rebuild it");
   // A species held back from the picture for now is named there too, and is nowhere else in the scene.
   const held = Object.keys(overlay.species_held || {});
-  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`)];
+  // A part whose files all stand in the map's legacy folder is left out by that rule, with its reason (the user, 17 November 2026).
+  const legacyParts = listed.filter((item) => item.kind === "component");
+  for (const item of legacyParts) {
+    assert.ok(overlay.legacy && overlay.components.some((part) => part.id === item.id), `${item.id} is left out as legacy code, yet the map has no such part or no legacy rule`);
+    assert.equal(item.reason, overlay.legacy.reason);
+    assert.equal(item.since, overlay.legacy.since);
+  }
+  const expected = [...leftOutCapabilities.map((item) => item.id), ...leftOutUnits.map((unit) => `unit.${unit.id}`), ...held.map((id) => `species.${id}`), ...legacyParts.map((item) => item.id)];
   for (const id of held) {
     assert.ok(!scene.species.some((item) => item.id === id), `${id} is held back, yet the scene lists it as a species`);
     assert.ok(!scene.proteins.atlases.some((item) => item.id === id) && !scene.proteins.shelves.some((item) => item.id === id), `${id} is held back, yet the scene carries its atlas or its proteins`);
@@ -202,7 +223,9 @@ test("each protein unit is linked to the engine part that holds its law", () => 
   const ids = new Set(scene.entities.map((entity) => entity.id));
   for (const unit of units) {
     const links = scene.relations.filter((relation) => relation.from === unit.id && relation.kind === "modelled_by");
-    assert.ok(links.length, `${unit.id} is linked to no engine part`);
+    // A unit whose laws all stand in held legacy code, which the map leaves out, links to no part, and the stamp says so.
+    const inLegacy = (scene.proteins.stamp.in_legacy || {})[unit.id.replace("unit.", "")];
+    assert.ok(links.length || inLegacy?.length, `${unit.id} is linked to no engine part`);
     for (const link of links) assert.ok(ids.has(link.to) && !link.to.startsWith("unit."), `${unit.id} -> ${link.to}`);
   }
 });
@@ -263,10 +286,19 @@ test("the scene carries the species the page can show, each with its shapes", ()
   assert.ok(species.length > 0, "the scene names no species: rebuild it");
   assert.equal(species.filter((item) => item.default).length, 1, "exactly one species is the one the page opens on");
   for (const item of species) {
-    // No species is said to be modelled: the record names no registered model of an organism.
-    assert.ok(["generic", "proposed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
+    // No species is said to be modelled: the record names no registered model of an organism. A word below it is the ladder's (schema/ENTRIES.md).
+    assert.ok(["generic", "proposed", "planned", "designed"].includes(item.modelled.state), `${item.id} is said to be modelled`);
     assert.ok(item.modelled.text?.trim(), `${item.id} does not say what Cells models of it`);
     for (const level of item.levels) if (level.shape?.ref) assert.ok(scene.shapes?.[level.shape.ref], `${item.id}: no shape ${level.shape.ref}`);
+    // Each with its cell types, its own first, and the one the page opens on (schema/CELL_TYPES.md).
+    assert.ok(item.cell_types?.[0]?.own && item.cell_types.some((type) => type.id === item.default_cell_type), `${item.id}: its cell types, its own first, and its default`);
+  }
+  // The model systems beside them (schema/MODEL_SYSTEMS.md): each a model, not an organism, under a heading of its own, never modelled before the record says so.
+  for (const item of scene.models || []) {
+    assert.equal(item.kind, "model system");
+    assert.ok(item.group && item.is && !("organism" in item) && !("cell" in item), `${item.id}: a model system has a heading and its line, and nothing of an organism`);
+    assert.ok(["proposed", "planned", "designed"].includes(item.modelled.state) || (item.modelled.state === "modelled" && /@\d+$/.test(item.modelled.model || "") && item.modelled.record?.length > 0), `${item.id} is said to be modelled with no registered model or no line of the record`);
+    for (const run of item.runs || []) assert.ok(run.path && !run.path.startsWith("data/"), `${item.id}: its run ${run.file} has the path it is published at`);
   }
 });
 
@@ -327,6 +359,14 @@ test("the page carries the replay catalogue, and the runs themselves only when a
     assert.ok(!linked.includes('<script type="application/json" data-replay='), "by default a run stays in its own file beside the page");
     const inline = await buildPage({ runsDir: runs, inlineRuns: true });
     assert.ok(inline.includes('<script type="application/json" data-replay="x--arm--seed1">'), "a standalone page carries its runs");
+    // A page exported without the Experiments view keeps its replays (the cell view's flux reads a species' looping run from
+    // them) and says the view is hidden; the page's list of views offers Experiments only where it is not.
+    assert.equal(sceneOf(linked).replays.hidden, undefined, "by default the view is offered");
+    const hidden = await buildPage({ runsDir: runs, hideExperiments: true });
+    assert.equal(sceneOf(hidden).replays.hidden, true);
+    assert.equal(sceneOf(hidden).replays.runs[0].id, "x--arm--seed1", "the replays stay with the page");
+    const viewer = await readFile(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
+    assert.match(viewer, /id: "experiments"[^\n]*needs: \(scene\) => scene\.replays\?\.runs\?\.length && !scene\.replays\.hidden/, "the view is offered only where the scene does not hide it");
   } finally {
     await rm(folder, { recursive: true, force: true });
   }

@@ -211,6 +211,9 @@
    ]
   }
  ],
+ "cell_type": {
+  "loop": "planarian-loop--planarian-b08af640"
+ },
  "cell": {
   "facts": [],
   "parts": {

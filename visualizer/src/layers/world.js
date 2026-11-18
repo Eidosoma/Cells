@@ -57,6 +57,26 @@ export function bordersOf(tiles) {
  */
 export function worldOf(run, tiles) {
   const borders = bordersOf(tiles);
+  // Cells placed where the run's view prescribes them need not touch: a junction between two that share no edge has a
+  // border of its own, across the line joining their middles, half way between their rims, as wide as the smaller cell.
+  const junctions = run.prescribed ? run.sets.get("junction")?.geometry : null;
+  if (junctions?.kind === "links" && junctions.between === "cell") {
+    const cellTile = new Map(tiles.filter((tile) => tile.set === "cell").map((tile) => [tile.index, tile]));
+    const joined = new Set(borders.map((border) => `${border.a.set}:${border.a.index}|${border.b.set}:${border.b.index}`));
+    for (const [first, second] of junctions.ends) {
+      const a = cellTile.get(first), b = cellTile.get(second);
+      if (!a || !b || joined.has(`cell:${first}|cell:${second}`) || joined.has(`cell:${second}|cell:${first}`)) continue;
+      let ax = b.centre[0] - a.centre[0], ay = b.centre[1] - a.centre[1];
+      const apart = Math.hypot(ax, ay) || 1;
+      ax /= apart;
+      ay /= apart;
+      const ra = a.radius || apart / 2, rb = b.radius || apart / 2;
+      const mx = a.centre[0] + ax * (ra + (apart - ra - rb) / 2), my = a.centre[1] + ay * (ra + (apart - ra - rb) / 2);
+      const length = Math.min(ra, rb), along = [-ay, ax];
+      borders.push({ a, b, points: [[mx - along[0] * length / 2, my - along[1] * length / 2], [mx + along[0] * length / 2, my + along[1] * length / 2]], mid: [mx, my], along, across: [ax, ay], length });
+      joined.add(`cell:${first}|cell:${second}`);
+    }
+  }
   const between = new Map();
   for (const border of borders) {
     between.set(`${keyOf(border.a.set, border.a.index)}|${keyOf(border.b.set, border.b.index)}`, { border, first: "a" });

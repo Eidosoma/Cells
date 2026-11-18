@@ -2,7 +2,7 @@
 
 Written by `tools/make_engine_view_fixture.sh fd008813` on the branch `run-view-d154` at revision
 `fd00881394d10fd33c05e47e17c88838fcf2b7c7`, exported with `git archive` (src, tests, validation) and run with the engine's own
-Python as a memory-capped unit (`scripts/run_detached.sh`). The writer is not on main yet. Every
+Python as a memory-capped unit (`scripts/run_detached.sh`). The writer was not on main then; it is on main since 050aa741 (16 November 2026). Every
 file here is the writer's own output, kept as written: `view.json` (`cells.run_view@1`), the
 arrays it names, `resolved_config.json` and `summary.json` (the manifest and the final checkpoint
 are left out). Do not edit by hand; run the script again.

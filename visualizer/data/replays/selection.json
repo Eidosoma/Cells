@@ -77,5 +77,52 @@
     "runs": [
       "secreted-species-dev-run"
     ]
+  },
+  "planarian-loop": {
+    "note": "FR-11's first looping run (16 November 2026): the interim planarian loop as the engine's run-view writer wrote it after adopting the engine's own view declarations (b08af640, the writer on main since 050aa741); one run, no verdict.",
+    "evidence_folder": "replay-20261116",
+    "runs": [
+      "planarian-b08af640"
+    ]
+  },
+  "gap-junction-linear-network": {
+    "note": "The engine side's run folder for the viewer: its index.json chooses the arms (runs: index), so arms added there later are data alone. The folder is named folder by folder (within), never as a path; move the run folder by changing within. It names dev-06, the run that packages every arm that fits the engine side's layer limit (17 November 2026).",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "dev-06",
+      "viewer"
+    ],
+    "runs": "index"
+  },
+  "gap-junction-tissue-line": {
+    "note": "The example's tissue line: the engine side's run folder of the line's four arms with dense records (17 November 2026, night): D = 0, and half, once and twice the threshold the search reported when it was rerun. It has no index.json, so its arms are its packages that hold a view.json; a pick an engine check refused would hold a REFUSED.json and no view, and be named from it.",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "dense-01",
+      "viewer"
+    ],
+    "runs": "index"
+  },
+  "gap-junction-tissue-sheet": {
+    "note": "The example's tissue sheet, an extension beyond the replication: the engine side's run folder of the 9 by 9 sheet's six arms (17 November 2026, night). It has no index.json, so its arms are its packages that hold a view.json.",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "sheet-01",
+      "viewer"
+    ],
+    "runs": "index"
+  },
+  "gap-junction-tissue-ladder": {
+    "note": "The example's tissue line at ten more couplings (the ladder), drawn in the line's view: the engine side's run folder of the ladder's ten arms (17 November 2026, night). It has no index.json, so its arms are its packages that hold a view.json.",
+    "evidence_folder": "gap-junction-20261117",
+    "within": [
+      "runs",
+      "ladder-01",
+      "viewer"
+    ],
+    "runs": "index"
   }
 }

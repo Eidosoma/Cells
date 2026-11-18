@@ -37,7 +37,7 @@ Nothing of the fly is in the engine. This is reference data for the viewer.
 - 4,747 InterPro families hold 9,528 proteins: 3,404 of one, 1,047 of two to four, 296 of five or more. 4,286 proteins have no family.
 - 1,960 lines of 1,343 families; the 3,404 only members of their families stand in 140 parts; the proteins with no family in 509 lines.
 - The largest: Peptidase S1A, chymotrypsin family (138); Protein of unknown function DUF1091 (97); Serine/Threonine Proteases with Immune and Developmental Roles (71); Larval/pupal cuticle protein (68); Cytochrome P450, E-class, group I (60); Olfactory receptor, insect (60); Ionotropic receptor (58); 7TM chemosensory receptor (53).
-- 54 proteins carry the family signature of one of Cells' machines and name its units.
+- 54 proteins carry the family signature of one of Cells' units and name it.
 
 ## What rests on tools and rule systems of other owners
 

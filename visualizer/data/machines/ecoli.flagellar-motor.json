@@ -203,7 +203,16 @@
             "count": {
               "n": 34,
               "says": "k-flif",
-              "measured_in": "Salmonella"
+              "measured_in": "Salmonella",
+              "also": {
+                "text": "34 in Salmonella's basal body",
+                "n": 34,
+                "pdb": {
+                  "entry": "7NVG",
+                  "what": "the copies the entry's own record states for the entity"
+                },
+                "measured_in": "Salmonella"
+              }
             },
             "arranged": "round the ring",
             "layout": "round"
@@ -273,7 +282,16 @@
               "n": 34,
               "about": true,
               "says": "n-flim-34",
-              "measured_in": "not stated"
+              "measured_in": "not stated",
+              "also": {
+                "text": "34 in a counter-clockwise-locked C ring of Salmonella",
+                "n": 34,
+                "pdb": {
+                  "entry": "8UOX",
+                  "what": "the copies the entry's own record states for the entity"
+                },
+                "measured_in": "Salmonella"
+              }
             },
             "arranged": "round, at the ring's wall",
             "layout": "round"
@@ -281,28 +299,47 @@
           {
             "id": "P15070",
             "gene": "fliN",
-            "count": null,
+            "count": {
+              "n": 102,
+              "pdb": {
+                "entry": "8UOX",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            },
             "arranged": "one band round the ring's lower edge",
             "says": "n-flin",
-            "why": "The sentence gives three FliN to each FliM's end and calls them one spiral round the lower edge; the band is drawn, not the copies.",
+            "why": "Drawn as one band round the ring's lower edge; the count is in the panel.",
             "layout": "band"
           },
           {
             "id": "P0ABZ1",
             "gene": "fliG",
-            "count": null,
+            "count": {
+              "n": 34,
+              "pdb": {
+                "entry": "8UOX",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            },
             "arranged": "one smooth ring at the top, where the stator units bear on it",
-            "why": "One sentence gives FliM bound one to one to FliG, another 26 steps a turn consistent with the FliG ring's symmetry: the two do not give one count, so none is drawn.",
+            "why": "Drawn as one smooth ring at the top of the C ring, where the stator units bear on it; the count is in the panel.",
             "layout": "smooth"
           }
         ]
       },
       "z_nm": {
         "nm": [
-          -24,
+          -19.2,
           -4
         ],
-        "choice": "Under the MS ring, 20 nm tall: no source read here gives its height."
+        "pdb": {
+          "entry": "8UOX",
+          "what": "how far the ring reaches along its axis, 15.2 nm, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+        },
+        "measured_in": "Salmonella",
+        "placed": "Under the MS ring: where it stands along the axis is the picture's choice."
       },
       "bore_nm": {
         "nm": 35,
@@ -372,8 +409,21 @@
       },
       "body": {
         "across_nm": {
-          "nm": 7,
-          "choice": "No source read here gives a unit's size."
+          "nm": 8.7,
+          "pdb": {
+            "entry": "6YSL",
+            "what": "the unit's width, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+          },
+          "measured_in": "other bacteria: Bacillus subtilis",
+          "also": {
+            "text": "7.8 nm in Campylobacter jejuni",
+            "nm": 7.8,
+            "pdb": {
+              "entry": "6YKM",
+              "what": "the unit's width, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+            },
+            "measured_in": "other bacteria: Campylobacter jejuni"
+          }
         },
         "z_nm": {
           "nm": [
@@ -383,7 +433,7 @@
           "choice": "Through the membrane, its cytoplasmic end resting on the C ring's upper rim, where the units meet FliG."
         },
         "placed": {
-          "choice": "The body's inner face stands at the 20 nm where a unit meets the rotor, so its middle is 23.5 nm from the axis."
+          "choice": "The body's inner face stands at the 20 nm where a unit meets the rotor, so its middle is 24.35 nm from the axis."
         }
       },
       "arm": {
@@ -426,6 +476,30 @@
             ],
             "says": "n-motab",
             "measured_in": "not stated"
+          },
+          {
+            "text": "five MotA and two MotB, in the units of two other bacteria",
+            "n": [
+              5,
+              2
+            ],
+            "pdb": {
+              "entry": "6YSL",
+              "what": "the copies the entry's own record states for the entity: 5 of Motility protein A and 2 of Motility protein B"
+            },
+            "measured_in": "other bacteria: Bacillus subtilis",
+            "also": {
+              "text": "the same in Campylobacter jejuni",
+              "n": [
+                5,
+                2
+              ],
+              "pdb": {
+                "entry": "6YKM",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "other bacteria: Campylobacter jejuni"
+            }
           }
         ]
       }
@@ -491,7 +565,16 @@
             "count": {
               "n": 5,
               "says": "n-pqr",
-              "measured_in": "not stated"
+              "measured_in": "not stated",
+              "also": {
+                "text": "the same in Salmonella's basal body",
+                "n": 5,
+                "pdb": {
+                  "entry": "7NVG",
+                  "what": "the copies the entry's own record states for the entity"
+                },
+                "measured_in": "Salmonella"
+              }
             },
             "arranged": "a right-handed helical bundle",
             "layout": "bundle"
@@ -502,7 +585,16 @@
             "count": {
               "n": 4,
               "says": "n-pqr",
-              "measured_in": "not stated"
+              "measured_in": "not stated",
+              "also": {
+                "text": "the same in Salmonella's basal body",
+                "n": 4,
+                "pdb": {
+                  "entry": "7NVG",
+                  "what": "the copies the entry's own record states for the entity"
+                },
+                "measured_in": "Salmonella"
+              }
             },
             "arranged": "in the same bundle",
             "layout": "bundle"
@@ -513,7 +605,16 @@
             "count": {
               "n": 1,
               "says": "n-pqr",
-              "measured_in": "not stated"
+              "measured_in": "not stated",
+              "also": {
+                "text": "the same in Salmonella's basal body",
+                "n": 1,
+                "pdb": {
+                  "entry": "7NVG",
+                  "what": "the copies the entry's own record states for the entity"
+                },
+                "measured_in": "Salmonella"
+              }
             },
             "arranged": "in the same bundle",
             "layout": "bundle"
@@ -640,8 +741,8 @@
       "within": "c-ring",
       "z_nm": {
         "nm": [
-          -21,
-          -13
+          -18.5,
+          -12.5
         ],
         "choice": "Inside the C ring, under the FlhA ring."
       }
@@ -695,8 +796,12 @@
         }
       ],
       "across_nm": {
-        "nm": 12,
-        "choice": "No source read here gives its width; drawn narrower than the LP ring it passes through."
+        "nm": 11.8,
+        "pdb": {
+          "entry": "7NVG",
+          "what": "how wide the FlgG part of the rod is, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+        },
+        "measured_in": "Salmonella"
       },
       "z_nm": {
         "nm": [
@@ -708,6 +813,72 @@
           "ms-ring",
           "outer-membrane"
         ]
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P0ABW9",
+            "gene": "flgB",
+            "count": {
+              "n": 5,
+              "pdb": {
+                "entry": "7NVG",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          },
+          {
+            "id": "P0ABX2",
+            "gene": "flgC",
+            "count": {
+              "n": 6,
+              "pdb": {
+                "entry": "7NVG",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          },
+          {
+            "id": "P75938",
+            "gene": "flgF",
+            "count": {
+              "n": 5,
+              "pdb": {
+                "entry": "7CGO",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          },
+          {
+            "id": "P0ABX5",
+            "gene": "flgG",
+            "count": {
+              "n": 24,
+              "pdb": {
+                "entry": "7NVG",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          },
+          {
+            "id": "P0A8T5",
+            "gene": "fliE",
+            "count": {
+              "n": 6,
+              "pdb": {
+                "entry": "7NVG",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          }
+        ],
+        "why": "The rod is drawn as one body with its mark at every level; the copies are in the panel."
       }
     },
     {
@@ -752,6 +923,24 @@
       "bore_nm": {
         "nm": 14,
         "choice": "Room for the rod."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P0A6S3",
+            "gene": "flgI",
+            "count": {
+              "n": 26,
+              "pdb": {
+                "entry": "7BGL",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          }
+        ],
+        "why": "Drawn as one ring at every level; the count is in the panel."
       }
     },
     {
@@ -796,6 +985,24 @@
       "bore_nm": {
         "nm": 14,
         "choice": "Room for the rod."
+      },
+      "subunits": {
+        "level": 3,
+        "of": [
+          {
+            "id": "P0A6S0",
+            "gene": "flgH",
+            "count": {
+              "n": 26,
+              "pdb": {
+                "entry": "7BGL",
+                "what": "the copies the entry's own record states for the entity"
+              },
+              "measured_in": "Salmonella"
+            }
+          }
+        ],
+        "why": "Drawn as one ring at every level; the count is in the panel."
       }
     },
     {
@@ -829,8 +1036,12 @@
         "measured_in": "not stated"
       },
       "across_nm": {
-        "nm": 24,
-        "choice": "No source read here gives the hook's width; drawn as wide as the filament."
+        "nm": 23.2,
+        "pdb": {
+          "entry": "6K3I",
+          "what": "the curved hook's width, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+        },
+        "measured_in": "Salmonella"
       },
       "bend": {
         "choice": "One gentle curve, as a hook is drawn in the cell view; the sentence says only that it is supercoiled and flexible."
@@ -933,7 +1144,16 @@
         "nm": 24,
         "says": "z-tube",
         "measured_in": "not stated",
-        "disagree": "about 20 nm by the same paper's opening and 40 nm by another: the species file gives 20 to 40 nm"
+        "disagree": "about 20 nm by the same paper's opening and 40 nm by another: the species file gives 20 to 40 nm",
+        "also": {
+          "text": "27.4 nm by the alpha carbons of E. coli O157:H7's filament",
+          "nm": 27.4,
+          "pdb": {
+            "entry": "7SN4",
+            "what": "its width, by the motor agent's own reading of the entry's coordinates (its alpha carbons), not checked against the paper that describes the entry"
+          },
+          "measured_in": "other bacteria: Escherichia coli O157:H7"
+        }
       },
       "bore_nm": {
         "nm": 2,
@@ -1087,18 +1307,18 @@
             "says": "s-load",
             "measured_in": "E. coli"
           }
-        ]
+        ],
+        "words": "at most 300, in E. coli and Salmonella"
       },
       "drawn": {
         "turns_per_s": 150,
-        "derived": "The middle of the 100 to 200 turns a second that one paper gives for a motor while the cell swims; another gives 150 for Salmonella at its mean swimming speed, and a third saw swimming cells' flagella turn about 100 times a second.",
-        "from_says": [
+        "choice": "The picture's choice within the range the saved sentences give for a motor while its cell swims: about 100 to 200 a second (one paper, naming no species); 150 for Salmonella at its mean swimming speed (another); about 100 for swimming cells' flagella (a third, naming no species). No saved sentence gives the rate for E. coli as it swims.",
+        "within_says": [
           "d-rate",
           "s-150",
           "m-swim"
         ],
-        "as": "while the cell swims",
-        "proposed": "Proposed by the motor agent on 16 November 2026 in place of the top speed; the coordinator may set it to 300 here."
+        "words": "about 150 turns a second, the picture's choice within the 100 to 200 one paper gives for a swimming cell (it names no species)"
       },
       "caveat": "The ten stator units drawn and the top speed are not of one moment: about ten work when the load is high and the motor turns slowly, only a few near its top speed.",
       "caveat_says": [
@@ -1267,19 +1487,44 @@
         "d-rate",
         "s-150"
       ],
-      "drawn": "neither: the rotor is drawn at about 150 turns a second, a swimming cell's; the picture names the top speed",
+      "drawn": "neither: the rotor is drawn at about 150 turns a second, the picture's choice within the 100 to 200 a second one paper gives for a swimming cell; the picture names the top speed",
       "part": "motion"
     },
     {
       "of": "how many FliG",
-      "values": "one to one with FliM, which has about 34; 26 steps a turn, said to match the FliG ring's symmetry",
+      "values": "one to one with FliM, which has about 34; 26 steps a turn, said to match the FliG ring's symmetry; 34 in the C ring of Salmonella that the Protein Data Bank's entry 8UOX holds",
       "says": [
         "n-flim-flig",
         "n-flim-34",
         "n-steps"
       ],
-      "drawn": "a smooth ring, uncounted",
-      "part": "c-ring"
+      "drawn": "a smooth ring; the panel gives 34, from the entry",
+      "part": "c-ring",
+      "pdb": [
+        "8UOX"
+      ]
+    },
+    {
+      "of": "what a stator unit holds",
+      "values": "four MotA and two MotB (a sentence that names no species); five and two in the units of Bacillus subtilis and Campylobacter jejuni, as the Protein Data Bank's entries 6YSL and 6YKM state",
+      "says": [
+        "n-motab"
+      ],
+      "pdb": [
+        "6YSL",
+        "6YKM"
+      ],
+      "part": "stator-units",
+      "drawn": "one body"
+    },
+    {
+      "of": "the space between the two membranes",
+      "values": "30 to 32 nm between the two membranes' middles, measured in whole cells in hyperosmotic conditions (this file's source); the cell drawn to scale in the Cell view takes the envelope of the species' own file, from another paper, which measured a narrower space in frozen-hydrated sections, where they were least deformed",
+      "says": [
+        "m-im-om"
+      ],
+      "drawn": "31 nm here, the middle of this file's range; the cell drawn to scale keeps the species file's envelope, until the two are made one envelope",
+      "part": "outer-membrane"
     }
   ],
   "sentences": {
@@ -1593,8 +1838,84 @@
       "class": "permissive",
       "accessed": "2026-11-16",
       "saved": "ecoli/europepmc-motor-papers/kawamoto2021_fulltext.xml"
+    },
+    "pdb": {
+      "text": "wwPDB: the Protein Data Bank archive, entries as saved with their records.",
+      "url": "https://www.wwpdb.org/",
+      "licence": "CC0 1.0",
+      "class": "permissive",
+      "accessed": "2026-11-16",
+      "saved": "ecoli/wwpdb-flagellar-motor/MANIFEST.json",
+      "terms": "ecoli/wwpdb-terms/wwpdb_usage_policies.html",
+      "reading": "Copies are those each entry's own record states; widths and heights are the motor agent's own reading of the coordinates (alpha carbons only), not checked against the papers that describe the entries."
     }
   },
   "made": "2026-11-16",
-  "decided": "The user, 16 November 2026: the motor turns, at real-life speed, as part of the Cell view's flux, and slowed only when flux is slowed; \"Look closer\" from the foot's panel; protons wait; the Protein Data Bank may be used. The parts are drawn from the papers here; no shape is taken from a structure yet."
+  "decided": "The user, 16 November 2026: the motor turns, at real-life speed, as part of the Cell view's flux, and slowed only when flux is slowed; \"Look closer\" from the foot's panel; protons wait; the Protein Data Bank may be used. The parts are drawn from the papers here; no shape is taken from a structure; some counts and sizes are, each with its entry and the organism its record states (the coordinator's ruling of the same day).",
+  "structures": [
+    {
+      "entry": "6K3I",
+      "title": "Salmonella hook in curved state - 66 subunit models",
+      "organisms": [
+        "Salmonella typhimurium (strain LT2 / SGSC1412 / ATCC 700720)"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "6YKM",
+      "title": "Structure of C. jejuni MotAB",
+      "organisms": [
+        "Campylobacter jejuni subsp. jejuni serotype O:23/36 (strain 81-176)"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "6YSL",
+      "title": "Structure of the flagellar MotAB stator complex from Bacillus subtilis",
+      "organisms": [
+        "Bacillus subtilis (strain 168)"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "7BGL",
+      "title": "Salmonella LP ring 26 mer refined in C26 map",
+      "organisms": [
+        "Salmonella typhimurium (strain LT2 / SGSC1412 / ATCC 700720)"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "7CGO",
+      "title": "Cryo-EM structure of the flagellar motor-hook complex from Salmonella",
+      "organisms": [
+        "Salmonella typhimurium (strain LT2 / SGSC1412 / ATCC 700720)"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "7NVG",
+      "title": "Salmonella flagellar basal body refined in C1 map",
+      "organisms": [
+        "Salmonella enterica subsp. enterica serovar Typhimurium"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "7SN4",
+      "title": "Cryo-EM structure of the enterohemorrhagic E. coli O157:H7 flagellar filament",
+      "organisms": [
+        "Escherichia coli O157:H7"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    },
+    {
+      "entry": "8UOX",
+      "title": "Cryo-EM structure of a Counterclockwise locked form of the Salmonella enterica Typhimurium flagellar C-ring, with C34 symmetry applied",
+      "organisms": [
+        "Salmonella enterica subsp. enterica serovar Typhimurium"
+      ],
+      "method": "ELECTRON MICROSCOPY"
+    }
+  ]
 }

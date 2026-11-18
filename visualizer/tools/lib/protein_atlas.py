@@ -35,7 +35,18 @@ from .static_eval import Unresolved, plain
 IDENTIFIER = re.compile(r"\b[A-Za-z][A-Za-z0-9_]*@\d+")
 PDB = re.compile(r"PDB (\d[A-Z0-9]{3})")
 GROUP = "proteins"
-SPECIES_FORMAT = "cells.visualizer.species_atlas@1"
+SPECIES_FORMAT = "cells.visualizer.species_atlas@2"
+# An older file (format @1) gave one word, `evidence`, that mixed how a product was found with
+# what its entry is. It is read so, never guessing the side the word does not cover
+# (schema/SPECIES_ATLAS.md, "Reading an older file"): (how it was found, what its entry is).
+OLDER_FORMAT = "cells.visualizer.species_atlas@1"
+NOT_STATED = "not stated"
+OLDER_KINDS = {
+    "reviewed entry": (NOT_STATED, "reviewed"),
+    "named in a publication": ("named in a publication", NOT_STATED),
+    "family signature": ("family signature", NOT_STATED),
+    "similarity search": ("similarity search", NOT_STATED),
+}
 SHELVES_FORMAT = "cells.visualizer.species_proteins@1"
 SHELF_SIDES = ("outside", "in", "inside", "not known")
 SHELF_BASES = ("stated", "predicted", "by function", "none")
@@ -141,30 +152,41 @@ class Atlas:
             self.module_ids[path] = found
         return self.module_ids[path]
 
+    def file_of(self, law):
+        """The file a law record names, where it stands now: a file that a move of the engine's source
+        moved is found at its new place through the engine's own path table (D188), and said so."""
+        path = self.build.current_path(law["file"])
+        if path != law["file"]:
+            self.moved[law["file"]] = path
+        return path
+
     def check_laws(self):
         """Where each law record's identifier is found in the checkout being read."""
         tracked = set(self.engine)
         found = Counter()
         self.known_ids = set()
+        self.moved = {}  # a file the inventory names -> where it stands now, for the files a move moved
+        self.in_legacy = {}  # unit id -> its law records whose files are held legacy code
         for path in self.engine:
             self.known_ids |= set(IDENTIFIER.findall(self.text(path)))
         for law in self.snapshot["laws"]:
-            self.known_ids |= self.ids_defined_in(law["file"]) if law["file"] in tracked else set()
+            self.known_ids |= self.ids_defined_in(self.file_of(law)) if self.file_of(law) in tracked else set()
         for law in self.snapshot["laws"]:
             name = law.get("id") or law.get("identity", "")[:60]
-            if law["file"] not in tracked:
+            file = self.file_of(law)
+            if file not in tracked:
                 found["missing"] += 1
                 self.build.warnings.append(f"protein inventory: {name} names {law['file']}, which is not tracked any more")
                 continue
             if not law.get("id"):
                 function = re.match(r"(\w+)\(\)", law.get("identity", ""))
-                if function and re.search(rf"^def {function.group(1)}\(", self.text(law["file"]), re.M):
+                if function and re.search(rf"^def {function.group(1)}\(", self.text(file), re.M):
                     found["function"] += 1
                 else:
                     found["missing"] += 1
-                    self.build.warnings.append(f"protein inventory: {name} is not defined in {law['file']} any more")
+                    self.build.warnings.append(f"protein inventory: {name} is not defined in {file} any more")
                 continue
-            if law["id"] in self.ids_defined_in(law["file"]):
+            if law["id"] in self.ids_defined_in(file):
                 found["named_file"] += 1
             elif law["id"] in self.known_ids:
                 found["elsewhere"] += 1
@@ -350,10 +372,10 @@ class Atlas:
             facts.append(["Candidate assembly" if generic else "Assembly", stoichiometry])
         if unit["assembly"].get("sources"):
             facts.append(["Assembly from", "; ".join(unit["assembly"]["sources"])])
-        facts.append(["Engine laws", str(len(laws))])
+        facts.append(["Laws in the inventory", str(len(laws))])
 
         # The keys let the view put a species' gene products in the place of the inventory's.
-        sections = [{"key": "laws", "title": "Engine laws", "items": [self.law_item(law) for law in laws]}]
+        sections = [{"key": "laws", "title": "Laws in the inventory", "items": [self.law_item(law) for law in laws]}]
         if unit.get("products"):
             sections.append({"key": "products", "title": "Candidate products", "items": [self.product_item(product) for product in unit["products"]]})
         cited = [pdb for source in unit["assembly"].get("sources", []) for pdb in PDB.findall(source)]
@@ -368,8 +390,9 @@ class Atlas:
                 sources.append({"path": path})
             else:
                 self.dropped_docs.add(path)
-        for path in dict.fromkeys(law["file"] for law in laws):
-            if path in tracked:
+        for path in dict.fromkeys(self.file_of(law) for law in laws):
+            # A file of held legacy code is left out of the picture, and so is a link to it.
+            if path in tracked and not build.is_legacy(path):
                 sources.append({"path": path})
 
         notes = [text for text in (mapping.get("note"), self.current(unit.get("note"))) if text]
@@ -404,11 +427,15 @@ class Atlas:
             }
         )
         for law in laws:
-            owner = build.owner.get(law["file"])
+            file = self.file_of(law)
+            owner = build.owner.get(file)
             if owner and owner in build.entities:
                 build.link(identifier, owner, "modelled_by", law.get("id") or "a function without an identifier")
+            elif build.is_legacy(file):
+                # Its file is held legacy code, which the map leaves out of the picture: no link, and said so.
+                self.in_legacy.setdefault(unit["id"], []).append(law.get("id") or self.current(law.get("identity", ""))[:80])
             else:
-                build.warnings.append(f"protein atlas: {law['file']} ({unit['id']}) belongs to no part of the engine map")
+                build.warnings.append(f"protein atlas: {self.file_of(law)} ({unit['id']}) belongs to no part of the engine map")
         target = extra.get("cell_view", kind.get("cell_view"))
         # A part of the cell view that is left out of the picture is not pointed at.
         if target and not build.is_left_out(target):
@@ -473,7 +500,8 @@ class Atlas:
                 "atlases": self.species.summary(),
                 # A finding's words, unless something left out of the picture gives them another wording.
                 "findings": [{**word, **{field: reword("species.findings", word["id"], field, word[field]) for field in ("description", "sentence") if field in word}} for word in words["findings"]],
-                "product_evidence": words["evidence"],
+                "product_found_by": words["found_by"],
+                "product_entries": words["entry_kinds"],
                 "no_entry": words["no_entry"],
                 "remarks": self.species.remarks,  # for the build's report; not written to the scene
             }
@@ -495,6 +523,10 @@ class Atlas:
                 "records": len(snapshot["laws"]),
                 "found": found,
                 "renamed": [{"from": old, "to": new} for old, new in sorted(self.renamed.items())],
+                # The files the inventory names that a move of the engine's source moved, each found at its new place.
+                "moved": [{"from": old, "to": new, "move": self.build.moves[old][1]} for old, new in sorted(self.moved.items())],
+                # The units whose law records' files are held legacy code: those links are left out with the code.
+                "in_legacy": {unit: records for unit, records in sorted(self.in_legacy.items())},
                 "gained": self.gained_since(described["read_at_revision"]),
             },
             "counts": {
@@ -834,7 +866,9 @@ class Species:
         self.words = overlay["species"]
         self.links = overlay["links"]
         self.findings = {item["id"]: item for item in self.words["findings"]}
-        self.evidence = {item["id"]: item for item in self.words["evidence"]}
+        # The two facts of each product: how it was found, and what its entry is (schema/SPECIES_ATLAS.md).
+        self.found_by = {item["id"]: item for item in self.words["found_by"]}
+        self.entry_kinds = {item["id"]: item for item in self.words["entry_kinds"]}
         self.unit_ids = [unit["id"] for unit in snapshot["units"]]
         # A unit the overlay flags as left out of the picture: every species' file keeps its entry
         # for it (the contract asks one for each unit of the inventory), and the page's counts leave it out.
@@ -866,10 +900,11 @@ class Species:
 
     def check(self, name, data, warn, note):
         """One file against the contract. Returns what is sound in it, or None if it cannot be shown."""
-        if not isinstance(data, dict) or data.get("format") != SPECIES_FORMAT:
+        if not isinstance(data, dict) or data.get("format") not in (SPECIES_FORMAT, OLDER_FORMAT):
             found = data.get("format") if isinstance(data, dict) else type(data).__name__
             warn(f"left out, its format is {found!r}, not {SPECIES_FORMAT!r}")
             return None
+        self.older = data["format"] == OLDER_FORMAT
         species = data.get("species") if isinstance(data.get("species"), dict) else {}
         identifier, label = _text(species.get("id")), _text(species.get("label"))
         if not identifier or not label:
@@ -969,13 +1004,25 @@ class Species:
         if not label:
             warn(f"{where}: a product has neither a name nor a gene")
             return None
-        evidence = self.evidence.get(product.get("evidence"))
-        if evidence is None:
-            warn(f"{where}: unknown evidence {product.get('evidence')!r} on {label}")
-            return None
+        if self.older:
+            # An older file's one word, read as the two facts; the side it does not cover is not stated.
+            if product.get("evidence") not in OLDER_KINDS:
+                warn(f"{where}: unknown evidence {product.get('evidence')!r} on {label}")
+                return None
+            found_by, record = OLDER_KINDS[product["evidence"]]
+        else:
+            if "evidence" in product:
+                warn(f"{where}: {label} carries the older word 'evidence'; this format gives found_by and entry instead")
+            found_by, record = product.get("found_by"), product.get("entry")
+            if found_by not in self.found_by or self.found_by[found_by].get("older"):
+                warn(f"{where}: unknown found_by {found_by!r} on {label}")
+                return None
+            if record not in self.entry_kinds or self.entry_kinds[record].get("older"):
+                warn(f"{where}: unknown entry {record!r} on {label}")
+                return None
         citation = product.get("citation")
         cited = isinstance(citation, dict) and _text(citation.get("text"))
-        if evidence.get("cited") and not cited:
+        if self.found_by[found_by].get("cited") and not cited:
             warn(f"{where}: {label} is named in a publication, but has no citation with a text")
             return None
         if citation is not None and not cited:
@@ -1012,7 +1059,8 @@ class Species:
             "role": _text(product.get("role")),
             "ids": ids,
             "length": length,
-            "evidence": evidence["id"],
+            "found_by": found_by,
+            "entry": record,
             "evidence_note": _text(product.get("evidence_note")),
             "citation": {
                 "text": cited,
@@ -1024,9 +1072,12 @@ class Species:
 
     # ------------------------------------------------------------ what the scene carries
 
-    def item(self, product, atlas):
-        """A gene product as the panel lists it: its evidence in the contract's words, and links built from its ids."""
-        evidence = self.evidence[product["evidence"]]
+    def item(self, product, atlas, extra=False):
+        """A gene product as the panel lists it: how it was found and what its entry is, in the contract's
+        words and apart, and links built from its ids. A product under `extra` matches no unit, so it is
+        a candidate for none, and its words say so."""
+        found = self.found_by[product["found_by"]]
+        description = found.get("extra_description", found["description"]) if extra else found["description"]
         databases = atlas["databases"]
         # How one entry of a species' database is addressed, where that was checked (the overlay says when).
         entries = self.words.get("entries", {}).get(atlas["species"]["id"], {})
@@ -1034,11 +1085,11 @@ class Species:
         if product["length"]:
             lines.append(f"{product['length']:,} amino acids")
         said = product["evidence_note"]
-        if evidence.get("candidate"):
-            # Found by signature or by similarity: a candidate, and the atlas says so.
-            lines.append(f"Candidate, not an established counterpart: {said}" if said else "Candidate, not an established counterpart.")
-        elif said:
-            lines.append(said)
+        # How it was found decides what it is a candidate for; its entry never does.
+        lead = None if extra else found.get("line")
+        if lead or said:
+            lines.append(f"{lead}: {said}" if lead and said else f"{lead}." if lead else said)
+        lines.append(self.entry_kinds[product["entry"]]["line"])
         for database, value in product["ids"]:
             template = entries.get(database) or self.links.get(self.words["databases"].get(database, database))
             if template:
@@ -1067,8 +1118,8 @@ class Species:
         return {
             "label": product["label"],
             "detail": ", ".join(text for text in (named, part) if text) or None,
-            "tag": evidence["label"],
-            "tag_title": evidence["description"],
+            "tag": found["label"],
+            "tag_title": description,
             "lines": lines,
             "links": links,
         }
@@ -1122,7 +1173,8 @@ class Species:
                 for product in entry["products"]:
                     distinct.setdefault(tuple(product["ids"][0]) if product["ids"] else ("", product["label"]), product)
             by_finding = Counter(entry["finding"] for entry in entries)
-            by_evidence = Counter(product["evidence"] for product in distinct.values())
+            by_found = Counter(product["found_by"] for product in distinct.values())
+            by_entry = Counter(product["entry"] for product in distinct.values())
             listed.append(
                 {
                     **atlas["species"],
@@ -1134,11 +1186,15 @@ class Species:
                         "units": len(self.drawn_ids),
                         "with_products": sum(1 for entry in entries if entry["products"]),
                         "products": len(distinct),
-                        "candidates": sum(count for kind, count in by_evidence.items() if self.evidence[kind].get("candidate")),
+                        # Candidates for a machine's own work: found by its family's signature, or by similarity. How an
+                        # entry was written makes no product more or less of a candidate.
+                        "candidates": sum(count for kind, count in by_found.items() if self.found_by[kind].get("candidate")),
+                        "reviewed": by_entry["reviewed"],
                     },
                     "findings": [{"id": word["id"], "count": by_finding[word["id"]]} for word in self.words["findings"]],
-                    "evidence": [{"id": word["id"], "count": by_evidence[word["id"]]} for word in self.words["evidence"]],
-                    "extra": [{**self.item(product, atlas), "note": product["why"]} for product in atlas["extra"]],
+                    "found_by": [{"id": word["id"], "count": by_found[word["id"]]} for word in self.words["found_by"] if by_found[word["id"]] or not word.get("older")],
+                    "entries": [{"id": word["id"], "count": by_entry[word["id"]]} for word in self.words["entry_kinds"] if by_entry[word["id"]] or not word.get("older")],
+                    "extra": [{**self.item(product, atlas, extra=True), "note": product["why"]} for product in atlas["extra"]],
                 }
             )
         return listed

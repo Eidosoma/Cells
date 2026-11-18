@@ -1,0 +1,13 @@
+{
+ "format": "cells.visualizer.structures@1",
+ "note": "What each structure of the Cell view needs a cell to hold, and the reason the page gives where it does not (schema/SPECIES_SHAPES.md, cell.parts). One table for both readers: tools/lib/species.py and src/lenses/cell_structures.js read it, and neither keeps a list of its own. Keyed by the map's part names (data/architecture/overlay.json, a capability's part). Nothing here is the engine's.",
+ "nucleated_organelles": ["er", "golgi", "mitochondria"],
+ "nucleated_note": "Where a species' file names no organelles, a cell whose nucleus is true holds these; a cell without a nucleus, or one that says nothing of one, holds none.",
+ "structures": {
+  "nucleus": {"held_when": "nucleus", "names": "nucleus", "why": "It has no nucleus.", "why_free_chromosome": "It has no nucleus: its chromosome lies free in the cytoplasm."},
+  "golgi": {"held_when": "organelle:golgi", "names": "golgi", "why": "It has no Golgi apparatus."},
+  "vesicles": {"held_when": "organelle:golgi", "names": "golgi", "why": "It has no Golgi apparatus for vesicles to carry proteins through."},
+  "er": {"held_when": "organelle:er", "names": "er", "why": "It has no endoplasmic reticulum."},
+  "mitochondria": {"held_when": "organelle:mitochondria", "names": "mitochondria", "why": "It has no mitochondria."}
+ }
+}

@@ -13,13 +13,21 @@ export default {
   draws: ["extracellular"],
   build(env) {
     const { ctx } = env;
-    const { real, style, cell, has, outline, BASE, random, taken, pack, cells } = env.layout;
+    const { real, style, cell, has, outline, BASE, random, taken, pack, cells, nm } = env.layout;
     // Packed cells leave little room between them: the narrow clefts between their flat sides,
     // and the gaps where three cells meet. The ions are drawn in those gaps from the cut down to
     // the base, and in the clefts only where the cut opens them, so the cell's sides stay clear.
     // To scale a cleft is 40 nm wide, so there the ions are a dotted line round the cut edge.
     // The name points into one of the gaps.
-    if (has("extracellular") && !cell.neighbours) {
+    if (has("extracellular") && !cell.neighbours && real) {
+      // A cell on its own, to scale: an ion is under a nanometre across, so the medium is a haze of dots round the cut
+      // edge, beyond the outermost shell, each standing for many.
+      const medium = ctx.part("extracellular", outline.point(GAP_CORNER, 2.1, CUT - 0.3));
+      const from = Math.max(env.built.shells?.outerGap || 0, env.built.shells?.wallGap || 0) + 8 * nm;
+      const around = [];
+      for (let index = 0; index < 1200; index++) around.push(outline.spot(random() * outline.length, from + random() * Math.max(2.6, 120 * nm), CUT + 0.05 - random() * 1.2));
+      medium.add(dots(around, medium.points({ hue: "bioIon", shade: -0.3, size: 1.7, opacity: 0.9 })));
+    } else if (has("extracellular") && !cell.neighbours) {
       // A cell on its own: what lies outside it is the medium all round, drawn as ions near the cut edge.
       const medium = ctx.part("extracellular", outline.point(GAP_CORNER, 2.1, CUT - 0.3));
       const around = [];

@@ -25,27 +25,163 @@
 // declaration gives it; a positive number is carried into the cell.
 //
 // The arithmetic and the stepping of a lane are here for every mark that draws beads
-// (./stream.js draws them across the borders of the sheet).
+// (./stream.js draws them across the borders of the sheet). The drawing is the one renderer of
+// flux (./tokens.js, ./flow.js), as in the Cell view: at true speed and faster each lane is a
+// stream as wide as its rate, slowed it resolves into packets and then single beads, and chevrons
+// along it point its way, standing where nothing may move or the replay is paused.
 
 import * as THREE from "../../three.js";
+import { Tokens } from "./tokens.js";
 import { rate } from "../derive.js";
 import { declared, family, fromFirst, restartsBetween, signedByShort } from "../records.js";
 import { speedWords } from "../../replay/player.js";
 
 export const PER_FMOL = 6.02214076e23 * 1e-15; // ions in a femtomole
 export const BUSIEST = 10; // beads a second on the screen for a run's busiest stream
-export const SLOWS = [1, 1e3, 1e6]; // the slow-downs a species' looping run is offered in the Cell view, which has no timeline: true speed, a thousand times, a million times
-export const CROSSING = 1.6; // seconds a bead takes to cross: the same for every bead
+// The slow-downs a species' looping run and a machine's rotor are offered in the Cell view, which has no timeline: true
+// speed, a thousand times, a million times. Never faster than life (the coordinator's ruling, 16 November 2026): a replay
+// played in the Cell view later gets the faster steps of its own timeline.
+export const SLOWS = [1, 1e3, 1e6];
+
+/**
+ * The Speed slider of the Cell view (the user, 17 November 2026: "make the speed a slider with
+ * those two points 1/1000 and 1/... at 2/4 and 3/4"): true speed at its start, slowed a thousand
+ * times at its middle, a million times at three quarters, and ten million times at its end, where
+ * a bead of the planarian's busiest stream is two ions and one sets out every four seconds. Between two marks the slow-down grows
+ * evenly in its powers of ten, so that the hand feels each mark's step as one move.
+ */
+export const SLIDER = Object.freeze([
+  Object.freeze({ at: 0, slow: 1, label: "True" }),
+  Object.freeze({ at: 0.5, slow: 1e3, label: "1/1,000" }),
+  Object.freeze({ at: 0.75, slow: 1e6, label: "1/1,000,000" }),
+  Object.freeze({ at: 1, slow: 1e7, label: "1/10,000,000" }),
+]);
+/** The slowest the slider goes. */
+export const SLOWEST = SLIDER.at(-1).slow;
+
+/** The slow-down at a place on the slider (0 to 1). */
+export function slowAt(position) {
+  const p = Math.min(1, Math.max(0, Number(position) || 0));
+  const k = Math.max(0, SLIDER.findIndex((mark) => mark.at >= p) - 1);
+  const [from, to] = [SLIDER[k], SLIDER[Math.min(SLIDER.length - 1, k + 1)]];
+  const share = to.at > from.at ? (p - from.at) / (to.at - from.at) : 0;
+  return Math.pow(10, Math.log10(from.slow) + share * (Math.log10(to.slow) - Math.log10(from.slow)));
+}
+
+/** The place on the slider (0 to 1) of a slow-down. */
+export function positionOf(slow) {
+  const decades = Math.log10(Math.min(SLOWEST, Math.max(1, Number(slow) || 1)));
+  const k = Math.max(0, SLIDER.findIndex((mark) => Math.log10(mark.slow) >= decades) - 1);
+  const [from, to] = [SLIDER[k], SLIDER[Math.min(SLIDER.length - 1, k + 1)]];
+  const span = Math.log10(to.slow) - Math.log10(from.slow);
+  return span > 0 ? from.at + ((decades - Math.log10(from.slow)) / span) * (to.at - from.at) : from.at;
+}
+
+/** A slow-down as the slider's short label: "True", "1/1,000", "1/32,000" (two figures between the marks). */
+export function slowLabel(slow) {
+  if (!(slow > 1.05)) return "True";
+  const mark = SLIDER.find((item) => Math.abs(Math.log10(item.slow) - Math.log10(slow)) < 0.01);
+  return mark ? mark.label : `1/${Number(slow.toPrecision(2)).toLocaleString("en-US")}`;
+}
+export const CROSSING = 1.6; // seconds a bead takes to cross at true speed: the same for every bead
+/**
+ * What a slow-down does to what the eye sees, for each thousandfold: the busiest stream passes
+ * a quarter as many beads a second, and a bead takes 1.6 times as long to cross (17 November
+ * 2026, after the user: "the speed does not change the anymation of the beads and arrows in
+ * flux"; tuned by eye on the planarian's loop so that packets and beads stand apart on a lane).
+ * At true speed and faster: ten a second at most on the busiest lane, a crossing of 1.6 s.
+ */
+export const SLOWER = Object.freeze({ beads: 0.25, crossing: 1.6 });
 export const MOST = 18; // beads on one lane at a time
 const SIZE = { quiet: 1, bold: 1.35 };
 
 /**
+ * How the beads go at a speed (seconds of the run each second of watching), so that slowing
+ * down is seen: { busiest, crossing }. `busiest` is how many beads a second the run's busiest
+ * stream passes at most (ten at true speed, 2.5 slowed a thousand times, 0.625 slowed a million
+ * times); `crossing` how many seconds a bead takes to cross (1.6, 2.56, 4.1). Between the steps it
+ * goes evenly with the slow-down's powers of ten; at true speed and faster it is true speed's.
+ * The crossing stands for nothing measured: it is a sign of the slow-down.
+ */
+export function paceAt(speed = 1) {
+  const thousands = speed > 0 && speed < 1 ? Math.log10(1 / speed) / 3 : 0;
+  return { busiest: BUSIEST * Math.pow(SLOWER.beads, thousands), crossing: CROSSING * Math.pow(SLOWER.crossing, thousands) };
+}
+
+/**
+ * How a lane of flux is drawn at a speed (the user, 17 November 2026: "at full speed, you wont
+ * see any individual ions"): at true speed and faster a "stream", as wide and bright as its
+ * rate, with no bead to count; slowed a little (down to a ten-thousandth), "packets" that
+ * visibly travel; slowed further, single "beads" crossing slowly.
+ */
+export function modeAt(speed = 1) {
+  const decades = resolveAt(speed);
+  return decades < 1.5 ? "stream" : decades < 4.5 ? "packets" : "beads";
+}
+
+/** How far a speed is slowed, in powers of ten (0 at true speed and faster, 3 slowed a thousand times): what the picture resolves by. */
+export function resolveAt(speed = 1) {
+  return speed > 0 && speed < 1 ? Math.log10(1 / speed) : 0;
+}
+
+const smooth = (from, to, value) => {
+  const t = Math.min(1, Math.max(0, (value - from) / (to - from)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * How a lane is drawn at a slow-down of `decades` powers of ten, without a jump anywhere: the
+ * stream's share of the picture (1 at true speed, gone slowed a thousand times), the beads'
+ * share (none at true speed, whole from a hundredfold slow-down on), and how long a bead is
+ * drawn along its lane (a long packet slowed a thousand times, round slowed a million times).
+ */
+export function blendAt(decades = 0) {
+  return { stream: 1 - smooth(0, 3, decades), beads: smooth(0, 2, decades), stretch: 1 + 2.4 * (1 - smooth(0, 3, decades)) + 0.5 * (1 - smooth(3, 6, decades)) };
+}
+
+/** What the eye sees at a speed, in a few words: nothing to say at true speed and faster. */
+export function paceWords(speed = 1) {
+  const mode = modeAt(speed);
+  return mode === "packets" ? "packets, crossing more slowly" : mode === "beads" ? "single beads, crossing slowly" : "";
+}
+
+/**
+ * What one token stands for at a speed: a stream at full width carries so many a second (the run's
+ * busiest lane); a packet or a bead is so many. Away from true speed a stream's rate is given in
+ * the run's seconds and in the seconds of watching, which differ by the speed in force.
+ */
+export function flowWords({ speed = 1, token, what = "ion", widest = null }) {
+  const mode = modeAt(speed), many = what.replace(/( or |$)/g, "s$1");
+  const whole = (value) => Math.round(value).toLocaleString("en-US");
+  if (mode === "stream") {
+    if (widest === null) return "Streams as wide as their rates";
+    return speed === 1 ? `Streams as wide as their rates: full width is ${whole(widest)} ${many} a second` : `Streams as wide as their rates: full width is ${whole(widest)} ${many} a second of the run, ${whole(widest * speed)} a second here`;
+  }
+  if (mode === "packets") return token === 1 ? `One packet is one ${what}` : `One packet is ${token.toLocaleString("en-US")} ${many}`;
+  return tokenWords(token, what);
+}
+
+/** The legend's line on what the eye sees at a speed: a stream, or packets and then beads, how many at most and how long a crossing takes. `what` names the particle. */
+export function paceKey(speed = 1, what = "ion") {
+  const mode = modeAt(speed);
+  if (mode === "stream") {
+    const lead = speed > 1 ? "Faster than true speed" : speed < 1 ? "Slowed this little" : "At true speed";
+    return `${lead} no single ${what.replace(/ or .*/, "")} can be followed: each lane is a stream, as wide and as bright as its rate, the busiest the fullest; its streaks run the way it flows, at a pace that stands for nothing`;
+  }
+  const pace = paceAt(speed), thing = mode === "packets" ? "packets" : "single beads";
+  return `Slowed, the stream resolves into ${thing}: at most ${round(pace.busiest)} a second on the busiest lane, each taking ${round(pace.crossing)} s to cross, more slowly the more it is slowed: a sign of the slow-down, standing for nothing measured`;
+}
+
+const round = (value) => String(Number(value.toPrecision(2)));
+
+/**
  * How many ions one bead stands for at a speed (seconds of the run each second of watching):
  * 1, 2 or 5 times a power of ten, the smallest with which the run's busiest stream passes at
- * most ten beads a second. Never under one ion: slowed enough, a bead is an ion.
+ * most as many beads a second as the speed allows (paceAt: ten at true speed, fewer slowed).
+ * Never under one ion: slowed enough, a bead is an ion.
  */
 export function tokenFor(busiest, speed = 1) {
-  const raw = (Math.abs(busiest) * speed) / BUSIEST;
+  const raw = (Math.abs(busiest) * speed) / paceAt(speed).busiest;
   if (!(raw > 1)) return 1;
   const power = Math.pow(10, Math.floor(Math.log10(raw)));
   const size = [1, 2, 5, 10].find((step) => step * power >= raw * (1 - 1e-9)) ?? 10;
@@ -70,27 +206,40 @@ export function tokenWords(token, what = "ion") {
   return token === 1 ? `One bead is one ${what}` : `One bead is ${token.toLocaleString("en-US")} ${what.replace(/( or |$)/g, "s$1")}`;
 }
 
-/** What a legend adds to the time a motion layer keeps where nothing may move. */
+/** What a legend adds where nothing may move and the beads keep one pace (an illustration). */
 export const STILL_WORDS = "Shown still here: the beads stand, as many as would be on their way at one moment";
-/** What a legend adds to the time a motion layer keeps while its replay is paused. */
-export const PAUSED_WORDS = "Paused: the beads stand, as many as would be on their way at one moment at this speed";
 /** What a legend says of a motion layer's clock on a replay: it is the replay's own. */
-export const CLOCK_WORDS = "The beads keep the replay's own time: the timeline's speed is theirs";
+export const CLOCK_WORDS = "What flows keeps the replay's own time: the timeline's speed is its speed";
+/** What a legend says of the chevrons that tell a lane's way. */
+export const WAY_WORDS = "Chevrons along each lane point the way it flows; they stand where they are when nothing may move";
 
-/** The legend's line on the time a motion layer keeps on a replay: the speed, whose clock it is, and why the beads stand where they do. */
-export function timeKey(speed = 1, still = false, paused = false) {
-  return `${timeWords(speed)}. ${CLOCK_WORDS}${still ? `. ${STILL_WORDS}` : paused ? `. ${PAUSED_WORDS}` : ""}`;
+/**
+ * What stands where nothing may move (`how` "still") or while a replay is paused ("paused"), at a
+ * speed: a stream's streaks and the chevrons; slowed, the packets or the beads with them.
+ */
+export function standWords(speed = 1, how = "still") {
+  const mode = modeAt(speed);
+  const what = mode === "stream" ? "the streams' streaks and the chevrons stand where they are" : `the ${mode === "packets" ? "packets" : "beads"} stand, as many as would be on their way at one moment at this speed, and the chevrons with them`;
+  return `${how === "paused" ? "Paused" : "Shown still here"}: ${what}`;
+}
+
+/** The legend's line on the time a motion layer keeps on a replay: the speed, whose clock it is, what the eye sees at it, and what stands. */
+export function timeKey(speed = 1, still = false, paused = false, what = "ion") {
+  return `${timeWords(speed)}. ${CLOCK_WORDS}. ${paceKey(speed, what)}${still ? `. ${standWords(speed, "still")}` : paused ? `. ${standWords(speed, "paused")}` : ""}`;
 }
 
 /**
- * The picture's own short statement of a motion layer (rule 3): the token, the speed, and the
- * interval the rate is a mean over. Where nothing may move (`still`), it says so; where the
+ * The picture's own short statement of a motion layer (rule 3): what a stream at full width, a
+ * packet or a bead stands for at the speed, the speed, and the interval the rate is a mean over. Where nothing may move (`still`), it says so; where the
  * replay is paused (`paused`), that. Nothing may move wins where both hold.
  */
-export function statementOf({ token, what = "ion", speed = 1, interval, clock, still = false, paused = false }) {
-  const time = `${speedWords(speed).phrase}${still ? ", shown still" : paused ? ", paused" : ""}`;
+export function statementOf({ token, what = "ion", speed = 1, interval, clock, still = false, paused = false, widest = null }) {
+  // What the eye sees when slowed is said with the speed: packets, or single beads, crossing more slowly.
+  const seen = paceWords(speed);
+  const time = `${speedWords(speed).phrase}${still ? ", shown still" : paused ? ", paused" : seen ? `: ${seen}` : ""}`;
   const over = interval ? `mean of ${clock(interval[0])} to ${clock(interval[1])}` : "no rate at the run's first record";
-  return `${tokenWords(token, what)} · ${time} · ${over}`;
+  // The lanes are drawn by the speed: a stream at true speed and faster, packets, then beads (modeAt).
+  return `${flowWords({ speed, token, what, widest })} · ${time} · ${over}`;
 }
 
 /**
@@ -116,25 +265,32 @@ export function restarted(run, record, entity, step) {
  * too thin for one bead to be on its way most of the time shows none: its arrowhead alone
  * says that something crosses, and which way.
  */
-export function standing(perSecond) {
+export function standing(perSecond, crossing = CROSSING) {
   if (!(perSecond > 0)) return [];
-  const count = Math.min(MOST, Math.round(perSecond * CROSSING));
+  const count = Math.min(MOST, Math.round(perSecond * crossing));
   return Array.from({ length: count }, (_, k) => (k + 0.5) / count);
 }
 
 /** The words for the arrowhead that ends a lane, for a legend. */
 export const HEAD_WORDS = "An arrowhead ends each lane that carries something, and points the way its beads go. A small arrowhead alone: a lane that passes a bead only now and then";
 
-/** How large a lane's arrowhead is drawn, as a share of its full size: full where a bead or more is on its way at one moment, smaller for a thinner stream. */
-export function headSize(perSecond) {
-  return Math.min(1, Math.max(0.4, Math.sqrt(Math.max(0, perSecond) * CROSSING)));
+/**
+ * How large a lane's arrowhead is drawn, as a share of its full size: full where a bead or more
+ * is on its way at one moment (beads a second times the crossing), smaller for a thinner stream.
+ * Slowed, fewer beads set out but each is longer on its way: the arrowhead follows the beads it
+ * ends, as many as stand on the lane at one moment.
+ */
+export function headSize(perSecond, crossing = CROSSING) {
+  return Math.min(1, Math.max(0.4, Math.sqrt(Math.max(0, perSecond) * crossing)));
 }
 
 /**
  * Advance one lane by a stretch of watching time: beads set out as many a second as the
  * lane's rate says, each crosses in the same time, and one that has arrived is gone. A lane
- * is { perSecond, due, beads }, `beads` being each bead's share of the way across, the one
- * that set out first standing first. Returns whether anything is on its way or will be.
+ * is { perSecond, due, beads, crossing? }, `beads` being each bead's share of the way across,
+ * the one that set out first standing first, and `crossing` the seconds a crossing takes at the
+ * speed shown (paceAt; true speed's where none is given). `sent` counts the beads set out, for
+ * a check that measures them. Returns whether anything is on its way or will be.
  *
  * The stretch may be of any length. A bead that set out within it stands where it has got
  * to since the moment it set out, so as many beads pass a second at two frames a second as
@@ -143,16 +299,17 @@ export function headSize(perSecond) {
  * truly got to, not at the same places frame after frame.
  */
 export function advance(lane, seconds) {
-  const stretch = Math.max(0, seconds);
-  if (lane.beads.length) lane.beads = lane.beads.map((share) => share + stretch / CROSSING).filter((share) => share < 1);
+  const stretch = Math.max(0, seconds), crossing = lane.crossing > 0 ? lane.crossing : CROSSING;
+  if (lane.beads.length) lane.beads = lane.beads.map((share) => share + stretch / crossing).filter((share) => share < 1);
   if (lane.perSecond > 0) {
     // The clock of setting out runs on from where it stood: a bead sets out each time it passes a whole number.
     // It runs on by the whole stretch, however long, so that the beads stand where they would after exactly that
     // time; of those that set out within it, only the ones of the last crossing are still on their way.
     const before = lane.due, after = before + lane.perSecond * stretch;
-    for (let number_ = Math.max(Math.floor(before) + 1, Math.ceil(after - lane.perSecond * CROSSING)); number_ <= after; number_++) {
+    lane.sent = (lane.sent || 0) + Math.floor(after) - Math.floor(before);
+    for (let number_ = Math.max(Math.floor(before) + 1, Math.ceil(after - lane.perSecond * crossing)); number_ <= after; number_++) {
       const since = (after - number_) / lane.perSecond; // seconds since this bead set out
-      if (since < CROSSING && lane.beads.length < MOST) lane.beads.push(since / CROSSING);
+      if (since < crossing && lane.beads.length < MOST) lane.beads.push(since / crossing);
     }
     lane.due = after - Math.floor(after);
   }
@@ -227,10 +384,11 @@ export const beads = {
   surface: "membrane",
   needs_sign: true,
 
-  /** The legend's lines for a layer of beads: what one bead stands for, and what time the picture keeps. */
+  /** The legend's lines for a layer of beads: what a stream at full width, a packet or a bead stands for at the speed, and what time the picture keeps. `busiest` is in ions a second. */
   keys(busiest, speed = 1, still = false, paused = false) {
+    const said = flowWords({ speed, token: tokenFor(busiest, speed), widest: busiest });
     return [
-      { key: "bead", text: `${tokenWords(tokenFor(busiest, speed))}. More beads a second means more ions a second; how fast a bead travels stands for nothing` },
+      { key: "bead", text: modeAt(speed) === "stream" ? `${said}. A stream's width and brightness carry its rate; how fast its streaks run stands for nothing` : `${said}. More of them a second means more ions a second; how fast one travels stands for nothing. Where a lane passes less than one now and then, its chevrons alone show` },
       { key: "time", text: timeKey(speed, still, paused) },
     ];
   },
@@ -268,7 +426,7 @@ export const beads = {
       form.wide = form.kind === "channel" ? 0.16 : 0.34;
       form.streams.forEach((stream, n) => (stream.x = form.x + (form.streams.length > 1 ? (n / (form.streams.length - 1) - 0.5) * (form.wide - 0.14) : 0)));
     });
-    for (const stream of streams) Object.assign(stream, { beads: [], due: 0, perSecond: 0, mean: null, up: true });
+    for (const stream of streams) Object.assign(stream, { beads: [], due: 0, perSecond: 0, mean: null, up: true, crossing: CROSSING });
 
     // The forms: two walls through the membrane for a channel population, a block for the pump, in the page's ink under the glass.
     const z = 0; // the middle of the piece's depth, behind the plane where the arrows stand
@@ -306,121 +464,76 @@ export const beads = {
     formMesh.userData.unpickable = true;
     group.add(formMesh);
 
-    const capacity = Math.max(1, streams.length * MOST);
-    const shape = new THREE.SphereGeometry(1, 12, 8);
-    // An arrowhead for each stream, pointing up the piece (out of the cell); turned round for a stream that goes in.
-    const headShape = new THREE.BufferGeometry();
-    headShape.setAttribute("position", new THREE.Float32BufferAttribute([0, 1, 0, -0.85, -0.7, 0, 0.85, -0.7, 0], 3));
-    // Drawn with the close-up's other see-through parts, in the order it keeps for them: after the card and the glass.
-    const coreMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-    const rimMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
-    const make = (material, at, geometry = shape, count = capacity) => {
-      const mesh = new THREE.InstancedMesh(geometry, material, count);
-      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      mesh.setColorAt(0, colours.ink);
-      mesh.frustumCulled = false;
-      mesh.renderOrder = at;
-      mesh.userData.unpickable = true;
-      mesh.userData.noContact = true;
-      mesh.count = 0;
-      group.add(mesh);
-      return mesh;
-    };
-    const rims = make(rimMaterial, order.beads), cores = make(coreMaterial, order.beads + 1);
-    const headRims = make(rimMaterial, order.beads, headShape, Math.max(1, streams.length)), heads = make(coreMaterial, order.beads + 1, headShape, Math.max(1, streams.length));
     surface.root.add(group);
     // Each form's name, and for a channel population the ion it lets through, under the piece.
     const names = forms.map((form) => {
       const ions = [...new Set(form.streams.map((stream) => stream.species).filter(Boolean))];
-      const label = surface.label({ text: `${form.name}${ions.length ? `\n${ions.join(", ")}` : ""}`, at: [form.x, -(face + reach + 0.25), z], kind: "closeup label-closeup-ion", lift: 2 }); // under the arrowhead of a stream that goes in
+      const label = surface.label({ text: `${form.name}${ions.length ? `\n${ions.join(", ")}` : ""}`, at: [form.x, -(face + reach + 0.25), z], kind: "closeup label-closeup-ion", lift: 2 }); // under a lane that goes in
       label.below(true);
       return label;
     });
 
-    let size = SIZE[strength], tones = colours;
+    let tones = colours;
     formMaterial.color.copy(colours.ink);
-    const matrix = new THREE.Matrix4(), position = new THREE.Vector3(), quaternion = new THREE.Quaternion(), scale = new THREE.Vector3();
-    const turn = new THREE.Quaternion(), inwards = new THREE.Vector3(0, 0, 1);
-    const drawBeads = () => {
-      let at = 0;
-      const radius = 0.05 * size;
-      for (const stream of streams) {
-        const colour = stream.species ? tones.ion(stream.species) : tones.ink;
-        for (const share of stream.beads) {
-          if (at >= capacity) break;
-          const t = stream.up ? share : 1 - share; // from the inside up to the outside, or back
-          position.set(stream.x, (t * 2 - 1) * (face + reach), z);
-          const grown = 0.45 + 0.55 * Math.sin(Math.PI * Math.min(1, Math.max(0, share)));
-          cores.setMatrixAt(at, matrix.compose(position, quaternion, scale.setScalar(radius * grown)));
-          rims.setMatrixAt(at, matrix.compose(position, quaternion, scale.setScalar(radius * grown * 1.45)));
-          cores.setColorAt(at, colour);
-          rims.setColorAt(at, tones.raised || tones.ground);
-          at += 1;
-        }
-      }
-      cores.count = rims.count = at;
-      // The arrowheads: one beyond the far end of each stream that carries something.
-      let ends = 0;
-      for (const stream of streams) {
-        if (!(stream.perSecond > 0)) continue;
-        const colour = stream.species ? tones.ion(stream.species) : tones.ink;
-        position.set(stream.x, (stream.up ? 1 : -1) * (face + reach + 0.1), z);
-        turn.setFromAxisAngle(inwards, stream.up ? 0 : Math.PI);
-        const grown = headSize(stream.perSecond);
-        heads.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 1.5 * grown)));
-        headRims.setMatrixAt(ends, matrix.compose(position, turn, scale.setScalar(radius * 2.1 * grown)));
-        heads.setColorAt(ends, colour);
-        headRims.setColorAt(ends, tones.raised || tones.ground);
-        ends += 1;
-      }
-      heads.count = headRims.count = ends;
-      for (const mesh of [cores, rims, heads, headRims]) {
-        mesh.instanceMatrix.needsUpdate = true;
-        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      }
-    };
+    const colourOf = (stream) => (stream.species ? tones.ion(stream.species) : tones.ink).clone();
+    // Each stream's lane runs up the piece, from the inside (0) to the outside (1); one that goes into the cell is reversed.
+    const pathOf = (stream) => (share) => new THREE.Vector3(stream.x, (share * 2 - 1) * (face + reach), z);
+    streams.forEach((stream, k) => Object.assign(stream, { key: k, path: pathOf(stream), colour: colourOf(stream), reverse: false }));
+    const radiusAt = (value) => 0.05 * SIZE[value];
     const token = () => tokenFor(ionsASecond(busiest), speed());
+    /** The beads a second of a stream at full width at the speed shown: the busiest stream through any membrane of the run. */
+    const full = () => beadsASecond(ionsASecond(busiest), token(), speed());
     const stands = () => still() || paused();
+    // Drawn with the close-up's other see-through parts, in the order it keeps for them: after the card and the glass.
+    const tokens = new Tokens({ lanes: streams, radius: radiusAt(strength), ground: tones.raised || tones.ground, order: order.beads, groupOrder: order.group, resolve: resolveAt(speed()), full: full(), overlay: true });
+    group.add(tokens.group);
     let shown = { step: 0, valid: false };
     const settle = () => {
-      const one = token(), fast = speed();
+      const one = token(), fast = speed(), crossing = paceAt(fast).crossing;
+      tokens.setResolve(resolveAt(fast), { crossing, full: full() });
       for (const stream of streams) {
         const mean = shown.valid ? meanRate(run, stream.record, stream.entity, shown.step) : null;
         stream.mean = mean === null ? null : mean * stream.per; // fmol a second of this ion, positive as the record's sign says
-        stream.perSecond = stream.mean ? beadsASecond(ionsASecond(stream.mean), one, fast) : 0;
         if (stream.mean) stream.up = stream.mean > 0 === stream.out;
-        if (!stream.perSecond) stream.beads = [];
-        else if (stands()) stream.beads = standing(stream.perSecond);
+        tokens.setRate(stream.key, stream.mean ? beadsASecond(ionsASecond(stream.mean), one, fast) : 0, !stream.up);
+        // With nothing passing, the lane empties; where nothing may move or the replay is paused, the beads stand as many as
+        // would be crossing (where beads are drawn at this speed: a stream keeps none).
+        if (!stream.perSecond || !(tokens.blend.beads > 0)) stream.beads = [];
+        else if (stands()) stream.beads = standing(stream.perSecond, crossing);
       }
-      drawBeads();
+      // Placed at once: a paused replay ticks no frame.
+      tokens.tick(0, stands());
     };
 
     return {
       streams,
       forms,
       busiest,
-      shines: [cores],
+      tokens,
+      get shines() {
+        return tokens.shines;
+      },
       get token() {
         return token();
       },
-      /** How many beads and how many arrowheads are drawn now. */
+      /** The ions a second a stream at full width carries: the busiest stream through any membrane of the run. */
+      get widest() {
+        return ionsASecond(busiest);
+      },
+      /** How many beads, chevrons and streams are drawn now (./tokens.js). */
       get drawn() {
-        return { beads: cores.count, heads: heads.count };
+        return tokens.drawn;
       },
       update(step, valid) {
         shown = { step, valid };
         settle();
       },
-      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether a bead is on its way. */
+      /** Advance by `milliseconds` of watching at the replay's speed: the run's time the playhead covered, over the speed. Returns whether anything is on its way. */
       tick(milliseconds) {
         if (stands()) return false;
-        const seconds = milliseconds / 1000;
-        let moving = false;
-        for (const stream of streams) moving = advance(stream, seconds) || moving;
-        drawBeads();
-        return moving;
+        return tokens.tick(milliseconds / 1000, false);
       },
-      /** The replay's clock changed (its speed, or whether it plays): a bead stands for another number, and the beads stand or set out. */
+      /** The replay's clock changed (its speed, or whether it plays): the drawing follows the speed, a bead stands for another number, and everything stands or sets out. */
       retime() {
         for (const stream of streams) stream.due = 0;
         settle();
@@ -447,6 +560,7 @@ export const beads = {
           reset: restarted(run, stream.record, stream.entity, step),
           particles: stream.mean === null ? null : Math.abs(ionsASecond(stream.mean)),
           beads: stream.mean === null ? null : beadsASecond(ionsASecond(stream.mean), one, fast),
+          ofFull: stream.mean === null ? null : Math.min(1, beadsASecond(ionsASecond(stream.mean), one, fast) / full()),
           way: stream.mean ? (stream.up ? "out of the cell" : "into the cell") : null,
         }));
       },
@@ -463,28 +577,27 @@ export const beads = {
           said.add(sign.says);
           by.set(whose, said);
         }
-        for (const [whose, said] of by) lines.push({ key: "way", text: `A bead goes the way its total grew: ${[...said].join("; ")}. ${whose.replace(/\.$/, "")}` });
-        lines.push({ key: "head", text: HEAD_WORDS });
+        for (const [whose, said] of by) lines.push({ key: "way", text: `A lane flows the way its total grew: ${[...said].join("; ")}. ${whose.replace(/\.$/, "")}` });
+        lines.push({ key: "head", text: WAY_WORDS });
         if (streams.some((stream) => stream.kind === "pump")) lines.push({ key: "pump", text: "Through the pump: its cycles between two records, times the ions one cycle moves as the pump's declaration gives them" });
         if (streams.some((stream) => stream.kind === "membrane")) lines.push({ key: "leak", text: "Through the membrane itself, with no form: what its own passive routes carried, beside its channel populations and its pump" });
         return lines;
       },
       setStrength(next) {
-        size = SIZE[next];
-        drawBeads();
+        tokens.setRadius(radiusAt(next));
+        tokens.tick(0, stands());
       },
       setColours(next) {
         tones = next;
         formMaterial.color.copy(next.ink);
-        drawBeads();
+        tokens.setColours(next.raised || next.ground, colourOf);
+        tokens.tick(0, stands());
       },
       dispose() {
         surface.root.remove(group);
-        shape.dispose();
-        headShape.dispose();
+        tokens.dispose();
         formGeometry.dispose();
-        for (const material of [formMaterial, coreMaterial, rimMaterial]) material.dispose();
-        for (const mesh of [cores, rims, heads, headRims]) mesh.dispose();
+        formMaterial.dispose();
         for (const label of names) label.remove();
       },
     };

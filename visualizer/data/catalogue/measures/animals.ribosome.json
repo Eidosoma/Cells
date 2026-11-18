@@ -1,0 +1,113 @@
+{
+ "format": "cells.visualizer.particle@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "each subunit as the ellipsoid of the same spread as its polymer atoms (model 1): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of both subunits' atoms; y from the large subunit's centre to the small one's; x the whole particle's longest axis made square to y (the next one if the longest runs along y); z = x × y",
+ "measured": {
+  "8YOP": {
+   "entry": "8YOP",
+   "title": "Cryo-EM structure of the human 80S ribosome with 4 um Tigecycline",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": "2.2",
+   "placed_by_the_caller": {
+    "70": {
+     "subunit": "small",
+     "description": "Receptor of activated protein C kinase 1"
+    }
+   },
+   "left_out": [],
+   "whole": {
+    "atoms": 218236,
+    "across_nm": [
+     29.7,
+     23.2,
+     21.1
+    ],
+    "farthest_nm": [
+     30.5,
+     27.0,
+     26.8
+    ],
+    "middle_98_percent_nm": [
+     25.6,
+     21.1,
+     19.6
+    ],
+    "radius_of_gyration_nm": 9.66
+   },
+   "large": {
+    "atoms": 142711,
+    "centre_nm": [
+     0.0,
+     -3.96,
+     0.0
+    ],
+    "axes": [
+     [
+      0.8782,
+      0.3594,
+      0.3157
+     ],
+     [
+      -0.1879,
+      -0.3476,
+      0.9186
+     ],
+     [
+      0.4399,
+      -0.866,
+      -0.2377
+     ]
+    ],
+    "across_nm": [
+     25.0,
+     20.6,
+     17.0
+    ],
+    "farthest_nm": [
+     27.5,
+     30.0,
+     20.6
+    ],
+    "radius_of_gyration_nm": 8.19
+   },
+   "small": {
+    "atoms": 75525,
+    "centre_nm": [
+     0.0,
+     7.49,
+     0.0
+    ],
+    "axes": [
+     [
+      -0.6898,
+      0.0652,
+      0.7211
+     ],
+     [
+      0.723,
+      0.0102,
+      0.6907
+     ],
+     [
+      0.0376,
+      0.9978,
+      -0.0542
+     ]
+    ],
+    "across_nm": [
+     27.3,
+     16.2,
+     11.6
+    ],
+    "farthest_nm": [
+     27.7,
+     19.8,
+     13.1
+    ],
+    "radius_of_gyration_nm": 7.56
+   },
+   "between_centres_nm": 11.5
+  }
+ }
+}

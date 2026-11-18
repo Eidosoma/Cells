@@ -303,15 +303,18 @@ export function feeds(run, layer, marks) {
  * The layers of one run: the declared ones, and for every plain record laid over the
  * cells that no declared layer shows, a colouring and a relief of it (a record over the
  * cells can always be coloured and raised: a new quantity with a known mark needs no code).
- * Each comes with whether the run can feed it: [{ layer, ok, why, … }].
+ * Each comes with whether the run can feed it: [{ layer, ok, why, … }]. `offer` names records in
+ * files of their own that are offered all the same (the record an experiment's runs open on).
  */
-export function layersFor(run, declarations, marks) {
+export function layersFor(run, declarations, marks, { offer = [] } = {}) {
   const layers = declarations.map((layer) => ({ ...layer }));
   const shown = (mark) => new Set(layers.filter((layer) => layer.mark === mark).flatMap((layer) => alternatives(layer).filter((quantity) => !quantity.derivation).flatMap(recordNames)));
   const tinted = shown("tint"), raised = shown("relief");
   for (const record of declaredOn(run, "cell")) {
     // A record that comes in a file of its own is not offered here: it would appear only once another layer had fetched it.
-    if (record.quantised || !record.loaded || record.part) continue;
+    // A record an experiment names as what its runs open on (`offer`) is offered all the same: it is fetched as the run opens.
+    // A record of states in words (a stated criterion's, schema/RUN_VIEW.md) colours nothing: the colour is the quantity's.
+    if (record.quantised || record.words || (!offer.includes(record.id) && (!record.loaded || record.part))) continue;
     const name = record.id.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
     if (marks.tint && !tinted.has(record.id)) layers.push({ id: `${name}-tint`, label: record.label, quantity: { record: record.id }, mark: "tint", channels: ["colour"], says: `Each cell is coloured by its ${lower(record.label)}.`, plain: true });
     if (marks.relief && !raised.has(record.id)) layers.push({ id: `${name}-relief`, label: record.label, quantity: { record: record.id }, mark: "relief", channels: ["height"], says: `Each cell stands as high as its ${lower(record.label)}.`, plain: true });

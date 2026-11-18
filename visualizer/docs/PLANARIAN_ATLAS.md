@@ -157,15 +157,29 @@ predicted protein, and those are the ones searched.
 | none found | 2 | U19 (Kir2.1), U45 (NKCC) |
 | nothing to look for | 6 | U18, U34, U35, U46, U48, U49 |
 
-**Products by evidence.** The units list 592 product entries, because units of one
-family share their candidates. They are 204 different products.
+**Products by how they were found, and by their records.** The units list 592 product
+entries, because units of one family share their candidates. They are 204 different
+products. Since 16 November 2026 each product says the two apart (`found_by` and `entry`,
+`schema/SPECIES_ATLAS.md`); before, one word mixed them.
 
-| Evidence | Products | What they are |
+| How it was found (`found_by`) | Products | What they are |
 | --- | --- | --- |
-| reviewed entry | 0 | |
 | named in a publication | 4 | smedinx-11; scna-1, scna-2, scna-3 |
-| family signature | 200 | 10 UniProtKB entries, each joined to a gene model, and 190 gene models |
+| family signature, of a family that makes the machine | 168 | candidates by family: 10 UniProtKB entries, each joined to a gene model, and 158 gene models |
+| accessory signature, only of a family that goes with the machine | 32 | gene models of beta subunits, alpha-2/delta subunits, regulators and the like: no candidates for the machine's own work |
 | similarity search | 0 | None was run |
+
+On the shelves (second round, 16 November 2026) the 32 found only by an accessory family's
+signature are drawn as plain grey markers, not in the unit's shape or the units' tone, and
+each one's panel says how the atlas found it and that it goes with the machine (`found_by`
+in `shelves.json`). The table's signature of the sodium channels' beta subunits is now
+IPR027098 alone; no planarian sequence carries it, as none carried the two before.
+
+| Their records (`entry`) | Products |
+| --- | --- |
+| UniProtKB entries, annotated automatically | 14 (the 4 named and the 10 found by signature) |
+| Gene models of the genome annotation, with no UniProtKB entry | 190 |
+| UniProtKB entries reviewed by a curator | 0 |
 
 **Gene models by family**
 

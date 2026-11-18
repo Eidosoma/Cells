@@ -19,18 +19,41 @@ import { StackLens } from "../lenses/stack.js";
 import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { ReplayLens } from "../lenses/replay.js";
+import { LawsLens } from "../lenses/laws.js";
+import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
+import { LAWS_CSS } from "../lenses/laws_styles.js";
+import { MachinesLens } from "../lenses/machines.js";
+import { doorsFor as machinesDoors, textSections as machinesSections, textDescribe as machinesDescribe, present as machinesPresent, owns as machinesOwn } from "../lenses/machines_card.js";
+import { MACHINES_CSS } from "../lenses/machines_styles.js";
 import { Catalogue } from "../replay/catalogue.js";
+import { chartOf, tableOf, armWords, unitSign } from "../replay/sweep.js";
+import { renderAtlasNav } from "./atlas_nav.js";
+import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
+import { makeEntryLens, entryTab } from "./entry_views.js";
+import { makeTissueLens } from "../lenses/tissue_line.js";
+import { isPart, partDoors, wholeRunOf, openingPart } from "./tissue_part.js";
+import "./model_views.js"; // the views of model systems, each registered beside itself
 
-// The views, in the order of the switch. "short" is the name on a narrow screen.
+// The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
+// stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
+// (the Cell view, the Protein atlas, the Laws library); only its tab is titled here. The titles and their order were
+// decided on 17 November 2026.
 // "needs" says what the scene must hold for the view to be offered.
 // From this width up the species switch stands in the bar; below it, in the view's card.
 const SPECIES_IN_BAR = 1000;
 
 const LENSES = [
-  { id: "cell", label: "Cell and scales", short: "Cell", make: (stage, model, labels) => new CellLens(stage, model, labels) },
-  { id: "proteins", label: "Protein atlas", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
-  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
+  { id: "cell", label: "Scope", short: "Scope", make: (stage, model, labels) => new CellLens(stage, model, labels) },
+  // The Machines catalogue (schema/MACHINE_CATALOGUE.md), by species. "present": how it shows a part of another view's that it holds too (a unit with laws).
+  { id: "machines", label: "Machines", short: "Machines", needs: (scene) => scene.catalogue?.entries?.length || Object.keys(scene.catalogue?.benches || {}).length, owns: machinesOwn, doorsFor: machinesDoors, textSections: machinesSections, textDescribe: machinesDescribe, present: machinesPresent, styles: MACHINES_CSS, make: (stage, model, labels) => new MachinesLens(stage, model, labels) },
+  { id: "proteins", label: "Proteins", short: "Proteins", needs: (scene) => scene.proteins, make: (stage, model, labels) => new ProteinLens(stage, model, labels) },
   { id: "engine", label: "Engine", short: "Engine", make: (stage, model, labels) => new StackLens(stage, model, labels) },
+  // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
+  // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
+  // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
+  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
+  // "hidden": a page exported without the Experiments view keeps its replays, since the cell view's flux reads a species' looping run from them.
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {
@@ -43,7 +66,7 @@ class CellsViewer extends HTMLElement {
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null };
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null };
     this.lenses = new Map();
   }
 
@@ -85,6 +108,7 @@ class CellsViewer extends HTMLElement {
     this.canvas = h("canvas", { tabIndex: 0, role: "img", "aria-label": "3D map of the Cells simulator. The list of parts gives the same content as text." });
     this.labelBox = h("div", { class: "labels" });
     this.switchBox = h("div", { class: "switch", role: "group", "aria-label": "View" });
+    this.switchBox.addEventListener("scroll", () => this.fadeTabs(), { passive: true });
     this.speciesBox = h("div", { class: "species", hidden: true });
     this.stamp = h("span", { class: "stamp" });
     this.indexButton = h("button", { class: "pill-button", type: "button", "aria-pressed": "false", onclick: () => this.toggleIndex() }, "List");
@@ -96,6 +120,8 @@ class CellsViewer extends HTMLElement {
     // On a phone the rail folds behind this button, which names the level shown (styles.js); a wide window does not show it.
     this.railToggle = h("button", { class: "rail-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-rail", onclick: () => this.toggleRail() });
     this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
+    // A sweep's chart, where the experiment shown has one: a card of its own at the right of a wide window (on a phone it stands in the experiment's card).
+    this.sweepCard = h("section", { class: "sweep-card card", hidden: true, "aria-label": "Sweep" });
     // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
     // its room above the panel; a press opens the card over the picture (styles.js). Elsewhere it is not shown.
     this.viewToggle = h("button", { class: "view-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-view", onclick: () => this.toggleViewCard() });
@@ -111,7 +137,7 @@ class CellsViewer extends HTMLElement {
       "div",
       { class: "frame", style: "position:absolute;inset:0" },
       h("div", { class: "stage" }, this.canvas, this.labelBox),
-      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells"), h("span", {}, "Architecture map")), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton))),
+      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells")), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton))),
       this.hint,
       this.caveat,
       this.timeline,
@@ -119,25 +145,38 @@ class CellsViewer extends HTMLElement {
       this.rail,
       this.viewToggle,
       this.viewCard,
+      this.sweepCard,
       this.scaleBar,
       this.legend,
       this.index,
       this.panel,
       this.fallback
     );
-    root.append(h("style", {}, css), this.frame);
+    root.append(h("style", {}, css + LENSES.map((lens) => lens.styles || "").join("")), this.frame);
     root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
     root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
     root.addEventListener("cells-door", (event) => this.openDoor(event.detail));
+    // A species' bench of the Machines catalogue read from beside the page: the list, the panel and the card read it again.
+    globalThis.addEventListener?.("cells-bench", () => {
+      if (!this.isConnected) return;
+      this.renderIndex();
+      this.renderPanel();
+      this.renderChrome();
+    });
+    // The protein atlas: what colour carries on a species' own proteins (its legend's "Colour").
+    root.addEventListener("cells-own-colour", (event) => this.current?.setOwnColour?.(event.detail));
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
     root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
     root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
     root.addEventListener("cells-slow", (event) => this.current?.setSlow?.(event.detail));
     root.addEventListener("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
+      // On a phone the legend's sheet and a view's card never lie over each other: opening the one folds the other.
+      if (this.state.legendOpen && this.clientWidth < 760 && this.state.viewOpen) this.toggleViewCard(false);
       this.renderLegend();
+      this.cardsMoved();
     });
   }
 
@@ -188,11 +227,23 @@ class CellsViewer extends HTMLElement {
       new ResizeObserver(() => {
         if (this.clientWidth !== this.widthSeen) {
           this.widthSeen = this.clientWidth;
+          // A fold of a narrow window (the rail's, the card's) ends when the window is no longer narrow.
+          if (this.clientWidth >= 760 && (this.state.railOpen || this.state.viewOpen)) {
+            this.toggleRail(false);
+            this.toggleViewCard(false);
+          }
           this.renderChrome(); // the switch may fit the bar again, or no longer
+          // The picture's room at the sides is a wide window's (renderPanel sets it): crossing into or out of a narrow
+          // window, it is set again, so a narrow window keeps no room the wide one left for the cards.
+          const narrow = this.clientWidth < 760;
+          if (this.narrowSeen !== undefined && this.narrowSeen !== narrow) this.renderPanel();
+          this.narrowSeen = narrow;
         } else this.fitCard();
       }).observe(this);
       // On a phone the panel is a sheet along the bottom: what stands on its top edge follows its height.
       new ResizeObserver(() => this.placeSheet()).observe(this.panel);
+      // And the rail's button stands under the bar, however many rows the bar takes (a longer first tab may wrap it).
+      new ResizeObserver(() => this.style.setProperty("--bar-height", `${this.bar.offsetHeight}px`)).observe(this.bar);
       document.fonts?.ready.then(() => {
         this.labels.measure();
         this.renderChrome(); // words are as wide as they will be only now: the species switch may fit the bar, or no longer
@@ -210,15 +261,26 @@ class CellsViewer extends HTMLElement {
       this.frame.classList.add("is-still");
       if (this.stage) this.stage.rig.instant = true;
     }
-    if (query.get("species") || query.get("atlas")) this.setSpecies(query.get("species") || query.get("atlas"));
+    // An entry of the switch (schema/ENTRIES.md): `entry=`, or `species=` and `atlas=` as before; `cell=` a cell type of the species shown.
+    const entered = query.get("entry") || query.get("species") || query.get("atlas") || (query.get("cell") ? this.state.species : null);
+    if (entered) this.setEntry(query.get("cell") && !entered.includes(".") && this.speciesChoices().includes(entered) ? `${entered}.${query.get("cell")}` : entered);
     // The resting look (core/look.js): "look=plain" is the look as it was, "look=full" holds every
     // effect on; "fps=1" shows the frame rate with a switch for each effect, for judging on a device.
     if (this.stage && query.get("look")) this.stage.look.choose(query.get("look"));
     if (this.stage && query.get("fps")) this.stage.look.trial = true;
+    // "frames=1": a small readout at the foot of the picture of the frames the device really draws (core/stage.js).
+    if (this.stage && query.get("frames")) this.stage.showFrames(this.frame);
     const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
+    // A model system's view in the Experiments tab's place, from its list (`example=gard`; showExample).
+    if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
+    else if (isPart(this.model.raw.replays, query.get("part"))) this.state.part = query.get("part"); // a part of an example (showPart)
+    // The Experiments tab opens on the part its listed example names (its entry's `opens.part`), unless the address names
+    // something of the runs' own view: a run, a record, layers or their strength, or, in this tab, a part to choose that is
+    // not a cell of the part's.
+    else if (!["run", "record", "layers", "strength"].some((key) => query.get(key)) && !(wanted === "experiments" && query.get("select") && !query.get("select").startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
-    // The protein atlas: the machines Cells has laws for ("units") or the species' own proteins ("own").
+    // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
     if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
@@ -232,17 +294,30 @@ class CellsViewer extends HTMLElement {
       // Quantity layers: "layers=junction-drops,-voltage-relief" switches the first on and the second off; "strength=bold".
       if (query.get("strength")) this.current?.setStrength?.(query.get("strength"));
       if (query.get("layers")) this.current?.setLayers?.(query.get("layers"));
-      if (query.get("select")) {
-        this.select(query.get("select"), { fly: true });
-        // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
-        this.current?.openedWith?.(this.state.selected);
-      }
-      // A stated camera angle or distance has the last word, also over the flight to a selected part.
-      if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
-        const view = {};
-        for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
-        this.stage.rig.setView(view);
-      }
+      const choose = () => {
+        if (query.get("select")) {
+          this.select(query.get("select"), { fly: true });
+          // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
+          this.current?.openedWith?.(this.state.selected);
+        }
+        // A stated camera angle or distance has the last word, also over the flight to a selected part.
+        if (this.stage && (query.get("azimuth") || query.get("polar") || query.get("distance"))) {
+          const view = {};
+          for (const name of ["azimuth", "polar", "distance"]) if (query.get(name)) view[name] = Number(query.get(name));
+          this.stage.rig.setView(view);
+        }
+      };
+      // A machine's closer view (schema/MACHINES.md): "machine=<id>", with "detail=1|2|3". It stands until the visitor chooses.
+      const machine = query.get("machine") && this.current?.lookCloser ? this.current.lookCloser(query.get("machine"), { address: true, detail: query.get("detail") }) : null;
+      if (machine?.then) {
+        machine.then((shown) => {
+          if (shown && !query.get("select")) {
+            this.select(`machine:${query.get("machine")}`);
+            this.current?.openedWith?.(this.state.selected);
+          }
+          choose();
+        });
+      } else choose();
     };
     // A view that loads its data first (a run) is ready a moment later; the others are ready now.
     const loading = query.get("run") ? this.current?.show?.(query.get("run")) : this.current?.ready;
@@ -268,11 +343,20 @@ class CellsViewer extends HTMLElement {
     const spec = this.views?.find((lens) => lens.id === id);
     if (!spec || !this.model) return;
     this.current?.deactivate();
+    if (this.state.lens !== id && this.state.viewOpen) this.toggleViewCard(false); // a phone's folded card starts folded in the next view
     this.state.lens = id;
     this.state.isolate = null;
     if (this.stage) {
-      if (!this.lenses.has(id)) {
-        const lens = spec.make(this.stage, this.model, this.labels);
+      // A model system shown in the switch takes the Cell view's place (src/ui/entry_views.js): its card at once, its own view once its runs are read.
+      // So does one the Experiments tab's list opens (showExample): the same view, in that tab's place.
+      const entry = id === "cell" ? modelSystemOf(this.model.raw, this.state.model) : id === "experiments" && this.state.example ? modelSystemOf(this.model.raw, this.state.example) : null;
+      // A part of an example (the gap-junction example's tissue line: showPart) takes the tab's place too, with a view of its own.
+      const part = !entry && id === "experiments" && this.state.part ? this.state.part : null;
+      const key = entry ? `model:${entry.id}` : part ? `part:${part}` : id;
+      if (!this.lenses.has(key)) {
+        const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still") }) : null;
+        made?.ready?.then((view) => view && this.swapLens(key, view));
+        const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null), open: (id) => this.showPart(id) }) : spec.make(this.stage, this.model, this.labels);
         lens.onChrome = () => {
           if (this.current === lens) this.renderChrome();
         };
@@ -295,10 +379,15 @@ class CellsViewer extends HTMLElement {
           this.renderChrome();
           this.renderPanel();
         };
-        this.lenses.set(id, lens);
+        // A view that showed something the visitor asked for by a control of its own (a machine's closer view, from the scale rail): its panel opens.
+        lens.onShown = (shown) => {
+          if (this.current === lens && shown) this.select(shown);
+        };
+        this.lenses.set(key, lens);
       }
-      this.current = this.lenses.get(id);
+      this.current = this.lenses.get(key);
       this.current.setSpecies?.(this.state.species);
+      this.current.setCellType?.(this.state.cellType);
       this.current.setAtlas?.(this.state.species);
       this.current.activate();
       this.current.setIsolate(null);
@@ -306,6 +395,7 @@ class CellsViewer extends HTMLElement {
     }
     if (!this.shows(this.state.selected)) this.state.selected = null;
     for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
+    this.showPressedTab();
     if (fromUser && location.hash.slice(1) !== id) {
       try {
         history.replaceState(null, "", `#${id}`);
@@ -322,6 +412,9 @@ class CellsViewer extends HTMLElement {
   shownEntities() {
     if (this.current) return this.current.entities();
     if (this.state.lens === "experiments") return this.replays.entities();
+    // A view that makes its own parts gives them as text where no 3D can be drawn (the Laws library).
+    const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
+    if (text) return text(this.model.raw, this.state.species).flatMap((section) => section.entities);
     return this.model.inLens(this.state.lens);
   }
 
@@ -334,16 +427,23 @@ class CellsViewer extends HTMLElement {
   /** A part by its id: one of the scene's, or one the current view makes itself (a run, a cell of a run). */
   lookup(id) {
     if (!id) return null;
-    const entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || null;
+    let entity = this.model.get(id) || this.current?.describe?.(id) || (this.state.lens === "experiments" ? this.replays.describe(id) : null) || (!this.current ? this.views.find((view) => view.owns?.(id))?.textDescribe?.(this.model.raw, id, this.state.species) : null) || null;
+    // A part of another view's that the view shown holds too (a unit with laws, in the Machines catalogue): as that view shows it.
+    const present = this.views.find((view) => view.id === this.state.lens)?.present;
+    if (entity && present) entity = present(entity, this.model.raw, this.state.species);
+    // A door another view offers on this part (the Laws library on an Engine view box that holds its pieces), after the view's own doors.
+    const offered = entity ? this.views.filter((view) => view.id !== this.state.lens && view.doorsFor).flatMap((view) => view.doorsFor(entity, this.model.raw, { species: this.state.species })) : [];
     // A part is shown as the chosen species has it: a unit with that species' side of the atlas,
     // a level under the species' name for it.
-    if (this.state.lens === "proteins") return this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species);
-    return this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
+    const shown = this.state.lens === "proteins" ? (this.current?.asShown ? this.current.asShown(entity) : inSpecies(entity, this.model.raw.proteins, this.state.species)) : this.state.lens === "cell" && this.current?.inSpecies ? this.current.inSpecies(entity) : entity;
+    return shown && offered.length ? { ...shown, doors: [...(shown.doors || []), ...offered] } : shown;
   }
 
   sections() {
     if (this.current) return this.current.sections();
     if (this.state.lens === "experiments") return this.replays.sections();
+    const text = this.views.find((view) => view.id === this.state.lens)?.textSections;
+    if (text) return text(this.model.raw, this.state.species);
     const groups = new Map();
     for (const part of this.shownEntities()) {
       const entity = this.state.lens === "proteins" ? inSpecies(part, this.model.raw.proteins, this.state.species) : part;
@@ -360,7 +460,21 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf }) {
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find }) {
+    // A closer view of a machine (Look closer), in the view shown or, from the Machines catalogue, in the Cell view; or back out of it.
+    if (look === "closer") {
+      if (lens && lens !== this.state.lens && this.views.some((view) => view.id === lens)) {
+        this.select(null);
+        this.setLens(lens, true);
+      }
+      Promise.resolve(this.current?.lookCloser?.(machine)).then((shown) => shown && this.select(`machine:${machine}`));
+      return;
+    }
+    if (look === "back") {
+      this.select(null);
+      this.current?.back?.();
+      return;
+    }
     if (!this.views.some((view) => view.id === lens)) return;
     this.select(null);
     this.setLens(lens, true);
@@ -369,17 +483,37 @@ class CellsViewer extends HTMLElement {
       if (this.current !== view) return; // another view was chosen meanwhile
       if (mark) view.setMark?.(mark);
       if (value !== undefined) view.setFinding?.(String(value));
+      // Of the set picked out, only the proteins the door names (a machine's part: schema/MACHINES.md).
+      if (ids?.length) view.pickIds?.(ids);
       if (shelf !== undefined) {
         view.setMark?.(null); // a set picked out before would stand in the way of the shelf
         view.setFinding?.(shelf);
       }
+      // A part the door names in the view it opens (the Machines catalogue's door to a unit in the atlas, or to a part of the cell).
+      if (select) this.select(select, { fly: true });
+      // A protein the door names (a machine's chain, by its accession): the view's own search finds it, and it opens on it.
+      if (find && view?.searchOwn && view?.reveal)
+        Promise.resolve(view.searchOwn(find)).then((found) => {
+          const hit = (found?.proteins || []).find((item) => String(item.id) === String(find));
+          if (hit && this.current === view) view.reveal(hit);
+        });
       this.renderChrome();
     });
   }
 
   // ------------------------------------------------------------ state changes
 
-  select(id, { fly = false } = {}) {
+  select(id, { fly = false, waited = false } = {}) {
+    // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
+    // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).
+    const owner = id && !this.current?.has?.(id) && this.views?.find((view) => view.owns?.(id));
+    if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true);
+    // A view still reading what would name it (a species' bench of machines, for a part of one): the choice waits for it, once.
+    const view = this.current, waiting = id && !waited ? view?.waitsFor?.(id) : null;
+    if (waiting) {
+      waiting.then(() => this.current === view && this.select(id, { fly, waited: true }));
+      return;
+    }
     if (id && !this.lookup(id)) return;
     if (id && !this.shows(id)) {
       if (!this.model.get(id)) return; // a part of a view that is not the one shown
@@ -444,6 +578,140 @@ class CellsViewer extends HTMLElement {
     this.setSpecies(id);
   }
 
+  /**
+   * The Experiments tab shows a model system's own view in its place (`id`, the entry's: GARD's pair, its levels, its clock,
+   * its panels), opened from the tab's list, which stands at the head of its card; null shows the tab's runs again, and `run`
+   * one of them where the run shown is of another experiment. The species switch, the first tab and the address's `entry=`
+   * are the switch's, and stay as they are.
+   */
+  showExample(id, { run = null } = {}) {
+    const example = (id && this.replays.doors.some((item) => item.entry === id) && modelSystemOf(this.model?.raw, id)?.id) || null;
+    if (example !== this.state.example || this.state.part) {
+      this.state.example = example;
+      this.state.part = null; // a part shown gives the tab back too
+      if (this.state.lens === "experiments") this.setLens("experiments");
+    }
+    const lens = this.current, shown = lens?.catalogue?.byId.get(lens.runId);
+    if (!example && run && lens?.show && shown?.experiment !== lens.catalogue.byId.get(run)?.experiment) lens.show(run);
+  }
+
+  /** A part of an example in the Experiments tab's place (src/lenses/tissue_line.js), opened from the example's card; null gives the tab back. */
+  showPart(id) {
+    const part = isPart(this.model?.raw?.replays, id) ? id : null;
+    if (part === this.state.part && !this.state.example) return;
+    this.state.example = null;
+    this.state.part = part;
+    if (this.state.selected && !this.current?.has?.(this.state.selected)) this.state.selected = null;
+    if (this.state.lens === "experiments") this.setLens("experiments");
+  }
+
+  // ------------------------------------------------------------ the switch's entries (schema/ENTRIES.md)
+
+  /**
+   * Show an entry of the switch: a species, as setSpecies does (`<species>.<type>` also chooses
+   * a cell type of it), or a model system, which takes the Cell view's place with a view of its
+   * own (src/ui/entry_views.js). The other views keep the species last shown.
+   */
+  setEntry(id, { user = false } = {}) {
+    const [speciesId, typeId] = String(id || "").split(".");
+    const entry = modelSystemOf(this.model?.raw, id);
+    const was = this.state.model;
+    if (entry) {
+      if (was === entry.id) return;
+      this.state.model = entry.id;
+      this.dataset.entry = entry.id;
+    } else {
+      if (!this.speciesChoices().includes(speciesId)) return;
+      this.state.model = null;
+      delete this.dataset.entry;
+      // A species' row shows its default cell type; a type's row ("<species>.<type>") that type.
+      this.state.cellType = typeId || null;
+      this.setSpecies(speciesId);
+      this.lenses.get("cell")?.setCellType?.(this.state.cellType);
+    }
+    this.nameFirstTab();
+    if (this.state.selected?.startsWith("model:") || (entry && this.state.selected?.startsWith("species:"))) this.state.selected = entry ? `model:${entry.id}` : null;
+    // Shown in the Cell view's place: the view follows the entry (a phone's folded card starts folded in it, as in the next view).
+    if ((entry || was) && this.state.lens === "cell" && this.state.viewOpen) this.toggleViewCard(false);
+    if ((entry || was) && this.state.lens === "cell") this.setLens("cell");
+    else {
+      this.renderChrome();
+      this.renderPanel();
+    }
+    if (user) this.writeEntry();
+    this.dispatchEvent(new CustomEvent("cells-entry", { detail: { id: entry ? entry.id : speciesId, kind: entry ? "model system" : "species" }, bubbles: true, composed: true }));
+  }
+
+  /** The first tab's name: the Cell view's, or the view of the model system shown. */
+  nameFirstTab() {
+    const button = this.switchBox?.querySelector('[data-lens="cell"]');
+    if (!button) return;
+    const entry = modelSystemOf(this.model?.raw, this.state.model);
+    const name = entry ? entryTab(entry) : this.views.find((lens) => lens.id === "cell");
+    button.querySelector(".long").textContent = name.label;
+    button.querySelector(".short").textContent = name.short;
+    button.setAttribute("aria-label", name.label);
+  }
+
+  /** The address names the entry chosen (`entry=`), and a cell type that is not its species' default (`cell=`). */
+  writeEntry() {
+    try {
+      const url = new URL(location.href);
+      for (const key of ["entry", "species", "atlas", "cell"]) url.searchParams.delete(key);
+      url.searchParams.set("entry", this.state.model || this.state.species);
+      const cell = this.lenses.get("cell");
+      if (!this.state.model && cell?.cellType && !cell.cellType.own) url.searchParams.set("cell", cell.cellType.id);
+      history.replaceState(null, "", url);
+    } catch {
+      // A page in a frame that keeps its address: the choice holds while the page is open.
+    }
+  }
+
+  /** A model system's own view, once its runs are read, in place of its card; it is given the calls setLens gives a lens. */
+  swapLens(key, view) {
+    const card = this.lenses.get(key);
+    const both = () => this.current === view && (this.renderChrome(), this.renderPanel());
+    view.onChrome = () => this.current === view && this.renderChrome();
+    view.onPanel = () => this.current === view && this.renderPanel();
+    view.onMode = () => this.current === view && ((this.state.isolate = null), this.state.selected && !this.shows(this.state.selected) && (this.state.selected = null), both());
+    view.onOpen = both;
+    view.onShown = (shown) => this.current === view && shown && this.select(shown);
+    this.lenses.set(key, view);
+    if (card?.levelChosen) view.goToScale?.(card.level); // a level chosen on the card (or by the address) holds
+    if (this.current !== card) return;
+    card.deactivate();
+    this.current = view;
+    view.setSpecies?.(this.state.species);
+    view.activate();
+    view.setIsolate?.(null);
+    view.setSelection?.(view.has?.(this.state.selected) ? this.state.selected : null);
+    if (!this.shows(this.state.selected)) this.state.selected = null;
+    both();
+    this.stage?.invalidate();
+  }
+
+  /**
+   * What a view's chrome says, with the page's entries: the switch lists the model systems
+   * beside the species, under their headings, and names the model system shown; the Protein
+   * atlas says that a model system has no proteins of a species.
+   */
+  withEntries(chrome) {
+    const entry = modelSystemOf(this.model?.raw, this.state.model);
+    const base = chrome.view?.species || chrome.card?.species || null;
+    // The switch goes where a view shows it, and into the model system's own view in the first tab's place; no other view gains it.
+    if (!base && !(entry && chrome.card && this.state.lens === "cell")) return chrome;
+    const options = [...(base?.options || (this.model.raw.species || []).map((item) => [item.id, item.label, item.organism])), ...modelSystems(this.model.raw).map((item) => [item.id, item.label, item.is])];
+    // A species with more than one cell type: the row of the type shown is the switch's, and a type not the species' own gives its own word.
+    const type = !entry && base?.cellTypes?.length > 1 ? base.cellTypes.find((item) => item.id === base.cellType) : null;
+    const species = entry ? { ...base, options, active: entry.id, organism: entry.is, plain: entry.plain, modelled: entry.modelled, cellTypes: null, model: true } : { ...base, options, row: type ? `${base.active}.${type.id}` : base.active, ...(type && !type.own && type.modelled ? { modelled: type.modelled } : {}) };
+    const out = { ...chrome };
+    if (chrome.view?.species) out.view = { ...chrome.view, species };
+    if (chrome.card) out.card = { ...chrome.card, species };
+    if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units of Cells' law inventory, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    if (entry && this.state.lens === "machines") out.caveat = [`${entry.label} is a model system, not an organism: it has no machines of a species. The catalogue shows ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}'s.`, chrome.caveat].filter(Boolean).join(" ");
+    return out;
+  }
+
   toggleIndex(force) {
     this.state.indexOpen = force ?? !this.state.indexOpen;
     this.index.hidden = !this.state.indexOpen;
@@ -457,28 +725,66 @@ class CellsViewer extends HTMLElement {
   renderChrome() {
     this.renderLegend();
     this.renderIndex();
-    const chrome = this.current?.chrome?.() || {};
+    const chrome = this.withEntries(this.current?.chrome?.() || {});
     // The protein atlas says which of its two drawings is shown; no other view has such a thing.
     if (this.state.lens === "proteins" && this.current?.mode) this.dataset.show = this.current.mode;
     else delete this.dataset.show;
     // A caveat on the picture, or what a view is doing (loading a run, or why it could not).
     const words = chrome.caveat || chrome.status || "";
+    // On a phone the protein atlas's caveat stands at the head of the legend's sheet, not over the picture (renderLegend).
+    this.frame.classList.toggle("caveat-in-legend", this.caveatInLegend(chrome));
     this.caveat.hidden = !words;
     this.hint.hidden = Boolean(words) || Boolean(chrome.quiet) || !this.stage;
+    // A phone is touched, not pointed at: its hint names the touch's own moves (the camera control takes a pinch).
+    this.hint.textContent = this.clientWidth < 760 ? "Drag to turn · pinch to zoom · tap a part" : "Drag to turn · scroll to zoom · click a part";
     this.caveat.textContent = words;
     this.caveat.classList.toggle("is-status", Boolean(chrome.status));
     // A view whose data has its own date says so in place of the map's.
     this.stamp.textContent = chrome.stamp || this.mapStamp;
+    // The protein atlas's trail, search and map of the stack (src/ui/atlas_nav.js), while its own proteins are shown.
+    renderAtlasNav(this, this.state.lens === "proteins" ? chrome.nav || null : null);
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     this.viewToggle.hidden = this.viewCard.hidden;
-    const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 ? "sizes" : null].filter(Boolean) : [];
-    const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : chrome.card?.heading || "";
+    const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 && !chrome.view.machine ? "sizes" : null, chrome.view.machine ? "detail" : null].filter(Boolean) : [];
+    // On a phone a view's card folds to one line saying what is shown (styles.js .card-folds): the protein atlas's, the Laws
+    // library's, a model system's in the Cell view's place. The Cell view's card and a replay's keep their own phone layouts.
+    this.frame.classList.toggle("card-folds", this.clientWidth < 760 && Boolean(chrome.card) && !chrome.run && !chrome.view);
+    // A model system's card in the first tab's place (its own view's, or the card that stands in for it): on a phone it shows its choices.
+    const example = this.state.lens === "experiments" && Boolean(this.state.example || this.state.part) && Boolean(chrome.card);
+    const modelCard = (this.state.lens === "cell" && Boolean(chrome.card?.species?.model)) || example;
+    // Its stamp (a long line of the runs it plays) is shortened clear of the card, the whole line in its title (styles.js).
+    this.bar.classList.toggle("tab-example", example);
+    // A part of an example draws its pictures up to the bar, so its stamp never drops to a second row over them (styles.js).
+    this.bar.classList.toggle("tab-part", example && Boolean(this.state.part));
+    this.stamp.title = example ? this.stamp.textContent : "";
+    this.frame.classList.toggle("model-card", modelCard);
+    // A view whose picture reaches the page's top edge (the origin view's water) gives the bar's words a ground to stand on (styles.js).
+    this.frame.classList.toggle("bar-ground", Boolean(this.current?.drawsUnderBar));
+    // The folded line says what is shown: the card's heading, and the drawing chosen where there is a choice ("Cells' 48 units"; not "All").
+    // A model system's line names it alone: its packing is the picture's choice, not what is shown.
+    const mode = this.clientWidth < 760 && chrome.card?.modes && !chrome.nav && !modelCard && chrome.card.modes.active !== "all" ? chrome.card.modes.options.find(([value]) => value === chrome.card.modes.active)?.[1] : null;
+    const folded = chrome.run ? "Experiment and run" : chrome.view ? switches.join(", ").replace(/, (?=[^,]*$)/, " and ").replace(/^./, (letter) => letter.toUpperCase()) : [chrome.card?.heading, mode].filter(Boolean).join(" · ");
     this.viewToggle.replaceChildren(h("span", {}, folded), h("span", { class: "chevron", "aria-hidden": "true" }));
+    this.viewToggle.removeAttribute("aria-label"); // set again by fitFolded where the line had to be shortened
     this.viewCard.classList.toggle("view-card", Boolean(chrome.card || chrome.run));
     this.viewCard.classList.toggle("run-card", Boolean(chrome.run));
-    if (chrome.card) this.viewCard.replaceChildren(...this.card(chrome.card));
+    // A view that plays an example says so in its legend (`legend.example`) and on its picture. Opened on a phone its card
+    // may cover the mark on the picture, so the card carries the words itself there (styles.js .view-notice; rule 11 of
+    // schema/QUANTITY_LAYERS.md, as the Cell view's card does for an illustrated flux).
+    const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
+    // A model system's view in the Experiments tab's place (showExample): the tab's list at the head of its card, the way back to the runs.
+    // While a part is shown, the example's pressed row says which part of it is shown, in the part's own short name, so
+    // that the row (the example's name, with its authors) reads as the example and, within it, the part, not as the part's.
+    const partShown = this.state.part ? (this.model.raw.replays?.experiments || []).find((item) => item.id === this.state.part) : null;
+    const listed = example ? this.runCard({ heading: chrome.card.heading, experiments: this.replays.listRows(this.state.part ? wholeRunOf(this.model.raw.replays, this.state.part) : null), doors: this.replays.doors.map((item) => item.entry), listOnly: true, within: partShown ? partShown.short || partShown.label : null }) : [];
+    if (chrome.card) this.viewCard.replaceChildren(...marked, ...listed, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
+    // A sweep's chart beside the picture on a wide window, out of the experiment's card, which the legend leaves little room.
+    const sweeps = chrome.run?.sweeps || [], wide = this.clientWidth >= 760;
+    this.sweepCard.hidden = !(sweeps.length && wide);
+    this.frame.classList.toggle("has-sweep", !this.sweepCard.hidden);
+    if (!this.sweepCard.hidden) this.sweepCard.replaceChildren(...this.sweepsShown(sweeps, (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : this.current.show(id)), chrome.run.units));
     // A replay brings its playhead.
     this.timeline.hidden = !chrome.timeline;
     this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
@@ -488,12 +794,14 @@ class CellsViewer extends HTMLElement {
       const view = chrome.view, species = view.species;
       const sizes = view.sizes || ["schematic", "real"];
       const width = view.across >= 1 ? `${Number(view.across.toPrecision(1))} µm` : `${Number((view.across * 1000).toPrecision(1))} nm`;
+      // The lens may give the words for the cell shown (a bacterium's: a short line, with a link to the panel that says
+      // in full what each mode draws of it); else these.
+      const own = view.sizeNote;
       const sized =
-        sizes.length < 2
-          ? `One size mode: the schematic layout, scaled down to a cell about ${width} across. Ribosomes and appendages are drawn at their sizes; the membrane, its proteins, ions and small molecules are drawn larger than life where each would otherwise be too small to see. Counts are indicative.`
-          : view.size === "real"
-            ? `Sizes and numbers nearer a real cell, about ${width} across. Dots stand for what is too small to see; counts are indicative.`
-            : "Parts are enlarged and few, so each can be seen.";
+        own?.text ||
+        (view.size === "real"
+          ? `Sizes and numbers nearer a real cell, about ${width} across. Dots stand for what is too small to see; counts are indicative.`
+          : "Parts are enlarged and few, so each can be seen.");
       // On a narrow window the species switch stands here, at the head of the card.
       const here = species && !this.speciesInBar;
       this.viewCard.replaceChildren(
@@ -503,8 +811,10 @@ class CellsViewer extends HTMLElement {
           here ? this.speciesRow(species) : null,
           here ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
           this.segmented("Colour", [["biology", "Biology"], ["status", "Status"]], view.colour, (value) => this.current.setColourBy(value)),
-          sizes.length > 1 ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
-          h("p", { class: "view-note" }, sized),
+          sizes.length > 1 && !view.machine ? this.segmented("Sizes", [["schematic", "Schematic"], ["real", "To scale"]], view.size, (value) => this.current.setSizeMode(value)) : null,
+          // In a machine's closer view: how much of it is drawn, and what the picture is.
+          view.machine ? this.segmented("Detail", view.machine.detail.options.map(([value, label]) => [value, label]), view.machine.detail.active, (value) => this.current.setDetail(value)) : null,
+          h("p", { class: "view-note" }, view.machine ? view.machine.note : [sized, own?.open ? [" ", h("button", { class: "link-button", type: "button", onclick: () => this.select(own.open) }, own.more)] : null]),
         ].filter(Boolean)
       );
     }
@@ -521,7 +831,7 @@ class CellsViewer extends HTMLElement {
     if (!chrome.rail) this.toggleRail(false);
     if (chrome.rail) {
       this.rail.replaceChildren(
-        h("span", { class: "rail-title" }, "Scale"),
+        h("span", { class: "rail-title" }, chrome.railTitle || "Scale"),
         ...chrome.rail.map((stop) =>
           h(
             "button",
@@ -546,28 +856,123 @@ class CellsViewer extends HTMLElement {
         ...(chrome.railNote ? [h("p", { class: "rail-note" }, chrome.railNote)] : [])
       );
       const active = chrome.rail.find((stop) => stop.id === chrome.railActive) || chrome.rail[0];
-      this.railToggle.replaceChildren(h("span", { class: "seg-label" }, "Scale"), h("span", {}, active?.label || ""), h("span", { class: "chevron", "aria-hidden": "true" }));
-      this.railToggle.setAttribute("aria-label", `Scale: ${active?.label || ""}. Press for the other levels.`);
+      this.railToggle.replaceChildren(h("span", { class: "seg-label" }, chrome.railTitle || "Scale"), h("span", {}, active?.label || ""), h("span", { class: "chevron", "aria-hidden": "true" }));
+      this.railToggle.setAttribute("aria-label", `${chrome.railTitle || "Scale"}: ${active?.label || ""}. Press for the other levels.`);
     }
+    // The folded line is fitted once the rail's button beside it has its words.
+    this.frame.classList.remove("rail-under");
+    if (this.clientWidth < 760) this.fitFolded(chrome.card?.heading || "");
     this.fitCard();
+    this.fitBar();
+  }
+
+  /**
+   * On a phone the bar keeps to one row, whatever the first tab is called (a model system's view)
+   * and whichever font has arrived: where it would wrap, it is squeezed in steps (styles.js,
+   * data-squeeze): tighter switches, a smaller name, the name put out of sight (still read out),
+   * smaller words, and last the tabs' row scrolls sideways inside the bar, its cut edges fading (decided
+   * 17 November 2026, for six tabs on a phone). A wide window is never squeezed.
+   */
+  fitBar() {
+    const bar = this.bar, box = this.switchBox, before = bar.dataset.squeeze || "", kept = box.scrollLeft;
+    delete bar.dataset.squeeze;
+    if (this.clientWidth < 760) {
+      const oneRow = () => {
+        const rects = [...bar.children].filter((element) => !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect()).filter((rect) => rect.width > 1);
+        return rects.every((a) => rects.every((b) => a.top < b.bottom - 1 && b.top < a.bottom - 1));
+      };
+      const steps = ["1", "1 2", "1 2 3", "1 2 3 4", "1 2 3 4 5"];
+      for (let step = 0; step < steps.length && !oneRow(); step++) bar.dataset.squeeze = steps[step];
+    }
+    // The tab of the view shown is brought into sight when the row first scrolls or the window's width changes;
+    // otherwise the row keeps where it was (a visitor's own scroll of it holds when the chrome is drawn again).
+    if ((bar.dataset.squeeze || "") !== before || this.centredWidth !== this.clientWidth) this.showPressedTab();
+    else {
+      box.scrollLeft = kept;
+      this.fadeTabs();
+    }
+  }
+
+  /** Where the tabs' row scrolls (a narrow phone): the tab of the view shown stands in the middle of what is seen, and each cut edge fades. */
+  showPressedTab() {
+    const box = this.switchBox, button = box?.querySelector('[aria-pressed="true"]');
+    if (!box) return;
+    if (button && box.scrollWidth > box.clientWidth + 1) {
+      const b = button.getBoundingClientRect(), r = box.getBoundingClientRect();
+      box.scrollLeft += (b.left + b.right) / 2 - (r.left + r.right) / 2;
+    }
+    this.centredWidth = this.clientWidth;
+    this.fadeTabs();
+  }
+
+  fadeTabs() {
+    const box = this.switchBox, more = box.scrollWidth - box.clientWidth;
+    box.style.setProperty("--fade-l", more > 1 && box.scrollLeft > 1 ? "28px" : "0px");
+    box.style.setProperty("--fade-r", more > 1 && box.scrollLeft < more - 1 ? "28px" : "0px");
+  }
+
+  /**
+   * The folded card's line on a phone never cuts a word: where it does not fit it says the heading alone, then fewer of its
+   * words. Beside the rail's button (a model system's levels) it keeps 8 px clear of it; where the heading alone would still
+   * meet the button, the button steps under the line (styles.js .rail-under), and the line keeps its words.
+   */
+  fitFolded(heading) {
+    const line = this.viewToggle.firstChild;
+    if (!line || this.viewToggle.hidden || !this.viewToggle.getClientRects().length) return;
+    const rail = !this.railToggle.hidden && this.railToggle.getClientRects().length ? this.railToggle : null;
+    const cut = () => line.scrollWidth > line.clientWidth + 1;
+    const meets = () => Boolean(rail) && !this.frame.classList.contains("rail-under") && this.viewToggle.getBoundingClientRect().right > rail.getBoundingClientRect().left - 8;
+    if (!cut() && !meets()) return;
+    const full = line.textContent;
+    if (heading && line.textContent !== heading) line.textContent = heading;
+    if (meets()) this.frame.classList.add("rail-under");
+    const words = line.textContent.split(" ");
+    while (cut() && words.length > 1) {
+      words.pop();
+      line.textContent = `${words.join(" ")}…`;
+    }
+    if (line.textContent !== full) this.viewToggle.setAttribute("aria-label", full);
+  }
+
+  /** On a phone the protein atlas's caveat (not what a view is doing: loading, or why it could not) stands in the legend's sheet. */
+  caveatInLegend(chrome) {
+    return this.clientWidth < 760 && this.state.lens === "proteins" && Boolean(chrome.caveat) && !chrome.status && !this.legend.hidden;
   }
 
   /** Open or close the view's card, folded on a phone while a panel is open. */
   toggleViewCard(force) {
-    const open = force ?? !this.state.viewOpen;
+    const open = force ?? !this.state.viewOpen, was = this.state.viewOpen;
     this.state.viewOpen = open;
+    if (open && this.state.legendOpen && this.clientWidth < 760) {
+      this.state.legendOpen = false;
+      this.renderLegend();
+    }
+    // A phone's folded card and folded rail open under the same band: one opened closes the other.
+    if (open && this.state.railOpen && this.clientWidth < 760 && this.frame.classList.contains("card-folds")) this.toggleRail(false);
     this.frame.classList.toggle("view-open", open);
     this.viewToggle.classList.toggle("is-open", open);
     this.viewToggle.setAttribute("aria-expanded", String(open));
+    if (open !== Boolean(was)) this.cardsMoved();
   }
 
   /** Open or close the folded rail of a phone. */
   toggleRail(force) {
-    const open = force ?? !this.state.railOpen;
+    const open = force ?? !this.state.railOpen, was = this.state.railOpen;
+    if (open && this.state.viewOpen && this.clientWidth < 760 && this.frame.classList.contains("card-folds")) this.toggleViewCard(false);
     this.state.railOpen = open;
     this.frame.classList.toggle("rail-open", open);
     this.railToggle.classList.toggle("is-open", open);
     this.railToggle.setAttribute("aria-expanded", String(open));
+    if (open !== Boolean(was)) this.cardsMoved();
+  }
+
+  /**
+   * A card over the picture opened or closed (the folded card, the rail, the legend; only when one did): a view that keeps
+   * something clear of the cards (the origin view's example mark) places it again, and a frame is drawn for it though nothing moves.
+   */
+  cardsMoved() {
+    this.current?.cardsMoved?.();
+    this.stage?.invalidate();
   }
 
   /**
@@ -578,10 +983,14 @@ class CellsViewer extends HTMLElement {
   renderSpecies(chrome) {
     const species = chrome.view?.species || chrome.card?.species || null;
     // The control is drawn afresh: its list, if open, stays with the new button; with no
-    // control left to belong to (another view), it closes.
+    // control left to belong to (another view), it closes. A visitor whose focus was on the
+    // button keeps it on the new one: the chrome is drawn again whenever a view has something
+    // new to say (a run arrives, a scale is reached), and the keyboard must not lose its place.
+    const held = Boolean(this.speciesButton) && this.shadowRoot.activeElement === this.speciesButton;
     this.speciesButton = null;
     queueMicrotask(() => {
       if (this.speciesMenu?.open && !this.speciesButton?.isConnected) this.closeSpecies({ focus: false });
+      else if (held && this.speciesButton?.isConnected && this.shadowRoot.activeElement !== this.speciesButton) this.speciesButton.focus({ preventScroll: true });
     });
     this.speciesInBar = Boolean(species) && this.clientWidth >= SPECIES_IN_BAR;
     this.speciesBox.hidden = !this.speciesInBar;
@@ -594,19 +1003,20 @@ class CellsViewer extends HTMLElement {
     // statement a species of this scene would show beside it. The end of the bar gives way first
     // (its stamp shortens), so that is measured too: the List button must stay whole.
     const statement = h("button", { class: "species-state", type: "button" });
-    this.speciesBox.append(h("span", { class: "species-label" }, "Species"), this.speciesPicker(species), statement);
+    // The switch names what it holds: a species, or the model system shown in the first tab's place.
+    this.speciesBox.append(h("span", { class: "species-label" }, species.model ? "Model" : "Species"), this.speciesPicker(species), statement);
     const end = this.indexButton.parentElement;
-    const words = [...new Set((this.model.raw.species || []).map((item) => MODELLED[item.modelled?.state] || item.modelled?.state).filter(Boolean))];
+    const words = [...new Set([...(this.model.raw.species || []), ...(this.model.raw.species || []).flatMap((item) => item.cell_types || []), ...modelSystems(this.model.raw)].map((item) => MODELLED[item.modelled?.state] || item.modelled?.state).filter(Boolean))];
     const holds = () =>
       (words.length ? words : [""]).every((word) => {
         statement.textContent = word;
         statement.hidden = !word;
         return this.bar.scrollWidth <= this.bar.clientWidth + 1 && end.scrollWidth <= end.clientWidth + 1;
       });
-    // Before the switch gives up its place, the bar is drawn tighter: first without the page's
-    // subtitle, then with the short names of the views and no date as well (as on a narrower window).
+    // Before the switch gives up its place, the bar is drawn tighter: with the short names of the
+    // views and no date (as on a narrower window).
     let fits = false;
-    for (const tight of ["", "1", "2"]) {
+    for (const tight of ["", "2"]) {
       this.bar.dataset.tight = tight;
       fits = holds();
       if (fits) break;
@@ -627,12 +1037,8 @@ class CellsViewer extends HTMLElement {
    * name, its organism, and what Cells models of it.
    */
   speciesRows(species) {
-    const said = new Map((this.model.raw.species || []).map((item) => [item.id, item]));
-    const rows = species.options.map(([id, label, organism]) => {
-      const item = said.get(id) || {};
-      const state = item.modelled?.state || null;
-      return { id, label, organism: organism || item.organism || "", state, word: state ? MODELLED[state] || state : "", group: item.group || "" };
-    });
+    // The species and model systems, and the cell types of a species that has more than one (src/scene/entries.js).
+    const rows = switchRows(this.model.raw, species.options);
     // Species with one heading stand together, the headings in the order of their first species; those with none come last.
     const headings = [...new Set(rows.map((row) => row.group).filter(Boolean))];
     return [...headings.flatMap((group) => rows.filter((row) => row.group === group)), ...rows.filter((row) => !row.group)];
@@ -649,12 +1055,12 @@ class CellsViewer extends HTMLElement {
   speciesPicker(species) {
     const menu = (this.speciesMenu ||= { open: false, active: null, typed: "", typedAt: 0 });
     const rows = this.speciesRows(species);
-    const current = rows.find((row) => row.id === species.active) || rows[0];
+    const current = rows.find((row) => row.id === (species.row || species.active)) || rows[0];
     // Every name lies in the button, one over the other, so that its width does not change with the species.
     const names = rows.map((row) => h("span", row.id === current.id ? {} : { "aria-hidden": "true" }, row.label));
     const button = h(
       "button",
-      { class: "species-pick", type: "button", role: "combobox", "aria-haspopup": "listbox", "aria-controls": "species-list", "aria-expanded": String(menu.open), "aria-label": `Species: ${current.label}`, dataset: { speciesPick: current.id } },
+      { class: "species-pick", type: "button", role: "combobox", "aria-haspopup": "listbox", "aria-controls": "species-list", "aria-expanded": String(menu.open), "aria-label": `${current.kind === "model system" ? "Model system" : "Species"}: ${current.label}`, dataset: { speciesPick: current.id } },
       h("span", { class: "species-pick-name" }, names),
       h("span", { class: "species-pick-caret", "aria-hidden": "true" })
     );
@@ -670,7 +1076,7 @@ class CellsViewer extends HTMLElement {
   /** The list of species, built once and filled each time it is shown. */
   speciesListbox() {
     if (this.speciesList) return this.speciesList;
-    const list = (this.speciesList = h("div", { class: "species-list", role: "listbox", id: "species-list", "aria-label": "Species", hidden: true }));
+    const list = (this.speciesList = h("div", { class: "species-list", role: "listbox", id: "species-list", "aria-label": modelSystems(this.model.raw).length ? "Species and model systems" : "Species", hidden: true }));
     // A press on the list must not take the focus from the button, which holds it while the list is open.
     list.addEventListener("mousedown", (event) => event.preventDefault());
     list.addEventListener("pointermove", (event) => {
@@ -705,7 +1111,7 @@ class CellsViewer extends HTMLElement {
     const option = (row) =>
       h(
         "div",
-        { class: `species-option${row.id === menu.active ? " is-active" : ""}`, role: "option", id: `species-option-${row.id}`, "aria-selected": String(row.id === shown.active), "aria-label": [row.label, row.organism, row.word].filter(Boolean).join(", "), dataset: { species: row.id, atlas: row.id } },
+        { class: `species-option${row.id === menu.active ? " is-active" : ""}${row.kind === "cell type" ? " is-type" : ""}${row.kind === "model system" ? " is-model" : ""}`, role: "option", id: `species-option-${row.id}`, "aria-selected": String(row.id === shown.active), "aria-label": [row.label, row.organism, row.word].filter(Boolean).join(", "), dataset: { species: row.id, atlas: row.id } },
         h("span", { class: "species-option-name" }, row.label),
         row.word ? h("span", { class: "species-option-state", dataset: { state: row.state } }, row.word) : null,
         row.organism ? h("span", { class: "species-option-organism" }, row.organism) : null
@@ -771,7 +1177,7 @@ class CellsViewer extends HTMLElement {
   /** Show the species chosen. The control is redrawn with it, so the focus is put back on its button. */
   chooseSpecies(id) {
     this.closeSpecies({ focus: false });
-    this.setSpecies(id);
+    this.setEntry(id, { user: true });
     this.speciesButton?.focus({ preventScroll: true });
   }
 
@@ -820,36 +1226,92 @@ class CellsViewer extends HTMLElement {
 
   /** The switch as a row of a card. */
   speciesRow(species) {
-    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, "Species"), this.speciesPicker(species));
+    return h("div", { class: "seg-row seg-species" }, h("span", { class: "seg-label" }, species.model ? "Model" : "Species"), this.speciesPicker(species));
   }
 
   /** What Cells models of the species shown, in two or three words; pressing it opens all that is said of the species. */
   speciesState(species) {
-    const id = `species:${species.active}`;
+    const id = species.model ? `model:${species.active}` : `species:${species.active}`;
     return h(
       "button",
-      { class: "species-state", type: "button", dataset: { state: species.modelled.state }, "aria-pressed": String(this.state.selected === id), title: species.modelled.text, onclick: () => this.select(this.state.selected === id ? null : id) },
+      { class: "species-state", type: "button", dataset: { state: species.modelled.state }, "aria-pressed": String(this.state.selected === id), title: species.modelled.text, onclick: () => (species.model && this.state.lens !== "cell" ? (this.setLens("cell", true), this.select(id)) : this.select(this.state.selected === id ? null : id)) },
       MODELLED[species.modelled.state] || species.modelled.state
     );
   }
 
   /** A view's own summary: headline numbers, what the data is, and where it came from. */
-  card({ heading, species, organism, modes, notice, open, stats, text, check, marks, method, extra, extraOpen, sources, notCopied }) {
+  card({ heading, species, organism, modes, find, notice, open, stats, text, check, marks, choices, method, extra, extraOpen, sources, notCopied, own }) {
     const outside = (url) => /^https:\/\//.test(url || "");
     const read = (date) => (/^\d{4}-\d{2}-\d{2}$/.test(date) ? formatDate(date) : date);
     const lens = this.current;
     // Pressing a button of the card redraws the card, so the focus is put back on the button's successor.
     const again = (selector) => this.viewCard.querySelector(selector)?.focus({ preventScroll: true });
+    const choice = marks
+      ? h(
+          "label",
+          { class: "card-marks" },
+          h("span", { class: "seg-label" }, marks.label),
+          (() => {
+            const select = h("select", { id: "cells-mark", class: "run-select", onchange: () => (lens.setMark(select.value), again("#cells-mark")) }, marks.options.map(([value, label]) => h("option", { value, selected: value === marks.active }, label)));
+            return select;
+          })()
+        )
+      : null;
+    const opened = open
+      ? h(
+          "p",
+          { class: "card-open" },
+          h("span", { class: "card-open-name" }, h("span", { class: "seg-label" }, "Open"), ` ${open.label} · ${open.count}`),
+          h(
+            "button",
+            {
+              class: "pill-button pill-small",
+              type: "button",
+              dataset: { close: "open" },
+              onclick: () => {
+                lens.back();
+                if (this.state.selected) this.select(null);
+              },
+            },
+            "Close"
+          )
+        )
+      : null;
     return [
       h("p", { class: "card-title" }, heading),
+      // A search of what the view draws (the Laws library). Typing may redraw the card: the new field keeps the focus and the caret.
+      find
+        ? h("input", {
+            id: "cells-find",
+            class: "run-select card-find",
+            type: "search",
+            value: find.value || "",
+            placeholder: find.placeholder || find.label,
+            "aria-label": find.label,
+            oninput: (event) => {
+              const { value, selectionStart } = event.target;
+              lens.setQuery(value);
+              const field = this.viewCard.querySelector("#cells-find");
+              if (field && field !== event.target) {
+                field.focus({ preventScroll: true });
+                field.setSelectionRange(selectionStart, selectionStart);
+              }
+            },
+          })
+        : null,
+      find ? choice : null,
+      find ? opened : null,
       // Which species is shown: the page's one switch, here on a narrow window (on a wide one it stands in the bar).
       species && !this.speciesInBar ? this.speciesRow(species) : null,
+      // A model system's card (src/lenses/entry_card.js) gives its word under the switch, as the Cell view's card does a species'.
+      species?.model && !this.speciesInBar ? h("p", { class: "species-line" }, this.speciesState(species)) : null,
       organism ? h("p", { class: "card-organism" }, organism) : null,
-      // The protein atlas: the machines Cells has laws for, or the species' own proteins.
+      // The protein atlas: the units of Cells' law inventory, or the species' own proteins.
       modes
         ? h(
             "div",
-            { class: "seg seg-wide", role: "group", "aria-label": modes.label },
+            // A view whose detail has more than two levels may ask for them in one row (the Machines catalogue's four).
+            { class: modes.oneRow ? "seg seg-wide seg-one-row" : "seg seg-wide", role: "group", "aria-label": modes.label, style: modes.oneRow ? `--seg-count: ${modes.options.length}` : null },
             modes.options.map(([value, label]) =>
               h(
                 "button",
@@ -869,42 +1331,20 @@ class CellsViewer extends HTMLElement {
         : null,
       // What the view is waiting for, could not read, or does not have.
       notice ? h("p", { class: "card-notice", role: "status" }, notice) : null,
-      // What stands open (a family of proteins), and the way back.
-      open
-        ? h(
-            "p",
-            { class: "card-open" },
-            h("span", { class: "card-open-name" }, h("span", { class: "seg-label" }, "Open"), ` ${open.label} · ${open.count}`),
-            h(
-              "button",
-              {
-                class: "pill-button pill-small",
-                type: "button",
-                dataset: { close: "open" },
-                onclick: () => {
-                  lens.back();
-                  if (this.state.selected) this.select(null);
-                },
-              },
-              "Close"
-            )
-          )
-        : null,
+      // What stands open (a family of proteins), and the way back (a view with a search has it under the search, above).
+      find ? null : opened,
       h("div", { class: "stats" }, stats.map(([value, label]) => h("div", { class: "stat" }, h("b", {}, String(value)), h("span", {}, label)))),
       text ? h("p", { class: "card-text" }, text) : null,
+      // What a view adds to its card in its own words (the tissue line's picks), made by the view.
+      ...(typeof own === "function" ? own() : []),
       check ? h("p", { class: "card-text" }, check) : null,
-      // Which of the proteins' marks the legend's last block lists.
-      marks
-        ? h(
-            "label",
-            { class: "card-marks" },
-            h("span", { class: "seg-label" }, marks.label),
-            (() => {
-              const select = h("select", { id: "cells-mark", class: "run-select", onchange: () => (lens.setMark(select.value), again("#cells-mark")) }, marks.options.map(([value, label]) => h("option", { value, selected: value === marks.active }, label)));
-              return select;
-            })()
-          )
-        : null,
+      // Which of the proteins' marks the legend's last block lists (a view with a search has it beside the search, above).
+      find ? null : choice,
+      // A model system's view's other choices (src/ui/entry_views.js, `choices`), each as the marks' choice is.
+      ...(choices || []).map((item) => {
+        const select = h("select", { class: "run-select", dataset: { choice: item.key }, onchange: () => (item.set(select.value), again(`[data-choice="${item.key}"]`)) }, item.options.map(([value, label]) => h("option", { value, selected: value === item.active }, label)));
+        return h("label", { class: "card-marks" }, h("span", { class: "seg-label" }, item.label), select);
+      }),
       method?.length ? h("details", {}, h("summary", {}, "How it was made"), h("ul", {}, method.map((line) => h("li", {}, line)))) : null,
       // Proteins of the species that bear on the picture but make none of the units drawn.
       extra?.length
@@ -940,10 +1380,92 @@ class CellsViewer extends HTMLElement {
   }
 
   /** A replay's card: the experiment, its runs, and the class the experiment itself records for the run shown. */
-  runCard({ heading, text, outcome, experiments = [], runs, klass, ended, colour, details }) {
+  /**
+   * A sweep's chart (replay/sweep.js): the parameter along it, each readout a line of points, the
+   * arm shown marked, the experiment's own reference drawn as rings in the summary's words. Each
+   * arm is a button over its points: a press, or Enter on it, shows that arm's run. The same
+   * numbers stand in a table under it. Nothing is computed from them and nothing is said of how
+   * they compare.
+   */
+  sweepChart(sweep, pick) {
+    const write = (value) => (Math.abs(value) >= 1e4 || (Math.abs(value) < 1e-3 && value !== 0) ? value.toExponential(2) : String(Number(value.toPrecision(4))));
+    const chart = chartOf(sweep, { width: 240, height: 140 });
+    const { inner } = chart;
+    const unit = (item) => (item.unit && item.unit !== "1" ? ` (${unitSign(item.unit)})` : "");
+    const lines = sweep.readouts.map((readout, line) => {
+      const points = chart.points.filter((point) => point.line === line).sort((p, q) => p.x - q.x);
+      return svg("g", { class: `sweep-line sweep-line-${line % 4}` }, points.length > 1 ? svg("polyline", { points: points.map((point) => `${point.x},${point.y}`).join(" "), fill: "none" }) : null, points.map((point) => svg("circle", { cx: point.x, cy: point.y, r: sweep.arms[point.arm].active ? 4.6 : 3.2, class: sweep.arms[point.arm].active ? "sweep-point is-shown" : "sweep-point" })));
+    });
+    const rings = chart.references.map((point) => svg("circle", { cx: point.x, cy: point.y, r: 6, class: `sweep-ref sweep-line-${point.line % 4}` }));
+    const shownArm = sweep.arms.find((arm) => arm.active);
+    const band = shownArm ? svg("rect", { x: chart.x(shownArm.parameter) - 7, y: inner.top, width: 14, height: inner.bottom - inner.top, class: "sweep-shown" }) : null;
+    const axes = [
+      svg("line", { x1: inner.left, y1: inner.bottom, x2: inner.right, y2: inner.bottom, class: "sweep-axis" }),
+      svg("line", { x1: inner.left, y1: inner.top, x2: inner.left, y2: inner.bottom, class: "sweep-axis" }),
+      ...chart.yTicks.map((tick) => svg("text", { x: inner.left - 4, y: tick.at + 3, "text-anchor": "end", class: "sweep-tick" }, write(tick.value))),
+      ...chart.xTicks.map((tick) => svg("text", { x: tick.at, y: inner.bottom + 12, "text-anchor": "middle", class: "sweep-tick" }, write(tick.value))),
+      svg("text", { x: (inner.left + inner.right) / 2, y: inner.bottom + 25, "text-anchor": "middle", class: "sweep-axis-label" }, `${sweep.parameter.label}${unit(sweep.parameter)}${sweep.log ? ", log scale" : ""}`),
+    ];
+    const picture = svg("svg", { viewBox: `0 0 ${chart.width} ${chart.height}`, class: "sweep-svg", role: "img", "aria-label": `${sweep.label}: ${sweep.readouts.map((readout) => readout.label).join(", ")} against ${sweep.parameter.label}` }, band, ...axes, ...rings, ...lines);
+    // A button over each arm's column: the press shows its run; an arm with no packaged run is said so and cannot be pressed.
+    const buttons = sweep.arms.map((arm) => {
+      const at = chart.x(arm.parameter) / chart.width;
+      return h("button", { type: "button", class: "sweep-arm", style: `left: calc(${(at * 100).toFixed(3)}% - 11px); top: ${((inner.top / chart.height) * 100).toFixed(3)}%; height: ${(((inner.bottom - inner.top) / chart.height) * 100).toFixed(3)}%`, "aria-pressed": String(arm.active), "aria-label": armWords(sweep, arm, write), title: armWords(sweep, arm, write), disabled: !arm.run, dataset: { arm: arm.arm }, onclick: () => arm.run && !arm.active && pick(arm.run) });
+    });
+    const key = h("p", { class: "sweep-key" }, sweep.readouts.map((readout, line) => h("span", { class: "sweep-key-item" }, h("i", { class: `sweep-swatch sweep-line-${line % 4}`, "aria-hidden": "true" }), `${readout.label}${unit(readout)}`)), sweep.reference && chart.references.length ? h("span", { class: "sweep-key-item" }, h("i", { class: "sweep-swatch sweep-ring", "aria-hidden": "true" }), sweep.reference.label) : null);
+    const table = tableOf(sweep, write);
+    return h(
+      "div",
+      { class: "sweep", role: "group", "aria-label": sweep.label, dataset: { sweep: sweep.id } },
+      h("span", { class: "seg-label" }, sweep.label),
+      sweep.plain ? h("p", { class: "card-text" }, sweep.plain) : null,
+      h("div", { class: "sweep-chart" }, picture, ...buttons),
+      key,
+      h("p", { class: "card-text sweep-note" }, `Each point is an arm, as the experiment's summary gives it; the arm shown is marked. Press a point to show that arm.${sweep.reference ? ` Rings: ${sweep.reference.label}, as the summary states it.` : ""}`),
+      h(
+        "details",
+        { class: "run-plain sweep-numbers" },
+        h("summary", {}, "The numbers as a table"),
+        h("table", { class: "sweep-table" }, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Arm"), table.head.map((cell) => h("th", { scope: "col" }, cell)))), h("tbody", {}, table.rows.map((row) => h("tr", { class: row.active ? "is-shown" : "" }, h("th", { scope: "row" }, row.arm), row.cells.map((cell) => h("td", {}, cell))))))
+      )
+    );
+  }
+
+  /**
+   * An experiment's sweeps: the one that holds the run shown is drawn (or the one the visitor chose, until another run is
+   * shown); the others are one press away, a row of their names. With one sweep, its chart alone.
+   */
+  sweepsShown(sweeps, pick, units = null) {
+    if (!sweeps.length) return [];
+    const holding = sweeps.find((sweep) => sweep.arms.some((arm) => arm.active)) || sweeps[0];
+    const runShown = sweeps.flatMap((sweep) => sweep.arms).find((arm) => arm.active)?.run || null;
+    if (this.sweepPicked && this.sweepPicked.run !== runShown) this.sweepPicked = null;
+    const shown = sweeps.find((sweep) => sweep.id === this.sweepPicked?.id) || holding;
+    // The other sweeps are one press away: a list to choose from, their labels being long.
+    const choose = sweeps.length > 1
+      ? h("label", { class: "sweep-choose" }, h("span", { class: "seg-label" }, `Sweeps · ${sweeps.length}`), (() => {
+          const select = h("select", { class: "run-select", "aria-label": "Sweep", onchange: () => {
+            // A sweep chosen shows a run of it: the run shown where it is one of its arms, else its first arm with a run.
+            const sweep = sweeps.find((item) => item.id === select.value);
+            const arm = sweep?.arms.find((item) => item.active) || sweep?.arms.find((item) => item.run);
+            this.sweepPicked = { id: select.value, run: arm?.run || runShown };
+            if (arm?.run && !arm.active) pick(arm.run);
+            else this.renderChrome();
+          } }, sweeps.map((sweep) => h("option", { value: sweep.id, selected: sweep.id === shown.id }, `${sweep.label}${sweep === holding && runShown ? " (the run shown)" : ""}`)));
+          return select;
+        })())
+      : null;
+    // Where the experiment's runs state one quantity in other units (two forms of a model), the line that says so stands by the chart.
+    return [choose, this.sweepChart(shown, pick), units ? h("p", { class: "card-text run-units" }, units) : null].filter(Boolean);
+  }
+
+  runCard({ heading, text, outcome, experiments: listed = [], runs, klass, ended, colour, details, sweeps = [], doors = [], units = null, listOnly = false, within = null }) {
+    // The page's other examples (a model system's entry, e.g. GARD) stand in the list beside the experiments, in their entry's own words; a press opens their view.
+    const experiments = [...listed, ...doors.map((id) => modelSystemOf(this.model?.raw, id)).filter(Boolean).map((entry) => ({ id: entry.id, label: entry.label, door: true, plain: entry.plain, active: entry.id === this.state.example, first: `door:${entry.id}` }))];
     const lens = this.current;
     // With a run's details open, the details follow the run picked.
-    const pick = (id) => (this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
+    // A door (`door:<entry>`) shows that entry's own view in this tab's place (showExample); from it, a run is shown here again.
+    const pick = (id) => (id?.startsWith("door:") ? this.showExample(id.slice("door:".length)) : this.state.example || this.state.part ? this.showExample(null, { run: id }) : this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
     const chooser = (id, label, options, active) => {
       const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
       return select;
@@ -959,25 +1481,66 @@ class CellsViewer extends HTMLElement {
             item.answer ? h("span", { class: "fact" }, mark(item.answerMark), item.label) : null,
           ]
         : [];
-    return [
-      // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
-      // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
-      ...(() => {
+    // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
+    // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
+    const listPart = (() => {
         const row = (item) =>
           h(
             "button",
-            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.outcome?.spoken || ""}`, onclick: () => pick(item.first) },
+            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.door ? item.plain || "" : item.outcome?.spoken || ""}${inside(item) ? ` Shown within it: ${within}.` : ""}`, title: item.door ? item.plain || "" : null, dataset: item.door ? { door: item.id } : {}, onclick: () => pick(item.first) },
             h("span", { class: "exp-name" }, item.label),
-            h("span", { class: "exp-found" }, found(item.outcome))
+            h("span", { class: "exp-found" }, found(item.outcome)),
+            // The part of this example that is shown (its short name), on a line of its own under the example's.
+            inside(item) ? h("span", { class: "exp-within" }, within) : null
           );
-        const judged = experiments.filter((item) => !item.development && !item.example), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example);
-        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label }, list.map(row))];
+        const inside = (item) => Boolean(within) && item.active && !item.door;
+        const judged = experiments.filter((item) => !item.development && !item.example && !item.door), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example), opened = experiments.filter((item) => item.door);
+        const page = experiments.every((item) => item.door || item.listed);
+        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label, dataset: page ? { examples: "page" } : {} }, list.map(row))];
         // Many, or more than one on a phone, where rows would cover the picture: a list to choose from, with a development run and an example named as such.
-        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : item.door ? "Model system: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}${inside(item) ? ` · ${within}` : ""}`]), experiments.find((item) => item.active)?.first), experiments.some(inside) ? h("p", { class: "exp-within exp-within-chosen" }, within) : null].filter(Boolean);
         // One: its name. Several: a row each, with what the record says it found.
         if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
-        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : [])];
-      })(),
+        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : []), ...(opened.length ? group(opened, opened.length > 1 ? "Model systems" : "Model system") : [])];
+      })();
+    // A model system's view in the tab's place (showExample) has a card of its own: the list stands at its head.
+    if (listOnly) return listPart;
+    return [
+      ...listPart,
+      // A part of this example (its tissue line), shown in the tab's place by a press (showPart): under the list of examples and
+      // above its runs, so that it is in sight with them.
+      ...partDoors(this.model?.raw?.replays, experiments.find((item) => item.active)?.id, (id) => this.showPart(id), { root: this.shadowRoot }),
+      // The runs, at the head under the list of examples, so that they are in sight: a few are rows to press; many are a
+      // list to choose from, grouped by the sweep that holds them, in the sweeps' order.
+      h(
+        "div",
+        { class: "runs", role: "group", "aria-label": "Runs" },
+        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
+        runs.length > 8
+          ? (() => {
+              const option = (run) => h("option", { value: run.id, selected: run.active }, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "));
+              const left = new Map(runs.map((run) => [run.id, run])), groups = [];
+              for (const sweep of sweeps) {
+                const held = sweep.arms.map((arm) => left.get(arm.run)).filter(Boolean);
+                held.forEach((run) => left.delete(run.id));
+                if (held.length) groups.push([sweep.label, held]);
+              }
+              if (left.size) groups.push([groups.length ? "Other runs" : null, [...left.values()]]);
+              const select = h("select", { id: "cells-run", class: "run-select", "aria-label": "Run", onchange: () => pick(select.value) }, groups.map(([label, list]) => (label ? h("optgroup", { label }, list.map(option)) : list.map(option))));
+              return select;
+            })()
+          : runs.map((run) =>
+              h(
+                "button",
+                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
+                h("span", { class: "run-name" }, run.title),
+                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
+              )
+            )
+      ),
+      units ? h("p", { class: "card-text run-units" }, units) : null,
+      // An experiment whose summary lists arms with a parameter and readouts: its chart first, where the card opens.
+      ...(this.clientWidth < 760 ? this.sweepsShown(sweeps, pick) : []),
       // The first sentence says what the experiment asks; the rest is a click away.
       ...(() => {
         const parts = /^(.*?[.?!])\s+(.+)$/s.exec(text || "");
@@ -994,22 +1557,6 @@ class CellsViewer extends HTMLElement {
             h("details", { class: "run-plain" }, h("summary", {}, outcome.status || "In the record's words"), h("p", { class: "card-text" }, outcome.text))
           )
         : null,
-      h(
-        "div",
-        { class: "runs", role: "group", "aria-label": "Runs" },
-        h("span", { class: "seg-label" }, runs.length === 1 ? "Run" : `Runs · ${runs.length}`),
-        // A few runs are rows to press; many are a list to choose from.
-        runs.length > 8
-          ? chooser("cells-run", "Run", runs.map((run) => [run.id, [[run.title, run.sub].filter(Boolean).join(", "), run.klass ? run.klass.toLowerCase() : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · ")]), runs.find((run) => run.active)?.id)
-          : runs.map((run) =>
-              h(
-                "button",
-                { class: "run-row", type: "button", "aria-pressed": String(run.active), title: [run.title, run.sub].filter(Boolean).join(", "), onclick: () => pick(run.id) },
-                h("span", { class: "run-name" }, run.title),
-                h("span", { class: "run-sub" }, [run.sub, run.klass ? `recorded as ${run.klass.toLowerCase()}` : "", run.early ? "stopped early" : ""].filter(Boolean).join(" · "))
-              )
-            )
-      ),
       klass
         ? h(
             "div",
@@ -1032,7 +1579,13 @@ class CellsViewer extends HTMLElement {
    * page's own font did not arrive and its words run longer, the legend scrolls within what is left.
    */
   fitCard() {
-    const card = this.viewCard, least = 150;
+    const card = this.viewCard;
+    // The Experiments tab's card keeps the page's list of examples (the listed experiments and the model systems) in view above
+    // the legend; a card whose list also holds a run opened by its address keeps its least height, as before.
+    // With it, the run chooser under the list (many runs), so that the runs are in sight.
+    const listed = [...card.querySelectorAll('.experiments[data-examples="page"]')].pop();
+    const list = listed ? card.querySelector("#cells-run") || listed : null;
+    const least = Math.max(150, list ? list.getBoundingClientRect().bottom - card.getBoundingClientRect().top + card.scrollTop + 14 : 0);
     this.placeFoot();
     if (this.clientWidth < 760) {
       // On a phone the cards keep their own heights (styles.js); the legend opens upward from where it stands, as far as the bar.
@@ -1102,7 +1655,7 @@ class CellsViewer extends HTMLElement {
     // bar (which moves up over the caveat where the two would meet, and on a phone stands on a panel's top edge), and
     // on a phone the folded rail's and view card's buttons.
     const look = this.lookBox.hidden ? null : this.lookBox.querySelector(".look-switch");
-    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look]
+    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look, this.atlasNav?.trail, this.atlasNav?.map]
       .filter((element) => element && !element.hidden)
       .map((element) => element.getBoundingClientRect())
       .filter((rect) => rect.width && rect.height)
@@ -1140,7 +1693,7 @@ class CellsViewer extends HTMLElement {
     const chrome = this.current?.chrome?.() || {};
     const base = { isolate: this.state.isolate, open: this.state.legendOpen };
     // Without the 3D stage a replay draws nothing, so it has nothing to explain.
-    this.legend.hidden = this.state.lens === "experiments" && !chrome.legend;
+    this.legend.hidden = (this.state.lens === "experiments" && !chrome.legend) || chrome.legend === false; // false: a view with nothing to explain (a model system's card)
     if (this.legend.hidden) return;
     const atlas = this.model.raw.proteins;
     if (chrome.legend || (this.state.lens === "proteins" && atlas)) {
@@ -1149,7 +1702,10 @@ class CellsViewer extends HTMLElement {
       // A species' findings add a block. On all but a tall window the evidence block then starts closed, so the card keeps its room.
       const filter = chrome.findings && chrome.filter && this.clientHeight < 1040 ? { ...chrome.filter, folded: true } : chrome.filter;
       // A view may ask for its marks to fold away (a replay whose layers add signs of their own).
-      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: legend.folded || this.clientHeight < 880 });
+      // On a phone the atlas's caveat is the legend's opening words (renderChrome hides it from over the picture).
+      const full = this.withEntries(chrome);
+      const lead = this.caveatInLegend(full) ? full.caveat : null;
+      this.legend.render({ ...base, ...legend, filter, findings: chrome.findings, folded: legend.folded || this.clientHeight < 880, ...(lead ? { lead } : {}) });
       return;
     }
     const counts = new Map();
@@ -1175,13 +1731,14 @@ class CellsViewer extends HTMLElement {
 
   renderPanel() {
     this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
-    for (const button of this.shadowRoot.querySelectorAll(".species-state")) button.setAttribute("aria-pressed", String(this.state.selected?.startsWith("species:") || false));
+    for (const button of this.shadowRoot.querySelectorAll(".species-state")) button.setAttribute("aria-pressed", String(/^(species|model):[^:]+$/.test(this.state.selected || ""))); // a species' panel, or a model system's own
     const had = this.frame.classList.contains("has-panel");
     this.frame.classList.toggle("has-panel", Boolean(this.state.selected));
     if (!this.state.selected) this.toggleViewCard(false); // the card folds again with the next panel
     if (had !== Boolean(this.state.selected) && this.clientWidth < 760) this.renderLegend(); // the Flux switch moves to the legend's head, or back
     this.placeSheet();
     this.placeFoot();
+    if (this.state.lens === "proteins" && this.current?.mounted) renderAtlasNav(this, this.current.chrome().nav || null); // the trail names what is chosen
     if (this.stage) {
       const open = Boolean(this.state.selected);
       const narrow = this.clientWidth < 760;
@@ -1197,7 +1754,12 @@ class CellsViewer extends HTMLElement {
         if (shown(this.legend)) floors.push(this.legend.getBoundingClientRect().bottom - origin - Math.min(this.legend.offsetHeight, 56)); // its title, open or not
         bottom = Math.max(0, this.clientHeight - top - Math.min(...floors));
       }
-      this.stage.setInsets(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : {});
+      // A replay's sweeps' card at the right of a wide window: the picture has the room between it and the cards on the left (the replay frames its sheet there).
+      const sweep = !narrow && !open && !this.sweepCard.hidden && this.sweepCard.getClientRects().length ? this.getBoundingClientRect().right - this.sweepCard.getBoundingClientRect().left + 12 : 0;
+      // A view that asks for its room clear of the cards on the left (the Laws library) has it on a wide window.
+      const left = !narrow && (this.current?.wantsLeftRoom || sweep) ? Math.max(0, ...[this.viewCard, this.legend].filter((element) => element && !element.hidden && element.getClientRects().length).map((element) => element.getBoundingClientRect().right - this.getBoundingClientRect().left + 12)) : 0;
+      this.stage.setInsets({ ...(open ? (narrow ? { bottom } : { right: this.panel.offsetWidth + 16 }) : sweep ? { right: sweep } : {}), ...(left ? { left } : {}) });
+      this.current?.roomChanged?.();
     }
   }
 
@@ -1229,6 +1791,7 @@ class CellsViewer extends HTMLElement {
         return;
       }
       const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
+      this.current.picked?.(hit); // where it was pressed: a foot that has a machine is looked at closer there
       this.select(hit?.id || null);
     });
     // Labels lie over the canvas. A press on one is handed to the camera control, which
@@ -1251,7 +1814,12 @@ class CellsViewer extends HTMLElement {
       if (event.target.closest("[data-label]") && !event.buttons) this.current?.setHover(null);
     });
     canvas.addEventListener("keydown", (event) => {
-      if (this.stage.rig.nudge(event.key)) event.preventDefault();
+      // A view that steps through its parts (the Laws library): ] or Page Down to the next, [ or Page Up to the one before.
+      const step = { "]": 1, PageDown: 1, "[": -1, PageUp: -1 }[event.key];
+      if (step && this.current?.step) {
+        this.select(this.current.step(step), { fly: true });
+        event.preventDefault();
+      } else if (this.stage.rig.nudge(event.key)) event.preventDefault();
       else if (event.key === " " && this.current?.player?.run) {
         // In a replay, the space bar plays and pauses.
         this.current.player.toggle();
@@ -1267,7 +1835,8 @@ class CellsViewer extends HTMLElement {
         } else if (this.state.viewOpen && this.state.selected) {
           this.toggleViewCard(false);
           this.viewToggle.focus({ preventScroll: true });
-        } else if (this.state.selected) this.select(null);
+        } else if (this.current?.escape?.()) return; // the protein atlas's own proteins: one level of its trail back
+        else if (this.state.selected) this.select(null);
         else if (this.current?.back?.()) return;
         else if (this.state.indexOpen) this.toggleIndex(false);
       }

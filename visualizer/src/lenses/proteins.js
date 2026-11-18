@@ -1,4 +1,4 @@
-// The protein atlas lens: the molecular machines Cells models, set in the membranes
+// The protein atlas lens: the units of Cells' law inventory, set in the membranes
 // where their laws act. One stretch of plasma membrane holds the channels, pumps and
 // transporters; a second membrane above one corner is the neighbouring cell, for the
 // junction channels; pieces of ER and mitochondrial membrane and the protein cage sit
@@ -15,9 +15,9 @@
 // and puts a flat ring beside each unit where that species differs. The units, their forms
 // and the engine's laws are the same in every atlas.
 //
-// The lens shows one of two things. "units" is that board: the machines Cells has laws for.
+// The lens shows one of two things. "units" is that board: the units of Cells' law inventory.
 // "own" is the species' own proteins on shelves (schema/SPECIES_PROTEINS.md), whether or not
-// Cells has a law for them: protein_shelves.js reads them and shelves_view.js draws them.
+// they are listed with a unit of the inventory: protein_shelves.js reads them and shelves_view.js draws them.
 // Their file is published beside the page and fetched when the species is first shown.
 
 import * as THREE from "../three.js";
@@ -25,8 +25,8 @@ import { soften } from "../core/materials.js";
 import { disposeTree } from "../core/stage.js";
 import { makeEnvironment } from "../core/environment.js";
 import { SHEET, UPPER, buildUnit, findingMark, membrane, outline } from "./protein_parts.js";
-import { BASES, LICENCE_NOTE, LICENCE_TAG, NO_SHELF, SIDES, Shelves, licenceClass, loadBeside, plural } from "./protein_shelves.js";
-import { ShelvesView, columnsFor, opensFor, shapeFor } from "./shelves_view.js";
+import { BASES, LICENCE_NOTE, LICENCE_TAG, NAMES_FILE, NO_SHELF, SIDES, Shelves, keyOf, licenceClass, loadBeside, plural } from "./protein_shelves.js";
+import { ORDERED_MARKS, ShelvesView, columnsFor, opensFor, shapeFor } from "./shelves_view.js";
 
 // The legend's row for the whole stack of a species with several shelves, beside its shelves' rows.
 const WHOLE = "stack";
@@ -76,8 +76,8 @@ export function shelvesOf(proteins, id) {
 }
 
 /**
- * Which of the two the atlas opens on for a species: the machines Cells has laws for, or the
- * species' own proteins. A species in which the atlas found almost none of those machines,
+ * Which of the two the atlas opens on for a species: the units of Cells' law inventory, or the
+ * species' own proteins. A species in which the atlas found almost none of those units,
  * or which has no side of the atlas at all, says most with its own proteins.
  */
 export function firstMode(proteins, id) {
@@ -99,7 +99,7 @@ export function defaultAtlas(proteins) {
 
 /**
  * Whether a species' atlas differs from the inventory's for so many units that a ring
- * beside each would bury the picture (a bacterium has almost none of the machines the
+ * beside each would bury the picture (a bacterium has almost none of the units the
  * laws name). Such an atlas is shown quietly: no rings, and the units it found no product
  * for, or another family for, are drawn faint.
  */
@@ -139,6 +139,49 @@ export function inSpecies(entity, proteins, id) {
   };
 }
 
+/** A list of clauses as a sentence's parts: "a", "a and b", "a, b and c". */
+const listed = (items) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
+
+/**
+ * How a species' products were found, and what their records are: two sentences from the two
+ * counts the scene gives (schema/SPECIES_ATLAS.md), kept apart. How a product was found decides
+ * what it is a candidate for; how its entry was written never does. A scene made before the
+ * two facts were kept apart has neither count, and then nothing is said of either.
+ */
+export function productWords(counts, foundBy, entries) {
+  const total = counts.products;
+  if (!total || !foundBy || !entries) return "";
+  const n = (list, id) => list.find((item) => item.id === id)?.count || 0;
+  const one = (count, single, many) => (count === 1 ? single : many);
+  const found = [
+    [n(foundBy, "family signature"), (c) => `by the signature of a family that makes the machine, ${one(c, "a candidate", "candidates")} by family, not ${one(c, "an established counterpart", "established counterparts")}`],
+    [n(foundBy, "similarity search"), (c) => `by sequence similarity, ${one(c, "a candidate", "candidates")}, not ${one(c, "an established counterpart", "established counterparts")}`],
+    [n(foundBy, "accessory signature"), (c) => `only by that of a family that goes with one (a regulator, or a subunit that makes none by itself), no ${one(c, "candidate", "candidates")} for its own work`],
+    [n(foundBy, "named in a publication"), () => "named in a publication"],
+    [n(foundBy, "not stated"), () => "in a way the file does not state"],
+  ].filter(([count]) => count);
+  // The records: UniProtKB entries are named once, then counted by how they were written.
+  let entryNamed = false;
+  const uniprot = (c, how) => {
+    const noun = entryNamed ? "" : `UniProtKB ${one(c, "entry", "entries")} `;
+    entryNamed = true;
+    return `${noun}${how}`;
+  };
+  const records = [
+    [n(entries, "reviewed"), (c) => uniprot(c, "reviewed by a curator")],
+    [n(entries, "unreviewed"), (c) => uniprot(c, "annotated automatically")],
+    [n(entries, "genome annotation"), (c) => `${one(c, "a gene model or genome-record protein", "gene models or genome-record proteins")} with no UniProtKB entry`],
+    [n(entries, "not stated"), () => "not stated in the file"],
+  ].filter(([count]) => count);
+  // A kind that covers every product is said with "all"; several are counted one by one.
+  const counted = (parts) => (parts.length === 1 && parts[0][0] === total ? [`${total === 1 ? "the one" : `all ${number(total)}`} ${parts[0][1](total)}`] : parts.map(([count, said]) => `${number(count)} ${said(count)}`));
+  const reviewed = n(entries, "reviewed");
+  return [
+    `How they were found: ${counted(found).join("; ")}.`,
+    records.length ? `Their records: ${counted(records).join(", ")}${reviewed ? "; a reviewed entry says how the entry was written, not that the protein does a unit's work" : ""}.` : "",
+  ].filter(Boolean).join(" ");
+}
+
 /**
  * What the view says on a species other than the inventory's own: the species' counts, sources
  * and findings. The units and laws are named as the engine's, the same for every species, and
@@ -149,7 +192,9 @@ export function speciesWords(proteins, species) {
   const name = /^[A-Z][a-z]+$/.test(species.label) ? lower(species.label) : species.label;
   const counts = species.counts;
   const words = new Map((proteins.findings || []).map((word) => [word.id, word]));
-  const some = counts.candidates === counts.products ? (counts.products === 1 ? "The one product was" : `All ${counts.products} products were`) : `${counts.candidates} of the ${counts.products} products were`;
+  // The two facts of the products, apart. A scene made before they were has neither, and the card then says nothing of them.
+  const kept = Array.isArray(species.found_by) && Array.isArray(species.entries);
+  const said = kept ? productWords(counts, species.found_by, species.entries) : "";
   const quiet = quietAtlas(proteins, species);
   const more = (species.extra || []).length;
   return {
@@ -168,13 +213,13 @@ export function speciesWords(proteins, species) {
     card: {
       heading: `${species.label} atlas`,
       organism: species.organism,
-      stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], [counts.candidates, "of them candidates"]],
+      stats: [[counts.with_products, `of ${counts.units} units have products`], [counts.products, "gene products"], ...(kept ? [[counts.candidates, "of them candidates for a unit"]] : [])],
       text: species.plain,
       check:
-        `The ${counts.units} units and their laws are the engine's, the same for every species. Listed here are the ${name} gene products that would make each machine, not anything the engine models.` +
-        (counts.candidates ? ` ${some} found by signature or similarity: candidates, not established counterparts.` : "") +
-        // Where the species has almost none of these machines, the card points at the proteins it does have.
-        (quiet && more ? ` Most of these machines were not found in it. The ${more} of its own proteins that bear on the picture are listed below.` : ""),
+        `The ${counts.units} units of Cells' law inventory and their laws are the same for every species. Listed here are the ${name} gene products that would make each unit, not anything the engine models.` +
+        (said ? ` ${said}` : "") +
+        // Where the species has almost none of these units, the card points at the proteins it does have.
+        (quiet && more ? ` Most of these units were not found in it. The ${more} of its own proteins that bear on the picture are listed below.` : ""),
       method: species.method,
       extra: species.extra,
       extraOpen: quiet && more > 0,
@@ -205,13 +250,14 @@ export class ProteinLens {
     this.list = model.raw.species || []; // the species the page can show (schema/SPECIES.md)
     this.page = this.shown; // the species the page shows; it may have no atlas yet
     this.finding = null; // one thing the species' atlas found, shown alone
+    this.waitingFinding = null; // a finding asked for while the species' own proteins were still being fetched
     this.marks = []; // the rings beside the units where the species differs
     this.markMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
     this.active = false;
     this.environment = makeEnvironment(stage.renderer);
     // The species' own proteins: which of the two is shown, what the visitor asked for, and
     // each species' shelves once its file is in.
-    this.mode = "units"; // "units": the machines Cells has laws for; "own": the species' own proteins
+    this.mode = "units"; // "units": the units of Cells' law inventory; "own": the species' own proteins
     this.wanted = null; // the one of the two the visitor asked for, kept from species to species
     this.own = new Map(); // species id -> { status: "loading" | "ready" | "failed", shelves, views, error, promise }
     this.mounted = null; // the shelves that are drawn, in place of the board of units; null while the board is
@@ -402,6 +448,7 @@ export class ProteinLens {
     const key = `${shape}:${columns}:${opens}`;
     if (!state.views.has(key)) {
       const view = new ShelvesView(this, state.shelves, { shape, columns, opens });
+      view.setColourBy(this.ownColour || "side", this.ownMark || null);
       view.applyPalette(this.stage.palette);
       state.views.set(key, view);
     }
@@ -439,6 +486,8 @@ export class ProteinLens {
   describe(id) {
     const key = this.ownKey(id);
     const said = key ? this.ownData().describe(key) : null;
+    // Coloured by side, the panel's chip for a side takes the side's colour, as the markers and the legend do.
+    if (said && this.mounted?.colourBy === "side") for (const chip of said.chips || []) if (/^own-(outside|in|inside)$/.test(chip.swatch || "")) chip.swatch = chip.swatch.replace(/^own-/, "own-side-");
     // While a set is picked out, a family, a part or a gathering says how many of the set it holds, and which.
     const view = this.mounted, set = view?.mark, shelves = view?.shelves;
     const held = said && set && shelves.kind === "families" && shelves.get(key).type !== "p" ? shelves.highlightOf(shelves.get(key), set.name, set.value) : [];
@@ -467,7 +516,7 @@ export class ProteinLens {
       .then((data) => {
         if (data.species !== id) throw new Error(`${summary.file} holds the proteins of ${data.species}`);
         const units = new Map(this.model.inGroup("proteins").map((unit) => [unit.id.replace(/^unit\./, ""), unit.id]));
-        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units });
+        state.shelves = new Shelves(data, { label: named.label, organism: named.organism, links: this.atlas.shelf_links, units, found: this.atlas.product_found_by });
         state.status = "ready";
       })
       .catch((error) => {
@@ -485,9 +534,9 @@ export class ProteinLens {
   }
 
   /**
-   * Show the machines Cells has laws for ("units") or the species' own proteins ("own").
+   * Show the units of Cells' law inventory ("units") or the species' own proteins ("own").
    * The own proteins are shown once their file is in; until then, and if it cannot be read,
-   * the machines are. Returns a promise that settles when the lens shows what it will.
+   * the units are. Returns a promise that settles when the lens shows what it will.
    */
   setMode(mode, { user = false } = {}) {
     const wants = mode === "own" && shelvesOf(this.atlas, this.page) ? "own" : "units";
@@ -495,20 +544,24 @@ export class ProteinLens {
     // Asked for again after they could not be read: they are fetched again.
     if (user && wants === "own" && this.own.get(this.page)?.status === "failed") this.own.delete(this.page);
     // The species' own proteins are fetched when it is shown here, whichever of the two is drawn:
-    // a machine's panel then names the families that hold its products.
+    // a unit's panel then names the families that hold its products.
     const state = this.ownState(this.page);
     if (!state || state.status === "ready") {
       this.enter(wants);
       return (this.ready = Promise.resolve());
     }
-    // Still being fetched, or it failed: the machines are shown, and the card says which.
+    // Still being fetched, or it failed: the units are shown, and the card says which.
     const page = this.page;
     this.enter("units");
     this.onChrome?.();
     return (this.ready = state.promise.then(() => {
       if (this.page !== page) return; // another species was chosen meanwhile
-      if (state.status === "ready" && wants === "own" && (this.wanted || firstMode(this.atlas, page)) === "own") this.enter("own");
-      else {
+      if (state.status === "ready" && wants === "own" && (this.wanted || firstMode(this.atlas, page)) === "own") {
+        this.enter("own");
+        const waiting = this.waitingFinding;
+        this.waitingFinding = null;
+        if (waiting?.page === page && this.mounted) this.setFinding(waiting.finding);
+      } else {
         this.onChrome?.();
         this.onPanel?.();
       }
@@ -561,6 +614,197 @@ export class ProteinLens {
     return Boolean(view?.shelves.several && view.focused !== undefined && view.focusOn(undefined));
   }
 
+  // ------------------------------------------------------------ what colour carries
+
+  /** The choices of "Colour" for a species' own proteins: [value, words]. A mark is "mark:<its name>". */
+  colourChoices(shelves) {
+    const out = [["side", "Side of its membrane"], ["basis", "How the side is known"]];
+    const small = shelves.kind === "proteins" ? shelves.filterable() : [];
+    const ordered = small.filter((mark) => ORDERED_MARKS.has(mark.id));
+    for (const mark of ordered) out.push([`mark:${mark.id}`, mark.measured ? `${mark.label}, measured` : mark.label]);
+    out.push(["law", "Cells' law inventory"]);
+    // The other marks of a catalogue of one marker each (what its "Show by" offered): a protein with a value is coloured.
+    for (const mark of small.filter((item) => !ORDERED_MARKS.has(item.id))) out.push([`mark:${mark.id}`, mark.label]);
+    return out;
+  }
+
+  /** Show the species' own proteins coloured by a choice of colourChoices(); the visitor's choice is kept for the next species where it has a meaning there. */
+  setOwnColour(choice) {
+    const [mode, name] = String(choice || "side").split(":");
+    this.ownColour = ["side", "basis", "mark", "law"].includes(mode) ? mode : "side";
+    this.ownMark = this.ownColour === "mark" ? name || null : null;
+    for (const state of this.own.values()) for (const view of state.views?.values() || []) view.setColourBy(this.ownColour, this.ownMark);
+    const view = this.mounted;
+    if (view) {
+      // What was shown alone belonged to what colour carried.
+      view.isolate = view.basis = null;
+      if (view.shelves.kind === "proteins") view.mark = null;
+      view.paint();
+      // The page lets go of what its legend showed alone, too.
+      this.stage.renderer.domElement.dispatchEvent(new CustomEvent("cells-isolate", { detail: null, bubbles: true, composed: true }));
+    }
+    this.onChrome?.();
+  }
+
+  /** The legend's first block for what colour carries now: its title, the choice at its head, and the values with their counts. */
+  colourLegend(shelves, view, near, words, basis) {
+    const several = shelves.several, families = shelves.kind === "families";
+    const by = view.colourBy;
+    const choices = this.colourChoices(shelves);
+    const active = by === "mark" ? `mark:${view.markName}` : by;
+    const colour = { options: choices, active: choices.some(([id]) => id === active) ? active : "side" };
+    // The sides: with one shelf, its own words; of several, those of the shelf in focus, or, for the whole stack, the
+    // words that hold on every shelf (each shelf names what lies on each side of its membrane).
+    const generic = { outside: ["Beyond its membrane", "Beyond the membrane of its shelf: each shelf names what lies there"], in: ["In its membrane", "Spans the membrane of its shelf"], inside: ["Enclosed by its membrane", "Enclosed by the membrane of its shelf: each shelf names what lies there"], "not known": ["Side not known", "No source states the side and nothing predicts it: set apart, hollow, not placed by guess"] };
+    const sideItem = (side, count) => {
+      const [label, description] = several && !near ? generic[side] : [words[side].short, words[side].long];
+      return { id: side, label, description, count, swatch: by === "side" && side !== "not known" ? `own-side-${side}` : words[side].swatch };
+    };
+    const sideItems = () => {
+      if (!several) return SIDES.map((side) => sideItem(side, shelves.counts[side]));
+      const counts = near ? near.counts : shelves.counts;
+      return SIDES.filter((side) => counts[side] || view.isolate === side).map((side) => sideItem(side, counts[side]));
+    };
+    const sideTitle = !several ? "Side of the membrane" : near ? (near.id === null ? "No place known" : `${near.label}: sides`) : "Side of its membrane";
+    if (by === "basis") {
+      const items = [...BASES.filter((id) => id !== "none"), "none"].filter((id) => basis[id]).map((id, index) => ({ id, label: shelves.basisWords(id).label, description: shelves.basisWords(id).sentence, count: basis[id], swatch: id === "none" ? "own-unknown" : `own-basis-${["stated", "predicted", "by function"].indexOf(id) + 1}` }));
+      return { title: "How the side is known", items, colour, note: families ? { text: "A family's marker carries no basis and stays grey: open it to see each member's." } : null };
+    }
+    if (by === "mark") {
+      const mark = shelves.filterable().find((item) => item.id === view.markName);
+      if (mark) {
+        const ordered = ORDERED_MARKS.has(mark.id);
+        const values = Array.isArray(shelves.marks[mark.id]?.values) ? shelves.marks[mark.id].values.map(String) : [];
+        const items = mark.items.map((item) => ({ id: item.id, label: item.label, description: mark.note || "", count: item.count, swatch: ordered ? `own-mark-${Math.min(3, values.indexOf(item.id) + 1) || 1}` : item.id === "false" || item.id === "" ? "own-plain" : "own-mark-1" }));
+        return { title: mark.measured ? `${mark.label}, measured` : mark.label, items, colour, note: ordered ? null : { text: "A protein that carries a value of this mark takes its colour; the others stay grey." } };
+      }
+    }
+    return { title: sideTitle, items: sideItems(), colour, note: by === "law" ? { swatch: "map-assigned", text: "One hue for a protein or family that makes a unit of Cells' law inventory; every other is grey." } : null };
+  }
+
+  // ------------------------------------------------------------ the trail, Escape, the search and the map
+
+  /**
+   * Where the visitor is among the species' own proteins, as the trail says it: the species, the shelf in focus,
+   * a side shown alone, the family open (or on its way), the protein chosen. Each { id, label, title, side }.
+   */
+  trailLevels() {
+    const view = this.mounted;
+    if (!view) return [];
+    const shelves = view.shelves;
+    const out = [{ id: "species", label: `${shelves.label} · ${number(shelves.total)}`, title: shelves.several ? "The whole stack" : "All its proteins" }];
+    if (shelves.several && view.focused !== undefined) {
+      const entry = shelves.byShelf.find((item) => item.id === view.focused);
+      out.push({ id: "shelf", label: entry?.label ?? "No place known", title: "This shelf, with nothing open" });
+    }
+    if (view.isolate) {
+      const words = shelves.sideWords(shelves.several ? (view.focused ?? null) : undefined)[view.isolate];
+      out.push({ id: "side", label: words?.short || view.isolate, title: "Only this side", side: view.isolate });
+    }
+    const item = view.opened || view.wanted;
+    if (item) {
+      const label = item.type === "l" ? plural(item.count, "family of one", "families of one") : item.label;
+      out.push({ id: "family", label: view.opened ? `${label} · ${number(item.count)}` : `Opening ${label}…`, title: view.opened ? "The open family" : "Its proteins are being fetched", side: item.side, opening: !view.opened });
+    }
+    const chosen = view.selected ? shelves.get(view.selected) : null;
+    if (chosen?.type === "p") out.push({ id: "protein", label: chosen.gene && chosen.gene !== chosen.label ? `${chosen.gene} · ${chosen.label}` : chosen.label, title: "The protein chosen", side: chosen.side });
+    return out;
+  }
+
+  /** Go back to a level of the trail: what is deeper is let go of. Returns whether anything changed. */
+  goTo(level) {
+    const view = this.mounted;
+    if (!view) return false;
+    const levels = this.trailLevels(), at = levels.findIndex((item) => item.id === level);
+    if (at < 0 || at === levels.length - 1) return false;
+    const select = (key) => this.choose(key);
+    if (level === "family") {
+      select(view.opened?.key || null);
+      return true;
+    }
+    // Every level above the family: nothing chosen, and nothing open.
+    if (view.selected) select(null);
+    if (view.opened || view.wanted) view.close({ quiet: level === "species" });
+    if (level === "side") return true;
+    view.isolate = null;
+    if (level === "species") {
+      if (view.shelves.several && view.focused !== undefined) view.focusOn(undefined);
+      else this.stage.rig.flyTo(this.homeView(), 700);
+    }
+    this.refresh();
+    this.onChrome?.();
+    return true;
+  }
+
+  /** Choose a part through the page, as a press would: the page's panel, list and address follow. */
+  choose(key, options = {}) {
+    this.stage.renderer.domElement.dispatchEvent(new CustomEvent("cells-select", { detail: { id: key, ...options }, bubbles: true, composed: true }));
+  }
+
+  /** Escape in the atlas: one level of the trail back. Returns whether there was one. */
+  escape() {
+    if (!this.active || !this.mounted) return false;
+    const levels = this.trailLevels();
+    return levels.length > 1 && this.goTo(levels[levels.length - 2].id);
+  }
+
+  /** The names of a large catalogue's proteins, fetched once from beside its members' files (schema/SPECIES_PROTEINS.md). */
+  async loadNames(shelves) {
+    if (shelves.kind !== "families" || shelves.names) return true;
+    shelves.namesLoading ??= loadBeside(shelvesOf(this.atlas, shelves.id).file.replace(/[^/]*$/, "") + NAMES_FILE)
+      .then((file) => (shelves.addNames(file), true))
+      .catch((error) => ((shelves.namesError = error.message), false));
+    return shelves.namesLoading;
+  }
+
+  /** What the search in view finds for a query, with the names fetched first where a large catalogue has them. */
+  async searchOwn(query) {
+    const shelves = this.mounted?.shelves;
+    if (!shelves) return null;
+    if (String(query || "").trim().length >= 2) await this.loadNames(shelves);
+    if (this.mounted?.shelves !== shelves) return null;
+    return shelves.search(query);
+  }
+
+  /** Choose what the search found: a protein (its family's members are fetched first, then it opens with the protein chosen), a family's line, or a shelf. */
+  async reveal(found) {
+    const view = this.mounted, shelves = view?.shelves;
+    if (!shelves) return;
+    let key = found.key || null;
+    if (!key && found.line) {
+      // A member of a family not yet open: its line's members are fetched, and the protein is then known by its key.
+      const line = found.line;
+      await this.loadMembers(shelves, shelves.filesOf(line));
+      shelves.membersOf(line);
+      key = keyOf(shelves.id, "p", found.id);
+    }
+    if (key && this.mounted?.shelves === shelves) this.choose(key, { fly: true });
+  }
+
+  /** The map of the stack: every shelf with its sides, the one in focus, and the one a family is open on. */
+  stackMap() {
+    const view = this.mounted, shelves = view.shelves;
+    const active = view.focused === undefined ? WHOLE : view.focused ?? NO_SHELF;
+    const open = view.opened ? view.opened.shelf ?? NO_SHELF : null;
+    return {
+      active,
+      rows: [
+        { id: WHOLE, label: "The whole stack", count: shelves.total, counts: null },
+        ...shelves.byShelf.map((entry) => ({ id: entry.id ?? NO_SHELF, label: entry.label ?? "No place known", count: entry.proteins, counts: entry.counts, open: open === (entry.id ?? NO_SHELF) })),
+      ],
+      most: Math.max(...shelves.byShelf.map((entry) => entry.proteins)),
+      whole: shelves.counts,
+    };
+  }
+
+  /** A press on the map: a shelf comes into focus, or the whole stack. */
+  showShelf(id) {
+    const view = this.mounted;
+    if (!view?.shelves.several) return;
+    this.choose(null);
+    view.focusOn(id === WHOLE ? undefined : id === NO_SHELF ? null : id);
+  }
+
   /**
    * The keys that move between the shelves of a species with several, when the picture has
    * the keyboard: Page Down to the next shelf, Page Up to the one before, Home to the whole
@@ -596,6 +840,15 @@ export class ProteinLens {
   }
 
   setMark(name) {
+    // A catalogue of one marker each shows a mark by the legend's "Colour" (its "Show by" folded into it).
+    // A mark let go of (a door to a shelf asks it) lets go of a value shown alone and keeps the colour chosen.
+    if (this.mounted?.shelves.kind === "proteins") {
+      this.markName = name;
+      this.pickedIds = null;
+      if (name) this.setOwnColour(`mark:${name}`);
+      else if (this.mounted.mark || this.mounted.basis || this.mounted.isolate) this.stage.renderer.domElement.dispatchEvent(new CustomEvent("cells-isolate", { detail: null, bubbles: true, composed: true }));
+      return;
+    }
     this.markName = name;
     this.pickedIds = null;
     if (this.mounted) this.mounted.mark = null;
@@ -642,13 +895,13 @@ export class ProteinLens {
     const label = (this.list.find((item) => item.id === this.page) || atlasOf(this.atlas, this.page))?.label || "This species";
     if (!summary) {
       // Said only in a scene that has such proteins for some species: an older scene knows none.
-      return { modes: null, notice: this.atlas.shelves?.length ? `${label}'s own catalogue of proteins is not made yet: the atlas shows the machines Cells has laws for.` : null };
+      return { modes: null, notice: this.atlas.shelves?.length ? `${label}'s own catalogue of proteins is not made yet: the atlas shows the units of Cells' law inventory.` : null };
     }
     const state = this.own.get(this.page);
-    const modes = { label: "What the atlas shows", options: [["units", `Cells' ${number(this.atlas.counts.units)} machines`], ["own", `Its ${number(summary.proteins)} proteins`]], active: this.mode };
+    const modes = { label: "What the atlas shows", options: [["units", `Cells' ${number(this.atlas.counts.units)} units`], ["own", `Its ${number(summary.proteins)} proteins`]], active: this.mode };
     let notice = null;
     if (!this.mounted && state?.status === "loading" && (this.wanted || firstMode(this.atlas, this.page)) === "own") notice = `Fetching ${label}'s own proteins…`;
-    else if (state?.status === "failed") notice = `${label}'s own proteins could not be loaded (${state.error}). The atlas shows the machines Cells has laws for.`;
+    else if (state?.status === "failed") notice = `${label}'s own proteins could not be loaded (${state.error}). The atlas shows the units of Cells' law inventory.`;
     return { modes, notice };
   }
 
@@ -662,7 +915,7 @@ export class ProteinLens {
     const near = several && view.focused !== undefined ? shelves.byShelf.find((entry) => entry.id === view.focused) || null : null;
     const words = shelves.sideWords(near ? near.id : undefined);
     const total = shelves.total, basis = shelves.byBasis();
-    // What holds a candidate product of a machine Cells has a law for. With one shelf, its
+    // What holds a protein listed with a unit of Cells' law inventory. With one shelf, its
     // families (or its proteins). With several: the families that do on any shelf, the
     // gatherings of families of one and the groups of "no family" that do, and the markers
     // that are lit for them (Shelves.lawHolders).
@@ -674,30 +927,28 @@ export class ProteinLens {
     const soft = basis.predicted + basis["by function"];
     const counted = !families || Boolean(data.by_basis); // a large catalogue counts its sides by basis in the file, or not at all
     const some = (count, all) => (count === all ? (all === 1 ? "its one" : `all ${number(all)}`) : `${number(count)} of the ${number(all)}`);
-    // The legend: where a protein sits, how that is known, and one of its marks.
-    const legend = {
-      title: !several ? "Side of the membrane" : near ? (near.id === null ? "No place known" : `${near.label}: sides`) : "Shelves",
-      // With one shelf, its four sides. Of several: the sides the shelf in focus has anything on (one that is isolated stays listed).
-      items: !several
-        ? SIDES.map((side) => ({ id: side, label: words[side].short, description: words[side].long, count: shelves.counts[side], swatch: words[side].swatch }))
-        : near
-          ? SIDES.filter((side) => near.counts[side] || view.isolate === side).map((side) => ({ id: side, label: words[side].short, description: words[side].long, count: near.counts[side], swatch: words[side].swatch }))
-          : [],
-    };
+    // The legend's first block names what colour carries (docs/ATLAS_LOOK.md, decided 16 November 2026), with the
+    // choice at its head: the side of each protein's own membrane, how that side is known, a mark the species
+    // states (a small catalogue's "Show by" folded into it), or Cells' law inventory. A press on a value shows it alone.
+    const legend = this.colourLegend(shelves, view, near, words, basis);
+    // The second: what holds a unit of the law inventory (in families), or how the side is known (one marker each; not
+    // while colour itself is that).
     const filter = families
       ? withUnit
-        ? { title: "Cells' laws", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a machine with a law", title: "Families that hold candidate products of a unit of the law inventory. Cells has no law for any other.", count: lawMarkers }], active: view.units ? "units" : null }
+        ? { title: "Cells' law inventory", unit: several ? "markers" : "families", items: [{ id: "units", label: "Holds parts of a unit of the law inventory", title: "Families that hold proteins listed with a unit of the law inventory: candidates for its unit, or parts that go with it. No other is listed with a unit of the inventory.", count: lawMarkers }], active: view.units ? "units" : null }
         : null
-      : {
-          title: "How the side is known",
-          unit: "proteins",
-          items: BASES.filter((id) => basis[id]).map((id) => ({ id, label: shelves.basisWords(id).label, title: shelves.basisWords(id).sentence, count: basis[id] })),
-          active: view.basis,
-        };
-    const marks = shelves.filterable();
-    const mark = this.markShown(shelves);
-    // The legend's third block: the values of one mark; or, of several shelves in families, the
-    // shelves themselves with what stands on each, and the whole stack. Pressing one brings it near.
+      : view.colourBy === "basis"
+        ? null
+        : {
+            title: "How the side is known",
+            unit: "proteins",
+            items: BASES.filter((id) => basis[id]).map((id) => ({ id, label: shelves.basisWords(id).label, title: shelves.basisWords(id).sentence, count: basis[id] })),
+            active: view.basis,
+          };
+    // The third: of a catalogue in families, the values of a set its file lists (E. coli's chemotaxis proteins,
+    // its assemblies), chosen by "Show by". The shelves themselves are in the map of the stack (src/ui/atlas_nav.js).
+    const marks = families ? shelves.filterable() : [];
+    const mark = families ? this.markShown(shelves) : null;
     const findings = mark
       ? {
           title: mark.measured ? `${mark.label}, measured` : mark.label,
@@ -705,17 +956,7 @@ export class ProteinLens {
           items: mark.items.map((item) => ({ id: item.id, label: item.label, count: item.count, title: mark.note || "" })),
           active: view.mark?.name === mark.id ? view.mark.value : null,
         }
-      : several && families
-        ? {
-            title: "Shelves",
-            unit: "proteins",
-            items: [
-              { id: WHOLE, label: "The whole stack", count: total, title: "Every shelf at once, and what has no place: a map to pick a shelf from." },
-              ...shelves.byShelf.map((entry) => ({ id: entry.id ?? NO_SHELF, label: entry.label ?? "No place known", count: entry.proteins, title: entry.shelf ? `Bring the shelf near: ${shelves.membraneOf(entry.id)}.` : "What has no stated place and nothing predicted: apart from every shelf." })),
-            ],
-            active: view.focused === undefined ? WHOLE : view.focused ?? NO_SHELF,
-          }
-        : null;
+      : null;
     // The shelf's own name, as the file gives it, and what its sides cover where the file says more than their names.
     // Whether the one shelf says more of its sides than their names.
     const fuller = !several && shelves.shelf.outside !== words.outside.short;
@@ -725,10 +966,10 @@ export class ProteinLens {
     const law = withUnit
       ? families
         ? several
-          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold candidate products of machines Cells has laws for. Cells has no law for any other protein here.`
-          : `${number(withUnit)} families hold candidate products of machines Cells has laws for: they carry the machine's shape. Cells has no law for any other protein here.`
-        : `${number(withUnit)} of them are drawn as the machine Cells has a law for. Every other is a plain marker: Cells has no law for it.`
-      : "Cells has no law for any of these proteins: every one is a plain marker.";
+          ? `${[plural(lawFamilies, "family", "families"), lawLone ? `${plural(lawLone, "gathering")} of families of one` : "", lawParts ? `${plural(lawParts, "group")} of proteins with no family` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")} hold proteins listed with units of Cells' law inventory. No other protein here is listed with one.`
+          : `${number(withUnit)} families hold proteins listed with units of Cells' law inventory: one that makes a unit carries its shape, one that only goes with it is drawn plain. No other protein here is listed with one.`
+        : `${number(withUnit)} of them are drawn as a unit of Cells' law inventory. Every other is a plain marker: it is listed with no unit of the inventory.`
+      : "None of these proteins is listed with a unit of Cells' law inventory: every one is a plain marker.";
     const sides =
       [
         basis.stated ? `${number(basis.stated)} stated by a curated entry or a paper` : "",
@@ -758,13 +999,15 @@ export class ProteinLens {
       caveat: view.status
         ? null
         : families
-        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`
-        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a machine Cells has a law for; a plain marker has none." : "Cells has no law for any of them."}`,
+        ? `A round marker is a family of ${shelves.predicted ? "predicted proteins" : "proteins"}: press it to open it. ${shelves.predicted ? "Sides are predictions on predicted proteins." : counted ? `${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured.` : "Each protein's panel says how its side is known."} ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit of Cells' law inventory; a plain marker is listed with none." : "None of them is listed with a unit of Cells' law inventory."}`
+        : `Each marker is one protein of ${shelves.label}, by its side of the membrane. ${soft >= total / 2 ? "Most sides" : `${number(soft)} sides`} are predicted or inferred, not measured. ${fuller ? `The shelf: ${lower(shelves.shelf.label)}. ` : ""}${withUnit ? "A drawn shape is a unit of Cells' law inventory; a plain marker is listed with none." : "None of them is listed with a unit of Cells' law inventory."}`,
       status: view.status || null,
       stamp: `${shelves.label} proteins${data.made ? ` of ${day(data.made)}` : ""} · ${number(total)}`,
       legend,
       filter,
       findings,
+      // The trail, the search and the map of the stack (src/ui/atlas_nav.js).
+      nav: { trail: this.trailLevels(), species: shelves.id, several, map: several ? this.stackMap() : null, finding: families ? "Gene, protein or family" : "Gene or protein" },
       card: {
         heading: `${shelves.label} proteins`,
         organism: shelves.organism,
@@ -777,7 +1020,7 @@ export class ProteinLens {
           ? several
             ? [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.familiesInAll), "families in all"]]
             : [[number(total), shelves.predicted ? "proteins, all predicted" : "proteins"], [number(shelves.familyCount), "families that open"], [number(shelves.noFamily.count), "with no family"]]
-          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), several ? "in a membrane or beyond one" : "in or on the membrane"], [number(withUnit), "with a law in Cells"]],
+          : [[number(total), "proteins"], [number(shelves.counts.in + shelves.counts.outside), several ? "in a membrane or beyond one" : "in or on the membrane"], [number(withUnit), "with a unit of the law inventory"]],
         open: opened ? { label: opened.label, count: `${number(opened.count)} ${opened.count === 1 ? "protein" : "proteins"}`, id: opened.key } : null,
         text: families
           ? several
@@ -790,13 +1033,8 @@ export class ProteinLens {
             : `${law} ${shelves.predicted ? "Every protein here is itself predicted, and so is its side: a prediction on a predicted protein, not a measurement." : soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""} A family stands where most of its members sit.${apart}`
           : `${law} ${soft ? `The side of ${some(soft, total)} is predicted or taken from what the protein does, not measured.` : ""}${apart}`,
         // In families the first choice is the plain view (the shelves, or the families); each other picks out a set.
-        marks: families
-          ? marks.length
-            ? { label: "Show by", options: [["", several ? "Shelves" : "Families"], ...marks.map((item) => [item.id, item.label])], active: mark ? mark.id : "" }
-            : null
-          : marks.length > 1
-            ? { label: "Show by", options: marks.map((item) => [item.id, item.label]), active: mark.id }
-            : null,
+        // A catalogue of one marker each shows its marks by the legend's "Colour" instead.
+        marks: families && marks.length ? { label: "Show by", options: [["", several ? "Shelves" : "Families"], ...marks.map((item) => [item.id, item.label])], active: mark ? mark.id : "" } : null,
         method: made,
         sources: shelves.sources.map((source) => {
           const kind = licenceClass(source);
@@ -839,7 +1077,7 @@ export class ProteinLens {
       legend,
       filter,
       card: {
-        heading: "The proteins Cells models",
+        heading: "The units of Cells' law inventory",
         species: choice,
         ...own,
         stats: [[counts.units, "functional units"], [counts.laws, "laws"], [counts.genes, "candidate genes"]],
@@ -948,7 +1186,7 @@ export class ProteinLens {
         this.refresh();
       }
     } else if (moved) this.onChrome?.();
-    // The machines or the species' own proteins: settled now if the view is shown, else when it next is.
+    // The units or the species' own proteins: settled now if the view is shown, else when it next is.
     if (moved && this.active) this.settleMode();
   }
 
@@ -1005,17 +1243,26 @@ export class ProteinLens {
 
   /** Show only the units of one mapping (the legend's first block). */
   setIsolate(mapping) {
-    // On the shelves the legend's first block lists the sides of the membrane.
-    if (this.mounted) this.mounted.isolate = SIDES.includes(mapping) ? mapping : null;
+    // On the shelves the legend's first block lists what colour carries: the sides of the membrane, how a side is
+    // known, or the values of a mark; a press shows those proteins alone.
+    const view = this.mounted;
+    if (view && view.colourBy === "basis") {
+      view.basis = BASES.includes(mapping) ? mapping : null;
+      view.isolate = null;
+    } else if (view && view.colourBy === "mark" && view.shelves.kind === "proteins") {
+      view.mark = mapping !== null && mapping !== undefined ? { name: view.markName, value: String(mapping) } : null;
+      view.isolate = null;
+    } else if (view) view.isolate = SIDES.includes(mapping) ? mapping : null;
     else this.isolate = mapping || null;
     this.refresh();
+    if (view) this.onChrome?.(); // the trail names a side shown alone
   }
 
   /** Show only the units with a law resting on one kind of evidence (the legend's second block). */
   setTogether(evidence) {
     const view = this.mounted;
     if (view) {
-      // On the shelves: how a side is known, or (of families) those holding a machine with a law.
+      // On the shelves: how a side is known, or (of families) those holding a unit of the law inventory.
       view.units = evidence === "units";
       view.basis = BASES.includes(evidence) ? evidence : null;
     } else this.evidence = evidence || null;
@@ -1041,13 +1288,25 @@ export class ProteinLens {
   setFinding(finding) {
     this.pickedIds = null;
     const view = this.mounted, mark = view ? this.markShown(view.shelves) : null;
+    if (view && view.shelves.kind === "proteins" && mark) {
+      // One marker each: a value of a mark (a door, or the address's "finding=") is shown by colouring by that mark
+      // and pressing its value in the legend, so that the legend says what is shown alone and lets go of it.
+      if (view.colourBy !== "mark" || view.markName !== mark.id) this.setOwnColour(`mark:${mark.id}`);
+      const value = finding !== null && finding !== undefined && mark.items.some((item) => item.id === String(finding)) ? String(finding) : null;
+      this.stage.renderer.domElement.dispatchEvent(new CustomEvent("cells-isolate", { detail: value, bubbles: true, composed: true }));
+      return;
+    }
     if (view && !mark && view.shelves.several && view.shelves.kind === "families") {
       // Of several shelves the block lists the shelves: one comes into focus, or the whole stack does.
       view.focusOn(finding === null || finding === WHOLE ? undefined : finding === NO_SHELF ? null : finding);
     } else if (view) {
       // On the shelves the block lists the values of one mark.
       view.mark = mark && finding !== null && mark.items.some((item) => item.id === String(finding)) ? { name: mark.id, value: String(finding) } : null;
-    } else this.finding = this.species && (this.atlas.findings || []).some((word) => word.id === finding) ? finding : null;
+    } else {
+      this.finding = this.species && (this.atlas.findings || []).some((word) => word.id === finding) ? finding : null;
+      // Asked before the species' own proteins are in (an address opened afresh): it waits for them as well.
+      this.waitingFinding = this.wanted === "own" && this.ownState(this.page)?.status === "loading" && finding !== null ? { page: this.page, finding } : null;
+    }
     this.refresh();
     this.onChrome?.();
   }
