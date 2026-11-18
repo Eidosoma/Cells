@@ -167,7 +167,8 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-93e45f00/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-94395770/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json",
-  "/mnt/workspaces/Cells/ol2-engine-20261118/measure-43155110/measured.json"
+  "/mnt/workspaces/Cells/ol2-engine-20261118/measure-43155110/measured.json",
+  "/mnt/workspaces/Cells/ol2-engine-20261118/measure-78729acf/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1373,6 +1374,13 @@
    "root": "/mnt/workspaces/Cells/ol2-engine-20261118/tree-43155110",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T15:33:23+00:00"
+  },
+  {
+   "git_revision": "78729acf782984de37be69866d1306d66ec9c038",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol2-engine-20261118/tree-78729acf",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T20:20:17+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -1735,7 +1743,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 7.54,
+    "seconds": 7.59,
     "exit_code": 0,
     "counts": {
      "passed": 6
