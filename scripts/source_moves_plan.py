@@ -43,10 +43,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import legacy_inventory as li  # noqa: E402
 
 ACTIVE_RULED = ("active", "decide")  # D189: the undecided families stay active.
-# The static model table: every active model, its definitions' module and its homes. A family is
-# active by its row, so a new family is active once it joins the table, as it must to run, and no
-# list of names here needs to learn it (GARD's @1, OL1's @2; D196's legacy list follows).
-MODEL_TABLE = "cells.registry.model_table"
 # The modules that import every family to dispatch on it: move 1 refactors them (R1), so they
 # neither move nor pull their importers along.
 CHAINS = {
@@ -72,58 +68,6 @@ def _dump(out, name, value):
 # ------------------------------------------------------------------ classes
 
 
-def table_rows_of(text):
-    """{model ID: {"module", "homes"}} of a model table's source, read statically: each row's
-    definitions' module, and the modules it names besides (law and operator homes, and its
-    runner's module)."""
-    rows = {}
-    for node in ast.walk(ast.parse(text)):
-        if not isinstance(node, ast.Assign) or not any(
-            isinstance(t, ast.Name) and t.id == "MODELS" for t in node.targets
-        ):
-            continue
-        table = node.value.args[0] if isinstance(node.value, ast.Call) else node.value
-        for key, row in zip(table.keys, table.values, strict=True):
-            fields = {k.arg: ast.literal_eval(k.value) for k in row.keywords}
-            runner = fields.get("runner")
-            rows[ast.literal_eval(key)] = dict(
-                module=fields["module"],
-                homes=[
-                    *fields.get("law_homes", ()),
-                    *fields.get("operator_homes", ()),
-                    *([runner.partition(":")[0]] if runner else []),
-                ],
-            )
-    return rows
-
-
-def table_rows(index):
-    """The tree's model table (MODEL_TABLE), or none when the tree has no table."""
-    return table_rows_of(index[MODEL_TABLE].read_text()) if MODEL_TABLE in index else {}
-
-
-def family_rows(fam, rows):
-    """A family's rows in the model table: those keyed by one of its IDs, or naming its
-    definitions' module where that module defines no other family (core/specs.py defines many,
-    each matched by its ID; a namespaced ID such as cells.assembly_lineages@1 is matched by its
-    module, since the inventory's ID pattern is the bare one)."""
-    ids = set(fam["ids"]) | {i for i in fam["class_ids"].values() if i}
-    shared = fam["definition"] == li.SHARED
-    return sorted(
-        k for k, r in rows.items() if k in ids or (not shared and r["module"] == fam["definition"])
-    )
-
-
-def rule_family(fam, rows, protocol_rows):
-    """D189's ruling as a general rule: active by a model-table row; "decide" when registered
-    protocols name it (counted active); legacy otherwise."""
-    if family_rows(fam, rows):
-        return "active"
-    if any(set(r["ids"]) & set(fam["ids"]) and r["registered"] for r in protocol_rows):
-        return "decide"
-    return "legacy"
-
-
 def classes(args):
     """legacy_inventory's families and closures, each family ruled by rule_family."""
     index = li.module_index()
@@ -131,8 +75,8 @@ def classes(args):
     fams = li.families(index)
     worlds = li.g1_worlds(args.g1) if args.g1 else {}
     protocol_rows = li.protocols()
-    rows = table_rows(index)
-    ruled = {key: rule_family(fam, rows, protocol_rows) for key, fam in fams.items()}
+    rows = li.table_rows(index)
+    ruled = {key: li.rule_family(fam, rows, protocol_rows) for key, fam in fams.items()}
     active_f = {k for k, c in ruled.items() if c in ACTIVE_RULED}
     legacy = {
         m
@@ -152,7 +96,7 @@ def classes(args):
         m
         for k, f in fams.items()
         if k in active_f
-        for row in family_rows(f, rows)
+        for row in li.family_rows(f, rows)
         for h in rows[row]["homes"]
         for m in index
         if m == h or m.startswith(h + ".")
@@ -173,7 +117,7 @@ def classes(args):
     out = dict(
         kind="cells.source_moves.classes@1",
         families={k: ruled[k] for k in sorted(ruled)},
-        rows={k: family_rows(fams[k], rows) for k in sorted(fams)},
+        rows={k: li.family_rows(fams[k], rows) for k in sorted(fams)},
         g1_worlds={  # Evidence only: G1's coverage is not a ruling.
             k: len({w for i in fams[k]["ids"] for w in worlds.get(i, [])}) for k in sorted(fams)
         }
@@ -895,7 +839,7 @@ def _classes_checks():
     """rule_family on planted families: a lineage family with a namespaced ID and its successor,
     active by their rows; a shared module's two families, one with a row; a family that only
     registered protocols name; and a planted unreferenced family, which must be legacy."""
-    table = table_rows_of(
+    table = li.table_rows_of(
         "from types import MappingProxyType\n"
         "MODELS = MappingProxyType({\n"
         "    'cells.lineages@1': Model(type='family', module='cells.models.lineages.spec',\n"
@@ -918,7 +862,7 @@ def _classes_checks():
     protocols = [dict(ids=["r@1"], registered=True), dict(ids=["old@1"], registered=False)]
 
     def rule(f, rows=table):
-        return rule_family(f, rows, protocols)
+        return li.rule_family(f, rows, protocols)
 
     return {
         "classes: the table is read statically, with its homes and its runner's module": (
