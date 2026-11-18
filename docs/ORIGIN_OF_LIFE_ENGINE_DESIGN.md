@@ -373,9 +373,11 @@ that refine it.
    - the channel is the first, in the group's declared order (forwards, then reverses), whose running
      total exceeds min(u3·a_g, nextafter(a_g, 0));
    - every total is a serial fold in those orders.
-6. **Serial transfer and shear times (Q6).** The draw maps and the schedule streams below are
-   provisional, until the builder confirms that they fit the kernel's stream layout. The clock rule
-   is ruled now, on exactness.
+6. **Serial transfer and shear times (Q6).** The builder confirmed the draw maps and the schedule
+   streams against G1's stream layout the same day, so they are no longer provisional.
+   - A schedule's declared index is the carrier word in domain 6, and nothing else draws there.
+   - Each uniform of the transfer, and each Poisson gap, is its own draw: a block of one, with its
+     own counter.
    - **The transfer** draws one uniform per living assembly, in slot order, and keeps the K_keep
      smallest, with ties broken by slot. That is a uniform sample without replacement.
      - It draws even when every assembly is kept, so every transfer advances its counter by the
@@ -395,6 +397,8 @@ that refine it.
        τ.
      - Without a schedule, draws and events coincide, so OL1's worlds and every schedule-free world
        are unchanged.
+     - The followed assembly's own event stream in a single-lineage world (domain 1, OL1's `age`
+       counter) follows the same rule when the world has a schedule.
 7. **Booking (Q7).**
    - **Shear.** F carries the closure cost C_close = 8πκ + 4πκ̄ once per living vesicle (§0.2c rule
      8). The shear work is therefore w_shear = Σ_j F(daughter_j) − F(parent), which already holds
@@ -412,6 +416,14 @@ that refine it.
 8. **Labels** stay out of the references for now. The engine's own tests carry their conservation
    and tracking-off claims (§0.2c rule 17). A references row joins if a law for label draws is
    claimed.
+9. **Partitionable threefry (the builder's addition).** A block draw gives the same values at any
+   block size only when JAX's threefry is partitionable. Examples are a partition's uniforms (rules
+   9 and 10 of §0.2c) and OL1's two per event.
+   - The pinned JAX has the flag on by default.
+   - The family refuses to start a run with the flag off.
+   - The run's environment record states the flag.
+   - No world's identity or records change, and the invariance comparison already exempts the
+     environment record.
 
 ### 0.3 Estimate, order and questions
 
