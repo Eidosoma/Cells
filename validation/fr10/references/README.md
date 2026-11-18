@@ -230,6 +230,8 @@ After 7e27b9e1, and before any engine output:
 - tolerances default to the registered ceilings, and a tolerance above a ceiling is refused;
 - exit status 0 means every row passed, 1 a failure, 2 a missing or malformed input.
 
-`standin.build_standin(dir, variant)` writes the honest stand-in and the planted variants. The
-engine adapter (`engine_layout.py`) waits for the engine's declared bundle format, whose path
-the lead will give.
+`standin.build_standin(dir, variant)` writes the honest stand-in and the planted variants.
+
+**No engine adapter** (the lead, 17 November 2026). The protocol's judge consumes these
+references' values through `REFERENCES_USAGE.md`, as FR-4's and FR-5's did, so there is one
+registered judge. The harness and its tests stay as a skeleton over the canonical bundle.

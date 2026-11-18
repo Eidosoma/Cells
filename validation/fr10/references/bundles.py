@@ -1,8 +1,8 @@
 """The canonical run bundle the harness reads, and its validation.
 
-The engine's own layout is declared by the engine (its FORMAT.md, not yet written). When it
-exists, ``engine_layout.py`` maps it onto these canonical names; only this module and that
-adapter know any key layout.
+An engine layout would need an adapter onto these canonical names. None is planned: the
+protocol's judge consumes the references through ``REFERENCES_USAGE.md`` (the lead,
+17 November 2026).
 
 **A bundle** is one directory with ``run.json``, ``records.npz`` and ``manifest.json``, the
 manifest written last. A bundle without its manifest is refused.
