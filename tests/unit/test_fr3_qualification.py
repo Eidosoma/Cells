@@ -223,7 +223,8 @@ def parts():
                            final_reversed_equal=True)
         for i in range(1, len(generator.BATCH_VARIANTS) + 1)})
     out["Q6_idle"] = dict(kind="idle", admitted=True, completed=True, zero_multipliers=[],
-                          no_populations=[], zero_world_fields_moved=[])
+                          no_populations=[], zero_world_fields_moved=[],
+                          no_populations_statically_idle=True)
     out["Q6_twins"] = dict(kind="twins", admitted=True, completed=True,
                            programs={k: dict(text_equal=True, constants_equal=True)
                                      for k in ("step", "rhs", "checks")},
@@ -304,6 +305,7 @@ def s_world_of(world_id):
     ("batch_relative", {"Q6_batch_scalar"}),
     ("batch_reversed", {"Q6_batch_reversed"}),
     ("idle", {"Q6_idle"}),
+    ("not_statically_idle", {"Q6_idle"}),
     ("twins", {"Q6_twins"}),
     ("twins_identical_values", {"Q6_twins"}),
     ("signature", {"Q6_signature"}),
@@ -396,6 +398,8 @@ def test_each_planted_error_fails_its_own_criterion(plant_name, expected):
         p["Q6_batch"]["worlds"]["world_2"]["reversed_equal"] = False
     elif plant_name == "idle":
         p["Q6_idle"]["zero_multipliers"] = ["amount_increment"]
+    elif plant_name == "not_statically_idle":
+        p["Q6_idle"]["no_populations_statically_idle"] = False
     elif plant_name == "twins":
         p["Q6_twins"]["programs"]["rhs"]["text_equal"] = False
     elif plant_name == "twins_identical_values":

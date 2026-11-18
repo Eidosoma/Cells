@@ -486,7 +486,8 @@ def q6(parts, d):
                                    if full else None)
     idle = parts.get("Q6_idle") or {}
     out["idle"] = (int(idle["zero_multipliers"] == [] and idle["no_populations"] == []
-                       and idle["zero_world_fields_moved"] == [])
+                       and idle["zero_world_fields_moved"] == []
+                       and idle.get("no_populations_statically_idle") is True)
                    if completed(idle) else None)
     twins = parts.get("Q6_twins") or {}
     programs = twins.get("programs") or {}

@@ -81,6 +81,20 @@ def test_the_ladder_and_every_control_world_are_admitted():
     admitted(af.build(generator.idle_world(), populations=False))
 
 
+def test_the_world_without_populations_declares_none_and_keeps_its_layout():
+    spec = admitted(af.build(generator.idle_world(), populations=False))
+    model = get_model(spec.model)
+    _, layout = model.initial_values(spec)
+    assert layout.site_capacity_fmol.shape == (0,)
+    assert model.operators[0].statically_idle(layout)
+    plain = admitted(af.build(generator.idle_world(), operator=False))
+    zero = admitted(af.build(generator.idle_world()))
+    for other in (plain, zero):
+        assert [m.id for m in other.model.membranes] == [m.id for m in spec.model.membranes]
+    _, zero_layout = get_model(zero.model).initial_values(zero)
+    assert zero_layout.site_capacity_fmol.shape == (2,)
+
+
 def test_each_control_changes_only_its_declaration():
     base = af.registered(af.LADDER_WORLD)
     changed = af.rates(af.LADDER_WORLD, "k_int")

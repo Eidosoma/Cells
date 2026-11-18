@@ -227,7 +227,8 @@ def criteria():
                   "each batched world bitwise its scalar run: reported", judged=False),
         criterion("Q6_idle", [f"{d}.Q6.idle"], "ge", 1,
                   "§4.8's claim 2: every multiplier zero, and no populations, bitwise the world "
-                  "without the operator on every inner field and row"),
+                  "without the operator on every inner field and row; the zero world's own "
+                  "fields frozen; no populations statically idle"),
         criterion("Q6_twins", [f"{d}.Q6.twins"], "ge", 1,
                   "the value twins identical in program text and closed-over constants"),
         criterion("Q6_signature", [f"{d}.Q6.signature"], "ge", 1,

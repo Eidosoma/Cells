@@ -780,16 +780,16 @@ def q6_signature(name, context):
     base = af.registered(af.LADDER_WORLD)
     no_route = copy.deepcopy(base)
     no_route["populations"][0]["internalisation"] = None
-    inward = af.registered(af.LADDER_WORLD)
-    inward["populations"][0]["owner"] = dict(cell="cell_0", orientation="inward",
-                                             faces_node="cell_0")
-    inward["populations"][0]["internalisation"] = None
-    inward["nodes"]["cell_0"]["L_mM"] = 1e-4
-    cases = {"internalisation_differs": (base, no_route), "facing_differs": (no_route, inward),
-             "same_structure": (base, batch_world(BATCH_VARIANTS[1]))}
+    no_route = af.build(no_route)
+    # The same layout (the contact patch kept), the population facing the cytosol instead.
+    inward = _engine_edit(no_route, lambda raw: _first_pop(raw).update(
+        owner=dict(patch="wall_cell_0", face="inside")))
+    cases = {"internalisation_differs": (af.build(base), no_route),
+             "facing_differs": (no_route, inward),
+             "same_structure": (af.build(base), af.build(batch_world(BATCH_VARIANTS[1])))}
     out = {}
     for case, (x, y) in cases.items():
-        specs = [parse_spec(af.build(x)), parse_spec(af.build(y))]
+        specs = [parse_spec(x), parse_spec(y)]
         try:
             plan_batch(BatchSpec((WorldSpec(1, specs[0]), WorldSpec(2, specs[1])), 2, 10**8,
                                  2**33))

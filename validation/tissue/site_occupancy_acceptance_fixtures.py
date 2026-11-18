@@ -112,7 +112,7 @@ def build(world, *, dt=DECLARED_DT, solver=SOLVER, operator=True, populations=Tr
     )
     if len(cells) + len(finite) != len(nodes):
         raise ValueError("every node is a cell or a finite outside node")
-    contacts, populations = [], []
+    contacts, declared = [], []
     for p in world["populations"]:
         patch, face = patch_of(p)
         owner = p["owner"]
@@ -120,7 +120,7 @@ def build(world, *, dt=DECLARED_DT, solver=SOLVER, operator=True, populations=Tr
             contacts.append((patch, owner["cell"], owner["faces_node"]))
         k_int = None if p["internalisation"] is None else p["internalisation"]["rate_per_s"]
         destination = None if p["internalisation"] is None else p["internalisation"]["destination"]
-        populations.append(
+        declared.append(
             sfx.population(
                 p["id"],
                 patch=patch,
@@ -155,9 +155,9 @@ def build(world, *, dt=DECLARED_DT, solver=SOLVER, operator=True, populations=Tr
         return sfx.with_site_occupancy(raw, [], ligands=[sfx.ligand(trace_mM=trace)], controls={})
     return sfx.with_site_occupancy(
         raw,
-        populations,
+        declared,
         ligands=[sfx.ligand(trace_mM=trace)],
-        controls=_schedules(world, populations),
+        controls=_schedules(world, declared),
     )
 
 
