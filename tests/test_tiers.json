@@ -169,7 +169,9 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json",
   "/mnt/workspaces/Cells/core-fixes-20261116/measure-9b0d8baa/measured.json",
   "/mnt/workspaces/Cells/core-fixes-landing-20261118/measure/measured.json",
-  "/mnt/workspaces/Cells/crossrev-acceptances-20261118/tiers-770d66d3/measure-01/measured.json"
+  "/mnt/workspaces/Cells/crossrev-acceptances-20261118/tiers-770d66d3/measure-01/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-d5c44163/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-44550c4f/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1390,6 +1392,22 @@
    "root": ".claude/worktrees/crossrev-acceptances",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T15:50:17+00:00"
+  },
+  {
+   "git_revision": "d5c441637daf7730f3f759a06ac3de6dcf753fac",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-d5c44163",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T19:32:36+00:00"
+  },
+  {
+   "git_revision": "44550c4f26cf5565836f95f0ffb8e7e947215e62",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-44550c4f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T19:33:49+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2904,6 +2922,14 @@
     }
    },
    {
+    "file": "tests/unit/test_host_table.py",
+    "seconds": 4.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
+   },
+   {
     "file": "tests/unit/test_inner_view_declarations.py",
     "seconds": 4.43,
     "exit_code": 0,
@@ -2997,6 +3023,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_moved_rows_guard.py",
+    "seconds": 3.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -3707,10 +3741,10 @@
    },
    {
     "file": "tests/unit/test_run_view_door_s.py",
-    "seconds": 17.68,
+    "seconds": 17.77,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 6
     }
    },
    {
@@ -4256,6 +4290,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_populations.py",
+    "seconds": 17.11,
+    "exit_code": 0,
+    "counts": {
+     "passed": 14
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_registry_laws.py",
+    "seconds": 3.98,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -5283,6 +5333,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_run_view_formats.py",
+    "seconds": 25.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
