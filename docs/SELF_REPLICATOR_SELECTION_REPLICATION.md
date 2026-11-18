@@ -17,12 +17,13 @@ doi:[10.1038/s41929-025-01409-3](https://doi.org/10.1038/s41929-025-01409-3) ("t
   mutations under tuneable photocatalytic cofactor function", Zenodo record 15104674, 4 February
   2025 (concept doi:[10.5281/zenodo.15104673](https://doi.org/10.5281/zenodo.15104673)).
   - It is one MATLAB file, `FAMonomers5d.m`, under CC BY 4.0.
-  - It is never copied into Cells. §5.1 says why it was not run.
+  - It is never copied into Cells. §5.1 and §5.4 say why it has not run.
 
 **Status: a replication note, its criteria registered before any run.** First task of a new
 track, 18 November 2026.
 - Docs only: nothing in `src/`, `tests/` or `validation/` changes.
-- Development work, not judged (D138; the question is §6).
+- Development work, not judged (D138; the question is §6). D221: development first; a judged
+  comparison once both chemical systems run.
 - Branch `self-replicator-replication`, from main 0a91d426.
 
 **Sources of numbers.** Each number below says where it comes from:
@@ -30,11 +31,12 @@ track, 18 November 2026.
 - **from the workbooks**, by sheet;
 - **read** off a plotted figure;
 - **derived** here (**S**: this note's own arithmetic, with the script that generated it);
-- **from the code** (it was not run, §5.1).
+- **from the code** (it has not run: §5.1, §5.4).
 
 **Evidence.** The scripts that read the workbooks use the standard library alone, run with
 `python -I`, and write their outputs beside them:
-- `/mnt/workspaces/Cells/self-replicator-selection-20261118/`, in `scripts/` and `results/`;
+- `/mnt/workspaces/Cells/self-replicator-selection-20261118/`, in `scripts/` and `results/`, and the
+  Octave runs in `runs/` (§5.4);
 - the downloads in `downloads/<name>/`.
 
 Nothing from the downloads is committed.
@@ -64,8 +66,12 @@ kinetic model runs out of process, as a reference, only if its licence allows.
   - planted controls P1–P3;
   - criteria M0–M6 for the authors' model.
 - **The reference** (§5).
-  - The authors' code (CC BY 4.0, MATLAB) was not run: installing Octave was refused by the
-    session's permission system. The SI's plotted model outputs stand in for it.
+  - The authors' code (CC BY 4.0, MATLAB) has not run.
+    - First, this agent's install of Octave was refused.
+    - Then, in the lead's Octave 9.4.0 (D221), the unmodified code stopped at its `ode15s` call
+      (§5.4). Octave's `ode15s` does not pass extra parameters as MATLAB's does, and this build
+      has no SUNDIALS at all.
+    - The SI's plotted model outputs stand in for it.
   - The model is not admissible in Cells' origin-of-life family (half orders, irreversible steps,
     no oxidant). So Cells' first model is its own: R0, three hexamer types in stacks under flow
     in the dark, then R1 with light.
@@ -74,11 +80,14 @@ kinetic model runs out of process, as a reference, only if its licence allows.
     potential, continuous flow, stack breaks and a ring family.
   - 15–23.5 agent-days with their references. The whole replication is 23.5–36, after OL3
     (D212).
-- **Questions** (§7.3): nine open for the lead, eight of them on physics (D220 answers a tenth),
-  and four for the user.
+- **Questions** (§7.3).
+  - The user answered all four (D221): development first; R0 and R1 to start, after OL3.
+  - Ten are open for the lead: eight on physics, the owners (L10), and how to run the authors'
+    model (L11, new). D220 answers L9.
+  - One is new for the user: whether a parameter-forwarding shim counts as unmodified (U5).
 
 **Engine models run: none.** Docs only. The milestones in §7 name the models they would run. The
-authors' model was not run (§5.1).
+authors' model has not run (§5.1, §5.4).
 
 ## 1. What the paper shows
 
@@ -676,6 +685,8 @@ references agent to derive independently):
 
 ### 5.1 The authors' model was not run
 
+*History, as written before the user's D221. §5.4 records the run in the lead's Octave 9.4.0.*
+
 - **Its licence allows it.** CC BY 4.0, from the Zenodo record's metadata: it may be run and
   cited, with attribution.
 - **It was downloaded and read.** Its md5 matches the record's.
@@ -762,6 +773,102 @@ which every later world needs. **Then R1,** then:
 
 R2–R5 need F6's ring family; R0 and R1 need only its minimal subset.
 
+### 5.4 The run in Octave 9.4.0 (D221; 18 November 2026, evening): stopped at the solver
+
+- **The environment.** GNU Octave 9.4.0, the Debian package 9.4.0-1, installed system-wide by the
+  lead with the user's leave (D221; `octave-install.log` in the evidence folder).
+  - It was started as `octave-cli --norc --no-history --quiet --no-window-system`, with no
+    startup files.
+  - It ran on CPUs 6 and 7 at nice 10, under a 2 GB memory cap, in a run folder of its own.
+- **The code.** `FAMonomers5d.m`, unmodified.
+  - md5 8fdd5a351dbbec8db95e70770454a5f7, the Zenodo record's.
+  - sha256 6c4cbf4a7c704e804c35e5bddbd100ede6db5a19b381bf89c18cbd7deecbab9a.
+- **The driver,** `scripts/famonomers_reference.m` (sha256
+  1733c66fbb70a596d6792f4105c0e2ec1d422c6f0181e2c5337525ea255232f5; also in
+  `runs/probe-02/inputs.sha256`).
+  - **Before any call,** it compares the file's md5 with the record's, and records the sha256.
+  - **What it calls.** It adds only the code folder, which holds that file alone, to the path. It
+    calls the function through its own five arguments, with `draw` false.
+  - **What it would run:** the registered cases M0–M4 in one pass, the default call first, with M5
+    and M6 from its outputs.
+  - **What has executed:** only its checks and its first call. Its case loops, readouts and CSV
+    writing are untested.
+- **The command,** with paths relative to the evidence folder (run `runs/probe-02`, the default
+  call alone):
+
+  `systemd-run --user --scope -p MemoryMax=2G --quiet taskset -c 6,7 nice -n 10 timeout 600
+  octave-cli --norc --no-history --quiet --no-window-system scripts/famonomers_reference.m
+  downloads/zenodo-15104674-code runs/probe-02 first`
+- **The result: the function did not return.**
+  - Octave refused the `ode15s` call at the code's line 71, in `myfun5c`: "ode15s: invalid value
+    assigned to field 'fcn'" (`Octave:invalid-input-arg`, from Octave's `check_default_input.m`,
+    line 41).
+  - Nothing past that call ran (`runs/probe-02/failure.json`).
+- **Why: two differences that block, and one that does not.**
+  1. **Extra parameters.** The code passes six parameters to its ODE function after the options
+     structure, `ode15s(@f, tspan, y0, options, p1, …, p6)`.
+     - **MATLAB:** its `ode15s` forwards them to f, an older form it still accepts (from memory).
+     - **Octave 9.4:** its `ode15s` reads only the options from its fourth argument, and it
+       requires an ODE function of exactly two inputs (`ode15s.m` lines 106–110, its `wrap`
+       function, and `check_default_input.m`). It never forwards the parameters.
+  2. **No SUNDIALS in this build.** Octave's `ode15s` runs on SUNDIALS IDA, which this build has
+     disabled: `__octave_config_info__ ("build_features")` gives SUNDIALS_IDA 0 and
+     SUNDIALS_NVECSERIAL 0. No SUNDIALS package is installed.
+     - So Octave's own `ode15s` refuses even dy/dt = −y: "support for sundials_ida,
+       sundials_nvecserial was unavailable or disabled when Octave was built"
+       (`runs/interpreter-check-01`). Its `ode45` solves the same equation.
+     - Forwarding the parameters alone would therefore not make the code run here.
+     - Installing Debian's SUNDIALS libraries would not help either: the build features are fixed
+       when Octave is compiled, so only a different build enables `ode15s`.
+  3. **`NonNegative` is ignored.** The code sets it on all 14 concentrations.
+     - **Octave:** its `ode15s.m` never reads the option. Its `ode45` and `ode23` warn that they
+       ignore it.
+     - **Not inspected:** the compiled `__ode15__`, which receives the options structure, and which
+       cannot run in this build.
+     - **MATLAB:** its `ode15s` honours it (from memory).
+     - **The effect.** This would not stop a run. But a run could differ wherever a concentration
+       would dip below zero, and the code takes square roots of concentration products.
+- **Stopped there, before any shim or package install,** as the lead instructed. Nothing was
+  retried.
+- **The criteria** (§2.5): none is evaluated, because the function did not return. That is §2.5's
+  condition for the model to count as having run.
+
+  | Criterion | Value | Verdict |
+  | --- | --- | --- |
+  | M0, Supplementary Fig. 121 | — | Not evaluated: no run |
+  | M1, Supplementary Fig. 122 | — | Not evaluated: no run |
+  | M2, Supplementary Fig. 123 | — | Not evaluated: no run |
+  | M3, Supplementary Fig. 124's grid | — | Not evaluated: no run |
+  | M4, Supplementary Fig. 125's grid | — | Not evaluated: no run |
+  | M5, SI Table 5's analogue | — | Not evaluated: no run |
+  | M6, the distance from a steady state | — | Not evaluated: no run |
+
+- **The reference stays §5.1's readings of the SI's plots.**
+- **What would let it run** (for the lead: §7.3, L11). It needs two things together, or one of two
+  alternatives:
+  - **An Octave with SUNDIALS IDA.**
+    - **Candidates.** conda-forge's two builds of 9.4.0, D221's version, list SUNDIALS 7.2 and 7.3
+      as dependencies, and its 10.3.0 lists SUNDIALS 7 (metadata read; build features not checked).
+      Either would go in an environment of its own.
+    - **Who installs it.** That route, through micromamba, is the install the permission system
+      refused this agent (§5.1). It was not retried, and it is not for another agent to retry. It
+      is the lead's or the user's to do.
+  - **And a shim that forwards the parameters.**
+    - **What it is:** a separate `ode15s.m`, on the path ahead of Octave's. It binds the six
+      parameters into a two-input function and calls Octave's own `ode15s`. The authors' file
+      stays unchanged.
+    - **Whether that counts as "unmodified"** (D220's and D221's term) is the user's call (§7.3,
+      U5).
+    - **Why it is needed:** 9.4's source never forwards them. Version 10's source was not read,
+      so whether 10 needs it too is not known.
+    - **Two checks would qualify it.**
+      - **Pass-through:** its solution of a test ODE with parameters equals Octave's own solution
+        with the parameters bound by hand, bitwise.
+      - **Non-negativity:** the run's concentrations stay real and non-negative throughout. That
+        would show the ignored `NonNegative` had nothing to clip.
+  - **Or MATLAB,** which is not available here.
+  - **Or the model stays unrun,** with the SI's plotted outputs as the reference (§5.1).
+
 ## 6. What a judged comparison would need: a D138 question for the user
 
 A judged comparison needs the user's approval and a registered protocol (D138). Proposed, for the
@@ -788,7 +895,7 @@ user to decide:
 | Milestone | Content | Engine models it runs | Needs | Agent-days (**S**) |
 | --- | --- | --- | --- | --- |
 | **SR0** Desk | This note; the lead's rulings and the user's answers on §7.3's questions | None (design) | — | Done; 0.5 for the amendments |
-| **SR1** Reference | The authors' model run out of process against M0–M6 | None. It is tooling (D138; AGENTS.md), and D220 approves it as a reference since the licence allows | An environment (U3) | 0.5 |
+| **SR1** Reference | The authors' model run out of process against M0–M6. Tried on 18 November, evening, in Octave 9.4.0, and stopped at the solver (§5.4) | None. It is tooling (D138; AGENTS.md), and D220 and D221 approve it as a reference | An Octave with SUNDIALS IDA, and the lead's ruling on a shim (L11) | 0.5 |
 | **OL10** Stacks and flow (new) | F1, F2, F4 and F5, behind OL2's invariance gate; tests and tier rows | `cells.assembly_lineages@2` with `cells.linear_stack_geometry@1`, `cells.phase_exchange@1` (`end_capture`), the side-binding law, `cells.shear_fission@1` (stack breaks) and the flow operator | OL3 landed | 8–13 |
 | **OL4b** Light | F3 | The photon source, with `cells.stochastic_mass_action@1` | OL4 | 2–3 |
 | **Ring family** | F6 | `cells.stochastic_mass_action@1` over the family | OL8's family machinery | 2.5–4 |
@@ -799,6 +906,8 @@ user to decide:
 | **In all** | | | | **23.5–36** |
 
 **The order.**
+- **D221: R0 and R1 first,** about 16–25 agent-days after OL3. The rest of the replication is
+  decided after them.
 - **Lipids come first (D212).** No code starts before OL3 lands.
   - F1, F2, F4 and F5 extend OL2's geometry interface and shared pool, and OL3's fission, streams
     and transfer.
@@ -848,6 +957,14 @@ this paper as a strong starting point. Against that idea:
   - This note does that reading for D199's other candidate, the Otto-type replicators.
 
 ### 7.3 Questions
+
+**The user answered U1–U4 on 18 November 2026 (D221).** The questions below are kept as they were
+asked.
+- **U1:** development first. A judged comparison against the paper's orderings follows once both
+  chemical systems run in Cells, with the authors' model as a reported reference only.
+- **U2:** R0 and R1 to start, after OL3.
+- **U3:** the install, done by the lead: Octave 9.4.0 (§5.4).
+- **U4:** the recovery experiment is registered separately, after the basic replication works.
 
 **For the lead** (physics choices, to be ruled into the design note's §0.2):
 1. **L1, light and the cofactor's activity.**
@@ -914,8 +1031,22 @@ this paper as a strong starting point. Against that idea:
     - **The proposal:** OL10 by the OL2/OL3 builder after OL3; OL4b with OL4's builder; F6 with
       OL8's builder and the binding owner; the replication's driver,
       `validation/self_replicator_selection/`, by this track.
-    - **The index:** an index line in `docs/README.md` and a row in `docs/PAPER_BACKLOG.md`, which
-      this note leaves to the lead.
+    - **The index:** an index line in `docs/README.md` and a row in `docs/PAPER_BACKLOG.md`. The
+      lead added both (5c9f9038).
+11. **L11, how to run the authors' model (new, §5.4).**
+    - **The options:**
+      - (a) an Octave with SUNDIALS IDA (conda-forge's 10.3.0, or a SUNDIALS-enabled 9.4) and a
+        shim that forwards the parameters, a separate `ode15s.m`, qualified by its pass-through
+        and non-negativity checks;
+      - (b) MATLAB;
+      - (c) leave it unrun, with the SI's plotted outputs as the reference.
+    - **Recommended: (a),** if a SUNDIALS-enabled Octave can be installed.
+      - **The build:** conda-forge's 9.4.0 keeps D221's version.
+      - **Who installs it:** that is the micromamba route refused to this agent (§5.1), not
+        retried and not for another agent to retry. It is the lead's or the user's to do.
+      - **The shim** changes no line of the authors' file. It is still a declared change of
+        environment, so its two checks are reported with the run, and U5 asks the user whether
+        it counts as unmodified.
 
 **For the user:**
 1. **U1, D138.** Development only now (recommended)? Then a judged comparison against the paper's
@@ -934,6 +1065,12 @@ this paper as a strong starting point. Against that idea:
      plotted outputs as the reference?
 4. **U4, an extension beyond the replication.** Perturbation and recovery, as the reading
    summary's experiment (§7.2), registered on its own after the replication?
+5. **U5, what "unmodified" means (new, §5.4).**
+   - **The case.** The authors' file cannot run in Octave 9.4 without a shim, a separate
+     `ode15s.m` that forwards its six parameters. Version 10's source was not read. Their file
+     stays byte for byte as downloaded.
+   - **The question.** Does a run through such a shim still count as "running it unmodified"
+     (D220, D221)?
 
 ## Sources
 
@@ -951,8 +1088,10 @@ this paper as a strong starting point. Against that idea:
 | Supplementary Data File 1 (MOESM3) | Read: the sheets for Supplementary Figs. 96–101 and 104–120 |
 | Source Data for Figs. 2–5 (MOESM7–MOESM10) | Read whole |
 | Supplementary Videos 1–3; the Reporting Summary | Not downloaded |
-| Zenodo record 15104674: metadata and `FAMonomers5d.m` | Read. CC BY 4.0. Not run (§5.1) |
+| Zenodo record 15104674: metadata and `FAMonomers5d.m` | Read. CC BY 4.0. Not run: no interpreter at first (§5.1); in Octave 9.4.0 it stopped at its solver call (§5.4) |
 | micromamba 2.10.0 (conda-forge) | Downloaded; not extracted or run, since the command was refused |
+| GNU Octave 9.4.0 (Debian 9.4.0-1), installed by the lead (D221) | Its `ode15s.m`, `check_default_input.m` and `odeset.m` read; its build features checked (SUNDIALS disabled) |
+| conda-forge's octave package metadata | Read for the dependencies of its 9.4.0 and 10.3.0 builds: SUNDIALS 7 |
 
 **Engine documents read:**
 - AGENTS.md;
@@ -967,6 +1106,7 @@ this paper as a strong starting point. Against that idea:
 - `docs/PAPER_BACKLOG.md`.
 
 **Cited from memory, not read for this note:**
+- MATLAB's `ode15s` forwarding extra parameters and honouring `NonNegative`;
 - the standard redox potentials of O₂ and of cysteine-like disulfides;
 - singlet oxygen's excitation energy;
 - the photon energy E = hc/λ;
