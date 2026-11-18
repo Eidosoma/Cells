@@ -362,12 +362,17 @@ try {
     check("a real press on an arm's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === `run:${LINE.runs[0].id}` && s.panel.includes(ARMS[0]) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
     await evaluate(`${V}.select(null)`);
     await sleep(600);
+    // The list's pressed row is the example's: with the line shown it says so, in the line's own short name.
+    const lineRow = await evaluate(`${V}.shadowRoot.querySelector('.exp-row[aria-pressed="true"]')?.textContent || null`);
+    check("with the line shown, the list's pressed row (the example's) carries the line's own short name under the example's", Boolean(lineRow) && lineRow.includes(ENTRY.short), JSON.stringify(lineRow));
     // The way to the networks: the card's own button; the seven-cell network is shown.
     const back = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
     if (back) await click(back.x, back.y, 1500);
     const atNetworks = await until(networks, 240);
     const net = await evaluate(`({ run: ${L}.runId || null, cells: ${L}.sheet?.cells.length ?? 0 })`).catch(() => ({}));
     check("a real press on the card's button shows the example's networks: the seven-cell network", Boolean(back) && atNetworks && net.run === `${WHOLE}--figure5-network-g1` && net.cells === 7, JSON.stringify(net));
+    const netRow = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".exp-within")].length`);
+    check("with the networks shown, the list's rows are as they were: no part named under the example's", netRow === 0, String(netRow));
     // And back to the tissue by the example's card, then to the sheet by a real press on its door over the line.
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${PART}` });
     await until(shownPart(PART), 240);
@@ -404,6 +409,9 @@ try {
       await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
       await sleep(1800);
       const bar = await evaluate(`(() => { const root = ${V}.shadowRoot, box = (el) => { const r = el?.getBoundingClientRect(); return r && r.width ? [r.left, r.top, r.right, r.bottom] : null; }; const stamp = root.querySelector(".stamp"), list = root.querySelector(".bar-end .pill-button"), s = box(stamp), b = box(root.querySelector(".bar")), heads = [...root.querySelectorAll(".label-tissue-head, .label-tissue-caption, .label-tissue-door")].map(box).filter(Boolean); return { stamp: s, words: s ? stamp.textContent : "", inRow: !s || (s[1] >= b[1] && s[3] <= b[3]), over: s ? heads.filter((h) => !(h[2] <= s[0] || h[0] >= s[2] || h[3] <= s[1] || h[1] >= s[3])).length : 0, heads: heads.length, list: Boolean(list) && list.getBoundingClientRect().right <= innerWidth && list.scrollWidth <= list.clientWidth + 1, sideways: document.documentElement.scrollWidth > innerWidth + 1 }; })()`);
+      // The part's standing in sight in full: the stamp's first words where they show, else on the picture.
+      const seen = await evaluate(`(() => { const root = ${V}.shadowRoot, stamp = root.querySelector(".stamp"); let stampShows = false; if (stamp && stamp.getClientRects().length) { const text = document.createTreeWalker(stamp, NodeFilter.SHOW_TEXT).nextNode(); if (text && /^Development work, not judged/.test(text.data)) { const range = document.createRange(); range.setStart(text, 0); range.setEnd(text, 28); stampShows = range.getBoundingClientRect().right <= stamp.getBoundingClientRect().right - 1; } } const el = root.querySelector(".label-tissue-door .tissue-standing"), r = el?.getBoundingClientRect(); return { stampShows, picture: Boolean(r && r.width && r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight) && el.textContent === "Development work, not judged." }; })()`);
+      check(`${width} by ${height}: "Development work, not judged" is in sight in full, in the bar's stamp or on the line's picture`, seen.stampShows || seen.picture, JSON.stringify(seen));
       check(`${width} by ${height}: the stamp stands in the bar's row, over none of the pictures' names, beginning with the part's standing, the List whole`, bar.inRow && bar.over === 0 && bar.heads > 0 && bar.list && !bar.sideways && (!bar.stamp || /^Development work, not judged/.test(bar.words)), JSON.stringify(bar));
     }
     // An address that names something of the networks' own view still opens them: a run, or a run to choose.
@@ -429,6 +437,9 @@ try {
     let s = await state();
     check("on a phone the lines stand one above the other, inside the window, their cells large enough to see", s.tissues.length === LINE.runs.length && s.tissues.every((t, k) => t.left >= 0 && t.right <= WIDTH && (k === 0 || t.top > s.tissues[k - 1].bottom) && t.cell >= 10), JSON.stringify(s.tissues));
     check("on the picture the sheet's small door, inside the window", s.door.length === 1 && s.door[0].inside, JSON.stringify(s.door));
+    // The bar's stamp is hidden and the card folded: the line's picture says its standing on the first screen, unpressed.
+    const standing = await evaluate(`(() => { const root = ${V}.shadowRoot, el = root.querySelector(".label-tissue-door .tissue-standing"); if (!el) return null; const r = el.getBoundingClientRect(), at = root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { text: el.textContent, inside: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, clear: Boolean(at && (at === el || el.contains(at))), stamp: getComputedStyle(root.querySelector(".stamp")).display, open: ${V}.state.viewOpen }; })()`);
+    check("on a phone the line's first screen says \"Development work, not judged.\" on the picture, in the window and under nothing, without a press", Boolean(standing) && standing.text === ENTRY.tissue.says[0] && standing.inside && standing.clear && !standing.open, JSON.stringify(standing));
     const colours = await drawn(lineSamples);
     check("the colours as drawn are the scale's colours of the stated values, in the dark page's tokens", allClose(colours, 8), JSON.stringify(colours.filter((c) => !close(c)).slice(0, 3)));
     await shot("line");
@@ -579,6 +590,10 @@ try {
     check("3. the line stays in sight beside the sheet, labelled as the record the threshold comes from (section 7.5)", lineTissues.length >= 1 && lineTissues.every((t) => t.top >= 56 && t.bottom <= HEIGHT - 90) && s.group.length === 1 && s.group[0].text === SHEET_ENTRY.tissue.beside.says && s.group[0].inside, JSON.stringify([lineTissues, s.group]));
     // 4. No heading or caption reads the sheet as the preprint's experiment.
     const words = [s.heading, s.stamp, ...[...s.heads, ...s.caption, ...s.group, ...s.over, ...s.ends].map((tag) => tag.text)].join(" ");
+    // 4. The list's pressed row is the example's (its name, with the preprint's authors): it carries the sheet's own short
+    // name under it, so that it reads as the example and, within it, the sheet, not as the sheet's attribution.
+    const sheetRow = await evaluate(`${V}.shadowRoot.querySelector('.exp-row[aria-pressed="true"]')?.textContent || null`);
+    check("4. with the sheet shown, the list's pressed row (the example's, with its authors) carries the sheet's own short name under it", Boolean(sheetRow) && sheetRow.includes(SHEET_ENTRY.short), JSON.stringify(sheetRow));
     check("4. no heading or caption reads the sheet as the preprint's experiment: it is Cells' extension", /Cells' extension/.test(s.heading + s.stamp) && !/Grodstein|Levin|preprint|after .* \(2026\)/i.test(words), words.slice(0, 300));
     check("the sheet's arms in view stand inside the room, their cells large enough to see", s.tissues.filter((t) => t.part === SHEET).every((t) => t.left > 290 && t.right <= WIDTH - 4 && t.bottom < HEIGHT - 90 && t.cell >= 10), JSON.stringify(s.tissues));
     await shot("sheet");
@@ -622,6 +637,9 @@ try {
     await sleep(2000);
     s = await state();
     check("on a phone too: the extension sentence in full inside the window, the bracket's words and the line's in sight", s.caption.length === 1 && s.caption[0].inside && s.caption[0].text === `Development work, not judged. ${EXTENSION}` && s.over.every((tag) => tag.inside) && s.group.length === 1 && s.group.every((tag) => tag.inside), JSON.stringify([s.caption, s.over, s.group]));
+    // On a phone the folded chip names the sheet; opened, the list's chosen example says the sheet is shown within it.
+    const chosen = await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-experiment"); return select ? [select.selectedOptions[0]?.textContent || "", select.parentElement.querySelector(".exp-within")?.textContent || ""] : null; })()`);
+    check("on a phone the card's list (a list to choose from) says the sheet's own short name with the example chosen, and under it", Boolean(chosen) && chosen.every((words) => words.includes(SHEET_ENTRY.short)), JSON.stringify(chosen));
     await shot("sheet-phone");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   }

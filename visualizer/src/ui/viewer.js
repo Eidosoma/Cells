@@ -756,7 +756,10 @@ class CellsViewer extends HTMLElement {
     // schema/QUANTITY_LAYERS.md, as the Cell view's card does for an illustrated flux).
     const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
     // A model system's view in the Experiments tab's place (showExample): the tab's list at the head of its card, the way back to the runs.
-    const listed = example ? this.runCard({ heading: chrome.card.heading, experiments: this.replays.listRows(this.state.part ? wholeRunOf(this.model.raw.replays, this.state.part) : null), doors: this.replays.doors.map((item) => item.entry), listOnly: true }) : [];
+    // While a part is shown, the example's pressed row says which part of it is shown, in the part's own short name, so
+    // that the row (the example's name, with its authors) reads as the example and, within it, the part, not as the part's.
+    const partShown = this.state.part ? (this.model.raw.replays?.experiments || []).find((item) => item.id === this.state.part) : null;
+    const listed = example ? this.runCard({ heading: chrome.card.heading, experiments: this.replays.listRows(this.state.part ? wholeRunOf(this.model.raw.replays, this.state.part) : null), doors: this.replays.doors.map((item) => item.entry), listOnly: true, within: partShown ? partShown.short || partShown.label : null }) : [];
     if (chrome.card) this.viewCard.replaceChildren(...marked, ...listed, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
     // A sweep's chart beside the picture on a wide window, out of the experiment's card, which the legend leaves little room.
@@ -1438,7 +1441,7 @@ class CellsViewer extends HTMLElement {
     return [choose, this.sweepChart(shown, pick), units ? h("p", { class: "card-text run-units" }, units) : null].filter(Boolean);
   }
 
-  runCard({ heading, text, outcome, experiments: listed = [], runs, klass, ended, colour, details, sweeps = [], doors = [], units = null, listOnly = false }) {
+  runCard({ heading, text, outcome, experiments: listed = [], runs, klass, ended, colour, details, sweeps = [], doors = [], units = null, listOnly = false, within = null }) {
     // The page's other examples (a model system's entry, e.g. GARD) stand in the list beside the experiments, in their entry's own words; a press opens their view.
     const experiments = [...listed, ...doors.map((id) => modelSystemOf(this.model?.raw, id)).filter(Boolean).map((entry) => ({ id: entry.id, label: entry.label, door: true, plain: entry.plain, active: entry.id === this.state.example, first: `door:${entry.id}` }))];
     const lens = this.current;
@@ -1466,15 +1469,18 @@ class CellsViewer extends HTMLElement {
         const row = (item) =>
           h(
             "button",
-            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.door ? item.plain || "" : item.outcome?.spoken || ""}`, title: item.door ? item.plain || "" : null, dataset: item.door ? { door: item.id } : {}, onclick: () => pick(item.first) },
+            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.door ? item.plain || "" : item.outcome?.spoken || ""}${inside(item) ? ` Shown within it: ${within}.` : ""}`, title: item.door ? item.plain || "" : null, dataset: item.door ? { door: item.id } : {}, onclick: () => pick(item.first) },
             h("span", { class: "exp-name" }, item.label),
-            h("span", { class: "exp-found" }, found(item.outcome))
+            h("span", { class: "exp-found" }, found(item.outcome)),
+            // The part of this example that is shown (its short name), on a line of its own under the example's.
+            inside(item) ? h("span", { class: "exp-within" }, within) : null
           );
+        const inside = (item) => Boolean(within) && item.active && !item.door;
         const judged = experiments.filter((item) => !item.development && !item.example && !item.door), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example), opened = experiments.filter((item) => item.door);
         const page = experiments.every((item) => item.door || item.listed);
         const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label, dataset: page ? { examples: "page" } : {} }, list.map(row))];
         // Many, or more than one on a phone, where rows would cover the picture: a list to choose from, with a development run and an example named as such.
-        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : item.door ? "Model system: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}`]), experiments.find((item) => item.active)?.first)];
+        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : item.door ? "Model system: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}${inside(item) ? ` · ${within}` : ""}`]), experiments.find((item) => item.active)?.first), experiments.some(inside) ? h("p", { class: "exp-within exp-within-chosen" }, within) : null].filter(Boolean);
         // One: its name. Several: a row each, with what the record says it found.
         if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
         return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : []), ...(opened.length ? group(opened, opened.length > 1 ? "Model systems" : "Model system") : [])];

@@ -265,6 +265,10 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .exp-name { font-family: var(--font-display); font-weight: 600; font-size: 13px; }
 .exp-found { display: flex; flex-wrap: wrap; gap: 3px 10px; color: var(--muted); }
 .exp-found .fact { font-size: 11.5px; font-weight: 400; }
+/* While a part of the example is shown: its short name under the example's row, a corner mark joining them. */
+.exp-within { position: relative; padding-left: 15px; font-size: 11.5px; font-weight: 600; color: var(--fg); }
+.exp-within-chosen { margin: 4px 0 0 2px; }
+.exp-within::before { content: ""; position: absolute; left: 3px; top: 1px; width: 7px; height: 7px; border-left: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); }
 .found { display: grid; gap: 4px; }
 .found-facts { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .run-ended { display: flex; align-items: center; gap: 6px; }

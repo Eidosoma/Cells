@@ -75,6 +75,9 @@ export const tissueCss = `
 .tissue-door .tissue-door-title { font-weight: 600; font-size: 13.5px; }
 .tissue-door .tissue-door-sub { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .tissue-back { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 0; font: inherit; font-size: 12.5px; color: var(--accent); background: var(--bg-raised); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; min-height: 36px; cursor: pointer; }
+/* The way back to the example's networks stands on one line in the wide card, so that it is whole above the card's fold
+   on a window 720 px high now that the list's pressed row carries a line for the part shown. */
+@media (min-width: 760px) { .tissue-way-back { white-space: nowrap; min-height: 30px; padding: 4px 12px; font-size: 12px; } }
 .tissue-back:hover { border-color: var(--accent); }
 .tissue-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tissue-says { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 12.5px; line-height: 1.4; }
@@ -131,7 +134,9 @@ export const tissueCss = `
 .label-tissue-key .tissue-key-item { white-space: normal; }
 .tissue-key-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; vertical-align: -1px; }
 .tissue-key-dot.is-bead { width: 8px; height: 8px; box-shadow: 0 0 0 1.5px var(--fg); }
-.label-tissue-door { pointer-events: auto; }
+.label-tissue-door { pointer-events: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; width: max-content; white-space: normal; }
+/* The line's standing on its picture, where the bar's stamp may not show it. */
+.label-tissue-door .tissue-standing { font-size: 12.5px; font-weight: 600; color: var(--fg); background: color-mix(in srgb, var(--bg) 90%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
 .label-tissue-door .tissue-door-button { margin: 0; min-height: 32px; padding: 4px 12px; font-size: 12.5px; }
 .tissue-door-button { color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
 `;

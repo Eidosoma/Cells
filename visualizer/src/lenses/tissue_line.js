@@ -239,6 +239,11 @@ export class TissueLineLens {
    * under the other: the part's own tissues, then a group beside them (smaller). Lines stand one above the other, each
    * with its whole run as a map beside it (under it on a narrow window); sheets stand three to a row.
    */
+  /** The part's standing, in its record's own words ("Development work, not judged."), where its entry says it; else null. */
+  standing() {
+    return (this.line?.entry?.tissue?.says || []).find((words) => /^Development work, not judged\.$/.test(words)) || null;
+  }
+
   build() {
     this.dropPieces();
     this.labels.clear();
@@ -302,10 +307,17 @@ export class TissueLineLens {
     for (const block of blocks) {
       const { group } = block;
       if (block.role === "main" && group.caption) block.caption = made("tissue-caption", [group.caption], { maxWidth: Math.min(roomWidth, 640) });
-      else if (block.role === "main" && this.door()) {
-        // From the line: the sheet's door, small, at the picture's top right (its caption is in the card's block).
+      else if (block.role === "main" && (this.door() || this.standing())) {
+        // From the line: the sheet's door, small, at the picture's top right (its caption is in the card's block). Where the
+        // bar's stamp may not show the line's standing (it is hidden on a phone, and shortened under its first words on a
+        // window under 1024 px), the picture says it on the same line, in the record's own words.
         const other = this.door();
-        block.door = made("tissue-door", [h("button", { class: "tissue-back tissue-door-button", type: "button", dataset: { part: other.id }, onclick: () => this.open(other.id) }, other.short || other.label)], { title: other.tissue.caption });
+        const standing = this.stage.width < 1024 ? this.standing() : null;
+        block.door = made(
+          "tissue-door",
+          [standing ? h("span", { class: "tissue-standing" }, standing) : null, other ? h("button", { class: "tissue-back tissue-door-button", type: "button", dataset: { part: other.id }, onclick: () => this.open(other.id) }, other.short || other.label) : null],
+          { title: other ? other.tissue.caption : null, maxWidth: roomWidth }
+        );
       } else if (block.role === "beside") block.caption = made("tissue-group", [group.caption], { maxWidth: roomWidth });
       // Over a sheet's grid, once: what x2 is (the record's words), and where its own threshold lies (the dashed line).
       if (!block.lined && block.role === "main") {
@@ -1214,7 +1226,7 @@ export class TissueLineLens {
     const groups = this.groups?.length ? this.groups : [{ id: line.id, line, role: "main", front: line.entry.tissue?.front }];
     return [
       // The way to the example's networks, at the card's head: on a phone the tab's list is a select whose chosen option is the example already.
-      typeof this.back === "function" && whole ? h("button", { class: "tissue-back", type: "button", onclick: () => this.back() }, "The example's networks and sweeps") : null,
+      typeof this.back === "function" && whole ? h("button", { class: "tissue-back tissue-way-back", type: "button", onclick: () => this.back() }, "The example's networks and sweeps") : null,
       // The example's other parts, each its own view here: a part with a caption of its own stands under it, in full.
       ...others.map((part) => (part.tissue?.caption ? h("div", { class: "tissue-sibling-block", dataset: { part: part.id } }, h("p", { class: "card-text" }, part.tissue.caption), door(part)) : door(part))),
       h("p", { class: "card-text" }, line.entry.plain),
