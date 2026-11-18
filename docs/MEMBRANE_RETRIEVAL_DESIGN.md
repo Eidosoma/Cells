@@ -77,7 +77,8 @@ operator (§2). §6 names what else composes.
    (F0); into a lumped pool declared with the world, so no creation event (D1); retrieval and
    recycling as one law's two directions (T2). Internalised channel units are held silent in the
    operator's record (P0), because refusal 4 refuses @3's channels and pumps on a bounding patch
-   **(code)**.
+   **(code)**. A patch's pump stays on the plasma patch with its aggregate capacity, as insertion@1
+   holds it.
 6. **Three population owners move** (§4): membrane state's units now; FR-3's sites once its count
    is state and its admission line exists; the kinds' populations by seam B's roles. Each moves by
    seam B's split and merge.
@@ -421,9 +422,18 @@ the destination by merge.
 
 - **A kind's per-entity fields move only if every one declares a role,** the fail-closed rule of
   CORE_SEAMS §4.2. Before seam B's B1 and B2, a kind's population on a retrieved patch is refused.
-- **@3's pumps** move once their capacity is an extensive state (CORE_SEAMS §4.5 item 3; composition
-  M6). Until then, retrieval from a patch carrying a pump is refused, since a pump's fixed capacity
-  over a shrinking area would raise its density silently.
+- **@3's pumps stay on the plasma patch in version 1** (**S**; a point for the lead, §10).
+  - Every cell of the seven-cell heredity sheet carries a pump on its patch to the held bath
+    (`validation/tissue/regulated_availability_fixtures.py`:3–5 **(code)**). Refusing retrieval from
+    a pumped patch would refuse T8's own world.
+  - Insertion@1 refuses pumps only on onset patches (`membrane_insertion.py`, `check_onsets`
+    **(code)**). Elsewhere it changes a pumped patch's area with the pump's aggregate capacity held,
+    since `pump_capacity` is a per-patch view field that membrane state does not touch.
+  - So version 1 mirrors that convention: the pump is not in the packet, and its aggregate capacity
+    stays. Its density rises as the area falls, a declared rule. @3's step bound has no term for its
+    own pump (§5), so holding the pump changes none of the bound's terms.
+  - **Internalising pumps** with their membrane waits for capacity as extensive state (CORE_SEAMS
+    §4.5 item 3; composition M6).
 
 ## 5. Numerics and the topology
 
@@ -433,8 +443,12 @@ the destination by merge.
     G/C rises.
   - So the bound is checked on the definition at the smallest plasma area over the schedule, with
     units at their largest: insertion's pattern, "the largest conductance over the smallest
-    capacitance at every point of the schedule" (`membrane_insertion.py`:48–52 **(code)**). Under
-    P0 the bounding patch has no conductance and adds no term.
+    capacitance at every point of the schedule" (`membrane_insertion.py`:48–52 **(code)**).
+  - The bound counts leaks, channels, junctions, faces and the kinds' stage terms, not @3's own pump
+    (`surface_pump_v3.membrane_rate`, :1484–1491 **(code)**). A held pump is outside it, as it is
+    for insertion today.
+  - Under P0 the bounding patch has no conductance of @3's, and adds no term **only if no kind sits
+    on it** (§6).
 - **The 64-node cap.** Membrane state provides capacitances, so every FR-2 world is a field-input
   world and is refused above 64 field nodes (`pump_composite_adapter.FIELD_INPUT_NODE_CAP`, :126
   **(code)**).
@@ -461,6 +475,25 @@ the destination by merge.
 | `site_occupancy@1` | Refused until §4.2's prerequisites | Version 1.1 |
 | Water, the lumens | Refused | Door V |
 | RK4 | Guarded | Exact half-steps around @3's RK4 step, as insertion's are |
+| Kinds on the pool's bounding patch (FR-4's and FR-5's transporter, passive routes and buffer) | Refused in version 1 | Retrieval and recycling change C_b, and recycling shrinks it, so the kinds' definition-time terms (`bound_rate`) would need the smallest C_b over the schedule. A lumped transporter's capacity, "N x the per-member value" (`transporter.py`:24), needs a rule as the pool grows. The door: both, under seam B's roles |
+
+**Two consequences of R2 for the compartment (S):**
+- **The lumen becomes charged, with no route to relax it.** R2 gives the pool the charge of its
+  membrane, so V_b ≠ 0, while P0 leaves the bounding patch with no conductance.
+  - FR-1's silence claims S1–S3 then no longer apply. They hold only in the silent version
+    (FR-1 §3.3), which a retrieval world is not.
+  - Within one run the charge sits in the increments, over a zero anchor, so refusal 5 is met.
+  - But a checkpoint imported as a new definition (D153's rule (b)) carries a nonzero anchor.
+    Refusal 5 version 1.1 refuses that unless the world declares kinds and steps with an IMEX
+    tableau (`compartments.py`:26–29 **(code)**). The door is a refusal 5 version 1.2 that admits
+    an anchor where this operator is declared.
+- **The operator is a first of its kind as a writer.**
+  - It is the first to move ion rows between outside nodes: the carriers from o to j. D150's and
+    D152's operators write neutral rows only, and the partition moves cell increments.
+  - It is the first to draw from a held bath into a finite node: exchange refuses any route on a
+    held bath (FR-1's delivery world).
+  - So its bookings against @3's outside, reservoir and electrode ledgers are new. T6 judges them
+    (§8), with planted errors in each.
 
 ## 7. Ownership: who owns each piece
 
@@ -516,6 +549,8 @@ internalised units (P0), and no fuel (E2).
 - **R2 is the physics.** Under R1, the work insertion's refusal points to pays for an artefact.
 - **F0 and D1 avoid door V and door C,** which are larger and are other owners' (§1.3).
 - **P0 avoids refusal 4** and still gives the requester's depleted and returned surface pool.
+- **Pumps stay on the plasma patch** with their aggregate capacity, insertion@1's convention, so the
+  seven-cell sheet is admitted. Kinds on the pool's bounding patch are refused (§6).
 
 **Then, version 1.1 and later:**
 - F1 with door V;
@@ -565,11 +600,16 @@ internalised units (P0), and no fuel (E2).
 7. P0's record in the new operator's own state, so that `membrane_state.py` is not edited?
 8. The compartments declaration's reads of areas and capacitances as `reference` reads (D191)?
 9. The name: `scheduled_membrane_trafficking@1` for the two-way law, or `scheduled_membrane_retrieval@1`?
+10. Pumps on a retrieved patch: held on the plasma patch with their aggregate capacity, as insertion@1
+    does (recommended, §4.3)? Or refused until capacity is extensive state, which would refuse the
+    seven-cell sheet?
+11. A refusal 5 version 1.2 that admits a retrieval-charged lumen's anchor at import (§6)?
 
 ## 11. The arithmetic
 
-Every number marked **S** in §0, §2 and §3 comes from the script below, run with `python3 -I`
-outside the repository. It imports nothing from Cells.
+The numbers marked **S** in §0, §2 and §3 come from the first script below, run with `python3 -I`
+outside the repository. The second checks R2's claim independently. Neither imports anything from
+Cells.
 
 ```python
 # FR-2 note arithmetic (S): one-patch cell, held bath outside; no Cells import.
@@ -608,6 +648,76 @@ v = r/3 at r = 25 nm: 8.3 nm
 v = r/3 at r = 50 nm: 16.7 nm
 10 um^2 at r = 50 nm encloses 1.667e-04 pL
 ```
+
+**An independent check of R2 (S).** A dense capacitor solve of a four-node world, written from @3's
+capacitor rows and not from the engine: a held bath, a cell i, a finite outside node o and a
+compartment j. The patches are w (i to the bath, 5 pF), k (i to o, 10 pF) and b (i to j, 1 pF), at
+V_w = V_k = −70 mV and V_b = −20 mV, and 0.1 pF moves from k to b. It ran with the project's CPU
+environment on one lane CPU (`taskset -c 6 nice -n 10`).
+
+```python
+# Independent check of FR-2's R2 claim (S): a dense capacitor solve, no Cells import.
+# Nodes: 0 bath (held at 0 V), 1 cell i, 2 finite outside node o, 3 compartment j.
+# Patches: w (i-bath), k (i-o), b (i-j). Patch voltage = phi(inside cell) - phi(outside node).
+import numpy as np
+
+def solve(caps, charges):
+    """Free-node potentials (i, o, j) for patch capacitances and free-node charges; bath at 0."""
+    Cw, Ck, Cb = caps
+    # Capacitor rows: sum over patches C (phi_node - phi_other) = q_node, for i, o, j.
+    K = np.array([[Cw + Ck + Cb, -Ck, -Cb],
+                  [-Ck,           Ck,  0.0],
+                  [-Cb,           0.0, Cb]])
+    return np.linalg.solve(K, np.asarray(charges, float))
+
+def energy(caps, phi):
+    Cw, Ck, Cb = caps
+    pi, po, pj = phi
+    Vw, Vk, Vb = pi - 0.0, pi - po, pi - pj
+    return 0.5 * (Cw * Vw**2 + Ck * Vk**2 + Cb * Vb**2), (Vw, Vk, Vb)
+
+def bath_plate(caps, phi):
+    Cw, _, _ = caps
+    return -Cw * (phi[0] - 0.0)          # charge on the bath's side of patch w
+
+caps = (5e-12, 10e-12, 1e-12)            # F
+phi0 = np.array([-0.070, 0.0, -0.070 + 0.020])   # choose potentials, derive consistent charges
+Cw, Ck, Cb = caps
+K = np.array([[Cw + Ck + Cb, -Ck, -Cb], [-Ck, Ck, 0.0], [-Cb, 0.0, Cb]])
+q = K @ phi0
+U0, (Vw, Vk, Vb) = energy(caps, phi0)
+dC = 0.1e-12
+
+# R2: capacitance dC from k to b; the o-side share of k's charge, -dC*Vk, moves from o to j.
+caps2 = (Cw, Ck - dC, Cb + dC)
+q2 = q + np.array([0.0, +dC * Vk, -dC * Vk])     # o loses -dC*Vk, j gains it
+phi2 = solve(caps2, q2)
+U2, (Vw2, Vk2, Vb2) = energy(caps2, phi2)
+print("R2: dphi_i %.3e V, dphi_o %.3e V, Vb' %.6f V (formula %.6f)" % (
+    phi2[0] - phi0[0], phi2[1] - phi0[1], Vb2, (Cb * Vb + dC * Vk) / (Cb + dC)))
+print("R2: dU %.6e pJ; formula -Cb dC (Vb-Vk)^2/(2(Cb+dC)) = %.6e pJ; bath plate change %.3e C" % (
+    (U2 - U0) * 1e12, -Cb * dC * (Vb - Vk) ** 2 / (2 * (Cb + dC)) * 1e12,
+    bath_plate(caps2, phi2) - bath_plate(caps, phi0)))
+
+# R1: the same capacitance move at fixed free-node charges (insertion's rule, both patches).
+phi1 = solve(caps2, q)
+U1, (Vw1, Vk1, Vb1) = energy(caps2, phi1)
+print("R1: dVk %.4e V, dVb %.4e V, dU %.6e pJ, bath plate change %.3e C" % (
+    Vk1 - Vk, Vb1 - Vb, (U1 - U0) * 1e12, bath_plate(caps2, phi1) - bath_plate(caps, phi0)))
+```
+
+Its output:
+
+```text
+R2: dphi_i 2.776e-17 V, dphi_o 3.993e-17 V, Vb' -0.024545 V (formula -0.024545)
+R2: dU -1.136364e-04 pJ; formula -Cb dC (Vb-Vk)^2/(2(Cb+dC)) = -1.136364e-04 pJ; bath plate change -1.515e-28 C
+R1: dVk -7.0707e-04 V, dVb 1.8182e-03 V, dU 2.292929e-04 pJ, bath plate change -1.010e-28 C
+```
+
+- **Under R2,** the cell's and the outside node's potentials move by rounding only, V_b' and the
+  energy change equal §2.2's closed forms, and the bath's plate charge does not change.
+- **Under R1,** the same move at fixed charges shifts V_k by −0.71 mV and V_b by +1.8 mV, and raises
+  the capacitor energy by 2.29 × 10⁻⁴ pJ. That is the work R1 would need.
 
 ## Sources
 

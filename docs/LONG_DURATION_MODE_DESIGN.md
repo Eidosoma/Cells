@@ -51,6 +51,9 @@ coupling operator, D150's turnover and, for the outside-envelope case, @3's exci
    - So 72 h is about 5.2, 23 and 227 days (**S**).
    - **An option helps only if it cuts that count.** Coarsening the operators alone leaves 3.6
      million steps per hour.
+   - **The fine step depends on the world.** It is 1 ms in the qualified tissue, while E07-v1 ran
+     at 1–5 ms, and a 5 ms full-tissue step passed with the trapezoid junction booking (§1.2). A
+     method's gain is over its world's own admissible step.
 2. **What sets the 1 ms step** (§1.2). The explicit charge relaxation of membranes and junctions,
    and fast gates: "these set the 1 ms step" (MULTISCALE_EXECUTION_ARCHITECTURE). The IMEX step
    already makes face electromigration implicit, while "membranes, junctions, pumps, gates and face
@@ -71,6 +74,9 @@ coupling operator, D150's turnover and, for the outside-envelope case, @3's exci
 5. **The recommendation (S, §7): measure first, then build N2 with N1 as the first mode.**
    - N2 cuts @3's step count while keeping one representation, and it extends the IMEX operator
      that already treats face drift implicitly.
+   - **N2 lifts only the stability bound.** The energy check binds first (FR-18), so N2's gain also
+     needs an energy booking that is exact at its step: seam D's branch X, 2–3 agent-days
+     (CORE_SEAMS §13). Stage 0 measures where the check binds (M5).
    - R1 follows only if the measurements show that N2's remaining explicit bounds hold the step
      below what the slow questions need.
    - E extends to the composite as the slow manifold's reference. C stays paused.
@@ -82,8 +88,9 @@ coupling operator, D150's turnover and, for the outside-envelope case, @3's exci
      declared per question;
    - which slow question is the first consumer;
    - whether a reduction (R1) is acceptable where a method suffices.
-8. **Effort (S, rough):** stage 0's measurements about 1–2 agent-days plus CPU hours. N1 with N2 and
-   their qualification about 15–24 agent-days. R1 would add about 10–18, plus D175's fields (§8).
+8. **Effort (S, rough):** stage 0's measurements about 1–2 agent-days plus CPU hours. N1 with N2,
+   branch X's exact booking and their qualification about 17–27 agent-days. R1 would add about
+   10–18, plus D175's fields (§8).
 
 ## 1. The cost model: where the time goes
 
@@ -135,6 +142,17 @@ coupling operator, D150's turnover and, for the outside-envelope case, @3's exci
 - **The energy check binds before the stability bound.** @3's check (2 × 10⁻³ under ARS(2,2,2))
   refused junction worlds at dt × rate of 0.08–0.31, with a second-order error (FR-18). "It is what
   refuses coarse steps" (EXCITABLE_TISSUE_DESIGN §4.4).
+- **So the admissible fine step is the world's, not one number:**
+  - 1 ms is qualified on the 825-node tissue, and 2 ms is not (MULTISCALE_EXECUTION_ARCHITECTURE,
+    "Coupled numerical execution");
+  - E07-v1's slow worlds ran at 1–5 ms (EXCITABLE_TISSUE_DESIGN §4.5's table);
+  - with the opt-in `trapezoid_nonnegative@1` junction booking, "the 5 ms collapse and the
+    full-tissue cue step are accepted, with energy residuals of about 1e-7 of flows" (PROGRESS, gap
+    A, 11 November);
+  - R-fuel's world, with no charged row, has an example ladder of 8, 4, 2 and 1 ms (FR-4/FR-5 note
+    §17.5, D5), and FR-4's implicit patch targets dt up to 10 ms (§7.3 there).
+- **This note's 3.6 million steps per hour is the 1 ms case.** A world that already runs at 5 ms
+  needs a fifth of that, and every gain below is relative to the world's own step (**S**).
 
 ### 1.3 The model
 
@@ -182,7 +200,7 @@ singular-perturbation fast subsystem. R1 could reuse it, with three changes:
 | Option | Class | Cuts @3's fine steps? | Gain (S, unmeasured) | Interventions | Main cost or risk |
 | --- | --- | --- | --- | --- | --- |
 | **N1. Multirate operators:** slow operators take a macro-step H, @3 subcycles at dt | Method | **No** | ≤ about 1.03–1.4× (§1.3) | Compulsory boundaries | A component only |
-| **N2. Linearly implicit membranes and junctions:** their slope conductances join the IMEX operator (C + a dt L) | Method: a new IMEX ID | **Yes** | dt set by what stays explicit (face diffusion, pumps, kinds, operators): perhaps 10–100× | Boundaries, then a declared fine window | Same matrix size and one factorization per step, as today; the energy booking at large dt (§4.3) |
+| **N2. Linearly implicit membranes and junctions:** their slope conductances join the IMEX operator (C + a dt L) | Method: a new IMEX ID | **Yes** | dt set by what stays explicit (face diffusion, pumps, kinds, operators) and by the energy check: perhaps 10–100× over a 1 ms world, less over a 5 ms one | Boundaries, then a declared fine window | Same matrix size and one factorization per step, as today; **an energy booking exact at its step** (§4.3; branch X) |
 | **N3. Fully implicit stiff steps** (an L-stable SDIRK or BDF on the whole state) | Method | **Yes** | Steps set by accuracy on the slow manifold | Step control | A Newton on every unknown: about 6–8 × 10³ at 825 nodes with 2,580 channel populations (**S**; PROGRESS's tissue). It needs sparse or Krylov solvers (FR-17, the field-solver interface) |
 | **R1. Quasi-steady electrical elimination** (D135's B): Vm, the field and fast gates algebraic; the slow state at H | Reduction (D175) | **Yes** | Up to 10³–10⁴× in steps, less a Newton per macro-step | Handoff to fine windows, then re-entry | D175's fields (refused at registration today); E's fast mode made composite, scaled and device-side; non-electrical stiffness stays |
 | **R2. E for the composite:** fixed points and continuation | Reduction: no trajectory | — | The end state only | A sequence of steady states | No histories and no crossing times: it fails ARCHITECTURE's list as a mode |
@@ -315,8 +333,11 @@ in the mode.
 - **@3's relative energy check binds at moderate steps** (FR-18). So a coarse mode books its heat
   exactly at the macro-step, or it is refused at once.
 - **The booking options are seam D's** (CORE_SEAMS §6): the trapezoid, written once, and branch X's
-  exact booking for charged rows, not built after P1's weak no. A coarse IMEX re-opens branch X's
-  question at its own step sizes (**S**).
+  exact booking for charged rows, not built after P1's weak no.
+- **A coarse IMEX re-opens branch X's question at its own step sizes (S).** Its residual is second
+  order in dt with a world-dependent coefficient (FR-18), so a 10–100× larger step raises it by
+  10²–10⁴ under the tableau's booking. N2's gain therefore assumes the exact booking: 2–3 agent-days
+  in CORE_SEAMS §13's table, the @3 owner's.
 - **The check is not loosened for a mode** (FR-18: "It is not loosened for one experiment").
 
 ### 4.4 Checkpoints
@@ -398,19 +419,23 @@ FR-7's U2 loop becomes the second world when it exists.
 
 | ID | What | Where | Cost (S) |
 | --- | --- | --- | --- |
-| M1 | @3's explicit bound per world with the membrane and junction terms removed: the step N2 would admit, term by term | Host-side, on the definitions of the seven-cell sheet, the 127-cell sheet and the 825-node tissue | Minutes |
+| M1 | @3's explicit bound per world, term by term: today's dt × rate for each term, and the step N2 would admit with the membrane and junction terms removed | Host-side, on the definitions of the seven-cell sheet, the 127-cell sheet and the 825-node tissue | Minutes |
 | M2 | The slow spectrum from E's dense eigenvalues: the step R1's slow integrator would face | Default world and seven-cell sheet | Minutes to an hour |
 | M3 | A fine hour of the harness world, and the operators' share of c_step in one composed world | One CPU, detached | Under an hour |
 | M4 | Settling after interventions: the time for \|dVm/dt\| and gate distances to fall below thresholds after a channel step, a dose step and a regulatory write | The seven-cell sheet, short fine runs | About an hour of CPU |
+| M5 | Where the energy check binds: the energy residual against dt (1, 2, 5, 10 ms) in the acceptance world, with the trapezoid junction booking on and off | The seven-cell sheet, short runs at each dt | About an hour of CPU |
 
 Each criterion is written before its run. Runs go through `scripts/run_detached.sh` on lane CPUs.
 
 ## 7. Recommendation (S)
 
-**Stage 0 first:** M1–M4, then a dated decision.
+**Stage 0 first:** M1–M5, then a dated decision.
 
 **Then N2 with N1, as the first long-duration mode:**
 - **It cuts @3's fine-step count,** the only lever that matters (§1.3), at today's cost per step.
+- **It needs branch X's exact booking with it.** N2 lifts the stability bound, while the energy
+  check binds first (§1.2, §4.3). If M5 shows the check binding near today's step, N2 without the
+  exact booking gains little.
 - **It keeps one representation:** no envelope, no handoff semantics and no D175 fields, which are
   not executable yet.
 - **It extends the operator that already treats face drift implicitly.** Its qualification is
@@ -434,9 +459,10 @@ qualification (D135).
 | Stage 0's measurements | Scratch and `validation/` | The FR lane, or numerics | 1–2, plus CPU hours |
 | The time contract (N1) | `models/operators/contract.py`, `models/pump_composite.py` | Operators owner (STEP0 §4.2), after the pass | 3–5 |
 | N2's IMEX ID | `numerics/surface_imex.py` (not byte-kept), with @3's slope terms in `models/surface_pump_v3.py` | Numerics, with the @3 owner for its file | 6–10 |
+| The exact charged booking (seam D's branch X), which N2 needs | `models/surface_pump_v3.py` | @3 owner (CORE_SEAMS §13) | 2–3 |
 | The coarse executor: boundaries, fine windows, records | A new module beside `core/projective.py` | Numerics and execution | 3–5 |
 | References, the protocol, the judged run | `validation/` | A references agent; the FR lane | 3–4, plus tens of CPU-h |
-| **N1 with N2, qualified** | | | **about 15–24** |
+| **N1 with N2 and branch X, qualified** | | | **about 17–27** |
 | R1, if needed | E's fast mode made composite and device-side; D175's fields (core lane item 4) | Numerics; the core lane | about 10–18 more |
 
 - **Not before** the user's answers (§9), D188's move 2 and the core-seams pass, which owns
@@ -461,7 +487,8 @@ qualification (D135).
 5. N2 as a new IMEX ID under D147, owned by numerics with the @3 owner?
 6. The time contract's classes (§4.1), and the counting record refused until it declares physical
    time?
-7. Whether branch X's exact charged booking re-opens for coarse steps (§4.3)?
+7. Branch X's exact charged booking re-opened for N2 (§4.3), with the @3 owner, and M5 run before
+   it is built?
 
 ## 10. The arithmetic
 
