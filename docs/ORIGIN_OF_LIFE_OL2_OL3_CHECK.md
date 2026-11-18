@@ -25,8 +25,8 @@ landed. Branch `ol2-design-check` from main bbcbec69.
 | --- | --- |
 | How OL2 enters OL1's kernel | OL1's three hooks keep their kind: reaction laws (θ⁺ and an extent on m), a factor on m, and terms of F. OL2 adds a geometry kind and a population structure for K assemblies sharing one pool (§1) |
 | Invariance | A new key is absent unless its feature is declared, and an absent key is never written, so OL1's world ids and fingerprints stay as they are. New behaviour enters only through new token values and new laws, chosen statically, so OL1's programs are unchanged (§4) |
-| The reverse rate when V moves (rule 2) | OL1's form carries over exactly. The lumen's ideal part is taken at X = 1, the rest of the lumen is an excess term, and the V(m) normalisation is a factor on m (§1.4). Probe L1: the pair rule closes 40 of 40 squares; the products' rule at V(m) fails 23 |
-| Rule 7 | Of six candidate rules, two meet all three properties exactly: C3x and C4. The properties do not fix the law at unequal a_L, since rules that pass differ by up to a total variation of 1. **P: C3x**, which runs on G1's draw (§2.2) |
+| The reverse rate when V moves (rule 2) | OL1's form carries over exactly. The lumen's ideal part is taken at X = 1, the rest of the lumen is an excess term, and the V(m) normalisation is a factor on m (§1.4). Probe L1: this kernel form equals the pair rule at all 93 reverses (relative 2e-58), and both close 40 of 40 squares; the products' rule at V(m) fails 23 |
+| Rule 7 | Of eight candidate rules, four meet all three properties exactly: C1, C3x, C4 and C5 (where defined). The properties do not fix the law at unequal a_L, since rules that pass differ by up to a total variation of 1. C1 ignores the daughters' areas, and C4 and C5 need a host sampler. **P: C3x**, which targets areas and runs on G1's draw (§2.2). Equal target areas only (§2.2) |
 | The lumen split | Multinomial, conserving, and exchangeable jointly with the membrane, for weights taken from each daughter's own membrane. The daughters' volumes cannot be the weights, since they depend on the split (§2.3) |
 | D199's debts | Every descendant: the shared pool's slots, with relations rows. External help: a sources row for every supply and every payer. Labels: integer label counts on the reserved `label` stream (§3) |
 | Questions | Q1–Q21 for the lead, Q7 among them (the coordinator's on `count_on_m`), and U1 for the user (§7) |
@@ -98,10 +98,14 @@ common state m, whose forward has α_L lumen reactant molecules:
 What follows:
 - **The claims are the ones rule 2 names:** cycle closure and the exact-F identity.
   - "The reverse is the products' rule at V(m)" is false wherever V moves.
-  - Probe L1 (a closed world with 22 floppy and 32 tense states): the pair rule closes 40 of 40
-    squares (largest |ln ratio| 1e-59); the products' rule at V(m) fails 23 of 40 (largest 0.23).
-  - Probe L2: the pair rule's stationary law is exp(−F)/Z to a total variation of 3e-59, and the
-    products' rule's is off by 0.031.
+  - Probe L1, on a closed world with 22 floppy and 32 tense states, has three arms:
+    - this kernel form: OL1's reverse at X = 1, the same extent on m, times
+      e^(F_osm(n′) − F_osm(n)). It equals the pair rule's reverse a⁺·e^(ΔF − w) at all 93 reverses
+      (largest relative difference 2e-58);
+    - the pair rule and the kernel form each close 40 of 40 squares (largest |ln ratio| 1e-59);
+    - the products' rule at V(m) fails 23 of 40 (largest 0.23).
+  - Probe L2: the pair rule's and the kernel form's stationary laws are exp(−F)/Z to a total
+    variation of 3e-59, and the products' rule's is off by 0.031.
 - **No new reverse path in the kernel.** The V(m) factor joins g(m) as a factor on m, and F_osm is
   one more excess term.
   - Both read their areas exactly from integers: the factor and the encounter extents at
@@ -155,6 +159,9 @@ V(m). Under (a) the question is moot for OL2.
 - Under `count_on_m`, OL1's permeation fires at an empty membrane with E(m) = N(m) − c + 1:
   1 under `multinomial`, 0 under `multinomial_less_one`. That agrees with §0.2a.
 - Rule 6's `permeation_area` makes the same rate 0 by geometry, since A(m) = 0.
+
+Here "physical world" means a world that declares a geometry. D215 uses the phrase for the token
+pair `multinomial` with `kept`, and a geometry world may declare either measure (X2).
 
 **P: in a world that declares a geometry:**
 - `cells.stochastic_mass_action@1` with `count_on_m` is admitted only on steps whose places all lie
@@ -222,8 +229,16 @@ V(m). Under (a) the question is moot for OL2.
 ### 2.2 Rule 7: the membrane split (probe `probe_rule7.py`)
 
 Twelve parents were probed: four with equal weights (N = 4, 5, 6, 7 with k = 2, 3) and eight with
-unequal integer weights (1:2, 1:3, 2:3, 1:2:3; k = 2, 3). The daughters' target areas are equal
-(W/k). Every law is exact, by enumeration.
+unequal integer weights (1:2, 1:3, 2:3, 1:2:3; k = 2, 3). Every law is exact, by enumeration.
+
+**Equal target areas only (P).** The daughters' targets are W/k: k equal spheres, §4.3's default.
+- §4.3 also allows sizes drawn from a declared distribution. That was not probed, and OL3's first
+  worlds would refuse it (Q11).
+- With unequal targets, exchangeability would read as invariance when the labels and their targets
+  are permuted together.
+
+The columns P1–P3 are the lead's three properties. The last two, areas and the device, are this
+note's criteria, not the lead's.
 
 | Rule | What it does | P1 | P2 | P3 | Areas (mean \|W_j − W/k\|, unequal cases) | Device |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -262,7 +277,13 @@ unequal integer weights (1:2, 1:3, 2:3, 1:2:3; k = 2, 3). The daughters' target 
 **P: C3x** (Q11). It reduces exactly to the exchangeable hypergeometric, and it keeps each
 daughter's area within w_max/2 at each cut, which is negligible at vesicle scale. It runs on G1's
 draw with static shapes. Its law at unequal a_L is procedural, so OL5 replays it from the uniforms
-or enumerates the sequences. **C4 is the alternative** if exact areas matter more than the device.
+or enumerates the sequences.
+
+**The alternatives:**
+- **C4,** if exact areas matter more than the device.
+- **C1,** if the lead reads rule 7 as asking nothing of the daughters' areas. It meets the three
+  properties, but its daughters' areas scatter more widely (mean deviation up to 8/5 in the probe,
+  against C3x's 4/5).
 
 **C3x, exactly:**
 1. List the parent's membrane molecule places by species, in declared order (G1's list). Draw M
@@ -432,7 +453,7 @@ Each claim is proved once, at the cheapest level, with its planted error. Symbol
 | G2 | Every pair with an end state below N_floor has a⁺ = a⁻ = 0. A closed world's law is exp(−F)/Z on the truncated space | Rate tables at N_floor and N_floor + 1; exact enumeration | The floor tested on m. It is caught by the rate table, not the stationary law, which zeroing a pair does not change |
 | G3 | C_close changes no rate. It enters ΔF only as +(k − 1)C at a fission and −C at lysis | Rate tables equal for C = 0 and C ≠ 0 | C_close charged per molecule |
 | X1 | a⁺(n) = k_ins·A(m)·ρ0·a_i (insertion area) or D_i·4πR(m)·ρ0·a_i (diffusion radius), with m = n. a⁻(n + e_i) = a⁺(n)·e^(F(n + e_i) − F(n) − w) | The kernel identity on random states; Kolmogorov's test on squares | A first-order leave with no tension term; the extent taken at n′ |
-| X2 | At equal a_L, insertion area and c = 1: the rate table equals the `count_on_m` world's with k_f = k_ins·(qk/2)·ρ0 | Rate tables, to rounding | c = 0 in one of the two (N against N + 1) |
+| X2 | At equal a_L, insertion area and c = 1: the rate table equals the `count_on_m` world's with k_f = k_ins·(qk/2)·ρ0, on every pair whose end states are both at or above the floor | Rate tables, to rounding | c = 0 in one of the two (N against N + 1) |
 | X3 | One amphiphile, with a finite pool and no lumen: the stationary law is exp(−F)/Z. In the large-vesicle limit, c_cac = c0·e^(μ°_bil − μ°_sol) | Exact enumeration; the closed form | The transfer potential's sign |
 | P1 | Entry a⁺ = P_s·A(m)·ρ0·a_s; exit = a⁺·e^(ΔF − w). In the large-N limits: n_s/N_L = c_s/c_ext (floppy) and n_s = N_A·V_sph·c_s (tense) | The kernel identity; exact stationary law | P·A(n′) |
 | L1 | F_osm = −N_L ln X(V(n)) + N_A c_ext V(n), with V(n) = min(N_L/(N_A c_ext), V_sph(A)), which is F's minimiser over V ≤ V_sph | Closed form; minimisation over V | A lumen species left out of N_L. Probe L5: V is then not the minimiser |
@@ -519,8 +540,13 @@ Each claim is proved once, at the cheapest level, with its planted error. Symbol
       under `osmotic`.
     - (d) `lysed` is not among `cells.relations@1`'s end reasons, and that format is bound. Does it
       go to the requirements of the next relations version?
-11. **Q11, rule 7.** C3x (proposed) or C4? Is P2 read as the exchangeable hypergeometric when k
-    does not divide N, with G1's floor-to-first kept for D1 (§2.2)?
+11. **Q11, rule 7.**
+    - C3x (proposed), C4, or C1, which ignores the daughters' areas?
+    - Is P2 read as the exchangeable hypergeometric when k does not divide N, with G1's
+      floor-to-first kept for D1 (§2.2)?
+    - Are OL3's first worlds limited to equal target areas, with a declared size distribution
+      later?
+    - C3x's integer cuts rest on Q9.
 12. **Q12, the lumen's weights.** (a) V_sph(A_j)/Σ V_sph (proposed), (b) A_j/A, or (c) 1/k?
 13. **Q13, D2's k.** Declared per schedule (proposed for OL3), or ⌊v^(−2)⌋ up to a cap, closer to
     A4's many daughters (for OL7's protocol)?
@@ -532,8 +558,8 @@ Each claim is proved once, at the cheapest level, with its planted error. Symbol
 17. **Q17, IDs and interfaces.**
     - `cells.shared_pool@1` as the first `cells.population_structure@1`, or a mode token?
     - Two new IDs: `cells.membrane_permeation@1` and the geometry interface
-      `cells.assembly_geometry@1`. The permeation name should be checked against the tissue laws'
-      names.
+      `cells.assembly_geometry@1`. The permeation name does not collide: the only registered
+      permeation law is the tissue's `passive_neutral_permeation@1`.
     - §8's other IDs are confirmed.
 18. **Q18, the shared loop (D215).**
     - Who owns @1's `runner.py`, `records.py`, `fission.py`, `continuation.py` and `keys.py` now?
