@@ -11,10 +11,10 @@ checkpoint restores.
 
 A move is declared in MOVES once it is made, by the package folders it dissolved (paths relative to
 src/cells): a checkpoint whose recorded files lie in one of them was written before the move. A
-dissolved folder holds no engine file afterwards, and tests/unit/test_source_layout.py holds every
-declared move to this installation, so no checkpoint written after a move is refused for it. A move
-that dissolves no folder needs another mark. The folders are written as plain paths, never as module
-names, so a move's rewrite (scripts/source_moves.py) leaves them as they are.
+dissolved folder holds no engine file afterwards, and tests/unit/test_continuity_loaders.py holds
+every declared move to this installation, so no checkpoint written after a move is refused for it.
+A move that dissolves no folder needs another mark. The folders are written as plain paths, never
+as module names, so a move's rewrite (scripts/source_moves.py) leaves them as they are.
 
 This module imports nothing but the definitions' error: checkpoint continuity, which imports no
 numpy, reaches it through the loaders.
@@ -33,8 +33,8 @@ class Move(NamedTuple):
     restores_at: str  # The tag of the last tree before the move.
 
 
-# The made moves, oldest first. D188 move 2 declares itself here, after its move commit.
-MOVES: tuple = ()
+# The made moves, oldest first. D188 move 2 declares itself in the commit after its move commit.
+MOVES: tuple = (Move("D188 move 2", ("core", "processes"), "pre-d188-move2-2026-11-18"),)
 
 
 def folders(sources):
