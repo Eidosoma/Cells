@@ -35,6 +35,12 @@ declarations manifest (registry/declarations.py) writes out.
 - `cells.cycle_law@1`, `CycleLaw` (also named `PumpLaw`): a membrane cycle, such as @3's two pumps
   and the transporter kind's two laws. Seam A adds its modes and its S or J as optional fields;
 - `cells.route_law@1`, `RouteLaw`: a passive route law;
+- a cycle and a route law name their step terms (docs/CORE_SEAMS_DESIGN.md §18, amended): each is
+  the name of the kernel that supplies it, or None where the law has none. `stage_term`, its charge
+  slope in the per-stage rule; `material_term`, its material slope per stage; `charge_bound` and
+  `material_bound`, its definition-time bounds on a charged and on a neutral row. Its host's
+  hooks evaluate them (registry/kind_registry.Kind: stage_term, material_term, bound_rate), and
+  refusal 4 reads which a law declares (operators/compartments.py);
 - `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C);
 - `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
@@ -87,6 +93,7 @@ __all__ = (
     "JUNCTION_LAW",
     "PROVENANCES",
     "ROUTE_LAW",
+    "STEP_TERMS",
     "BindingLaw",
     "ChannelLaw",
     "Citation",
@@ -253,6 +260,17 @@ def _callables(law, *names):
     return [f"its {name} is callable" for name in names if not callable(getattr(law, name))]
 
 
+STEP_TERMS = ("stage_term", "material_term", "charge_bound", "material_bound")
+
+
+def _named_or_none(law, *names):
+    return [
+        f"its {name} is named, or None"
+        for name in names
+        if getattr(law, name) is not None and not _named(getattr(law, name))
+    ]
+
+
 @dataclass(frozen=True)
 class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
@@ -332,8 +350,12 @@ class CycleLaw(Law):
     kinetics: Callable
     domain_valid: Callable
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
-    stage_term: str | None = None  # Its slope in the stage rule, where its host takes one.
+    stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
     loop_term: str | None = None
+    # Its other step terms (module docstring), each its kernel's name or None.
+    material_term: str | None = None  # Its material slope per stage.
+    charge_bound: str | None = None  # Its definition-time bound on a charged row.
+    material_bound: str | None = None  # Its definition-time bound on a neutral row.
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
@@ -357,10 +379,7 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        for name in ("stage_term", "loop_term"):
-            if getattr(self, name) is not None and not _named(getattr(self, name)):
-                out.append(f"its {name} is named, or None")
-        return out
+        return out + _named_or_none(self, *STEP_TERMS, "loop_term")
 
 
 PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (§8.1).
@@ -368,10 +387,15 @@ PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (
 
 @dataclass(frozen=True)
 class RouteLaw(Law):
-    """A passive route law: the entities its routes sit on, and what it is (its basis)."""
+    """A passive route law: the entities its routes sit on, what it is (its basis), and its step
+    terms (module docstring)."""
 
     hosts: tuple[str, ...]
     basis: str
+    stage_term: str | None = None  # Its charge slope in the stage rule.
+    material_term: str | None = None  # Its material slope per stage.
+    charge_bound: str | None = None  # Its definition-time bound on a charged row.
+    material_bound: str | None = None  # Its definition-time bound on a neutral row.
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -381,7 +405,7 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
-        return out
+        return out + _named_or_none(self, *STEP_TERMS)
 
 
 @dataclass(frozen=True)

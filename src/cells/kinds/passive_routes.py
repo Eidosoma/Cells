@@ -88,6 +88,7 @@ NEUTRAL = law_registry.BUILTIN.register(
         ("membrane", "junction"),
         "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with "  # noqa: E501
         "the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
+        material_bound="bound_rate_per_s",  # dt L <= 1 (the kind's bound_rate): CORE_SEAMS §18.
         host=KIND_ID,
         provenance="cited",
         source=law_registry.Citation(
@@ -103,6 +104,7 @@ LEAK = law_registry.BUILTIN.register(
         ("membrane",),
         "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each "
         "node's closure (laws/transport/proton_leak.py)",
+        stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
         host=KIND_ID,
         provenance="cited",
         source=law_registry.Citation(
