@@ -123,7 +123,8 @@ not the manufactured ones; the two differ by the inputs' rounding times the cond
 **The closure's floors**, per state and per output (free ligands and every form):
 - **the inputs' rounding:** ½ ulp on every published double (the totals, V and each μ°/RT), at
   most 8.5e-14 relative;
-- **the residual's bound:** the solution error that §19's |g|/T ≤ 1e-13 admits, at most 3.8e-11
+- **the residual's bound:** the solution error that §19's |g_L| ≤ 1e-13 V A_L admits (amendment
+  C2; |g|/T ≤ 1e-13 as first registered), at most 3.8e-11
   (S1's saturated binder). This is the floor the engine's comparison needs.
 
 ## The registered design: power
@@ -338,6 +339,28 @@ positive up to the stored amount.
     - The earlier second routes, nested bisection and manufactured solutions, both share the
       dual's formulation.
   - Three tests added (binding: 9); the earlier inputs and values are unchanged.
+- **18 November 2026, 20:12 UTC, amendment C2, the convergence scale, before any output of the general
+  closure** (§19 amended at 19:52 UTC):
+  - **The criterion:** |g_L| ≤ 1e-13 V A_L, with A_L = x_L + Σ_B Σ_f |n_{L,f}| c_f at the
+    speciation, in place of 1e-13 |T_L|. Each state now records `residual_scale_fmol` (V A_L),
+    `residual_rel` (|g_L|/(V A_L), which replaces |g_L|/|T_L|) and `totals_over_scale`.
+  - **The solution floors** `floor_residual_1e-13` are restated on that scale, and so is the
+    planted conservation error, now 1e-10 of V A_L. They are identical wherever every count is ≥ 0.
+    So S1, S2, S3, S5 and S6 are unchanged to the last digit; only S4's values moved, because
+    `pi2_PO4` has a count of −1.
+  - **One state added,** appended as S4[12] `near_zero_H_total`. There the H total nearly cancels:
+    the bound protons of nuc4, nuc3 and pi2_H against pi2_PO4's −1, so |T_H| = 1e-9 V A_H.
+    - On the |T_L| scale the tolerance would be 4.5e-7 ulps of the residual's terms, which no
+      solver can meet. On V A_L it is 450 ulps.
+    - This package's own Newton never converged there on the |T_L| scale. It was moved to V A_L
+      here.
+    - Earlier states' solutions are unchanged to their printed digits.
+    - The pair S4 (11, 12) joins amendment C1's plants.
+  - **The correction to 17:33:** the per-ligand floor Σ T_B min n is necessary but not sufficient
+    for mixed-sign counts. The joint condition is the closure's own validity. In the registered
+    systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
+    attained jointly.
+  - One test added (binding: 10).
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 

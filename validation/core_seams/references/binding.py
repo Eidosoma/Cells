@@ -149,6 +149,21 @@ class System:
                                            Decimal(0)) / Z
             return g
 
+    def scale_at(self, u: dict, totals_B: dict, V) -> dict:
+        """V A_L at u: V x_L + Σ_B T_B ⟨|n_L|⟩_B (fmol), the convergence scale (amendment C2)."""
+        V = dec(V)
+        with context():
+            E, W = self._weights(u)
+            out = {L: V * self.c0 * E[L] for L in self.ligands}
+            for B in self.binders:
+                Z = sum(W[B], Decimal(0))
+                for L in self.ligands:
+                    out[L] += dec(totals_B[B]) * sum((w * abs(f["counts"].get(L, 0))
+                                                      for w, f in zip(W[B], self.forms[B],
+                                                                      strict=True)),
+                                                     Decimal(0)) / Z
+            return out
+
     def potential(self, u: dict, totals_L: dict, totals_B: dict, V):
         V = dec(V)
         with context():
@@ -188,7 +203,10 @@ def solve(system: System, totals_L: dict, totals_B: dict, V, max_iter: int = 400
         while it < max_iter:
             it += 1
             g, H = system.gradient_hessian(u, totals_L, totals_B, V)
-            rel = max(abs(g[L]) / max(abs(dec(totals_L[L])), Decimal("1e-300")) for L in Ls)
+            # amendment C2: the residual relative to V A_L (= |T_L| where every count is ≥ 0),
+            # which a cancelling total (T_L ≈ 0) can meet; |g|/|T_L| there cannot
+            scale = system.scale_at(u, totals_B, V)
+            rel = max(abs(g[L]) / scale[L] for L in Ls)
             A = [[H[L][M] for M in Ls] for L in Ls]
             step = exact.solve(A, [-g[L] for L in Ls])
             if rel < NEWTON_TOL and max(abs(s) for s in step) < NEWTON_TOL:
@@ -503,11 +521,14 @@ def sensitivities(system: System, sp: dict, totals_L: dict, totals_B: dict, V,
                     d = direct_f[f["id"]] + sum((f["counts"].get(M, 0) * du[M] for M in Ls),
                                                 Decimal(0)) - dlnZ - direct_lnZ
                     bound_f[(B, f["id"])] += abs(d) * dp
-        # (b) the residual's bound: worst case over signs of δg_L = ± rel |T_L|, per output
+        # (b) the residual's bound: worst case over signs of δg_L = ± rel V A_L, per output
+        # (amendment C2: A_L = x_L + Σ |n| c, the convergence scale of §19 as amended at 19:52
+        # UTC; it equals |T_L|/V wherever every count is ≥ 0)
+        scale = residual_scale(system, sp, Vd)
         res_x = {L: Decimal(0) for L in Ls}
         res_f = {(B, f["id"]): Decimal(0) for B in system.binders for f in system.forms[B]}
         for j, M in enumerate(Ls):
-            dgm = residual_rel * abs(dec(totals_L[M]))
+            dgm = residual_rel * scale[M]
             du = {L: -Hinv[i][j] for i, L in enumerate(Ls)}
             for L in Ls:
                 res_x[L] += abs(du[L]) * dgm
@@ -527,6 +548,21 @@ def sensitivities(system: System, sp: dict, totals_L: dict, totals_B: dict, V,
 # --------------------------------------------------------------------------------------------
 # P1's buffered node: the free amount against the stored equivalents
 # --------------------------------------------------------------------------------------------
+
+def residual_scale(system: System, sp: dict, V) -> dict:
+    """Amendment C2: each ligand's convergence scale V A_L (fmol), A_L = x_L + Σ_B Σ_f |n_{L,f}| c_f
+    at the speciation: |g_L| ≤ 1e-13 V A_L in place of 1e-13 |T_L| (§19 amended at 19:52 UTC)."""
+    V = dec(V)
+    with context():
+        out = {}
+        for L in system.ligands:
+            a = sp["x_mM"][L]
+            for B in system.binders:
+                for f in system.forms[B]:
+                    a += abs(f["counts"].get(L, 0)) * sp["forms_mM"][B][f["id"]]
+            out[L] = V * a
+        return out
+
 
 def p1_thresholds(system: System, ligand: str, totals_L: dict, totals_B: dict, V,
                   drawn_over_free=(Decimal("0.5"), Decimal(1), Decimal(2), Decimal(10),

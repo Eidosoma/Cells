@@ -4,7 +4,7 @@
  "status": "registered before any engine output for seams A and C (CORE_SEAMS_DESIGN \u00a719 item 7: the kinds and binding owners had not started)",
  "inputs": {
   "path": "validation/core_seams/references/reference_inputs.json",
-  "git_blob": "6d9ec5b03f2bc7749a668f576918424b14c0060f"
+  "git_blob": "e4c53189fbaa2faec674f44d20eb02069e56d939"
  },
  "min_margin": 10.0,
  "verdict_band_eps": 64.0,
@@ -93,6 +93,12 @@
    "claim": "Amendment C1: the booked term E_c = G* \u2212 \u03a3_r T_r \u03bc\u00b0\u2032_r over the closure's rows holds in either split, S_c with @3's ideal terms or E_c alone; its gradient is each row's free form's potential in @3's frame, RT ln(c_free/1 mM) (\u00a719 amended at 19:52 UTC)",
    "reference": "E_c, S_c, @3's ideal terms, the standard parts and B4's formula at every state; E_c's gradient analytically and by central differences; the primal route (primal.py) as the second solve",
    "plants": ["G* booked whole (\u03a3 \u0394T_r \u03bc\u00b0\u2032_r)", "B4's formula on moved binders (\u03a3_B \u0394T_B \u03bc\u00b0\u2032_B)", "S_c alone with @3's ideal terms masked (\u03a3 \u0394 ideal_r)"]
+  },
+  {
+   "row": "C1b",
+   "claim": "Amendment C2: the closure converges on |g_L| \u2264 1e-13 A_L, A_L = x_L + \u03a3|n| c, in place of |T_L|; identical where every count is \u2265 0 (\u00a719 amended at 19:52 UTC)",
+   "reference": "V A_L at every state (`residual_scale_fmol`), the solution floors restated on that scale, and S4's cancelling state, where |T_H| = 1e-9 V A_H",
+   "plants": ["the |T_L| scale at the cancelling state: a tolerance far below one ulp of the residual's terms, which no solver can meet"]
   },
   {
    "row": "C5",
@@ -3026,53 +3032,53 @@
    "S4": {
     "plants": {
      "K_1pct": {
-      "max": 43491880383.095856,
+      "max": 43420237479.32082,
       "at": "random_8",
-      "min": 5786178695.493259,
+      "min": 5786178690.533588,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "K_1e-6": {
-      "max": 4370953.005506043,
+      "max": 4363752.862334023,
       "at": "random_8",
-      "min": 580489.6988937954,
+      "min": 580489.6983962238,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "form_dropped": {
-      "max": 924823278774.5634,
+      "max": 924823277981.8434,
       "at": "acidic",
-      "min": 14954189.145790108,
+      "min": 14939958.97860323,
       "min_at": "high_pH_negative_total",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "count_off_by_one": {
-      "max": 84151020722269.14,
+      "max": 84012401204624.19,
       "at": "random_8",
-      "min": 5971081184737.633,
+      "min": 5971081179619.472,
       "min_at": "acidic",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      },
      "conservation_1e-10": {
-      "max": 641.398934275054,
-      "at": "high_pH_negative_total",
-      "min": 422.7333150227569,
+      "max": 678.2999966035469,
+      "at": "near_zero_H_total",
+      "min": 422.73331603749364,
       "min_at": "random_0",
       "weak_at": [],
       "note": "deviation over the residual-bound floor at each state"
      }
     },
-    "floor_residual_max": 1.6487342128732178e-12,
+    "floor_residual_max": 1.648734214286444e-12,
     "floor_input_max": 1.2205981333672856e-14,
     "manufactured_max_dln": 3.445610385644532e-16,
-    "residual_max_rel": 1.2638327186703778e-54,
-    "conservation_max_rel": 1.2638313561238913e-54,
+    "residual_max_rel": 1.2591783631502574e-54,
+    "conservation_max_rel": 2.5567992860909304e-50,
     "charge_max_abs_fmol_e": 7.84e-56,
-    "gradient_vs_differences_max_rel": 2.9484790214233885e-34,
+    "gradient_vs_differences_max_rel": 2.2717854692619454e-25,
     "newton_vs_bisection_max_rel": 6.800876057551109e-32,
     "joint_vs_separate_max_rel": 0.0,
     "gradient_plant": {
@@ -3347,7 +3353,7 @@
      }
     },
     "identity_E_c_minus_S_c_minus_ideal_max_pJ": 3e-58,
-    "E_c_gradient_vs_differences_max_J_per_mol": 6.801171484139958e-30,
+    "E_c_gradient_vs_differences_max_J_per_mol": 1.7799764080766664e-20,
     "states_where_S_c_is_undefined": ["high_pH_negative_total"],
     "primal_vs_dual_max_abs_dln": 2.553733092e-51,
     "primal_certificate_max": 2.5537694e-51,
@@ -3420,6 +3426,56 @@
     "primal_vs_dual_max_abs_dln": 8.742435e-53,
     "primal_certificate_max": 8.79763e-53,
     "primal_iterations_max": 26
+   }
+  },
+  "C2_amendment_convergence_scale": {
+   "S1": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 5.803120547965098e-57
+   },
+   "S2": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 1.4607232007851465e-55
+   },
+   "S3": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 9.9222398388944e-56
+   },
+   "S4": {
+    "min_total_over_scale": 1.000000028489195e-09,
+    "at": "near_zero_H_total",
+    "states_where_the_scales_differ": ["random_0", "random_1", "random_2", "random_3", "random_4", "random_5", "random_6", "random_7", "random_8", "random_9", "high_pH_negative_total", "acidic", "near_zero_H_total"],
+    "old_scale_tolerance_ulps_at_min": 4.503599755674424e-07,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 1.2591783631502574e-54
+   },
+   "S5": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 3.793372612967444e-59
+   },
+   "S6": {
+    "min_total_over_scale": 1.0,
+    "at": "random_0",
+    "states_where_the_scales_differ": [],
+    "old_scale_tolerance_ulps_at_min": 450.3599627370496,
+    "new_scale_tolerance_ulps": 450.3599627370496,
+    "residual_max_rel_to_scale": 3.7306791744287726e-53
    }
   },
   "C3_movers": {
@@ -3584,6 +3640,11 @@
    "control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
    "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
    "remedy": "E_c, which is defined there, and every other pair"
+  },
+  {
+   "control": "amendment C2: the convergence scale, where every count is \u2265 0",
+   "why": "V A_L = |T_L| there, so both criteria are the same (S1, S2, S3, S5, S6)",
+   "remedy": "S4, whose pi2_PO4 has a count of \u22121, and its cancelling state above all"
   },
   {
    "control": "bitwise agreement of the two layouts",

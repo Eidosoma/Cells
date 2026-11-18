@@ -700,6 +700,22 @@ def power_c(inputs, vc, dc) -> dict:
                     "primal_certificate_max": max(r["primal"]["certificate"] for r in rows),
                     "primal_iterations_max": max(r["primal"]["iterations"] for r in rows)}
     power["C1_amendment_booked_term_and_primal"] = bt
+    # amendment C2: the convergence scale V A_L against |T_L|, and the tolerance each gives in
+    # ulps of the residual's terms (1e-13 V A_L/(eps V A_L) = 450 on the new scale)
+    cs = {}
+    for name, srec in vc["systems"].items():
+        rows = srec["states"]
+        ratios = {r["tag"]: min(r["totals_over_scale"].values()) for r in rows}
+        tags = list(ratios)
+        lo = min(tags, key=lambda t: ratios[t])
+        cs[name] = {"min_total_over_scale": ratios[lo], "at": lo,
+                    "states_where_the_scales_differ": [t for t in tags
+                                                       if abs(ratios[t] - 1) > 1e-12],
+                    "old_scale_tolerance_ulps_at_min": 1e-13 * ratios[lo] / exact.EPS,
+                    "new_scale_tolerance_ulps": 1e-13 / exact.EPS,
+                    "residual_max_rel_to_scale": max(max(r["residual_rel"].values())
+                                                     for r in rows)}
+    power["C2_amendment_convergence_scale"] = cs
     power["C3_movers"] = vc["movers"]
     power["C2_parse"] = vc["parse"]["planted_declared_valence"]
     power["C5_p1"] = {k: {kk: v[kk] for kk in ("threshold_free_fmol", "threshold_stored_fmol",
@@ -793,6 +809,13 @@ CLAIMS = [
                    "route (primal.py) as the second solve"),
      "plants": ["G* booked whole (Σ ΔT_r μ°′_r)", "B4's formula on moved binders (Σ_B ΔT_B μ°′_B)",
                 "S_c alone with @3's ideal terms masked (Σ Δ ideal_r)"]},
+    {"row": "C1b", "claim": ("Amendment C2: the closure converges on |g_L| ≤ 1e-13 A_L, A_L = "
+                             "x_L + Σ|n| c, in place of |T_L|; identical where every count is ≥ 0 "
+                             "(§19 amended at 19:52 UTC)"),
+     "reference": ("V A_L at every state (`residual_scale_fmol`), the solution floors restated on "
+                   "that scale, and S4's cancelling state, where |T_H| = 1e-9 V A_H"),
+     "plants": ["the |T_L| scale at the cancelling state: a tolerance far below one ulp of the "
+                "residual's terms, which no solver can meet"]},
     {"row": "C5", "claim": ("P1's buffered node: a predictor must read the quantity it "
                             "differentiates (§17, §18)"),
      "reference": ("rate-normalised thresholds (the free amount, the stored equivalents above "
@@ -877,6 +900,9 @@ ZERO_POWER = [
     {"control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
      "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
      "remedy": "E_c, which is defined there, and every other pair"},
+    {"control": "amendment C2: the convergence scale, where every count is ≥ 0",
+     "why": "V A_L = |T_L| there, so both criteria are the same (S1, S2, S3, S5, S6)",
+     "remedy": "S4, whose pi2_PO4 has a count of −1, and its cancelling state above all"},
     {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
      "remedy": "the engine's own test; the references give the rates both must meet"},
     {"control": "a K plant on a form that holds little of its ligand",

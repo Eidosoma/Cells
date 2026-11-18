@@ -100,6 +100,13 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment C2: the scales part only in S4, and by 1e9 at its cancelling state
+    for name, c in p["C2_amendment_convergence_scale"].items():
+        if name == "S4":
+            assert c["at"] == "near_zero_H_total" and c["min_total_over_scale"] < 1e-8
+            assert c["old_scale_tolerance_ulps_at_min"] < 1
+        else:
+            assert c["states_where_the_scales_differ"] == [], name
     # amendment C1: the booked term's plants, its identity and the primal route
     for name, c in p["C1_amendment_booked_term_and_primal"].items():
         assert c["identity_E_c_minus_S_c_minus_ideal_max_pJ"] < 1e-50, name

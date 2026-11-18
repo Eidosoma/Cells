@@ -252,8 +252,11 @@ def binding_state(system_spec, registry, totals, V, extra_checks=False) -> dict:
         sens = Bd.sensitivities(sy, sp, TL, TB, V)
         out = {"x_mM": sp["x_mM"], "forms_mM": sp["forms_mM"],
                "free_fmol": {L: dec(V) * sp["x_mM"][L] for L in sy.ligands},
-               "residual_rel": {L: abs(sp["residual_fmol"][L]) / abs(dec(TL[L]))
+               "residual_scale_fmol": Bd.residual_scale(sy, sp, V),
+               "residual_rel": {L: abs(sp["residual_fmol"][L]) / Bd.residual_scale(sy, sp, V)[L]
                                 for L in sy.ligands},
+               "totals_over_scale": {L: abs(dec(TL[L])) / Bd.residual_scale(sy, sp, V)[L]
+                                     for L in sy.ligands},
                "conservation_rel": Bd.conservation(sy, sp, TL, TB, V),
                "charge": Bd.charge(sy, sp, TL, TB, V),
                "G_star_pJ": Bd.free_energy(sy, sp, V),
@@ -343,13 +346,15 @@ def binding_plants(system_spec, registry, totals, V, designated) -> dict:
                         if d > worst:
                             worst, where = d, f"{B}|{fid}"
             out[name] = {"max_abs_dln": fl(worst), "where": where}
-        # a solution whose ligand conservation is off by 1e-10 relative: δu = H⁻¹ δg
+        # a solution whose ligand conservation is off by 1e-10 of the convergence scale V A_L
+        # (amendment C2; = 1e-10 |T_L| where every count is ≥ 0): δu = H⁻¹ δg
         Ls = sy_ref.ligands
         H = [[ref["hessian_fmol"][L][M] for M in Ls] for L in Ls]
+        scale = Bd.residual_scale(sy_ref, ref, V)
         worst = Decimal(0)
         for j, M in enumerate(Ls):
             dg = [Decimal(0)] * len(Ls)
-            dg[j] = Decimal("1e-10") * abs(dec(totals["ligands_fmol"][M]))
+            dg[j] = Decimal("1e-10") * scale[M]
             du = exact.solve(H, dg)
             worst = max(worst, max(abs(x) for x in du))
         out["conservation_1e-10"] = {"max_abs_dln": fl(worst), "where": "free ligands"}

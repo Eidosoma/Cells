@@ -133,12 +133,13 @@ counted from each base form.
 | Key | Meaning |
 | --- | --- |
 | `x_mM`, `free_fmol`, `forms_mM` | The free ligands, and every form's concentration ({binder: {form: mM}}) |
-| `residual_rel`, `conservation_rel` | \|g_L\|/\|T_L\|, and each row's reconstruction error (~1e-50) |
+| `residual_scale_fmol`, `residual_rel`, `totals_over_scale` | Amendment C2: V A_L, with A_L = x_L + Σ \|n\| c (the convergence scale); \|g_L\|/(V A_L); and \|T_L\|/(V A_L), which is 1 wherever every count is ≥ 0 |
+| `conservation_rel` | Each row's reconstruction error (~1e-50) |
 | `charge` | `species_fmol_e`, `totals_fmol_e` and their difference |
 | `G_star_pJ` | Σ n (μ° + RT(ln(c/c°) − 1)) over the free ligands and every form |
 | `potentials_J_per_mol` | ∂G*/∂T per row: the free ligand's, and each binder's free base form's |
 | `own_terms_pJ`, `speciation_part_pJ` | Σ over the rows as single base-form species, and G* minus it (null where a total is ≤ 0). **Not the booked term** (§19 item 3) |
-| `floor_input_rounding`, `floor_residual_1e-13` | {x: {ligand: \|δ ln x\|}, forms: {"binder\|form": \|δ ln c\|}}: from ½ ulp on every input, and from a residual \|g\|/T ≤ 1e-13. Compare solutions against the second |
+| `floor_input_rounding`, `floor_residual_1e-13` | {x: {ligand: \|δ ln x\|}, forms: {"binder\|form": \|δ ln c\|}}: from ½ ulp on every input, and from a residual \|g_L\| ≤ 1e-13 V A_L (amendment C2). Compare solutions against the second |
 | `manufactured_dln` | The registered solution against the manufactured free ligands |
 | `gradient_vs_differences_rel`, `newton_vs_bisection_rel` | Where computed (two states per system and every hard state) |
 | `booked_term` | Amendment C1, the closure's booked term in both splits. It holds `E_c_pJ` (= G* − Σ_r T_r μ°′_r) and `S_c_pJ` (= E_c − Σ ideal_r, = `speciation_part_pJ`; null where a total is ≤ 0). It also holds `ideal_rows_pJ` and `ideal_total_pJ` (@3's RT T (ln(T/V) − 1); null at T ≤ 0), `standard_parts_pJ` and `standard_total_pJ` (T μ°′ with μ°′ = μ° − RT ln c°, c° in mM), `B4_term_pJ` (S_c + Σ_B T_B μ°′_B), `identity_residual_pJ`, `gradient_at3_J_per_mol` (∂E_c/∂T_r = RT ln(c_free/1 mM)), and `terms_abs_pJ`, for rounding floors. A world-level check: the closure's phase-1 term (S_c) plus @3's ideal terms on its rows equals `E_c_pJ` |

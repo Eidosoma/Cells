@@ -186,3 +186,30 @@ def test_the_primal_route_agrees_with_the_dual_and_a_planted_K_does_not(s4):
         dev = max(abs((bad["forms_mM"]["nuc4"][k] / c).ln())
                   for k, c in sp["forms_mM"]["nuc4"].items())
         assert dev > Decimal("1e-8")
+
+
+def test_the_convergence_scale_is_the_total_unless_counts_mix_signs(s4):
+    """Amendment C2 (§19 amended at 19:52 UTC): |g_L| ≤ 1e-13 V A_L, A_L = x_L + Σ|n| c. It is
+    |T_L| where every count is ≥ 0; at a cancelling H total the |T_L| scale asks for less than one
+    ulp of the residual's terms, which no solver can meet, and the reference converges only on
+    V A_L (its own solver failed there before the amendment)."""
+    spec3 = {"ligands": ["H", "Mg"], "binders": ["nuc4"]}
+    sy3 = B.System(spec3, REG)
+    tB3 = {"nuc4": 5.0}
+    TL3 = {k: float(v) for k, v in B.manufacture(sy3, {"H": 1e-4, "Mg": 0.3}, tB3, 1.0).items()}
+    sc3 = B.residual_scale(sy3, B.solve(sy3, TL3, tB3, 1.0), 1.0)
+    with exact.context():
+        for L in sy3.ligands:
+            assert abs(sc3[L] / exact.dec(TL3[L]) - 1) < Decimal("1e-40")
+    sy, _free, _tB, _TL = s4
+    tB = {"nuc4": 10.0, "nuc3": 1.0, "pi2": 40.0}
+    TL = {k: float(v) for k, v in B.manufacture(sy, {"H": 2.791027282207225e-07, "Mg": 0.5}, tB,
+                                                2.0).items()}
+    sp = B.solve(sy, TL, tB, 2.0)
+    sc = B.residual_scale(sy, sp, 2.0)
+    with exact.context():
+        ratio = abs(exact.dec(TL["H"])) / sc["H"]
+        assert ratio < Decimal("1e-6")
+        # planted: the |T_L| scale's tolerance at this state, in ulps of the residual's terms
+        assert Decimal("1e-13") * ratio / exact.dec(exact.EPS) < 1
+        assert abs(sp["residual_fmol"]["H"]) <= Decimal("1e-50") * sc["H"]

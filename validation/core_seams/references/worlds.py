@@ -745,6 +745,51 @@ def amendment_1(a: dict, rng) -> None:
                         "ruling": "CORE_SEAMS_DESIGN §19, amended the same evening"}]
 
 
+def amendment_c2(c: dict) -> None:
+    """Amendment C2 (§19, amended at 19:52 UTC): S4 gains one state, appended, where the H total
+    nearly cancels (T_H ≈ 1e-9 V A_H): the bound protons of nuc4, nuc3 and pi2_H against pi2_PO4's
+    count of −1. There the scale |T_L| and the scale V A_L part by 1e9. The pH is found by
+    bisection on the exact manufactured T_H; the other free values are S4[10]'s."""
+    from decimal import Decimal
+
+    from . import binding, exact
+    sysd = SYSTEMS["S4"]
+    spec = {"ligands": sysd["ligands"], "binders": sysd["binders"]}
+    sy = binding.System(spec, REGISTRY_C)
+    V = sysd["volume_pL"]
+    bm = {"nuc4": 5.0, "nuc3": 0.5, "pi2": 20.0}
+    tB = {B: bm[B] * V for B in sysd["binders"]}
+
+    def totals(pH):
+        """The exact H total and V A_H of the forward (manufactured) speciation: no solve."""
+        free = {"H": 10.0 ** (3.0 - pH), "Mg": 0.5}
+        TL = binding.manufacture(sy, free, tB, V)
+        with exact.context():
+            u = {L: (Decimal(free[L]) / sy.c0).ln() for L in sy.ligands}
+            _E, W = sy._weights(u)
+            forms = {B: {f["id"]: Decimal(tB[B]) / Decimal(V) * w / sum(W[B], Decimal(0))
+                         for f, w in zip(sy.forms[B], W[B], strict=True)}
+                     for B in sy.binders}
+            A = binding.residual_scale(sy, {"x_mM": {L: Decimal(free[L]) for L in sy.ligands},
+                                            "forms_mM": forms}, V)
+        return TL["H"], A["H"], free
+
+    lo, hi = 8.0, 11.0
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        T, A, _f = totals(mid)
+        if T > Decimal("1e-9") * A:
+            lo = mid
+        else:
+            hi = mid
+    pH = lo
+    _T, _A, free = totals(pH)
+    st = {"tag": "near_zero_H_total", "free_mM": free, "binders_mM": dict(bm),
+          "amendment": "C2"}
+    st["totals"] = totals_from_manufactured(spec, st, V)
+    c["manufactured_states"]["S4"].append(st)
+
+
 def build() -> dict:
     rng = np.random.default_rng(SEED)
     a = seam_a(rng)
@@ -758,6 +803,7 @@ def build() -> dict:
                                                    "binders_mM": node["binders_mM"]},
                                                   node["volume_pL"])
     amendment_1(a, rng)
+    amendment_c2(c)
     return {
         "kind": "cells.core_seams_reference_inputs@1",
         "registered": REGISTERED,
