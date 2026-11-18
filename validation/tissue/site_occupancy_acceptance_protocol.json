@@ -7,8 +7,8 @@
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates (§12) as development checks",
   "needs_first": [
-   "the generator (records only), the judge (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only from validation/tissue/compartment_ph_judge.py), the planted controls (each in its own process, by checkpoint edits) and the drafter of the machine criteria, in FR-1's form, with tool tests and planted judge mutants",
-   "development runs at full horizons and the dt study, against the budgets declared here"
+   "a rehearsal of every judged part on a registered dry-run copy, at full horizons, until it passes, with the judge's compare against the development records",
+   "the landing gate (tier 1 and the collected test IDs: additions only)"
   ],
   "path": "the tools; development runs and the dt study; a rehearsal of every judged part on a registered dry-run copy, until it passes; the lead's registration; one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's, FR-5's, FR-10's and FR-1's)",
   "move_2": "registration and the judged run sit on the same side of D188's move 2 (the lead's rule of 17 November 2026); the lead is told before a registration is proposed"
@@ -31,9 +31,9 @@
   "Q3_kinetics": "q3_association, q3_dissociation (into a node at the trace), q3_internalisation (1e3 pL nodes, 5 s), q3_binding_multiplier (q2_closed's node with m_b = 1/4 from 1 s to 4 s, 10 s), and q2_closed (the Riccati form)",
   "Q4_accessibility": "q4_alpha_{1,1_2,1_4}_low (c = 0.01 K_d, 10 s) and _high (c = 100 K_d, 0.2 s) in 1e6 pL nodes, where the depletion term is at most 1.6e-7; q1_eps_1e-1_alpha_half",
   "Q5_accounting": "§3.4's guard worlds: q5_passive_from_zero and q5_passive_preformed (passive-only, closed node), q1_eps_1e-1 (the mixed share branch), q5_washout (the quadrature branch), q5_class_switch (internalisation off, on at 5 s, off at 10 s), q5_inward (a 2 pL cell receiving cargo and faced by an inward population), q2_two_populations, q2_closed (the closed relaxation) and the background pair q5_background_threshold (trace 1e-9 mM, 1e-6 K_d) and q5_background_lowered (1e-12 mM); and every engine part's every record for the ledgers and the closure",
-  "Q6_runs": "Q6_restart: q5_class_switch, straight and resumed at 4, 5 and 6 s (before, at and after its 5 s switch-on), in process and through a written snapshot (cells.io), with K4's restart whose switch is moved one step; Q6_batch: four q1_fast-shaped worlds with every parameter different (copies, sites per copy, alpha, k_on, k_off, initial occupancy, k_int, both volumes and c0) in one vector batch, against each scalar run and the reversed batch; Q6_idle: q5_inward's layout with every multiplier zero, and with no populations, against the world without the operator, every inner field and row; Q6_twins: two value twins of q5_inward with every parameter and multiplier changed, traced; Q6_signature: worlds of different structure in one batch; Q6_refusals: a representative of each of §6.2's refusal classes beside its admitted neighbour, and the run-time stage condition",
+  "Q6_runs": "Q6_restart: q5_class_switch, straight and resumed at 4, 5 and 6 s (before, at and after its 5 s switch-on), in process and through a written snapshot (cells.io), with K4's restart whose switch is moved one step; Q6_batch: four q1_fast-shaped worlds with every parameter different (copies, sites per copy, alpha, k_on, k_off, initial occupancy, k_int, both volumes and c0, and both multipliers from 0.1 s) in one vector batch, against each scalar run and the reversed batch; Q6_idle: q5_inward's layout with every multiplier zero, and with no populations, against the world without the operator, every inner field and row; Q6_twins: two value twins of q5_inward with every parameter and multiplier changed, traced; Q6_signature: worlds of different structure in one batch; Q6_refusals: a representative of each of §6.2's refusal classes beside its admitted neighbour, and the run-time stage condition",
   "controls": "declared variants of registered worlds, run by the engine (controls)",
-  "plants": "checkpoint edits in their own process (validation/tissue/site_occupancy_acceptance_plants), never patches: the lead's ruling"
+  "plants": "checkpoint edits in their own process (validation/tissue/site_occupancy_acceptance_plants), never patches: the lead's ruling. Each plant's world runs to 1 s recorded at every step, its checkpoint is edited there, and the engine resumes from it for 10 steps: q5_passive_from_zero for the move, the bound pool, the heat's sign and the site free energy dropped; q1_eps_1e-1 (mixed) for the work"
  },
  "references": {
   "author": "the FR references agent (code-blind), from the design's Appendix A, §2, §3.3-§3.4, §4.1, §4.3-§4.4 and §8; the worlds are the references' own (the lead's ruling of 17 November 2026)",
@@ -175,9 +175,17 @@
    {
     "path": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/authoring/budget_window.json",
     "status": "the budget window, reference side only (no engine output): each world's S_world, floors, ceiling and the background guard's changes"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/dev/smoke-01 and smoke-02",
+    "status": "the tools' first engine runs, 18 November 2026 (CPUs 6, 7, 22 and 23 at nice 10): q1_fast at 1 ms, q2_closed, Q6_twins and Q6_signature in full; Q6_refusals, the plants, Q6_idle, Q6_batch, K_alpha, Q6_restart and Q4_kinetic at 0.4 of their horizons. Three tool faults found and fixed (disclosures)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/site-occupancy-fr3-20261118/pipeline/run-dev-bc287a20",
+    "status": "the development run at full horizons with the dt study, from the clean snapshot of bc287a20 on lane A (CPUs 0-3 and 16-19 under its lock, nice 10), 18 November 2026, 14 minutes: every one of the 43 judged parts and the 8 development rungs admitted and run with every host check; the development verdict passed every judged criterion. q1_fast's errors at 1, 0.5 and 0.25 ms in B, 2.910e-13, 3.544e-14 and 4.373e-15 fmol, are the references' honest stand-in's to every printed digit (orders 3.04 and 3.02 for both nodes and B; the heat and work 1.97 and 1.99). Every rung of the dt study's slow worlds within its budgets: the declared 1 ms stands. Margins: the state at most 0.10 of B_state (Q4's 0.1 mM worlds, SSPRK(3,3)'s honest error at lambda dt = 0.1; elsewhere at most 1.2e-4), the energy at most 1.9e-3 of B_energy, the closure 0.11 of its rounding, the ledgers 0.09, the system total 0.33; the background guard 11 x; (K) 494 x and (A) at 100 K_d 490 x M_Q4, the ratio 4.1e-5 of M_Q4; the controls 66 x (k_int 1%) to 4.7e4 x; the plants 3.1e5 x to 5.3e11 x, the engine refusing the material plants by their ledgers and the heat's sign and the dropped site term by its energy ledger, and not the 1e-6 work (FR-18); the restarts bitwise and K4 caught; the batch within 8.2e-15 of its scalar runs and bitwise its reverse; R-qss's order in eps 0.97 and 0.997 (reported). One tool fault found (disclosures)"
    }
   ],
-  "note": "development evidence only: no run of this protocol exists"
+  "note": "development evidence only: no judged run of this protocol exists"
  },
  "questions_for_the_lead": [],
  "questions_answered": [
@@ -195,7 +203,9 @@
   "Drafted on 18 November 2026 after milestone 1, whose gates are known (§12), and after the references registered their worlds, values and power (992ce385, amended the same day). No engine run of a protocol world exists: the adapter's worlds were only admitted (parse and timeline), every world, rung and control",
   "The budgets' basis is reference side only: the references' api.reference on every world through the usage note, and their registered design file (/mnt/workspaces/Cells/site-occupancy-fr3-20261118/authoring/budget_window.json)",
   "One layout choice is the adapter's, not the references': an inward population sits on its cell's wall patch (facing inside), as milestone 1's runs placed it; in a face-free world its patch carries no other role",
-  "18 November 2026: the lead ruled on the draft's nine questions (questions_answered) before any engine output of a protocol world; no budget, band or margin changed"
+  "18 November 2026: the lead ruled on the draft's nine questions (questions_answered) before any engine output of a protocol world; no budget, band or margin changed",
+  "18 November 2026 (FR owner), after the tools' first engine runs (dev/smoke-01, smoke-02) and before the development run: three tool faults fixed at bc287a20. The adapter's build shadowed its populations switch with its own population list, so the world declared with no populations still declared them (Q6_idle compared the zero-multiplier world twice); Q6_signature's inward world was rebuilt from an inward population and lost its contact patch (refused as a floating node) and now edits the built definition; Q6_idle's judged claim now includes static idleness, as §4.8 states it. No budget, band, margin or threshold changed",
+  "18 November 2026 (FR owner), after the development run (run-dev-bc287a20): one tool fault fixed. Q4_A_low_reported's metric paths held a dot (low_0.5), which MG0c's evaluator splits, so the reported values read None; the derived keys are now low_0p5 and low_0p25, and a tool test requires every criterion's metric to resolve on a complete run. A reported criterion: no judged criterion, budget or threshold changed"
  ],
  "judge": {
   "written": "18 November 2026, by the FR owner, after the protocol's worlds were fixed, its budgets declared and the lead's rulings recorded, and before any engine output of a protocol world",
@@ -800,8 +810,8 @@
    {
     "id": "Q4_A_low_reported",
     "metrics": [
-     "derived.Q4_accessibility.A.low_0.5",
-     "derived.Q4_accessibility.A.low_0.25"
+     "derived.Q4_accessibility.A.low_0p5",
+     "derived.Q4_accessibility.A.low_0p25"
     ],
     "comparison": "ge",
     "threshold": 10.0,

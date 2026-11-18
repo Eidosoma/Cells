@@ -1140,8 +1140,9 @@ def _plant(plant, context):
 
     directory = Path(tempfile.mkdtemp(prefix=f"plant-{plant}-", dir=context["out_dir"]))
     out = directory / f"{plant}.json"
-    subprocess.run([sys.executable, "-B", "-m", "validation.tissue.site_occupancy_acceptance_plants",
-                    plant, str(out)], check=True, cwd=ROOT, env=dict(os.environ))
+    module = "validation.tissue.site_occupancy_acceptance_plants"
+    subprocess.run([sys.executable, "-B", "-m", module, plant, str(out)], check=True, cwd=ROOT,
+                   env=dict(os.environ))
     bundle = json.loads(out.read_text())
     out.unlink()
     directory.rmdir()
@@ -1171,7 +1172,8 @@ def reference_record(r, world):
     nodes, pops = [str(n) for n in r["nodes"]], [str(p) for p in r["populations"]]
     series = {}
     for key, prefix, names in (("n_fmol", "amount_", nodes), ("B_fmol", "B_", pops),
-                               ("R_fmol", "R_", pops), ("internalised_fmol", "internalised_", pops)):
+                               ("R_fmol", "R_", pops),
+                               ("internalised_fmol", "internalised_", pops)):
         values, floors = _array(r[key]), _array(r[key + "_floor"])
         for j, name in enumerate(names):
             series[prefix + name] = values[:, j].tolist()

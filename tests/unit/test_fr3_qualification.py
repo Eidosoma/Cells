@@ -449,6 +449,14 @@ def test_the_background_guard_reads_changes_from_t0():
     assert derived["background"]["ratio"] == pytest.approx(0.0, abs=1e-12)
 
 
+def test_every_criterion_metric_resolves_on_a_complete_run():
+    """No metric path is broken (a key with a dot would be split by the evaluator): every
+    criterion, judged or reported, reads a defined value from a complete run."""
+    _, evaluated = judge.verdict(parts(), PROTOCOL)
+    undefined = [c["id"] for c in evaluated["criteria"] if any(v is None for v in c["values"])]
+    assert undefined == []
+
+
 def test_the_orders_are_third_order_on_the_synthetic_ladder():
     derived, _ = judge.verdict(parts(), PROTOCOL)
     for x in D["order_observables"]:

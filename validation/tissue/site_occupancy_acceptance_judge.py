@@ -362,12 +362,13 @@ def q4(parts, d):
         one = by_ms(parts.get(f"q4_alpha_1_{regime}"), "B_r0")
         for alpha, world in d["Q4"]["worlds"][regime].items():
             a = float(alpha)
+            key = f"{regime}_{alpha}".replace(".", "p")  # No dot: a metric path's separator.
             value = ratio_departure(by_ms(parts.get(world), "B_r0"), one, a)
-            out["ratio"][f"{regime}_{alpha}"] = None if value is None else value / m
+            out["ratio"][key] = None if value is None else value / m
             for form, part in (("K", "Q4_kinetic"), ("A", "Q4_affinity")):
                 run = ((parts.get(part) or {}).get("runs") or {}).get(f"{regime}_{alpha}")
                 value = ratio_departure(by_ms(run, "B_r0"), one, a)
-                out[form][f"{regime}_{alpha}"] = None if value is None else value / m
+                out[form][key] = None if value is None else value / m
     out["ratio_max"] = max_or_none(out["ratio"].values())
     out["K_min"] = min_or_none(out["K"].values())
     out["A_high_min"] = min_or_none(v for k, v in out["A"].items() if k.startswith("high"))
