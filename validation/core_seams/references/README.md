@@ -19,6 +19,7 @@ references.
 | `cycles.py` | Cycle laws on a population: free energies, fluxes, rows per host end, heat, work, the stored rate, charge, exact slopes, and the parse-time checks |
 | `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, P1's thresholds, and (amendment C1) the booked term |
 | `primal.py` | Amendment C1: the second route, the primal Gibbs minimum by Newton on reaction extents, sharing only the registry's inputs with the dual |
+| `envelope.py` | Amendment C3: the binding network's first-order lag and its kinetic reference |
 | `api.py` | The entry points |
 | `worlds.py` | Writes the inputs (`--check` compares) |
 | `design.py` | Writes both design files in about a minute of one CPU (`--check` regenerates and compares) |
@@ -361,6 +362,39 @@ positive up to the stored amount.
     systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
     attained jointly.
   - One test added (binding: 10).
+- **18 November 2026, 20:21 UTC, amendment C3, the envelope's two-ligand kinetic reference, before any
+  output of the general closure** (§19 amended at 19:52 UTC; B4's Appendix A.2 generalised):
+  - **`envelope.py`:**
+    - the unit-step network, with k_on per (binder, ligand);
+    - the first-order lag δ = −K⁻¹ P D at 60 digits, with K = −N diag(F) Nᵀ W;
+    - the full nonlinear network under a constant drive, integrated by Radau and by BDF. Its lag
+      is measured against the closure at each state's own totals.
+  - **Eight registered cases** (`seam_c.envelope`, every value synthetic). The registry gains one
+    binder, `coop2`, a cooperative two-proton chain (pK 1 then 13, so its singly protonated form
+    is scarce at every pH) with Mg²⁺ on its base. It joins no system of S1–S6.
+    - **E0_b4:** one two-form buffer. The general lag equals B4's formula exactly.
+    - **E1_chain:**
+      - the network's slowest mode, 78 s⁻¹, is 0.077 of the slowest single step;
+      - the true first-order lag is ΔpH 1.63e-3, outside the 1e-3 budget, and the kinetic run
+        gives 1.62e-3;
+      - a per-step minimum λ gives 1.28e-4, inside the budget. That is the plant, 12.7 times
+        non-conservative.
+    - **E1_chain_small** (a tenth of the drive): the kinetic run meets the first order 9.95 times
+      closer, at second order.
+    - **E1_chain_kon10 and _kon100:** the lag falls exactly 10 and 100 times, so the closure is
+      the limit.
+    - **E1_chain_two_drives:** H⁺ and Mg²⁺ driven together.
+    - **E2_nuc4 and E2_nuc4_binder_drive:** a two-ligand binder without a bottleneck, the second
+      with a moved binder row. A per-step minimum is conservative there.
+    - Radau and BDF agree to 1e-11 in ln x.
+  - **Plants:**
+    - the per-step minimum λ: the budget's verdict flips on E1;
+    - a k_on that ignores the ligand: up to 1.19 on Mg²⁺;
+    - k_on swapped between ligands: up to about 1e3;
+    - a planted binder with a form not reachable by unit steps, refused. Every registered binder
+      is admitted.
+  - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged, and the
+    registry's new binder is appended.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
@@ -376,6 +410,7 @@ s, cycles 0.67 s, registration 0.92 s. The record is
 | `tests/unit/test_core_seams_references_cycles.py` | 9 | Seam A's machinery, amendment 1's finite fuel and N = b included, each test with its plant |
 | `tests/unit/test_core_seams_references_binding.py` | 6 | Seam C's, each test with its plant |
 | `tests/unit/test_core_seams_references_registration.py` | 4 | The inputs equal their generator, sampled values recompute, the registered power holds, and no engine import |
+| `tests/unit/test_core_seams_references_envelope.py` | 5 | Amendment C3: B4's reduction, the chain's non-conservative per-step bound, second order and 1/k_on, a shared k_on, and reachability |
 
 ## Sources
 

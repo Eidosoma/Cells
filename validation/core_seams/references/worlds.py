@@ -99,6 +99,13 @@ def _registry_c() -> dict:
                               ("cabuf_Ca", {"Ca": 1}, kd(1e-4)),
                               ("cabuf_CaH", {"Ca": 1, "H": 1}, pk(9.0) + kd(0.05)),
                               ("cabuf_Mg", {"Mg": 1}, kd(5.0))])
+    # amendment C3 (§19 amended at 19:52 UTC): a cooperative two-proton chain for the envelope.
+    # Its first protonation is weak (pK 1) and its second strong (pK 13), so the singly protonated
+    # form is scarce at every pH and the base ⇌ H2 conversion is the network's slowest mode; Mg²⁺
+    # binds the base. It joins no system of S1-S6.
+    binder("coop2", -2, 0.75, [("coop2_H", {"H": 1}, pk(1.0)),
+                               ("coop2_H2", {"H": 2}, pk(1.0) + pk(13.0)),
+                               ("coop2_Mg", {"Mg": 1}, kd(1.0))])
     return {
         "temperature_K": T_K,
         "standard_concentration_mM": C0_MM,
@@ -790,6 +797,68 @@ def amendment_c2(c: dict) -> None:
     c["manufactured_states"]["S4"].append(st)
 
 
+ENVELOPE_BUDGET_PH = 1e-3
+ENVELOPE_RECORD_SLOW_TIMES = [0.5, 2.0, 8.0, 16.0]
+
+
+def amendment_c3(c: dict) -> None:
+    """Amendment C3 (§19 amended at 19:52 UTC): the two-ligand kinetic reference for the envelope.
+    Each case is a closed node at the closure's state, with k_on per (binder, ligand) (D175's
+    stand-in parameter, the closure's declaration) and a constant drive (fmol/s) on free ligands or
+    on a binder's base form. Every value is synthetic (D152 §2.4)."""
+    from . import binding
+
+    def case(tag, ligands, binders, V, free, bm, kon, drive, note):
+        spec = {"ligands": ligands, "binders": binders}
+        tB = {B: bm[B] * V for B in binders}
+        st = totals_from_manufactured(spec, {"free_mM": free, "binders_mM": bm}, V)
+        assert st["binders_fmol"] == {B: float(v) for B, v in tB.items()}
+        binding.System(spec, REGISTRY_C)               # parses
+        return tag, {"ligands": ligands, "binders": binders, "volume_pL": V, "free_mM": free,
+                     "binders_mM": bm, "totals": st,
+                     "kon_per_mM_per_s": [[B, L, k] for (B, L), k in kon.items()],
+                     "drive_fmol_per_s": [[k, v] for k, v in drive.items()],
+                     "record_slow_times": ENVELOPE_RECORD_SLOW_TIMES, "note": note}
+
+    chain = {("coop2", "H"): 1e7, ("coop2", "Mg"): 1e4}
+    cases = dict([
+        case("E0_b4", ["H"], ["buf1"], 0.05, {"H": 10 ** (3 - 7.2)}, {"buf1": 40.0},
+             {("buf1", "H"): 1e5}, {"H": 1e-4},
+             "one ligand and one two-form buffer: the general lag must equal B4's formula"),
+        case("E1_chain", ["H", "Mg"], ["coop2"], 1.0, {"H": 1e-4, "Mg": 0.5}, {"coop2": 5.0},
+             chain, {"H": 3e-5},
+             ("the cooperative chain: its slowest mode is slower than every single step; the true "
+              "lag is outside the 1e-3 pH budget while a per-step minimum puts it inside")),
+        case("E1_chain_small", ["H", "Mg"], ["coop2"], 1.0, {"H": 1e-4, "Mg": 0.5},
+             {"coop2": 5.0}, chain, {"H": 3e-6},
+             ("E1_chain at a tenth of the drive: the kinetic lag meets the first order at "
+              "second order")),
+        case("E1_chain_kon10", ["H", "Mg"], ["coop2"], 1.0, {"H": 1e-4, "Mg": 0.5},
+             {"coop2": 5.0}, {k: 10 * v for k, v in chain.items()}, {"H": 3e-5},
+             "E1_chain with every k_on ten times larger: the lag falls tenfold"),
+        case("E1_chain_kon100", ["H", "Mg"], ["coop2"], 1.0, {"H": 1e-4, "Mg": 0.5},
+             {"coop2": 5.0}, {k: 100 * v for k, v in chain.items()}, {"H": 3e-5},
+             "E1_chain with every k_on a hundred times larger: the closure is the limit"),
+        case("E1_chain_two_drives", ["H", "Mg"], ["coop2"], 1.0, {"H": 1e-4, "Mg": 0.5},
+             {"coop2": 5.0}, chain, {"H": 3e-6, "Mg": 1e-3},
+             "E1_chain driven in both ligands: the Mg²⁺ steps and the coupling through the base"),
+        case("E2_nuc4", ["H", "Mg"], ["nuc4"], 1.0, {"H": 10 ** (3 - 7.2), "Mg": 0.5},
+             {"nuc4": 5.0}, {("nuc4", "H"): 1e7, ("nuc4", "Mg"): 1e4}, {"H": 1e-3, "Mg": 1e-3},
+             "a two-ligand binder without a bottleneck: a per-step minimum is conservative here"),
+        case("E2_nuc4_binder_drive", ["H", "Mg"], ["nuc4"], 1.0, {"H": 10 ** (3 - 7.2), "Mg": 0.5},
+             {"nuc4": 5.0}, {("nuc4", "H"): 1e7, ("nuc4", "Mg"): 1e4}, {"nuc4": 1e-3},
+             "E2 with its binder's base form moved in (a moved binder row)"),
+    ])
+    planted = {"unreach2": {"base_valence": -2, "forms": [{"id": "unreach2_base", "mu0_RT": 0.0},
+                                                          {"id": "unreach2_H2", "counts": {"H": 2},
+                                                           "mu0_RT": -20.0}]}}
+    c["envelope"] = {"budget_pH": ENVELOPE_BUDGET_PH, "cases": cases,
+                     "planted_unreachable_binders": planted,
+                     "note": ("amendment C3: k_on per (binder, ligand); drives on free ligands or "
+                              "a binder's base form; record times in units of the network's "
+                              "slowest relaxation time")}
+
+
 def build() -> dict:
     rng = np.random.default_rng(SEED)
     a = seam_a(rng)
@@ -804,6 +873,7 @@ def build() -> dict:
                                                   node["volume_pL"])
     amendment_1(a, rng)
     amendment_c2(c)
+    amendment_c3(c)
     return {
         "kind": "cells.core_seams_reference_inputs@1",
         "registered": REGISTERED,

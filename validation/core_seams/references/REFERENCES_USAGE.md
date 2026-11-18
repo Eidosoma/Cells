@@ -161,6 +161,26 @@ the exact amount by which that booking misses ΔE_c.
 - `ladder`: after drawing k × n_free, the equilibrated free amount, today's predictor and the
   linearised free amount.
 
+**`seam_c.envelope`** (amendment C3, inputs). It gives `budget_pH` (1e-3, B4's) and
+`planted_unreachable_binders`. Each case under `cases.<id>` gives:
+- `ligands`, `binders`, `volume_pL`, the free values it was made from, and `totals`;
+- `kon_per_mM_per_s`: [binder, ligand, k_on] for every (binder, ligand) pair;
+- `drive_fmol_per_s`: [ligand or binder, rate]. A binder's drive adds its base form;
+- `record_slow_times`, in units of the network's slowest relaxation time.
+
+**`values.seam_c.envelope.cases.<id>`** holds:
+- `species`, `closure_fmol`, and the `steps` with their `K_r_mM` and B4's `lambda_per_s`;
+- `slowest_network_rates_per_s` and `min_step_rate_per_s`;
+- `first_order_dln` {L: Δ ln x_L} and `first_order_pH`;
+- `per_step_estimate_dln`, the plant: min over all steps, or over the ligand's own steps;
+- `per_step_pH`, and `b4_formula_pH` for E0;
+- `kinetic.rows`: per record time, `lag_dln`, `first_order_dln` at that state and `floor_dln`
+  (|Radau − BDF|);
+- `plants` {name: {L: relative deviation}} and `first_order_floor_rel`;
+- `kinetic_vs_first_order_rel` at the last record.
+
+`values.seam_c.envelope.reachability` {binder: verdict}.
+
 **`values.seam_c.movers.<id>`** gives `verdict` and `reasons`. **`values.seam_c.parse`** gives
 `form_valences` and the planted declared valence.
 
