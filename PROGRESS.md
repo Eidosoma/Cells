@@ -14,12 +14,15 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **16 November 2026.** The levels and the working order are in
   [CURRENT_PLAN](docs/CURRENT_PLAN.md#status-on-14-november-2026-and-the-working-order-d156)
   (D156, with D176's round). The runs below are newest first.
-  - **Judged (numerically qualified, CPU only, each within its scope line):** the coupling
-    operator `species_regulated_availability@1` (47 of 47) and MG0c's reactions operator
-    `local_species_reactions@1` (55 of 55).
-  - **Landed for development, not judged:** FR-1's and FR-3's first milestones, FR-10's first two,
-    the phase start and failure records, Track E's M1 development work, and independent references
-    for FR-3, FR-4 and the passive law.
+  - **Judged (numerically qualified, CPU only, each within its scope line):**
+    - the coupling operator `species_regulated_availability@1` (47 of 47) and MG0c's reactions
+      operator `local_species_reactions@1` (55 of 55);
+    - D216's FR lane, each against code-blind independent references: FR-4 (21 of 21) and FR-5
+      (51 of 51) on 17 November; FR-10's dose schedule (31 of 31) on 17 November; FR-1's closed
+      compartment (44 of 44) and FR-3's site occupancy (51 of 51) on 18 November. Each is tagged
+      `fr<n>-v1-qualified-<date>`.
+  - **Landed for development, not judged:** the phase start and failure records, Track E's M1
+    development work, and independent references for the passive law.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
