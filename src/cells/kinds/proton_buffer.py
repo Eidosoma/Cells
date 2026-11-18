@@ -71,12 +71,19 @@ def parse(entries, base):
     if proton not in m.species_ids:
         raise ConfigError(f"{MODEL_KEY}: unknown proton row {proton!r}")
     nodes = {c.id for c in m.cells} | {o.id for o in m.extracellular}
+    held = {o.id for o in m.extracellular if o.reservoir}
     if not isinstance(buffers, dict) or not buffers:
         raise ConfigError(f"{MODEL_KEY}: buffers maps nodes to their buffer rows")
     pairs = []
     for node, rows in buffers.items():
         if node not in nodes:
             raise ConfigError(f"{MODEL_KEY}: unknown node {node!r}")
+        if node in held:
+            raise ConfigError(
+                f"{MODEL_KEY}: node {node} is a held bath. @3 values its supply at the stored "
+                "total's concentration, while every route there books against the free proton, "
+                "so its energy ledger cannot close: a buffered held bath is refused"
+            )
         if not isinstance(rows, list) or not rows or len(set(rows)) != len(rows):
             raise ConfigError(f"{MODEL_KEY}: node {node} needs a list of distinct buffer rows")
         for row in rows:
