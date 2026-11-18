@@ -186,7 +186,7 @@ def balanced_hypergeometric_law(counts, k: int) -> dict:
 
 def _matrices(col_totals, row_sizes):
     """Every k x G non-negative integer matrix with the given row sums and column sums."""
-    k, G = len(row_sizes), len(col_totals)
+    k = len(row_sizes)
 
     def rows(j, remaining):
         if j == k - 1:
