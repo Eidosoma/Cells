@@ -1186,3 +1186,62 @@ about eight days sooner.
 
 **Every landing:** the tier record is folded with `scripts/test_tiers.py tiers --base`, and each
 landing is gated at its merged head.
+
+## 19. The lead's rulings for the references agent's plan (18 November 2026)
+
+These are the references agent's eight questions on seams A and C. The builders cite this section
+too.
+
+1. **What A's first outputs run.** The engine runs:
+   - A's two first laws;
+   - synthetic test laws built from the references' published diagram inputs (states, edges, rate
+     expressions and constants). These are inputs, never expected values. They are registered
+     through F's registry in a test-only namespace that is never shipped.
+
+   A factored cycle law declares its diagram's Hill cycles (§16), so the kind can compute each
+   cycle's Π⁺ and Π⁻ as functions of state, for the parse check and the one-way fluxes. A probe
+   records, at the registered states:
+   - each cycle's Π±;
+   - J⁺ and J⁻;
+   - each edge's one-way rates, where the law is a diagram;
+   - S and ΔG.
+
+   The kinds owner designs the API to carry these contents.
+2. **Tolerances.**
+   - **Wegscheider at parse** is decided exactly. For mass-action diagrams the residual is affine
+     in ln c and V, so it is decided algebraically or at d + 1 generic states, never at one
+     reference state.
+     - The admitted band is a rounding bound relative to the residual's terms, a few tens of eps of
+       their absolute sum.
+     - The kinds owner states it, and the references register the honest stand-in's place inside
+       it.
+   - **The population guard's allowance** is also a rounding bound derived from its terms, stated
+     the same way. It is never a fixed tolerance.
+   - **The multi-ligand closure converges on its residual relative to the totals,** as B4 does
+     (|g|/T ≤ 1e-13). The references compare solutions with floors that include the conditioning.
+3. **The closure's energy term when binder rows are moved.** The binding owner's first design
+   statement rules this, before C's first output, and the lead confirms it.
+   - The references' reading avoids double counting:
+     - the closure books the speciation part only;
+     - the cycle kind books each moved row's standard part (§3.4).
+   - The references register G* and its derivative property now, and the booked-term row by a dated
+     amendment once the term is ruled.
+4. **P1's buffered node** is the references' own synthetic node, with rate-normalised thresholds as
+   planned. STEP0 §5.2's world is not read.
+5. **How a version-1-form entry selects the general layout** is the kinds owner's design, stated
+   before A's first output. The references' expected rates hold for any selection mechanism.
+6. **A form below the base,** with a negative ligand count such as PO4³⁻ from HPO4²⁻, is admitted. It
+   is legitimate speciation, provided the conservation and charge identities hold with the negative
+   count (z_form = z_base + Σ n_L z_L).
+7. **No engine output exists yet for A or C.** The kinds and binding owners have not started.
+8. **Synthetic constants throughout,** labelled under D152 §2.4. The diagrams are self-verified by
+   the two methods. Hill and King–Altman are cited as the design cites them, marked unread.
+
+**The offered rows:**
+- **Taken now:** the slopes against finite differences, with a wrong-slope plant, and the
+  parse-time charge and moiety checks. Both are cheap and catch real classes.
+- **Later, with composition's references or when A and C land:** the two composed worlds with
+  Radau, DOP853 and a 50-digit ledger.
+
+**Order.** Register in whichever order fits, before either builder's first output. The binding
+owner's seat comes after the kinds owner's or near it (§18), so C need not go first.
