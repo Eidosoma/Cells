@@ -1187,6 +1187,27 @@ about eight days sooner.
 **Every landing:** the tier record is folded with `scripts/test_tiers.py tiers --base`, and each
 landing is gated at its merged head.
 
+**Amended the same evening (the lead, 21:54 UTC), on the operators owner's B1 questions:**
+- **Kind fields' axes and hosts (B1's lift).** F adds two optional declarations to the kind
+  contract, both checked in `declaration_errors`:
+  - the axis of each layout and control field;
+  - for each own axis, its host kind and its host-index layout field.
+
+  The composite's refusal is lifted only for kinds that declare these and all their roles.
+- **Kinds' rates on a closed host.** The core zeroes every kind entity's rates on an inactive
+  host, only where a closer is declared (C5's condition), so no other program changes. The @3
+  owner does this after 44550c4f lands. Until then the lift stays refused for kinds on closable
+  hosts.
+- **The division split.** B1 does the role-driven split and retirement on @3's slot axes through
+  the partition's existing maps. B2 adds the own-axis maps and the dividing world.
+- **@3's FIELD_ROLES** are converted to F's `PartitionRole` once, in the adapter's role table. The
+  six pump-history fields are excluded explicitly until M5's Q2, with the reason written beside
+  them.
+- **D's "stored" role** is a level: in neither ENERGY_FLOW_FIELDS nor DISSIPATION_FIELDS.
+- **E's operator hook:** `standard_free_energies(declaration)` returns
+  ((((species, ν), ...), ΔG°/RT, c0 in mM), ...), with default (). `species_potentials` stays. F's
+  kind hook takes the same form.
+
 ## 19. The lead's rulings for the references agent's plan (18 November 2026)
 
 These are the references agent's eight questions on seams A and C. The builders cite this section
@@ -1499,3 +1520,20 @@ confirmed with the advisor.
     planted dilution, that the energy ledger closes or refuses and never drifts.
   - **The general parse may come before the three reference amendments:** declaration, admission
     and refusals, with no closure solve and no number from it. The gate on C's outputs is unchanged.
+- **Amended at 23:03 UTC, on the second external review's finding 3** (verified at main 718405b2).
+  - At a version-1 buffered node, a regulated-availability state input read the stored H_eq/V,
+    not free h.
+  - The water operator's osmolyte sum counted bound protons twice: a plant took up 17% more water.
+  - No judged, registered, crossrev or G1 world combined either with a buffer.
+  - **The definition now refuses, for version 1 and the general layout alike**
+    (`species_registry.check_stage_read_rows`, binding 3de621a4):
+    - every operator that names or moves a species a stage read holds. The rule is per species,
+      not per node, until operators declare nodes;
+    - the water operator beside any stage read;
+    - restricted_cleft_lumen@1 and @2 wherever a read holds rows at an outside node.
+  - **So the 20:09 amendment's admitted no-row operators are narrowed.** Water and the lumen's fill are no longer admitted
+    beside a closure.
+  - The lumen cannot sit beside a buffer today in any case, since membrane insertion is refused
+    beside any declared kind. The rule guards the day that refusal lifts.
+  - Reading through the closure (free amounts for step-boundary operators, a free-particle osmolyte
+    count) waits for an experiment that needs it. Its acceptance test is "equal free h gives equal u".

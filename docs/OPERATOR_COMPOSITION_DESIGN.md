@@ -5,6 +5,9 @@ order. Proposed the same day, written by this lane's operators owner for the lea
 advisor reviews it before its options go to the user (D142: options first, then discussion). Docs
 only; nothing here is built. Branch `composition-design` from 3c10b833 (integration-d172's c1).
 
+**M1 built, 18 November 2026 (§17):** the composite's rules C1–C4, on branch
+`core-pass-operators-m1`. Every operator is unchanged. M2–M5 follow B1 (CORE_SEAMS §18 as amended).
+
 **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
 `membrane_entity_state@1`, `scheduled_membrane_insertion@2`, `ideal_osmosis_linear_compliance_water@1`,
 `scheduled_species_turnover@1`, `isopotential_partition@1`, and @3's Na/K pump for gap 4.
@@ -800,3 +803,63 @@ So in every admitted world water's bound masks are the view's masks.
 
 Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's water row in
 `docs/PUMP_COMPOSITE.md` at 7c8bfa47 agrees.
+
+## 17. M1 as built (18 November 2026)
+
+**The rules,** in `operators/contract.py`, `models/pump_composite.py` and
+`models/pump_composite_adapter.py`:
+- **One table of changes** (`pump_composite.view_changes`) feeds C1, C2 and the view readers. It
+  lists every change of a view field, once per stage it is made at:
+  - a provider's change, at its declared stage, and at the stages of the earlier changes of what it
+    reads current, since its view takes the accumulated view. An undeclared change of an operator
+    with an event map and a split part counts at both stages (insertion@2's closures open at its
+    event, though `view_change` defaults them to `split`); a `VIEW_CHANGES` entry narrows it;
+  - a closer's change of what `close()` changes for the masks it closes, the adapter's
+    `CLOSURE_REACH`: the masks below them in the entity hierarchy and the padded fields of the
+    slots closed. So a reader of `membrane_active` beside a closer of `active` alone receives the
+    view, never the declared mask (gap 5's hazard), while a closer of cells reaches no face or
+    outside anchor;
+  - a writer of an owner's accepted state, as a change of everything the owner provides, at each
+    stage its parts run at.
+- **C1:** a current read of a field nothing changes is admitted and reads the declared value; its
+  part receives no view. A current read of a name that is no view field is refused.
+- **C2:** a change at another stage is seen whatever the declared order. A later change at the
+  reader's own stage is refused, by the structure check, or per slot where both are scoped. The
+  per-slot check covers a scoped provider's own declared stage only; a stage it inherits from what
+  it reads is ordered at the structure check. A self pair is not a constraint, as door S's per-slot
+  check already had it.
+- **C3:** `SCOPED_READS[field]` may hold one Read per stage. A reference read may stand beside a
+  current one at another stage. `contract.reads_of` gives every Read, and `Operator.scoped_read`
+  refuses a field read at several stages. The contract's public names are unchanged.
+- **A declared stage is one of the operator's parts':** a read or change at `event` needs the event
+  map, at `split` the split part (a part-less owner may change at `split`, its default), and a read
+  at `inner` the in-step process.
+- **Fixed reads, tightened** (the lead's ruling on M1's hand-back): a fixed read is refused beside
+  another operator's closer whose closure reaches the field, not only one that closes it by name
+  (door S's rule 4). No sequence is newly refused or admitted; the composition matrix gains eleven
+  tagged rows (four nominal), all in cells already refused, so no cell changes.
+- **C4:** a door S reader's part receives `reader_view`: the full view's merge of every provider and
+  closer, without the field refresh, holding only its read fields. An operator that books at the
+  view keeps the full view.
+
+**What changed for registered compositions** (`structure_errors` of main at f609dd7f against M1's,
+over every sequence of one to four registered operators with their closures, 75,823 in all):
+- none is newly refused, and none newly admitted;
+- 9,302 sequences, all already refused as two versions of one law, gain an order message. Three are
+  new rows of the composition matrix, tagged real: a lumen of one insertion version beside the other
+  version. The matrix's cells are unchanged.
+- No registered operator declares a current read in `SCOPED_READS`, so no part receives a view it
+  did not receive before, and the per-slot check's new stage test meets no registered pair.
+
+**Deferred:**
+- E1's "joins the cycle" waits for M2–M4, and E2's "water and turnover idle on the closed slot" for
+  M2 and M3.
+- E3 waits for M2, since water's change of the volume is a replacement on every slot until it
+  declares its slots.
+- `registry/declarations.py` (the F owner's) calls `scoped_read`. A registered operator with reads
+  at two stages, due at M2, needs it to call `reads_of`.
+- `docs/SCOPED_COMPOSITION_DESIGN.md` §3 (rule 3 and the `VIEW_READS` rule) predates C1 and C2.
+
+**Tests:** `tests/unit/test_composition_order.py` (new), with the flipped assertions of
+`test_door_s.py` and `test_pump_composite_contract.py`, each beside a same-stage twin that is still
+refused. Evidence: `/mnt/workspaces/Cells/core-pass-operators-20261118/m1/`.

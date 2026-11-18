@@ -101,6 +101,35 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The core-seams pass's first landings (18 November 2026, evening).** Four branches merged into
+  main. Every core head is checked again on its merge with main, because main's src/ moved between
+  them (CORE_SEAMS §18, amended at 18:31 UTC).
+  - **The references for seams A and C,** merged at 746a37ef: registered before either seam's first
+    output (§19).
+    - Gate: tiers 1+2 534 files, 0 changed; G1 113 of 113; crossrev 10 of 10; IDs additions
+      only.
+    - Evidence: `/mnt/workspaces/Cells/core-seams-references-20261118/gate-808d346f/`.
+  - **@3's host table** (dd9758ef), merged at ea261379:
+    - lane A: tiers 534 files, 0 changed; G1 113 of 113; crossrev 10 of 10;
+    - FR's bitwise landing set passed;
+    - the replication check: 55 of 55.
+  - **crossrev's replication set,** merged at 460d766d: five quick worlds of the gap-junction
+    replication (D219), whose baseline was recorded from src/ before any core head.
+    - Gate: tiers 535 files, 0 changed; G1 113 of 113; crossrev 10 of 10; replication 55 of 55.
+    - It was installed into the record of record at 21:18 UTC. Main's eleven sets are all
+      identical.
+    - The acceptances set (0a91d426) had been installed at 19:07 UTC.
+    - Evidence: `/mnt/workspaces/Cells/crossrev-replication-20261118/install-460d766d/`.
+  - **F's laws as modules** (8e11638a, which carries the step terms 8c2cb523), merged at 599b8610.
+    - Lane A: tiers 534 files, 0 changed; G1 113 of 113; crossrev 10 of 10; IDs additions only.
+    - FR's set passed at both heads.
+    - Tier 3's test_surface_calcium_channels passed, 89 with 1 skipped.
+    - The merged check: replication 55 of 55, and crossrev 10 of 10 against the record.
+    - test_inner_laws.py moves to tier 1.
+  - **Tier rows** are folded at each landing from the landing's own measured file onto main's
+    current record. The merged-head checks and the folds are in
+    `/mnt/workspaces/Cells/core-pass-kickoff-20261118/` (`replication-checks/`, `landings/`).
+
 - **core-fixes carried across move 2 and landed (18 November 2026).** Merge 270825ab
   (core-fixes-m2 2d22a666): D3 and D4 (ff5ca5ff, 0a00ba6e) and G's item 1 (9b0d8baa).
   - **Carrying it.** Git placed the edits in the moved files. move2.json's apply then brought them
@@ -3962,7 +3991,7 @@ machine-readable inputs, results, checks and failures.
   (`e8ded03`). The run used a clean snapshot of that commit, on CPU in float64
   ([results](/mnt/workspaces/Cells/morphogenesis-mg0-20261109-01/judged-01/results/results.json)).
   The source is a large-volume reservoir cell (the model has no source term).
-  The references are independent numpy/scipy solutions. All 12 criteria pass:
+  The references are independent numpy/scipy solutions. All 12 criteria pass (13 judged entries; A6 has two parts):
   - profile against the exact discrete steady state: at most 4.6e-13
     relative on strips and 3.0e-14 on the Voronoi tissue, against 1e-9;
   - decay length against √(D/k) = 19.92 µm (Kicheva 2007 wing-disc values):

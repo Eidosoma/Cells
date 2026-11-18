@@ -399,12 +399,15 @@ def seam_c(inputs) -> tuple:
                 d["joint_vs_separate_rel"] = worst
             rows.append(rec)
             drows.append(d)
-        val["systems"][name] = {"spec": spec, "volume_pL": V, "states": rows}
+        val["systems"][name] = {"spec": spec, "volume_pL": V, "states": rows,
+                                "pairs": booked_pairs(rows)}
         dia["systems"][name] = drows
     for name, node in Cc["p1_nodes"].items():
         val["p1"][name] = api.p1(node, reg)
     for mv in Cc["movers"]:
         val["movers"][mv["id"]] = api.mover_verdict(mv, reg)
+    if "envelope" in Cc:
+        val["envelope"] = envelope_values(Cc)
     val["parse"]["form_valences"] = {
         B: {f["id"]: int(b["base_valence"]) + sum(int(n) * int(reg["species"][L]["valence"])
                                                   for L, n in f.get("counts", {}).items())
@@ -413,6 +416,92 @@ def seam_c(inputs) -> tuple:
         "form": "nuc4_Mg", "declared": -1,
         "derived": val["parse"]["form_valences"]["nuc4"]["nuc4_Mg"], "verdict": "refused"}
     return val, dia
+
+
+def envelope_values(Cc) -> dict:
+    """Amendment C3: every envelope case, its plants, and the reachability verdicts."""
+    from . import envelope as En
+    reg = Cc["registry"]
+    env = Cc["envelope"]
+    out = {"cases": {}, "reachability": {}}
+    for cid, case in env["cases"].items():
+        r = En.run_case(case, reg)
+        lag = r["first_order_dln"]
+        plants = {}
+        # a k_on that ignores the ligand (each binder's first ligand's for all), and swapped k_on
+        kon = {(B, L): k for B, L, k in case["kon_per_mM_per_s"]}
+        if len(case["ligands"]) > 1:
+            first = {B: kon[(B, case["ligands"][0])] for B in case["binders"]}
+            same = copy.deepcopy(case)
+            same["kon_per_mM_per_s"] = [[B, L, first[B]] for B, L, _k in case["kon_per_mM_per_s"]]
+            swap = copy.deepcopy(case)
+            ligs = case["ligands"]
+            swap["kon_per_mM_per_s"] = [[B, L, kon[(B, ligs[1 - ligs.index(L)])]]
+                                        if len(ligs) == 2 else [B, L, k]
+                                        for B, L, k in case["kon_per_mM_per_s"]]
+            for name, variant in (("kon_ignores_the_ligand", same), ("kon_swapped", swap)):
+                rv = En.run_case(variant, reg, kinetic=False)["first_order_dln"]
+                plants[name] = {L: (abs(rv[L] / lag[L] - 1) if lag[L] != 0 else None)
+                                for L in case["ligands"]}
+        plants["per_step_minimum"] = {
+            L: (abs(lag[L]) / abs(r["per_step_estimate_dln"]["min_over_all_steps"][L])
+                if r["per_step_estimate_dln"]["min_over_all_steps"][L] != 0 else None)
+            for L in case["ligands"]}
+        r["plants"] = plants
+        rates = r["slowest_network_rates_per_s"]
+        lam_max = max(st["lambda_per_s"] for st in r["steps"])
+        r["first_order_floor_rel"] = 8 * exact.EPS * lam_max / rates[0]
+        last = r["kinetic"]["rows"][-1]
+        r["kinetic_vs_first_order_rel"] = {
+            L: (abs(last["lag_dln"][L] / last["first_order_dln"][L] - 1)
+                if last["first_order_dln"][L] != 0 else None) for L in case["ligands"]}
+        out["cases"][cid] = r
+    for B in reg["binders"]:
+        lig = sorted({L for f in reg["binders"][B]["forms"] for L in f.get("counts", {})})
+        kon = {(B, L): 1.0 for L in lig}
+        try:
+            En.Network({"ligands": lig, "binders": [B]}, reg, kon, 1.0)
+            out["reachability"][B] = {"verdict": "admitted"}
+        except ValueError as e:
+            out["reachability"][B] = {"verdict": "refused", "reason": str(e)}
+    preg = copy.deepcopy(reg)
+    preg["binders"].update(env["planted_unreachable_binders"])
+    for B in env["planted_unreachable_binders"]:
+        try:
+            En.Network({"ligands": ["H"], "binders": [B]}, preg, {(B, "H"): 1.0}, 1.0)
+            out["reachability"][B] = {"verdict": "admitted", "planted": True}
+        except ValueError as e:
+            out["reachability"][B] = {"verdict": "refused", "reason": str(e), "planted": True}
+    return out
+
+
+def booked_pairs(rows) -> list:
+    """Amendment C1: the three booked-term plants on consecutive registered states (k, k + 1) of
+    one system. Each plant's deviation of the booked change from ΔE_c (pJ):
+    - G* booked whole: Σ_r ΔT_r μ°′_r;
+    - B4's formula carried to moved binders: Σ_B ΔT_B μ°′_B (against S_c in B4's split);
+    - S_c alone with @3's ideal terms masked: Σ_r Δ ideal_r (None where a total is ≤ 0).
+
+    The floor is the rounding of the difference: 8 eps of both states' terms."""
+    out = []
+    for k in range(len(rows) - 1):
+        a, b = rows[k]["booked_term"], rows[k + 1]["booked_term"]
+        binders = [r for r in a["standard_parts_pJ"] if r in rows[k]["forms_mM"]]
+        whole = abs(b["standard_total_pJ"] - a["standard_total_pJ"])
+        b4 = abs(sum(b["standard_parts_pJ"][B] - a["standard_parts_pJ"][B] for B in binders))
+        masked = (abs(b["ideal_total_pJ"] - a["ideal_total_pJ"])
+                  if a["ideal_total_pJ"] is not None and b["ideal_total_pJ"] is not None
+                  else None)
+        floor = 8 * exact.EPS * (a["terms_abs_pJ"] + b["terms_abs_pJ"])
+        out.append({"pair": [k, k + 1], "tags": [rows[k]["tag"], rows[k + 1]["tag"]],
+                    "dE_c_pJ": b["E_c_pJ"] - a["E_c_pJ"],
+                    "dS_c_pJ": (b["S_c_pJ"] - a["S_c_pJ"]) if a["S_c_pJ"] is not None and
+                    b["S_c_pJ"] is not None else None,
+                    "floor_pJ": floor,
+                    "plants_pJ": {"G_star_booked_whole": whole,
+                                  "B4_formula_on_moved_binders": b4,
+                                  "S_c_alone_ideal_masked": masked}})
+    return out
 
 
 # --------------------------------------------------------------------------------------------
@@ -641,6 +730,90 @@ def power_c(inputs, vc, dc) -> dict:
                                                  if not r["every_total_positive"]],
         }
     power["C1_C2_C4_binding"] = cp
+    # amendment C1: the booked term's plants over consecutive pairs, its identity, its gradient in
+    # @3's frame, and the primal route's agreement with the dual
+    bt = {}
+    for name, srec in vc["systems"].items():
+        pairs = srec["pairs"]
+        tags = [f"{p['tags'][0]}->{p['tags'][1]}" for p in pairs]
+        plants = {}
+        for plant in ("G_star_booked_whole", "B4_formula_on_moved_binders",
+                      "S_c_alone_ideal_masked"):
+            devs = [(p["plants_pJ"][plant] / p["floor_pJ"]
+                     if p["plants_pJ"][plant] is not None else None) for p in pairs]
+            plants[plant] = summarise(tags, devs)
+            plants[plant]["undefined_at"] = [t for t, d in zip(tags, devs, strict=True)
+                                             if d is None]
+        rows = srec["states"]
+        ident = [abs(r["booked_term"]["identity_residual_pJ"]) for r in rows
+                 if r["booked_term"]["identity_residual_pJ"] is not None]
+        grad = [r["E_c_gradient_vs_differences_abs_J_per_mol"] for r in rows
+                if "E_c_gradient_vs_differences_abs_J_per_mol" in r]
+        bt[name] = {"plants": plants,
+                    "identity_E_c_minus_S_c_minus_ideal_max_pJ": max(ident) if ident else None,
+                    "E_c_gradient_vs_differences_max_J_per_mol": max(grad) if grad else None,
+                    "states_where_S_c_is_undefined": [r["tag"] for r in rows
+                                                      if r["booked_term"]["S_c_pJ"] is None],
+                    "primal_vs_dual_max_abs_dln": max(r["primal"]["max_abs_dln_vs_dual"]
+                                                      for r in rows),
+                    "primal_certificate_max": max(r["primal"]["certificate"] for r in rows),
+                    "primal_iterations_max": max(r["primal"]["iterations"] for r in rows)}
+    power["C1_amendment_booked_term_and_primal"] = bt
+    # amendment C2: the convergence scale V A_L against |T_L|, and the tolerance each gives in
+    # ulps of the residual's terms (1e-13 V A_L/(eps V A_L) = 450 on the new scale)
+    cs = {}
+    for name, srec in vc["systems"].items():
+        rows = srec["states"]
+        ratios = {r["tag"]: min(r["totals_over_scale"].values()) for r in rows}
+        tags = list(ratios)
+        lo = min(tags, key=lambda t: ratios[t])
+        cs[name] = {"min_total_over_scale": ratios[lo], "at": lo,
+                    "states_where_the_scales_differ": [t for t in tags
+                                                       if abs(ratios[t] - 1) > 1e-12],
+                    "old_scale_tolerance_ulps_at_min": 1e-13 * ratios[lo] / exact.EPS,
+                    "new_scale_tolerance_ulps": 1e-13 / exact.EPS,
+                    "residual_max_rel_to_scale": max(max(r["residual_rel"].values())
+                                                     for r in rows)}
+    power["C2_amendment_convergence_scale"] = cs
+    # amendment C3: the envelope
+    if "envelope" in vc:
+        budget = inputs["seam_c"]["envelope"]["budget_pH"]
+        ec = {}
+        for cid, r in vc["envelope"]["cases"].items():
+            row = {"slowest_network_rate_per_s": r["slowest_network_rates_per_s"][0],
+                   "min_step_rate_per_s": r["min_step_rate_per_s"],
+                   "network_over_min_step": r["slowest_network_rates_per_s"][0] /
+                   r["min_step_rate_per_s"],
+                   "first_order_floor_rel": r["first_order_floor_rel"],
+                   "kinetic_vs_first_order_rel": r["kinetic_vs_first_order_rel"],
+                   "radau_vs_bdf_max_dln": max(max(x["floor_dln"].values())
+                                               for x in r["kinetic"]["rows"]),
+                   "plants": {}}
+            for plant, devs in r["plants"].items():
+                fl_ = r["first_order_floor_rel"]
+                row["plants"][plant] = {L: ({"value": v, "over_floor": v / fl_}
+                                            if v is not None else None) for L, v in devs.items()}
+            if "first_order_pH" in r:
+                row["first_order_pH"] = r["first_order_pH"]
+                row["per_step_pH"] = r["per_step_pH"]
+                row["verdict_first_order"] = ("outside" if r["first_order_pH"] > budget
+                                              else "inside")
+                row["verdict_per_step"] = "outside" if r["per_step_pH"] > budget else "inside"
+                last_H = r["kinetic"]["rows"][-1]["lag_dln"]["H"]
+                row["kinetic_pH_last"] = abs(last_H) / math.log(10)
+            if "b4_formula_pH" in r:
+                row["b4_formula_vs_general_rel"] = abs(r["b4_formula_pH"] / r["first_order_pH"] - 1)
+            ec[cid] = row
+        cases = vc["envelope"]["cases"]
+        lagH = {cid: abs(cases[cid]["first_order_dln"]["H"]) for cid in cases}
+        ec["scalings"] = {"E1_chain_over_kon10": lagH["E1_chain"] / lagH["E1_chain_kon10"],
+                          "E1_chain_over_kon100": lagH["E1_chain"] / lagH["E1_chain_kon100"],
+                          "E1_chain_over_small_drive": lagH["E1_chain"] / lagH["E1_chain_small"],
+                          "second_order_ratio": (ec["E1_chain"]["kinetic_vs_first_order_rel"]["H"]
+                                                 / ec["E1_chain_small"]
+                                                 ["kinetic_vs_first_order_rel"]["H"])}
+        ec["reachability"] = vc["envelope"]["reachability"]
+        power["C3_amendment_envelope"] = ec
     power["C3_movers"] = vc["movers"]
     power["C2_parse"] = vc["parse"]["planted_declared_valence"]
     power["C5_p1"] = {k: {kk: v[kk] for kk in ("threshold_free_fmol", "threshold_stored_fmol",
@@ -725,6 +898,32 @@ CLAIMS = [
                             "form's potential; the booked term follows its ruling (§19 item 3)"),
      "reference": "G* at 60 digits; its gradient analytically and by central differences",
      "plants": ["the rows' own ideal potentials as the gradient", "a non-minimum speciation"]},
+    {"row": "C4b", "claim": ("Amendment C1: the booked term E_c = G* − Σ_r T_r μ°′_r over the "
+                             "closure's rows holds in either split, S_c with @3's ideal terms or "
+                             "E_c alone; its gradient is each row's free form's potential in @3's "
+                             "frame, RT ln(c_free/1 mM) (§19 amended at 19:52 UTC)"),
+     "reference": ("E_c, S_c, @3's ideal terms, the standard parts and B4's formula at every "
+                   "state; E_c's gradient analytically and by central differences; the primal "
+                   "route (primal.py) as the second solve"),
+     "plants": ["G* booked whole (Σ ΔT_r μ°′_r)", "B4's formula on moved binders (Σ_B ΔT_B μ°′_B)",
+                "S_c alone with @3's ideal terms masked (Σ Δ ideal_r)"]},
+    {"row": "C1b", "claim": ("Amendment C2: the closure converges on |g_L| ≤ 1e-13 A_L, A_L = "
+                             "x_L + Σ|n| c, in place of |T_L|; identical where every count is ≥ 0 "
+                             "(§19 amended at 19:52 UTC)"),
+     "reference": ("V A_L at every state (`residual_scale_fmol`), the solution floors restated on "
+                   "that scale, and S4's cancelling state, where |T_H| = 1e-9 V A_H"),
+     "plants": ["the |T_L| scale at the cancelling state: a tolerance far below one ulp of the "
+                "residual's terms, which no solver can meet"]},
+    {"row": "C6", "claim": ("Amendment C3: the envelope is the first-order lag of the linearised "
+                            "binding network, with k_on per (binder, ligand); it reduces to B4's "
+                            "for one two-form buffer; every form is reachable from its base by "
+                            "unit steps (§19 amended at 19:52 UTC)"),
+     "reference": ("δ = −K⁻¹ P D at 60 digits; the full nonlinear network under the drive by "
+                   "Radau and BDF, its lag measured against the closure at each state's own "
+                   "totals; eight cases, one a cooperative chain"),
+     "plants": ["a per-step minimum λ (non-conservative on the chain: the budget's verdict flips)",
+                "a k_on that ignores the ligand", "k_on swapped between the ligands",
+                "a binder with a form not reachable by unit steps"]},
     {"row": "C5", "claim": ("P1's buffered node: a predictor must read the quantity it "
                             "differentiates (§17, §18)"),
      "reference": ("rate-normalised thresholds (the free amount, the stored equivalents above "
@@ -801,6 +1000,28 @@ ZERO_POWER = [
     {"control": "amendment 1's N = b plants at the unit state",
      "why": "both ends are identical there (every activity 1, V = 0)",
      "remedy": "every other state of d2_slip_exchanger_Nb"},
+    {"control": ("amendment C1: B4's formula on moved binders, at a pair whose binder totals are "
+                 "equal (S1 mostly_bound -> saturated_binder, S3 mg_mostly_bound -> "
+                 "mg_saturating)"),
+     "why": "Σ_B ΔT_B μ°′_B = 0 there: B4's formula is exact while binder rows do not move",
+     "remedy": "every other pair, where the binders' totals differ"},
+    {"control": "amendment C1: S_c alone with @3's ideal terms masked, at pairs with S4[10]",
+     "why": "S_c and @3's ideal term on the H row are undefined at a negative total",
+     "remedy": "E_c, which is defined there, and every other pair"},
+    {"control": "amendment C2: the convergence scale, where every count is ≥ 0",
+     "why": "V A_L = |T_L| there, so both criteria are the same (S1, S2, S3, S5, S6)",
+     "remedy": "S4, whose pi2_PO4 has a count of −1, and its cancelling state above all"},
+    {"control": "amendment C3: a per-step minimum λ on a network without a bottleneck (E2)",
+     "why": "every mode is about as fast as its slowest step, so the per-step bound holds there",
+     "remedy": "E1's cooperative chain, where it is non-conservative"},
+    {"control": "amendment C3: a k_on that ignores the ligand, on E1's H⁺ lag under an H⁺ drive",
+     "why": ("only the Mg²⁺ steps' k_on changes, and they barely carry the H⁺ lag: 4e-9 relative, "
+             "below the first order's floor of 2.3e-8"),
+     "remedy": ("the Mg²⁺ lag in the same cases (2.3e-3), E1_chain_two_drives (1.19 on Mg²⁺) and "
+                "E2 (0.68 and 1.0)")},
+    {"control": "amendment C3: the kinetic lag in the first relaxation times",
+     "why": "the lag builds up from zero (the run starts at the closure's state)",
+     "remedy": "the later record times (8 and 16 slowest relaxation times)"},
     {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
      "remedy": "the engine's own test; the references give the rates both must meet"},
     {"control": "a K plant on a form that holds little of its ligand",

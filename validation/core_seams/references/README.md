@@ -17,7 +17,9 @@ references.
 | `exact.py` | Exact SI constants, 60-digit decimals and forward-mode duals |
 | `diagrams.py` | Kinetic diagrams: Hill's cycles by spanning trees and by the matrix-tree minors, the master equation's steady state, and Wegscheider's residual (exact, affine and as a float64 stand-in) |
 | `cycles.py` | Cycle laws on a population: free energies, fluxes, rows per host end, heat, work, the stored rate, charge, exact slopes, and the parse-time checks |
-| `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, and P1's thresholds |
+| `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, P1's thresholds, and (amendment C1) the booked term |
+| `primal.py` | Amendment C1: the second route, the primal Gibbs minimum by Newton on reaction extents, sharing only the registry's inputs with the dual |
+| `envelope.py` | Amendment C3: the binding network's first-order lag and its kinetic reference |
 | `api.py` | The entry points |
 | `worlds.py` | Writes the inputs (`--check` compares) |
 | `design.py` | Writes both design files in about a minute of one CPU (`--check` regenerates and compares) |
@@ -122,7 +124,8 @@ not the manufactured ones; the two differ by the inputs' rounding times the cond
 **The closure's floors**, per state and per output (free ligands and every form):
 - **the inputs' rounding:** ½ ulp on every published double (the totals, V and each μ°/RT), at
   most 8.5e-14 relative;
-- **the residual's bound:** the solution error that §19's |g|/T ≤ 1e-13 admits, at most 3.8e-11
+- **the residual's bound:** the solution error that §19's |g_L| ≤ 1e-13 V A_L admits (amendment
+  C2; |g|/T ≤ 1e-13 as first registered), at most 3.8e-11
   (S1's saturated binder). This is the floor the engine's comparison needs.
 
 ## The registered design: power
@@ -303,6 +306,97 @@ positive up to the stored amount.
     own weak cells are listed;
   - two tests added.
 - The tests' tier rows were folded the same day, after amendment 1 (see Tests).
+- **18 November 2026, 20:06 UTC, amendment C1, the booked term, before any output of the general
+  closure** (CORE_SEAMS_DESIGN §19, amended at 19:52 UTC on the binding owner's design statement
+  1, which this package read only as the ruling states it; branched from main, never from the
+  binding owner's branch):
+  - **The booked-term row,** at every state of S1–S6, from this package's own G*:
+    - E_c = G* − Σ_r T_r μ°′_r, the standard parts in @3's 1 mM frame;
+    - S_c = E_c − Σ_r ideal_r (= G* − Σ own_r, the registered `speciation_part_pJ`);
+    - @3's ideal terms, and B4's formula S_c + Σ_B T_B μ°′_B;
+    - E_c's gradient in @3's frame, RT ln(c_free/1 mM) per row, against differences to 9e-26
+      J/mol.
+
+    The identity E_c = S_c + Σ ideal holds to 2e-57 pJ, so both splits are referenced. At S4[10],
+    whose H total is negative, E_c and G* are defined and S_c is not.
+  - **Three plants,** each on consecutive pairs of one system's states. Each misses ΔE_c by
+    exactly its named sum:
+    - G* booked whole (Σ ΔT_r μ°′_r): at least 7e11 floors;
+    - B4's formula on moved binders (Σ_B ΔT_B μ°′_B): up to 2e14, and 0 where a pair's binder
+      totals are equal (listed in zero power);
+    - S_c alone with @3's ideal terms masked (Σ Δ ideal_r): at least 9e11, and undefined at
+      S4[10]'s pairs.
+
+    The floor is 8 eps of both states' terms.
+  - **The second route** (the lead's question). The engine and `binding.solve` share the dual
+    formulation. `primal.py` minimises the species-space Gibbs energy by Newton on the reaction
+    extents, with exact conservation by construction and a start built from the totals alone.
+    It forms no β and imports nothing from `binding`: it shares only the registry's μ°/RT and
+    the forms' counts.
+    - Its own certificate is every formation ΔG/RT ≤ 2.6e-51.
+    - It agrees with the dual to 2.6e-51 in ln of every species, at all 70 states, S4[10]
+      included.
+    - A planted K off by 1e-6 in its inputs is caught (a test).
+    - The earlier second routes, nested bisection and manufactured solutions, both share the
+      dual's formulation.
+  - Three tests added (binding: 9); the earlier inputs and values are unchanged.
+- **18 November 2026, 20:12 UTC, amendment C2, the convergence scale, before any output of the general
+  closure** (§19 amended at 19:52 UTC):
+  - **The criterion:** |g_L| ≤ 1e-13 V A_L, with A_L = x_L + Σ_B Σ_f |n_{L,f}| c_f at the
+    speciation, in place of 1e-13 |T_L|. Each state now records `residual_scale_fmol` (V A_L),
+    `residual_rel` (|g_L|/(V A_L), which replaces |g_L|/|T_L|) and `totals_over_scale`.
+  - **The solution floors** `floor_residual_1e-13` are restated on that scale, and so is the
+    planted conservation error, now 1e-10 of V A_L. They are identical wherever every count is ≥ 0.
+    So S1, S2, S3, S5 and S6 are unchanged to the last digit; only S4's values moved, because
+    `pi2_PO4` has a count of −1.
+  - **One state added,** appended as S4[12] `near_zero_H_total`. There the H total nearly cancels:
+    the bound protons of nuc4, nuc3 and pi2_H against pi2_PO4's −1, so |T_H| = 1e-9 V A_H.
+    - On the |T_L| scale the tolerance would be 4.5e-7 ulps of the residual's terms, which no
+      solver can meet. On V A_L it is 450 ulps.
+    - This package's own Newton never converged there on the |T_L| scale. It was moved to V A_L
+      here.
+    - Earlier states' solutions are unchanged to their printed digits.
+    - The pair S4 (11, 12) joins amendment C1's plants, and the primal route agrees there to
+      1.3e-55, so it now covers 71 states.
+  - **The correction to 17:33:** the per-ligand floor Σ T_B min n is necessary but not sufficient
+    for mixed-sign counts. The joint condition is the closure's own validity. In the registered
+    systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
+    attained jointly.
+  - One test added (binding: 10).
+- **18 November 2026, 20:21 UTC, amendment C3, the envelope's two-ligand kinetic reference, before any
+  output of the general closure** (§19 amended at 19:52 UTC; B4's Appendix A.2 generalised):
+  - **`envelope.py`:**
+    - the unit-step network, with k_on per (binder, ligand);
+    - the first-order lag δ = −K⁻¹ P D at 60 digits, with K = −N diag(F) Nᵀ W;
+    - the full nonlinear network under a constant drive, integrated by Radau and by BDF. Its lag
+      is measured against the closure at each state's own totals.
+  - **Eight registered cases** (`seam_c.envelope`, every value synthetic). The registry gains one
+    binder, `coop2`, a cooperative two-proton chain (pK 1 then 13, so its singly protonated form
+    is scarce at every pH) with Mg²⁺ on its base. It joins no system of S1–S6.
+    - **E0_b4:** one two-form buffer. The general lag equals B4's formula exactly.
+    - **E1_chain:**
+      - the network's slowest mode, 78 s⁻¹, is 0.077 of the slowest single step;
+      - the true first-order lag is ΔpH 1.63e-3, outside the 1e-3 budget, and the kinetic run
+        gives 1.62e-3;
+      - a per-step minimum λ gives 1.28e-4, inside the budget. That is the plant, 12.7 times
+        non-conservative.
+    - **E1_chain_small** (a tenth of the drive): the kinetic run meets the first order 9.95 times
+      closer, at second order.
+    - **E1_chain_kon10 and _kon100:** the lag falls exactly 10 and 100 times, so the closure is
+      the limit.
+    - **E1_chain_two_drives:** H⁺ and Mg²⁺ driven together.
+    - **E2_nuc4 and E2_nuc4_binder_drive:** a two-ligand binder without a bottleneck, the second
+      with a moved binder row. A per-step minimum is conservative there.
+    - Radau and BDF agree to 1e-11 in ln x.
+  - **Plants:**
+    - the per-step minimum λ: the budget's verdict flips on E1;
+    - a k_on that ignores the ligand: up to 1.19 on Mg²⁺;
+    - k_on swapped between ligands: up to about 1e3;
+    - a planted binder with a form not reachable by unit steps, refused. Every registered binder
+      is admitted.
+  - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged. The registry's
+    new binder is appended, and its form valences join the parse table
+    (`seam_c.parse.form_valences.coop2`), which covers every registry binder.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
@@ -312,12 +406,16 @@ All three files are tier 1. Their rows were measured at 1b607df4 on the timed la
 thread per core, under its lock) and folded with `scripts/test_tiers.py tiers --base`: binding 2.22
 s, cycles 0.67 s, registration 0.92 s. The record is
 `/mnt/workspaces/Cells/core-seams-references-20261118/gate-1b607df4/tiers/measure/measured.json`.
+After amendments C1–C3, the changed and new files were re-measured at 56dedfba the same way:
+binding 2.52 s (10 passed), envelope 1.42 s (5), registration 1.07 s (4). The record is
+`/mnt/workspaces/Cells/core-seams-references-c-20261118/gate-56dedfba/tiers/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
 | `tests/unit/test_core_seams_references_cycles.py` | 9 | Seam A's machinery, amendment 1's finite fuel and N = b included, each test with its plant |
 | `tests/unit/test_core_seams_references_binding.py` | 6 | Seam C's, each test with its plant |
 | `tests/unit/test_core_seams_references_registration.py` | 4 | The inputs equal their generator, sampled values recompute, the registered power holds, and no engine import |
+| `tests/unit/test_core_seams_references_envelope.py` | 5 | Amendment C3: B4's reduction, the chain's non-conservative per-step bound, second order and 1/k_on, a shared k_on, and reachability |
 
 ## Sources
 

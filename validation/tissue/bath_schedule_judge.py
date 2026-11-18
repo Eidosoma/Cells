@@ -9,7 +9,10 @@ criterion) into OUT_DIR/verdict.json.
 
 **The arithmetic is FR-4's and FR-5's,** imported read-only from validation/tissue/
 compartment_ph_judge.py (the lead's ruling of 17 November 2026; that judge serves two registered
-protocols and is never edited): the classes rule for orders with each difference's floor
+protocols. On 18 November 2026, at 9a67ce89, it gained harness 1.1's entry checks only, incomplete()
+and harnessed() called by its main(); an AST diff shows its arithmetic unchanged, and the v1
+verdicts are read from the frozen judged snapshots): the classes rule for orders with each
+difference's floor
 N eps max|q|, the ladder, the Richardson error (4/3) D(dt, dt/2) at the nominal p = 2, the energy
 residual over the integrated flows and its ladder, max-norm differences on shared records,
 admission, the merge and its refusals, and compare. That judge keys records by round(t), integer
@@ -54,8 +57,12 @@ from pathlib import Path
 
 from validation.morphogenesis.mg0a_gradient import evaluate
 from validation.tissue import compartment_ph_judge as base
+from validation.tissue import judge_harness as harness
 
 RECORD_UNIT_S = 0.01
+INPUTS = (Path(__file__).resolve().parents[2] / "validation" / "bath_schedule"
+          / "reference_inputs.json")
+GRIDS = {"W1": "R_faces", "W2": "R_ion"}  # Each world's registered record_times_s in the inputs.
 EPS = base.EPS
 FARADAY_C_PER_MOL = 6.02214076e23 * 1.602176634e-19  # N_A e, exact SI
 
@@ -320,6 +327,44 @@ def verdict(parts, protocol):
     return derived, evaluated
 
 
+def incomplete(parts, protocol):
+    """The harness's completeness check (judge_harness, the external review's finding 4):
+    - W1's and W2's engine parts, and their references and floors, hold the world's registered
+      record times (the code-blind references' inputs) exactly, as the judge keys its records;
+    - every registered refusal class has a refused and an admitted example."""
+    import json
+
+    inputs = json.loads(INPUTS.read_text())
+    d = protocol["judge"]["derivation"]
+    worlds = (parts.get("references") or {}).get("worlds") or {}
+    problems = []
+    for world, key in GRIDS.items():
+        registered = inputs[key]["record_times_s"]
+        w = d[world]
+        names = {*w["ladder_parts"], w["declared_part"], w["half_part"],
+                 *(n for n in parts if n.startswith(world + "_"))}
+        for name in sorted(names):
+            part = parts.get(name)
+            if isinstance(part, dict) and part.get("kind") not in (None, "engine"):
+                continue
+            problems += harness.grid(name, (part or {}).get("record_s"), registered)
+        for ref in (world, f"{world}_floor"):
+            problems += harness.grid(f"references/{ref}", (worlds.get(ref) or {}).get("record_s"),
+                                     registered)
+    classes = (parts.get("refusals") or {}).get("classes") or {}
+    return problems + harness.classes(classes, d["refusal_checks"])
+
+
+def harnessed(parts, protocol):
+    """verdict's derivation and evaluation with the harness's checks before scoring: refused,
+    as a harness failure, when the evidence is incomplete."""
+    harness.refuse(incomplete(parts, protocol))  # Before any derivation.
+    derived = derive(parts, protocol)
+    criteria = protocol["judge"]["criteria"]
+    harness.refuse(harness.metrics(criteria, dict(parts=parts, derived=derived)))
+    return derived, evaluate(dict(criteria=criteria), dict(parts=parts, derived=derived))
+
+
 def main(argv):
     if argv and argv[0] == "compare":
         return base.compare(*argv[1:])
@@ -338,8 +383,17 @@ def main(argv):
             raise SystemExit("Refused: the output directory exists")
         label = "Development verdict (not a judgement: the protocol is not registered)"
     parts, origin = base.merge(results_list, protocol, judged=mode == "judged")
-    derived, evaluated = verdict(parts, protocol)
-    record = dict(kind=label, protocol_id=protocol["id"], protocol_status=protocol["status"],
+    if mode == "judged":
+        derived, evaluated = harnessed(parts, protocol)  # Refused when the evidence is incomplete.
+        gaps = []
+    else:  # A development verdict records the harness's gaps (quick and partial runs are admitted).
+        gaps = incomplete(parts, protocol)
+        derived, evaluated = verdict(parts, protocol)
+        gaps += harness.metrics(protocol["judge"]["criteria"],
+                                dict(parts=parts, derived=derived))
+    report = dict(version=harness.VERSION, gaps=gaps)
+    record = dict(kind=label, harness=report,
+                  protocol_id=protocol["id"], protocol_status=protocol["status"],
                   results=[str(p) for p in paths], part_sources=origin,
                   source=results_list[0][1].get("source"), passed=evaluated["passed"],
                   criteria=evaluated["criteria"], derived=derived)
