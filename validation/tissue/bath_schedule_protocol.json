@@ -1,0 +1,889 @@
+{
+ "schema": "cells.bath_schedule_protocol@1",
+ "id": "fr10-dose-schedule-v1",
+ "title": "FR-10's first acceptance: a held bath's composition scheduled on the dt grid in the composite (scheduled_bath_composition@1), against independent references, with its records, ledgers, idleness, restart, batch and refusals",
+ "status": "registered by the lead (registrar), 17 November 2026, after the full rehearsal with the references on a registered dry-run copy and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 17 November 2026, after the full rehearsal with the references on a registered dry-run copy and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-17",
+  "basis": [
+   "rehearsal r2: /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0 (snapshot ed2b8ee0; the dt phase and all 19 judged parts, then the judge's judged entry on a registered dry-run copy: 31 of 31, a dry-run verdict and not a judgement)",
+   "the dt study: the declared 1 ms stands (orders 2.003-2.011, Richardson errors under 0.92% of each budget, the energy residual falling at order 2)",
+   "the references: branch fr10-references at 23b8ff58, written code-blind and registered before any engine output, with the dated sign amendment 012a3e7e; the protocol reads them only through validation/fr10/references/REFERENCES_USAGE.md",
+   "the landing gate: /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/gate-258d2be7/out (tier 1, 343 files, 0 changed; the two tier-2 bath-schedule files, 0 changed; collected IDs, additions only, 68)",
+   "the disclosures in the protocol, each dated before any judged run"
+  ],
+  "judged_runs_before_registration": 0
+ },
+ "registration_plan": {
+  "status": "not registered",
+  "no_judged_run_yet": "No run of this protocol exists. Milestones 1 and 2 ran development checks and probes only (development_runs)",
+  "needs_first": [
+   "the world builders of every part in validation/tissue/bath_schedule_fixtures.py (B2's ion world and the staircase are now only in the workspace's probe scripts)",
+   "the generator (records only), the judge (reads records, never runs) and the drafter of the machine criteria, in FR-4's and FR-5's form (questions_for_the_lead 3)"
+  ],
+  "path": "Write first: the references, the builders, the generator, the judge and the machine criteria. Then the dt study (development), a rehearsal of every judged part on a registered dry-run copy, the lead's registration, and one judged run from a clean snapshot of main (the D150/MG0c path, as FR-4's and FR-5's)",
+  "launch": "each judged part through scripts/run_detached.sh, one part per unit and per CPU, --oom-first, its cap and runtime limit from the rehearsal (D150's rule on the larger of a sizing rate and the rehearsal's wall)",
+  "references": "delivered (fr10-references, 23b8ff58) and merged into fr10-protocol",
+  "rehearsed": "every judged part, the references included, on a registered dry-run copy (r2/run-ed2b8ee0): the judged entry passed every judged criterion on the copy",
+  "judged_run_launcher": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/judge-run.sh SNAPSHOT OUT CPU,CPU,CPU,CPU /mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0: from the registration's clean snapshot, on its own registered protocol; each part's runtime limit by D150's rule on the larger of the rehearsal plan's estimate and the rehearsal's wall; then the judge's judged entry and the compare of every part against the rehearsal's"
+ },
+ "rung": "FR-10, acceptance 1 (numerical verification, D174's first claim kind; no living-cell claim)",
+ "question": "Does scheduled_bath_composition@1 change a held bath's composition on the dt grid so that @3's transport and membrane see the new composition (a neutral species through a face chain against the matrix exponential with the stepped boundary; an ion substitution's membrane relaxation against an independent constant-field ODE), with every ledger closing across events (the energy ledger at rounding under RK4; the reservoir-work ledger closing only with the operator's reconciliation term), its records exact, the composition bitwise idle when nothing is scheduled, restart and batch bitwise, and every refusal of its declared scope holding?",
+ "engine_models": [
+  "resolved_pump_composite@1 over resolved_pump_tissue@3 (the composite and its inner model)",
+  "scheduled_bath_composition@1 (the operator: event map, view of extracellular_amount_reference, records, the reconciliation term K, the step rule)",
+  "constant_field@1 (the passive patch law of the ion world's K leak)",
+  "ideal_osmosis_linear_compliance_water@1 (water@1, in the water part only)",
+  "imex_ars222_face_electromigration@1 and rk4 (the solvers)",
+  "the IDs the judged definitions print are checked against this list when the generator exists (pre-registration)"
+ ],
+ "scope": "Neutral formula units only (a net-charged unit is refused, design §2.5). Held baths only (reservoir: true). Steps only inside the measured region: a step is admitted only if a measured passing point of its key (neutral species by class, ions by species ID) and direction dominates its ratio and level, under ARS(2,2,2) at dt <= 1 ms or RK4 at dt <= 0.1 ms, beside faces at kappa/V <= 10/s (bath_schedule.MEASURED_POINTS, design §8). Water@1 only with isosmotic steps (door W unbuilt). The verdict covers scheduled_bath_composition@1 and its MEASURED_POINTS as built at the judged snapshot; the region is expected to grow with new measurements, and each addition is outside this verdict",
+ "worlds": {
+  "builders": "validation/tissue/bath_schedule_fixtures.py (to be added there: the two-node chain, the ion world, the staircase, the water world and the refusal definitions; B2's ion world and the staircase now exist only in /mnt/workspaces/Cells/bath-schedule-20261114-01/m2-probes/probe_m2.py and staircase/staircase_probe.py, which stay as frozen run inputs)",
+  "W1_chain": "B1's world: the species-only dose leg (secreted_species_fixtures' quiescent world: passive cells, zero ion permeability and diffusivity) with the neutral species S on a chain bath -face_0- ecs_0 -face_1- ecs_1, each node 1 pL, face_0 at kappa/V = 10/s (the measured face rate) and face_1 at 5/s; two inert cells, cell_0 on ecs_0 and cell_1 on ecs_1 (each node needs its patch's return path), S impermeant at both. S starts at steady state, 1e-3 mM at every node and the bath. The schedule: S at the bath up tenfold to 1e-2 mM at 1 s, down tenfold to 1e-3 mM at 2 s; horizon 3 s; records every 10 ms. Both steps are the measured corner (10, 1e-2) (neutral up, neutral down)",
+  "W2_ion": "B2's world: probe I's passive cell (1 pL) on a held bath at Na 145, K 5, Cl 150 mM, its cytosol at Na 10, K 140, Cl 20 mM, a K permeability of 5e-10 m/s on its wall, at rest at E_K through its charge anchor. At 0.5 s, KCl replaces NaCl by 45 mM: K 5 to 50 mM (the measured point K up (10, 50)), Na 145 to 100 mM (Na down (1.45, 145)). Horizon 2 s (about 20 relaxation times); records every 10 ms",
+  "W3_ledgers": "B3's world (milestone 1's tests/unit/test_bath_schedule_runs.py world): the species-only dose leg under RK4 at 0.1 ms, S stepped from 1e-3 to 1.5e-3 mM at step 20 of 60 (neutral up (1.5, 1.5e-3)); every row recorded",
+  "W4_idle": "B5's pair: W1 with the operator declared and no event, and W1 without the operator",
+  "W5_restart_batch": "B6's: W1 run straight, and restarted through the engine's checkpoint (cells.io.write_snapshot and load_snapshot, written and resumed within the run's own snapshot, so no checkpoint crosses a source change, D195 item 4) from checkpoints at 0.5 s (before the first event), at 1 s (an event time: the event is applied once, by the resumed run) and at 1.5 s (after it); and a vector batch (cells.core.batch) of three W1 worlds with different schedules on the same bath (up tenfold; up threefold; none), against each run alone",
+  "W6_water": "B8's: milestone 1's isosmotic salt step beside water@1 (KCl for NaCl, K 5 to 15 mM, Na 145 to 135 mM, the measured points K up (3, 15) and Na down (1.0741, 145)), and the same world with an anisosmotic step (KCl added alone)",
+  "W7_staircase": "B10's admitted dose from the trace: the staircase probe's world (the dose leg, face at kappa/V = 10/s, S at 1e-15 mM everywhere), the bath raised to 1e-3 mM by six stairs of 100 held 0.3 s each, under ARS at 1 ms and RK4 at 0.1 ms",
+  "refusals": "one representative per refusal class, each beside its admitted neighbour, which is admitted and run over a short horizon: the classes, representatives, neighbours and the check each refusal must name are refusal_classes"
+ },
+ "refusal_classes": {
+  "R1_past_a_neutral_corner": {
+   "source": "design §8.3: 1% past each neutral corner",
+   "refused": "the bath's S up from 1e-3 to 1.01e-2 mM (ratio 10.1, level 1.01e-2 mM)",
+   "admitted": "up from 1e-3 to 1e-2 mM, the corner (10, 1e-2)",
+   "check": "the step rule (region)"
+  },
+  "R2_a_measured_failure": {
+   "source": "design §8.3: the staircase's measured failures",
+   "refused": "up from 1e-6 to 1e-3 mM, the failure (1e3, 1e-3)",
+   "admitted": "up from 1e-5 to 1e-3 mM, the corner (100, 1e-3)",
+   "check": "the step rule (region)"
+  },
+  "R3_a_dose_from_nothing": {
+   "source": "design §8.3: the dose from nothing in one step",
+   "refused": "up from 1e-15 to 1e-3 mM in one step",
+   "admitted": "W7's six stairs of 100 from 1e-15 mM",
+   "check": "the step rule (region)"
+  },
+  "R4_past_the_down_corner": {
+   "source": "design §8.3: a step down past (100, 1e-2)",
+   "refused": "down from 1.01e-2 to 1.01e-4 mM (ratio 100, level 1.01e-2 mM)",
+   "admitted": "down from 1e-2 to 1e-4 mM, the corner (100, 1e-2)",
+   "check": "the step rule (region)"
+  },
+  "R5_past_the_K_corner": {
+   "source": "design §8.3: K up past (10, 50)",
+   "refused": "KCl for NaCl by 45.5 mM (K 5 to 50.5 mM)",
+   "admitted": "KCl for NaCl by 45 mM (K 5 to 50 mM), W2's step",
+   "check": "the step rule (region)"
+  },
+  "R6_an_unmeasured_ion_direction": {
+   "source": "design §8.3: Na up and K down, never measured",
+   "refused": "NaCl for KCl by 2.5 mM (Na up to 147.5 mM, K down to 2.5 mM)",
+   "admitted": "KCl for NaCl by 2.5 mM (K up to 7.5 mM, Na down to 142.5 mM: probe I's points)",
+   "check": "the step rule (region): no step of that kind is measured"
+  },
+  "R7_a_faster_face": {
+   "source": "design §8.3: a face of 11/s",
+   "refused": "W1's tenfold step beside a face at kappa/V = 11/s",
+   "admitted": "the same step beside 10/s",
+   "check": "the step rule (face)"
+  },
+  "R8_outside_the_measured_steps": {
+   "source": "design §8.3: ARS at 2 ms and RK4 at 0.2 ms",
+   "refused": "a tenfold step under ARS at 2 ms, and under RK4 at 0.2 ms",
+   "admitted": "the same under ARS at 1 ms, and under RK4 at 0.1 ms",
+   "check": "the step rule (solver and dt)"
+  },
+  "R9_the_species_cap": {
+   "source": "design §8.2 and §8.3: the species cap (16, D165)",
+   "refused": "a scheduled world with 17 species",
+   "admitted": "the same with 16 species",
+   "check": "the species cap"
+  },
+  "R10_a_charged_unit": {
+   "source": "design §2.5 and §1.1: net-charged steps refused",
+   "refused": "a formula unit {K: 1}",
+   "admitted": "a neutral unit with a large count, {Na: 1000, Cl: 1000}",
+   "check": "the neutrality rule (integer charge)"
+  },
+  "R11_an_anisosmotic_step": {
+   "source": "design §3.1: beside water@1 only isosmotic steps",
+   "refused": "W6's world with KCl added alone",
+   "admitted": "W6's isosmotic substitution",
+   "check": "the isosmotic rule"
+  },
+  "R12_beyond_the_explicit_bound": {
+   "source": "design §2.4: the step checks see the worst composition (B7)",
+   "refused": "a K step whose worst composition puts @3's explicit-rate bound past its limit at 1 ms (the K permeability set from the bound's own host computation, so that the declared composition alone would pass)",
+   "admitted": "the same at 0.1 ms (at 0.25 ms, dt x the membrane rate is about 0.3 after the K step and the run-time IMEX energy ledger refuses the run: the rehearsal's finding)",
+   "check": "@3's explicit-rate bound"
+  },
+  "R13_not_a_held_bath": {
+   "source": "design §1.1: held baths only",
+   "refused": "a schedule naming the finite node ecs_0",
+   "admitted": "the same naming the held bath",
+   "check": "the held-bath rule"
+  },
+  "mapping_rule": "every refusal class of design §8.3 (R1 to R9) has a representative, each beside its admitted neighbour; R10 to R13 are the scope's other refusals (§1.1, §2.4, §2.5, §3.1). Each refusal is judged by the check its message names (J9), and each neighbour must be admitted and run"
+ },
+ "references": {
+  "author": "the FR references agent (code-blind), from the design's Appendix A and the registered input file only (the lead's ruling of 17 November 2026). Delivered on branch fr10-references at 23b8ff58 (validation/fr10/references): its registered design README.md and designs/ (fr10_reference_design.json, fr10_reference_values.json), written before any engine output; one dated amendment before any engine output, the sign of R-ion's supply (012a3e7e). The generator's references part uses it through its usage note's API only (REFERENCES_USAGE.md)",
+  "R_faces": "A.2: the linear face chain with the stepped bath boundary, each epoch the matrix exponential with its constant boundary from the previous epoch's end; returns each finite node's amount (fmol) at the record times, with a floor run at a tighter tolerance",
+  "R_ion": "A.3: the passive cell's constant-field K flux and capacitor, with the cytosol's amounts moving by the flux; returns V_m (cell less bath, V) and the cytosol's Na, K and Cl (fmol) at the record times, and the zero-current potential at the new composition, with a floor run",
+  "R_records": "A.4 and A.5: at each event, the dose V_b sum_f delta_a_f nu_f, the free-energy change delta_G_b (§2.2's expression, in NumPy) and the step's charge (zero in exact arithmetic); and the reservoir-work reconciliation K(t) as a function of the record times and the cumulative supply at them, which the references part applies to W3's recorded supply series (so that part runs after W3_rk4's)",
+  "event_convention": "an event at t_e sets the boundary for t >= t_e (right-continuous): the engine applies it at the start of the step that starts at t_e. Node amounts and V_m are continuous at an event, so the references compare only those; the bath's held content is judged through the records (J6), not against a reference",
+  "inputs": "validation/bath_schedule/reference_inputs.json, a registered file: each reference world's physical parameters, initial state, schedule and record times, the physical constants, and Appendix A's forms, written from the world builders' declarations, with no value taken from the operator's code",
+  "adapter": "validation/tissue/bath_schedule_qualification.references_part: faces.reference, ion.reference, records.event_records and records.reconciliation_K on the references' copy of the inputs, refused unless it equals the registered inputs; each floor world is the reference plus its own error bound (the usage note's floor), so the judge's floor difference is that bound; K_W3 from W3_rk4's recorded supply, which the part keeps beside K and the judge checks is W3's, so the part runs after W3_rk4 (--w3)"
+ },
+ "budgets": {
+  "status": "declared before any protocol run (the lead's ruling of 17 November 2026: declared first, as FR-4 and FR-5 did; the dt study reports against them as development)",
+  "B1": "every finite node's S amount within 1e-3 of the step's size (V_node x |delta c_b| = 9e-3 fmol, so 9e-6 fmol) of R-faces at every record",
+  "B2": "V_m within 1e-3 of the voltage step (|E_K(50) - E_K(5)| about 61.5 mV, so about 61.5 uV) of R-ion at every record; the cytosol's K within B2 carried through the owner's capacitor, C B2 / F (1 pF x 61.5 uV / F, about 6.37e-7 fmol: 1e-3 of the K that moves to the new equilibrium, since the cell's charge moves with its K alone)",
+  "records": "the dose within the operator's own dose-ledger tolerance of the held content less the declared one, and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records",
+  "controls_margin": "each control differs from its arm by at least 10 x the arm's budget on the same quantity"
+ },
+ "criteria": {
+  "J1_admission": "every run part admitted and run to its end with every host check on every row; every refusal part refused at the definition (J9)",
+  "J2_orders": "the dt study's orders on the three finest rungs, for W1's two node amounts and W2's V_m and cytosol K, by FR-4's classes rule (resolved in [1.8, 2.2]; at rounding passes; mixed passes unless its lower bound exceeds 2.2; reversed fails)",
+  "J3_state_error": "at the declared 1 ms, the Richardson-estimated error of W1's node amounts within B1's budget and of W2's V_m within B2's and its cytosol K within C B2 / F",
+  "J4_reference": "W1 against R-faces within B1's budget, and W2 against R-ion within B2's, at every record at the declared 1 ms; row 0 equal at rounding; each reference's floor reported",
+  "J5_ledgers": "W3 under RK4: the energy ledger within its absolute 2e-8 pJ bound at every row before, at and after the event, with the largest ratio of each segment reported; the reservoir-work ledger, with the operator's term, within its bound at every row, and that term K equal to R-records' K from W3's supply series within the same bound. W1 and W2 under ARS: the energy residual over the integrated flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, at every record, falling at second order down the ladder (the classes, no upper edge)",
+  "J6_records": "at every event of W1, W2 and W3, read across the event from the last record before it to the first after it (the engine's record at t_e shows the bath before the event, which applies at the start of the step that starts at t_e): the dose record within its ledger's tolerance of the held content less the declared content and equal to R-records' dose at rounding; delta_G_b within 1e-12 relative of R-records; the compensation-charge record at rounding of zero; the electrode and global-charge ledgers within their bounds at every row",
+  "J7_idle": "W4: every state field, observation and diagnostic of the world with the operator and no event bitwise equal to the world without it, at every record",
+  "J8_restart_batch": "W5: each restarted run bitwise equal to the straight run at every record after its restart, the event at the restart time applied once; each batched world bitwise equal to its run alone",
+  "J9_refusals": "each refusal class's representative refused at the definition with the reason of its own check (refusal_classes), recorded from the refusal; each admitted neighbour admitted and run",
+  "J10_staircase": "W7: the six-stair dose from the trace admitted and run with every host check under both solvers, while the same dose in one step is refused (J9)",
+  "J11_water": "W6: the isosmotic step beside water@1 run with water's ledgers within their bounds at every row; the anisosmotic step refused (J9)",
+  "J12_controls": "every control caught with its margin (controls)"
+ },
+ "controls": {
+  "K1_no_step": "W1 without its events: its node amounts differ from R-faces' stepped trajectory by at least 10 x B1's budget (the comparison sees a step)",
+  "K2_no_step": "W2 without its event: V_m differs from R-ion's by at least 10 x B2's budget",
+  "K3_no_term": "W3's reservoir-work ledger without the operator's term (@3's own, at the declared potential): within its bound before the event and at least 10 x its bound at every row after it (milestone 1 measured 2.1e4 x at the first)",
+  "K4_one_ulp": "W4's pair with the operator-free world's declared bath S changed by one ulp: not bitwise equal (the idle check sees one ulp)",
+  "K5_moved_event": "W5's restart at 1 s from a schedule whose event is moved one step later: not bitwise equal to the straight run (the restart check sees an event applied at the wrong step)",
+  "K6_neighbours": "each refusal's admitted neighbour (J9): a refusal check that refused everything would fail it"
+ },
+ "dt_study_criteria_written_first": {
+  "ladder_s": [
+   0.001,
+   0.0005,
+   0.00025,
+   0.000125
+  ],
+  "declared_dt_s": 0.001,
+  "note": "the ladder can only go finer: with events, the step rule refuses ARS above 1 ms, so the declared rung is the coarsest; event and record times lie on the 1 ms grid. W3 is one RK4 rung (0.1 ms, the largest admitted); its claim is ledger closure, not an order",
+  "checks": [
+   "admission of every rung (W1 and W2)",
+   "orders as J2",
+   "state error at the declared 1 ms, as J3",
+   "energy residual over flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, falling at second order down the ladder (J5's ARS line)"
+  ],
+  "verdict": "the declared 1 ms stands if every check holds; otherwise the arm declares the finest rung that passes, reported, not repaired"
+ },
+ "harness_limits": "A part ended by its runtime limit or its memory cap (as by any other infrastructure ending: a signal, an incomplete results.json) is a harness failure, not a verdict: the judged run is void and is relaunched once, whole, from the same snapshot under the same protocol, into a new output directory; the void attempt is kept and reported beside the relaunch's verdict. A second harness failure goes to the lead. A refusal by the engine is a verdict, never a harness failure",
+ "recording_rules": [
+  "Keep the bath's held content (the operator's state) apart from @3's tissue: the dose and its free-energy change are records, never work fields (design §2.2)",
+  "Keep the reconciliation term K apart from @3's reservoir_work_pJ: K is the operator's own ledger term (design §2.3)",
+  "Each refusal part records the message and the check it names; a refusal is judged by its reason, not by its occurrence"
+ ],
+ "reported_not_judged": [
+  "crossrev with the operator not declared: a landing gate, reported (design §4 B5's second half)",
+  "compile time, memory and cost per step",
+  "each reference's floor"
+ ],
+ "what_it_does_not_show": [
+  "a net-charged step, a step outside the measured region, a dose from nothing in one step (each refused)",
+  "an osmotic (anisosmotic) step, which waits for door W",
+  "faster faces, other ions or directions, or solvers and steps outside the region",
+  "any living-cell or dosing claim"
+ ],
+ "judged_parts": [
+  "W1_rung_1ms",
+  "W1_rung_0p5ms",
+  "W1_rung_0p25ms",
+  "W1_rung_0p125ms",
+  "W1_control",
+  "W2_rung_1ms",
+  "W2_rung_0p5ms",
+  "W2_rung_0p25ms",
+  "W2_rung_0p125ms",
+  "W2_control",
+  "W3_rk4",
+  "W4_idle",
+  "W5_restart",
+  "W5_batch",
+  "W6_water",
+  "W7_staircase_ars",
+  "W7_staircase_rk4",
+  "refusals",
+  "references"
+ ],
+ "outcome_rules": "PASS when J1-J12 hold; otherwise the failing criteria are reported with their values, without repair or retuning after the judged run",
+ "development_runs": {
+  "runs": [
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/run-c36a3fa",
+    "status": "milestone 1's gates: the smoke, B3 (the ledgers across an event under RK4, with the term-dropped control) and B5 (idleness); crossrev's five sets identical"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/run-2a7e594/staircase",
+    "status": "the staircase probe: the admissible dose from nothing is six stairs of 100; between resolved levels a tenfold step"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/m2-probes/run-3d16980",
+    "status": "milestone 2's probes I (ion steps) and D (neutral steps down): all fourteen arms passed under both solvers"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/closed-compartment-20261114-01/probe1",
+    "status": "probe 1: the dose from nothing (D150's onset limit)"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/run-e8c45bcb",
+    "status": "the dt study (development) and the first rehearsal of every judged part but the references, on a registered dry-run copy, from snapshot e8c45bcb: the declared 1 ms stands (orders 2.003 to 2.011; Richardson errors 0.37 to 0.92% of the budgets; energy over flows 5.8e-5 and 1.7e-5); every part ran; the judged judge refused as it must (the references absent); J9 failed on R12's neighbour at 0.25 ms (refused at run time by the IMEX energy ledger), now at 0.1 ms"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/r2/run-ed2b8ee0",
+    "status": "the dt study again and the full rehearsal, the references included, on a new registered dry-run copy, from snapshot ed2b8ee0 (the references merged, main 295b3333): all 19 parts ran; the judge's judged entry on the copy passed every judged criterion (31 of 31; not a judgement); the ten dt parts bitwise between the development and judged entries; walls 4 to 261 s on CPUs 6, 7, 22 and 23 at nice 10"
+   }
+  ],
+  "note": "development evidence only: no judged run of this protocol exists; the rehearsals ran on registered dry-run copies"
+ },
+ "questions_for_the_lead": [],
+ "questions_answered": [
+  "1. References: RULED (the lead, 17 November 2026): a fresh code-blind agent writes R-faces, R-ion and R-records from Appendix A, and later FR-3's references, as one FR references agent, starting when a slot frees; the FR owner prepares its inputs as registered files",
+  "2. Budgets: RULED: declared first, rules and numbers, before any protocol run, as FR-4 and FR-5 did; B1 and B2 as proposed; the dt study reports against them as development",
+  "3. Machinery: RULED: a new FR-10 generator, judge and drafter, importing the FR-4/FR-5 judge's arithmetic read-only; that judge is never edited",
+  "4. Refusal set: RULED: the representative set, with every refusal class of design §8.3 represented beside its admitted neighbour, and the class-to-representative mapping stated (refusal_classes)",
+  "5. Restart: RULED: the engine's checkpoint, written and resumed within one run's snapshot"
+ ],
+ "disclosures": [
+  "Drafted on 17 November 2026 after milestones 1 and 2 and their probes, whose results are known: B3's ledger record, the staircase probe and probes I and D (development_runs). Design §4's table predates milestone 2, so its items are restated against the operator as built: B10's dose from nothing is now refused at the definition in every world by the step rule, so a mixed world can no longer run it, and B10 judges that refusal and the admitted six-stair protocol instead; B1's 'step ratio pinned at registration' becomes the measured corner (10, 1e-2), up and down; B2's tenfold K step is probe I's measured point K up (10, 50) with Na down (1.45, 145); B9's parse refusals and B7's bound are judged as refusal parts that write records, not as test files, so no guard test of record can change under a later pass; B5's crossrev half is a landing gate, reported",
+  "Door S (verified 17 November 2026 on main): the bath schedule and local_species_reactions@1 compose in either order (pump_composite.structure_errors is empty; tests/unit/test_door_s.py), so design §3.1's 'D152 refused' is superseded; site_occupancy@1 beside the schedule is refused (it reads the field as declared). The operator's module docstring still says D152 is refused: stale, reported to the lead, not edited here",
+  "No budget, threshold or ladder here has been run against: no generator or reference exists yet (17 November 2026)",
+  "pre-run correction, 17 November 2026, the lead's ruling on the budgets: declared first, rules and numbers, before any protocol run, as FR-4 and FR-5 did. This supersedes design §4's 'tolerances are pinned from a dt study at registration': the dt study reports against the declared budgets as development",
+  "pre-run correction, 17 November 2026, the lead's ruling on the references: the FR references agent, code-blind, writes them from Appendix A and the registered input file (references.inputs)",
+  "pre-run correction, 17 November 2026, the lead's ruling on the refusal set: one representative per refusal class of design §8.3, each beside its admitted neighbour, with the mapping in refusal_classes",
+  "pre-run correction, 17 November 2026, the lead's ruling on the restart: through the engine's checkpoint, written and resumed within one run's snapshot",
+  "pre-run note, 17 November 2026 (FR owner): the generator, judge and drafter exist (validation/tissue/bath_schedule_qualification.py, bath_schedule_judge.py, bath_schedule_protocol.py). Development runs of every part except the references, on quick horizons (0.4 of each), tested the tools before the dt study; they are not runs of this protocol and no threshold was set from them. Two changes followed. (1) The judge read each event's dose from the record before t_e to the first at or after it; the engine's record at t_e holds the bath before the event (the event applies at the start of the step that starts at t_e), so the judge now reads from the last record before t_e to the first after it. J6's criterion is unchanged; its text now says where it reads. (2) The judge now derives two items the prose already named but the machine criteria lacked: J6's compensation charge at rounding of zero (J6_compensation: (n + 2) eps F times the dose's charge magnitude so far), and R-records' K against W3's reconciliation term within the reservoir-work ledger's bound (J5_K_reference; J5's text now names it). Both tolerances follow from rounding and the ledger's own bound, not from the runs.",
+  "pre-run correction, 17 November 2026 (FR owner), before the dt study: the cytosol K's budget was '1e-3 of its change', which the judge read from R-ion's K series, so the dt study could not report it before the references exist. It is now declared in closed form from declared values, C B2 / F (about 6.37e-7 fmol): the same quantity, 1e-3 of the K that moves to the new equilibrium, since W2's cell changes its charge through K alone. J3's text now names it.",
+  "pre-run correction, 17 November 2026 (FR owner), from the rehearsal (run-e8c45bcb, on a registered dry-run copy): R12's admitted neighbour ran at 0.25 ms (the prose said 0.5 ms; the builder had 0.25 ms) and was refused at run time after the K step at 0.5 s, 'Resolved pump accounting failed: energy': its wall K permeability gives a membrane rate of about 1200/s at the worst composition, so dt x the rate is about 0.3, inside @3's explicit-rate bound of 1 but past the IMEX energy ledger's 2e-3 tolerance (the residual scales about as (rate x dt)^2). A scan of the neighbour, development: refused at 0.25 ms; at 0.1 ms the largest energy ratio is 0.18 of the bound (residual over flows 3.6e-4). The neighbour now runs at 0.1 ms. The quick development run had ended at 0.4 s, before the event. Reported to the lead: the step rule's measured region bounds the face rate (kappa/V <= 10/s), not the membrane rate; the run-time energy guard holds there",
+  "17 November 2026 (FR owner): the references landed (fr10-references at 23b8ff58, merged), and the generator's references part, a stand-in until then, is the adapter above. Its development check against W3 at the full horizon: R-records' K equals the operator's term to 1.4e-10 of the reservoir-work bound; R-records' dG_b at W1's, W2's and W3's events equals the engine's records to their printed digits (-0.12409, -189.58786, -0.0086234 pJ); the zero-current potential after W2's step is -27.505 mV. No criterion or threshold changed."
+ ],
+ "judge": {
+  "written": "17 November 2026, by the FR owner, after the protocol's worlds and refusal classes were fixed and before any run of the protocol (development runs of the generator's parts on quick horizons, to test the tools, had run)",
+  "generator": "validation/tissue/bath_schedule_qualification.py (records only)",
+  "judge": "validation/tissue/bath_schedule_judge.py (reads records, never runs; FR-4's and FR-5's arithmetic imported read-only from validation/tissue/compartment_ph_judge.py)",
+  "references": "the FR references agent's R-faces, R-ion and R-records (validation/fr10/references, branch fr10-references at 23b8ff58: its registered design README.md and designs/), used through its usage note's API only (REFERENCES_USAGE.md), from Appendix A and the registered inputs validation/bath_schedule/reference_inputs.json",
+  "derivation": {
+   "run_parts": [
+    "W1_rung_1ms",
+    "W1_rung_0p5ms",
+    "W1_rung_0p25ms",
+    "W1_rung_0p125ms",
+    "W1_control",
+    "W2_rung_1ms",
+    "W2_rung_0p5ms",
+    "W2_rung_0p25ms",
+    "W2_rung_0p125ms",
+    "W2_control",
+    "W3_rk4",
+    "W4_idle",
+    "W5_restart",
+    "W5_batch",
+    "W6_water",
+    "W7_staircase_ars",
+    "W7_staircase_rk4",
+    "refusals"
+   ],
+   "band": [
+    1.8,
+    2.2
+   ],
+   "energy_order_low": 1.8,
+   "W1": {
+    "ladder_parts": [
+     "W1_rung_1ms",
+     "W1_rung_0p5ms",
+     "W1_rung_0p25ms",
+     "W1_rung_0p125ms"
+    ],
+    "declared_part": "W1_rung_1ms",
+    "half_part": "W1_rung_0p5ms",
+    "control_part": "W1_control",
+    "observables": [
+     "amount_S_ecs_0",
+     "amount_S_ecs_1"
+    ],
+    "budget_fmol": 9.000000000000002e-06
+   },
+   "W2": {
+    "ladder_parts": [
+     "W2_rung_1ms",
+     "W2_rung_0p5ms",
+     "W2_rung_0p25ms",
+     "W2_rung_0p125ms"
+    ],
+    "declared_part": "W2_rung_1ms",
+    "half_part": "W2_rung_0p5ms",
+    "control_part": "W2_control",
+    "observables": [
+     "V_wall_cell_0",
+     "amount_K_cell_0"
+    ],
+    "v_observable": "V_wall_cell_0",
+    "k_observable": "amount_K_cell_0",
+    "budget_V": 6.151064364340944e-05,
+    "k_budget_fmol": 6.375128974505444e-07
+   },
+   "W3": {
+    "part": "W3_rk4",
+    "event_s": 0.002,
+    "ledgers": [
+     "local",
+     "outside",
+     "total",
+     "charge",
+     "electrode",
+     "global_charge",
+     "energy",
+     "reservoir_work",
+     "electrode_work",
+     "metabolic_work",
+     "bath_dose",
+     "bath_dose_free_energy",
+     "bath_neutrality"
+    ]
+   },
+   "record_ledgers": [
+    "bath_dose",
+    "bath_dose_free_energy",
+    "bath_neutrality"
+   ],
+   "charge_ledgers": [
+    "charge",
+    "electrode",
+    "global_charge"
+   ],
+   "records": {
+    "W1": {
+     "part": "W1_rung_1ms",
+     "event_s": [
+      1.0,
+      2.0
+     ],
+     "species": [
+      "S"
+     ]
+    },
+    "W2": {
+     "part": "W2_rung_1ms",
+     "event_s": [
+      0.5
+     ],
+     "species": [
+      "Na",
+      "K",
+      "Cl"
+     ]
+    },
+    "W3": {
+     "part": "W3_rk4",
+     "event_s": [
+      0.002
+     ],
+     "species": [
+      "S"
+     ]
+    }
+   },
+   "restart_times_s": [
+    0.5,
+    1.0,
+    1.5
+   ],
+   "batch_worlds": 3,
+   "refusal_checks": {
+    "R1_past_a_neutral_corner": "the step rule (region)",
+    "R2_a_measured_failure": "the step rule (region)",
+    "R3_a_dose_from_nothing": "the step rule (region)",
+    "R4_past_the_down_corner": "the step rule (region)",
+    "R5_past_the_K_corner": "the step rule (region)",
+    "R6_an_unmeasured_ion_direction": "the step rule (region)",
+    "R7_a_faster_face": "the step rule (face)",
+    "R8_outside_the_measured_steps": "the step rule (solver and dt)",
+    "R9_the_species_cap": "the species cap",
+    "R10_a_charged_unit": "the neutrality rule (integer charge)",
+    "R11_an_anisosmotic_step": "the isosmotic rule",
+    "R12_beyond_the_explicit_bound": "@3's explicit-rate bound",
+    "R13_not_a_held_bath": "the held-bath rule"
+   },
+   "compensation_parts": [
+    "W1_rung_1ms",
+    "W1_rung_0p5ms",
+    "W1_rung_0p25ms",
+    "W1_rung_0p125ms",
+    "W1_control",
+    "W2_rung_1ms",
+    "W2_rung_0p5ms",
+    "W2_rung_0p25ms",
+    "W2_rung_0p125ms",
+    "W2_control",
+    "W3_rk4",
+    "W6_water",
+    "W7_staircase_ars",
+    "W7_staircase_rk4"
+   ],
+   "W6_part": "W6_water",
+   "W7_parts": [
+    "W7_staircase_ars",
+    "W7_staircase_rk4"
+   ],
+   "record_unit_s": 0.01
+  },
+  "criteria": [
+   {
+    "id": "J1_admission",
+    "metrics": [
+     "derived.admission.all_admitted"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every run part admitted and run to its end with every host check on every row (the runner)",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W1_amount_S_ecs_0",
+    "metrics": [
+     "derived.orders.W1_amount_S_ecs_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W1's amount_S_ecs_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W1_amount_S_ecs_1",
+    "metrics": [
+     "derived.orders.W1_amount_S_ecs_1.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W1's amount_S_ecs_1 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W2_V_wall_cell_0",
+    "metrics": [
+     "derived.orders.W2_V_wall_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W2's V_wall_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J2_order_W2_amount_K_cell_0",
+    "metrics": [
+     "derived.orders.W2_amount_K_cell_0.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W2's amount_K_cell_0 on the three finest rungs by FR-4's classes rule",
+    "judged": true
+   },
+   {
+    "id": "J3_state_error",
+    "metrics": [
+     "derived.state_error.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "at the declared 1 ms, the Richardson-estimated error of every judged observable within its budget (B1; B2 for V_m; C B2 / F for the cytosol K)",
+    "judged": true
+   },
+   {
+    "id": "J4_reference",
+    "metrics": [
+     "derived.reference.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W1 against R-faces and W2 against R-ion within their budgets at every record at the declared 1 ms",
+    "judged": true
+   },
+   {
+    "id": "J4_row0",
+    "metrics": [
+     "derived.reference.row0_max"
+    ],
+    "comparison": "le",
+    "threshold": 1e-06,
+    "basis": "row 0 against the reference at rounding, in budgets",
+    "judged": true
+   },
+   {
+    "id": "J4_reported",
+    "metrics": [
+     "derived.reference.W1_amount_S_ecs_0_floor",
+     "derived.reference.W2_V_wall_cell_0_floor"
+    ],
+    "comparison": "ge",
+    "threshold": 0,
+    "basis": "each reference's floor, in budgets",
+    "judged": false
+   },
+   {
+    "id": "J5_W3_energy",
+    "metrics": [
+     "derived.W3.energy.before",
+     "derived.W3.energy.at",
+     "derived.W3.energy.after"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3 under RK4: the energy ledger within its absolute bound before, at and after the event",
+    "judged": true
+   },
+   {
+    "id": "J5_W3_reservoir_work",
+    "metrics": [
+     "derived.W3.reservoir_work.before",
+     "derived.W3.reservoir_work.at",
+     "derived.W3.reservoir_work.after"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3: the reservoir-work ledger, with the operator's term, within its bound before, at and after the event",
+    "judged": true
+   },
+   {
+    "id": "J5_energy",
+    "metrics": [
+     "derived.energy.W1.over_flows_at_declared",
+     "derived.energy.W2.over_flows_at_declared"
+    ],
+    "comparison": "le",
+    "threshold": 0.002,
+    "basis": "W1 and W2 under ARS: the energy residual over the integrated flows <= 2e-3 at the declared 1 ms, which is the coarsest rung, at every record",
+    "judged": true
+   },
+   {
+    "id": "J5_energy_falls",
+    "metrics": [
+     "derived.energy.W1.ladder.passes",
+     "derived.energy.W2.ladder.passes"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "the energy residual falls at second order down the ladder (the classes, no upper edge)",
+    "judged": true
+   },
+   {
+    "id": "J6_records",
+    "metrics": [
+     "derived.ledger_max.records"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the operator's own ledgers (the dose against the held content, the free-energy record against its endpoints, neutrality) within their bounds at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "J5_K_reference",
+    "metrics": [
+     "derived.K_reference.max_over_bound"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3: the operator's reconciliation term K equal to R-records' K from W3's supply series within the reservoir-work ledger's bound at every record",
+    "judged": true
+   },
+   {
+    "id": "J6_compensation",
+    "metrics": [
+     "derived.compensation.max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the compensation-charge record at rounding of zero at every record of every engine part: within (n + 2) eps F times the dose's charge magnitude so far",
+    "judged": true
+   },
+   {
+    "id": "J6_records_reference",
+    "metrics": [
+     "derived.records.dose_over_rounding_max"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "each event's dose equal to R-records' at rounding (N eps |dose|)",
+    "judged": true
+   },
+   {
+    "id": "J6_free_energy_reference",
+    "metrics": [
+     "derived.records.free_energy_relative_max"
+    ],
+    "comparison": "le",
+    "threshold": 1e-12,
+    "basis": "each event's delta_G_b within 1e-12 relative of R-records",
+    "judged": true
+   },
+   {
+    "id": "J6_charge",
+    "metrics": [
+     "derived.ledger_max.charge"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "the charge, electrode and global-charge ledgers within their bounds at every record of every run part",
+    "judged": true
+   },
+   {
+    "id": "J7_idle",
+    "metrics": [
+     "derived.idle"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W4: the operator with no event bitwise the composition without it",
+    "judged": true
+   },
+   {
+    "id": "J8_restart",
+    "metrics": [
+     "derived.restart"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5: every restart bitwise the straight run from its restart time",
+    "judged": true
+   },
+   {
+    "id": "J8_batch",
+    "metrics": [
+     "derived.batch"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5: every batched world bitwise its batch of one",
+    "judged": true
+   },
+   {
+    "id": "J9_refusals",
+    "metrics": [
+     "derived.refusals.all"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "every refusal class's representative refused by its own check, and its neighbour admitted and run; R12's declared composition alone admitted",
+    "judged": true
+   },
+   {
+    "id": "J9_reported",
+    "metrics": [
+     "derived.refusals.R1_past_a_neutral_corner",
+     "derived.refusals.R2_a_measured_failure",
+     "derived.refusals.R3_a_dose_from_nothing",
+     "derived.refusals.R4_past_the_down_corner",
+     "derived.refusals.R5_past_the_K_corner",
+     "derived.refusals.R6_an_unmeasured_ion_direction",
+     "derived.refusals.R7_a_faster_face",
+     "derived.refusals.R8_outside_the_measured_steps",
+     "derived.refusals.R9_the_species_cap",
+     "derived.refusals.R10_a_charged_unit",
+     "derived.refusals.R11_an_anisosmotic_step",
+     "derived.refusals.R12_beyond_the_explicit_bound",
+     "derived.refusals.R13_not_a_held_bath"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "each refusal class, reported",
+    "judged": false
+   },
+   {
+    "id": "J10_staircase",
+    "metrics": [
+     "derived.staircase"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W7: the six-stair dose from the trace run under both solvers",
+    "judged": true
+   },
+   {
+    "id": "J11_water",
+    "metrics": [
+     "derived.water"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W6: the isosmotic step run",
+    "judged": true
+   },
+   {
+    "id": "J11_water_ledgers",
+    "metrics": [
+     "derived.ledger_max.water"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W6: every ledger, water's included, within its bound at every record",
+    "judged": true
+   },
+   {
+    "id": "J12_K1",
+    "metrics": [
+     "derived.controls.K1_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "W1 without its events against R-faces: at least 10 x B1",
+    "judged": true
+   },
+   {
+    "id": "J12_K2",
+    "metrics": [
+     "derived.controls.K2_over_budget"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "W2 without its event against R-ion: at least 10 x B2",
+    "judged": true
+   },
+   {
+    "id": "J12_K3_before",
+    "metrics": [
+     "derived.controls.K3_before"
+    ],
+    "comparison": "le",
+    "threshold": 1,
+    "basis": "W3's reservoir-work ledger without the operator's term within its bound before the event",
+    "judged": true
+   },
+   {
+    "id": "J12_K3_after",
+    "metrics": [
+     "derived.controls.K3_after_min"
+    ],
+    "comparison": "ge",
+    "threshold": 10.0,
+    "basis": "and at least 10 x its bound at every record after it",
+    "judged": true
+   },
+   {
+    "id": "J12_K4",
+    "metrics": [
+     "derived.controls.K4_planted_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W4's pair with one ulp planted is not bitwise equal",
+    "judged": true
+   },
+   {
+    "id": "J12_K5",
+    "metrics": [
+     "derived.controls.K5_moved_event_differs"
+    ],
+    "comparison": "ge",
+    "threshold": 1,
+    "basis": "W5's restart with the event moved one step is not bitwise the straight run",
+    "judged": true
+   }
+  ],
+  "units": {
+   "W1_rung_1ms": {
+    "steps": 3000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p5ms": {
+    "steps": 6000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p25ms": {
+    "steps": 12000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_rung_0p125ms": {
+    "steps": 24000,
+    "note": "sized at the rehearsal"
+   },
+   "W1_control": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_1ms": {
+    "steps": 2000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p5ms": {
+    "steps": 4000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p25ms": {
+    "steps": 8000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_rung_0p125ms": {
+    "steps": 16000,
+    "note": "sized at the rehearsal"
+   },
+   "W2_control": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W3_rk4": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W4_idle": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W5_restart": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W5_batch": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W6_water": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W7_staircase_ars": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "W7_staircase_rk4": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "refusals": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   },
+   "references": {
+    "steps": null,
+    "note": "sized at the rehearsal"
+   }
+  },
+  "resources": {
+   "status": "a template until the rehearsal measures each unit",
+   "environment": "from the snapshot's root, PYTHONPATH=SNAPSHOT/src:SNAPSHOT, JAX_ENABLE_X64=1, JAX_PLATFORMS=cpu, CUDA_VISIBLE_DEVICES= (empty), PYTHONDONTWRITEBYTECODE=1, CPU backend only, float64",
+   "unit": "scripts/run_detached.sh fr10-PART CAP --cpus CPU --oom-first --runtime-max RUNTIME_MAX_S --dir SNAPSHOT --env PYTHONPATH=SNAPSHOT/src:SNAPSHOT --env JAX_ENABLE_X64=1 --env JAX_PLATFORMS=cpu --env CUDA_VISIBLE_DEVICES= --env PYTHONDONTWRITEBYTECODE=1 -- /mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.bath_schedule_qualification judged SNAPSHOT/validation/tissue/bath_schedule_protocol.json OUT/PART PART",
+   "references_unit": "the references part adds --w3 OUT/W3_rk4/results.json and runs after W3_rk4's unit has ended (R-records' K reads W3's own supply)",
+   "judge": "/mnt/workspaces/Cells/venv-cpu/bin/python -B -m validation.tissue.bath_schedule_judge judged SNAPSHOT/validation/tissue/bath_schedule_protocol.json OUT/verdict OUT/*/results.json (in its own unit: 1G, 600 s; it runs nothing)",
+   "runtime_max_rule": "D150's rule on the larger of a sizing rate and the rehearsal's wall (3 x estimate + 600 s, rounded up to the minute)",
+   "attempts": "harness_limits"
+  }
+ }
+}

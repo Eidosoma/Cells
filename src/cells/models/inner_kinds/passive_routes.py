@@ -48,11 +48,12 @@ two by name (VERSION_1_LAWS), so it refuses any other route law it hosts.
   books, per step, its exact divided-difference shares of each row's exact free-energy decrease:
   Q = -1e-3 RT moved (mu-bar_in - mu-bar_out) (the kernel's divided_potential_RT and
   route_heat_pJ). No clamp, no scaling: each share is booked as computed. A share below its
-  floor, -RAW_SUM_FACTOR eps (|mu-bar_in moved| + |mu-bar_out moved|) RT (negative beyond its own
-  rounding: §7.5's sign rule, amended 17 November 2026), or a row whose shares miss its exact
-  decrease by more than RAW_SUM_FACTOR eps times its terms and its inputs' rounding (the stored
-  amounts, increments and cumulative transfers times |mu-bar|: §7.5's raw-sum bound, amended 16
-  November 2026), refuses the step ("negative exact share: step-bound breach"). A share within
+  floor, -RAW_SUM_FACTOR eps (|mu-bar_in| + |mu-bar_out| + 2) |moved| RT (negative beyond its own
+  rounding, its potentials' evaluation rounding included: §7.5's sign rule, amended 17 November
+  2026), or a row whose shares miss its exact decrease by more than RAW_SUM_FACTOR eps times its
+  terms and its inputs' rounding (the stored amounts, increments and cumulative transfers times
+  |mu-bar|: §7.5's raw-sum bound, amended 16 November 2026), refuses the step ("negative exact
+  share: step-bound breach"). A share within
   its floor is booked too, so a route's heat may fall in a step by at most that rounding. Every
   other route, the leak always, keeps the tableau's booking of its dissipation rate (the leak's:
   the kernel's heat_pJ_s, >= 0).
@@ -465,9 +466,14 @@ def _shares(start, end, p, *, xp):
     """One step's exact shares and their floors (§7.5): (volume, n0, n1, moved, mu-bar, mu-bar_in,
     mu-bar_out, shares, floor, exact), moved and both pJ terms [species, route].
 
-    The sign rule (amended 17 November 2026): a share is refused only below its floor, minus the
-    raw-sum check's factor times eps times the share's own terms, |mu-bar_in m| + |mu-bar_out m|
-    (the route's products in its rows' own terms), in the share's unit (route_heat_pJ's 1e-3 RT).
+    The sign rule (amended 17 November 2026, its band near 1 mM closed the same day): a share is
+    refused only below its floor. The floor is minus the raw-sum check's factor times eps times
+    the share's scale, (|mu-bar_in| + |mu-bar_out| + 2) |m|, in the share's unit (route_heat_pJ's
+    1e-3 RT).
+    - |mu-bar| |m| is the route's product in its rows' own terms.
+    - 2 |m| is its potentials' evaluation rounding. The kernel forms each end's mu-bar as
+      ln(n0/V) + p(x) - 1 with p near 1, so a mu-bar carries the ulp of |mu-bar| + 1 even where it
+      is 0 (c = 1 mM).
     Between rows whose divided potentials differ by a few ulp, a transfer below the amounts'
     resolution gives a share of either sign at that scale; a relative tolerance on the share
     itself would be zero there."""
@@ -478,7 +484,7 @@ def _shares(start, end, p, *, xp):
     mu_in, mu_out = mu[:, p.passive_inside], mu[:, p.passive_outside]
     shares = passive.route_heat_pJ(moved, mu_in, mu_out, p.temperature, xp=xp)
     exact = p.passive_exact[None, :] & (p.passive_permeability > 0)
-    terms = xp.abs(mu_in * moved) + xp.abs(mu_out * moved)  # RT fmol.
+    terms = (xp.abs(mu_in) + xp.abs(mu_out) + 2.0) * xp.abs(moved)  # RT fmol.
     floor = -(RAW_SUM_FACTOR * np.finfo(float).eps * 1e-3 * R) * p.temperature * terms
     return volume, n0, n1, moved, mu, mu_in, mu_out, shares, floor, exact
 

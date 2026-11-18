@@ -31,6 +31,10 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
     (D192) and mitochondria (D193).
+    Proposed on 18 November, with options and questions for the user (D216):
+    [FR-7's abundance to function and the closed loop's unit](docs/ABUNDANCE_TO_FUNCTION_DESIGN.md),
+    [FR-2's membrane retrieval](docs/MEMBRANE_RETRIEVAL_DESIGN.md), and
+    [FR-8's long-duration mode](docs/LONG_DURATION_MODE_DESIGN.md).
   - **On the L4:** Q7's run-to-run nondeterminism at 825 nodes goes away under the deterministic
     flag (15 of 15 bitwise pairs, D181). Judged alone under the flag on 16 November, Q7 passed, and
     the landing's L4 block passed under it. The W1 full-tissue hold completed its 70-minute
@@ -84,6 +88,90 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **FR-19's band follow-up on main (18 November 2026, early).** Merged from `passive-share-band` at
+  7bfe0c68.
+  - **The fix:** the passive routes' heat-share floor now bounds the rounding by
+    (|μ̄_in| + |μ̄_out| + 2)·|m|. FR-19's |μ̄_in·m| + |μ̄_out·m| left a band near 1 mM.
+    `test_passive_share_floor.py` now has 11 tests.
+  - **The gate at cde5efd1:** crossrev, eight sets identical. The kinds set differs, by design,
+    only in the three FR checked steps' floor terms (constants 12/12, bindings 3/3). G1 113 of 113;
+    tiers 1+2 502 files, 0 changed; IDs, only the band's renamed tests; FR's bitwise set passed.
+  - **The record's kinds texts** are renewed on main after this landing, as for FR-19. The
+    superseded texts are kept, and crossrev's nine sets are rerun against the renewed record.
+  - Evidence: `/mnt/workspaces/Cells/passive-share-band-20261117/gate-cde5efd1/` and
+    `fr-landing-cde5efd1/verdict.json`.
+
+- **D214's two core boundary fixes on main (18 November 2026, early).** Merged from
+  `core-boundary-checks` at 13aaf72a.
+  - **Fix 1a:** kinds write only their own resolved, declared fields: initial values, derivatives
+    and control outputs, at the pump family's three merge points. `test_kind_foreign_writes.py` has
+    19 tests.
+  - **Fix 1b:** the vector windows' failure mask refuses, at admission, more checks than its dtype
+    and shift hold. `test_vector_failure_mask.py` has 34 tests.
+  - **The gate at 1aca2314:** crossrev 9 of 9 identical against the renewed record (the placement
+    proof), G1 113 of 113, tiers 1+2 with 0 of 495 changed, collected IDs with 53 new and none
+    missing, and FR's bitwise set passed.
+  - **The targeted check at 13aaf72a,** for FR-10's pump-family worlds landed after that gate: FR-10's
+    seven test files, the bath-schedule files, the door-S view and the continuity bypass, 0 changed.
+    IDs show additions only.
+  - Evidence: `/mnt/workspaces/Cells/core-boundary-checks-20261117/` (`gate-1aca2314/`,
+    `fr-landing-1aca2314/`, `targeted-13aaf72a/`).
+
+- **FR-10 judged: passed (17 November 2026, 23:45–23:50 UTC).** The registered protocol
+  `fr10-dose-schedule-v1` was judged once from the clean snapshot of its registration commit
+  407ba164, on lane A (CPUs 0-3, under its lock). Its references are the code-blind FR references
+  agent's R-faces, R-ion and R-records (`validation/fr10/references`).
+  - **31 of 31 judged criteria.** Examples:
+    - W1 against R-faces is at most 0.92% of B1, and W2 against R-ion 0.80% of B2; row 0 is exact.
+    - The orders are 2.003 to 2.011, and the energy residual over the flows is 5.8e-5 and 1.7e-5,
+      falling at order 2.
+    - The dose equals R-records' exactly at every event, and dG_b is within 4.5e-16 relative.
+    - The operator's reconciliation term K equals R-records' K to 1.4e-10 of the reservoir-work
+      bound. The compensation charge is 0.
+    - Controls: K1 is 973 x B1 and K2 is 1000 x B2. Without the operator's term, the reservoir-work
+      ledger is 2.1e4 x its bound after the event.
+    - Restart, batch, idleness and all 13 refusal classes hold.
+  - **No harness failure** (the harness-limit rule): all 19 parts are complete. Peak memory was
+    0.92 G of 2 G, and no part used more than 6.9% of its runtime limit.
+  - **Against the rehearsal** (`r2/run-ed2b8ee0`, on a registered dry-run copy): 18 parts are
+    bitwise equal. The references part differs only in the path and sha256 of the W3 records it
+    reads, which was expected and listed before launch.
+  - **Disclosure, the launcher:** before the run, the launcher's dry-run check refused the protocol
+    of record. That check is the run folder's `judge-run.sh`, run tooling outside the repo. It
+    matched the phrase "a registered dry-run copy" in the lead's registration status. It was
+    narrowed to the dry-run copy's own status prefix, "registered for the rehearsal only". Separately
+    checked: the snapshot's protocol is the one of record, with its matching registration record.
+    The judge and the engine were not touched.
+  - **Scope:** `scheduled_bath_composition@1` as built at 407ba164. It covers neutral formula units
+    only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms
+    and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal
+    found that the run-time energy guard holds there (R12's neighbour, disclosed).
+  - **Evidence:** `/mnt/workspaces/Cells/bath-schedule-20261114-01/fr10-protocol/judged/run-407ba164/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
+
+- **The gap-junction tissue line, dense records, and the sheet (17 November 2026, night).**
+  Development, not judged (D138). Note §7.6, registered before these runs, merged from
+  `gap-junction-replication` at 0471f7c3.
+  - **Dense records** (`runs/dense-01`, D = 0, x2/2, x2 and 2·x2): about 370 log-spaced records per
+    arm, the first one step in. Every end state is bitwise its earlier run (picks-02 and picks-01),
+    so the records changed nothing. Each package carries the tumour cells, a species map, each
+    arm's place against x2, and the cells' miR200, Zeb mRNA and ZEB protein in µM.
+  - **The 9×9 sheet** (`runs/sheet-01`): an extension beyond the replication, not part of it.
+    - Its setup: 4-neighbour junctions, a 3×3 tumour patch in the middle, the same seeds and
+      protocol, and a coupled horizon of 2,000 s (a tenth of the line's).
+    - The tumour holds at D = 0, x2/16 and x2/8, and the sheet normalises at x2/4, x2/2 and x2.
+      No arm is still changing at 2,000 s.
+    - So, at 2,000 s, the sheet's threshold lies between x2/8 and x2/4 (0.9–1.8e-15 m²/s), 4 to 8
+      times below the line's. That is observed; why is not measured.
+  - **The coupling ladder** (`runs/ladder-01`, ten line arms to 20,000 s, none refused):
+    - below x2, the tumour holds (0.70 x2) or converts only partly (0.87 and 0.98 x2);
+    - above x2, every arm normalises, sooner as coupling grows: first all-E record at 6,800 s at
+      1.05 x2, down to 311 s at 6.97 x2. The times are as fine as the record spacing.
+  - **The light gate:** tier 1 at 0471f7c3, 336 files, 0 changed. The ladder's commit b40b9169 is
+    docs only.
+  - Evidence: `/mnt/workspaces/Cells/gap-junction-20261117/runs/dense-01/`, `runs/sheet-01/` and
+    `runs/ladder-01/`.
 
 - **The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night).**
   Development, not judged (D138). Note §7.5, merged from `gap-junction-replication` at 15ba9bea.

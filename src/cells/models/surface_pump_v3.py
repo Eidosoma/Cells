@@ -192,9 +192,15 @@ def initial_values(spec, *, structure=None):
     registry = kind_registry.active()
     declarations = dict(spec.model.kinds)
     fields, entries = state._asdict(), layout._asdict()
-    for kind_id, _ in structure.kinds:
-        kind = registry.lookup(kind_id)
+    for kind_id, entry in structure.kinds:  # Each bound to its entry's fields (§7.4 (n) 5).
+        kind = kind_registry.bound(registry.lookup(kind_id), entry)
         own_state, own_layout = kind.initial(spec, declarations[kind_id], entries)
+        kind_registry.refuse_foreign_writes(
+            kind, "initial values", own_state, kind.state_fields, "state"
+        )
+        kind_registry.refuse_foreign_writes(
+            kind, "initial values", own_layout, kind.layout_fields, "layout"
+        )
         fields |= own_state
         entries |= own_layout
     floor = "field_current_floor" in entries
@@ -494,7 +500,17 @@ def _stage_checks(kinds, read, cell, outside, p, *, xp):
 
 
 def _kind_rates(kinds, state, potentials, control, p, *, xp):
-    return [kind.rates(state, potentials, control, p, xp=xp) for kind in kinds if kind.rates]
+    """Each kind's rates at the stage, in hook order. A kind's derivatives name only its own
+    state fields (kinds bound to their entries; the keys are checked while tracing)."""
+    rates = []
+    for kind in kinds:
+        if kind.rates:
+            kr = kind.rates(state, potentials, control, p, xp=xp)
+            kind_registry.refuse_foreign_writes(
+                kind, "rates", kr.derivatives, kind.state_fields, "state"
+            )
+            rates.append(kr)
+    return rates
 
 
 def _with_kind_derivatives(base, rates, structure, state, *, xp):
