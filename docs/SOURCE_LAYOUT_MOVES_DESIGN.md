@@ -868,3 +868,60 @@ The user chose (R): retire the pinning legacy laws and their tests, and move wha
   (D190's first wording), on 2 CPUs, with a planted control.
 - **Handoff:** move 2's owner finishes through M2's landing. A fresh owner then takes tier 3, G3
   and G4 on the final tree.
+
+## 21. Move 2 made (18 November 2026, on d188-m2-prep at main bb69abd4)
+
+*Not landed until the lead merges. Evidence: `/mnt/workspaces/Cells/d188-m2-move-20261118/`.*
+
+**The map** (`scripts/moves/move2.json`, with its path table):
+- **117 modules move.** 108 come from the planner's rule table (§9); the 9 it leaves unplaced are
+  placed in the map's `placement`, each with its reason.
+- **Ten packages are created,** each with its text: `definitions/`, `execution/`, `laws/` with six
+  of its groups, and `records/`. `laws/junctions/` is `coupling/`'s package file, moved.
+- **`processes/` (D198) and `core/` (R6′, the BLAS pin's one home in `cells/__init__.py`)
+  dissolve.** Their package files go, by the map's `dissolve`.
+- **`laws/mechanics/` is a seventh law group** beyond D188's six, approved by the lead on 17
+  November. It holds `vertex_mechanics` (MG1's law), and later tissue mechanics.
+- **The other placements:**
+  - `electrochemistry` goes to `laws/`;
+  - `calcium_gates` to `laws/channels/`;
+  - `patch_electrodiffusion` to `laws/routes/`;
+  - `legacy_entry` to `registry/`;
+  - `spec_values` and `vertex_preparation` to `definitions/`;
+  - `source_layout` to `records/`.
+- **Hazards:** every one of the scan's 128, in 111 files, is reviewed. The set is the one dry run
+  4 read.
+
+**The move commit** is `apply` alone: 1270 files rewritten. `verify` holds with 0 problems.
+- **A second `apply` changes nothing.** It needed one tool fix after the move: a reviewed hazard
+  file that the map moves keeps its review at its new path. Two had moved.
+- **The declaration** follows in its own commit: `cells.records.source_layout.MOVES` names the two
+  dissolved folders and the restore tag `pre-d188-move2-2026-11-18`.
+
+**Outside the rewriter's scope:**
+- **`visualizer/tools/make_engine_view_fixture.sh`.** Its six imports and one path check get a
+  follow-up commit with the same old-to-new list, which CellsViz applies to the visualizer
+  branch's copy.
+- **The docs.** Commit by the rules of §19: 56 files, the library pages among them, whose
+  generated blocks name the moved files.
+
+**The two tier-3 pin tests** (`test_joint_water_profile_interventions`,
+`test_owned_calcium_profile_interventions`) fail first at a different pin than the tier-3 record
+says:
+- the record has `src/cells/core/er_spec.py`;
+- the tree has `src/cells/__init__.py`, both before the move and after it, because R6′ edited that
+  file;
+- after the move, 103 of 181 and 90 of 152 of their pinned paths are missing, against 67 and 54.
+
+No hash is updated (D187).
+
+**Open branches:**
+- **core-fixes and packed-gpu-planner carry over by §10's procedure,** each starting from the
+  branch merged with main:
+  - the tier record re-folded with `tiers --base`;
+  - the branch's tests run on the merged head;
+  - then the map applied and `verify` run.
+- **packed-gpu-planner's own modules.** It adds `core/packed_runner.py` and `core/packing.py`,
+  which exist only on the branch. The committed map refuses the branch for them, as §10 intends,
+  so its owner applies the map extended by those two modules (to `execution/`).
+- **windows-next and fr45-transporter** are superseded on main, and are pruned after the move.
