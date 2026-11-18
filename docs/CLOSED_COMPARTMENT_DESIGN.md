@@ -11,11 +11,13 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
 
-**Refusals 4 and 5, later versions (status 16 November 2026):**
+**Refusals 4 and 5, later versions (status 18 November 2026):**
 - **On main,** with D172's round (ab267c39): refusal 4 version 1.1 (§3.4.1, FR-4's kinds).
 - **On main since fr45-next merged (16 November):**
   - refusal 4 version 1.2 (§3.4.2, FR-5's source kinds);
   - refusal 5 version 1.1 (§3.4.3, the charge anchor where charged routes are admitted).
+- **Version 1.3 (§3.4.4, 18 November; CORE_SEAMS §18's option (a)):** refusal 4 checks the kinds
+  per move, from each law's declared step terms, in place of version 1.2's lists of kinds.
 
 **As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
 after that review: no engine code was added or changed. One read-only probe ran on the engine as
@@ -789,6 +791,55 @@ see that string differ.
 
 **Then the protocol's check:** FR-5's declared world must run bitwise equal to its development
 world, as FR-4's did (§3.4.1).
+
+### 3.4.4 Version 1.3: refusal 4 per move (CORE_SEAMS_DESIGN §4.4; the lead's ruling, 18 November 2026)
+
+**Why.** Versions 1.1 and 1.2 admit kinds by ID, so coverage is judged per kind, but it is needed
+per law: the transporter has a `stage_term`, yet its neutral law has no term of any kind (§3.4.1's
+open item). Every new kind also meant an edit to the lists.
+
+**The rule.** @3's own routes keep version 1.2's rule and its messages: pumps and channel
+populations are refused on a bounding patch, a permeability is admitted only where the world
+declares kinds, and under RK4 no declared kind is admitted. With an IMEX tableau, each declared
+kind is checked per move:
+- **Every row a kind moves at the compartment's node,** as its `moved_rows` gives them, needs a step
+  term. A move across the bounding patch moves its row there, at the patch's outside end.
+  - A charged row needs a charge slope, `stage_term`, which the per-stage rule holds at the node.
+  - A neutral row needs a material slope, `material_term`, or a definition-time bound,
+    `bound_rate`.
+- **The term is read by law ID from the law registry.** The law declares it on the law template,
+  and the kind that hosts the law must have the hook of that name. So a planted kind that reuses a
+  law's ID, as FR-4's K2 does, is admitted only where it keeps the hooks the law names.
+- **Fails closed.** A move is refused, naming its law, when the law declares no needed term, when
+  its kind lacks the hook, when the move names no law, when the law is unregistered, or when
+  another kind hosts it.
+- **A kind with no moved rows** is admitted by its hooks, never its ID:
+  - as a stage read, which declares its rows and has no `rates`, `stage_term`, `material_term` or
+    `bound_rate` (B4's buffer);
+  - or as a source, with none of a mover's hooks (§3.4.2's list, which `material_term` joins: FR-5's
+    damage and pH condition).
+
+**What changes.**
+- `ROUTE_KINDS`, `READ_KINDS` and `FACTOR_KINDS` go. A new kind or law joins by declaring its
+  terms, with no edit here.
+- **Newly refused:** the transporter's neutral law at a compartment's node, until it declares D4's
+  material term. No world on main has it (CORE_SEAMS_STEP0 §3, redone call by call for this
+  version).
+- **Newly admitted:** a kind none of whose moves is at a compartment's node, whatever its ID.
+- **What it needs:** the law template's step terms (`registry/laws.py`), and the passive routes'
+  two laws declaring theirs (the leak a `stage_term`, the neutral law a `bound_rate`). Without
+  them, FR-4's and FR-5's declared worlds are refused.
+- **Text.** The summary's scope string changes to version 1.3. No judged record holds it. Frozen
+  operator summaries see it differ. The unchanged branches keep version 1.2's messages, since FR-1's
+  judged refusal record holds the permeability one.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- FR-4's and FR-5's declared worlds are admitted, with their moves at the lumen and their terms;
+- planted moves at the node, charged and neutral, each refused case beside its admitted twin;
+- a move with no law, an unregistered law, a law another kind hosts, and K2's reuse of a law ID;
+- non-movers judged by their hooks;
+- the transporter's neutral law, refused on the bounding patch and admitted on the plasma patch;
+- the built-in laws' declared terms against their kinds' hooks: the premise.
 
 ### 3.5 Floating components and the gauge
 

@@ -14,15 +14,22 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 2. a patch that is not declared, is not the only patch whose outside is the node, or whose inside
    is not the declared owner (a declared cell);
 3. two compartments on one node (an owner may own several);
-4. an ion route on the bounding patch (version 1.2, §3.4.1 and §3.4.2): a Na/K or Ca pump or a
-   channel population; a nonzero permeability unless the world declares kinds; any declared kind
-   outside the known ones (ROUTE_KINDS, READ_KINDS and, since version 1.2, FACTOR_KINDS), which
-   fails closed; and, under an RK4 step, any declared kind, so that version 1's refusal stands
-   there. That is the charged door (§3.4): a
-   compartment has no face, so its charge relaxation is held only by B7's face-free term and,
-   with kinds declared, by the per-stage rule at free outside nodes, where the known kinds'
-   charged routes put their slopes (ROUTE_KINDS' comment names the neutral laws' terms). Both run
-   only with an IMEX tableau;
+4. an ion route on the bounding patch (version 1.3, §3.4.1, §3.4.2 and §3.4.4). @3's own routes
+   keep version 1.2's rule: a Na/K or Ca pump or a channel population is refused, a nonzero
+   permeability unless the world declares kinds, and, under an RK4 step, any declared kind, so
+   that version 1's refusal stands there. The kinds are checked per move, not per kind
+   (docs/CORE_SEAMS_DESIGN.md §4.4): every row a kind moves at the compartment's node (a move
+   across the bounding patch moves its row there, at the patch's outside end) is held by a step
+   term its law declares in the law registry and its kind holds by the hook of that name: a
+   charged row by a charge slope (stage_term, in the per-stage rule), a neutral row by a material
+   slope (material_term) or a definition-time bound (bound_rate). A move whose law declares no
+   such term is refused, naming the law, and so is a move with no law ID. A kind that declares no
+   moved rows is admitted only as a stage read (its rows declared; no rates, moves or slope) or a
+   source (none of a mover's hooks), each judged by its hooks; any other fails closed. That is
+   the charged door (§3.4) and its material twin: a compartment has no face, so its charge
+   relaxation is held only by B7's face-free term and, with kinds declared, by the per-stage rule
+   at free outside nodes, and the material relaxation of its small volume only by its movers'
+   own terms. Both rules run only with an IMEX tableau;
 5. a nonzero charge anchor (version 1.1, §3.4.3), except where refusal 4 admits charged routes (a
    world that declares kinds and steps with an IMEX tableau), since such a world must be able to
    resume from its own checkpoint; elsewhere (the silent version, and RK4) the content is
@@ -60,25 +67,35 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.operators.contract import Operator
+from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 
 LAW_ID = "cell_owned_compartments@1"
-# Refusal 4's known kinds (version 1.1, §3.4.1). Their charged routes on a bounding patch (the
-# transporter's proton law, the passive routes' proton leak) put their slopes at the compartment's
-# node through stage_term, which the per-stage rule holds; the proton law also has a
-# definition-time bound_rate, the leak none. The passive neutral law moves no charge: its
-# definition-time bound_rate (dt L <= 1, the compartment's own volume in L) holds its material
-# relaxation. The transporter's neutral law has neither term: its material stiffness at a small
-# node is an open question (§3.4.1), not the charged door's. The buffer is a stage read and
-# declares no route. Any other declared kind is refused while a compartment is declared.
-ROUTE_KINDS = ("cells.passive_routes@1", "cells.transporter@1")
-READ_KINDS = ("cells.rapid_proton_buffer@1",)
-# Version 1.2 (§3.4.2; the lead's ruling, 16 November 2026, on the FR-4/FR-5 note's §16.5): the
-# routing door's source kinds. They declare no route, move no row and carry no charge (no node
-# rate, no moved_rows, no stage_term, no bound_rate, no held_rows, no stage read, no ledger term),
-# so they cannot cross a bounding patch: their factors reach the known route kinds' openings
-# through the door, whose [0, 1] rule bounds each route at its declared slope.
-FACTOR_KINDS = ("cells.patch_damage@1", "cells.ph_condition@1")
-KNOWN_KINDS = ROUTE_KINDS + READ_KINDS + FACTOR_KINDS
+# Refusal 4's step terms (version 1.3, §3.4.4; docs/CORE_SEAMS_DESIGN.md §4.4). Each is a field a
+# law declares on the law template (registry/laws.py, §8.1: its kernel's name, or None) and the
+# kind hook of the same name that holds it at the step: a charge slope in the per-stage rule
+# (stage_term, surface_pump_v3.membrane_rate at every free outside node, a face-free
+# compartment's included), a material slope per stage (material_term, surface_pump_v3's
+# material_rate) or a definition-time bound (bound_rate, the IMEX step checks). A charged row
+# moved at a compartment's node needs a charge slope; a neutral row a material slope or a bound.
+CHARGE_TERMS = ("stage_term",)
+MATERIAL_TERMS = ("material_term", "bound_rate")
+# A kind that declares no moved rows is admitted only by its hooks (never its ID), as one of two
+# non-movers. A stage read (B4's buffer): it declares the rows it reads (stage_rows), and has no
+# rates, so no move and no slope; the read changes the concentrations the stage's rates see, never
+# charge. A source (version 1.2's routing-door kinds, §3.4.2: FR-5's damage and pH condition): it
+# has none of a mover's hooks, so its factors reach routes only through the door, whose [0, 1]
+# rule bounds each route at the slope its own terms declare. Anything else fails closed.
+STAGE_READ_ABSENT = ("rates", "stage_term", "material_term", "bound_rate")
+SOURCE_ABSENT = (
+    "stage_term",
+    "material_term",
+    "bound_rate",
+    "held_rows",
+    "stage_read",
+    "stage_check",
+    "ledger_terms",
+)
 # @3's step for an empty tableau (surface_pump_v3.checked_step). Every other solver steps with
 # imex_step, whose per-stage rule holds a compartment's node, and only those solvers' step checks
 # hold B7's and the kinds' definition-time terms (surface_pump_v3.StepChecks). Refusal 4 admits
@@ -182,26 +199,96 @@ def capacitor_components(model):
     return {name: root(name) for name in parent}
 
 
+def held_terms(kind, law_id):
+    """The step terms a move under `law_id` by `kind` has: those of CHARGE_TERMS and
+    MATERIAL_TERMS that the law declares in the active law registry and that the kind moving it
+    holds by its hook of the same name, with the reason when there are none. Read by law ID, so a
+    planted kind that reuses a law's ID (FR-4's K2) is admitted on the law's declaration only where
+    it keeps the hooks the law names. A move with no law ID, an unregistered law and a law another
+    kind hosts have none (fails closed)."""
+    if law_id is None:
+        return (), "names no law (a moved row without a law ID)"
+    laws = law_registry.active()
+    if law_id not in laws:
+        return (), "is not a registered law"
+    law = laws.lookup(law_id)
+    host = kind_registry.qualified(law.host)
+    if host != kind_registry.qualified(kind.kind_id):
+        return (), f"is hosted by {host}, whose hooks hold its terms"
+    declared = [t for t in (*CHARGE_TERMS, *MATERIAL_TERMS) if getattr(law, t, None)]
+    held = tuple(t for t in declared if getattr(kind, t, None) is not None)
+    if not declared:
+        return held, "declares no step term"
+    holds = ", ".join(held) or "none"
+    return held, f"declares {', '.join(declared)}, of which its kind holds {holds}"
+
+
+def refuse_kind_moves(model, node, kind_id, declaration):
+    """Refusal 4's kinds, per move (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4): every
+    row the kind moves at the compartment's node is held by its law's declared step term (a
+    charged row by a charge slope, a neutral row by a material slope or a definition-time bound);
+    a kind that declares no moved rows is admitted as a stage read or a source, by its hooks."""
+    kind = kind_registry.active().lookup(kind_id)
+    if kind.moved_rows is None:
+        if kind.stage_read is not None:  # A stage read, which declares its rows.
+            wrong = [f"has {h}" for h in STAGE_READ_ABSENT if getattr(kind, h) is not None]
+            if kind.stage_rows is None:
+                wrong.append("declares no stage_rows for its stage read")
+        else:  # A source.
+            wrong = [f"has {h}" for h in SOURCE_ABSENT if getattr(kind, h) is not None]
+        if wrong:
+            raise ConfigError(
+                f"{LAW_ID}: compartment {node!r} is declared with the kind {kind_id}, which "
+                "declares no moved rows, so version 1.3 admits it only as a stage read (its "
+                f"stage_rows declared, and none of {', '.join(STAGE_READ_ABSENT)}) or a source "
+                f"(none of {', '.join(SOURCE_ABSENT)}); it {' and '.join(wrong)}, so its moves "
+                "at the compartment's node cannot be placed (fails closed)"
+            )
+        return
+    valence = dict(zip(model.species_ids, model.valence, strict=True))
+    for entry in kind.moved_rows(declaration):
+        species, at, law = (*entry, None) if len(entry) == 2 else entry
+        if at != node:
+            continue
+        charged = valence[species] != 0
+        need = CHARGE_TERMS if charged else MATERIAL_TERMS
+        terms, why = held_terms(kind, law)
+        if not set(terms) & set(need):
+            raise ConfigError(
+                f"{LAW_ID}: compartment {node!r}: the kind {kind_id} moves "
+                f"{'the charged' if charged else 'the neutral'} row {species} at its node under "
+                f"{law or 'no law'}, which {why}; version 1.3 admits a move at a compartment's "
+                "node only where its law declares, and its kind holds, "
+                + (
+                    "a charge slope (stage_term), which the per-stage rule holds there"
+                    if charged
+                    else "a material slope (material_term) or a definition-time bound (bound_rate)"
+                )
+                + " (fails closed)"
+            )
+
+
 def refuse_ion_routes(model, node, bounding, imex):
-    """Refusal 4 (version 1.2, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1 and §3.4.2), the charged
-    door: on the bounding patch @3's Na/K or Ca pump and channel populations are refused, and a
-    constant-field permeability unless the world declares kinds (only then does the per-stage
-    rule hold the compartment's node); a declared kind outside KNOWN_KINDS (ROUTE_KINDS,
-    READ_KINDS and the routing door's FACTOR_KINDS) is refused, since its routes may cross the
-    patch (fails closed). `imex` is whether @3 steps with an IMEX tableau: under RK4 neither the
-    per-stage rule nor the definition-time terms run, so no declared kind is admitted beside a
-    compartment and version 1's refusal stands."""
+    """Refusal 4 (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1, §3.4.2 and §3.4.4), the
+    charged door. @3's own routes keep version 1.2's rule: on the bounding patch @3's Na/K or Ca
+    pump and channel populations are refused, and a constant-field permeability unless the world
+    declares kinds (only then does the per-stage rule hold the compartment's node); that refusal's
+    message is version 1.2's, byte for byte, since FR-1's judged refusal record holds it. `imex`
+    is whether @3 steps with an IMEX tableau: under RK4 neither the per-stage rule nor the
+    definition-time terms run, so no declared kind is admitted beside a compartment and version
+    1's refusal stands. With an IMEX tableau each declared kind is checked per move
+    (refuse_kind_moves), in canonical kind order."""
     kinds = [kind_id for kind_id, _ in getattr(model, "kinds", ())]
     pumps = [p.id for p in (bounding.pump, bounding.calcium_pump) if p is not None]
     channels = [c.id for c in model.channels if c.membrane_id == bounding.id]
     if pumps or channels:
         raise ConfigError(
             f"{LAW_ID}: the bounding patch {bounding.id!r} of compartment {node!r} carries an ion "
-            f"route version 1.2 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
+            f"route refusal 4 refuses there, {', '.join(pumps + channels)} (a Na/K or Ca pump, "
             "or a channel population): the per-stage rule does not hold its slope at the "
             "compartment's node (a pump's slope is in no per-stage term, a channel's gating "
-            "slope neither), so on a bounding patch version 1.2 admits only @3's constant-field "
-            "permeability and the known kinds' routes"
+            "slope neither), so on a bounding patch refusal 4 admits only @3's constant-field "
+            "permeability and the kinds' moves that their laws' step terms hold"
         )
     if any(v != 0.0 for v in bounding.permeability_m_per_s) and not kinds:
         raise ConfigError(
@@ -214,19 +301,13 @@ def refuse_ion_routes(model, node, bounding, imex):
     if kinds and not imex:
         raise ConfigError(
             f"{LAW_ID}: compartment {node!r} is declared with kinds in a world that steps with "
-            "RK4. Version 1.2 admits kinds and a constant-field permeability on a bounding patch "
+            "RK4. Refusal 4 admits kinds and a constant-field permeability on a bounding patch "
             "only with an IMEX tableau, whose per-stage rule and definition-time bound terms hold "
             "the compartment's node; an RK4 step runs neither, so version 1's refusal stands "
             "(fails closed)"
         )
-    unknown = sorted(k for k in kinds if k not in KNOWN_KINDS)
-    if unknown:
-        raise ConfigError(
-            f"{LAW_ID}: compartment {node!r} is declared with the kind(s) {', '.join(unknown)}, "
-            "which refusal 4 does not know: a kind's routes may cross its bounding patch "
-            f"{bounding.id!r}, so version 1.2 admits only {', '.join(KNOWN_KINDS)} "
-            "(fails closed)"
-        )
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        refuse_kind_moves(model, node, kind_id, declaration)
 
 
 def refuse_charge_anchor(node, compartment, kinds=False, imex=False):
@@ -442,10 +523,11 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "refusal 4 version 1.2, refusal 5 version 1.1: a held-bath topology at a fixed "
-                "volume; on a bounding patch no ion route but refusal 4's admitted ones (the "
-                "known kinds' routes, and @3's permeabilities when the world declares kinds, with "
-                "an IMEX step), and a zero charge anchor except in those same worlds; owners are "
-                "never replaced, used as donors or divided"
+                "refusal 4 version 1.3, refusal 5 version 1.1: a held-bath topology at a fixed "
+                "volume; on a bounding patch no ion route but refusal 4's admitted ones (@3's "
+                "permeabilities, and the kinds' moves at the compartment's node, each held by a "
+                "step term its law declares, when the world declares kinds, with an IMEX step), "
+                "and a zero charge anchor except in those same worlds; owners are never replaced, "
+                "used as donors or divided"
             ),
         }
