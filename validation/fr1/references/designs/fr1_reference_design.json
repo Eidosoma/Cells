@@ -1,0 +1,588 @@
+{
+ "kind": "fr1-references design@1",
+ "registered": "2026-11-17",
+ "status": "registered before any engine output; the references are code-blind",
+ "inputs": {
+  "path": "validation/fr1/references/reference_inputs.json",
+  "source": "branch fr1-protocol, commit 2305446b (amended inputs; registered first at f78dacb9), validation/closed_compartment/reference_inputs.json (copied byte for byte)",
+  "git_blob": "3c875823c6bca584b49bc198ca4bd04e83fd3a96"
+ },
+ "constants": {
+  "faraday_C_per_mol": "96485.3321233100184",
+  "gas_constant_J_per_mol_K": "8.31446261815324",
+  "RT_pJ_per_fmol_at_310K": "2.5774834116275044"
+ },
+ "min_margin": 10.0,
+ "settled_readings": [
+  {
+   "reading": "1. A.4's comparison 'to rounding'",
+   "settled": "the inputs fix the plan S(h) = E(h/2) I(h) E(h/2), S(dt/2) twice per step (convention 6). The floor is the float64 moved-form iteration's distance from the 50-digit map; the registered rounding allowance is 4 ulps of N per stage, accumulated (power.C4_step_map)"
+  },
+  {
+   "reading": "2. A.5's units",
+   "settled": "the inputs declare a = 2.0000000000000004e-4 fmol/s = A V_max with V_max in fmol/s/m^2, and b = 5e-4 fmol = K_M V_o; both are used as declared and checked against their parameters to 1e-14"
+  },
+  {
+   "reading": "3. A.7's standard potentials",
+   "settled": "C7 declares none, and R_energy does not ask for C7's energy: no reaction work is computed"
+  },
+  {
+   "reading": "4. A.8's face",
+   "settled": "C8 declares no face to a bath: the uptake path is the closed three-node chain"
+  },
+  {
+   "reading": "5. A.9's orientation",
+   "settled": "the inputs' R_capacitor names V_b = phi_i - phi_j and V_pm = phi_i - phi_b, as this package computes them"
+  },
+  {
+   "reading": "6. A declared rate beside its parameters",
+   "settled": "kappa_per_s is used as declared (19.999999999999996 and 1.9999999999999998, the doubles of 1e15 k_u A/V) and checked against 1e15 k_u A/V of the import's source to 1e-14; a mismatch is refused"
+  },
+  {
+   "reading": "7. The splitting term",
+   "settled": "the fixed point's relative displacement x*/x_eq - 1 = -a(a + 2b) dt^2/96 (\u00a72.3, the design's wording since 4adb6fed; the inputs' returns line names it since 2305446b). It meets the leading term at ratio 1 - O(dt); the absolute displacement x* - x_eq = x_eq times it is returned beside it"
+  },
+  {
+   "reading": "8. C7's moiety",
+   "settled": "S + P over the cytosol's S and the compartment's S and P; P's cytosolic row is untouched and is reported as its own constant"
+  },
+  {
+   "reading": "9. Energy along a trajectory",
+   "settled": "dG(t) is the change of G over the two nodes the law touches, evaluated per node as a stable increment from the declared start, in decimals, with RT = 1e-3 R T pJ/fmol from the exact SI R"
+  }
+ ],
+ "claims": {
+  "C3 (A.2)": {
+   "quantity": "each node's S at every record time, flux and first-order loading",
+   "reference": "exact rationals (flux); 50-digit decimals (first-order)",
+   "second_method": "float64 with expm1",
+   "tolerance_basis": "the engine equals the closed form to rounding: the registered allowance is 8 ulps of the total amount per step, accumulated (power.C3_C4_C5_closed_forms)"
+  },
+  "C4 (A.3, A.4)": {
+   "quantity": "each node's S at every record time; x_eq; at each rung the map's x*, x(t), the amounts, and the splitting term",
+   "reference": "A.3 in decimals; A.4's map iterated in 50-digit decimals",
+   "second_method": "SciPy expm (A.3); the float64 moved-form iteration (A.4)",
+   "tolerance_basis": "against the closed form: the dt study's tolerance, which an honest map meets at its own O(dt^2) distance (power.C4_step_map.per_rung.honest_map_vs_closed_form_fmol); against the map: rounding, 4 ulps of N per stage; the splitting term: the relative displacement over -a(a + 2b) dt^2/96 = 1 - O(dt)"
+  },
+  "C5 (A.5)": {
+   "quantity": "each node's S at every record time",
+   "reference": "Newton on the implicit form in 50-digit decimals",
+   "second_method": "Wright's omega (SciPy)",
+   "tolerance_basis": "the protocol pins it; the controls' deviations and the rounding allowance are in power.C3_C4_C5_closed_forms"
+  },
+  "C6, C7, C8 (A.6, A.7, A.8)": {
+   "quantity": "each node's S (C7's P at the compartment) at every record time; C6's cleared amount; C7's moiety",
+   "reference": "50-digit matrix exponential",
+   "second_method": "SciPy expm",
+   "tolerance_basis": "the protocol's dt study; an honest split engine's distance is bracketed by the Lie and Strang stand-ins at the declared dt, and the ceiling is the smallest control's deviation / 10 (power.C6_C7_C8_linear)"
+  },
+  "C9 (A.9)": {
+   "quantity": "V_b and V_pm from the charges",
+   "reference": "exact rationals",
+   "second_method": "NumPy's dense solve",
+   "tolerance_basis": "rounding; V_b = -q_j/C_b exactly, so a silent compartment's V_b is 0"
+  },
+  "C10, C11 (A.10)": {
+   "quantity": "dG of the nodes each law touches at every record time; G",
+   "reference": "stable per-node increments in 50-digit decimals",
+   "second_method": "float64 of the same increments",
+   "tolerance_basis": "the protocol's (RK4's absolute 2e-8 pJ, the NumPy dG test); the floor is below 1e-16 pJ"
+  }
+ },
+ "power": {
+  "C3_C4_C5_closed_forms": {
+   "C3_flux": {
+    "rounding_allowance_fmol": 4.442224454948019e-15,
+    "floor_fmol": 1.0842021724855044e-19,
+    "controls": {
+     "one_step_late": 1.0000000000005664e-07,
+     "rate_1pct": 5.000000000000013e-06,
+     "half_the_moved": 0.00025000000000000006
+    },
+    "margins": {
+     "one_step_late": 22511244.31334634,
+     "rate_1pct": 1125562215.6666825,
+     "half_the_moved": 56278110783.33399
+    }
+   },
+   "C3_first_order": {
+    "rounding_allowance_fmol": 4.442224454948019e-15,
+    "floor_fmol": 1.6263032587282567e-19,
+    "controls": {
+     "one_step_late": 4.97630636888324e-07,
+     "rate_1pct": 3.6605070507401017e-06
+    },
+    "margins": {
+     "one_step_late": 112022848.44792856,
+     "rate_1pct": 824025685.2989063
+    }
+   },
+   "C4_two_way": {
+    "rounding_allowance_fmol": 8.891555047796375e-16,
+    "floor_fmol": 2.8731357570865868e-18,
+    "controls": {
+     "one_step_late": 7.518920466801417e-06,
+     "export_1pct": 2.270973680528149e-06,
+     "kappa_on_cytosol_volume": 0.0005000448799254736
+    },
+    "margins": {
+     "one_step_late": 8456249133.457097,
+     "export_1pct": 2554079312.6967955,
+     "kappa_on_cytosol_volume": 562381807498.7922
+    }
+   },
+   "C5_saturable": {
+    "rounding_allowance_fmol": 4.446222057197246e-15,
+    "floor_fmol": 3.2526065174565133e-19,
+    "controls": {
+     "one_step_late": 1.3327700133469783e-07,
+     "rate_1pct": 4.58876934839958e-06,
+     "K_M_as_amount": 0.0004182771164886852,
+     "first_order_instead": 8.711436802572931e-05
+    },
+    "margins": {
+     "one_step_late": 29975336.2787983,
+     "rate_1pct": 1032060317.5839111,
+     "K_M_as_amount": 94074724813.08176,
+     "first_order_instead": 19592896374.735584
+    }
+   }
+  },
+  "C4_step_map": {
+   "per_rung": [
+    {
+     "dt_s": 0.001,
+     "honest_map_vs_closed_form_fmol": 3.4725509965357476e-09,
+     "rounding_allowance_fmol": 2.664801712626286e-15,
+     "floor_fmol": 2.6020852139652106e-18,
+     "controls": {
+      "lie": {
+       "vs_honest_map_fmol": 1.6689099201321056e-06,
+       "vs_closed_form_fmol": 1.6654373691355698e-06
+      },
+      "swapped": {
+       "vs_honest_map_fmol": 6.250589189358939e-09,
+       "vs_closed_form_fmol": 2.7780381928231915e-09
+      }
+     },
+     "margin_against_map_to_rounding": {
+      "lie": 626279213.2804948,
+      "swapped": 2345611.367533494
+     },
+     "splitting": {
+      "relative_displacement": -5.208305664216782e-06,
+      "absolute_displacement": -3.472203776166971e-06,
+      "leading_term": -5.208333333333333e-06,
+      "relative_over_leading": 0.9999946875296222
+     }
+    },
+    {
+     "dt_s": 0.0005,
+     "honest_map_vs_closed_form_fmol": 8.681412081183379e-10,
+     "rounding_allowance_fmol": 5.329603425252572e-15,
+     "floor_fmol": 4.662069341687669e-18,
+     "controls": {
+      "lie": {
+       "vs_honest_map_fmol": 8.33936683331698e-07,
+       "vs_closed_form_fmol": 8.330685421235797e-07
+      },
+      "swapped": {
+       "vs_honest_map_fmol": 1.562654011830894e-09,
+       "vs_closed_form_fmol": 6.945128037125561e-10
+      }
+     },
+     "margin_against_map_to_rounding": {
+      "lie": 156472558.42345858,
+      "swapped": 293202.6807898637
+     },
+     "splitting": {
+      "relative_displacement": -1.3020816040063167e-06,
+      "absolute_displacement": -8.680544026917758e-07,
+      "leading_term": -1.3020833333333333e-06,
+      "relative_over_leading": 0.9999986718768514
+     }
+    },
+    {
+     "dt_s": 0.00025,
+     "honest_map_vs_closed_form_fmol": 2.1703551824660272e-10,
+     "rounding_allowance_fmol": 1.0659206850505144e-14,
+     "floor_fmol": 4.119968255444917e-18,
+     "controls": {
+      "lie": {
+       "vs_honest_map_fmol": 4.1683844613157883e-07,
+       "vs_closed_form_fmol": 4.1662141061333223e-07
+      },
+      "swapped": {
+       "vs_honest_map_fmol": 3.906639226523845e-10,
+       "vs_closed_form_fmol": 1.7362840440578176e-10
+      }
+     },
+     "margin_against_map_to_rounding": {
+      "lie": 39105953.37699303,
+      "swapped": 36650.37447264388
+     },
+     "splitting": {
+      "relative_displacement": -3.255207252502818e-07,
+      "absolute_displacement": -2.1701381680561127e-07,
+      "leading_term": -3.255208333333333e-07,
+      "relative_over_leading": 0.9999996679688657
+     }
+    },
+    {
+     "dt_s": 0.000125,
+     "honest_map_vs_closed_form_fmol": 5.4258893168387945e-11,
+     "rounding_allowance_fmol": 2.1318413701010287e-14,
+     "floor_fmol": 2.0599841277224584e-17,
+     "controls": {
+      "lie": {
+       "vs_honest_map_fmol": 2.083867084380804e-07,
+       "vs_closed_form_fmol": 2.0833244954502044e-07
+      },
+      "swapped": {
+       "vs_honest_map_fmol": 9.766600690078869e-11,
+       "vs_closed_form_fmol": 4.3407113840820966e-11
+      }
+     },
+     "margin_against_map_to_rounding": {
+      "lie": 9774963.154421048,
+      "swapped": 4581.298039833061
+     },
+     "splitting": {
+      "relative_displacement": -8.138020157814084e-08,
+      "absolute_displacement": -5.425346771836814e-08,
+      "leading_term": -8.138020833333333e-08,
+      "relative_over_leading": 0.9999999169921947
+     }
+    }
+   ],
+   "honest_map_vs_closed_form_order": [
+    1.9999942517766274,
+    1.9999985627450387,
+    1.9999996382090808
+   ]
+  },
+  "C6_C7_C8_linear": {
+   "C6_load_and_degrade": {
+    "controls": {
+     "export_1pct": 3.6604615999189893e-06,
+     "clearance_1pct": 2.0214871073558343e-06,
+     "clearance_in_the_cytosol": 0.0003848999017597326
+    },
+    "split_stand_ins": {
+     "lie": 2.4987255890031356e-07,
+     "strang": 6.24993841944789e-11
+    },
+    "ceiling_fmol": 2.0214871073558342e-07,
+    "honest_margin": 0.8090072460346895,
+    "floor_fmol": 8.090858712173077e-18
+   },
+   "C7_load_and_react": {
+    "controls": {
+     "export_1pct": 3.6604615999189893e-06,
+     "reaction_in_the_cytosol": 0.0009030043675657208,
+     "reaction_1pct": 2.0214871073558343e-06
+    },
+    "split_stand_ins": {
+     "lie": 2.498725589064393e-07,
+     "strang": 6.249938408605868e-11
+    },
+    "ceiling_fmol": 2.0214871073558342e-07,
+    "honest_margin": 0.8090072460148563,
+    "floor_fmol": 8.17217387510949e-18
+   },
+   "C8_uptake_path": {
+    "controls": {
+     "export_1pct": 6.441101711049239e-06,
+     "uptake_1pct": 7.32092319983787e-06,
+     "kappa_on_cytosol_volume": 0.0004999766796996062
+    },
+    "split_stand_ins": {
+     "lie": 4.997451178136375e-07,
+     "strang": 7.719519468096792e-17
+    },
+    "ceiling_fmol": 6.441101711049239e-07,
+    "honest_margin": 1.2888773659718318,
+    "floor_fmol": 2.1846673775582914e-17
+   }
+  },
+  "C9_capacitor": {
+   "silent": {
+    "orientation_flipped_V": 0.0,
+    "zero_power": true
+   },
+   "charged_compartment": {
+    "orientation_flipped_V": 0.0002,
+    "zero_power": false
+   },
+   "both_charged": {
+    "orientation_flipped_V": 0.004,
+    "zero_power": false
+   }
+  },
+  "C10_C11_energy": {
+   "flux_export ARS": {
+    "max_abs_dG_pJ": 0.0002456604061087471,
+    "floor_pJ": 2.6020852139652106e-18,
+    "controls": {
+     "sign": 0.0004913208122174942,
+     "volume_dropped": 0.0005934874881052926,
+     "rounded_RT": 4.607404889383123e-08,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 188818110022150.5,
+     "volume_dropped": 228081495917230.72,
+     "rounded_RT": 17706587258.001778,
+     "dropped_minus_one": 0.107395142151146,
+     "one_molar_standard_state": 0.7418593601316158
+    }
+   },
+   "flux_export RK4": {
+    "max_abs_dG_pJ": 0.00013399669054115474,
+    "floor_pJ": 6.505213034913027e-19,
+    "controls": {
+     "sign": 0.0002679933810823095,
+     "volume_dropped": 0.00011869749762105853,
+     "rounded_RT": 2.513131916289261e-08,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 411967109522789.8,
+     "volume_dropped": 182465196733784.6,
+     "rounded_RT": 38632584402.71604,
+     "dropped_minus_one": 0.429580568604584,
+     "one_molar_standard_state": 2.967437440526463
+    }
+   },
+   "first_order_export ARS": {
+    "max_abs_dG_pJ": 0.0006075693967311398,
+    "floor_pJ": 1.0408340855860843e-17,
+    "controls": {
+     "sign": 0.0012151387934622795,
+     "volume_dropped": 0.0023351913041359577,
+     "rounded_RT": 1.139507278962743e-07,
+     "dropped_minus_one": 2.7508488470188914e-19,
+     "one_molar_standard_state": 1.900219064467667e-18
+    },
+    "margins_over_floor": {
+     "sign": 116746637172056.67,
+     "volume_dropped": 224357689325771.12,
+     "rounded_RT": 10948020388.101498,
+     "dropped_minus_one": 0.026429273263758588,
+     "one_molar_standard_state": 0.1825669519073898
+    }
+   },
+   "first_order_export RK4": {
+    "max_abs_dG_pJ": 0.0002456604060619707,
+    "floor_pJ": 2.8189256484623115e-18,
+    "controls": {
+     "sign": 0.0004913208121239414,
+     "volume_dropped": 0.0005647780173145238,
+     "rounded_RT": 4.6074048885058236e-08,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 174293639987259.22,
+     "volume_dropped": 200352221997271.56,
+     "rounded_RT": 16344542081.197157,
+     "dropped_minus_one": 0.09913397737028862,
+     "one_molar_standard_state": 0.6847932555061068
+    }
+   },
+   "saturable_import ARS": {
+    "max_abs_dG_pJ": 0.001769976925707227,
+    "floor_pJ": 3.3610267347050637e-18,
+    "controls": {
+     "sign": 0.003539953851414454,
+     "volume_dropped": 0.0007729242494383953,
+     "rounded_RT": 3.319623406463308e-07,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 1053235850480401.2,
+     "volume_dropped": 229966706737969.72,
+     "rounded_RT": 98768134516.32991,
+     "dropped_minus_one": 0.08314462618153239,
+     "one_molar_standard_state": 0.5743427304244767
+    }
+   },
+   "saturable_import RK4": {
+    "max_abs_dG_pJ": 0.00047336382015545535,
+    "floor_pJ": 7.318364664277155e-19,
+    "controls": {
+     "sign": 0.0009467276403109107,
+     "volume_dropped": 0.0001575536435024811,
+     "rounded_RT": 8.878023178370304e-08,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 1293632776912764.5,
+     "volume_dropped": 215285314042277.06,
+     "rounded_RT": 121311571445.82108,
+     "dropped_minus_one": 0.3818493943151858,
+     "one_molar_standard_state": 2.637722169356856
+    }
+   },
+   "first_order_import ARS": {
+    "max_abs_dG_pJ": 0.006153402809455807,
+    "floor_pJ": 1.9949319973733282e-17,
+    "controls": {
+     "sign": 0.012306805618911613,
+     "volume_dropped": 0.005131676908051769,
+     "rounded_RT": 1.1540817114044918e-06,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 616903515263459.9,
+     "volume_dropped": 257235680955967.75,
+     "rounded_RT": 57850679267.46572,
+     "dropped_minus_one": 0.014008062019714695,
+     "one_molar_standard_state": 0.09676426436499336
+    }
+   },
+   "first_order_import RK4": {
+    "max_abs_dG_pJ": 0.0035906094026124857,
+    "floor_pJ": 1.0408340855860843e-17,
+    "controls": {
+     "sign": 0.007181218805224971,
+     "volume_dropped": 0.001956609277569769,
+     "rounded_RT": 6.734252205924661e-07,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 689948465819246.5,
+     "volume_dropped": 187984742685287.84,
+     "rounded_RT": 64700534880.471985,
+     "dropped_minus_one": 0.0268487855377865,
+     "one_molar_standard_state": 0.18546484003290395
+    }
+   },
+   "C6_load_and_degrade": {
+    "max_abs_dG_pJ": 0.01793066973302879,
+    "floor_pJ": 1.0191500421363742e-17,
+    "controls": {
+     "sign": 0.03586133946605758,
+     "volume_dropped": 0.0014832597993068221,
+     "rounded_RT": 3.362929204037054e-06,
+     "dropped_minus_one": 0.0023274787780278305,
+     "one_molar_standard_state": 0.01607765381564064
+    },
+    "margins_over_floor": {
+     "sign": 3518749740802043.0,
+     "volume_dropped": 145538903790610.3,
+     "rounded_RT": 329973906196.14526,
+     "dropped_minus_one": 228374496570583.16,
+     "one_molar_standard_state": 1577555134270333.5
+    }
+   },
+   "C3_flux": {
+    "max_abs_dG_pJ": 0.0011833151473475585,
+    "floor_pJ": 8.239936510889834e-18,
+    "controls": {
+     "sign": 0.002366630294695117,
+     "volume_dropped": 0.0029674374405264637,
+     "rounded_RT": 2.2193287399992316e-07,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 287214627390320.0,
+     "volume_dropped": 360128677764048.56,
+     "rounded_RT": 26933808738.2856,
+     "dropped_minus_one": 0.03391425541615137,
+     "one_molar_standard_state": 0.23427137688366814
+    }
+   },
+   "C3_first_order": {
+    "max_abs_dG_pJ": 0.00471874711989847,
+    "floor_pJ": 1.474514954580286e-17,
+    "controls": {
+     "sign": 0.00943749423979694,
+     "volume_dropped": 0.005447710684608685,
+     "rounded_RT": 8.850094688176377e-07,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 640040591686184.8,
+     "volume_dropped": 369457811715402.5,
+     "rounded_RT": 60020379316.50219,
+     "dropped_minus_one": 0.018952083909025766,
+     "one_molar_standard_state": 0.13091635767028514
+    }
+   },
+   "C4_two_way": {
+    "max_abs_dG_pJ": 0.00033975890935591946,
+    "floor_pJ": 5.204170427930421e-18,
+    "controls": {
+     "sign": 0.0006795178187118389,
+     "volume_dropped": 0.0019778959686920536,
+     "rounded_RT": 6.372239161263042e-08,
+     "dropped_minus_one": 1.3972565572159448e-19,
+     "one_molar_standard_state": 9.651906359200848e-19
+    },
+    "margins_over_floor": {
+     "sign": 130571784326069.33,
+     "volume_dropped": 380059799363376.56,
+     "rounded_RT": 12244485935.863432,
+     "dropped_minus_one": 0.0268487855377865,
+     "one_molar_standard_state": 0.18546484003290395
+    }
+   },
+   "C5_saturable": {
+    "max_abs_dG_pJ": 0.005144344226654994,
+    "floor_pJ": 1.0842021724855044e-17,
+    "controls": {
+     "sign": 0.010288688453309987,
+     "volume_dropped": 0.003404821392378536,
+     "rounded_RT": 9.648309680017302e-07,
+     "dropped_minus_one": 2.7945131144318896e-19,
+     "one_molar_standard_state": 1.9303812718401697e-18
+    },
+    "margins_over_floor": {
+     "sign": 948964013761699.5,
+     "volume_dropped": 314039344209491.3,
+     "rounded_RT": 88989949705.58684,
+     "dropped_minus_one": 0.02577483411627504,
+     "one_molar_standard_state": 0.17804624643158778
+    }
+   }
+  }
+ },
+ "zero_power": [
+  {
+   "control": "a dropped -1, or a 1 M standard state, in A.10's dG, in every world but C6",
+   "why": "those worlds move S between two nodes, so sum dn = 0 and both shifts vanish",
+   "remedy": "given power in C6 (amendment 2305446b): its clearance removes S from both nodes (power.C10_C11_energy.C6_load_and_degrade)"
+  },
+  {
+   "control": "V_b's orientation",
+   "why": "a silent compartment has q_j = 0, so V_b = 0 either way",
+   "remedy": "a charged compartment (q_j != 0), which version 1 refuses"
+  },
+  {
+   "control": "the swapped palindrome against the closed form (C4)",
+   "why": "its O(dt^2) distance is the honest map's size",
+   "remedy": "the comparison with the iterated map to rounding, which C4 makes"
+  },
+  {
+   "control": "the halves plan against the single plan (A.4)",
+   "why": "they are one map in exact arithmetic",
+   "remedy": "none needed: not an error"
+  }
+ ],
+ "notes": [
+  "C6 to C8 at the declared 1 ms: a first-order (Lie) split of exchange and clearance, reaction or uptake errs by about 2.5e-7 fmol, near a 1% rate error's 2e-6/10; a second-order (Strang) split errs by about 6e-11. So a rate error is caught with margin 10 at 1 ms only if the engine's split is second order. A dt study separates the two: the split error falls with dt, a rate error does not (power.C6_C7_C8_linear).",
+  "C4: the swapped palindrome I(h/2) E(h) I(h/2) lies 2.8e-9 fmol from the closed form at 1 ms, within the honest map's own 3.5e-9: it is caught only by the comparison with the map to rounding (margin 2.3e6 at 1 ms, 4.6e3 at 0.125 ms), not by the closed form at a dt-study tolerance.",
+  "C10 and C11: Appendix A's rounded RT moves dG by 2.5e-8 to 1.2e-6 pJ, so against RK4's absolute 2e-8 pJ its margin is 1 to 60 (power.C10_C11_energy).",
+  "The registered values keep every k-th record of long arrays and the last, and each floor's largest value; the API returns every record and every floor.",
+  "Amendment 2305446b gave power to two of the registration's zero-power cases: kappa on the wrong volume in C8 (ecs_e is now 2 pL against the cytosol's 1 pL) and a dropped -1 or a 1 M standard state in dG (C6 with its clearance joins R_energy)."
+ ]
+}
