@@ -76,7 +76,7 @@ already supports that continuation. The first observed row is at t0 and the last
 - **Refusal:** the caller declares a tolerance. Above it the writer refuses the loop block, so a
   run that does not close is never labelled a loop.
 
-## 3. What the writer adds (`src/cells/run_view.py`, host only)
+## 3. What the writer adds (`src/cells/records/run_view.py`, host only)
 
 - **`run_view.Loop(species, cell, period, tolerance, follows=())` in the Request.**
   - `species` is the caller's label: the viewer's ids are its own, and the engine checks only that

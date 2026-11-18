@@ -336,7 +336,7 @@ setup failure and resolve the environment explicitly.
 ### Preliminary source mapping
 
 Read-only inspection identifies pinned [`electroflux`](https://github.com/betsee/betse/blob/5269a714aa2593ed2a6708c4516289977d8ae1a2/betse/science/sim_toolbox.py)
-as a candidate counterpart to Cells' [`ghk_leak`](../src/cells/processes/electrochemistry.py).
+as a candidate counterpart to Cells' [`ghk_leak`](../src/cells/laws/electrochemistry.py).
 REF-003a has now checked this mapping in direct function calls, including
 area/thickness scaling and separate native/matched constants; it remains a
 component mapping, not a full-model equivalence statement.

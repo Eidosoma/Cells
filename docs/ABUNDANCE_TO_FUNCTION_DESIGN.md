@@ -111,7 +111,7 @@ CURRENT_PLAN's gate "a closed molecular-to-physiology loop":
 
 | Piece | What it is | Where |
 | --- | --- | --- |
-| Units of a channel population | N per population, as anchored increments, with the ledger `population_abundance_entity` and the domain N ≥ 0 | `models/operators/membrane_state.py`:151 **(code)** |
+| Units of a channel population | N per population, as anchored increments, with the ledger `population_abundance_entity` and the domain N ≥ 0 | `operators/membrane_state.py`:151 **(code)** |
 | Its abundance-to-function relation | The view's `channel_abundance` = a₀A₀/A + dN/(A ρ_ref). So @3's conductance P a A = P N/ρ_ref is linear in units at any area: "A fixed number of units keeps its conductance ... whatever the area" | `membrane_state.py`:12–15, :158 **(code)** |
 | Writers of units | Insertion@1 and @2, dN = ρ r h with their area; the partition, by the patch's fraction | `membrane_insertion.py`:407; `partition.py`:24–26 **(code)** |
 | Removers of units | None: insertion refuses a negative rate | `membrane_insertion.py`:198 **(code)** |
@@ -119,7 +119,7 @@ CURRENT_PLAN's gate "a closed molecular-to-physiology loop":
 | A rate route to another operator's control | Designed in the coupling note's §2.1. Not built: no `ROUTABLE_CONTROLS` anywhere in `src/` | **(code)** |
 | A population-abundance source | Recorded as a door of the coupling note's §1.3. Not built | Coupling §7.2 item 4 |
 | Production | `scheduled_species_turnover@1`: a scheduled P (fmol/s) of a neutral species at a cell, with exact half-steps and signed work | `species_turnover.py`:1–30 **(code)** |
-| Junction abundance | `delayed_first_order_junction_formation@1`: A = 1 − (1 − A₀) e^(−max(0, age − lag)/τ), "a modelling choice loosely consistent with the cited time courses, not a fit". Replacement@1 owns it, and it multiplies the junction's availability | `processes/junction_formation.py`:1–25; `cell_replacement.py`:28–31 **(code)** |
+| Junction abundance | `delayed_first_order_junction_formation@1`: A = 1 − (1 − A₀) e^(−max(0, age − lag)/τ), "a modelling choice loosely consistent with the cited time courses, not a fit". Replacement@1 owns it, and it multiplies the junction's availability | `laws/junctions/junction_formation.py`:1–25; `cell_replacement.py`:28–31 **(code)** |
 | Mobile surface populations | `resolved_redistribution@1`, neutral leak populations whose "local permeability is background + reference permeability × local density / reference density", and `@2`, Na/K ATPase populations. Both live on fixed patches with lateral drift and diffusion, and their law performs "No synthesis, removal, membrane crossing" | `legacy/models/surface_redistribution.py`:1–7; `legacy/numerics/membrane_redistribution.py`:1–10 **(code)** |
 
 **Two walls bear on every candidate (code):**
@@ -193,7 +193,7 @@ which changes a response.
    division, where the partition splits units, and owned by the occupant at replacement, so a
    newcomer arrives without it.
 7. **A horizon of several lifetimes.**
-   - Connexin half-lives of 1.3–5 h are cited in `processes/junction_formation.py` (Beardslee et al.
+   - Connexin half-lives of 1.3–5 h are cited in `laws/junctions/junction_formation.py` (Beardslee et al.
      1998; Fallon and Goodenough 1981; not read for this note).
    - At 1 ms that is about 4.7–18 million steps per half-life (**S**: 3.6 million steps per hour).
    - So a judged run at measured lifetimes waits for FR-8. A first numerical acceptance uses
@@ -265,10 +265,10 @@ which changes a response.
 
   | File | Change | Owner in the pass |
   | --- | --- | --- |
-  | `models/operators/contract.py` | `ROUTABLE_CONTROLS`, and the routed control passed to a target's half-steps | Operators owner |
+  | `operators/contract.py` | `ROUTABLE_CONTROLS`, and the routed control passed to a target's half-steps | Operators owner |
   | `models/pump_composite*.py` | Routes wired at build; a route to an undeclared control refused; the per-operator static branch | Operators owner |
-  | `models/operators/species_turnover.py`, `species_reactions.py` | Their routable controls declared | Operators owner |
-  | `models/operators/species_regulated_availability.py` | The `operator` target in the declaration | Not in the pass ("named, not edited by the pass") |
+  | `operators/species_turnover.py`, `species_reactions.py` | Their routable controls declared | Operators owner |
+  | `operators/species_regulated_availability.py` | The `operator` target in the declaration | Not in the pass ("named, not edited by the pass") |
 
 - **What the note found.** D216 assigned "FR-6's routing door" to seam B1. But B1's operator part,
   as CORE_SEAMS §13 and STEP0 §4.2 wrote it, is lifecycle by roles, refusal 4 per move, and the
@@ -371,6 +371,6 @@ which changes a response.
 ## Sources
 
 - The code, read at main 5133a850, as cited.
-- Connexin half-lives: as cited in `src/cells/processes/junction_formation.py`. The papers were not
+- Connexin half-lives: as cited in `src/cells/laws/junctions/junction_formation.py`. The papers were not
   read for this note.
 - No web search was made, and no external file was fetched.

@@ -25,7 +25,7 @@ Check actual local clocks in the snapshot before choosing future interventions;
 a round is not a common-time snapshot. The two example worlds happen to share
 early grid points, but this is not a general guarantee.
 
-Python APIs live in `cells.core.batch_windows`:
+Python APIs live in `cells.execution.batch_windows`:
 
 - `plan_batch_windows(spec, policy, checkpoints=None)` validates before execution.
 - `run_batch_windowed(spec, policy, checkpoints=None, sink=None)` returns final
@@ -34,8 +34,8 @@ Python APIs live in `cells.core.batch_windows`:
   read-only numerical windows; `checkpoints` always contains the complete cohort.
   A terminal world participates once if already finished at the start, then is
   omitted from later `worlds` mappings while its checkpoint remains unchanged.
-- `cells.batch_window_io.write_windowed_batch(...)` runs and records incrementally.
-  `cells.batch_io.load_batch_snapshot(...)` restores both ordinary and windowed
+- `cells.records.batch_window_io.write_windowed_batch(...)` runs and records incrementally.
+  `cells.records.batch_io.load_batch_snapshot(...)` restores both ordinary and windowed
   cohort checkpoints under the same strict source/runtime checks.
 
 Retaining yielded rounds or accumulating them in a sink defeats bounded storage.

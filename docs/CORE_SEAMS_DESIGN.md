@@ -86,13 +86,13 @@ Three questions are marked for the user.
 
 **Duplication already in the code** (code):
 - **Closed lists that a new piece must edit:**
-  - the transporter's and the passive routes' law tuples (`models/inner_kinds/transporter.py`:100,
+  - the transporter's and the passive routes' law tuples (`kinds/transporter.py`:100,
     `passive_routes.py`:72 [`kinds/`]);
   - @3's channel table and the spec's codes, permeant ions and gate counts
-    (`models/inner_laws.py`:132–170; `core/surface_pump_v3_spec.py`:56–66 [`definitions/`]);
-  - the operators' dictionary (`models/operators/__init__.py`:29–52 [`operators/`]);
-  - refusal 4's known kinds (`models/operators/compartments.py`:73–81 [`operators/`]).
-- **Meaning keyed on a field-name suffix:** the heat and work roles (`models/operators/contract.py`:11–15),
+    (`models/inner_laws.py`:132–170; `definitions/surface_pump_v3_spec.py`:56–66 [`definitions/`]);
+  - the operators' dictionary (`operators/__init__.py`:29–52 [`operators/`]);
+  - refusal 4's known kinds (`operators/compartments.py`:73–81 [`operators/`]).
+- **Meaning keyed on a field-name suffix:** the heat and work roles (`operators/contract.py`:11–15),
   the dissipation check (`models/surface_pump_v3.py`:1713, 1735–1742) and the run view's
   monotone note (`run_view.py`:200, 1678 [`records/`]).
 - **The same physics written in each kind:**
@@ -107,7 +107,7 @@ Three questions are marked for the user.
   - one transporter per patch (`transporter.py`:245–249), the fuel node fixed to the inside cell
     (:188–192), and a stoichiometry of 1 to 4 (:118);
   - one stage read (`proton_buffer.py`:64);
-  - every two-form row inert (`core/species_registry.py`:369–397 [`registry/`]);
+  - every two-form row inert (`registry/species_registry.py`:369–397 [`registry/`]);
   - no closer beside a kind (`models/pump_composite.py`:594–598), and no operator factor on a
     kind's control (:610–615).
 - **Two ways to scale channel availability:** operators' `CONTROL_FACTORS`
@@ -201,7 +201,7 @@ Three questions are marked for the user.
 - **The law supplies the kinetics:** a pure kernel S_m(activities, V, parameters) ≥ 0. The kind
   forms J_m = k a S_m (1 − e^{ΔG_m/RT}).
   - Then J_m ΔG_m ≤ 0 at every state, and J_m = 0 exactly at each mode's equilibrium (**S**).
-  - This is the form of FR-4's pumps (`processes/proton_pump.py` [`laws/pumps/`]).
+  - This is the form of FR-4's pumps (`laws/pumps/proton_pump.py` [`laws/pumps/`]).
   - Hill's diagram method writes a steady-state cycle's net flux as such a product, with a
     non-negative factor (Sources).
 - **A screen item, not yet a claim.** Whether ORd's exchanger (after Kang and Hilgemann) and its
@@ -216,7 +216,7 @@ Three questions are marked for the user.
   - a cycle that fails is refused, never repaired (cardiac §3.6).
 - **A law with an implied ΔG° of its own** (ORd's Na⁺/K⁺ rate constants, C3) declares it. E's
   check refuses one that disagrees with the registry (§7.1).
-- **The domain:** |ΔG_m/RT| ≤ 80 per mode, as today (`processes/proton_pump.py`:30). A law may
+- **The domain:** |ΔG_m/RT| ≤ 80 per mode, as today (`laws/pumps/proton_pump.py`:30). A law may
   declare the one-sided form, a ≤ 80, for strongly exergonic modes (mitochondria §1.4), as a
   declared change.
 - **Charge and moieties, checked at parse:**
@@ -306,7 +306,7 @@ Three questions are marked for the user.
 - **@3's channel populations already are one:**
   - their host, abundance, law code and availability (`control.channel`) are layout and control;
   - their gates, transfers and heat are state;
-  - the partition maps them, each taking its patch's fraction (`models/operators/partition.py`:7–8;
+  - the partition maps them, each taking its patch's fraction (`operators/partition.py`:7–8;
     retirement :30).
 - **The pass makes the kinds' populations the same concept (**S**).** Each entity of a kind declares
   its host through a structural field, a host index. So the adapter's closure, which propagates
@@ -442,7 +442,7 @@ nodes (**S**).
   Charge depends on totals only, so the field solve stays exact as it stands (FR-4's §3
   argument).
 - **The solve, at every stage:**
-  - one ligand: B4's log-space bisection, 80 fixed steps (`processes/rapid_proton_buffer.py`:46
+  - one ligand: B4's log-space bisection, 80 fixed steps (`laws/reactions/rapid_proton_buffer.py`:46
     [`laws/reactions/`]);
   - two or more: a safeguarded Newton with a fixed iteration count (**S**), deterministic on the
     device, with no loop count that depends on data.
@@ -500,7 +500,7 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
 - **Selection.**
   - Each law declares the bookings it admits.
   - The definition picks one per mover class: channels, junctions, and each kind's routes. This
-    generalises `junction_heat_booking` (`core/surface_pump_v3_spec.py`:53).
+    generalises `junction_heat_booking` (`definitions/surface_pump_v3_spec.py`:53).
   - The default is the tableau, so a world that picks none keeps its programs.
 - **The trapezoid and the exact booking answer different problems (**S**).**
   - The trapezoid keeps every element non-negative when a flux reverses within a step: channels at
@@ -519,7 +519,7 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
 ### 6.2 The trapezoid, written once
 
 - **The gap.** The kind hook `book(applied, start, end, control, p, dt)` receives no potentials
-  (`core/kind_registry.py`:252–259 [`registry/`]), so a kind cannot evaluate its power at the end
+  (`registry/kind_registry.py`:252–259 [`registry/`]), so a kind cannot evaluate its power at the end
   state.
 - **The core does it once (**S**).** For each mover class booked by the trapezoid, after the tableau's
   combination:
@@ -691,7 +691,7 @@ with its citation in our own words. Its fields (**S**):
     geometry cluster;
   - so the frozen families' bits and tests are unaffected.
 - **Six files keep their bytes.** The lead's ruling for move 2 (SOURCE_LAYOUT_MOVES_DESIGN §17
-  item 2, main cbc52577) keeps `processes/electrochemistry.py`, `numerics/fixed_step.py`,
+  item 2, main cbc52577) keeps `laws/electrochemistry.py`, `numerics/fixed_step.py`,
   `numerics/extracellular_field.py` and the three package `__init__` files byte for byte. The pass
   edits none of them, and the surface (§8.5) re-exports R, F and `scatter` from them by import.
 - **The declarations leave `inner_laws.py`'s central tables** and join their laws' modules.
@@ -718,7 +718,7 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
 - **One registry, in sections by interface (**S**):** laws, kinds, operators and models, each keyed by
   namespaced ID.
 - **Operators register the way kinds do:**
-  - the `OPERATORS` dictionary (`models/operators/__init__.py`:29–52) becomes a section filled from
+  - the `OPERATORS` dictionary (`operators/__init__.py`:29–52) becomes a section filled from
     the built-in package;
   - `check_declarations` runs at registration;
   - built in the pass.
@@ -729,14 +729,14 @@ SOURCE_LAYOUT_MOVES_DESIGN §6 leaves D185's registration tables to this pass.
     operator homes, declared interfaces, runner and, for a composition, its inner model and
     operators. The registries load every home from it, and a static scan holds it to every module
     that registers a piece. The dispatch chains are not replaced yet.
-  - It replaces the active branches of `get_model`'s chain (`models/registry.py`, "no dynamic
+  - It replaces the active branches of `get_model`'s chain (`registry/models.py`, "no dynamic
     plugins", :1 [`registry/models.py`]) and of `parse_spec`.
   - The older families stay behind `legacy/registration.py`'s delegation (D188's R1).
   - GARD's family registers one model entry and its laws and operators in its own namespace.
     That answers its Q4: through the table if stage 1 has built it by then, otherwise through
     today's chain. Its runner shape is its own.
-- **File ownership.** D188's R1 owner changes the dispatch points (`models/registry.py`,
-  `core/specs.py`, `core/schedule.py`, `__main__.py`, `ensemble/*`) in move 1. The pass touches
+- **File ownership.** D188's R1 owner changes the dispatch points (`registry/models.py`,
+  `definitions/specs.py`, `execution/schedule.py`, `__main__.py`, `ensemble/*`) in move 1. The pass touches
   only the operators' registration, after the moves.
 
 ### 8.5 The stable import surface: `cells.modules`

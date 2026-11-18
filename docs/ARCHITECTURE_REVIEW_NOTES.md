@@ -87,11 +87,11 @@ Nothing here should start before the open branches have landed (see PROGRESS).
   `surface_pump as first` and `surface_pump_v2 as second`, and the stack runs
   `surface_tissue` → `surface_kinetic` → `surface_pump` → `_v2` → `_v3`. The W1 cost
   probe's stack trace went through five `initial_values` layers.
-- **Dispatch is a chain of type checks.** `models/registry.py` is 773 lines. `get_model`
+- **Dispatch is a chain of type checks.** `registry/models.py` is 773 lines. `get_model`
   (line 139) is an ordered chain of `isinstance` tests with lazy imports, so the order
   carries meaning.
-- **Adding a model touches many places.** The composite had to edit `core/specs.py`,
-  `models/registry.py`, `core/schedule.py`, `io.py` and `window_io.py`.
+- **Adding a model touches many places.** The composite had to edit `definitions/specs.py`,
+  `registry/models.py`, `execution/schedule.py`, `io.py` and `window_io.py`.
 - **Caution: this is not dead code.** Many of these modules are probably qualified models
   kept frozen on purpose (BETSE comparison rungs and the qualified pump models).
   - Count model IDs by use before judging; the protein catalogue's census of 778 versioned
@@ -100,7 +100,7 @@ Nothing here should start before the open branches have landed (see PROGRESS).
   - Freezing qualified models is a deliberate choice, not a defect.
 
 **The newer design: a composite with operators (D142, D143).**
-- `models/operators/contract.py` defines an `Operator` base class:
+- `operators/contract.py` defines an `Operator` base class:
   - **declarations:** owned state, heat and work fields, entity writes with their
     accumulators, view fields with a single provider, control factors, conflicts,
     requirements and ledgers;
@@ -208,7 +208,7 @@ the host for checks and set-up, and JAX on the device for stepping.
    - `surface_pump_water`, `surface_pump_water_v2`;
    - `cell_replacement`.
 
-   Other families run through `core/batch.py` (`lax.map`) with checks on the host.
+   Other families run through `execution/batch.py` (`lax.map`) with checks on the host.
 4. **Compile behaviour has no library-wide policy or budget.**
    `compile_window` does keep an executable cache (see the corrections below). What is
    missing is a rule for what is a traced input and what is a constant built into the
@@ -232,10 +232,10 @@ the host for checks and set-up, and JAX on the device for stepping.
 
 | Path | File | Lines | What it does |
 | --- | --- | --- | --- |
-| Single world | `core/runner.py` (with `core/windows.py`) | 500 (+260) | Eager, checked, discrete and windowed rollouts |
-| Guarded batch | `core/batch.py` | 458 | Worlds mapped with `lax.map`; rows checked on the host |
-| Batch windows | `core/batch_windows.py` | 384 | Windowed cohorts and snapshots |
-| Vector windows | `core/vector_windows.py` | 776 | `vmap` over worlds inside `lax.scan`; device checks on every row; only per-window summaries leave the device |
+| Single world | `execution/runner.py` (with `execution/windows.py`) | 500 (+260) | Eager, checked, discrete and windowed rollouts |
+| Guarded batch | `execution/batch.py` | 458 | Worlds mapped with `lax.map`; rows checked on the host |
+| Batch windows | `execution/batch_windows.py` | 384 | Windowed cohorts and snapshots |
+| Vector windows | `execution/vector_windows.py` | 776 | `vmap` over worlds inside `lax.scan`; device checks on every row; only per-window summaries leave the device |
 
 Each path validates plans, checkpoints and observations in its own way.
 

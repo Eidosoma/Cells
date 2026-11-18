@@ -426,7 +426,7 @@ cross-check, using numbers from the open paper under D186.
 ## 5. Run records and the run view
 
 This section is in the terms of `docs/RUN_VIEW_DESIGN.md` and the writer on main since 16 November
-(`cells/run_view.py`; the contract's `RECORD_KINDS`, `view_events`, `living_intervals`,
+(`cells/records/run_view.py`; the contract's `RECORD_KINDS`, `view_events`, `living_intervals`,
 `time.event_rows` and `resets`).
 
 ### 5.1 What a run saves of an assembly

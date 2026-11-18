@@ -12,8 +12,8 @@ population and fixed graph are data; the shared numerical machinery has no
 one-, two-, or three-cell limit. The model itself has exactly two species and
 one conversion law, not an arbitrary reaction-network language.
 
-The [local process](../src/cells/processes/reactions.py) reads two amount fields
-and per-cell rate constants. The [coupler](../src/cells/coupling/passive.py) reads
+The [local process](../src/cells/laws/reactions/reactions.py) reads two amount fields
+and per-cell rate constants. The [coupler](../src/cells/laws/junctions/passive.py) reads
 amounts, volumes, endpoints, masks, permeability, and prescribed openings. Neither
 knows phenotype, donor/recipient roles, assay identifiers, or desired outcomes.
 The [model composition](../src/cells/models/reaction_transport.py) maps declared

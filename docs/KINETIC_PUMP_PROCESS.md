@@ -2,7 +2,7 @@
 
 2026-09-16, D111 / SPEC-010. D110 [closed the bounded coupled numerical
 prerequisite](../reports/NUM011_COUPLED_CLOSEOUT.md). The new
-`src/cells/processes/kinetic_pump.py` implements `nak_atp_mass_action_positive@1`
+`src/cells/laws/pumps/kinetic_pump.py` implements `nak_atp_mass_action_positive@1`
 in the production process layer. **It is not yet a selectable model family.**
 The existing synthetic pump and all registered simulation families are unchanged.
 

@@ -425,8 +425,8 @@ the one shared file it touches (the operator registry). The evidence and log are
 `/mnt/workspaces/Cells/bath-schedule-20261114-01/` (HANDOFF.md).
 
 **What was built.**
-- `src/cells/models/operators/bath_schedule.py`, `scheduled_bath_composition@1`, registered in
-  `models/operators/__init__.py` with one import and one line.
+- `src/cells/operators/bath_schedule.py`, `scheduled_bath_composition@1`, registered in
+  `operators/__init__.py` with one import and one line.
 - **The declaration:** `baths` and `formula_units`. Each unit is checked neutral in integer
   arithmetic, with counts that are positive ints.
 - **The events,** under the experiment key `bath_composition_events`: `{time, baths,

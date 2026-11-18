@@ -5,7 +5,7 @@ volumes. It is opt-in ([D136](DECISIONS.md)); the default engine is unchanged.
 Design: `/mnt/workspaces/Cells/water-volume-pump-20261110-01/design-note-W1.md`.
 Status and runs: [Progress](../PROGRESS.md).
 
-Files: `src/cells/core/surface_pump_water_spec.py` (definition),
+Files: `src/cells/definitions/surface_pump_water_spec.py` (definition),
 `src/cells/models/surface_pump_water.py` (model), the law
 `src/cells/numerics/osmotic_water.py`, worlds `validation/tissue/pump_water_fixtures.py`.
 
@@ -13,7 +13,7 @@ Files: `src/cells/core/surface_pump_water_spec.py` (definition),
 [composite pump-tissue model](PUMP_COMPOSITE.md): `resolved_pump_composite@1` with the
 operator `ideal_osmosis_linear_compliance_water@1` (and, for `@2`,
 `k_anion_symport_mass_action@1`). The water law, its Heun half-steps and ledgers and the
-route law moved unchanged into `src/cells/models/operators/osmotic_water.py` and
+route law moved unchanged into `src/cells/operators/osmotic_water.py` and
 `k_anion_symport.py`; the model modules re-export them. The definition formats, the
 step, the checks and the qualified scope below are unchanged. Before the conversion the
 composition was bitwise equal to the earlier implementation on the models' test and
@@ -165,9 +165,9 @@ passes disabled, and it is bitwise with the barrier.
 ## resolved_pump_water@2: one volume-regulation route (KCC-type)
 
 `resolved_pump_water@2` is `resolved_pump_water@1` plus KCC-type K⁺/anion symport
-routes. Files: `src/cells/core/surface_pump_water_v2_spec.py`,
+routes. Files: `src/cells/definitions/surface_pump_water_v2_spec.py`,
 `src/cells/models/surface_pump_water_v2.py`, and the law in
-`src/cells/processes/k_anion_symport.py`.
+`src/cells/laws/routes/k_anion_symport.py`.
 
 **The law, `k_anion_symport_mass_action@1`.** One route per declared membrane:
 

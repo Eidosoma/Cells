@@ -29,7 +29,7 @@ Neither operation removes the membrane or resets accumulated exchange.
 
 The [host schema](../src/cells/legacy/core/bioelectric_spec.py) resolves definitions;
 [model composition](../src/cells/legacy/models/bioelectric_cell.py) owns the closure and
-accumulation; [pure mechanisms](../src/cells/processes/electrochemistry.py) implement
+accumulation; [pure mechanisms](../src/cells/laws/electrochemistry.py) implement
 Bernoulli/GHK leaks, electrochemical potentials, and the reversible reference pump.
 Mechanisms know nothing about experiments or assay outcomes.
 

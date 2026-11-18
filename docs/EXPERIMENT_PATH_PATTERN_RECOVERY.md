@@ -95,7 +95,7 @@ It goes only through what the repository states; the preprint was not read for t
     junctions (`junction_voltage_relaxation@1`).
   - The composite `resolved_pump_composite@1` (`models/pump_composite.py`), with
     `scheduled_cell_replacement@1`, `delayed_first_order_junction_formation@1`
-    (`processes/junction_formation.py`), water (`resolved_pump_water@1/@2`),
+    (`laws/junctions/junction_formation.py`), water (`resolved_pump_water@1/@2`),
     `electrode_current_injection@1` and `membrane_entity_state@1`.
   - Runs and qualification (MG0b, the parity rungs, E07-v1): [Progress][P].
 - **Designed:** E07-v1 ([design](E07_V1_DESIGN.md), D139) and E07-v2 (D151). Cortés-Poza

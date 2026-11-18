@@ -263,7 +263,7 @@ uncatalysed CO₂ hydration. They are not on FR-4's critical path.
   buffered node. Proton routes there are this note's own laws (§6, §7), which read through the
   closure. At an unbuffered node (the bath, an unbuffered cell) the closure is the identity, h = H̄.
 - **The closure is a pure, traced function** of (H_eq, B_tot, V, K_k) per node, in a new process
-  module (`processes/rapid_proton_buffer.py`, with neutral naming).
+  module (`laws/reactions/rapid_proton_buffer.py`, with neutral naming).
   - One buffer takes the closed form. Several take a safeguarded Newton in ln h, bracketed by
     [H̄_eq/(1 + Σ B̄_k/K_k), H̄_eq], at a fixed iteration count.
   - Convergence is checked at |g|/H̄_eq ≤ 1e-13, and a failure refuses the step.
@@ -347,7 +347,7 @@ outside.
       ΔG_cyc = Δ_rG'_ATP(inside) + n [RT ln(h_out/h_in) − F V_b],
 
   with h from each node's closure and V_b = φ_in − φ_out. The pump runs forward when ΔG_cyc < 0.
-- **The rate**, in the Na/K law's form (`processes/kinetic_pump.py`):
+- **The rate**, in the Na/K law's form (`laws/pumps/kinetic_pump.py`):
 
       J_cyc = k × a × S × (1 − exp(ΔG_cyc/RT)),
       S = [1 + (K_H/h_in)^n]⁻¹ × [1 + K_ATP/c_ATP]⁻¹.
@@ -931,8 +931,8 @@ One owner per entity:
 
 | Entity | Kind (module) and law | Owner | State and controls | Exposes |
 | --- | --- | --- | --- | --- |
-| A patch's damage | `cells.patch_damage@1` (`models/inner_kinds/patch_damage.py`); law `cells.bounding_patch_damage@1` (`processes/patch_damage.py`) | FR45 | d and the integrated hazards [damage]; controls u_inj, u_res [damage], scheduled (gap 6) | the factor d, per damage entity |
-| A node's pH condition | `cells.ph_condition@1` (`models/inner_kinds/ph_condition.py`); law `cells.ph_conditioned_factor@1` (`processes/ph_condition.py`) | FR45 | none: algebraic, from the stage's read | the factor f(pH), per condition; the readout column f |
+| A patch's damage | `cells.patch_damage@1` (`kinds/patch_damage.py`); law `cells.bounding_patch_damage@1` (`laws/transport/patch_damage.py`) | FR45 | d and the integrated hazards [damage]; controls u_inj, u_res [damage], scheduled (gap 6) | the factor d, per damage entity |
+| A node's pH condition | `cells.ph_condition@1` (`kinds/ph_condition.py`); law `cells.ph_conditioned_factor@1` (`laws/reactions/ph_condition.py`) | FR45 | none: algebraic, from the stage's read | the factor f(pH), per condition; the readout column f |
 | A route's rate multiplier | `cells.passive_routes@1`'s reserved `factors` key | CORE's insertion, FR45's kernels | control `passive_multiplier` [route], written by the door | — |
 | The routing door | a seam in `kind_registry.Kind` and `surface_pump_v3` | CORE | — | writes each routed control slot at every stage |
 
@@ -1093,7 +1093,7 @@ FR-5's breakpoints (60 and 120 s in arm T, 100 and 160 s in arm R) lie on every 
 - **The run:** the generator's `start` part runs FR-4's declared world at 1 ms to 1800 s (1.8e6
   steps, about 30 min on the vector path).
 - **What it writes:**
-  - the engine's snapshot of the final state (`cells.io.write_snapshot`, in OUT/start/
+  - the engine's snapshot of the final state (`cells.records.io.write_snapshot`, in OUT/start/
     engine_snapshot), for provenance;
   - the start extract (`definitions.start_extract(producer="engine", ...)`): each node's nine rows
     and its charge (`surface_pump_v3.node_charge` of the final state), the last record's pH_c, pH_L

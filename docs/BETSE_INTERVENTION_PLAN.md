@@ -23,8 +23,8 @@ Source anchors are recorded in the review receipt. The main call sites are
 [native FULL loop and clock](../upstream/betse-v1.5.0/betse/science/sim.py),
 [native event composition](../upstream/betse-v1.5.0/betse/science/tissue/tishandler.py),
 [native pulse](../upstream/betse-v1.5.0/betse/science/math/toolbox.py),
-[Cells controls](../src/cells/core/schedule.py),
-[event grid](../src/cells/core/grid.py), [runner](../src/cells/core/runner.py),
+[Cells controls](../src/cells/execution/schedule.py),
+[event grid](../src/cells/execution/grid.py), [runner](../src/cells/execution/runner.py),
 and [RK4 stages](../src/cells/numerics/fixed_step.py).
 
 ## Step 1 — REF-003e0: a SIM-phase bridge, with no physical intervention

@@ -821,7 +821,7 @@ an exact Riccati solution (Appendix A.4), a candidate for that door.
     it: at equilibrium θ_bg = c_bg/(K_d + c_bg). A trace of 10⁻⁹ mM against K_d = 10⁻⁶ mM occupies
     10⁻³ of the sites (**S**).
   - **The ruling's premise does not hold as built.** The trace is not stored in the definition:
-    `add_inventory_species` takes it as an argument (`core/inventory_species.py`). So the rule needs
+    `add_inventory_species` takes it as an argument (`registry/inventory_species.py`). So the rule needs
     either a declared trace or a proxy for it.
   - **Proposed: (a), a declared trace.** This operator's species entry declares `trace_mM`, the
     ligand's background. The definition refuses, naming the ratio and the threshold, if:
@@ -1383,7 +1383,7 @@ half-step with its bookings and guards. The operator was registered only with st
 A1 to A5 and B1 to B6 were fixed before any code in `/mnt/workspaces/Cells/site-occupancy-m1-20261115-01/`
 (HANDOFF.md). That folder also holds the snapshots, the test logs and the queue log.
 
-**The operator** (`models/operators/site_occupancy.py`), registered with one import and one line:
+**The operator** (`operators/site_occupancy.py`), registered with one import and one line:
 - **The declaration** (§2.1) has three parts, and it round-trips:
   - `species`, the ligands, parsed by `species_common.parse_species`, each with a declared
     `trace_mM`;
