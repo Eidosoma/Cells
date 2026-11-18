@@ -92,6 +92,36 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-6's A5″ judged: passed (18 November 2026, 03:39–03:47 UTC).** The registered protocol
+  `fr6-a5pp-v1` was judged once from the clean snapshot of its registration commit 555d8771, on
+  lane B (CPUs 8-11 and 24-27, under its lock). It takes FR-6's items 1 and 3 together: two cells'
+  gate-free K-leak populations driven through `species_regulated_availability@1`'s regulatory
+  state (`hill_regulated_two_state@1`) from a per-cell prior, s₀ = 0.1 and 0.8, under the same
+  regulator dose. Its references are the code-blind FR references agent's
+  (`validation/fr6/references`).
+  - **18 of 18 judged criteria.** Examples:
+    - V and the amounts against R-cell on 1, 0.5, 0.25 and 0.125 ms at order 2.03, 2.01 and 2.01,
+      every pair resolved (3 of 3, at least 2 required); the errors fall from 6.1e-7 to 9.2e-9 V
+      and from 2.0e-8 to 3.0e-10 fmol. Row 0 is the references' start within 1.2e-16 relative.
+    - Each control at least 10 x the honest engine's error at the same rung, where it has power:
+      the prior swapped, shared (a's, b's or their mean) or ignored at 4.7e3 x and more, the state
+      bypassed at 8.9e3 x, the state's rates 1% off at 39 x (k_on) and 41 x (k_off).
+    - The basal level x (1 + 1e-3), the references' control: 26 x in the amounts at 1 ms, and 27 x
+      and 109 x in V at 0.25 and 0.125 ms. At the coupling rule's delta, 1e-4 (registered from the
+      development run, 9.25e-5 rounded up): detected by the band, and 10.8 x in V at 0.125 ms.
+  - **Reported, not judged:** V and the amounts use 0.59 to 0.65 of the dt² state budget derived
+    from the references' stand-in; s and a_eff converge at order 2.00, every pair resolved.
+  - **No harness failure:** all 15 parts are complete. Peak memory was 1.0 G of 3 G, and no part
+    used more than 10.9% of its runtime limit.
+  - **Against the rehearsal** (`pipeline/run-reh-6ecd4d9b`, on a registered dry-run copy on lane
+    B): all 15 parts are bitwise equal, and so is the judged derivation.
+  - **Scope:** `species_regulated_availability@1` with `hill_regulated_two_state@1` and D150's
+    turnover as built at 555d8771: two pump-free 2 pL cells over 2 s, synthetic values, CPU only.
+    Zero power: a state reading the other cell's regulator (both cells get the same dose) and the
+    references' basal control in V at 1 and 0.5 ms. Not covered: gated channels (A5′), the
+    routing door, leak and pump targets, any biological comparison.
+  - **Evidence:** `/mnt/workspaces/Cells/fr6-a5pp-20261118/judged/run-555d8771/`
+    (`verdict/verdict.json`, `reading.json`, `compare/`, `run.log`).
 - **FR-3 judged: passed (18 November 2026, 03:20–03:32 UTC).** The registered protocol
   `fr3-site-occupancy-v1` was judged once from the clean snapshot of its registration commit
   1b838d75, on lane A (CPUs 0-3 and 16-19, under its lock). It is `site_occupancy@1`'s first

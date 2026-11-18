@@ -1,5 +1,15 @@
 # Coupling out of the inventory: species-regulated availability (design)
 
+**A5″ qualified, 18 November 2026 (FR-6 items 1 and 3).** The registered protocol `fr6-a5pp-v1`
+(`validation/tissue/a5pp_acceptance_protocol.json`, registered at 555d8771) was judged once from a
+clean snapshot of that commit: passed, 18 of 18 judged criteria, against the code-blind references
+(`validation/fr6/references`). Two pump-free cells' gate-free K-leak populations are driven through
+`hill_regulated_two_state@1`'s state from a per-cell prior (s₀ = 0.1 and 0.8, the same regulator
+dose): V and the amounts converge at second order to R-cell with the state integrated alongside,
+and every control that tells the two cells apart is caught (the prior swapped, shared or ignored,
+the state bypassed, its rates 1% off, the basal level). Gated channels (A5′), the routing door and
+the leak and pump targets are not covered.
+
 **Status: numerically qualified, 15 November 2026.** The design was accepted on 14 November 2026
 (the lead, with the advisor; rulings in §6.3). `species_regulated_availability@1` was built in four
 milestones (§7 to §10). The judged run of the registered protocol `coupling_regulated_availability_v1`
