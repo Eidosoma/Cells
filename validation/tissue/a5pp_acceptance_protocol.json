@@ -17,8 +17,8 @@
  "question": "Does species_regulated_availability@1 drive each of two cells' gate-free K-leak populations through that cell's own regulatory state s1 (hill_regulated_two_state@1, read from the cell's X by a Hill activation, X under D150's turnover, the same dose in both cells), from a per-cell prior s0 = 0.1 in a and 0.8 in b, so that V and the amounts of both cells converge at second order to R-cell with the state integrated alongside; and are the two cells told apart: a swapped, shared or ignored prior, the state bypassed, the state's rates 1% off and the basal level x (1 + delta) each caught?",
  "engine_models": [
   "resolved_pump_composite@1 over resolved_pump_tissue@3 (the composite and its inner model)",
-  "species_regulated_availability@1 with hill_regulated_two_state@1 (the state s1) and two state_fraction couplings on the channel targets (the operator judged; FR-6 items 1 and 3)",
-  "scheduled_species_turnover@1 (X, D150's regulator)",
+  "species_regulated_availability@1 with hill_regulated_two_state@1 (the state s1) and two state_fraction couplings on the channel targets, its step exact_two_state_half_steps@1 (the operator judged; FR-6 items 1 and 3)",
+  "scheduled_species_turnover@1 (X, D150's regulator), its step exact_production_clearance_half_steps@1",
   "kleak_always_open@1 (the populations), constant_field@1 (the patches), the closure resolved_capacitor_components_current_continuity@1 with capacitive_reduction_gauged_damped_newton@2",
   "imex_ars222_face_electromigration@1 (the solver)",
   "the IDs the judged definitions print are recorded by the generator and checked against this list"
@@ -106,9 +106,22 @@
    {
     "path": "/mnt/workspaces/Cells/fr6-a5pp-20261118/wellposed/run.json",
     "status": "one well-posedness run of the registered world at 1 ms to its 2 s horizon (2,000 steps, every host check passed, 15 s), 18 November 2026, at a81e79d5: no comparison with the references"
+   },
+   {
+    "path": "/mnt/workspaces/Cells/fr6-a5pp-20261118/pipeline/run-dev-49271f0e",
+    "status": "the development run, from the clean snapshot of 49271f0e on lane B (CPUs 8-11 and 24-27 under its lock, nice 10), 18 November 2026, 7 minutes: every one of the 15 parts admitted and run with every host check. V errs by 6.07e-7, 1.49e-7, 3.68e-8 and 9.16e-9 V and the amounts by 1.95e-8, 4.79e-9, 1.19e-9 and 2.95e-10 fmol on the four rungs: orders 2.03, 2.01, 2.01 for both, every pair resolved (s and a_eff 2.00, reported); the start at 1.2e-16. The controls over the honest engine's own error, where judged: the prior 4.7e3 x (the mean, V at 1 ms) to 6.7e5 x, the bypass 8.9e3 x and more, k_on 39 x and k_off 41 x (V at 1 ms), the references' basal 26 x (the amounts at 1 ms; V 27 x and 109 x at 0.25 and 0.125 ms), the rule's basal at delta = 1e-4 caught by the band and 10.8 x (V at 0.125 ms; the amounts 43 x and 171 x at 0.25 and 0.125 ms). The dt^2 state budget (reported) used 0.59 to 0.65. The development verdict failed C0_ids alone: the declared list lacked the operators' step IDs (disclosures)"
    }
   ],
   "note": "development evidence only: no run of this protocol exists"
+ },
+ "registered_delta": {
+  "basal": 0.0001,
+  "basis": "the coupling protocol's rule (the lead's ruling 2), from the development run run-dev-49271f0e: the basal control's V departure at the finest rung is 9.91e-8 V at delta = 1e-4 (9.91e-4 V per unit delta, linear), the honest V error there 9.16e-9 V; the delta that plateaus at 10 x it is 9.25e-5, rounded up on the 1-2-5 grid to 1e-4. Registered 18 November 2026 by the FR owner, disclosed before registration"
+ },
+ "development_counts": {
+  "V": 3,
+  "amounts": 3,
+  "basis": "the development run's resolved pairs (run-dev-49271f0e): 3 of 3 for V and for the amounts; the criteria ask at least the count less one (the lead's ruling 5)"
  },
  "questions_for_the_lead": [],
  "questions_answered": [
@@ -123,7 +136,8 @@
   "Drafted on 18 November 2026 after the coupling protocol's judged A5 (15 November, 47 of 47), whose engine errors and orders are known (§9-§10: 2.9e-8 V at 1 ms, orders 2.00). Nothing here is set from them",
   "Before the draft, host-only checks: the engine's F and R equal the registered exact SI products (N_A e and N_A k_B) to the last bit, so the constants induce no V offset (100 floors of V are 3.3e-12 V); the engine's bound start equals the references' registered row 0 (the amounts 24, 280 and 60 fmol, -60 mV from the charge over the capacitance, s = 0.1 and 0.8); @3's explicit-rate bound admits the world up to between 5 and 10 ms, so 1 ms has a factor of at least 5 (the README's open item, closed)",
   "One well-posedness run (development_runs), with no comparison with the references",
-  "18 November 2026: the lead ruled on the draft's five questions (questions_answered) before any engine output was compared with the references; question 6 (the basal control under rulings 1 and 2) raised the same day, before any such output, and ruled (iii) the same day, also before any such output"
+  "18 November 2026: the lead ruled on the draft's five questions (questions_answered) before any engine output was compared with the references; question 6 (the basal control under rulings 1 and 2) raised the same day, before any such output, and ruled (iii) the same day, also before any such output",
+  "18 November 2026 (FR owner), after the development run (run-dev-49271f0e): the declared engine IDs lacked the two operators' step IDs, exact_two_state_half_steps@1 and exact_production_clearance_half_steps@1, which the definitions print, so C0_ids failed; they are added (a drafting omission, not an engine change). delta = 1e-4 and the resolved counts (3 and 3) registered from that run by the rules the lead confirmed (registered_delta, development_counts); a tool test now takes the delta out of its unregistered copy. No other criterion or threshold changed"
  ],
  "judge": {
   "written": "18 November 2026, by the FR owner, after the protocol's world was fixed and the lead ruled on its six questions, and before any engine output compared with the references",
@@ -170,8 +184,10 @@
     "resolved_pump_composite@1",
     "resolved_pump_tissue@3",
     "species_regulated_availability@1",
+    "exact_two_state_half_steps@1",
     "hill_regulated_two_state@1",
     "scheduled_species_turnover@1",
+    "exact_production_clearance_half_steps@1",
     "kleak_always_open@1",
     "constant_field@1",
     "resolved_capacitor_components_current_continuity@1",
@@ -423,8 +439,8 @@
      "derived.orders.V_resolved"
     ],
     "comparison": "ge",
-    "threshold": 1,
-    "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one, the lead's ruling 5); provisional at 1 until the development run fixes the count",
+    "threshold": 2,
+    "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one, the lead's ruling 5)",
     "judged": true
    },
    {
@@ -443,8 +459,8 @@
      "derived.orders.amounts_resolved"
     ],
     "comparison": "ge",
-    "threshold": 1,
-    "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one, the lead's ruling 5); provisional at 1 until the development run fixes the count",
+    "threshold": 2,
+    "basis": "the judged rule is not vacuous: at least this many resolved pairs (the development count less one, the lead's ruling 5)",
     "judged": true
    },
    {

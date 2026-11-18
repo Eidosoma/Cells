@@ -205,6 +205,7 @@ def test_the_judged_entry_refuses_before_writing_anything(tmp_path, monkeypatch)
     with pytest.raises(SystemExit, match="not registered"):
         generator.main(["judged", str(unregistered), str(out), "a5pp_rung_1ms"])
     data = proposed()
+    data.pop("registered_delta", None)
     data["status"] = "registered (a test)"
     data["registration"] = dict(status=data["status"])
     no_delta = tmp_path / "no_delta.json"

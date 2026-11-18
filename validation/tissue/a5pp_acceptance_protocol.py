@@ -32,7 +32,8 @@ WRITTEN = ("18 November 2026, by the FR owner, after the protocol's world was fi
            "ruled on its six questions, and before any engine output compared with the references")
 ENGINE_IDS = [
     "resolved_pump_composite@1", "resolved_pump_tissue@3", "species_regulated_availability@1",
-    "hill_regulated_two_state@1", "scheduled_species_turnover@1", "kleak_always_open@1",
+    "exact_two_state_half_steps@1", "hill_regulated_two_state@1", "scheduled_species_turnover@1",
+    "exact_production_clearance_half_steps@1", "kleak_always_open@1",
     "constant_field@1", "resolved_capacitor_components_current_continuity@1",
     "capacitive_reduction_gauged_damped_newton@2", "imex_ars222_face_electromigration@1"]
 ALL = ["V", "amounts"]
