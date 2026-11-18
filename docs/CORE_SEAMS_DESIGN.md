@@ -1531,7 +1531,7 @@ confirmed with the advisor.
       not per node, until operators declare nodes;
     - the water operator beside any stage read;
     - restricted_cleft_lumen@1 and @2 wherever a read holds rows at an outside node.
-  - **So the 18:31 line above is narrowed.** Water and the lumen's fill are no longer admitted
+  - **So the 20:09 amendment's admitted no-row operators are narrowed.** Water and the lumen's fill are no longer admitted
     beside a closure.
   - The lumen cannot sit beside a buffer today in any case, since membrane insertion is refused
     beside any declared kind. The rule guards the day that refusal lifts.
