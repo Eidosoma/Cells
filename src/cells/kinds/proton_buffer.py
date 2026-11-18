@@ -34,6 +34,26 @@ registry already refuses in-step movers of the buffer rows (two-form rows are in
 
 Precision: the read writes h V into the proton row through the state's increment, so the rates
 see h to about eps H_eq / h relative (about 1e-10 in a 50 mM buffer at pH 7.2).
+
+The general closure (seam C, docs/CORE_SEAMS_DESIGN.md §5 and §19 as amended): the same kind and
+model key host a second law and read, rapid_binding@1, for several ligands on binders whose forms
+the species registry declares (``forms``). Version 1's declaration above keeps its layout, fields
+and code, chosen statically by the declaration's form, so its programs are unchanged. The general
+declaration:
+
+    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"],
+      "binders": {"matrix": ["ATP", "Pi"]},
+      "k_on_per_mM_s": {"ATP": {"H": 1e7, "Mg": 1e5}, "Pi": {"H": 1e7, "Mg": 1e5}}}]
+
+- At each named node it holds each binder row's total and the total equivalents of every ligand
+  those binders bind there (its closure rows); k_on is declared per binding (binder, ligand), one
+  for each ligand the binder's forms bind, and every form is reachable from its base by unit steps.
+- Its admission (a parse; no solve): the registry's forms checks here, and the movers' rules in the
+  species registry's check_closure_rows (@3's own routes and pumps refused on a closure row, a
+  kind's move admitted only when its law reads rapid_binding@1, operators naming a held species
+  refused).
+- Its solve is seam C's item 3, gated on the references' amendments: until it is built, an
+  admitted general declaration is refused at the end of its check, fail-closed.
 """
 
 from types import MappingProxyType, SimpleNamespace
@@ -50,6 +70,8 @@ KIND_ID = "cells.rapid_proton_buffer@1"
 MODEL_KEY = "stage_reads"
 FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
+GENERAL_READ_ID = "rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
+GENERAL_FIELDS = ("read_id", "ligand_rows", "binders", "k_on_per_mM_s")
 
 
 class Declaration(NamedTuple):
@@ -58,11 +80,105 @@ class Declaration(NamedTuple):
     k_on: tuple  # ((buffer row, k_on in 1/(mM s)), ...), sorted
 
 
+class GeneralDeclaration(NamedTuple):
+    """rapid_binding@1's declaration (module docstring): the ligand rows, sorted; the binder rows at
+    each node, ((node ID, (binder row, ...)), ...), sorted; k_on per binding, ((binder row,
+    ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its one ligand of valence +1
+    (the row the passive routes' leak and the pH condition check theirs against), or None."""
+
+    ligands: tuple
+    binders: tuple
+    k_on: tuple
+    proton: str | None
+
+    @property
+    def read_id(self):
+        return GENERAL_READ_ID
+
+    @property
+    def closure_rows(self):
+        """((species, node ID), ...): each binder row at its node, and each ligand row at a node
+        where a binder there binds it (its k_on's ligands): the rows the closure holds."""
+        binds = {row: tuple(ligand for ligand, _ in rates) for row, rates in self.k_on}
+        out = []
+        for node, rows in self.binders:
+            ligands = sorted({ligand for row in rows for ligand in binds[row]})
+            out += [(ligand, node) for ligand in ligands] + [(row, node) for row in rows]
+        return tuple(out)
+
+
+class GeneralEntry(NamedTuple):
+    """The general closure's value-free structure entry: its numbers of ligand and binder rows.
+    Seam C's item 3 extends it with the solve's static structure."""
+
+    ligands: int
+    binders: int
+
+
+def _parse_general(entry, m):
+    from cells.modules import finite_number  # The surface (F's guard); imported at parse time.
+
+    where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
+    if set(entry) != set(GENERAL_FIELDS):
+        raise ConfigError(f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}")
+    _, ligands, binders, k_on = (entry[k] for k in GENERAL_FIELDS)
+    species = set(m.species_ids)
+    if (
+        not isinstance(ligands, list)
+        or not ligands
+        or len(set(ligands)) != len(ligands)
+        or any(ligand not in species for ligand in ligands)
+    ):
+        raise ConfigError(f"{where}: ligand_rows lists distinct species rows")
+    nodes = {c.id for c in m.cells} | {o.id for o in m.extracellular}
+    held = {o.id for o in m.extracellular if o.reservoir}
+    if not isinstance(binders, dict) or not binders:
+        raise ConfigError(f"{where}: binders maps nodes to their binder rows")
+    pairs = []
+    for node, rows in binders.items():
+        if node not in nodes:
+            raise ConfigError(f"{where}: unknown node {node!r}")
+        if node in held:
+            raise ConfigError(
+                f"{where}: node {node} is a held bath. @3 values its supply at the stored total's "
+                "concentration, while every route there books against the free forms, so its "
+                "energy ledger cannot close: a held bath under a closure is refused"
+            )
+        if not isinstance(rows, list) or not rows or len(set(rows)) != len(rows):
+            raise ConfigError(f"{where}: node {node} needs a list of distinct binder rows")
+        for row in rows:
+            if row not in species or row in ligands:
+                raise ConfigError(f"{where}: {row!r} is not a binder row")
+        pairs.append((node, tuple(sorted(rows))))
+    named = {row for _, rows in pairs for row in rows}
+    if not isinstance(k_on, dict) or set(k_on) != named:
+        raise ConfigError(f"{where}: k_on_per_mM_s names each binder row once")
+    rates = []
+    for row, per_ligand in k_on.items():
+        if not isinstance(per_ligand, dict) or not per_ligand:
+            raise ConfigError(f"{where}: k_on of {row} maps each ligand it binds to its k_on")
+        values = []
+        for ligand, value in per_ligand.items():
+            if ligand not in ligands:
+                raise ConfigError(f"{where}: k_on of {row} names {ligand!r}, no declared ligand row")
+            value = finite_number(value, f"{where}: k_on of {row} for {ligand}", positive=True)
+            values.append((ligand, value))
+        rates.append((row, tuple(sorted(values))))
+    valence = dict(zip(m.species_ids, m.valence, strict=True))
+    plus = [ligand for ligand in ligands if valence[ligand] == 1]
+    proton = plus[0] if len(plus) == 1 else None
+    return GeneralDeclaration(
+        tuple(sorted(ligands)), tuple(sorted(pairs)), tuple(sorted(rates)), proton
+    )
+
+
 def parse(entries, base):
     m = base.model
     if not isinstance(entries, list) or len(entries) != 1 or not isinstance(entries[0], dict):
         raise ConfigError(f"{MODEL_KEY}: version 1 declares one read, {closure.READ_ID}")
     entry = entries[0]
+    if entry.get("read_id") == GENERAL_READ_ID:
+        return _parse_general(entry, m)
     if set(entry) != set(FIELDS):
         raise ConfigError(f"{MODEL_KEY}: a read declares exactly {', '.join(FIELDS)}")
     read_id, proton, buffers, k_on = (entry[k] for k in FIELDS)
@@ -103,6 +219,15 @@ def parse(entries, base):
 
 
 def to_dict(declaration):
+    if isinstance(declaration, GeneralDeclaration):
+        return [
+            dict(
+                read_id=GENERAL_READ_ID,
+                ligand_rows=list(declaration.ligands),
+                binders={node: list(rows) for node, rows in declaration.binders},
+                k_on_per_mM_s={row: dict(rates) for row, rates in declaration.k_on},
+            )
+        ]
     return [
         dict(
             read_id=closure.READ_ID,
@@ -115,7 +240,10 @@ def to_dict(declaration):
 
 def structure_entry(declaration):
     """Value-free: the number of buffer rows, which selects the kernel's closed form (one) or
-    its bisection (several). Rows, membership and constants are layout values."""
+    its bisection (several). Rows, membership and constants are layout values. The general
+    declaration's entry is its own type (GeneralEntry), so version 1's entries are today's."""
+    if isinstance(declaration, GeneralDeclaration):
+        return GeneralEntry(len(declaration.ligands), len(declaration.k_on))
     return (len(declaration.k_on),)
 
 
@@ -215,7 +343,10 @@ def stage_read(state, p, *, xp):
 
 
 def stage_rows(declaration):
-    """(proton, node) and (buffer, node) at every declared node: the rows the read uses."""
+    """(proton, node) and (buffer, node) at every declared node: the rows the read uses (the
+    general declaration's: its closure rows)."""
+    if isinstance(declaration, GeneralDeclaration):
+        return declaration.closure_rows
     out = []
     for node, rows in declaration.buffers:
         out.append((declaration.proton, node))
@@ -322,13 +453,91 @@ def readouts(state, read, potentials, control, p, *, xp):
 INNER_ROUTES = ("membrane", "junction", "channel", "face")
 
 
+NOT_BUILT = (
+    f"{MODEL_KEY}: the general closure {GENERAL_READ_ID} is admitted, but its solve is not built "
+    "yet (seam C's item 3), so the definition is refused"
+)
+
+
+def _unit_steps_reach(counts):
+    """Whether every form (count vectors, the base the zero vector) is reachable from the base by
+    unit steps: one more or one fewer of a single ligand, through declared forms."""
+    forms = {tuple(c) for c in counts}
+    seen, frontier = {tuple(0 for _ in counts[0])}, [tuple(0 for _ in counts[0])]
+    while frontier:
+        here = frontier.pop()
+        for k in range(len(here)):
+            for step in (1, -1):
+                there = here[:k] + (here[k] + step,) + here[k + 1 :]
+                if there in forms and there not in seen:
+                    seen.add(there)
+                    frontier.append(there)
+    return seen == forms
+
+
+def _check_general(spec, declaration):
+    """The general closure's admission against the species registry (module docstring): each
+    ligand row a single-form species with a standard potential; each binder row a multi-form row
+    whose forms bind only declared ligands (every ligand written out), with k_on declared for
+    exactly the ligands its forms bind; every declared ligand bound somewhere; and every form
+    reachable from its base by unit steps (the envelope's network, CORE_SEAMS §19 as amended). The
+    movers' rules are the species registry's (check_closure_rows), ahead of this."""
+    where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
+    model = species_registry.declared(spec)
+    if model is None:
+        raise ConfigError(f"{where}: the closure reads the species registry, which is not declared")
+    ligands = set(declaration.ligands)
+    for ligand in declaration.ligands:
+        entry = model.entry(ligand)
+        if entry is None or entry.standard_mu_RT is None:
+            raise ConfigError(f"{where}: ligand row {ligand} declares no standard_mu_RT")
+        if entry.forms or entry.protonated_standard_mu_RT is not None:
+            raise ConfigError(f"{where}: ligand row {ligand} has forms of its own")
+    bound = set()
+    for row, rates in declaration.k_on:
+        entry = model.entry(row)
+        if entry is None or not entry.forms:
+            raise ConfigError(
+                f"{where}: binder row {row} declares no forms; the general closure reads the "
+                "registry's forms (version 1's two-form spelling is rapid_proton_buffer@1's)"
+            )
+        forms = species_registry.forms_of(spec, row)
+        binds = sorted({ligand for _, counts, _ in forms for ligand, _ in counts})
+        outside = [ligand for ligand in binds if ligand not in ligands]
+        if outside:
+            raise ConfigError(
+                f"{where}: binder row {row}'s forms bind {outside}, which the closure does not "
+                "hold: every ligand of a form is a declared ligand row"
+            )
+        if sorted(ligand for ligand, _ in rates) != binds:
+            raise ConfigError(
+                f"{where}: k_on of {row} names {sorted(ligand for ligand, _ in rates)}, but its "
+                f"forms bind {binds}: k_on is declared per binding"
+            )
+        vectors = [[dict(counts).get(ligand, 0) for ligand in binds] for _, counts, _ in forms]
+        if not _unit_steps_reach(vectors):
+            raise ConfigError(
+                f"{where}: a form of binder row {row} is not reachable from its base by unit "
+                "steps (one ligand more or fewer at a time) through declared forms"
+            )
+        bound |= set(binds)
+    unbound = sorted(ligands - bound)
+    if unbound:
+        raise ConfigError(f"{where}: ligand rows {unbound} are bound by no declared binder")
+
+
 def check_definition(spec):
     """Version 1's admission: no inner-model route (membrane, junction, channel or face) moves
     the proton row at a buffered node, since those routes read stored rows as concentrations.
-    Kinds' movers (a transporter) read the stage's read and are admitted."""
+    Kinds' movers (a transporter) read the stage's read and are admitted. The general closure's
+    admission is _check_general's, and an admitted general declaration is refused (NOT_BUILT)
+    until its solve is built."""
     from cells.models import surface_pump_v3
 
     declaration = dict(spec.model.kinds)[KIND_ID]
+    if isinstance(declaration, GeneralDeclaration):
+        _check_general(spec, declaration)
+        raise ConfigError(NOT_BUILT)
     buffered = {node for node, _ in declaration.buffers}
     m = spec.model
     ends = {p.id: (p.inside, p.outside) for p in m.membranes}

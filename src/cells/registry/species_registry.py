@@ -668,13 +668,97 @@ def check_two_form_rows(spec):
                 )
 
 
+INNER_MOVERS = ("membrane", "junction", "channel", "face", "pump")
+
+
+def _law_reads(law_id):
+    """The stage reads a kind move's law declares (a cycle law's reads), or () for a law that
+    declares none (a route law) or that the active law registry does not hold."""
+    from cells.registry import laws
+
+    try:
+        law = laws.active().lookup(law_id)
+    except KeyError:
+        return ()
+    return tuple(getattr(law, "reads", ()) or ())
+
+
+def _entity_ends(m):
+    """{entity ID: its two end nodes}: patches, junctions, faces and channels (their patch's)."""
+    ends = {p.id: (p.inside, p.outside) for p in m.membranes}
+    ends |= {j.id: (j.sender, j.receiver) for j in m.junctions}
+    ends |= {f.id: (f.sender, f.receiver) for f in m.faces}
+    ends |= {c.id: ends[c.membrane_id] for c in m.channels}
+    return ends
+
+
+def check_closure_rows(spec):
+    """The movers at a node where a general binding closure holds rows (seam C, version 2;
+    docs/CORE_SEAMS_DESIGN.md §19 as amended at 20:09 UTC, 18 November 2026). A declared kind
+    whose declaration carries closure_rows, ((species, node ID), ...), and read_id is such a
+    closure. At its rows:
+    - @3's own routes and pumps (membrane, junction, channel, face, pump) are refused: they read
+      stored totals as concentrations;
+    - a kind's in-step move is admitted only when its law's reads name the closure's read ID, so
+      no mover reads a stored total (a route law declares no reads, so it is refused);
+    - an operator that names a held species (its species_identities) or moves one in the step is
+      refused. Operators that name no row (replacement, division, a lumen's fill, water) are
+      admitted: the closure re-solves from the totals they leave.
+    Version 1's closure declares no closure_rows, so its worlds are not checked here."""
+    if not any(hasattr(d, "closure_rows") for _, d in getattr(spec.model, "kinds", ())):
+        return  # No general closure: nothing to check, and no projection is built.
+    m = _inner_model(spec)
+    closures = [d for _, d in getattr(m, "kinds", ()) if hasattr(d, "closure_rows")]
+    from cells.registry.kind_registry import qualified
+
+    _, movers = inner_movers(spec)
+    ends = _entity_ends(m)
+    for closure in closures:
+        rows, read = set(closure.closure_rows), closure.read_id
+        for species, entries in movers.items():
+            for kind, law, entities in entries:
+                for entity in entities:
+                    nodes = ends.get(entity, (entity,)) if kind in INNER_MOVERS else (entity,)
+                    for node in nodes:
+                        if (species, node) not in rows:
+                            continue
+                        held = f"species {species} at {node} is held by the closure {read}"
+                        if kind in INNER_MOVERS:
+                            raise ConfigError(
+                                f"{held}: the {kind} {entity} moves it in the step, and @3's own "
+                                "routes and pumps read stored totals (refused at a closure node)"
+                            )
+                        reads = _law_reads(law)
+                        if qualified(read) not in {qualified(r) for r in reads}:
+                            raise ConfigError(
+                                f"{held}: {kind} moves it under {law}, whose reads "
+                                f"{list(reads)} lack {read}; a mover at a closure node reads the "
+                                "closure"
+                            )
+        nodes = {}
+        for species, node in sorted(rows):
+            nodes.setdefault(species, node)
+        for op, declaration in _entries(spec):
+            named = [item.id for item in operator_identities(op, declaration)]
+            if op.PROCESS:
+                named += [s for s, _ in op.moves_in_step(spec, declaration)]
+            for species in named:
+                if species in nodes:
+                    raise ConfigError(
+                        f"species {species} is held by the closure {read} at {nodes[species]}: "
+                        f"{op.LAW_ID} names or moves it, and an operator that names a held row is "
+                        "refused"
+                    )
+
+
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
     model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
-    then operators' potentials."""
+    the movers at a general closure's rows, then operators' potentials."""
     check_background(spec)
     check_two_form_rows(spec)
     check_forms(spec)
+    check_closure_rows(spec)
     check_potentials(spec)
 
 
