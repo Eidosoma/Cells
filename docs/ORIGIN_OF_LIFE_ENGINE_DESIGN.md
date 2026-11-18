@@ -424,6 +424,51 @@ that refine it.
    - The run's environment record states the flag.
    - No world's identity or records change, and the invariance comparison already exempts the
      environment record.
+10. **Replay conventions.** These are OL5's seven readings, which the builder confirmed against its
+    design the same day. They bind the engine and the references alike.
+    1. **Which assemblies a shear event acts on.**
+       - The set is fixed when the event begins: the assemblies alive at its start, processed in slot
+         order. Daughters born during the event are not tested again in it.
+       - Two scheduled events at the same time apply in order of their schedule index, each to the
+          assemblies alive at its own start.
+       - A declared time equal to t_end applies. One later than t_end never does.
+    2. **An attempt runs in this order:**
+       1. the stress test, then v ≤ k^(−1/2);
+       2. in population mode, k − 1 free slots, or else the run stops `slots_full`;
+       3. the draw: rule 9's uniforms, then rule 10's;
+       4. the split and the floor test;
+       5. the fission is applied, or refused and recorded with the parent kept.
+
+       The fission counter counts draws. An assembly that fails the stress or the v test neither
+       draws nor advances its counter.
+    3. **A daughter that lyses at birth.**
+       - Every daughter counts as born, both for the shear work (its F at its own V, with its closure
+         cost) and for keys.
+       - Each takes its slot before any lysis at birth. A birth lysis then frees the slot.
+       - The birth lysis is booked as a lysis: one row, q = −(F(after release) − F(as born)) + w.
+    4. **The first Poisson shear time** is t₁ = −ln(u₀)/λ, measured from t = 0.
+    5. **A diagnostic record,** absent by default.
+       - It records every draw: its address (domain, key, counter), its uniforms and its fate. That
+         includes discarded draws, the draw that ends the run, a Poisson gap past t_end, every
+         transfer uniform, and each partition block's used prefix.
+       - It also records each event's changes, and its ledger terms by payer.
+       - OL1's `event_uniforms` keeps its meaning: committed events only.
+    6. **Every counter starts at 0:**
+       - the world counter (domain 5);
+       - each assembly's event counter, at its birth (domain 1, in single-lineage worlds);
+       - each parent's fission counter (domain 2);
+       - each schedule's counter (domain 6).
+
+       A new sub-lineage's starting key counter follows the relations rule, s′·2³² + 1 with s′
+       assigned in world event order. It is read from the `lives` table.
+    7. **A group's channels** are its declared steps forward, then the same steps reverse, as in
+       OL1.
+       - A step with any membrane or lumen place belongs to every slot's group.
+       - A pool-locus step belongs to the pool group.
+
+    **What the record carries.** Every single-lineage attempt records the daughter it follows: G1's
+    `fission_followed`, generalised to k. A missing field is a replay error; the replay never
+    assumes daughter 0.
 
 ### 0.3 Estimate, order and questions
 
