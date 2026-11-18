@@ -1,0 +1,86 @@
+{
+ "format": "ool_references.conventions@1",
+ "registered": "2026-11-17",
+ "authority": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md \u00a70.2a (the lead's rulings for OL1, D215, amended 17 November 2026); token names as the OL1 family's draft format declares them",
+ "rule": "every run bundle and probe declares every key below, with one token each; a missing key, an unknown token or a refused token makes the harness exit with status 2; there are no defaults",
+ "menu": {
+  "free_energy_form": [
+   "discrete"
+  ],
+  "condensed_measure": [
+   "multinomial",
+   "multinomial_less_one"
+  ],
+  "membrane_kinetics": [
+   "count_on_m"
+  ],
+  "lumen_volume": [
+   "declared"
+  ],
+  "empty_catalyst_phase": [
+   "uncatalysed"
+  ],
+  "last_molecule": [
+   "kept",
+   "reversible",
+   "extinct"
+  ]
+ },
+ "refused": {
+  "free_energy_form": [
+   "continuum"
+  ]
+ },
+ "pairing": {
+  "last_molecule=reversible": "condensed_measure=multinomial only",
+  "last_molecule=extinct": "condensed_measure=multinomial_less_one only"
+ },
+ "meanings": {
+  "free_energy_form": {
+   "discrete": "F uses ln n! exactly (the exact kernel's only form)",
+   "continuum": "Stirling's n ln n - n: refused by the exact kernel"
+  },
+  "condensed_measure": {
+   "multinomial": "c = 0: -ln N! + Sum ln n_i!",
+   "multinomial_less_one": "c = 1: -ln (N - 1)! + Sum ln n_i!, G1's measure; 0 at N = 0"
+  },
+  "membrane_kinetics": {
+   "count_on_m": "membrane activities prod ff(n_i, a_i)/ff(N - c, r) at the firing state; extent N(m) - c + 1 on the common state m"
+  },
+  "lumen_volume": {
+   "declared": "the lumen's volume_L is a constant (no lumen in OL1's registered worlds)"
+  },
+  "empty_catalyst_phase": {
+   "uncatalysed": "g = 1 where the membrane (the only catalysing phase) is empty at m"
+  },
+  "last_molecule": {
+   "kept": "rate zero only for a pair whose step changes the membrane's count and one of whose end states has an empty membrane; a step in which the membrane takes no part fires at its own rate under every token, and a pool step at a probe state with an empty membrane fires at the pool's mass action (amendment 5, 18 November 2026: \u00a70.2a as reworded by the lead, main bbcbec69; amendment 4's wording read literally also zeroed those pool steps). The membrane never empties and nothing else is frozen",
+   "reversible": "c = 0 only: the empty membrane is an ordinary state",
+   "extinct": "c = 1 only: a channel whose result empties the membrane fires at the pair rule's cancelled form, 1/ff(N - 1, r - 1) for E(m)/ff(N - 1, r), in either direction (k- for the last molecule's leave); it is one-way, and a literal zero is an error"
+  }
+ },
+ "phases": {
+  "membrane": "condensed: count_on_m; the only catalysing phase in OL1",
+  "pool, lumen": "dilute: mass action scaled by X = N_A V c0 (activity ff(n, a)/X^a, extent X)"
+ },
+ "probed_pairs": [
+  {
+   "condensed_measure": "multinomial",
+   "last_molecule": "kept"
+  },
+  {
+   "condensed_measure": "multinomial_less_one",
+   "last_molecule": "extinct"
+  }
+ ],
+ "covered_pairs": "all four admissible (condensed_measure, last_molecule) pairs",
+ "empty_common_state": "\u00a70.2a as amended (amendment 4): wherever the membrane factor E(m)/ff(N - c, r) is 0/0 - the common state's membrane is empty while neither end state's is (a lone molecule changing form, two joining), or under extinct a channel whose result empties the membrane - it takes its continuous extension 1/ff(N - 1, r - 1), under every last_molecule token; detailed balance holds there",
+ "singular_rate": "\u00a70.2b rule 8 (amendment 4): under multinomial_less_one a step with a membrane place on both sides (one and the same membrane species among both the step's reactants and its products, as E is in A + B + E -> C + E: the lead's confirmation, main bbcbec69, 18 November 2026; a step whose membrane species differ between its sides meets \u00a70.2a's 0/0 at N = r and takes the cancelled form) is +inf at N = r and is admitted only in a world declaring world_role = probe (optional key, only value probe); there the probe reports +inf, and a run that reaches it stops with end_reason stalled, which fails its row",
+ "world_role": {
+  "key": "optional",
+  "values": [
+   "probe"
+  ]
+ },
+ "end_reason": "every run declares one; the registered runs end at their registered event count ('max_events'); any other end, 'stalled' included, fails the run's row"
+}

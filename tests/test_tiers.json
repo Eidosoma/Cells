@@ -157,7 +157,13 @@
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-2e8c6fb3/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-72689736/measured.json",
   "/mnt/workspaces/Cells/ol1-laws-20261117/measure-06ee359e/measured.json",
-  "/mnt/workspaces/Cells/ol1-laws-20261117/measure-efb3c739/measured.json"
+  "/mnt/workspaces/Cells/ol1-laws-20261117/measure-efb3c739/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-7b54090c/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-af0d3ec3/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-591adadb/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-6e78883b/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-cbae394b/measured.json",
+  "/mnt/workspaces/Cells/ool-references-20261117/land/measure-2dcaaa44/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1293,6 +1299,48 @@
    "root": ".claude/worktrees/ol1-laws",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T12:22:47+00:00"
+  },
+  {
+   "git_revision": "7b54090c666c805ac41ea2b41ce2f52b47e9e8b2",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:50:10+00:00"
+  },
+  {
+   "git_revision": "af0d3ec317f858bfe514449f4d647006495f9b2b",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T21:56:58+00:00"
+  },
+  {
+   "git_revision": "591adadb9a0f09cea57a1bef3e335b594f1cc0d3",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:41:06+00:00"
+  },
+  {
+   "git_revision": "6e78883b1e4ed7ab9e908b603dd5dd4a63c68e2e",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T22:47:56+00:00"
+  },
+  {
+   "git_revision": "cbae394b7bb9aa3c8a9f85c6ccdefd0d555eff38",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T11:45:02+00:00"
+  },
+  {
+   "git_revision": "2dcaaa44359c7b6bf4c8e11826e782a7077345f7",
+   "dirty": false,
+   "root": ".claude/worktrees/ool-references",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T12:16:43+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4202,6 +4250,54 @@
     "counts": {
      "passed": 2
     }
+   },
+   {
+    "file": "tests/unit/test_ool_references_closed_world.py",
+    "seconds": 7.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_division.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_geometry.py",
+    "seconds": 1.07,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_mass_action.py",
+    "seconds": 13.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_registration.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_runs.py",
+    "seconds": 5.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
+    }
    }
   ],
   "2": [
@@ -5486,6 +5582,30 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_engine_layout.py",
+    "seconds": 32.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_harness.py",
+    "seconds": 41.71,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_laws.py",
+    "seconds": 22.61,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
     }
    }
   ],

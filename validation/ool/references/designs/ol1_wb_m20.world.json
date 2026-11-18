@@ -1,0 +1,121 @@
+{
+ "format": "ool_references.world@1",
+ "id": "ol1_wb_m20",
+ "registered": "2026-11-17",
+ "description": "OL1 large-system ladder, rung M = 20: 2 S -> T in the pool at K = 1 (exp(-mu0) 1 and 1), forward rate 1/2 per s, X = 20; an inert membrane of three L.",
+ "units": {
+  "time": "s",
+  "energy": "k_BT",
+  "concentration": "mM",
+  "volume": "L"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_mM": {
+  "exact": "1",
+  "float": 1.0
+ },
+ "avogadro_per_mol": {
+  "exact": "602214076000000000000000",
+  "float": 6.02214076e+23
+ },
+ "phases": {
+  "membrane": {
+   "kind": "condensed"
+  },
+  "pool": {
+   "kind": "dilute",
+   "volume_L": {
+    "exact": "1/30110703800000000000",
+    "float": 3.3210781343476933e-20
+   },
+   "X": "20"
+  }
+ },
+ "species": [
+  {
+   "id": "S",
+   "moieties": {
+    "s": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1",
+     "float": -0.0
+    }
+   }
+  },
+  {
+   "id": "T",
+   "moieties": {
+    "s": 2
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1",
+     "float": -0.0
+    }
+   }
+  },
+  {
+   "id": "L",
+   "moieties": {
+    "l": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "bilayer": {
+     "exp_minus": "1",
+     "float": -0.0
+    }
+   }
+  }
+ ],
+ "places": [
+  {
+   "species": "L",
+   "phase": "membrane"
+  },
+  {
+   "species": "S",
+   "phase": "pool"
+  },
+  {
+   "species": "T",
+   "phase": "pool"
+  }
+ ],
+ "regular_mixing_chi": [],
+ "steps": [
+  {
+   "id": "p1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "pool",
+   "reactants": {
+    "S@pool": 2
+   },
+   "products": {
+    "T@pool": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/2",
+    "float": 0.5
+   },
+   "transition_state_factor": []
+  }
+ ],
+ "initial_state": {
+  "L@membrane": 3,
+  "S@pool": 40,
+  "T@pool": 0
+ },
+ "conventions_required": [
+  "free_energy_form",
+  "condensed_measure",
+  "membrane_kinetics",
+  "lumen_volume",
+  "empty_catalyst_phase",
+  "last_molecule"
+ ]
+}
