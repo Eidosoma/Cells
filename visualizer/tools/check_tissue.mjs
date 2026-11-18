@@ -336,6 +336,14 @@ try {
     const head = await question();
     const asked = ENTRY.tissue.intro.items[0];
     check("the note's question stands as the line's head line on the picture, in the window and under nothing, its source linked as the card gives it", Boolean(head) && head.text.startsWith(asked.says) && head.inside && head.clear && Boolean(head.link) && head.link.includes(asked.source.revision), JSON.stringify(head));
+    // A multiple of the threshold reads as the note writes it ("2 x2"): the font's contextual forms, which would draw the
+    // letter between two numbers as a multiplication sign, are off on the heads, the card's picks and the walk's chart.
+    const forms = await evaluate(`(() => { const root = ${V}.shadowRoot, pick = (selector) => root.querySelector(selector); const heads = [...root.querySelectorAll(".label-tissue-head")].filter((el) => / x2/.test(el.textContent)); return { said: heads.map((el) => el.textContent.match(/[\\d.]+ x2/)?.[0]).filter(Boolean), off: [heads[0], pick(".view .tissue-slots"), pick(".view .tissue-walk")].map((el) => (el ? getComputedStyle(el).fontVariantLigatures : null)) }; })()`);
+    check("a multiple of the threshold is written as the note writes it (\"2 x2\"), the font's contextual forms off where it stands", forms.said.includes("2 x2") && forms.off.every((value) => /no-contextual/.test(value || "")), JSON.stringify(forms));
+    // The switch's caption names the cell as the line does, by its number ("the switch of cell 6, the tumor's edge cell").
+    const switchTitle = await evaluate(`${V}.shadowRoot.querySelector(".view .tissue-switch-block .tissue-intro-title")?.textContent || null`);
+    const switchCell = STATED[ENTRY.tissue.switch.cell.arm].cells.indexOf(ENTRY.tissue.switch.cell.cell);
+    check("the switch's caption names its cell by its number along the line, as the changes do", switchTitle === `The switch of cell ${switchCell + 1}, ${ENTRY.tissue.switch.cell_says}`, JSON.stringify(switchTitle));
     // The switch of the tumor's edge cell of the arm in front: every saved record a point.
     const sw = await evaluate(`(() => { const lens = ${L}, figure = ${V}.shadowRoot.querySelector(".tissue-switch"); const item = lens.runs.find((run) => run.slot.arm === ${JSON.stringify(ENTRY.tissue.switch.cell.arm)}); return figure && item ? { points: figure.querySelectorAll("svg > circle").length, count: item.run.count, caption: figure.textContent.slice(-160) } : null; })()`);
     check("the switch of the tumor's edge cell stands drawn: every saved record of it a point, and the ring at the record shown", Boolean(sw) && sw.points === sw.count + 1, JSON.stringify(sw));
@@ -350,10 +358,17 @@ try {
       const came = await until(`${L}.runs.some((item) => item.slot.arm === ${JSON.stringify(brought.arm)}) && !${L}.loading && ${L}.pieces?.has(${JSON.stringify(brought.arm)})`, 240);
       const rows = await evaluate(`${L}.runs.filter((item) => item.group.role === "main").map((item) => item.slot.arm)`);
       check(`a real press on a point (${brought.label}) brings its run into the line's rows in place of the row nearest it`, Boolean(point) && came && rows.length === LINE.runs.length && rows.includes(brought.arm), JSON.stringify(rows));
-      const restore = await placeOf(`[...root.querySelectorAll(".view .tissue-walk-block .tissue-back")][0]`);
+      await sleep(1200);
+      // The switch keeps its cell where the arm it stood on was replaced: the same cell of the arm brought in, said so.
+      const replaced = await evaluate(`${L}.walk?.replace || null`);
+      const switchNow = await evaluate(`${V}.shadowRoot.querySelector(".view .tissue-switch-block .tissue-intro-title")?.textContent || null`);
+      if (replaced === ENTRY.tissue.switch.cell.arm) check("where the arm the switch stood on is replaced, the switch shows the same cell of the arm brought in, its caption saying which", Boolean(switchNow) && switchNow.includes(brought.short), JSON.stringify(switchNow));
+      // The way back to the line's four stands on the picture too, while a ladder arm is in view; a real press on it.
+      const restore = await placeOf(`root.querySelector(".label-tissue-door .tissue-walk-restore")`);
+      check("while a ladder arm is in the line's rows, the way back to the four of the record stands on the picture, in the window", Boolean(restore) && restore.x > 0 && restore.x < WIDTH && restore.y > 0 && restore.y < HEIGHT, JSON.stringify(restore));
       if (restore) await click(restore.x, restore.y, 1500);
       const back = await until(`!${L}.walk && !${L}.loading && ${L}.runs.filter((item) => item.group.role === "main").map((item) => item.slot.arm).join() === ${JSON.stringify(ARMS.join())}`, 240);
-      check("and \"the four of the record\" gives the line its own rows again", Boolean(restore) && back, "");
+      check("and a real press on \"the four of the record\" gives the line its own rows again", Boolean(restore) && back, "");
     } else note("the ladder's runs are not on this machine: the walk is not checked");
     // The colours as drawn, at the first record and at the last.
     let colours = await drawn(lineSamples);
@@ -373,7 +388,9 @@ try {
     check(`a real press on a map opens that cell and moves the clock to the record pressed (${PRESS.arm}, ${PRESS.name}, ${clock(PRESS.time)})`, s.selected === `tissue:${PRESS.arm}:${PRESS.cell}` && Math.abs(s.time - target.time) < 1e-6, JSON.stringify([s.selected, s.time, target]));
     const said = new RegExp(`State there, as the driver states it\\s*${PRESS.state}`);
     check(`its panel gives its value and its state as the driver states it (${PRESS.state} there), and the note's end line`, said.test(s.panel) && s.panel.includes(`miR200 minus Zeb mRNA at ${clock(PRESS.time)}`) && s.panel.includes(PRESS.end), s.panel.slice(0, 260));
-    check("the pressed cell is told apart on the picture: ringed, and named with the driver's state", s.chosenRing?.visible && s.chosenRing.cell === PRESS.cell && s.chosen.length === 1 && s.chosen[0].text === `${PRESS.name} · ${PRESS.state}`, JSON.stringify([s.chosenRing, s.chosen]));
+    // One name for a line's cell: its number along the line, as a change's name gives it; the driver's id once, in the panel.
+    check("a line's cell has one name where a visitor reads it: its panel is headed by its number along the line, with the driver's id beside it once", s.panel.includes(`cell ${PRESS.cell + 1}, at `) && s.panel.includes(`cell ${PRESS.cell + 1}, the driver's ${PRESS.name}`) && !s.panel.includes(`${PRESS.name}, at `), s.panel.slice(0, 240));
+    check("the pressed cell is told apart on the picture: ringed, and named with the driver's state", s.chosenRing?.visible && s.chosenRing.cell === PRESS.cell && s.chosen.length === 1 && s.chosen[0].text === `cell ${PRESS.cell + 1} · ${PRESS.state}`, JSON.stringify([s.chosenRing, s.chosen]));
     await shot("pressed");
     // The timeline's next change: the clock goes to the first stated change, which is named over its cell.
     await evaluate(`${V}.select(null)`);

@@ -140,7 +140,8 @@ export const tissueCss = `
 /* The walk: each coupling a point to press. */
 .tissue-walk-block { margin: 10px 0 0; display: grid; gap: 4px; justify-items: start; }
 .tissue-walk { margin: 0; display: grid; gap: 4px; }
-.tissue-walk svg { width: 100%; max-width: 250px; height: auto; display: block; }
+.tissue-walk-block { justify-items: stretch; }
+.tissue-walk svg { width: 100%; height: auto; display: block; }
 .tissue-walk figcaption { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
 .tissue-walk-point { cursor: pointer; }
 .tissue-walk-point:focus-visible { outline: none; }
@@ -152,7 +153,7 @@ export const tissueCss = `
 .label-tissue-walk-label .tissue-intro-title { font-size: 10px; }
 .label-tissue-switch-label { pointer-events: none; background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px 4px; white-space: normal; width: 300px; }
 .label-tissue-switch-label .tissue-switch svg { max-width: 200px; margin: 0 auto; }
-.label-tissue-switch-label figcaption { font-size: 11px; line-height: 1.35; height: 1.4em; overflow: hidden; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
+.label-tissue-switch-label figcaption { font-size: 11px; line-height: 1.35; max-height: 2.8em; overflow: hidden; text-align: center; white-space: normal; }
 /* The tissue's names on the picture (src/lenses/tissue_line.js lays them out so that none meets another or a cell: each
    stands with its middle bottom on its point, as the label layer places it, and no rule here moves it off that). */
 .label-tissue-head .tissue-line, .label-tissue-end .tissue-line, .label-tissue-over .tissue-line { display: block; }
@@ -170,11 +171,23 @@ export const tissueCss = `
 .tissue-key-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; vertical-align: -1px; }
 .tissue-key-dot.is-bead { width: 8px; height: 8px; box-shadow: 0 0 0 1.5px var(--fg); }
 .label-tissue-door { pointer-events: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; width: max-content; white-space: normal; }
+/* A multiple of the threshold is written as the note writes it ("x2/2", "x2", "2 x2"): the page's font would draw a letter
+   x between two numbers as a multiplication sign ("2 ×2"), so its contextual forms are off wherever the tissue writes one:
+   its names on the picture, the whole of its card (the record's own lines and the switch's caption among them) and the
+   panel of one of its cells. */
+[class*="label-tissue"], .view:has(.tissue-intro), .tissue-slots, .tissue-walk, .tissue-switch, .tissue-intro, cells-panel:has(.tissue-switch) { font-variant-ligatures: no-contextual; }
+/* On a wide window the tissue's long heading folds to one line in its card (in full under the pointer), so that "What you
+   are looking at" comes up nearer the card's fold; the picture's head line and the list's row name it too. */
+@media (min-width: 760px) {
+  .view:has(.tissue-intro) > .card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .view:has(.tissue-intro) > .card-title:hover { white-space: normal; }
+}
 /* The note's question, the line's head line on the picture, with its source as the card gives it. */
 .label-tissue-question { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--fg); white-space: normal; width: max-content; text-align: left; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 85%, transparent); pointer-events: auto; }
 .label-tissue-question .tissue-intro-source { font-weight: 400; font-size: 11.5px; color: var(--accent); }
 /* The line's standing on its picture, where the bar's stamp may not show it. */
 .label-tissue-door .tissue-standing { font-size: 12.5px; font-weight: 600; color: var(--fg); background: color-mix(in srgb, var(--bg) 90%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
 .label-tissue-door .tissue-door-button { margin: 0; min-height: 32px; padding: 4px 12px; font-size: 12.5px; }
+.label-tissue-door .tissue-walk-restore { margin: 0; min-height: 32px; padding: 4px 12px; font-size: 12.5px; }
 .tissue-door-button { color: var(--bg-raised); background: var(--accent); border-color: var(--accent); font-weight: 600; }
 `;

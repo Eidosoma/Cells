@@ -77,3 +77,15 @@ test("the tissue view's ready resolves to nothing, as every view's does, and a p
   assert.equal(await lens.ready, undefined);
   assert.match(lens.error, /no tissue called no-such-part/);
 });
+
+test("a cell has one name where a visitor reads it: on a line its number along the line, as a change says it; on a sheet the run's id", () => {
+  const name = (item, k) => TissueLineLens.prototype.cellName.call(null, item, k);
+  const line = { lined: true, cells: { ids: ["c0", "c1", "c2", "c3", "c4", "c5"] } }, sheet = { lined: false, cells: { ids: ["c3_3", "c3_4"] } };
+  assert.equal(name(line, 5), "cell 6");
+  assert.equal(name(sheet, 0), "c3_3");
+  // The same number a stated change of that cell is named by.
+  const states = { width: 6, words: ["M", "X", "E"], text: (k, c) => (k === 0 ? "M" : c === 5 ? "X" : "M") };
+  const run = { t: Float64Array.from([0, 1]), count: 2, sets: new Map([["cell", { ids: line.cells.ids }]]) };
+  const [change] = changesOf([{ arm: "a", label: "a", run, states, naming: "number" }]);
+  assert.equal(change.words, `${name(line, change.cell)}: M to X`);
+});

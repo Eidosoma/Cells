@@ -356,9 +356,15 @@ export class TissueLineLens {
         // window under 1024 px), the picture says it on the same line, in the record's own words.
         const other = this.door();
         const standing = this.stage.width < 1024 ? this.standing() : null;
+        // While the walk has a coupling of the ladder in the line's rows, the way back to the line's own four stands here too.
+        const restore = this.walk && group.line.entry.tissue?.walk?.restore;
         block.door = made(
           "tissue-door",
-          [standing ? h("span", { class: "tissue-standing" }, standing) : null, other ? h("button", { class: "tissue-back tissue-door-button", type: "button", dataset: { part: other.id }, onclick: () => this.open(other.id) }, other.short || other.label) : null],
+          [
+            standing ? h("span", { class: "tissue-standing" }, standing) : null,
+            restore ? h("button", { class: "tissue-back tissue-walk-restore", type: "button", onclick: () => this.walkTo(this.line.runs[0].arm) }, restore) : null,
+            other ? h("button", { class: "tissue-back tissue-door-button", type: "button", dataset: { part: other.id }, onclick: () => this.open(other.id) }, other.short || other.label) : null,
+          ],
           { title: other ? other.tissue.caption : null, maxWidth: roomWidth }
         );
         // The note's question, the line a newcomer needs first, as the picture's head line with its source as the card
@@ -399,7 +405,7 @@ export class TissueLineLens {
       // without making them smaller (layout below).
       if (block.role === "main" && !narrow) {
         const at = this.switchCell();
-        const figure = at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}` });
+        const figure = at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${this.cellName(at.item, at.k)}${at.says ? `, ${at.says}` : ""}` });
         if (figure) block.switch = made("tissue-switch-label", [figure]);
         // And the walk (the line's couplings and its ladder's), pressed as the card's.
         const walk = this.walkFigure({ compact: true });
@@ -1109,7 +1115,7 @@ export class TissueLineLens {
     const { item, sheet } = piece, k = this.selected.cell, cell = sheet.cells[k];
     const index = item.run.indexAt(this.player.time);
     const state = item.states ? item.states.text(index, item.cells.columns[k]) : null;
-    const words = `${item.cells.ids[k]}${state ? ` · ${state}` : ""}`;
+    const words = `${this.cellName(item, k)}${state ? ` · ${state}` : ""}`;
     if (!tags.chosen) {
       tags.chosen = labels.add({ text: words, anchor: new THREE.Vector3(), kind: "tissue-state", priority: 10, lift: 0 });
       tags.chosen.boost = 1000;
@@ -1237,7 +1243,7 @@ export class TissueLineLens {
     // The card's switch, and the one under the tissues, are the chosen cell's.
     if (changed) {
       const label = this.blocks?.find((block) => block.switch)?.switch, at = this.switchCell();
-      const figure = label && at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}` });
+      const figure = label && at && this.switchFigure(at.item, at.k, "stage", { compact: true, title: `The switch of ${this.cellName(at.item, at.k)}${at.says ? `, ${at.says}` : ""}` });
       if (figure) label.element.replaceChildren(figure);
       this.onChrome?.();
     }
@@ -1309,7 +1315,7 @@ export class TissueLineLens {
   sections() {
     return this.runs.map((item) => ({
       label: `${item.group.line.short}: ${item.slot.label}`,
-      entities: [{ id: RUN + item.run.id, label: `The run at ${item.slot.label}` }, ...item.cells.ids.map((name, k) => ({ id: `${CELL_ID}${item.slot.arm}:${k}`, label: `${name} at ${item.slot.short}`, keywords: item.group.line.tumor?.cells?.includes(name) ? "tumor" : "" }))],
+      entities: [{ id: RUN + item.run.id, label: `The run at ${item.slot.label}` }, ...item.cells.ids.map((name, k) => ({ id: `${CELL_ID}${item.slot.arm}:${k}`, label: `${this.cellName(item, k)} at ${item.slot.short}`, keywords: [item.lined ? name : "", item.group.line.tumor?.cells?.includes(name) ? "tumor" : ""].filter(Boolean).join(" ") }))],
     }));
   }
 
@@ -1337,7 +1343,7 @@ export class TissueLineLens {
     const amounts = item.amounts.filter((amount) => amount.record).map((amount) => [`${amount.label} at ${at} (${amount.stated ? "as the driver states it" : "saved"})`, reading(amount.record, amount.record.at(index, column)) || "no value"]);
     return {
       id,
-      label: `${name}, at ${item.slot.label}`,
+      label: `${this.cellName(item, cell.cell)}, at ${item.slot.label}`,
       eyebrow: line.entry.label,
       kind: "cell",
       plain: `One cell of the tissue in the run at ${item.slot.label}. The chart shows its ${lower(label)} at every saved record, as the experiment's driver states it beside the run; the line through it is the clock.`,
@@ -1345,6 +1351,8 @@ export class TissueLineLens {
       chips: [{ label: item.slot.label, title: "The run this cell is shown in." }, ...(tumor ? [{ label: "Tumor", title: line.tumor.source || "" }] : [])],
       figure: this.switchFigure(item, cell.cell, "panel"),
       facts: [
+        // On a line the cell is named by its number; the driver's own id stands beside it here, once.
+        ...(item.lined ? [["Cell", `${this.cellName(item, cell.cell)}, the driver's ${name}`]] : []),
         ["Run", item.slot.arm],
         [`${label} at ${at}`, reading(item.record, item.record.at(index, column)) || "no value"],
         ...(state ? [["State there, as the driver states it", state]] : []),
@@ -1474,7 +1482,7 @@ export class TissueLineLens {
       (() => {
         const at = this.runs.length && this.switchCell();
         const figure = at && this.switchFigure(at.item, at.k, "card");
-        return figure ? h("section", { class: "tissue-switch-block" }, h("p", { class: "tissue-intro-title" }, `The switch of ${at.item.cells.ids[at.k]}${at.says ? `, ${at.says}` : ""}`), figure) : null;
+        return figure ? h("section", { class: "tissue-switch-block" }, h("p", { class: "tissue-intro-title" }, `The switch of ${this.cellName(at.item, at.k)}${at.says ? `, ${at.says}` : ""}`), figure) : null;
       })(),
       // The example's other parts, each its own view here: a part with a caption of its own stands under it, in full.
       ...others.map((part) => (part.tissue?.caption ? h("div", { class: "tissue-sibling-block", dataset: { part: part.id } }, h("p", { class: "card-text" }, part.tissue.caption), door(part)) : door(part))),
@@ -1520,10 +1528,18 @@ export class TissueLineLens {
   switchCell() {
     const chosen = this.selected && this.runs.find((item) => item.slot.arm === this.selected.arm);
     if (chosen) return { item: chosen, k: this.selected.cell, says: "the cell chosen" };
-    const cfg = this.line?.entry.tissue?.switch?.cell;
-    const item = cfg && this.runs.find((run) => run.slot.arm === cfg.arm);
+    const cfg = this.line?.entry.tissue?.switch?.cell, says = this.line?.entry.tissue?.switch?.cell_says || "";
+    let item = cfg && this.runs.find((run) => run.slot.arm === cfg.arm);
+    // Where the walk brought a coupling in place of the entry's arm, the same cell of the arm brought in, its caption
+    // saying which arm.
+    if (cfg && !item && this.walk?.replace === cfg.arm) {
+      item = this.runs.find((run) => run.slot.arm === this.walk.slot.arm);
+      const k = item ? item.cells.ids.indexOf(cfg.cell) : -1;
+      const kind = says.split(", at ")[0];
+      return item && k >= 0 ? { item, k, says: `${kind}, at ${item.slot.short}${item.slot.where ? ` · ${item.slot.where}` : ""}` } : null;
+    }
     const k = item ? item.cells.ids.indexOf(cfg.cell) : -1;
-    return item && k >= 0 ? { item, k, says: this.line.entry.tissue.switch.cell_says || "" } : null;
+    return item && k >= 0 ? { item, k, says } : null;
   }
 
   /**
@@ -1559,7 +1575,7 @@ export class TissueLineLens {
       { class: "tissue-switch" },
       svg(
         "svg",
-        { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `${xr.label ? headOf(xr.label) : "x"} against ${yr.label ? headOf(yr.label) : "y"}, every saved record of ${item.cells.ids[k]}` },
+        { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", "aria-label": `${xr.label ? headOf(xr.label) : "x"} against ${yr.label ? headOf(yr.label) : "y"}, every saved record of ${this.cellName(item, k)}` },
         svg("rect", { x: left, y: upper, width: W - left - right, height: H - bottom - upper, fill: "none", stroke: muted, "stroke-opacity": 0.4 }),
         ...[low, high].map((d) => { const [[x0, y0], [x1, y1]] = lineAt(d); return svg("line", { x1: sx(x0), y1: sy(y0), x2: sx(x1), y2: sy(y1), stroke: ink, "stroke-width": 1.2, "stroke-dasharray": "4 3" }); }),
         // E's name in its band's open middle (its records gather at its far corner), M's at its band's top left.
@@ -1574,8 +1590,8 @@ export class TissueLineLens {
         svg("text", { x: 10, y: (upper + H - bottom) / 2, "text-anchor": "middle", transform: `rotate(-90 10 ${(upper + H - bottom) / 2})`, class: "tissue-switch-axis" }, `${yr.label ? headOf(yr.label) : "y"} (${unitSign(yr.unit)})`)
       ),
       compact
-        ? h("figcaption", {}, title || `The switch of ${item.cells.ids[k]} at ${item.slot.short}: each saved record a point; the ring, the record shown`)
-        : h("figcaption", {}, `Every saved record of ${item.cells.ids[k]} at ${item.slot.short} is a point, as the driver states it; the dashed lines are ${lower(headOf(item.record.label))} at ${number(high, 0)} and at ${number(low, 0)} (the criterion); the ring is the record shown.`)
+        ? h("figcaption", {}, title || `The switch of ${this.cellName(item, k)} at ${item.slot.short}: each saved record a point; the ring, the record shown`)
+        : h("figcaption", {}, `Every saved record of ${this.cellName(item, k)} at ${item.slot.short} is a point, as the driver states it; the dashed lines are ${lower(headOf(item.record.label))} at ${number(high, 0)} and at ${number(low, 0)} (the criterion); the ring is the record shown.`)
     );
     (this.switchRings ||= new Map()).set(place, { item, column, ring, sx, sy, xs, ys });
     this.moveSwitchRings();
@@ -1601,8 +1617,15 @@ export class TissueLineLens {
     const x2 = points.find((point) => point.slot.place?.x2)?.slot.place.x2;
     const positive = points.filter((point) => point.slot.value > 0).map((point) => Math.log10(point.slot.value));
     const lo = Math.min(...positive) - 0.08, hi = Math.max(...positive) + 0.08;
-    const W = 250, left = 34, right = 8, zeroGap = 16, top1 = 8, h1 = compact ? 54 : 78, gap = compact ? 20 : 26, h2 = compact ? 42 : 62, H = top1 + h1 + gap + h2 + 24;
-    const sx = (value) => (value > 0 ? left + zeroGap + ((Math.log10(value) - lo) / (hi - lo)) * (W - left - zeroGap - right) : left + 4);
+    const W = 270, left = compact ? 46 : 40, right = 10, zeroGap = 22, top1 = 8, h1 = compact ? 42 : 96, gap = compact ? 18 : 28, h2 = compact ? 34 : 80, H = top1 + h1 + gap + h2 + (compact ? 24 : 38);
+    // D on a log scale, its ticks at 1, 2 and 5 of each power of ten in the walk's range, read in the power of its least
+    // value ("5, 10, 20, 50" for 5e-15 to 5e-14); D = 0 stands apart at the left, past a break.
+    const sx = (value) => (value > 0 ? left + zeroGap + ((Math.log10(value) - lo) / (hi - lo)) * (W - left - zeroGap - right) : left + 6);
+    const power = Math.floor(lo + 0.08);
+    const ticks = [];
+    for (let e = Math.floor(lo); e <= Math.ceil(hi); e++) for (const m of [1, 2, 5]) if (Math.log10(m * 10 ** e) >= lo && Math.log10(m * 10 ** e) <= hi) ticks.push(m * 10 ** e);
+    // The power of ten raised in the drawing itself (the font may lack superscript signs).
+    const tenTo = (rest) => ["10", svg("tspan", { dy: -4, "font-size": "0.8em" }, String(power).replace("-", "−")), svg("tspan", { dy: 4 }, rest)];
     // The tumor's cells as the packages state them (its summary's tumor_cells).
     const tumor = this.line.tumor?.cells?.length || Math.max(1, ...points.map((point) => point.end.tumor_E));
     const sy1 = (n) => top1 + h1 - (n / Math.max(1, tumor)) * h1;
@@ -1648,10 +1671,14 @@ export class TissueLineLens {
         svg("text", { x: 9, y: top1 + h1 + gap + h2 / 2, "text-anchor": "middle", transform: `rotate(-90 9 ${top1 + h1 + gap + h2 / 2})`, class: "tissue-switch-axis" }, "all E first"),
         // The threshold the search reported.
         ...(xLine ? [svg("line", { x1: xLine, x2: xLine, y1: top1 - 4, y2: top1 + h1 + gap + h2, stroke: ink, "stroke-dasharray": "3 3", "stroke-width": 1.1 }), svg("text", { x: xLine + 3, y: top1 + h1 + 14, class: "tissue-switch-band" }, "x2")] : []),
-        // D's axis: 0 apart at the left, then a log scale.
-        svg("text", { x: left + 4, y: H - 6, "text-anchor": "middle", class: "tissue-switch-tick" }, "0"),
-        ...[Math.pow(10, Math.ceil(lo)), Math.pow(10, Math.floor(hi))].filter((value, k, all) => all.indexOf(value) === k && Math.log10(value) >= lo && Math.log10(value) <= hi).map((value) => svg("text", { x: sx(value), y: H - 6, "text-anchor": "middle", class: "tissue-switch-tick" }, `1e${Math.round(Math.log10(value))}`)),
-        svg("text", { x: (left + W - right) / 2 + 20, y: H - 6, "text-anchor": "middle", class: "tissue-switch-axis" }, `D (${this.line.parameter.unit})`),
+        // D's axis: 0 apart at the left past a break, then a log scale with its ticks.
+        ...[top1, top1 + h1 + gap].map((y0, k) => svg("line", { x1: left + zeroGap - 5, x2: left + zeroGap - 5, y1: y0, y2: y0 + (k ? h2 : h1), stroke: muted, "stroke-opacity": 0.6, "stroke-dasharray": "2 2" })),
+        svg("text", { x: left + 6, y: top1 + h1 + gap + h2 + 13, "text-anchor": "middle", class: "tissue-switch-tick" }, "0"),
+        ...ticks.flatMap((value) => [
+          svg("line", { x1: sx(value), x2: sx(value), y1: top1 + h1 + gap + h2, y2: top1 + h1 + gap + h2 + 3, stroke: muted }),
+          svg("text", { x: sx(value), y: top1 + h1 + gap + h2 + 13, "text-anchor": "middle", class: "tissue-switch-tick" }, number(value / 10 ** power, 0)),
+        ]),
+        svg("text", { x: (left + W - right) / 2, y: H - (compact ? 2 : 6), "text-anchor": "middle", class: "tissue-switch-axis" }, "D (", ...tenTo(` ${this.line.parameter.unit})${compact ? ", log; 0 apart" : ", a log scale; D = 0 apart at the left"}`)),
         ...points.map((point) => dot(point, sx(point.slot.value), sy1(point.end.tumor_E))),
         ...points.filter((point) => point.end.all_E_first_s).map((point) => dot(point, sx(point.slot.value), sy2(point.end.all_E_first_s)))
       ),
@@ -1684,6 +1711,14 @@ export class TissueLineLens {
    * The block "What you are looking at" (the entry's `tissue.intro`): what to do first, then the record's own sentences,
    * each with a link to its source; the first few in sight (one on a narrow window), the rest folded.
    */
+  /**
+   * A cell's name where a visitor reads it: on a line its number along the line, counted from one as the note's tables
+   * count them and as a change's name says it ("cell 6"); on a sheet the run's own id ("c3_3").
+   */
+  cellName(item, k) {
+    return item.lined ? `cell ${k + 1}` : item.cells.ids[k];
+  }
+
   /** An intro sentence's source, as the card gives it: its place in the note ("In short", "§7.1"), linked at its revision. */
   sourceLink(item) {
     const where = String(item.source?.where || "");
