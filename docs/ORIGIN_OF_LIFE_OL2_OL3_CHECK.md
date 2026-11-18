@@ -4,6 +4,11 @@
 `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` (main 5f2d16ed). This note is amended to cite those rulings.
 - **§0.2b–c are the authority.** OL5 builds from them, never from this note. Where this note and
   §0.2c differ, §0.2c holds.
+- **§0.2d.** The lead's rulings on OL5's questions are §0.2d (branch `ol-rulings-20261118` at
+  7fb8816f, landing after move 2). Items 2 and 5–7 bind this builder, and the note is amended to
+  them.
+  - Item 6's provisional draw maps and schedule streams are **confirmed** against the stream
+    layout, with one proposed extension (§2.1).
 - **The probes that rule 9 and the rulings asked for were added after them** (§2.2, §1.6 and
   §1.3). None disagrees with a ruling.
 - **Scope.** Docs only until the lead says move 2 has landed. Branch `ol2-design-check` from main
@@ -74,10 +79,10 @@
 | Component | ID (interface) | The world declares | In the kernel | Records and refusals |
 | --- | --- | --- | --- | --- |
 | **Geometry** | `cells.bilayer_geometry@1` (new: `cells.assembly_geometry@1`) | A `geometry` block: the law; an area quantum q (m²); each membrane species' area per molecule per leaflet as an integer k_i of quanta, with its rounding to q declared (rule 4); `vesicle_floor` in quanta, W_floor ≥ 1, provenance `unsourced` (rule 5); `closure_cost_kT` {value, provenance `unsourced`}; `sigma_max_N_per_m` with its source | W(n) = Σ n_i k_i, an exact int64, so A = qW/2; R = (A/4π)^½, V_sph = A^(3/2)/(6√π) and v are derived, never stored (R4). It supplies A(m) and R(m) to the encounter laws. Its F is C_close for each living vesicle: a constant whose change is 0 at every step, entering only where the number of vesicles changes (rule 8) | Rows: W, A, V, v and σ. Refused: a membrane species without k_i; a founder below the floor; a floor without `last_molecule: kept` (rule 5) |
-| **Phase exchange** | `cells.phase_exchange@1` (`cells.reaction_law@1`) | A join of one molecule from the pool into the membrane, of the same species, in the join's direction (rule 2). Its constant's key matches the token: `insertion_velocity_m_per_s` (k_ins) or `diffusivity_m2_per_s` (D_i). The token `exchange_encounter` (§0.2b rule 1; conditional, rule 1) | θ⁺ is the pool's activity (n/X_pool, or c/c0 when held). The extent on m is A(m)·ρ0 (`insertion_area`) or 4πR(m)·ρ0 (`diffusion_radius`), with ρ0 = N_A c0. The leave comes from F | Refused: no geometry; a step declared as the leave; a change of species; a key that does not match the token |
-| **Permeation** (§0.2b rule 6) | `cells.membrane_permeation@1` (`cells.reaction_law@1`; rule 15) | An entry of one molecule from the pool into the lumen, of the same species (rule 2). Its key is `permeability_m_per_s` (P_s) | θ⁺ is the pool's activity. The extent is P_s·A(m)·ρ0 (`permeation_area`). The exit comes from F | Refused: no geometry or no lumen; a step declared as the exit |
-| **Osmotic lumen** (§0.2b rule 2) | `cells.osmotic_lumen@1` (`cells.free_energy_term@1`, excess) | `lumen_volume: osmotic` (a new value; `declared` keeps its meaning); a free-energy entry with `outside_osmolarity_mM`, c_ext, the outside's total osmolarity, held (rule 6); a lumen block without `volume_L` | F_osm(n) = −N_L(n) ln(N_A c0 V(n)) + N_A c_ext V(n), with V(n) = min(V_osm, V_sph(A(n))), V_osm = N_L/(N_A c_ext), and N_L every lumen species (rule 6). The lumen's ln X in the layout is 0, so `cells.ideal_mixing@1` carries only μ° and ln n! there. Its factor on m is X(V(m))^(1−α_L) for a lumen-locus step with one reactant molecule, the only lumen-reactant step admitted (rule 7), and so 1 (§1.4) | Rows: V, Δp and σ, and for a finite pool the largest relative drift of the pool's solute osmolarity against c_ext (rule 6). Refused: osmotic without a geometry or a lumen; `volume_L` declared; c_ext below the declared pool solutes' total, for the world and for each transfer's fresh pool (rule 6); rule 7's steps |
-| **Lysis** (§0.2b rule 3; rule 8) | Part of the osmotic lumen, with the geometry's σ_max | — | An event whose end state has σ > σ_max fires at its pair-rule rate and ends the life `lysed`. The lumen's and the membrane's molecules return to their pool places as monomers. q = −(F_after − F(n)) + w, where F_after drops the vesicle's terms and its C_close | A lysis table: time, slot, key, σ at the end state, the returned counts. The status `lysed` (one assembly), or a freed slot (a shared pool). `lysed` enters the next relations version, which OL2 adds (rule 8). Refused: a membrane or lumen species without a pool place; a founder beyond σ_max |
+| **Phase exchange** | `cells.phase_exchange@1` (`cells.reaction_law@1`) | A join of one molecule from the pool into the membrane, of the same species, in the join's direction (rule 2). Its constant's key matches the token: `insertion_velocity_m_per_s` (k_ins) or `diffusivity_m2_per_s` (D_i). The token `exchange_encounter` (§0.2b rule 1; conditional, rule 1) | a⁺ = k·E(m)·ρ0·θ⁺(n) (§0.2d item 2), with θ⁺ the pool's activity (n/X_pool, or c/c0 when held) and ρ0 = N_A·c0 in molecules per m³. Under `insertion_area`, k = k_ins in m/s and E = A(m) in m². Under `diffusion_radius`, k = D_i in m²/s and E = 4πR(m) in m. The leave comes from F | Refused: no geometry; a step declared as the leave; a change of species; a key that does not match the token |
+| **Permeation** (§0.2b rule 6) | `cells.membrane_permeation@1` (`cells.reaction_law@1`; rule 15) | An entry of one molecule from the pool into the lumen, of the same species (rule 2). Its key is `permeability_m_per_s` (P_s) | a⁺ = P_s·A(m)·ρ0·θ⁺(n) (`permeation_area`; §0.2d items 2 and 4), with P_s in m/s, A(m) in m², and θ⁺ the pool's activity alone. The exit comes from the exact ΔF | Refused: no geometry or no lumen; a step declared as the exit |
+| **Osmotic lumen** (§0.2b rule 2) | `cells.osmotic_lumen@1` (`cells.free_energy_term@1`, excess) | `lumen_volume: osmotic` (a new value; `declared` keeps its meaning); a free-energy entry with `outside_osmolarity_mM`, c_ext, the outside's total osmolarity, held (rule 6); a lumen block without `volume_L` | F_osm(n) = −N_L(n) ln(N_A c0 V(n)) + N_A c_ext V(n), with V(n) = min(V_osm, V_sph(A(n))), V_osm = N_L/(N_A c_ext), and N_L every lumen species (rule 6). The lumen's ln X in the layout is 0, so `cells.ideal_mixing@1` carries only μ° and ln n! there. Together they are §0.2d item 3's F_lumen: V in L (V_sph converted from m³), c0 and c_ext in mol/L, and F_lumen = 0 at an empty lumen. Its factor on m is X(V(m))^(1−α_L) for a lumen-locus step with one reactant molecule, the only lumen-reactant step admitted (rule 7), and so 1 (§1.4) | Rows: V, Δp and σ, and for a finite pool the largest relative drift of the pool's solute osmolarity against c_ext (rule 6). Refused: osmotic without a geometry or a lumen; `volume_L` declared; c_ext below the declared pool solutes' total, for the world and for each transfer's fresh pool (rule 6); rule 7's steps |
+| **Lysis** (§0.2b rule 3; rule 8) | Part of the osmotic lumen, with the geometry's σ_max | — | An event whose end state has σ > σ_max fires at its pair-rule rate and ends the life `lysed`. The lumen's and the membrane's molecules return to their pool places as monomers. One ledger row covers the triggering step and the release together (§0.2d item 7): q = −(F(n_after) − F(n)) + w. Here n_after is the state after the release, without the vesicle's terms or its C_close, and w is the step's work plus the reservoir work of any held place that receives molecules | A lysis table: time, slot, key, σ at the end state, the returned counts. The status `lysed` (one assembly), or a freed slot (a shared pool). `lysed` enters the next relations version, which OL2 adds (rule 8). Refused: a membrane or lumen species without a pool place; a founder beyond σ_max |
 | **Vesicle floor** (§0.2b rule 4; rule 5) | In the geometry block | W_floor, in quanta | A pair whose step changes the membrane's area, with an end state below W_floor, has rate 0, tested on the end states. A step that keeps the area fires at its own rate. A division is admitted only if every daughter is at or above the floor | — |
 | **Selection order** (rule 5, R as a requirement) | — | — | Each bundle declares its fold order and its map from uniforms to events. One assembly: OL1's. A shared pool: §1.8 | `run.json` declares both |
 | **Shared pool** | `cells.shared_pool@1`, the first `cells.population_structure@1` (rule 15) | A `population` block: the structure; K slots, a capacity bucket; the assemblies' founders (membrane and lumen counts). `founder` gives the pool | State: the pool's counts plus [K, P_asm] counts, each slot's occupant key and its alive flag. F = F_pool + Σ_slots F_asm. Draws come from the reserved `world` domain (5) (rule 14) | Rows per slot, with occupancy. Refused: more founders than K; `population` under `single_lineage` |
@@ -219,9 +224,13 @@ What follows (S):
     fission the two differ);
   - each group's total is a serial fold over its channels, and a0 is a serial fold over the
     groups;
-  - three uniforms per event from domain 5 (`world`), with the counter at the world's event count:
-    u1 gives τ = −ln u1/a0, u2 the first group with C_g > min(u2·a0, nextafter(a0, 0)), and u3 the
-    channel within it, by the same rule on a_g.
+  - three uniforms per draw from domain 5 (`world`), with the counter at the world's **draw** count
+    (§0.2d item 6). u1 gives τ = −ln u1/a0, u2 the first group with C_g > min(u2·a0,
+    nextafter(a0, 0)), and u3 the channel within it, by the same rule on a_g (§0.2d item 5);
+  - **a draw that crosses the next declared schedule time is discarded** (§0.2d item 6). Its
+    counter is spent, the clock moves to that time, the scheduled event applies, and the next draw
+    takes the next counter. This is exact by the exponential's memorylessness. Without schedules,
+    draws and events coincide.
   - It is exact in distribution, with P(j) = a_j/a0 (S). The residual of one uniform could stand
     in for u3, but it loses bits.
 - **The cost per event (S):**
@@ -239,8 +248,31 @@ What follows (S):
 
 ### 2.1 Shear fission (D2): `cells.shear_fission@1`
 
-- **The schedule:** declared times, or a Poisson rate on the `schedule` domain (6) (rule 14), each
-  event with a stress τ.
+- **The schedule** (§0.2d item 6), each event with a stress τ, takes one of two forms:
+  - declared times;
+  - a Poisson process of declared rate λ, whose gaps are −ln(u)/λ from successive uniforms under
+    the time uniform's convention.
+
+  Each schedule draws on the `schedule` domain (6) under its own key, its declared index, with the
+  counter at its own draw count.
+- **Item 6 against the stream layout (S): confirmed.**
+  - **The schedule's key.** G1's derivation folds the base key, then a 64-bit carrier word, then
+    the domain, then the counter. A schedule's declared index takes the carrier word in domain 6,
+    so no new fold is needed. No other stream draws in domain 6, so no key collides.
+  - **One uniform per counter.** Each uniform of a transfer, and each Poisson gap, is its own draw:
+    one counter value, giving a block of one.
+    - So the values do not depend on the slot capacity. The device draws K counters statically
+      and masks the ones it does not use.
+    - That holds whether or not JAX's threefry is partitionable.
+  - **Blocks.** A block draw, such as the partition's one draw per attempt (rule 12), is
+    size-independent only because threefry is partitionable. It is here: JAX 0.11.1, with the flag
+    true by default, and an 8-uniform block's prefix equals a 5-uniform block.
+    - **P:** the stream identity records the flag, and a run refuses without it. Then rule 9's and
+      rule 10's positions within the block replay bitwise at any block size.
+- **One extension (P):** a single-lineage world with schedules (OL3).
+  - The occupant's own event stream (domain 1, OL1's `age`) follows the same clock rule: its counter
+    counts the occupant's draws, and a draw that crosses a schedule time is discarded.
+  - Without schedules, draws and events coincide, so OL1's worlds are unchanged.
 - **At an event,** each living assembly is tested in slot order (rule 12). It needs:
   1. τ ≥ τ_crit (declared, with its source);
   2. v ≤ k^(−1/2), that is, 36πkV² ≤ A³ (S);
@@ -343,8 +375,13 @@ A daughter's key is the next count of the parent's sub-lineage, in daughter orde
 
 ### 2.4 Shear work (S, §4.4)
 
-**w_shear = F(daughters) − F(parent) for each fission.** It includes:
-- (k − 1)·C_close;
+**w_shear = Σ_j F(daughter_j) − F(parent) for each fission** (§0.2d item 7).
+- F carries C_close once per living vesicle, so the difference already holds (k − 1)·C_close. It is
+  not added again.
+- The fission's own dissipation is not modelled: a declared limit (the lead's).
+
+The difference is made of:
+- (k − 1)·C_close, through F;
 - the membranes' mixing: each daughter's −ln(N_j − c)! + Σ ln n_ij!, less the parent's;
 - each daughter's excess terms;
 - the lumens' terms, at each daughter's own V_j(n_j).
@@ -366,9 +403,14 @@ at birth books its release as heat, after the split.
 ### 2.6 Serial transfer: `cells.serial_transfer@1`
 
 - **At declared times:**
-  - K_keep living assemblies are drawn uniformly without replacement, all of them if fewer live,
-    from the `schedule` domain (rule 14);
-  - the rest end `removed`;
+  - the transfer draws one uniform per living assembly, in slot order, on its own `schedule` key
+    (§0.2d item 6);
+  - it keeps the K_keep smallest, ties by slot: a uniform sample without replacement, all of them
+    if fewer live;
+  - it draws even when every assembly is kept, so its counter advances by the number living;
+  - kept assemblies keep their slots;
+  - the rest end `removed`, their slots become free, and later daughters take free slots in slot
+    order;
   - the pool is replaced by the declared fresh composition, with c_ext unchanged. The fresh pool's
     solutes may not exceed c_ext (rule 6).
 - **Bookings (S):**
@@ -471,13 +513,14 @@ reading of how each event moves them (S):
     like with like.
   - **The plant:** a written default, which must fail the gate.
 
-## 5. Claims for §7.1, kept consistent with §0.2b–c
+## 5. Claims for §7.1, kept consistent with §0.2b–d
 
-OL5 builds from §0.2b–c and the design note, not from this table. The table states the claims as
+OL5 builds from §0.2b–d and the design note, not from this table. The table states the claims as
 this note reads those rulings. Each claim is proved once, at the cheapest level, with its planted
 error. Symbols:
 - n′ = n + ν, and m = min(n, n′);
-- ρ0 = N_A c0;
+- ρ0 = N_A·c0, in molecules per m³ (c0 in mol/L, times 10³ L/m³; §0.2d item 2). k and E(m)
+  carry the token's units: m/s and m², m²/s and m, m/s and m²;
 - X(V) = N_A c0 V;
 - a_i is a pool activity: n_i/X_pool, or c/c0 when held.
 
@@ -495,19 +538,20 @@ error. Symbols:
 | L2 | a⁻(n′)/a⁺(n) = e^(F(n′) − F(n) − w) for every pair, and every square closes, in both regimes and across the kink | The kernel identity; Kolmogorov's test | The reverse as the products' rule at V(m) (probe L1) |
 | L3 | σ = max(0, Δp·R/2), with Δp = k_BT(N_L/V − N_A c_ext). σ is continuous at V_osm = V_sph. A join's lumen part of ΔF is −σ·a_L/2·(1 + O(1/N)) | Closed forms; probe L3 | Δp·R, with no 1/2 |
 | L4 | A closed world that crosses the kink relaxes to exp(−F)/Z | Exact master-equation solve | The products' rule at V(m) (probe L2) |
-| Y1 | Rule 8. n → n′ with σ(n′) > σ_max fires at a⁺(n) and ends the life `lysed`. Its molecules go to their pool places as monomers, and q = −(F_after − F(n)) + w, with F_after holding no vesicle and no C_close | A small world whose only route crosses σ_max; the ledger closes | Lysis as a zero rate; lysis tested on m; C_close kept after lysis |
+| Y1 | Rule 8 and §0.2d item 7. n → n′ with σ(n′) > σ_max fires at a⁺(n) and ends the life `lysed`. Its molecules go to their pool places as monomers. One ledger row books q = −(F(n_after) − F(n)) + w, where n_after holds no vesicle and no C_close, and w includes the reservoir work of held places receiving molecules | A small world whose only route crosses σ_max; the ledger closes | Lysis as a zero rate; lysis tested on m; C_close kept after lysis; the release booked as a second row |
 | Y2 | A daughter born with σ > σ_max lyses at birth, and that is recorded | A forced split | No record |
 | S1 | Two assemblies on one finite pool relax to exp(−F_pool − Σ F_asm)/Z | Exact enumeration | A join that reads the pool at n′ |
 | S2 | The declared map replays every event (§1.8) | The host oracle, with common uniforms | Groups folded in key order after a fission |
 | S3 | P(channel j) = a_j/a0 | Exact rationals over the map | The group chosen uniformly |
 | S4 | A world with K = 1 has the single assembly's rate table | Rate tables | — |
+| S5 | §0.2d item 6's clock. The `world` counter counts draws. A draw that crosses a declared schedule time is discarded, the event applies at that time, and the next draw takes the next counter. A schedule-free world's draws and events coincide | The host oracle, with common uniforms, across a schedule time | The discarded draw read again (τ biased); the counter left at the event count |
 | D1 | Admitted only if τ ≥ τ_crit, 36πkV² ≤ A³ and every daughter is at or above the floor in area (rule 5), with k declared (rule 11) | Closed forms at the thresholds | The threshold at k^(−1/3) |
 | D2 | Rule 9's C3x. P1 on counts. P2: at equal a_L, the hypergeometric on the balanced size vector in a random order. P3: the joint pmf invariant under relabelling | Exact pmfs by enumeration at small N, including N mod k = 2 (as `probe_rule7.py`); χ² at N = 80 with registered power | Floor-to-first (P2, P3); G1's sizes in a random order at N mod k = 2 (P2); binomial labels (P2); independent samples (P1) |
 | D3 | Rule 10. The lumen: multinomial at weights V_sph(A_j)/Σ V_sph, with the ruled uniform order, conserving and jointly exchangeable | Enumeration | Sequential binomials at p = 1/k with k = 3; independent binomials; weights by block position |
-| D4 | w_shear = F(daughters) − F(parent), including (k − 1)·C_close; the ledger closes | A forced split | C_close left out |
-| T1 | Each K_keep-subset is equally likely; the sink gains F_removed and schedule work gains F_fresh | Enumeration over the sampler's map | Sampling with replacement; the fresh pool booked as heat |
+| D4 | §0.2d item 7: w_shear = Σ_j F(daughter_j) − F(parent), which already holds (k − 1)·C_close; the ledger closes | A forced split | C_close added again; C_close left out of F |
+| T1 | §0.2d item 6's map: one uniform per living assembly in slot order, the K_keep smallest kept (ties by slot), drawn even when all are kept. Each K_keep-subset is equally likely. The sink gains F_removed and schedule work gains F_fresh | Enumeration over the map; the host oracle | Sampling with replacement; no draw when all are kept; the fresh pool booked as heat |
 | E1 | F(n_t) − F(n_0) = W_res + W_shear + W_sched − Q − S_sink at every saved row | The composed world | A heat sign error; shear work booked as heat |
-| B1 | Label content sums to the counts; per label, founder + supplied − removed = content | Ledgers | A dropped booking |
+| B1 | The engine's own test, not a references row (§0.2d item 8; B2–B4 likewise). Label content sums to the counts; per label, founder + supplied − removed = content | Ledgers | A dropped booking |
 | B2 | Labels change no event: the comparison set is equal with labels on and off | Bitwise | A label draw from the event stream |
 | B3 | A closed world's label marginals at equilibrium | Exact enumeration | The destination's composition used for a move |
 | B4 | Given the species split, each label's split is hypergeometric | Enumeration | Places ordered by label before species |
@@ -521,7 +565,7 @@ error. Symbols:
 | `test_assembly_lineages_v2_geometry.py` | G1–G3; conditional parsing and refusals | 1 |
 | `test_assembly_lineages_v2_exchange.py` | X1–X3, P1 | 2 |
 | `test_assembly_lineages_v2_lumen.py` | L1–L5, Y1–Y2 | 2 |
-| `test_assembly_lineages_v2_pool.py` | S1–S4 | 2 |
+| `test_assembly_lineages_v2_pool.py` | S1–S5 | 2 |
 | `test_assembly_lineages_v2_division.py` | D1–D4. Exact pmfs in tier 2; χ² at N = 80 in tier 3 | 2 and 3 |
 | `test_assembly_lineages_v2_transfer.py` | T1, E1 | 1 |
 | `test_assembly_lineages_v2_labels.py` | B1–B4, R1 | 2 |
@@ -567,6 +611,15 @@ the questions to its rules.
 | Q20, c_ext | 6 | **No:** the outside's total osmolarity, held, with the refusal and the drift report |
 
 **No probe disagrees with a ruling** (§1.3, §2.2). This check leaves no question open for the lead.
+
+**§0.2d's items for this builder:**
+- Items 2 (rate form and units), 3 (the lumen's F), 4 (an entry's θ⁺), 5 (the two-level map with
+  its guard) and 7 (shear work and lysis's single row) agree with this note as amended.
+- Item 8 makes labels the engine's own tests.
+- **Item 6 is confirmed** against the stream layout (§2.1), with two proposals (P):
+  - the occupant's stream in a single-lineage world with schedules counts draws, as `world` does;
+  - the stream identity records threefry's partitionable flag, which a run requires, so that block
+    draws such as rule 12's partition replay at any block size.
 
 **For the user (marked):**
 - **U1 (for the user, through the lead): the estimate.** OL2 and OL3 come to about 13–20.5
