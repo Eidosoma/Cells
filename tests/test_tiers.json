@@ -143,7 +143,8 @@
   "/mnt/workspaces/Cells/fr1-references-20261117/measure-01/measured.json",
   "/mnt/workspaces/Cells/fr1-references-20261117/measure-02/measured.json",
   "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-0cbb1acc/measured.json",
-  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json"
+  "/mnt/workspaces/Cells/closed-compartment-fr1-20261117/tiers-09fa5daf/measured.json",
+  "/mnt/workspaces/Cells/passive-share-band-20261117/measure-7ec2d78c/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1181,6 +1182,13 @@
    "root": ".claude/worktrees/fr1-protocol",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-17T23:39:25+00:00"
+  },
+  {
+   "git_revision": "7ec2d78cb8cfebeeffde88f1ae4bdc2bad8abc9b",
+   "dirty": false,
+   "root": ".claude/worktrees/passive-share-band",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-17T20:50:04+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3097,10 +3105,10 @@
    },
    {
     "file": "tests/unit/test_passive_share_floor.py",
-    "seconds": 18.57,
+    "seconds": 19.86,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 11
     }
    },
    {
