@@ -9,7 +9,10 @@ docs/SCOPED_COMPOSITION_DESIGN.md (D176), the tests that land with door S:
   the field map;
 * T3, readers: a fixed reader is refused where a changer meets its slots and admitted where they
   are disjoint; a reference read has no constraint; a current reader must follow the changers of
-  its slots, and a part with a current read at stage split receives the merged view;
+  its slots at its own stage, sees an earlier stage's change whatever the declared order, and
+  reads the declared value where nothing changes the field (docs/OPERATOR_COMPOSITION_DESIGN.md
+  §4.1, C1 and C2; tests/unit/test_composition_order.py has the rest); a part with a current read
+  at stage split receives the merged view;
 * T7, planted controls: a changer's values off its slots change nothing there; a slot mask that
   differs from the declared slots is refused at binding;
 * the contract's checks of the new declarations, and the real pair the round admits: the bath
@@ -39,15 +42,17 @@ INSERTION_1, STATE = "scheduled_membrane_insertion@1", "membrane_entity_state@1"
 SITES = "site_occupancy@1"
 
 
-def changer(law, slots, value, *, contribution="replace", scoped=True):
-    """A test-double changer of FIELD: `value` on every slot (off its slots too: T7), taken on
-    `slots` when scoped."""
+def changer(law, slots, value, *, contribution="replace", scoped=True, stage="event"):
+    """A test-double changer of FIELD at `stage` (its event map, or its split part): `value` on
+    every slot (off its slots too: T7), taken on `slots` when scoped."""
 
     class Changer(Operator):
         LAW_ID = law
-        EVENT = True
+        EVENT = stage == "event"
+        SPLIT = stage == "split"
+        RK4 = "split" if stage == "split" else None
         VIEW_FIELDS = (FIELD,)
-        VIEW_CHANGES = {FIELD: Change(contribution, "event", scoped=scoped)}
+        VIEW_CHANGES = {FIELD: Change(contribution, stage, scoped=scoped)}
 
         def changed_slots(self, spec, declaration):
             return {FIELD: tuple(slots)}
@@ -198,18 +203,25 @@ def test_a_reference_read_has_no_constraint(world):
 
 
 def test_a_current_reader_follows_the_changers_of_its_slots(world):
+    """Door S's rule 3, stage-aware (docs/OPERATOR_COMPOSITION_DESIGN.md §5, C2): a split reader
+    sees an event's change whatever the declared order, since the events run first; a split
+    change of its slot must precede it, else it is refused naming the slot. A reader of a field
+    nothing changes reads the declared value (C1)."""
     dose = changer("test_dose@1", [0], 2.0)
     late = reader("test_current@1", [0], "current")
     assert scope(world, dose, late) == []
     early = (changer("test_first@1", [2], 1.0), late, dose)
-    assert structure(*early) == []
-    (error,) = scope(world, *early)
+    assert structure(*early) == [] and scope(world, *early) == []  # The event runs first.
+    split_dose = changer("test_split_dose@1", [0], 2.0, stage="split")  # The same-stage twin.
+    assert scope(world, split_dose, late) == []
+    before = (changer("test_first@1", [2], 1.0), late, split_dose)
+    assert structure(*before) == []
+    (error,) = scope(world, *before)
     assert error == (
-        "test_current@1 reads the view extracellular_volume at bath before test_dose@1 changes it"
+        "test_current@1 reads the view extracellular_volume at bath at stage split before "
+        "test_split_dose@1 changes it there"
     )
-    assert structure(reader("test_alone@1", [0], "current")) == [
-        "test_alone@1 reads the view extracellular_volume; no earlier operator provides it"
-    ]
+    assert structure(reader("test_alone@1", [0], "current")) == []  # Nothing changes it.
 
 
 def test_a_current_split_reader_receives_the_merged_view(world):

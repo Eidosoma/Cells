@@ -318,9 +318,9 @@ class InnerAdapter:
     def inner_control(self, control):
         return self.CONTROL_TYPE(*(getattr(control, k) for k in self.CONTROL_FIELDS))
 
-    def view(self, p, state, providers, closers=(), *, xp=jnp):
+    def view(self, p, state, providers, closers=(), *, xp=jnp, refresh=True):
         """The module's view (below) on the structure's declared layout."""
-        return _view(self.inner_layout, p, state, providers, closers, xp=xp)
+        return _view(self.inner_layout, p, state, providers, closers, xp=xp, refresh=refresh)
 
     def control_view(self, control, state, p, factors, *, xp=jnp):
         """The module's control_view (below) on the structure's control."""
@@ -357,7 +357,7 @@ def inner_control(control):
     return Control(*(getattr(control, k) for k in CONTROL_FIELDS))
 
 
-def view(p, state, providers, closers=(), *, xp=jnp):
+def view(p, state, providers, closers=(), *, xp=jnp, refresh=True):
     """@3's layout at the composite state: the declared fields, merged with the providers'.
 
     providers: operators with VIEW_FIELDS, in declared order. Each provider's values are merged
@@ -366,12 +366,13 @@ def view(p, state, providers, closers=(), *, xp=jnp):
     only on its masked slots (merge). Overlaps are admitted only as the composite's structure and
     scope checks allow. Without providers this is the declared layout itself. closers: operators
     that close activity masks (CLOSES), each not statically idle; with none the call is exactly
-    the one without closers.
+    the one without closers. refresh=False leaves the derived field arrays bound (a door S
+    reader's view, which reads none of them; docs/OPERATOR_COMPOSITION_DESIGN.md §11, C4).
     """
-    return _view(inner_layout, p, state, providers, closers, xp=xp)
+    return _view(inner_layout, p, state, providers, closers, xp=xp, refresh=refresh)
 
 
-def _view(declared, p, state, providers, closers, *, xp):
+def _view(declared, p, state, providers, closers, *, xp, refresh=True):
     """view, with `declared` giving the declared layout of p: this module's inner_layout, or an
     adapter's for its structure (schema A)."""
     q = declared(p)
@@ -396,7 +397,7 @@ def _view(declared, p, state, providers, closers, *, xp):
     if closers:
         q = close(q, state, p, closers, xp=xp)
         provided |= set(MASK_FIELDS)
-    if provided & set(FIELD_INPUTS):
+    if refresh and provided & set(FIELD_INPUTS):
         q = refresh_field(q, declared(p), xp=xp)
     return q
 
