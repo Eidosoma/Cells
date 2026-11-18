@@ -215,6 +215,8 @@ for a shared dose, or the cell-to-cell variation that makes delivery selective.
 - **What it touches.** S3's insertion and membrane-state operators, D150 and D152's energy-pool door,
   FR-1's compartment, and the composition walls (the species operators refuse insertion today).
 
+**The design note (proposed, 18 November 2026):** [MEMBRANE_RETRIEVAL_DESIGN.md](MEMBRANE_RETRIEVAL_DESIGN.md), with the energy source answered once for D150's question 11, D152's question 10 and D151 (D216).
+
 ## FR-3 — The site-occupancy primitive
 
 **Logged 14 November 2026, priority 2** (the request's label; the user: "then next one"). The request
@@ -443,6 +445,8 @@ use Cells' unit choice than ask for its own.
 - **The link to the preprints.** The response's persistence after the template is gone is the
   heredity question. A unit chosen for the loop should be one where that question is measurable.
 
+**The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216).
+
 ## FR-8 — A qualified long-duration mode
 
 **Logged 14 November 2026, priority 2** (the request's label). The request below is the requesting
@@ -489,6 +493,8 @@ requester is writing a benchmark specification for its own composition):
 - **The two-clock pattern helps where the physics separates.** Track E's plan runs a slow world
   coarsely and short fast assays from frozen snapshots (D155). It is not a long-time method for
   one coupled trajectory.
+
+**The design note (proposed, 18 November 2026):** [LONG_DURATION_MODE_DESIGN.md](LONG_DURATION_MODE_DESIGN.md), the long-time path for composite operators, written before the GH200 numbers and the benchmark specification (D216).
 
 ## FR-9 — Raise the 7-species cap
 
