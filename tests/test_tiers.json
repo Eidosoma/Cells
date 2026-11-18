@@ -167,6 +167,8 @@
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-93e45f00/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-94395770/measured.json",
   "/mnt/workspaces/Cells/ool-references-20261117/land/measure-1c5f6435/measured.json",
+  "/mnt/workspaces/Cells/core-fixes-20261116/measure-9b0d8baa/measured.json",
+  "/mnt/workspaces/Cells/core-fixes-landing-20261118/measure/measured.json",
   "/mnt/workspaces/Cells/crossrev-acceptances-20261118/tiers-770d66d3/measure-01/measured.json"
  ],
  "measured_provenance": [
@@ -1368,6 +1370,21 @@
    "utc": "2026-11-18T14:32:53+00:00"
   },
   {
+   "git_revision": "9b0d8baa4a70241f121cc5a17d59f00555616c78",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-fixes-20261116/snapshot-full-9b0d8baa",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-16T22:31:22+00:00"
+  },
+  {
+   "git_revision": "270825abf89170ad955ca52cc84cd16075bdb4cc",
+   "dirty": false,
+   "root": ".",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-18T16:06:50+00:00"
+  },
+  {
    "git_revision": "770d66d3b0126763d6a45b4fbc1ad8fcb3a1c34a",
    "dirty": false,
    "root": ".claude/worktrees/crossrev-acceptances",
@@ -2061,10 +2078,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 6.8,
+    "seconds": 7.33,
     "exit_code": 0,
     "counts": {
-     "passed": 148
+     "passed": 149
     }
    },
    {
@@ -2975,6 +2992,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_material_term.py",
+    "seconds": 3.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_kind_rules.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -3293,6 +3318,70 @@
     "exit_code": 0,
     "counts": {
      "passed": 20
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_closed_world.py",
+    "seconds": 7.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_division.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_geometry.py",
+    "seconds": 1.07,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_mass_action.py",
+    "seconds": 13.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_ol2.py",
+    "seconds": 15.29,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_partition.py",
+    "seconds": 1.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_registration.py",
+    "seconds": 1.57,
+    "exit_code": 0,
+    "counts": {
+     "passed": 17
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_runs.py",
+    "seconds": 5.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
     }
    },
    {
@@ -3866,6 +3955,14 @@
     }
    },
    {
+    "file": "tests/unit/test_species_potentials.py",
+    "seconds": 3.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_species_reactions.py",
     "seconds": 3.08,
     "exit_code": 0,
@@ -4289,70 +4386,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_closed_world.py",
-    "seconds": 7.38,
-    "exit_code": 0,
-    "counts": {
-     "passed": 8
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_division.py",
-    "seconds": 1.57,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_geometry.py",
-    "seconds": 1.07,
-    "exit_code": 0,
-    "counts": {
-     "passed": 7
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_mass_action.py",
-    "seconds": 13.85,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_registration.py",
-    "seconds": 1.57,
-    "exit_code": 0,
-    "counts": {
-     "passed": 17
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_runs.py",
-    "seconds": 5.38,
-    "exit_code": 0,
-    "counts": {
-     "passed": 9
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_ol2.py",
-    "seconds": 15.29,
-    "exit_code": 0,
-    "counts": {
-     "passed": 10
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_partition.py",
-    "seconds": 1.42,
-    "exit_code": 0,
-    "counts": {
-     "passed": 12
     }
    }
   ],
@@ -5109,6 +5142,38 @@
     }
    },
    {
+    "file": "tests/unit/test_ool_references_engine_layout.py",
+    "seconds": 32.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_harness.py",
+    "seconds": 41.71,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_laws.py",
+    "seconds": 22.61,
+    "exit_code": 0,
+    "counts": {
+     "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_ool_references_ol3.py",
+    "seconds": 50.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 42
+    }
+   },
+   {
     "file": "tests/unit/test_open_calcium.py",
     "seconds": 27.95,
     "exit_code": 0,
@@ -5638,38 +5703,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_engine_layout.py",
-    "seconds": 32.04,
-    "exit_code": 0,
-    "counts": {
-     "passed": 2
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_harness.py",
-    "seconds": 41.71,
-    "exit_code": 0,
-    "counts": {
-     "passed": 8
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_laws.py",
-    "seconds": 22.61,
-    "exit_code": 0,
-    "counts": {
-     "passed": 22
-    }
-   },
-   {
-    "file": "tests/unit/test_ool_references_ol3.py",
-    "seconds": 50.17,
-    "exit_code": 0,
-    "counts": {
-     "passed": 42
     }
    }
   ],
