@@ -7113,8 +7113,8 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
 - **The authors' model** (Zenodo, CC BY 4.0) is to run unmodified in GNU Octave, out of process, as a
   reference.
   - Octave 9.4.0 is installed system-wide from the distribution's packages, with the user's leave.
-  - **It has not run yet** (18 November 2026, evening). This build has no SUNDIALS, so its `ode15s`
-    cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
+  - **Debian's build could not run it** (18 November 2026, evening). That build has no SUNDIALS, so
+    its `ode15s` cannot run at all. Octave's `ode15s` also does not forward the six extra parameters the
     authors' MATLAB call passes. The attempt is recorded in the replication note's §5.4, and the
     route (U5, L11) is put to the user.
   - **U5 and L11 answered** (the same evening). The user: "1. yes, install it 2. Yes, fine".
@@ -7127,8 +7127,47 @@ fine with the install you have sudo on this vm", "4. yes agreed keep seperate as
       - It is disclosed and qualified by two checks: it passes a test equation through bit for
         bit, and the run's concentrations stay real and non-negative.
       - The second check is needed because Octave ignores the code's `NonNegative` option.
+    - **It ran** at 20:04–20:05 UTC, all 250 cases, with both adapter checks passing. M0–M6 all
+      pass as registered (the replication note's §5.4).
+      - One difference is unexplained: Supplementary Fig. 124's top row.
+      - The values are good to about three significant figures.
   - Its outputs are numbers, cited.
   - Its code is never copied into Cells.
 - **The perturbation-and-recovery experiment** suggested in the user's reading summary is registered
   separately, after the basic replication works, so that the match with the paper stays
   unambiguous.
+
+## D222: Core and FRs first
+
+2026-11-18, evening. The user: "we should now be priortizing core and FRs".
+- **Seats and CPU lanes go first** to two lines of work:
+  - **the core-seams pass:** the F, @3, operators, binding and kinds owners, the verification
+    owner, and the references for seams A and C;
+  - **the feature requests:**
+    - the external review's fixes;
+    - FR-8's stage 0 (D217);
+    - FR-2's retrieval version 1, on B1's split-and-merge kernel;
+    - FR-7's loop;
+    - FR-15 to FR-17 as scheduled;
+    - FR-18's criterion, from the @3 owner's probe.
+- **The gate tooling counts as core.** On 18 November three of its faults stood in front of core
+  landings:
+  - FR's lane-B holder refused a landing because another unit was merely waiting for the lock;
+  - a tier list without a tier-2 key failed the measuring script;
+  - a fold made against an older record conflicted at landing.
+
+  The tooling moves into `scripts/gates/` as D220 and the user approved.
+- **The new seat order, replacing D220's:**
+  1. the kinds owner, the moment the registry and the host table land;
+  2. the operators owner's next step after F's step terms land: refusal 4 version 1.3, then B1;
+  3. the gate tooling;
+  4. FR-8's stage 0;
+  5. then FR-2's retrieval version 1, FR-7, and FR-15 to FR-17.
+- **Waits until the core and FR seats are filled and lanes are free:**
+  - the gap-junction bundle's steps 2–5 and the references for D219's two judged comparisons;
+  - the self-replicator's R0 and R1, which come after OL3 anyway (D212);
+  - OL3.
+- **Work already built still lands:**
+  - the gap-junction replication's crossrev set, which guards every core landing;
+  - OL2, when its gate passes;
+  - the self-replicator's reference run (landed, 9f9ffd7f).
