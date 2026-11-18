@@ -2,7 +2,21 @@
  "schema": "cells.closed_compartment_protocol@1",
  "id": "fr1-closed-compartment-v1",
  "title": "FR-1's first acceptance: a closed compartment (cell_owned_compartments@1) loaded and released by exchange@1's laws, exchange's first judged acceptance, against independent references, with silence, energy, restart, batch, refusals and planted controls",
- "status": "PROPOSED (drafted 17 November 2026 by the FR owner on branch fr1-protocol, from docs/CLOSED_COMPARTMENT_DESIGN.md §6.3's items C1 to C13, against the declaration as built in milestone 1, §12). Not registered; registration is the lead's",
+ "status": "registered by the lead (registrar), 18 November 2026, after two full rehearsals and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+ "registration": {
+  "status": "registered by the lead (registrar), 18 November 2026, after two full rehearsals and the landing gate; one judged run follows from a clean snapshot of main at this registration commit",
+  "registrar": "the lead",
+  "date": "2026-11-18",
+  "basis": [
+   "rehearsal 2: /mnt/workspaces/Cells/closed-compartment-fr1-20261117/pipeline/run-5f6e857c (snapshot 5f6e857c on CPUs 4, 5, 20 and 21; the dt phase and all 38 parts, then the judge's judged entry on its rehearsal copy: 44 of 44, a rehearsal verdict and not a judgement)",
+   "rehearsal 1: /mnt/workspaces/Cells/closed-compartment-fr1-20261117/pipeline/run-d5080224 (37 of 38 parts; C12_restart's tool fault fixed in 5f6e857c with a dated disclosure, no criterion changed)",
+   "the references: branch fr1-references, written code-blind and registered at 6319913f before any engine output, with the dated amendment 707bf338 (C8's unequal volume, C6's energy world, the relative splitting term); the protocol reads them only through validation/fr1/references/REFERENCES_USAGE.md",
+   "the lead's rulings on the draft's six questions, and the design note's clarification at 4adb6fed (the splitting bias is the relative displacement x*/x_eq - 1)",
+   "the landing gate: /mnt/workspaces/Cells/closed-compartment-fr1-20261117/gate/gate-b2bbb6d0/out (tier 1, 350 files, 0 changed; collected IDs, additions only, 65)",
+   "the disclosures in the protocol, each dated before any judged run"
+  ],
+  "judged_runs_before_registration": 0
+ },
  "registration_plan": {
   "status": "not registered",
   "no_judged_run_yet": "No run of this protocol exists. Milestone 1 ran its gates and S1 to S5 as development checks (development_runs)",
