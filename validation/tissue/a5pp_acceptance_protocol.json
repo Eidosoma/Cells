@@ -1,0 +1,110 @@
+{
+ "schema": "cells.a5pp_protocol@1",
+ "id": "fr6-a5pp-v1",
+ "title": "FR-6's A5'': a gate-free K-leak population driven through species_regulated_availability@1's regulatory state with a per-cell prior, two cells given the same regulator dose, against R-cell with the state integrated alongside, with the controls that tell the two cells apart",
+ "status": "PROPOSED (drafted 18 November 2026 by the FR owner on branch fr6-a5pp-protocol, from the lead's ruling (c) on FR-6 and the references' registered world and design, against the coupling operator as judged in coupling_regulated_availability_v1). Not registered; registration is the lead's",
+ "registration_plan": {
+  "status": "not registered",
+  "no_judged_run_yet": "No run of this protocol exists",
+  "needs_first": [
+   "the lead's rulings on questions_for_the_lead",
+   "the generator (records only), the judge (reads records, never runs; the coupling protocol's arithmetic imported read-only from validation/tissue/regulated_availability_judge.py) and the drafter, in FR-1's form, with tool tests and planted judge mutants",
+   "the development run on the ladder, which fixes delta and the resolved-pair counts (disclosed), then a rehearsal on a registered dry-run copy until it passes"
+  ],
+  "path": "the D150/MG0c path, as FR-1's and FR-3's",
+  "move_2": "the side of D188's move 2 it registers on is the lead's (questions_for_the_lead 4); it is rehearsed on that side"
+ },
+ "rung": "FR-6 items 1 and 3, acceptance A5'' (numerical verification, D174's first claim kind; no biological comparison, D151)",
+ "question": "Does species_regulated_availability@1 drive each of two cells' gate-free K-leak populations through that cell's own regulatory state s1 (hill_regulated_two_state@1, read from the cell's X by a Hill activation, X under D150's turnover, the same dose in both cells), from a per-cell prior s0 = 0.1 in a and 0.8 in b, so that V and the amounts of both cells converge at second order to R-cell with the state integrated alongside; and are the two cells told apart: a swapped, shared or ignored prior, the state bypassed, the state's rates 1% off and the basal level x (1 + delta) each caught?",
+ "engine_models": [
+  "resolved_pump_composite@1 over resolved_pump_tissue@3 (the composite and its inner model)",
+  "species_regulated_availability@1 with hill_regulated_two_state@1 (the state s1) and two state_fraction couplings on the channel targets (the operator judged; FR-6 items 1 and 3)",
+  "scheduled_species_turnover@1 (X, D150's regulator)",
+  "kleak_always_open@1 (the populations), constant_field@1 (the patches), the closure resolved_capacitor_components_current_continuity@1 with capacitive_reduction_gauged_damped_newton@2",
+  "imex_ars222_face_electromigration@1 (the solver)",
+  "the IDs the judged definitions print are recorded by the generator and checked against this list"
+ ],
+ "scope": "Two identical pump-free 2 pL cells, a and b, each on one constant-field 4 pF patch facing a bath held at 0 V, with a gate-free K-leak population of 2e-9 m/s; X in each cell held at 1 uM by D150's turnover (clearance 5/s) and driven toward 10 uM over [0.2, 0.5) s, the same dose in both; s1 in both cells (Hill activation of X, K 3 uM, n 2; k_on 5/s, k_off 1/s), s0 = 0.1 in a and 0.8 in b; F = 0.1 + 0.9 s1 on each population; 2 s on the ladder 1, 0.5, 0.25 and 0.125 ms; CPU only. Synthetic, within A5's bracket (the references' README). Not covered: A5' (gated channels), the routing door (FR-6 item 2, the core pass's seam B1), leak and pump targets, any biological comparison",
+ "worlds": {
+  "builder": "validation/tissue/a5pp_acceptance_fixtures.py: the engine-layout adapter. It declares validation/fr6/references/reference_inputs.json's world a5pp_prior as R-cell's documented World (validation/coupling/REFERENCES_USAGE.md's classes) and translates it with the coupling protocol's adapter (validation/tissue/regulated_availability_references.engine_definition), from the references' registered start (designs/fr6_a5pp_values.json: -60 mV and the background charge in each cell), the start both sides share",
+  "registered": "a5pp_prior on the ladder 1, 0.5, 0.25 and 0.125 ms, records every 50 ms",
+  "controls": "declared variants, each on all four rungs (the README records 'at every rung' as the lead's requirement): the prior swapped (0.8, 0.1), shared (a's, b's, the mean) and ignored (0, 0); the state bypassed (A5's instantaneous form: each population read at once from its cell's X by the same Hill activation, K, n and basal); the state's k_on or k_off x 1.01; and the basal x (1 + delta)",
+  "admitted": "18 November 2026, before any run: the world, its four rungs and every control (parse and the clock's step checks)"
+ },
+ "references": {
+  "author": "the FR references agent (code-blind), registered at ee1d8915 before any engine output, with docs-only follow-ups to 19b3b418",
+  "inputs": "validation/fr6/references/reference_inputs.json (the design file records its git blob, which the references part checks)",
+  "usage": "validation/fr6/references/REFERENCES_USAGE.md: a5pp.reference and a5pp.floor (and the registered design's controls and stand-in, read from the design file)",
+  "R_cell": "validation/coupling/cells_reference.py unchanged (Radau at rtol 1e-10, the state integrated with the ions), its floor by rtol 1e-10 against 1e-12: V 3.3e-14 V, the amounts 1.4e-12 fmol, s 2.1e-14"
+ },
+ "budgets": {
+  "status": "declared 18 November 2026 by the FR owner, before any engine output compared with the references (one well-posedness run, no comparison: disclosures); for the lead's ruling (questions_for_the_lead)",
+  "orders": "A5's rule, the coupling protocol's resolved-pair rule (imported read-only): V and the amounts of both cells, the max norm of each rung's error against R-cell over the records; a pair of successive rungs is resolved when its finer error is at least 100 x the reference's floor and its rounding scale; every resolved pair's order in [1.7, 2.3]; at least (the development count - 1) resolved pairs per observable, the count fixed by the development run and disclosed (the coupling protocol's form). s, U, F and a_eff reported",
+  "start": "row 0 equal to the references' registered start (V, the amounts and s) within 1e-15 relative (a priori: both sides start from it)",
+  "state_budget": "proposed (questions_for_the_lead 1): B_V(dt) = 1e-6 V (dt / 1 ms)^2 and B_n(dt) = 3e-8 fmol (dt / 1 ms)^2 for V and the amounts of both cells at every record of every rung. It is the registered honest stand-in's errors rounded up (6.6e-7 V and 2.1e-8 fmol at 1 ms, at second order), not a closed form of declared values: the stand-in sits at 0.64 to 0.71 of it on every rung. Every registered control departs by at least 10 x it at 1 ms: the prior's by 2.9e3 x to 6.1e3 x in V (2.0e4 x to 4.3e4 x in the amounts), the bypass 5.4e3 x, k_on and k_off 24 x in V and 560 x in the amounts, the basal x (1 + 1e-3) 16.8 x in the amounts only (1.0 x in V)",
+  "delta": "the basal control's delta, by the coupling protocol's rule, declared now and registered after the development run (disclosed): the delta whose control's V departure plateaus at 10 x the development run's finest (0.125 ms) V error, rounded up on a 1-2-5 grid. Judged: at the registered delta the control puts a resolved pair of V or the amounts out of the band (the rule can fail)",
+  "controls_margin": "each control world departs from R-cell's registered world by at least 10 x the scale the lead rules (questions_for_the_lead 1) on every rung"
+ },
+ "criteria": {
+  "C0_admission": "every run part admitted and run to its end with every host check on every accepted row (the runner); the printed IDs among the declared engine models",
+  "A5pp_orders": "V and the amounts of both cells: every resolved pair in [1.7, 2.3], at least the declared count of resolved pairs (orders budget)",
+  "A5pp_start": "row 0 is the references' start, within 1e-15",
+  "A5pp_state": "V and the amounts within the state budget at every record of every rung (if the lead rules the budget form)",
+  "prior": "the prior swapped, shared (a's, b's, the mean) and ignored: each departs by at least 10 x the ruled scale on every rung: the two cells are told apart",
+  "state": "the state bypassed (A5's instantaneous form) departs by at least 10 x the ruled scale on every rung",
+  "rates": "k_on and k_off x 1.01 each depart by at least 10 x the ruled scale on every rung",
+  "basal": "the basal x (1 + delta) at the registered delta puts a resolved pair out of the band"
+ },
+ "dt_study_criteria_written_first": {
+  "ladder_s": [
+   0.001,
+   0.0005,
+   0.00025,
+   0.000125
+  ],
+  "declared_dt_s": 0.001,
+  "checks": [
+   "admission of every rung",
+   "V's and the amounts' orders by the resolved-pair rule",
+   "the state budget at every rung, if ruled"
+  ],
+  "verdict": "the ladder stands if every check holds; otherwise reported to the lead, not repaired"
+ },
+ "harness_limits": "a part ended by its runtime limit or memory cap is a harness failure, not a verdict: the judged run is void and is relaunched once, whole, from the same snapshot; a second harness failure goes to the lead. An engine refusal is a verdict",
+ "recording_rules": [
+  "the generator writes records only (results.json per unit); the judge reads records and never runs; parts from more than one source are refused",
+  "every record carries the snapshot's identity; a judged run comes from a clean snapshot",
+  "undefined values are None, never NaN; a None fails its criterion",
+  "records are aligned on integer milliseconds"
+ ],
+ "reported_not_judged": [
+  "s, U, F and a_eff on the ladder",
+  "the engine's own error at each rung, and each control's departure over it (the references' margins_over_honest form with the engine in place of the stand-in)",
+  "each control's margin; the reference's floor"
+ ],
+ "what_it_does_not_show": "no biological comparison (D151). Zero power (the references' README): a state reading the other cell's regulator, since both cells receive the same dose (a dose that differs between the cells would give it power); the basal x (1 + 1e-3) control in V at 1 and 0.5 ms (caught in the amounts at every rung). Not covered: A5' (gated channels), the routing door, leak and pump targets. Integration grants no acceptance (D143)",
+ "judged_parts": "written by the drafter when the generator exists",
+ "outcome_rules": "a criterion passes or fails as written; a failed criterion is reported, not repaired; the protocol passes when every judged criterion passes",
+ "development_runs": {
+  "runs": [
+   {
+    "path": "/mnt/workspaces/Cells/fr6-a5pp-20261118/wellposed/run.json",
+    "status": "one well-posedness run of the registered world at 1 ms to its 2 s horizon (2,000 steps, every host check passed, 15 s), 18 November 2026, at a81e79d5: no comparison with the references"
+   }
+  ],
+  "note": "development evidence only: no run of this protocol exists"
+ },
+ "questions_for_the_lead": [
+  "1. The scale the prior, bypass and rate controls are judged against (the registered claim fixes the orders by the resolved-pair rule; the scale of the controls is not fixed). Proposed: (a) the state budget B_V(dt) = 1e-6 V (dt/1 ms)^2 and B_n(dt) = 3e-8 fmol (dt/1 ms)^2, judged at every record of every rung, with each control at least 10 x it on every rung. It is the registered stand-in's errors rounded up, not a closed form of declared values (budgets). The alternative: (b) each control's departure over the engine's own error at the same rung, at least 10 (the references' margins_over_honest form with the engine in place of the stand-in), no absolute state budget, as A5 judged orders only. (b) is reported either way",
+  "2. delta by the coupling protocol's rule (budgets), registered after the development run and disclosed, the control judged by the order rule: confirm",
+  "3. Every control on all four rungs (the README's 'at every rung'): confirm. About 36 short runs",
+  "4. D188's move 2: which side FR-6 registers on (it is rehearsed on that side)",
+  "5. The resolved-pair counts: at least the development count less one, per observable, as the coupling protocol: confirm"
+ ],
+ "questions_answered": [],
+ "disclosures": [
+  "Drafted on 18 November 2026 after the coupling protocol's judged A5 (15 November, 47 of 47), whose engine errors and orders are known (§9-§10: 2.9e-8 V at 1 ms, orders 2.00). Nothing here is set from them",
+  "Before the draft, host-only checks: the engine's F and R equal the registered exact SI products (N_A e and N_A k_B) to the last bit, so the constants induce no V offset (100 floors of V are 3.3e-12 V); the engine's bound start equals the references' registered row 0 (the amounts 24, 280 and 60 fmol, -60 mV from the charge over the capacitance, s = 0.1 and 0.8); @3's explicit-rate bound admits the world up to between 5 and 10 ms, so 1 ms has a factor of at least 5 (the README's open item, closed)",
+  "One well-posedness run (development_runs), with no comparison with the references"
+ ]
+}
