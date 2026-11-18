@@ -2,9 +2,10 @@
 
 Structural only for version 2 (no rate of its laws is computed). Each claim with a planted error it
 must catch (D187):
-- OL1's four laws are declarations of the family's three interfaces, hosted by @2, cited with their
-  works, registered from the homes the static model table lists, each by one direct call with a
-  literal ID that the declarations manifest reads (planted: a manifest without them);
+- OL1's four laws, and OL2's three (the bilayer geometry, phase exchange and permeation), are
+  declarations of the family's interfaces, hosted by @2, cited with their works, registered from the
+  homes the static model table lists, each by one direct call with a literal ID that the declarations
+  manifest reads (planted: a manifest without them);
 - parse_spec and get_model dispatch @2 to its own spec and model, and @1 to @1's (planted: an
   unknown major is refused);
 - U2 (D199) holds structurally in @2: a declaration that is driven, or names a source, or claims a
@@ -26,17 +27,24 @@ from cells.models.assembly_lineages import GARD_SINGLE_EVENT, factors, gard
 from cells.models.assembly_lineages import runner as v1_runner
 from cells.models.assembly_lineages.spec import LineageModel
 from cells.models.assembly_lineages_v2 import (
+    BILAYER_GEOMETRY,
     FREE_ENERGY_INTERFACE,
+    GEOMETRY_INTERFACE,
     IDEAL_MIXING,
     MASS_ACTION,
+    MEMBRANE_PERMEATION,
     MODEL_ID,
+    PHASE_EXCHANGE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     REGULAR_MIXING,
     TRANSITION_STATE,
+    exchange,
+    geometry,
     ideal_mixing,
     interfaces,
     mass_action,
+    permeation,
     regular_mixing,
     transition_state,
 )
@@ -58,6 +66,10 @@ HOMES = {
     REGULAR_MIXING: (
         regular_mixing, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, "10.1021/ja01376a009"
     ),
+    # OL2's three (milestone 1, geometry worlds).
+    BILAYER_GEOMETRY: (geometry, interfaces.GeometryLaw, GEOMETRY_INTERFACE, None),
+    PHASE_EXCHANGE: (exchange, interfaces.ReactionLaw, REACTION_INTERFACE, None),
+    MEMBRANE_PERMEATION: (permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
 }  # fmt: skip
 
 
@@ -75,7 +87,9 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
         assert law.provenance == "cited" and law.test and registry.module(law_id) == home.__name__
         works = [w.doi for w in law.source.works]
         assert works == ([] if doi is None else [doi])
-    assert {law.law_id for law in registry.laws(REACTION_INTERFACE, MODEL_ID)} == {MASS_ACTION}
+    assert {law.law_id for law in registry.laws(REACTION_INTERFACE, MODEL_ID)} == {
+        MASS_ACTION, PHASE_EXCHANGE, MEMBRANE_PERMEATION
+    }
     # @1's rate factors are unchanged by @2's registrations.
     assert set(factors.registered()) == {law.law_id for law in gard.LAWS}
 
