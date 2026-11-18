@@ -2976,6 +2976,16 @@
    "remedy": "the fuel rows' potentials (hydrolysis) and seam C's forms"
   },
   {
+   "control": "the moved rows' standard part (the stored rate, \u00a73.4), and its frame: RT (\u03a3 \u03bd \u03bc\u00b0/RT \u2212 (\u03a3 \u03bd) ln c0) per cycle (COMPARTMENT_PH_TRANSFER_DESIGN \u00a717.2)",
+   "why": "every registered population holds its fuel and moves each species between its two ends, so \u03a3 \u03bd \u03bc\u00b0' = 0 and stored_standard_pJ_per_s is exactly 0 at every state; fuel_frame_1mM tests the held \u0394G's activity frame, a different error",
+   "remedy": "a finite-fuel population (ATP, ADP and Pi moved): the deferred composed world (\u00a719), or registered now if the lead asks"
+  },
+  {
+   "control": "a population with N = b (the outside end as N)",
+   "why": "every registered population has N = a; the orientation plant shows only that an N = a world is not read as N = b",
+   "remedy": "an N = b population, if the lead asks"
+  },
+  {
    "control": "bitwise agreement of the two layouts",
    "why": "the engine against itself",
    "remedy": "the engine's own test; the references give the rates both must meet"

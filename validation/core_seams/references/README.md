@@ -235,6 +235,8 @@ positive up to the stored amount.
 - the static-head formula at static head, and ∂S/∂V at equilibrium;
 - conductance plants on neutral modes;
 - a transported species' dropped μ°;
+- the moved rows' standard part (every registered population holds its fuel);
+- a population with N = b (none registered);
 - the layouts' bitwise identity (the engine against itself);
 - weakly held forms;
 - today's predictor below n_free;
@@ -262,9 +264,16 @@ positive up to the stored amount.
 
 ## Amendments
 
-None to the registered inputs, values or design. The same day, before any engine output, a later
-commit added the registering hash to this README and, once measured, the tests' tier rows. The
-booked closure term follows the binding owner's statement by a dated amendment (§19 item 3).
+- **18 November 2026, before any engine output for seams A or C** (the lead's confirmation,
+  §19 item 7; to be reconfirmed for this amendment):
+  - this README gained the registering hash;
+  - the design file's `zero_power` gained two entries found at review. One is the moved rows'
+    standard part: the stored rate is exactly 0 at every state, because every population holds
+    its fuel. The other is a population with N = b, of which none is registered.
+  - The inputs and values are unchanged, and so is every other registered number.
+- The tests' tier rows follow once measured on the timed lane.
+- The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
+  3).
 
 ## Tests
 

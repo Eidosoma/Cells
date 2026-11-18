@@ -664,6 +664,17 @@ ZERO_POWER = [
     {"control": "a dropped standard potential of a transported species",
      "why": "it cancels between the ends of a transport mode",
      "remedy": "the fuel rows' potentials (hydrolysis) and seam C's forms"},
+    {"control": ("the moved rows' standard part (the stored rate, §3.4), and its frame: "
+                 "RT (Σ ν μ°/RT − (Σ ν) ln c0) per cycle (COMPARTMENT_PH_TRANSFER_DESIGN §17.2)"),
+     "why": ("every registered population holds its fuel and moves each species between its two "
+             "ends, so Σ ν μ°' = 0 and stored_standard_pJ_per_s is exactly 0 at every state; "
+             "fuel_frame_1mM tests the held ΔG's activity frame, a different error"),
+     "remedy": ("a finite-fuel population (ATP, ADP and Pi moved): the deferred composed world "
+                "(§19), or registered now if the lead asks")},
+    {"control": "a population with N = b (the outside end as N)",
+     "why": ("every registered population has N = a; the orientation plant shows only that an "
+             "N = a world is not read as N = b"),
+     "remedy": "an N = b population, if the lead asks"},
     {"control": "bitwise agreement of the two layouts", "why": "the engine against itself",
      "remedy": "the engine's own test; the references give the rates both must meet"},
     {"control": "a K plant on a form that holds little of its ligand",
