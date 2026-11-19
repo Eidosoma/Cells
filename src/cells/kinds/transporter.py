@@ -472,6 +472,39 @@ def moved_rows(declaration):
     return tuple(out)
 
 
+def role_species(declaration):
+    """Each population as §5.2's admission reads it (F's EntityBinding; D142), in declared order and
+    in either layout: the law it runs; the species each role its law's change rows name binds (the
+    roles of registry/laws.cycle_changes' "role@end"); the node at each end those rows name, N at
+    the population's N end (its host's end a, the cell, or b, the outside node; version 1's are
+    always a) and P at the other; and its values for the law's parameter-named counts (the
+    stoichiometry, for both built-in laws)."""
+    from cells.modules import EntityBinding, cycle_changes
+
+    hosted = hosted_laws()
+    out = []
+    for t in declaration:
+        if isinstance(declaration, PopulationAxis):
+            roles, values = dict(t.roles), dict(t.parameters)
+            n_node, p_node = (t.inside, t.outside) if t.n_end == "a" else (t.outside, t.inside)
+        else:  # Version 1's: N is the cell, as the general form's one-to-one map reads it.
+            roles = {VERSION_1_ROLE[t.law]: t.role, **dict(zip(FUEL_ROLES, t.fuel_rows, strict=True))}
+            values, n_node, p_node = {"stoichiometry": t.stoichiometry}, t.inside, t.outside
+        rows = cycle_changes(hosted[t.law])
+        named = [row["role"].split("@") for row in rows]
+        counts = {c.lstrip("-") for c in (row["per_cycle"] for row in rows) if isinstance(c, str)}
+        node = {"N": n_node, "P": p_node}
+        out.append(
+            EntityBinding(
+                t.law,
+                MappingProxyType({role: roles[role] for role in dict.fromkeys(r for r, _ in named)}),
+                MappingProxyType({end: node[end] for end in dict.fromkeys(e for _, e in named)}),
+                MappingProxyType({name: values[name] for name in sorted(counts)}),
+            )
+        )
+    return tuple(out)
+
+
 def held_rows(declaration):
     """Held fuel's rows at its node: read at every stage, moved by nothing (gap 8, one writer)."""
     if isinstance(declaration, PopulationAxis):
@@ -2214,5 +2247,6 @@ TRANSPORTER = BUILTIN.register(
         internal_axes=INTERNAL_AXES,
         presence=PRESENCE,
         standard_free_energies=standard_free_energies,
+        role_species=role_species,
     )
 )
