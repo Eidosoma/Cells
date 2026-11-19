@@ -1,5 +1,35 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Potassium and anion cotransport
+
+**Engine finding for the operators owner.** The `k_anion_symport_mass_action@1` step-size check can admit a step that transports both ions in the wrong direction. The normal CPU float64 runner for `resolved_pump_composite@1` completed a 10 ms step with 2.141 × 10⁻⁶ fmol **inward**. The exact trajectory gives 0.867 × 10⁻⁶ fmol **outward**. The reported global material and charge errors were both zero. [Reproducer](checks/potassium_anion_symport.py) · [Operator step check](../src/cells/operators/k_anion_symport.py#L252) · [Proof](CellsProofs/Transport/PotassiumAnionSymport.lean)
+
+The fixture has one cell and one finite outside compartment, each 1 pL, with water and other membrane transfers disabled. One cycle moves one K⁺ and one monovalent anion. The inside concentrations were 4 and 4 mM. The outside concentrations were 128 and 0.125 − 2⁻²⁰ mM. The capacity was 2.5 fmol/(s mM²), availability was one, and the cell was at its set volume. These inputs test the integration near equilibrium. [World definition](checks/potassium_anion_symport.py#L65)
+
+For equal fixed volumes, let D be the initial inside product minus the outside product, S the sum of **all four** starting concentrations, V the common volume and k the active rate scale. The outward extent is V(D/S)(1 − exp(−λt)), with λ = kS/V. The engine bounds the rate using the inside concentration sum and the largest allowed volume factor. In this example it obtained h × bound = 0.221, below the limit of 1, while hλ = 3.403. On this linear problem the explicit ARS(2,2,2) stages give hJ₀(1 − hλ/2), which reverses sign when hλ exceeds 2. The correction belongs in the step-size bound for finite outside compartments. The proof also gives the dependence on each volume when the two volumes differ. [Rate used in the bound](../src/cells/operators/k_anion_symport.py#L152) · [Tableau](../src/cells/numerics/surface_imex.py#L52) · [Applied transfer and heat](../src/cells/models/surface_pump_v3.py#L1436)
+
+| Steps over the same 10 ms | Booked outward transfer (fmol) | Exact outward transfer (fmol) |
+| ---: | ---: | ---: |
+| 1 | −2.1409988 × 10⁻⁶ | +8.6691746 × 10⁻⁷ |
+| 32 | +8.6670944 × 10⁻⁷ | +8.6691746 × 10⁻⁷ |
+| 64 | +8.6686762 × 10⁻⁷ | +8.6691746 × 10⁻⁷ |
+
+The 32- and 64-step runs converged with an error reduction of 4.17. An ordinary 20-step world agreed with the independent tableau calculation, and 27 component cases agreed with the 60-digit rate, affinity, activation and heat calculations. A separate **component-only** check found overflow in the concentration-product quotient. With 16 mM for both inside ions and 2⁻⁵¹⁰ mM for both outside ions, both products are normal float64 numbers. The domain check accepts them, but the kernel returns infinite affinity and heat. The reference gives 1.83660 × 10⁶ J/mol and 4701.69 pJ/s. The scale of this second case is far outside physiological concentrations. [Range check](checks/potassium_anion_symport.py#L44) · [Kernel](../src/cells/laws/routes/k_anion_symport.py#L79)
+
+**Biological measurements.** Search checked the original erythrocyte studies. In rabbit red cells the measured outward K:Cl flux ratio was 1.12 ± 0.26 (SD, five preparations), consistent with the 1:1 booking. In sheep red cells with pH and volume clamped, normalized reversal versus chloride ratio had fitted slopes of 1.12 and 1.08 at normal and low internal magnesium. Cells predicts 1. The study used Rb for inward flux and reported no uncertainty for the slopes. Earlier swollen sheep cells gave apparent reversal near 24 mM external Rb at 37 °C, against about 12 mM from equal products. That assay used chloride medium without a chloride-minus-nitrate subtraction, leaving the contribution of other K fluxes unresolved. Human red-cell swelling measurements used one-way K influx and leave the instantaneous exponential law for net flux open. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/) · [Lauf and Adragna, Fig. 8](https://pmc.ncbi.nlm.nih.gov/articles/PMC2229324/) · [Reversal data](checks/data/lauf1996_kcc_reversal.json) · [Delpire and Lauf, Fig. 4](https://pmc.ncbi.nlm.nih.gov/articles/PMC2216477/) · [Kaji, Fig. 1 and Table I](https://pmc.ncbi.nlm.nih.gov/articles/PMC2228857/)
+
+```json
+{
+  "engine_revision": "d6532edeb1bb06127ddf398adb23ab41b2f396c7",
+  "model": "resolved_pump_composite@1", "operator": "k_anion_symport_mass_action@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 27,
+  "near_stall_steps": [1, 32, 64], "duration_s": 0.01,
+  "reference_outward_fmol": 8.669174564376788e-7,
+  "booked_outward_fmol": [-2.140998803980456e-6, 8.667094436883358e-7, 8.668676212784617e-7],
+  "full_exit": 1, "controls_only_exit": 0
+}
+```
+
 ## 19 November 2026 · Law and evidence review
 
 We rebuilt all 22 Cells Lean modules from source into an empty output directory using the pinned Lean 4.19.0 compiler and compiled Mathlib dependencies. All 153 distinct theorems named in the register resolved in their declared modules. Lean reported only `propext`, `Classical.choice` and `Quot.sound` as transitive axioms. The optional `grn-lean` Hill proofs and ATOMS Lab dimensional check also compiled. The live inventory contains 30 laws and 24 operators. Direct claims cover all 30 laws and three operators. Each claim gives the property and assumptions that were proved. [Claim register](claims.json) · [Registry coverage](COVERAGE.md) · [Theorem check](scripts/CheckClaims.lean)

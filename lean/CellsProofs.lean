@@ -15,5 +15,6 @@ import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.NeutralPermeation
+import CellsProofs.Transport.PotassiumAnionSymport
 import CellsProofs.Transport.ProtonLeak
 import CellsProofs.Transport.SodiumAnionSymport
