@@ -126,6 +126,24 @@ def test_fold_refuses_a_dropped_row_an_unknown_file_and_a_failing_row(tool):
             tool.fold_rows(base, [measured(bad)], ["m1"], files_of(base))
 
 
+def test_a_row_that_reached_the_cap_folds_into_tier_3(tool):
+    """measure records a file that reached the cap as timed_out with exit code None; fold places
+    it in tier 3 (19 November: FR-2's restart file), and still refuses a timed-out row that had
+    already failed a test."""
+    base = record([row("a", 1)], [row("x", 30)], [row("slow", 90.02, exit_code=None, passed=0)])
+    capped = dict(row("new", 90.12, exit_code=None, passed=0), timed_out=True)
+    out = tool.fold_rows(base, [measured(capped)], ["m1"], files_of(base) + [f("new")])
+    assert [r["file"] for r in out["tiers"]["3"]] == [f("new"), f("slow")]
+    assert out["tiers"]["3"][0]["exit_code"] is None and out["tiers"]["3"][0]["seconds"] == 90.12
+    assert "timed_out" not in out["tiers"]["3"][0]  # The record keeps its row form.
+    failed = dict(row("new", 90.12, exit_code=None, passed=0, failed=1), timed_out=True)
+    with pytest.raises(SystemExit, match="did not pass"):
+        tool.fold_rows(base, [measured(failed)], ["m1"], files_of(base) + [f("new")])
+    unmarked = row("new", 90.12, exit_code=None, passed=0)  # No timed_out: a missing exit code.
+    with pytest.raises(SystemExit, match="did not pass"):
+        tool.fold_rows(base, [measured(unmarked)], ["m1"], files_of(base) + [f("new")])
+
+
 def test_the_fold_command_writes_nothing_when_refused(tool, tmp_path, monkeypatch):
     base = record([row("a", 1)])
     (tmp_path / "record.json").write_text(json.dumps(base))
