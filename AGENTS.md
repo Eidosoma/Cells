@@ -79,7 +79,10 @@ or more, including acceptance, benchmark or regression jobs, launch detached
 with durable logs and result/failure artifacts, then return control to the user.
 Do not automatically wait or poll repeatedly for detached jobs; the user will
 request status checks.
-Do not interrupt an active computation merely to stop assistant polling.
+Do not interrupt an active computation merely to stop assistant polling. A running test gate
+whose head a newer head of the same change has replaced may be stopped as a whole unit, since
+its result is no longer needed (user direction, 19 November 2026, D224). Science runs, and any
+run whose result is still needed, are never interrupted.
 Follow-up audits and regression jobs should wait for the user's next instruction.
 
 From 8 November 2026 a single lead agent coordinates this checkout, with at most
@@ -101,6 +104,10 @@ the scientific and engineering risk.
 - Add a protocol or independent review when it resolves a concrete risk or
   supports a new scientific claim; explain that purpose briefly. Batch related
   low-risk work and validation where practical.
+- Keep the test suite's cost down (user direction, 19 November 2026, D224): a bug fix
+  adds a row to an existing parametrized test, or nothing, and never a new test file for a
+  small bug. A new test that compiles or runs a world states its seconds and its reason at
+  landing. Tests no longer needed are removed in batches with a removal list.
 - Preserve failed evidence, reproducibility, conservation/domain checks and
   numerical tolerances. Simplify the process, not the scientific standards;
   leave frozen evidence and active jobs untouched.
