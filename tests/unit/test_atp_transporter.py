@@ -10,6 +10,7 @@ from cells.laws.electrochemistry import R
 from cells.laws.pumps import atp_transporter as tk
 
 T = 310.0
+U = np.finfo(float).eps / 2  # The unit roundoff, for the bounds derived from it.
 P = tk.Parameters(capacity_fmol_s=0.1, stoichiometry=1.0, km_role_mM=1.0, km_atp_mM=0.1)
 
 
@@ -46,11 +47,16 @@ def test_delta_g_per_cycle_closes_against_the_moved_rows():
     s = inputs(c_out=50.0)
     rates = tk.kinetics(s, P, 1.0, xp=np)
     transport = R * T * math.log(50.0 / 10.0)
-    assert rates.cycle_free_energy_J_mol == pytest.approx(rates.chemical_drive_J_mol + transport)
+    # Identities to rounding, at 1e-12 relative (far above the few roundings in each), with abs=0:
+    # approx's default abs of 1e-12 exceeds these pJ/s values.
+    assert rates.cycle_free_energy_J_mol == pytest.approx(
+        rates.chemical_drive_J_mol + transport, rel=1e-12, abs=0
+    )
     stored = 1e-3 * rates.cycles_fmol_s * transport
-    assert tk.held_work_pJ_s(rates) == pytest.approx(tk.heat_pJ_s(rates) + stored, rel=1e-12)
+    assert tk.held_work_pJ_s(rates) == pytest.approx(tk.heat_pJ_s(rates) + stored, rel=1e-12, abs=0)
     assert tk.heat_pJ_s(rates) >= 0
-    assert tk.role_inward_fmol_s(rates, P) == pytest.approx(-rates.cycles_fmol_s)
+    # The role moves -stoichiometry per cycle (1 here): one product, within u.
+    assert tk.role_inward_fmol_s(rates, P) == pytest.approx(-rates.cycles_fmol_s, rel=U, abs=0)
     assert tk.FUEL_STOICHIOMETRY == {"ATP": -1, "ADP": 1, "Pi": 1}
 
 
@@ -73,4 +79,5 @@ def test_planted_flipped_role_sign_fails_the_energy_identity():
     rates = tk.kinetics(s, P, 1.0, xp=np)
     transport = R * T * math.log(50.0 / 10.0)
     flipped = 1e-3 * (-rates.cycles_fmol_s) * transport  # the role moved the wrong way
-    assert tk.held_work_pJ_s(rates) != pytest.approx(tk.heat_pJ_s(rates) + flipped, rel=1e-6)
+    # The identity's own tolerance (test_delta_g_per_cycle_closes_against_the_moved_rows).
+    assert tk.held_work_pJ_s(rates) != pytest.approx(tk.heat_pJ_s(rates) + flipped, rel=1e-12, abs=0)

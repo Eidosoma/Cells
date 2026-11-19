@@ -39,6 +39,13 @@ keeps its start, and the definition keeps its form.
 - **domain:** d in [0, 1], zeros off the declared patches.
 - **The routing door's source** (§7.4 (n)): `factor_sources(declaration)`, the damage IDs in
   declared order, and `factors(read, p, *, xp)`, d at each one's patch on the stage's state.
+- **The lifecycle's declarations** (CORE_SEAMS §4.2, and §18's B1 lift, the lead's rulings of 18
+  November 2026): every field's partition role and axes, and the host of its own axis (the damage
+  entities, each on its patch). d is a level of its patch, a uniform damage of every member (§9),
+  so a split copies it (intensive), as it copies the patch's rate constants and schedules; the
+  patch's presence and each entity's patch slot are structural. They are read on the host only, so
+  no program changes; a kind beside a closer stays refused until the core gates its rates by its
+  host's activity (B1's third step).
 """
 
 from types import MappingProxyType
@@ -47,11 +54,12 @@ from typing import NamedTuple
 import numpy as np
 
 from cells.laws.transport import patch_damage as law
-from cells.registry.kind_registry import (
-    BUILTIN,
+from cells.modules import (
+    AxisHost,
     ConfigError,
     Kind,
     KindView,
+    PartitionRole,
     Schedule,
     declared_schedule,
     finite_number,
@@ -60,6 +68,7 @@ from cells.registry.kind_registry import (
     require_fields,
     series_to_dict,
 )
+from cells.registry.kind_registry import BUILTIN
 
 KIND_ID = "cells.patch_damage@1"
 MODEL_KEY = "patch_damage"
@@ -76,6 +85,30 @@ LAYOUT_FIELDS = (
     "patch_damage_source_slot",  # [source] each damage entity's patch slot, in declared order
 )
 CONTROL_FIELDS = ("patch_damage_injury", "patch_damage_resealing")
+SOURCE_AXIS = "patch_damage_source"  # The damage entities, in declared order, each on its patch.
+# The lifecycle's declarations (the module docstring's last item).
+PARTITION_ROLES = MappingProxyType(
+    {
+        "patch_damage": PartitionRole("intensive"),
+        "patch_damage_present": PartitionRole("structural", False),
+        "patch_damage_injury_rate_per_s": PartitionRole("intensive"),
+        "patch_damage_resealing_rate_per_s": PartitionRole("intensive"),
+        "patch_damage_source_slot": PartitionRole("structural", 0),
+        "patch_damage_injury": PartitionRole("intensive"),
+        "patch_damage_resealing": PartitionRole("intensive"),
+    }
+)
+FIELD_AXES = MappingProxyType(
+    {
+        "patch_damage_present": ("membrane_slot",),
+        "patch_damage_injury_rate_per_s": ("membrane_slot",),
+        "patch_damage_resealing_rate_per_s": ("membrane_slot",),
+        "patch_damage_source_slot": (SOURCE_AXIS,),
+        "patch_damage_injury": ("membrane_slot",),
+        "patch_damage_resealing": ("membrane_slot",),
+    }
+)
+AXIS_HOSTS = MappingProxyType({SOURCE_AXIS: AxisHost("patch", "patch_damage_source_slot")})
 
 
 class Damage(NamedTuple):
@@ -247,7 +280,7 @@ def control_values(spec, declaration, times):
 
 
 def rates(state, potentials, control, p, *, xp):
-    from cells.models.surface_pump_v3 import KindRates
+    from cells.modules import KindRates
 
     d = state.patch_damage
     k_inj, k_res = p.patch_damage_injury_rate_per_s, p.patch_damage_resealing_rate_per_s
@@ -330,5 +363,8 @@ PATCH_DAMAGE = BUILTIN.register(
         factor_sources=factor_sources,
         factors=factors,
         view=VIEW,
+        partition_roles=PARTITION_ROLES,
+        field_axes=FIELD_AXES,
+        axis_hosts=AXIS_HOSTS,
     )
 )
