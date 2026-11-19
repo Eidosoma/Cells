@@ -1036,11 +1036,15 @@ def check_stage_read_rows(spec):
     for kind_id, declaration in getattr(m, "kinds", ()):
         kind = registry.lookup(kind_id)
         if kind.stage_read is not None and kind.stage_rows is not None:
+            # Each row as (species, node), normalized here: mixed list and tuple rows from one kind,
+            # or two rows of one (species, node) whose third items are None and a law ID, made
+            # sorted(rows) below raise TypeError. A malformed row is @3's to refuse
+            # (_check_stage_rows), which in a composite runs first, in the inner parse.
             rows = tuple(
                 tuple(row[:2])
                 for row in kind.stage_rows(declaration)
                 if isinstance(row, (tuple, list)) and len(row) in (2, 3)
-            )  # A malformed row is @3's to refuse, later (_check_stage_rows), as in P2's rule.
+            )
             if rows:  # A read that rewrites no row (an identity read) stores nothing.
                 reads.append((kind_registry.qualified(kind_id), rows))
     if not reads:
