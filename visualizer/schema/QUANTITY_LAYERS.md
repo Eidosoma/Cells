@@ -187,11 +187,14 @@ the viewer changes.
    and who owns it are the view's own words for its layer.
 5. **What a run did not save is said.** A layer whose record a run lacks is listed,
    switched off, with "this run did not save it".
-6. **Examples are marked and kept apart.** Where no saved run carries a layer's record,
-   the layer may be shown on an example run with invented numbers. Such a run is made by
-   the run-fixture tool, stands under "Examples" and never among the experiments, has no
-   result class, and carries "Example: invented numbers" on the picture and in the
-   legend for as long as it is shown. The run folder says of itself that it is an example
+6. **Invented numbers are marked and kept apart.** Where no saved run carries a layer's
+   record, the layer may be shown on a run with invented numbers. Such a run is made by
+   the run-fixture tool, stands apart from the experiments (on the Experiments tab's
+   landing, in its band of invented numbers, never among the runs of the engine), has no
+   result class, and carries "Invented numbers · no run of Cells' engine" on the picture
+   and in the legend for as long as it is shown. No word a visitor reads calls it an
+   example: "Examples" are the landing's two experiments to start with (decided on 18
+   November 2026; in the code an entry's key `example: true` still marks invented numbers). The run folder says of itself that it is an example
    (`example.json`, which the run-fixture tool writes). The adapter carries that into the
    run's view, names no model as the owner of a record, and refuses to list the run under
    an entry that is not marked `example` (and a run that is none under one that is).

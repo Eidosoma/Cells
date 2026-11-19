@@ -48,6 +48,8 @@ const runs = path.resolve(process.argv[3] || DEFAULT_RUNS);
 const outDir = process.argv[4] ? path.resolve(process.argv[4]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
 
+// The words a run of invented numbers keeps on the picture and in the legend (schema/QUANTITY_LAYERS.md, rule 6): the run's own, from the run-fixture tool.
+const INVENTED = "Invented numbers · no run of Cells' engine";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const results = [];
 const check = (name, ok, detail = "") => {
@@ -523,13 +525,14 @@ try {
   }
 
   if (scenario === "example") {
-    // An example run: invented numbers, said to be on the picture, in the legend and in the run's card.
+    // A run of invented numbers, said to be so on the picture, in the legend and in the run's card, never called an example
+    // (18 November 2026: "Examples" are the landing's two experiments to start with).
     await open(`${run}time=1`);
     // The picture's own labels come a frame or two after the run is drawn: wait for them (a poll with a limit, never a fixed sleep).
     let s = await until((now) => now.flow.example.length > 0 && now.flow.legendExample);
     check(
-      "an example says that its numbers are invented: on the picture, in the legend, and under a heading of its own in the run's card",
-      s.flow.example.includes("Example: invented numbers") && s.flow.legendExample === "Example: invented numbers" && s.flow.headings.some((text) => /^Examples?$/.test(text)),
+      "a run of invented numbers says so: on the picture, in the legend, and under a heading of its own in the run's card, and none of them says example",
+      s.flow.example.includes(INVENTED) && s.flow.legendExample === INVENTED && s.flow.headings.some((text) => /^Invented numbers$/i.test(text)) && !s.flow.headings.some((text) => /example/i.test(text)),
       JSON.stringify([s.flow.example, s.flow.legendExample, s.flow.headings])
     );
     // Ion traffic, with a real press: it waits for a cell, and offers the slow-down beside the true speed.
@@ -554,7 +557,7 @@ try {
       s.selected === `cell:${first.number}` && through?.forms.length === 4 && through.forms[2] === "pump" && through.forms[3] === "membrane itself" && through.readings.length === 6 && through.drawn.streams === 6 && through.drawn.beads === 0 && through.drawn.chevrons >= 6 && through.drawn.chevrons <= 18,
       JSON.stringify([s.selected, through?.forms, through?.beads, through?.drawn])
     );
-    check("the close-up says that it is an example, and states what full width carries, the time it keeps and the interval", /^Example: invented numbers/.test(caption) && /Streams as wide as their rates: full width is [\d,]+ ions a second · true speed, shown still\nmean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 260));
+    check("the close-up says that its numbers are invented, and states what full width carries, the time it keeps and the interval", caption.startsWith(INVENTED) && /Streams as wide as their rates: full width is [\d,]+ ions a second · true speed, shown still\nmean of 0\.5 s to 1\.0 s/.test(caption), caption.slice(0, 260));
     const ways = Object.fromEntries((through?.readings || []).map((reading) => [`${reading.kind} ${reading.species}`, reading.way]));
     check("potassium leaves through its channels and sodium enters through its own; the pump carries three sodium out and two potassium in for each cycle", ways["channel K"] === "out of the cell" && ways["channel Na"] === "into the cell" && ways["pump Na"] === "out of the cell" && ways["pump K"] === "into the cell" && through.readings.filter((reading) => reading.kind === "pump").map((reading) => reading.per).join() === "-3,2", JSON.stringify(ways));
     check("each stream's beads a second are its ions a second over the token", through.readings.every((reading) => Math.abs(reading.beads - (Math.abs(reading.mean) * 6.02214076e8) / through.token) <= 1e-6 * reading.beads), JSON.stringify(through.readings.map((reading) => [reading.name, reading.species, reading.mean, reading.beads])));

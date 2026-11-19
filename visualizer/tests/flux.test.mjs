@@ -948,7 +948,7 @@ test("a run is read as a species' loop only where it says so, names the engine, 
   const cell = plain.sets.get("cell").ids[discOf(plain)];
   // An example's numbers are invented: it is no species' run, whatever it says of looping.
   const example = await opened((view) => (view.loop = { species: "planarian", cell, closes: CLOSES }));
-  assert.match(readLoop(example, "planarian").why, /^The run is an example with invented numbers/);
+  assert.match(readLoop(example, "planarian").why, /^The run's numbers are invented/);
   const run = await opened(asLoop(cell));
   const read = readLoop(run, "planarian");
   assert.equal(read.ok, true);

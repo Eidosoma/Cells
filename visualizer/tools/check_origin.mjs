@@ -65,7 +65,7 @@ const CASE = process.env.CASE || "main";
 const PHONE = CASE === "phone" || process.env.PHONE === "1";
 const WIDTH = Number(process.env.WIDTH || (PHONE ? 400 : 1400)), HEIGHT = Number(process.env.HEIGHT || (PHONE ? 800 : 900));
 const NAME = process.env.NAME || `origin-${CASE}`;
-const EXAMPLE = "Example: invented numbers · not a run of Cells' engine";
+const EXAMPLE = "Invented numbers · no run of Cells' engine";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const results = [];
 const check = (name, ok, detail = "") => {
@@ -361,7 +361,7 @@ try {
       check("and the example's mark keeps clear of the opened card", markShows(m), JSON.stringify(m));
       // The opened card says the example's mark itself: at 390 px and under, the card leaves the mark on the picture no room beside it.
       const inCard = await evaluate(`(() => { const el = ${V}.shadowRoot.querySelector("#cells-view .view-notice"); return el && el.getClientRects().length ? el.textContent : null; })()`);
-      check("and the opened card carries the example's mark itself", inCard === "Example: invented numbers · not a run of Cells' engine", String(inCard));
+      check("and the opened card carries the example's mark itself", inCard === EXAMPLE, String(inCard));
       await shot(`${NAME}-card-open`);
     }
     const similarity = await placeOf(`root.querySelector('[data-choice="compare"]')`);
