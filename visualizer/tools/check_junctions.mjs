@@ -240,13 +240,23 @@ try {
   } else if (CASE === "levin" && levin) {
     const R = "gap-junction-linear-network";
     const state = () => evaluate(`(async () => { await new Promise((r) => setTimeout(r, 1500)); const v = ${V}, lens = v.current, legend = lens.chrome().legend; return { outside: lens.surface?.outside?.tiles?.length ?? 0, unit: legend.scale?.unit ?? null, said: legend.scale?.said || "", units: v.shadowRoot.querySelector(".run-units")?.textContent || null, run: lens.runId, cells: lens.sheet?.cells.length ?? null, error: lens.error, colour: lens.switch.holder("colour"), height: lens.switch.holder("height"), on: lens.switch.on, links: lens.markOn("links")?.mark.counts || null, note: lens.scaleInfo?.()?.note || null, list: v.shadowRoot.querySelector("#cells-experiment") ? [...v.shadowRoot.querySelector("#cells-experiment").options].map((o) => o.textContent) : [...v.shadowRoot.querySelectorAll(".exp-row")].map((b) => b.textContent), sweep: v.shadowRoot.querySelector(".sweep .seg-label")?.textContent || null, shown: [...v.shadowRoot.querySelectorAll(".sweep-arm")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.arm), errors: window.__pageErrors }; })()`);
-    // The view opens on the listed experiment's part its entry names (opens.part: the tumour tissue) where it is packaged;
-    // the networks are a real press away, on the card's own button (on a phone, in the card opened by a real press).
+    // The tab opens on its landing (18 November 2026). A real press on the card that opens this experiment shows the part its
+    // entry names (opens.part: the tumour tissue) where it is packaged, else its networks; from the part, the networks are a
+    // real press away, on the part's card's own button (on a phone, in the card opened by a real press).
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    await until(`${V}?.state.landing && ${V}.shadowRoot.querySelectorAll(".landing-card").length > 0`, 240);
+    // The landing's card that opens the replication (by the page's own rule), pressed for real.
+    const pressCard = async (pick) => {
+      const at = await evaluate(`(() => { const v = ${V}; const id = [...v.shadowRoot.querySelectorAll(".landing-card.is-replay")].map((el) => el.dataset.card).find((id) => (${pick})(v.landingView.opened(id))); if (!id) return null; const el = v.shadowRoot.querySelector('[data-card="' + id + '"] .landing-open'); el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { id, x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (at) await click(at.x, at.y, 1500);
+      return at;
+    };
+    const ofReplication = `(opened) => Boolean(opened?.part || opened?.run?.startsWith(${JSON.stringify(`${R}--`)}))`;
+    const card = await pressCard(ofReplication);
     await until(`Boolean(${V}?.current?.run && ${V}.current.sheet) || Boolean(${V}?.state.part && ${V}.current?.runs?.length)`, 240);
     const opened = await evaluate(`${V}.state.part || null`);
     const tissue = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8")).experiments.some((item) => item.id === "gap-junction-tissue-line");
-    check(tissue ? "the Experiments tab opens on the example's tumour tissue, the part its entry names" : "the tissue is not packaged here: the tab opens on the networks", tissue ? opened === "gap-junction-tissue-line" : !opened, JSON.stringify(opened));
+    check(tissue ? "a real press on the landing's card of this experiment shows its tumour tissue, the part its entry names" : "the tissue is not packaged here: the card shows the networks", Boolean(card) && (tissue ? opened === "gap-junction-tissue-line" : !opened), JSON.stringify([card?.id, opened]));
     if (opened) {
       if (WIDTH < 760 && !(await evaluate(`${V}.state.viewOpen`))) {
         const fold = await placeOf(`root.querySelector(".view-toggle")`);
@@ -258,16 +268,17 @@ try {
       if (WIDTH < 760 && (await evaluate(`${V}.state.viewOpen`))) await evaluate(`${V}.toggleViewCard(false)`);
     }
     let s = await state();
-    check("the Experiments view opens on the replication, and its list is the two examples: the replication and GARD", s.run?.startsWith(`${R}--`) && s.list.length === 2 && /^(Development run: )?Gap-junction networks of a linear model/.test(s.list[0]) && /GARD/.test(s.list[1]), JSON.stringify([s.run, s.list]));
+    const title = await evaluate(`${V}.shadowRoot.querySelector("#cells-view .card-title")?.textContent || ""`);
+    check("the networks show the replication's run under its own name, and no list of experiments stands in its card (the landing is the list)", s.run?.startsWith(`${R}--`) && s.list.length === 0 && /^Gap-junction networks of a linear model/.test(title), JSON.stringify([s.run, s.list, title]));
     // Each arm opens on the quantity the experiment's driver states beside it (concentration.json), in its own unit, with Coupling on; else on the amount.
     const index = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8"));
     // It opens on the run its entry names (opens.run): Figure 5a's seven-cell network, where that arm is packaged.
     const named = index.runs.some((row) => row.id === `${R}--figure5-network-g1`);
     check(named ? "it opens on the run its entry names: Figure 5a's seven-cell network" : "the arm its entry names is not packaged here: it opens on its first run", named ? s.run === `${R}--figure5-network-g1` && s.cells === 7 : s.run === index.runs.find((row) => row.experiment === R)?.id, JSON.stringify([s.run, s.cells]));
-    // The runs stand at the card's head, under the list of examples and over its text: grouped by their sweep, in the sweeps' order.
-    const head = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector("#cells-view"), runs = card.querySelector(".runs"), list = [...card.querySelectorAll(".experiments, #cells-experiment")].pop(), text = card.querySelector(".run-lead"), select = card.querySelector("#cells-run"), box = (el) => el?.getBoundingClientRect(); const order = (a, b) => Boolean(a && b) && Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); return { afterList: order(list, runs), beforeText: order(runs, text), inSight: ${WIDTH >= 760} ? box(select || runs).bottom <= box(card).bottom : true, groups: select ? [...select.querySelectorAll("optgroup")].map((group) => [group.label, group.children.length]) : [], sweeps: (${L}.chrome().run.sweeps || []).map((sweep) => sweep.label), count: card.querySelector(".runs .seg-label")?.textContent }; })()`);
+    // The runs stand at the card's head, under the experiment's name and over its text: grouped by their sweep, in the sweeps' order.
+    const head = await evaluate(`(() => { const root = ${V}.shadowRoot, card = root.querySelector("#cells-view"), runs = card.querySelector(".runs"), list = card.querySelector(".card-title"), text = card.querySelector(".run-lead"), select = card.querySelector("#cells-run"), box = (el) => el?.getBoundingClientRect(); const order = (a, b) => Boolean(a && b) && Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); return { afterList: order(list, runs), beforeText: order(runs, text), inSight: ${WIDTH >= 760} ? box(select || runs).bottom <= box(card).bottom : true, groups: select ? [...select.querySelectorAll("optgroup")].map((group) => [group.label, group.children.length]) : [], sweeps: (${L}.chrome().run.sweeps || []).map((sweep) => sweep.label), count: card.querySelector(".runs .seg-label")?.textContent }; })()`);
     const sweptLabels = head.groups.map(([label]) => label).filter((label) => label !== "Other runs");
-    check("the runs stand at the card's head, under the list of examples and over its text, in sight, grouped by their sweep in the sweeps' order", head.afterList && head.beforeText && head.inSight && head.groups.length > 1 && JSON.stringify(sweptLabels) === JSON.stringify(head.sweeps.filter((label) => sweptLabels.includes(label))) && sweptLabels.length >= 2, JSON.stringify(head));
+    check("the runs stand at the card's head, under the experiment's name and over its text, in sight, grouped by their sweep in the sweeps' order", head.afterList && head.beforeText && head.inSight && head.groups.length > 1 && JSON.stringify(sweptLabels) === JSON.stringify(head.sweeps.filter((label) => sweptLabels.includes(label))) && sweptLabels.length >= 2, JSON.stringify(head));
     const stated = (arm) => /"stated\.concentration"/.test(readFileSync(path.join(levinRuns, `${R}--${arm}.json`), "utf8"));
     for (const [arm, cells, lines, label, unit] of [["figure5-network-g1", 7, 6, "Figure 5a's seven cells", "mM"], ["figure8-chain10-held0.5", 10, 9, "a chain of ten", "mM"], ["aw-figure3-g1", 2, 1, "the two-cell pair as written", "µM"], ["figure3-g1", 2, 1, "the two-cell pair", "mM"]]) {
         if (!index.runs.some((row) => row.id === `${R}--${arm}`)) { note(`${label}: ${arm} is not among the runs the folder's index chooses: skipped`); continue; }
@@ -300,27 +311,36 @@ try {
       check("a run shown after another opens as the first did: coloured by the experiment's quantity, the sheet flat", /^(stated-concentration|amount-mr)-tint$/.test(s.colour || "") && !s.height, JSON.stringify([s.colour, s.height]));
       if (WIDTH < 760 && (await evaluate(`${V}.state.viewOpen`))) await evaluate(`${V}.toggleViewCard(false)`);
     }
-    // GARD's row shows the origin view in the Experiments tab's place (its levels, its clock, its panels); the species switch and the first tab stay as they were.
+    // The assembly's card on the landing shows the origin view in the Experiments tab's place (its levels, its clock, its panels); the species switch and the first tab stay as they were.
     const before = await evaluate(`({ run: ${L}.runId, model: ${V}.state.model || null, first: ${V}.shadowRoot.querySelector('[data-lens="cell"] .long')?.textContent })`);
     const door = () => evaluate(`(() => { const v = ${V}, root = v.shadowRoot, lens = v.current; return { tab: v.state.lens, pressed: root.querySelector('[data-lens="experiments"]')?.getAttribute("aria-pressed"), door: v.state.example, model: v.state.model || null, first: root.querySelector('[data-lens="cell"] .long')?.textContent, entry: new URL(location.href).searchParams.get("entry"), view: Boolean(lens?.levels && lens.player), rail: root.querySelector(".rail .rail-title")?.textContent || null, levels: [...root.querySelectorAll(".rail [data-stop]")].length, timeline: !v.timeline.hidden && v.timeline.player === lens?.player, pair: Boolean(lens?.pairRuns), pairChoice: Boolean(root.querySelector('.view select[data-choice="pair"]')), list: root.querySelector("#cells-experiment") ? [...root.querySelector("#cells-experiment").options].map((o) => [o.textContent, String(o.selected)]) : [...root.querySelectorAll(".view .exp-row")].map((b) => [b.textContent, b.getAttribute("aria-pressed")]), sweepCard: !root.querySelector(".sweep-card")?.hidden || Boolean(root.querySelector(".view .sweep")), run: lens?.runId ?? null, sheet: Boolean(lens?.sheet), errors: window.__pageErrors }; })()`);
-    // A row of the list: on a wide window a real press; on a phone its list is a select in the folded card, opened by a real press.
+    // The way to another experiment: a real press on the way back to all experiments, then on its card on the landing (until
+    // 18 November 2026 a row of a list in the view's card). For the replication, its card shows the tumour tissue, and the
+    // part's card's own button its networks.
     const choose = async (wanted) => {
-      if (WIDTH >= 760) {
-        const at = await placeOf(`root.querySelector(${JSON.stringify(wanted === "gard" ? '.view .exp-row[data-door="gard"]' : ".view .exp-row:not([data-door])")})`);
-        if (at) await click(at.x, at.y, 1500);
-        return Boolean(at);
+      const way = await placeOf(`root.querySelector(".exp-back")`);
+      if (way) await click(way.x, way.y, 1200);
+      await until(`${V}.state.landing && ${V}.shadowRoot.querySelectorAll(".landing-card").length > 0`, 60);
+      const at = await pressCard(wanted === "gard" ? "(opened) => opened?.example === \"gard\"" : ofReplication);
+      if (wanted === "gard" || !at) return Boolean(way && at);
+      await until(`Boolean(${V}?.state.part && ${V}.current?.runs?.length) || Boolean(${V}.current?.run && ${V}.current.sheet)`, 240);
+      if (await evaluate(`Boolean(${V}.state.part)`)) {
+        if (WIDTH < 760 && !(await evaluate(`${V}.state.viewOpen`))) {
+          const fold = await placeOf(`root.querySelector(".view-toggle")`);
+          if (fold) await click(fold.x, fold.y, 900);
+        }
+        const networks = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
+        if (networks) await click(networks.x, networks.y, 1500);
+        if (WIDTH < 760 && (await evaluate(`${V}.state.viewOpen`))) await evaluate(`${V}.toggleViewCard(false)`);
       }
-      if (!(await evaluate(`${V}.state.viewOpen`))) {
-        const fold = await placeOf(`root.querySelector(".view-toggle")`);
-        if (fold) await click(fold.x, fold.y, 900);
-      }
-      return evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-experiment"); const option = select && [...select.options].find((o) => ${wanted === "gard" ? `o.value === "door:gard"` : `!o.value.startsWith("door:")`}); if (!option) return false; select.value = option.value; select.dispatchEvent(new Event("change")); return true; })()`);
+      return Boolean(way && at);
     };
     const gard = await choose("gard");
     await until(`Boolean(${L}?.levels && ${L}.player)`, 120);
     let d = await door();
-    check("a real press on GARD's row shows the origin view in the Experiments tab's place: the tab stays pressed, the species switch and the first tab as they were", Boolean(gard) && d.tab === "experiments" && d.pressed === "true" && d.door === "gard" && d.view && d.model === before.model && d.first === before.first && !d.entry, JSON.stringify(d));
-    check("its levels stand on the rail, its clock on the timeline, and the tab's list at the head of its card, GARD's row pressed", d.rail === "Level" && d.levels >= 2 && d.timeline && d.list.length === 2 && d.list[1][1] === "true" && d.list[0][1] === "false" && !d.sweepCard, JSON.stringify([d.rail, d.levels, d.timeline, d.list, d.sweepCard]));
+    check("a real press on the way back, then on the assembly's card, shows the origin view in the Experiments tab's place: the tab stays pressed, the species switch and the first tab as they were", Boolean(gard) && d.tab === "experiments" && d.pressed === "true" && d.door === "gard" && d.view && d.model === before.model && d.first === before.first && !d.entry, JSON.stringify(d));
+    const way = await evaluate(`!${V}.backButton.hidden`);
+    check("its levels stand on the rail, its clock on the timeline, no list of experiments in its card, and the way back to all experiments in its place", d.rail === "Level" && d.levels >= 2 && d.timeline && d.list.length === 0 && way && !d.sweepCard, JSON.stringify([d.rail, d.levels, d.timeline, d.list, way, d.sweepCard]));
     check(d.pair ? "the entry names the engine's two runs: the card offers the two forms of the law (side by side where there is room)" : "the entry names no pair of the engine's runs here: the card offers none", d.pair === d.pairChoice, JSON.stringify([d.pair, d.pairChoice]));
     // Its legend says what the coloured types are, and so does a type's panel; its stamp is not cut under the card.
     const words = await evaluate(`(() => { const root = ${V}.shadowRoot, stamp = root.querySelector(".stamp"), card = root.querySelector("#cells-view"), shown = stamp && getComputedStyle(stamp).display !== "none" && stamp.getClientRects().length; return { lead: root.querySelector("cells-legend .legend-lead")?.textContent || "", stamp: shown ? Math.round(stamp.getBoundingClientRect().left) : null, card: Math.round(card.getBoundingClientRect().right), type: ${L}.sections().flatMap((section) => section.entities || []).find((entity) => /:type:/.test(String(entity?.id)))?.id || null }; })()`);
@@ -341,11 +361,11 @@ try {
     await evaluate(`${V}.select(null)`);
     await sleep(600);
     await shot("gard-door");
-    // The replication's row: its run again, as it was left, with its sweeps' card.
+    // The replication again, by the way back and its card: its run again, as it was left, with its sweeps' card.
     const back = await choose("replication");
     await until(`Boolean(${L}?.sheet && ${L}.run)`, 120);
     d = await door();
-    check("a real press on the replication's row shows its runs again, the run left before, with its sweeps' card", Boolean(back) && d.tab === "experiments" && !d.door && d.run === before.run && d.sheet && d.sweepCard, JSON.stringify([d.door, d.run, before.run, d.sheet, d.sweepCard]));
+    check("the way back, its card and the networks' button show its runs again, the run left before, with its sweeps' card", Boolean(back) && d.tab === "experiments" && !d.door && d.run === before.run && d.sheet && d.sweepCard, JSON.stringify([d.door, d.run, before.run, d.sheet, d.sweepCard]));
     const errors = await evaluate(`window.__pageErrors`);
     check("the page logged no error", !errors.length, JSON.stringify(errors));
   } else if (CASE === "sweep") {

@@ -383,7 +383,7 @@ test("every engine part an experiment's replays point at is on the map", async (
     // An example has invented numbers (schema/QUANTITY_LAYERS.md, rule 6): nothing was found, no part of the engine stands behind it, and it has no class.
     if (experiment.example === true) {
       assert.ok(!experiment.outcome && !experiment.classes && !experiment.development && experiment.engine_entities.length === 0, `${name}: an example has no outcome, no class and no engine part`);
-      assert.ok(/invented numbers/.test(experiment.label) && experiment.plain.startsWith("Example: invented numbers"), `${name}: an example says so in its name and in its first words`);
+      assert.ok(/invented numbers/.test(experiment.label) && experiment.plain.startsWith("Invented numbers") && !/example/i.test(`${experiment.label} ${experiment.plain}`), `${name}: invented numbers say so in their name and in their first words, and never "example" (18 November 2026)`);
       continue;
     }
     // What an experiment found is the record's, so it must say where the record says it.

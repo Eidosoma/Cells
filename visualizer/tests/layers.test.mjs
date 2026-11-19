@@ -632,7 +632,7 @@ test("the wedge mark draws one sign for each junction that carries a drop, on th
 // into arrays and makes objects of the scene.
 globalThis.HTMLElement ??= class {};
 globalThis.customElements ??= { define() {}, get: () => null };
-const { ReplayLens } = await import("../src/lenses/replay.js");
+const { ReplayLens, KEPT_RUNS } = await import("../src/lenses/replay.js");
 
 function lensFor(runs, experiments = [{ id: "e07-v1", label: "A made-up experiment", records: { vm: { label: "Membrane voltage", shown_between: [-0.09, -0.01] } } }], { moving = false } = {}) {
   const files = new Map();
@@ -788,6 +788,35 @@ test("the drops are fetched when switched on, drawn beside the other layers, exp
   await lens.setLayer("junction-drops", false);
   assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"]);
   assert.deepEqual(lens.chrome().legend.layers.keys, []);
+});
+
+test("a run asked for as the view is made is the only one fetched; an id the catalogue lacks opens the first; the few runs shown last are kept", async (t) => {
+  const runs = [1, 2, 3, 4, 5, 6].map((seed) => syntheticRun({ seed }));
+  const asked = lensFor(runs);
+  t.after(asked.restore);
+  // As the page does for an address with run=: the view is made, and that run asked for at once.
+  asked.lens.show(runs[2].entry.id);
+  await asked.lens.ready;
+  assert.equal(asked.lens.run.id, runs[2].entry.id);
+  assert.deepEqual(asked.asked, [`${runs[2].entry.id}.json`], "the view's opening run is not fetched");
+  asked.restore();
+  const { lens, asked: fetched, restore } = lensFor(runs);
+  t.after(restore);
+  lens.show("e07-v1--no-such-run--seed1");
+  await lens.ready;
+  assert.equal(lens.run.id, runs[0].entry.id, "an id the catalogue lacks: the view opens on its opening run");
+  assert.deepEqual(fetched, [`${runs[0].entry.id}.json`]);
+  // Six runs shown one after another: the last few are kept, the run drawn among them; a run let go is fetched again.
+  for (const run of runs) await lens.show(run.entry.id);
+  assert.equal(KEPT_RUNS, 4);
+  assert.deepEqual([...lens.loaded.keys()], runs.slice(2).map((run) => run.entry.id));
+  await lens.show(runs[3].entry.id);
+  assert.equal([...lens.loaded.keys()].at(-1), runs[3].entry.id, "a run shown again is the last shown");
+  const before = fetched.length;
+  await lens.show(runs[0].entry.id);
+  assert.equal(fetched.length, before + 1, "a run let go is fetched again");
+  assert.equal(lens.run.id, runs[0].entry.id);
+  assert.ok(lens.loaded.has(runs[0].entry.id) && lens.loaded.size === KEPT_RUNS);
 });
 
 test("a layer a run cannot feed is listed with the reason and cannot be switched on; a part that does not come is said", async (t) => {
@@ -1265,9 +1294,9 @@ test("a replay is slowed or made faster from its timeline: a short run opens at 
   const catalogue = new Catalogue(CATALOGUE);
   assert.deepEqual(catalogue.sections().map((section) => section.label), [
     "Synthetic sheet (test fixture)", "Synthetic pre-screen arms (test fixture)", "Synthetic pilot (test fixture)",
-    "Development run: Synthetic development run (test fixture)", "Development run: Synthetic small world (test fixture)", "Example: Example sheet (invented numbers)",
+    "Development run: Synthetic development run (test fixture)", "Development run: Synthetic small world (test fixture)", "Invented numbers: Test sheet (invented numbers)",
   ].map((label, k) => (k < 3 ? catalogue.sections()[k].label : label)));
-  assert.deepEqual(catalogue.sections().map((section) => section.label).filter((label) => /^(Development run|Example): /.test(label)).map((label) => label.split(":")[0]), ["Development run", "Development run", "Example"]);
+  assert.deepEqual(catalogue.sections().map((section) => section.label).filter((label) => /^(Development run|Invented numbers): /.test(label)).map((label) => label.split(":")[0]), ["Development run", "Development run", "Invented numbers"]);
 });
 
 // ------------------------------------------------------------ where things stand: tiles and their borders
@@ -1821,15 +1850,15 @@ test("an example says that its numbers are invented: on the picture, in the lege
   await lens.ready;
   lens.activate();
   const chrome = lens.chrome();
-  assert.equal(chrome.legend.layers.example, "Example: invented numbers");
-  assert.match(chrome.stamp, /^Example sheet \(invented numbers\) · Example: invented numbers$/);
-  assert.deepEqual(chrome.run.experiments.map((item) => [item.id, item.example, item.development]), [["example-sheet", true, false]]);
-  assert.ok(lens.labels.shown.some((label) => label.text === "Example: invented numbers" && /label-example/.test(label.kind) && label.boost === 1000), "the picture carries the words for as long as the run is shown");
-  assert.match(lens.describe("layers:shown").plain, /^Example: invented numbers\. /);
+  assert.equal(chrome.legend.layers.example, "Invented numbers · no run of Cells' engine");
+  assert.match(chrome.stamp, /^Test sheet \(invented numbers\) · Invented numbers · no run of Cells' engine$/);
+  assert.deepEqual([chrome.run.experiment, chrome.run.example, chrome.run.development], ["example-sheet", true, false]);
+  assert.ok(lens.labels.shown.some((label) => label.text === "Invented numbers · no run of Cells' engine" && /label-example/.test(label.kind) && label.boost === 1000), "the picture carries the words for as long as the run is shown");
+  assert.match(lens.describe("layers:shown").plain, /^Invented numbers · no run of Cells' engine\. /);
   // No record of it is said to be computed by a model.
   const run = lens.run;
-  assert.equal(behind(declared(run, "vm")), "Example: invented numbers. Written by the viewer's run-fixture tool under the engine's own name for this record; no model computed it. Positive means: a positive voltage means the cell's inside is at a higher potential than its outside. That is the viewer's reading of the run's own saved arrays, not a declaration by the run: at every record each membrane's saved voltage equals the saved potential of its cell less that of the outside node it faces.");
-  for (const record of run.view.records) if (record.set) assert.match(behind(declared(run, record.id)), /^Example: invented numbers\./, record.id);
+  assert.equal(behind(declared(run, "vm")), "Invented numbers. Written by the viewer's run-fixture tool under the engine's own name for this record; no model computed it. Positive means: a positive voltage means the cell's inside is at a higher potential than its outside. That is the viewer's reading of the run's own saved arrays, not a declaration by the run: at every record each membrane's saved voltage equals the saved potential of its cell less that of the outside node it faces.");
+  for (const record of run.view.records) if (record.set) assert.match(behind(declared(run, record.id)), /^Invented numbers\./, record.id);
   // It opens as a sheet does: coloured and raised by its voltage; and it can feed the layers no saved run feeds yet.
   assert.deepEqual(lens.switch.on, ["voltage-tint", "voltage-relief"]);
   assert.deepEqual(rowsOf(lens).filter((row) => /^(Motion|Glow)/.test(row)), ["Motion: Off* | Transfers | Ion traffic", "Glow: Off* | Energy dissipated"]);
@@ -1916,7 +1945,7 @@ test("with a cell of the example chosen, beads cross its membrane through each c
   assert.ok(near(readings[4].mean, 0.0003, 1e-4) && near(readings[5].mean, 0.0005, 1e-4) && readings[4].way === "out of the cell" && readings[5].way === "out of the cell");
   // What the close-up says of itself: that it is an example, and the token, the time and the interval.
   const caption = lens.closeupCaption().split("\n");
-  assert.equal(caption[0], "Example: invented numbers");
+  assert.equal(caption[0], "Invented numbers · no run of Cells' engine");
   assert.match(caption[1], new RegExp(`^Membrane of cell_${disc} at 1\\.0 s$`));
   assert.ok(caption.includes(`Streams as wide as their rates: full width is ${Math.round(most * PER_FMOL).toLocaleString("en-US")} ions a second · true speed, shown still`) && caption.includes("mean of 0.5 s to 1.0 s"), caption.join(" | "));
   assert.ok(caption.includes("Worked out by the viewer from the saved totals."));

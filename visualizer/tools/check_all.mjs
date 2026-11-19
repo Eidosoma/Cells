@@ -84,6 +84,15 @@ const SUITE = [
   { name: "tissue-play", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "play", NAME: "tissue-play" }, minutes: 4 }, // the play of the stated changes, watched whole
   { name: "tissue-sheet", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "sheet", NAME: "tissue-sheet" }, minutes: 3 }, // the switch turned to the sheet, in the check's own catalogue
   { name: "tissue-layout", tool: "check_tissue.mjs", args: [pictures], env: { CASE: "layout", NAME: "tissue-layout" }, minutes: 6 }, // no name meets another or lies on a cell, at five sizes in every state a press reaches
+  // What each address of the exported page fetches beside it, cold, held to the budgets of tools/references/fetches.json (tools/check_fetches.mjs).
+  // The export publishes what the landing's cards list, every experiment with a card: the case "with every experiment listed" (fetches-all) is this one since 18 November 2026.
+  { name: "fetches", tool: "check_fetches.mjs", args: [pictures], env: { CASE: "listed", NAME: "fetches" }, minutes: 4 },
+  // The Experiments tab's landing (tools/check_landing.mjs): at 1440 by 900, 1280 by 720, 400 by 860 and 360 by 780, each in both themes, and its cards' file held back, refused and given on "Try again".
+  { name: "landing-wide", tool: "check_landing.mjs", args: [pictures], env: { CASE: "wide", NAME: "landing-wide" }, minutes: 4 },
+  { name: "landing-720", tool: "check_landing.mjs", args: [pictures], env: { CASE: "720", NAME: "landing-720" }, minutes: 4 },
+  { name: "landing-phone", tool: "check_landing.mjs", args: [pictures], env: { CASE: "phone", NAME: "landing-phone" }, minutes: 4 },
+  { name: "landing-narrow", tool: "check_landing.mjs", args: [pictures], env: { CASE: "narrow", NAME: "landing-narrow" }, minutes: 4 },
+  { name: "landing-retry", tool: "check_landing.mjs", args: [pictures], env: { CASE: "retry", NAME: "landing-retry" }, minutes: 1 },
   // The bacteria drawn to scale (17 November 2026): at the cell's stop and at the molecule stop, where the close-up's lanes take over.
   flux("ecoli-scale-cell", { SPECIES: "ecoli", SIZE: "real", SCALE: "cell" }, 5),
   flux("ecoli-scale-molecule", { SPECIES: "ecoli", SIZE: "real", SCALE: "molecule" }, 5),
