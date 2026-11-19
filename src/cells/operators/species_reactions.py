@@ -98,6 +98,7 @@ read, never offset, and an idle node beside an active one keeps every field bit 
 
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import NamedTuple
 
 import jax.numpy as jnp
@@ -1251,6 +1252,9 @@ class LocalSpeciesReactions(Operator):
     WORK_FIELDS = ("reaction_work_pJ", "reaction_outside_work_pJ")
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = ("reaction_multiplier",)
+    # B1′: D152's multiplier, which a rate route may multiply in the half-steps (both directions,
+    # so detailed balance is kept; docs/INVENTORY_COUPLING_DESIGN.md §2.1).
+    ROUTABLE_CONTROLS = MappingProxyType({"reaction_multiplier": "rate"})
     EXPERIMENT_KEYS = (CONTROLS_KEY,)
     # Concentrations and dG read the declared volumes; a closer counts as a mask's provider (S5);
     # insertion@1 provides the outside mask and anchors (§1.4).

@@ -31,6 +31,16 @@ Declarations (class attributes):
   ``CONTROL_FACTORS``: inner control fields it multiplies; several factors on one
   field combine as a product in declared order. ``CONFLICTS_VIEW``: inner fields
   it reads as declared, so no other operator may provide them.
+* Rate routes (B1′; docs/INVENTORY_COUPLING_DESIGN.md §2.1): ``ROUTABLE_CONTROLS`` ({own
+  control field: "rate"}) names its rate controls that another operator's factor may multiply.
+  They are read in its own exact half-steps only, so it has a split part kept split under RK4
+  and no in-step process, and its scheduled rate is the maximum. ``RATE_ROUTES`` ((target law,
+  target control field), ...) names the routable controls a source may route to. Its
+  ``rate_factors`` gives each its factor and validity from the state the target's half-step
+  receives, or None where the definition declares no route there (static, by layout shape).
+  The composite multiplies the target's field by its sources' factors in declared order, at the
+  start of each of the target's two half-steps, with every source before its target; a
+  composition without a route source is unchanged.
 * Parts (kinds of §3.4), each optional: an event map at the start of the step
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
@@ -196,6 +206,7 @@ from cells.registry import kind_registry
 HEAT_SUFFIX = "_dissipated_energy_pJ"
 WORK_SUFFIX = "_work_pJ"
 RK4_MODES = ("coupled", "split")
+ROUTE_KINDS = ("rate",)  # B1′'s routable controls (an event route is a later door, §2.2).
 IDENTITY_ROLES = ("author", "user")
 REPRESENTATIONS = ("simulated", "modelled", "prescribed")
 LAYER_KEYS = frozenset({"id", "label", "representation"})
@@ -272,6 +283,9 @@ class Operator:
     EXPERIMENT_KEYS = ()
     VIEW_FIELDS = ()
     CONTROL_FACTORS = ()
+    # B1′ (module docstring): its routable rate controls, and the routable controls it routes to.
+    ROUTABLE_CONTROLS = MappingProxyType({})
+    RATE_ROUTES = ()
     CONFLICTS_VIEW = ()
     ENTITY_WRITES = MappingProxyType({})
     # Inner kinetic state it sets at events (intensive, without a ledger: gates).
@@ -531,6 +545,12 @@ class Operator:
         """{inner control field: multiplier} for CONTROL_FACTORS."""
         return {}
 
+    def rate_factors(self, state, p, target, field, *, xp):
+        """(factor, valid) for one of RATE_ROUTES, (target law, field): the factor shaped as the
+        target's control field, from the state the target's half-step receives, and its validity
+        (None: nothing to check); None where the definition declares no route on it (static)."""
+        return None
+
     def closures(self, state, p, q, *, xp):
         """{mask field: open (bool array)} for CLOSES, from state (q: the running view)."""
         return {}
@@ -774,6 +794,7 @@ def check_declarations(operator):
                 "removed and supplied accumulators"
             )
     _check_scopes(operator)
+    _check_routes(operator)
     if operator.PROCESS and not _defined_below_operator(operator, "moves_in_step"):
         raise ValueError(f"{name}: an in-step process declares the rows it moves (moves_in_step)")
     if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
@@ -938,6 +959,42 @@ def _check_layers(operator):
             raise ValueError(f"{name}: a view layer's id and label are non-empty strings")
         if layer["representation"] not in REPRESENTATIONS:
             raise ValueError(f"{name}: a view layer's representation is one of {REPRESENTATIONS}")
+
+
+def _named_string(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _check_routes(operator):
+    """B1′'s declarations (module docstring): a target's routable controls are its own control
+    fields, each "rate", read in exact half-steps (a split part kept split under RK4, no in-step
+    process); a source's routes are distinct (target law, control field) pairs, never to its own
+    law, with rate_factors defined."""
+    name = operator.LAW_ID
+    routable = operator.ROUTABLE_CONTROLS
+    if not isinstance(routable, Mapping) or any(
+        field not in operator.CONTROL_FIELDS or kind not in ROUTE_KINDS
+        for field, kind in routable.items()
+    ):
+        raise ValueError(
+            f"{name}: ROUTABLE_CONTROLS maps its own control fields to one of {ROUTE_KINDS}"
+        )
+    if routable and not (operator.SPLIT and operator.RK4 == "split" and not operator.PROCESS):
+        raise ValueError(
+            f"{name}: a routable control is read in exact half-steps only: a split part kept "
+            "split under RK4, and no in-step process"
+        )
+    routes = operator.RATE_ROUTES
+    pairs = isinstance(routes, tuple) and all(
+        isinstance(route, tuple) and len(route) == 2 and all(map(_named_string, route))
+        for route in routes
+    )
+    if not pairs or len(set(routes)) != len(routes):
+        raise ValueError(f"{name}: RATE_ROUTES is a tuple of distinct (target law, field) pairs")
+    if any(law == name for law, _ in routes):
+        raise ValueError(f"{name}: a route source routes no factor to its own controls")
+    if routes and not _defined_below_operator(operator, "rate_factors"):
+        raise ValueError(f"{name}: a route source defines rate_factors")
 
 
 def _check_scopes(operator):

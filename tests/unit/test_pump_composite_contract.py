@@ -9,10 +9,12 @@
   read as declared by one operator and provided by another, two providers of one
   view field, two in-step processes, an undeclared experiment key; operator
   classes that break the declarations (heat or work suffixes, RK4 modes, entity
-  writes without accumulators).
+  writes without accumulators, B1′'s rate-route declarations); rate routes when a
+  composition is built (a route to an undeclared control, a source after its target).
 """
 
 import copy
+from types import MappingProxyType
 
 import jax
 import pytest
@@ -38,6 +40,8 @@ from validation.tissue import pump_water_fixtures as wfx
 WATER = "ideal_osmosis_linear_compliance_water@1"
 SYMPORT = "k_anion_symport_mass_action@1"
 REPLACEMENT = "scheduled_cell_replacement@1"
+TURNOVER = "scheduled_species_turnover@1"
+REACTIONS = "local_species_reactions@1"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -247,6 +251,75 @@ def test_operator_declarations_are_checked():
             check_declarations(bad)
     for op in OPERATORS.values():
         check_declarations(type(op))
+    # B1′'s declarations (contract._check_routes), each planted and refused by its words.
+    planted = (
+        (dict(ROUTABLE_CONTROLS={"not_mine": "rate"}), "maps its own control fields"),
+        (dict(ROUTABLE_CONTROLS={"rate_x": "event"}), "maps its own control fields"),
+        (dict(RK4="coupled"), "read in exact half-steps only"),
+        (dict(PROCESS=True), "read in exact half-steps only"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=[(TURNOVER, "turnover_rate")]), "distinct"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "x"),) * 2), "distinct"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("routed@1", "rate_x"),)), "its own controls"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "turnover_rate"),)), "rate_factors"),
+    )
+    for changes, words in planted:
+        bad = type("Routed", (Routed,), changes)
+        with pytest.raises(ValueError, match=words):
+            check_declarations(bad)
+    check_declarations(Routed)
+    check_declarations(RateSource)
+    assert dict(OPERATORS[TURNOVER].ROUTABLE_CONTROLS) == {"turnover_rate": "rate"}
+    assert dict(OPERATORS[REACTIONS].ROUTABLE_CONTROLS) == {"reaction_multiplier": "rate"}
+
+
+class Routed(Operator):
+    """A planted routable target (B1′): its own control rate_x, read in exact half-steps."""
+
+    LAW_ID = "routed@1"
+    SPLIT = True
+    RK4 = "split"
+    CONTROL_FIELDS = ("rate_x",)
+    ROUTABLE_CONTROLS = MappingProxyType({"rate_x": "rate"})
+
+
+class RateSource(Operator):
+    """A planted rate-route source (B1′) on the turnover's rates, declaring none in a definition."""
+
+    LAW_ID = "rate_source@1"
+    SPLIT = True
+    RK4 = "split"
+    RATE_ROUTES = (("scheduled_species_turnover@1", "turnover_rate"),)
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        return None
+
+
+def test_rate_routes_are_checked_when_a_composition_is_built():
+    """B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a route goes to a routable control of its
+    target, from a source declared before it; the composite wires each target's routes in
+    declared order. Planted: a route to a control the target does not declare routable, and a
+    source after its target, each refused; a route to a law the composition lacks is idle."""
+    turnover, source = OPERATORS[TURNOVER], RateSource()
+    assert pump_composite.structure_errors(pump3, (source, turnover)) == []
+    assert pump_composite.rate_routes((source, turnover)) == {
+        turnover: ((source, "turnover_rate"),)
+    }
+    assert pump_composite.rate_routes((turnover,)) == {}
+    assert pump_composite.structure_errors(pump3, (source,)) == []  # No target: idle.
+    (error,) = pump_composite.structure_errors(pump3, (turnover, source))
+    assert error == (
+        f"rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
+        "runs before its target, so the split's halves are symmetric about it"
+    )
+    stray = type("Stray", (RateSource,), dict(LAW_ID="stray@1", RATE_ROUTES=((TURNOVER, "x"),)))
+    (error,) = pump_composite.structure_errors(pump3, (stray(), turnover))
+    assert error == (
+        f"stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its routable "
+        "controls (ROUTABLE_CONTROLS)"
+    )
 
 
 def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():
