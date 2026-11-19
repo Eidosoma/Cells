@@ -67,8 +67,11 @@ finish() { log "done status $1"; echo "$1" > "$OUT/done"; exit "$1"; }
 steps() { "$HOSTPY" -I "$STEPS" "$@"; }
 short() { tr -d '\n' < "$1" | cut -c1-400; }
 
+# PRELOCK_NICE is the niceness the pre-lock steps run at, not an increment: a gate started under
+# nice must not push them past it (nice -n adds to the caller's niceness).
+to_nice() { local now; now=$(nice); if [ "$1" -gt "$now" ]; then echo $(( $1 - now )); else echo 0; fi; }
 if [ "$PRELOCK" = lane ]; then PRE_CPUS=$CPUS; light() { "$@"; }
-else PRE_CPUS=$PRELOCK_CPU; light() { taskset -c "$PRELOCK_CPU" nice -n "$PRELOCK_NICE" "$@"; }; fi
+else PRE_CPUS=$PRELOCK_CPU; light() { taskset -c "$PRELOCK_CPU" nice -n "$(to_nice "$PRELOCK_NICE")" "$@"; }; fi
 
 collect() {  # TREE PREFIX: every test ID under tests/, in the tier runner's environment.
   local tree=$1 prefix=$2 rc
@@ -126,7 +129,10 @@ if [ $LOCKED -eq 0 ]; then
 tiers $TIERS; additions from ${ADDITIONS_FROM:-none}; removals listed in ${REMOVED_OK_FILE:-none}; \
 crossrev differences declared in ${CROSSREV_EXPECTED:-none}; cache ${GATE_CACHE:-off}; tool $G"
   if [ "$PRELOCK" != lane ]; then prelock || finish 1; fi
-  if [ "${PRELOCK_ONLY:-0}" = 1 ]; then log "pre-lock only (PRELOCK_ONLY=1): not queued"; finish 0; fi
+  if [ "${PRELOCK_ONLY:-0}" = 1 ]; then
+    [ "$PRELOCK" != lane ] || { log "PRELOCK_ONLY needs PRELOCK=light"; finish 2; }
+    log "pre-lock only (PRELOCK_ONLY=1): not queued"; finish 0
+  fi
   log "waiting for $LOCK"
   rm -f "$OUT/locked.done"
   /usr/bin/flock "$LOCK" bash "$0" --locked "$S" "$B" "$OUT"
