@@ -39,7 +39,8 @@
         "formal": {
           "type": "object", "additionalProperties": false, "required": ["status", "theorems"],
           "properties": {"status": {"enum": ["proved", "open"]}, "theorems": {"$ref": "#/$defs/links"},
-                         "about": {"$ref": "#/$defs/texts"}}
+                         "about": {"$ref": "#/$defs/texts"},
+                         "sources": {"$ref": "#/$defs/links"}}
         },
         "numerical": {
           "type": "object", "additionalProperties": false, "required": ["status", "comparisons", "result"],

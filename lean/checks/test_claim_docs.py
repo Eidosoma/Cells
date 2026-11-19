@@ -54,6 +54,10 @@ class ClaimDocsTests(unittest.TestCase):
         handwritten = notes / "reading.md"
         handwritten.write_text("A handwritten note.\n")
         self.claim["id"] = "renamed"
+        self.claim["formal"]["sources"] = {
+            "Upstream": "https://github.com/ATOMSLab/LeanDimensionalAnalysis",
+            "Local check": "lean/README.md",
+        }
         self.save([self.claim])
         generate(self.lane)
         self.assertFalse(first.exists())
@@ -62,6 +66,10 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertTrue(self.readme.read_text().endswith(self.footer))
         self.assertIn("(claims/renamed.md)", self.readme.read_text())
         renamed = notes / "renamed.md"
+        self.assertIn(
+            "[Upstream](https://github.com/ATOMSLab/LeanDimensionalAnalysis)", renamed.read_text()
+        )
+        self.assertIn("[Local check](../README.md)", renamed.read_text())
         stamp = renamed.stat().st_mtime_ns
         generate(self.lane)
         self.assertEqual(renamed.stat().st_mtime_ns, stamp)

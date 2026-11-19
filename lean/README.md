@@ -17,6 +17,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [Only boundary transfers change a region’s inventory during transport](claims/transfer-inventory.md) | Proved | Checked | Open |
 | [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) | Proved | Checked | Open |
 | [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | Open |
+| [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | Proved | Checked | Open |
 | [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | Open |
 | [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | Not assessable |
 
@@ -54,6 +55,10 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
   | select(any(.numerical.comparisons[]; $checks[.].laws | index($law))) | .id' claims.json
 ```
 
+### Reusing a proof
+
+Keep the Cells theorem beside the mechanism it explains. Import a narrow upstream module when it fits our pinned Lean version. For a short result from another Lean version, a local derivation can be simpler. When copying licensed source, keep the original attribution, license and required notices with the copy. Give the claim a `formal.sources` entry for the upstream theorem at a fixed revision and label how we used it. The binding claim shows a local Lean 4 derivation. The face-power claim links an optional external import. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+
 ## Build
 
 Run these commands from `lean/`. Lean and Mathlib are pinned to 4.19.0. Lake reads the dependency revisions from the lockfile. The Linux x86-64 setup below reuses the lane’s installed compiler, or fetches it on a fresh checkout. [Lean release](https://github.com/leanprover/lean4/releases/tag/v4.19.0) · [Mathlib release](https://github.com/leanprover-community/mathlib4/releases/tag/v4.19.0)
@@ -81,6 +86,12 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
 lake build
 ```
 
+To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check compiles the dimension of flux × molar potential and checks the scalar conversion used by the engine. [Optional proof](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
+
+```bash
+bash checks/units/check.sh
+```
+
 ## CPU comparisons
 
 Run these from `lean/` with the pinned Lake executable on your path. Use the Cells CPU Python environment, or set `CELLS_PYTHON` to its interpreter. Each driver prints its numerical results as JSON. See the [development results](PROGRESS.md).
@@ -91,6 +102,12 @@ export TMPDIR="$PWD/.lake/tmp" XDG_CACHE_HOME="$PWD/.lake/cache"
 export PYTHONPATH="../src:.." PYTHONDONTWRITEBYTECODE=1
 export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
 cells_python=${CELLS_PYTHON:-python}
+```
+
+For single-site binding, compare the compiled law against the independent S1 states and read the occupied fraction in a tissue cell. The input substitution checks whether the comparison distinguishes free and total ligand. [Binding driver](checks/single_site_binding.py)
+
+```bash
+"$cells_python" -B checks/single_site_binding.py
 ```
 
 For junction transport, the driver compares fluxes with an independent scalar reference and runs the per-cell potassium ledger on one closed tissue world. Reversing the endpoint bookings tests the sensitivity of the per-cell comparison. [Junction driver](checks/constant_field.py) · [Independent reference](../validation/tissue/surface_reference.py#L71)

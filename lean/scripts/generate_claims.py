@@ -155,6 +155,12 @@ def render_claim(claim, claims, comparisons, repo):
         )
     if formal.get("about"):
         parts.append("Direct proof subject " + ", ".join(f"`{piece}`" for piece in formal["about"]))
+    if sources := formal.get("sources"):
+        links = [
+            f"[{label}]({path})" if path.startswith("https://") else local_link(label, path, repo)
+            for label, path in sources.items()
+        ]
+        parts.append("Proof sources " + " · ".join(links))
     if claim.get("uses"):
         parts.append("Uses " + " · ".join(f"[{claims[i]['title']}]({i}.md)" for i in claim["uses"]))
     parts += ["## Numerical comparison", f"**{tested}.** {numerical['result']}"]

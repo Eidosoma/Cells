@@ -64,6 +64,23 @@
       "driver": "lean/checks/logmean_face.py",
       "record": "lean/PROGRESS.md#19-november-2026--extracellular-face-electrodiffusion"
     },
+    "single-site-binding": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["rapid_binding@1"],
+      "engine_revision": "9a5bc6b8211847888cbb83c41ad88941bac19213",
+      "record_revision": "c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c",
+      "sources": {
+        "Binding weights": "src/cells/laws/reactions/rapid_binding.py#L87",
+        "One-step branch": "src/cells/laws/reactions/rapid_binding.py#L217",
+        "Tissue stage read": "src/cells/kinds/proton_buffer.py#L707",
+        "Independent S1 design": "validation/core_seams/references/README.md#L101",
+        "Frozen reference values": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Numerical tolerances": "tests/unit/test_rapid_binding_kernel.py#L127"
+      },
+      "driver": "lean/checks/single_site_binding.py",
+      "record": "lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units"
+    },
     "bio002-endpoint": {
       "kind": "reference",
       "models": ["conditioned_ghk_affine_exp@1"],
@@ -137,7 +154,12 @@
       "uses": ["extracellular-face-direction"],
       "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
         "CellsProofs.Transport.Face.dissipation_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.power_in_pJ_per_s": "lean/CellsProofs/Transport/LogMeanFace.lean",
         "CellsProofs.Transport.Face.face_power_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean"
+      }, "sources": {
+        "Dimensional algebra used by the optional check": "https://github.com/ATOMSLab/LeanDimensionalAnalysis/tree/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis",
+        "Cells dimensional check": "lean/checks/units/FacePower.lean",
+        "SI prefixes": "https://www.bipm.org/en/measurement-units/si-prefixes"
       }},
       "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Face power agreed with the scalar reference across eleven CPU cases. Reversing a resolved flux and its endpoint bookings preserved the total material rate and gave −4.52 × 10⁻⁵ pJ/s, failing the direction and power checks."},
       "biology": {"status": "open", "observable": "Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.", "unit": "pJ/s", "evidence": []}
@@ -190,6 +212,21 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "Lean checked both fixture columns and both weight rows. The largest absolute inventory residual in the CPU half-step was about 1.12 × 10⁻²⁰ fmol, below the 6.94 × 10⁻¹⁸ fmol tolerance. The engine refused the missing-enzyme reaction."},
       "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "single-site-binding",
+      "title": "One-site binding follows the free ligand concentration",
+      "statement": "At equilibrium the occupied fraction of sites is c / (Kd + c), where c is free ligand concentration and Kd is the dissociation constant. The normalized weights of the two binder forms give the same fraction.",
+      "assumptions": ["One ligand binds one site. Each binder has a free and a singly occupied form, with positive total sites and positive association and dissociation rates. Kd is their off-rate divided by their on-rate.", "Both concentrations are expressed in mM. The rate-balance theorem allows zero free ligand. The log-weight theorem uses positive free ligand and a positive Kd."],
+      "formal": {"status": "proved", "about": ["cells.rapid_binding@1"], "theorems": {
+        "CellsProofs.Chemistry.SingleSite.occupancy_from_rates": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean",
+        "CellsProofs.Chemistry.SingleSite.occupancy_from_log_weights": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean"
+      }, "sources": {
+        "Langmuir kinetic derivation, adapted from Lean 3": "https://github.com/ATOMSLab/LeanChemicalTheories/blob/00841fedb86c0af282f515eda7e83a525a42e048/src/adsorption/langmuir_kinetics.lean",
+        "Bobbin et al., Digital Discovery": "https://doi.org/10.1039/D3DD00077J"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["single-site-binding"], "result": "Across thirteen manufactured S1 states, the largest absolute occupancy difference from the independent reference was 3.33 × 10⁻¹⁶. Using total ligand in the same formula failed all thirteen. The first state also passed through the tissue’s stage read."},
+      "biology": {"status": "open", "observable": "Equilibrium bound fraction measured across a free ligand titration for an identified single-site binder at specified temperature and solution conditions.", "unit": "fraction of sites occupied", "evidence": []}
     },
     {
       "id": "regional-reaction-transport",
