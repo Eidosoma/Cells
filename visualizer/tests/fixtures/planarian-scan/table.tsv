@@ -1,0 +1,9 @@
+db	id	length	kind	name	gene	interpro	match	note
+wormbase_parasite	h1SMcG0000008	383	gene model	Insulin gene enhancer protein ISL-1/2-like		IPR001356;IPR001781;IPR009057;IPR047169		h1SMcT0000008.1 +1
+wormbase_parasite	h1SMcG0000009	499	gene model	Ras association domain-containing protein 1-6		IPR000159;IPR011524;IPR029071;IPR033614;IPR900000		h1SMcT0000009.2 +1
+wormbase_parasite	h1SMcG0000011	591	gene model			IPR001611;IPR003591;IPR032675	I1ZI93	h1SMcT0000011.1
+wormbase_parasite	h1SMcG0000014	438	gene model			IPR001164;IPR037278;IPR038508		h1SMcT0000014.1 +1
+wormbase_parasite	h1SMcG0000027	366	gene model	Nonsense-mediated mRNA decay protein 3		IPR005120;IPR012677;IPR035979;IPR039722		h1SMcT0000027.1 +1
+wormbase_parasite	h1SMcG0000028	396	gene model	Thiolase		IPR016039;IPR020610;IPR020613;IPR020615;IPR020616;IPR020617		h1SMcT0000028.1
+wormbase_parasite	h1SMcG0000040	207	gene model	Small GTPase		IPR001806;IPR005225;IPR027417		h1SMcT0000040.1
+wormbase_parasite	h1SMcG0000051	236	gene model	Zinc finger protein 830-like		IPR040050		h1SMcT0000051.1

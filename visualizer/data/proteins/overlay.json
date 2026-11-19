@@ -339,10 +339,26 @@
           "checked": "The pattern of links.uniprot above. The catalogue's identifiers are UniProtKB accessions, of reviewed entries and of unreviewed ones; on 16 November 2026 UniProt's interface gave both kinds among the proteome's entries (P35561, Kcnj2; A0ACP0BMC4, Atp2b3), and their pages answered."
         }
       ],
+      "xenopus": [
+        {
+          "text": "UniProt {id}",
+          "url": "https://www.uniprot.org/uniprotkb/{id}/entry",
+          "checked": "The pattern of links.uniprot above. The catalogue's identifiers are UniProtKB accessions, of reviewed entries and of unreviewed ones, as UniProt's saved proteome of 19 November 2026 lists them (Q6PF69, mvp, reviewed; A0A8J1LWL1, mvp.S, unreviewed). The pages were not fetched for this pattern."
+        }
+      ],
       "family": {
         "text": "InterPro {id}",
         "url": "https://www.ebi.ac.uk/interpro/entry/InterPro/{id}/",
         "checked": "2026-11-15: InterPro's own interface returns the entry for IPR000990 (a family, Innexin) and for IPR011009 (a homologous superfamily), and the page address answers."
+      }
+    },
+    "limits_note": "A species' shelves.json stays under 1 MB, and so does each file of its families' members (schema/SPECIES_PROTEINS.md, Size). A species named here has bounds of its own, in bytes, each with since when and why; every other species keeps the shared ones.",
+    "limits": {
+      "xenopus": {
+        "shelves_bytes": 1300000,
+        "members_bytes": 2000000,
+        "since": "2026-11-19",
+        "why": "The frog's catalogue is the largest of all, with both copies of a gene shown: its shelves are over 1 MB. Its members are cut 6,000 to a file where the others' are cut 2,000, so that its catalogue adds 6 files of members to the page and not 18 (the page holds at most 511 files), and each such file is over 1 MB. Decided on 19 November 2026, when the frog was added."
       }
     }
   },

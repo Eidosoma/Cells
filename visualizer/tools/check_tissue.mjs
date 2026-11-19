@@ -6,7 +6,8 @@
 // the overlay and the driver's own criterion files, so that a new run folder is data alone. Where the runs' folders are
 // not on this machine the check is skipped, and says so.
 //
-//   wide     1400 by 900, light: the tab opens on the line (the example's opens.part); its arms in D's order with their
+//   wide     1400 by 900, light: the tumour tissue's card opens the line (the switch turned to it in this check's own
+//            packaged catalogue: the page's own opens.part names the sheet since 19 November 2026); its arms in D's order with their
 //            names, places and ends; the record's words in the card; the sheet's caption with its door over the line;
 //            each cell's colour as drawn is the scale's colour of the stated value; a real press on a map moves the clock
 //            and opens the cell, ringed on the picture, with the driver's state; the timeline's next change; the even
@@ -17,8 +18,8 @@
 //   reduced  1400 by 900, light, less motion, not held still: nothing plays.
 //   play     1280 by 720, light, motion: the clock plays the stated changes, each on the screen for its stretch, and the
 //            picture at each change differs from the picture before it.
-//   sheet    1280 by 720, light: the switch turned to the sheet (the example's opens.part, in this check's own packaged
-//            catalogue): the extension sentence in full on the first screen beside "Development work, not judged.", the
+//   sheet    1280 by 720, light: the tumour tissue's card opens the sheet, the part the page's own entry names (the
+//            example's opens.part): the extension sentence in full on the first screen beside "Development work, not judged.", the
 //            sheet's own bracket, x2 named as the line's wherever a place is, the line beside it as the record the
 //            threshold comes from, no heading that reads it as the preprint's; what it fetches; and on a phone.
 //
@@ -95,10 +96,14 @@ const ladderHere = selection[LADDER] && existsSync(folderOf(LADDER));
 if (ladderHere) adapt(["--experiment", LADDER]);
 const indexFile = path.join(runs, "index.json");
 const index = JSON.parse(readFileSync(indexFile, "utf8"));
-// Which part the tab opens on is one field, the example's opens.part: the sheet case turns it in this check's own catalogue.
+// Which part the tumour tissue's card opens is one field, the example's opens.part. The page's own names the sheet (Cells'
+// own tissue of hexagons) since 19 November 2026, when the user asked for it; until then it named the line. The sheet's
+// case checks the page's own field as it is. Every other case turns the switch to the line in this check's own
+// catalogue, so that the line is still checked as a part a card opens.
 const OPENS = index.experiments.find((item) => item.id === WHOLE)?.opens?.part;
-if (CASE === "sheet") {
-  index.experiments.find((item) => item.id === WHOLE).opens.part = SHEET;
+const TURNED = CASE === "sheet" ? SHEET : PART;
+if (OPENS !== TURNED && CASE !== "sheet") {
+  index.experiments.find((item) => item.id === WHOLE).opens.part = TURNED;
   writeFileSync(indexFile, JSON.stringify(index));
 }
 // What the page should show, from the data: each part's slots as the catalogue states them, the overlay's words, and
@@ -121,7 +126,7 @@ const placeWords = (slot) => [slot.label, slot.where && /x2/.test(slot.where) ? 
 const SIDE = { M: "below", E: "above" }; // the criterion's words for a state, to hold a colour's side beside the driver's state
 // The stated changes of the line's arms, record to record, as the driver's files give them.
 const changesOf = (arms) => arms.flatMap((arm) => { const c = STATED[arm], out = []; for (let k = 1; k < c.states.length; k++) c.states[k].forEach((state, n) => { if (state !== c.states[k - 1][n]) out.push({ arm, time: c.times_s[k], cell: n, from: c.states[k - 1][n], to: state }); }); return out; });
-note(`opens on ${OPENS}; the line: ${LINE.slots.map((slot) => slot.arm).join(", ")}; the sheet: ${SHEETS.slots.map((slot) => slot.arm).join(", ")}; a press at ${PRESS.arm} ${PRESS.name}, record ${PRESS.record} (${PRESS.state})`);
+note(`the page's own entry opens on ${OPENS}; this case's catalogue on ${CASE === "sheet" ? OPENS : TURNED}; the line: ${LINE.slots.map((slot) => slot.arm).join(", ")}; the sheet: ${SHEETS.slots.map((slot) => slot.arm).join(", ")}; a press at ${PRESS.arm} ${PRESS.name}, record ${PRESS.record} (${PRESS.state})`);
 
 // ---------------------------------------------------------------- the browser
 const release = await acquireBrowser({ wait: 60 * 60 * 1000 });
@@ -317,7 +322,7 @@ try {
   if (CASE === "wide") {
     fetched.clear();
     const pressed = await openByCard();
-    check("the Experiments tab opens on its landing, and a real press on the tumour tissue's card shows its line, the part the example's entry names (opens.part)", Boolean(pressed) && OPENS === PART && (await until(shownPart(PART), 240)), JSON.stringify([pressed?.id, OPENS]));
+    check("the Experiments tab opens on its landing, and a real press on the tumour tissue's card shows its line, the part this check's catalogue names (opens.part, turned to the line)", Boolean(pressed) && TURNED === PART && (await until(shownPart(PART), 240)), JSON.stringify([pressed?.id, OPENS, TURNED]));
     await sleep(1500);
     let s = await state();
     const got = bytes();
@@ -654,7 +659,7 @@ try {
   } else if (CASE === "sheet") {
     fetched.clear();
     const pressed = await openByCard();
-    check("with the switch turned to the sheet (the example's opens.part, in this check's catalogue), the tumour tissue's card on the landing opens the sheet", Boolean(pressed) && (await until(shownPart(SHEET), 240)), JSON.stringify(pressed));
+    check("the tumour tissue's card on the landing opens the sheet, the part the page's own entry names (the example's opens.part)", Boolean(pressed) && OPENS === SHEET && (await until(shownPart(SHEET), 240)), JSON.stringify([pressed?.id, OPENS]));
     await sleep(1800);
     let s = await state();
     const got = bytes();

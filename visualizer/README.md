@@ -16,8 +16,8 @@ One data file, the scene, drawn through six lenses, each under a tab, in this or
 
 | Tab | What you see |
 | --- | --- |
-| **Scope** (the Cell view) | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
-| **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). On the animals' benches the eukaryotic ribosome and five units of the law inventory (the sodium pump, SERCA, the IP3 receptor, Kv1.2 and the gap-junction channel) are drawn to scale from the viewer's own measure of a structure, of the species' own organism or another, and each panel says whose structure it is; the ATP synthase, chosen, stands in a thin slab where its ring stands, an illustration. Eight species' benches hold the machines their dossiers name (`schema/MACHINE_DOSSIERS.md`; the planarian's, Syn3A's and M. pneumoniae's proteins as candidates by family, never called parts), each bench a file beside the page read when it is shown (the page carries the catalogue's core), each with its proteins by tier, its count from an open paper where one gives it, and a door from each chain to its protein in the Protein atlas and back; the human's proteasome, mitochondrial ATP synthase, three RNA polymerases, complex I, mitochondrial ribosome and CMG helicase are measured, and its nuclear pore stays a card. Every measured machine and unit (E. coli's six, the mycoplasmas' ribosomes at E. coli's, the human's eight, the animals' 80S and five units) offers a fourth level, Shape: the viewer's own smooth surface of each chain (`schema/MACHINE_SHAPES.md`, drawn by `src/lenses/machine_shape.js` as one mesh), a press on a surface choosing its chain. A part or chain chosen in a machine is lit in the page's accent. A measured machine's parts are its sub-assemblies, drawn as their chains, each part in one colour; the opening view frames the shapes, and while one is chosen the rest of the bench is faint. The law inventory's membrane units stand in a tray of their own, as the Protein atlas lists them; a unit's panel says which of its laws an active model declares. All of it is illustration |
+| **Scope** (the Cell view) | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Frog, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the frog's hind foot and the frog, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
+| **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). On the animals' benches the eukaryotic ribosome and five units of the law inventory (the sodium pump, SERCA, the IP3 receptor, Kv1.2 and the gap-junction channel) are drawn to scale from the viewer's own measure of a structure, of the species' own organism or another, and each panel says whose structure it is; the ATP synthase, chosen, stands in a thin slab where its ring stands, an illustration. Eight species' benches hold the machines their dossiers name (`schema/MACHINE_DOSSIERS.md`; the planarian's, Syn3A's and M. pneumoniae's proteins as candidates by family, never called parts), each bench a file beside the page read when it is shown (the page carries the catalogue's core), each with its proteins by tier, its count from an open paper where one gives it, and a door from each chain to its protein in the Protein atlas and back; the human's proteasome, mitochondrial ATP synthase, three RNA polymerases, complex I, mitochondrial ribosome and CMG helicase are measured, and its nuclear pore stays a card. A kind's panel lists the forms the Complex Portal curates for it (for the human, E. coli, the mouse and the fruit fly): each entry with its name, its Complex Portal page, how many proteins it holds and how many of the machine's parts, its stoichiometry where it gives one, and its evidence in the portal's own term (an inferred entry says so first); a form is never a machine of its own. The vault, a particle whose job has not been found, stands in a group of its own, in a tray at the back of the human's, the mouse's and the planarian's benches (behind the units' tray, where its large shape hides nothing): by the Complex Portal's record (the human), by UniProt's reviewed entries with the evidence of each sentence (the mouse), or as a candidate by its family (the planarian), each said in its own words; its size and shape are the viewer's own of a human vault (PDB 9MXV), and a bioRxiv preprint (not peer reviewed) on prokaryotic vaults is cited by its numbers and their places, with no prokaryotic vault shown. Every measured machine and unit (E. coli's six, the mycoplasmas' ribosomes at E. coli's, the human's nine, the animals' 80S and five units) offers a fourth level, Shape: the viewer's own smooth surface of each chain (`schema/MACHINE_SHAPES.md`, drawn by `src/lenses/machine_shape.js` as one mesh), a press on a surface choosing its chain. A part or chain chosen in a machine is lit in the page's accent. A measured machine's parts are its sub-assemblies, drawn as their chains, each part in one colour; the opening view frames the shapes, and while one is chosen the rest of the bench is faint. The law inventory's membrane units stand in a tray of their own, as the Protein atlas lists them; a unit's panel says which of its laws an active model declares. All of it is illustration |
 | **Proteins** (the Protein atlas) | The units of Cells' law inventory, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. A unit's panel opens each of its laws an active model declares in the Laws library; of each other law it says, with no door, what the law-port inventory of 17 November 2026 marks it (D211: to port as is, to fold into the cardiac lane's planned laws, or not a port), or, where that inventory has no row for it, that the engine's declarations do not list it. For the species shown it gives the gene products that would make each unit (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
 | **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step; and, each on a shelf of their own, a model family's own laws and operators), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared opens nothing, and says what the law-port inventory marks it (`data/laws/law_port.json`, made by `tools/extract_law_port.py`; the words in `src/lenses/law_port.js`), or that the declarations do not list it. Its files link at the manifest's revision |
@@ -193,6 +193,29 @@ entries, in 2.2 MB without sequences. They are predicted from the genome and fro
 transcripts, not measured, and the table is not the library. The viewer does not read it.
 Joining any catalogue to the engine's protein catalogue is for the user and the lead.
 
+**The planarian's own scan** (18 to 19 November 2026). The 18,882 proteins of the open set
+were scanned again with InterProScan 5.78-109.0, with the member databases whose terms
+allow it (`docs/PLANARIAN_ATLAS.md`, "The planarian's own scan"): all ten ran on every
+protein, and 4,466 proteins gain 5,103 InterPro entries that their own column lacks.
+`tools/read_planarian_scan.py` reads the scan's outputs into
+`data/proteins/planarian/interproscan_added.tsv` (the entries each line gains, each with
+the databases that found it) and `interproscan.json` (the scan's record: each database's
+release, terms and citation, and how many proteins its pass ran on); the table's own
+column is unchanged. The planarian's machine dossiers count the added entries as carried,
+and call a family "not in the table" by the scan only where a database run on every
+protein has a signature in it (`schema/MACHINE_DOSSIERS.md`): no part of its machines is
+left as "cannot tell" (60 were), and myosin II has candidates and stands on its bench.
+On 19 November 2026 it was decided that the shelves take the scan's added entries: their
+filing reads them beside the table's own column, so 3,147 of the 18,882 proteins stand on
+another shelf and 2,650 have a family they lacked ("No family assigned" holds 7,371, from
+10,021). A member filed by what the scan added says so in its panel, with the databases
+whose signatures reached it (PANTHER for most; CDD and NCBIfam named with their terms),
+and those databases are sources of the shelves' file (`schema/SPECIES_PROTEINS.md`, "A
+species' own scan"). Sides, districts and the atlas's candidates for Cells' law units
+still read the column alone; a unit's panel leads to the families its candidates are now
+filed under. CDD, which states no terms, stands by the decision of 18 November 2026 and is
+held in a register of the licence test; NCBIfam is under a share-alike licence.
+
 ## Species
 
 The user, 14 November 2026: "for the visualization we must be able to switch species that
@@ -210,7 +233,7 @@ must bve configurable as well based on our different species as we add them".
 - **What Cells models of an entry is said on the page,** in one ladder of words
   (`schema/ENTRIES.md`): "Generic cell", "Proposed, not modelled", "Planned, not modelled",
   "Designed, not modelled" and "Modelled", each met only by tracked files of the engine's main
-  or the viewer's own notes. Human, Mouse, Planarian, Fruit fly and Thale cress are `generic`:
+  or the viewer's own notes. Human, Mouse, Frog, Planarian, Fruit fly and Thale cress are `generic`:
   Cells models a generic cell and sheet, and the species lends names or outlines (no plant cell
   is modelled, and thale cress's card says so; the mouse's card adds D155's planned comparison
   of heart muscle cells; the human's, that its first cell type, a ventricular heart cell, is
@@ -262,7 +285,7 @@ must bve configurable as well based on our different species as we add them".
   level. A search in the trail finds a protein by gene, name or identifier, also in a
   family not yet opened, from a names file beside a large catalogue's members
   (`names.json`, written by the page builder, one more published file each: 0.3 to
-  1.8 MB). A map of the stack at the right edge brings a shelf near.
+  2.7 MB). A map of the stack at the right edge brings a shelf near.
 - **The human's entries that only go with a machine** (auxiliary subunits, the sodium
   pump's beta subunits, the uniplex's regulators, the pump's FXYD regulators: 27) are
   drawn plain and say so, in the inventory's own words (`inventory_roles`).
@@ -278,8 +301,24 @@ must bve configurable as well based on our different species as we add them".
   and a protein for which no membrane is stated stands apart. "Show by" picks out a set
   of a species' proteins: for E. coli its chemotaxis proteins, and the assemblies a
   protein is part of (the flagellum, the chemoreceptor array, the ribosome).
-  `docs/HUMAN_PROTEOME.md`, `docs/MOUSE.md`, `docs/ECOLI.md` and `docs/FRUITFLY.md` give each one's
-  method and counts.
+  `docs/HUMAN_PROTEOME.md`, `docs/MOUSE.md`, `docs/ECOLI.md`, `docs/FRUITFLY.md` and
+  `docs/XENOPUS.md` give each one's method and counts.
+- **The frog, *Xenopus laevis*** (19 November 2026, `docs/XENOPUS.md`): 35,004 proteins of
+  UniProt's reference proteome on the same six shelves. Its genes stand on two sets of
+  chromosomes, L and S, and both copies of a gene are shown, each as its own protein; where
+  a gene has a reviewed entry, its 1,425 unreviewed twins in UniProt's gene-by-gene set are
+  not shown, and the reviewed entry names them, so that the search finds it by them; 476
+  genes still stand twice with unreviewed entries only. Each protein's panel gives the copy
+  of its gene and its chromosome, from UniProt's proteome component. Its gene names are
+  UniProt's, which name Xenbase's nomenclature as their source; Xenbase is named on its
+  shelves as read through UniProt, and nothing else of it is used. Placeholder names that
+  embed Xenbase's number for a gene (304 gene names, 49 protein names) are not written:
+  such a protein is shown and found by its accession (decided on 19 November 2026, the
+  choice left to the viewer's coordinator). The adult is drawn, from one open paper's means
+  for laboratory females; its life stages are not drawn yet, and it has no bench of
+  machines yet. It is the largest catalogue: its members are cut 6,000 to a file (6 files),
+  and its shelves and members have bounds of their own (`data/proteins/overlay.json`,
+  `shelves.limits`).
 - **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
   each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
   envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a
@@ -341,7 +380,9 @@ must bve configurable as well based on our different species as we add them".
 
 The Experiments tab opens on a landing of cards that shows everything Cells has run, in
 four bands, each card with its standing in the record's words (the user chose the layout
-on 18 November 2026; the site's first entry is Scope, as before):
+on 18 November 2026; the site's first entry is Scope, as before). A visitor first sees the
+first band, the two examples to start with; every later band stands folded behind its own
+control (19 November 2026):
 
 | Band | Cards | What stands in it |
 | --- | --- | --- |
@@ -353,6 +394,17 @@ on 18 November 2026; the site's first entry is Scope, as before):
 What is designed or planned and has not run is on the Engine map, and the landing says so
 in one line, a press away from it.
 
+- **Folded bands.** The first band of the cards' file stands open, drawn large; every
+  later band stands folded under its head (its label, its words and its count) behind one
+  button in the file's words (`bands[].control`: "Show qualifications and judged runs" 18,
+  "Show development runs" 6, "Show the test sheet of invented numbers" 1; a band without
+  words gets a plain control from its label). The rule is the band's place in the file,
+  never its id. A press shows its cards under its head, and a second folds them. A folded
+  band's cards are not drawn, not reached by the keyboard and not fetched. A card asked
+  for (its detail's address, the List, the way back from its view) opens its band. The
+  bands a visitor opened are kept in the browser's own storage for their next visit;
+  where storage is refused the first band alone opens. On a window 1,100 px wide or more
+  the cards leave the List room beside them, as they leave the panel room.
 - **Three kinds of card.** A replay's card opens the view that exists for it, by rule (a
   model system's entry opens its own view; an experiment whose entry names a part opens
   that part; any other its opening run), and in that view "All experiments", under the bar
@@ -392,8 +444,9 @@ in one line, a press away from it.
   directly; a published artifact's frame passes only `#name`, so a detail has no shareable
   link there. Every address that worked before (`run=`, `select=run:`, `part=`,
   `example=`) opens its view without the landing.
-- **What each address fetches.** The landing fetches `cards.json` and the stills near the
-  screen: no run and no model. The site's first entry fetches nothing of the landing's. A
+- **What each address fetches.** The landing fetches `cards.json` and, as it opens, the
+  two examples' stills; a later band's stills only once it is shown and they come near
+  the screen: no run and no model. The site's first entry fetches nothing of the landing's. A
   card's view fetches its own run and the parts its opening view shows, and no other run.
   `fetches` (`tools/check_fetches.mjs`) holds each address to
   `tools/references/fetches.json`, with a bound in bytes.
@@ -501,7 +554,8 @@ system, played in the tab's place).
   (`tests/engine-views/sweep-made-up/`).
 - **The gap-junction example's tumour tissue** (added on 17 November 2026, redrawn on 18
   November; development work, not judged). Its card on the landing opens on it: the
-  example's entry names the part (`opens.part`, one field: the line), and an address that
+  example's entry names the part (`opens.part`, one field: the sheet, Cells' own tissue of
+  hexagons, since the user asked for it on 19 November 2026; the line until then), and an address that
   names a run, a record, layers, `part=` or `example=` opens its view without the landing.
   `src/lenses/tissue_line.js` draws each run's cells from straight above as the
   Experiments view draws a run's (`src/layers/sheet.js`), standing where its view places
@@ -850,7 +904,7 @@ npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load 
 npm test                    # scene, sources, page and allowed hosts; no browser needed
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view; CASE=model: a model system in the switch, through every tab and back
-npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default)
+npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default; twins: a reviewed entry found by the twin of its gene that is not shown, SPECIES=xenopus)
 npm run check:layers        # real clicks on a replay's quantity layers (zero, switch, closeup; flow and example for the newer layers)
                             # flow: RUN=secreted-species-dev-run--secreted-species-dev-run REFERENCE=tools/references/secreted-species-dev-run-0.4.json
                             # holds the page to numbers worked out from the run's own arrays (tools/reference_flow.py); example: RUN=example-sheet--invented-numbers
@@ -1055,6 +1109,19 @@ page can be published to any link, or to a new one (the user, 18 November 2026).
    it in a short head and tail of its own), list the link's files against the staged
    folder, and record the version in `artifacts.json`: its date, the engine revision the
    map reads, the gate it rests on, and what was looked at.
+5. Tag the commit that records the version, `viewer-vNN` (an annotated tag; `viewer-v48`
+   is the first, 19 November 2026), and push the tag. Before the publish, the staged page is
+   also searched for a path of the build's machine (`/home/`, `/mnt/`, `/Users/`): the build
+   refuses to write one, and the page-build test holds it.
+
+**A site of its own.** The page will also be served at `cells.eidosoma.ai`, beside the
+artifact. `docs/HOSTING_AND_API.md` (19 November 2026) reviews how, and how an API for the
+page's data could come in stages; its section 9 records what the owner then decided: the site
+is served from a container on a machine of the project's own, set up by the owner; releases
+are marked by these tags; the site serves three.js and the fonts itself; and the API's only
+user, for now, is the viewer. Nothing of the site is built yet, and a tag marks the code and
+the record, not a folder that can be rebuilt from the repository alone (the run files are
+made from the frozen evidence, below).
 
 A page published without the proteins' files draws the atlas as before and says that the
 species' own proteins could not be loaded.

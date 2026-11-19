@@ -280,7 +280,10 @@ BOUND_KINDS = ()  # The declared kinds bound to their structure entries, in KIND
 #      the lift of Q7 (a) after Q2, the lead's ruling of 19 November 2026). Where a closer is
 #      declared, the core's presence gate makes an entity on a closed host absent to the kind's
 #      rates, readouts and stage terms; a kind without presence would keep running there at the
-#      view, so it stays refused (Q7 (a), checked at the structure).
+#      view, so it stays refused (Q7 (a), checked at the structure);
+#   4. every entity axis has a host the presence gate reads: one of @3's slot axes it closes
+#      (GATED_SLOT_AXES), or an own axis with its axis_hosts declared. Otherwise the gate could
+#      not close its entities, so it stays refused (fails closed).
 SLOT_AXES = (
     "cell_slot",
     "extracellular_slot",
@@ -290,9 +293,10 @@ SLOT_AXES = (
     "face_slot",
 )
 SHARED_AXES = kind_registry.SHARED_AXES  # F's set: one for the contract and the lifecycle.
-# The slot axes whose hosts the core's presence gate reads (kind_registry.AXIS_HOST_KINDS: cells,
-# outside nodes, patches and junctions); an own axis is gated through its declared axis_hosts.
-GATED_SLOT_AXES = tuple(kind_registry.AXIS_HOST_KINDS.values())
+# The slot axes whose entities the core's presence gate closes, @3's one list for the gate and
+# this check (surface_pump_v3.PRESENCE_SLOT_AXES: cells, outside nodes, patches and junctions,
+# and channel populations and faces); an own axis is gated through its declared axis_hosts.
+GATED_SLOT_AXES = ionic.PRESENCE_SLOT_AXES
 KIND_ROLE_STEPS = ("roles", "axes", "presence", "hosts")  # kind_lifecycle_errors' reasons.
 
 
@@ -328,8 +332,8 @@ def kind_lifecycle_errors(kind):
     when the lifecycle acts on all it holds (the module comment above): the fields without a role
     or axes; the entity axes (kind_registry.entity_axes) that declare no presence field; or the
     entity axes whose host the core's presence gate cannot read (hosts: neither one of
-    GATED_SLOT_AXES nor an own axis with its axis_hosts declared, such as @3's channel or face
-    slots), where the gate could not close an entity (fails closed). A presence that names a field
+    GATED_SLOT_AXES nor an own axis with its axis_hosts declared, such as an own axis that declares
+    none), where the gate could not close an entity (fails closed). A presence that names a field
     the kind does not hold is the contract's own refusal (kind_registry.presence_fields raises)."""
     missing = kind_registry.missing_partition_roles(kind)
     if missing:

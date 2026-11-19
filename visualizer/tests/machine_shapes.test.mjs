@@ -34,6 +34,7 @@ const CALLS = {
   "human.complex-i.json": ["human/wwpdb-complex-i-g/9I4I.cif.gz", "data/catalogue/measures/human.complex-i.json", 1.3],
   "human.mitochondrial-ribosome.json": ["human/wwpdb-mitochondrial-ribosome-g/9S7C.cif.gz", "data/catalogue/measures/human.mitochondrial-ribosome.json", 1.8, "--by", "parts"],
   "human.cmg-helicase.json": ["human/wwpdb-cmg-helicase-g/6XTX.cif.gz", "data/catalogue/measures/human.cmg-helicase.json"],
+  "human.vault.json": ["vault/wwpdb-vault-9mxv-e1/9MXV-assembly1.cif.gz", "data/catalogue/measures/human.vault.json", 2.7, "--by", "parts"],
   "animals.ribosome.json": ["human/wwpdb-ribosome-80s-b/8YOP.cif.gz", "data/catalogue/measures/animals.ribosome.json", 2.0],
   "animals.sodium-pump.json": ["human/wwpdb-sodium-pump/7E1Z.cif.gz", "data/catalogue/measures/animals.sodium-pump.json"],
   "animals.serca.json": ["human/wwpdb-serca/6LLE.cif.gz", "data/catalogue/measures/animals.serca.json"],

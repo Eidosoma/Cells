@@ -79,7 +79,7 @@ const mixesExample = (card) => {
 };
 /** The words typed by hand in a source file that claim a standing (none may: what a card says of one is read). */
 const typedClaims = (given) =>
-  [...given.bands.filter((band) => band.id !== "judged").flatMap((band) => [band.label, band.says]), given.not_run.says, ...given.cards.flatMap((card) => [card.title, typeof card.asks === "string" ? card.asks : null, card.shows, card.none])]
+  [...given.bands.filter((band) => band.id !== "judged").flatMap((band) => [band.label, band.says, band.control]), given.not_run.says, ...given.cards.flatMap((card) => [card.title, typeof card.asks === "string" ? card.asks : null, card.shows, card.none])]
     .filter(Boolean)
     .filter((words) => /judg|qualif/i.test(words));
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -128,6 +128,37 @@ test("four bands in order, each card in one, of one of three kinds, with a stand
   // The examples to start with are the two the page has today, and the invented numbers stand alone.
   assert.deepEqual(cards.bands[0].cards, ["tumour-tissue", "assembly"]);
   assert.deepEqual(cards.bands[3].cards, ["test-sheet"]);
+  // Each later band folds on the landing behind a control in the file's words (19 November 2026), carried from the source
+  // as typed; a band may leave them out (the landing then makes a plain control from its label).
+  for (const band of cards.bands) {
+    const given = source.bands.find((item) => item.id === band.id);
+    assert.equal(band.control, given.control, band.id);
+    if ("control" in band) assert.ok(typeof band.control === "string" && band.control.trim() === band.control && band.control, band.id);
+  }
+  assert.ok(cards.bands.slice(1).every((band) => band.control), "every later band has its control's words");
+  // The judged band's words are true of each of its cards: a registered qualification or a judged run (passed or failed).
+  assert.equal(cards.bands[1].control, "qualifications and judged runs");
+  for (const id of cards.bands[1].cards) {
+    const card = byId.get(id);
+    const said = card.record.map((entry) => `${entry.says} ${entry.item || ""}`).join(" ");
+    assert.ok(/qualif|judged|passes|passed|FAIL|fails/i.test(said) || ["qualified", "failed"].includes(card.standing.status), `${id}: neither a qualification nor a judged run in its record`);
+  }
+  const folder = mkdtempSync(path.join(os.tmpdir(), "cells-cards-control-"));
+  try {
+    const given = path.join(folder, "source.json"), built = path.join(folder, "cards.json");
+    const unworded = copy(source);
+    delete unworded.bands[2].control;
+    writeFileSync(given, JSON.stringify(unworded));
+    const run = tool(["--source", given, "--out", built]);
+    assert.equal(run.status, 0, run.stderr);
+    assert.ok(!("control" in JSON.parse(readFileSync(built, "utf8")).bands[2]), "a band without its control's words is built without them");
+    const blank = copy(source);
+    blank.bands[1].control = " ";
+    writeFileSync(given, JSON.stringify(blank));
+    assert.equal(tool(["--source", given, "--out", built]).status, 2, "a blank control's words are refused");
+  } finally {
+    rmSync(folder, { recursive: true, force: true });
+  }
 });
 
 test("every source names its revision, each one the gathering found on main, and nothing names a machine or a clock", () => {
@@ -258,7 +289,7 @@ test("\"example\" and \"invented numbers\" never stand on one card", () => {
   assert.match(sheet.standing.none, /invented/);
   const [examples, , , invented] = cards.bands;
   assert.doesNotMatch(`${examples.label} ${examples.says}`, /invented/i);
-  assert.doesNotMatch(`${invented.label} ${invented.says}`, /\bexample/i);
+  assert.doesNotMatch(`${invented.label} ${invented.says} ${invented.control || ""}`, /\bexample/i);
   // The assembly keeps the catalogue's scoped words and is not called an example of invented numbers.
   assert.doesNotMatch(shown(byId.get("assembly")).join(" "), /invented/i);
 });
@@ -284,6 +315,10 @@ test("the word rules catch what they are for: a planted card of each fault", () 
   titled.cards[3].title = "FR-1: qualified";
   titled.cards[4].asks = "Was it judged?";
   assert.deepEqual(typedClaims(titled), ["FR-1: qualified", "Was it judged?"]);
+  // "Judged" in a later band's control, outside the judged band; the judged band's own control may say it.
+  const controlled = copy(source);
+  controlled.bands.find((band) => band.id === "development").control = "development runs, not judged";
+  assert.deepEqual(typedClaims(controlled), ["development runs, not judged"]);
 });
 
 test("a card's map part says on the page what it says in the map's overlay (the scene the page draws)", () => {

@@ -6,7 +6,7 @@ Each row links to a Cells registry declaration. The proof column lists named cla
 
 ## Registered laws
 
-Direct Lean claims cover 21 of 28 registered laws. Recorded numerical comparisons exercise 21.
+Direct Lean claims cover 22 of 28 registered laws. Recorded numerical comparisons exercise 22.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -35,19 +35,19 @@ Direct Lean claims cover 21 of 28 registered laws. Recorded numerical comparison
 | [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L52) | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | [proton-leak](https://github.com/Eidosoma/Cells/blob/252cb83542e368e5572328d7eb0266ca8bd7417f/lean/PROGRESS.md#19-november-2026--passive-proton-leak) |
 | [`cells.rapid_binding@1`](../src/cells/laws/reactions/rapid_binding.py#L581) | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | [single-site-binding](https://github.com/Eidosoma/Cells/blob/c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c/lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units) |
 | [`cells.regular_mixing@1`](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L153) | Open | Open |
-| [`cells.reservoir_exchange@1`](../src/cells/models/assembly_lineages/exchange.py#L64) | Open | Open |
+| [`cells.reservoir_exchange@1`](../src/cells/models/assembly_lineages/exchange.py#L64) | [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) · [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | [assembly-exchange](https://github.com/Eidosoma/Cells/blob/713ef3b4bedb2c1f184d46d968262af92f115e3b/lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange) |
 | [`cells.stochastic_mass_action@1`](../src/cells/models/assembly_lineages_v2/mass_action.py#L143) | Open | Open |
 | [`cells.transition_state_factor@1`](../src/cells/models/assembly_lineages_v2/transition_state.py#L154) | Open | Open |
 
 ## Registered operators
 
-Direct Lean claims cover 3 of 22 registered operators. Recorded numerical comparisons exercise 4.
+Direct Lean claims cover 3 of 22 registered operators. Recorded numerical comparisons exercise 6.
 
 | Operator | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
 | [`cells.cell_owned_compartments@1`](../src/cells/operators/compartments.py#L603) | Open | Open |
 | [`cells.cytoplasmic_bridge_closure@1`](../src/cells/operators/bridge_closure.py#L272) | Open | Open |
-| [`cells.daughter_continuation@1`](../src/cells/models/assembly_lineages/continuation.py#L55) | Open | Open |
+| [`cells.daughter_continuation@1`](../src/cells/models/assembly_lineages/continuation.py#L55) | Open | [assembly-exchange](https://github.com/Eidosoma/Cells/blob/713ef3b4bedb2c1f184d46d968262af92f115e3b/lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange) |
 | [`cells.electrode_current_injection@1`](../src/cells/operators/current_injection.py#L244) | Open | Open |
 | [`cells.ideal_osmosis_linear_compliance_water@1`](../src/cells/operators/osmotic_water.py#L489) | Open | Open |
 | [`cells.isopotential_partition@1`](../src/cells/operators/partition.py#L1110) | Open | Open |
@@ -65,5 +65,5 @@ Direct Lean claims cover 3 of 22 registered operators. Recorded numerical compar
 | [`cells.scheduled_species_exchange@1`](../src/cells/operators/species_exchange.py#L452) | Open | Open |
 | [`cells.scheduled_species_turnover@1`](../src/cells/operators/species_turnover.py#L415) | Open | Open |
 | [`cells.site_occupancy@1`](../src/cells/operators/site_occupancy.py#L1177) | Open | Open |
-| [`cells.size_threshold_fission@1`](../src/cells/models/assembly_lineages/fission.py#L71) | Open | Open |
+| [`cells.size_threshold_fission@1`](../src/cells/models/assembly_lineages/fission.py#L71) | Open | [assembly-exchange](https://github.com/Eidosoma/Cells/blob/713ef3b4bedb2c1f184d46d968262af92f115e3b/lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange) |
 | [`cells.species_regulated_availability@1`](../src/cells/operators/species_regulated_availability.py#L851) | Open | Open |

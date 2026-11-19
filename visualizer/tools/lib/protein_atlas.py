@@ -508,7 +508,7 @@ class Atlas:
         # Each species' own proteins: published beside the page, summarised here.
         own = {}
         if self.shelves is not None and overlay.get("shelves"):
-            summaries, breaches = read_shelves(self.shelves)
+            summaries, breaches = read_shelves(self.shelves, overlay["shelves"].get("limits"))
             self.build.warnings.extend(breaches)
             own = {"shelves": summaries, "shelf_links": shelf_links(overlay["shelves"])}
         return {
@@ -610,7 +610,7 @@ def _off_shelf(ids, shelf, sides):
     return None
 
 
-def read_shelves(folder):
+def read_shelves(folder, limits=None):
     """What the scene says of each species' own proteins: (summaries, warnings).
 
     Every `<species>/shelves.json` under the folder is held to its contract
@@ -618,7 +618,8 @@ def read_shelves(folder):
     never stops the build. The scene gets the file's name beside the page, its counts and
     its sources, and for a large catalogue the names of the files of its families' members.
     Where a species has several shelves, the scene also gets each shelf's id, label and
-    counts, and how many proteins are on no shelf.
+    counts, and how many proteins are on no shelf. limits: the overlay's bounds of a species
+    of its own (`shelves.limits`, by species id), where it has them; else the shared 1 MB.
     """
     summaries, warnings = [], []
     folder = Path(folder) if folder else None
@@ -633,7 +634,7 @@ def read_shelves(folder):
         except (OSError, ValueError) as error:
             warnings.append(f"species proteins {name}: shelves.json could not be read as JSON ({type(error).__name__}); left out")
             continue
-        summary = _shelves_summary(name, data, len(text.encode("utf-8")), problems)
+        summary = _shelves_summary(name, data, len(text.encode("utf-8")), problems, (limits or {}).get(name, {}).get("shelves_bytes") or SHELF_LIMIT)
         if MACHINE.search(text):
             problems.append("it holds a machine path")
         if problems:
@@ -644,15 +645,15 @@ def read_shelves(folder):
     return summaries, warnings
 
 
-def _shelves_summary(name, data, size, problems):
-    """One species' summary for the scene; what breaks the contract is added to `problems`."""
+def _shelves_summary(name, data, size, problems, limit=SHELF_LIMIT):
+    """One species' summary for the scene; what breaks the contract is added to `problems`. limit: its bound in bytes."""
     if not isinstance(data, dict) or data.get("format") != SHELVES_FORMAT:
         problems.append(f"its format is not {SHELVES_FORMAT}")
         return None
     if data.get("species") != name:
         problems.append(f"it says it holds the proteins of {data.get('species')!r}")
-    if size >= SHELF_LIMIT:
-        problems.append(f"it is {size / 1024:.0f} KB; a species' file stays under 1 MB")
+    if size >= limit:
+        problems.append(f"it is {size / 1024:.0f} KB; a species' file stays under {'1 MB' if limit == SHELF_LIMIT else f'its own bound of {limit:,} bytes'}")
     shelves = data.get("shelves")
     if not isinstance(shelves, list) or not shelves or not all(isinstance(shelf, dict) and all(_text(shelf.get(key)) for key in ("id", "label", "outside", "inside")) for shelf in shelves):
         problems.append("its shelves need an id, a label and the names of their two sides")

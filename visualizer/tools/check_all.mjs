@@ -142,6 +142,8 @@ const SUITE = [
   { name: "catalogue-shape-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 2 },
   { name: "catalogue-shape-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 2 },
   { name: "catalogue-shape-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-vault", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault", WIDTH: "1440", HEIGHT: "900" }, minutes: 4 },
+  { name: "catalogue-vault-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 4 },
   { name: "catalogue-human-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 2 },
   // The benches read beside the page (the planarian's by family, the thale cress's with its machines of light, one that cannot be read).
   { name: "catalogue-benches", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches", WIDTH: "1440", HEIGHT: "900" }, minutes: 3 },
@@ -152,6 +154,8 @@ const SUITE = [
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)
   { name: "shelves-planarian", tool: "check_shelves.mjs", args: ["planarian"], minutes: 2 },
+  // The planarian's members filed by what its own scan added (19 November 2026): each says so, with the databases behind it.
+  { name: "shelves-scan", tool: "check_shelves.mjs", args: ["scan"], minutes: 2 },
   { name: "layers-closeup", tool: "check_layers.mjs", args: ["closeup"], env: { RUN: SHEET }, minutes: 2 },
   { name: "shelves-syn3a", tool: "check_shelves.mjs", args: ["syn3a"], minutes: 1 },
   { name: "shelves-nofiles", tool: "check_shelves.mjs", args: ["nofiles"], minutes: 1 },
@@ -159,6 +163,9 @@ const SUITE = [
   { name: "shelves-stack-thalecress", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "thalecress" }, minutes: 1 },
   { name: "shelves-stack-mouse", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "mouse" }, minutes: 1 },
   { name: "shelves-accessory-mouse", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "mouse" }, minutes: 1 },
+  // The frog (19 November 2026): its stack of six shelves, and a reviewed entry found by the twin of its gene that is not shown.
+  { name: "shelves-stack-xenopus", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "xenopus" }, minutes: 1 },
+  { name: "shelves-twins", tool: "check_shelves.mjs", args: ["twins"], env: { SPECIES: "xenopus" }, minutes: 2 },
   { name: "shelves-trail", tool: "check_shelves.mjs", args: ["trail"], minutes: 2 },
   { name: "shelves-search", tool: "check_shelves.mjs", args: ["search"], minutes: 2 },
   { name: "shelves-map", tool: "check_shelves.mjs", args: ["map"], env: { SPECIES: "thalecress" }, minutes: 1 },

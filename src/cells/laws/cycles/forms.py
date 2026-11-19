@@ -188,6 +188,32 @@ class CycleForm(NamedTuple):
             if count != 0
         )
 
+    def free_energy_band(self, mode, terms, c0_mM):
+        """The band within which a free-energy entry this form produced may differ from the
+        registry's (seam E; the binding owner's check, under ruling (d): computed from the form,
+        never from the entry), a Decimal, or None for a form with no constants of its own
+        (factored and net-flow forms: the registry then uses its generic rule).
+        - mode: the entry's mode ID; terms: ((nu, mu°/RT at c0_mM), ...), the entry's
+          coefficients each with the registry's potential; c0_mM: the registry's standard
+          concentration.
+        - A diagram form gives that mode's cycle's Wegscheider band, B_W = WEGSCHEIDER_BAND eps
+          (T + N), T the cycle's edges' |ln k0+-| plus sum |nu| (|mu| + |ln c0_mM| + |ln c°|), c°
+          the diagram's standard state, N its rate constants: _cycle_band, wegscheider's own code,
+          so it equals wegscheider(...).band where each species has one role.
+        - Plus one ulp of the mode's implied dG°/RT (implied_free_energy, rounded once), the
+          lead's ruling, so that every law Wegscheider's condition admits, the entry's check
+          admits too: the entry carries that rounding beyond the residual the band admits."""
+        if self.kinetics != "diagram":
+            return None
+        modes = [m for m, _ in self.modes]
+        if mode not in modes:
+            raise ValueError(f"the form has no mode {mode!r}; its modes are {modes}")
+        index = modes.index(mode)
+        _, signed = self.diagram.cycles[index]
+        _, _, _, band = _cycle_band(self.diagram, signed, tuple(terms), c0_mM)
+        _, implied, _ = implied_free_energy(self, index)
+        return band + Decimal(math.ulp(implied))
+
     def errors(self):
         """Why this form breaks its contract (empty: it keeps it)."""
         out = []
@@ -681,6 +707,24 @@ def wegscheider(form, mode_index, valence, potential, c0_mM):
         zeta += sign * (Fraction(edge.forward.zeta) - Fraction(edge.backward.zeta))
         zeta_abs += abs(Fraction(edge.forward.zeta)) + abs(Fraction(edge.backward.zeta))
     u = Fraction(UNIT_ROUNDOFF)
+    net = {}
+    for k, (role, _) in enumerate(form.rows):
+        net[role] = net.get(role, 0) + counts[k]
+    pairs = tuple((delta, potential[role]) for role, delta in net.items() if delta != 0)
+    constant, terms, n_constants, band = _cycle_band(d, signed, pairs, c0_mM)
+    return Wegscheider(
+        mode_id, coefficients, zeta - charge, u * zeta_abs, constant, terms, n_constants, band
+    )
+
+
+def _cycle_band(diagram, signed, pairs, c0_mM):
+    """One cycle's constant R0, its terms T, its rate constants N and Wegscheider's band
+    B_W = WEGSCHEIDER_BAND eps (T + N), each a Decimal at DIGITS digits from the declared doubles:
+    R0 = sum_e s_e (ln k0+ - ln k0-) + sum Delta (mu - ln c0 + ln c°) and T = sum_e (|ln k0+| +
+    |ln k0-|) + sum |Delta| (|mu| + |ln c0| + |ln c°|), over the cycle's signed edges and the pairs
+    ((Delta, mu°/RT at c0_mM), ...) of the species it converts, c° the diagram's standard state.
+    The one code for wegscheider's band and CycleForm.free_energy_band, so they cannot drift."""
+    by_id = {edge.id: edge for edge in diagram.edges}
     with localcontext() as ctx:
         ctx.prec = DIGITS
         constant, terms = Decimal(0), Decimal(0)
@@ -690,29 +734,15 @@ def wegscheider(form, mode_index, valence, potential, c0_mM):
             ln_b = Decimal(edge.backward.k0_per_s).ln()
             constant += sign * (ln_f - ln_b)
             terms += abs(ln_f) + abs(ln_b)
-        net = {}
-        for k, (role, _) in enumerate(form.rows):
-            net[role] = net.get(role, 0) + counts[k]
         ln_c0 = Decimal(c0_mM).ln()
-        ln_standard = Decimal(d.standard_state_mM).ln()
-        for role, delta in net.items():
-            if delta == 0:
-                continue
-            mu = Decimal(potential[role])
+        ln_standard = Decimal(diagram.standard_state_mM).ln()
+        for delta, mu in pairs:
+            mu = Decimal(mu)
             constant += delta * (mu - ln_c0 + ln_standard)
             terms += abs(delta) * (abs(mu) + abs(ln_c0) + abs(ln_standard))
         n_constants = 2 * len(signed)
         band = Decimal(WEGSCHEIDER_BAND) * Decimal(EPS) * (terms + n_constants)
-    return Wegscheider(
-        mode_id,
-        coefficients,
-        zeta - charge,
-        u * zeta_abs,
-        +constant,
-        +terms,
-        n_constants,
-        +band,
-    )
+        return +constant, +terms, n_constants, +band
 
 
 def implied_free_energy(form, mode_index):
