@@ -261,6 +261,89 @@ TYPE_NAMES = (
 )
 KINDS = ()  # The declared kinds' namespaced IDs, in canonical order.
 KIND_FIELDS = MappingProxyType({})  # {state, layout or control field: the kind that declares it}
+BOUND_KINDS = ()  # The declared kinds bound to their structure entries, in KINDS' order.
+
+# ------------------------------------------------------------------ the lifecycle by roles
+# docs/CORE_SEAMS_DESIGN.md §4.2, with the lead's rulings of 18 November 2026 (CORE_SEAMS §18): each
+# per-entity field declares its partition role (kind_registry.PartitionRole: extensive, intensive,
+# history or structural), and close, split, retire and open act on every field by its role, once.
+# - Entity axes: @3's slot axes, which closure propagates along, and a kind's own axes, whose
+#   entities name a host (Q1: the kind contract's host declaration). SHARED_AXES are no entities.
+# - A kind beside a closer (an operator that closes, retires or provides activity masks) is
+#   admitted only when the lifecycle acts on every field it holds (kind_lifecycle_errors):
+#   1. every partition field declares a role (missing_partition_roles; §4.2, fail-closed);
+#   2. every layout and control field declares its axes (Q1; the state fields' are state_axes);
+#   3. no field is per-entity, until the core gates every kind entity's rates by its host's
+#      activity where a closer is declared (Q2, the @3 owner's): a kind on a closed host keeps
+#      running at the view otherwise (Q7 (a), checked at the structure).
+SLOT_AXES = (
+    "cell_slot",
+    "extracellular_slot",
+    "membrane_slot",
+    "edge_slot",
+    "channel_slot",
+    "face_slot",
+)
+SHARED_AXES = ("species", "gate")
+KIND_ROLE_STEPS = ("roles", "axes", "entities")  # kind_lifecycle_errors' reasons, in order.
+
+
+def bound_kind(kind, declaration):
+    """`kind` bound to its declaration's structure entry (kind_registry.bound), as the inner model
+    binds it. A check reads the bound kind's hooks and fields, never the static kind's, which may
+    differ per entry: a static read could admit what the bound kind refuses (fail-open)."""
+    entry = kind.structure_entry(declaration) if kind.structure_entry else ()
+    return kind_registry.bound(kind, entry)
+
+
+def kind_field_axes(kind):
+    """{field: axes or None} of a bound kind's partition fields (kind_registry.partition_fields'
+    order): a state field's from state_axes, and a layout or control field's as the kind declares
+    them (Q1's declaration, `field_axes` {field: (axis, ...)}), None where it declares none."""
+    declared = getattr(kind, "field_axes", None) or {}
+    axes = dict(kind.state_axes)
+    return {
+        name: tuple(axes[name]) if name in axes else declared.get(name)
+        for name in kind_registry.partition_fields(kind)
+    }
+
+
+def kind_role_table(kind):
+    """{field: (PartitionRole, axes)} of a bound kind whose every partition field declares its
+    role and axes (kind_lifecycle_errors empty of the first two reasons)."""
+    axes = kind_field_axes(kind)
+    return {name: (kind.partition_roles[name], axes[name]) for name in axes}
+
+
+def kind_lifecycle_errors(kind):
+    """(reason, fields) for the first of KIND_ROLE_STEPS a bound kind fails beside a closer, or ()
+    when the lifecycle acts on all it holds (the module comment above)."""
+    missing = kind_registry.missing_partition_roles(kind)
+    if missing:
+        return ("roles", missing)
+    axes = kind_field_axes(kind)
+    undeclared = tuple(name for name, a in axes.items() if a is None)
+    if undeclared:
+        return ("axes", undeclared)
+    entities = tuple(name for name, a in axes.items() if any(axis not in SHARED_AXES for axis in a))
+    if entities:
+        return ("entities", entities)
+    return ()
+
+
+def inner_role_table(roles, axes, *, excluded=()):
+    """{field: (PartitionRole, axes)} of @3's fields from its role table (surface_pump_v3's
+    FIELD_ROLES: {field: role name}), converted once here (Q4): every padded value of @3's is 0,
+    so a structural field's fill is 0. `axes` gives each field's axes; `excluded` names fields the
+    lifecycle leaves to their closers' own records (the pumps' history until composition's M5
+    Q2)."""
+    out = {}
+    for name, role in roles.items():
+        if name in excluded:
+            continue
+        fill = 0 if role == "structural" else None
+        out[name] = (kind_registry.PartitionRole(role, fill), tuple(axes[name]))
+    return out
 
 
 def structure_names(implementation):
@@ -277,10 +360,11 @@ def structure_names(implementation):
     heat = tuple(k for k in added if k.endswith("_dissipated_energy_pJ"))
     work = tuple(k for k in added if k.endswith("_work_pJ"))
     kinds = tuple(kind_id for kind_id, _ in implementation.structure.kinds)
-    owned = {}
+    owned, bound = {}, []
     entries = dict(implementation.structure.kinds)
     for kind_id in kinds:  # The registry the object's types were built from (its cache key).
         kind = kind_registry.bound(kind_registry.active().lookup(kind_id), entries[kind_id])
+        bound.append(kind)
         owned |= dict.fromkeys(  # Its fields for the declaration (§7.4 (n) 5).
             (*kind.state_fields, *kind.layout_fields, *kind.control_fields), kind_id
         )
@@ -298,6 +382,7 @@ def structure_names(implementation):
         WORK_FIELDS=(*WORK_FIELDS, *work) if work else WORK_FIELDS,
         KINDS=kinds,
         KIND_FIELDS=MappingProxyType(owned) if owned else KIND_FIELDS,
+        BOUND_KINDS=tuple(bound) if bound else BOUND_KINDS,
     )
 
 
