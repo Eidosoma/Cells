@@ -23,6 +23,7 @@ off until 15 ms and on after it, serves every run:
 
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
+from typing import NamedTuple
 
 import jax
 import numpy as np
@@ -31,8 +32,11 @@ import pytest
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
+from cells.models import pump_composite
 from cells.operators import membrane_state
 from cells.operators import population_unit_turnover as put
+from cells.operators import species_regulated_availability as sra
+from cells.operators.contract import Operator
 from cells.registry import species_registry
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
@@ -537,6 +541,130 @@ def test_turnover_supplies_the_precursor_and_the_bound_reads_the_supply():
     units = kir.abundance * area * fx.DENSITY + (6.02214076e23 * 1e-15 / 4) * pool
     got = next(c for c in checked.model.channels if c.id == "kir_0").abundance
     assert got == pytest.approx(units / (area * fx.DENSITY), rel=1e-15)
+
+
+# ------------------------------------------------------------------ B1′: the routable assembly rate
+
+
+class UnitControl(NamedTuple):
+    unit_assembly_rate: np.ndarray
+    unit_removal_rate: np.ndarray
+
+
+class _Planted(Operator):
+    """A planted rate-route source (B1′): a declared factor on the producer's assembly rate and
+    its validity, or no route (factor None)."""
+
+    LAW_ID = "tests.planted_unit_route@1"
+    SPLIT = True
+    RK4 = "split"
+    RATE_ROUTES = ((put.LAW_ID, "unit_assembly_rate"),)
+
+    def __init__(self, factor, valid=True):
+        self.factor, self.valid = factor, valid
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        if self.factor is None:
+            return None
+        return np.asarray(self.factor), np.asarray(self.valid)
+
+
+def _bitwise_but(a, b, skipped=None):
+    for name in type(a)._fields:
+        if name != skipped:
+            assert np.asarray(getattr(a, name)).tobytes() == np.asarray(getattr(b, name)).tobytes()
+
+
+def test_the_assembly_rate_is_routable_and_a_route_multiplies_it_in_the_half_step():
+    """B1′'s target side (docs/INVENTORY_COUPLING_DESIGN.md §2.1): the producer declares its
+    assembly rate routable, and its elements are its routes at their cells. Beside a route source
+    declared before it, the composite's half-step is bitwise the half-step at the product rate.
+    Planted: an invalid evaluation (a range breach) refuses the half-step, and a source with no
+    route in the definition leaves the call unchanged."""
+    spec, model, op, state, p = case_world("shared")
+    _, assembly, removal, _, _ = CASES["shared"]
+    declaration = next(d for d in spec.model.operators if d.law == put.LAW_ID)
+    assert dict(op.ROUTABLE_CONTROLS) == {"unit_assembly_rate": "rate"}
+    cells = op.routable_elements(declaration, "unit_assembly_rate")
+    assert cells == (("r0", fx.CELL), ("r1", fx.CELL))
+    state_op = model.operators[0]
+    factor = np.array([0.5, 0.25])
+    composite = pump_composite.Composition(model.inner, (state_op, _Planted(factor), op))
+    assert composite.rate_routes == {op: ((composite.operators[1], "unit_assembly_rate"),)}
+    control = UnitControl(np.asarray(assembly, dtype=float), np.asarray(removal, dtype=float))
+    routed, ok = composite._half_step(op, state, H, control, p, xp=np)
+    expected, ok_expected = step(op, state, p, np.asarray(assembly) * factor, removal)
+    assert bool(ok) and bool(ok_expected)
+    _bitwise_but(routed, expected)
+    breach = pump_composite.Composition(model.inner, (state_op, _Planted(factor, False), op))
+    _, ok = breach._half_step(op, state, H, control, p, xp=np)
+    assert not bool(ok)
+    idle = pump_composite.Composition(model.inner, (state_op, _Planted(None), op))
+    unrouted, ok = idle._half_step(op, state, H, control, p, xp=np)
+    plain, _ = step(op, state, p, assembly, removal)
+    assert bool(ok)
+    _bitwise_but(unrouted, plain)
+    assert not np.array_equal(routed.unit_consumed_fmol, plain.unit_consumed_fmol)  # It acts.
+
+
+def test_the_coupling_v2_routes_a_template_onto_the_assembly_rate():
+    """F3's code (B1′ on species_regulated_availability@2; development, not judged): a Hill
+    activation of a template species in the cell, F = b + (1 - b) c^n / (K^n + c^n), multiplies the
+    producer's assembly rate in its half-steps. It parses, round trips and binds one route; the
+    routed half-step is bitwise the half-step at the product rate, and records F; switched off
+    (the cut control), F is exactly 1 and the half-step is the scheduled one. Planted, each
+    refused: the producer declared before its route's source, and the template outside the
+    declared operating range while the coupling is on (off, the same breach is admitted)."""
+    routes, controls = base_routes()
+    spec = parse_spec(fx.with_template_route(definition(routes, controls)))
+    again = parse_spec(composite_spec.to_dict(spec))
+    assert again.model.operators == spec.model.operators
+    assert again.experiment.operators == spec.experiment.operators
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    coupling = next(o for o in model.operators if o.LAW_ID == fx.COUPLING_2)
+    producer = next(o for o in model.operators if o.LAW_ID == put.LAW_ID)
+    assert model.rate_routes == {producer: ((coupling, "unit_assembly_rate"),)}
+    assert np.asarray(p.coupling_unit_assembly_rate_routes).tolist() == [[0]]
+    row = list(spec.model.species_ids).index(fx.TEMPLATE)
+    amount = np.asarray(p.amount_reference)[row, 0] + np.asarray(state.amount_increment)[row, 0]
+    c = amount / np.asarray(p.volume)[0]
+    expected = 0.1 + 0.9 * c**2 / (1e-3**2 + c**2)
+    factor, ok = coupling.rate_factors(state, p, put.LAW_ID, "unit_assembly_rate", xp=np)
+    assert bool(ok) and float(factor[0]) == pytest.approx(expected, rel=1e-14) and expected < 1
+    values = composite_spec.control_values(spec, [0.0])
+    control = model.CONTROL_TYPE(*(v[0] for v in values))
+    h = 0.5 * spec.execution.dt
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    routed, ok = model._half_step(producer, state, h, control, p, xp=np)
+    product = control._replace(unit_assembly_rate=control.unit_assembly_rate * factor)
+    by_hand, _ = producer.half_step(state, h, product, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(routed, by_hand, record)
+    assert np.asarray(getattr(routed, record)).tobytes() == np.asarray(factor).tobytes()
+    off = state._replace(coupling_enabled=np.zeros_like(state.coupling_enabled))
+    cut, ok = model._half_step(producer, off, h, control, p, xp=np)
+    plain, _ = producer.half_step(off, h, control, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(cut, plain, record)
+    assert not np.array_equal(routed.unit_consumed_fmol, cut.unit_consumed_fmol)  # It acts.
+    assert np.asarray(getattr(cut, record)).tolist() == [1.0]  # The factor applied: exactly 1.
+    with pytest.raises(ConfigError, match="precedes it"):
+        parse_spec(fx.with_template_route(definition(routes, controls), coupling_first=False))
+    narrow = parse_spec(
+        fx.with_template_route(definition(routes, controls), operating_range=(0.5, 1.0))
+    )
+    model2 = get_model(narrow.model)
+    state2, p2 = model2.initial_values(narrow)
+    producer2 = next(o for o in model2.operators if o.LAW_ID == put.LAW_ID)
+    _, ok = model2._half_step(producer2, state2, h, control, p2, xp=np)
+    assert not bool(ok)
+    off2 = state2._replace(coupling_enabled=np.zeros_like(state2.coupling_enabled))
+    _, ok = model2._half_step(producer2, off2, h, control, p2, xp=np)
+    assert bool(ok)
 
 
 # ------------------------------------------------------------------ one compiled world

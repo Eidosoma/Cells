@@ -29,6 +29,10 @@ Schedule `unit_turnover_controls`: per route, piecewise-constant assembly_rate_p
 first-order rate at which the route consumes its precursor) and removal_rate_per_s k_r (the
 first-order removal of the population's units: lifetime 1/k_r), from time 0, changing at exact
 multiples of dt inside the horizon. Per-world control data, never closed-over constants.
+The assembly rate is routable (B1′, docs/INVENTORY_COUPLING_DESIGN.md §2.1): a rate route's
+factor F in [b, 1] multiplies it at the start of each of this operator's half-steps, from the
+state that half-step receives, so the scheduled rate is the maximum and the definition's
+bounds hold. Its elements are the routes, each at its population's cell.
 
 Law, per route i in cell c with precursor P (n_P fmol in c), c_u = N_A 1e-15 / ν units per fmol,
 κ = m / τ, and the population's units N (membrane_entity_state@1's units: declared plus
@@ -88,6 +92,7 @@ so zero rates are bitwise idle and @3's other rows are untouched.
 
 import math
 from dataclasses import dataclass, replace
+from types import MappingProxyType
 
 import jax.numpy as jnp
 import numpy as np
@@ -716,6 +721,9 @@ class PopulationUnitTurnover(Operator):
     WORK_FIELDS = ("unit_turnover_work_pJ",)
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = ("unit_assembly_rate", "unit_removal_rate")
+    # B1′: the assembly rate, per route, which a rate route may multiply in the half-steps (the
+    # scheduled rate is the maximum).
+    ROUTABLE_CONTROLS = MappingProxyType({"unit_assembly_rate": "rate"})
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
     CONFLICTS_VIEW = common.CONFLICTS_VIEW
     ENTITY_WRITES = {
@@ -811,6 +819,11 @@ class PopulationUnitTurnover(Operator):
         assembly = np.array([[a for a, _ in record] for record in records], dtype=float)
         removal = np.array([[r for _, r in record] for record in records], dtype=float)
         return assembly[indices], removal[indices]
+
+    def routable_elements(self, declaration, field):
+        """B1′: unit_assembly_rate's elements are the routes, by route ID, each at its
+        population's cell, in control order."""
+        return tuple((route.id, route.cell) for route in declaration.routes)
 
     def species_identities(self, declaration):
         return declaration.species
