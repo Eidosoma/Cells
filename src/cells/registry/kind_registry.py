@@ -351,7 +351,7 @@ class Kind:
       free energies it declares (§7.1, seam E), each with the cycle law and mode that produced it,
       a law the kind hosts with a general form, or None for both; () when it declares none. The
       species registry's check compares each with its own sum of nu mu°/RT
-      (kind_standard_free_energies checks the form; today's 3-tuples still read, transitionally);
+      (kind_standard_free_energies checks the form);
     - `role_species(declaration)` -> (EntityBinding, ...), one per entity the declaration declares
       (a transporter population, say), in its own entity order: the cycle law the entity runs,
       one the kind hosts; the species each of that law's roles binds, the roles being those its
@@ -607,9 +607,8 @@ def free_energy_entries(entries, hosted, where):
     law_id and mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle
     law}; none for an operator, which hosts no law), a law with a general form, and its mode one of
     that form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has
-    neither. Transitional: an entry may still be today's 3-tuple (stoichiometry, dG°/RT, c0), read
-    as an entry that names no law, until the kinds owner's transporter hook gives entries; remove
-    this reading then."""
+    neither. Every kind declares FreeEnergyEntry since the kinds owner's follow-up 2 (4e6ca60e), so
+    a bare (stoichiometry, dG°/RT, c0) tuple is refused like any other non-entry."""
     from cells.registry import laws as law_registry  # registry/laws imports this module.
 
     if not isinstance(entries, tuple):
@@ -618,9 +617,7 @@ def free_energy_entries(entries, hosted, where):
     for index, entry in enumerate(entries):
         at = f"{where}, entry {index}"
         if not isinstance(entry, FreeEnergyEntry):
-            if not (isinstance(entry, tuple) and len(entry) == 3):  # Transitional (docstring).
-                raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
-            entry = FreeEnergyEntry(*entry)
+            raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
         stoichiometry = entry.stoichiometry
         if not (
             isinstance(stoichiometry, tuple)
