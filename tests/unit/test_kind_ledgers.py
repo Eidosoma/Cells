@@ -14,7 +14,8 @@ kind's ledger_terms under its own name and bounded by its ledger_bounds at check
   takes the ledger from its inner model's lists, with no edit of its own, and runs with it.
 - Refused at the definition: a declared ledger the kind's ledger_terms does not value; a ledger
   or diagnostic named for one of @1's ten; a malformed hook result. The structure itself refuses
-  an undeclared, unsorted, repeated or malformed entry.
+  an undeclared kind, two kinds unsorted or one kind twice, a repeated name, a name of @1's or of
+  a ledger_terms role, and a malformed entry (F's review, 19 November 2026).
 - Today's structures keep @1's own ledger objects, so their programs are unchanged.
 """
 
@@ -216,10 +217,16 @@ def test_a_malformed_ledgers_result_is_refused_naming_the_kind():
 
 
 def test_the_structure_refuses_entries_that_are_not_declared_sorted_distinct_named_ledgers():
-    with scoped(PRODUCER):
-        structure = surface_pump_v3.structure(parse_spec(world()).model)
-    assert structure.kind_ledgers == ((PRODUCER_ID, (ADENINE,)),)
+    raw = kind_fixtures.declare_carrier(world(), species="K")  # Two kinds: the carrier too.
+    with scoped(PRODUCER, kind_fixtures.carrier()):
+        structure = surface_pump_v3.structure(parse_spec(raw).model)
+    assert [kind_id for kind_id, _ in structure.kinds] == [kind_fixtures.CARRIER_ID, PRODUCER_ID]
+    assert structure.kind_ledgers == ((PRODUCER_ID, (ADENINE,)),)  # At most one per kind.
+    other = (kind_fixtures.CARRIER_ID, (("b", "b_error"),))
     for planted, reason in (
+        (((PRODUCER_ID, (ADENINE,)), other), "sorted, one entry per kind"),  # Two kinds, unsorted.
+        (((PRODUCER_ID, (ADENINE,)), (PRODUCER_ID, (("b", "b_error"),))), "sorted, one entry"),
+        (((PRODUCER_ID, (("heat_pJ", "heat_error"),)),), "ledger_terms' roles"),
         (
             ((PRODUCER_ID, (ADENINE,)), ("tests.undeclared@1", (("b", "b_error"),))),
             "not a declared",
@@ -232,6 +239,9 @@ def test_the_structure_refuses_entries_that_are_not_declared_sorted_distinct_nam
         with pytest.raises(ValueError, match=reason):
             dataclasses.replace(structure, kind_ledgers=planted)
     assert inner_laws.kind_ledger_errors((), ()) == []
+    assert dataclasses.replace(
+        structure, kind_ledgers=(other, (PRODUCER_ID, (ADENINE,)))
+    )  # Sorted.
 
 
 def test_todays_structures_keep_todays_ledger_objects():

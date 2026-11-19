@@ -172,10 +172,11 @@ def heat_booking_errors(bookings, kinds, junction_heat_booking=DEFAULT_JUNCTION_
 def kind_ledger_errors(ledgers, kinds):
     """Why an InnerStructure's kind_ledgers break E's list (empty: they keep it), for a structure
     whose declared kinds are `kinds` (namespaced IDs): (kind ID, ((ledger, diagnostic), ...))
-    entries of non-empty names, one per declared kind, sorted by kind ID, each with at least one
-    pair; every name distinct across them, and none taken by @1's ten ledgers or their
-    diagnostics (surface_pump's, read only where a kind declares a ledger). Today's empty list
-    reads nothing."""
+    entries of non-empty names, at most one per declared kind, sorted by kind ID, each with at
+    least one pair; every name distinct across them, none taken by @1's ten ledgers or their
+    diagnostics (surface_pump's, read only where a kind declares a ledger), and no ledger named
+    for one of ledger_terms' roles (kind_registry.LEDGER_TERM_ROLES, as kind_ledgers refuses).
+    Today's empty list reads nothing."""
     if ledgers == ():
         return []
     if not (
@@ -213,6 +214,12 @@ def kind_ledger_errors(ledgers, kinds):
         elif name in seen:
             out.append(f"kind {kind_id}'s {name} is named twice")
         seen.add(name)
+    reserved = sorted(
+        {ledger for _, pairs in ledgers for ledger, _ in pairs}
+        & set(kind_registry.LEDGER_TERM_ROLES)
+    )
+    if reserved:
+        out.append(f"ledgers {reserved} take names of ledger_terms' roles, as kind_ledgers refuses")
     return out
 
 
