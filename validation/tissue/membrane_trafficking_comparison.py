@@ -169,6 +169,18 @@ def stress_world(name):
         o["initial_amount_fmol"] = {s: v["value"] for s, v in node["initial_amounts"].items()}
         o["fixed_charge_equivalent_fmol"] = node["fixed_charge_equivalent"]["value"]
         o["initial_charge_C"] = node["charge_anchor"]["value"]
+    for node in record["nodes"]:  # A held node's potential is the declared one.
+        if node["held"]:
+            assert nodes[node["id"]]["boundary_potential_V"] == node["held_potential"]["value"]
+    for cell, declared in zip(record["cells"], m["cells"], strict=True):
+        assert (cell["id"], cell["volume"]["value"], cell["charge_anchor"]["value"]) == (
+            declared["id"],
+            declared["volume_pL"],
+            declared["initial_charge_C"],
+        ), cell["id"]
+        assert {s: v["value"] for s, v in cell["initial_amounts"].items()} == declared[
+            "initial_amount_fmol"
+        ], cell["id"]
     for patch in record["patches"]:
         q = fx.patch(raw, patch["id"])
         assert (q["area_m2"], q["capacitance_F"]) == (
@@ -426,9 +438,13 @@ def potentials(w, state):
 
 
 def capacitor_energy(w, state):
-    view, bound = trafficking.capacitor_view(state, w.p, xp=np)
-    energy, _, _, _ = adapter.view_capacitor_terms(state, view, bound, xp=np)
-    return float(energy)
+    """1/2 sum C V^2 (pJ) over the active patches: the view's capacitances and the engine's patch
+    voltages from its field solve. view_capacitor_terms' energy alone is not it: that term is
+    measured against @3's own at the current charges, so its change is not this change."""
+    view, _ = trafficking.capacitor_view(state, w.p, xp=np)
+    _, v = potentials(w, state)
+    c = np.where(np.asarray(view.membrane_active), np.asarray(view.membrane_capacitance), 0.0)
+    return 0.5e12 * math.fsum((c * v**2).tolist())
 
 
 def chemical_change(w, before, after, nodes=None):
