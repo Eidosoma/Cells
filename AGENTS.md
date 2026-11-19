@@ -72,6 +72,9 @@ as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
   runs also freeze the module's files beside the snapshot.
 - If a check needs more than 30 minutes to reach the code under test, build a
   faster harness first.
+- Gates are sized to the change (D223, amended by D229). A landing with no src/ change runs the
+  tier-1/2 files it can reach (from recorded runtime imports and file reads), plus the always-run
+  guard set, and tiers 1+2 run in full nightly. Queued heads may be gated together as a stack.
 - The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json
   --tier 1` (about 6 minutes on four cores). Add tier 2 (about 11 more minutes)
   before landing engine changes; run tier 3 deliberately. A gate passes when

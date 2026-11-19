@@ -7407,3 +7407,39 @@ pass as its current heads land, in this order:
    - cell migration and topology changes.
 
 Each lands through its owner's gate. The lane uses each one only after its qualification.
+
+## D229: The testing plan's three decisions: the compile measurement, stacked gates, and selection for non-src landings
+
+2026-11-19, about 15:35 UTC. The user answered the testing plan's three questions
+(/mnt/workspaces/Cells/testing-plan-20261119/PLAN.md, after the advisor's review): "1. yes you can run
+any tests that you need 2.yes 3. yes".
+1. **The held measurement runs:** the compile, execute and host-check split on a sample of the
+   heaviest tier-2 files and G1 worlds. A guard had refused writing its driver.
+   - More broadly, the lead and its agents may run whatever tests and measurements the work needs,
+     within the CPU, memory and lane rules.
+   - A guard refusal is still held and put to the user.
+   - The persistent compilation cache stays conditional. It is adopted only if compiling is 40% or
+     more of tier and G1 time, and only after its bitwise and memory qualification. It has two
+     recorded failures, and its writes are not atomic.
+2. **Queued heads may be gated together as a stack** of two or three, after the fail-fast steps
+   (the plan's A) are in.
+   - The stacked tree is the one that lands, so cross-head clashes are seen before landing. Today's
+     three landing-check refusals were all such clashes.
+   - On a failure, the stack is bisected with only the failing check.
+   - Evidence is recorded per stack, and each head's merge message names its stack's gate.
+3. **Landings with no src/ change run a selection of tiers 1+2.** This amends D223 rule 2. They run:
+   - the tier-1/2 files that the change can reach, found from recorded runtime imports and file
+     reads, not guessed;
+   - an always-run guard set: the tree-scanning guards, test_species_sum_sites.py, and any test that
+     reads the repository's files;
+   - IDs, as before.
+
+   Tiers 1+2 then run in full once a night, and a nightly failure stops selection until it is
+   explained. A landing with a src/ change keeps the full gate.
+- **The plan's A and B need no decision.** They are built first and qualified by replay before any
+  owner uses them:
+  - A: pre-lock checks, including a removal list declared before the gate, then the checks under
+    the lock in fail-fast order;
+  - B: base-side runs reused per main revision, and G1's shards re-planned.
+
+  Crossrev keeps comparing head against base, never against the record. G1 keeps its 113 worlds.
