@@ -315,10 +315,24 @@ must bve configurable as well based on our different species as we add them".
   embed Xenbase's number for a gene (304 gene names, 49 protein names) are not written:
   such a protein is shown and found by its accession (decided on 19 November 2026, the
   choice left to the viewer's coordinator). The adult is drawn, from one open paper's means
-  for laboratory females; its life stages are not drawn yet, and it has no bench of
-  machines yet. It is the largest catalogue: its members are cut 6,000 to a file (6 files),
-  and its shelves and members have bounds of their own (`data/proteins/overlay.json`,
-  `shelves.limits`).
+  for laboratory females; it has no bench of machines yet. It is the largest catalogue:
+  its members are cut 6,000 to a file (6 files), and its shelves and members have bounds
+  of their own (`data/proteins/overlay.json`, `shelves.limits`).
+- **A species may carry life stages** (`schema/SPECIES_STAGES.md`, 19 November 2026): its
+  stages in order, each stating only what differs from its file, with its sources, or
+  named and not drawn; and the spans between them. In Scope they stand as a strip at the
+  foot of the picture, the page's one timeline: a press on a drawn stage shows the species
+  at it, by the viewer's own plain change (one picture held, an empty picture, the other
+  held), which says that it is an illustration and not a run. Play shows only where a
+  saved run fills a span; playing the plain change is built and switched off
+  (`PLAIN_CHANGE_PLAYS` in `src/lenses/cell.js`). The strip's axis is the stages' order,
+  never a clock. The reader is `src/scene/life_stages.js`; the build reads a block through
+  it (`tools/lib/species.py`, through node); `tools/check_stages.mjs` checks it on a
+  made-up species. **The frog is the first species with stages:** its fertilised egg
+  (NF 1, a sphere 1.2 mm across, drawn with a generic cell's parts, which its picture
+  says) and its adult are drawn; NF 2, 3, 35-36 and 66 are named and not drawn, since no
+  size of them is in hand under usable terms (`docs/XENOPUS.md`, "Its life stages"). The
+  frog opens on its adult, as before.
 - **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
   each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
   envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a

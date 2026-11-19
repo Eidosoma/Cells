@@ -1,0 +1,91 @@
+{
+ "format": "cells.visualizer.species_stages@1",
+ "species": "xenopus",
+ "note": "The frog's life stages (schema/SPECIES_STAGES.md), kept by hand. tools/build_xenopus_atlas.py reads this block, checks each number against the saved running text of the open paper it cites, and writes it into data/species/xenopus.json with those papers among the species' sources: edit it here, then build. Two stages are drawn, the fertilised egg and the adult (the file's own); four are named and not drawn. The species opens on its adult, and no stage gives a word of its own for what Cells models of it.",
+ "stages": {
+  "system": {"id": "nf", "label": "NF stage", "short": "NF", "sources": ["zahn2022"]},
+  "times_after": "fertilisation",
+  "list": [
+   {
+    "id": "egg",
+    "order": 1,
+    "index": "1",
+    "label": "Fertilised egg",
+    "short": "Egg",
+    "plain": "The fertilised egg: one cell, before its first division.",
+    "sources": ["zahn2022"],
+    "ends_at": "cell",
+    "no_further_levels": "A fertilised egg is one cell: it has no tissue, organ or body yet.",
+    "levels": [
+     {
+      "id": "cell",
+      "label": "The egg",
+      "shape": {"kind": "sphere", "across_um": 1200},
+      "note": "The egg is drawn as a sphere 1.2 mm across, the diameter a review gives the frog's fertilised eggs. What is drawn inside it is not the egg's own structure: its parts are the generic cell's, the parts of the frog's skin-like cell drawn here, enlarged to the egg's size. An egg's yolk, its pigment and the rest of what it holds are not drawn.",
+      "notes": [
+       {"text": "Its parts are a generic cell's, enlarged: not the egg's own; its yolk and pigment are not drawn", "short": "A generic cell's parts, enlarged: not the egg's own"},
+       {"text": "The fertilised egg, 1.2 mm across", "roomy": true}
+      ],
+      "sources": ["sato2025"]
+     }
+    ],
+    "cell": {
+     "facts": [
+      {"label": "Diameter", "value": "about 1.2 mm, as a review gives the frog's fertilised eggs", "sources": ["sato2025"]}
+     ],
+     "capabilities": {
+      "cap.junctions": {"place": "absent", "why": "The egg is one cell: it has no neighbour to share a junction with."}
+     }
+    }
+   },
+   {
+    "id": "two-cell",
+    "order": 2,
+    "index": "2",
+    "label": "Two-cell embryo",
+    "short": "Two cells",
+    "time": {"value": 90, "unit": "min", "about": true, "temperature_c": 23, "sources": ["zahn2022"], "where": "the section \"NF stages 1-6: zygote and cleavage\", paragraph 1, which gives the time of the first cell division"},
+    "note": "The time is that of the first cell division, after which the embryo is in two cells.",
+    "sources": ["zahn2022"],
+    "missing": "No size of the two-cell embryo is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "four-cell",
+    "order": 3,
+    "index": "3",
+    "label": "Four-cell embryo",
+    "short": "Four cells",
+    "note": "The paper gives this stage's time from the first division, not from fertilisation (20 to 30 minutes after it, at 23 °C), so no time is written for it here.",
+    "sources": ["zahn2022"],
+    "missing": "No size of the four-cell embryo is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "tadpole",
+    "order": 4,
+    "index": "35-36",
+    "label": "Free-swimming tadpole",
+    "short": "Tadpole",
+    "plain": "The stage at which tadpoles break free of the vitelline membrane and begin to swim.",
+    "sources": ["zahn2022"],
+    "missing": "No length of a tadpole at this stage is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "froglet",
+    "order": 5,
+    "index": "66",
+    "label": "End of metamorphosis",
+    "short": "Froglet",
+    "plain": "The froglet, its tail fully resorbed.",
+    "sources": ["zahn2022"],
+    "missing": "No size of the froglet is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "adult",
+    "order": 6,
+    "label": "Adult",
+    "plain": "The adult, as the species' file describes it.",
+    "own": true
+   }
+  ]
+ }
+}

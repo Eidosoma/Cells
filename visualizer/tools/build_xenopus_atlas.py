@@ -2,7 +2,7 @@
 """Build the viewer's data on the African clawed frog, Xenopus laevis: the species with its levels and
 placeholder outlines of an adult, its side of the protein atlas, and its own proteins on shelves.
 
-Six files are written, each from saved answers of public databases and one open paper:
+Six files are written, each from saved answers of public databases and three open papers:
 
     data/species/xenopus.json           the species file (schema/SPECIES.md)
     data/species/shapes/xenopus.json    placeholder outlines of an adult frog and its hind foot (schema/SPECIES_SHAPES.md)
@@ -32,7 +32,10 @@ proteins (docs/XENOPUS.md gives them with their counts):
     8. Nothing of another species changes.
 
 Its cell is the mouse's and the planarian's: one cell of a sheet that stands for skin-like tissue. The
-adult is drawn; the frog's life stages are not drawn yet.
+adult is drawn, and its life stages stand on a strip (schema/SPECIES_STAGES.md): the fertilised egg is drawn,
+four stages between are named and not drawn. The stages are kept by hand in data/species/stages/xenopus.json;
+this tool checks each of their numbers against the saved running text of the open paper it cites, and writes
+the block into the species file with those papers among its sources.
 
     python3 tools/build_xenopus_atlas.py fetch --datasets DATA     the only step that uses the network
     python3 tools/build_xenopus_atlas.py build --datasets DATA     the same bytes every time
@@ -67,6 +70,7 @@ from lib import proteome_shelves as P  # noqa: E402  the shelves' machinery
 
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 SPECIES_FILE = ROOT / "data" / "species" / "xenopus.json"
+STAGES_FILE = ROOT / "data" / "species" / "stages" / "xenopus.json"  # the frog's life stages, kept by hand
 SHAPES_FILE = ROOT / "data" / "species" / "shapes" / "xenopus.json"
 ATLAS_FILE = ROOT / "data" / "proteins" / "atlases" / "xenopus.json"
 OUT_DIR = ROOT / "data" / "proteins" / "xenopus"
@@ -139,6 +143,36 @@ PAPER = {
         r"TW \(cm\) 190 3\.4 ± 0\.3 ",
     ],
 }
+# The open papers the life stages rest on (data/species/stages/xenopus.json): each one's licence and DOI in its full
+# text, and the words of its running text that the stages' names and numbers rest on, a few words round each, kept to
+# check the saved text and never written out. The build stops where one is gone. Their records are Europe PMC's.
+STAGE_PAPERS = {
+    "zahn2022": {
+        "pmc": "PMC9445888", "doi": "10.1242/dev.200356", "file": "zahn2022_fulltext.xml", "record": "search_stage_hpf.json",
+        "licence": [r"Creative Commons Attribution License", r"https://creativecommons\.org/licenses/by/4\.0"],
+        "holds": [
+            r"Nieuwkoop and Faber based their staging system",  # the NF stages (Introduction, paragraph 3)
+            r"the Xenopus egg, NF stage 1",  # "NF stages 1-6: zygote and cleavage", paragraph 1
+            r"At room temperature \(23°C\), the first cell division occurs approximately 90 min post-fertilization",
+            r"The fully cleaved two-cell embryo is NF stage 2",
+            r"The second cleavage ∼20-30 min later .{0,80}four-cell embryo, NF stage 3",
+            r"NF 35-36 marks a major behavioral transition as tadpoles naturally break free from their vitelline membrane to become free-swimming",  # "NF stages 29-38", paragraph 2
+            r"NF stage 66 \(froglet with a fully resorbed tail",  # "NF stages 47-61", paragraph 1
+        ],
+        "says": "Its running text names the stages of the standard table of normal development, the NF stages, and gives the first cell division at about 90 min after fertilisation, at 23 °C, and the second 20 to 30 min after it.",
+    },
+    "sato2025": {
+        "pmc": "PMC12838665", "doi": "10.3390/biom16010022", "file": "PMC12838665_fulltext.xml", "record": "search_egg_diam.json",
+        "licence": [r"Creative Commons Attribution \(CC BY\) license", r"https://creativecommons\.org/licenses/by/4\.0/"],
+        "holds": [r"externally fertilized eggs—approximately 1\.2 mm in diameter"],  # section 2.1, paragraph 1
+        "says": "A review: its section 2.1 gives the frog's fertilised eggs a diameter of about 1.2 mm.",
+    },
+}
+# The numbers of the stages that rest on those words: the egg's diameter, in micrometres, and the first division's time
+# and temperature. The build stops where the block kept by hand gives others.
+EGG_UM, FIRST_DIVISION = 1200, {"value": 90, "unit": "min", "about": True, "temperature_c": 23}
+STAGE_NUMBERS_SAID = ("20 to 30 minutes", "23 °C")  # the four-cell stage's note gives its time from the first division
+
 # The paper's means for the 198 females (Table 1), in micrometres: snout to vent, the width directly behind the
 # forelimbs and directly in front of the hindlimbs, and a thigh's width (190 of them). The male's length for the fact.
 BODY_UM, CRANIAL_UM, CAUDAL_UM, THIGH_UM, MALE_UM = 121000, 51000, 62000, 34000, 77000
@@ -216,30 +250,72 @@ def flat(markup):
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"(?s)<[^>]+>", " ", markup))).strip()
 
 
-def paper(d):
-    """The paper's citation, checked: its full text states its licence (CC BY 4.0) and its DOI, its running text the
-    sentences that say what each measure is, and its Table 1 the cells the numbers are read from. The build stops
-    where one is gone. The citation is the one Europe PMC's record gives (the gathering round's search answer)."""
-    raw = d.text(PAPERS_AT, PAPER["file"])
+def paper(d, spec=PAPER):
+    """A paper's citation, checked: its full text states its licence (CC BY 4.0) and its DOI, its running text the
+    sentences that say what each measure is, and its tables (where it gives numbers from them) the cells the numbers
+    are read from. The build stops where one is gone. The citation is the one Europe PMC's record gives (the gathering
+    round's search answer). `spec` is PAPER, or one of STAGE_PAPERS with its key."""
+    key = spec.get("key")
+    raw = d.text(PAPERS_AT, spec["file"])
     licence = " ".join(flat(block) for block in re.findall(r"(?s)<license\b.*?</license>", raw))
-    if not all(re.search(pattern, licence) for pattern in PAPER["licence"]):
-        raise SystemExit(f"{PAPER['key']}: its full text no longer states the licence CC BY 4.0; read it again")
-    if f'<article-id pub-id-type="doi">{PAPER["doi"]}</article-id>' not in raw:
-        raise SystemExit(f"{PAPER['key']}: its full text no longer gives the DOI {PAPER['doi']}")
+    if not all(re.search(pattern, licence) for pattern in spec["licence"]):
+        raise SystemExit(f"{key}: its full text no longer states the licence CC BY 4.0; read it again")
+    if f'<article-id pub-id-type="doi">{spec["doi"]}</article-id>' not in raw:
+        raise SystemExit(f"{key}: its full text no longer gives the DOI {spec['doi']}")
     text = flat(re.sub(r"(?s)<(table-wrap|ref-list)\b.*?</\1>", " ", raw))
-    for pattern in PAPER["holds"]:
+    for pattern in spec["holds"]:
         if not re.search(pattern, text):
-            raise SystemExit(f"{PAPER['key']}: the saved text no longer holds what a number rests on ({pattern})")
+            raise SystemExit(f"{key}: the saved text no longer holds what a number rests on ({pattern})")
     tables = flat(" ".join(re.findall(r"(?s)<table-wrap\b.*?</table-wrap>", raw)))
-    for pattern in PAPER["table"]:
+    for pattern in spec.get("table", []):
         if not re.search(pattern, tables):
-            raise SystemExit(f"{PAPER['key']}: the saved tables no longer hold what a number rests on ({pattern})")
-    record = next((item for item in json.loads(d.text(PAPERS_AT, PAPER["record"]))["resultList"]["result"] if item.get("pmcid") == PAPER["pmc"]), None)
-    if record is None or (record.get("doi") or "").lower() != PAPER["doi"]:
-        raise SystemExit(f"{PAPER['key']}: Europe PMC's record of it is not in the saved answer")
-    clean = lambda words: re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", words or ""))).strip().rstrip(".")
+            raise SystemExit(f"{key}: the saved tables no longer hold what a number rests on ({pattern})")
+    record = next((item for item in json.loads(d.text(PAPERS_AT, spec["record"]))["resultList"]["result"] if item.get("pmcid") == spec["pmc"]), None)
+    if record is None or (record.get("doi") or "").lower() != spec["doi"]:
+        raise SystemExit(f"{key}: Europe PMC's record of it is not in the saved answer")
+    # A record's words may carry markup, escaped or not (a title's italics): it is taken out after unescaping.
+    clean = lambda words: re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", html.unescape(words or ""))).strip().rstrip(".")
     where = f"{record['journalVolume']}({record['issue']}):{record['pageInfo']}"
     return f"{clean(record['authorString'])} ({record['pubYear']}) {clean(record['title'])}. {clean(record['journalTitle'])} {where}."
+
+
+def stages(d):
+    """The frog's life stages, as kept by hand (data/species/stages/xenopus.json), checked: every source they cite is one
+    of the open papers above, whose saved text holds what each name and number rests on; the egg's diameter and the first
+    division's time are the numbers those words give; and no stage gives a word of its own for what Cells models of it.
+    Returns the block, as the species file carries it, and the papers' entries among the species' sources."""
+    kept = json.loads(STAGES_FILE.read_text(encoding="utf-8"))
+    if kept.get("format") != "cells.visualizer.species_stages@1" or kept.get("species") != SPECIES_ID:
+        raise SystemExit(f"{STAGES_FILE.name}: not the frog's stages block")
+    block = kept["stages"]
+    sources = {}
+    for key, spec in STAGE_PAPERS.items():
+        cite = paper(d, {**spec, "key": key})
+        sources[key] = {"text": f"{cite} {spec['says']}", "doi": spec["doi"], "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(PAPERS_AT, spec["file"])}
+    cited = {key for key in block.get("system", {}).get("sources", [])}
+    for stage in block["list"]:
+        cited.update(stage.get("sources", []))
+        cited.update(stage.get("time", {}).get("sources", []))
+        for level in stage.get("levels", []):
+            cited.update(level.get("sources", []))
+        for fact in stage.get("cell", {}).get("facts", []):
+            cited.update(fact.get("sources", []))
+        if "modelled" in stage:
+            raise SystemExit(f"the stage {stage['id']} gives a word of its own for what Cells models of it: none is given until it is decided")
+    if cited - set(sources):
+        raise SystemExit(f"the stages cite {sorted(cited - set(sources))}, which are not among the open papers this tool checks")
+    by_id = {stage["id"]: stage for stage in block["list"]}
+    egg = next(level for level in by_id["egg"]["levels"] if level["id"] == "cell")
+    if egg["shape"] != {"kind": "sphere", "across_um": EGG_UM} or egg.get("sources") != ["sato2025"]:
+        raise SystemExit(f"the egg is drawn {egg['shape']}, not the sphere of {EGG_UM} µm that its source gives")
+    time = {key: value for key, value in by_id["two-cell"]["time"].items() if key in FIRST_DIVISION}
+    if time != FIRST_DIVISION or by_id["two-cell"]["time"]["sources"] != ["zahn2022"]:
+        raise SystemExit(f"the two-cell stage's time is {by_id['two-cell']['time']}, not the first division's as its source gives it")
+    if not all(words in by_id["four-cell"]["note"] for words in STAGE_NUMBERS_SAID):
+        raise SystemExit("the four-cell stage's note no longer gives its time from the first division as its source does")
+    if "opens_on" in block:
+        raise SystemExit("the stages name a stage to open on: the frog opens on its adult until it is decided otherwise")
+    return block, sources
 
 
 # ---------------------------------------------------------------------------------------
@@ -542,6 +618,7 @@ def build(datasets_folder, snapshot):
     must(KB_DOCS, "help_transmem.json", r"predicted by the application of the predictive tools TMHMM, Memsat, Phobius and the hydrophobic moment plot method", "content")
     must(KB_DOCS, "help_signal.json", r"predicted by the application of the predictive tools Phobius, Predotar, SignalP and TargetP", "content")
     cite = paper(d)
+    stage_block, stage_sources = stages(d)  # the life stages, kept by hand, checked against their papers
 
     vocabulary = P.Vocabulary(d, KB_DOCS, CELL)
     every, read = P.read_proteome(d, KB, PLACES_FILE, vocabulary, GENE_DB)
@@ -711,7 +788,7 @@ def build(datasets_folder, snapshot):
     sizes = f"{BODY_UM / 10000:g} cm from snout to vent, {CRANIAL_UM / 10000:g} cm wide behind the forelimbs and {CAUDAL_UM / 10000:g} cm in front of the hindlimbs, a thigh {THIGH_UM / 10000:g} cm wide"
     species = {
         "format": "cells.visualizer.species@1", "id": SPECIES_ID, "label": LABEL, "organism": ORGANISM, "taxon": TAXON,
-        "plain": f"The African clawed frog of the laboratory: {s['genes']:,} genes in UniProt's reference proteome, on two sets of chromosomes, L and S, and {s['shown']:,} proteins shown, both copies of a gene among them. Its cell is drawn as the mouse's is: one cell of a sheet that stands for skin-like tissue. The frog is drawn as an adult; its life stages are not drawn yet.",
+        "plain": f"The African clawed frog of the laboratory: {s['genes']:,} genes in UniProt's reference proteome, on two sets of chromosomes, L and S, and {s['shown']:,} proteins shown, both copies of a gene among them. Its cell is drawn as the mouse's is: one cell of a sheet that stands for skin-like tissue. The frog is drawn as an adult; on the strip of its life stages its fertilised egg is drawn too, and four stages between are named and not drawn.",
         "group": "Animals", "order": 17, "default": False, "made": made,  # after the mouse, before the planarian
         "modelled": {"state": "generic", "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on a hind foot for the scales only. The foot and the frog are placeholder outlines: nothing at those scales is simulated."},
         "levels": [
@@ -742,9 +819,11 @@ def build(datasets_folder, snapshot):
             ],
             "parts": {"membranes": 1, "wall": False, "nucleus": True, "organelles": ["er", "golgi", "mitochondria"]},
         },
+        "stages": stage_block,
         "sources": {
             "uniprot": {"text": f"UniProt Consortium, UniProt release {release}: the reference proteome {PROTEOME} (Xenopus laevis{of_strain}), its entries, their proteome components and its gene-by-gene set.", "url": f"https://www.uniprot.org/proteomes/{PROTEOME}", "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(KB, PLACES_FILE)},
             PAPER["key"]: {"text": f"{cite} Its Table 1 gives, for 198 adult females kept as laboratory animals, a snout-vent length of 12.1 ± 1.0 cm, a width directly behind the forelimbs of 5.1 ± 0.5 cm and directly in front of the hindlimbs of 6.2 ± 0.7 cm, and (for 190) a thigh width of 3.4 ± 0.3 cm; for 40 males, a snout-vent length of 7.7 ± 0.3 cm.", "doi": PAPER["doi"], "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(PAPERS_AT, PAPER["file"])},
+            **stage_sources,
         },
     }
     atlas = {

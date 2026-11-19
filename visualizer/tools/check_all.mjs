@@ -62,6 +62,10 @@ const flux = (name, env, minutes = 4) => ({ name: `flux-${name}`, tool: "check_c
 const SUITE = [
   { name: "species", tool: "check_species.mjs", minutes: 14 },
   { name: "species-model", tool: "check_species.mjs", env: { CASE: "model" }, minutes: 3 },
+  // A species' life stages in the Scope view, on a check-only scene with a made-up species (tools/check_stages.mjs): wide
+  // (60 to 90 s on one core) and a phone (60 to 90 s). The other two sizes stay runnable by hand: CASE=720 or CASE=360.
+  { name: "stages-wide", tool: "check_stages.mjs", args: [pictures], env: { CASE: "wide" }, minutes: 2 },
+  { name: "stages-phone", tool: "check_stages.mjs", args: [pictures], env: { CASE: "phone" }, minutes: 2 },
   // The origin-of-life view on the map's page (tools/check_origin.mjs): wide in both themes, a phone, by address, and the pair of forms on a check-only scene.
   { name: "origin-main", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-main" }, minutes: 2 },
   { name: "origin-dark", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-dark", THEME: "dark" }, minutes: 2 },

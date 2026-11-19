@@ -81,16 +81,16 @@ const SHELF_SOURCES = [
 ];
 
 test("the species file says what it is: an animal whose generic cell and sheet Cells models, drawn as an adult, with placeholder outlines", () => {
-  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "group", "order", "default", "made", "modelled", "levels", "cell", "sources"]);
+  assert.deepEqual(Object.keys(species), ["format", "id", "label", "organism", "taxon", "plain", "group", "order", "default", "made", "modelled", "levels", "cell", "stages", "sources"]);
   assert.deepEqual([species.format, species.id, species.label, species.organism, species.taxon, species.group, species.default], ["cells.visualizer.species@1", "xenopus", "Frog", "Xenopus laevis", 8355, "Animals", false]);
   // Among the animals, after the mouse and before the planarian.
   assert.ok(mouse.order < species.order && species.order < planarian.order, `order ${species.order}`);
-  // The mouse's state and words, and nothing more of the engine: no stages, no record of the egg.
+  // The mouse's state and words, and nothing more of the engine: no record of the egg, and no stage gives a word of its own.
   assert.equal(species.modelled.state, "generic");
   assert.match(species.modelled.text, /^Cells models a generic cell and a sheet of such cells, not this animal\./);
   assert.match(species.modelled.text, /placeholder outlines: nothing at those scales is simulated\.$/);
-  assert.ok(!("record" in species.modelled) && !("stages" in species));
-  assert.match(species.plain, /The frog is drawn as an adult; its life stages are not drawn yet\.$/);
+  assert.ok(!("record" in species.modelled) && species.stages.list.every((stage) => !("modelled" in stage)));
+  assert.match(species.plain, /The frog is drawn as an adult; on the strip of its life stages its fertilised egg is drawn too, and four stages between are named and not drawn\.$/);
   assert.deepEqual(species.levels.map((item) => item.id), ["molecules", "cell", "tissue", "organ", "organism"]);
   // The cell and the sheet are the mouse's: one cell of a sheet that stands for skin-like tissue.
   const theirs = Object.fromEntries(mouse.levels.map((item) => [item.id, item]));
@@ -109,6 +109,35 @@ test("the species file says what it is: an animal whose generic cell and sheet C
   for (const fact of species.cell.facts) assert.ok(fact.sources.every((key) => species.sources[key]?.class === "permissive"), fact.label);
   // Nothing says that Cells models a frog.
   for (const text of [JSON.stringify(species), JSON.stringify(atlas), shelvesText, readme]) assert.ok(!/\b(is|are|was|were) modelled\b|Cells models (the frog|this frog|a frog|Xenopus)/i.test(text.replace(/no foot is modelled/g, "").replace(/own cells are not modelled/g, "")));
+});
+
+test("its life stages: the block kept by hand, as the tool writes it; the egg and the adult drawn, four stages named, every number an open paper's", async () => {
+  // The tool writes the block it keeps by hand (data/species/stages/xenopus.json) into the species file as it is.
+  const kept = await json(path.join(ROOT, "data", "species", "stages", "xenopus.json"));
+  assert.deepEqual([kept.format, kept.species], ["cells.visualizer.species_stages@1", "xenopus"]);
+  assert.deepEqual(species.stages, kept.stages);
+  const { stageProblems, openingStage, stripOf, speciesAt } = await import("../src/scene/life_stages.js");
+  assert.deepEqual(stageProblems(species), []);
+  // Decided on 19 November 2026 by the viewer's coordinator: the egg and the adult drawn, four named; the frog opens on its adult.
+  assert.deepEqual(stripOf(species).map((mark) => [mark.id, mark.index, mark.drawn, mark.own]), [["egg", "1", true, false], ["two-cell", "2", false, false], ["four-cell", "3", false, false], ["tadpole", "35-36", false, false], ["froglet", "66", false, false], ["adult", null, true, true]]);
+  assert.equal(openingStage(species), "adult");
+  assert.ok(!("opens_on" in species.stages));
+  assert.equal(speciesAt(species), species, "at its own stage the frog is the file, exactly as before");
+  // The egg: one cell 1.2 mm across, ending at its cell; its picture's words say that its parts are a generic cell's, not an egg's own.
+  const egg = speciesAt(species, "egg");
+  assert.deepEqual(egg.levels.map((item) => item.id), ["molecules", "cell"]);
+  const cell = egg.levels[1];
+  assert.deepEqual([cell.shape, cell.sources], [{ kind: "sphere", across_um: 1200 }, ["sato2025"]]);
+  assert.match(cell.note, /not the egg's own structure: its parts are the generic cell's/);
+  assert.match(cell.notes.map((item) => item.text).join(" "), /Its parts are a generic cell's, enlarged: not the egg's own; its yolk and pigment are not drawn/);
+  assert.deepEqual(egg.stage.inherits, ["cell.parts", "modelled"]);
+  // Each named stage says what is not in hand; the one time given is the first division's, at its temperature.
+  for (const stage of species.stages.list.filter((item) => item.missing)) assert.match(stage.missing, /^No (size|length) of .* is in hand under usable terms, and nothing of it is drawn\.$/, stage.id);
+  assert.deepEqual(species.stages.list.filter((item) => item.time).map((item) => [item.id, item.time.value, item.time.unit, item.time.temperature_c]), [["two-cell", 90, "min", 23]]);
+  // Every source a stage cites is an open paper among the species' sources, permissive, with its DOI; nothing of Xenbase.
+  for (const key of ["zahn2022", "sato2025"]) assert.deepEqual([species.sources[key].class, species.sources[key].licence], ["permissive", "CC BY 4.0"], key);
+  assert.deepEqual([species.sources.zahn2022.doi, species.sources.sato2025.doi], ["10.1242/dev.200356", "10.3390/biom16010022"]);
+  assert.ok(!/xenbase/i.test(JSON.stringify(species.stages)) && !/xenbase/i.test(JSON.stringify(kept)));
 });
 
 test("the outline: an adult frog, its length and widths the paper's, with the sheet on the left hind foot", () => {
