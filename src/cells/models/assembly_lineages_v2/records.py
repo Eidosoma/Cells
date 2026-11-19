@@ -28,7 +28,15 @@ from pathlib import Path
 import numpy as np
 
 from cells.definitions.specs import ConfigError, digest
-from cells.models.assembly_lineages_v2 import MODEL_ID, division, kernel, ledger, model, runner
+from cells.models.assembly_lineages_v2 import (
+    MODEL_ID,
+    diagnostic,
+    division,
+    kernel,
+    ledger,
+    model,
+    runner,
+)
 from cells.models.assembly_lineages_v2 import spec as world_spec
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.registry import laws as law_registry
@@ -337,7 +345,10 @@ def run_record(run, world_id):
         "records": {
             name: {"file": ARRAYS, "array": name, **_declared(run, name)} for name in arrays
         },
-        "diagnostics": {"uniforms": spec.experiment.uniforms},
+        "diagnostics": {
+            "uniforms": spec.experiment.uniforms,
+            **({"record": ["diagnostic.json", "diagnostic.npz"]} if run.diagnostic else {}),
+        },
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
     }
@@ -411,7 +422,7 @@ def relation_tables(directory, run):
     sources = [
         rel.Source(f"source:shear/{index}", "schedule", "energy", SHEAR_FISSION,
                    payer_of="shear_work_kT")
-        for index, *_ in run.spec.experiment.schedules
+        for index in (s.index for s in run.spec.experiment.schedules)
     ]  # fmt: skip
     records = rel.records_in(
         directory,
@@ -443,6 +454,9 @@ def write_run(directory, run, *, provenance=None):
     _write_json(directory / "world.json", world)
     _write_json(directory / "run.json", record)
     _write_json(directory / "resolved_config.json", run.spec.to_dict())
+    if run.diagnostic is not None:  # §0.2d item 10.5, declared (diagnostic.py)
+        np.savez(directory / "diagnostic.npz", **run.diagnostic["arrays"])
+        _write_json(directory / "diagnostic.json", run.diagnostic["body"])
     if run.division is not None:  # OL3: the relationship tables, beside records.npz.
         from cells.records import relations as rel
 
@@ -464,7 +478,10 @@ def write_run(directory, run, *, provenance=None):
         "status": run.status,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "definition_sha256": run.spec.fingerprint,
-        "runtime": runtime_identity(backend),
+        "runtime": {  # the environment record, with §0.2d item 9's flag
+            **runtime_identity(backend),
+            "jax_threefry_partitionable": diagnostic.partitionable(),
+        },
         "source_hashes": source_hashes(),
         "device": str(execution_device(backend)),
         "cpu_affinity": sorted(os.sched_getaffinity(0))

@@ -74,6 +74,7 @@ EXPERIMENT_KEYS = {
     "trace",
     "uniforms",
     "schedules",
+    "diagnostic",
 }
 EXECUTION_KEYS = {
     "backend",
@@ -112,6 +113,7 @@ class Experiment:
     trace: bool
     uniforms: bool
     schedules: tuple = ()  # OL3: the shear schedules (division.py), by index.
+    diagnostic: bool = False  # OL2 milestone 3: §0.2d item 10.5's record (diagnostic.py)
 
 
 @dataclass(frozen=True)
@@ -462,7 +464,7 @@ def _observations(raw, horizon):
 
 
 def parse_experiment(raw, world=None):
-    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS - {"schedules"}, "experiment")
+    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS - {"schedules", "diagnostic"}, "experiment")
     schedules = ()
     if "schedules" in raw:
         from cells.models.assembly_lineages_v2 import division as division_rules
@@ -479,6 +481,7 @@ def parse_experiment(raw, world=None):
         trace=_boolean(raw["trace"], "experiment: trace"),
         uniforms=_boolean(raw["uniforms"], "experiment: uniforms"),
         schedules=schedules,
+        diagnostic=_boolean(raw.get("diagnostic", False), "experiment: diagnostic"),
     )
 
 
@@ -557,6 +560,7 @@ def to_dict(spec):
             "trace": e.trace,
             "uniforms": e.uniforms,
             **({"schedules": _schedules_to_dict(e.schedules)} if e.schedules else {}),
+            **({"diagnostic": True} if e.diagnostic else {}),
         },
         "execution": {
             "backend": x.backend,
@@ -585,4 +589,6 @@ def _schedules_to_dict(schedules):
 
 def stream_identity(spec):
     x = spec.execution
-    return streams.identity(x.seed, x.environment, x.lineage, x.branch)
+    later = any(s.rate is not None for s in spec.experiment.schedules)  # domain 6 is drawn
+    build = streams.scheduled_identity if later else streams.identity
+    return build(x.seed, x.environment, x.lineage, x.branch)

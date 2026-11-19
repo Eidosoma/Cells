@@ -85,8 +85,21 @@ def data_to_dict(data):
     return out
 
 
+@dataclass(frozen=True)
+class Schedule:
+    """A declared schedule: its index (the carrier word of its stream, domain 6), its kind, k, and
+    its times: declared (times), or a Poisson process of rate `rate` (1/s) drawn per run."""
+
+    index: int
+    kind: str
+    k: int
+    times: tuple | None
+    rate: float | None
+    stress: float | None
+
+
 def parse_schedules(raw, world):
-    """The experiment's shear schedules: ((index, k, times, stress), ...), by index."""
+    """The experiment's shear schedules (Schedule), by index."""
     if type(raw) is not list or not raw:
         raise ConfigError("experiment: schedules is a non-empty list")
     if world.division is None:
@@ -96,16 +109,12 @@ def parse_schedules(raw, world):
     for entry in raw:
         if not isinstance(entry, dict) or entry.get("kind") != "shear":
             raise ConfigError("experiment: a schedule is {index, kind: shear, k, times_s, ...}")
-        if "poisson_rate_per_s" in entry:
-            raise ConfigError(
-                "experiment: Poisson shear times (poisson_rate_per_s) come with the shared pool "
-                "(OL2 milestone 3); this version takes declared times_s"
-            )
-        keys = {"index", "kind", "k", "times_s"} | ({"stress_Pa"} if critical else set())
+        timing = {"poisson_rate_per_s"} if "poisson_rate_per_s" in entry else {"times_s"}
+        keys = {"index", "kind", "k"} | timing | ({"stress_Pa"} if critical else set())
         if set(entry) != keys:
             raise ConfigError(
-                f"experiment: schedule keys are {sorted(keys)} (a stress exactly when the world "
-                "declares a critical stress)"
+                f"experiment: schedule keys are {sorted(keys)} (times_s or poisson_rate_per_s; a "
+                "stress exactly when the world declares a critical stress)"
             )
         index = bounded_integer(entry["index"], "experiment: schedule index", minimum=0,
                                 maximum=2**31 - 1)  # fmt: skip
@@ -113,44 +122,80 @@ def parse_schedules(raw, world):
             raise ConfigError("experiment: schedule indices are unique")
         seen.add(index)
         k = bounded_integer(entry["k"], "experiment: schedule k", minimum=2, maximum=MAX_K)
-        times = entry["times_s"]
-        if type(times) is not list or not times:
-            raise ConfigError("experiment: a schedule's times_s is a non-empty list")
-        times = tuple(finite_number(t, "experiment: a schedule time", positive=True) for t in times)
-        if any(b <= a for a, b in zip(times, times[1:], strict=False)):
-            raise ConfigError("experiment: a schedule's times_s are strictly increasing")
+        times = rate = None
+        if "times_s" in entry:
+            times = entry["times_s"]
+            if type(times) is not list or not times:
+                raise ConfigError("experiment: a schedule's times_s is a non-empty list")
+            times = tuple(
+                finite_number(t, "experiment: a schedule time", positive=True) for t in times
+            )
+            if any(b <= a for a, b in zip(times, times[1:], strict=False)):
+                raise ConfigError("experiment: a schedule's times_s are strictly increasing")
+        else:
+            rate = finite_number(
+                entry["poisson_rate_per_s"], "experiment: poisson_rate_per_s", positive=True
+            )
         stress = None
         if critical:
             stress = finite_number(entry["stress_Pa"], "experiment: schedule stress_Pa")
-        out.append((index, k, times, stress))
+        out.append(Schedule(index, "shear", k, times, rate, stress))
+    out.sort(key=lambda s: s.index)
     first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
-    for index, _, times, _ in sorted(out):
-        for t in times:
+    for s in out:
+        index = s.index
+        for t in s.times or ():
             if t in first:
                 raise ConfigError(
                     f"experiment: shear schedules {first[t]} and {index} share the time {t} s; "
                     "each attempt has one payer"
                 )
             first[t] = index
-    return tuple(sorted(out))
+    return tuple(out)
 
 
 def schedule_to_dict(schedules):
     out = []
-    for index, k, times, stress in schedules:
-        entry = {"index": index, "kind": "shear", "k": k, "times_s": list(times)}
-        if stress is not None:
-            entry["stress_Pa"] = stress
+    for s in schedules:
+        entry = {"index": s.index, "kind": s.kind, "k": s.k}
+        if s.times is not None:
+            entry["times_s"] = list(s.times)
+        else:
+            entry["poisson_rate_per_s"] = s.rate
+        if s.stress is not None:
+            entry["stress_Pa"] = s.stress
         out.append(entry)
     return out
 
 
-def timeline(schedules, horizon):
-    """[(time, index, k, stress)] of every scheduled event at or before the horizon, in time order,
-    same-time events in schedule-index order (§0.2d item 10.1)."""
-    events = [(t, index, k, stress) for index, k, times, stress in schedules for t in times
-              if t <= horizon]  # fmt: skip
-    return sorted(events, key=lambda e: (e[0], e[1]))
+def poisson_times(schedule, horizon, base_key):
+    """A Poisson schedule's times at or before the horizon, and its draws [(index, counter, u,
+    "gap", time)]: t_1 = -ln(u_0)/rate from t = 0, then t_(i+1) = t_i - ln(u_i)/rate, each gap its
+    own draw on the schedule's stream (domain 6, its index), the gap past the horizon included
+    (§0.2d items 6 and 10.4)."""
+    key = streams.stream_key_data(base_key, schedule.index, "schedule")
+    t, counter, times, draws = 0.0, 0, [], []
+    while True:
+        u = float(np.asarray(streams.uniforms(key, counter, 1))[0])
+        t = t - math.log(u) / schedule.rate
+        draws.append((schedule.index, counter, u, "gap", t))
+        counter += 1
+        if t > horizon:
+            return tuple(times), draws
+        times.append(t)
+
+
+def timeline(schedules, horizon, base_key=None):
+    """([(time, index, k, stress)] of every scheduled event at or before the horizon, in time
+    order, same-time events in schedule-index order (§0.2d item 10.1); the schedules' draws)."""
+    events, draws = [], []
+    for s in schedules:
+        times = s.times
+        if times is None:
+            times, drawn = poisson_times(s, horizon, base_key)
+            draws += drawn
+        events += [(t, s.index, s.k, s.stress) for t in times if t <= horizon]
+    return sorted(events, key=lambda e: (e[0], e[1])), draws
 
 
 # ------------------------------------------------------------------ the split (host, vectorised)

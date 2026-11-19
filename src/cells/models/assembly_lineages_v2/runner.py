@@ -40,6 +40,7 @@ from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import (
     MODE,
     balance,
+    diagnostic,
     division,
     geometry,
     kernel,
@@ -81,6 +82,7 @@ class WorldRun:
     timings: dict = field(default_factory=dict)
     osmotic: dict | None = None  # OL2 milestone 2: c_ext's drift report and any lysis (records)
     division: dict | None = None  # OL3: the fission table, the lives and the schedule's report
+    diagnostic: dict | None = None  # OL2 milestone 3: §0.2d item 10.5's record (diagnostic.py)
 
     def check(self):
         """Raise if the run was refused (a ledger that did not close)."""
@@ -149,7 +151,7 @@ def changes(layout, structure):
 class _World:
     """One lane's records (host side)."""
 
-    def __init__(self, lane, row_every, observations, divides=False):
+    def __init__(self, lane, row_every, observations, divides=False, diagnose=False):
         self.start = lane
         self.row_every = row_every
         self.rows = []  # (kind, event index, time, fired [2R], Q, |Q|, W, |W|)
@@ -165,6 +167,11 @@ class _World:
         self.shear = self.sink = self.magnitude = 0.0
         self.attempts = []  # (division.Attempt, the parent's generation), in order
         self.counters = {}  # each parent's fission counter: its attempts that drew
+        self.diagnostic = None  # §0.2d item 10.5: the draws' addresses and fates, when declared
+        if diagnose:
+            self.diagnostic = {"draws": [], "heat": [], "work": [], "jumps": [],
+                               "schedule_draws": [], "key": 0, "counter": 0,
+                               "lysed_at_stop": False, "ended_by_stop": False}  # fmt: skip
 
     def extra(self):
         return (self.jump.copy(), self.shear, self.sink, self.magnitude)
@@ -195,20 +202,31 @@ class _World:
         self.times.append(time)
         if draws is not None:
             self.draws.append(draws)
+        d = self.diagnostic
+        if d is not None:
+            for _ in range(len(index)):
+                d["draws"].append((d["key"], d["counter"], diagnostic.COMMITTED))
+                d["counter"] += 1
+            d["heat"].append(np.asarray(heat))
+            d["work"].append(np.asarray(work))
 
 
-def _plan(spec):
-    """A division world's schedule stops, [(time, [its events, in schedule-index order])], at or
-    before the horizon (§0.2d item 10.1); [] for any other world."""
+def _plan(spec, base_key):
+    """(stops, schedule draws): a division world's schedule stops, [(time, [its events, in
+    schedule-index order])], at or before the horizon (§0.2d item 10.1), and its schedules' draws
+    (Poisson gaps); ([], []) for any other world."""
     if spec.model.world.division is None:
-        return []
+        return [], []
+    events, draws = division.timeline(
+        spec.experiment.schedules, spec.experiment.time_horizon_s, base_key
+    )
     out = []
-    for event in division.timeline(spec.experiment.schedules, spec.experiment.time_horizon_s):
+    for event in events:
         if out and out[-1][0] == event[0]:
             out[-1][1].append(event)
         else:
             out.append((event[0], [event]))
-    return out
+    return out, draws
 
 
 def _vesicle_energy(spec, layout):
@@ -253,6 +271,10 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
         held = int(host.status[i])
         age = int(host.age[i]) + 1  # The draw that crossed the stop: discarded, and counted.
         key, generation = int(host.occupant[i]), int(host.generation[i])
+        d = holder.diagnostic
+        if d is not None:
+            d["draws"].append((key, age - 1, diagnostic.DISCARDED))
+            before = host.counts[i].copy()
         next_key = int(host.next_carrier[i])
         counts = host.counts[i].copy()
         lysed = False
@@ -295,6 +317,12 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
             host.status[i] = kernel.RUNNING
         else:
             host.status[i] = held  # The last stop is the horizon: the state holds to it.
+        if d is not None:
+            d["key"], d["counter"] = key, age
+            if changed[i]:
+                d["jumps"].append((holder.events, counts - before))
+            d["lysed_at_stop"] |= lysed
+            d["ended_by_stop"] = not lysed and stop >= spec.experiment.time_horizon_s
     if changed.any():  # The new occupants' totals, rates and term states, from their counts.
         fresh = jax.tree_util.tree_map(np.asarray, initial(host.counts, layout))
 
@@ -322,6 +350,12 @@ def run_lanes(specs):
 
     from cells.execution.devices import execution_device
 
+    if not diagnostic.partitionable():
+        raise ConfigError(
+            "This family's block draws (a partition's uniforms, an event's two) give the same "
+            "values at any block size only with JAX's partitionable threefry: "
+            "jax_threefry_partitionable is off, so the run is refused (§0.2d item 9)"
+        )
     if any(s.execution.mode != MODE for s in specs):
         raise ConfigError(f"run_lanes runs {MODE} worlds")
     structures = {model.structure(s) for s in specs}
@@ -348,15 +382,8 @@ def run_lanes(specs):
     reports = [by_world[world_id(s.model.world)] for s in specs]
     device = execution_device(specs[0].execution.backend)
     host_layouts = [model.layout(s) for s in specs]
-    plans = [_plan(s) for s in specs]  # OL3: each lane's schedule stops (division.py)
-    if any(s.model.world.division is not None for s in specs) and not (
-        jax.config.jax_threefry_partitionable
-    ):
-        raise ConfigError(
-            "A world with division draws each attempt's uniforms as one block whose size depends "
-            "on the parent, so its replay needs JAX's partitionable threefry: "
-            "jax_threefry_partitionable is off (§0.2d item 9)"
-        )
+    planned = [_plan(s, h.base_key) for s, h in zip(specs, host_layouts, strict=True)]
+    plans = [p for p, _ in planned]  # OL3: each lane's schedule stops (division.py)
     stops = [
         layout_i._replace(horizon=np.float64(plan[0][0])) if plan else layout_i
         for layout_i, plan in zip(host_layouts, plans, strict=True)
@@ -370,9 +397,12 @@ def run_lanes(specs):
         lanes = initial(founders, layout)
         holders = [
             _World(_lane(lanes, i), s.experiment.row_every_events, s.experiment.observation_times_s,
-                   s.model.world.division is not None)
+                   s.model.world.division is not None, s.experiment.diagnostic)
             for i, s in enumerate(specs)
         ]  # fmt: skip
+        for holder, (_, draws) in zip(holders, planned, strict=True):
+            if holder.diagnostic is not None:
+                holder.diagnostic["schedule_draws"] = draws
         for holder, spec, layout_i in zip(holders, specs, host_layouts, strict=True):
             if spec.model.world.division is not None:
                 holder.energy = _vesicle_energy(spec, layout_i)
@@ -625,6 +655,17 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
             np.concatenate(holder.draws) if holder.draws else np.zeros((0, 2))
         )
     qualifier = keys.qualifier(spec.fingerprint, "fresh", None)
+    record = None
+    if holder.diagnostic is not None:  # §0.2d item 10.5 (diagnostic.py)
+        d = holder.diagnostic
+        device = kernel.STATUS[int(final["status"])]
+        if device in ("complete", "inert", "stalled", "capacity") and not d["ended_by_stop"]:
+            d["draws"].append((d["key"], d["counter"], diagnostic.ENDED))
+        body, arrays = diagnostic.build(
+            spec, layout, holder, status, start["counts"], counts[-1], world_id(world),
+            np.concatenate(holder.draws) if holder.draws else None,
+        )  # fmt: skip
+        record = {"body": body, "arrays": arrays}
     return WorldRun(
         spec=spec,
         structure=structure,
@@ -640,4 +681,5 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         timings=timings,
         osmotic=osmotic_report,
         division=division_report,
+        diagnostic=record,
     )

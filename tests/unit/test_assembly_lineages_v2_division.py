@@ -151,7 +151,7 @@ def oracle(spec, table, *, counted=True):
     counts = model.founder(spec).copy()
     change, _ = runner.changes(layout, structure)
     R, horizon = structure.steps, spec.experiment.time_horizon_s
-    stops = sorted({t for _, _, ts, _ in spec.experiment.schedules for t in ts if t <= horizon})
+    stops = sorted({t for s in spec.experiment.schedules for t in s.times if t <= horizon})
     membrane, inside = division.vesicle_places(world)
     quanta = division.geometry.place_quanta(world, P)
     key, counter, time, row = 0, 0, 0.0, 0
@@ -326,8 +326,9 @@ REFUSALS = {
     "a_shear_schedule_without_k": (None, [{"index": 0, "kind": "shear", "times_s": [1.0]}],
                                    "schedule keys are"),
     "a_schedule_without_division": (lambda w: w.pop("division"), _schedule(), "needs the world's"),
-    "poisson_times_come_later": (None, [{"index": 0, "kind": "shear", "k": 2,
-                                         "poisson_rate_per_s": 1.0}], "milestone 3"),
+    "times_and_a_poisson_rate_both": (None, [{"index": 0, "kind": "shear", "k": 2,
+                                              "times_s": [1.0], "poisson_rate_per_s": 1.0}],
+                                      "schedule keys are"),
     "an_unknown_continuation": (lambda w: w["division"].update(continuation="second"), None,
                                 "continuation is one of"),
     "times_not_increasing": (None, _schedule(times_s=[2.0, 1.0]), "strictly increasing"),

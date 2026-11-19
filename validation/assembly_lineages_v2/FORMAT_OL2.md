@@ -162,3 +162,53 @@ Development only: not yet compared against OL5's references, which need the prob
   - the `ssa.draw` text of the clock rule.
 - **relations.json and relations.npz** are `cells.relations@2`: @1's tables, with `lysed` as an end
   reason at a `lysis` event. Each split's event is paid by `source:shear/<index>`.
+
+## OL2 milestone 3: the shared pool, serial transfer, the diagnostic record and item 9
+
+Development only, built in slices. Slice 1 is below.
+
+### §0.2d item 9
+
+- **Every run of the family refuses to start** when JAX's threefry is not partitionable.
+- **The bundle's environment record,** manifest.json's `runtime`, states
+  `jax_threefry_partitionable`. The invariance comparison already exempts that path.
+
+### Streams
+
+- **Domain 5 (`world`)** has carrier word 0 (the lead's ruling, 19 November 2026).
+- **Domain 6 (`schedule`)** takes the schedule's declared index as its carrier word.
+- **Both use @1's derivation:** fold the base key, then the 64-bit carrier, then the domain, then
+  the counter.
+- **A run that draws on either** states both in its stream identity (`scheduled_identity`), with
+  only `label` reserved. Every other run's identity is unchanged.
+
+### Poisson shear times
+
+- **A shear schedule** declares `times_s` or `poisson_rate_per_s`.
+- **Poisson gaps:** t₁ = −ln(u₀)/λ from t = 0, then t_(i+1) = t_i − ln(u_i)/λ. Each gap is its own
+  draw on the schedule's stream, from counter 0, and the gap past the horizon is drawn too.
+
+### The diagnostic record (§0.2d item 10.5)
+
+The record is written when the experiment declares `diagnostic: true`, as `diagnostic.json` and
+`diagnostic.npz`. It is absent by default.
+
+- **`draw_*`** has one row per draw, in order: domain, carrier key, counter, uniforms (NaN pads)
+  and fate (`committed`, `discarded_at_schedule` or `ended_run`).
+  - The uniforms are recomputed on the host from each draw's address.
+  - Each committed draw's uniforms equal the device's `event_uniforms` when those are recorded
+    (checked).
+- **`schedule_draw_*`** has one row per schedule draw: index, counter, uniform, use (`gap` or
+  `transfer`), and the time a gap gives.
+- **`event_*`** has one row per step event: time, group, the kernel's signed channel code,
+  whether it lysed, and its heat and reservoir work. It also holds the changed vesicle's counts
+  after the event (`vesicle_places` order) and the pool after it (`pool_places` order).
+- **`attempt_uniforms`** holds each drawing attempt's block (N + k + N_L values), concatenated.
+  `diagnostic.json`'s shear events give each attempt's offset and count.
+- **`diagnostic.json`** gives:
+  - the channel table;
+  - the shear events, each with its time, schedule, the slots not admitted, and its attempts: slot,
+    key, counter, outcome, daughters (key, slot, counts, lysed at birth), the followed daughter,
+    shear work, sink, heat, reservoir work, and the pool after;
+  - the initial and final states (each slot's key and counts, and the pool);
+  - the world's key, the end reason and the environment record.
