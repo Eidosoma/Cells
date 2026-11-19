@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-19",
-  "generated_at": "2026-11-19T18:43:34Z",
+  "generated_at": "2026-11-19T19:01:46Z",
   "revision": "1ca5eada",
   "revision_date": "2026-11-19",
   "dirty": false,
@@ -4828,6 +4828,32 @@
       ],
       "ends_at": "cell",
       "no_further_levels": "A fertilised egg is one cell: it has no tissue, organ or body yet.",
+      "modelled": {
+       "state": "planned",
+       "text": "The project's record decides that the frog's early cleavage, from one cell to four, is the first subject of its cell-division work (D141, D144, the cell-division plan). That work's design note is on main, and so far the engine has carried an egg-scale cell through prescribed division against independently written references (the Engine view's Cell division S2–S5a). The record's first prediction for the egg itself, J1, its membrane potential at the onset of second cleavage, was made with an independent reference model and misses the measured value (12 November 2026); no engine run of it exists. No model of this egg is registered, so the word here is the lower one the record allows: planned. What is drawn is a generic cell's parts at the egg's size.",
+       "record": [
+        {
+         "path": "docs/DECISIONS.md",
+         "where": "D141: Cell division, high priority"
+        },
+        {
+         "path": "docs/DECISIONS.md",
+         "where": "D144: Qualify the simulator for many uses, not one experiment"
+        },
+        {
+         "path": "docs/CELL_DIVISION_PLAN.md",
+         "where": "Order of work (lead's ranking under D141), item 2: Xenopus early cleavage first, from 1 to 4 cells"
+        },
+        {
+         "path": "docs/CELL_DIVISION_DESIGN.md",
+         "where": "Its status line: draft for review; nothing here is built or qualified"
+        },
+        {
+         "path": "PROGRESS.md",
+         "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development)"
+        }
+       ]
+      },
       "levels": [
        {
         "id": "cell",

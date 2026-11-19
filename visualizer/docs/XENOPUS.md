@@ -55,6 +55,14 @@ The paragraphs are counted in the saved full text. It was decided on 19 November
 viewer's coordinator, within the user's choice of a strip with just two stages to go between, that
 the egg and the adult are drawn and these four are named; that the frog opens on its adult; and
 that no stage gives a word of its own for what Cells models of it, so the species' own word stands.
+One stage has since been given a word: the fertilised egg, **planned**, the same day, after the
+engine's lead confirmed that the record supports it. Its record is D141 (Xenopus cleavage is the
+division work's first subject), D144, the cell-division plan, that work's design note and
+PROGRESS's entry of 12 November 2026, in which the record's first prediction for the egg, J1, made
+with an independent reference model, fails against the measured membrane potential. The ladder's
+next word, "designed", would be met too (a design note is on main), and the file states the lower
+word, as `schema/ENTRIES.md` allows; the text says what the lower word leaves out. The tool refuses
+a word on any other stage, any other word on the egg, and any other record.
 
 - **The egg's size** is a review's: Sato (2025), Biomolecules 16(1):22 (doi:10.3390/biom16010022,
   CC BY 4.0), section 2.1, paragraph 1, gives the frog's externally fertilised eggs a diameter of

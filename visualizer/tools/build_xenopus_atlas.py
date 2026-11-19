@@ -71,6 +71,8 @@ from lib import proteome_shelves as P  # noqa: E402  the shelves' machinery
 SNAPSHOT = ROOT / "data" / "proteins" / "inventory.snapshot.json"
 SPECIES_FILE = ROOT / "data" / "species" / "xenopus.json"
 STAGES_FILE = ROOT / "data" / "species" / "stages" / "xenopus.json"  # the frog's life stages, kept by hand
+# The files of the project's record that the egg's own word, "planned", rests on, in the order the block cites them.
+EGG_RECORD = ["docs/DECISIONS.md", "docs/DECISIONS.md", "docs/CELL_DIVISION_PLAN.md", "docs/CELL_DIVISION_DESIGN.md", "PROGRESS.md"]
 SHAPES_FILE = ROOT / "data" / "species" / "shapes" / "xenopus.json"
 ATLAS_FILE = ROOT / "data" / "proteins" / "atlases" / "xenopus.json"
 OUT_DIR = ROOT / "data" / "proteins" / "xenopus"
@@ -301,7 +303,12 @@ def stages(d):
         for fact in stage.get("cell", {}).get("facts", []):
             cited.update(fact.get("sources", []))
         if "modelled" in stage:
-            raise SystemExit(f"the stage {stage['id']} gives a word of its own for what Cells models of it: none is given until it is decided")
+            # Decided on 19 November 2026, the engine's lead agreeing that the record supports it: the fertilised egg alone
+            # gives a word of its own for what Cells models of it, and only "planned", on these files of the record. Any
+            # other stage, word or record is refused here until it is decided in its turn.
+            word = stage["modelled"]
+            if stage["id"] != "egg" or word.get("state") != "planned" or [item.get("path") for item in word.get("record", [])] != EGG_RECORD:
+                raise SystemExit(f"the stage {stage['id']} gives a word of its own for what Cells models of it ({word.get('state')}): only the egg's, planned, on its decided record, is given")
     if cited - set(sources):
         raise SystemExit(f"the stages cite {sorted(cited - set(sources))}, which are not among the open papers this tool checks")
     by_id = {stage["id"]: stage for stage in block["list"]}

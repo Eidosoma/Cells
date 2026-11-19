@@ -89,7 +89,13 @@ test("the species file says what it is: an animal whose generic cell and sheet C
   assert.equal(species.modelled.state, "generic");
   assert.match(species.modelled.text, /^Cells models a generic cell and a sheet of such cells, not this animal\./);
   assert.match(species.modelled.text, /placeholder outlines: nothing at those scales is simulated\.$/);
-  assert.ok(!("record" in species.modelled) && species.stages.list.every((stage) => !("modelled" in stage)));
+  // One stage gives a word of its own: the fertilised egg, planned, on the record's five places (the two decisions, the
+  // plan, the design note and the entry of the first prediction's failure). No other stage gives one, and none says more.
+  assert.ok(!("record" in species.modelled));
+  assert.deepEqual(species.stages.list.filter((stage) => "modelled" in stage).map((stage) => [stage.id, stage.modelled.state]), [["egg", "planned"]]);
+  const eggWord = species.stages.list.find((stage) => stage.id === "egg").modelled;
+  assert.deepEqual(eggWord.record.map((item) => item.path), ["docs/DECISIONS.md", "docs/DECISIONS.md", "docs/CELL_DIVISION_PLAN.md", "docs/CELL_DIVISION_DESIGN.md", "PROGRESS.md"]);
+  assert.match(eggWord.text, /misses the measured value \(12 November 2026\); no engine run of it exists\. No model of this egg is registered/);
   assert.match(species.plain, /The frog is drawn as an adult; on the strip of its life stages its fertilised egg is drawn too, and four stages between are named and not drawn\.$/);
   assert.deepEqual(species.levels.map((item) => item.id), ["molecules", "cell", "tissue", "organ", "organism"]);
   // The cell and the sheet are the mouse's: one cell of a sheet that stands for skin-like tissue.
@@ -130,7 +136,8 @@ test("its life stages: the block kept by hand, as the tool writes it; the egg an
   assert.deepEqual([cell.shape, cell.sources], [{ kind: "sphere", across_um: 1200 }, ["sato2025"]]);
   assert.match(cell.note, /not the egg's own structure: its parts are the generic cell's/);
   assert.match(cell.notes.map((item) => item.text).join(" "), /Its parts are a generic cell's, enlarged: not the egg's own; its yolk and pigment are not drawn/);
-  assert.deepEqual(egg.stage.inherits, ["cell.parts", "modelled"]);
+  assert.deepEqual(egg.stage.inherits, ["cell.parts"]);
+  assert.equal(egg.modelled.state, "planned");
   // Each named stage says what is not in hand; the one time given is the first division's, at its temperature.
   for (const stage of species.stages.list.filter((item) => item.missing)) assert.match(stage.missing, /^No (size|length) of .* is in hand under usable terms, and nothing of it is drawn\.$/, stage.id);
   assert.deepEqual(species.stages.list.filter((item) => item.time).map((item) => [item.id, item.time.value, item.time.unit, item.time.temperature_c]), [["two-cell", 90, "min", 23]]);
