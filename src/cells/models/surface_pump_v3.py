@@ -3335,8 +3335,38 @@ def _bound_checks(structure):
 
 
 def structured_batch_signature(model):
-    """The batch signature with the declared structure: different law sets never share a batch."""
-    return (*batch_signature(model), structure(model))
+    """The batch signature with the declared structure: different law sets never share a batch.
+    Nor do kinds whose own axes hold different numbers of entities (kind_axis_sizes): a structure
+    entry is value-free, so one transporter population on the population axis and two of one law
+    share theirs, as one passive route and two do, while their arrays differ in shape (the fourth
+    review's finding 4). Where no kind has an own axis, the signature is today's."""
+    sizes = kind_axis_sizes(model)
+    return (*batch_signature(model), structure(model), *((sizes,) if sizes else ()))
+
+
+def kind_axis_sizes(model):
+    """((kind ID, ((own axis, size), ...)), ...) in the structure's order: each declared kind's own
+    axes, sized as kind_row_values sizes them, by their view sets' IDs; () where no kind has one. A
+    view set is read from its kind's declaration, so the hook gets a spec holding the model alone:
+    a batch compares models. A hook that reads more is refused, naming its kind (fail closed; the
+    @3 owner's review)."""
+    kinds = getattr(model, "kinds", ())
+    if not kinds:
+        return ()
+    spec, declarations = SimpleNamespace(model=model), dict(kinds)
+    registry, out = kind_registry.active(), []
+    for kind_id, entry in structure(model).kinds:
+        kind = kind_registry.bound(registry.lookup(kind_id), entry)
+        try:
+            own = {} if kind.view_sets is None else kind.view_sets(spec, declarations[kind_id])
+        except AttributeError as error:
+            raise ConfigError(
+                f"Kind {kind_id}'s view_sets read more than its declaration and the model during "
+                f"batch planning ({error})"
+            ) from error
+        if own:
+            out.append((kind_id, tuple((axis, len(own[axis]["ids"])) for axis in sorted(own))))
+    return tuple(out)
 
 
 def implementation(structure):
