@@ -108,6 +108,18 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The third external review's five findings, fixed (19 November 2026).** Merge 560da6a0, tag
+  `review3-fixes-landed-2026-11-19`. Engine models touched: the transporter, passive routes, pH
+  condition and proton buffer kinds; `surface_pump_v3`; `scheduled_membrane_trafficking@1`.
+  - The general closure's proton is declared (proton_row), never inferred from a charge.
+  - FR-2 version 1 holds one receiving pool per cell; two routes of one cell are refused.
+  - @3's trace estimate counts every declared kind's saved rows, and an undercount is refused. FR's
+    landing-set verdict reads the planner's estimate as information.
+  - The transporter's probe reads the solver's own switch for its population-scaled fields.
+  - FR-8 stage 0's judges get their observations, with the registration's amendment 5.
+  - Gates: tiers 591 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +6, FR's set, R1
+    274 of 274; the lead's merged check on trial c3171354.
+
 - **FR-8 rung 0: the fine engine's order through a switch (19 November 2026). Registered verdict:
   "instrument not validated". Under a blind amendment, the weaker evidence: the cause is the
   pre-asymptotic transient.**
