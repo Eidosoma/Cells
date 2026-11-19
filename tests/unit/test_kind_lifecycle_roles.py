@@ -754,8 +754,10 @@ def per_patch_carrier(transferred="history"):
     roles = roles_for(kind, "intensive") | {
         "carrier_transferred": PartitionRole(transferred),
         "carrier_work_pJ": PartitionRole("history"),
-        # Its rate is per patch, set at its declared patch alone: structural, so a daughter patch
-        # takes the fill, as the carrier's own initial values give every other patch.
+        # Its rate is per patch, set at its declared patch alone: structural (as declared), so
+        # each daughter patch keeps the 0 the carrier's initial values give every other patch.
+        # Intensive or extensive would claim the parent's rate there, which step C refuses. The
+        # fill pads only a state field's retired slot, so nothing reads it for this layout field.
         "carrier_rate_fmol_s": PartitionRole("structural", 0.0),
     }
     return dataclasses.replace(kind, partition_roles=roles)
@@ -1021,9 +1023,11 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
     def control_values(spec, declaration, times):
         values, out = dict(declaration), {}
         for name in control:
-            size, ids = _planted_slots(spec, fields[name][1])
+            _, ids = _planted_slots(spec, fields[name][1])  # As initial's layout: `bound_on`.
+            bound = bound_on.get(name, fields[name][1])
+            size = bound if isinstance(bound, int) else _planted_slots(spec, bound)[0]
             out[name] = np.zeros((len(times), size))
-            for slot, schedule in values.get(name, ()):
+            for slot, schedule in values.get(name, ()) if size else ():
                 for start, value in schedule:  # Piecewise constant, each point from its time on.
                     out[name][np.asarray(times) >= start, ids.index(slot)] = value
         return out
@@ -1240,12 +1244,15 @@ def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
     """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
     the patches' 3); read along the patches' maps it would be compared at the wrong slots. F's
     array-axes check refuses it where @3 binds the kind's initial values (D228 item 6), before
-    the lifecycle's own refusal, which stays as defence in depth."""
+    step C's own refusal (partition.check_kind_roles). F's check binds state and layout only, so
+    the availability, a control, bound per population reaches step C's refusal (planted)."""
     raw, _ = planted_world()
     with pytest.raises(
         ValueError, match=r"planted_km_mM's axis membrane_slot has length 6, not the host's 3"
     ):
         planted(raw, bound_on={"planted_km_mM": "channel_slot"})
+    with pytest.raises(ConfigError, match=r"planted_availability binds shape \(\d+, 6\), whose"):
+        planted(raw, bound_on={"planted_availability": "channel_slot"})
 
 
 def test_nothing_is_bound_without_a_field_to_compare(planted, monkeypatch):
