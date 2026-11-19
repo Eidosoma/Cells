@@ -585,6 +585,9 @@ cycles 1.07 s (16), registration 1.12 s (4); envelope is unchanged. The record i
 After amendment C5, envelope and registration were re-measured at 24fc0beb the same way: envelope
 1.98 s (9 passed), registration 1.12 s (4). The record is
 `/mnt/workspaces/Cells/core-seams-references-c5-20261119/tiers-24fc0beb/measure/measured.json`.
+Registration, which then gained C5's floor and zero-power checks, was re-measured at 12660384:
+1.27 s (4 passed). The record is
+`/mnt/workspaces/Cells/core-seams-references-c5-20261119/tiers-12660384/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
