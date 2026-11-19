@@ -10,6 +10,21 @@ after D231's engine probe.
 
 Everything here is synthetic and labelled so (D217).
 
+## Amendments
+
+**19 November 2026, before any engine output for F3: the template's operating range.**
+- **What changed:** the declared operating range moved from [10⁻⁷, 1] mM to [0, 1] mM
+  (`inputs.json → clearance`), at the lead's direction.
+- **Why:** B1′ refuses a routed half-step whose source leaves its declared range. The template
+  falls below 10⁻⁷ mM inside the horizons:
+  - from 398.63 s in the dose worlds (W1, W2 and W5);
+  - from 414.21 s in the pulse worlds (W3 and W4);
+  - from the start in W6, which has no template.
+- **What stays:** the mean-field floor of about 10² molecules per cell is now a stated limit, not
+  a refusal (below).
+- **Files touched:** `inputs.json` and `clearance.json`. Nothing else in the registration changed:
+  rows, bands, plants and the zero-power list are as registered.
+
 ## Independence
 
 - **Read:**
@@ -334,10 +349,12 @@ Per world it gives:
 **The trace level and the operating range:**
 - D = ε at c = K (ε/(1 − ε))^(1/n) = **1.414 × 10⁻⁵ mM (14.1 nM)**. That is 2.83 × 10⁻⁵ fmol, or
   about 1.7 × 10⁴ molecules, in the 2 pL cell.
-- The coupling's declared operating range on the template is **[10⁻⁷, 1] mM**:
-  - it includes the trace level and the peaks (≤ 0.1 mM);
-  - its low end lies above D150's mean-field floor of 10² molecules per cell (8.3 × 10⁻⁸ mM).
-- After clearance the template keeps decaying below the range. F_T is then b to within 10⁻¹⁰.
+- The coupling's declared operating range on the template is **[0, 1] mM** (amended; see
+  Amendments). It includes the trace level, the peaks (≤ 0.1 mM) and 0, where F_T is b exactly.
+- **D150's mean-field floor is a stated limit, not a refusal.** About 10² molecules per cell is
+  8.3 × 10⁻⁸ mM in the 2 pL cell. The template passes the trace level well above that floor, and
+  falls under it only after clearance. Below the floor F_T is b to within 6.8 × 10⁻¹¹
+  (`clearance.json → operating_range → factor_above_basal_at_floor`).
 
 **The worlds' clearance** (`rows.json → clearance`):
 
@@ -426,9 +443,10 @@ assert t_clear == rows["clearance"]["t_clear_s"]
 - Synthetic throughout: pump-free and feedback-free, with no compartment in R-chain's worlds. R-loop,
   the pump with Na-leak units, waits for D231's probe.
 - The references run in float64. Their bounds are at most 4 × 10⁻⁶ of the bands.
-- Below about 10² molecules per cell a Hill factor is not meaningful (D150 §1.3). The template
-  passes the trace level well above that. It falls under that floor only after clearance, when F_T
-  is b to within 10⁻¹⁰.
+- Below about 10² molecules per cell a Hill factor is not meaningful (D150 §1.3). In R-chain's
+  2 pL cell the template passes the trace level well above that floor. It falls under the floor
+  only after clearance, when F_T is b to within 6.8 × 10⁻¹¹. The floor is a stated limit, not a
+  refusal.
 - The c_u plant's cell is not integrated (above).
 
 ## Reproduce

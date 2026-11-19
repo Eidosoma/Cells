@@ -440,11 +440,16 @@ def clearance_design(inputs, row_docs, log=print):
                          molecules=c_eps * V * avogadro * chain.FMOL,
                          note="the template concentration at which D = epsilon, K (epsilon/"
                               "(1 - epsilon))^(1/n), in the 2 pL cell"),
-        operating_range=dict(declared_mM=[lo, hi], includes_trace_level=lo <= c_eps <= hi,
-                             mean_field_floor_mM=mean_field_floor,
-                             note="the coupling's declared range on the template; its low end "
-                                  "is above D150's mean-field floor of about 10^2 molecules "
-                                  "per cell and below the trace level"),
+        operating_range=dict(
+            declared_mM=[lo, hi], includes_trace_level=lo <= c_eps <= hi,
+            amendment=cl.get("operating_range_amendment"),
+            mean_field_floor_mM=mean_field_floor,
+            factor_above_basal_at_floor=float((1.0 - worlds.BASAL) * clearance.hill_drive(
+                mean_field_floor, K, n)),
+            note="the coupling's declared range on the template, which includes the trace level "
+                 "and reaches 0, where F_T is b exactly. D150's mean-field floor of about 10^2 "
+                 "molecules per cell is a stated limit, not a refusal: below it F_T is b to "
+                 "within factor_above_basal_at_floor"),
         voltage_equivalent=dict(
             max_abs_dV_dlnN_V=worst[0], world=worst[1], row_s=worst[2],
             resolution_in_V=worst[0] * cl["resolution_relative"],

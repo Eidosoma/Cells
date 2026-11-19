@@ -209,7 +209,14 @@ def build():
             epsilon=eps, resolution_relative=EPSILON_RESOLUTION,
             resolution_note="a constant drive of epsilon moves the steady-state units, and so "
                             "the conductance, by less than this relative amount",
-            operating_range_mM=[1e-7, 1.0],
+            operating_range_mM=[0.0, 1.0],
+            operating_range_amendment=(
+                "Amended 19 November 2026, before any engine output, at the lead's direction: "
+                "[1e-7, 1] mM became [0, 1] mM. B1' refuses a routed half-step whose source "
+                "leaves its declared range, and the template falls below 1e-7 mM inside the "
+                "horizons (from 398.63 s in the dose worlds and 414.21 s in the pulse worlds; "
+                "W6 has none from the start). The mean-field floor of about 10^2 molecules per "
+                "cell is a stated limit, not a refusal (clearance.json, operating_range)."),
             rule="the fall-back rule over each world's saved rows (clearance.t_clear)"),
         power=dict(margin=3.0, note="a plant has power on a compared row when it moves the row "
                                     "by at least 3 bands"),

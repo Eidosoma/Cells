@@ -162,6 +162,8 @@ def test_clearance_regenerates(reg):
     assert eps["held_precursor_move"] < cl["resolution_relative"]
     assert clear["epsilon"]["supplied_move"] < eps["held_precursor_move"]
     assert clear["operating_range"]["includes_trace_level"]
+    assert cl["operating_range_mM"] == [0.0, 1.0]  # the amendment of 19 November 2026
+    assert clear["operating_range"]["factor_above_basal_at_floor"] < 1e-10
     assert clear["trace_level"]["molecules"] > 1e2
     for name, w in reg["rows"]["worlds"].items():
         D = w["quantities"]["D"]["value"]
