@@ -1030,3 +1030,145 @@ identical in code to ef9fc1a8. It ran on the gate lane under its lock, 13:57–1
   - This caps explicit steps wherever a route draws protons from a buffered outside node. It
     matters for mitochondria and for strong proton pumps.
   - It goes to seam C (the binding closure) and @3's owner. No fix is proposed yet.
+
+## 9. P1′: P1's ladder under the general closure (D234)
+
+### 9.1 Criterion (20 November 2026, written and committed before any run)
+
+**Why.** MT-1's host waits for P1′ (D234; CORE_LAWS_ROADMAP §2.3, item A1; MITOCHONDRIA_DESIGN §2.3
+and §3.6). An engine gap decided P1 (§8): the face weights' predictor at a buffered node, which
+refused every rung above 3.37 µs. 9e181b08 fixed that gap for the general closure `rapid_binding@1`
+only. P1′ reruns P1's ladder with the buffers declared that way and asks P1's question per host. Does
+today's IMEX handle the ΔΨ mode at the steps MT-1 needs (branch E)? Or is branch I (an implicit cycle
+block) or branch X (the exact charged booking) needed? It edits no file under `src/`.
+
+**Engine models:**
+- host C: `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `cell_owned_compartments@1`;
+- host P: `resolved_pump_tissue@3`;
+- on both:
+  - `cells.transporter@1`'s population axis, running the proton law's general form;
+  - `cells.rapid_proton_buffer@1`, declaring the general closure `rapid_binding@1`;
+  - IMEX ARS(2,2,2), `imex_ars222_face_electromigration@1`;
+  - in reading (b), `step_doubled_energy@1` (X2).
+
+**The worlds** are P1's (§5.2 and both amendments: n = 4, capacity × 500, leak and K⁺ route at 0,
+the start 5 mV past the pump's static head), ported to today's module layout and otherwise
+unchanged, except for three declared changes:
+1. **The buffers as the general closure.**
+   - Each binder, B_c at the cell and B_L at the lumen, is one form holding one more H, with its
+     protonated potential.
+   - The read is `rapid_binding@1` on H at both nodes, with the world's own k_on of 10⁷ /mM/s.
+   - At equilibrium it gives version 1's free h (`test_rapid_binding_world.py`, within 10⁻¹²).
+2. **The pump under a probe ID, on the population axis.**
+   - **Why a probe ID.** The shipped `cells.proton_atp_mass_action_positive@1` reads version 1's
+     buffer only, so binding refuses it at a closure node ("a mover at a closure node reads the
+     closure"). Version 1's layout runs that law by name only.
+   - **What the probe ID is.** The shipped law, with its reads set to `rapid_binding@1` and its
+     forms to "base".
+     - A scoped law registry in the probe holds it; it is never shipped.
+     - Its kinetics, domain, general form and step terms are the shipped law's own objects.
+   - **Its entry** is the kind's own one-to-one map of P1's entry: N is the cell, and the held fuel
+     sits at N.
+   - MT-1's laws will declare this read (the roadmap's L1).
+3. **Host P's error is measured.** P1 recorded only its refusals. P1′ measures it against the
+   engine's own finest arm (below).
+
+**Seen before this criterion, at parse only, with nothing stepped:**
+- both hosts' worlds parse, and the structure lists the buffer in `free_amount_reads`, so the
+  predictor takes P1's form;
+- ΣG/C at the start is 8.55 × 10³ /s on host C and 3.29 × 10³ /s on host P (over the cell's two
+  patches), as at P1;
+- the definition-time ceilings are as at P1:
+  - the kind's bound at rung 0.289 on both hosts;
+  - host P's face term at rung 0.108.
+
+**Host P first, on two ladders:**
+- **(P-a), P1's face:** area 10⁻¹⁰ m², length 10⁻⁸ m, D 10⁻¹⁰ m²/s for Na, K, Cl and the trace
+  rows, and 0 for H and the binders. This is the comparison with P1. Its face term caps it at 0.108.
+- **(P-b), the face's D at a hundredth (10⁻¹² m²/s).** Its face term moves to rung 10.8, so the ladder
+  reaches the cycle's own limits.
+  - The face is the outer membrane's mode, not the ΔΨ mode. Its ceiling for MT-1 is
+    1/(2 max_s p_s A_OM/V_IMS), with p_s each row's permeability.
+  - That ceiling is reported as a host-P term, to be evaluated with MT-1's permeabilities.
+
+**Then host C's two-cycle arm, if it fits about half a day.** This is P1's host C world with two
+populations of the probe law on the bounding patch:
+- **A:** n = 4, at P1's capacity;
+- **B:** n = 2, its capacity set so that the two charge currents cancel 10 mV past A's head.
+  There, A runs in reverse and B forward: a non-equilibrium steady state, V_ss, as respiration
+  against synthesis.
+- **The start** is 5 mV past V_ss, on the side away from B's head.
+- **ΣG/C** is the two slopes at the start, Σ n² F² J₁/RT over C_b, with J₁ each population's reverse
+  one-way flux.
+- **Each rung** runs ten relaxation times at V_ss.
+- **The reference** is P1's Radau integration with the two laws summed. Its code reduces to P1's
+  with B's capacity at 0, which is checked before any run.
+
+**The ladder:** dt·ΣG/C at the start of 0.01, 0.02, 0.05, 0.1, 0.2, 0.28 (just below the kind's
+bound), 0.5, 1 and 2.
+- Host P adds 0.0025 and 0.005, its reference arms.
+- Each rung runs ten relaxation times at the head (V_ss for the two-cycle arm), or until it is
+  refused.
+- Records are taken every steps//200 steps, and at the end.
+
+**Two readings per rung, each its own run:**
+- **(a) today's energy check,** P1's configuration;
+- **(b) X2 at the cap 2 × 10⁻³,** MT-1's registered configuration (D224). The cap is today's energy
+  rtol, as FR-8 rung 1's.
+
+**Recorded per rung and reading:**
+- admitted or refused, and the refusing check by its message;
+- **for a validity-flag refusal ("domain failure"):** dt·`membrane_rate` at the failing step's
+  start, recomputed at the last accepted row.
+  - Above `EXPLICIT_STEP_BOUND`, the refusal is the per-stage rule.
+  - Otherwise it is "the validity flag, unattributed", P1's verdict form.
+- `max_energy_balance_relative` against ENERGY_RTOL;
+- in (b), X2's summary;
+- **the error:** the largest |V_b(engine) − V_b(reference)| over the records, relative to the start's
+  offset.
+  - **Host C:** against P1's Radau reference (the lumen's charge and both nodes' proton
+    equivalents, the buffers at equilibrium).
+  - **Host P:** against its own 0.0025 arm, at matched times. The bound holds where the observed
+    order from the 0.0025, 0.005 and 0.01 arms is at least 1, and the reference's error bound is its
+    difference from the 0.005 arm.
+
+**The decision rules, stated before the run, per host:**
+- **The limits.** L_stage, L_ledger, L_X2 and L_other are each the largest admitted rung below the
+  first refusal by:
+  - the per-stage rule;
+  - today's energy ledger, in (a);
+  - X2, any of its refusals named, in (b);
+  - any other check, named.
+
+  L_err is the largest rung whose error is within 10⁻³ of the offset, every finer rung included.
+- **The effective limit.**
+  - In (a), L_eff = min(L_stage, L_ledger, L_err, L_other), P1's rule.
+  - In (b), L_eff(X2) = min(L_stage, L_X2, L_err, L_other).
+- **Branch E** holds on the host if L_eff(X2) ≥ 0.05, MT-1's configuration. P1's reading (a) is
+  reported beside it. 0.05 is the explicit limit that MITOCHONDRIA_DESIGN §2.3's cost for E assumes.
+- **Branch I** holds if L_eff(X2) < 0.05 and what binds is the ΔΨ mode itself, a limit an implicit
+  cycle block would lift:
+  - the per-stage rule;
+  - a validity refusal attributed to it;
+  - the error.
+- **"Not decided by the ΔΨ mode"** if, below 0.05, another check binds first. That includes the
+  face term at a face of the probe's choosing, an engine gap, or a definition-time bound. It is
+  named, with what lifting it would take.
+- **Branch X** is indicated if the energy check binds first:
+  - in (a), if the ledger refuses before every other check, P1's rule;
+  - in (b), if X2's per-row cap ("exceeds the registration's cap") does, FR-8 rung 1's trigger form.
+- **The kind's definition-time bound** (rung 0.289 here, below the stage rule's 1) is reported as a
+  ceiling. Above 0.05 it caps E's range, and its conservatism belongs to each law's `bound_rate`.
+
+**Steps for MT-1, reported as information.** Each host's L_eff(X2) is converted with
+MITOCHONDRIA_DESIGN §2.3's table: dt = L_eff/(ΣG/C) for J₁ = 1, 10 and 100 mM/s (n = 10, lumped).
+With it come the cost of 300 s of protocol, at that note's 3.6 ms per step.
+
+**How it runs:**
+- from a clean snapshot of this criterion's commit;
+- on the light CPUs at nice 10, through `scripts/run_detached.sh` with a memory cap;
+- with 900 s per rung;
+- **a timeout is not a result:** the rung is re-run once, and a second timeout is reported as one.
+
+The probe is scratch, as P1's was: `p1prime/` in the @3 owner's workspace, with its sha256 recorded
+in the result.
