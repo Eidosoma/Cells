@@ -568,6 +568,9 @@ binding 2.52 s (10 passed), envelope 1.42 s (5), registration 1.07 s (4). The re
 After amendments F4, C4 and A2, they were re-measured at 6abadf3b: binding 3.43 s (11 passed),
 cycles 1.07 s (16), registration 1.12 s (4); envelope is unchanged. The record is
 `/mnt/workspaces/Cells/core-seams-references-f4-20261118/gate-6abadf3b/tiers/measure/measured.json`.
+After amendment C5, envelope and registration were re-measured at 24fc0beb the same way: envelope
+1.98 s (9 passed), registration 1.12 s (4). The record is
+`/mnt/workspaces/Cells/core-seams-references-c5-20261119/tiers-24fc0beb/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
