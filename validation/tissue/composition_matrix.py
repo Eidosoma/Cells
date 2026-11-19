@@ -712,6 +712,16 @@ def _off_list(admitted_by_declarations, law=COMPARTMENTS, admitted=None):
 
 # ------------------------------------------------------------------ the rules at the definition
 
+# Trafficking requires the compartments, whose admitted list is checked first
+# (compartments.check_definition). Of the pairs off trafficking's list that the declarations admit,
+# one with a law off the compartments' list too is refused there first, and trafficking's own
+# reason is a second wall it never reaches.
+_TRAFFICKING_OFF = _off_list(True, TRAFFICKING, trafficking_operator.ADMITTED)
+_TRAFFICKING_FIRST = tuple(
+    pair for pair in _TRAFFICKING_OFF if set(pair) <= set(compartments_operator.ADMITTED)
+)
+_COMPARTMENTS_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if pair not in _TRAFFICKING_FIRST)
+
 RULES = (
     dict(
         rule="insertion@2 precedes every retiring operator",
@@ -935,11 +945,25 @@ RULES = (
         tag=REAL,
         why="Version 1 is qualified beside membrane state, the compartments, turnover, reactions "
         "and the coupling only (FR-2's design statement §6; D217). It marks the off-list pairs "
-        "the declarations admit (injection, not qualified beside it; site occupancy, whose sites "
-        "move with their membrane only from version 1.1) and stands behind the declarations' "
-        "refusals of the rest",
-        marks=_off_list(True, TRAFFICKING, trafficking_operator.ADMITTED),
+        "the declarations admit and the compartments' list passes (injection, not qualified "
+        "beside it) and stands behind the declarations' refusals of the rest. A pair with a law "
+        "off the compartments' list too is that list's first (the next rule)",
+        marks=_TRAFFICKING_FIRST,
         behind=_off_list(False, TRAFFICKING, trafficking_operator.ADMITTED),
+    ),
+    dict(
+        rule="beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
+        "site occupancy first",
+        laws=(TRAFFICKING, SITES),
+        level="law",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="Trafficking requires the compartments, whose check runs first, and site_occupancy@1 "
+        "is not on their admitted list: the case 'site occupancy beside it' asserts that "
+        "message. Trafficking's own reason, that sites move with their membrane only from "
+        "version 1.1, is a second wall this composition never reaches",
+        marks=_COMPARTMENTS_FIRST,
     ),
     dict(
         rule="membrane state beside a compartment only together with trafficking",
