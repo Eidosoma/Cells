@@ -108,6 +108,13 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;
+  D228 item 2).** Merge 2db46727, tag `rectifier-landed-2026-11-19`. An instantaneous inward
+  rectifier on the passive-routes kind: E_K-referenced rectification, √K_o scaling, coefficients in
+  the route's declaration (unsourced today), weak rectifiers through V_h and s. Kir4.1 for the
+  Xenopus lane's XC0 is its first use. Gates: tiers 594 files with 0 changed, G1 113 of 113,
+  crossrev 11 of 11, IDs +5, FR's set; the lead's merged check on trial 4da4ec58.
+
 - **FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not
   judged).** Merge 7fb27a92, tag `fr7-f1-landed-2026-11-19`. A finite precursor is consumed at first
   order into channel units, through m maturation pools, with first-order removal of every unit into
