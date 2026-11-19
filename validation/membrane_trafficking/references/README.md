@@ -220,6 +220,47 @@ with the conservative models' bands, so they are lower bounds.
 - The builder confirms that its operator adds |electrode transfer| to `trafficking_image_charge_C`
   stage by stage. So that field's half-step change is `electrode_abs_C`.
 
+**Dated note, 2026-11-19 11:31 UTC: the comparison bands.** This changes no registered value.
+- **The interface.** The user chose (b) at about 11:20 UTC: export the floors and plant rows the
+  engine-side comparison needs into a named interface file. That file is
+  `interface/comparison_bands.json`, which `bands.py` writes from the values and the design. It
+  holds:
+  - 782 compared rows, each with its quantity, unit, reference, tolerance, floor (under the
+    selected models above), floor model and band;
+  - 3 T5 criteria;
+  - 322 plant rows, each with its row, size, band and margin. 273 of them must be refused, and 49
+    are zero power, as registered.
+- **No drift.** `design --check` and the existing test `test_registered_files_regenerate_identically`
+  keep the file equal to what `bands.py` writes. REFERENCES_USAGE describes it, and the
+  engine-side comparison reads it in place of the design file.
+- **One text correction in the design's zero-power list.** It named the stress carriers as 0.7
+  and 0.3, written before the binary-exact 0.75 and 0.25 were chosen. It now says 0.75 and 0.25.
+  No value depends on it.
+
+**Erratum, 2026-11-19 12:33 UTC, to the comparison bands' held-node floors.** This came from the
+lead's audit question, answered blind (no comparison result was sought or seen). It changes no
+registered value and no row outside its class.
+- **The class:** T6's `electrode_transfer`, `W_elec` and `image_charge` rows, on every drive and
+  half-step.
+- **The error:** their floor was written as if the transfer were the product dC V_k, with V_k's
+  floor taken once: (K_OPS u + f(V_k)/|V_k|) × |ΔQ_h|. That does not follow from what was
+  registered at 06:08. Under `increment_storage` the rounding sits on the potentials, through
+  each solve. The transfer is the change of the held node's plate charge,
+  Q_h = Σ_p s_p C_p V_p, and each stage books it (§4) from its own two solves. Q_h is about 30
+  times the transfer for a retrieval of 3%, so the difference also cancels.
+- **The corrected rule,** from the registered voltage floors f with no new model and no engine
+  fact (`models.increment_storage.parameters.held_node_transfer`):
+  - floor(ΔQ_h) = n_stages × 2 [max(F_b, F_a) + u K_OPS max(A_b, A_a)], where F = Σ_p C_p f(V_p)
+    and A = Σ_p |C_p V_p| over the patches touching h, before (b) and after (a) the half-step.
+    A stage's own two states differ from these by a few percent at most.
+  - W_elec's floor is |φ_h| × that (in pJ) + u K_OPS |W_elec|.
+  - The image charge's floor is the transfer's.
+- **The effect:** 87 rows' bands change (29 of each check), widened 133 to 2.2e3 times: from
+  1.9e-14 to 2.8e-14 of the reference to 2.6e-12 to 4.4e-11.
+  - Every other row, the factor 10 and the tolerances are untouched.
+  - No plant is judged on these rows, so the plants are unchanged: 273 must be refused and 49
+    are zero power, with the smallest margin still 6.9e4.
+
 ## Zero power (what these references cannot see)
 
 - **The potentials and the heat in the compiled worlds** (cycle, t8_sheet). They depend on the
