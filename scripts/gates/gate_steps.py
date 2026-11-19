@@ -56,6 +56,13 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
       The shards' parts as one baseline-shaped folder (g1_plan.py's merge, unchanged in behaviour).
   g1-seconds MERGED FILE
       The world seconds of a passing G1, written whole for the next plan.
+  qualify-subsets RECORD OUT --verify FILE ... --tier3 FILE ...
+      The cache qualification's two tier subsets of RECORD, rows only (cache_qualify.sh):
+      OUT/verify-tiers.json and OUT/tier3-tiers.json.
+  cache-verdict OUT
+      The cache qualification's verdict on its arms (cache_qualify.sh), into OUT/verdict.json:
+      every criterion, each listed with what failed, and notes (the cross-revision hit rate, the
+      seconds and new cache entries per stage).
 """
 
 import hashlib
@@ -520,6 +527,226 @@ def g1_seconds(merged, path):
     return len(seconds)
 
 
+# ------------------------------------------------------------------- the cache qualification
+
+TIMING = ("new timeout", "no verdict")  # Blocking kinds that lose coverage to time, not outcomes.
+COMPLETED = ("pass", "pass-skips", "pass-empty", "fail")  # test_tiers.py's completed file endings
+CACHE_ERRORS = ("CacheVerificationError", "Persistent compilation cache inconsistency",
+                "Error reading persistent compilation cache",
+                "Error writing persistent compilation cache")
+
+
+def qualify_subsets(record_path, out, verify, tier3):
+    """cache_qualify.sh's two tier subsets of a tier record, rows only (the record's measured
+    provenance is left out): OUT/verify-tiers.json keeps the VERIFY files in their own tiers, and
+    OUT/tier3-tiers.json puts the tier-3 stage's files under tier 3. A named file the record does
+    not hold is refused."""
+    record = json.loads(Path(record_path).read_text())
+    rows = {r["file"]: (t, r) for t, rs in record["tiers"].items() for r in rs}
+    missing = sorted(f for f in set(verify) | set(tier3) if f not in rows)
+    if missing:
+        raise SystemExit(f"Refused: not in {record_path}: {missing}")
+    keep = {k: v for k, v in record.items() if k not in ("measured", "measured_provenance")}
+    keep["subset_of"] = str(record_path)
+    tiers = {t: [r for r in rs if r["file"] in set(verify)] for t, rs in record["tiers"].items()}
+    write_json(Path(out) / "verify-tiers.json", dict(keep, tiers=tiers))
+    write_json(Path(out) / "tier3-tiers.json",
+               dict(keep, tiers={"1": [], "2": [], "3": [rows[f][1] for f in sorted(set(tier3))]}))
+
+
+def _read(path):
+    try:
+        return json.loads(Path(path).read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def _stages(out):
+    """{(arm, stage): record} of cache_qualify.sh's stages.jsonl, the last record winning."""
+    found, path = {}, Path(out) / "stages.jsonl"
+    for line in path.read_text().splitlines() if path.is_file() else []:
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        found[(row.get("arm"), row.get("stage"))] = row
+    return found
+
+
+def _peaks(folder):
+    """{key: peak RSS in KB} of one stage's processes: /usr/bin/time's "%M %e" files (rss-*.txt,
+    keyed by name) and the interpreter wrapper's lines "KB seconds exit command" (rss-*.log, keyed
+    by the command with the stage's own folder written <stage>), the largest of a key's runs."""
+    folder, out = Path(folder), {}
+    for path in sorted(folder.glob("rss-*.txt")):
+        fields = path.read_text(errors="replace").split()
+        if fields and fields[0].isdigit():
+            out[path.stem] = int(fields[0])
+    for path in sorted(folder.glob("rss-*.log")):
+        for line in path.read_text(errors="replace").splitlines():
+            parts = line.split(" ", 3)
+            if len(parts) == 4 and parts[0].isdigit():
+                key = parts[3].replace(str(folder), "<stage>")
+                out[key] = max(out.get(key, 0), int(parts[0]))
+    return out
+
+
+def _identical(compare, worlds):
+    return bool(compare) and compare.get("verdict") == "identical" \
+        and not compare.get("problems") and compare.get("worlds") == compare.get("equal") == worlds
+
+
+def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1024,
+                  warm_g1=0.6, verify_g1=0.75):
+    """Every criterion of the qualification (cache_qualify.sh; the testing plan's section 5.3),
+    each True or False with what failed, and notes: the qualification passes only when all hold.
+
+    Outcomes, per test ID against OFF: tiers 1+2 (cold, warm, warm2, xrev-head), the VERIFY
+    subset and the tier-3 stage's files, each complete at OFF's cap; an outcome change and a loss of
+    coverage to time are separate criteria. Bits: G1 against c1 on the head and the base, every
+    shard on one CPU; the planted controls against their own runs without the cache; FR's set;
+    crossrev against the record and the replication set's 55 files. The cache: no cache or
+    verification error in any log; written in COLD, read in WARM (no entry added, G1 faster),
+    recompiled in VERIFY; the shared default folder untouched; OFF's reused tier run free of it.
+    Memory: no out-of-memory kill; each G1 group's and FR process's peak RSS within rss_factor of
+    OFF's, FR's under its 3 GiB unit cap; each stage's largest anonymous memory within
+    stage_factor of COLD's same stage."""
+    out, checks, notes = Path(out), {}, {}
+
+    def check(name, ok, detail=None):
+        checks[name] = bool(ok)
+        if detail not in (None, [], {}):
+            notes[name] = detail
+
+    stages = _stages(out)
+    plan = _read(out / "g1-plan.json") or []
+    worlds = sum(len(g["worlds"]) for shard in plan for g in shard.get("groups", []))
+    check("G1's shared plan holds worlds", worlds > 0)
+    off_record = _read(out / "off" / "reuse.json") or {}
+    check("off: its tier run wrote no persistent cache entry", off_record.get("cache_entries") == 0,
+          off_record)
+    t3 = (_read(out / "off" / "tier3-record.json") or {}).get("files", {})
+    want3 = sum(len(v) for v in (_read(out / "tier3-tiers.json") or {}).get("tiers", {}).values())
+    check("off: every tier-3 stage file ran to its end", len(t3) == want3 > 0
+          and all(r.get("status") in COMPLETED for r in t3.values()),
+          {f: r.get("status") for f, r in t3.items() if r.get("status") not in COMPLETED})
+    wantv = sum(len(v) for v in (_read(out / "verify-tiers.json") or {}).get("tiers", {}).values())
+    runs = [(a, "tiers", None) for a in ("cold", "warm", "warm2", "xrev-head")]
+    runs += [("verify", "tiers", wantv)] + [(a, "tier3", want3) for a in ("cold", "warm", "warm2",
+                                                                            "verify")]
+    for arm, stage, want in runs:
+        d = _read(out / arm / stage / "diff.json")
+        blocking = (d or {}).get("blocking", [])
+        outcome = [b for b in blocking if b.get("kind") not in TIMING]
+        timing = [b for b in blocking if b.get("kind") in TIMING]
+        complete = bool(d) and d.get("files_read", 0) > 0 and not d.get("caps_differ") and (
+            d["files_read"] == want if want is not None else not d.get("record_files_not_in_runs"))
+        read = {k: (d or {}).get(k) for k in ("files_read", "caps_differ")}
+        check(f"{arm} {stage}: every file read against OFF's record at OFF's cap", complete,
+              None if complete else read)
+        check(f"{arm} {stage}: outcomes per test ID as OFF's", bool(d) and not outcome,
+              outcome[:20])
+        check(f"{arm} {stage}: no coverage lost to time", bool(d) and not timing, timing[:20])
+    for arm in ("off", "cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
+        c = _read(out / arm / "g1" / "compare.json")
+        cpus = sorted({p.read_text().strip() for p in (out / arm / "g1").glob("shard-*.cpus")})
+        check(f"{arm} G1: {worlds} of {worlds} worlds bitwise as c1's", _identical(c, worlds),
+              {k: (c or {}).get(k) for k in ("verdict", "worlds", "equal")})
+        check(f"{arm} G1: every shard on one CPU, as c1's", cpus == ["1"], cpus)
+    for name, n in (("unplanted", worlds), ("planted", worlds), ("c2prime", 1)):
+        c = _read(out / "negative" / name / "compare.json")
+        check(f"negative {name}: bitwise as its own run without the cache", _identical(c, n),
+              {k: (c or {}).get(k) for k in ("verdict", "worlds", "equal")})
+    for arm in ("off", "cold", "warm", "warm2", "verify"):
+        v = _read(out / arm / "fr" / "verdict.json")
+        check(f"{arm} FR: the set passes", bool(v) and v.get("passed") is True)
+        peaks = _peaks(out / arm / "fr")
+        over = {k: p for k, p in peaks.items() if p >= fr_cap_kb}
+        check(f"{arm} FR: every process under its unit's 3 GiB", bool(peaks) and not over, over)
+    for arm in ("cold", "warm", "warm2"):
+        v = _read(out / arm / "crossrev" / "verdict.json") or {}
+        check(f"{arm} crossrev: every set identical to the record", v.get("ok") is True
+              and v.get("sets", 0) > 0 and v.get("identical") == v.get("sets"),
+              {k: v.get(k) for k in ("sets", "identical")})
+        done = out / arm / "replication" / "done"
+        check(f"{arm} replication: 55 of 55, by the lead's check", done.is_file()
+              and done.read_text().strip() == "0")
+    bad = sorted(str(p.relative_to(out)) for p in out.rglob("*.log") if p.is_file()
+                 and any(m in p.read_text(errors="replace") for m in CACHE_ERRORS))
+    check("no cache error and no verification error in any log", not bad, bad[:20])
+    check("no out-of-memory kill in any stage", bool(stages) and all(
+        int(r.get("oom_kills") or 0) == 0 for r in stages.values()),
+        {f"{a} {s}": r.get("oom_kills") for (a, s), r in stages.items() if r.get("oom_kills")})
+    for arm, stage in [(a, "g1") for a in ("cold", "warm", "warm2", "verify", "xrev-head")] + [
+            (a, "fr") for a in ("cold", "warm", "warm2", "verify")]:
+        ref, now = _peaks(out / "off" / stage), _peaks(out / arm / stage)
+        ratios = {k: round(now[k] / ref[k], 3) for k in sorted(set(ref) & set(now)) if ref[k]}
+        worst = max(ratios.values(), default=None)
+        check(f"{arm} {stage}: each process's peak RSS within {rss_factor} times OFF's",
+              worst is not None and worst <= rss_factor,
+              {"worst": worst, "over": {k: r for k, r in ratios.items() if r > rss_factor}})
+    for arm, stage in [(a, s) for a in ("warm", "warm2") for s in ("tiers", "g1", "fr+tier3")] + [
+            ("verify", "g1"), ("verify", "fr+tier3"), ("xrev-head", "tiers"), ("xrev-head", "g1")]:
+        a, c = stages.get((arm, stage)) or {}, stages.get(("cold", stage)) or {}
+        ok = bool(a.get("anon_peak")) and bool(c.get("anon_peak")) \
+            and a["anon_peak"] <= stage_factor * c["anon_peak"]
+        check(f"{arm} {stage}: the stage's largest anonymous memory within {stage_factor} times "
+              f"cold's", ok, None if ok else [a.get("anon_peak"), c.get("anon_peak")])
+
+    def added(arm, stage):
+        r = stages.get((arm, stage)) or {}
+        try:
+            return int(r["entries_after"]) - int(r["entries_before"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    def seconds(arm, stage):
+        return (stages.get((arm, stage)) or {}).get("seconds")
+
+    for stage in ("tiers", "g1"):
+        check(f"cold {stage}: wrote cache entries (the cache engaged)",
+              (added("cold", stage) or 0) > 0, added("cold", stage))
+    for arm in ("warm", "warm2"):
+        new = {s: added(a, s) for (a, s) in stages if a == arm}
+        check(f"{arm}: added no cache entry (every program read)", bool(new)
+              and all(v == 0 for v in new.values()), {k: v for k, v in new.items() if v})
+        w, c = seconds(arm, "g1"), seconds("cold", "g1")
+        check(f"{arm} G1: under {warm_g1} of cold's seconds (read, not compiled)",
+              bool(w is not None and c) and w < warm_g1 * c, [w, c])
+    v, c = seconds("verify", "g1"), seconds("cold", "g1")
+    check(f"verify G1: at least {verify_g1} of cold's seconds (every program recompiled)",
+          bool(v is not None and c) and v >= verify_g1 * c, [v, c])
+    before = _read(out / "default-cache-before.json")
+    after = _read(out / "default-cache-after.json")
+    check("the shared default cache folder is unchanged", before is not None and before == after,
+          None if before == after else [before, after])
+
+    head = (added("cold", "tiers") or 0) + (added("cold", "g1") or 0)
+    head_new = (added("xrev-head", "tiers") or 0) + (added("xrev-head", "g1") or 0)
+    if head:
+        notes["cross-revision hit rate by programs: 1 - the head's new entries / its programs"] \
+            = round(1 - head_new / head, 3)
+    s = {arm: sum(seconds(arm, x) or 0 for x in ("tiers", "g1"))
+         for arm in ("cold", "warm", "xrev-head")}
+    if s["cold"] > s["warm"]:
+        notes["cross-revision saving by seconds, tiers and G1: (cold - xrev) / (cold - warm)"] \
+            = round((s["cold"] - s["xrev-head"]) / (s["cold"] - s["warm"]), 3)
+    notes["seconds per stage"] = {f"{a} {st}": r.get("seconds") for (a, st), r in stages.items()}
+    notes["entries added per stage"] = {f"{a} {st}": added(a, st) for (a, st) in stages}
+    clis = {}
+    for arm in ("cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
+        for stage in ("tiers", "tier3"):
+            found = list((out / arm / stage / "outputs").glob("*/Cells/cache/jax/*-cache"))
+            if found:
+                clis[f"{arm} {stage}"] = {"files": len({p.parts[-5] for p in found}),
+                                          "entries": len(found)}
+    notes["per-file caches of engine CLIs under the tier runner (configure_caches)"] = clis
+    base = _read(out / "xrev-base" / "tiers" / "summary.json") or {}
+    notes["xrev-base tiers: files changed against the base's own record"] = len(
+        base.get("changed_vs_record") or [])
+    return {"passed": all(checks.values()), "checks": checks, "notes": notes}
+
+
 # ------------------------------------------------------------------------------------------ CLI
 
 
@@ -585,6 +812,13 @@ def main(argv=None):
     s = sub.add_parser("g1-seconds")
     s.add_argument("merged")
     s.add_argument("file")
+    s = sub.add_parser("qualify-subsets")
+    s.add_argument("record")
+    s.add_argument("out")
+    s.add_argument("--verify", nargs="+", required=True)
+    s.add_argument("--tier3", nargs="+", required=True)
+    s = sub.add_parser("cache-verdict")
+    s.add_argument("out")
     a = p.parse_args(argv)
     step = a.step
     if step == "preflight":
@@ -654,6 +888,15 @@ def main(argv=None):
     if step == "g1-seconds":
         print(f"{g1_seconds(a.merged, a.file)} world seconds written to {a.file}")
         return 0
+    if step == "qualify-subsets":
+        qualify_subsets(a.record, a.out, a.verify, a.tier3)
+        return 0
+    if step == "cache-verdict":
+        doc = cache_verdict(a.out)
+        write_json(Path(a.out) / "verdict.json", doc)
+        failed = [k for k, v in doc["checks"].items() if not v]
+        print(json.dumps({"passed": doc["passed"], "failed": failed, "notes": doc["notes"]})[:2000])
+        return 0 if doc["passed"] else 1
     return 2
 
 

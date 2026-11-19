@@ -23,6 +23,19 @@ Host only: no world runs here.
 - **crossrev-verdict** passes identical sets, and a difference only where it is declared, exactly.
 - **G1's plan** places every world once, from the last passing G1's seconds where it has them, and
   the merge refuses a world saved twice.
+- **The cache qualification's verdict** (cache_qualify.sh) passes only when every criterion holds.
+  Each criterion's failure is planted once:
+  - outcomes per test ID, completeness and coverage lost to time, apart;
+  - G1 bitwise on one CPU per shard;
+  - the planted controls as their runs without the cache;
+  - FR's set and its 3 GiB cap;
+  - crossrev and the replication check;
+  - no cache or verification error, and no out-of-memory kill;
+  - peak RSS per process and anonymous memory per stage within their factors;
+  - the cache engaged: written in COLD, read in WARM, recompiled in VERIFY;
+  - the shared default cache folder untouched.
+
+  It reports the cross-revision hit rate by programs and by seconds.
 - **gate.sh** runs end to end with a stub interpreter, a private lock and this process's own CPU,
   so no case can reach a real lane, start a unit or run the engine. It shows that:
   - a pre-lock refusal never takes the lock;
@@ -337,6 +350,144 @@ def test_g1_merge_refuses_a_world_saved_twice(tmp_path):
         (part / "manifest.json").write_text(json.dumps({"worlds": {"s/w": {"seconds": 1.0}}}))
     with pytest.raises(SystemExit, match="saved twice"):
         steps.g1_merge(tmp_path / "parts", tmp_path / "merged")
+
+
+# ------------------------------------------------------------------- the cache qualification
+
+
+def qualification(tmp_path, plant=None):
+    """cache_qualify.sh's outputs for a qualification that passes, with one planted fault."""
+    out = tmp_path / "q"
+
+    def put(path, doc):
+        (out / path).parent.mkdir(parents=True, exist_ok=True)
+        (out / path).write_text(doc if isinstance(doc, str) else json.dumps(doc))
+
+    put("g1-plan.json", [{"seconds": 1, "groups": [{"set": "s", "worlds": ["a", "b"]}]}])
+    put("verify-tiers.json", {"tiers": {"1": [{"file": "v"}], "2": [], "3": []}})
+    put("tier3-tiers.json", {"tiers": {"1": [], "2": [], "3": [{"file": "t"}]}})
+    put("off/reuse.json", {"cache_entries": int(plant == "reused")})
+    status = "timeout" if plant == "off3" else "pass"
+    put("off/tier3-record.json", {"files": {"t": {"status": status}}})
+    runs = [(a, "tiers", 3) for a in ("cold", "warm", "warm2", "xrev-head")]
+    runs += [("verify", "tiers", 1)]
+    for arm, stage, n in runs + [(a, "tier3", 1) for a in ("cold", "warm", "warm2", "verify")]:
+        blocking = []
+        if plant == "outcome" and (arm, stage) == ("warm", "tiers"):
+            blocking = [{"file": "f", "kind": "new failure", "test": "t1"}]
+        if plant == "time" and (arm, stage) == ("warm2", "tier3"):
+            blocking = [{"file": "t", "kind": "new timeout"}]
+        missing = ["g"] if plant == "missing" and (arm, stage) == ("cold", "tiers") else []
+        if (arm, stage) == ("verify", "tiers"):
+            missing = ["x", "y"]  # A subset run: the record's other files are not run.
+        put(f"{arm}/{stage}/diff.json", {"blocking": blocking, "caps_differ": [], "files_read": n,
+                                         "record_files_not_in_runs": missing})
+    for arm in ("off", "cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
+        equal = 1 if plant == "g1" and arm == "verify" else 2
+        put(f"{arm}/g1/compare.json", {"verdict": "identical" if equal == 2 else "differs",
+                                       "worlds": 2, "equal": equal, "problems": []})
+        put(f"{arm}/g1/shard-0.cpus", "2\n" if plant == "cpus" and arm == "cold" else "1\n")
+        kb = "1300" if plant == "rss" and arm == "warm" else "1000"
+        put(f"{arm}/g1/rss-0-0.txt", kb + " 9\n")
+    for name, n in (("unplanted", 2), ("planted", 2), ("c2prime", 1)):
+        masked = plant == "masked" and name == "planted"
+        put(f"negative/{name}/compare.json", {"verdict": "differs" if masked else "identical",
+                                              "worlds": n, "equal": n - masked, "problems": []})
+    for arm in ("off", "cold", "warm", "warm2", "verify"):
+        put(f"{arm}/fr/verdict.json", {"passed": not (plant == "fr" and arm == "cold")})
+        kb = 3200000 if plant == "frcap" and arm == "warm2" else 2000000
+        put(f"{arm}/fr/rss-q0.log", "Command exited with non-zero status 1\n"
+            f"{kb} 9.0 1 /py -m q {out / arm / 'fr'}/part\n")
+    for arm in ("cold", "warm", "warm2"):
+        same = 1 if plant == "crossrev" and arm == "warm" else 2
+        put(f"{arm}/crossrev/verdict.json", {"ok": same == 2, "sets": 2, "identical": same})
+        failed = plant == "replication" and arm == "warm2"
+        put(f"{arm}/replication/done", "1\n" if failed else "0\n")
+    if plant == "verification":
+        put("verify/g1/shard-0.log", "CacheVerificationError: Persistent compilation cache "
+            "inconsistency for key k\n")
+    engaged = plant != "engaged"
+
+    def stage(arm, name, before, after, seconds, anon=1000, oom=0):
+        before, after = (before, after) if engaged else (0, 0)
+        return {"arm": arm, "stage": name, "exit": 0, "seconds": seconds, "entries_before": before,
+                "entries_after": after, "anon_peak": anon, "oom_kills": oom}
+
+    warm_g1 = 100 if plant == "engaged" else 70 if plant == "slowwarm" else 30
+    rows = [stage("off", "g1", 0, 0, 100), stage("off", "fr+tier3", 0, 0, 50),
+            stage("cold", "tiers", 0, 10, 200), stage("cold", "g1", 10, 15, 100,
+                                                      oom=int(plant == "oom")),
+            stage("cold", "fr+tier3", 15, 17, 60), stage("cold", "crossrev", 17, 17, 30)]
+    for arm in ("warm", "warm2"):
+        grow = int(plant == "added" and arm == "warm2")
+        rows += [stage(arm, "tiers", 17, 17 + grow, 120,
+                       anon=2000 if plant == "anon" and arm == "warm" else 1000),
+                 stage(arm, "g1", 17 + grow, 17 + grow, 100 if plant == "engaged" else warm_g1),
+                 stage(arm, "fr+tier3", 17, 17, 40), stage(arm, "crossrev", 17, 17, 30)]
+    rows += [stage("verify", "tiers", 17, 17, 20),
+             stage("verify", "g1", 17, 17, 40 if plant == "recompiled" else 90),
+             stage("verify", "fr+tier3", 17, 17, 50),
+             stage("xrev-base", "tiers", 0, 8, 200), stage("xrev-base", "g1", 8, 12, 100),
+             stage("xrev-head", "tiers", 12, 13, 130), stage("xrev-head", "g1", 13, 13, 35),
+             stage("negative", "unplanted", 17, 20, 90), stage("negative", "planted", 20, 23, 90),
+             stage("negative", "c2prime", 23, 23, 5)]
+    put("stages.jsonl", "".join(json.dumps(r) + "\n" for r in rows))
+    put("default-cache-before.json", {"files": 78, "newest": 1})
+    put("default-cache-after.json", {"files": 79 if plant == "default" else 78, "newest": 1})
+    return out
+
+
+def test_a_clean_qualification_passes_with_its_cross_revision_figures(tmp_path):
+    doc = steps.cache_verdict(qualification(tmp_path))
+    assert doc["passed"], [k for k, v in doc["checks"].items() if not v]
+    notes = doc["notes"]
+    assert notes["cross-revision hit rate by programs: 1 - the head's new entries / its programs"] \
+        == round(1 - 1 / 15, 3)
+    assert notes["cross-revision saving by seconds, tiers and G1: (cold - xrev) / (cold - warm)"] \
+        == round((300 - 165) / (300 - 150), 3)
+
+
+@pytest.mark.parametrize("plant, check", [
+    ("outcome", "warm tiers: outcomes per test ID as OFF's"),
+    ("time", "warm2 tier3: no coverage lost to time"),
+    ("missing", "cold tiers: every file read against OFF's record at OFF's cap"),
+    ("off3", "off: every tier-3 stage file ran to its end"),
+    ("reused", "off: its tier run wrote no persistent cache entry"),
+    ("g1", "verify G1: 2 of 2 worlds bitwise as c1's"),
+    ("cpus", "cold G1: every shard on one CPU, as c1's"),
+    ("masked", "negative planted: bitwise as its own run without the cache"),
+    ("fr", "cold FR: the set passes"),
+    ("frcap", "warm2 FR: every process under its unit's 3 GiB"),
+    ("crossrev", "warm crossrev: every set identical to the record"),
+    ("replication", "warm2 replication: 55 of 55, by the lead's check"),
+    ("verification", "no cache error and no verification error in any log"),
+    ("oom", "no out-of-memory kill in any stage"),
+    ("rss", "warm g1: each process's peak RSS within 1.25 times OFF's"),
+    ("anon", "warm tiers: the stage's largest anonymous memory within 1.5 times cold's"),
+    ("engaged", "cold tiers: wrote cache entries (the cache engaged)"),
+    ("added", "warm2: added no cache entry (every program read)"),
+    ("slowwarm", "warm G1: under 0.6 of cold's seconds (read, not compiled)"),
+    ("recompiled", "verify G1: at least 0.75 of cold's seconds (every program recompiled)"),
+    ("default", "the shared default cache folder is unchanged"),
+])
+def test_each_failed_criterion_fails_the_qualification(tmp_path, plant, check):
+    doc = steps.cache_verdict(qualification(tmp_path, plant))
+    assert not doc["passed"] and doc["checks"][check] is False, doc["checks"]
+
+
+def test_qualify_subsets_keeps_rows_only_and_refuses_an_unknown_file(tmp_path):
+    record = {"kind": "k", "measured": ["m"], "measured_provenance": [{"root": "/scratch/x"}],
+              "tiers": {"1": [{"file": "a"}, {"file": "b"}], "2": [{"file": "c"}],
+                        "3": [{"file": "e"}]}}
+    (tmp_path / "record.json").write_text(json.dumps(record))
+    steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["a", "c"], ["e", "b"])
+    verify = json.loads((tmp_path / "verify-tiers.json").read_text())
+    tier3 = json.loads((tmp_path / "tier3-tiers.json").read_text())
+    assert "measured_provenance" not in verify and "measured" not in tier3
+    assert [r["file"] for t in ("1", "2", "3") for r in verify["tiers"][t]] == ["a", "c"]
+    assert [r["file"] for r in tier3["tiers"]["3"]] == ["b", "e"] and not tier3["tiers"]["1"]
+    with pytest.raises(SystemExit, match="not in"):
+        steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["a", "zz"], ["e"])
 
 
 # ---------------------------------------------------------------------- gate.sh, end to end
