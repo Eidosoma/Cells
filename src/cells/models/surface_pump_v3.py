@@ -1365,8 +1365,9 @@ def check_definition(spec, *, structure=None):
     )
     _check_kinds_solver(spec)  # Ahead of the kinds' own checks: under RK4 they are moot.
     if structure is None and getattr(m, "heat_bookings", ()):
-        # Seam D: the picks live in the structure, so a family that runs @3 without one (water,
-        # water @2, replacement) would book the tableau silently; it refuses them instead.
+        # Seam D: the picks live in the structure, so a caller that ran @3 without one would book
+        # the tableau silently; it refuses them instead. The water and replacement families run
+        # @3 through compositions whose inner carries the structure, so they book the picks.
         raise ConfigError(
             "Heat bookings are @3's structure's (heat_bookings); this family runs @3 without "
             "one, so it refuses them"
