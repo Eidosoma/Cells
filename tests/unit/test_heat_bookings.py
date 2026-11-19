@@ -1,43 +1,26 @@
-"""Seam D: one heat booking per mover class, and the trapezoid written once (docs/
-CORE_SEAMS_DESIGN.md §6.1-6.2; the lead's rulings of 18 November 2026: D's plan, the classes (b),
-"stored" a level).
-
-The booking probe (CORE_SEAMS_STEP0 §5.1, confirmed in §6.1) is the cheapest proof. A heredity
-cell with a K+ and a Na+ leak starts 15 mV below E_K and relaxes through it. Under ARS(2,2,2) the
-tableau books a negative K+ heat increment on the step that crosses, which the dissipation check
-refuses, at dt G/C = 0.03. With `heat_bookings: {"channels": "trapezoid_nonnegative@1"}` the same
-run is admitted with every channel heat element non-decreasing. The planted error, the tableau's
-weights left in a class declared trapezoid, must again fail the dissipation check.
-
-Beside it:
-- the booked heat is the trapezoid of the start and end powers, and the state is the tableau's;
-- a declared kind's heat field is booked by the same code;
+"""Seam D: one heat booking per mover class (docs/CORE_SEAMS_DESIGN.md §6.1-6.2; the lead's rulings
+of 18 and 19 November 2026: D's plan, the classes (b), "stored" a level, the water and replacement
+families booking what is picked). Host-side claims; the booking probe's runs are in
+test_heat_bookings_probe.py, the booked heat's form in test_heat_bookings_formula.py:
 - the key's parse, round trip and default (omitted, so no fingerprint or structure moves), and its
   refusals: junctions, the tableau listed, a class that admits nothing, RK4, and a caller that
-  checks @3 without its structure; water@1, whose composition carries the structure, books it;
-- the dissipation check reads declared energy roles, with today's suffix rule as the default.
+  checks @3 without its structure;
+- the dissipation check and the run view read declared energy roles, with today's suffix rule as
+  the default.
 """
 
-import copy
 import dataclasses
 import math
 
 import jax
-import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.execution.errors import NumericalError
-from cells.execution.runner import run
-from cells.execution.schedule import control_values
 from cells.laws.electrochemistry import F, R
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry.models import get_model
-from tests import kind_fixtures as kf
-from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import surface_pump_v3_fixtures as fx
 
 TRAPEZOID = spec3.TRAPEZOID_JUNCTION_HEAT
@@ -58,6 +41,9 @@ CROSSING, CONTROL = E_K - 0.015, E_K + 0.010  # The two arms' starting voltages 
 RUNG = 0.03  # dt G/C at which the tableau's crossing step was refused (STEP0 §6.1, step 22).
 
 
+CROSSED_STEPS = 30  # Past the crossing step at RUNG (STEP0 §6.1: step 22).
+
+
 def _ghk_current_A(v):
     total = 0.0
     for p, ci, co in ((P_K, K_I, K_O), (P_NA, NA_I, NA_O)):
@@ -73,11 +59,12 @@ def _g_over_c():
     return slope / fx.HEREDITY_CAPACITANCE_F
 
 
-def probe_world(v0, *, bookings=None, rung=RUNG):
+def probe_world(v0, *, bookings=None, rung=RUNG, steps=None):
     """STEP0's booking world at one rung: the heredity cell, its pump and gated populations
-    removed, its patch's own permeabilities zeroed, and the two leaks."""
+    removed, its patch's own permeabilities zeroed, and the two leaks. steps: STEP0's five
+    relaxation times by default; CROSSED_STEPS runs just past the crossing."""
     dt = rung / _g_over_c()
-    steps = max(8, math.ceil(5 / rung))
+    steps = max(8, math.ceil(5 / rung)) if steps is None else steps
     raw = fx.heredity_cells(
         [(v0, NA_I, K_I, M_I)],
         dt=dt,
@@ -110,68 +97,6 @@ def _clear_compiled():
     """A fresh trace: compiled steps are cached by structure (surface_pump_v3._implementation)."""
     jax.clear_caches()
     surface_pump_v3._implementation.cache_clear()
-
-
-def test_the_tableau_refuses_the_crossing_and_the_trapezoid_admits_it():
-    with pytest.raises(NumericalError, match=DISSIPATION_REFUSAL):
-        run(parse_spec(probe_world(CROSSING)))
-    spec = parse_spec(probe_world(CROSSING, bookings={"channels": TRAPEZOID}))
-    assert spec.model.heat_bookings == (("channels", TRAPEZOID),)
-    result = run(spec)
-    heat = np.asarray(result.history.channel_dissipated_energy_pJ)
-    assert np.all(np.diff(heat, axis=0) >= 0) and np.all(heat >= 0)
-    for bookings in (None, {"channels": TRAPEZOID}):  # The control is admitted either way.
-        run(parse_spec(probe_world(CONTROL, bookings=bookings)))
-
-
-def test_the_planted_tableau_weights_in_a_trapezoid_class_fail_the_dissipation_check(monkeypatch):
-    _clear_compiled()
-    monkeypatch.setattr(surface_pump_v3, "trapezoid_fields", lambda structure: ())
-    try:
-        spec = parse_spec(probe_world(CROSSING, bookings={"channels": TRAPEZOID}))
-        with pytest.raises(NumericalError, match=DISSIPATION_REFUSAL):
-            run(spec)
-    finally:
-        monkeypatch.undo()
-        _clear_compiled()
-
-
-def _steps(raw, count):
-    """count checked steps of the world's model from its initial state: [(state, valid)]."""
-    spec = parse_spec(raw)
-    model = get_model(spec.model)
-    state, p = model.initial_values(spec)
-    c = control_values(spec, [0.0])
-    control = type(c)(*(jnp.asarray(np.asarray(v)[0]) for v in c))
-    state, p = jax.tree.map(jnp.asarray, (state, p))
-    dt = jnp.asarray(spec.execution.dt)
-    step = jax.jit(lambda s: model.checked_step(s, dt, control, p, p.active))
-    rhs = jax.jit(lambda s: model.rhs(s, control, p, p.active))
-    rows = [state]
-    for _ in range(count):
-        state, valid = step(state)
-        assert bool(valid)
-        rows.append(state)
-    return spec, rows, rhs
-
-
-def test_the_booked_heat_is_the_trapezoid_and_the_state_is_the_tableaus():
-    count = 30  # Through the crossing at this rung (STEP0's step 22).
-    spec, rows, rhs = _steps(probe_world(CROSSING, bookings={"channels": TRAPEZOID}), count)
-    _, plain, _ = _steps(probe_world(CROSSING), count)
-    dt = spec.execution.dt
-    for start, end in zip(rows, rows[1:], strict=False):
-        booked = np.asarray(end.channel_dissipated_energy_pJ - start.channel_dissipated_energy_pJ)
-        q0 = np.asarray(rhs(start).channel_dissipated_energy_pJ)
-        q1 = np.asarray(rhs(end).channel_dissipated_energy_pJ)
-        np.testing.assert_allclose(booked, 0.5 * dt * (q0 + q1), rtol=1e-9, atol=1e-24)
-        assert np.all(booked >= 0)
-    for a, b in zip(rows, plain, strict=True):  # Only the heat fields' quadrature changes.
-        for name in a._fields:
-            if name != "channel_dissipated_energy_pJ":
-                np.testing.assert_array_equal(
-                    np.asarray(getattr(a, name)), np.asarray(getattr(b, name))
-                )
 
 
 def test_the_default_is_omitted_and_the_key_round_trips():
@@ -221,65 +146,6 @@ def test_a_caller_without_the_structure_refuses_a_booking_rather_than_ignore_it(
     surface_pump_v3.check_definition(spec, structure=surface_pump_v3.structure(spec.model))
     with pytest.raises(ConfigError, match="runs @3 without one"):
         surface_pump_v3.check_definition(spec)
-
-
-def test_the_water_family_books_through_its_compositions_structure():
-    """Water@1 runs @3 through a composition whose inner carries the structure, picks included,
-    so the family books what the definition picks: the probe's crossing, refused by the tableau,
-    is admitted under the trapezoid there too."""
-    with pytest.raises(NumericalError, match=DISSIPATION_REFUSAL):
-        run(parse_spec(wfx.with_water(probe_world(CROSSING))))
-    spec = parse_spec(wfx.with_water(probe_world(CROSSING, bookings={"channels": TRAPEZOID})))
-    assert spec.model.heat_bookings == (("channels", TRAPEZOID),)
-    assert (
-        get_model(spec.model).composition.inner.structure.heat_bookings == spec.model.heat_bookings
-    )
-    heat = np.asarray(run(spec).history.channel_dissipated_energy_pJ)
-    assert np.all(np.diff(heat, axis=0) >= 0)
-
-
-# ------------------------------------------------------------------ a kind's routes, by its ID
-
-
-def _booked_conversion():
-    """tests.conversion@1 with its heat declared heat and monotone, admitting the trapezoid."""
-    base = kf.conversion()
-    return dataclasses.replace(
-        base,
-        energy_roles={"conversion_heat_pJ": kind_registry.EnergyRole("heat", True)},
-        heat_bookings=(TRAPEZOID,),
-    )
-
-
-def _conversion_world(bookings=None):
-    from tests.unit.test_kind_stored_rate import world
-
-    raw = copy.deepcopy(world())
-    if bookings is not None:
-        raw["model"][spec3.HEAT_BOOKINGS_KEY] = dict(bookings)
-    return raw
-
-
-def test_a_kinds_declared_heat_is_booked_by_the_same_trapezoid():
-    _clear_compiled()
-    try:
-        with kind_registry.scope(kf.registry(_booked_conversion())):
-            spec, rows, rhs = _steps(_conversion_world({kf.CONVERSION_ID: TRAPEZOID}), 3)
-            structure = surface_pump_v3.structure(spec.model)
-            assert structure.heat_bookings == ((kf.CONVERSION_ID, TRAPEZOID),)
-            assert surface_pump_v3.trapezoid_fields(structure) == ("conversion_heat_pJ",)
-            assert "conversion_heat_pJ" in surface_pump_v3.dissipation_fields(structure)
-            dt = spec.execution.dt
-            for start, end in zip(rows, rows[1:], strict=False):
-                booked = np.asarray(end.conversion_heat_pJ - start.conversion_heat_pJ)
-                q0 = np.asarray(rhs(start).conversion_heat_pJ)
-                q1 = np.asarray(rhs(end).conversion_heat_pJ)
-                np.testing.assert_allclose(booked, 0.5 * dt * (q0 + q1), rtol=1e-9, atol=1e-24)
-        with kind_registry.scope(kf.registry(kf.conversion())):  # It admits nothing by default.
-            with pytest.raises(ConfigError, match="admits no heat booking"):
-                parse_spec(_conversion_world({kf.CONVERSION_ID: TRAPEZOID}))
-    finally:
-        _clear_compiled()
 
 
 # ------------------------------------------------------------------ declared monotonicity
