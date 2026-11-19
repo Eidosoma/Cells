@@ -245,12 +245,18 @@ const SKELETON_HEAD =
 export async function bundle(entry, { three = THREE_CDN } = {}) {
   const made = await build({
     entryPoints: [entry],
+    // Each module's path is written from this folder, wherever the build is started from: the same script from the same files.
+    absWorkingDir: ROOT,
     bundle: true,
     format: "esm",
     target: "es2022",
     write: false,
     minify: false,
     legalComments: "none",
+    // A checkout whose node_modules is a link to another folder's: a module is named by the path it is reached by, inside
+    // this folder, never by the folder the link leads to. The bundler writes each module's path above it as a comment, and
+    // by the link's target that comment held a path of the machine the page was built on (found on 19 November 2026).
+    preserveSymlinks: true,
     plugins: [
       {
         name: "three-from-url",
@@ -260,7 +266,11 @@ export async function bundle(entry, { three = THREE_CDN } = {}) {
       },
     ],
   });
-  return made.outputFiles[0].text.replaceAll("</script", "<\\/script");
+  const text = made.outputFiles[0].text;
+  // No module of the page is named by a path that leaves the folder it is built in, or by a path from the machine's root.
+  const outside = text.match(/^\/\/ (?:\.\.\/|\/|[A-Za-z]:[\\/]).*$/m);
+  if (outside) throw new Error(`the page's script names a file outside the folder it is built in: ${outside[0].slice(0, 200)}`);
+  return text.replaceAll("</script", "<\\/script");
 }
 
 /** The Laws library's list (schema/LAWS_LIBRARY.md), carried in the scene as `laws`: the view is offered only with it. */

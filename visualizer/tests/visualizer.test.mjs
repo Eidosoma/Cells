@@ -353,6 +353,11 @@ test("the page builds and loads scripts only from allowed hosts", async () => {
     assert.ok(allowed[0].test(url), `not an allowed script host: ${url}`);
   }
   assert.ok(Buffer.byteLength(page) < 16 * 1024 * 1024, "over the 16 MB page limit");
+  // The page names no path of the machine it was built on. The bundler writes each module's path above it, and a library
+  // linked from another folder was named by that folder's path until 19 November 2026; the build now names every module
+  // from this folder and refuses a script that names one outside it (tools/lib/build_page.mjs, bundle).
+  for (const part of ["/home/", "/mnt/", "/Users/", "\n// ../"]) assert.ok(!page.includes(part), `a path of the build's machine stands in the page (${JSON.stringify(part)})`);
+  assert.ok(page.includes("\n// node_modules/three/examples/jsm/"), "the libraries bundled into the page are named from this folder");
 });
 
 // ---------------------------------------------------------------- replays in the page
