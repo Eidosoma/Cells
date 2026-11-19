@@ -7275,3 +7275,31 @@ these rulings.
    - **The larger saving is slimming the heaviest files while keeping their claims,** with shared
      compiled fixtures and smaller worlds, measured before and after. One agent does it once the
      queue drains.
+
+**Amended the same day, about 11:50 UTC (the lead's rulings on X2, after the @3 owner's checks of the
+records):**
+- **Amendment 2 is not adopted.** It was registered at 11:36:41 UTC. Re-evaluating the saved
+  records reproduced the registered verdicts, but the running form refused 47 worlds that the
+  whole-run form admits. So the order condition and the held-step cap are decided over the whole run,
+  as registered.
+- **The cap is per row:** Σ|a|_k ≤ cap·F_k + floor_k at every row, like today's bound.
+  - A cap decided at the run's end would weaken as a run grows and would say nothing about the
+    early rows.
+  - For FR-18's three refused arms, Σ|a|/F peaks at row 1, at 2.3e-2, 5.7e-3 and 2.6e-3, so a
+    registration declares at least those values.
+  - There is no default. A missing, non-finite or non-positive cap is refused at parse.
+- **The switch and the cap's constants:**
+  - The switch lives in the execution spec, beside row_checks.
+  - The cap's constants have their own type, used only when X2 is on. When X2 is off, crossrev is
+    identical, and R1's parse row differs only by a defaulted field's text.
+- **The half steps** are taken at the model's step function, so a composite's operators are
+  included. The run-level sums travel in the checkpoint, not in the model state. Recorded
+  exceptions cover the execution layer's runner, windows, row checks, checkpoint IO and the
+  execution spec.
+- **The corrections, worded exactly:**
+  - X2 missed 15 of 378 plant cases. In each, the plant sat inside the allowance, and κΣ|a|
+    dominates that allowance.
+  - 14 GB was H2's raised admission limit, and 26 GB was cleft_egg's own trace estimate.
+  - The replay runs peaked at 2.2–6.5 GB, including the harness's per-row arrays.
+  - The check's work is two extra half steps per checked step. Its overhead inside the engine is to
+    be measured.
