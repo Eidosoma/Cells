@@ -7,6 +7,11 @@
 // draws whatever bands and cards the file gives, in its order, and a band, a level or a kind of card it has not seen
 // still stands, plainly, by its own words. Where a card's words are too long for its face they are shortened at their
 // end only, with "…", and the whole is one press away (the card's detail).
+//
+// The first band the landing draws stands open; every later band stands folded behind one control, in the file's words
+// (`control`, else its label), until it is pressed (19 November 2026). Which is first is the bands' order, never an id. A
+// card asked for opens its band first, and which bands a visitor opened is kept in the browser's own storage, read and
+// written so that a refusal there breaks nothing.
 
 import { Catalogue } from "./catalogue.js";
 import { partsOf } from "./tissue_line.js";
@@ -17,6 +22,8 @@ export const CARDS_FILE = "cards.json"; // beside the page, as the export publis
 export const CARD = "card:"; // the id of a card's detail in the page's panel, and in its address (`select=card:<id>`)
 // How much of a standing's words, and of a scope line, a card's face shows before it says "…".
 export const FACE = { standing: 170, scope: 120, asks: 200 };
+// Where the browser keeps which of the later bands a visitor opened (a list of band ids), for their next visit.
+export const KEPT = "cells-visualizer.landing.opened";
 
 const text = (value) => (typeof value === "string" && value.trim() ? value : null);
 
@@ -41,18 +48,71 @@ export function landingOf(data) {
     if (!band || typeof band.id !== "string") continue;
     const own = (Array.isArray(band.cards) ? band.cards : []).map((id) => byId.get(id)).filter((card) => card && !placed.has(card.id));
     for (const card of own) placed.add(card.id);
-    bands.push({ id: band.id, label: text(band.label) || band.id, says: text(band.says), status: text(band.status), cards: own });
+    bands.push({ id: band.id, label: text(band.label) || band.id, says: text(band.says), status: text(band.status), control: text(band.control), cards: own });
   }
   for (const card of cards) {
     if (placed.has(card.id)) continue;
     const named = String(card.band ?? "");
     let band = bands.find((item) => item.id === named);
-    if (!band) bands.push((band = { id: named, label: named || "Other", says: null, status: null, cards: [] }));
+    if (!band) bands.push((band = { id: named, label: named || "Other", says: null, status: null, control: null, cards: [] }));
     band.cards.push(card);
     placed.add(card.id);
   }
   const notRun = text(data?.not_run?.says) ? { says: data.not_run.says, lens: text(data.not_run.lens) } : null;
   return { bands: bands.filter((band) => band.cards.length), notRun, cards: cards.length };
+}
+
+/**
+ * The bands that stand open as the landing first opens: the first band it draws (by its place, never by its id), and of
+ * the later bands those a visitor opened on an earlier visit (`kept`, their ids as the browser kept them), where the file
+ * still holds them. Every other band stands folded behind its control.
+ */
+export function openFirst(landing, kept = []) {
+  const bands = Array.isArray(landing?.bands) ? landing.bands : [];
+  const later = new Set(bands.slice(1).map((band) => band.id));
+  const opened = new Set(bands.length ? [bands[0].id] : []);
+  for (const id of Array.isArray(kept) ? kept : []) if (typeof id === "string" && later.has(id)) opened.add(id);
+  return opened;
+}
+
+/** The band that holds a card, by the card's id: the band a card asked for opens first. Null where no band holds it. */
+export function bandHolding(landing, id) {
+  return typeof id === "string" ? (landing?.bands || []).find((band) => band.cards.some((card) => card.id === id)) || null : null;
+}
+
+/**
+ * A folded band's control: its words (the file's `control`; else the band's own label, its first letter lowered where
+ * it is a sentence's capital and kept where it begins a name such as "BETSE" or "E07-v1"), what the control says folded
+ * ("Show …") or open ("Hide …"), and how many cards the band holds, shown beside them.
+ */
+export function controlOf(band, open = false) {
+  const own = text(band?.control);
+  const label = text(band?.label) || String(band?.id ?? "");
+  const words = own ? own.trim() : /^\p{Lu}\p{Ll}*(?=[\s,;:]|$)/u.test(label) ? label[0].toLowerCase() + label.slice(1) : label;
+  return { words, says: `${open ? "Hide" : "Show"} ${words}`, count: Array.isArray(band?.cards) ? band.cards.length : 0, open: Boolean(open) };
+}
+
+/** The later bands a visitor opened, as the browser kept them (KEPT); none where its storage is refused, empty or holds anything else. */
+export function readKept(store = () => globalThis.localStorage) {
+  try {
+    const raw = store()?.getItem(KEPT);
+    const ids = typeof raw === "string" && raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids.filter((id) => typeof id === "string" && id) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Keeps the later bands a visitor opened (ids) for their next visit; false where the browser keeps nothing (the page works on). */
+export function writeKept(ids, store = () => globalThis.localStorage) {
+  try {
+    const storage = store();
+    if (!storage) return false;
+    storage.setItem(KEPT, JSON.stringify([...ids].filter((id) => typeof id === "string" && id)));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

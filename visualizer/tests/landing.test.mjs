@@ -4,7 +4,10 @@
 // opens (by rule, never by a card's id), the addresses, the detail with its sources at their revisions and its door to
 // the Engine map, and that the page's code types no standing, count, card or band of its own. The stills the cards name
 // are files of their record, of the size and checksum it states. The rules are held on the real file and on made-up ones,
-// so that tomorrow's cards are held by them too (18 November 2026).
+// so that tomorrow's cards are held by them too (18 November 2026). The first band stands open and every later band folds
+// behind a control in the file's words, by the bands' places and never by their ids; a card asked for opens its band; and
+// which bands a visitor opened is kept in the browser's storage, read and written so that a refusal breaks nothing
+// (19 November 2026).
 //
 //   node --test tests/landing.test.mjs
 import test from "node:test";
@@ -13,7 +16,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CARD, CARDS_FORMAT, FACE, addressOf, cardsProblems, countWords, detailOf, faceOf, landingOf, opensOf, shorten, standingWords, stillOf, verdictsOf } from "../src/replay/landing.js";
+import { CARD, CARDS_FORMAT, FACE, KEPT, addressOf, bandHolding, cardsProblems, controlOf, countWords, detailOf, faceOf, landingOf, openFirst, opensOf, readKept, shorten, standingWords, stillOf, verdictsOf, writeKept } from "../src/replay/landing.js";
 import { landingFiles, publishedReplays } from "../tools/lib/build_page.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -43,6 +46,85 @@ test("every card of the file stands on the page once, in its band, in the order 
     assert.equal(band.label, given.label);
   }
   assert.deepEqual(landing.notRun, { says: cards.not_run.says, lens: cards.not_run.lens });
+});
+
+test("as the landing first opens, its first band stands open and every later band folds, by their places, never by their ids", () => {
+  const landing = landingOf(cards);
+  assert.deepEqual([...openFirst(landing)], [cards.bands[0].id], "the first band alone, as the landing first opens");
+  assert.deepEqual(landing.bands[0].cards.map((card) => card.id), cards.bands[0].cards);
+  // Bands the landing has not seen (other ids, other labels), in another order: the first of them stands open, the rest fold.
+  const made = {
+    format: CARDS_FORMAT,
+    bands: [{ id: "nothing", label: "Nothing in it", cards: [] }, { id: "zeta", label: "Zeta", cards: ["z"] }, { id: "alpha", label: "Alpha", control: "the alpha cards", cards: ["a", "b"] }],
+    cards: [{ id: "a", band: "alpha", kind: "standing", title: "A", standing: {} }, { id: "b", band: "alpha", kind: "standing", title: "B", standing: {} }, { id: "z", band: "zeta", kind: "standing", title: "Z", standing: {} }, { id: "n", band: "never-named", kind: "standing", title: "N", standing: {} }],
+  };
+  const other = landingOf(made);
+  assert.deepEqual(other.bands.map((band) => band.id), ["zeta", "alpha", "never-named"], "a band of no card is not drawn, so it is not the first");
+  assert.deepEqual([...openFirst(other)], ["zeta"]);
+  const turned = landingOf({ ...cards, bands: [...cards.bands].reverse() });
+  assert.deepEqual([...openFirst(turned)], [cards.bands.at(-1).id], "the first band by its place: the file's order turned, the other band opens");
+  // What a visitor opened before stands open again; ids the file does not hold, the first band's own, and anything else are let go.
+  assert.deepEqual([...openFirst(landing, [cards.bands[2].id, "no-such-band", cards.bands[0].id, 7, null])], [cards.bands[0].id, cards.bands[2].id]);
+  assert.deepEqual([...openFirst(landing, "not a list")], [cards.bands[0].id]);
+  assert.deepEqual([...openFirst(landingOf({ format: CARDS_FORMAT, cards: [] }))], [], "no band, nothing open");
+});
+
+test("a card asked for (by its address, from the List, by the way back) is in one band, which opens for it", () => {
+  const landing = landingOf(cards);
+  for (const band of cards.bands) for (const id of band.cards) assert.equal(bandHolding(landing, id)?.id, band.id, id);
+  assert.equal(bandHolding(landing, "no-such-card"), null);
+  assert.equal(bandHolding(landing, null), null);
+  // A card that names a band the file does not hold stands in a band of that name, and opens it.
+  const made = landingOf({ format: CARDS_FORMAT, bands: [{ id: "first", label: "First", cards: ["a"] }], cards: [{ id: "a", band: "first", title: "A", standing: {} }, { id: "b", band: "elsewhere", title: "B", standing: {} }] });
+  assert.equal(bandHolding(made, "b").id, "elsewhere");
+});
+
+test("a folded band's control: the file's words, true of every card in the band, beside the band's count, or a plain one from its label", () => {
+  const landing = landingOf(cards);
+  for (const band of landing.bands.slice(1)) {
+    const given = cards.bands.find((item) => item.id === band.id);
+    assert.ok(given.control, `${band.id}: its control's words are in the file`);
+    assert.deepEqual(controlOf(band), { words: given.control, says: `Show ${given.control}`, count: given.cards.length, open: false }, band.id);
+    assert.deepEqual(controlOf(band, true), { words: given.control, says: `Hide ${given.control}`, count: given.cards.length, open: true }, band.id);
+  }
+  // The judged band's control does not say "qualifications" alone: its cards are qualifications and judged runs.
+  assert.equal(controlOf(landing.bands.find((band) => band.id === "judged")).says, "Show qualifications and judged runs");
+  // Without words of its own, a band's control says its label, after "Show", with a sentence's capital lowered and a name's kept.
+  const plain = (label, id = "x") => controlOf(landingOf({ format: CARDS_FORMAT, bands: [{ id, label, cards: ["a"] }], cards: [{ id: "a", band: id, title: "A", standing: {} }] }).bands[0]);
+  assert.equal(plain("Development runs").says, "Show development runs");
+  assert.equal(plain("BETSE runs").says, "Show BETSE runs");
+  assert.equal(plain("E07-v1 and its kin").says, "Show E07-v1 and its kin");
+  assert.equal(plain("", "a-band-id").says, "Show a-band-id");
+  assert.equal(plain("Development runs").count, 1);
+});
+
+test("which bands a visitor opened is kept in the browser's storage, and nothing breaks where storage is refused, empty or unreadable", () => {
+  const store = () => {
+    const kept = new Map();
+    return { getItem: (key) => (kept.has(key) ? kept.get(key) : null), setItem: (key, value) => kept.set(key, String(value)), kept };
+  };
+  const one = store();
+  assert.deepEqual(readKept(() => one), [], "empty: nothing kept");
+  assert.equal(writeKept(new Set(["judged", "development"]), () => one), true);
+  assert.deepEqual(readKept(() => one), ["judged", "development"]);
+  assert.deepEqual(JSON.parse(one.kept.get(KEPT)), ["judged", "development"]);
+  // Refused (the storage itself throws, as in a frame that allows none), or its calls throw, or it holds something else.
+  const refused = () => {
+    throw new Error("SecurityError: storage is refused here");
+  };
+  assert.deepEqual(readKept(refused), []);
+  assert.equal(writeKept(new Set(["judged"]), refused), false);
+  const throwing = () => ({ getItem: () => { throw new Error("no"); }, setItem: () => { throw new Error("full"); } });
+  assert.deepEqual(readKept(throwing), []);
+  assert.equal(writeKept(new Set(["judged"]), throwing), false);
+  assert.deepEqual(readKept(() => null), []);
+  for (const raw of ["not json", "{\"judged\": true}", "42", "null", "[1, \"judged\", null, \"\"]"]) {
+    const odd = store();
+    odd.setItem(KEPT, raw);
+    assert.deepEqual(readKept(() => odd), raw.startsWith("[") ? ["judged"] : [], raw);
+  }
+  // Nothing kept: the first band alone stands open.
+  assert.deepEqual([...openFirst(landingOf(cards), readKept(refused))], [cards.bands[0].id]);
 });
 
 test("a band, a level or a kind the landing has not seen still stands, by its own words", () => {
@@ -204,11 +286,11 @@ test("the page's code types no card, band, level, standing or count of the recor
   const strip = (text) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
   const code = ["src/replay/landing.js", "src/ui/landing.js"].map((file) => strip(readFileSync(path.join(ROOT, file), "utf8"))).join("\n");
   const statuses = scene.statuses.flatMap((status) => [status.id, status.label]);
-  for (const word of [...cards.cards.map((card) => card.id), ...cards.bands.flatMap((band) => [band.id, band.label]), ...statuses, ...cards.bands.flatMap((band) => (band.levels || []).map((level) => level.label))]) {
+  for (const word of [...cards.cards.map((card) => card.id), ...cards.bands.flatMap((band) => [band.id, band.label, band.control].filter(Boolean)), ...statuses, ...cards.bands.flatMap((band) => (band.levels || []).map((level) => level.label))]) {
     if (word.length < 3) continue;
     assert.ok(!new RegExp(`["'\`]${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'\`]`).test(code), `the code names ${JSON.stringify(word)}`);
   }
-  assert.doesNotMatch(code, /\bjudged\b|\bqualified\b/i, "no word of a standing is typed");
+  assert.doesNotMatch(code, /\bjudged\b|\bqualified\b|\bqualifications?\b/i, "no word of a standing is typed");
   assert.doesNotMatch(code, /replicat|reproduc|\bagree|\bmatches\b/i);
   // The words it types (its strings; the code's keys, such as an address's `example=`, are not words a visitor reads).
   const literals = [...code.matchAll(/"([^"\n]*)"|`([^`]*)`/g)].map((match) => (match[1] ?? match[2]).replace(/\$\{[^}]*\}/g, "")).join(" | ");

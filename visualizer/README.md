@@ -364,7 +364,9 @@ must bve configurable as well based on our different species as we add them".
 
 The Experiments tab opens on a landing of cards that shows everything Cells has run, in
 four bands, each card with its standing in the record's words (the user chose the layout
-on 18 November 2026; the site's first entry is Scope, as before):
+on 18 November 2026; the site's first entry is Scope, as before). A visitor first sees the
+first band, the two examples to start with; every later band stands folded behind its own
+control (19 November 2026):
 
 | Band | Cards | What stands in it |
 | --- | --- | --- |
@@ -376,6 +378,17 @@ on 18 November 2026; the site's first entry is Scope, as before):
 What is designed or planned and has not run is on the Engine map, and the landing says so
 in one line, a press away from it.
 
+- **Folded bands.** The first band of the cards' file stands open, drawn large; every
+  later band stands folded under its head (its label, its words and its count) behind one
+  button in the file's words (`bands[].control`: "Show qualifications and judged runs" 18,
+  "Show development runs" 6, "Show the test sheet of invented numbers" 1; a band without
+  words gets a plain control from its label). The rule is the band's place in the file,
+  never its id. A press shows its cards under its head, and a second folds them. A folded
+  band's cards are not drawn, not reached by the keyboard and not fetched. A card asked
+  for (its detail's address, the List, the way back from its view) opens its band. The
+  bands a visitor opened are kept in the browser's own storage for their next visit;
+  where storage is refused the first band alone opens. On a window 1,100 px wide or more
+  the cards leave the List room beside them, as they leave the panel room.
 - **Three kinds of card.** A replay's card opens the view that exists for it, by rule (a
   model system's entry opens its own view; an experiment whose entry names a part opens
   that part; any other its opening run), and in that view "All experiments", under the bar
@@ -415,8 +428,9 @@ in one line, a press away from it.
   directly; a published artifact's frame passes only `#name`, so a detail has no shareable
   link there. Every address that worked before (`run=`, `select=run:`, `part=`,
   `example=`) opens its view without the landing.
-- **What each address fetches.** The landing fetches `cards.json` and the stills near the
-  screen: no run and no model. The site's first entry fetches nothing of the landing's. A
+- **What each address fetches.** The landing fetches `cards.json` and, as it opens, the
+  two examples' stills; a later band's stills only once it is shown and they come near
+  the screen: no run and no model. The site's first entry fetches nothing of the landing's. A
   card's view fetches its own run and the parts its opening view shows, and no other run.
   `fetches` (`tools/check_fetches.mjs`) holds each address to
   `tools/references/fetches.json`, with a bound in bytes.
