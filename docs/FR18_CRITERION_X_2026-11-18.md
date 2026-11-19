@@ -416,6 +416,27 @@ it:
   largest and at the end.
 - **Storage:** the check's per-step values (2 × 8 × 5 bytes per step, with the estimate's margin)
   are their own term in the runner's and the windows' trace estimates.
+- **Imports:** the check's model imports wait until it runs, so a process with X2 off imports one
+  module more than before X2 (the check's own), not seven (about 90 ms at the CLI's start).
+- **R1, by design:** 262 of 274 parse rows gain `, energy_check=None`, once each. All 262 are equal
+  once that text is removed. to_dict, the fingerprints, the models and the controls (1,857 arrays)
+  are equal in all 274 worlds. This is the case of seam D's `, heat_bookings=()`. The check is
+  `/mnt/workspaces/Cells/core-pass-at3-20261118/gate-97c0516e/r1/parse_rows_declared.json`.
+
+**Overhead, measured** on W0 at 1 ms over its first 10 s (10,000 steps, X2 off then on, CPU 4 alone
+under the timed lane's lock):
+- execute: 0.44 to 1.10 ms per step (2.5×, the two half steps and the residuals);
+- analysis: 2.25 to 2.19 ms per step, so X2's host check is lost in the model's own host checks;
+- compile: 21 to 44 s;
+- the whole run without compile: 1.22× as long.
+
+X2 admits those 10 s: 745 counted steps, median 4.006, and 9 out-of-band held steps under a cap of
+15, exactly what the saved record's first 10,000 rows give.
+
+**A run is decided at its own end.** The whole-run conditions read the run that was asked for.
+W0's first 0.3 s are refused by the held-step cap: 9 out-of-band steps among 300 counted, against a
+cap of 8. The registered rule gives the same on the saved record's first 300 rows, while W0's first
+10 s are admitted. So a run stopped early can be refused where its full horizon is admitted.
 
 **Tests, as built:**
 - five parse refusals, as rows of `test_surface_pump_v3_definitions.py`'s definition errors;

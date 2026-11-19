@@ -58,9 +58,9 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, digest
 from cells.execution.errors import NumericalError
-from cells.laws.electrochemistry import R as GAS_R
-from cells.models import surface_tissue as tissue
-from cells.models.surface_pump import LEDGER_STEP_ROUNDING
+
+# The models this check reads (surface_tissue, surface_pump) are imported where it runs, so a
+# process that only imports the runner, with the check off, imports what it did before X2.
 
 KAPPA = 1.0 / 16.0  # X2's allowance on the integration error.
 BAND = (3.5, 4.6)  # The order condition's band, and X2's out-of-band test.
@@ -249,6 +249,9 @@ def stored_terms_abs(state, p, *, xp):
     """T: the tissue ledger's stored terms (surface_tissue.balances) as absolute values, element
     by element: each inventory element's two chemical terms, cytosol and outside, and each patch's
     electric term; non-finite elements count as 0 (the registered recorder's form)."""
+    from cells.laws.electrochemistry import R as GAS_R
+    from cells.models import surface_tissue as tissue
+
     _, _, dv = tissue.capacitor_change(state, p, xp=xp)
     scale = 1e-3 * GAS_R * p.temperature
     total = 0.0
@@ -453,6 +456,8 @@ def residual_at(model, spec, checkpoint):
 
 def floor(k, magnitude):
     """The registration's rounding floor at row k: 2.5 eps k M_k."""
+    from cells.models.surface_pump import LEDGER_STEP_ROUNDING
+
     return LEDGER_STEP_ROUNDING * EPS * k * magnitude
 
 
@@ -490,7 +495,8 @@ def check_segment(spec, record, first_step, values, events, *, rtol):
     n = energy.size
     if n == 0:
         return record, dict.fromkeys(DIAGNOSTICS, 0.0)
-    atol = tissue.ENERGY_ATOL_PJ
+    from cells.models.surface_tissue import ENERGY_ATOL_PJ as atol
+
     cap = spec.energy_check.integration_error_cap
     k = first_step + 1 + np.arange(n, dtype=np.float64)
     previous = np.concatenate(([record.residual], energy[:-1]))
