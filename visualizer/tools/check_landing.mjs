@@ -376,6 +376,11 @@ try {
 
     for (const [k, theme] of THEMES.entries()) {
       // ------------------------------------------------------------ as the landing opens: the first band, and the heads of the rest
+      // The visit before this one is left first, and its fetches have ended: a still it asked for late would otherwise be
+      // counted with this visit's (seen on 19 November 2026 with four browsers at work: the light stills of the visit
+      // before reached the server after this window had opened, ahead of this visit's own cards).
+      await page("Page.navigate", { url: "about:blank" });
+      await quiet(1000);
       errors.length = 0;
       from = asked.length;
       await fresh("lens=experiments", theme);
