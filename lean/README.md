@@ -10,6 +10,7 @@ This Lean library organizes results by biological mechanism. The index connects 
 | `Accounting.nodeChange_reorient`, `region_balance`, `total_balance`, `charge_balance` | On a finite graph, reversing any subset of edges and their signed fluxes preserves every node’s credit or debit. Within any region, internal edges cancel and crossing edges contribute their signed flux. The whole graph conserves each species and any charge-weighted sum. Multiple edges can share an owner. [Accounting proofs](CellsProofs/Accounting/Transfer.lean) | The inner model assigns each junction flux to its two cells. The integrated potassium ledger also includes membrane, pump and channel contributions. A held bath exchanges material through a separate supply term. [Owner updates](../src/cells/numerics/surface_transport.py#L316) · [Tissue ledger](../tests/unit/test_surface_pump_v3_imex.py#L80) |
 | `Chemistry.inventory_after_reactions` | For a finite network at one site, an integer-weighted inventory is preserved if it balances in every reaction. Reaction extents can be any signed real amounts. [General theorem](CellsProofs/Chemistry/Stoichiometry.lean) | `local_species_reactions@1` on `resolved_pump_composite@1` forms each species change from signed stoichiometric coefficients and extents. [Admission](../src/cells/operators/species_reactions.py#L431) · [Half-step](../src/cells/operators/species_reactions.py#L1024) |
 | `Chemistry.Enzyme.enzyme_conserved`, `substrate_conserved`, `missing_enzyme_balance` | Binding and catalysis preserve E + C and S + C + P. Removing E from the catalytic products loses one enzyme unit per event while preserving the substrate count. [Enzyme proofs](CellsProofs/Chemistry/Enzyme.lean) | The comparison checks the fixture’s two columns and two weight rows in Lean. It checks the stored amounts after one compiled CPU half-step and the engine’s refusal of the altered reaction. [Fixture](../validation/tissue/species_reactions_fixtures.py#L248) · [Comparison](checks/closed_enzyme.py) |
+| `Tissue.region_inventory_balance`, `whole_inventory_conserved` | For a fixed set of nodes, if each local reaction balances the chosen inventory, its change over a reaction–transport–reaction step equals the signed amount crossing its boundary. On the whole closed graph the change is zero. [Regional proof](CellsProofs/Tissue/ReactionTransport.lean) | `resolved_pump_composite@1` runs two `local_species_reactions@1` half-steps around the `resolved_pump_tissue@3` face update. The closed A ⇌ B chain exercises regional exchange through `logmean_electrodiffusion@1` faces. [Split order](../src/cells/models/pump_composite.py#L1308) · [Closed pair](../validation/morphogenesis/mg0c_turing.py#L180) · [Comparison](checks/regional_balance.py) |
 
 The Lean namespaces above begin with `CellsProofs.`. The proofs use exact real arithmetic. A floating-point error bound for the near-zero series and the biological calibration of a given tissue remain separate questions. [Engine evaluator](../src/cells/laws/electrochemistry.py#L17) · [Research and design options](ENGINE_LAW_VERIFICATION.md)
 
@@ -40,14 +41,14 @@ lake build
 
 ## CPU comparisons
 
-Run these from `lean/` with the pinned Lake executable on your path. Both drivers print their numerical results as JSON. See the [development results](PROGRESS.md).
+Run these from `lean/` with the pinned Lake executable on your path. Use the Cells CPU Python environment, or set `CELLS_PYTHON` to its interpreter. Each driver prints its numerical results as JSON. See the [development results](PROGRESS.md).
 
 ```bash
 mkdir -p .lake/tmp .lake/cache
 export TMPDIR="$PWD/.lake/tmp" XDG_CACHE_HOME="$PWD/.lake/cache"
 export PYTHONPATH="../src:.." PYTHONDONTWRITEBYTECODE=1
 export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
-cells_python=${CELLS_PYTHON:-/mnt/workspaces/Cells/venv-cpu/bin/python}
+cells_python=${CELLS_PYTHON:-python}
 ```
 
 For junction transport, the driver compares fluxes with an independent scalar reference and runs the per-cell potassium ledger on one closed tissue world. Reversing the endpoint bookings tests the sensitivity of the per-cell comparison. [Junction driver](checks/constant_field.py) · [Independent reference](../validation/tissue/surface_reference.py#L71)
@@ -67,4 +68,12 @@ For closed reactions, the driver reads the declaration, checks its correspondenc
 "$cells_python" -B -m pytest -q -p no:cacheprovider \
   ../tests/unit/test_species_reactions_halfstep.py::test_the_bookings_are_exact_on_random_states \
   '../tests/unit/test_species_reactions_refusals.py::test_definition_refusals[unbalanced]'
+```
+
+For the tissue balance, the driver follows A and B through one 50 ms composite step on twelve finite extracellular compartments. It compares the change in their stored amounts at nodes 2 through 5 with the signed transfers on the two boundary faces. Each species also has to account for its share of the local conversion. The same comparison runs on the full chain and with the largest boundary face reversed in the recorded transfers. The existing passive-chain test checks the trajectory against the independent split-step reference. [Regional driver](checks/regional_balance.py) · [Reference comparison](../tests/unit/test_species_reactions_composition.py#L84)
+
+```bash
+"$cells_python" -B checks/regional_balance.py
+"$cells_python" -B -m pytest -q -p no:cacheprovider \
+  '../tests/unit/test_species_reactions_composition.py::test_guard_2_linear_networks_on_the_chain_run_the_engine_orders_map[passive]'
 ```

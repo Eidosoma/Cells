@@ -1,5 +1,32 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Regional reaction and transport balance
+
+Lean checked the regional balance for a reaction–transport–reaction step and its whole-graph corollary. The proof uses the earlier chemistry theorem separately on each reaction half-step. The transfer theorem cancels every internal edge. Only the reactions inside the chosen region need to balance its inventory. Both results use the standard Lean axioms `propext`, `Classical.choice` and `Quot.sound`. [Regional proof](CellsProofs/Tissue/ReactionTransport.lean) · [Engine split order](../src/cells/models/pump_composite.py#L1308)
+
+The development comparison ran one 50 ms step of `resolved_pump_composite@1` with `local_species_reactions@1` and the `resolved_pump_tissue@3` face solver. Four of the twelve finite extracellular compartments formed the region. A and B interconverted there, while one boundary face brought material in and the other carried it out. Both the individual species balances and the A + B inventory passed. Reversing the larger boundary face in the recorded transfers failed the regional check and passed the whole-chain check. The driver took 17.99 s on four CPU cores. The existing 200-step passive-chain test against the independent reference passed in 19.76 s. [Inputs and driver](checks/regional_balance.py) · [Closed pair](../validation/morphogenesis/mg0c_turing.py#L180) · [Reference test](../tests/unit/test_species_reactions_composition.py#L84) · [Tolerance rule](../tests/unit/test_species_reactions_composition.py#L321)
+
+```json
+{
+  "engine_revision": "030bd02a5f4bb74d15ef8bde4fdf1db03f69b801",
+  "backend": "cpu", "dtype": "float64", "step_s": 0.05,
+  "region": ["node_2", "node_3", "node_4", "node_5"],
+  "region_balance": {
+    "inventory_change_fmol": 1.2526038874940276e-6,
+    "boundary_inflow_fmol": 1.2526038874941343e-6,
+    "crossing_faces_fmol": {"face_1": 3.5748138477117313e-6, "face_5": -2.322209960217597e-6},
+    "reaction_extent_fmol": 1.7563691429785305e-5,
+    "max_species_residual_fmol": 9.147955830346444e-20,
+    "residual_fmol": -1.0672615135404184e-19, "tolerance_fmol": 5.578917767468619e-17
+  },
+  "whole_chain": {"residual_fmol": -1.6263032587282567e-19, "tolerance_fmol": 1.7053025658242405e-16},
+  "reversed_face": {
+    "id": "face_1", "region_residual_fmol": 7.149627695423356e-6,
+    "whole_chain_residual_fmol": -1.6263032587282567e-19
+  }
+}
+```
+
 ## 19 November 2026 · Closed enzyme reactions
 
 Lean 4.19.0 checked the general conservation theorem, the two enzyme-fixture inventories and the missing-enzyme counterexample. All four use only the standard Lean axioms `propext`, `Classical.choice` and `Quot.sound`. Four additional equalities matched the fixture’s integer columns and weights to the Lean definitions. Replacing the catalytic products with P alone made the column equality fail in Lean. [General theorem](CellsProofs/Chemistry/Stoichiometry.lean) · [Fixture proofs](CellsProofs/Chemistry/Enzyme.lean) · [Declaration](../validation/tissue/species_reactions_fixtures.py#L248)
