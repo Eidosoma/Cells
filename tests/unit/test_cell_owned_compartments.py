@@ -524,10 +524,11 @@ def test_definition_refusals(name):
 
 
 def moves_at(spec, node):
-    """{(kind, species, law, held terms)} of every kind move at `node` (refusal 4's reading)."""
+    """{(kind, species, law, held terms)} of every kind move at `node` (refusal 4's reading: each
+    kind bound to its declaration's structure entry, as the inner model binds it)."""
     out = set()
     for kind_id, declaration in spec.model.kinds:
-        kind = kind_registry.active().lookup(kind_id)
+        kind = adapter.bound_kind(kind_registry.active().lookup(kind_id), declaration)
         for entry in kind.moved_rows(declaration) if kind.moved_rows is not None else ():
             species, at, law = (*entry, None) if len(entry) == 2 else entry
             if at == node:
@@ -739,10 +740,15 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         NEUTRAL_ROUTE: ("material_bound",),
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(fr5_sources(defs.declared_world(defs.fr4_world())))
+    declared = dict(spec.model.kinds)
     for kind_id in ("cells.rapid_proton_buffer@1", *SOURCE_KINDS):
         kind = kinds.lookup(kind_id)
         assert kind.moved_rows is None, kind_id
-        comp.refuse_kind_moves(None, "lumen_0", kind_id, ())  # Admitted, by its hooks alone.
+        # Admitted by its hooks alone, read on the kind bound to its declared entry.
+        comp.refuse_kind_moves(spec.model, defs.LUMEN, kind_id, declared[kind_id])
     assert kinds.lookup("cells.rapid_proton_buffer@1").stage_read is not None
     assert all(kinds.lookup(k).stage_read is None for k in SOURCE_KINDS)
 
@@ -881,8 +887,10 @@ def test_a_move_at_the_compartments_node_needs_a_term_its_law_declares(name):
 
 
 def moves_at_planted(spec, kind, node):
-    """{(species, law, held terms)} of the planted kind's moves at `node`."""
+    """{(species, law, held terms)} of the planted kind's moves at `node`, the kind bound to its
+    declaration's entry as refusal 4 reads it."""
     declaration = dict(spec.model.kinds)[kind_fixtures.CARRIER_ID]
+    kind = adapter.bound_kind(kind, declaration)
     return {
         (species, law, comp.held_terms(kind, law)[0])
         for species, at, law in kind.moved_rows(declaration)
@@ -933,6 +941,41 @@ def test_a_kind_that_reuses_a_laws_id_is_held_by_its_own_hooks():
         with pytest.raises(ConfigError, match=rf"under {PROTON_PUMP}, which declares stage_term, "
                            "of which its kind holds none"):
             parse_spec(raw)
+
+
+def test_refusal_4_reads_the_kind_bound_to_its_entry(monkeypatch):
+    """The bound-kind sweep (CORE_SEAMS §18; the operators brief's item 2, 19 November 2026):
+    refusal 4 reads each kind bound to its declaration's structure entry
+    (pump_composite_adapter.bound_kind), whose hooks the step runs, never the static kind's, which
+    may differ per entry: a static read could admit what the bound kind refuses (fail-open).
+    Planted: in FR-4's declared world the transporter's bound kind loses its stage_term while its
+    static kind keeps it. The static read would still admit the proton move at the lumen; the bound
+    read refuses it, naming the law."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(defs.declared_world(defs.fr4_world()))
+    pump = "cells.transporter@1"
+    declaration = dict(spec.model.kinds)[pump]
+    comp.refuse_kind_moves(spec.model, defs.LUMEN, pump, declaration)  # Admitted, unplanted.
+    real = kind_registry.bound
+
+    def stripped(kind, entry):
+        out = real(kind, entry)
+        if kind_registry.qualified(out.kind_id) != pump:
+            return out
+        return dataclasses.replace(out, stage_term=None)
+
+    monkeypatch.setattr(kind_registry, "bound", stripped)
+    assert kind_registry.active().lookup(pump).stage_term is not None  # The static kind keeps it.
+    with pytest.raises(
+        ConfigError,
+        match=rf"under {PROTON_PUMP}, which declares stage_term, of which its kind holds none",
+    ):
+        comp.refuse_kind_moves(spec.model, defs.LUMEN, pump, declaration)
+    assert moves_at(spec, defs.LUMEN) == {
+        ("cells.passive_routes@1", "H", LEAK, ("stage_term",)),
+        (pump, "H", PROTON_PUMP, ()),
+    }
 
 
 def planted_kind(kind_id, **hooks):

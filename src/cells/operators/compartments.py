@@ -75,6 +75,7 @@ from dataclasses import dataclass
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
+from cells.models import pump_composite_adapter as adapter
 from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
@@ -234,10 +235,11 @@ def capacitor_components(model):
 def held_terms(kind, law_id):
     """The step terms a move under `law_id` by `kind` has: those of TERM_HOOKS that the law
     declares in the active law registry and that the kind moving it holds by the hook each maps
-    to, with the reason when there are none. Read by law ID, so a planted kind that reuses a law's
-    ID (FR-4's K2) is admitted on the law's declaration only where it keeps the hooks the law
-    names. A move with no law ID, an unregistered law and a law another kind hosts have none
-    (fails closed)."""
+    to, with the reason when there are none. `kind` is the kind bound to its declaration's
+    structure entry (refuse_kind_moves), whose hooks the step runs. Read by law ID, so a planted
+    kind that reuses a law's ID (FR-4's K2) is admitted on the law's declaration only where it
+    keeps the hooks the law names. A move with no law ID, an unregistered law and a law another
+    kind hosts have none (fails closed)."""
     if law_id is None:
         return (), "names no law (a moved row without a law ID)"
     laws = law_registry.active()
@@ -259,8 +261,12 @@ def refuse_kind_moves(model, node, kind_id, declaration):
     """Refusal 4's kinds, per move (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4): every
     row the kind moves at the compartment's node is held by its law's declared step term (a
     charged row by a charge slope, a neutral row by a material slope or a material bound); a kind
-    that declares no moved rows is admitted as a stage read or a source, by its hooks."""
-    kind = kind_registry.active().lookup(kind_id)
+    that declares no moved rows is admitted as a stage read or a source, by its hooks. Every
+    hook is read on the kind bound to the declaration's structure entry
+    (pump_composite_adapter.bound_kind), as the inner model binds it, never on the static kind,
+    which may differ per entry: a static read could admit what the bound kind refuses (fail-open;
+    the lead's bound-kind sweep, CORE_SEAMS §18)."""
+    kind = adapter.bound_kind(kind_registry.active().lookup(kind_id), declaration)
     if kind.moved_rows is None:
         if kind.stage_read is not None:  # A stage read, which declares its rows.
             wrong = [f"has {h}" for h in STAGE_READ_ABSENT if getattr(kind, h) is not None]

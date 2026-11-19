@@ -822,6 +822,10 @@ kind is checked per move:
 - **Fails closed.** A move is refused, naming its law, when the law declares no needed term, when
   its kind lacks the hook, when the move names no law, when the law is unregistered, or when
   another kind hosts it.
+- **The kind is read bound to its declaration's structure entry** (the adapter's `bound_kind`), as
+  the inner model binds it, never as the static kind, which may differ per entry: a static read
+  could admit what the bound kind refuses (the bound-kind sweep, 19 November 2026; planted in the
+  test by a bound kind that loses its `stage_term`).
 - **A kind with no moved rows** is admitted by its hooks, never its ID:
   - as a stage read, which declares its rows and has no `rates`, `stage_term`, `material_term` or
     `bound_rate` (B4's buffer);
