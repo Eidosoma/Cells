@@ -455,6 +455,23 @@ def connected_sets(member, counts):
 # closure's kind and registered by the law registry's loader from @3's law homes. Its general
 # fields beyond version 1's (forms, free_energy, envelope and free_amounts) join when the law
 # template's hand-off lands on main (the F owner's e74d3599).
+def onto_species(rows, hold, values, n_species, *, xp):
+    """(mask [species, node], value [species, node]): the closure's rows (ligand rows, then binder
+    rows; `rows` their species indices) placed on the species axis, a host's stage read. mask is
+    true where a row is held at the node and value is its value there, 0 elsewhere. The rows are
+    distinct species, so each output takes at most one term, an exact placement with no rounding.
+    It lives in the kernel, as version 1's arithmetic does, so the kind keeps A7's sum rule."""
+    onehot = (rows[:, None] == xp.arange(n_species)[None, :]).astype(float)
+    mask = xp.einsum("ks,kn->sn", onehot, hold.astype(float)) > 0
+    value = xp.einsum("ks,kn->sn", onehot, xp.where(hold, values, 0.0))
+    return mask, value
+
+
+def binder_totals(forms, *, xp):
+    """Each binder's total [B, ...] (mM): the sum of its forms' concentrations [B, F, ...]."""
+    return xp.sum(forms, axis=1)
+
+
 def free_energy_pJ(u, total_ligand, total_binder, log_beta, counts, present, held,
                    mu0p_ligand_RT, mu0p_binder_RT, volume_pL, temperature_K, *, xp):
     """G* per node, pJ: the closure's free-energy term at ln x u (booked_terms_pJ's second part;

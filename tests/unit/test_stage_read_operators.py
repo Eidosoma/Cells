@@ -11,8 +11,9 @@ the stored row. So, beside a declared buffer read:
   node at its declared volume: refused where the read holds rows at an outside node.
 The plants are the verifier's worlds (its three-cell and water cases), each with the same world
 unbuffered as its admitted control, and for the lumen a buffered cleft (refused today first by the
-insertion beside a declared kind) with the registry's rule tested directly. Parse only, with
-nothing run.
+insertion beside a declared kind) with the registry's rule tested directly. A read that rewrites
+no row (the planted exchange kind's identity read) stores no totals, so water beside it is
+admitted (the composite kinds' own world). Parse only, with nothing run.
 """
 
 import copy
@@ -142,6 +143,22 @@ def test_an_operator_beside_a_stored_total_is_refused_and_the_unbuffered_control
     parse_spec(world(buffered=False))  # The control: the same world with no buffer read.
     with pytest.raises(ConfigError, match=message):
         parse_spec(world(buffered=True))
+
+
+def test_water_beside_a_read_that_rewrites_no_row_is_admitted():
+    """The planted exchange kind's stage read is the identity, and its stage_rows name no row, so
+    it stores no totals and water beside it counts nothing twice: admitted. This is the composite
+    kinds' world (tests/unit/test_pump_composite_kinds.py), which 3de621a4's rule refused. Water
+    beside the buffer read, which rewrites rows, stays refused."""
+    from cells.registry import kind_registry
+    from tests import kind_fixtures as kf
+    from tests.unit.test_pump_composite_kinds import RATE, world
+
+    assert kf.EXCHANGE.stage_read is not None and kf.EXCHANGE.stage_rows(None) == ()
+    with kind_registry.scope(kf.registry()):
+        parse_spec(cs.frozen_definition(water.with_water(kf.declare(world(), rate=RATE))))
+    with pytest.raises(ConfigError, match="sums every stored row as free particles"):
+        parse_spec(two_cells_with_water(buffered=True))  # Beside the closure: still refused.
 
 
 def test_the_lumen_fill_beside_a_buffered_outside_node_is_refused(monkeypatch):

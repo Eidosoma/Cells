@@ -803,8 +803,9 @@ def check_stage_read_rows(spec):
     - the lumen's fill (LUMEN_LAWS) is refused where a read holds rows at an outside node: its
       dilution term sums the lumen's stored rows, and the closure reads the node at its declared
       volume, not the lumen's.
-    A world without a stage read, or without operators, is not checked. Reading through the
-    closure (option (b)) waits until an experiment needs it."""
+    A world without a stage read, or without operators, is not checked, and neither is a read
+    whose stage_rows name no row: an identity read stores no totals, so nothing counts twice.
+    Reading through the closure (option (b)) waits until an experiment needs it."""
     if not hasattr(spec.model, "operators"):
         return  # No composite, no operators.
     from cells.registry import kind_registry
@@ -815,7 +816,9 @@ def check_stage_read_rows(spec):
     for kind_id, declaration in getattr(m, "kinds", ()):
         kind = registry.lookup(kind_id)
         if kind.stage_read is not None and kind.stage_rows is not None:
-            reads.append((kind_registry.qualified(kind_id), tuple(kind.stage_rows(declaration))))
+            rows = tuple(kind.stage_rows(declaration))
+            if rows:  # A read that rewrites no row (an identity read) stores nothing.
+                reads.append((kind_registry.qualified(kind_id), rows))
     if not reads:
         return
     outside = {o.id for o in m.extracellular}

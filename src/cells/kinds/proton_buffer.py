@@ -623,9 +623,7 @@ def _general_read(state, p, xp):
                                   p.binding_present, xp=xp)
     free = xp.concatenate((x * safe_v, forms[:, 0] * safe_v), axis=0)  # [L + B, node]
     hold = xp.concatenate((held, member), axis=0)
-    onehot = (p.binding_rows[:, None] == xp.arange(amounts.shape[0])[None, :]).astype(float)
-    mask = xp.einsum("ks,kn->sn", onehot, hold.astype(float)) > 0
-    value = xp.einsum("ks,kn->sn", onehot, xp.where(hold, free, 0.0))
+    mask, value = binding.onto_species(p.binding_rows, hold, free, amounts.shape[0], xp=xp)
     reference = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
     increment = xp.concatenate(
         (state.amount_increment, state.extracellular_amount_increment), axis=1
@@ -655,7 +653,8 @@ def _general_stage(read, cell, outside, p, xp):
                                     p.binding_present, xp=xp)
     rates = xp.concatenate((cell, outside), axis=1)
     lag = binding.lag_first_order(
-        u, forms, xp.sum(forms, axis=1), xp.where(held, rates[rows[:nl]] / safe_v, 0.0),
+        u, forms, binding.binder_totals(forms, xp=xp),
+        xp.where(held, rates[rows[:nl]] / safe_v, 0.0),
         xp.where(member, rates[rows[nl:]] / safe_v, 0.0), p.binding_log_beta, p.binding_counts,
         p.binding_present, held, p.binding_step_matrix, p.binding_step_from,
         p.binding_step_ligand, p.binding_step_kon, p.binding_conservation, xp=xp,
