@@ -217,7 +217,8 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-325a55b3/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-674f077a/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-f0ddf5c0/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-3a882746/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-3a882746/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/review3-20261119/tiers-4fa89614/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1819,6 +1820,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-3a882746",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T11:02:26+00:00"
+  },
+  {
+   "git_revision": "4fa896148a0fd5b9019cfdf61021a90ba68c25a7",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/review3-20261119/snapshot-4fa89614",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T14:05:23+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2788,7 +2797,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 17.26,
+    "seconds": 18.31,
     "exit_code": 0,
     "counts": {
      "passed": 24
@@ -3320,10 +3329,10 @@
    },
    {
     "file": "tests/unit/test_gates_fr_landing_set.py",
-    "seconds": 5.53,
+    "seconds": 8.23,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 13
     }
    },
    {
@@ -3726,7 +3735,7 @@
    },
    {
     "file": "tests/unit/test_long_duration_harness.py",
-    "seconds": 0.67,
+    "seconds": 0.97,
     "exit_code": 0,
     "counts": {
      "passed": 11
@@ -3790,10 +3799,10 @@
    },
    {
     "file": "tests/unit/test_membrane_trafficking.py",
-    "seconds": 4.38,
+    "seconds": 4.93,
     "exit_code": 0,
     "counts": {
-     "passed": 37
+     "passed": 38
     }
    },
    {
@@ -4328,18 +4337,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_parse.py",
-    "seconds": 13.11,
+    "seconds": 14.1,
     "exit_code": 0,
     "counts": {
-     "passed": 21
-    }
-   },
-   {
-    "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 18.36,
-    "exit_code": 0,
-    "counts": {
-     "passed": 12
+     "passed": 22
     }
    },
    {
@@ -6115,6 +6116,14 @@
     }
    },
    {
+    "file": "tests/unit/test_rapid_binding_world.py",
+    "seconds": 20.42,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
     "file": "tests/unit/test_rapid_binding_world_run.py",
     "seconds": 57.43,
     "exit_code": 0,
@@ -6528,7 +6537,7 @@
    },
    {
     "file": "tests/unit/test_transporter_kind.py",
-    "seconds": 78.23,
+    "seconds": 79.55,
     "exit_code": 0,
     "counts": {
      "passed": 30
