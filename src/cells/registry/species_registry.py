@@ -241,7 +241,9 @@ def _check_forms(entries):
     Counts of both signs are admitted (the C4 follow-up, the lead's ruling of 19 November 2026):
     for them the per-ligand floor (the sum over binders of T_B min_f n) is necessary but not
     sufficient, and the general closure's read checks the exact joint condition, its margin
-    t* > 0 (laws/reactions/rapid_binding.py, amendment C4)."""
+    t* > 0 (laws/reactions/rapid_binding.py, amendment C4). The general closure's own admission
+    still refuses any negative count beside its envelope, until a release-step envelope case is
+    registered (kinds/proton_buffer.py)."""
     by_id = {e.id: e for e in entries}
     taken = set(by_id)
     for e in entries:
