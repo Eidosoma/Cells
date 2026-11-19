@@ -1,6 +1,6 @@
 # FR-18: criterion X, registered before its run on the full set
 
-*The @3 owner, 18 November 2026, 22:40 UTC, at the lead's direction (FR work under D222).*
+*The @3 owner, 18 November 2026, 22:38 UTC (its commit's time), at the lead's direction (FR work under D222).*
 
 This registers criterion X and its pass criteria before X runs on the FR-18 probe's full world set.
 It is development work: no engine code changes the energy check until the lead rules on κ and the
@@ -155,7 +155,7 @@ Per world and variant:
 
 ## Amendment 1: FR-8's worlds, registered before X runs on them
 
-*19 November 2026, 01:00 UTC, at the lead's direction, after the run on the full set. The rule,
+*19 November 2026, 00:59 UTC (its commit's time), at the lead's direction, after the run on the full set. The rule,
 both variants and their parameters are unchanged.*
 
 **Why these worlds:**
@@ -193,15 +193,20 @@ clean snapshot of this amendment's commit. The run is
 `/mnt/workspaces/Cells/core-pass-at3-20261118/fr18-x/fr8/`, detached on the light CPUs at nice 10
 and memory-capped.
 
-**A note on admission, before the run (01:10 UTC).** H2's builder sets `max_trace_bytes` to 2 GB.
+**A note on admission, before the run (01:03 UTC, its commit's time).** H2's builder sets `max_trace_bytes` to 2 GB.
 `timeline()` estimates a trace for the whole 3600 s horizon at 1 ms (6.9 GB) and refuses the
 replay, which never keeps that trace: it keeps per-row values only. FR-8 ran H2 through the
 windowed runner instead. So the wrapper raises H2's `max_trace_bytes` to 14 GB. Only that
 admission estimate reads it. Nothing else in the rule, the worlds or the tools changes.
 
-**The note, corrected before any world ran (01:12 UTC).** A first launch at 01:04 UTC found W0's
+**The note, corrected before any world ran (01:05 UTC, its commit's time).** A first launch at 01:04 UTC found W0's
 1 ms arms refused by the same admission estimate (2.9 GB against W0's 2 GB). It was stopped before
 any other world ran, and its two refusals are kept in `fr8/out-stopped-1/`. The wrapper now applies
 one rule to every FR-8 world: a definition whose whole-horizon estimate exceeds its own
 `max_trace_bytes` gets twice the estimate. That means 13.8 GB for H2 at 1 ms and 5.9 GB for W0's two
 1 ms arms. The 2, 5 and 10 ms arms are unchanged.
+
+*Times corrected to their commits on 19 November, 01:08 UTC. The registration's commit is
+570df4fd (22:38:17Z), amendment 1's is e886e928 (00:59:55Z), and the two notes' are 68e8da48
+(01:03:34Z) and 344a847e (01:05:36Z). The run of record on FR-8's worlds launched at 01:06:00Z from
+a snapshot of 344a847e.*
