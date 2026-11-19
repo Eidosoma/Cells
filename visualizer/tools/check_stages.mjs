@@ -158,6 +158,7 @@ const strip = () =>
       read: tl.querySelector(".tl-read")?.textContent, stage: lens.stageId, weight: lens.pictureWeight, changing: Boolean(lens.change),
       levels: lens.currentStops.map((s) => s.id).join(" "), caveat: root.querySelector(".caveat")?.hidden ? null : root.querySelector(".caveat")?.textContent,
       caveatBox: shown(root.querySelector(".caveat")) ? box(root.querySelector(".caveat")) : null,
+      barBox: shown(root.querySelector(".scalebar")) ? box(root.querySelector(".scalebar")) : null,
       address: location.search, u: lens.u, playing: lens.stagePlayer.playing, time: lens.stagePlayer.time,
       panel: root.querySelector("cells-panel").hidden ? null : root.querySelector("cells-panel").textContent.slice(0, 400),
     };
@@ -187,7 +188,8 @@ try {
   check("the slider is named for the stages, and its read-out names the stage shown", s.slider === "Life stage" && /DS 1 · Egg/.test(s.read), JSON.stringify([s.slider, s.read]));
   check(WIDTH >= 760 ? "on a wide window each stop carries its short name" : "on a phone the stops carry no names", WIDTH >= 760 ? s.stops.every((stop) => stop.name) : s.stops.every((stop) => !stop.name), JSON.stringify(s.stops.map((stop) => stop.name)));
   if (WIDTH < 760) check("on a phone each stop is a target as large as a touch needs (44 px)", s.stops.every((stop) => stop.box[2] - stop.box[0] >= 44 && stop.box[3] - stop.box[1] >= 44), JSON.stringify(s.stops.map((stop) => stop.box)));
-  check("the strip stands inside the window, and the picture's words do not lie over it", s.box && s.box[0] >= 0 && s.box[2] <= WIDTH && s.box[3] <= HEIGHT && !overlaps(s.box, s.caveatBox), JSON.stringify([s.box, s.caveatBox]));
+  // The scale bar's box holds the look's switch and its note, at the right of the foot: at 1280 px the strip ran under the note's first words (19 November 2026).
+  check("the strip stands inside the window, and neither the picture's words nor the scale bar with the look's note lie over it", s.box && s.box[0] >= 0 && s.box[2] <= WIDTH && s.box[3] <= HEIGHT && !overlaps(s.box, s.caveatBox) && !overlaps(s.box, s.barBox), JSON.stringify([s.box, s.caveatBox, s.barBox]));
   check("play shows at the egg, where a run fills the span that follows it", (await waitFor(`!${V}.shadowRoot.querySelector("cells-timeline .tl-play").hidden`, 8000)) && (await strip()).play);
   await shot("egg");
 

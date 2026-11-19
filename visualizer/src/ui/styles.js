@@ -400,6 +400,8 @@ cells-timeline.is-stages .tl-stop:first-child .tl-stop-name { transform: none; m
 cells-timeline.is-stages .tl-stop:last-child .tl-stop-name { left: auto; right: 50%; transform: none; margin-right: -6px; }
 cells-timeline.is-stages.has-names .tl-track { margin-bottom: 12px; }
 .has-stages .caveat { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+/* In Scope the look's note stands at the right of the foot, up to 266 px from the edge: the strip ends before it (at 1280 px it ran under the note's first words). */
+@media (min-width: 761px) { .has-stages cells-timeline { right: 280px; } }
 @media (max-width: 760px) { cells-timeline.is-stages .tl-stop { width: 44px; height: 44px; top: -6px; margin-left: -22px; } cells-timeline.is-stages .tl-stop::before { left: 17px; top: 17px; } cells-timeline.is-stages .tl-stop:hover::before, cells-timeline.is-stages .tl-stop:focus-visible::before { left: 16px; top: 16px; } }
 /* On a phone the strip takes the foot: the picture's words stand just above it and the scale bar above them, and the look's own notes
    fold while the strip shows, so that the foot is about as tall as it is without a strip (the legend keeps what moves at rest and what is scenery). */
