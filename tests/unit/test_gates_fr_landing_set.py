@@ -3,8 +3,10 @@
 - scripts/gates/fr_landing_verdict.py reads the set as the earlier landing verdicts were read: nine
   identical quick parts (FR-5's start may differ in its extract digest only), and both windowed arms
   bitwise against the rehearsal's records, run times apart, and completed. Each departure is planted
-  here and must show under `unexpected`. The script runs as the gates run it (python -I), on this
-  checkout as the snapshot it imports the judges' helpers from.
+  here and must show under `unexpected`. The planner's admission estimate
+  (resources.estimated_working_bytes) is information, not compared: a set differing in it alone
+  passes with it reported, and another resources leaf still fails. The script runs as the gates run
+  it (python -I), on this checkout as the snapshot it imports the judges' helpers from.
 - scripts/gates/freeze_snapshot.py selects its scope's tracked files (full: everything but
   visualizer/; guards: src/cells, validation, tests and pyproject.toml), freezes them with the
   checkout's own validation/source_snapshot.py, and reports whether the selection is clean. A dirty
@@ -43,14 +45,23 @@ def landing(tmp_path, plant=None):
         if name == "start" and plant in ("start_digest", "start_other"):
             found = ".extract_sha256" if plant == "start_digest" else ".records.x"
             part = dict(identical=False, differences=[found])
+        if name == "rung_1ms" and plant in ("estimate", "resources"):
+            found = [".resources.estimated_working_bytes"]
+            part = dict(identical=False, differences=found + [".resources.window_width"] * (
+                plant == "resources"))
         doc = dict(a_source=dict(git_revision="old"), b_source=dict(git_revision="new"),
                    parts={name: part})
         (land / f"compare-{name}.json").write_text(json.dumps(doc))
     for arm in ("T", "R"):
-        old = dict(kind="windowed", wall_s=1.0, records=dict(completed=True, steps=100,
-                                                              x=[1.0, 2.0], seconds=5.0))
+        old = dict(kind="windowed", wall_s=1.0, records=dict(
+            completed=True, steps=100, x=[1.0, 2.0], seconds=5.0,
+            resources=dict(estimated_working_bytes=11760, window_width=1000)))
         new = json.loads(json.dumps(old))
         new["wall_s"], new["records"]["seconds"] = 9.0, 7.0  # Run times differ: not compared.
+        if plant in ("estimate", "resources"):
+            new["records"]["resources"]["estimated_working_bytes"] = 19600
+        if plant == "resources" and arm == "T":
+            new["records"]["resources"]["window_width"] = 999
         if plant == "windowed" and arm == "T":
             new["records"]["x"][1] = 2.0000000000000004
         if plant == "incomplete" and arm == "R":
@@ -74,6 +85,12 @@ def test_a_bitwise_set_passes(tmp_path):
     assert code == 0 and doc["passed"] and doc["unexpected"] == {}
     assert doc["windowed"]["T"]["bitwise"] and len(doc["quick_20s"]) == 9
     assert doc["kind"].startswith("FR's bitwise landing set at new")
+    # The admission estimate is reported, not compared (the third review's finding 3).
+    (tmp_path / "estimate").mkdir()
+    code, doc = verdict(tmp_path / "estimate", "estimate")
+    assert code == 0 and doc["passed"], doc["unexpected"]
+    leaf = ".records.resources.estimated_working_bytes"
+    assert doc["windowed"]["T"]["estimate"] == dict(before={leaf: 11760}, after={leaf: 19600})
 
 
 def test_the_start_may_differ_in_its_extract_digest_only(tmp_path):
@@ -83,7 +100,8 @@ def test_the_start_may_differ_in_its_extract_digest_only(tmp_path):
 
 @pytest.mark.parametrize("plant, key", [
     ("quick", "quick:rung_1ms"), ("start_other", "quick:start"), ("eight", "quick_count"),
-    ("windowed", "windowed:T"), ("missing", "windowed:R"), ("incomplete", "windowed:R")])
+    ("windowed", "windowed:T"), ("missing", "windowed:R"), ("incomplete", "windowed:R"),
+    ("resources", "quick:rung_1ms"), ("resources", "windowed:T")])
 def test_each_departure_is_unexpected(tmp_path, plant, key):
     code, doc = verdict(tmp_path, plant)
     assert code == 1 and not doc["passed"] and key in doc["unexpected"], doc["unexpected"]
