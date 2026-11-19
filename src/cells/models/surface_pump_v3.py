@@ -2473,7 +2473,11 @@ def _kind_ledger_limits(
             raise ValueError(
                 f"Kind {kind_id}'s ledger_bounds gives {len(own)} bounds for {len(pairs)} ledgers"
             )
-        extra.extend(own)
+        # A kind's bound that is not finite would admit any residual (|r| > NaN or +inf is
+        # false): it becomes -inf, which no residual passes, on the host and the device (the
+        # fourth review's finding 2). An operator's and @1's own bounds are not mapped: the gap
+        # that leaves on the device is stated at surface_pump_checks.row_checks' comparison.
+        extra.extend(xp.where(xp.isfinite(bound), bound, -xp.inf) for bound in own)
     return flows, (*bounds, *extra)
 
 
