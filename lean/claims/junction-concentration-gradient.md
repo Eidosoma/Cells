@@ -29,7 +29,9 @@ Direct proof subject `cells.constant_field@1`
 
 ## Biological evidence
 
-**Open.** Ion transfer across a junction at equal potentials and a measured concentration difference. At a 125 μM gradient, Zonta et al. estimated 226 ± 75 calcein molecules/s per open Cx26 channel from three cell pairs. During the transfer interval only the donor was voltage-clamped. A direct comparison needs both endpoint voltages and a calibrated rate for the modelled species. [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15)
+**Open.** Ion transfer across a junction at equal potentials and a measured concentration difference.
+
+Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15)
 
 **Unit** fmol/s
 

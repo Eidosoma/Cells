@@ -32,7 +32,9 @@ Proof sources [Langmuir kinetic derivation, adapted from Lean 3](https://github.
 
 ## Biological evidence
 
-**Open.** Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions. Human myoglobin oxygenation at 10 °C supplies occupancy versus pressure. A retrospective two-point fit predicted three other figure readings with an occupancy RMSE of 0.0422. Pointwise experimental uncertainty remains open. [Primary study](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Figure digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)
+**Open.** Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions.
+
+For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)
 
 **Unit** fraction of sites occupied
 

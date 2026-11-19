@@ -54,6 +54,7 @@
           "properties": {
             "status": {"enum": ["open", "not_assessable", "supported", "disagrees", "mixed"]},
             "observable": {"$ref": "#/$defs/text"}, "unit": {"$ref": "#/$defs/text"},
+            "finding": {"$ref": "#/$defs/text"},
             "evidence": {"type": "array", "items": {"$ref": "#/$defs/experiment"}}
           }
         }

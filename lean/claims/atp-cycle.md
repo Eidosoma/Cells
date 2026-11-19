@@ -36,7 +36,9 @@ Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_drive
 
 ## Biological evidence
 
-**Open.** In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, mean ATP-dependent current reversed at −17.5 ± 5 mV (standard error, six vacuoles). The two-proton tightly coupled prediction was −86.5 mV using the study’s fuel and gradient estimates. A parallel proton shunt was the authors’ explanation. For neutral cargo, ATP-dependent riboflavin uptake has been measured in inside-out vesicles. Voltage independence and reverse flux remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
+**Open.** Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.
+
+In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
 
 **Unit** mV for reversal, fmol/s for signed cargo flux
 

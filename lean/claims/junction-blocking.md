@@ -30,6 +30,8 @@ Direct proof subject `cells.constant_field@1`
 
 **Open.** Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.
 
+Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)
+
 **Unit** fmol/s
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

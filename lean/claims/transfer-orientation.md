@@ -28,6 +28,8 @@ Reversing any subset of edge orientations and their signed fluxes preserves each
 
 **Open.** Net ion gain or loss in each of two identified compartments over the same transfer interval.
 
+Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/)
+
 **Unit** fmol
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

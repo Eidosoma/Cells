@@ -36,6 +36,8 @@ Uses [Extracellular face flux follows the electrochemical potential drop](extrac
 
 **Open.** Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.
 
+Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf)
+
 **Unit** pJ/s
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

@@ -177,7 +177,7 @@
         "CellsProofs.Transport.flux_reverse": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference."},
-      "biology": {"status": "open", "observable": "Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.", "unit": "fmol/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.", "finding": "A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/)", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "junction-concentration-gradient",
@@ -189,7 +189,7 @@
         "CellsProofs.Transport.flux_down_gradient": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The equal-voltage CPU fixture exercised concentration differences of both signs and compared the signed flux with an independent scalar calculation."},
-      "biology": {"status": "open", "observable": "Ion transfer across a junction at equal potentials and a measured concentration difference. At a 125 μM gradient, Zonta et al. estimated 226 ± 75 calcein molecules/s per open Cx26 channel from three cell pairs. During the transfer interval only the donor was voltage-clamped. A direct comparison needs both endpoint voltages and a calibrated rate for the modelled species. [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15)", "unit": "fmol/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Ion transfer across a junction at equal potentials and a measured concentration difference.", "finding": "Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15)", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "junction-blocking",
@@ -200,7 +200,7 @@
         "CellsProofs.Transport.flux_blocked": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
-      "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "unit": "fmol/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "finding": "Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "neutral-permeation",
@@ -214,7 +214,7 @@
         "CellsProofs.Transport.Neutral.closed_pair_gradient_rate": "lean/CellsProofs/Transport/NeutralPermeation.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["neutral-permeation"], "result": "Five compiled cases agreed with the independent flux within 7.11 × 10⁻¹⁵ fmol/s. In the closed tissue pair at 20 ms, the largest relative error in final compartment amount was 1.70 × 10⁻⁴ against a 5 × 10⁻⁴ tolerance."},
-      "biology": {"status": "open", "observable": "Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.", "unit": "fmol/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.", "finding": "Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67)", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "proton-leak",
@@ -234,7 +234,7 @@
         "Goldman’s constant-field model (1943)": "https://doi.org/10.1085/jgp.27.1.37"
       }},
       "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
-      "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening. In Jurkat T cells, the reported reversal slope was −47 mV/pH against an ideal −58 mV/pH. The slope uncertainty and intracellular pH remain to be assessed. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
+      "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.", "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
     },
     {
       "id": "atp-cycle",
@@ -252,7 +252,7 @@
         "CellsProofs.Transport.ATPCycle.neutral_voltage_independent": "lean/CellsProofs/Transport/ATPCycle.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["atp-cycle"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work."},
-      "biology": {"status": "open", "observable": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, mean ATP-dependent current reversed at −17.5 ± 5 mV (standard error, six vacuoles). The two-proton tightly coupled prediction was −86.5 mV using the study’s fuel and gradient estimates. A parallel proton shunt was the authors’ explanation. For neutral cargo, ATP-dependent riboflavin uptake has been measured in inside-out vesicles. Voltage independence and reverse flux remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
+      "biology": {"status": "open", "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.", "finding": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
     },
     {
       "id": "extracellular-face-direction",
@@ -268,7 +268,7 @@
         "CellsProofs.Transport.Face.flux_pos_iff": "lean/CellsProofs/Transport/LogMeanFace.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Opposing voltage reversed a resolved concentration-driven flux. At zero voltage, 100.00000000000001 and 100 mM gave zero CPU flux versus 1.42 × 10⁻¹⁸ fmol/s in the scalar reference. The absolute tolerance was 3 × 10⁻¹² fmol/s. Across 60 tissue flux observations, the largest absolute discrepancy was 1.50 × 10⁻¹⁷ fmol/s."},
-      "biology": {"status": "open", "observable": "Species-resolved ion transfer rate between two extracellular compartments, with measured concentrations at both endpoints and their voltage difference.", "unit": "fmol/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Species-resolved ion transfer rate between two extracellular compartments, with measured concentrations at both endpoints and their voltage difference.", "finding": "Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906)", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "extracellular-face-dissipation",
@@ -286,7 +286,7 @@
         "SI prefixes": "https://www.bipm.org/en/measurement-units/si-prefixes"
       }},
       "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Face power agreed with the scalar reference across eleven CPU cases. Reversing a resolved flux and its endpoint bookings preserved the total material rate and gave −4.52 × 10⁻⁵ pJ/s, failing the direction and power checks."},
-      "biology": {"status": "open", "observable": "Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.", "unit": "pJ/s", "evidence": []}
+      "biology": {"status": "open", "observable": "Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.", "finding": "Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf)", "unit": "pJ/s", "evidence": []}
     },
     {
       "id": "transfer-orientation",
@@ -297,7 +297,7 @@
         "CellsProofs.Accounting.nodeChange_reorient": "lean/CellsProofs/Accounting/Transfer.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The per-cell comparison passed for the declared owners. Swapping owners alone preserved the global total and produced a per-cell discrepancy of 2.40 × 10⁻⁴ fmol/s."},
-      "biology": {"status": "open", "observable": "Net ion gain or loss in each of two identified compartments over the same transfer interval.", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Net ion gain or loss in each of two identified compartments over the same transfer interval.", "finding": "Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "transfer-inventory",
@@ -310,7 +310,7 @@
         "CellsProofs.Accounting.charge_balance": "lean/CellsProofs/Accounting/Transfer.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction", "regional-chain"], "result": "The closed tissue run checked the potassium ledger, including membrane, pump and channel contributions. The chain comparison exercised both entering and leaving transfers on a four-compartment region."},
-      "biology": {"status": "open", "observable": "Change in regional ion amount and net ion transfer across its boundary over the same interval.", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Change in regional ion amount and net ion transfer across its boundary over the same interval.", "finding": "Perfused rat hearts lost 139 ± 12 μmol of K⁺ per g dry weight in effluent over 40 min. Tissue depletion was measured in separate hearts, leaving the within-heart balance open. [Kuki et al., Figs. 3–4](https://doi.org/10.1161/01.RES.67.2.401)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "reaction-inventory",
@@ -321,7 +321,7 @@
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
-      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site. Five PGI time courses measured soluble G6P and F6P. The one archived raw acquisition lists 0.950 mL and a different sampling interval from the workbook. The per-course volumes, shared calibration uncertainty and unobserved pools remain unresolved. [Eicher et al., Fig. 5 and supplement](https://www.mdpi.com/2218-1989/2/4/818)", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "enzyme-inventories",
@@ -335,7 +335,7 @@
         "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "Lean checked both fixture columns and both weight rows. The largest absolute inventory residual in the CPU half-step was about 1.12 × 10⁻²⁰ fmol, below the 6.94 × 10⁻¹⁸ fmol tolerance. The engine refused the missing-enzyme reaction."},
-      "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "finding": "NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "single-site-binding",
@@ -350,7 +350,7 @@
         "Bobbin et al., Digital Discovery": "https://doi.org/10.1039/D3DD00077J"
       }},
       "numerical": {"status": "checked", "comparisons": ["single-site-binding"], "result": "Across thirteen manufactured S1 states, the largest absolute occupancy difference from the independent reference was 3.33 × 10⁻¹⁶. Using total ligand in the same formula failed all thirteen. The first state also passed through the tissue’s stage read."},
-      "biology": {"status": "open", "observable": "Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions. Human myoglobin oxygenation at 10 °C supplies occupancy versus pressure. A retrospective two-point fit predicted three other figure readings with an occupancy RMSE of 0.0422. Pointwise experimental uncertainty remains open. [Primary study](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Figure digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)", "unit": "fraction of sites occupied", "evidence": []}
+      "biology": {"status": "open", "observable": "Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions.", "finding": "For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)", "unit": "fraction of sites occupied", "evidence": []}
     },
     {
       "id": "membrane-insertion-heat",
@@ -367,7 +367,7 @@
         "CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero": "lean/CellsProofs/Tissue/MembraneInsertion.lean"
       }},
       "numerical": {"status": "failed", "comparisons": ["membrane-insertion"], "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner."},
-      "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for. Neher and Marty measured capacitance steps in secreting chromaffin cells. The heat balance would require independent electrical work and energy measurements. [Neher and Marty (1982)](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
+      "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.", "finding": "Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
     },
     {
       "id": "regional-reaction-transport",
@@ -380,7 +380,7 @@
         "CellsProofs.Tissue.whole_inventory_conserved": "lean/CellsProofs/Tissue/ReactionTransport.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["regional-chain"], "result": "In a 50 ms CPU step, the change in A + B across four compartments agreed with boundary inflow within 1.07 × 10⁻¹⁹ fmol. Reversing a crossing face failed the regional check while the whole chain still balanced."},
-      "biology": {"status": "open", "observable": "Change in the amount of a named chemical group inside a defined tissue region and its net passage across that boundary over the same interval.", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Change in the amount of a named chemical group inside a defined tissue region and its net passage across that boundary over the same interval.", "finding": "A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "rptec-voltage-c3",

@@ -36,6 +36,8 @@ Uses [Balanced reactions preserve a weighted inventory](reaction-inventory.md)
 
 **Open.** Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.
 
+NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/)
+
 **Unit** fmol
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

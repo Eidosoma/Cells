@@ -97,10 +97,14 @@ def comparison_text(check):
     return "\n\n".join([*lines, " · ".join(links), " · ".join(revisions)])
 
 
-def experiment_text(e, unit, repo):
+def publication_link(e):
     source = f"https://doi.org/{e['doi']}" if e.get("doi") else e["url"]
     if not source.startswith("https://"):
         raise ValueError(f"expected an HTTPS primary source for {e['dataset_id']}")
+    return f"[{e['citation']}]({source})"
+
+
+def experiment_text(e, unit, repo):
     groups = [e.get(key, []) for key in ("fit", "evaluation", "excluded")]
     if e["role"] == "held_out_from_fitting":
         if not groups[1] or set(groups[0]) & set(groups[1]):
@@ -110,7 +114,7 @@ def experiment_text(e, unit, repo):
     lines = [
         f"### {e['dataset_id']}",
         "",
-        f"{e['context']} {e['locator']} [{e['citation']}]({source})",
+        f"{e['context']} {e['locator']} {publication_link(e)}",
         "",
         f"- **Evidence role** {e['role'].replace('_', ' ')}",
     ]
@@ -126,6 +130,21 @@ def experiment_text(e, unit, repo):
     links.append(local_link("Comparison verdict", e["report"], repo))
     lines.extend(["", e["uncertainty"], "", e["assessment"] + " " + " · ".join(links)])
     return "\n".join(lines)
+
+
+def biological_summary(biology, verdict):
+    findings = [biology["finding"]] if biology.get("finding") else []
+    for e in biology["evidence"]:
+        values = [
+            f"{name.title()} {e[name]} {biology['unit']}."
+            for name in ("observed", "predicted")
+            if name in e
+        ]
+        findings.append(" ".join([*values, e["assessment"], publication_link(e)]))
+    if not findings:
+        return f"**Measurement sought.** {biology['observable']}"
+    label = "Partial evidence" if verdict == "Open" else verdict
+    return f"**{label}.** " + " ".join(findings)
 
 
 def render_claim(claim, claims, comparisons, repo):
@@ -165,15 +184,15 @@ def render_claim(claim, claims, comparisons, repo):
         parts.append("Uses " + " · ".join(f"[{claims[i]['title']}]({i}.md)" for i in claim["uses"]))
     parts += ["## Numerical comparison", f"**{tested}.** {numerical['result']}"]
     parts.extend(comparisons[i] for i in numerical["comparisons"])
-    parts += [
-        "## Biological evidence",
-        f"**{empirical}.** {biology['observable']}",
-        f"**Unit** {biology['unit']}",
-    ]
+    parts += ["## Biological evidence", f"**{empirical}.** {biology['observable']}"]
+    if finding := biology.get("finding"):
+        parts.append(finding)
+    parts.append(f"**Unit** {biology['unit']}")
     parts.extend(experiment_text(e, biology["unit"], repo) for e in biology["evidence"])
     parts.append("[Claim index](../README.md#proof-index) · [Editable register](../claims.json)")
     title = claim["title"].replace("|", r"\|")
-    row = f"| [{title}](claims/{claim['id']}.md) | {proof} | {tested} | {empirical} |"
+    summary = " ".join(biological_summary(biology, empirical).splitlines()).replace("|", r"\|")
+    row = f"| [{title}](claims/{claim['id']}.md) | {proof} | {tested} | {summary} |"
     return "\n\n".join(parts) + "\n", row
 
 
@@ -275,7 +294,7 @@ def render(lane, live_registry=False):
     if live_registry:
         outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
     rows = [
-        "| Claim | Lean proof | Numerical check | Biological evidence |",
+        "| Claim | Lean proof | Numerical check | Biological measurements and limits |",
         "| --- | --- | --- | --- |",
     ]
     for key, claim in claims.items():
