@@ -1045,12 +1045,13 @@ def test_the_map_records_imports_reads_listings_and_unmapped_children(scope_map)
     doc = scope_map["doc"]
     files = doc["files"]
     assert doc["verdict"] == "passed" and all(e["complete"] for e in files.values()), files
-    paths = lambda f: {doc["paths"][i] for i in files[f]["deps"]}  # noqa: E731
+    paths = lambda f, key="content": {doc["paths"][i] for i in files[f][key]}  # noqa: E731
     assert {"validation/helper.py", "docs/a.md", "tests/unit/test_reader.py"} <= paths(
         "tests/unit/test_reader.py")
     assert "docs/a.md" not in paths("tests/unit/test_plain.py")
     assert files["tests/unit/test_reader.py"]["reads"] == ["docs/a.md"]
-    assert {doc["dirs"][i] for i in files["tests/unit/test_lister.py"]["lists"]} == {"docs"}
+    assert paths("tests/unit/test_lister.py", "lists") == {"docs"}
+    assert "validation.py" in paths("tests/unit/test_reader.py", "exists")  # It would shadow.
     assert files["tests/unit/test_spawner.py"]["children_unmapped"] == ["true"]
     assert not any(files[f]["reads_repository"] or files[f]["children_unmapped"]
                    for f in ("tests/unit/test_plain.py",))
@@ -1100,6 +1101,32 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     head = scope_snapshot(tmp_path / "head2", dict(planted, **changed), rev="h" * 40)
     after = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
     assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
+
+
+@pytest.mark.parametrize("changes, chosen", [
+    ({"tests/unit/test_new.py": "def test_new():\n    pass\n"}, False),  # Not a plugin's name.
+    ({"tests/unit/test_reader.py": None}, False),  # A library's stat of a file it cannot use.
+    ({"tests/unit/jax_rocm7_plugin/__init__.py": ""}, True),  # A plugin its discovery would find.
+])
+def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, changes, chosen):
+    """jaxlib's plugin search (pkgutil over sys.path) lists tests/unit and asks about each entry:
+    only names discovery can use (DISCOVERY) count, so a new test file selects nothing."""
+    snap = scope_snapshot(tmp_path / "nightly")
+    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
+    logs = run / "scope" / "tests__unit__test_plain.py"
+    logs.mkdir(parents=True)
+    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
+        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
+        {"list": "tests/unit", "by": "library"}, {"stat": "tests/unit/test_reader.py", "by": "library"},
+        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
+    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
+        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
+    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
+    doc = scope.build(run, snap, sys.executable)
+    assert doc["files"][P]["complete"] and not doc["files"][P]["reads_repository"]
+    head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
+    files = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
+    assert (P in files) is chosen, files.get(P)
 
 
 @pytest.mark.parametrize("plant, words", [
@@ -1156,9 +1183,10 @@ def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g
     m.write_text(json.dumps({
         "kind": scope.KIND, "built": steps.utc(), "revision": "b" * 40, "verdict": "passed",
         "interpreter": steps.interpreter(gate["envs"]["PY"]), "paths": ["tests/unit/test_other.py"],
-        "states": ["-"], "dirs": [], "listings": [], "files": {"tests/unit/test_other.py": {
-            "complete": True, "why": [], "deps": [0], "lists": [], "reads_repository": False,
-            "scans": False, "reads": [], "children_unmapped": [],
+        "content": ["-"], "kind_of": ["-"], "names": ["-"], "discovery": ["-"],
+        "files": {"tests/unit/test_other.py": {
+            "complete": True, "why": [], "content": [0], "exists": [], "lists": [], "finds": [],
+            "reads_repository": False, "scans": False, "reads": [], "children_unmapped": [],
             "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
     code, calls, log = run_gate(gate, gate["tmp"] / "out", SELECT=str(m), CHECKS="tiers")
     assert code == 0 and "selection: " in log and "tiers: the selection" in log, log

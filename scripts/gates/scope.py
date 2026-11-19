@@ -3,17 +3,23 @@ of 19 November 2026, item E, §10.5; D229 rule 3). Host only: nothing here impor
 
   build RUN SNAPSHOT OUT_MAP [--python PY]
       The map, from a tiers run made with `scripts/test_tiers.py run --scope-map RUN/scope` on
-      SNAPSHOT (the nightly's). Per test file: every repository path its processes touched (the
-      modules they imported, the files they opened or asked about, the files a failed import or a
-      shadowing module would have been, and the paths among a child's arguments) and every
-      directory they listed, each with its state in SNAPSHOT: a file's digest (SNAPSHOT.json's), a
-      directory, or absent; a directory's listing as the digest of its names.
+      SNAPSHOT (the nightly's). Per test file, three kinds of dependency, each with its state in
+      SNAPSHOT:
+      - content: the modules its processes imported, the files they opened and the paths among a
+        child's arguments, by digest (SNAPSHOT.json's);
+      - existence: the paths they asked about (os.stat and its kin) and the files a failed import
+        or a shadowing module would have been, by kind (a file, a folder or absent);
+      - listing: the folders they listed, by the digest of their names. A third-party library's
+        own scans of sys.path (jaxlib's plugin search through pkgutil, metadata lookups) depend
+        only on the names discovery can use (DISCOVERY: distribution metadata, path files,
+        extension modules and plugins), so its listings and existence questions are compared on
+        those names alone; a new test file is not a JAX plugin.
       - A file's entry is complete only when its run ended within the cap, its outcome matched its
         row, its test process and every child that was not forked wrote an exit record, and the
         recorder reported no fault.
       - A file reads the repository's files when code other than the import system and pytest
-        opened, asked about or listed a repository path that is not one of its own modules, a
-        directory, or src/ read by src/ code, or named one to a child.
+        opened a repository path that is not one of its own modules or src/ read by src/ code,
+        named one to a child, or (its own code, not a library's) listed a repository folder.
       - A file's children are unmapped when one of its processes started more children than
         recorded themselves (another program, or a child with a cleared environment).
       The map's verdict is the run's: passed when every file ran and matched its row.
@@ -38,6 +44,7 @@ of 19 November 2026, item E, §10.5; D229 rule 3). Host only: nothing here impor
 import argparse
 import hashlib
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -46,9 +53,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gate_steps  # noqa: E402
 
-KIND = "cells.scope_map@1"
+KIND = "cells.scope_map@2"
 REFUSED = 3
 SKIP = ("__pycache__",)
+# The names a library's own discovery can use (pkgutil plugin searches, importlib.metadata).
+DISCOVERY = re.compile(r"(\.dist-info|\.egg-info|\.egg-link|\.pth|\.egg|\.so|\.pyd)$|plugin", re.I)
 
 
 # ------------------------------------------------------------------------------------- states
@@ -74,8 +83,12 @@ class Tree:
             return f"f:{self.files[path]}"
         return "d" if path in self.children else "-"
 
-    def listing(self, folder):
-        names = sorted(self.children.get(folder, ()))
+    def kind(self, path):
+        return "f" if path in self.files or path == "SNAPSHOT.json" else (
+            "d" if path in self.children else "-")
+
+    def listing(self, folder, discovery=False):
+        names = sorted(n for n in self.children.get(folder, ()) if not discovery or DISCOVERY.search(n))
         return hashlib.sha256("\n".join(names).encode()).hexdigest()[:16] if names else "-"
 
 
@@ -109,8 +122,8 @@ def read_file_logs(folder):
 
 
 def entry(logs, tree):
-    """One test file's entry: its paths, listed directories, reads and children."""
-    touched, listed, why = set(), set(), []
+    """One test file's entry: its dependencies by kind, its reads and its children."""
+    content, exists, lists, finds, why = set(), set(), set(), set(), []
     modules, reads, scans = set(), [], False
     processes = {}
     for name, rows in logs.items():
@@ -126,20 +139,30 @@ def entry(logs, tree):
                 why.append(f"recorder fault: {r['fault']}")
             if r.get("exit"):
                 modules.update(r["modules"])
-                touched.update(r["modules"])
-                touched.update(p for p in r["absent"] if useful(p))
-            for key in ("open", "stat", "arg"):
-                if key in r and useful(r[key]):
-                    path = source_of(r[key]) if key == "open" else r[key]
-                    touched.add(path)
-                    by = r.get("by", "child")
-                    if by == "import":
-                        modules.add(path)
-                    elif by != "pytest":
-                        reads.append((path, by, key))
+                content.update(r["modules"])
+                exists.update(p for p in r["absent"] if useful(p))
+            by = r.get("by", "child")
+            if "open" in r and useful(r["open"]):
+                path = source_of(r["open"])
+                content.add(path)
+                if by == "import":
+                    modules.add(path)
+                elif by != "pytest":
+                    reads.append((path, by))
+            if "arg" in r and useful(r["arg"]):
+                content.add(r["arg"])
+                reads.append((r["arg"], "arg"))
+            if "stat" in r and useful(r["stat"]):
+                if by != "library":
+                    exists.add(r["stat"])
+                elif DISCOVERY.search(r["stat"].rsplit("/", 1)[-1]):
+                    exists.add(r["stat"])
             if "list" in r and useful(r["list"]):
-                listed.add(r["list"])
-                scans = True
+                if by == "library":
+                    finds.add(r["list"])
+                else:
+                    lists.add(r["list"])
+                    scans = True
     pids = {p["pid"] for p in processes.values()}
     roots = [p for p in processes.values() if p["parent"] not in pids and not p["forked"]
              and "pytest" in p["argv"]]  # Others are children of a child not recorded.
@@ -153,11 +176,11 @@ def entry(logs, tree):
         children = sum(1 for q in processes.values() if q["parent"] == p["pid"] and not q["forked"])
         if len(p["spawns"]) > children:
             unmapped += [" ".join(s[:4]) for s in p["spawns"]][: 3]
-    data = sorted({path for path, by, key in reads
-                   if key == "arg" or (path not in modules and tree.state(path) != "d"
-                                       and not (path.startswith("src/") and by.startswith("repo:src/")))})
-    return {"touched": touched, "listed": listed, "why": why, "reads": data, "scans": scans,
-            "unmapped": unmapped}
+    data = sorted({path for path, by in reads
+                   if by == "arg" or (path not in modules and tree.kind(path) == "f"
+                                      and not (path.startswith("src/") and by.startswith("repo:src/")))})
+    return {"content": content, "exists": exists, "lists": lists, "finds": finds, "why": why,
+            "reads": data, "scans": scans, "unmapped": unmapped}
 
 
 def build(run_dir, snapshot, python):
@@ -169,7 +192,7 @@ def build(run_dir, snapshot, python):
     record = json.loads((Path(snapshot) / "tests" / "test_tiers.json").read_text())
     rows = {r["file"]: r for t in ("1", "2") for r in record["tiers"].get(t, [])}
     changed = {e["file"] for e in summary["changed_vs_record"]}
-    files, all_paths, all_dirs = {}, set(), set()
+    files, every = {}, set()
     for row in run["files"]:
         name = row["file"]
         e = entry(read_file_logs(scope / name.replace("/", "__")), tree)
@@ -179,22 +202,22 @@ def build(run_dir, snapshot, python):
             e["why"].append("its outcome differed from its row")
         if name not in rows:
             e["why"].append("no tier-1/2 row")
-        all_paths |= e["touched"]
-        all_dirs |= e["listed"]
+        every |= e["content"] | e["exists"] | e["lists"] | e["finds"]
         files[name] = e
-    paths, dirs = sorted(all_paths), sorted(all_dirs)
-    at, dat = {p: i for i, p in enumerate(paths)}, {d: i for i, d in enumerate(dirs)}
+    paths = sorted(every)
+    at = {p: i for i, p in enumerate(paths)}
     verdict = "passed" if not changed and len(run["files"]) == len(rows) else "failed"
     doc = {"kind": KIND, "built": gate_steps.utc(), "revision": tree.revision,
            "snapshot": str(Path(snapshot).resolve()), "run": str(run_dir.resolve()),
-           "verdict": verdict, "interpreter": gate_steps.interpreter(python),
-           "paths": paths, "states": [tree.state(p) for p in paths],
-           "dirs": dirs, "listings": [tree.listing(d) for d in dirs], "files": {}}
+           "verdict": verdict, "interpreter": gate_steps.interpreter(python), "paths": paths,
+           "content": [tree.state(p) for p in paths], "kind_of": [tree.kind(p) for p in paths],
+           "names": [tree.listing(p) for p in paths],
+           "discovery": [tree.listing(p, discovery=True) for p in paths], "files": {}}
     for name, e in sorted(files.items()):
         row = rows.get(name, {})
         doc["files"][name] = {
             "complete": not e["why"], "why": e["why"][:5],
-            "deps": sorted(at[p] for p in e["touched"]), "lists": sorted(dat[d] for d in e["listed"]),
+            **{key: sorted(at[p] for p in e[key]) for key in ("content", "exists", "lists", "finds")},
             "reads_repository": bool(e["reads"] or e["scans"]), "scans": e["scans"],
             "reads": e["reads"][:20], "children_unmapped": e["unmapped"],
             "row": {"exit_code": row.get("exit_code"), "counts": row.get("counts")}}
@@ -231,8 +254,17 @@ def select(head, base, doc, tiers_rel, always="readers"):
     record_path = Path(tiers_rel) if Path(tiers_rel).is_absolute() else Path(head) / tiers_rel
     record = json.loads(record_path.read_text())
     now, was = Tree(head), gate_steps.snapshot_files(base)
-    moved = {i for i, (p, s) in enumerate(zip(doc["paths"], doc["states"])) if now.state(p) != s}
-    relisted = {i for i, (d, s) in enumerate(zip(doc["dirs"], doc["listings"])) if now.listing(d) != s}
+    paths = doc["paths"]
+    test = {  # Per kind of dependency, whether a path is in another state at the head.
+        "content": lambda i: now.state(paths[i]) != doc["content"][i],
+        "exists": lambda i: now.kind(paths[i]) != doc["kind_of"][i],
+        "lists": lambda i: now.listing(paths[i]) != doc["names"][i],
+        "finds": lambda i: now.listing(paths[i], discovery=True) != doc["discovery"][i]}
+    moved = {key: {i for i in {i for e in doc["files"].values() for i in e[key]} if check(i)}
+             for key, check in test.items()}
+    words = {"content": "touched paths changed since the map", "exists": "paths it asked about "
+             "appeared, went or changed kind", "lists": "listed folders changed since the map",
+             "finds": "a library's discovery would see other names"}
     subset, reasons, seconds = {"1": [], "2": [], "3": []}, {}, {"selected": 0.0, "all": 0.0}
     for tier in ("1", "2"):
         for row in record["tiers"].get(tier, []):
@@ -256,12 +288,10 @@ def select(head, base, doc, tiers_rel, always="readers"):
                     why.append(f"children not mapped: {entry['children_unmapped'][:1]}")
                 if entry["row"] != {"exit_code": row.get("exit_code"), "counts": row.get("counts")}:
                     why.append("its row's outcome differs from the map's")
-                hit = [doc["paths"][i] for i in entry["deps"] if i in moved]
-                if hit:
-                    why.append(f"touched paths changed since the map: {hit[:3]}")
-                lists = [doc["dirs"][i] for i in entry["lists"] if i in relisted]
-                if lists:
-                    why.append(f"listed folders changed since the map: {lists[:3]}")
+                for key, text in words.items():
+                    hit = [paths[i] for i in entry[key] if i in moved[key]]
+                    if hit:
+                        why.append(f"{text}: {hit[:3]}")
             if why:
                 subset[tier].append(row)
                 reasons[name] = why
@@ -277,7 +307,7 @@ def select(head, base, doc, tiers_rel, always="readers"):
               "selected": len(reasons), "of": sum(len(record["tiers"].get(t, [])) for t in ("1", "2")),
               "seconds_selected": round(seconds["selected"], 1), "seconds_all": round(seconds["all"], 1),
               "reasons_counted": dict(sorted(counts.items())), "paths_changed_since_the_map": sorted(
-                  doc["paths"][i] for i in moved)[:50], "files": reasons}
+                  paths[i] for i in moved["content"])[:50], "files": reasons}
     return out, report
 
 
@@ -305,7 +335,7 @@ def main(argv=None):
         tmp.replace(a.out)
         incomplete = sorted(f for f, e in doc["files"].items() if not e["complete"])
         print(json.dumps({"verdict": doc["verdict"], "files": len(doc["files"]), "paths": len(doc["paths"]),
-                          "dirs": len(doc["dirs"]), "incomplete": len(incomplete),
+                          "incomplete": len(incomplete),
                           "reads_repository": sum(e["reads_repository"] for e in doc["files"].values()),
                           "scans": sum(e["scans"] for e in doc["files"].values()),
                           "children_unmapped": sum(bool(e["children_unmapped"]) for e in doc["files"].values())}))
