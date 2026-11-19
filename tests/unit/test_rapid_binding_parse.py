@@ -37,6 +37,7 @@ def general_entry(**overrides):
     entry = dict(
         read_id="rapid_binding@1",
         ligand_rows=["H"],
+        proton_row="H",
         binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
         k_on_per_mM_s={"B_c": {"H": 1e7}, "B_L": {"H": 1e7}},
     )
@@ -245,7 +246,8 @@ def _version_1_spelling(m):
 
 GENERAL = general_entry()
 REFUSALS = {
-    "fields": (dict(GENERAL, proton_row="H"), None, "a read declares exactly"),
+    "fields": (dict(GENERAL, proton="H"), None, "a read declares exactly"),
+    "proton row": (general_entry(proton_row="B_c"), None, "proton_row 'B_c' is not a declared"),
     "unknown ligand": (general_entry(ligand_rows=["X"]), None, "distinct species rows"),
     "repeated ligand": (general_entry(ligand_rows=["H", "H"]), None, "distinct species rows"),
     "unknown node": (

@@ -1758,7 +1758,9 @@ def _check_population_axis(spec, declaration):
     movers = moved_nodes(m)
     kinds = dict(m.kinds)
     closure = kinds.get("cells.rapid_proton_buffer@1")
-    proton = closure.proton if closure is not None else ("H" if "H" in m.species_ids else None)
+    proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
+    if proton is None:  # the row named H, as in a world with no closure (never skipped).
+        proton = "H" if "H" in m.species_ids else None
     for t in declaration:
         where = f"transporter {t.id!r}"
         form, roles = cycle_form(t.law), dict(t.roles)

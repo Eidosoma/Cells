@@ -41,10 +41,15 @@ the species registry declares (``forms``). Version 1's declaration above keeps i
 and code, chosen statically by the declaration's form, so its programs are unchanged. The general
 declaration:
 
-    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"],
+    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"], "proton_row": "H",
       "binders": {"matrix": ["ATP", "Pi"]},
       "k_on_per_mM_s": {"ATP": {"H": 1e7, "Mg": 1e5}, "Pi": {"H": 1e7, "Mg": 1e5}}}]
 
+- The proton is declared, never inferred: proton_row, optional, names the ligand row that is the
+  proton (version 1's field), which must be a declared ligand row of valence +1. A charge is no
+  identity: Na+ is a ligand of valence +1 too (the third review's finding 1). Without proton_row
+  the closure has no proton row, so it admits no release step (C5's scope is the proton row's),
+  and the proton leak and the pH condition, which check theirs against it, are refused.
 - At each named node it holds each binder row's total and the total equivalents of every ligand
   those binders bind there (its closure rows); k_on is declared per binding (binder, ligand), one
   for each ligand the binder's forms bind, and every form is reachable from its base by unit steps.
@@ -101,6 +106,7 @@ FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
 GENERAL_READ_ID = "rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
 GENERAL_FIELDS = ("read_id", "ligand_rows", "binders", "k_on_per_mM_s")
+GENERAL_PROTON = "proton_row"  # Optional: the declared proton row (module docstring).
 
 
 class Declaration(NamedTuple):
@@ -112,8 +118,9 @@ class Declaration(NamedTuple):
 class GeneralDeclaration(NamedTuple):
     """rapid_binding@1's declaration (module docstring): the ligand rows, sorted; the binder rows at
     each node, ((node ID, (binder row, ...)), ...), sorted; k_on per binding, ((binder row,
-    ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its one ligand of valence +1
-    (the row the passive routes' leak and the pH condition check theirs against), or None."""
+    ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its declared proton_row (the
+    row the release scope, the passive routes' leak and the pH condition check theirs against), or
+    None where it declares none."""
 
     ligands: tuple
     binders: tuple
@@ -146,8 +153,11 @@ class GeneralEntry(NamedTuple):
 
 def _parse_general(entry, m):
     where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
-    if set(entry) != set(GENERAL_FIELDS):
-        raise ConfigError(f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}")
+    if set(entry) - {GENERAL_PROTON} != set(GENERAL_FIELDS):
+        raise ConfigError(
+            f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}, and optionally "
+            f"{GENERAL_PROTON}"
+        )
     _, ligands, binders, k_on = (entry[k] for k in GENERAL_FIELDS)
     species = set(m.species_ids)
     if (
@@ -191,9 +201,13 @@ def _parse_general(entry, m):
             value = finite_number(value, f"{where}: k_on of {row} for {ligand}", positive=True)
             values.append((ligand, value))
         rates.append((row, tuple(sorted(values))))
+    proton = entry.get(GENERAL_PROTON)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
-    plus = [ligand for ligand in ligands if valence[ligand] == 1]
-    proton = plus[0] if len(plus) == 1 else None
+    if proton is not None and (proton not in ligands or valence[proton] != 1):
+        raise ConfigError(
+            f"{where}: proton_row {proton!r} is not a declared ligand row of valence +1; the "
+            "proton is the declared row, never inferred from a charge"
+        )
     return GeneralDeclaration(
         tuple(sorted(ligands)), tuple(sorted(pairs)), tuple(sorted(rates)), proton
     )
@@ -253,6 +267,7 @@ def to_dict(declaration):
                 ligand_rows=list(declaration.ligands),
                 binders={node: list(rows) for node, rows in declaration.binders},
                 k_on_per_mM_s={row: dict(rates) for row, rates in declaration.k_on},
+                **({} if declaration.proton is None else {GENERAL_PROTON: declaration.proton}),
             )
         ]
     return [
@@ -549,7 +564,11 @@ def _release_scope_error(forms, proton):
     foreign = [step for step in releases if step[1] != proton]
     if foreign:
         f, ligand, g = foreign[0]
-        return f"its release step {f} + {ligand} <-> {g} releases {ligand}, not the proton row"
+        declared = "none declared" if proton is None else proton
+        return (
+            f"its release step {f} + {ligand} <-> {g} releases {ligand}, not the proton row "
+            f"({GENERAL_PROTON}: {declared})"
+        )
     if len(releases) > 1:
         named = ", ".join(f"{f} + {ligand} <-> {g}" for f, ligand, g in releases)
         return f"it has {len(releases)} release steps ({named}), more than one"

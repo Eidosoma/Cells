@@ -160,7 +160,7 @@ def check_definition(spec):
         if read is not None and read.proton != c.proton:
             raise ConfigError(
                 f"pH condition {c.id!r}: its proton row {c.proton} is not the closure's proton "
-                f"row {read.proton}"
+                f"row {read.proton or '(none: the closure declares no proton_row)'}"
             )
 
 

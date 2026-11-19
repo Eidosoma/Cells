@@ -596,7 +596,7 @@ def check_definition(spec):
             if closure is not None and closure.proton != route.species:
                 raise ConfigError(
                     f"{MODEL_KEY} {route.id}: the leak's row {route.species} is not the closure's "
-                    f"proton row {closure.proton}"
+                    f"proton row {closure.proton or '(none: the closure declares no proton_row)'}"
                 )
         if route.permeability > 0 and host.permeability_m_per_s[row]:
             raise ConfigError(
