@@ -32,7 +32,7 @@ from cells.models import (
 )
 from cells.models import pump_composite_adapter as pump3
 from cells.operators import OPERATORS
-from cells.operators.contract import Operator, check_declarations
+from cells.operators.contract import Operator, Read, check_declarations, factor_reads
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
@@ -276,6 +276,32 @@ def test_operator_declarations_are_checked():
         check_declarations(type("Elementless", (Operator,), elementless))
     check_declarations(Routed)
     check_declarations(RateSource)
+    # R2's control-view reads (contract._check_scopes), planted on the coupling's @2: a reader
+    # whose three control-view hooks take view=None is admitted; refused by their words, an
+    # inner-stage read with no factor and no in-step process, and a hook without view=None.
+    reader = dict(
+        SCOPED_READS=MappingProxyType({"channel_abundance": Read("current", "inner")}),
+        VIEW_READS=("channel_abundance",),
+        control_factors=lambda self, state, p, *, xp, view=None: {},
+        factor_valid=lambda self, state, p, *, xp, view=None: None,
+        factor_record=lambda self, state, p, target, field, *, xp, view=None: None,
+    )
+    coupling = type(OPERATORS["species_regulated_availability@2"])
+    check_declarations(type("Reader", (coupling,), reader))
+    assert not any(factor_reads(op) for op in OPERATORS.values())  # No registered reader yet.
+    for changes, words in (
+        (dict(reader, CONTROL_FACTORS=()), "which none of its parts runs at"),
+        (
+            dict(reader, control_factors=lambda self, state, p, *, xp: {}),
+            "its control_factors takes view=None",
+        ),
+        (
+            dict(reader, factor_record=lambda self, state, p, target, field, *, xp, view: None),
+            "its factor_record takes view=None",
+        ),
+    ):
+        with pytest.raises(ValueError, match=words):
+            check_declarations(type("Reader", (coupling,), changes))
     assert dict(OPERATORS[TURNOVER].ROUTABLE_CONTROLS) == {"turnover_rate": "rate"}
     assert dict(OPERATORS[REACTIONS].ROUTABLE_CONTROLS) == {"reaction_multiplier": "rate"}
 

@@ -21,10 +21,18 @@
 // src/replay/tissue_play.js, whose track is the play and not the run's even time), and a binding may ask for its events
 // as stops (`stops: true`): each event with a label becomes a mark that can be pressed to go there, with buttons
 // for the previous and the next one beside play.
+//
+// A species' life stages (src/scene/life_stages.js, journeyOf) are bound the same way, with a few words more: `label`
+// names the slider ("Life stage"), `read(time)` gives the read-out's words, `play: false` hides play where nothing
+// plays, `named: true` writes each stop's short name under it, and `onStop(event)` is called when a stop is pressed
+// (or Page Up and Page Down reach one) in place of moving there. A stop whose event says `enterable: false` (a stage
+// named and not drawn) is hollow, says so, and Page Up and Page Down pass over it.
 
 import { h, svg } from "./dom.js";
 import { clock, duration } from "../replay/format.js";
 import { SPEEDS, SECONDS, whereWords } from "../replay/player.js";
+
+const RANGE_LABEL = "Time in the run";
 
 const PLAY = "M7 4.5v15l12-7.5z", PAUSE = "M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z";
 
@@ -85,7 +93,7 @@ class CellsTimeline extends HTMLElement {
       else if (event.key === "Home") player.seek(player.start);
       else if (event.key === "End") player.seek(player.end);
       else if (event.key === "PageDown" || event.key === "PageUp") this.toEvent(event.key === "PageDown" ? 1 : -1);
-      else if (event.key === " " || event.key === "Enter") player.toggle();
+      else if ((event.key === " " || event.key === "Enter") && this.canPlay !== false) player.toggle();
       else if (event.key === "<" || event.key === ">") this.stepSpeed(event.key === ">" ? 1 : -1);
       else return;
       event.preventDefault();
@@ -99,8 +107,24 @@ class CellsTimeline extends HTMLElement {
   }
 
   /** Follow a player. `words` names the run's events ("replacement"). */
-  bind(player, { eventWord = "event", stops = false } = {}) {
-    if (this.player === player && this.eventWord === eventWord && this.run === player.run && this.withStops === stops) return;
+  bind(player, { eventWord = "event", stops = false, play = true, label = RANGE_LABEL, read = null, onStop = null, named = false } = {}) {
+    // What a binding may change while it follows the same player (a life stage's strip: whether play shows here).
+    const same = this.player === player && this.eventWord === eventWord && this.run === player.run && this.withStops === stops;
+    const looks = `${play}|${label}|${named}`;
+    this.read = read;
+    this.onStop = onStop;
+    if (same && looks === this.looks) return;
+    this.canPlay = play;
+    this.label = label;
+    this.named = named;
+    this.looks = looks;
+    if (same) {
+      if (this.built) {
+        this.laidOut = null; // the stops are drawn again with their names
+        this.sync();
+      }
+      return;
+    }
     this.unbind();
     this.player = player;
     this.eventWord = eventWord;
@@ -110,6 +134,9 @@ class CellsTimeline extends HTMLElement {
     this.onState = () => this.sync();
     player.addEventListener("time", this.onTime);
     player.addEventListener("state", this.onState);
+    // The speeds offered are one list for every player (src/replay/player.js, refilled when a player loads a run): a player
+    // bound again after another loaded its run gets its own back.
+    if (player.run) SPEEDS.splice(0, SPEEDS.length, ...player.base.speedsFor(player.end - player.start));
     if (this.built) this.sync();
   }
 
@@ -140,6 +167,11 @@ class CellsTimeline extends HTMLElement {
       button.setAttribute("aria-label", `Go to the ${which} ${word}`);
       button.title = `The ${which} ${word}`;
     }
+    this.playButton.hidden = this.canPlay === false;
+    this.classList.toggle("no-play", this.canPlay === false); // its column goes with it (styles.js)
+    this.classList.toggle("is-stages", Boolean(this.onStop)); // a strip of stages: dots, not ticks (styles.js)
+    this.classList.toggle("has-names", Boolean(this.named));
+    this.range.setAttribute("aria-label", this.label || RANGE_LABEL);
     this.icon.setAttribute("d", player.playing ? PAUSE : PLAY);
     this.playButton.setAttribute("aria-label", player.playing ? "Pause" : player.atEnd ? "Play again from the start" : "Play");
     this.playButton.title = this.playButton.getAttribute("aria-label");
@@ -224,9 +256,15 @@ class CellsTimeline extends HTMLElement {
     // Stops: each event that has words becomes a mark to press, named by its words.
     this.stops.hidden = !this.withStops;
     this.stops.replaceChildren(
-      ...(this.withStops ? run.events.filter((event) => event.label) : []).map((event) =>
-        h("button", { class: "tl-stop", type: "button", dataset: { time: String(event.time) }, style: `left:${(this.fraction(event.time) * 100).toFixed(2)}%`, "aria-label": `Go to ${event.label}`, title: event.label, onclick: () => (this.player?.pause(), this.player?.seek(event.time)) })
-      )
+      ...(this.withStops ? run.events.filter((event) => event.label) : []).map((event) => {
+        const named = event.enterable === false;
+        const said = String(event.says || event.label).replace(/\.+$/, "");
+        return h(
+          "button",
+          { class: `tl-stop${named ? " is-named" : ""}`, type: "button", dataset: { time: String(event.time), ...(event.stage ? { stage: event.stage } : {}) }, style: `left:${(this.fraction(event.time) * 100).toFixed(2)}%`, "aria-label": named ? `${said}. Opens what is known of it` : `Go to ${event.label}`, title: said, onclick: () => (this.onStop ? this.onStop(event) : (this.player?.pause(), this.player?.seek(event.time))) },
+          this.named ? h("span", { class: "tl-stop-name", "aria-hidden": "true" }, event.short || event.label) : null
+        );
+      })
     );
     const judged = run.info.judged_s;
     if (Number.isFinite(judged)) {
@@ -243,6 +281,7 @@ class CellsTimeline extends HTMLElement {
     if (!player || !this.built) return;
     const run = player.run;
     this.range.value = String(this.laid() ? this.fraction(player.time) : player.time);
+    for (const stop of this.stops.children) stop.toggleAttribute("aria-current", Math.abs(Number(stop.dataset.time) - player.time) < 1e-9);
     this.fill.style.width = `${(this.fraction(player.time) * 100).toFixed(2)}%`;
     if (!run) {
       this.now.textContent = "";
@@ -250,10 +289,11 @@ class CellsTimeline extends HTMLElement {
       return;
     }
     // The run's own time, and what it lies in: its length, or, for a run whose records start later, its first and last record.
-    const { now, of } = whereWords({ time: player.time, start: player.start, end: player.end, base: player.base || SECONDS });
+    // A binding that gives its own words (a life stage's strip) says where on the strip the playhead stands.
+    const { now, of } = this.read ? this.read(player.time) : whereWords({ time: player.time, start: player.start, end: player.end, base: player.base || SECONDS });
     this.now.textContent = now;
     const parts = [of];
-    if (run.events.length) parts.push(`${this.eventWord} ${run.eventsBy(player.time)} of ${run.events.length}`);
+    if (run.events.length && !this.read) parts.push(`${this.eventWord} ${run.eventsBy(player.time)} of ${run.events.length}`);
     if (!run.isValid(player.index)) parts.push("this record is not valid in the run");
     this.rest.textContent = parts.join(" · ");
     this.range.setAttribute("aria-valuetext", `${now}${of}`);
@@ -272,6 +312,13 @@ class CellsTimeline extends HTMLElement {
   toEvent(direction) {
     const { player } = this;
     if (!player?.run) return;
+    // A binding that takes its stops itself (a life stage's strip) is handed the next one that can be entered.
+    if (this.onStop && this.withStops) {
+      const open = player.run.events.filter((event) => event.label && event.enterable !== false);
+      const next = direction > 0 ? open.find((event) => event.time > player.time + 1e-3) : [...open].reverse().find((event) => event.time < player.time - 1e-3);
+      if (next) this.onStop(next);
+      return;
+    }
     const times = player.run.events.map((event) => event.time);
     const target = direction > 0 ? times.find((time) => time > player.time + 1e-3) : [...times].reverse().find((time) => time < player.time - 1e-3);
     if (target !== undefined) {

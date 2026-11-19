@@ -40,9 +40,9 @@ with a planted error it must catch (D187):
   that is no hook, refused at binding);
 - a kind's standard free energies are () by default and checked when read: a tuple of
   FreeEnergyEntry, each naming the law and mode that produced it, a law the kind hosts with a
-  general form and a mode it has, or neither; today's 3-tuples still read, transitionally, as
-  entries that name no law (planted, each refused, naming the entry: a list, a mapping, a
-  four-item tuple, a bare species, a zero coefficient, a repeated species, an empty
+  general form and a mode it has, or neither (planted, each refused, naming the entry: a list, a
+  mapping, a bare 3-tuple, refused since every kind declares entries, a four-item tuple, a bare
+  species, a zero coefficient, a repeated species, an empty
   stoichiometry, a non-finite energy, a zero and a negative c0, a law without its mode, a mode
   without its law, a law another kind hosts, an unregistered law, a version-1 law, a mode the
   form lacks, and a hook that is not a callable, refused at registration);
@@ -349,12 +349,9 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
     assert kind_registry.declaration_errors(kind) == []
     with law_registry.scope(law_registry.BUILTIN.extended(formed, version_1, elsewhere)):
         assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled)
-        # Transitional, until the kinds owner's transporter hook gives entries: today's 3-tuple
-        # still reads, as an entry that names no law.
-        legacy = planted(standard_free_energies=lambda declaration: ((hydrolysis, -12.3, 1000.0),))
-        assert kind_registry.kind_standard_free_energies(legacy, ()) == (plain,)
         plants = (  # Each refused when read, naming the entry.
             ([plain], "returns a tuple of FreeEnergyEntry"),
+            (((hydrolysis, -12.3, 1000.0),), "returns a tuple of FreeEnergyEntry"),  # Bare.
             ((dict(plain._asdict()),), "returns a tuple of FreeEnergyEntry"),
             (((hydrolysis, -12.3, 1000.0, "x"),), "returns a tuple of FreeEnergyEntry"),
             ((plain._replace(stoichiometry=(("ATP",),)),), "entry 0: its stoichiometry"),

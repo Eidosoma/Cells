@@ -33,6 +33,10 @@ The last column below gives the experimental result and what it can test. **Part
 | [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | Proved | Failed | **Partial evidence.** Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712) |
 | [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) | Proved | Checked | **Partial evidence.** Accessible fluorescent lipid washed out of 310 protein-free vesicles at 0.0108 ± 0.0045 s⁻¹ (24 °C, mean ± SD). The retained fraction was 49.5 ± 8.5%. In a separate sterol assay, adding more equal-sized vesicles increased transfer at 25 °C. The insertion constant fitted at 35 °C was (6.4 ± 0.6) × 10⁷ M⁻¹ s⁻¹ per molar vesicles. Individual vesicle size, free monomer activity and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8) · [Estronca et al., Fig. 2 and Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC2098731/) |
 | [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | Proved | Checked | **Measurement sought.** Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions. |
+| [Pair-consistent catalysis preserves the heat of a reversible transfer](claims/gard-pair-heat.md) | Proved | Failed | **Partial evidence.** For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007) |
+| [Single-event catalysis can give different forward and reverse cycle rate products](claims/gard-single-cycle.md) | Proved | Checked | **Measurement sought.** Forward and reverse transition rates around the same four known lipid compositions under a fixed reservoir, including the identity of the moving lipid. |
+| [Whole-molecule counts set the ideal mixing cost of membrane entry](claims/assembly-ideal-mixing.md) | Proved | Checked | **Partial evidence.** Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open. [Shaw et al. (2023), Fig. 2A and Table S1](https://doi.org/10.1016/j.bpj.2023.02.009) At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts activity 1.119. The expected value is 1 if the crystal references match. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6) |
+| [Pair interactions change the energy of membrane entry with composition](claims/assembly-regular-mixing.md) | Proved | Checked | **Partial evidence.** The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT. [Shaw et al. (2023), Fig. 2A and Table S1](https://doi.org/10.1016/j.bpj.2023.02.009) At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6) |
 | [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | **Partial evidence.** A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811) |
 | [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | **Not assessable.** Observed -18 mV. Predicted -14.59 mV. The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized. [Bonzanni et al. (2020)](https://doi.org/10.1242/bio.048553) |
 
@@ -99,7 +103,7 @@ On the first build, fetch the compiled dependencies for the imported modules. Su
 lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
-  Mathlib.Data.Nat.Factorial.Basic Mathlib.Tactic.Positivity \
+  Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -220,6 +224,19 @@ For assembly exchange, compare entry and exit rates at every three-species compo
 
 ```bash
 "$cells_python" -B checks/reservoir_exchange.py
+```
+
+For the two GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
+
+```bash
+"$cells_python" -B checks/gard_catalysis.py
+"$cells_python" -B checks/gard_catalysis.py --controls-only
+```
+
+For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
+
+```bash
+"$cells_python" -B checks/assembly_mixing.py
 ```
 
 For the tissue balance, the driver follows A and B through one 50 ms composite step on twelve finite extracellular compartments. It compares the change in their stored amounts at nodes 2 through 5 with the signed transfers on the two boundary faces. Each species also has to account for its share of the local conversion. The same comparison runs on the full chain and with the largest boundary face reversed in the recorded transfers. The existing passive-chain test checks the trajectory against the independent split-step reference. [Regional driver](checks/regional_balance.py) · [Reference comparison](../tests/unit/test_species_reactions_composition.py#L84)

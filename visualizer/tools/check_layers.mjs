@@ -42,6 +42,7 @@ import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { pageWaits } from "./lib/page_waits.mjs";
 
 const scenario = process.argv[2] || "zero";
 const runs = path.resolve(process.argv[3] || DEFAULT_RUNS);
@@ -109,6 +110,10 @@ const evaluate = async (expression) => {
 };
 const V = "document.querySelector('cells-viewer')";
 const L = `${V}.current`;
+// Before a reading or a press, the page at rest by its own word (its busy(), src/core/busy.js), never a fixed time; a pause
+// kept is a window a check watches over, said where it stands (tools/lib/page_waits.mjs). `rest` (the camera and the stage
+// held still) is kept.
+const { settled } = pageWaits({ evaluate, viewer: V });
 
 /** The view holds still: three looks in a row with the camera and the stage where they were (at most 8 s). */
 const rest = async () => {
@@ -144,14 +149,14 @@ const open = async (query) => {
     await sleep(250);
   }
   await rest();
-  await sleep(400);
+  await settled({ moving: "auto", most: 360000 }); // (a) the page opened and at rest; was 400 ms
 };
 const mouse = (type, x, y, extra = {}) => page("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons: 1, clickCount: 1, ...extra });
-const click = async (x, y, wait = 400) => {
+const click = async (x, y, wait = 400) => { // `wait`: the pause it once took, kept for its callers
   await mouse("mouseMoved", x, y, { button: "none", buttons: 0 });
   await mouse("mousePressed", x, y);
   await mouse("mouseReleased", x, y, { buttons: 0 });
-  await sleep(wait);
+  await settled({ moving: "auto" }); // (a) the page's answer to the press, at rest
 };
 const middle = (selector) =>
   evaluate(`(() => { const el = ${V}.shadowRoot.querySelector(${JSON.stringify(selector)}); if (!el) return null; el.scrollIntoView({ block: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, text: el.textContent, pressed: el.getAttribute("aria-pressed") }; })()`);
@@ -262,6 +267,7 @@ try {
   if (scenario === "zero") {
     // Layer zero: the replay as it always opened, now drawn by two layers.
     await open(`${run}time=1170`);
+    await sleep(400); // (b) a window: "no record ... has been fetched" below watches over it (open's pause was it)
     const s = await state();
     check("the replay opens with its colouring and its quiet relief on, and nothing else", JSON.stringify(s.on) === JSON.stringify(["voltage-tint", "voltage-relief"]) && s.strength === "quiet", JSON.stringify([s.on, s.strength]));
     // The sheet's own arrays against the replay's loop as it stood before layers.
@@ -315,6 +321,8 @@ try {
     s = await until((seen) => seen.on.includes("voltage-relief") && seen.tallest > seen.low);
     check("Voltage on the height row raises it again", s.on.includes("voltage-relief") && s.tallest > s.low && /Height repeats the colour/.test(s.note || ""), JSON.stringify([s.on, s.tallest]));
     // The drops: their gate comes in a file of its own, fetched now and not before.
+    await sleep(400); // (b) a window: "no record ... has been fetched" below watches over it (the press's pause was it)
+    s = await state();
     check("before the drops are switched on, no record of their own has been fetched", s.fetched === 0, String(s.fetched));
     await press(option("links", "junction-drops"));
     for (let tries = 0; tries < 120; tries++) {
@@ -379,6 +387,7 @@ try {
     const reference = process.env.REFERENCE ? JSON.parse(await readFile(path.resolve(process.env.REFERENCE), "utf8")) : null;
     const time = reference?.time ?? 1170;
     await open(`${reference ? `run=${reference.run}&` : run}time=${time}`);
+    await sleep(400); // (b) a window: "no record ... has been fetched" below watches over it (open's pause was it)
     let s = await state();
     check("the switch offers a row for the marks on a membrane and one for the arrows through it, both off; no ion's record has been fetched", s.rows.some((row) => /^surface: Off\* \| Charge$/.test(row)) && s.rows.some((row) => /^arrows: Off\* \| Push and pull on ions$/.test(row)) && s.ions === 0 && s.closeup === null, JSON.stringify([s.rows, s.ions]));
     // The arrows, switched on with a real press and no cell chosen: the ions' records are fetched, nothing is drawn, and the switch says how to see it.
@@ -751,7 +760,7 @@ try {
       if (item.do) {
         await evaluate(`(async () => { const viewer = ${V}, lens = viewer.current; ${item.do} })()`);
         await rest();
-        await sleep(500);
+        await settled({ moving: "auto" }); // (a) at rest; was 500 ms
       }
       const s = await state();
       note(`${item.name}: ${JSON.stringify({ flow: { statement: s.flow.statement, example: s.flow.example, legendExample: s.flow.legendExample, token: s.flow.lanes?.token, lanes: s.flow.lanes?.readings.length, glow: s.flow.glow?.readings.length }, size: [width, height], run: s.run, on: s.on, strength: s.strength, time: s.time, drops: s.drops, bar: s.bar, tallest_cells: Number((s.tallest / s.pitch).toFixed(2)), frame_ms: s.frame, rows: s.rows, cannot: s.cannot, legend: s.legendBox, closeup: s.closeup && { cell: s.closeup.cell, layers: s.closeup.layers, placed: s.closeup.placed, words: s.closeup.words } })}`);
@@ -761,6 +770,7 @@ try {
 } catch (error) {
   check("the run completed", false, error.stack || error.message);
 } finally {
+  await sleep(500); // (b) a window: "no script errors or blocked loads" watches the run through it (as long as the longest pause it stands for)
   for (const line of pageLog) console.log(line);
   // Whether the page's own font had arrived by the end: with the stand-in, words run longer and cards stand
   // taller, and a miss is read against that.

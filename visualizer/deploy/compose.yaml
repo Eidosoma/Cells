@@ -1,0 +1,54 @@
+# The container that serves the viewer's site (deploy/README.md), in two forms: `docker compose --profile http up`
+# behind a proxy that terminates HTTPS, or `--profile https up` with the server obtaining its own certificate.
+# An example, never started by the repository's tools. CELLS_SITE names the site folder (tools/stage_site.mjs writes it).
+name: cells-site
+
+x-site: &site
+  restart: unless-stopped
+  # Nothing of the image is written, /tmp included: the server keeps no scratch.
+  read_only: true
+  cap_drop: [ALL]
+  cap_add: [NET_BIND_SERVICE]
+  security_opt: ["no-new-privileges:true"]
+  # The viewer's share of the machine: 4 GB and no swap beyond it, processors 12-15 and 28-31 (the engine's jobs hold
+  # the others), and no graphics card (none is passed to the container).
+  mem_limit: 4g
+  memswap_limit: 4g
+  cpuset: "12-15,28-31"
+  pids_limit: 256
+  volumes:
+    # The site folder, read-only, and nothing else of the machine.
+    - type: bind
+      source: ${CELLS_SITE:?CELLS_SITE names the site folder}
+      target: /srv/site
+      read_only: true
+    # The server's own state (its certificates, in the https form) and its logs, in volumes of their own.
+    - caddy-data:/data
+    - caddy-config:/config
+    - caddy-logs:/var/log/caddy
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  site-http:
+    <<: *site
+    profiles: [http]
+    build: { context: ., args: { FORM: http } }
+    image: cells-site:http
+    # Only the proxy on this machine reaches it.
+    ports: ["127.0.0.1:8080:80"]
+
+  site-https:
+    <<: *site
+    profiles: [https]
+    build: { context: ., args: { FORM: https } }
+    image: cells-site:https
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL names the address the certificate authority writes to}
+    ports: ["80:80", "443:443", "443:443/udp"]
+
+volumes:
+  caddy-data: {}
+  caddy-config: {}
+  caddy-logs: {}

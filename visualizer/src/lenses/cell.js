@@ -31,6 +31,9 @@ import { structureAbsence, structureDoors } from "./cell_structures.js";
 import { CellFlux, FLUX_SWITCH } from "../layers/cellflux.js";
 import { LEAST_DISTANCE, MachineView, MACHINE_STOP } from "./machine_view.js";
 import { MODELLED, cellTypeOf, cellTypesOf, notInEngine } from "../scene/entries.js";
+import { HOLD, ILLUSTRATION_SECONDS, hasStages, illustration, journeyOf, openingStage, passagesOf, readStages, recordsPlayer, speciesAt, stripOf } from "../scene/life_stages.js";
+import { Player, SPEEDS } from "../replay/player.js";
+import { loadRun } from "../replay/source.js";
 
 const smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -38,6 +41,16 @@ const smooth = (a, b, x) => {
 };
 const WHITE = new THREE.Color(0xffffff), BLACK = new THREE.Color(0x000000);
 export const SIZE_MODES = ["schematic", "real"];
+// A cell more than this many times the reference cell's size (shapes.js, REF): to scale, its parts are the reference's,
+// enlarged with it, and the card says so (sizeNote). No species of today is one; an egg a millimetre across is.
+export const LARGE_CELL = 4;
+// THE PLAY SWITCH of a species' life stages (schema/SPECIES_STAGES.md). Off: the strip's play control shows only where a
+// saved run fills a span, and plays that run's span; a visitor goes from one drawn stage to another by pressing its mark
+// (or by the keyboard), and the press makes the viewer's own plain change. On (true): play also plays the viewer's own
+// change across the strip, each span at its own pace, as the journey is built and tested to (src/scene/life_stages.js,
+// journeyOf; tests/life_stages.test.mjs). It stays off until the user has seen a picture of the change played.
+export const PLAIN_CHANGE_PLAYS = false;
+const PLAYS = (passage) => passage.player.kind !== "none" && (PLAIN_CHANGE_PLAYS || passage.player.kind !== "illustrative");
 // The levels a species may have, small to large, with the scene's part for each and the stop's name.
 const LEVELS = [
   { id: "molecules", stop: "molecule", entity: "scale.molecule" },
@@ -317,7 +330,16 @@ export class CellLens {
     this.root.add(this.fill);
     // The species the scene holds; the page shows one at a time (schema/SPECIES.md).
     this.list = model.raw.species || [];
-    this.species = null;
+    this.species = null; // the species shown, read through its stage where it has stages (src/scene/life_stages.js)
+    this.file = null; // the species as the scene gives it
+    this.stageId = null;
+    this.pictureWeight = 1; // how much of the picture is drawn: below 1 only while one stage gives way to another
+    this.change = null; // the plain change under way, from one drawn stage to another
+    this.runs = new Map(); // the saved runs that fill a span of the species' strip: id -> { run } or { why }
+    // The strip's one clock: the page's Player, loaded with the species' journey (life_stages.js, journeyOf).
+    this.stagePlayer = new Player();
+    this.stagePlayer.addEventListener("time", () => this.stripMoved());
+    this.stagePlayer.addEventListener("state", () => this.stripMoved());
     // What flows in the cell: shown for a chosen part, or all of it with the Flux switch (layers/cellflux.js).
     this.flux = new CellFlux(this);
     // A closer view of a machine at the foot of an appendage (machine_view.js, schema/MACHINES.md).
@@ -334,11 +356,203 @@ export class CellLens {
 
   /** Show another species: its levels, its shapes and the capabilities that have a place in its cell, in its default cell type. */
   setSpecies(id) {
-    const species = this.speciesOf(id);
-    if (!species || species === this.species) return;
-    this.species = species;
-    this.cellType = cellTypeOf(species);
+    const file = this.speciesOf(id);
+    if (!file || file === this.file) return;
+    this.file = file;
+    // A species with life stages opens on the stage its block names, else its file's own (schema/SPECIES_STAGES.md).
+    this.stageId = openingStage(file);
+    this.species = this.stageId ? speciesAt(file, this.stageId) : file;
+    this.cellType = cellTypeOf(this.species);
+    this.change = null;
+    this.pictureWeight = 1;
+    this.makeJourney();
     this.rebuild();
+  }
+
+  // ------------------------------------------------------------ the species' life stages (schema/SPECIES_STAGES.md)
+
+  /**
+   * Show the species at another of its stages: the species' file read through the stage, built afresh as for a species
+   * or a cell type. `change`: by the viewer's own plain change (held, through an empty picture, held), as a press on
+   * the strip asks; else at once (an address, a run's span that ends on it). A stage named and not drawn, or one the
+   * species does not have, cannot be entered: false.
+   */
+  setStage(id, { change = false } = {}) {
+    if (!id || !hasStages(this.file)) return false;
+    const next = speciesAt(this.file, id);
+    if (!next) return false;
+    if (id === this.stageId && !this.change) return true;
+    this.stagePlayer.pause();
+    if (change && this.active && !this.stage.rig.instant && !this.stage.reducedMotion && !globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      const marks = stripOf(this.file), at = (stage) => marks.findIndex((mark) => mark.id === stage);
+      const [low, high] = [at(this.stageId), at(id)].sort((a, b) => a - b);
+      const through = marks.slice(low + 1, high).filter((mark) => !mark.drawn).map((mark) => mark.id);
+      this.change = { from: this.stageId, to: id, player: illustration(this.file, { from: this.stageId, to: id, through }), t: 0, rebuilt: false, level: this.currentStops.find((stop) => stop.id === this.activeStop)?.level || "cell" };
+      this.seekStrip(id);
+      this.onChrome?.();
+      this.stage.invalidate();
+    } else {
+      this.change = null;
+      this.pictureWeight = 1;
+      this.enterStage(id);
+    }
+    this.onStage?.(id);
+    return true;
+  }
+
+  /** The stage shown, or the one a plain change under way is going to. */
+  get stageShown() {
+    return this.change?.to ?? this.stageId;
+  }
+
+  /** Build the species at a stage now, keeping the visitor's cell type where the stage has it; `seek`: the strip's playhead goes there too. */
+  enterStage(id, { seek = true } = {}) {
+    this.stageId = id;
+    this.species = speciesAt(this.file, id);
+    this.cellType = cellTypeOf(this.species, this.cellType?.id);
+    this.rebuild();
+    if (seek) this.seekStrip(id);
+  }
+
+  /**
+   * Draw a frame of the viewer's own change (life_stages.js, `frameAt`: each end's picture at its weight): the stage
+   * whose picture it holds is built where another was, the camera coming on the log of its distance from where it was
+   * to the new stage's own stop; the picture is drawn at its weight. A press's change and a played one draw alike.
+   */
+  drawFrame(draws, { seek = true } = {}) {
+    const top = draws[0];
+    if (top?.stage && top.stage !== this.stageId) {
+      const from = this.stage.rig.distance;
+      this.enterStage(top.stage, { seek });
+      const to = this.stage.rig.view();
+      this.stage.rig.setView({ ...to, distance: from });
+      this.stage.rig.flyTo(to, (0.5 - HOLD) * ILLUSTRATION_SECONDS * 1000);
+      if (!seek) this.onStage?.(top.stage);
+    }
+    this.pictureWeight = top?.weight ?? 0;
+    this.fades(true);
+  }
+
+  /** The strip's playhead at a stage, without playing. */
+  seekStrip(id) {
+    const place = this.journey?.placeOf(id);
+    if (place === null || place === undefined) return;
+    this.settling = true;
+    this.stagePlayer.seek(place);
+    this.settling = false;
+  }
+
+  /**
+   * The species' journey along its strip, for the strip's Player: its stages, and what fills each stretch. A span a saved
+   * run fills is played from that run's records, fetched from the page's runs; the viewer's own change is played only where
+   * the play switch is on (PLAIN_CHANGE_PLAYS).
+   */
+  makeJourney() {
+    if (!hasStages(this.file)) {
+      this.journey = null;
+      this.stagePlayer.load(null);
+      return;
+    }
+    const runPlayer = (fill, span) => {
+      const held = this.runs.get(fill.run);
+      if (!held) {
+        this.fetchRun(fill.run);
+        return { none: `the run ${fill.run} that fills it is on its way` };
+      }
+      if (held.why) return { none: held.why };
+      // The span's word is the run's own: one of the words its view gives its layers.
+      const words = new Set((held.run.layers || []).map((layer) => layer.representation).filter(Boolean));
+      if (!words.has(fill.kind)) return { none: `the run ${fill.run} gives none of its layers the word ${fill.kind}, as the species file says of it` };
+      return recordsPlayer(held.run, { from: span.from, to: span.to, kind: fill.kind, levels: [], label: held.run.info?.label ? `${held.run.info.label} (${held.run.id})` : held.run.id });
+    };
+    this.journey = journeyOf(this.file, passagesOf(this.file, { runPlayer }), { plays: PLAYS });
+    // Loading puts the playhead at the strip's start; it is put back on the stage shown before anything follows it.
+    // The speeds offered are one list for every Player (src/replay/player.js): a strip loaded while another view's timeline is
+    // bound (a run of a span fetched late) leaves that view's list as it was.
+    const kept = this.active ? null : [...SPEEDS];
+    this.settling = true;
+    this.stagePlayer.load(this.journey);
+    this.settling = false;
+    if (kept) SPEEDS.splice(0, SPEEDS.length, ...kept);
+    this.seekStrip(this.stageId);
+  }
+
+  /** Fetch a saved run that fills a span, from the page's catalogue of runs, and make the journey again when it is in. */
+  fetchRun(id) {
+    if (this.runs.has(id)) return;
+    const entry = (this.model.raw.replays?.runs || []).find((run) => run.id === id);
+    if (!entry) {
+      this.runs.set(id, { why: `the run ${id} that fills it is not among the page's runs` });
+      return;
+    }
+    this.runs.set(id, { why: `the run ${id} that fills it is on its way` });
+    const file = this.file;
+    loadRun(entry, { root: globalThis.document })
+      .then((run) => this.runs.set(id, { run }))
+      .catch((error) => this.runs.set(id, { why: `the run ${id} that fills it could not be read (${error.message})` }))
+      .then(() => {
+        if (this.file !== file) return;
+        this.makeJourney();
+        this.onChrome?.();
+      });
+  }
+
+  /** The strip's playhead moved or stopped: a run's span plays, or the playhead came to rest on a stage. */
+  stripMoved() {
+    if (!this.journey || this.settling || this.change) return;
+    const player = this.stagePlayer, time = player.time;
+    if (player.playing) {
+      this.stage.invalidate(); // the picture's frames keep coming, and with them the strip's ticks (update)
+      const frame = this.journey.frameAt(time, this.currentStops.find((stop) => stop.id === this.activeStop)?.level || "cell");
+      if (frame.kind === "illustrative" || frame.kind === "stage") {
+        // The viewer's own change, played (only where the play switch lets it: PLAIN_CHANGE_PLAYS): drawn as a press draws it.
+        const was = this.pictureWeight;
+        this.drawFrame(frame.draws, { seek: false });
+        if ((was > 0) !== (this.pictureWeight > 0)) this.onChrome?.();
+      } else if (this.pictureWeight !== 0) {
+        // A run's span: nothing of the run is drawn in this view yet; the picture gives way, and its words say what plays.
+        this.pictureWeight = 0;
+        this.fades(true);
+        this.onChrome?.();
+      }
+      if (this.journey.stretchEnd(time) === null) player.pause();
+      return;
+    }
+    // At rest: the playhead stands on a stage (the keyboard, the slider and the stops move it from stage to stage).
+    const near = Math.round(time);
+    if (Math.abs(time - near) > 1e-9) {
+      this.settling = true;
+      player.seek(near);
+      this.settling = false;
+    }
+    const mark = this.journey.stageAt(near);
+    if (mark?.enterable && mark.id !== this.stageId) this.setStage(mark.id, { change: this.pictureWeight > 0.5 });
+    else if (mark?.enterable) this.pictureWeight = 1;
+    else this.pictureWeight = player.time === this.journey.placeOf(this.stageId) ? 1 : 0;
+    this.fades(true);
+    this.onChrome?.();
+  }
+
+  /** A stop of the strip pressed: a drawn stage is entered by the plain change; a named one opens what is known of it. */
+  pressStage(event) {
+    if (event.enterable) this.setStage(event.stage, { change: true });
+    else this.onShown?.(`stage:${this.file.id}.${event.stage}`);
+  }
+
+  /** Advance the plain change: hold, give way through an empty picture (rebuilt there for the next stage), hold. */
+  stepChange(dt) {
+    const change = this.change;
+    change.t = Math.min(1, change.t + dt / (ILLUSTRATION_SECONDS * 1000));
+    // Held, then given way through an empty picture: past the middle the next stage is built and comes in (drawFrame).
+    const draws = change.player.frameAt(change.t, change.level).draws;
+    this.drawFrame(change.t >= 0.5 ? draws.filter((item) => item.stage === change.to) : draws.filter((item) => item.stage === change.from));
+    if (change.t >= 1) {
+      this.change = null;
+      this.pictureWeight = 1;
+      this.fades(true);
+      this.onChrome?.();
+    }
+    return true;
   }
 
   /**
@@ -653,6 +867,7 @@ export class CellLens {
 
   has(id) {
     if (this.machine?.has(id)) return true;
+    if (typeof id === "string" && id.startsWith("stage:")) return Boolean(this.stagePanel(id));
     if (this.species.id && id === `species:${this.species.id}`) return true;
     if (this.sceneryItem(id) || this.flux.has(id)) return true;
     return this.model.get(id)?.group === "biology" && !unshown(this, id);
@@ -663,6 +878,8 @@ export class CellLens {
    * drawn for it, and the capabilities that have no place in it, each with the species' reason.
    */
   describe(id) {
+    const staged = this.stagePanel(id);
+    if (staged) return staged;
     const species = this.species;
     const sources = species.sources || {};
     const links = (keys) =>
@@ -700,6 +917,7 @@ export class CellLens {
         { title: "Its cell", items: (this.cellType?.facts || species.cell.facts || []).map((fact) => ({ label: fact.label, detail: fact.value, links: links(fact.sources) })) },
         // Its cell types, where it has more than one (schema/CELL_TYPES.md): each with what Cells models of it.
         ...(this.cellTypes.length > 1 ? [{ title: "Its cell types", items: this.cellTypes.map((type) => ({ label: type.label, detail: MODELLED[type.modelled?.state] || type.modelled?.state || "", lines: [type.plain || type.modelled?.text].filter(Boolean) })) }] : []),
+        ...this.stageSections(links),
         { title: "Levels drawn", note: species.no_further_levels || null, items: drawn.map((item) => ({ label: item.level.label || item.entity?.label || item.level.id, lines: item.level.note ? [item.level.note] : [], links: links(item.level.sources) })) },
       ],
     };
@@ -766,7 +984,10 @@ export class CellLens {
     return {
       // Of a species (or a cell type of its own file) that is proposed, planned or designed, nothing is in the engine
       // (the ladder's meaning of those words, schema/ENTRIES.md), so the picture says that in place of the map's caveat about runs.
-      caveat: notInEngine(this.cellType && !this.cellType.own ? this.cellType.modelled : species.modelled) ? `${this.cellType && !this.cellType.own ? `${species.label}, ${this.cellType.label}` : species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat,
+      // A species' life stages: the strip is the page's one timeline, bound to its journey; while a stage gives way to
+      // another, or a run's span plays, its words stand on the picture.
+      timeline: this.journey ? this.stripChrome() : null,
+      caveat: this.stageWords() || this.partsWords() || (notInEngine(this.cellType && !this.cellType.own ? this.cellType.modelled : species.modelled) ? `${this.cellType && !this.cellType.own ? `${species.label}, ${this.cellType.label}` : species.label}: nothing of it is in the engine. The picture shows where the capabilities of Cells would have a place in it.` : this.model.raw.caveat),
       // A machine's closer view stands among the levels, below one cell (machine_view.js).
       rail: this.currentStops.flatMap((stop) => [{ id: stop.id, label: stop.label, title: stop.entity?.plain }, ...(stop.id === "molecule" ? (this.machine?.railStops() ?? []) : [])]),
       railActive: this.machine?.open && !this.machine?.leaving ? MACHINE_STOP : this.activeStop,
@@ -802,6 +1023,78 @@ export class CellLens {
     };
   }
 
+  /** What the strip's timeline is bound with: the journey's Player, its stops and words, and play only where a run fills a span. */
+  stripChrome() {
+    const player = this.stagePlayer, journey = this.journey;
+    return { player, eventWord: "stage", stops: true, named: this.stage.width >= 760, label: "Life stage", play: player.playing || journey.stretchEnd(player.time) !== null, read: (time) => journey.read(time), onStop: (event) => this.pressStage(event) };
+  }
+
+  /** The words that stand on the picture while one stage gives way to another, a run's span plays, or the playhead rests on a stage not drawn. */
+  stageWords() {
+    if (this.change) return this.change.player.says;
+    const journey = this.journey, time = this.stagePlayer.time;
+    if (!journey || (!this.stagePlayer.playing && time === journey.placeOf(this.stageId))) return null;
+    const mark = journey.stageAt(time);
+    if (mark && !mark.drawn) return `${mark.words}: named, not drawn. ${mark.missing}`;
+    const passage = journey.passageAt(time);
+    if (!passage) return null;
+    return passage.player.kind === "illustrative" || passage.player.kind === "none" ? passage.player.says : `${passage.player.says}. Its frames are not drawn in this view yet.`;
+  }
+
+  /**
+   * On a phone the names of a cell's parts push its own notes off the picture. At a stage whose cell is drawn with
+   * another form's parts (the file's, enlarged: an egg's), what its first note says of them stands in the picture's words
+   * there, so that the picture never reads as that cell's own inside.
+   */
+  partsWords() {
+    if (this.stage.width >= 760 || !this.species?.stage?.inherits?.includes("cell.parts")) return null;
+    const note = (this.levels?.cell?.notes || [])[0];
+    const words = typeof note === "string" ? note : note?.text;
+    return words ? `${words}.` : null;
+  }
+
+  /** What the species' panel says of the stage shown, where the species has stages. */
+  stageSections(links) {
+    const read = readStages(this.file);
+    if (!read?.ok) return [];
+    const stage = read.byId.get(this.stageId), mark = stripOf(this.file).find((item) => item.id === this.stageId);
+    const said = { "cell.parts": "Its cell's parts are drawn as the species' own cell's: this stage states none of its own.", "cell.facts": "Its cell's facts are the species' own.", modelled: "What Cells models of it is said as of the species.", "cell types": "Its cell types are the species' own." };
+    const inherits = this.species.stage?.inherits || [];
+    return [{
+      title: "At this stage",
+      note: stage.own ? "The form the species' file describes." : "This stage states only what differs from the species' file; the rest is the file's.",
+      items: [
+        { label: mark.words, lines: [mark.timeWords ? `${mark.timeWords[0].toUpperCase()}${mark.timeWords.slice(1)}.` : null, stage.plain || null].filter(Boolean), links: links([...(stage.time?.sources || []), ...(stage.sources || [])]) },
+        ...inherits.map((key) => ({ label: "As the species' own", lines: [said[key] || key] })),
+      ],
+    }];
+  }
+
+  /** A stage of the species as a panel (`stage:<species>.<stage>`): what is known of it, and for a stage named and not drawn, what is missing. */
+  stagePanel(id) {
+    if (typeof id !== "string" || !id.startsWith("stage:") || !this.file?.id) return null;
+    const [speciesId, stageId] = id.slice("stage:".length).split(".");
+    const read = speciesId === this.file.id ? readStages(this.file) : null;
+    const stage = read?.ok ? read.byId.get(stageId) : null;
+    if (!stage) return null;
+    const mark = stripOf(this.file).find((item) => item.id === stageId), sources = this.file.sources || {};
+    const links = (keys) => (keys || []).map((key) => sources[key]).filter(Boolean).map((source) => ({ text: source.text, url: source.doi ? `https://doi.org/${source.doi}` : source.url }));
+    return {
+      id,
+      kind: "stage",
+      group: "biology",
+      label: stage.label,
+      eyebrow: `A life stage of ${this.file.label}`,
+      chips: [...(mark.indexWords ? [{ label: mark.indexWords, title: read.system?.label || "" }] : []), { label: mark.drawn ? "Drawn" : "Named, not drawn" }],
+      plain: mark.drawn ? stage.plain || `${stage.label}: press its mark on the strip to see it.` : `Named, not drawn: ${stage.missing} It stands on the strip and cannot be entered.`,
+      note: stage.note || null,
+      sections: [{ title: "What is known of it", items: [
+        ...(mark.indexWords ? [{ label: read.system.label, detail: stage.index, links: links(read.system.sources) }] : []),
+        ...(mark.timeWords ? [{ label: "Time", detail: mark.timeWords, lines: [`In ${stage.time.where}.`], links: links(stage.time.sources) }] : []),
+      ] }],
+    };
+  }
+
   /**
    * The card's words on the size mode shown, for a cell whose molecules are drawn as themselves to scale (a bacterium:
    * cell_layout.js, the layout's `fine`): one short sentence and a link to the cell's own panel, where `sizeWords` says
@@ -810,7 +1103,28 @@ export class CellLens {
    */
   sizeNote() {
     const said = this.sizeWords();
-    return said ? { text: said.card[this.sizeMode], more: "What each mode draws", open: "scale.cell" } : null;
+    if (said) return { text: said.card[this.sizeMode], more: "What each mode draws", open: "scale.cell" };
+    // A cell many times the reference's size (LARGE_CELL): to scale, its outline is; its parts are the reference cell's
+    // (shapes.js, REF), enlarged with it, since at their own size they would be too small to see beside it. The card says
+    // so in one line, short enough to show whole at 1280 by 720.
+    if (this.sizeMode === "real" && this.u > LARGE_CELL) {
+      const across = cellAcross(this.levels.cell.shape);
+      const width = across >= 1000 ? `${Number((across / 1000).toPrecision(2))} mm` : `${Number(across.toPrecision(2))} µm`;
+      return { text: `A cell about ${width} across: its outline is to scale, its parts are enlarged about ${Math.round(this.u)} times.` };
+    }
+    return null;
+  }
+
+  /**
+   * The closest the camera may come at the cut edge, in micrometres: 0.03 units of the cell's frame, as for every cell,
+   * but never more than the distance at which the membrane's close-up drawn to scale is framed, which is the same in
+   * nanometres for every cell. For every cell drawn before 19 November 2026 (0.2 to 47 µm across) the first is the
+   * nearer, at most 0.077 µm against about 0.09 µm; for a cell sixty times the reference's it would keep the camera
+   * away from its own close-up.
+   */
+  closestApproach() {
+    const stop = this.stops?.real?.find((item) => item.id === "molecule");
+    return Math.min(0.03 * this.u, stop ? this.stopView(stop).distance : Infinity);
   }
 
   /**
@@ -1022,6 +1336,7 @@ export class CellLens {
 
   deactivate() {
     this.active = false;
+    this.stagePlayer.pause(); // a run's span on the strip does not play on behind another view
     this.flux.shine(); // the bloom and the hold on the look's motion go with the view
     this.machine?.holdLook(false);
     this.trial?.hide();
@@ -1244,7 +1559,7 @@ export class CellLens {
     for (const zone of this.zones) {
       const range = zone.range;
       const own = zone === this.machine?.zone;
-      const fade = own ? veil : (!this.shows(zone) ? 0 : (range.in ? smooth(range.in[0], range.in[1], distance) : 1) * (range.out ? 1 - smooth(range.out[0], range.out[1], distance) : 1)) * (1 - veil);
+      const fade = (own ? veil : (!this.shows(zone) ? 0 : (range.in ? smooth(range.in[0], range.in[1], distance) : 1) * (range.out ? 1 - smooth(range.out[0], range.out[1], distance) : 1)) * (1 - veil)) * (this.pictureWeight ?? 1);
       if (own) this.machine?.applyFade(fade, force);
       if (!force && Math.abs(fade - zone.fade) < 0.004) continue;
       changed = true;
@@ -1284,12 +1599,18 @@ export class CellLens {
     // The camera may come close at the cut edge, but looking at the middle of the cell it stays outside.
     const atEdge = 1 - smooth(0.3, 2.8, this.cells[this.sizeMode].shape.depth({ x: rig.target.x / u, z: rig.target.z / u }));
     // In a machine's closer view the camera may come as close as the machine asks (machine_view.js).
-    rig.limits.minDistance = this.machine?.open ? LEAST_DISTANCE : (R + 6 + (0.03 - R - 6) * atEdge) * u;
+    // There it comes as close as 0.03 units, but never kept farther than the membrane's close-up drawn to scale stands: that
+    // stop is in nanometres whatever the cell's size, so a cell many times the reference's (an egg a millimetre across) can
+    // still be seen close (closestApproach).
+    rig.limits.minDistance = this.machine?.open ? LEAST_DISTANCE : (R + 6) * u * (1 - atEdge) + this.closestApproach() * atEdge;
     return changed;
   }
 
   update(dt, time, real = dt) {
-    const changed = this.fades();
+    // A species' stages: the plain change under way, and a run's span playing on the strip.
+    const staging = this.change ? this.stepChange(real) : false;
+    const playing = this.stagePlayer?.playing ? this.stagePlayer.tick(real) : false;
+    const changed = this.fades() || staging || playing;
     const turning = this.machine?.update(dt, time, real) ?? false; // a machine's rotor turns by the time that really passed
     const flowing = this.flux.frame() || turning; // beads keep their own time
     const near = this.zones.some((zone) => zone.mode === this.sizeMode && zone.fade > 0.02);

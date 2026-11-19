@@ -30,6 +30,7 @@ from tests import membrane_insertion_fixtures as fx
 from validation.compartment_ph_engine import definitions as fr
 from validation.tissue import pump_water_fixtures as water
 from validation.tissue import regulated_availability_fixtures as rf
+from validation.tissue import species_reactions_fixtures as rfx
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 LN10 = math.log(10.0)
@@ -101,6 +102,23 @@ def three_cells(*, buffered):
     return rf.with_coupling(raw, species=["H"], states=states)
 
 
+def reactions_with_proton_counter_ion(*, buffered):
+    """FR-15 S1: the three-cell plant's world with local_species_reactions@1 making a trace anion X
+    with H as its counter-ion (0 -> X + H in cell_0), H flagged counter_ion: beside the buffer read,
+    the network names the stored proton row, so check_stage_read_rows refuses it (no new code)."""
+    kind = fixtures.HEREDITY_STATES["D"][:4]
+    raw = copy.deepcopy(fixtures.heredity_cells([kind] * 3, dt=1e-3, end_time=0.01))
+    cells = [c["id"] for c in raw["model"]["cells"]]
+    raw = quiet(with_buffer_rows(raw, {cells[0]: 50.0, cells[1]: 10.0}))
+    if buffered:
+        declare_buffer(raw, cells[:2])
+    raw = rfx.with_charged_trace(cs.frozen_definition(raw), "X", -1)
+    listed = [rfx.species("X"), dict(rfx.species("H"), counter_ion=True)]
+    make = rfx.mass_action("make", {"cells": [cells[0]]}, {}, {"X": 1, "H": 1}, 1e-6)
+    # c0 the world's 1000 mM, so H's mu°/RT agrees with the species registry's (one authority).
+    return rfx.with_reactions(raw, listed, [make], [("make", None, [(0.0, 1.0)])], c0=C0_MM)
+
+
 def two_cells_with_water(*, buffered):
     """The verifier's water plant: two heredity cells D with 50 mM of B at free pH 7.2 (the first
     declared under the buffer read when `buffered`), osmotic water on."""
@@ -134,8 +152,11 @@ def buffered_cleft(*, buffered):
                       r"cell_0: species_regulated_availability@1 names or moves it"),
         (two_cells_with_water, r"ideal_osmosis_linear_compliance_water@1 sums every stored row as "
                                "free particles"),
+        (reactions_with_proton_counter_ion,
+         r"species H is held by the stage read of cells.rapid_proton_buffer@1 at cell_0: "
+         r"local_species_reactions@1 names or moves it"),  # FR-15 S1: B4's proton as counter-ion.
     ],
-    ids=["regulated_availability", "water"],
+    ids=["regulated_availability", "water", "proton_counter_ion"],
 )  # fmt: skip
 def test_an_operator_beside_a_stored_total_is_refused_and_the_unbuffered_control_admitted(
     world, message

@@ -378,7 +378,10 @@ test("the tool cuts the members' files as the lines say, and every member is a p
 
 const SAVED = [path.join(DATASETS, "uniprot-human-reviewed-proteome"), path.join(TERMS, "mpneumoniae", "terms-upstream-tools"), path.join(TERMS, "syn3a", "terms-prosite"), path.join(TERMS, "planarian", "terms-upstream-tools")].every((folder) => existsSync(path.join(folder, "MANIFEST.json")));
 
-test("the build tool reproduces the shelves, the table and the note beside them from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set HUMAN_DATASETS, and HUMAN_TERMS for the other species' pages of terms)" }, async () => {
+test("the build tool reproduces the shelves, the table and the note beside them from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set HUMAN_DATASETS, and HUMAN_TERMS for the other species' pages of terms)" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*"), path.join(TERMS, "*", "*")], env: ["HUMAN_DATASETS", "HUMAN_TERMS"] })) return;
   const out = await mkdtemp(path.join(os.tmpdir(), "human-build-"));
   try {
     const run = spawnSync("python3", [TOOL, "build", "--datasets", DATASETS, "--terms", TERMS, "--out-dir", out], { encoding: "utf8", timeout: 900000, maxBuffer: 1 << 26 });

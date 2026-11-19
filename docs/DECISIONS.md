@@ -7460,3 +7460,84 @@ This lifts D222's hold on OL2 and OL3, at low priority.
   OL2 milestone 1 as built (ol2-engine 9190ae78); then, on one branch, OL2 milestone 2 (the osmotic
   lumen and lysis), OL3 milestone 1 (single-lineage division), OL2 milestone 3 (the shared pool and
   serial transfer, labels and the diagnostic record), and OL5's probe roles.
+
+## D231: FR-7's first closed loop and FR-8 rung 1's three choices
+
+2026-11-19, about 20:50 UTC. The user, on the two open questions: "Get adviser on the two questions
+then I go with what yuo guyes think". The lead took the advisor's review, and records these rulings
+under that delegation, which covers these two questions only.
+
+1. **FR-7's closed loop (the lane's Q10): (b), the Na/K pump with Na-leak units**
+   (`naleak_always_open@1` populations), with a declared synthetic time scale.
+   - **Gated on one engine probe before R-loop is briefed.** The probe runs in the world to be
+     registered: real population units through membrane state, the pump, and the whole F4
+     composition admitted at definition, including the regulator sourced on Na. It measures the
+     loop's gain. The stand-in's 0.37 scaled a patch's Na leak rather than population units, and
+     the engine's K-unit result was below 0.01.
+   - **The synthetic time scale** is one declared geometric number, volume per area, labelled
+     synthetic (D217). The probe also checks that the gain is unchanged, that 1 ms is admitted,
+     and what a run costs. The real-time-scale world, FR-8's consumer, is the same world.
+   - **Fallback, declared now:** if the closed and cut arms cannot differ by more than the
+     comparison band, the question returns to the user. The lane does not move to (c), the held
+     injection, whose only evidence is NumPy.
+   - **Power:** F4's registration has the code-blind references show, blind, that |closed − cut|
+     exceeds the comparison band by a stated margin.
+   - **Reference inputs** declare the pump's fuel pools and standard state from the start.
+   - **F3 does not wait:** its readings are units and conductance. R-chain's and R-clear's
+     references are briefed now; only R-loop waits for the probe.
+2. **FR-8 rung 1** (validation/long_duration/RUNG1_20261119.md, registered at a28616ba):
+   - **The accuracy bar:** the parity caps (|ΔVm| ≤ 20 µV, |Δc|/c ≤ 2 × 10⁻⁴) judge the method,
+     and stage 0's adequacy budgets (2 µV, 2 × 10⁻⁵, 10⁻⁵) judge the reference. Stage 0's
+     registration defined 2 µV as a tenth of the voltage cap, so these roles were on record before
+     rung 0's numbers. Both are reported. Before any new-ID run, the owner checks that the
+     intervention reading carries stage 0's peak-response and crossing-time criteria (D217), and
+     adds them as a dated §10 entry if it does not.
+   - **The threshold:** a step gain of 10, as registered. The cost per simulated second of both
+     IDs at dt* is added as a reported reading (D217 lists measured cost).
+   - **The energy check:** X2 (`step_doubled_energy@1`) at the registered cap of 2 × 10⁻³, never
+     raised. Rung 1 builds no exact booking.
+     - **Trigger, recorded now:** if an X2 cap refusal is what binds dt* in Stage A or on either
+       reading, seam D's branch X (the exact booking, 2–3 agent-days, the @3 owner's) is built
+       before rung 2.
+     - It is deferred because on the intervention reading the predicted limit is NaV resolution,
+       which an exact booking would not lift.
+     - I3 runs X2's plant at the largest step claimed, not only at 1 ms.
+
+## D232: FR-7's scoped exception to D177, and FR-8 measures before it builds
+
+2026-11-19, about 21:25 UTC. The user, choosing among the lead's options (after the advisor's
+review):
+
+1. **FR-7: option 2.** The first test proceeds as built.
+   - **A scoped exception to D177** covers both surface insertion and irreversible removal: FR-7's
+     unit producer (`population_unit_turnover@1`, landed at 7fb27a92) inserts its units and removes
+     them itself.
+   - **The declared lifetime applies to every unit in a routed population,** including units present
+     initially.
+   - **The producer's refusal stays simulation-wide.** It excludes recycling (FR-2's trafficking),
+     membrane insertion and division even on other populations, and this is documented.
+   - **References:** the independent chain and clearance references proceed now. The closed-loop
+     reference stays behind the agreed gain probe (D231).
+   - **For the later FR-2 design:** specify who owns insertion, and give each population one owner
+     for terminal removal, so that a retrieved unit can either return or be destroyed and its loss
+     is counted once.
+   - Whether recycling prolongs the response remains an open question.
+2. **FR-8: option B first.** Run rung 1's registered control, today's time integrator with X2
+   enabled, before building anything.
+   - **Report:** the largest passing step, what stops the next rung, and wall time per simulated
+     second. The roughly 71 ms figure is a predicted charge-stability ceiling.
+   - **In parallel,** check whether fine steps around events can run on today's integrator.
+   - **Then, by these rules:**
+     - if charge stability limits the calm stretch and the proposed method (N2) addresses that
+       limit, proceed to A (build N2, then rung 1 as registered);
+     - if today's integrator already gives adequate calm-stretch performance and event windows can
+       use it, prioritise C (the fine-window executor);
+     - if X2's cap binds today's integrator, report the evidence and keep the exact-accounting build
+       on hold. The registered build trigger (D231) applies to Stage A or the new integrator's
+       limiting rung; a refusal on today's integrator alone does not trigger it.
+   - **Rung 0's official verdict stays inconclusive.** The follow-up supports a transient in this
+     case. The 3.3 µV figure is the difference from the finest saved trace through one switch.
+   - **The 1 ms rule** governs the spacing of the samples bracketing the threshold crossing.
+   - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
+     that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
+     per-trace criterion.

@@ -88,6 +88,44 @@
       "driver": "lean/checks/reservoir_exchange.py",
       "record": "lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange"
     },
+    "assembly-mixing": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.ideal_mixing@1", "cells.regular_mixing@1", "cells.stochastic_mass_action@1", "cells.transition_state_factor@1"],
+      "engine_revision": "1e77a8876cc28e23e9ffed443e62c465b6f8fe3c",
+      "record_revision": "2c18459cbac3a33f58551194340afe2b2c565b5a",
+      "sources": {
+        "Ideal free energy and step increment": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64",
+        "Cached pair-energy update": "src/cells/models/assembly_lineages_v2/regular_mixing.py#L95",
+        "Reverse-rate composition": "src/cells/models/assembly_lineages_v2/kernel.py#L254",
+        "Registered seven-step world": "validation/ool/references/designs/ol1_wa.world.json",
+        "Exact reference weight and energy": "validation/ool/references/laws.py#L168",
+        "Independent edge identity": "validation/ool/references/detailed_balance.py#L155",
+        "Independent event ledger": "validation/ool/references/ledger.py#L85"
+      },
+      "driver": "lean/checks/assembly_mixing.py",
+      "record": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing"
+    },
+    "gard-catalysis": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@1"],
+      "laws": ["cells.reservoir_exchange@1", "cells.gard_catalysis_pair_consistent@1", "cells.gard_catalysis_single_event@1"],
+      "operators": ["cells.size_threshold_fission@1", "cells.daughter_continuation@1"],
+      "engine_revision": "f7767ad79edf2f972b78999e64b40f0c294bcf88",
+      "record_revision": "f382628833be3f23b53cd95ac0a52ec15a76e6ca",
+      "sources": {
+        "Single-event factor": "src/cells/models/assembly_lineages/gard.py#L137",
+        "Pair-consistent reverse and terminal factors": "src/cells/models/assembly_lineages/gard.py#L143",
+        "Event heat using reverse rates at arrival": "src/cells/models/assembly_lineages/kernel.py#L299",
+        "Passive ledger refusal": "src/cells/models/assembly_lineages/runner.py#L894",
+        "Compiled rate probe": "validation/assembly_lineages/probes.py#L210",
+        "Independent rational propensities": "validation/gard/references/kernels.py#L279",
+        "Rate products around a square": "validation/gard/references/detailed_balance.py#L132",
+        "Rank-one condition in the finite-reservoir reference": "validation/gard/references/closed_world.py#L202"
+      },
+      "driver": "lean/checks/gard_catalysis.py",
+      "record": "lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers"
+    },
     "closed-enzyme": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1"],
@@ -596,6 +634,161 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["assembly-exchange"], "result": "Across 357 reversible pairs the largest difference from the independent log-weight change was 4.53 × 10⁻¹⁶ kBT. Two seeded lineages exercised three divisions and a terminal exit. Their saved log weight, heat, fission work and discarded free energy agreed with the independent calculation within 1.78 × 10⁻¹⁵ kBT."},
       "biology": {"status": "open", "observable": "Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions.", "unit": "kBT", "evidence": []}
+    },
+    {
+      "id": "gard-pair-heat",
+      "title": "Pair-consistent catalysis preserves the heat of a reversible transfer",
+      "statement": "A molecule entering an assembly sees the same catalytic multiplier as its reverse exit when the moving molecule is excluded from both catalyst counts. The log ratio of the two rates then equals the base exchange log-weight change. A singleton’s exit has multiplier one.",
+      "assumptions": ["The species set is finite. The counts are nonnegative integers and the catalytic matrix β has nonnegative entries. The assembly exchanges one molecule at a time, with positive rate and transfer constants and fixed positive reservoir activities.", "The reversible transfer connects two nonempty compositions. The singleton’s exit into the empty state is a separate boundary case. Lean evaluates the sums in exact arithmetic."],
+      "uses": ["assembly-exchange-heat"],
+      "formal": {"status": "proved", "about": ["cells.gard_catalysis_pair_consistent@1"], "theorems": {
+        "CellsProofs.Chemistry.GardCatalysis.weighted_addOne": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.factor_pos": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.pair_reverse_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.singleton_factors": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.pair_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean"
+      }},
+      "numerical": {"status": "failed", "comparisons": ["gard-catalysis"], "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."},
+      "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
+    },
+    {
+      "id": "gard-single-cycle",
+      "title": "Single-event catalysis can give different forward and reverse cycle rate products",
+      "statement": "The single-event rule evaluates the moving species’ multiplier at each event’s departure state. This adds the log ratio of two composition-dependent multipliers to the base heat. A rank-one β with only β_AA = 1 gives a four-transfer cycle ratio of 81/80. If adding one to every entry of β gives a positive rank-one matrix, the extra heat is a difference of state values and sums to zero around closed paths.",
+      "assumptions": ["The assembly exchanges with a held reservoir and each reversible edge joins nonempty states. Base propensities and multipliers are positive on the edges in the cycle.", "The explicit square starts with one molecule each of A and B and follows +A, +B, −A, −B. The sufficient rank-one condition is 1 + βᵢⱼ = uᵢvⱼ. Then the correction to the base log weight is −ln(Σⱼ vⱼnⱼ / N)."],
+      "uses": ["assembly-exchange-heat"],
+      "formal": {"status": "proved", "about": ["cells.gard_catalysis_single_event@1"], "theorems": {
+        "CellsProofs.Chemistry.GardCatalysis.single_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.shifted_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.shifted_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.raw_rank_one_square": "lean/CellsProofs/Chemistry/GardCatalysis.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["gard-catalysis"], "result": "The CPU agreed with rational forward and reverse rate products on 81 four-step cycles across three matrices. The rank-one β example gave 81/80. With a rank-one entrywise shift, all 27 cycles had ratio one in the exact reference and all 70 CPU edges matched the corrected log weight within 4.45 × 10⁻¹⁶ kBT. The lead corrected the design and assigned the matching code wording to the builder. [Design correction](https://github.com/Eidosoma/Cells/blob/0b564f2d99f70995c741456d7f55a515d049dd4d/docs/GARD_DESIGN.md#L320)"},
+      "biology": {"status": "open", "observable": "Forward and reverse transition rates around the same four known lipid compositions under a fixed reservoir, including the identity of the moving lipid.", "unit": "dimensionless ratio of rate products", "evidence": []}
+    },
+    {
+      "id": "assembly-ideal-mixing",
+      "title": "Whole-molecule counts set the ideal mixing cost of membrane entry",
+      "statement": "For a membrane with N molecules and a molecules of the incoming species, the activity for adding one molecule relative to its standard state is (a + 1)/(N + 1 − c). A finite source pool also contributes its count and standard concentration to the transfer energy.",
+      "assumptions": [
+        "The ideal term uses log factorials of integer counts. The measure offset c is 0 or 1. For N ≥ c the activity formula applies directly. The first insertion into an empty membrane has only the entering species’ standard energy.",
+        "The equilibrium experiment measures bulk activity relative to cholesterol crystals. The ideal bulk curve is A = s x with one fitted reference-state scale s and cholesterol mole fraction x."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyMixing.site_add": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.measure_shift": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_insert": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_insertion_activity": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_activity_error": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.first_insertion": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_transfer": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
+        },
+        "about": ["cells.ideal_mixing@1"]
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-mixing"],
+        "result": "Both registered measures agreed with exact-factorial state weights on 592 compositions in the ideal-only world, within 2.14 × 10⁻¹⁴ kBT. Reference rates and independent ledger replay passed. At equal A and B counts with N = 6 the insertion activities were 4/7 and 4/6."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction.",
+        "unit": "dimensionless activity relative to crystalline cholesterol",
+        "evidence": [
+          {
+            "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
+            "manifest": "lean/checks/data/shaw2023_dopc.json",
+            "citation": "Shaw et al. (2023), Fig. 2A and Table S1",
+            "doi": "10.1016/j.bpj.2023.02.009",
+            "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
+            "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
+            "role": "descriptive",
+            "evaluation": ["Leave one of 23 distinct cholesterol compositions out at a time. Keep repeated readings at the same composition together."],
+            "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open."
+          },
+          {
+            "dataset_id": "parker2004_dopc_crystal_onset@1",
+            "manifest": "lean/checks/data/parker2004_dopc_saturation.json",
+            "citation": "Parker et al. (2004), Fig. 3",
+            "doi": "10.1016/S0006-3495(04)74221-6",
+            "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
+            "context": "Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy detected cholesterol monohydrate.",
+            "role": "held_out_from_fitting",
+            "fit": ["Shaw Table S1 DOPC activity curve"],
+            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts activity 1.119. The expected value is 1 if the crystal references match."
+          }
+        ]
+      }
+    },
+    {
+      "id": "assembly-regular-mixing",
+      "title": "Pair interactions change the energy of membrane entry with composition",
+      "statement": "Updating the symmetric pair energy equals recomputing it from all membrane counts. For A entering a binary membrane with b molecules of B and total N, the excess insertion energy is χb²/[N(N + 1)] and the bulk excess chemical potential is χ(b/N)².",
+      "assumptions": [
+        "The pair matrix is symmetric and counts remain in their physical domain. For the binary result the diagonal is zero, χ is the unlike-pair energy in kBT and N is positive.",
+        "The bulk comparison treats the cholesterol/DOPC membrane as a homogeneous binary mixture at fixed temperature. It uses one composition-independent χ and a fitted scale for the cholesterol crystal reference."
+      ],
+      "uses": ["assembly-ideal-mixing"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyMixing.quadratic_update": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.regular_change": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_specialization": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_insert": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_chemical_potential": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
+        },
+        "about": ["cells.regular_mixing@1"],
+        "sources": {
+          "Imported Mathlib dot-product and matrix-vector identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L662"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-mixing"],
+        "result": "Under both measures, the signed pair matrix matched the reference energy within 2.14 × 10⁻¹⁴ kBT. The reversible edge identities passed. With equal counts and χ = 1, adding A cost an extra 0.214286 kBT at N = 6 and 0.245902 at N = 60."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction under a binary interaction model.",
+        "unit": "dimensionless activity relative to crystalline cholesterol",
+        "evidence": [
+          {
+            "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
+            "manifest": "lean/checks/data/shaw2023_dopc.json",
+            "citation": "Shaw et al. (2023), Fig. 2A and Table S1",
+            "doi": "10.1016/j.bpj.2023.02.009",
+            "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
+            "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
+            "role": "descriptive",
+            "evaluation": ["Leave one of 23 distinct cholesterol compositions out at a time. Keep repeated readings at the same composition together."],
+            "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT."
+          },
+          {
+            "dataset_id": "parker2004_dopc_crystal_onset@1",
+            "manifest": "lean/checks/data/parker2004_dopc_saturation.json",
+            "citation": "Parker et al. (2004), Fig. 3",
+            "doi": "10.1016/S0006-3495(04)74221-6",
+            "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
+            "context": "Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy detected cholesterol monohydrate.",
+            "role": "held_out_from_fitting",
+            "fit": ["Shaw Table S1 DOPC activity curve"],
+            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
+          }
+        ]
+      }
     },
     {
       "id": "regional-reaction-transport",

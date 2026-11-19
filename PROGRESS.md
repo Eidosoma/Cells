@@ -108,6 +108,39 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Seam E's checks and F's cleanup (19 November 2026).**
+  - Merge bd9881d5, tag `binding-item5-landed-2026-11-19`: the species registry checks every declared
+    `FreeEnergyEntry` against its own sum of ν μ°/RT, within the form's band. Gates: tiers 594 files
+    with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +11, FR's set; the lead's merged check on
+    trial b50835af.
+  - Merge 985c6a44, tag `f-energies-cleanup-landed-2026-11-19`: a bare 3-tuple from a
+    standard_free_energies hook is now refused, since every hook returns FreeEnergyEntry. Gates:
+    tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +0; the lead's merged check
+    on trial ee082f5d.
+
+- **FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under
+  D148).** Merge ddb52790, tag `fr15-s1-landed-2026-11-19`. Reactions may involve charged species
+  when every reaction conserves charge. A charged row stays impermeant on @3's routes unless it is a
+  declared counter-ion covered by @3's own charge-relaxation bound, 100 times its material term.
+  Charged turnover routes are deferred; exchange stays neutral. Gates: tiers 594 files with 0
+  changed, G1 113 of 113, crossrev 11 of 11 identical (the D148 evidence), FR's set; IDs with one
+  declared rename; X2 checked (admitted; no counted steps, so no power there); the lead's merged
+  check on trial 29c44900.
+
+- **R2, the view into `control_factors` for a factor operator's current reads (19 November 2026;
+  @2 only; FR-7's F2 prerequisite).** Merge 6c501ab3, tag `r2-landed-2026-11-19`. A factor
+  operator may declare a current read at the control view, and the composite passes C4's reader
+  view to its hooks. No registered operator declares one, so no existing program changes. Gates:
+  tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +1, FR's set; the lead's
+  merged check on trial 25128f4e.
+
+- **The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;
+  D228 item 2).** Merge 2db46727, tag `rectifier-landed-2026-11-19`. An instantaneous inward
+  rectifier on the passive-routes kind: E_K-referenced rectification, √K_o scaling, coefficients in
+  the route's declaration (unsourced today), weak rectifiers through V_h and s. Kir4.1 for the
+  Xenopus lane's XC0 is its first use. Gates: tiers 594 files with 0 changed, G1 113 of 113,
+  crossrev 11 of 11, IDs +5, FR's set; the lead's merged check on trial 4da4ec58.
+
 - **FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not
   judged).** Merge 7fb27a92, tag `fr7-f1-landed-2026-11-19`. A finite precursor is consumed at first
   order into channel units, through m maturation pools, with first-order removal of every unit into

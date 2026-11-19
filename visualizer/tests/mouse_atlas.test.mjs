@@ -240,7 +240,10 @@ test("the tool cuts the members' files as the lines say, and every member carrie
   }
 });
 
-test("the build tool reproduces the six files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set MOUSE_DATASETS)" }, async () => {
+test("the build tool reproduces the six files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set MOUSE_DATASETS)" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*", "*")], env: ["MOUSE_DATASETS"] })) return;
   await mkdir(SCRATCH, { recursive: true });
   const folder = await mkdtemp(path.join(SCRATCH, "mouse-build-"));
   try {

@@ -1,0 +1,71 @@
+# What the viewer's site server does, in both forms (deploy/README.md; docs/HOSTING_AND_API.md, section 9, "What the
+# server must do"). Imported by Caddyfile.http and Caddyfile.https. An example, never started by the repository's tools.
+
+# The site folder, mounted read-only (compose.yaml): the pointer (index.html) and the releases (r/<id>/).
+root * /srv/site
+
+# Every page and file: the content policy (the same line as sitePolicy() in tools/stage_site.mjs, held equal by
+# tests/stage_site.test.mjs): scripts, styles, fonts, pictures and connections from the site itself; no limit on who may
+# frame the viewer. A release's inline scripts are named by their hashes in its release.json.
+header {
+	Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; base-uri 'self'"
+	X-Content-Type-Options "nosniff"
+	Referrer-Policy "strict-origin-when-cross-origin"
+	Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	-Server
+}
+
+# A release is written once and never changes: a year, immutable, and not listed by search engines (the root is).
+@release path /r/*
+header @release {
+	Cache-Control "public, max-age=31536000, immutable"
+	X-Robots-Tag "noindex"
+}
+# The pointer: asked again on every visit (a short "not modified" while it is current).
+@pointer path / /index.html
+header @pointer Cache-Control "no-cache"
+
+# Logs, for counting visits: one JSON line a request, the visitor's address cut to its first 16 bits (IPv4) or 32 bits
+# (IPv6) before it is written, kept at most 30 days.
+log {
+	output file /var/log/caddy/access.log {
+		roll_size 50MiB
+		roll_keep 10
+		roll_keep_for 720h
+	}
+	format filter {
+		wrap json
+		fields {
+			request>remote_ip ip_mask 16 32
+			request>client_ip ip_mask 16 32
+			request>headers>X-Forwarded-For delete
+			request>headers>Cookie delete
+			request>headers>Authorization delete
+		}
+	}
+}
+
+route {
+	# Files compressed as they are sent where no copy stands beside them (a release staged without --compress); a copy is
+	# sent as it is, the pointer's too (index.html.br and .gz are the release's own, moved with the pointer).
+	# gzip, as tools/check_site.mjs measures it (zstd may be added: browsers that ask for it would then get it).
+	encode gzip
+	# Nothing is written to the site, and nothing hidden is served (a release being written, the pointer's own temporary copy).
+	@refused not method GET HEAD
+	respond @refused 405
+	@hidden path_regexp hidden /\.
+	respond @hidden 404
+	# A limit on requests from one address (a first visit makes about fifteen), then 429 with Retry-After. Needs the
+	# rate_limit module (deploy/Dockerfile builds it in): the stock image has none.
+	rate_limit {
+		zone per_address {
+			key {client_ip}
+			events 600
+			window 1m
+		}
+	}
+	# The release's .br and .gz copies where the request accepts them; index.html for a folder, whatever the query string.
+	file_server {
+		precompressed br gzip
+	}
+}

@@ -48,6 +48,15 @@ Declarations (class attributes):
   source's ``FACTOR_RECORD`` (an owned state field [route], with ``factor_record``) is filled by
   the composite with each route's factor where it is applied: at the control view, and at each
   routed half-step.
+* The control view's reads (R2; docs/INVENTORY_COUPLING_DESIGN.md §2.1): a factor operator's
+  current read at stage ``inner`` (``SCOPED_READS``) is a read at the control view, the state the
+  inner step starts from, where its ``control_factors``, ``factor_valid`` and ``factor_record``
+  are evaluated, so the contract admits that stage for a factor operator without an in-step
+  process. The composite passes those three hooks ``view=``, a function of state giving its
+  reader view of those fields (C4: the merged view's fields without the field refresh), only
+  where such a read is declared (``factor_reads``; static), so every other call is unchanged; a
+  factor operator that declares one takes ``view=None`` in each of those hooks it defines (a
+  routed half-step's ``factor_record`` passes none).
 * Parts (kinds of §3.4), each optional: an event map at the start of the step
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
@@ -204,6 +213,7 @@ fields are the inner model's followed by each operator's in declared order.
 Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
+import inspect
 from collections.abc import Mapping
 from types import MappingProxyType
 from typing import NamedTuple
@@ -260,6 +270,18 @@ def reads_of(operator, field):
         return (declared,) if isinstance(declared, Read) else tuple(declared)
     read = operator.scoped_read(field)
     return () if read is None else (read,)
+
+
+def factor_reads(operator):
+    """The fields a factor operator reads current at the control view (R2: stage inner, from
+    SCOPED_READS), in declared order; () for any other operator."""
+    if not operator.CONTROL_FACTORS:
+        return ()
+    return tuple(
+        k
+        for k in operator.SCOPED_READS
+        if any(r.mode == "current" and r.stage == "inner" for r in reads_of(operator, k))
+    )
 
 
 def part_stages(operator):
@@ -552,7 +574,8 @@ class Operator:
         return {}
 
     def control_factors(self, state, p, *, xp):
-        """{inner control field: multiplier} for CONTROL_FACTORS."""
+        """{inner control field: multiplier} for CONTROL_FACTORS. An operator with factor_reads
+        also takes view=, the function of state giving its reader view (R2)."""
         return {}
 
     def rate_factors(self, state, p, target, field, *, xp):
@@ -574,13 +597,15 @@ class Operator:
 
     def factor_valid(self, state, p, *, xp):
         """The validity of its CONTROL_FACTORS' sources at the control view, where the composite
-        evaluates them (B1′: a declared operating range), or None: nothing to check."""
+        evaluates them (B1′: a declared operating range), or None: nothing to check. With
+        factor_reads it also takes view= (R2)."""
         return None
 
     def factor_record(self, state, p, target, field, *, xp):
         """(values, mask) [route] for FACTOR_RECORD: each route's factor from `state` and the
         routes evaluated there, at the control view (target None) or at a target's half-step
-        (target, field) (B1′'s exact record of the factor applied)."""
+        (target, field) (B1′'s exact record of the factor applied). With factor_reads it also
+        takes view= at the control view (R2); a target's half-step passes none."""
         raise NotImplementedError
 
     def closures(self, state, p, q, *, xp):
@@ -1096,7 +1121,9 @@ def _check_scopes(operator):
                     f"{name}: a reference read of {field} is not also read, held as declared or "
                     "provided, except beside a current read of it at another stage"
                 )
-            if read.stage in ("event", "split", "inner") and read.stage not in stages:
+            # A factor operator reads at stage inner through its control view (R2).
+            points = (*stages, "inner") if operator.CONTROL_FACTORS else stages
+            if read.stage in ("event", "split", "inner") and read.stage not in points:
                 raise ValueError(
                     f"{name}: the read of {field} is at stage {read.stage}, which none of its "
                     "parts runs at"
@@ -1105,3 +1132,24 @@ def _check_scopes(operator):
             raise ValueError(f"{name}: a VIEW_READS field, {field}, has a current read")
         if field in operator.CONFLICTS_VIEW and "fixed" not in modes:
             raise ValueError(f"{name}: a CONFLICTS_VIEW field, {field}, has a fixed read")
+    if factor_reads(operator):  # R2: the composite passes view= to each control-view hook.
+        for hook in ("control_factors", "factor_valid", "factor_record"):
+            if _defined_below_operator(operator, hook) and not _takes_view(getattr(operator, hook)):
+                raise ValueError(
+                    f"{name}: it reads at the control view, so its {hook} takes view=None (R2: "
+                    "a routed half-step's factor_record passes none)"
+                )
+
+
+def _takes_view(method):
+    """Whether `method` takes the keyword view with a default, or any keyword."""
+    parameters = inspect.signature(method).parameters.values()
+    return any(
+        (
+            p.name == "view"
+            and p.kind in (p.KEYWORD_ONLY, p.POSITIONAL_OR_KEYWORD)
+            and p.default is not p.empty
+        )
+        or p.kind is p.VAR_KEYWORD
+        for p in parameters
+    )

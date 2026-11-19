@@ -1,5 +1,83 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Ideal and regular assembly mixing
+
+For the two mixing laws in `cells.assembly_lineages@2`, adding one molecule of species A costs an ideal mixing energy whose exponential, relative to the membrane standard state, is (a + 1)/(N + 1 − c). Here a is the count of A, N is the total membrane count, and c is 0 or 1 for the two registered measures. The formula holds for N ≥ c. Lean also checks the empty membrane, the first molecule’s energy and the cost of transferring one molecule from a finite dilute pool. At positive N the two membrane free energies differ by ln N. Event admission at extinction follows the world's boundary rule. [Lean derivation](CellsProofs/Chemistry/AssemblyMixing.lean) · [Ideal energy and increment](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64)
+
+For regular mixing, symmetry of the interaction matrix makes the engine’s incremental update equal to recomputing the quadratic energy from all counts. In a binary membrane with b molecules of B and one unlike-pair energy χ, the excess cost of adding A is χb²/[N(N + 1)]. Its bulk chemical potential is χ(b/N)². For χ = 1 and equal amounts of A and B, the engine gave 0.214286 kBT at N = 6 and 0.245902 at N = 60, approaching 0.25. The default proof reuses matrix and derivative results from the pinned Mathlib. All twelve named theorems checked with only `propext`, `Classical.choice` and `Quot.sound`. [Regular energy and update](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L95) · [Mathlib matrix identities](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L662)
+
+The CPU comparison used the seven-step OL1 probe world, with its declared interactions and again with only ideal mixing. For each measure and variant, the host kernel and ledger were compared with the exact-factorial reference on the same 592 compositions. The check includes zero and singular rate patterns, reversible edge heats and closed cycles. On four compiled 80-event trajectories the independent reference replayed the counts and rebooked heat and reservoir work at every saved row. The largest state-energy error was 2.14 × 10⁻¹⁴ kBT. [CPU comparison](checks/assembly_mixing.py) · [World](../validation/ool/references/designs/ol1_wa.world.json) · [Reference and edge tolerances](../validation/ool/references/detailed_balance.py#L155) · [Trajectory tolerance](../validation/ool/references/ledger.py#L85)
+
+**Biological evidence.** Shaw et al. measured equilibrium cholesterol activity in protein-free DOPC vesicles across 5.4–45.6 mol% cholesterol. Unit activity refers to crystalline cholesterol. For cholesterol mole fraction x we fitted A = s x for ideal mixing and A = s x exp[χ(1 − x)²] for regular mixing. Each model fitted its own reference-state scale s. We used all 25 readings, fitting ln(A/x) with each of the 23 distinct compositions held out in turn. Repeated readings at one composition stayed together. The table gives activity errors on these withheld readings. The parameter estimates use all rows. [Shaw et al., Fig. 2A](https://pmc.ncbi.nlm.nih.gov/articles/PMC10111267/) · [Table S1, printed p. 13](https://ars.els-cdn.com/content/image/1-s2.0-S0006349523001017-mmc1.pdf) · [Transcribed numbers and reference state](checks/data/shaw2023_dopc.json) · [Fit and engine comparison](checks/cholesterol_activity.py)
+
+| Model | Scale s | χ (kBT) | Held-out activity RMSE | Predicted activity at 45.6 mol% |
+| --- | ---: | ---: | ---: | ---: |
+| Ideal | 1.695 | 0 | 0.0953 | 0.791 |
+| Regular | 1.117 | 0.753 | 0.0782 | 0.677 |
+
+At 45.6 ± 1.5 mol% the observed activity was 0.45 ± 0.02. Adding the interaction term reduced average error, and both curves overpredicted this endpoint. Reweighting the fits using both reported 68% half-widths gave errors of 0.0997 and 0.0772, respectively, and shifted χ to 1.017 kBT. This sensitivity calculation assumes zero covariance. The two coordinates come from the same fit, activity shares a calibration across samples, and the reported intervals describe the extracted values. These within-study predictions leave the value of χ and its transfer to other preparations open. The experimental observable is bulk activity. At each measured composition we also evaluated the engine’s insertion energy at a chosen N = 1,000, which represents every tabulated percentage exactly. For the primary fits its activity differed from the bulk prediction by at most 0.0021. Molecular event rates and finite vesicle counts were unmeasured. [Experimental method and confidence intervals](https://pmc.ncbi.nlm.nih.gov/articles/PMC10111267/) · [Calibration, Fig. S7](https://ars.els-cdn.com/content/image/1-s2.0-S0006349523001017-mmc1.pdf)
+
+**Independent saturation check.** Parker et al. located the onset of cholesterol crystals at a DOPC membrane mole fraction of 0.66 ± 0.02 across three sample series. We extrapolated the two Shaw fits to this endpoint with the fitted scales fixed. At x = 0.66 the ideal curve gives 1.119 and the regular curve 0.804. Over x = 0.64–0.68 the predictions span 1.085–1.153 and 0.788–0.820. If the two preparations equilibrated with the same solid phase, activity at onset is 1. The ideal curve is closer at saturation, although regular mixing fitted the lower compositions better. Parker identified the solid as monohydrate. Shaw’s reference crystal polymorph is unspecified, as is the confidence level of Parker’s reported ±0.02. Independent activity measurements in the 35–50 mol% range remain open. [Parker et al., Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6) · [Endpoint and preparation](checks/data/parker2004_dopc_saturation.json)
+
+```json
+{
+  "engine_revision": "1e77a8876cc28e23e9ffed443e62c465b6f8fe3c",
+  "model": "cells.assembly_lineages@2", "backend": "cpu", "dtype": "float64", "seed": 1,
+  "laws": ["cells.ideal_mixing@1", "cells.regular_mixing@1"],
+  "states_per_variant": 592, "variants": 4, "reversible_edge_comparisons": 3842,
+  "cycle_comparisons": 1930, "trajectory_events": 320, "saved_rows": 48,
+  "max_state_energy_error_kT": 2.1316282072803006e-14, "state_atol_kT": 1e-10,
+  "max_edge_error_kT": 1.9984014443252818e-14, "max_independent_closure_kT": 1.4210854715202004e-14,
+  "activity_rows": 25, "composition_folds": 23, "activity_rmse_ideal": 0.09532314049809815,
+  "activity_rmse_regular": 0.07819454423476385, "regular_chi_kT": 0.7526736601694367,
+  "max_abs_finite_N1000_minus_bulk_activity": [0.0015963759088614832, 0.0020792557562164526],
+  "external_crystal_onset_mole_fraction": 0.66,
+  "extrapolated_activity_at_onset": {"ideal": 1.118971866, "regular": 0.804292464}
+}
+```
+
+The complete comparison, including both datasets, took 41.73 s on two CPU cores. The nine existing kernel tests passed in 69.71 s, the six ledger tests in 36.29 s and the 82 repository guards in 89.68 s. [Model kernel tests](../tests/unit/test_assembly_lineages_v2_kernel.py) · [Ledger tests](../tests/unit/test_assembly_lineages_v2_ledger.py)
+
+Full test discovery before and after the proof checkpoint returned identical lists of 20,308 test IDs. Both collections reported the same five missing-fixture errors in the finite extracellular, kinetic finite and physical ionic graph modules. The claim generator’s five tests, its live-registry check and the Lean declaration check passed. [Proof checkpoint](https://github.com/Eidosoma/Cells/commit/2c18459cbac3a33f58551194340afe2b2c565b5a)
+
+## 19 November 2026 · GARD catalysis on reversible transfers
+
+The two GARD comparison laws in `cells.assembly_lineages@1` multiply the base reservoir-exchange rates. For a transfer of species i from composition n to n + eᵢ, the pair-consistent form evaluates both multipliers on n. Lean proves that the multiplier cancels and the heat equals the change in the base log weight Φ on every nonempty reversible edge. The single-event form instead adds ln bᵢ(n) − ln bᵢ(n + eᵢ) to that heat. When the last molecule leaves, the pair-consistent exit factor is 1 and the single-event factor is 1 + βᵢᵢ. [Lean proofs](CellsProofs/Chemistry/GardCatalysis.lean) · [Registered factors](../src/cells/models/assembly_lineages/gard.py#L137) · [Base exchange heat](claims/assembly-exchange-heat.md)
+
+**Float64 refusal for the engine lead.** Start with one molecule of type B. When A enters, B is the only catalyst on both sides of the reversible edge. If β_AA = 2⁵⁴ and β_AB = 1, the exact multiplier is 2 in both directions and the exact heat is zero. On CPU, forming the row sum at (1, 1) rounds 2⁵⁴ + 1 to 2⁵⁴. Subtracting β_AA then gives a reverse multiplier of 1. The engine books **ln 2 kBT** and refuses the first event at its passive ledger check. A smaller case also crosses the rounding bound. Keeping the same random draw and reducing the diagonal, or setting β_AB to zero, gives the expected zero heat. Computing the reverse sum on the counts with the departing molecule removed gives a reference that avoids the subtraction. [One-event reproducer](checks/gard_catalysis.py#L107) · [Reverse multiplier](../src/cells/models/assembly_lineages/gard.py#L143) · [Ledger refusal](../src/cells/models/assembly_lineages/runner.py#L894)
+
+| β_AA | β_AB | Exact multiplier | CPU reverse multiplier | CPU heat (kBT) | Outcome after one event |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 2 | 1 | 2 | 2 | 0 | Reached stop |
+| 2⁵⁴ | 0 | 1 | 1 | 0 | Reached stop |
+| 2²¹ | 2⁻³² | 1 + 2⁻³² | 1 | 2.3283064363 × 10⁻¹⁰ | Refused, bound 10⁻¹⁰ |
+| 2⁵⁴ | 1 | 2 | 1 | 0.6931471806 | Refused, bound 10⁻¹⁰ |
+
+**Rank-one condition at the tested revision.** The single-event exception in the design and law description used rank one of β. The sufficient condition proved here is rank one of the matrix formed by adding one to **every entry** of β. If 1 + βᵢⱼ = uᵢvⱼ with positive factors, the extra heat is a difference of state values and cancels around any closed path of nonempty compositions. The corrected log weight is Φ(n) − ln(Σⱼ vⱼ nⱼ / N). For a direct counterexample to the wording, set β_AA = 1 and all other entries to zero. This β has rank one. At counts (1, 1), the product of the four rates around +A, +B, −A, −B divided by the reverse product is **81/80**, which excludes detailed balance on that square. The exact finite-reservoir reference already uses the entrywise shift. The CPU comparison below uses the registered held reservoir. [Exact square](CellsProofs/Chemistry/GardCatalysis.lean#L117) · [Design §2.5](../docs/GARD_DESIGN.md#25-the-independent-check-and-its-scope-16-november-2026) · [Finite-reservoir reference](../validation/gard/references/closed_world.py#L202)
+
+For each of three matrices and both laws, the CPU driver checked 45 compositions through size eight, 70 reversible edges and 27 four-step cycles against an independent exact-rational reference. The largest edge error on that grid was 5.00 × 10⁻¹⁶ kBT. On the shifted rank-one example the single-event log weight correction agreed within 4.45 × 10⁻¹⁶ kBT, even though the difference from the base heat reached 0.4055 kBT. Each law also ran a two-fission lineage and agreed with scalar replay on all 14 event choices and times. The full driver took 13.15 s on two CPU cores and exited with status 1 on the two refusals. Its controls-only run passed. All 17 existing assembly kernel, balance and ledger tests and the 82 repository guards passed. [CPU comparison and inputs](checks/gard_catalysis.py) · [Exact reference propensities](../validation/gard/references/kernels.py#L279) · [Exact cycle reference](../validation/gard/references/detailed_balance.py#L132)
+
+```json
+{
+  "engine_revision": "f7767ad79edf2f972b78999e64b40f0c294bcf88",
+  "model": "cells.assembly_lineages@1", "backend": "cpu", "dtype": "float64", "seed": 1,
+  "laws": ["cells.gard_catalysis_pair_consistent@1", "cells.gard_catalysis_single_event@1"],
+  "matrices": [[[1,0],[0,0]], [[0,1],[1,3]], [[2,5],[0.5,1]]],
+  "edge_comparisons": 420, "square_comparisons": 162,
+  "single_event_square_at_1_1": ["81/80", "1", "99/98"],
+  "max_ordinary_edge_error_kT": 4.996003610813204e-16, "edge_atol_kT": 1e-9,
+  "pair_lineage_max_residual_kT": 4.440892098500626e-15,
+  "driven_lineage_reported_max_residual_kT": 0.25071844353711015,
+  "one_event_exact_heat_kT": 0, "refused_heat_kT": [2.3283064362676457e-10, 0.6931471805599453]
+}
+```
+
+Full test discovery at the tested engine revision and the proof checkpoint returned the same 20,300 test IDs. Both collections reported the same five missing-fixture errors in the finite extracellular, kinetic finite and physical ionic graph tests.
+
+**Biological measurements.** Sampaio, Moreno and Vaz compared the same fluorescent lysophospholipid (NBD-lysoMPE) in protein-free vesicles at 308 K. From pure POPC to 1:1 POPC/cholesterol, the insertion constant fell from (3.4 ± 0.3) × 10¹⁰ to (1.7 ± 0.1) × 10¹⁰ M⁻¹ s⁻¹ per molar vesicles. The corresponding exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent equilibrium titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. The kinetic fit used the measured equilibrium constant and assumed slow lipid exchange between leaflets. Changing a shared rate multiplier at fixed affinity cannot account for that composition change. Testing GARD’s specific multiplier or a four-transfer cycle would require event rates at known neighboring molecular counts. [Sampaio et al., Figs. 1–3 and Table 1](https://doi.org/10.1529/biophysj.104.054007)
+
+**Lead decision, 19 November.** The lead accepted the two false refusals at extreme coefficient ratios. The builder plans to recompute the lost catalyst sum after its current test run, preserving existing results bit for bit. If that changes recorded results, the proposed alternative is a new law version. The design correction for the entrywise rank-one condition landed at `0b564f2d`. At `1e77a887`, the numerical repair and matching code wording were still pending. [Corrected design](https://github.com/Eidosoma/Cells/blob/0b564f2d99f70995c741456d7f55a515d049dd4d/docs/GARD_DESIGN.md#L320) · [Law at the reviewed revision](https://github.com/Eidosoma/Cells/blob/1e77a8876cc28e23e9ffed443e62c465b6f8fe3c/src/cells/models/assembly_lineages/gard.py#L143)
+
 ## 19 November 2026 · Assembly reservoir exchange
 
 In `cells.assembly_lineages@1`, the uncatalyzed `cells.reservoir_exchange@1` law admits one molecule at a time. For species *i*, write θᵢ = Kᵢρᵢ, where Kᵢ is its transfer constant and ρᵢ is its held activity. In an assembly of size N, the entry rate is kᵢθᵢN and the exit rate is kᵢnᵢ. Lean proves entry is linear in activity and size, each additional molecule raises that species’ exit rate by kᵢ, and a nonempty state with all net rates zero requires Σθᵢ = 1. Time is nominal. [Engine rates](../src/cells/models/assembly_lineages/exchange.py#L108) · [Parameter binding](../src/cells/models/assembly_lineages/model.py#L47) · [Lean proofs](CellsProofs/Chemistry/ReservoirExchange.lean)
