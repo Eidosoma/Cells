@@ -14,6 +14,7 @@ import time
 import traceback
 from pathlib import Path
 
+from cells.ensemble import families
 from cells.ensemble.plan import balance, plan
 from cells.ensemble.telemetry import Monitor, devices, utilization
 from cells.execution.output_paths import configure_caches, within_output_root
@@ -83,8 +84,53 @@ def wilson(successes, n):
     ]
 
 
+def model_of(row):
+    """A result row's own model ID, in either form (families.model_of), or None."""
+    return families.model_of(row.get("model"))
+
+
+# The controller's own keys of each arm's summary, which it computes for every family (its cost
+# profile reads task_seconds_per_world); an adapter's aggregate adds the family's own beside them.
+ARM_TIMING_KEYS = ("worlds", "task_wall_seconds", "task_seconds_per_world")
+
+
+def aggregate_adapter(adapter, rows):
+    """An adapter family's arms: the controller's timing keys from the rows, then the family's own
+    summary of each arm (its aggregate hook), which names each arm once and none of those keys."""
+    arms = {}
+    for row in rows:
+        arm = arms.setdefault(row["arm"], {key: [] for key in ARM_TIMING_KEYS} | {"worlds": 0})
+        wall = row["wall_end"] - row["wall_start"]
+        arm["worlds"] += row["worlds"]
+        arm["task_wall_seconds"].append(wall)
+        arm["task_seconds_per_world"].append(wall / row["worlds"])
+    own = adapter.aggregate(rows)
+    if not isinstance(own, dict) or set(own) != set(arms):
+        raise ValueError(f"{adapter.kind}'s aggregate summarises each of its arms once")
+    for name, summary in own.items():
+        clash = sorted(set(summary) & set(ARM_TIMING_KEYS))
+        if clash:
+            raise ValueError(f"{adapter.kind}'s aggregate writes the controller's keys {clash}")
+        arms[name] |= summary
+    return arms
+
+
 def aggregate(rows):
-    clusters = [row for row in rows if row.get("model") == "assembly_regulated_cluster@1"]
+    """The arms' summary of the completed tasks' result rows: an adapter family's own aggregate
+    hook (families.EnsembleAdapter), else today's families' below. Each row's model is read in
+    either form a definition writes (families.row_model; the second external review's finding 5),
+    and a mix of an adapter family's rows with any others is refused. Today's families' filters
+    read the row's own `model` as they always did, in either form."""
+    adapted = {
+        row_model: families.adapter_of(row_model) for row_model in map(families.row_model, rows)
+    }
+    adapters = {a.kind: a for a in adapted.values() if a is not None}
+    if adapters:
+        if len(adapters) != 1 or None in adapted.values():
+            raise ValueError("An ensemble cannot mix an adapter family's results with others")
+        (adapter,) = adapters.values()
+        return aggregate_adapter(adapter, rows)
+    clusters = [r for r in rows if model_of(r) == "assembly_regulated_cluster@1"]
     if clusters:
         if len(clusters) != len(rows):
             raise ValueError("An ensemble cannot mix cluster and other result families")
@@ -92,8 +138,8 @@ def aggregate(rows):
 
         aggregate_cluster = legacy().ensemble("assembly_regulated_cluster@1").aggregate()
         return aggregate_cluster(clusters)
-    ionic = [row for row in rows if row.get("model") == "ionic_worlds@1"]
-    assembly = [row for row in rows if row.get("model") != "ionic_worlds@1"]
+    ionic = [row for row in rows if model_of(row) == "ionic_worlds@1"]
+    assembly = [row for row in rows if model_of(row) != "ionic_worlds@1"]
     if ionic and assembly:
         raise ValueError("An ensemble cannot mix ionic and assembly result families")
     if ionic:
@@ -131,7 +177,7 @@ def aggregate(rows):
             raise ValueError("An arm changed its registered observation grid")
         for key in ("not_completed_counts", "final_size_histogram", "dwell_by_size_total_s"):
             arm[key] = [a + b for a, b in zip(arm[key], row[key], strict=True)]
-        if row.get("model") in ("finite_bond_assembly@1", "assembly_regulated_cell@1"):
+        if model_of(row) in ("finite_bond_assembly@1", "assembly_regulated_cell@1"):
             arm["model"] = row["model"]
             arm["completion_event"] = row["completion_event"]
             for key in (
@@ -147,7 +193,7 @@ def aggregate(rows):
             reaction = arm.setdefault("reaction_counts", dict.fromkeys(row["reaction_counts"], 0))
             for key, count in row["reaction_counts"].items():
                 reaction[key] += count
-        if row.get("model") == "assembly_regulated_cell@1":
+        if model_of(row) == "assembly_regulated_cell@1":
             add_ionic_observables(arm, row)
     for arm in groups.values():
         n = arm["worlds"]
@@ -466,7 +512,7 @@ def register(args):
             "ionic_worlds@1": "simulation",
             "assembly_regulated_cell@1": "ionic",
             "assembly_regulated_cluster@1": "ionic",
-        }.get(raw["model"])
+        }.get(families.model_of(raw["model"]))
         if component and raw[component]["execution"]["backend"] != "gpu":
             raise ValueError("GPU ensembles require an explicit GPU ionic definition")
     output = args.output.resolve()

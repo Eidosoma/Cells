@@ -77,6 +77,10 @@ MODELS = MappingProxyType(
                 "cells.laws.routes.logmean_electrodiffusion",
                 "cells.laws.routes.passive_permeation",
                 "cells.laws.transport.proton_leak",
+                # The transporter's two laws' modules: their declarations move in as inert LAWs
+                # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
+                "cells.laws.pumps.atp_transporter",
+                "cells.laws.pumps.proton_pump",
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
