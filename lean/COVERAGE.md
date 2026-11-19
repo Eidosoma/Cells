@@ -6,7 +6,7 @@ Each row links to a Cells registry declaration. The proof column lists named cla
 
 ## Registered laws
 
-Direct Lean claims cover 24 of 30 registered laws. Recorded numerical comparisons exercise 24.
+Direct Lean claims cover 26 of 30 registered laws. Recorded numerical comparisons exercise 28.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Direct Lean claims cover 24 of 30 registered laws. Recorded numerical comparison
 | [`cells.constant_field@1`](../src/cells/laws/routes/constant_field.py#L13) | [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) · [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) · [A blocked junction carries zero flux](claims/junction-blocking.md) | [junction](https://github.com/Eidosoma/Cells/blob/627c376c463ae66c0f9e53db6dbb1374ec8ac1fd/lean/README.md#cpu-comparison) |
 | [`cells.gard_catalysis_pair_consistent@1`](../src/cells/models/assembly_lineages/gard.py#L208) | [Pair-consistent catalysis preserves the heat of a reversible transfer](claims/gard-pair-heat.md) | [gard-catalysis](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers) |
 | [`cells.gard_catalysis_single_event@1`](../src/cells/models/assembly_lineages/gard.py#L174) | [Single-event catalysis can give different forward and reverse cycle rate products](claims/gard-single-cycle.md) | [gard-catalysis](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers) |
-| [`cells.ideal_mixing@1`](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L109) | Open | Open |
+| [`cells.ideal_mixing@1`](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L109) | [Whole-molecule counts set the ideal mixing cost of membrane entry](claims/assembly-ideal-mixing.md) | [assembly-mixing](https://github.com/Eidosoma/Cells/blob/2c18459cbac3a33f58551194340afe2b2c565b5a/lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing) |
 | [`cells.inward_rectifier_linear_driving_force@1`](../src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L118) | Open | Open |
 | [`cells.junction_voltage_relaxation@1`](../src/cells/laws/junctions/junction_voltage_relaxation.py#L100) | [Junction conductance relaxes toward a voltage-dependent target](claims/junction-gate.md) | [junction-gate](https://github.com/Eidosoma/Cells/blob/394a9294379f7636b7f75993fee850363c04bd26/lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance) |
 | [`cells.kir2p1_mh2@1`](../src/cells/laws/channels/kir2p1_mh2.py#L47) | [Voltage-gated channel openings stay between zero and one](claims/channel-gate-bounds.md) · [Channel opening scales the signed transfer of sodium or potassium](claims/channel-ion-transfer.md) | [ion-channels](https://github.com/Eidosoma/Cells/blob/a45e076f2af4828a29058c06d40cdbafb7081db0/lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws) |
@@ -36,10 +36,10 @@ Direct Lean claims cover 24 of 30 registered laws. Recorded numerical comparison
 | [`cells.proton_atp_mass_action_positive@1`](../src/cells/laws/pumps/proton_pump.py#L257) | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | [atp-cycle](https://github.com/Eidosoma/Cells/blob/5f39e089a5f84fa4c2414d72536de844d0bd2503/lean/PROGRESS.md#19-november-2026--atp-driven-transport) |
 | [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L58) | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | [proton-leak](https://github.com/Eidosoma/Cells/blob/252cb83542e368e5572328d7eb0266ca8bd7417f/lean/PROGRESS.md#19-november-2026--passive-proton-leak) |
 | [`cells.rapid_binding@1`](../src/cells/laws/reactions/rapid_binding.py#L581) | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | [single-site-binding](https://github.com/Eidosoma/Cells/blob/c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c/lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units) |
-| [`cells.regular_mixing@1`](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L153) | Open | Open |
+| [`cells.regular_mixing@1`](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L153) | [Pair interactions change the energy of membrane entry with composition](claims/assembly-regular-mixing.md) | [assembly-mixing](https://github.com/Eidosoma/Cells/blob/2c18459cbac3a33f58551194340afe2b2c565b5a/lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing) |
 | [`cells.reservoir_exchange@1`](../src/cells/models/assembly_lineages/exchange.py#L64) | [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) · [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | [assembly-exchange](https://github.com/Eidosoma/Cells/blob/713ef3b4bedb2c1f184d46d968262af92f115e3b/lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange) · [gard-catalysis](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers) |
-| [`cells.stochastic_mass_action@1`](../src/cells/models/assembly_lineages_v2/mass_action.py#L143) | Open | Open |
-| [`cells.transition_state_factor@1`](../src/cells/models/assembly_lineages_v2/transition_state.py#L154) | Open | Open |
+| [`cells.stochastic_mass_action@1`](../src/cells/models/assembly_lineages_v2/mass_action.py#L143) | Open | [assembly-mixing](https://github.com/Eidosoma/Cells/blob/2c18459cbac3a33f58551194340afe2b2c565b5a/lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing) |
+| [`cells.transition_state_factor@1`](../src/cells/models/assembly_lineages_v2/transition_state.py#L154) | Open | [assembly-mixing](https://github.com/Eidosoma/Cells/blob/2c18459cbac3a33f58551194340afe2b2c565b5a/lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing) |
 
 ## Registered operators
 
@@ -54,7 +54,7 @@ Direct Lean claims cover 3 of 24 registered operators. Recorded numerical compar
 | [`cells.ideal_osmosis_linear_compliance_water@1`](../src/cells/operators/osmotic_water.py#L489) | Open | Open |
 | [`cells.isopotential_partition@1`](../src/cells/operators/partition.py#L1110) | Open | Open |
 | [`cells.k_anion_symport_mass_action@1`](../src/cells/operators/k_anion_symport.py#L167) | Open | Open |
-| [`cells.local_species_reactions@1`](../src/cells/operators/species_reactions.py#L1245) | [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) · [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | [closed-enzyme](https://github.com/Eidosoma/Cells/blob/9c0b99d30676863d67dd8d30efea6ae490f2bd40/lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions) · [regional-chain](https://github.com/Eidosoma/Cells/blob/9252236d3f6339d4dfdd18fd79fc1d73246faf7e/lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance) |
+| [`cells.local_species_reactions@1`](../src/cells/operators/species_reactions.py#L1279) | [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) · [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | [closed-enzyme](https://github.com/Eidosoma/Cells/blob/9c0b99d30676863d67dd8d30efea6ae490f2bd40/lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions) · [regional-chain](https://github.com/Eidosoma/Cells/blob/9252236d3f6339d4dfdd18fd79fc1d73246faf7e/lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance) |
 | [`cells.membrane_entity_state@1`](../src/cells/operators/membrane_state.py#L182) | Open | [membrane-insertion](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/PROGRESS.md#19-november-2026--membrane-insertion-heat) |
 | [`cells.population_unit_turnover@1`](../src/cells/operators/population_unit_turnover.py#L709) | Open | Open |
 | [`cells.restricted_cleft_lumen@1`](../src/cells/operators/restricted_lumen.py#L401) | Open | Open |
@@ -65,8 +65,8 @@ Direct Lean claims cover 3 of 24 registered operators. Recorded numerical compar
 | [`cells.scheduled_membrane_insertion@1`](../src/cells/operators/membrane_insertion.py#L468) | [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | [membrane-insertion](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/PROGRESS.md#19-november-2026--membrane-insertion-heat) |
 | [`cells.scheduled_membrane_insertion@2`](../src/cells/operators/membrane_insertion_v2.py#L263) | [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | [membrane-insertion](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/PROGRESS.md#19-november-2026--membrane-insertion-heat) |
 | [`cells.scheduled_membrane_trafficking@1`](../src/cells/operators/membrane_trafficking.py#L826) | Open | Open |
-| [`cells.scheduled_species_exchange@1`](../src/cells/operators/species_exchange.py#L452) | Open | Open |
-| [`cells.scheduled_species_turnover@1`](../src/cells/operators/species_turnover.py#L416) | Open | Open |
+| [`cells.scheduled_species_exchange@1`](../src/cells/operators/species_exchange.py#L459) | Open | Open |
+| [`cells.scheduled_species_turnover@1`](../src/cells/operators/species_turnover.py#L425) | Open | Open |
 | [`cells.site_occupancy@1`](../src/cells/operators/site_occupancy.py#L1177) | Open | Open |
 | [`cells.size_threshold_fission@1`](../src/cells/models/assembly_lineages/fission.py#L71) | Open | [assembly-exchange](https://github.com/Eidosoma/Cells/blob/713ef3b4bedb2c1f184d46d968262af92f115e3b/lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange) · [gard-catalysis](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers) |
 | [`cells.species_regulated_availability@1`](../src/cells/operators/species_regulated_availability.py#L1173) | Open | Open |

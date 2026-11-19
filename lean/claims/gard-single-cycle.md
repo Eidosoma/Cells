@@ -24,7 +24,7 @@ Uses [Single-molecule exchange heat equals the change in assembly log weight](as
 
 ## Numerical comparison
 
-**Checked.** The CPU agreed with rational forward and reverse rate products on 81 four-step cycles across three matrices. The rank-one β example gave 81/80. With a rank-one entrywise shift, all 27 cycles had ratio one in the exact reference and all 70 CPU edges matched the corrected log weight within 4.45 × 10⁻¹⁶ kBT.
+**Checked.** The CPU agreed with rational forward and reverse rate products on 81 four-step cycles across three matrices. The rank-one β example gave 81/80. With a rank-one entrywise shift, all 27 cycles had ratio one in the exact reference and all 70 CPU edges matched the corrected log weight within 4.45 × 10⁻¹⁶ kBT. The lead corrected the design and assigned the matching code wording to the builder. [Design correction](https://github.com/Eidosoma/Cells/blob/0b564f2d99f70995c741456d7f55a515d049dd4d/docs/GARD_DESIGN.md#L320)
 
 **Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@1`, `cells.gard_catalysis_single_event@1`
 

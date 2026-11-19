@@ -38,6 +38,8 @@ At 45.6 ± 1.5 mol% the observed activity was 0.45 ± 0.02. Adding the interacti
 
 The complete comparison, including both datasets, took 41.73 s on two CPU cores. The nine existing kernel tests passed in 69.71 s, the six ledger tests in 36.29 s and the 82 repository guards in 89.68 s. [Model kernel tests](../tests/unit/test_assembly_lineages_v2_kernel.py) · [Ledger tests](../tests/unit/test_assembly_lineages_v2_ledger.py)
 
+Full test discovery before and after the proof checkpoint returned identical lists of 20,308 test IDs. Both collections reported the same five missing-fixture errors in the finite extracellular, kinetic finite and physical ionic graph modules. The claim generator’s five tests, its live-registry check and the Lean declaration check passed. [Proof checkpoint](https://github.com/Eidosoma/Cells/commit/2c18459cbac3a33f58551194340afe2b2c565b5a)
+
 ## 19 November 2026 · GARD catalysis on reversible transfers
 
 The two GARD comparison laws in `cells.assembly_lineages@1` multiply the base reservoir-exchange rates. For a transfer of species i from composition n to n + eᵢ, the pair-consistent form evaluates both multipliers on n. Lean proves that the multiplier cancels and the heat equals the change in the base log weight Φ on every nonempty reversible edge. The single-event form instead adds ln bᵢ(n) − ln bᵢ(n + eᵢ) to that heat. When the last molecule leaves, the pair-consistent exit factor is 1 and the single-event factor is 1 + βᵢᵢ. [Lean proofs](CellsProofs/Chemistry/GardCatalysis.lean) · [Registered factors](../src/cells/models/assembly_lineages/gard.py#L137) · [Base exchange heat](claims/assembly-exchange-heat.md)
