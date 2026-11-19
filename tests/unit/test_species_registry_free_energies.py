@@ -7,7 +7,9 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   the mode's implied dG°/RT: an honest diagram pump whose constants put it near the edge of that
   band is admitted, its residual asserted to lie inside the band and well outside the rounding
   bound; planted, the same entry naming no law is refused by the rounding bound, and a dG°/RT
-  just outside the form's band is refused, naming the law and mode;
+  just outside the form's band is refused, naming the law and mode; an entry naming a hosted law
+  whose form has no constants of its own (a factored form) takes the rounding bound, and one off
+  by twice it is refused;
 - F's checks are the definition's: an entry naming a law the kind does not host, and a mode the
   form lacks, are refused as definition errors, naming the kind and the entry;
 - an operator's entries take check_potentials' rounding at the reaction level, converted by
@@ -24,6 +26,7 @@ declarations.py); the operator's, the reactions fixture's enzyme network at a re
 import contextlib
 import dataclasses
 import math
+import re
 from decimal import Decimal, localcontext
 
 import pytest
@@ -136,6 +139,17 @@ def just_outside(monkeypatch):
     return pump_world(), kind_scope((honest._replace(dG_RT=honest.dG_RT + 1.1 * float(band)),))
 
 
+def bandless(monkeypatch):
+    """An entry naming a hosted law whose form has no constants of its own (the proton law's
+    factored form), off by twice the rounding bound: that bound, not a form's band, refuses it."""
+    _, rounding, _ = bands(PUMP)
+    honest = entry(PUMP)
+    planted = honest._replace(
+        dG_RT=honest.dG_RT + 2.0 * float(rounding), law_id=transporter.PROTON.law_id, mode="cycle"
+    )
+    return pump_world(), kind_scope((planted,))
+
+
 def unhosted(monkeypatch):
     return pump_world(), kind_scope((entry()._replace(law_id="seamtest.nowhere@1"),))
 
@@ -193,6 +207,11 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "an energy just outside the form band": (
         just_outside,
         rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): .* beyond its law's form's band",
+    ),
+    "a law whose form gives no band": (
+        bandless,
+        rf"{KIND} \({re.escape(transporter.PROTON.law_id)}'s cycle, mode cycle\): .* beyond the "
+        "rounding bound",
     ),
     "a law the kind does not host": (
         unhosted,
