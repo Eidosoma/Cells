@@ -1259,6 +1259,20 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
             + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
         )
+    booked = trapezoid_fields(structure)  # Seam D (§6.2): static; () by default.
+    if booked:
+        # The trapezoid, written once: each booked class's heat rates at the end state, at the
+        # last-stage potentials, with the stage read and the routing door (explicit_rates, as at
+        # every explicit stage), averaged with stage 0's. Only those heat fields change; the
+        # state is the tableau's. Junctions keep their own switch above.
+        end_rates, end_ok, *_ = explicit_rates(stage, potential, control, p, xp=xp, **hook)
+        valid &= end_ok
+        stage = stage._replace(
+            **{
+                k: getattr(state, k) + 0.5 * dt * (getattr(explicit[0], k) + getattr(end_rates, k))
+                for k in booked
+            }
+        )
     if kinds:  # Gap 7: the kinds' per-stage values, their running extrema over the stages.
         extrema = _stage_extrema(kinds, state, explicit_states, explicit, p, xp=xp)
         stage = stage._replace(**extrema)
@@ -1350,6 +1364,13 @@ def check_definition(spec, *, structure=None):
         ),
     )
     _check_kinds_solver(spec)  # Ahead of the kinds' own checks: under RK4 they are moot.
+    if structure is None and getattr(m, "heat_bookings", ()):
+        # Seam D: the picks live in the structure, so a family that runs @3 without one (water,
+        # water @2, replacement) would book the tableau silently; it refuses them instead.
+        raise ConfigError(
+            "Heat bookings are @3's structure's (heat_bookings); this family runs @3 without "
+            "one, so it refuses them"
+        )
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -2020,6 +2041,42 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
 
 
 DISSIPATION_FIELDS = tuple(k for k in STATE_AXES if k.endswith("_dissipated_energy_pJ"))
+# Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): the heat fields of @3's own mover classes, which a
+# booking other than the tableau books. Junctions keep their own switch (junction_heat_booking,
+# the layout's junction_heat_trapezoid), so they are not listed here.
+OWN_HEAT_FIELDS = MappingProxyType(
+    {
+        inner_laws.CHANNELS: ("channel_dissipated_energy_pJ",),
+        inner_laws.MEMBRANES: ("membrane_dissipated_energy_pJ",),
+        inner_laws.PUMPS: ("pump_dissipated_energy_pJ",),
+        inner_laws.CALCIUM_PUMPS: ("calcium_pump_dissipated_energy_pJ",),
+    }
+)
+
+
+def trapezoid_fields(structure):
+    """The heat fields the step books by trapezoid_nonnegative@1 (seam D, §6.2), in the
+    structure's class order: each picked own class's (OWN_HEAT_FIELDS), and each picked kind's
+    state fields whose energy role is heat (kind_registry.energy_role). () by default, so the
+    step's branch is static and today's programs are unchanged. A kind that admits another
+    booking books it itself."""
+    if structure is None or not structure.heat_bookings:
+        return ()
+    kinds = {kind_registry.qualified(kind.kind_id): kind for kind in _kinds(structure)}
+    out = []
+    for mover, booking in structure.heat_bookings:
+        if booking != TRAPEZOID_JUNCTION_HEAT or mover == inner_laws.JUNCTIONS:
+            continue
+        if mover in OWN_HEAT_FIELDS:
+            out += OWN_HEAT_FIELDS[mover]
+            continue
+        kind = kinds[mover]
+        out += [
+            name
+            for name in kind.state_fields
+            if (role := kind_registry.energy_role(kind, name)) is not None and role.role == "heat"
+        ]
+    return tuple(out)
 
 
 def check_values(state, spec, steps=None, *, structure=None):
@@ -2042,12 +2099,27 @@ def check_values(state, spec, steps=None, *, structure=None):
 
 
 def dissipation_fields(structure):
-    """Every *_dissipated_energy_pJ state field of the structure's state type, kinds' included
-    (checked nonnegative and non-decreasing per element, on the host and the device)."""
+    """The heat fields the dissipation check holds non-negative and non-decreasing per element,
+    on the host and the device, in the structure's state order: @3's own *_dissipated_energy_pJ
+    fields, and each declared kind's fields whose energy role is heat and monotone (seam D,
+    §6.1: a declaration, else today's suffix rule, kind_registry.energy_role). A heat declared
+    non-monotone stays among the energy flows but leaves this check; a stored field is a level,
+    in neither."""
     if structure is None or not structure.kinds:
         return DISSIPATION_FIELDS
-    axes = kind_types(structure).STATE_AXES
-    return tuple(k for k in axes if k.endswith("_dissipated_energy_pJ"))
+    own = set(STATE_AXES)
+    roles = {}
+    for kind in _kinds(structure):
+        for name in kind.state_fields:
+            roles[name] = kind_registry.energy_role(kind, name)
+    out = []
+    for k in kind_types(structure).STATE_AXES:
+        if k in own:
+            if k.endswith("_dissipated_energy_pJ"):
+                out.append(k)
+        elif (role := roles.get(k)) is not None and role.role == "heat" and role.monotone:
+            out.append(k)
+    return tuple(out)
 
 
 # Device checks (cells.execution.vector_windows, execution/projective.py): check_values'
@@ -2583,6 +2655,7 @@ def structure(model):
         padding_fill=_closes_slots(model),
         kinds=_kind_entries(model),
         routes=_routes(model),
+        heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
     )
 
 
