@@ -15,7 +15,9 @@ tests with planted failures (`tests/unit/test_gates_*.py`, `tests/unit/test_tier
 | `fr_landing_verdict.py` | The set's verdict: nine identical quick parts and two bitwise windowed arms. | `d198-retire-20261117/tools/fr_landing_verdict.py` |
 | `crossrev_sets.py` | crossrev's sets of a snapshot. `run` compares each set with a record; `record` makes a new record. It fails closed: every set the runner knows is required, and a set the record lacks fails the run unless `--allow-missing` names it (logged; no gate passes it). An unknown record folder is refused. | The ten-set `crossrev.sh` (`crossrev-acceptances-20261118/tools/`, installed in `d198-retire-20261117/tools/` and `d188-m1-20261117/tools/`), its nine-set originals, and `core-fixes-20261116/tools/crossrev-record.sh` |
 | `fingerprints.py` | R1's definition-fingerprint check through a move map: every saved definition's digest value, harness rows and control arrays, compared through the map. It carries the harness parts it uses. | `d188-m2-move-20261118/tools/fingerprints.py` |
-| `fingerprints_landing.sh` | That check at a landing after a move: main's snapshot against the head, and the head against the move's pre-move record. | `d188-m2-move-20261118/tools/fingerprints-landing.sh` |
+| `fingerprints_landing.sh` | That check at a landing after a move: main's snapshot against the head, and the head against the move's pre-move record. The base's identity and record are cached per main revision (`GATE_CACHE`). | `d188-m2-move-20261118/tools/fingerprints-landing.sh` |
+| `gate.sh` | The landing gate, failing fast and lane-aware. Before the lock, on one light CPU: the configuration, IDs with declared additions and removals, and the guard set with the head's changed test files. Under the lock, stopping at the first failure: crossrev head against base (a difference passes only where `CROSSREV_EXPECTED` declares it), then tiers 1+2, then G1 on shards planned from the last passing G1's seconds. The base side's crossrev and IDs are cached per main revision. Run the copy in the gate's own base snapshot. | The owners' `gate-laneA.sh` copies (for example `core-pass-at3-20261118/tools/gate-laneA.sh`) and the lead's `gate-tiers-ids.sh` |
+| `gate_steps.py` | `gate.sh`'s host steps: preflight, the pre-lock selection and its verdict, the IDs check, the base cache, crossrev's set pool and its head-against-base verdict, and G1's plan, merge and seconds. | `core-pass-at3-20261118/tools/ids_additions.py`, `d198-retire-20261117/tools/g1_plan.py` (plan and merge) and `g1-shard.sh` |
 
 **Locks.** Every lock taken in `scripts/gates/` uses flock's command form, which runs the locked
 work only once flock holds the lock, and its exit status is checked. A flock killed while it waits
@@ -45,7 +47,12 @@ python scripts/test_tiers.py fold --record tests/test_tiers.json --measured LAND
 python scripts/test_tiers.py merge --base BASE.json --ours BRANCH.json --theirs MAIN.json --out tests/test_tiers.json
 python scripts/gates/crossrev_sets.py run SNAPSHOT OUT /mnt/workspaces/Cells/core-fixes-20261116/record-cda5dc82
 scripts/gates/fingerprints_landing.sh OUT HEAD_SNAPSHOT BASE_SNAPSHOT [PREMOVE_RECORD]
+LANE=A REMOVED_OK_FILE=removed-ok.txt ADDITIONS_FROM="tests/unit/test_x.py" bash BASE_SNAPSHOT/scripts/gates/gate.sh HEAD_SNAPSHOT BASE_SNAPSHOT OUT
 ```
+
+The base cache lives in `/mnt/workspaces/Cells/gate-cache` (`GATE_CACHE`). Each entry is named by its
+kind, the base's revision and a key, and holds `CACHE.json`. Entries are renamed into place whole,
+so a partial entry is never used. Deleting an entry only costs the next gate its recomputation.
 
 The workspace folders above are under `/mnt/workspaces/Cells/`, and `fr45` stands for
 `d172-restructure-20261115-01/fr45`.
