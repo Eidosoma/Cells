@@ -371,8 +371,8 @@ def test_the_charged_law_refuses_a_row_a_closure_holds():
         parse_spec(raw)
 
 
-@pytest.mark.parametrize("voltage_fmol, dt", [(0.0, 1e-3), (-5.18e-5, 2.5e-4)])
-def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_fmol, dt):
+@pytest.mark.parametrize("voltage_fmol", [0.0, -5.18e-5])
+def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_fmol):
     """FR-15 P2: a trace anion X (z = -1) on the contact patch under the charged law, with every
     check passing. Its charge moves the patch voltage by about 1 uV, so at the patch's held voltage
     V (0, and about -50 mV from the anchors) the flux is linear in the two amounts: dn_a/dt =
@@ -380,10 +380,10 @@ def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_f
     an exponential to its equilibrium n_a/n_b = k_b/k_a = e^-x, the independent closed form here.
     Material is conserved, the heat is >= 0, and the definition-only kind fields appear (the
     charged mask and the material term, which fails closed, +inf, where no potentials are given).
-    At -50 mV the relaxation is 2.6 times faster, so its row
-    takes dt/4 to keep the step's second-order error inside 5e-4. One compile per row, about
-    10 s each."""
-    spec = parse_spec(charged_pair(voltage_fmol=voltage_fmol, dt=dt))
+    Both rows take dt = 0.25 ms: at -50 mV the relaxation is 2.6 times faster, and one dt keeps
+    the step's second-order error inside 5e-4 there and lets the second row reuse the first's
+    compiled step (only the anchors differ, as data). One compile, about 11 s, for both rows."""
+    spec = parse_spec(charged_pair(voltage_fmol=voltage_fmol, dt=2.5e-4))
     model = get_model(spec.model)
     bound = dict(model.structure.kinds)[passive_routes.KIND_ID]
     kind = kind_registry.bound(kind_registry.active().lookup(passive_routes.KIND_ID), bound)
