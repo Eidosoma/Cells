@@ -1568,8 +1568,10 @@ questions.**
   refused beside any closer, checked at the structure level. No closer declares which slots it
   closes, so every entity axis counts as closable.
 - **Q2's gate is a presence gate,** the @3 owner's option (a), in the form of B1's pump gate.
-  - **The declaration (F's contract):** each kind declares one presence field per entity axis: a
-    bool layout field, structural, with fill False. declaration_errors checks it.
+  - **The declaration (F's contract):** each kind declares one or more presence fields per entity
+    axis (corrected at 02:48 UTC): bool layout fields, structural, with fill False.
+    declaration_errors checks them. The built-in transporter declares transporter_present and its
+    two law masks, since its kinetics read the masks, so no kind code and no program changes.
   - **The gate (@3's core):** where a closer is declared, the core ANDs each presence field with
     its host's activity, found through axis_hosts and the host table. It does so before every
     rates, readouts and stage-check call.
@@ -1608,7 +1610,13 @@ owner's design statement 1, core-pass-operators-2-20261119/item4_design_statemen
     which also covers history no ledger reads, such as cycle counts.
 - **A kind's extensive split is booked** in a composite-owned moved accumulator per extensive
   state field, added to the kind's ledger terms, as partition_*_moved does for @3's fields.
-- **Layout and control roles are checked at the definition** in check_structure, by role.
+- **Layout and control roles are checked at the definition,** by role, in the partition's
+  check_definition, where kinds' bound values exist (corrected after step C).
+  - Extensive fields are checked by the anchor rule's exact split, and intensive fields equal.
+  - Structural fields stay as declared, except presence fields, which must be equal at the
+    daughters. That rule comes with the lift after Q2.
+  - History fields are refused on layout and control, as are per-cell and per-contact extensive
+    ones.
 - **Per-cell extensive kind fields are refused beside a dividing closer** until a charge rule is
   designed (corrected at 02:35 UTC). The kind contract does not say which fields enter the charge
   ledger, a probe can miss a charge path, and no planned world needs a neutral one there. When a
