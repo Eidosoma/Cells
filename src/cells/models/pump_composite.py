@@ -44,6 +44,7 @@ fields with the operators' heat. Without operators every check is the inner
 model's exactly.
 """
 
+from collections.abc import Mapping
 from dataclasses import make_dataclass, replace
 from functools import cache
 from typing import NamedTuple
@@ -704,11 +705,16 @@ def structure_errors(inner, operators):
     # (docs/CORE_SEAMS_DESIGN.md §4.2; the inner's kind_lifecycle_errors): a kind that declares no
     # roles keeps the refusal's words, since no closer resets its per-slot fields (state on
     # cell_slot, membrane_slot, ...), which would be left stale where a slot closes, retires or
-    # opens; one with roles is refused while a field lacks declared axes or is per-entity.
+    # opens; one with roles is refused while a field lacks declared axes or an entity axis lacks
+    # presence. The core's presence gate, which makes an entity on a closed host absent, acts only
+    # where the composition declares a closer (CLOSES: @3's padding_fill), so beside a slot changer
+    # with no closer declared (an activity-mask provider alone) a kind with entities stays refused.
     kinds = tuple(getattr(inner, "KINDS", ()))
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
+    gated = any(op.CLOSES for op in operators)
+    bound = dict(zip(kinds, getattr(inner, "BOUND_KINDS", ()), strict=False))
     for op in operators:
         if kinds and op.FIXED_INNER_FIELDS:
             errors.append(
@@ -716,7 +722,7 @@ def structure_errors(inner, operators):
                 f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
-            errors.extend(_kinds_beside_closer(op, kinds, blocked))
+            errors.extend(_kinds_beside_closer(op, kinds, blocked, bound=bound, gated=gated))
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
@@ -745,10 +751,10 @@ def structure_errors(inner, operators):
 def kind_lifecycle_table(inner, operators):
     """{field: (PartitionRole, axes)}: the declared kinds' state fields that a retiring operator's
     lifecycle acts on (B1's last slice; pump_composite_adapter.lifecycle_split and
-    lifecycle_retire): those on a slot axis the partition divides or retires, of every bound kind
-    whose fields all declare roles and axes. Empty without a retiring operator or such a field, so
-    no composition admitted today (Q7 (a) refuses kinds with entity fields beside a closer) gains
-    a field."""
+    lifecycle_retire): those on a slot axis the partition divides or retires (their entity axis,
+    shared and internal axes aside), of every bound kind whose fields all declare roles and axes.
+    Empty without a retiring operator or such a field, so no composition admitted before the lift
+    of Q7 (a) (which refused every kind with entity fields beside a closer) gains a field."""
     if not any(op.RETIRES for op in operators):
         return {}
     out = {}
@@ -759,9 +765,23 @@ def kind_lifecycle_table(inner, operators):
         table = pump3.kind_role_table(kind)
         for name in kind.state_fields:
             role, axes = table[name]
-            if pump3.lifecycle_axis(name, axes) in pump3.LIFECYCLE_AXES:
+            if pump3.lifecycle_axis(name, axes, kind.internal_axes) in pump3.LIFECYCLE_AXES:
                 out[name] = (role, axes)
     return out
+
+
+def kind_lifecycle_internal(inner, table):
+    """{field: its kind's internal axes} for the fields of a lifecycle table (kind_lifecycle_table)
+    whose kind declares any: axes its laws carry no entities on, which ride along at a split as
+    shared axes do (kind_registry.entity_axes), for pump_composite_adapter.lifecycle_split and
+    lifecycle_retire."""
+    return {
+        name: tuple(kind.internal_axes)
+        for kind in getattr(inner, "BOUND_KINDS", ())
+        if kind.internal_axes
+        for name in kind.state_fields
+        if name in table
+    }
 
 
 def lifecycle_field_name(name, what):
@@ -783,6 +803,18 @@ def lifecycle_fields(table):
     }
 
 
+def own_axes(kind):
+    """A bound kind's own entity axes whose entities a division moves: its entity axes
+    (kind_registry.entity_axes) that are not @3's slot axes, unless hosted on outside nodes, which
+    are never divided. An own axis that declares no host counts (fails closed)."""
+    hosts = kind.axis_hosts if isinstance(kind.axis_hosts, Mapping) else {}
+    return tuple(
+        axis
+        for axis in kind_registry.entity_axes(kind)
+        if axis not in pump3.SLOT_AXES and getattr(hosts.get(axis), "kind", None) != "outside_node"
+    )
+
+
 def lifecycle_errors(inner, operators):
     """The refusals of a retiring operator beside the kinds' lifecycle fields (the lead's rulings
     1 and 7 of 19 November 2026 on design statement 1, CORE_SEAMS §18 at 02:25 UTC): one whose
@@ -790,11 +822,26 @@ def lifecycle_errors(inner, operators):
     extensive kind field, which a division would split by the volume fraction alone, waits for a
     charge rule; and an extensive kind field on edge slots has no contact fraction to split by
     (the partition binds none), so it is refused here rather than when the event is traced (fails
-    closed)."""
-    table = kind_lifecycle_table(inner, operators)
-    if not table:
+    closed). With the lift of Q7 (a), a kind's own entity axes (own_axes) are refused beside a
+    retiring operator too: B1's division neither splits nor retires their entities, which waits
+    for B2's own-axis maps."""
+    if not any(op.RETIRES for op in operators):
         return []
     errors = []
+    for kind in getattr(inner, "BOUND_KINDS", ()):
+        reason = pump3.kind_lifecycle_errors(kind)
+        if reason and reason[0] in ("roles", "axes"):  # Refused by the structure check anyway.
+            continue
+        own = own_axes(kind)
+        if own:
+            errors.append(
+                f"The kind {kind.kind_id}'s own entity axes {list(own)} are refused beside a "
+                "dividing closer until own-axis maps exist (B2): a division would neither split "
+                "nor retire their entities (fails closed)"
+            )
+    table = kind_lifecycle_table(inner, operators)
+    if not table:
+        return errors
     for op in operators:
         if op.RETIRES and not op.TAKES_LIFECYCLE:
             errors.append(
@@ -835,8 +882,10 @@ def _kinds_lifecycle(inner, kinds):
     return {k: check(kind) for k, kind in zip(kinds, bound, strict=True)}
 
 
-def _kinds_beside_closer(op, kinds, blocked):
-    """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on."""
+def _kinds_beside_closer(op, kinds, blocked, *, bound=None, gated=True):
+    """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on, and,
+    where no closer is declared (`gated` false: the core's presence gate is off), beside each
+    admitted kind with entities (kind_registry.entity_axes of its `bound` kind)."""
     roleless = [k for k in kinds if blocked[k] and blocked[k][0] == "roles"]
     out = []
     if roleless:
@@ -851,12 +900,28 @@ def _kinds_beside_closer(op, kinds, blocked):
                 f"{op.LAW_ID} opens, closes or retires slots, and the kind {k} declares no axes "
                 f"for {', '.join(fields)}, so the lifecycle cannot act on them by role"
             )
-        elif reason == "entities":
+        elif reason == "presence":
             out.append(
-                f"{op.LAW_ID} opens, closes or retires slots, and the kind {k} holds per-entity "
-                f"fields ({', '.join(fields)}), which keep running on a closed host until the core "
-                "gates every kind entity's rates by its host's activity"
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {k} declares no "
+                f"presence field on its entity axes ({', '.join(fields)}), so the core's presence "
+                "gate cannot make its entities there absent where their host is closed"
             )
+        elif reason == "hosts":
+            out.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {k}'s entity axes "
+                f"({', '.join(fields)}) have no host the core's presence gate reads (cell, outside "
+                "node, patch or junction slots, or an own axis's declared host), so it cannot "
+                "close their entities"
+            )
+        elif reason is None and not gated:
+            entities = kind_registry.entity_axes(bound[k]) if k in (bound or {}) else ("?",)
+            if entities:
+                out.append(
+                    f"{op.LAW_ID} opens, closes or retires slots, but no closer is declared, so "
+                    "the core's presence gate is off and the kind "
+                    f"{k}'s entities on {', '.join(entities)} would keep running where the view "
+                    "closes their host"
+                )
     return out
 
 
@@ -1008,6 +1073,7 @@ class Composition:
         # accumulator for each extensive one, on the slot axes; none in a composition admitted
         # today (kind_lifecycle_table).
         self.kind_lifecycle = kind_lifecycle_table(inner, operators)
+        self.KIND_INTERNAL = kind_lifecycle_internal(inner, self.kind_lifecycle)
         names = lifecycle_fields(self.kind_lifecycle)
         self.KIND_RECORDS = {
             k: names[k] for k, (r, _) in self.kind_lifecycle.items() if r.role == "history"
@@ -1551,9 +1617,12 @@ class Composition:
         moved accumulators written. The retiring operator calls it (TAKES_LIFECYCLE)."""
         table = self.kind_lifecycle
         values = {k: getattr(state, k) for k in table}
-        split, valid = pump3.lifecycle_split(values, table, maps, xp=xp)
+        internal = self.KIND_INTERNAL
+        split, valid = pump3.lifecycle_split(values, table, maps, xp=xp, internal=internal)
         records = {k: (r, getattr(state, r)) for k, r in self.KIND_RECORDS.items()}
-        retired, kept = pump3.lifecycle_retire(split, table, masks, records, xp=xp)
+        retired, kept = pump3.lifecycle_retire(
+            split, table, masks, records, xp=xp, internal=internal
+        )
         moved = {
             m: getattr(state, m) + (retired[k] - values[k]) for k, m in self.KIND_MOVED.items()
         }

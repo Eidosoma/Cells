@@ -37,6 +37,7 @@ layout. This adapter is the only place that knows @3's names:
 
 import math
 import sys
+from collections.abc import Mapping
 from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
@@ -268,14 +269,18 @@ BOUND_KINDS = ()  # The declared kinds bound to their structure entries, in KIND
 # per-entity field declares its partition role (kind_registry.PartitionRole: extensive, intensive,
 # history or structural), and close, split, retire and open act on every field by its role, once.
 # - Entity axes: @3's slot axes, which closure propagates along, and a kind's own axes, whose
-#   entities name a host (Q1: the kind contract's host declaration). SHARED_AXES are no entities.
+#   entities name a host (Q1: the kind contract's host declaration). Neither @3's shared axes nor a
+#   kind's laws' internal axes carry entities: one set, F's (kind_registry.SHARED_AXES and
+#   entity_axes; a field's internal axes ride along at a split, copied whole, as shared ones do).
 # - A kind beside a closer (an operator that closes, retires or provides activity masks) is
 #   admitted only when the lifecycle acts on every field it holds (kind_lifecycle_errors):
 #   1. every partition field declares a role (missing_partition_roles; §4.2, fail-closed);
 #   2. every layout and control field declares its axes (Q1; the state fields' are state_axes);
-#   3. no field is per-entity, until the core gates every kind entity's rates by its host's
-#      activity where a closer is declared (Q2, the @3 owner's): a kind on a closed host keeps
-#      running at the view otherwise (Q7 (a), checked at the structure).
+#   3. every entity axis it has declares at least one presence field (kind_registry.presence_fields;
+#      the lift of Q7 (a) after Q2, the lead's ruling of 19 November 2026). Where a closer is
+#      declared, the core's presence gate makes an entity on a closed host absent to the kind's
+#      rates, readouts and stage terms; a kind without presence would keep running there at the
+#      view, so it stays refused (Q7 (a), checked at the structure).
 SLOT_AXES = (
     "cell_slot",
     "extracellular_slot",
@@ -284,8 +289,11 @@ SLOT_AXES = (
     "channel_slot",
     "face_slot",
 )
-SHARED_AXES = ("species", "gate")
-KIND_ROLE_STEPS = ("roles", "axes", "entities")  # kind_lifecycle_errors' reasons, in order.
+SHARED_AXES = kind_registry.SHARED_AXES  # F's set: one for the contract and the lifecycle.
+# The slot axes whose hosts the core's presence gate reads (kind_registry.AXIS_HOST_KINDS: cells,
+# outside nodes, patches and junctions); an own axis is gated through its declared axis_hosts.
+GATED_SLOT_AXES = tuple(kind_registry.AXIS_HOST_KINDS.values())
+KIND_ROLE_STEPS = ("roles", "axes", "presence", "hosts")  # kind_lifecycle_errors' reasons.
 
 
 def bound_kind(kind, declaration):
@@ -316,8 +324,13 @@ def kind_role_table(kind):
 
 
 def kind_lifecycle_errors(kind):
-    """(reason, fields) for the first of KIND_ROLE_STEPS a bound kind fails beside a closer, or ()
-    when the lifecycle acts on all it holds (the module comment above)."""
+    """(reason, names) for the first of KIND_ROLE_STEPS a bound kind fails beside a closer, or ()
+    when the lifecycle acts on all it holds (the module comment above): the fields without a role
+    or axes; the entity axes (kind_registry.entity_axes) that declare no presence field; or the
+    entity axes whose host the core's presence gate cannot read (hosts: neither one of
+    GATED_SLOT_AXES nor an own axis with its axis_hosts declared, such as @3's channel or face
+    slots), where the gate could not close an entity (fails closed). A presence that names a field
+    the kind does not hold is the contract's own refusal (kind_registry.presence_fields raises)."""
     missing = kind_registry.missing_partition_roles(kind)
     if missing:
         return ("roles", missing)
@@ -325,9 +338,16 @@ def kind_lifecycle_errors(kind):
     undeclared = tuple(name for name, a in axes.items() if a is None)
     if undeclared:
         return ("axes", undeclared)
-    entities = tuple(name for name, a in axes.items() if any(axis not in SHARED_AXES for axis in a))
-    if entities:
-        return ("entities", entities)
+    entities = kind_registry.entity_axes(kind)
+    declared = kind.presence if isinstance(kind.presence, Mapping) else {}
+    lacking = tuple(axis for axis in entities if not declared.get(axis))
+    if lacking:
+        return ("presence", lacking)
+    kind_registry.presence_fields(kind)  # Raises on a presence field it does not hold.
+    hosts = kind.axis_hosts if isinstance(kind.axis_hosts, Mapping) else {}
+    unhosted = tuple(axis for axis in entities if axis not in GATED_SLOT_AXES and axis not in hosts)
+    if unhosted:
+        return ("hosts", unhosted)
     return ()
 
 
@@ -364,10 +384,11 @@ def _put_last(array, index, values, *, xp):
     return array.at[..., index].set(values)
 
 
-def lifecycle_axis(name, axes):
-    """A field's entity axis for the lifecycle, or None for a field on shared axes only. Fails
-    closed: a field with two entity axes, or whose entity axis is not its last, is refused."""
-    entities = [axis for axis in axes if axis not in SHARED_AXES]
+def lifecycle_axis(name, axes, internal=()):
+    """A field's entity axis for the lifecycle, or None for a field on shared axes or its kind's
+    internal axes (`internal`) only, as kind_registry.entity_axes counts them. Fails closed: a field
+    with two entity axes, or whose entity axis is not its last, is refused."""
+    entities = [axis for axis in axes if axis not in SHARED_AXES and axis not in internal]
     if not entities:
         return None
     if len(entities) > 1 or axes[-1] != entities[0]:
@@ -377,16 +398,17 @@ def lifecycle_axis(name, axes):
     return entities[0]
 
 
-def lifecycle_split(values, table, maps, *, xp):
+def lifecycle_split(values, table, maps, *, xp, internal=MappingProxyType({})):
     """({field: array} after a division's split, valid): each state field of `table` ({field:
     (PartitionRole, axes)}) on an axis with maps, by role: extensive by the anchor rule (daughter 1
     fl(a x), daughter 2 x - fl(a x), the parent 0, so the daughters sum to the parent exactly);
     intensive copied to the daughters; history left at the daughters' 0, which validity requires;
-    structural kept as declared. Fields not in `values`, on shared axes or on an unmapped axis are
-    returned unchanged."""
+    structural kept as declared. Fields not in `values`, on shared or internal axes only
+    (`internal`: {field: its kind's internal axes}) or on an unmapped axis are returned
+    unchanged."""
     out, valid = dict(values), xp.asarray(True)
     for name, (role, axes) in table.items():
-        axis = lifecycle_axis(name, axes)
+        axis = lifecycle_axis(name, axes, internal.get(name, ()))
         if name not in values or axis not in maps:
             continue
         parent, daughters, fraction, due = maps[axis]
@@ -411,14 +433,15 @@ def lifecycle_split(values, table, maps, *, xp):
     return out, valid
 
 
-def lifecycle_retire(values, table, masks, records, *, xp):
+def lifecycle_retire(values, table, masks, records, *, xp, internal=MappingProxyType({})):
     """({field: array}, {record field: array}) after a retirement, by role: a history field's value
     on the retired slots moves into its record (`records`: {field: (record field, array)}), then 0;
     every other role takes its fill (a structural field's declared fill, else 0). A history field
-    with no record is refused (fails closed: its history would be lost)."""
+    with no record is refused (fails closed: its history would be lost). `internal` as for
+    lifecycle_split."""
     out, kept = dict(values), {}
     for name, (role, axes) in table.items():
-        axis = lifecycle_axis(name, axes)
+        axis = lifecycle_axis(name, axes, internal.get(name, ()))
         if name not in values or axis not in masks:
             continue
         mask, value = masks[axis], values[name]
