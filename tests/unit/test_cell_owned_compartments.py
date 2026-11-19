@@ -1251,17 +1251,18 @@ def test_refusal_5_version_1_2_admits_an_anchor_where_a_route_charges_its_compar
 def test_fr1s_judged_refusal_class_holds_refusal_5_from_the_definition_check():
     """The lead's ruling of 19 November 2026 on version 1.2's move: refusal 5 reads the
     composition, so it is checked at the definition, whose refusals the composite prefixes. A
-    re-run of FR-1's R5 world (its protocol's own refusal_pairs) now reports that prefix before
-    version 1.1's message, kept byte for byte, and FR-1's classify() still puts it in its judged
-    class, so a later re-judge keeps it; the admitted neighbour parses."""
+    re-run of FR-1's R5 world (its protocol's own refusal_pairs, through its own capture, admit)
+    now reports that prefix before version 1.1's message, kept byte for byte, and FR-1's
+    classify() still puts it in its judged class, so a later re-judge keeps it; the admitted
+    neighbour is admitted."""
     from validation.tissue import compartment_acceptance_qualification as fr1
 
     refused, admitted = fr1.refusal_pairs()["R5_a_charge_anchor"]
-    with pytest.raises(ConfigError) as caught:
-        parse_spec(refused)
-    assert str(caught.value) == "Invalid composite definition: " + V1_1_ANCHOR
-    assert fr1.classify(str(caught.value)) == "refusal 5 (the charge anchor)"
-    parse_spec(admitted)
+    spec, message = fr1.admit(refused)
+    assert spec is None and message == "Invalid composite definition: " + V1_1_ANCHOR
+    assert fr1.classify(message) == "refusal 5 (the charge anchor)"
+    spec, message = fr1.admit(admitted)
+    assert spec is not None and message is None
 
 
 def test_the_scope_names_refusal_5_version_1_2_and_no_operator_charges_by_default():
