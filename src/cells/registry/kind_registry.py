@@ -43,6 +43,7 @@ __all__ = (
     "WORK_SUFFIX",
     "ConfigError",
     "AXIS_HOST_KINDS",
+    "SHARED_AXES",
     "AxisHost",
     "EnergyRole",
     "HOOKS",
@@ -62,6 +63,8 @@ __all__ = (
     "finite_number",
     "kind_ledgers",
     "kind_standard_free_energies",
+    "entity_axes",
+    "presence_fields",
     "missing_partition_roles",
     "parse_series",
     "partition_fields",
@@ -321,7 +324,15 @@ class Kind:
       saturation factors, bands, diagram edges and terms), which carry no entities: a split copies
       them whole and none is hosted (the kinds owner's Q5, ruled yes, 19 November 2026), so an
       adapter counts an axis as an entity axis only when it is neither @3's shared axis nor one of
-      these;
+      these; `presence`, {entity axis: (layout field, ...)}: for each entity axis, the fields
+      saying which of its entities are present, every mask its rates, readouts and stage terms
+      read (the transporter's transporter_present and its two law masks are the model), each a
+      bool layout field on exactly that axis, structural with fill False. They are Q2's presence
+      gate's declaration (CORE_SEAMS §18 at 931b6606, widened to a tuple on 19 November): once the
+      gate lands, the core ANDs each with its entity's host's activity, where a closer is
+      declared, before the kind's rates, readouts and stage checks. Until then every kind with an
+      entity axis stays refused beside a closer (Q7 (a)), and after it every kind that declares
+      none. entity_axes and presence_fields read them for the core;
     - `standard_free_energies(declaration)` -> ((((species, nu), ...), dG°/RT, c0 in mM), ...), the
       reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
       signed, products positive; () when it declares none. The species registry's check compares
@@ -381,6 +392,7 @@ class Kind:
     field_axes: object = MappingProxyType({})  # {layout or control field: (axis, ...)}
     axis_hosts: object = MappingProxyType({})  # {own axis: AxisHost}
     internal_axes: tuple = ()  # Its laws' internal axes: copied whole at a split, never hosted.
+    presence: object = MappingProxyType({})  # {entity axis: (bool presence layout field, ...)}
     standard_free_energies: Callable | None = (
         None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
     )
@@ -492,6 +504,9 @@ class PartitionRole(NamedTuple):
     role: str
     fill: object = None
 
+
+# @3's axes that carry no entities, shared by every field on them (B1's adapter's SHARED_AXES).
+SHARED_AXES = ("species", "gate")
 
 # The kinds of host a kind's own entities sit on, each with the slot axis of @3's that indexes them
 # (models/surface_pump_v3: HOST_KINDS' patch and junction, and the nodes).
@@ -722,7 +737,86 @@ def _axis_errors(kind, static):
             )
         elif host.index in axes and axes[host.index] != (axis,):
             out.append(f"axis {axis}: its host index {host.index!r} is on {axes[host.index]}")
-    return out + _internal_axis_errors(kind, static, used)
+    return out + _internal_axis_errors(kind, static, used) + _presence_errors(kind, static, axes)
+
+
+def entity_axes(kind):
+    """A kind's entity axes: the axes of its fields that carry entities, neither @3's shared axes
+    nor its laws' internal ones, in first-use order (state fields, then layout and control fields'
+    field_axes). For a kind that declares its fields per entry, bind it first (bound)."""
+    axes = [a for _, names in kind.state_axes for a in names]
+    if isinstance(kind.field_axes, Mapping):
+        axes += [a for names in kind.field_axes.values() for a in names]
+    internal = set(kind.internal_axes) if isinstance(kind.internal_axes, tuple) else set()
+    return tuple(a for a in dict.fromkeys(axes) if a not in SHARED_AXES and a not in internal)
+
+
+def presence_fields(kind):
+    """{entity axis: (presence field, ...)} of a kind bound to its entry (Q2's presence gate): {}
+    where it declares no presence, which leaves it refused beside a closer. A kind that declares
+    presence declares it for each entity axis it has, each field one of its layout fields; a key of
+    an axis this entry does not have belongs to another entry and is left out. Raises otherwise.
+    The core reads presence only through this, on the bound kind: a kind's own fields may differ
+    per entry, and declaration_errors checks these two only where they are static."""
+    if not kind.presence:
+        return {}
+    axes = entity_axes(kind)
+    missing = [a for a in axes if a not in kind.presence]
+    named = [f for a in axes if a in kind.presence for f in kind.presence[a]]
+    absent = [f for f in named if f not in kind.layout_fields]
+    if missing or absent:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s presence lacks its entity axes {missing} or names fields "
+            f"{absent} that are not its layout fields"
+        )
+    return {a: tuple(kind.presence[a]) for a in axes}
+
+
+def _presence_errors(kind, static, axes):
+    """Why a kind's presence breaks the contract (declaration_errors' part; the Kind docstring):
+    for each of its entity axes a non-empty tuple of distinct bool layout fields, each on exactly
+    that axis, structural with fill False; none on a shared or internal axis, and no field named
+    twice; where the fields are static, every entity axis covered and each field one of its layout
+    fields. A field's dtype is the layout's: fill False is what the declaration can say."""
+    presence = kind.presence
+    if not presence:
+        return []
+    if not isinstance(presence, Mapping) or not all(
+        _named(axis) and isinstance(names, tuple) and all(map(_named, names))
+        for axis, names in presence.items()
+    ):
+        return ["its presence maps its entity axes to tuples of layout fields"]
+    out = []
+    named = [field for names in presence.values() for field in names]
+    repeated = sorted({field for field in named if named.count(field) > 1})
+    if repeated:
+        out.append(f"its presence names fields more than once: {repeated}")
+    internal = set(kind.internal_axes) if isinstance(kind.internal_axes, tuple) else set()
+    roles = kind.partition_roles if isinstance(kind.partition_roles, Mapping) else {}
+    for axis, names in presence.items():
+        if not names:
+            out.append(f"presence of axis {axis}: an empty tuple, so no field gates its entities")
+        if axis in SHARED_AXES or axis in internal:
+            out.append(f"presence of axis {axis}: a shared or internal axis carries no entities")
+        for field in names:
+            if axes.get(field) != (axis,):
+                out.append(f"presence field {field}: on {axes.get(field)}, not exactly {(axis,)}")
+            role = roles.get(field)
+            if not (isinstance(role, PartitionRole) and role.role == "structural"):
+                out.append(f"presence field {field}: {role}, not structural with fill False")
+            elif role.fill is not False:
+                out.append(f"presence field {field}: its fill is {role.fill!r}, not False")
+            if static and field not in kind.layout_fields:
+                out.append(f"presence field {field}: not one of its layout fields")
+    if static:
+        own = entity_axes(kind)
+        uncovered = [a for a in own if a not in presence]
+        if uncovered:
+            out.append(f"its presence lacks its entity axes {uncovered}")
+        stray = sorted(set(presence) - set(own) - set(SHARED_AXES) - internal)
+        if stray:
+            out.append(f"its presence names axes no field of its own is on: {stray}")
+    return out
 
 
 def _internal_axis_errors(kind, static, used):
