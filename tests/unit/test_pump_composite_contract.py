@@ -261,6 +261,8 @@ def test_operator_declarations_are_checked():
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "x"),) * 2), "distinct"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("routed@1", "rate_x"),)), "its own controls"),
         (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "turnover_rate"),)), "rate_factors"),
+        (dict(FACTOR_RECORD="nowhere"), "FACTOR_RECORD is an owned state field"),
+        (dict(STATE_AXES={"rec": ["one"]}, FACTOR_RECORD="rec"), "with factor_record"),
     )
     for changes, words in planted:
         bad = type("Routed", (Routed,), changes)

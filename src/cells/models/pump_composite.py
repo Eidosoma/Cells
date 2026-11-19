@@ -95,6 +95,28 @@ def _and(a, b):
     return a & b
 
 
+def _merged(old, new, *, xp):
+    """Two (values, mask) records of one FACTOR_RECORD field, the later taking its own routes
+    (B1′); None is no record."""
+    if old is None:
+        return new
+    values, mask = new
+    return xp.where(mask, values, old[0]), mask | old[1]
+
+
+def _recorded(state, records, *, xp):
+    """state with each FACTOR_RECORD field set to its routes' applied factors, elsewhere kept
+    (B1′'s exact record); unchanged without a record (static)."""
+    if not records:
+        return state
+    return state._replace(
+        **{
+            field: xp.where(mask, values, getattr(state, field))
+            for field, (values, mask) in records.items()
+        }
+    )
+
+
 def _checked_above(row, p, active, *, xp):
     """The domain of a row whose actual state was checked beforehand (retirement, S5 §3.5)."""
     return xp.asarray(True)
@@ -1406,6 +1428,9 @@ class Composition:
             self.control_view(control, current, p, xp=xp),
             self.view(p, current, xp=xp),
         )
+        if self.factors:  # Static (B1′): the factors' ranges and records at the control view.
+            checked, current = self._control_factor_checks(current, p, xp=xp)
+            valid = _and(valid, checked)
         inputs = self.inner.barrier(inputs, xp=xp)
         if process is None:
             moved, ok = self.inner.checked_step(inputs[0], dt, inputs[1], inputs[2], p.active)
@@ -1460,16 +1485,17 @@ class Composition:
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
         routes = self.rate_routes.get(op)
         if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
-            control, routed = self._routed_control(op, routes, state, control, p, xp=xp)
+            control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
             new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
-            return new, _and(ok, routed)
+            return _recorded(new, records, xp=xp), _and(ok, routed)
         return op.half_step(state, h, control, p, xp=xp, **keywords)
 
     def _routed_control(self, op, routes, state, control, p, *, xp):
         """(control with each of op's routed fields times its sources' factors, in declared
-        order, from `state`; their validity) for B1′'s rate routes. A source that declares no
+        order, from `state`; their validity; the sources' exact records of the factors applied,
+        {FACTOR_RECORD field: (values, mask)}) for B1′'s rate routes. A source that declares no
         route on a field in this definition gives None and leaves it as scheduled (static)."""
-        fields, valid = {}, None
+        fields, valid, records = {}, None, {}
         for source, name in routes:
             out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp)
             if out is None:
@@ -1477,7 +1503,24 @@ class Composition:
             factor, ok = out
             fields[name] = fields.get(name, getattr(control, name)) * factor
             valid = _and(valid, ok)
-        return (control._replace(**fields) if fields else control), valid
+            if source.FACTOR_RECORD:
+                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp)
+                records[source.FACTOR_RECORD] = _merged(
+                    records.get(source.FACTOR_RECORD), record, xp=xp
+                )
+        return (control._replace(**fields) if fields else control), valid, records
+
+    def _control_factor_checks(self, current, p, *, xp):
+        """(validity, current with its records) of the factor sources at the control view (B1′):
+        each one's factor_valid, and each FACTOR_RECORD filled with the factors applied there
+        (static: a source without either changes nothing)."""
+        valid, records = None, {}
+        for op in self.factors:
+            valid = _and(valid, op.factor_valid(current, p, xp=xp))
+            if op.FACTOR_RECORD:
+                record = op.factor_record(current, p, None, None, xp=xp)
+                records[op.FACTOR_RECORD] = _merged(records.get(op.FACTOR_RECORD), record, xp=xp)
+        return valid, _recorded(current, records, xp=xp)
 
     def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""

@@ -432,9 +432,11 @@ LAW_V2 = sra.LAW_ID_V2
 PRODUCTION = 2e-4  # fmol/s, X0's scheduled production in cell_0.
 
 
-def routed(*, coupling_first=True, ranged=(0.0, 1.0), routes=None, states=()):
+def routed(*, coupling_first=True, ranged=(0.0, 1.0), routes=None, states=(), inner=None):
     """The sheet with R and X0, @2 routing a Hill activation of R (K 1e-3 mM, n 2, basal 0.1) to
-    the turnover's production of X0 in cell_0 (route make_x0), and that turnover."""
+    the turnover's production of X0 in cell_0 (route make_x0), and that turnover. `inner`: an
+    operating range for a second coupling, a step_view inhibition of R on junction_0's first
+    side (its one route read in cell_0)."""
     raw = rf.sheet(extra=1)
     target = dict(
         operator=sfx.TURNOVER,
@@ -445,7 +447,14 @@ def routed(*, coupling_first=True, ranged=(0.0, 1.0), routes=None, states=()):
     )
     entry = rf.hill_coupling("c_x", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 2.0)
     entry.update(target=target, basal=0.1)
-    raw = rf.with_coupling(raw, species=["R"], states=list(states), couplings=[entry])
+    couplings = [entry]
+    if inner is not None:
+        view = rf.hill_coupling(
+            "c_j", "junction", ["junction_0"], "R", "hill_inhibition", 1e-3, 1.0, side="first"
+        )
+        view["target"].update(evaluation="step_view", operating_range=list(inner))
+        couplings.insert(0, view)
+    raw = rf.with_coupling(raw, species=["R"], states=list(states), couplings=couplings)
     block(raw)["law"] = LAW_V2
     routes = routes or [("make_x0", "cell_0", "production", PRODUCTION)]
     turnover = dict(
@@ -532,7 +541,7 @@ REFUSALS.update(
                     )
                 )
             ),
-            f"{LAW_V2} target: missing=['evaluation']",
+            f"{LAW_V2} target: missing=['evaluation', 'operating_range']",
         ),
         "v2 state source outside its cells": (
             _edit_v2(_from_state, states=[rf.state("s", ["cell_3"], [STATE_INPUT])]),
@@ -1027,18 +1036,20 @@ def test_version_2_routes_a_production_rate_in_the_targets_half_steps(monkeypatc
     values = cs.control_values(spec, [0.0])
     control = model.CONTROL_TYPE(*(v[0] for v in values))
     h = 0.5 * spec.execution.dt
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    assert np.asarray(getattr(state, record)).tobytes() == np.asarray(factor).tobytes()  # Bound.
     routed_step, ok = model._half_step(turnover, state, h, control, p, xp=np)
     scheduled = control._replace(turnover_rate=control.turnover_rate * factor)
     by_hand, _ = turnover.half_step(state, h, scheduled, p, xp=np)
     assert bool(ok)
-    for a, b in zip(routed_step, by_hand, strict=True):
-        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    _bitwise_but(routed_step, by_hand, record)
+    assert np.asarray(getattr(routed_step, record)).tobytes() == np.asarray(factor).tobytes()
     off = state._replace(coupling_enabled=np.zeros_like(state.coupling_enabled))
     cut, ok = model._half_step(turnover, off, h, control, p, xp=np)
     plain, _ = turnover.half_step(off, h, control, p, xp=np)
     assert bool(ok)
-    for a, b in zip(cut, plain, strict=True):
-        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    _bitwise_but(cut, plain, record)
+    assert np.asarray(getattr(cut, record)).tolist() == [1.0]  # The factor applied: exactly 1.
     narrow = parse_spec(routed(ranged=(0.5, 1.0)))  # R at 1e-3 mM, below the range.
     model2 = get_model(narrow.model)
     state2, p2 = model2.initial_values(narrow)
@@ -1054,3 +1065,57 @@ def test_version_2_routes_a_production_rate_in_the_targets_half_steps(monkeypatc
     )
     with pytest.raises(ConfigError, match="routes cell-side elements only"):
         parse_spec(routed())
+
+
+def _bitwise_but(a, b, skipped):
+    """Every field of two states bitwise equal but `skipped`."""
+    for name in type(a)._fields:
+        if name != skipped:
+            assert np.asarray(getattr(a, name)).tobytes() == np.asarray(getattr(b, name)).tobytes()
+
+
+def test_version_2_holds_and_records_each_factor_where_it_is_applied(monkeypatch):
+    """R4 and the exact record (the lead's freeze rulings of 19 November 2026; development, not
+    judged). A step_view target's operating range is held at the control view, where its factor is
+    evaluated, for an enabled coupling only. The composite records each route's factor where it
+    is applied: a step_view route at the control view, an operator route at its target's
+    half-step, every other route kept. Planted: R outside the step_view range, refused by the
+    control view's check and so by the composite's whole step (NumPy, @3's step stubbed, since
+    the check precedes it), and admitted switched off."""
+    spec = parse_spec(routed(inner=(0.0, 1.0)))
+    assert parse_spec(cs.to_dict(spec)).model.operators == spec.model.operators
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    coupling = next(o for o in model.operators if o.LAW_ID == LAW_V2)
+    turnover = next(o for o in model.operators if o.LAW_ID == sfx.TURNOVER)
+    assert sra.route_keys(spec, spec.model.operators[0]) == (
+        ("c_j", "junction_0", "cell_0"),
+        ("c_x", "make_x0", "cell_0"),
+    )
+    assert np.asarray(p.coupling_route_low).tolist() == [0.0, 0.0]
+    assert bool(coupling.factor_valid(state, p, xp=np))
+    record = coupling.FACTOR_RECORD
+    values = sra.route_factors(state, p, xp=np)
+    planted = state._replace(**{record: np.full(2, 0.5)})  # A record to be overwritten in part.
+    checked, viewed = model._control_factor_checks(planted, p, xp=np)
+    assert bool(checked)
+    assert np.asarray(getattr(viewed, record)).tolist() == [float(values[0]), 0.5]
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    h = 0.5 * spec.execution.dt
+    stepped, ok = model._half_step(turnover, planted, h, control, p, xp=np)
+    assert bool(ok) and np.asarray(getattr(stepped, record)).tolist() == [0.5, float(values[1])]
+    narrow = parse_spec(routed(inner=(0.5, 1.0)))  # R at 1e-3 mM, below the step_view range.
+    model2 = get_model(narrow.model)
+    state2, p2 = model2.initial_values(narrow)
+    coupling2 = next(o for o in model2.operators if o.LAW_ID == LAW_V2)
+    assert not bool(coupling2.factor_valid(state2, p2, xp=np))
+    control2 = model2.CONTROL_TYPE(*(v[0] for v in cs.control_values(narrow, [0.0])))
+    monkeypatch.setattr(model2.inner, "checked_step", lambda s, dt, c, q, active: (s, True))
+    _, ok = model2.split_step(state2, narrow.execution.dt, control2, p2, xp=np)
+    assert not bool(ok)
+    off_schedule = control2._replace(coupling_switch=np.zeros_like(control2.coupling_switch))
+    _, ok = model2.split_step(state2, narrow.execution.dt, off_schedule, p2, xp=np)
+    assert bool(ok)  # The same stubbed step admitted with every coupling switched off.
+    off = np.asarray(state2.coupling_enabled).copy()
+    off[0] = 0.0  # c_j switched off: its range is not held.
+    assert bool(coupling2.factor_valid(state2._replace(coupling_enabled=off), p2, xp=np))

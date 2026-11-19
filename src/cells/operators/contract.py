@@ -43,7 +43,11 @@ Declarations (class attributes):
   cell its source is read in. The composite
   multiplies the target's field by its sources' factors in declared order, at the start of each
   of the target's two half-steps. A declared route's source precedes its target (refused at the
-  definition otherwise), and a composition without a route source is unchanged.
+  definition otherwise), and a composition without a route source is unchanged. A factor
+  operator's ``factor_valid`` holds its sources where the control view evaluates them, and a
+  source's ``FACTOR_RECORD`` (an owned state field [route], with ``factor_record``) is filled by
+  the composite with each route's factor where it is applied: at the control view, and at each
+  routed half-step.
 * Parts (kinds of §3.4), each optional: an event map at the start of the step
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
@@ -289,6 +293,9 @@ class Operator:
     # B1′ (module docstring): its routable rate controls, and the routable controls it routes to.
     ROUTABLE_CONTROLS = MappingProxyType({})
     RATE_ROUTES = ()
+    # B1′'s exact record: an owned state field [route] the composite fills with each route's factor
+    # where it is applied (factor_record); None: no record.
+    FACTOR_RECORD = None
     CONFLICTS_VIEW = ()
     ENTITY_WRITES = MappingProxyType({})
     # Inner kinetic state it sets at events (intensive, without a ledger: gates).
@@ -563,6 +570,17 @@ class Operator:
         """((element id, cell id or None), ...) of a routable control field, aligned with its last
         axis: the ids a route names and the cell where its source is read (None: an outside node)
         (B1′, the target side; a routable operator defines it)."""
+        raise NotImplementedError
+
+    def factor_valid(self, state, p, *, xp):
+        """The validity of its CONTROL_FACTORS' sources at the control view, where the composite
+        evaluates them (B1′: a declared operating range), or None: nothing to check."""
+        return None
+
+    def factor_record(self, state, p, target, field, *, xp):
+        """(values, mask) [route] for FACTOR_RECORD: each route's factor from `state` and the
+        routes evaluated there, at the control view (target None) or at a target's half-step
+        (target, field) (B1′'s exact record of the factor applied)."""
         raise NotImplementedError
 
     def closures(self, state, p, q, *, xp):
@@ -1011,6 +1029,11 @@ def _check_routes(operator):
         raise ValueError(f"{name}: a route source routes no factor to its own controls")
     if routes and not _defined_below_operator(operator, "rate_factors"):
         raise ValueError(f"{name}: a route source defines rate_factors")
+    record = operator.FACTOR_RECORD
+    if record is not None and (
+        record not in operator.STATE_AXES or not _defined_below_operator(operator, "factor_record")
+    ):
+        raise ValueError(f"{name}: FACTOR_RECORD is an owned state field, with factor_record")
 
 
 def _check_scopes(operator):

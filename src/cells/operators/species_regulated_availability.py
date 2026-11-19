@@ -83,7 +83,7 @@ coupling (pump_composite.rate_route_definition_errors).
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from types import MappingProxyType
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 
@@ -158,6 +158,9 @@ LAYOUT_FIELDS_V2 = (
     "coupling_route_low",
     "coupling_route_high",
 )
+# Version 2's exact record (contract FACTOR_RECORD): each route's factor where it was last applied,
+# at the control view (a step_view route) or at its target's half-step (an operator route).
+STATE_AXES_V2 = {**STATE_AXES, "coupling_applied_factor": ["coupling_route"]}
 
 
 # ------------------------------------------------------------------ declaration
@@ -189,6 +192,15 @@ class Target:
     control: str
     ids: tuple
     side: str | None
+
+
+@dataclass(frozen=True)
+class RangedTarget(Target):
+    """Version 2's inner target: @1's, with its evaluation ("step_view") and its source's
+    operating range declared, which the control view enforces (the module docstring)."""
+
+    evaluation: str = "step_view"
+    operating_range: tuple = ()  # (low, high), as an operator target's.
 
 
 @dataclass(frozen=True)
@@ -391,8 +403,11 @@ def _operator_target(raw, name):
 
 
 def _inner_target(raw, name, elements, version):
-    """An inner target (@1's, unchanged; version 2 also declares its evaluation, "step_view")."""
-    keys = {"operator", "control", "ids", "side"} | ({"evaluation"} if version == 2 else set())
+    """An inner target (@1's, unchanged; version 2 also declares its evaluation, "step_view", and
+    its source's operating range)."""
+    keys = {"operator", "control", "ids", "side"}
+    if version == 2:
+        keys |= {"evaluation", "operating_range"}
     t = _fields(raw, keys, f"{LAW_ID} target")
     if t["operator"] != "inner":
         raise ConfigError(
@@ -420,6 +435,15 @@ def _inner_target(raw, name, elements, version):
             raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
     elif t["side"] is not None:
         raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
+    if version == 2:
+        return RangedTarget(
+            "inner",
+            t["control"],
+            ids,
+            t["side"],
+            t["evaluation"],
+            _operating_range(t["operating_range"], name),
+        )
     return Target("inner", t["control"], ids, t["side"])
 
 
@@ -483,14 +507,14 @@ def _parse_couplings(raw, base, listed, states, *, version=1):
             if origin not in by_state:
                 raise ConfigError(f"{LAW_ID}: coupling {name} reads an undeclared state {origin!r}")
             k = n = None
-            for element in target.ids if type(target) is Target else ():  # Operator: at binding.
+            for element in target.ids if isinstance(target, Target) else ():  # Operator: binding.
                 for cell in _target_cells(m, target, element):
                     if cell not in by_state[origin].cells:
                         raise ConfigError(
                             f"{LAW_ID}: coupling {name} reads state {origin} in {cell}, where it "
                             "is not declared"
                         )
-        if type(target) is OperatorTarget:
+        if isinstance(target, (OperatorTarget, RangedTarget)):
             low, high = target.operating_range
             if low < 0 or (kind == "state" and high > 1):
                 raise ConfigError(
@@ -533,8 +557,8 @@ def _target_to_dict(target, law):
         ids=list(target.ids),
         side=target.side,
     )
-    if law == LAW_ID_V2:
-        out["evaluation"] = EVALUATIONS["inner"]
+    if type(target) is RangedTarget:
+        out.update(evaluation=target.evaluation, operating_range=list(target.operating_range))
     return out
 
 
@@ -843,7 +867,6 @@ def bind(spec, declaration, schedule):
                 )
                 on_element[coupling.target.control].setdefault(index, []).append(len(routes))
                 routes.append(route)
-    inner_routes = len(routes)
     operator = None
     if declaration.law == LAW_ID_V2:
         operator = _operator_routes(spec, declaration, routes, slot_keys)
@@ -864,11 +887,13 @@ def bind(spec, declaration, schedule):
         for index, members in on_element[name].items():
             table[index, : len(members)] = members
         layout[field] = table
-    if operator is not None:  # Version 2: its element tables and every route's range.
-        tables, ranges = operator
+    if operator is not None:  # Version 2: its element tables and every route's declared range.
+        tables, _ = operator
         layout.update(tables)
-        unbounded = [(-np.inf, np.inf)] * inner_routes
-        bounds = np.asarray(unbounded + ranges, dtype=float).reshape(len(routes), 2)
+        bounds = np.asarray(
+            [declaration.couplings[r["coupling"]].target.operating_range for r in routes],
+            dtype=float,
+        ).reshape(len(routes), 2)
         layout.update(coupling_route_low=bounds[:, 0], coupling_route_high=bounds[:, 1])
     switches = np.asarray([changes[0][1] for _, changes in schedule.switches], dtype=float)
     state = dict(
@@ -986,10 +1011,22 @@ def factors_valid(state, p, *, xp):
     return xp.all(xp.isfinite(f) & (f >= 0) & (f <= 1))
 
 
-def range_valid(state, p, *, xp):
-    """Version 2: every enabled route's source inside its declared operating range, at the state
-    a target's half-step receives: a species route's concentration (mM, in its cell at the
-    declared volume) or a state route's fraction. An inner route's range is unbounded."""
+def used_routes(tables, count, *, xp):
+    """Version 2: [route] whether a route stands in any of `tables` ([element, width] route
+    indices, -1 pads): the routes evaluated where those tables' factors are."""
+    index = xp.arange(count)
+    used = xp.zeros(count, dtype=bool)
+    for table in tables:
+        if table.size:  # Static.
+            used = used | xp.any(index[:, None] == xp.reshape(table, (1, -1)), axis=1)
+    return used
+
+
+def range_valid(state, p, used, *, xp):
+    """Version 2: every enabled route of `used` inside its declared operating range at `state`,
+    where its factor is evaluated: a species route's concentration (mM, in its cell at the
+    declared volume) or a state route's fraction. A switched-off coupling's routes are skipped
+    (its factor is exactly 1)."""
     law = p.coupling_route_law
     rows, cells = p.coupling_route_row, p.coupling_route_cell
     amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
@@ -999,7 +1036,7 @@ def range_valid(state, p, *, xp):
         source = xp.where(law >= STATE_FRACTION, s, source)
     inside = (source >= p.coupling_route_low) & (source <= p.coupling_route_high)
     on = state.coupling_enabled[p.coupling_route_coupling] > 0
-    return xp.all(inside | ~on)
+    return xp.all(inside | ~on | ~used)
 
 
 def own_valid(state, *, xp):
@@ -1071,6 +1108,30 @@ def check_replaced_slots(spec, declaration):
                     f"{sorted(hit)[0]}, a slot "
                     f"{common.REPLACEMENT_LAW} replaces (refused in version 1)"
                 )
+
+
+def route_keys(spec, declaration):
+    """Version 2: (coupling id, element id, cell id) of each route, in the binding's order: every
+    inner target's routes, coupling by coupling, then every operator target's (host side)."""
+    m = spec.model
+    keys = [
+        (c.id, element, cell)
+        for c in declaration.couplings
+        if type(c.target) is not OperatorTarget
+        for element in c.target.ids
+        for cell in _target_cells(m, c.target, element)
+    ]
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    for c in declaration.couplings:
+        if type(c.target) is not OperatorTarget or c.target.operator not in declared:
+            continue
+        op, target_declaration = declared[c.target.operator]
+        keys += [
+            (c.id, element, cell)
+            for element, cell in op.routable_elements(target_declaration, c.target.control)
+            if element in c.target.ids
+        ]
+    return tuple(keys)
 
 
 def check_replaced_operator_elements(spec, declaration):
@@ -1323,6 +1384,8 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
 
     LAW_ID = LAW_ID_V2
     LAYOUT_FIELDS = LAYOUT_FIELDS_V2
+    STATE_AXES = STATE_AXES_V2
+    FACTOR_RECORD = "coupling_applied_factor"
     RATE_ROUTES = tuple(OPERATOR_TABLES)
     # Its run view (the contract; an operator registered after the run view declares it).
     VIEW_LAYERS = (
@@ -1340,6 +1403,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         "coupling_enabled": "1",
         "coupling_step_count": "1",
         "coupling_factor": "1",
+        "coupling_applied_factor": "1",
     }
     RECORD_KINDS = {
         "regulatory_state": "level",
@@ -1348,6 +1412,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         "regulatory_writes_applied": "cumulative",
         "coupling_enabled": "level",
         "coupling_step_count": "cumulative",
+        "coupling_applied_factor": "level",
     }
 
     def view_sets(self, spec, declaration):
@@ -1370,6 +1435,14 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
                 ),
             },
             "one": {"id": "regulation_step_counter", "ids": ("steps",), "holds": "step counter"},
+            "coupling_route": {
+                "id": "coupling_route",
+                "ids": tuple(
+                    f"{c}:{element}:{cell}" for c, element, cell in route_keys(spec, declaration)
+                ),
+                "holds": "coupling route (a coupling's factor read in one cell, on one element)",
+                "at": tuple({"cell": cell} for _, _, cell in route_keys(spec, declaration)),
+            },
         }
 
     def view_events(self, spec, declaration, schedule):
@@ -1434,8 +1507,33 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         return out
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        """@1's binding plus @2's tables and ranges, and the record's start: each route's factor
+        at the bound state (no factor has been applied yet)."""
         with _named_v2():
-            return bind(spec, declaration, schedule)
+            state, layout = bind(spec, declaration, schedule)
+        read = SimpleNamespace(**inner_state._asdict(), **state)
+        bound = SimpleNamespace(**inner_layout._asdict(), **layout)
+        state["coupling_applied_factor"] = np.asarray(route_factors(read, bound, xp=np), float)
+        return state, layout
+
+    def factor_valid(self, state, p, *, xp):
+        """Its step_view routes' sources inside their declared ranges at the control view, where
+        their factors are evaluated (enabled routes only); None without one (static)."""
+        tables = [getattr(p, field) for field in TARGET_TABLES.values()]
+        if not any(table.shape[1] for table in tables):
+            return None
+        used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
+        return range_valid(state, p, used, xp=xp)
+
+    def factor_record(self, state, p, target, field, *, xp):
+        """(each route's factor at `state`, the routes evaluated there): the step_view routes at
+        the control view (target None), or one operator target's at its half-step."""
+        if target is None:
+            tables = [getattr(p, name) for name in TARGET_TABLES.values()]
+        else:
+            tables = [getattr(p, OPERATOR_TABLES[(target, field)])]
+        used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
+        return route_factors(state, p, xp=xp), used
 
     def declared_rate_routes(self, declaration):
         return tuple(
@@ -1454,4 +1552,5 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         if table.shape[1] == 0:
             return None
         values = route_factors(state, p, xp=xp)
-        return element_product(values, table, xp=xp), range_valid(state, p, xp=xp)
+        used = used_routes((table,), values.shape[0], xp=xp)
+        return element_product(values, table, xp=xp), range_valid(state, p, used, xp=xp)
