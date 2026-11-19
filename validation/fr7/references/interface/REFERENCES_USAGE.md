@@ -61,7 +61,7 @@ Everything here is synthetic and labelled so (D217).
   template's closed forms in every world, W1's chain, R-clear on every case, and the cell against
   R-cell at a held N. It also checks independence.
 - `tests/unit/test_fr7_references_regeneration.py` runs the whole regeneration, about 3 minutes
-  under pytest, so it falls in tier 3 by measurement.
+  under load. It measured 79 s on a quiet core, which places it in tier 2.
 
 ## The model
 
@@ -486,7 +486,7 @@ and labelled so (D217). Its author read the same documents as R-chain's, plus
 **Tests:**
 - `test_fr7_references.py` gains two checks:
   - the inputs are the export plus what the references computed;
-  - the start is stationary, and its balance equals the lane's to 1e-12;
+  - the start is stationary to rounding;
   - the bands, margins and rules recompute;
   - the cut, the confound and persistence have power;
   - the calibration is in bounds.
@@ -546,8 +546,18 @@ and labelled so (D217). Its author read the same documents as R-chain's, plus
 | u₀, s₀ | 0.510355, 0.337904 |
 | F_loop0, F₀ = b_T F_loop0 | 0.662096, 0.132419 |
 | n_P0, S_P | 9.449075e-05 fmol, 9.474100e-05 fmol/s |
-| Production = removal | 37.67569344 units/s (the lane's start balance: equal to 1e-12) |
+| Production = removal | 37.67569344 units/s, by construction: n_P0 is defined from it. It equals k_r N₀, which is the export's declared balance, so it checks neither the pump nor the ion steady state |
 | Stationarity residual | 5.4e-18 fmol/s |
+
+**How the start is checked on the reference side:**
+- **The cell without its pump agrees with R-cell.** With the pump's capacity at 0 and the units
+  frozen, R-loop's cell matches R-cell (`validation/coupling/cells_reference.py`) on the same
+  four-species cell, with the fixed charge as background, the K population and the Na-leak units.
+  Over 50 s, while Na triples, they agree to 7 × 10⁻¹⁵ V and 2 × 10⁻¹⁵ fmol.
+- **The pump agrees with §5's literal form** to 3 × 10⁻¹⁶ relative at five states. This is the
+  same author's second transcription, not an independent reference.
+- **The first independent test of the start** is the engine's drift check from it. A drift there
+  implicates either side.
 
 **F* and its bound:**
 - **F* = 0.6407314862.** It is 1 − s at t_d = 260 s on the closed trajectory, where
@@ -570,7 +580,7 @@ and labelled so (D217). Its author read the same documents as R-chain's, plus
 - the pump's rate, rel 10⁻⁶ of scale;
 - the amounts of Na, K and M, rel 10⁻⁶ of scale.
 
-Every bound is under 1.1 × 10⁻³ of its band.
+Every bound is under 3.6 × 10⁻³ of its band. The largest belongs to the material total, whose bound counts its ledger terms' rounding.
 
 **Statuses:**
 - **The core is compared on every row:** n_P, N, PA, W, R, C_P and s. The closed arm also
@@ -661,7 +671,7 @@ Every bound is under 1.1 × 10⁻³ of its band.
 - **Within each row's own error bound,** with one exception: one row of the clamped arm's pump
   rate (and its current) differs by 9 × 10⁻¹⁵ relative. That is integration-path noise, below
   that row's local estimate from the 10⁻¹² and 10⁻¹⁰ runs.
-- **The material total** differs by at most 1.6 × 10⁻¹⁶ fmol, which is 1.1 × 10⁻³ band. That is
+- **The material total** differs by at most 1.25 × 10⁻¹⁶ fmol, which is 1.1 × 10⁻³ band. That is
   rounding: the total, about 1.2 × 10⁻⁴ fmol, is the small difference of two ledger terms near
   0.053 fmol, C_P and S_P t. Its registered bound counts the rounding of those terms (16 ε times
   their sum), not of the total alone.
@@ -694,8 +704,10 @@ integrated at rtol 10⁻¹⁰. Steps of 0.1 and 0.05 s give the order.
   at the sub-flows' noise, so no order is claimed for them.
 - **Extrapolated to 1 ms,** the error is at most 2.0 × 10⁻² of its band (s). Every other quantity
   is at most 7.9 × 10⁻⁴ of its band.
-- **This calibrates the voltage, the amounts and the pump as well as the units:** a correct
-  second-order engine passes every band with at least 50-fold margin (`loop_calibration.json`).
+- **This emulated split passes every band at 1 ms with at least a 50-fold margin:** V, the
+  amounts, the pump, s and the units (`loop_calibration.json`).
+- **It is one split.** The precursor's turnover and the producer share a sub-flow in it, so the n_P
+  and C_P bands are not calibrated against a split between them.
 - **The calibration is invariant under D233,** since c/K is unchanged.
 
 ### How a comparison reads them
