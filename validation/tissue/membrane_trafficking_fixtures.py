@@ -16,6 +16,7 @@ The builders:
 * route and with_trafficking: a route's declaration entry and the operator's block with its
   schedules. Floors and rates are given as fractions of the declared areas.
 * uptake: pooled_cells with one route per cell, membrane_i into endosome_i.
+* cycle: one cell for 5 ms, observed every step: retrieval, then recycling from CYCLE_CHANGE.
 """
 
 import copy
@@ -272,3 +273,27 @@ def uptake(n=1, *, retrieval=0.1, recycling=0.0, end=END, **kwargs):
         for i, r in enumerate(routes)
     ]
     return with_trafficking(raw, routes, schedules)
+
+
+CYCLE_CHANGE = 0.002  # s: retrieval until here, then recycling.
+CYCLE_END = 0.005
+CYCLE_TIMES = [0.0, 0.001, 0.002, 0.003, 0.004, CYCLE_END]
+CYCLE_E = {"kir_0": 1.0, "nav_0": 0.5}  # Retrieval enrichments.
+CYCLE_E_R = {"kir_0": 2.0, "nav_0": 1.0}  # Recycling enrichments.
+
+
+def cycle(retrieval=0.1, recycling=0.3):
+    """One cell for CYCLE_END, observed every step: retrieval at `retrieval` of the plasma area
+    per ms until CYCLE_CHANGE, then recycling at `recycling` of the pool's declared area per ms,
+    with the enrichments CYCLE_E and CYCLE_E_R."""
+    raw = pooled_cells(1, end=CYCLE_END, observation_times=CYCLE_TIMES)
+    entry = route(raw, 0, retrieval=CYCLE_E, recycling=CYCLE_E_R)
+    plasma = patch(raw, "membrane_0")["area_m2"]
+    pool = patch(raw, "pool_membrane_0")["area_m2"]
+    rates = (retrieval * plasma / DT, recycling * pool / DT)
+    plan = schedule(
+        entry["id"],
+        [(0.0, rates[0]), (CYCLE_CHANGE, 0.0)],
+        [(0.0, 0.0), (CYCLE_CHANGE, rates[1])],
+    )
+    return with_trafficking(raw, [entry], [plan])

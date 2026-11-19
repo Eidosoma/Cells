@@ -109,7 +109,7 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
 from cells.numerics.extracellular_field import scatter
-from cells.numerics.species_sums import species_sum
+from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import compartments, membrane_state
 from cells.operators.contract import Operator
 
@@ -603,23 +603,13 @@ def _indicator(condition, *, xp):
     return xp.where(condition, 1.0, 0.0)
 
 
-def _fold(values, *, xp):
-    """The serial left fold over the leading axis (species_sum's, with its barrier). Every sum
-    here is one (D182), over species, routes or nodes, so bitwise-equal terms give bitwise-equal
-    sums on the host and the device; tests/unit/test_species_sum_sites.py refuses any other sum
-    in an operator, and this module has no entity_sum to list."""
-    return species_sum(values, xp=xp)
-
-
-def _total(values, *, xp):
-    """The full sum of [species, outside] values: species first, then nodes, each folded."""
-    return _fold(_fold(values, xp=xp), xp=xp)
-
-
 def _per_route(values, *, xp):
-    """[route] sums of [route, species, outside] values: species first, then nodes, each folded."""
-    by_node = _fold(xp.moveaxis(values, 1, 0), xp=xp)  # [route, outside]
-    return _fold(xp.moveaxis(by_node, 1, 0), xp=xp)
+    """[route] sums of [route, species, outside] values: the species first (species_sum), then
+    the nodes (an entity sum). Every sum here is one of D182's two (the species axis by
+    species_sum, the routes and nodes by entity_sum, each listed in
+    tests/species_sum_entity_sums.json); tests/unit/test_species_sum_sites.py refuses any other."""
+    by_node = species_sum(xp.moveaxis(values, 1, 0), xp=xp)  # [route, outside]
+    return entity_sum(by_node, axis=1, xp=xp)
 
 
 def stage(state, tau, rate, p, retrieval, *, xp=jnp):
@@ -641,7 +631,7 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
         units = state.trafficking_internalised_units  # The record [route, channel].
     moved = -units * xp.expm1(enrichment * shrink[:, None])  # [route, channel], >= 0.
     sign = -1.0 if retrieval else 1.0  # Plasma units: lost to the record, or returned.
-    unit_change = sign * _fold(moved, xp=xp)
+    unit_change = sign * entity_sum(moved, axis=0, xp=xp)  # Over routes.
     record = state.trafficking_internalised_units - sign * moved
     nm = area.size
     area_change = scatter(da, xp.zeros(nm), (target,), xp=xp) - scatter(
@@ -664,7 +654,7 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     # Each route's carriers of its pieces' outside plates, -plate_C, moved source -> target node.
     carried = p.trafficking_carrier_scale * (-out.plate_C)[:, None]  # [route, species]
     contribution = carried[:, :, None] * direction[:, None, :]  # [route, species, outside]
-    moved_nodes = _fold(contribution, xp=xp)  # [species, outside]
+    moved_nodes = entity_sum(contribution, axis=0, xp=xp)  # Over routes: [species, outside]
     held = p.reservoir & p.outside_active
     free = p.outside_active & ~p.reservoir
     amounts = p.extracellular_amount_reference + state.extracellular_amount_increment
@@ -686,19 +676,21 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     dg = adapter.species_chemical_free_energy_pJ(anchor, change, volume, temperature, xp=xp)
     dg_magnitude = adapter.species_chemical_magnitude_pJ(anchor, change, volume, temperature, xp=xp)
     weight = xp.where(free, xp.abs(contribution), 0.0)
-    total = _fold(weight, xp=xp)
+    total = entity_sum(weight, axis=0, xp=xp)  # Over routes.
     share = xp.where(total > 0, weight / xp.where(total > 0, total, 1.0), 0.0)
     work = _per_route(share * dg[None], xp=xp) - reservoir_chemical  # [route], pJ
     # The merge heat, shared by the first-order terms.
     jump = out.before_V[source] - out.before_V[target]
     first_order = 0.5e12 * dc * jump**2
-    whole = _fold(first_order, xp=xp)
+    whole = entity_sum(first_order, axis=None, xp=xp)  # Over routes.
     positive = whole > 0
     heat_share = xp.where(positive, first_order / xp.where(positive, whole, 1.0), 0.0)
     heat = out.heat_pJ * heat_share
     electrode = out.electrode_C
     electrode_work = 1e12 * p.boundary_V * electrode
-    flows = _fold(xp.abs(electrode_work), xp=xp) + _fold(xp.abs(reservoir_work), xp=xp)
+    flows = entity_sum(xp.abs(electrode_work), axis=None, xp=xp) + entity_sum(
+        xp.abs(reservoir_work), axis=None, xp=xp
+    )  # Over nodes.
     magnitude = (
         first_order
         + _per_route(share * dg_magnitude[None], xp=xp)
@@ -802,7 +794,7 @@ def own_ledgers(row, p, *, xp):
     cells = xp.zeros(p.active.size)
     record = row.trafficking_internalised_units - p.trafficking_internalised_reference
     return dict(
-        trafficking_units=row.trafficking_units + _fold(record, xp=xp),  # Over routes.
+        trafficking_units=row.trafficking_units + entity_sum(record, axis=0, xp=xp),  # Routes.
         trafficking_area=scatter(row.trafficking_area_m2, cells, (p.membrane_cell,), xp=xp),
         trafficking_capacitance=scatter(
             row.trafficking_capacitance_F, cells, (p.membrane_cell,), xp=xp
@@ -1035,8 +1027,8 @@ class ScheduledMembraneTrafficking(Operator):
         result["energy"] = (
             result["energy"]
             + energy
-            + _fold(row.trafficking_dissipated_energy_pJ, xp=xp)
-            - _fold(row.trafficking_work_pJ, xp=xp)
+            + entity_sum(row.trafficking_dissipated_energy_pJ, axis=None, xp=xp)
+            - entity_sum(row.trafficking_work_pJ, axis=None, xp=xp)
         )
         result["electrode"] = result["electrode"] - electrode
         result["outside"] = result["outside"] - row.trafficking_carrier_fmol
@@ -1050,14 +1042,15 @@ class ScheduledMembraneTrafficking(Operator):
         _, _, energy, electrode = adapter.view_capacitor_terms(row, view, bound, xp=xp)
         carriers = xp.abs(row.trafficking_carrier_fmol)
         magnitudes[1] = magnitudes[1] + carriers
-        magnitudes[2] = magnitudes[2] + 2.0 * _fold(xp.moveaxis(carriers, 1, 0), xp=xp)
+        magnitudes[2] = magnitudes[2] + 2.0 * entity_sum(carriers, axis=1, xp=xp)  # Nodes.
         image = row.trafficking_image_charge_C + electrode
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
         held = p.reservoir & p.outside_active
-        supply = CHARGE_PER_FMOL * _total(xp.abs(p.valence * xp.where(held, carriers, 0.0)), xp=xp)
-        charge = _fold(row.trafficking_image_charge_C, xp=xp) + supply
+        supplied = xp.abs(p.valence * xp.where(held, carriers, 0.0))  # [species, outside]
+        supply = CHARGE_PER_FMOL * entity_sum(species_sum(supplied, xp=xp), axis=None, xp=xp)
+        charge = entity_sum(row.trafficking_image_charge_C, axis=None, xp=xp) + supply
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = energy + _fold(row.trafficking_energy_magnitude_pJ, xp=xp)
+        energy = energy + entity_sum(row.trafficking_energy_magnitude_pJ, axis=None, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 
@@ -1068,7 +1061,7 @@ class ScheduledMembraneTrafficking(Operator):
         cells = xp.zeros(p.active.size)
         record = row.trafficking_internalised_units - p.trafficking_internalised_reference
         return (
-            xp.abs(row.trafficking_units) + _fold(xp.abs(record), xp=xp),
+            xp.abs(row.trafficking_units) + entity_sum(xp.abs(record), axis=0, xp=xp),
             scatter(xp.abs(row.trafficking_area_m2), cells, (p.membrane_cell,), xp=xp),
             scatter(xp.abs(row.trafficking_capacitance_F), cells, (p.membrane_cell,), xp=xp),
         )
