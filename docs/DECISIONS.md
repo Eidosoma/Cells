@@ -7200,3 +7200,78 @@ unchanged: every check that could see a change still runs.
    - The import closures are computed at the landing's head, never guessed. The gate tooling gains a
      scope tool for it.
    - When in doubt, the larger gate runs.
+
+## D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost
+
+2026-11-19, about 11:20 UTC. The user answered the four open questions: "1. agreed"; on X2, "get
+adviser on it and then go as you guys think"; on FR-8, "sounds good on the ladder and get adviser on
+it"; and on gates and tests, "yes plese stop and also remove tests no longer needed and lets make sure
+we are not filling our tests with a lot of regression tests for small bugs along the way, be safe but
+testing is already one of teh slowest part of our process". The advisor reviewed 2, 3 and 4 before
+these rulings.
+
+1. **FR-2's floors: (b).** The references agent exports the floors and plant rows that the
+   engine-side comparison needs into a named interface file, generated from its design file. The
+   builder reads only the interface.
+2. **FR-18's criterion X2 is adopted as an opt-in energy check that registered and judged runs must
+   select.** Development runs keep today's check. Before any code:
+   - **An accuracy cap per registration.** X2 subtracts the integration error rather than capping it,
+     and today's 2e-3 · F bound was the only cap on it. So each registration that selects X2
+     declares its own cap on Σ|a|/F. There is no default, and a run without a cap is refused.
+   - **The run-level conditions.** The order condition's median and the held-step cap are whole-run
+     quantities. Either implement them as registered, decided over the whole run, or amend them to a
+     running form and re-evaluate the saved records before any code.
+   - **With X2 off,** today's check and device programs stay bit-identical, so crossrev stays
+     identical and adoption needs no renewal.
+   - **Scope, fail-closed:** ARS(2,2,2) only, refused elsewhere. The evidence on FR-8's worlds stops
+     at 5 ms.
+   - **Evidence on main:** the registration, the harness and the results land with the
+     implementation.
+   - **Qualification:** one run on the boundary worlds against the saved verdicts, not a tier file:
+     - the refused arms;
+     - the four mixed worlds X1 failed;
+     - W1_P4;
+     - division_quartered_values;
+     - FR-3's plant;
+     - cleft_egg.
+   - **Corrections to what the user was told on 19 November:**
+     - X2's misses are plants below κΣ|a|, so its sensitivity falls as steps grow. They are not
+       plants below rounding.
+     - The 14 GB and 26 GB figures were the replay harness's raised admission limits, not the check's
+       cost. The cost is two extra half steps per checked step.
+   - **Owner:** the @3 owner, who also takes `surface_pump_checks.py`.
+3. **FR-8's ladder:**
+   - **Rung 0, first:** explain the fine engine's order drop through a switch, on a restart window
+     near 1800 s, before any later rung is registered. Every later accuracy study is judged against
+     that reference. Check whether the drop follows the gate updates or the cue's discontinuity.
+   - **Rung 1:** N2 with (a), the exponential junction-gate update, as one new opt-in ID, with G1 and
+     crossrev identical when it is off.
+     - (b), the review of the inherited 0.125, is a side study if it changes admission only.
+     - Rung 1 declares its own accuracy budget and names its energy check. Nothing past 5 ms has been
+       measured, so X2 lands first.
+   - **Rung 2:** (c), the slow integrator, designed inside the existing long-horizon family. C's
+     qual-01 failed on absolute caps on this world.
+   - **825 nodes:** whether FR-8's targets include 825-node tissue is settled from the request. If
+     they do, face diffusion, which none of (a), (b) or (c) touches, is a rung.
+4. **Gates and tests:**
+   - **Superseded gates may be stopped.** A running gate whose head has been replaced by a newer
+     head of the same change is stopped as a whole unit. Science runs, and any run whose result is
+     still needed, are never interrupted. A guard refusal is still held and put to the user.
+   - **The cost was measured** on the record:
+     - tiers 1+2 hold 589 files, 172 CPU-minutes in all;
+     - the 329 files under 10 s take 11%, and the 103 files over 40 s take 57%;
+     - files named for fixes or regressions take 0.4 CPU-minutes.
+
+     The time goes on per-file world building and compiling, not on small tests.
+   - **The policy aims at cost:**
+     - a fix adds a row to an existing parametrized test, or nothing;
+     - no new test file for a small bug;
+     - a new test that compiles or runs a world states its seconds and its reason at landing.
+   - **Tests no longer needed are removed in batches:**
+     - each batch has a removal list for the IDs gate;
+     - their tier rows are dropped in the same commit, since fold refuses a row whose file is gone;
+     - each batch lands after the queued heads that touch those files;
+     - legacy tests go with the approved legacy batch.
+   - **The larger saving is slimming the heaviest files while keeping their claims,** with shared
+     compiled fixtures and smaller worlds, measured before and after. One agent does it once the
+     queue drains.
