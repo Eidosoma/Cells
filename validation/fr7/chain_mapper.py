@@ -17,8 +17,19 @@ and declares each world for the engine:
   (maturation_time_s = m / kappa), initial units in each stage (M0), k_a and k_r on all of N.
 
 The start is the registered one: the cell's amounts, its background charge, and the charge
-C V0 at the declared initial V. A world without a template starts it at TRACE_mM, a trace the
-template's factor cannot see (F_T = b to 1e-20).
+C V0 at the declared initial V.
+
+The template's tail is the plain mean-field one.
+* The cell holds the declared dose alone: the inventory helper's concentrations_mM replaces its
+  trace there. The trace stays in the bath, which the template, impermeant on every patch and
+  junction, can neither enter nor leave.
+* A world with no initial template (the pulses before their onset, and W6) starts the cell at
+  TRACE_mM, since @3 refuses a zero amount; the template's factor cannot see it (F_T = b to 1e-20).
+* From there the template follows D150's turnover alone: its declared production and an exact
+  first-order clearance in every half-step, with no floor, clamp or reset. An amount that would not
+  stay positive refuses the step.
+* FLOOR_FMOL is the species' material-ledger tolerance (material_balance_atol_fmol) only, never a
+  bound on the state.
 
 The engine's layout choices, none of them physics:
 * the bath is a 1 pL reservoir, as the coupling protocol's cells declare it;
