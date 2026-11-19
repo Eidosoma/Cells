@@ -33,6 +33,8 @@ In `formal.about`, list the canonical registry IDs whose law or operator propert
 
 For biological evidence, record the observable and unit, the primary paper or dataset and its exact panel or table, preparation, fit and evaluation conditions, uncertainty and the recorded verdict. Reference calculations have their own implementation kind. Detailed run records and datasets stay with their owners.
 
+The research agent collects candidate papers in `claims/incoming/`. The November review identifies what each assay measured, which claim it can address and what is needed for a quantitative comparison. Enter a biological verdict in the register when a comparison has a documented outcome. [Reviewed measurements and follow-up](PROGRESS.md#19-november-2026--biological-evidence-review)
+
 A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the index, claim notes and coverage table. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
 
 ```bash
