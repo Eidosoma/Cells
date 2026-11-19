@@ -19,4 +19,7 @@ target claimDocs pkg : Unit := do
   proofs.mapM fun _ => do
     proc {cmd := lean.toString, args := #["-DwarningAsError=true", "scripts/CheckClaims.lean"],
           env, cwd := pkg.dir}
-    proc {cmd := "python3", args := #["scripts/generate_claims.py"], cwd := pkg.dir}
+    let python ← IO.getEnv "CELLS_PYTHON"
+    let args := #["-B", "scripts/generate_claims.py"]
+    proc {cmd := python.getD "python3", args := if python.isSome then args.push "--live-registry"
+          else args, cwd := pkg.dir}

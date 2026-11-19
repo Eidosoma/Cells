@@ -15,6 +15,8 @@ Exchanging the concentrations at the two ends of a constant-field junction and r
 
 - [CellsProofs.Transport.flux_reverse](../CellsProofs/Transport/ConstantField.lean#L40)
 
+Direct proof subject `cells.constant_field@1`
+
 ## Numerical comparison
 
 **Checked.** The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference.

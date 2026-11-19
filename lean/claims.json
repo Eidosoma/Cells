@@ -21,7 +21,8 @@
     "closed-enzyme": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1"],
-      "laws": ["local_species_reactions@1"],
+      "laws": [],
+      "operators": ["local_species_reactions@1"],
       "engine_revision": "a124c937041353d395732a936a3d2b1001c2b63a",
       "record_revision": "9c0b99d30676863d67dd8d30efea6ae490f2bd40",
       "sources": {
@@ -35,7 +36,8 @@
     "regional-chain": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
-      "laws": ["local_species_reactions@1", "logmean_electrodiffusion@1"],
+      "laws": ["logmean_electrodiffusion@1"],
+      "operators": ["local_species_reactions@1"],
       "engine_revision": "030bd02a5f4bb74d15ef8bde4fdf1db03f69b801",
       "record_revision": "9252236d3f6339d4dfdd18fd79fc1d73246faf7e",
       "sources": {
@@ -45,6 +47,22 @@
       },
       "driver": "lean/checks/regional_balance.py",
       "record": "lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance"
+    },
+    "extracellular-face": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["logmean_electrodiffusion@1"],
+      "engine_revision": "c9549dfc553ce2e9cce5d05160c24b1879e3077b",
+      "record_revision": "0c2e9f962480f430c2383bb1dddf97477f434335",
+      "sources": {
+        "Face law": "src/cells/laws/routes/logmean_electrodiffusion.py#L13",
+        "Piecewise logarithmic mean": "src/cells/numerics/extracellular_field.py#L48",
+        "Force, flux and power": "src/cells/numerics/surface_transport.py#L292",
+        "Independent scalar calculation": "validation/tissue/surface_reference.py#L98",
+        "Numerical tolerances": "validation/tissue/surface_protocol.json#L27"
+      },
+      "driver": "lean/checks/logmean_face.py",
+      "record": "lean/PROGRESS.md#19-november-2026--extracellular-face-electrodiffusion"
     },
     "bio002-endpoint": {
       "kind": "reference",
@@ -66,7 +84,7 @@
       "title": "Reversing a junction reverses its flux",
       "statement": "Exchanging the concentrations at the two ends of a constant-field junction and reversing the voltage difference negates the signed flux.",
       "assumptions": ["The ion, temperature, area, permeability and opening are the same in both orientations. Voltage is sender potential minus receiver potential, scaled by zF/(RT).", "The proof treats both the analytic Bernoulli factor and the engine’s near-zero series in real arithmetic. A floating-point error bound for the series remains open."],
-      "formal": {"status": "proved", "theorems": {
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_reverse": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference."},
@@ -77,7 +95,7 @@
       "title": "At equal voltage, junction flux follows the concentration gradient",
       "statement": "At equal potentials the signed flux is scale × (sender concentration − receiver concentration). A positive scale gives flow from higher to lower concentration.",
       "assumptions": ["The transport factor has value one at zero voltage. The scale is area × permeability × opening divided by mol/fmol. The direction claim requires a positive scale."],
-      "formal": {"status": "proved", "theorems": {
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_zero_voltage": "lean/CellsProofs/Transport/ConstantField.lean",
         "CellsProofs.Transport.flux_down_gradient": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
@@ -89,11 +107,40 @@
       "title": "A blocked junction carries zero flux",
       "statement": "Setting the effective transport scale to zero gives zero junction flux at every voltage and concentration difference.",
       "assumptions": ["The constant-field route multiplies the concentration-dependent term by its effective area, permeability and opening scale."],
-      "formal": {"status": "proved", "theorems": {
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
         "CellsProofs.Transport.flux_blocked": "lean/CellsProofs/Transport/ConstantField.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
       "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "extracellular-face-direction",
+      "title": "Extracellular face flux follows the electrochemical potential drop",
+      "statement": "Reversing the endpoints and voltage reverses the signed flux. A positive face coefficient gives positive flux exactly when the sender’s electrochemical potential is higher. At equilibrium the flux is zero, including when the concentration and electrical drives cancel.",
+      "assumptions": ["Both endpoint concentrations and RT are positive. The two orientations use the same ion, temperature, geometry and diffusivity.", "The proof evaluates the two log-ratio branches and the fourth-degree small-gradient mean in exact real arithmetic. The force uses the difference of the endpoint logs."],
+      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+        "CellsProofs.Transport.Face.stableLogRatio_eq": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.mean_swap": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.mean_pos": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_reverse": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_at_equilibrium": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_pos_iff": "lean/CellsProofs/Transport/LogMeanFace.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Opposing voltage reversed a resolved concentration-driven flux. At zero voltage, 100.00000000000001 and 100 mM gave zero CPU flux versus 1.42 × 10⁻¹⁸ fmol/s in the scalar reference. The absolute tolerance was 3 × 10⁻¹² fmol/s. Across 60 tissue flux observations, the largest absolute discrepancy was 1.50 × 10⁻¹⁷ fmol/s."},
+      "biology": {"status": "open", "observable": "Species-resolved ion transfer rate between two extracellular compartments, with measured concentrations at both endpoints and their voltage difference.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "extracellular-face-dissipation",
+      "title": "Passive extracellular face transport dissipates energy",
+      "statement": "Each ion’s signed flux multiplied by its electrochemical potential drop is nonnegative. Summing the contributions over all ions gives nonnegative instantaneous face power.",
+      "assumptions": ["Endpoint concentrations and RT are positive. Each ion has a nonnegative face coefficient. Power is evaluated at a single state."],
+      "uses": ["extracellular-face-direction"],
+      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+        "CellsProofs.Transport.Face.dissipation_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.face_power_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Face power agreed with the scalar reference across eleven CPU cases. Reversing a resolved flux and its endpoint bookings preserved the total material rate and gave −4.52 × 10⁻⁵ pJ/s, failing the direction and power checks."},
+      "biology": {"status": "open", "observable": "Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.", "unit": "pJ/s", "evidence": []}
     },
     {
       "id": "transfer-orientation",
@@ -124,7 +171,7 @@
       "title": "Balanced reactions preserve a weighted inventory",
       "statement": "If each reaction balances an integer-weighted inventory, the combined update preserves that inventory for any signed real reaction extents.",
       "assumptions": ["The species and reaction sets at the site are finite. Each species change equals its signed stoichiometric coefficients times the extents, summed over reactions."],
-      "formal": {"status": "proved", "theorems": {
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
@@ -136,7 +183,7 @@
       "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
       "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
       "uses": ["reaction-inventory"],
-      "formal": {"status": "proved", "theorems": {
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
         "CellsProofs.Chemistry.Enzyme.enzyme_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.substrate_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"

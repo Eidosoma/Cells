@@ -26,7 +26,9 @@ Internal edges cancel when transfers are summed over a region. On the entire clo
 
 [Tested engine 109a7355ed85](https://github.com/Eidosoma/Cells/commit/109a7355ed85ff2e1e5a9c884c32801c07a2fd72) · [Evidence checkpoint 627c376c463a](https://github.com/Eidosoma/Cells/commit/627c376c463ae66c0f9e53db6dbb1374ec8ac1fd)
 
-**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `local_species_reactions@1`, `logmean_electrodiffusion@1`
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `logmean_electrodiffusion@1`
+
+**Operators** `local_species_reactions@1`
 
 [Split-step order](https://github.com/Eidosoma/Cells/blob/030bd02a5f4bb74d15ef8bde4fdf1db03f69b801/src/cells/models/pump_composite.py#L1308) · [Closed pair](https://github.com/Eidosoma/Cells/blob/030bd02a5f4bb74d15ef8bde4fdf1db03f69b801/validation/morphogenesis/mg0c_turing.py#L180) · [Independent trajectory comparison](https://github.com/Eidosoma/Cells/blob/030bd02a5f4bb74d15ef8bde4fdf1db03f69b801/tests/unit/test_species_reactions_composition.py#L84) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/9252236d3f6339d4dfdd18fd79fc1d73246faf7e/lean/checks/regional_balance.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/9252236d3f6339d4dfdd18fd79fc1d73246faf7e/lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance)
 

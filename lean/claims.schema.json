@@ -23,6 +23,7 @@
       "properties": {
         "kind": {"enum": ["engine", "reference"]},
         "models": {"$ref": "#/$defs/texts"}, "laws": {"$ref": "#/$defs/texts"},
+        "operators": {"$ref": "#/$defs/texts"},
         "engine_revision": {"$ref": "#/$defs/revision"}, "record_revision": {"$ref": "#/$defs/revision"},
         "sources": {"$ref": "#/$defs/links"},
         "driver": {"$ref": "#/$defs/text"}, "record": {"$ref": "#/$defs/text"}
@@ -37,7 +38,8 @@
         "assumptions": {"$ref": "#/$defs/texts"}, "uses": {"$ref": "#/$defs/texts"},
         "formal": {
           "type": "object", "additionalProperties": false, "required": ["status", "theorems"],
-          "properties": {"status": {"enum": ["proved", "open"]}, "theorems": {"$ref": "#/$defs/links"}}
+          "properties": {"status": {"enum": ["proved", "open"]}, "theorems": {"$ref": "#/$defs/links"},
+                         "about": {"$ref": "#/$defs/texts"}}
         },
         "numerical": {
           "type": "object", "additionalProperties": false, "required": ["status", "comparisons", "result"],
