@@ -19,8 +19,9 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   with Citation, the source a cited law gives, and CitedWork, a work it names (registry/laws.py);
   the operator template of a family's own operators, FamilyOperator (registry/operators.py); and
   the kind contract's Kind, KindFields, KindView, KindRates and Schedule, with the roles its
-  fields declare, EnergyRole and PartitionRole, and the host of an own axis, AxisHost
-  (registry/kind_registry.py);
+  fields declare, EnergyRole and PartitionRole, the host of an own axis, AxisHost, and an
+  entity's binding for §5.2's admission, EntityBinding, with MOVES_END, the end a moves-only
+  law's rows name (registry/kind_registry.py);
 - the law readers a kind uses: hosted_laws(interface, host), and cycle_changes(law), a cycle law's
   declared change rows, with the interfaces' IDs CHANNEL_LAW, CYCLE_LAW, ROUTE_LAW, BINDING_LAW and
   JUNCTION_LAW (registry/laws.py);
@@ -79,6 +80,8 @@ HOMES = MappingProxyType(
             "EnergyRole",
             "PartitionRole",
             "AxisHost",
+            "EntityBinding",
+            "MOVES_END",
             "parse_series",
             "series_to_dict",
             "qualified",
@@ -132,6 +135,8 @@ __all__ = (
     "EnergyRole",
     "PartitionRole",
     "AxisHost",
+    "EntityBinding",
+    "MOVES_END",
     # The law readers a kind uses.
     "hosted_laws",
     "cycle_changes",

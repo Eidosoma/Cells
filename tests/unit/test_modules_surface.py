@@ -60,6 +60,8 @@ HOMES = {  # Each name's own module: where it is defined.
         "EnergyRole",
         "PartitionRole",
         "AxisHost",
+        "EntityBinding",
+        "MOVES_END",
         "parse_series",
         "series_to_dict",
         "qualified",
