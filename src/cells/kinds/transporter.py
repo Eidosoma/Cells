@@ -2195,11 +2195,15 @@ PRESENCE = MappingProxyType(
 
 def standard_free_energies(declaration):
     """Seam E's kind hook (the lead's answer of 19 November): each diagram-form population's cycles'
-    standard free energies implied by their own constants, ((((species, nu), ...), dG°/RT, c0 in
-    mM), ...) in declared order, for each cycle that converts a species (forms.implied_free_energy);
-    the species registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's
-    condition did at parse. Factored and net-flow laws have no constants of their own, and version
-    1's laws are factored: ()."""
+    standard free energies implied by their own constants, as F's FreeEnergyEntry, in declared
+    order, for each cycle that converts a species (forms.implied_free_energy): its stoichiometry
+    over the species its roles bind, dG°/RT and c0 in mM, and the law and the mode of its form that
+    produced it, so the binding owner's check computes its band from that form. The species
+    registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's condition did at
+    parse. Factored and net-flow laws have no constants of their own, and version 1's laws are
+    factored: ()."""
+    from cells.modules import FreeEnergyEntry
+
     if not isinstance(declaration, PopulationAxis):
         return ()
     hosted, out = hosted_laws(), []
@@ -2208,10 +2212,11 @@ def standard_free_energies(declaration):
         if form.kinetics != "diagram":
             continue
         roles = dict(t.roles)
-        for m in range(len(form.modes)):
+        for m, (mode, _) in enumerate(form.modes):
             net, value, c0 = forms.implied_free_energy(form, m)
             if net:
-                out.append((tuple((roles[r], n) for r, n in net.items()), value, c0))
+                stoichiometry = tuple((roles[r], n) for r, n in net.items())
+                out.append(FreeEnergyEntry(stoichiometry, value, c0, law_id=t.law, mode=mode))
     return tuple(out)
 
 
