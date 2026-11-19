@@ -529,19 +529,19 @@ def test_the_lifecycle_acts_along_one_entity_axis_its_last():
 # accepted bypass, as the silence tests bypass refusals 4 and 5).
 
 
-def per_patch_carrier():
-    """The carrier with its two state fields per patch and history (its transfers and its work),
-    its rate and availability on shared axes."""
+def per_patch_carrier(transferred="history"):
+    """The carrier with its two state fields per patch (its transfers, history unless given, and
+    its work, history), its rate and availability on shared axes."""
     kind = axed(kf.carrier(), {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
     roles = roles_for(kind, "intensive") | {
-        "carrier_transferred": PartitionRole("history"),
+        "carrier_transferred": PartitionRole(transferred),
         "carrier_work_pJ": PartitionRole("history"),
     }
     return dataclasses.replace(kind, partition_roles=roles)
 
 
-@pytest.fixture
-def lifecycle_world(monkeypatch):
+@pytest.fixture(params=["history"])
+def lifecycle_world(monkeypatch, request):
     """The division world with the carrier on its parent's first patch, parsed with the bypass:
     (spec, model, a planted pre-event state with history on that patch, layout, patch slot)."""
     import numpy as np
@@ -556,7 +556,7 @@ def lifecycle_world(monkeypatch):
     division = next(o for o in raw["model"]["operators"] if o["law"] == "isopotential_partition@1")
     parent = division["divisions"][0]["parent"]
     patch = next(m["id"] for m in raw["model"]["membranes"] if m["inside"] == parent)
-    with kind_registry.scope(kf.registry(per_patch_carrier())):
+    with kind_registry.scope(kf.registry(per_patch_carrier(request.param))):
         spec = parse_spec(kf.declare_carrier(raw, species="K", membrane=patch))
         model = get_model(spec.model)
         state, p = model.initial_values(spec)
@@ -683,3 +683,28 @@ def test_no_composition_admitted_today_gains_a_lifecycle_field():
         partition_op = OPERATORS["isopotential_partition@1"]
         assert pump_composite.kind_lifecycle_table(inner, (partition_op,)) == {}
     assert pump_composite.kind_lifecycle_table(pump3, (partition_op,)) == {}
+
+
+@pytest.mark.parametrize("lifecycle_world", ["extensive"], indirect=True)
+def test_an_extensive_kind_field_is_split_and_its_move_booked(lifecycle_world):
+    """Ruling 5: the carrier's transfers declared extensive. The daughters' patches take the
+    anchor rule's shares and the parent's goes to 0; the composite's moved accumulator books the
+    split, so the adjusted row is the pre-event one and the ledgers equal the pre-event ones."""
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, k = lifecycle_world
+    assert model.KIND_MOVED == {"carrier_transferred": "carrier_transferred_moved"}
+    after, ok = retire(model, state, p)
+    assert bool(ok)
+    parent, kids, fraction, _ = partition.division_maps(np.ones(1, dtype=bool), p)["membrane_slot"]
+    row = int(np.flatnonzero(np.asarray(parent) == k)[0])
+    x = np.asarray(state.carrier_transferred)[:, k]
+    one = np.asarray(after.carrier_transferred)[:, kids[row, 0]]
+    two = np.asarray(after.carrier_transferred)[:, kids[row, 1]]
+    assert (one + two == x).all() and (np.asarray(after.carrier_transferred)[:, k] == 0).all()
+    adjusted = model._adjusted(after, p, xp=np)
+    assert (np.asarray(adjusted.carrier_transferred) == np.asarray(state.carrier_transferred)).all()
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    np.testing.assert_allclose(after_l["local"], before_l["local"], rtol=1e-9, atol=1e-15)
