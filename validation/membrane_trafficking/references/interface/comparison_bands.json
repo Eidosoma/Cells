@@ -238,6 +238,7 @@
    "parameters": {
     "K_OPS": 4,
     "charge": "u [|anchor| + (S + 1) CHARGE_PER_FMOL \u03a3_s |z_s (n_s \u2212 n0_s)| + \u03a3_h |K_nh \u03c6_h|]",
+    "held_node_transfer": "erratum of 2026-11-19 (README): a held node's transfer is the change of its plate charge Q_h = \u03a3_p s_p C_p V_p over the patches p touching h, formed in each stage from that stage's two solves, so per half-step floor(\u0394Q_h) = n_stages \u00d7 2 [max(F_b, F_a) + u K_OPS max(A_b, A_a)], F = \u03a3_p C_p f(V_p) with f the registered voltage floors and A = \u03a3_p |C_p V_p|, before (b) and after (a) the half-step; W_elec's is |\u03c6_h| \u00d7 that (in pJ) + u K_OPS |W_elec|; the image charge's is the transfer's",
     "solve": "u \u00d7 4 \u00d7 (free nodes) \u00d7 max|\u03c6|",
     "unit_roundoff": 1.1102230246251565e-16
    },
@@ -4051,10 +4052,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.4888641307609188e-17,
+   "band": 1.9886088042165893e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential",
-   "floor": 1.4888641307609189e-18,
+   "floor": 1.9886088042165893e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d03|1|W_elec|bath_0",
@@ -4066,10 +4067,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d03|1|electrode_transfer|bath_0",
@@ -4081,10 +4082,10 @@
    "unit": "C"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d03|1|image_charge|bath_0",
@@ -4284,10 +4285,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.925760871739462e-18,
+   "band": 1.987456594260357e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 9.925760871739462e-19,
+   "floor": 1.987456594260357e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d04|1|W_elec|bath_0",
@@ -4299,10 +4300,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d04|1|electrode_transfer|bath_0",
@@ -4314,10 +4315,10 @@
    "unit": "C"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d04|1|image_charge|bath_0",
@@ -4517,10 +4518,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.996304338447574e-18,
+   "band": 1.9615800702481896e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 9.996304338447575e-19,
+   "floor": 1.9615800702481896e-16,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d04|2|W_elec|bath_0",
@@ -4532,10 +4533,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d04|2|electrode_transfer|bath_0",
@@ -4547,10 +4548,10 @@
    "unit": "C"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d04|2|image_charge|bath_0",
@@ -4750,10 +4751,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.0069787116268527e-17,
+   "band": 1.935703546236022e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 1.0069787116268526e-18,
+   "floor": 1.935703546236022e-16,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d04|3|W_elec|bath_0",
@@ -4765,10 +4766,10 @@
    "unit": "pJ"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d04|3|electrode_transfer|bath_0",
@@ -4780,10 +4781,10 @@
    "unit": "C"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d04|3|image_charge|bath_0",
@@ -4983,10 +4984,10 @@
    "unit": "pJ"
   },
   {
-   "band": 6.087838092483159e-18,
+   "band": 9.607344666381219e-16,
    "check": "W_elec",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 6.087838092483159e-19,
+   "floor": 9.60734466638122e-17,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d04|4|W_elec|bath_0",
@@ -4998,10 +4999,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.043919046241579e-28,
+   "band": 4.796759073453214e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 3.043919046241579e-29,
+   "floor": 4.796759073453214e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d04|4|electrode_transfer|bath_0",
@@ -5013,10 +5014,10 @@
    "unit": "C"
   },
   {
-   "band": 3.043919046241579e-28,
+   "band": 4.796759073453214e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
-   "floor": 3.043919046241579e-29,
+   "floor": 4.796759073453214e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d04|4|image_charge|bath_0",
@@ -5216,10 +5217,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.4888641307609188e-17,
+   "band": 1.9886088042165893e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath]",
-   "floor": 1.4888641307609189e-18,
+   "floor": 1.9886088042165893e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d05|1|W_elec|bath_0",
@@ -5231,10 +5232,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath]",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d05|1|electrode_transfer|bath_0",
@@ -5246,10 +5247,10 @@
    "unit": "C"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath]",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d05|1|image_charge|bath_0",
@@ -5449,10 +5450,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.925760871739462e-18,
+   "band": 1.987456594260357e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 9.925760871739462e-19,
+   "floor": 1.987456594260357e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d06|1|W_elec|bath_0",
@@ -5464,10 +5465,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d06|1|electrode_transfer|bath_0",
@@ -5479,10 +5480,10 @@
    "unit": "C"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d06|1|image_charge|bath_0",
@@ -5682,10 +5683,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.996304338447574e-18,
+   "band": 1.9615800702481896e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 9.996304338447575e-19,
+   "floor": 1.9615800702481896e-16,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d06|2|W_elec|bath_0",
@@ -5697,10 +5698,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d06|2|electrode_transfer|bath_0",
@@ -5712,10 +5713,10 @@
    "unit": "C"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d06|2|image_charge|bath_0",
@@ -5871,10 +5872,10 @@
    "unit": "pJ"
   },
   {
-   "band": 8.797883377106336e-18,
+   "band": 2.902112040652312e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 8.797883377106336e-19,
+   "floor": 2.902112040652312e-16,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d06|3|W_elec|bath_0",
@@ -5886,10 +5887,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.398941688553167e-28,
+   "band": 1.4500493447426675e-25,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 4.398941688553168e-29,
+   "floor": 1.4500493447426676e-26,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d06|3|electrode_transfer|bath_0",
@@ -5901,10 +5902,10 @@
    "unit": "C"
   },
   {
-   "band": 5.657665078086733e-28,
+   "band": 1.4500493447426675e-25,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
-   "floor": 5.657665078086733e-29,
+   "floor": 1.4500493447426676e-26,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d06|3|image_charge|bath_0",
@@ -6104,10 +6105,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.925760871739462e-18,
+   "band": 1.987456594260357e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 9.925760871739462e-19,
+   "floor": 1.987456594260357e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d07|1|W_elec|bath_0",
@@ -6119,10 +6120,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d07|1|electrode_transfer|bath_0",
@@ -6134,10 +6135,10 @@
    "unit": "C"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d07|1|image_charge|bath_0",
@@ -6337,10 +6338,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.996304338447574e-18,
+   "band": 1.9615800702481896e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 9.996304338447575e-19,
+   "floor": 1.9615800702481896e-16,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d07|2|W_elec|bath_0",
@@ -6352,10 +6353,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d07|2|electrode_transfer|bath_0",
@@ -6367,10 +6368,10 @@
    "unit": "C"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d07|2|image_charge|bath_0",
@@ -6570,10 +6571,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.0069787116268527e-17,
+   "band": 1.935703546236022e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 1.0069787116268526e-18,
+   "floor": 1.935703546236022e-16,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d07|3|W_elec|bath_0",
@@ -6585,10 +6586,10 @@
    "unit": "pJ"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d07|3|electrode_transfer|bath_0",
@@ -6600,10 +6601,10 @@
    "unit": "C"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d07|3|image_charge|bath_0",
@@ -6803,10 +6804,10 @@
    "unit": "pJ"
   },
   {
-   "band": 2.767199132946891e-18,
+   "band": 9.569309218295254e-16,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 2.767199132946891e-19,
+   "floor": 9.569309218295254e-17,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d07|4|W_elec|bath_0",
@@ -6818,10 +6819,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.3835995664734454e-28,
+   "band": 4.7815122183579015e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 1.3835995664734453e-29,
+   "floor": 4.7815122183579015e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d07|4|electrode_transfer|bath_0",
@@ -6833,10 +6834,10 @@
    "unit": "C"
   },
   {
-   "band": 1.3835995664734454e-28,
+   "band": 4.7815122183579015e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
-   "floor": 1.3835995664734453e-29,
+   "floor": 4.7815122183579015e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d07|4|image_charge|bath_0",
@@ -7036,10 +7037,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.4888641307609188e-17,
+   "band": 1.9886088042165893e-15,
    "check": "W_elec",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV]",
-   "floor": 1.4888641307609189e-18,
+   "floor": 1.9886088042165893e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d08|1|W_elec|bath_0",
@@ -7051,10 +7052,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV]",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d08|1|electrode_transfer|bath_0",
@@ -7066,10 +7067,10 @@
    "unit": "C"
   },
   {
-   "band": 7.4443206538045945e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV]",
-   "floor": 7.444320653804594e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d08|1|image_charge|bath_0",
@@ -7269,10 +7270,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.925760871739462e-18,
+   "band": 1.987456594260357e-15,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 9.925760871739462e-19,
+   "floor": 1.987456594260357e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d09|1|W_elec|bath_0",
@@ -7284,10 +7285,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d09|1|electrode_transfer|bath_0",
@@ -7299,10 +7300,10 @@
    "unit": "C"
   },
   {
-   "band": 4.962880435869731e-28,
+   "band": 9.925760871739459e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 4.9628804358697307e-29,
+   "floor": 9.92576087173946e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d09|1|image_charge|bath_0",
@@ -7502,10 +7503,10 @@
    "unit": "pJ"
   },
   {
-   "band": 9.996304338447574e-18,
+   "band": 1.9615800702481896e-15,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 9.996304338447575e-19,
+   "floor": 1.9615800702481896e-16,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d09|2|W_elec|bath_0",
@@ -7517,10 +7518,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d09|2|electrode_transfer|bath_0",
@@ -7532,10 +7533,10 @@
    "unit": "C"
   },
   {
-   "band": 4.998152169223787e-28,
+   "band": 9.796378251678621e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 4.998152169223787e-29,
+   "floor": 9.796378251678622e-27,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d09|2|image_charge|bath_0",
@@ -7735,10 +7736,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.0069787116268527e-17,
+   "band": 1.935703546236022e-15,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 1.0069787116268526e-18,
+   "floor": 1.935703546236022e-16,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d09|3|W_elec|bath_0",
@@ -7750,10 +7751,10 @@
    "unit": "pJ"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d09|3|electrode_transfer|bath_0",
@@ -7765,10 +7766,10 @@
    "unit": "C"
   },
   {
-   "band": 5.034893558134263e-28,
+   "band": 9.666995631617786e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 5.0348935581342633e-29,
+   "floor": 9.666995631617785e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d09|3|image_charge|bath_0",
@@ -7968,10 +7969,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.0146396820805266e-17,
+   "band": 1.909827022223855e-15,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 1.0146396820805265e-18,
+   "floor": 1.9098270222238553e-16,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d09|4|W_elec|bath_0",
@@ -7983,10 +7984,10 @@
    "unit": "pJ"
   },
   {
-   "band": 5.073198410402633e-28,
+   "band": 9.53761301155695e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 5.073198410402633e-29,
+   "floor": 9.53761301155695e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d09|4|electrode_transfer|bath_0",
@@ -7998,10 +7999,10 @@
    "unit": "C"
   },
   {
-   "band": 5.073198410402633e-28,
+   "band": 9.53761301155695e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 5.073198410402633e-29,
+   "floor": 9.53761301155695e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d09|4|image_charge|bath_0",
@@ -8201,10 +8202,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.866413370816147e-19,
+   "band": 9.417866643290474e-16,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 7.866413370816147e-20,
+   "floor": 9.417866643290475e-17,
    "floor_model": "increment_storage",
    "half_step": 5,
    "id": "T6|d09|5|W_elec|bath_0",
@@ -8216,10 +8217,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.933206685408073e-29,
+   "band": 4.708047006294289e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.933206685408073e-30,
+   "floor": 4.708047006294289e-27,
    "floor_model": "increment_storage",
    "half_step": 5,
    "id": "T6|d09|5|electrode_transfer|bath_0",
@@ -8231,10 +8232,10 @@
    "unit": "C"
   },
   {
-   "band": 3.933206685408073e-29,
+   "band": 4.708047006294289e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.933206685408073e-30,
+   "floor": 4.708047006294289e-27,
    "floor_model": "increment_storage",
    "half_step": 5,
    "id": "T6|d09|5|image_charge|bath_0",
@@ -8434,10 +8435,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.85984475174339e-19,
+   "band": 9.42573026438294e-16,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 7.85984475174339e-20,
+   "floor": 9.425730264382942e-17,
    "floor_model": "increment_storage",
    "half_step": 6,
    "id": "T6|d09|6|W_elec|bath_0",
@@ -8449,10 +8450,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.9299223758716945e-29,
+   "band": 4.7119788168405226e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.9299223758716945e-30,
+   "floor": 4.7119788168405225e-27,
    "floor_model": "increment_storage",
    "half_step": 6,
    "id": "T6|d09|6|electrode_transfer|bath_0",
@@ -8464,10 +8465,10 @@
    "unit": "C"
   },
   {
-   "band": 3.9299223758716945e-29,
+   "band": 4.7119788168405226e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.9299223758716945e-30,
+   "floor": 4.7119788168405225e-27,
    "floor_model": "increment_storage",
    "half_step": 6,
    "id": "T6|d09|6|image_charge|bath_0",
@@ -8667,10 +8668,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.853298028067537e-19,
+   "band": 9.433593885475407e-16,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 7.853298028067537e-20,
+   "floor": 9.433593885475407e-17,
    "floor_model": "increment_storage",
    "half_step": 7,
    "id": "T6|d09|7|W_elec|bath_0",
@@ -8682,10 +8683,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.926649014033768e-29,
+   "band": 4.7159106273867555e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.926649014033768e-30,
+   "floor": 4.715910627386755e-27,
    "floor_model": "increment_storage",
    "half_step": 7,
    "id": "T6|d09|7|electrode_transfer|bath_0",
@@ -8697,10 +8698,10 @@
    "unit": "C"
   },
   {
-   "band": 3.926649014033768e-29,
+   "band": 4.7159106273867555e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.926649014033768e-30,
+   "floor": 4.715910627386755e-27,
    "floor_model": "increment_storage",
    "half_step": 7,
    "id": "T6|d09|7|image_charge|bath_0",
@@ -8900,10 +8901,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.846773090493771e-19,
+   "band": 9.441457506567872e-16,
    "check": "W_elec",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 7.846773090493772e-20,
+   "floor": 9.441457506567873e-17,
    "floor_model": "increment_storage",
    "half_step": 8,
    "id": "T6|d09|8|W_elec|bath_0",
@@ -8915,10 +8916,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.923386545246885e-29,
+   "band": 4.719842437932988e-26,
    "check": "electrode_transfer",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.923386545246885e-30,
+   "floor": 4.719842437932988e-27,
    "floor_model": "increment_storage",
    "half_step": 8,
    "id": "T6|d09|8|electrode_transfer|bath_0",
@@ -8930,10 +8931,10 @@
    "unit": "C"
   },
   {
-   "band": 3.923386545246885e-29,
+   "band": 4.719842437932988e-26,
    "check": "image_charge",
    "drive": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise",
-   "floor": 3.923386545246885e-30,
+   "floor": 4.719842437932988e-27,
    "floor_model": "increment_storage",
    "half_step": 8,
    "id": "T6|d09|8|image_charge|bath_0",
@@ -9278,10 +9279,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.5717543433209834e-17,
+   "band": 4.46183277437389e-15,
    "check": "W_elec",
    "drive": "stress_held_bath:both directions",
-   "floor": 1.5717543433209832e-18,
+   "floor": 4.46183277437389e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d11|1|W_elec|bath_0",
@@ -9293,10 +9294,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.858771716604917e-28,
+   "band": 2.229667421788377e-25,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:both directions",
-   "floor": 7.858771716604916e-29,
+   "floor": 2.2296674217883767e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d11|1|electrode_transfer|bath_0",
@@ -9308,10 +9309,10 @@
    "unit": "C"
   },
   {
-   "band": 7.858771716604917e-28,
+   "band": 2.229667421788377e-25,
    "check": "image_charge",
    "drive": "stress_held_bath:both directions",
-   "floor": 7.858771716604916e-29,
+   "floor": 2.2296674217883767e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d11|1|image_charge|bath_0",
@@ -9511,10 +9512,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.486444947858918e-17,
+   "band": 2.9752522474614657e-15,
    "check": "W_elec",
    "drive": "stress_held_bath:cycle",
-   "floor": 1.4864449478589179e-18,
+   "floor": 2.975252247461466e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d12|1|W_elec|bath_0",
@@ -9526,10 +9527,10 @@
    "unit": "pJ"
   },
   {
-   "band": 7.432224739294588e-28,
+   "band": 1.4864449478589178e-25,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:cycle",
-   "floor": 7.432224739294588e-29,
+   "floor": 1.4864449478589178e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d12|1|electrode_transfer|bath_0",
@@ -9541,10 +9542,10 @@
    "unit": "C"
   },
   {
-   "band": 7.432224739294588e-28,
+   "band": 1.4864449478589178e-25,
    "check": "image_charge",
    "drive": "stress_held_bath:cycle",
-   "floor": 7.432224739294588e-29,
+   "floor": 1.4864449478589178e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d12|1|image_charge|bath_0",
@@ -9744,10 +9745,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.0912779663627943e-17,
+   "band": 2.141267165814707e-15,
    "check": "W_elec",
    "drive": "stress_held_bath:cycle",
-   "floor": 1.0912779663627943e-18,
+   "floor": 2.141267165814707e-16,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d12|2|W_elec|bath_0",
@@ -9759,10 +9760,10 @@
    "unit": "pJ"
   },
   {
-   "band": 5.456389831813971e-28,
+   "band": 1.0694524070355381e-25,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:cycle",
-   "floor": 5.456389831813971e-29,
+   "floor": 1.0694524070355382e-26,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d12|2|electrode_transfer|bath_0",
@@ -9774,10 +9775,10 @@
    "unit": "C"
   },
   {
-   "band": 5.456389831813971e-28,
+   "band": 1.0694524070355381e-25,
    "check": "image_charge",
    "drive": "stress_held_bath:cycle",
-   "floor": 5.456389831813971e-29,
+   "floor": 1.0694524070355382e-26,
    "floor_model": "increment_storage",
    "half_step": 2,
    "id": "T6|d12|2|image_charge|bath_0",
@@ -9977,10 +9978,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.461496412489973e-19,
+   "band": 9.965494823776272e-16,
    "check": "W_elec",
    "drive": "stress_held_bath:cycle",
-   "floor": 4.4614964124899725e-20,
+   "floor": 9.965494823776273e-17,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d12|3|W_elec|bath_0",
@@ -9992,10 +9993,10 @@
    "unit": "pJ"
   },
   {
-   "band": 2.2307482062449861e-29,
+   "band": 4.9822396030189726e-26,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:cycle",
-   "floor": 2.230748206244986e-30,
+   "floor": 4.982239603018972e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d12|3|electrode_transfer|bath_0",
@@ -10007,10 +10008,10 @@
    "unit": "C"
   },
   {
-   "band": 2.2307482062449861e-29,
+   "band": 4.9822396030189726e-26,
    "check": "image_charge",
    "drive": "stress_held_bath:cycle",
-   "floor": 2.230748206244986e-30,
+   "floor": 4.982239603018972e-27,
    "floor_model": "increment_storage",
    "half_step": 3,
    "id": "T6|d12|3|image_charge|bath_0",
@@ -10210,10 +10211,10 @@
    "unit": "pJ"
   },
   {
-   "band": 4.456052042089171e-19,
+   "band": 9.962249738470227e-16,
    "check": "W_elec",
    "drive": "stress_held_bath:cycle",
-   "floor": 4.4560520420891704e-20,
+   "floor": 9.962249738470227e-17,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d12|4|W_elec|bath_0",
@@ -10225,10 +10226,10 @@
    "unit": "pJ"
   },
   {
-   "band": 2.228026021044585e-29,
+   "band": 4.9806170603659486e-26,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:cycle",
-   "floor": 2.228026021044585e-30,
+   "floor": 4.9806170603659485e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d12|4|electrode_transfer|bath_0",
@@ -10240,10 +10241,10 @@
    "unit": "C"
   },
   {
-   "band": 2.228026021044585e-29,
+   "band": 4.9806170603659486e-26,
    "check": "image_charge",
    "drive": "stress_held_bath:cycle",
-   "floor": 2.228026021044585e-30,
+   "floor": 4.9806170603659485e-27,
    "floor_model": "increment_storage",
    "half_step": 4,
    "id": "T6|d12|4|image_charge|bath_0",
@@ -10443,10 +10444,10 @@
    "unit": "pJ"
   },
   {
-   "band": 3.645201354463646e-18,
+   "band": 1.4870242661705716e-15,
    "check": "W_elec",
    "drive": "stress_held_bath:recycling",
-   "floor": 3.645201354463646e-19,
+   "floor": 1.4870242661705716e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d13|1|W_elec|bath_0",
@@ -10458,10 +10459,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.822600677231823e-28,
+   "band": 7.432224739294589e-26,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:recycling",
-   "floor": 1.822600677231823e-29,
+   "floor": 7.432224739294589e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d13|1|electrode_transfer|bath_0",
@@ -10473,10 +10474,10 @@
    "unit": "C"
   },
   {
-   "band": 1.822600677231823e-28,
+   "band": 7.432224739294589e-26,
    "check": "image_charge",
    "drive": "stress_held_bath:recycling",
-   "floor": 1.822600677231823e-29,
+   "floor": 7.432224739294589e-27,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d13|1|image_charge|bath_0",
@@ -10676,10 +10677,10 @@
    "unit": "pJ"
   },
   {
-   "band": 2.2296674217883764e-17,
+   "band": 2.976433423333281e-15,
    "check": "W_elec",
    "drive": "stress_held_bath:retrieval",
-   "floor": 2.2296674217883765e-18,
+   "floor": 2.976433423333281e-16,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d14|1|W_elec|bath_0",
@@ -10691,10 +10692,10 @@
    "unit": "pJ"
   },
   {
-   "band": 1.1148337108941882e-27,
+   "band": 1.4864449478589178e-25,
    "check": "electrode_transfer",
    "drive": "stress_held_bath:retrieval",
-   "floor": 1.1148337108941882e-28,
+   "floor": 1.4864449478589178e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d14|1|electrode_transfer|bath_0",
@@ -10706,10 +10707,10 @@
    "unit": "C"
   },
   {
-   "band": 1.1148337108941882e-27,
+   "band": 1.4864449478589178e-25,
    "check": "image_charge",
    "drive": "stress_held_bath:retrieval",
-   "floor": 1.1148337108941882e-28,
+   "floor": 1.4864449478589178e-26,
    "floor_model": "increment_storage",
    "half_step": 1,
    "id": "T6|d14|1|image_charge|bath_0",

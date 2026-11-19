@@ -34,7 +34,16 @@ MODELS = {
                  "increments; the rounding acts on potentials through K⁻¹"),
         "parameters": {"unit_roundoff": U, "charge": ("u [|anchor| + (S + 1) CHARGE_PER_FMOL "
                                                       "Σ_s |z_s (n_s − n0_s)| + Σ_h |K_nh φ_h|]"),
-                       "solve": "u × 4 × (free nodes) × max|φ|", "K_OPS": K_OPS},
+                       "solve": "u × 4 × (free nodes) × max|φ|", "K_OPS": K_OPS,
+                       "held_node_transfer": (
+                           "erratum of 2026-11-19 (README): a held node's transfer is the change "
+                           "of its plate charge Q_h = Σ_p s_p C_p V_p over the patches p touching "
+                           "h, formed in each stage from that stage's two solves, so per "
+                           "half-step floor(ΔQ_h) = n_stages × 2 [max(F_b, F_a) + u K_OPS "
+                           "max(A_b, A_a)], F = Σ_p C_p f(V_p) with f the registered voltage "
+                           "floors and A = Σ_p |C_p V_p|, before (b) and after (a) the "
+                           "half-step; W_elec's is |φ_h| × that (in pJ) + u K_OPS |W_elec|; the "
+                           "image charge's is the transfer's")},
         "selected": "dated note, 2026-11-19 06:08 UTC (the builder's statement of the engine)"},
     "stable_change": {
         "what": ("ΔG_chem as the move's change computed stably (log1p), to a few roundings of its "
@@ -112,9 +121,11 @@ def t4_t6_t3_rows(R: Rows, vals: dict) -> None:
     for key, dv in vals["drives"].items():
         pools = set(dv["pool_nodes"])
         prev_volt = dv["start"]["voltages_V"]
+        prev_patches = dv["start"]["patches"]
         for i, hs in enumerate(dv["half_steps"]):
             n = i + 1
             start_volt = prev_volt
+            start_patches = prev_patches
             P = f"drives.{key}.half_steps[{i}]"
             cf = hs["closed_forms"]
             fl = hs["floors"]["increment_storage"]
@@ -165,6 +176,7 @@ def t4_t6_t3_rows(R: Rows, vals: dict) -> None:
                       "relative 1e-9", "§12", _f(fl["heat_rel"]) * abs(H), "increment_storage",
                       **w)
             prev_volt = hs["after"]["voltages_V"]
+            prev_patches = hs["after"]["patches"]
             # ---- T6 (every half-step)
             s = hs["sums"]
             t6 = hs["floors"]["T6"]["stable_change"]
@@ -220,25 +232,27 @@ def t4_t6_t3_rows(R: Rows, vals: dict) -> None:
                 if qv == 0.0:
                     continue
                 we = _f(s["W_elec_closed_pJ"])
-                k = dv["plasma_patch"]
-                frel = K_OPS * U + _f(fl["voltage_before_V"][k]) / abs(_f(start_volt[k]))
+                fq = held_transfer_floor(_TOUCH[key][h], fl, start_patches, start_volt,
+                                         hs["after"]["patches"], hs["after"]["voltages_V"],
+                                         len(hs["stages"]))
+                phi_h = abs(_f(hs["after"]["potentials_V"][h]))
                 R.add(f"T6|{key}|{n}|W_elec|{h}", "T6", "W_elec",
                       f"the electrode work at {h} over the half-step, φ_h × the transfer",
                       "the change of electrode_work_pJ", "pJ", s["W_elec_closed_pJ"],
                       f"{P}.sums.W_elec_closed_pJ", 1e-14 * abs(we), "relative 1e-14", "§13",
-                      frel * abs(we), "increment_storage", node=h, **w)
+                      phi_h * fq * 1e12 + K_OPS * U * abs(we), "increment_storage", node=h, **w)
                 R.add(f"T6|{key}|{n}|electrode_transfer|{h}", "T6", "electrode_transfer",
                       f"the electrode transfer at {h} over the half-step (ΔQ_h, signed)",
                       "the change of electrode_charge_transferred_C", "C", q,
                       f"{P}.sums.electrode_closed_C.{h}", 1e-14 * abs(qv),
                       "relative 1e-14, §13's electrode-work tolerance applied to the transfer",
-                      "references", frel * abs(qv), "increment_storage", node=h, **w)
+                      "references", fq, "increment_storage", node=h, **w)
                 qa = _f(s["electrode_abs_C"][h])
                 R.add(f"T6|{key}|{n}|image_charge|{h}", "T6", "image_charge",
                       f"Σ over stages of |electrode transfer| at {h}",
                       "the change of trafficking_image_charge_C (confirmed, 06:08 UTC)", "C",
                       s["electrode_abs_C"][h], f"{P}.sums.electrode_abs_C.{h}", 1e-14 * qa,
-                      "relative 1e-14, as the transfer's", "references", frel * qa,
+                      "relative 1e-14, as the transfer's", "references", fq,
                       "increment_storage", node=h, **w)
             # ---- T3 (every half-step)
             for p, x in hs["T3"]["N_plus_R_minus_N0_plus_R0"].items():
@@ -265,6 +279,30 @@ def t4_t6_t3_rows(R: Rows, vals: dict) -> None:
 
 
 _INSIDE = {}                    # drive -> cell -> the patches it is inside of (set by build)
+_TOUCH = {}                     # drive -> node -> [(patch, +1 inside or −1 outside)] (set by build)
+
+
+def held_transfer_floor(touch: list, fl: dict, patches_b: dict, volt_b: dict, patches_a: dict,
+                        volt_a: dict, n_stages: int) -> float:
+    """Erratum (2026-11-19): a held node's transfer over a half-step under increment_storage.
+
+    The transfer is the change of the node's plate charge Q_h = Σ_p s_p C_p V_p over the patches
+    p touching h, which each stage forms from its own two solves. Carrying the registered voltage
+    floors f (each with its own solve) through Q_h, with a few roundings of its products and sum,
+    gives per stage F_1 + F_2 + u K_OPS (A_1 + A_2) for its two states, where F = Σ_p C_p f(V_p)
+    and A = Σ_p |C_p V_p|. A stage's states differ from the half-step's two (b, a) by a few percent
+    at most, so each is bounded by the larger of those, and the half-step's floor is
+    n_stages × 2 [max(F_b, F_a) + u K_OPS max(A_b, A_a)] (C)."""
+    F = {"b": 0.0, "a": 0.0}
+    A = {"b": 0.0, "a": 0.0}
+    for p, _sign in touch:
+        Cb, Vb = _f(patches_b[p]["capacitance_F"]), _f(volt_b[p])
+        Ca, Va = _f(patches_a[p]["capacitance_F"]), _f(volt_a[p])
+        F["b"] += Cb * _f(fl["voltage_before_V"][p])
+        F["a"] += Ca * _f(fl["voltage_after_V"][p])
+        A["b"] += abs(Cb * Vb)
+        A["a"] += abs(Ca * Va)
+    return n_stages * 2 * (max(F.values()) + K_OPS * U * max(A.values()))
 
 
 def t5_rows(R: Rows, vals: dict, criteria: list) -> None:
@@ -455,14 +493,18 @@ def build(vals: dict, des: dict) -> dict:
 
 def _build(vals: dict, des: dict) -> dict:
     _INSIDE.clear()
+    _TOUCH.clear()
     from . import worlds as W
     inp = W.load()
     for key, dv in vals["drives"].items():
         w = W.world_record(inp, dv["world"])
-        inside = {}
+        inside, touch = {}, {}
         for p in w["patches"]:
             inside.setdefault(p["inside"], []).append(p["id"])
+            touch.setdefault(p["inside"], []).append((p["id"], 1))
+            touch.setdefault(p["outside"], []).append((p["id"], -1))
         _INSIDE[key] = inside
+        _TOUCH[key] = touch
     R = Rows()
     criteria = []
     t4_t6_t3_rows(R, vals)
