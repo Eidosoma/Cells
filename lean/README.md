@@ -11,6 +11,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) | Proved | Checked | Open |
 | [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | Open |
 | [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | Open |
+| [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | Open |
 | [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | Open |
 | [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | Open |
 | [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | Open |
@@ -120,6 +121,12 @@ For junction transport, the driver compares fluxes with an independent scalar re
   ../tests/unit/test_surface_transport.py::test_independent_surface_laws_and_accounting \
   ../tests/unit/test_surface_transport.py::test_patch_subdivision_route_reversal_and_padding \
   ../tests/unit/test_surface_transport.py::test_equilibrium_and_transport_blocking
+```
+
+For neutral permeation, compare the compiled inward flux and the final amounts in a closed tissue pair with the analytic solution. The unequal-volume case distinguishes amount from concentration. [Neutral driver](checks/neutral_permeation.py) · [Closed-pair reference](../validation/passive/passive_reference.py#L66)
+
+```bash
+"$cells_python" -B checks/neutral_permeation.py
 ```
 
 For extracellular faces, run the direction and power cases and the closed tissue model. The driver checks the engine's two mean thresholds, opposing drives, an adjacent-float pair and an intentionally reversed flux. The reference test checks the scalar mean against Decimal. [Face driver](checks/logmean_face.py) · [Scalar reference](../validation/tissue/surface_reference.py#L13)

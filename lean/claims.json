@@ -48,6 +48,23 @@
       "driver": "lean/checks/regional_balance.py",
       "record": "lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance"
     },
+    "neutral-permeation": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["passive_neutral_permeation@1"],
+      "engine_revision": "f130a109ad8861ce114f0f6fea3ece524465e80f",
+      "record_revision": "b6c7108c22c4c3ea3366672932f3d49ca8b8a3c8",
+      "sources": {
+        "Neutral route": "src/cells/laws/routes/passive_permeation.py#L43",
+        "Constant-field kernel": "src/cells/laws/electrochemistry.py#L32",
+        "Inward booking": "src/cells/kinds/passive_routes.py#L355",
+        "Full-opening rate bound": "src/cells/kinds/passive_routes.py#L553",
+        "Independent closed-form solution": "validation/passive/passive_reference.py#L66",
+        "Tissue fixture and tolerance": "tests/unit/test_passive_routes_kind.py#L64"
+      },
+      "driver": "lean/checks/neutral_permeation.py",
+      "record": "lean/PROGRESS.md#19-november-2026--passive-neutral-permeation"
+    },
     "extracellular-face": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -129,6 +146,20 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
       "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "neutral-permeation",
+      "title": "Passive neutral solute follows its concentration gradient",
+      "statement": "For a neutral solute the inward constant-field flux is the route scale times outside minus inside concentration at any voltage. With a positive scale it is inward exactly when concentration is higher outside. In a closed pair the gradient changes at rate −k times the gradient, where k is the scale times the sum of the reciprocal compartment volumes.",
+      "assumptions": ["Valence is zero. The route scale is area × permeability × opening divided by mol/fmol. Concentrations are in mM and flux is in fmol/s.", "The relaxation identity applies to two well-mixed compartments at fixed positive volumes in pL, with this route as the sole transfer of the solute."],
+      "uses": ["junction-concentration-gradient"],
+      "formal": {"status": "proved", "about": ["cells.passive_neutral_permeation@1"], "theorems": {
+        "CellsProofs.Transport.Neutral.flux_eq_fick": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "CellsProofs.Transport.Neutral.inward_iff": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "CellsProofs.Transport.Neutral.closed_pair_gradient_rate": "lean/CellsProofs/Transport/NeutralPermeation.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["neutral-permeation"], "result": "Five compiled cases agreed with the independent flux within 7.11 × 10⁻¹⁵ fmol/s. In the closed tissue pair at 20 ms, the largest relative error in final compartment amount was 1.70 × 10⁻⁴ against a 5 × 10⁻⁴ tolerance."},
+      "biology": {"status": "open", "observable": "Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.", "unit": "fmol/s", "evidence": []}
     },
     {
       "id": "extracellular-face-direction",
