@@ -237,6 +237,30 @@ with the conservative models' bands, so they are lower bounds.
   and 0.3, written before the binary-exact 0.75 and 0.25 were chosen. It now says 0.75 and 0.25.
   No value depends on it.
 
+**Erratum, 2026-11-19 12:33 UTC, to the comparison bands' held-node floors.** This came from the
+lead's audit question, answered blind (no comparison result was sought or seen). It changes no
+registered value and no row outside its class.
+- **The class:** T6's `electrode_transfer`, `W_elec` and `image_charge` rows, on every drive and
+  half-step.
+- **The error:** their floor was written as if the transfer were the product dC V_k, with V_k's
+  floor taken once: (K_OPS u + f(V_k)/|V_k|) × |ΔQ_h|. That does not follow from what was
+  registered at 06:08. Under `increment_storage` the rounding sits on the potentials, through
+  each solve. The transfer is the change of the held node's plate charge,
+  Q_h = Σ_p s_p C_p V_p, and each stage books it (§4) from its own two solves. Q_h is about 30
+  times the transfer for a retrieval of 3%, so the difference also cancels.
+- **The corrected rule,** from the registered voltage floors f with no new model and no engine
+  fact (`models.increment_storage.parameters.held_node_transfer`):
+  - floor(ΔQ_h) = n_stages × 2 [max(F_b, F_a) + u K_OPS max(A_b, A_a)], where F = Σ_p C_p f(V_p)
+    and A = Σ_p |C_p V_p| over the patches touching h, before (b) and after (a) the half-step.
+    A stage's own two states differ from these by a few percent at most.
+  - W_elec's floor is |φ_h| × that (in pJ) + u K_OPS |W_elec|.
+  - The image charge's floor is the transfer's.
+- **The effect:** 87 rows' bands change (29 of each check), widened 133 to 2.2e3 times: from
+  1.9e-14 to 2.8e-14 of the reference to 2.6e-12 to 4.4e-11.
+  - Every other row, the factor 10 and the tolerances are untouched.
+  - No plant is judged on these rows, so the plants are unchanged: 273 must be refused and 49
+    are zero power, with the smallest margin still 6.9e4.
+
 ## Zero power (what these references cannot see)
 
 - **The potentials and the heat in the compiled worlds** (cycle, t8_sheet). They depend on the

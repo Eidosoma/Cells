@@ -178,7 +178,9 @@ equal to what they would write, so it cannot drift from them. It adds no number 
 - every band is max(the test's tolerance, 10 × the floor);
 - each floor is taken under the selected models of the dated note of 2026-11-19 06:08 UTC:
   `increment_storage` for the potentials and `stable_change` for ΔG_chem;
-- every plant's size is its registered deviation, and `bands.py` asserts it against the design.
+- every plant's size is its registered deviation, and `bands.py` asserts it against the design;
+- the held-node rows (`electrode_transfer`, `W_elec`, `image_charge`) carry the plate-charge rule
+  of the README's erratum of 2026-11-19 (`models.increment_storage.parameters.held_node_transfer`).
 
 **Top level:**
 
