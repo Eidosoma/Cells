@@ -33,7 +33,8 @@ with a planted error it must catch (D187):
   uncovered, an axis no field is on, an empty tuple, a repeated field, a name for a tuple, a
   non-name); a bound kind's presence_fields covers its own entity axes with its own layout fields
   (planted: an entry with an entity axis uncovered, an entry without one of the masks), and the
-  shared axes are B1's;
+  shared axes are B1's; two entries with disjoint fields, and one field_axes and presence covering
+  both, each bind to their own axis's masks only;
 - an entry's `without` removes those hooks from the kind bound to it, so a hook a later layout
   adds never reaches an earlier entry (the kinds owner's design statement 1 §6; planted: a name
   that is no hook, refused at binding);
@@ -456,3 +457,39 @@ def test_presence_fields_are_bool_structural_fields_on_each_entity_axis():
         kind_registry.presence_fields(kind_registry.bound(per_entry, "bare"))
     # B1's adapter's shared axes are the contract's.
     assert kind_registry.SHARED_AXES == pump_composite_adapter.SHARED_AXES
+
+
+def test_a_bound_entry_s_presence_reads_its_own_fields_only():
+    """Two entries with disjoint fields and one field_axes and presence covering both, as the
+    transporter's two layouts declare them: each bound entry's presence is its own axis's masks
+    (bound keeps field_axes whole, so entity_axes reads only the entry's own fields)."""
+    routes = present_kind()
+    bands = KindFields(
+        (("booked_work_pJ", ("booked_band",)),), ("booked_band_host", "booked_band_present"), (), ()
+    )
+    entries = {
+        "routes": KindFields(routes.state_axes, routes.layout_fields, (), ()),
+        "bands": bands,
+    }
+    kind = replace(
+        routes,
+        declared_fields=entries.get,
+        field_axes={
+            **routes.field_axes,
+            "booked_band_host": ("booked_band",),
+            "booked_band_present": ("booked_band",),
+        },
+        axis_hosts={
+            **routes.axis_hosts,
+            "booked_band": AxisHost("junction", "booked_band_host"),
+        },
+        presence={"booked_route": MASKS, "booked_band": ("booked_band_present",)},
+        partition_roles={**routes.partition_roles, "booked_band_present": STRUCTURAL_FALSE},
+    )
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    on_routes, on_bands = (kind_registry.bound(kind, entry) for entry in ("routes", "bands"))
+    assert kind_registry.entity_axes(on_routes) == ("booked_route",)
+    assert kind_registry.entity_axes(on_bands) == ("booked_band",)
+    assert kind_registry.presence_fields(on_routes) == {"booked_route": MASKS}
+    assert kind_registry.presence_fields(on_bands) == {"booked_band": ("booked_band_present",)}

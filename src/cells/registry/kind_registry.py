@@ -741,12 +741,15 @@ def _axis_errors(kind, static):
 
 
 def entity_axes(kind):
-    """A kind's entity axes: the axes of its fields that carry entities, neither @3's shared axes
-    nor its laws' internal ones, in first-use order (state fields, then layout and control fields'
-    field_axes). For a kind that declares its fields per entry, bind it first (bound)."""
+    """A kind's entity axes: the axes of its own fields that carry entities, neither @3's shared
+    axes nor its laws' internal ones, in first-use order (state fields, then its layout and control
+    fields' field_axes). field_axes may cover every entry's fields, and bound keeps it whole, so
+    only the kind's own fields count. For a kind that declares its fields per entry, bind it first
+    (bound)."""
     axes = [a for _, names in kind.state_axes for a in names]
     if isinstance(kind.field_axes, Mapping):
-        axes += [a for names in kind.field_axes.values() for a in names]
+        own = {*kind.layout_fields, *kind.control_fields}
+        axes += [a for field, names in kind.field_axes.items() if field in own for a in names]
     internal = set(kind.internal_axes) if isinstance(kind.internal_axes, tuple) else set()
     return tuple(a for a in dict.fromkeys(axes) if a not in SHARED_AXES and a not in internal)
 
