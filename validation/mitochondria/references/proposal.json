@@ -1,0 +1,170 @@
+{
+ "kind": "cells.validation.mito_reference_proposal@1",
+ "status": "PROPOSAL ONLY, not a registration. Registration waits until the roadmap and the user fix the first mitochondrion milestone's scope (D193 (C), D138), and is made before any engine output exists.",
+ "subject": "One lumped isolated cardiac mitochondrion in a held buffer (host P: matrix, intermembrane-space node, buffer), Beard 2005 as corrected in 2006",
+ "judging": {
+  "engine_vs_R1_declared": "judged, on the rows below",
+  "R1_published_vs_published_figures": "reported, not judged (digitised curves carry +-1 px and unreported inputs; README 'Reproduction')",
+  "R1_published_vs_R2": "judged as the references' own check once R2 (the CellML file in libOpenCOR, D193 (B)) exists; R1 never reads it",
+  "backend": "CPU, float64 (design note Sec. 5.3)"
+ },
+ "reference_arms": {
+  "R1_published": {
+   "switches": {
+    "column": "with",
+    "table": "e8",
+    "J_C3": "eq24_with_eq7_proton_term",
+    "J_F1": "eq11",
+    "J_PiHt": "eq16_printed",
+    "DGo_ATP_sign": 1,
+    "cytc_volume": "V_x",
+    "H_x_row": "pdf"
+   },
+   "declared_inputs": {
+    "T_K": 298.15,
+    "mg_x_total_M": 0.001,
+    "mg_i_rule": "buffer_free",
+    "charge_inventory": "anchored to pH_x = 7.1418 at [Pi]e = 0, state 4 (Fig. 4D)"
+   },
+   "note": "Eq. 24 carries Eq. 7's proton term because the published curves were computed with it (Q02); Eqs. 11 and 16 as printed because the published curves support them (Q03, Q11)."
+  },
+  "R1_declared": {
+   "switches": {
+    "J_F1": "eq11_with_proton_term",
+    "J_PiHt": "eq16_symport",
+    "cytc_volume": "V_i"
+   },
+   "why": "The engine admits only cycle laws whose zero is their reaction's equilibrium and which dissipate at every state (design note Sec. 1.4). Eqs. 11 and 16, as printed and as run, fail both (audit: zero offsets and negative-dissipation states), so the engine cannot run them. Each switch is one declared departure, sized against R1_published in the reproduction record. Cytochrome c sits in the intermembrane space (Q05); this moves transients only. The rapid Mg2+-binding limit (X_MgA large, D1) is needed for any transient protocol: as printed, an ADP step drives IMS free ADP negative (Q15).",
+   "engine_departures_still_to_declare": [
+    "D1 Mg2+ binding as a rapid closure: no effect on any steady state (binding is at equilibrium there for any X_MgA); transients only",
+    "D2 matrix H+ buffering by a declared buffer species instead of rbuff^-1 = (100 M^-1)[H+]x: changes the charge invariant's form, so the inventory anchor is re-solved; size to be measured",
+    "D5 outer membrane as a face: Eq. 13 is linear permeation of totals with no outer-membrane potential; the face law's form at zero outer potential decides whether this is a departure"
+   ],
+   "not_departures": [
+    "D3: X_F1 = 150.93 is finite in Table 1",
+    "D4: R1 already uses the SI 2019 constants; B05 states none"
+   ]
+  }
+ },
+ "inputs_to_fix_at_registration": [
+  "T: 298.15 K (B05 states none; 298.15 reproduces the published P50 and cytochrome c curves, 310.15 K misses both)",
+  "matrix Mg2+ total (an initial inventory B05 never reports; Eq. 22 conserves it)",
+  "matrix charge inventory, or the pH anchor that fixes it (Eq. 22 conserves V_x (ln[H+]x/(100 M^-1) + [K+]x - [NADH]x - [ATP]x - 2[Pi]x) + C_IM dPsi)",
+  "IMS free Mg2+ rule (not a state in B05)",
+  "[Pi]e for the low-oxygen rows (B05 states none; 10 mM reproduces the published P50)"
+ ],
+ "rows": [
+  {
+   "id": "SS",
+   "what": "steady states",
+   "grid": {
+    "ADP_e_mM": [
+     0,
+     1.3
+    ],
+    "Pi_e_mM": [
+     0,
+     1,
+     2,
+     3,
+     5,
+     10
+    ]
+   },
+   "conditions": "pH_e 7.1, K_e 150 mM, buffer Mg2+ total 5.0 mM, ATP_e = AMP_e = 0, O2 26 uM (B05)",
+   "outputs_and_bands": {
+    "dPsi_mV": 0.05,
+    "pH_x": 0.0005,
+    "NADH_frac": 0.0005,
+    "cytc_red_frac": 0.0005,
+    "O2_flux_rel": 0.001,
+    "K_x_rel": 0.001,
+    "Pi_x_rel": 0.001,
+    "ATP_x_rel": 0.001
+   },
+   "band_basis": "a stated physical scale: about a third of the published figures' 1-px resolution (0.13 mV, 0.0033 pH, 0.001 fraction), far above R1's convergence floor (integration vs exact Newton below 2e-13 relative; Newton residual below 1e-40)"
+  },
+  {
+   "id": "INV",
+   "what": "Eq. 22's two invariants over every run: matrix Mg2+ total and matrix charge",
+   "band": "relative drift 1e-9 of the run's initial value",
+   "band_basis": "exact conservation; 1e-9 is a ledger-scale tolerance"
+  },
+  {
+   "id": "THERMO",
+   "what": "every process's dissipation -J dG >= 0 at every SS state, and each cycle law's zero at its reaction's equilibrium (zero offset, kJ/mol)",
+   "band": {
+    "dissipation_kW_per_l": -1e-12,
+    "zero_offset_kJ_per_mol": 1e-06
+   },
+   "band_basis": "sign is exact; the offset tolerance is a numerical scale"
+  },
+  {
+   "id": "O2",
+   "what": "low oxygen: P50 of state-3 O2 flux ([ADP]e 1.0 mM, [ATP]e 0, [Pi]e 10 mM) and the cytochrome c reduced fraction at 50 uM O2 ([ADP]e 0.5, [ATP]e 0.87, [Pi]e 10 mM)",
+   "band": {
+    "P50_rel": 0.005,
+    "cytc_red_frac": 0.0005
+   }
+  },
+  {
+   "id": "SUPPLY",
+   "what": "the dehydrogenase's implied affinity RT ln(r[NAD]/[NADH]) and its flux at every SS state",
+   "band": "reported, not judged",
+   "why": "Eq. 1 has no reductant, so its free energy is booked as declared work (design note Sec. 1.4 item 4); R1 reports the number the booking must reproduce"
+  },
+  {
+   "id": "ADP_STEP",
+   "what": "time course of the [ADP]e step 0 -> 1.3 mM -> 0 at [Pi]e 10 mM (reproduce.adp_step_time_course)",
+   "tier": "second: B05 reports no transients",
+   "band": {
+    "dPsi_mV": 0.2,
+    "NADH_frac": 0.002
+   },
+   "band_basis": "R1's own rtol 1e-8 vs 1e-10 spread plus a physical scale; depends on Q05, C_IM, X_MgA and X_AK"
+  }
+ ],
+ "plants": [
+  {
+   "id": "P1",
+   "what": "the 2005 uncorrected Table 1 (nine values)",
+   "caught_by": "SS",
+   "size": "state-3 cytochrome c and dPsi move by far more than the bands (reproduction record)"
+  },
+  {
+   "id": "P2",
+   "what": "the 2005 k_O2 alone (1.0e-6 M for 1.20e-4 M)",
+   "caught_by": "SS, O2",
+   "size": "at [Pi]e 10 mM: dPsi +4.5 mV (state 4) and +2.8 mV (state 3); cytochrome c -0.058 and -0.111"
+  },
+  {
+   "id": "P3",
+   "what": "the web XML's stale proton row of Eq. 22 (-J_DH -(4-1)J_C1 -(2+2)J_C3 -(4-2)J_C4)",
+   "caught_by": "INV, SS",
+   "size": "the matrix-charge invariant is lost (exact null space)"
+  },
+  {
+   "id": "P4",
+   "what": "ANT exponent shares 0.35 and 0.70 (not summing to one)",
+   "caught_by": "THERMO",
+   "size": "zero offset 0.05 F dPsi, about 0.8 kJ/mol at 170 mV"
+  },
+  {
+   "id": "P5",
+   "what": "a 1% coefficient change, X_ANT x 1.01",
+   "caught_by": "SS",
+   "size": "state 3 at [Pi]e 10 mM: dPsi -0.19 mV (3.8 bands), NADH -0.004 (8 bands), O2 flux +0.85% (8.5 bands)"
+  },
+  {
+   "id": "P6",
+   "what": "Eq. 24 as typeset (without Eq. 7's proton term)",
+   "caught_by": "THERMO, SS",
+   "size": "zero offset 2RT ln([H+]x/10^-7), about -0.7 kJ/mol at pH_x 7.06; Fig. 5 dPsi 1.1-2.7 mV lower"
+  }
+ ],
+ "not_in_scope": [
+  "a cell, cytosolic fuel or calcium",
+  "the measured data of Bose et al. 2003 (a later, separate question, D151)",
+  "Fig. 2C's red curves: they used refitted parameters B05 does not publish"
+ ]
+}

@@ -16,6 +16,7 @@
     }
   },
   "independence": "Written from B05 and B06 alone (PDF read as images for every equation and both Table 1s; XML used for the text). No engine code, engine test, CellML, SBML or author code was read.",
+  "parameter_provenance": "Each parameter carries its printed strings from B05's Table 1 ('e36') and from B06's corrected Table 1 ('e8'), per column (without / with phosphate control), with its class (A fitted, B literature, C set large), the equations it enters, and Table 1's sensitivity. The 2006 correction changed a parameter if and only if its two strings differ: nine do (Q13). The model uses e8.",
   "units": {
     "concentration": "M (mol per litre of the compartment's water)",
     "time": "s",
@@ -220,7 +221,7 @@
   "switches": {
     "column": {"options": ["with", "without"], "published": "with", "what": "Table 1 column: with or without phosphate control of complex III"},
     "table": {"options": ["e8", "e36"], "published": "e8", "what": "the 2006 corrected Table 1, or the 2005 original (a planted control)"},
-    "J_C3": {"options": ["eq24_printed", "eq24_with_eq7_proton_term", "eq7"], "published": "eq24_printed", "what": "Q02; 'eq7' goes with column 'without'"},
+    "J_C3": {"options": ["eq24_with_eq7_proton_term", "eq24_printed", "eq7"], "published": "eq24_with_eq7_proton_term", "what": "Q02; 'eq7' goes with column 'without'"},
     "J_F1": {"options": ["eq11", "eq11_with_proton_term"], "published": "eq11", "what": "Q11"},
     "J_PiHt": {"options": ["eq16_printed", "eq16_symport"], "published": "eq16_printed", "what": "Q03"},
     "DGo_ATP_sign": {"options": [1, -1], "published": 1, "what": "Q01: +1 takes Table 2's +36.03; -1 takes the text's -36.03"},
@@ -241,9 +242,9 @@
     {"id": "Q01", "where": "text after Eq. 11 vs Table 2", "printed": "text: DGo,ATP = -36.03 kJ/mol; Table 2: +36.03 for H+ + ADP + Pi = ATP",
      "resolution": "+36.03. Table 2 and Eq. 10's direction (synthesis) agree, and Eq. 11's exponent -(DGo,ATP - n_A DG_H)/RT gives a physical equilibrium only with +36.03; the text's -36.03 is the hydrolysis sign. The -36.03 reading is kept as a switch (DGo_ATP_sign = -1).", "affects": "every state-3 result"},
     {"id": "Q02", "where": "Eq. 7 vs Eq. 24", "printed": "Eq. 24 (phosphate control) drops Eq. 7's + 2RT ln([H+]x/10^-7) from the exponent; the text says only that Eq. 7 is 'modified' by the phosphate factor",
-     "resolution": "Published arm runs Eq. 24 as printed; the variant with Eq. 7's term is a switch. Decided by which reproduces Figs. 4-5 (reported in the reproduction record). As printed, Eq. 24's zero is not reaction 6's equilibrium unless pH_x = 7 (audit).", "affects": "phosphate-control model"},
+     "resolution": "Eq. 24 WITH Eq. 7's proton term. Decided by the published curves: with the term the phosphate-control model reproduces Figs. 4-5 at rms z 1.98 (Fig. 5 dPsi within 0.46 mV in both states); as typeset (switch 'eq24_printed') it misses dPsi by 1.1-2.7 mV (rms z 7.3). The typeset Eq. 24 omits a term the published results contain. As typeset, its zero is not reaction 6's equilibrium unless pH_x = 7 (audit).", "affects": "phosphate-control model"},
     {"id": "Q03", "where": "Eq. 16 vs the text before it", "printed": "Eq. 16 pairs [H2PO4-]i with [H+]x and [H2PO4-]x with [H+]e; the text states 1:1 electroneutral co-transport of H+ and H2PO4-, and Eq. 22 books 2 H+ and 1 Pi into the matrix per turnover",
-     "resolution": "Published arm runs Eq. 16 as printed; the symport mass-action form (H2PO4-_i H+_e - H2PO4-_x H+_x) is a switch. As printed, the flux is proportional to [HPO4 2-]i - [HPO4 2-]x, so its zero is equal HPO4 2- on both sides, not the symport's equilibrium (audit).", "affects": "matrix Pi and pH"},
+     "resolution": "Eq. 16 as printed: the published curves support it (the symport form, switch 'eq16_symport', worsens the match from rms z 1.98 to 3.58, mostly state-3 MVO2 and cytochrome c). So this is the model as run, not a typesetting slip. As printed, the flux is proportional to [HPO4 2-]i - [HPO4 2-]x: its zero is equal HPO4 2- on both sides, not the booked co-transport's equilibrium, and it dissipates negatively in part of state space (audit).", "affects": "matrix Pi and pH"},
     {"id": "Q04", "where": "Eq. 13, second line", "printed": "labelled J_ATPt but carries ADP", "resolution": "J_ADPt, as Eq. 22 uses it", "affects": "nothing numerically"},
     {"id": "Q05", "where": "Eq. 22, cytochrome c row", "printed": "d[cytC(red)2+]x/dt = (2J_C3 - 2J_C4)/V_x, while the text and Table 1 place cytochrome c in the intermembrane space at 2.70 mM, ten times the matrix-referred value 'since the IM volume is assumed to be 1/10 of the mitochondrial water volume'",
      "resolution": "Published arm divides by V_x as printed; V_i is a switch. Steady states are identical; only the cytochrome c relaxation time changes (by V_x/V_i = 9).", "affects": "transients only"},
@@ -258,17 +259,19 @@
     {"id": "Q10", "where": "V_i's description", "printed": "Table 1: 'IM water fraction per total cell volume'; footnote f: IMS is 10% of mitochondrial volume, and 0.0715 = 0.10 x 0.715 as 0.6435 = 0.90 x 0.715",
      "resolution": "per mitochondrial volume", "affects": "nothing numerically"},
     {"id": "Q11", "where": "Eq. 10 vs Eq. 11", "printed": "reaction 10 consumes a matrix H+ (and Eq. 22 books n_A - 1), and Table 2's DGo,ATP is at pH 7, but Eq. 11 carries no [H+]x/10^-7 factor",
-     "resolution": "not a contradiction between two printed versions, so both arms keep Eq. 11 as printed; the factor is a switch and its size is reported by the audit", "affects": "F1 equilibrium off pH 7"},
+     "resolution": "Eq. 11 as printed: the published curves support it (adding the proton factor, switch 'eq11_with_proton_term', worsens the match from rms z 1.98 to 3.55). The rate law's zero sits RT ln(10^-7/[H+]x) from reaction 10's equilibrium, about +0.5 kJ/mol at the model's matrix pH (audit).", "affects": "F1 equilibrium off pH 7"},
     {"id": "Q12", "where": "parameter counts", "printed": "Introduction and Discussion: 16 adjustable parameters, nine curves; 'Parameter values' and Results: 14 adjustable parameters, seven curves; Table 1 lists 16 class-A rows including k_Pi,3 and k_Pi,4",
      "resolution": "16 class A for the phosphate-control model and 14 for the model without it; no effect on the equations", "affects": "nothing"},
     {"id": "Q13", "where": "Table 1, 2005 vs 2006", "printed": "nine values changed: X_KH (with control) 2.9802e-6 -> 2.9802e7; K_Mg-ATP 1.0e-6 -> 24.0e-6; K_Mg-ADP 1.0e-6 -> 347.0e-6; k_dH 1.0e-6 -> 1.7783e-7; k_m,ADP 1.0e-6 -> 3.5e-6; k_O2 1.0e-6 -> 1.20e-4; C_IM 1.0e-6 -> 6.75e-6; X_AK 1.0e-6 -> 1.0e6; X_MgA 1.0e-6 -> 1.0e6",
      "resolution": "the 2006 values (B06 replaces Table 1); the text's C_IM of 6.75e-6 agrees with B06", "affects": "all"},
     {"id": "Q14", "where": "text, 'Simulation of isolated mitochondria'", "printed": "'inorganic potassium concentrations were set as constants'", "resolution": "read as inorganic phosphate", "affects": "nothing"},
+    {"id": "Q15", "where": "Eqs. 11, 18 and 22 (found by the audit, not a printed contradiction)", "printed": "Eq. 11 reads the Mg-bound forms (mADP, mATP) and Eq. 18 the IMS totals at a fixed apparent K_AK, but Eq. 22 books F1F0's turnover on the matrix totals, so the free forms absorb it while the bound pools change only by binding",
+     "resolution": "kept as printed: the rate law's driving force equals the booked reaction's only at Mg2+-binding equilibrium, which X_MgA = 1e6 keeps to within numerical precision and which holds exactly at every steady state; a rapid binding closure (departure D1) removes the distinction", "affects": "transients far from binding equilibrium (free forms can go negative from a non-equilibrated start)"},
     {"id": "Q24", "where": "temperature", "printed": "RT appears throughout; no temperature is stated", "resolution": "UNREPORTED input: declared 298.15 K, selected between two candidates (298.15 and 310.15 K) by the published P50 and cytochrome c curves; 310.15 K misses cytochrome c by a near-constant factor of 1.33 and P50 by a factor of 2", "affects": "all exponents"},
     {"id": "Q25", "where": "initial conditions", "printed": "none are reported; Eq. 22 conserves the matrix Mg2+ total and a matrix charge combination, so steady states depend on two initial inventories",
      "resolution": "UNREPORTED input: the matrix Mg2+ total is declared; the matrix charge inventory is anchored to one published matrix pH (Fig. 4D at [Pi]e = 0) and the rest are predictions", "affects": "matrix pH, K+, and through them every output"},
     {"id": "Q26", "where": "IMS free Mg2+", "printed": "not a state and no equation; the buffer's total Mg2+ is 5.0 mM", "resolution": "UNREPORTED input: declared as the buffer's free Mg2+ from its 5.0 mM total and the buffer's nucleotides at Table 1's constants; 5.0 mM free is the alternative", "affects": "IMS free nucleotides"},
-    {"id": "Q27", "where": "Fig. 6 phosphate", "printed": "[Pi]e is not stated for either low-oxygen curve", "resolution": "UNREPORTED input: scanned; the published P50 is compared across the scan", "affects": "Fig. 6"},
+    {"id": "Q27", "where": "Fig. 6 phosphate", "printed": "[Pi]e is not stated for either low-oxygen curve", "resolution": "UNREPORTED input: [Pi]e = 10 mM reproduces the published P50 (0.3751 against 0.373 uM); 1 mM gives 0.451 uM", "affects": "Fig. 6"},
     {"id": "Q28", "where": "Figs. 2B and 4B units", "printed": "MVO2 in mol O2 per min per mol cytochrome a; no cytochrome a content per mitochondrial volume is given", "resolution": "UNREPORTED conversion: compared as ratios, and one anchor fixes the scale for display", "affects": "MVO2 magnitude"}
   ]
 }

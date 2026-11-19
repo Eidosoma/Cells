@@ -115,7 +115,7 @@ class Arm:
     """One choice per switch in the data file; ``published()`` is the published arm."""
     column: str = "with"
     table: str = "e8"
-    J_C3: str = "eq24_printed"
+    J_C3: str = "eq24_with_eq7_proton_term"   # Q02: what the published curves were computed with
     J_F1: str = "eq11"
     J_PiHt: str = "eq16_printed"
     DGo_ATP_sign: int = 1
@@ -252,11 +252,16 @@ class Compiled:
             setattr(self, attr, ns["_model"])
         return getattr(self, attr)
 
+    def _args(self, y, held, kind):
+        if kind == "float":
+            return y, held
+        return [_dec(v) for v in y], {k: _dec(v) for k, v in held.items()}
+
     def rhs(self, y, held, kind="float"):
-        return self.fn(kind)(y, held)[0]
+        return self.fn(kind)(*self._args(y, held, kind))[0]
 
     def fluxes(self, y, held, kind="float"):
-        return dict(zip(self.flux_names, self.fn(kind)(y, held)[1]))
+        return dict(zip(self.flux_names, self.fn(kind)(*self._args(y, held, kind))[1]))
 
 
 def compile_model(model: dict | None = None, arm: Arm | None = None) -> Compiled:
@@ -616,12 +621,20 @@ def steady_state(comp: Compiled, h: dict, y_guess, invariant_values=None, pinned
                 if all(yn[STATES.index(s)] > 0 for s in ("H_x", "QH2_x", "NADH_x", "cytCred", "K_x")) and \
                         yn[STATES.index("QH2_x")] < Pd["Q_tot"] and yn[STATES.index("NADH_x")] < Pd["NAD_tot"] and \
                         yn[STATES.index("cytCred")] < Pd["cytC_tot"]:
-                    break
+                    try:
+                        F(yn)
+                        break
+                    except ArithmeticError:
+                        pass
                 lam /= 2
+            else:
+                raise ArithmeticError("Newton: no admissible step")
             y = yn
             step = max(abs(lam * dx[c]) / scale[i] for c, i in enumerate(free))
             if step < Decimal(10) ** tol_exp:
                 break
+        else:
+            raise ArithmeticError(f"Newton: no convergence in {max_iter} iterations")
         d = f(y, hd)[0]
         res = max(abs(d[i]) / (scale[i] if STATES[i] != "dPsi" else Decimal(1)) for i in free)
         _, inv_now = invariants(comp, y, kind="decimal")

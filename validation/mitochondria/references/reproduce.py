@@ -102,7 +102,12 @@ class Runner:
             laws, vals = M.invariants(self.comp, guess)
             inv = [self.charge if "K_x" in law else self.mg_x_total * self.comp.params["V_x"]
                    for law in laws]
-        ss = M.steady_state(self.comp, h, guess, invariant_values=inv, pinned=self._pinned(h))
+        try:
+            ss = M.steady_state(self.comp, h, guess, invariant_values=inv, pinned=self._pinned(h))
+        except ArithmeticError:
+            if yi is not None:
+                raise
+            return self.solve(h, guess=guess, integrate=True, t_end=t_end)   # continuation failed: integrate
         yn = ss.floats()
         info["newton_residual"] = float(ss.residual)
         info["newton_iterations"] = ss.iterations
@@ -144,7 +149,7 @@ class Runner:
             h = self.held(ADP_e=ADP_e, Pi_e=pi * 1e-3)
             y, info = self.solve(h, guess=guess, integrate=(check_every or k == 0))
             out = outputs(self.comp, h, y)
-            out.update({"Pi_e_mM": pi, "ADP_e_mM": ADP_e * 1e3, **info})
+            out.update({"Pi_e_mM": pi, "ADP_e_mM": ADP_e * 1e3, **info, "y": [float(v) for v in y]})
             rows.append(out)
             guess = y
         return rows
@@ -152,7 +157,7 @@ class Runner:
     def low_oxygen(self, ADP_e, ATP_e, Pi_e, o2_uM=None):
         """MVO2 and cytochrome c reduction against [O2] (continuation downward from 50 uM)."""
         if o2_uM is None:
-            o2_uM = np.concatenate([np.linspace(50, 5, 10), np.geomspace(4.5, 0.01, 60)])
+            o2_uM = np.concatenate([np.linspace(50, 5, 10), np.geomspace(4.5, 0.02, 36)])
         rows = []
         guess = None
         for k, o in enumerate(o2_uM):
@@ -169,6 +174,40 @@ class Runner:
         p50 = float(np.interp(half, mv[order], o2[order]))
         return {"P50_uM": p50, "cytc_at_50uM": rows[0]["cytc_red_frac"], "MVO2_at_50uM": float(mv[0]),
                 "rows": rows}
+
+
+def adp_step_time_course(runner: "Runner", Pi_e=10e-3, ADP_on=1.3e-3, t_on=60.0, t_off=120.0,
+                         samples=None, rtol=1e-10):
+    """The design note's first protocol step (Sec. 7): state 4 -> [ADP]e step -> state 4.
+
+    Starts at the state-4 steady state with the runner's inventories, steps the buffer ADP
+    to ``ADP_on`` at t = 0 and back to 0 at ``t_on``, and samples every state. Beard 2005
+    reports no transients and was fitted to steady states only, so these depend on the
+    switches that only move transients (Q05) and on C_IM, X_MgA and X_AK."""
+    from scipy.integrate import solve_ivp
+    if samples is None:
+        samples = np.concatenate([np.linspace(0, t_on, 241), np.linspace(t_on, t_on + t_off, 481)[1:]])
+    h4 = runner.held(ADP_e=0.0, Pi_e=Pi_e)
+    h3 = runner.held(ADP_e=ADP_on, Pi_e=Pi_e)
+    y4, _ = runner.solve(h4)
+    f = runner.comp.fn("float")
+    scale = np.maximum(np.abs(y4), 1e-6)
+    scale[M.STATES.index("H_x")] = 1e-8
+    scale[M.STATES.index("dPsi")] = 100.0
+    out = []
+    y = y4.copy()
+    for (t0, t1, h) in ((0.0, t_on, h3), (t_on, t_on + t_off, h4)):
+        ts = samples[(samples >= t0) & (samples <= t1)]
+        sol = solve_ivp(lambda t, yy: f(yy, h)[0], (t0, t1), y, method="Radau", rtol=rtol,
+                        atol=1e-12 * scale, t_eval=ts)
+        if not sol.success:
+            raise RuntimeError(sol.message)
+        for k, t in enumerate(sol.t):
+            o = outputs(runner.comp, h, sol.y[:, k])
+            out.append({"t_s": float(t), **{q: o[q] for q in ("dPsi_mV", "NADH_frac", "cytc_red_frac", "pH_x",
+                                                               "MVO2_mol_per_s_per_l", "ATP_x_mM", "Pi_x_mM")}})
+        y = sol.y[:, -1]
+    return out
 
 
 def compare(sweeps: dict, targets: dict, model_kind: str, cyta_anchor=("state3", 10.0)) -> list:
@@ -218,12 +257,12 @@ def summarise(rows):
 
 
 def run_arm(arm: M.Arm, mg_x_total=1.0e-3, mg_i_rule="buffer_free", targets=None, low_oxygen=True,
-            pi_fig6=(1.0, 3.0, 10.0)):
+            pi_fig6=(1.0, 3.0, 10.0), check_every=True):
     targets = targets or json.loads(TARGETS.read_text())
     R = Runner(arm, mg_x_total=mg_x_total, mg_i_rule=mg_i_rule)
     t0 = time.time()
     charge = R.calibrate_charge()
-    sweeps = {"state4": R.sweep(0.0), "state3": R.sweep(1.3e-3)}
+    sweeps = {"state4": R.sweep(0.0, check_every=check_every), "state3": R.sweep(1.3e-3, check_every=check_every)}
     rows, cyta = compare(sweeps, targets, arm.column)
     summary, rmsz = summarise(rows)
     res = {"arm": arm.label(), "arm_fields": asdict(arm), "mg_x_total_M": mg_x_total, "mg_i_rule": mg_i_rule,
@@ -241,26 +280,34 @@ def run_arm(arm: M.Arm, mg_x_total=1.0e-3, mg_i_rule="buffer_free", targets=None
 
 
 def arms():
+    """Named arms. ``published`` is the model the published curves were computed with
+    (Q02 resolved by them); the others each change one switch or input."""
     P, W = M.Arm.published, M.Arm.without_control
-    thermo = dict(J_C3="eq24_with_eq7_proton_term", J_F1="eq11_with_proton_term", J_PiHt="eq16_symport")
+    thermo = dict(J_F1="eq11_with_proton_term", J_PiHt="eq16_symport")
     return {
         "published": (P(), {}),
         "without_control": (W(), {}),
-        "T310": (P(T=310.15), {}),
-        "without_control_T310": (W(T=310.15), {}),
-        "eq24_with_eq7_proton_term": (P(J_C3="eq24_with_eq7_proton_term"), {}),
+        "eq24_printed": (P(J_C3="eq24_printed"), {}),
         "eq16_symport": (P(J_PiHt="eq16_symport"), {}),
         "eq11_with_proton_term": (P(J_F1="eq11_with_proton_term"), {}),
         "thermo_consistent": (P(**thermo), {}),
+        "T310": (P(T=310.15), {}),
+        "without_control_T310": (W(T=310.15), {}),
         "mg_i_total": (P(), {"mg_i_rule": "total"}),
         "mg_x_0.25mM": (P(), {"mg_x_total": 0.25e-3}),
         "mg_x_0.5mM": (P(), {"mg_x_total": 0.5e-3}),
         "mg_x_2mM": (P(), {"mg_x_total": 2.0e-3}),
         "mg_x_5mM": (P(), {"mg_x_total": 5.0e-3}),
         "plant_table_2005": (P(table="e36"), {}),
+        "plant_k_O2_2005": (P(overrides={"k_O2": 1.0e-6}), {}),
         "plant_stale_xml_row": (P(H_x_row="stale_web_xml"), {}),
         "plant_DGo_ATP_text_sign": (P(DGo_ATP_sign=-1), {}),
+        "plant_X_ANT_plus_1pct": (P(overrides={"X_ANT": 0.0079204 * 1.01}), {}),
     }
+
+
+FULL = ("published", "without_control", "eq24_printed", "eq16_symport", "eq11_with_proton_term",
+        "thermo_consistent", "T310", "plant_table_2005", "plant_k_O2_2005")
 
 
 def main(argv=None):
@@ -276,7 +323,8 @@ def main(argv=None):
         arm, kw = table[name]
         t0 = time.time()
         try:
-            res = run_arm(arm, pi_fig6=(1.0, 3.0, 5.0, 10.0), **kw)
+            res = run_arm(arm, pi_fig6=(1.0, 3.0, 10.0), low_oxygen=name in FULL,
+                          check_every=name in ("published", "without_control"), **kw)
         except Exception as exc:   # a failure is a finding, recorded, not hidden
             res = {"arm": arm.label(), "error": repr(exc), "seconds": time.time() - t0}
         (args.out / f"{name}.json").write_text(json.dumps(res, indent=1, default=float))

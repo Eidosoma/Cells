@@ -59,6 +59,9 @@ def delta_g(comp, y, h) -> dict:
         # H+(x) + ADP + Pi + n_A H+ in -> ATP (free forms; Table 2 at pH 7)
         "J_F1": p["DGo_ATP"] + RT * ln(fATP_x / (fADP_x * S["Pi_x"])) - RT * hx - p["n_A"] * DG_H
         if S["Pi_x"] > 0 and fADP_x > 0 and fATP_x > 0 else float("nan"),
+        # the same synthesis written on the Mg-bound forms Eq. 11 reads (MgADP + Pi -> MgATP)
+        "J_F1_Mg": p["DGo_ATP"] + RT * ln(p["K_MgATP"] / p["K_MgADP"]) + RT * ln(S["mATP_x"] / (S["mADP_x"] * S["Pi_x"]))
+        - RT * hx - p["n_A"] * DG_H if S["Pi_x"] > 0 and S["mADP_x"] > 0 and S["mATP_x"] > 0 else float("nan"),
         # ADP3-(i) + ATP4-(x) -> ADP3-(x) + ATP4-(i): one negative charge matrix -> IMS
         "J_ANT": RT * ln(fATP_i * fADP_x / (fADP_i * fATP_x)) - F * psi
         if min(fATP_i, fADP_i, fATP_x, fADP_x) > 0 else float("nan"),
@@ -85,7 +88,8 @@ def delta_g(comp, y, h) -> dict:
     return out
 
 
-DIRECT = ("J_C1", "J_C3", "J_C4", "J_F1", "J_ANT", "J_PiHt", "J_KH", "J_Hle", "J_AK", "J_MgATPx", "J_MgADPx")
+DIRECT = ("J_C1", "J_C3", "J_C4", "J_F1", "J_F1_Mg", "J_ANT", "J_PiHt", "J_KH", "J_Hle", "J_AK", "J_MgATPx", "J_MgADPx")
+FLUX_OF = {"J_F1_Mg": "J_F1"}   # Delta G variants of one flux
 
 
 def random_states(comp, n, rng):
@@ -126,7 +130,7 @@ def sign_test(comp, n=4000, seed=1):
             if not np.isfinite(g):
                 continue
             res[k]["n"] += 1
-            if fl[k] * g > 0 and abs(g) > 1e-9:
+            if fl[FLUX_OF.get(k, k)] * g > 0 and abs(g) > 1e-9:
                 res[k]["violations"] += 1
                 res[k]["max_violating_abs_DG_kJ"] = max(res[k]["max_violating_abs_DG_kJ"], abs(g))
     return res
@@ -172,7 +176,8 @@ def dissipation(comp, y, h):
     """-J * Delta G per process (kW per litre of mitochondria = kJ s^-1 (l mito)^-1)."""
     fl = comp.fluxes(y, h)
     dg = delta_g(comp, y, h)
-    return {k: (-fl[k] * dg[k] if np.isfinite(dg.get(k, float("nan"))) else None) for k in dg}, fl, dg
+    return {k: (-fl[FLUX_OF.get(k, k)] * dg[k] if np.isfinite(dg.get(k, float("nan"))) else None)
+            for k in dg if k != "J_F1_Mg"}, fl, dg
 
 
 def charge_bookkeeping(comp, y, h):
@@ -190,23 +195,75 @@ def charge_bookkeeping(comp, y, h):
     return {"by_process": by_reaction, "total": total, "eq22_dPsi_row": from_row}
 
 
+def proton_bookkeeping(comp, y, h):
+    """Matrix H+ sources per second (mol/s/l mito) by process, Eq. 22's row 1, against the
+    protons each reaction moves or releases in reference species."""
+    fl = comp.fluxes(y, h)
+    n_A = comp.params["n_A"]
+    rows = M.ode_rows(comp.model, comp.arm)["H_x"]["terms"]
+    env = {k: M.Fraction(repr(v)) for k, v in comp.params.items()}
+    eq22 = {j: float(M.eval_fraction(c, env)) * fl[j] for j, c in rows.items()}
+    from_reactions = {"J_DH": fl["J_DH"], "J_C1": -(4 + 1) * fl["J_C1"], "J_C3": -(4 - 2) * fl["J_C3"],
+                      "J_C4": -(2 + 2) * fl["J_C4"], "J_F1": (n_A - 1) * fl["J_F1"], "J_PiHt": 2 * fl["J_PiHt"],
+                      "J_Hle": fl["J_Hle"], "J_KH": -fl["J_KH"]}
+    S = dict(zip(M.STATES, np.asarray(y, float)))
+    frac_H2PO4_x = S["H_x"] / (S["H_x"] + comp.params["k_dH"])
+    return {"eq22": eq22, "from_reactions": from_reactions,
+            "note": "Eq. 22 sends both protons of each H2PO4-/H+ co-transport to the matrix buffer; "
+                    f"at this pH_x a fraction {frac_H2PO4_x:.3f} of matrix Pi is H2PO4-, so that share of "
+                    "the second proton stays on phosphate (the buffer formula absorbs it)."}
+
+
+def audit_state(comp, y, h):
+    dis, fl, dg = dissipation(comp, y, h)
+    return {"fluxes": fl, "delta_G_kJ": dg, "dissipation_kW_per_l": dis,
+            "total_dissipation_kW_per_l": sum(v for v in dis.values() if v is not None),
+            "negative_dissipation": {k: v for k, v in dis.items() if v is not None and v < -1e-15},
+            "charge": charge_bookkeeping(comp, y, h), "protons": proton_bookkeeping(comp, y, h)}
+
+
+ARMS = {"published": dict(), "eq24_with_eq7_proton_term": dict(J_C3="eq24_with_eq7_proton_term"),
+        "eq16_symport": dict(J_PiHt="eq16_symport"), "eq11_with_proton_term": dict(J_F1="eq11_with_proton_term")}
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(description="Thermodynamic audit of Beard 2005")
-    ap.add_argument("--repro", type=Path, required=True, help="a reproduce.py arm JSON (steady states)")
+    ap.add_argument("--repro", type=Path, required=True, help="directory of reproduce.py arm JSONs")
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--n", type=int, default=4000)
     args = ap.parse_args(argv)
-    rep = json.loads(args.repro.read_text())
     model = M.load()
-    res = {"sign_tests": {}, "states": {}}
-    for name, arm in (("published", M.Arm.published()), ("eq7", M.Arm.without_control()),
-                      ("eq24_with_eq7_proton_term", M.Arm.published(J_C3="eq24_with_eq7_proton_term")),
-                      ("eq16_symport", M.Arm.published(J_PiHt="eq16_symport")),
-                      ("eq11_with_proton_term", M.Arm.published(J_F1="eq11_with_proton_term"))):
+    res = {"sign_tests": {}, "zero_offsets": {}, "states": {}}
+    for name, kw in list(ARMS.items()) + [("without_control_eq7", None)]:
+        arm = M.Arm.without_control() if kw is None else M.Arm.published(**kw)
         comp = M.compile_model(model, arm)
-        res["sign_tests"][name] = sign_test(comp)
+        res["sign_tests"][name] = sign_test(comp, n=args.n)
+    from .reproduce import Runner
+    for name, kw in ARMS.items():
+        f = args.repro / f"{name}.json"
+        if not f.exists():
+            continue
+        rep = json.loads(f.read_text())
+        if "sweeps" not in rep:
+            continue
+        arm = M.Arm.published(**kw)
+        run = Runner(arm, mg_x_total=rep["mg_x_total_M"], mg_i_rule=rep["mg_i_rule"],
+                     charge=rep["charge_inventory_mol_per_l"], model=model)
+        out = {}
+        for state, adp in (("state4", 0.0), ("state3", 1.3e-3)):
+            rows = rep["sweeps"][state]
+            ys = [r.get("y") for r in rows]
+            if any(v is None for v in ys):                 # older runs: re-solve by continuation
+                ys = [r["y"] for r in run.sweep(adp, check_every=False)]
+            for r, yy in zip(rows, ys):
+                h = run.held(ADP_e=adp, Pi_e=r["Pi_e_mM"] * 1e-3)
+                a = audit_state(run.comp, np.array(yy), h)
+                a["zero_offsets_kJ"] = zero_offset(run.comp, np.array(yy), h)
+                out[f"{state}_Pi{r['Pi_e_mM']:g}"] = a
+        res["states"][name] = out
+    args.out.write_text(json.dumps(res, indent=1, default=lambda v: float(v) if v is not None else None))
     print(json.dumps(res["sign_tests"], indent=1))
-    args.out.write_text(json.dumps(res, indent=1, default=float))
 
 
 if __name__ == "__main__":
