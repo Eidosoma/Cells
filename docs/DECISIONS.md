@@ -7541,3 +7541,26 @@ review):
    - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
      that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
      per-trace criterion.
+
+## D233: FR-7's closed-loop world scales its template five-fold
+
+2026-11-19, about 23:02 UTC. The user, choosing among the lead's options after the advisor's review
+and the references' measurement: "lets do option 2".
+
+- **F4, R-loop's world (D231), scales the template's half-saturation K and its dose together, ×5:**
+  K 0.05 mM and dose 0.5 mM. n 2, the 20 s half-life, basal b_T 0.2 and ε 2 × 10⁻⁶ are unchanged.
+  Only c/K drives the cell, so F_T(t), t_clear (260 s) and every non-template row are unchanged. The
+  references show that identity before they register.
+- **Why:** in F4's 7.5 fL cell, R-chain's template falls under D150 §1.3's mean-field floor (about
+  10² molecules per cell) at 243 s, before the cut at t_d = 260 s. Clearance (D ≤ ε) then comes at
+  about 64 molecules. The references measured how far replacing that sub-floor tail (set to zero, or
+  held at 10² molecules) moves the judged effect, the closed arm minus the cut arm:
+  - up to 9.5% at ×1 (R, 10 s after the cut);
+  - at most 6 × 10⁻⁵ at ×5. There the floor comes at 289 s, after the cut, clearance comes at about
+    320 molecules, and the cut's applied factor F* no longer depends on the tail.
+- **The tail is registered as a bounded term.** Both sides run the same mean-field tail, and neither
+  applies a floor. The comparison would detect a different treatment: even at ×5, up to about 10
+  bands on s at late rows. R-loop registers the ×5 floor table with its rows.
+- **The lead's earlier rule is withdrawn.** "1% of the tightest band" was the wrong yardstick: the
+  bands measure numerical agreement between two codes running the same equations. The judged effect
+  is the yardstick.
