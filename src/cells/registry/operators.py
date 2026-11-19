@@ -58,6 +58,7 @@ __all__ = (
     "OPERATORS",
     "OperatorRegistry",
     "active",
+    "operator_standard_free_energies",
     "package_operators",
     "register_package",
     "scope",
@@ -231,6 +232,18 @@ class OperatorRegistry:
             if new:
                 out._modules[qualified(operator.operator_id)] = caller
         return out
+
+
+def operator_standard_free_energies(operator, declaration):
+    """A composite operator's reaction-level standard free energies (seam E: the contract's
+    Operator.standard_free_energies), checked as a kind's are (kind_registry.free_energy_entries),
+    with no law to name: an operator hosts none, so each entry's law_id and mode are None, and an
+    entry that names a law is refused."""
+    from cells.registry import kind_registry
+
+    entries = operator.standard_free_energies(declaration)
+    where = f"Operator {operator.LAW_ID}'s standard_free_energies"
+    return kind_registry.free_energy_entries(entries, {}, where)
 
 
 def package_operators(package):

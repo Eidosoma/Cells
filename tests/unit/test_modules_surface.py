@@ -63,6 +63,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "EntityBinding",
         "MOVES_END",
         "MOVES_ENDS",
+        "FreeEnergyEntry",
         "parse_series",
         "series_to_dict",
         "qualified",
