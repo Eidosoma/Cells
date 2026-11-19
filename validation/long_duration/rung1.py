@@ -403,7 +403,10 @@ RUNG0_ROOTS = dict(
 )
 STAGE0_HARNESS = "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness"
 HISTORY_FLOORS = (("_pJ", 2e-8), ("_C", 3e-25))  # Else amounts and cycles: 1e-10 fmol.
-ENGINE_REFUSALS = ("ConfigError", "NumericalError")  # Any other exception is a driver fault.
+# The engine's refusals that are an arm's result (§0, §10.5): every run-time NumericalError (a
+# step's domain failure, X2, a row's ledgers), and a ConfigError only from a step bound. Any other
+# exception (admission, grid, observation, trace limits, the driver's own) is unclassified: a fault.
+STEP_BOUND_MESSAGES = ("step exceeds", "requires a smaller step", "exceeds the explicit-rate bound")
 X2_MESSAGE = "Step-doubled energy check failed"
 
 
@@ -585,8 +588,12 @@ def verdict_rows(table, ms, bar):
 
 
 def refusal_of(record):
-    """An incomplete arm's verdict: the engine's refusal (a result), or a driver fault."""
-    kind = "refusal" if record.get("error_type") in ENGINE_REFUSALS else "driver fault"
+    """An incomplete arm's verdict: the engine's refusal (a result), or an unclassified fault."""
+    error_type, message = record.get("error_type"), str(record.get("error") or "")
+    result = error_type == "NumericalError" or (
+        error_type == "ConfigError" and any(m in message for m in STEP_BOUND_MESSAGES)
+    )
+    kind = "refusal" if result else "unclassified (a fault)"
     cause = dict(
         kind=kind,
         error_type=record.get("error_type"),
@@ -916,9 +923,10 @@ def arm_reading(arm, parts, ms_sets, extra_verdicts=()):
         out[bar] = {}
         for name, (ms, table) in tables.items():
             v = verdict_rows(table, ms, bar)
-            for label, ev in extra_verdicts:
+            for label, ev in extra_verdicts:  # Both causes are kept when both fail.
                 if ev in ("fail", "undetermined") and worst([v["verdict"], ev]) == ev:
-                    v = dict(verdict=ev, cause=dict(kind="events", which=label))
+                    causes = [c for c in (v.get("cause"),) if c]
+                    v = dict(verdict=ev, cause=dict(kind="events", which=label, also=causes))
             out[bar][name] = v
     return out, tables
 
@@ -996,6 +1004,13 @@ def analyse(output, root, instrument_output):
             if not arm.complete and refusal_of(arm.record)["cause"]["x2"]:
                 x2_dropped.append(name)  # Fallback (ii): this rung of this window leaves dt*.
                 out["arms"][name] = dict(x2=x2_of(arm), left_dt_star="fallback (ii)")
+                full = {0: "H2-full-1", 1: "H2-full-0.5", 2: "H2-full-0.25"}.get(k)
+                if window == "WA" and not (full and (root / full).is_dir()):
+                    # No event check at this rung (no full run carries it): never a pass (§10.1).
+                    for bar in BARS:
+                        for s in comp[bar]:
+                            comp[bar][s].append(dict(verdict="undetermined", cause=dict(
+                                kind="no event check", which="WA refused by X2")))  # fmt: skip
                 continue
             ev_verdict = []
             if window == "WA" and arm.complete:

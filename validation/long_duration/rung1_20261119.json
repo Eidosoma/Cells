@@ -648,7 +648,8 @@
     "largest_such_bounds": {
      "voltage_V": 5e-12,
      "gate": 5e-10
-    }
+    },
+    "plainly": "a reference row always has a bound now, so section 3's 'order below 1, undetermined' no longer applies anywhere, not only near rounding; on the existing references it bites only at 1.0-5.4 times the floor; W0's ladder is control data, and its count of such rows is reported with the results"
    },
    "event_bounds": {
     "rule": "as rows: the difference from the next-coarser arm where the order from the three finest is at least 1; the floor where that difference is at or below it; otherwise the larger spread",
@@ -664,7 +665,9 @@
     }
    },
    "analysis": "committed with this entry before any registered row exists (rung1.py instrument and analyse); analyse refuses unless I1a and I4 pass; an exception other than the engine's ConfigError or NumericalError is a driver fault, fixed under a new head and never what binds",
-   "changed": "no registered number, budget or outcome"
+   "changed": "no registered number, budget or outcome",
+   "refusals": "an arm's result: any run-time NumericalError, or a ConfigError from a step bound; any other exception is unclassified, a fault that stops the ladder's walk, is fixed under a new head and is never what binds",
+   "revised_utc": "2026-11-19T21:58Z (before any run and before the lead's tag)"
   }
  ]
 }
