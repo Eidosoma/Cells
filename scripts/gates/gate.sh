@@ -10,8 +10,9 @@
 #      sets; c1's save, the baseline, the tier record, the declared files and the guard set exist;
 #   1. IDs: the head's collected test IDs against the base's (cached per main revision), with the
 #      additions (ADDITIONS_FROM) and the removals (REMOVED_OK_FILE) declared before the gate;
-#   2. the guard set and every test file the head changed against the base, through the tier
-#      runner, each against its row (scripts/gates/gate_steps.py select).
+#   2. the guard set and the test files the head changed against the base, within
+#      PRELOCK_TEST_SECONDS of their rows (default 600; the rest are left to the tiers), through the
+#      tier runner, each against its row (scripts/gates/gate_steps.py select).
 # Under the lane's lock (flock's command form: a flock killed while it waits runs nothing), the
 # cheapest stage first, stopping at the first failure:
 #   3. crossrev: the head's sets against the base's, set by set on the lane's CPUs (one CPU per set).
@@ -29,7 +30,7 @@
 # gate's script never changes under it.
 # Environment: LANE (A or B; "custom" with GATE_LOCK and GATE_CPUS, for tests and replays only),
 # TIERS, ADDITIONS_FROM, REMOVED_OK_FILE, CROSSREV_EXPECTED, CROSSREV_SETS (default every set),
-# PRELOCK, PRELOCK_CPU, PRELOCK_NICE, PRELOCK_ONLY (1: stop after the pre-lock steps, for an owner's
+# PRELOCK, PRELOCK_CPU, PRELOCK_NICE, PRELOCK_TEST_SECONDS, PRELOCK_ONLY (1: stop after the pre-lock steps, for an owner's
 # check before queueing), GATE_CACHE (default /mnt/workspaces/Cells/gate-cache; empty turns the
 # cache off), PY and HOSTPY.
 # Usage (a run_detached unit's command): gate.sh HEAD_S BASE_S OUT
@@ -102,7 +103,7 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
   steps ids "$base_ids" "$P/ids/collect-head" "$P/ids/verdict.json" > "$P/ids/verdict.log" 2>&1
   rc=$?; log "ids, additions only, exit $rc: $(short "$P/ids/verdict.log")"
   [ $rc -eq 0 ] || { log "stopped at ids"; return 1; }
-  steps select "$S" "$B" "$TIERS" "$P/subset.json" > "$P/select.log" 2>&1 \
+  steps select "$S" "$B" "$TIERS" "$P/subset.json" --budget "${PRELOCK_TEST_SECONDS:-600}" > "$P/select.log" 2>&1 \
     || { log "prelock select failed: $(short "$P/select.log")"; return 1; }
   (cd "$S" && PYTHONPATH="$S/src:$S" light "$PY" -B scripts/test_tiers.py run --tiers "$P/subset.json" \
     --tier 1 2 9 --out "$P/tests" --cpus "$PRE_CPUS" --cap 300 > "$P/tests.log" 2>&1)

@@ -8,11 +8,13 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
       "10 of 9" fault of 18 November) is refused here. c1's save, the baseline, the tier record and
       every declared file exist. A guard file the head lacks (an older tree) is reported, not
       refused.
-  select HEAD BASE TIERS OUT_JSON
+  select HEAD BASE TIERS OUT_JSON [--budget SECONDS]
       The pre-lock test files, as a tier-record subset for scripts/test_tiers.py run: the guard set
-      (GUARDS) and every test file whose bytes differ between the two snapshots, or that only the
-      head holds. Rows come from the head's record. Tier-3 files are listed, not run (they are run
-      deliberately). New files go under tier "9", with a row that only asks for an exit code of 0.
+      (GUARDS) and the test files whose bytes differ between the two snapshots, or that only the
+      head holds, within --budget seconds of their rows (default 600; new files first, then the
+      cheapest; the rest are left to the tiers under the lock). Rows come from the head's record.
+      Tier-3 files are listed, not run (they are run deliberately). New files go under tier "9",
+      with a row that only asks for an exit code of 0.
   prelock-verdict SUBSET RUN_DIR OUT_JSON
       That run, judged against its rows: a recorded file as the tier runner judges it (its
       summary.json), and a new file by its exit code and failed and error counts only.
@@ -187,22 +189,32 @@ def test_files(tree):
     return {p.relative_to(tree).as_posix() for p in (Path(tree) / "tests").rglob("test_*.py")}
 
 
-def select(head, base, tiers_rel):
-    """(subset document, report) of the pre-lock test files."""
+def select(head, base, tiers_rel, budget=600.0, new_seconds=30.0):
+    """(subset document, report) of the pre-lock test files.
+
+    The guard set always runs. The changed files run within budget seconds of their rows (a new
+    file counts new_seconds), new files first and then the cheapest; the rest are left to the tiers
+    under the lock. A move that touches most test files then keeps its pre-lock step short."""
     doc = json.loads((Path(head) / tiers_rel).read_text())
     tier_of = {r["file"]: (t, r) for t in doc["tiers"] for r in doc["tiers"][t]}
     head_files, base_files = test_files(head), test_files(base)
     changed = sorted(f for f in head_files if f not in base_files
                      or (Path(head) / f).read_bytes() != (Path(base) / f).read_bytes())
     guards = [g for g in GUARDS if g in head_files]
-    chosen = sorted(set(guards) | set(changed))
+    cost = {f: tier_of[f][1]["seconds"] if f in tier_of else new_seconds for f in changed}
+    spent, within, left = 0.0, [], []
+    runnable = [f for f in changed if f not in guards and tier_of.get(f, ("new",))[0] != "3"]
+    for name in sorted(runnable, key=lambda f: (f in tier_of, cost[f], f)):
+        if spent + cost[name] <= budget:
+            within.append(name)
+            spent += cost[name]
+        else:
+            left.append(name)
     subset = {"1": [], "2": [], NEW_TIER: []}
-    tier3 = []
-    for name in chosen:
+    tier3 = sorted(f for f in changed if tier_of.get(f, ("new",))[0] == "3")
+    for name in sorted(set(guards) | set(within)):
         if name not in tier_of:
             subset[NEW_TIER].append({"file": name, "seconds": 0.0, "exit_code": 0, "counts": {}})
-        elif tier_of[name][0] == "3":
-            tier3.append(name)
         else:
             subset[tier_of[name][0]].append(tier_of[name][1])
     out = {"kind": "cells.test_tiers@1", "fast_seconds": doc.get("fast_seconds"),
@@ -210,7 +222,9 @@ def select(head, base, tiers_rel):
            "note": "the gate's pre-lock subset: the guard set and the head's changed test files"}
     report = {"guards": guards, "guards_absent": [g for g in GUARDS if g not in guards],
               "changed": changed, "new": [r["file"] for r in subset[NEW_TIER]],
-              "tier3_not_run": tier3, "files": sum(len(v) for v in subset.values())}
+              "tier3_not_run": tier3, "budget_seconds": budget,
+              "changed_within_budget_seconds": round(spent, 1), "left_to_tiers": left,
+              "files": sum(len(v) for v in subset.values())}
     return out, report
 
 
@@ -482,6 +496,7 @@ def main(argv=None):
     s.add_argument("base")
     s.add_argument("tiers")
     s.add_argument("out")
+    s.add_argument("--budget", type=float, default=600.0)
     s = sub.add_parser("prelock-verdict")
     s.add_argument("subset")
     s.add_argument("run")
@@ -535,7 +550,7 @@ def main(argv=None):
         print(json.dumps({"ok": doc["ok"], "problems": doc["problems"][:3]}))
         return 0 if doc["ok"] else 1
     if step == "select":
-        subset, report = select(a.head, a.base, a.tiers)
+        subset, report = select(a.head, a.base, a.tiers, a.budget)
         write_json(a.out, subset)
         write_json(Path(a.out).with_name("selection.json"), report)
         print(json.dumps({k: (v if not isinstance(v, list) else len(v))

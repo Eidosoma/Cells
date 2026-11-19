@@ -8,6 +8,7 @@ Host only: no world runs here.
   - a dirty snapshot;
   - a declared file the head lacks.
 - **select** chooses the guard set and the test files whose bytes differ, and nothing else:
+  - changed files beyond the pre-lock budget are left to the tiers;
   - a changed tier-3 file is listed, not run;
   - a guard an older tree lacks is listed and skipped;
   - a new file is judged by its exit code alone, and a recorded file as the tier runner judges it.
@@ -149,6 +150,9 @@ def test_select_chooses_the_guards_and_the_changed_files_only(world):
     assert tier1 == sorted([*steps.GUARDS, "tests/unit/test_other.py"])
     assert [r["file"] for r in subset["tiers"][steps.NEW_TIER]] == ["tests/unit/test_new.py"]
     assert report["tier3_not_run"] == ["tests/unit/test_slow.py"]
+    tight = steps.select(head, world["base"], "tests/test_tiers.json", budget=0.1)[1]
+    assert tight["left_to_tiers"] == ["tests/unit/test_new.py", "tests/unit/test_other.py"]
+    assert tight["files"] == len(steps.GUARDS)  # Over the budget: only the guard set runs early.
     unchanged = steps.select(world["base"], world["base"], "tests/test_tiers.json")[1]
     assert unchanged["changed"] == [] and unchanged["files"] == len(steps.GUARDS)
     (world["base"] / steps.GUARDS[0]).unlink()  # An older tree without a guard: skipped, listed.
