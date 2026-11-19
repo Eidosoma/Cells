@@ -1,4 +1,4 @@
-# The engine's output format for OL2's worlds (`cells.assembly_lineages@2`): milestones 1 and 2
+# The engine's output format for OL2's and OL3's worlds (`cells.assembly_lineages@2`): OL2 milestones 1 and 2, OL3 milestone 1
 
 This page adds to `FORMAT.md` (OL1's, unchanged) what a world that declares a geometry writes:
 milestone 1's geometry, and milestone 2's osmotic lumen and lysis. The physical choices are the
@@ -113,3 +113,51 @@ where a value without a source says so, its provenance beginning "unsourced".
   - `lysis`: null, or its time, σ at the end state, σ_max, the returned counts by pool place, and
     the release's heat and reservoir work.
 - **`lifecycle`** names `lysed`. An OL1 or milestone-1 world's lifecycle is unchanged.
+
+## OL3 milestone 1: single-lineage division (§0.2c rules 9–13, §0.2d items 6, 7, 9 and 10)
+
+Development only: not yet compared against OL5's references, which need the probe roles.
+
+### The world and the experiment
+
+- **The world** declares `division = {law: cells.shear_fission@1, continuation: first | uniform}`,
+  with an optional `critical_stress_Pa = {value, provenance}`. It needs a geometry and an osmotic
+  lumen.
+- **The experiment** declares `schedules = [{index, kind: shear, k, times_s, stress_Pa?}]`. A
+  stress is given exactly when the world declares a critical stress. Declared times only:
+  `poisson_rate_per_s` is refused until the shared pool (OL2 milestone 3).
+- **The run is refused** when JAX's threefry is not partitionable (§0.2d item 9). The environment
+  record comes with milestone 3.
+
+### A shear event
+
+- **The clock:** the occupant's draw that crosses a schedule time is discarded and counted. Its
+  next draw is at the next counter, with its wait measured from the schedule time.
+- **The attempt,** in item 10.2's order:
+  1. the stress test, when declared;
+  2. 36πkV² ≤ A³;
+  3. one block of N + k + N_L uniforms (domain 2, the parent's key, its fission counter);
+  4. rule 9's membrane split, then rule 10's lumen split;
+  5. the floor test.
+- **The daughters** take the lineage counter's next k keys, in daughter order. The followed
+  daughter (`first`, or ⌊u k⌋ with u from domain 3 at counter 0) takes the slot. Its own event
+  stream starts at counter 0, and the others leave for `sink:discard`.
+- **The booking:** w = Σ_j F_v(d_j) − F_v(parent), with F_v the vesicle's own F, its closure cost
+  included. The sink takes the unfollowed daughters' F_v.
+- **A followed daughter beyond σ_max** ends the lineage `lysed` at its birth, booked as a lysis.
+  An unfollowed one leaves as born, with its flag recorded.
+
+### The bundle (division worlds only; every other bundle is unchanged)
+
+- **records.npz** adds:
+  - `shear_work_kT` and `discarded_free_energy_kT` [row], both cumulative;
+  - the fission table, one row per attempt: `fission_time`, `_schedule`, `_k`, `_parent`,
+    `_parent_generation`, `_counter` (−1: no draw), `_outcome`, `_followed`, `_parent_counts`,
+    `_daughters` (keys), `_daughter_counts`, `_lysed_at_birth`, `_shear_work_kT` and
+    `_discarded_kT`.
+- **row_kind** adds `shear` (4), a row after each split.
+- **run.json** adds:
+  - `division`: the operator's declaration, the schedules, the attempts and outcomes;
+  - the `ssa.draw` text of the clock rule.
+- **relations.json and relations.npz** are `cells.relations@2`: @1's tables, with `lysed` as an end
+  reason at a `lysis` event. Each split's event is paid by `source:shear/<index>`.

@@ -40,16 +40,22 @@ from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import (
     MODE,
     balance,
+    division,
     geometry,
     kernel,
     ledger,
     lumen,
     model,
+    streams,
 )
 from cells.models.assembly_lineages_v2.spec import world_id
 
 ROW_KINDS = ("start", "periodic", "end", "observed")
 START, PERIODIC, END, OBSERVED = range(4)
+# OL3: a row after a shear event's fission. Only a world that declares division writes it, and only
+# its record's legend names it, so every other bundle's legend is unchanged.
+DIVISION_ROW_KINDS = (*ROW_KINDS, "shear")
+SHEAR = 4
 _COMPILED = {}
 HELD_TO_HORIZON = ("complete", "inert")
 HOLDS = ("complete", "inert", "extinct")  # The final state holds after the last event.
@@ -74,6 +80,7 @@ class WorldRun:
     final: dict  # The last lane state (host arrays).
     timings: dict = field(default_factory=dict)
     osmotic: dict | None = None  # OL2 milestone 2: c_ext's drift report and any lysis (records)
+    division: dict | None = None  # OL3: the fission table, the lives and the schedule's report
 
     def check(self):
         """Raise if the run was refused (a ledger that did not close)."""
@@ -142,7 +149,7 @@ def changes(layout, structure):
 class _World:
     """One lane's records (host side)."""
 
-    def __init__(self, lane, row_every, observations):
+    def __init__(self, lane, row_every, observations, divides=False):
         self.start = lane
         self.row_every = row_every
         self.rows = []  # (kind, event index, time, fired [2R], Q, |Q|, W, |W|)
@@ -151,12 +158,27 @@ class _World:
         self.channels, self.times, self.draws = [], [], []
         self.observations = list(observations)
         self.booked = (0.0, 0.0, 0.0, 0.0)  # Q, |Q|, W, |W| after the last event taken.
+        # OL3: each row's fission terms, (jump [P], shear work, sink, their magnitude), cumulative;
+        # None for a world without division (its rows are OL2's).
+        self.extras = [] if divides else None
+        self.jump = np.zeros_like(lane["counts"])
+        self.shear = self.sink = self.magnitude = 0.0
+        self.attempts = []  # (division.Attempt, the parent's generation), in order
+        self.counters = {}  # each parent's fission counter: its attempts that drew
+
+    def extra(self):
+        return (self.jump.copy(), self.shear, self.sink, self.magnitude)
+
+    def row(self, *row):
+        self.rows.append(row)
+        if self.extras is not None:
+            self.extras.append(self.extra())
 
     def observe(self, until):
         """Observation rows for every pending time before `until` (the next event's time)."""
         while self.observations and self.observations[0] < until:
             t = self.observations.pop(0)
-            self.rows.append((OBSERVED, self.events, t, self.fired.copy(), *self.booked))
+            self.row(OBSERVED, self.events, t, self.fired.copy(), *self.booked)
 
     def take(self, channel, time, heat, heat_mag, work, work_mag, draws, R):
         """The committed events of one chunk, in order (channel: the kernel's signed code)."""
@@ -167,14 +189,126 @@ class _World:
             self.events += 1
             self.fired[index[k]] += 1
             if self.events % self.row_every == 0:
-                self.rows.append(
-                    (PERIODIC, self.events, time[k], self.fired.copy(), heat[k], heat_mag[k],
-                     work[k], work_mag[k])
-                )  # fmt: skip
+                self.row(PERIODIC, self.events, time[k], self.fired.copy(), heat[k], heat_mag[k],
+                         work[k], work_mag[k])  # fmt: skip
         self.channels.append(channel)
         self.times.append(time)
         if draws is not None:
             self.draws.append(draws)
+
+
+def _plan(spec):
+    """A division world's schedule stops, [(time, [its events, in schedule-index order])], at or
+    before the horizon (§0.2d item 10.1); [] for any other world."""
+    if spec.model.world.division is None:
+        return []
+    out = []
+    for event in division.timeline(spec.experiment.schedules, spec.experiment.time_horizon_s):
+        if out and out[-1][0] == event[0]:
+            out[-1][1].append(event)
+        else:
+            out.append((event[0], [event]))
+    return out
+
+
+def _vesicle_energy(spec, layout):
+    """F_v(counts): the vesicle's own part of F in a [P] state, with its closure cost, as F less F
+    with the vesicle's places emptied (the pool's part cancels; §0.2d item 7)."""
+    world = spec.model.world
+    tables = model.tables(spec)
+    vesicle = np.concatenate(division.vesicle_places(world))
+    capacity = layout.place_held.shape[0]
+    closure = geometry.closure_kT(world)
+
+    def energy(counts):
+        full = np.zeros(capacity, dtype=np.int64)
+        full[: len(counts)] = counts
+        empty = full.copy()
+        empty[vesicle] = 0
+        value = ledger.free_energy(full, tables, world.terms, layout.terms) - ledger.free_energy(
+            empty, tables, world.terms, layout.terms
+        )
+        if not np.isfinite(value):
+            raise AssertionError("A vesicle's own free energy is not finite: a fault")
+        return value + closure
+
+    return energy
+
+
+def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, device):
+    """Apply each due lane's schedule stop on the host (division.py): the draw that crossed the
+    stop is discarded and counted, then the stop's events act in index order on the assembly alive
+    at each one's start. Returns the lanes and the layout with each lane's next stop."""
+    import jax
+
+    host = jax.tree_util.tree_map(np.array, lanes)
+    horizons = np.array(layout.horizon)
+    changed = np.zeros(len(specs), dtype=bool)
+    for i in due:
+        spec, holder = specs[i], holders[i]
+        world = spec.model.world
+        places = len(world.places)
+        stop, events = plans[i].pop(0)
+        holder.observe(stop)  # Observations before the stop see the state before its events.
+        held = int(host.status[i])
+        age = int(host.age[i]) + 1  # The draw that crossed the stop: discarded, and counted.
+        key, generation = int(host.occupant[i]), int(host.generation[i])
+        next_key = int(host.next_carrier[i])
+        counts = host.counts[i].copy()
+        lysed = False
+        for event in events:
+            counter = holder.counters.get(key, 0)
+            attempt = division.attempt(
+                world, counts[:places], key, counter, event, host_layouts[i].base_key,
+                holder.energy, next_key,
+            )  # fmt: skip
+            holder.attempts.append((attempt, generation))
+            if attempt.counter >= 0:
+                holder.counters[key] = counter + 1
+            if attempt.outcome != "split":
+                continue
+            after = counts.copy()
+            after[:places] = attempt.daughters[attempt.followed]
+            holder.jump += after - counts
+            holder.shear += attempt.shear_work
+            holder.sink += attempt.sink
+            holder.magnitude += abs(attempt.shear_work) + abs(attempt.sink)
+            counts = after
+            next_key += attempt.k
+            key, generation, age = attempt.keys[attempt.followed], generation + 1, 0
+            changed[i] = True
+            holder.row(SHEAR, holder.events, stop, holder.fired.copy(), *holder.booked)
+            if attempt.lysed[attempt.followed]:  # §0.2d item 10.3: born beyond sigma_max.
+                lysed = True
+                break
+        if changed[i]:
+            host.counts[i] = counts
+            host.event_stream[i] = np.asarray(
+                streams.stream_key_data(host_layouts[i].base_key, key, "events")
+            )
+        host.occupant[i], host.generation[i], host.next_carrier[i] = key, generation, next_key
+        host.age[i], host.time[i] = age, stop
+        horizons[i] = plans[i][0][0] if plans[i] else spec.experiment.time_horizon_s
+        if lysed:
+            host.status[i] = kernel.LYSED
+        elif stop < spec.experiment.time_horizon_s:
+            host.status[i] = kernel.RUNNING
+        else:
+            host.status[i] = held  # The last stop is the horizon: the state holds to it.
+    if changed.any():  # The new occupants' totals, rates and term states, from their counts.
+        fresh = jax.tree_util.tree_map(np.asarray, initial(host.counts, layout))
+
+        def pick(new, old):
+            return np.where(changed.reshape((-1,) + (1,) * (old.ndim - 1)), new, old)
+
+        host = host._replace(
+            totals=pick(fresh.totals, host.totals),
+            rates=pick(fresh.rates, host.rates),
+            factor_state=jax.tree_util.tree_map(pick, fresh.factor_state, host.factor_state),
+            term_states=jax.tree_util.tree_map(pick, fresh.term_states, host.term_states),
+        )
+    layout = layout._replace(horizon=jax.device_put(horizons, device))
+    return jax.device_put(host, device), layout
 
 
 def run(spec):
@@ -214,7 +348,20 @@ def run_lanes(specs):
     reports = [by_world[world_id(s.model.world)] for s in specs]
     device = execution_device(specs[0].execution.backend)
     host_layouts = [model.layout(s) for s in specs]
-    layout = jax.device_put(_stack(host_layouts), device)
+    plans = [_plan(s) for s in specs]  # OL3: each lane's schedule stops (division.py)
+    if any(s.model.world.division is not None for s in specs) and not (
+        jax.config.jax_threefry_partitionable
+    ):
+        raise ConfigError(
+            "A world with division draws each attempt's uniforms as one block whose size depends "
+            "on the parent, so its replay needs JAX's partitionable threefry: "
+            "jax_threefry_partitionable is off (§0.2d item 9)"
+        )
+    stops = [
+        layout_i._replace(horizon=np.float64(plan[0][0])) if plan else layout_i
+        for layout_i, plan in zip(host_layouts, plans, strict=True)
+    ]
+    layout = jax.device_put(_stack(stops), device)
     founders = jax.device_put(np.stack([model.founder(s) for s in specs]), device)
     L, R = len(specs), structure.steps
     with jax.default_device(device):
@@ -222,14 +369,24 @@ def run_lanes(specs):
         started = perf_counter()
         lanes = initial(founders, layout)
         holders = [
-            _World(_lane(lanes, i), s.experiment.row_every_events, s.experiment.observation_times_s)
+            _World(_lane(lanes, i), s.experiment.row_every_events, s.experiment.observation_times_s,
+                   s.model.world.division is not None)
             for i, s in enumerate(specs)
-        ]
+        ]  # fmt: skip
+        for holder, spec, layout_i in zip(holders, specs, host_layouts, strict=True):
+            if spec.model.world.division is not None:
+                holder.energy = _vesicle_energy(spec, layout_i)
         chunks = 0
         while True:
             status = np.asarray(lanes.status)
             if not (status == kernel.RUNNING).any():
-                break
+                held = (kernel.COMPLETE, kernel.INERT)  # A lane at a schedule stop holds to it.
+                due = [i for i in range(L) if plans[i] and int(status[i]) in held]
+                if not due:
+                    break
+                lanes, layout = _shear(specs, host_layouts, holders, plans, lanes, layout, due,
+                                       initial, device)  # fmt: skip
+                continue
             lanes, out = advance(lanes, layout)
             chunks += 1
             committed = np.asarray(out.committed)
@@ -364,6 +521,13 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     )  # fmt: skip
     fired = np.stack([r[3] for r in rows]).astype(np.int64)
     counts = start["counts"][None, :] + fired @ count_change
+    divides = world.division is not None
+    if divides:  # OL3: each row's fission jump, shear work, sink and their magnitude, cumulative.
+        extras = [(np.zeros_like(holder.jump), 0.0, 0.0, 0.0), *holder.extras, holder.extra()]
+        counts = counts + np.stack([e[0] for e in extras])
+        shear, sink, fission_mag = (
+            np.asarray([e[k] for e in extras], dtype=np.float64) for k in (1, 2, 3)
+        )
     supplied = fired @ supply_change
     if not np.array_equal(counts[-1], final["counts"]) or not np.array_equal(
         supplied[-1], final["supplied"]
@@ -387,8 +551,11 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
             world, layout, tables, counts, supplied, f, heat, heat_mag, work, work_mag,
             float(final["time"]),
         )  # fmt: skip
-    residual = ledger.residual(heat, work, f, f[0])
-    tolerance = ledger.closure_tolerance(heat_mag, work_mag, f, f[0])
+    booked, booked_mag = work, work_mag
+    if divides:  # The shear work is done on the lineage; the sink takes F_v (§0.2d item 7).
+        booked, booked_mag = work + shear - sink, work_mag + fission_mag
+    residual = ledger.residual(heat, booked, f, f[0])
+    tolerance = ledger.closure_tolerance(heat_mag, booked_mag, f, f[0])
     closes = bool(np.all(np.abs(residual) <= tolerance))
     worst = int(np.argmax(np.abs(residual) - tolerance))
     refused = None
@@ -426,6 +593,17 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         row_arrays["membrane_footprint_quanta"] = counts[:, :places] @ geometry.place_quanta(
             world, places
         )
+    division_report = None
+    if divides:
+        row_arrays["shear_work_kT"] = shear
+        row_arrays["discarded_free_energy_kT"] = sink
+        lysis_time = float(final["time"])
+        division_report = {
+            "fissions": division.fission_arrays(holder.attempts, places),
+            "lives": division.lives(
+                holder.attempts, world, status, lysis_time if status == "lysed" else end_time
+            ),
+        }
     osmotic_report = None
     if world.conventions.lumen_volume == "osmotic":  # OL2 milestone 2's rows and report.
         rows_v = [lumen.host_volume_L(world, c[:places]) for c in counts]
@@ -461,4 +639,5 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         final=final,
         timings=timings,
         osmotic=osmotic_report,
+        division=division_report,
     )

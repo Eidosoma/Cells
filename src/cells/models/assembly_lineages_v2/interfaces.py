@@ -31,10 +31,11 @@ from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GEOMETRY_INTERFACE,
     MODEL_ID,
+    OPERATOR_INTERFACE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
 )
-from cells.modules import Law
+from cells.modules import FamilyOperator, Law
 from cells.registry import laws as law_registry
 
 SPLITS = ("encounter",)  # θ⁺ the reactants' encounter, the reverse from F (§2.1's default split).
@@ -176,3 +177,37 @@ class FreeEnergyTerm(Law):
         if not self.phases:
             out.append("it names the phases it reads")
         return out
+
+
+@dataclass(frozen=True)
+class AssemblyOperator(FamilyOperator):
+    """cells.assembly_operator@1: an operator acting on the family's lineages at scheduled events
+    (OL3: shear fission). Its fields are what a run record states of it, as @1's lineage
+    operators' are: what it reads and writes, its energy role, its rules, its streams and its
+    contract in words."""
+
+    reads: str
+    writes: str
+    energy_role: str
+    rules: dict
+    stream: str
+    contract: dict
+
+    interface: ClassVar[str] = OPERATOR_INTERFACE
+
+    def errors(self):
+        out = super().errors()
+        if law_registry.qualified(self.host) != law_registry.qualified(MODEL_ID):
+            out.append(f"an assembly operator is hosted by {MODEL_ID}")
+        for name in ("reads", "writes", "energy_role", "stream"):
+            if not (isinstance(getattr(self, name), str) and getattr(self, name)):
+                out.append(f"its {name} is stated")
+        if not (isinstance(self.rules, dict) and isinstance(self.contract, dict)):
+            out.append("its rules and its contract are mappings")
+        return out
+
+    def record(self):
+        """The declaration as a run record states it, in @1's form (lineage_operators.py)."""
+        from cells.models.assembly_lineages.lineage_operators import LineageOperator
+
+        return LineageOperator.record(self)

@@ -17,7 +17,7 @@ import math
 import numpy as np
 
 from cells.models.assembly_lineages import ledger as v1_ledger
-from cells.models.assembly_lineages_v2 import MODEL_ID, streams
+from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, streams
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.kernel import ENTRIES, Layout, Structure, Tables
 from cells.registry import laws as law_registry
@@ -255,4 +255,5 @@ def components(spec):
         laws.append(world.rate_factor[0])
     if world.geometry is not None:
         laws.append(world.geometry[0])
-    return {"model": MODEL_ID, "laws": laws, "operators": []}
+    operators = [] if world.division is None else [SHEAR_FISSION]  # OL3 (division.py)
+    return {"model": MODEL_ID, "laws": laws, "operators": operators}

@@ -73,6 +73,7 @@ EXPERIMENT_KEYS = {
     "observation_times_s",
     "trace",
     "uniforms",
+    "schedules",
 }
 EXECUTION_KEYS = {
     "backend",
@@ -110,6 +111,7 @@ class Experiment:
     observation_times_s: tuple
     trace: bool
     uniforms: bool
+    schedules: tuple = ()  # OL3: the shear schedules (division.py), by index.
 
 
 @dataclass(frozen=True)
@@ -229,6 +231,12 @@ def parse_world(raw):
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
     _geometry_refusals(world)
     _osmotic_refusals(world)
+    if "division" in raw:  # OL3 milestone 1: shear fission (division.py).
+        from cells.models.assembly_lineages_v2 import division as division_rules
+
+        world = dataclasses.replace(
+            world, division=division_rules.parse_data(raw["division"], world)
+        )
     return world
 
 
@@ -419,6 +427,10 @@ def world_to_dict(world):
     if world.geometry is not None:
         law_id, data = world.geometry
         out["geometry"] = {"law": law_id, **registry.lookup(law_id).data_to_dict(data)}
+    if world.division is not None:
+        from cells.models.assembly_lineages_v2 import division as division_rules
+
+        out["division"] = division_rules.data_to_dict(world.division)
     return out
 
 
@@ -449,8 +461,13 @@ def _observations(raw, horizon):
     return times
 
 
-def parse_experiment(raw):
-    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS, "experiment")
+def parse_experiment(raw, world=None):
+    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS - {"schedules"}, "experiment")
+    schedules = ()
+    if "schedules" in raw:
+        from cells.models.assembly_lineages_v2 import division as division_rules
+
+        schedules = division_rules.parse_schedules(raw["schedules"], world)
     horizon = finite_number(raw["time_horizon_s"], "experiment: time_horizon_s", positive=True)
     return Experiment(
         time_horizon_s=horizon,
@@ -461,6 +478,7 @@ def parse_experiment(raw):
         observation_times_s=_observations(raw["observation_times_s"], horizon),
         trace=_boolean(raw["trace"], "experiment: trace"),
         uniforms=_boolean(raw["uniforms"], "experiment: uniforms"),
+        schedules=schedules,
     )
 
 
@@ -523,7 +541,7 @@ def parse(data):
         raise ConfigError("Only schema_version 1 is supported")
     model = parse_model(raw["model"])
     execution = parse_execution(raw["execution"], model)
-    return SimulationSpec(model, parse_experiment(raw["experiment"]), execution)
+    return SimulationSpec(model, parse_experiment(raw["experiment"], model.world), execution)
 
 
 def to_dict(spec):
@@ -538,6 +556,7 @@ def to_dict(spec):
             "observation_times_s": list(e.observation_times_s),
             "trace": e.trace,
             "uniforms": e.uniforms,
+            **({"schedules": _schedules_to_dict(e.schedules)} if e.schedules else {}),
         },
         "execution": {
             "backend": x.backend,
@@ -556,6 +575,12 @@ def to_dict(spec):
             "unroll": x.unroll,
         },
     }
+
+
+def _schedules_to_dict(schedules):
+    from cells.models.assembly_lineages_v2 import division as division_rules
+
+    return division_rules.schedule_to_dict(schedules)
 
 
 def stream_identity(spec):

@@ -34,12 +34,15 @@ from cells.models.assembly_lineages_v2 import (
     MASS_ACTION,
     MEMBRANE_PERMEATION,
     MODEL_ID,
+    OPERATOR_INTERFACE,
     OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     REGULAR_MIXING,
+    SHEAR_FISSION,
     TRANSITION_STATE,
+    division,
     exchange,
     geometry,
     ideal_mixing,
@@ -75,6 +78,7 @@ HOMES = {
     # OL2 milestone 2.
     OSMOTIC_LUMEN: (lumen, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, None),
 }  # fmt: skip
+OPERATORS = {SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE)}  # OL3
 
 
 def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
@@ -83,7 +87,15 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
     assert row.type == "family" and row.module == "cells.models.assembly_lineages_v2.spec"
     assert row.runner == v2_model.RUNNER
     assert set(row.law_homes) == {home.__name__ for home, *_ in HOMES.values()}
-    assert set(row.interfaces) == {interface for *_, interface, _ in HOMES.values()}
+    assert set(row.interfaces) == {interface for *_, interface, _ in HOMES.values()} | {
+        interface for *_, interface in OPERATORS.values()
+    }
+    assert set(row.operator_homes) == {home.__name__ for home, *_ in OPERATORS.values()}
+    for operator_id, (home, kind, interface) in OPERATORS.items():
+        operator = home.OPERATOR
+        assert isinstance(operator, kind) and operator.errors() == []
+        assert operator.operator_id == operator_id and operator.interface == interface
+        assert interface in law_registry.FAMILY_INTERFACES and operator.host == MODEL_ID
     for law_id, (home, kind, interface, doi) in HOMES.items():
         law = registry.lookup(law_id)
         assert isinstance(law, kind) and law.errors() == [] and law.interface == interface
@@ -110,7 +122,7 @@ def test_the_manifest_lists_each_law_at_its_one_direct_call():
         assert entry["host"] == MODEL_ID and entry["line"] > 0
         assert entry["module_path"] == "src/" + home.__name__.replace(".", "/") + ".py"
     model = next(m for m in doc["models"] if m["id"] == MODEL_ID)
-    assert {r["id"] for r in model["rows"]} == set(HOMES)
+    assert {r["id"] for r in model["rows"]} == set(HOMES) | set(OPERATORS)
     # Planted: a manifest without them is caught by the coverage check.
     planted = dict(doc, pieces=[p for p in doc["pieces"] if p["id"] not in HOMES])
     assert len(declarations.coverage_errors(planted)) == len(HOMES)
