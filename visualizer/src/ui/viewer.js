@@ -698,9 +698,8 @@ class CellsViewer extends HTMLElement {
     // A run left for the landing lets its drawing go; the runs it keeps (ReplayLens.keep) stay for the way back to it.
     for (const lens of this.lenses.values()) lens.rest?.();
     this.writeAddress({ select: null, views: true });
-    // The keyboard comes back to the card it left from.
-    const card = this.openedCard && this.landingView?.box.querySelector(`[data-card="${CSS.escape(this.openedCard)}"] .landing-open`);
-    card?.focus({ preventScroll: true });
+    // The keyboard comes back to the card it left from, its band open first.
+    this.landingView?.returnTo(this.openedCard);
   }
 
   /**
@@ -834,6 +833,7 @@ class CellsViewer extends HTMLElement {
   toggleIndex(force) {
     this.state.indexOpen = force ?? !this.state.indexOpen;
     this.index.hidden = !this.state.indexOpen;
+    this.frame.classList.toggle("has-index", !this.index.hidden); // on a wide window the landing's cards leave it room
     this.indexButton.setAttribute("aria-pressed", String(this.state.indexOpen));
     this.renderIndex();
     if (this.state.indexOpen) this.index.querySelector("input")?.focus({ preventScroll: true });
@@ -876,6 +876,7 @@ class CellsViewer extends HTMLElement {
     if (!this.stage) {
       this.fallback.hidden = onLanding;
       this.index.hidden = onLanding || !this.state.indexOpen;
+      this.frame.classList.toggle("has-index", !this.index.hidden);
     }
     if (back) this.frame.style.setProperty("--back-width", `${Math.ceil(this.backButton.getBoundingClientRect().width)}px`);
     this.viewToggle.hidden = this.viewCard.hidden;

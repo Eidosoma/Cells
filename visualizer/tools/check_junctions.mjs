@@ -93,16 +93,19 @@ else note(`the gap-junction fixture is not on this machine (${GAP_FIXTURE}): its
 // The replication, as the page packages it, in a scene of its own: its list is the page's (the listed experiment and GARD's door).
 const levinRuns = path.join(OUT, `${NAME}-levin`, "runs");
 let levin = false;
+// The part of the gap-junction example that its card on the landing opens, as the page's own overlay names it.
+const OPENS_PART = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "overlay.json"), "utf8")).experiments["gap-junction-linear-network"]?.opens?.part || "gap-junction-tissue-line";
 if (CASE === "levin") {
   mkdirSync(levinRuns, { recursive: true });
   try {
     python("adapt_run.py", ["--evidence", EVIDENCE, "--experiment", "gap-junction-linear-network", "--out", levinRuns]);
     levin = true;
-    // The example's tumour tissue, as the page packages it beside the networks: the tab opens on it (the example's opens.part).
+    // The example's tumour tissue, as the page packages it beside the networks: the part its card opens is the one the
+    // page's own overlay names (the example's opens.part: the sheet since 19 November 2026, the line until then).
     try {
-      python("adapt_run.py", ["--evidence", EVIDENCE, "--experiment", "gap-junction-tissue-line", "--out", levinRuns]);
+      python("adapt_run.py", ["--evidence", EVIDENCE, "--experiment", OPENS_PART, "--out", levinRuns]);
     } catch (error) {
-      note(`the tissue line's runs are not on this machine: the tab opens on the networks (${String(error.message).slice(0, 120)})`);
+      note(`the runs of the part the example opens (${OPENS_PART}) are not on this machine: the card opens the networks (${String(error.message).slice(0, 120)})`);
     }
   } catch (error) {
     note(`the replication's runs are not on this machine (${EVIDENCE}): the case is skipped (${String(error.message).slice(0, 160)})`);
@@ -255,8 +258,8 @@ try {
     const card = await pressCard(ofReplication);
     await until(`Boolean(${V}?.current?.run && ${V}.current.sheet) || Boolean(${V}?.state.part && ${V}.current?.runs?.length)`, 240);
     const opened = await evaluate(`${V}.state.part || null`);
-    const tissue = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8")).experiments.some((item) => item.id === "gap-junction-tissue-line");
-    check(tissue ? "a real press on the landing's card of this experiment shows its tumour tissue, the part its entry names" : "the tissue is not packaged here: the card shows the networks", Boolean(card) && (tissue ? opened === "gap-junction-tissue-line" : !opened), JSON.stringify([card?.id, opened]));
+    const tissue = JSON.parse(readFileSync(path.join(levinRuns, "index.json"), "utf8")).experiments.some((item) => item.id === OPENS_PART);
+    check(tissue ? "a real press on the landing's card of this experiment shows its tumour tissue, the part its entry names" : "the tissue is not packaged here: the card shows the networks", Boolean(card) && (tissue ? opened === OPENS_PART : !opened), JSON.stringify([card?.id, opened, OPENS_PART]));
     if (opened) {
       if (WIDTH < 760 && !(await evaluate(`${V}.state.viewOpen`))) {
         const fold = await placeOf(`root.querySelector(".view-toggle")`);

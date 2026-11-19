@@ -5651,5 +5651,11 @@
    "class": "permissive",
    "accessed": "2026-11-14"
   }
+ },
+ "vault_looked": {
+  "words": "No protein of Syn3A's table carries the major vault protein family's signature (IPR039059) or PARP4's marker (IPR058904), and no reviewed entry of the species names the vault particle.",
+  "sources": [
+   "atlas_table"
+  ]
  }
 }

@@ -194,6 +194,8 @@ def gathered_entry(machine, dossier, entry, source, where=""):
     abundance; UniProt's SUBUNIT sentences; the sub-assemblies the Gene Ontology and UniProt name; the entry the gathering
     picked, with its own title, where its size is not measured from it; another organism's entry where the species has
     none; and what was left out, and why."""
+    if machine.get("vault"):
+        return vault_entry(machine, dossier, source, where)
     columns = machine["proteins"]["columns"]
     rows = [dict(zip(columns, row)) for row in machine["proteins"]["rows"]]
     family = dossier.get("route") == "family"
@@ -219,6 +221,16 @@ def gathered_entry(machine, dossier, entry, source, where=""):
         out["sub_assemblies"] = named
     if machine.get("uniprot_fractions"):
         out["fractions"] = machine["uniprot_fractions"]["groups"]
+    if machine.get("forms"):
+        # The Complex Portal's entries that are forms of the machine (schema/MACHINE_DOSSIERS.md, "Forms"): lines of its panel,
+        # never machines. Each: its identifier and name, its protein members, the parts of the machine it holds and the machine's
+        # parts, its stoichiometry (the portal's, in the dossier's compact form), its evidence code and, where the portal marks
+        # it as taken from another species' entry, that entry and its species.
+        words = dossier.get("forms_evidence") or {}
+        items = machine["forms"]["items"]
+        out["forms"] = {"evidence": {code: words[code] for code in sorted({form["evidence"] for form in items})},
+                        "items": [[form["id"], form["name"], form["proteins"], form["parts_held"], form["of_parts"], form["stoichiometry"], form["evidence"], [[x["id"], x["of"]] for x in form.get("inferred_from") or []]] for form in items],
+                        "source": source("complex_portal")}
     structure = machine.get("structure") or {}
     measured = (entry.get("size") or {}).get("entry")
     if structure.get("entry") and (not measured or measured.split("-assembly")[0] != structure["entry"]):
@@ -235,6 +247,22 @@ def gathered_entry(machine, dossier, entry, source, where=""):
         out["no_structure"] = plain(machine["no_structure"], where)
     if machine.get("left_out"):
         out["left_out"] = [[item["entry"], item.get("title"), plain(item.get("why"), where)] for item in machine["left_out"]]
+    return out
+
+
+def vault_entry(machine, dossier, source, where):
+    """What the vault's dossier adds to its entry (schema/MACHINE_DOSSIERS.md, "The vault"): its proteins with the tier of the
+    footing each stands on, the footings apart, the UniProt lines that name the particle with the evidence each carries, the
+    Complex Portal's entry, the family's signatures, what the Protein Data Bank holds of the species' own, and the preprint's
+    statements, each with its place. The card says each footing in its own words; nothing here calls a candidate a part."""
+    columns = machine["proteins"]["columns"]
+    rows = [dict(zip(columns, row)) for row in machine["proteins"]["rows"]]
+    vault = machine["vault"]
+    preprint = {**vault["preprint"], "source": source(vault["preprint"]["source"])}
+    out = {"proteins": [[row["id"], row.get("gene"), row.get("label"), row["tier"]] for row in rows], "in_atlas": all(row["in_atlas"] for row in rows),
+           "vault": {**vault, "preprint": preprint, "sources": [source(key) for key in machine["named"]["sources"]]}}
+    if machine.get("no_structure") and not machine.get("structure"):
+        out["no_structure"] = plain(machine["no_structure"], where)
     return out
 
 
@@ -310,7 +338,8 @@ def build():
             kind = gathered_kinds.get(machine["kind"])
             if not kind or kind.get("group") not in groups:
                 raise Breach(f"the dossiers' kind {machine['kind']} has no group of the overlay")
-            kinds[machine["kind"]] = {"id": kind["id"], "label": kind["label"], "group": kind["group"], **({"plain": kind["plain"]} if kind.get("plain") else {}), "records": ["fr13"], "from": "gather"}
+            kinds[machine["kind"]] = {"id": kind["id"], "label": kind["label"], "group": kind["group"], **({"plain": kind["plain"]} if kind.get("plain") else {}), "records": ["fr13"], "from": "gather",
+                                      **({"identified_by": kind["identified_by"], "identity": kind["identity"], "absence": kind["absence"]} if kind.get("identified_by") else {})}
     sources = {}
     entries = []
     by_protein = {}
@@ -324,6 +353,12 @@ def build():
         name = f"gathered:{species}:{key}"
         sources[name] = {field: source[field] for field in ("text", "doi", "url", "licence", "class", "standing", "accessed") if field in source}
         return name
+
+    # A species in which the vault was looked for and none of its three footings reached a protein: what was looked for, said
+    # on the kind (the page says it where a visitor names the vault in that species), never as an absence.
+    for species_, dossier_ in sorted(dossiers.items()):
+        if dossier_.get("vault_looked") and "vault" in kinds:
+            kinds["vault"].setdefault("looked", {})[species_] = {"words": dossier_["vault_looked"]["words"], "sources": [gathered_source(species_, key) for key in dossier_["vault_looked"]["sources"]]}
 
     def own_source(key):
         source = (overlay.get("sources") or {}).get(key)

@@ -55,7 +55,14 @@ with a planted error it must catch (D187):
   extra role, a non-string species, an empty role, a form's missing end, a moves-only law's
   missing inside and its missing outside (MOVES_ENDS: its counts land there with the opposite
   sign), a non-string node, a missing count, a string, a bool and an infinite value, and a hook
-  that is not a callable, refused at registration).
+  that is not a callable, refused at registration);
+- a kind's arrays match the axes it declares where the host binds them (D228 item 6): each field
+  with one dimension per declared axis, the host's axes at the host's lengths (axis_sizes), its own
+  and internal axes at one length, and only a dispatch mask empty along them (planted, each
+  refused: dispatch masks that are a list, repeated, not a field, or a scalar; a host field off
+  its axes and two disagreeing on one; a field of the wrong rank, a host axis at another length,
+  an own axis at two lengths, an empty field that is no mask, a mask at a wrong nonzero length,
+  and an internal axis at two lengths).
 """
 
 import math
@@ -63,6 +70,7 @@ import re
 from dataclasses import replace
 from types import MappingProxyType
 
+import numpy as np
 import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
@@ -666,3 +674,70 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
                 kind_registry.kind_role_species(planted_kind, ())
     with pytest.raises(ValueError, match=PLANTED_ID):
         kind_registry.KindRegistry().register(planted(role_species=entities))
+
+
+def test_a_kind_s_arrays_match_the_axes_it_declares_where_the_host_binds_them():
+    """F's array-axes check (D228 item 6): where @3 binds a kind's initial state and layout, each
+    field's array has its declared axes, @3's at @3's lengths, the kind's own at one length, and
+    only a dispatch mask may be empty along them."""
+    kind = present_kind(
+        layout_fields=("booked_host", *MASKS, "booked_rate", "booked_scale"),
+        field_axes={
+            "booked_host": ("booked_route",),
+            **dict.fromkeys(MASKS, ("booked_route",)),
+            "booked_rate": ("species", "booked_route"),
+            "booked_scale": (),
+            "booked_availability": (),
+        },
+        dispatch_masks=("booked_open",),
+    )
+    assert kind_registry.declaration_errors(kind) == [] and planted().dispatch_masks == ()
+    for masks, words in (  # Planted, each refused at registration.
+        (["booked_open"], "a tuple of distinct field names"),
+        (("booked_open", "booked_open"), "a tuple of distinct field names"),
+        (("booked_elsewhere",), "dispatch mask booked_elsewhere: one of its state or layout"),
+        (("booked_availability",), "dispatch mask booked_availability: one of its state or"),
+        (("booked_scale",), "dispatch mask booked_scale: one of its state or layout fields"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            kind_registry.KindRegistry().register(replace(kind, dispatch_masks=masks))
+    host = {"amounts": ("species", "cell_slot"), "heat": ("membrane_slot",)}
+    sizes = kind_registry.axis_sizes(host, {"amounts": np.zeros((3, 2)), "heat": np.zeros(4)})
+    assert sizes == {"species": 3, "cell_slot": 2, "membrane_slot": 4}
+    with pytest.raises(ValueError, match=re.escape("amounts has shape (3,), not its axes")):
+        kind_registry.axis_sizes(host, {"amounts": np.zeros(3)})
+    with pytest.raises(ValueError, match="axis species has lengths 3 and 4"):
+        kind_registry.axis_sizes(
+            {"a": ("species",), "b": ("species",)}, {"a": np.zeros(3), "b": np.zeros(4)}
+        )
+    routes, modes = 5, 2
+    state = {"booked_dissipated_energy_pJ": np.zeros((routes, modes))}
+    layout = {
+        "booked_host": np.zeros(routes, dtype=int),
+        **{mask: np.zeros(routes, dtype=bool) for mask in MASKS},
+        "booked_rate": np.zeros((3, routes)),
+    }
+    kind_registry.refuse_misshapen(kind, "initial values", state, layout, sizes)
+    empty = {**layout, "booked_open": np.zeros(0, dtype=bool)}  # A dispatch mask may be empty.
+    kind_registry.refuse_misshapen(kind, "initial values", state, empty, sizes)
+    for changes, words in (  # Planted, each refused, naming the field.
+        (dict(booked_rate=np.zeros(3)), "booked_rate binds shape (3,), not its declared axes"),
+        (dict(booked_rate=np.zeros((2, routes))), "axis species has length 2, not the host's 3"),
+        (dict(booked_present=np.zeros(4, dtype=bool)), "booked_present's axis booked_route has"),
+        (dict(booked_present=np.zeros(0, dtype=bool)), "booked_present's axis booked_route has"),
+        (dict(booked_open=np.zeros(3, dtype=bool)), "booked_open's axis booked_route has length 3"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            kind_registry.refuse_misshapen(
+                kind, "initial values", state, {**layout, **changes}, sizes
+            )
+    with pytest.raises(
+        ValueError, match=re.escape("booked_mode has length 3")
+    ):  # An internal axis.
+        kind_registry.refuse_misshapen(
+            replace(kind, state_axes=(*kind.state_axes, ("booked_work_pJ", ("booked_mode",)))),
+            "initial values",
+            {**state, "booked_work_pJ": np.zeros(3)},
+            layout,
+            sizes,
+        )

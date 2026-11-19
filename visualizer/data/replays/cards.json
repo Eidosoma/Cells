@@ -42,6 +42,7 @@
      "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
     }
    ],
+   "control": "qualifications and judged runs",
    "cards": [
     "e07-v1",
     "fr1",
@@ -67,6 +68,7 @@
    "id": "development",
    "label": "Development runs",
    "says": "Runs of the engine made while it is built, each with its standing in the record's words.",
+   "control": "development runs",
    "cards": [
     "turnover",
     "secreted-species",
@@ -80,6 +82,7 @@
    "id": "invented",
    "label": "Invented numbers",
    "says": "A test sheet written by the viewer's own tool. No engine ran.",
+   "control": "the test sheet of invented numbers",
    "cards": [
     "test-sheet"
    ]

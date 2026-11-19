@@ -1,7 +1,7 @@
 {
  "format": "cells.visualizer.fetch_budgets@1",
- "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one).",
- "page_bytes": 4700000,
+ "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one); the landing's again on 19 November 2026, its later bands folded as it opens. The page's own bound was raised the same day to a tenth above its measure with the frog added (5,059,135 bytes, from 4,341,031): the frog's side of the Protein atlas stands inside the scene (718,104 bytes more).",
+ "page_bytes": 5566000,
  "addresses": [
   {
    "id": "scope",
@@ -13,19 +13,19 @@
   },
   {
    "id": "experiments",
-   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/.",
+   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes).",
    "query": "lens=experiments",
    "must": ["cards.json", "stills/*"],
    "allowed": ["cards.json", "stills/*"],
-   "bytes": 256000
+   "bytes": 262000
   },
   {
    "id": "tissue",
-   "says": "The tumour tissue's own address (the part its card on the landing opens): the tissue line's runs and the parts it draws. Until 18 November 2026 this was the Experiments tab's opening.",
-   "query": "lens=experiments&part=gap-junction-tissue-line",
-   "must": ["runs/gap-junction-tissue-line--*.json"],
-   "allowed": ["runs/gap-junction-tissue-line--*"],
-   "bytes": 1463000
+   "says": "The tumour tissue's own address (the part its card on the landing opens): since 19 November 2026 the tissue sheet, Cells' own tissue of hexagons, with the line beside it as the record its threshold comes from; the runs of both and the parts they draw. Until then the card opened the line, which fetched less than half as much (and until 18 November 2026 this was the Experiments tab's opening). Its bound was set on 19 November 2026 a tenth above that day's measure (10 files, 2,817,063 bytes).",
+   "query": "lens=experiments&part=gap-junction-tissue-sheet",
+   "must": ["runs/gap-junction-tissue-sheet--*.json"],
+   "allowed": ["runs/gap-junction-tissue-sheet--*", "runs/gap-junction-tissue-line--*"],
+   "bytes": 3100000
   },
   {
    "id": "assembly",

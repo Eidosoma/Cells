@@ -248,6 +248,7 @@ def initial_values(spec, *, structure=None):
     registry = kind_registry.active()
     declarations = dict(spec.model.kinds)
     fields, entries = state._asdict(), layout._asdict()
+    sizes = kind_registry.axis_sizes(STATE_AXES, fields)  # @3's axes, for the kinds' arrays.
     for kind_id, entry in structure.kinds:  # Each bound to its entry's fields (§7.4 (n) 5).
         kind = kind_registry.bound(registry.lookup(kind_id), entry)
         own_state, own_layout = kind.initial(spec, declarations[kind_id], entries)
@@ -257,6 +258,7 @@ def initial_values(spec, *, structure=None):
         kind_registry.refuse_foreign_writes(
             kind, "initial values", own_layout, kind.layout_fields, "layout"
         )
+        kind_registry.refuse_misshapen(kind, "initial values", own_state, own_layout, sizes)
         fields |= own_state
         entries |= own_layout
     floor = "field_current_floor" in entries

@@ -33,6 +33,14 @@ const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b/
 const NO_TERMS = /^(No open licence stated|no licence stated|no open licence|Terms not read\b)/;
 const PERMISSIVE = /^CC BY\b(?!-NC)|^CC0\b|[Nn]o restrictions?\b|places no restriction|[Ii]mposes no restrictions|no use restrictions|^Public domain|BSD 3-Clause|^Bibliographic facts only/;
 const classOf = (licence) => (NON_COMMERCIAL.test(licence) ? "non-commercial" : NO_TERMS.test(licence) ? "no stated terms" : PERMISSIVE.test(licence) ? "permissive" : null);
+// A source of a species' own scan that is not permissive (CDD) stands behind a value only as the species' scan record carries
+// it (`scan_<key>`, with the record's own terms and class): tests/licence_classes.test.mjs holds that record against its
+// register DECIDED, so a second such source fails there.
+function scanCopy(species, key, source) {
+  const record = gather.species[species].atlas?.scan?.record;
+  const held = record && key.startsWith("scan_") ? json(record).sources?.[key.slice("scan_".length)] : null;
+  return Boolean(held && held.licence === source.licence && held.class === source.class);
+}
 
 function atlasIds(species) {
   const atlas = gather.species[species].atlas;
@@ -94,6 +102,7 @@ test("a dossier by family: every candidate is a line of the species' atlas, stan
     const back = new Map();
     for (const machine of dossier.machines) {
       const where = `${species}, ${machine.kind}`;
+      if (machine.kind === "vault") continue; // a kind with an identity of its own: its footings are held by the vault's own test, at the end of this file
       const refMachine = reference.machines.find((item) => item.kind === machine.kind);
       const refParts = new Map(refMachine.proteins.rows.filter((row) => row[3] !== "named").map((row) => [row[0], row[1]]));
       assert.deepEqual(machine.proteins.columns, ["id", "gene", "label", "kind", "families", "stands_for", "same_as", "how"], where);
@@ -123,8 +132,9 @@ test("a dossier by family: every candidate is a line of the species' atlas, stan
       assert.match(machine.named.text, /candidate/, `${where}: a candidate is said to be one`);
       if (!machine.structure) assert.match(machine.no_structure, /^None in hand/, where);
     }
-    assert.deepEqual(Object.keys(dossier.by_protein).sort(), [...back.keys()].sort(), `${species}: by_protein is not the candidates`);
-    for (const [id, items] of back) assert.deepEqual(dossier.by_protein[id], [...items].sort((a, b) => (a.machine < b.machine ? -1 : a.machine > b.machine ? 1 : 0)), `${species}: ${id}`);
+    const byProtein = Object.fromEntries(Object.entries(dossier.by_protein).map(([id, items]) => [id, items.filter((item) => item.machine !== "vault")]).filter(([, items]) => items.length));
+    assert.deepEqual(Object.keys(byProtein).sort(), [...back.keys()].sort(), `${species}: by_protein is not the candidates`);
+    for (const [id, items] of back) assert.deepEqual(byProtein[id], [...items].sort((a, b) => (a.machine < b.machine ? -1 : a.machine > b.machine ? 1 : 0)), `${species}: ${id}`);
   }
 });
 
@@ -133,11 +143,12 @@ test("each dossier joins every protein to the Protein atlas by its id, and gives
     const dossier = dossiers[species];
     assert.equal(dossier.format, "cells.visualizer.machine_dossiers@1");
     assert.equal(dossier.species, species);
-    assert.deepEqual(dossier.machines.map((machine) => machine.kind), gather.species[species].machines.map((machine) => machine.kind));
+    assert.deepEqual(dossier.machines.map((machine) => machine.kind).filter((kind) => kind !== "vault"), gather.species[species].machines.map((machine) => machine.kind));
     const ids = atlasIds(species);
     const partOf = new Map();
     for (const machine of dossier.machines) {
       const where = `${species}, ${machine.kind}`;
+      if (machine.kind === "vault") continue; // its footings and tiers are held by the vault's own test, at the end of this file
       const { columns, rows, counts } = machine.proteins;
       assert.deepEqual(columns, ["id", "gene", "label", "tier", "go", "keyword", "entities", "in_atlas"], where);
       const named = (row) => Object.fromEntries(columns.map((column, index) => [column, row[index]]));
@@ -168,7 +179,8 @@ test("each dossier joins every protein to the Protein atlas by its id, and gives
     }
     // Both ways: by_protein holds exactly the parts, each with its machines, and only proteins the atlas knows or the join lists as missing.
     const back = Object.fromEntries([...partOf].map(([id, items]) => [id, [...items].sort((a, b) => (a.machine < b.machine ? -1 : a.machine > b.machine ? 1 : 0))]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-    assert.deepEqual(dossier.by_protein, back, `${species}: by_protein is not the parts`);
+    const withoutVault = Object.fromEntries(Object.entries(dossier.by_protein).map(([id, items]) => [id, items.filter((item) => item.machine !== "vault")]).filter(([, items]) => items.length));
+    assert.deepEqual(withoutVault, back, `${species}: by_protein is not the parts`);
   }
 });
 
@@ -225,7 +237,7 @@ test("every value rests on a source whose licence and class agree, and that is p
       for (const group of Object.values(machine.uniprot_fractions?.groups || {})) for (const id of group) assert.ok(partIds.has(id), `${species}, ${machine.kind}: fraction ${id}`);
       for (const key of behind) {
         assert.ok(dossier.sources[key], `${species}, ${machine.kind}: ${key} is not a source`);
-        assert.equal(dossier.sources[key].class, "permissive", `${species}, ${machine.kind}: ${key} is ${dossier.sources[key].class}`);
+        assert.ok(dossier.sources[key].class === "permissive" || scanCopy(species, key, dossier.sources[key]), `${species}, ${machine.kind}: ${key} is ${dossier.sources[key].class}`);
       }
       for (const item of machine.per_cell || []) {
         if (item.fact) continue;
@@ -309,4 +321,73 @@ test("an entry of another machine is never a pick, and every pick carries its en
 test("the tool writes the dossiers as they are, from the saved downloads", { skip: !SAVED && "the saved downloads are not on this machine" }, () => {
   const run = spawnSync("python3", ["-I", path.join(ROOT, "tools", "gather_machines.py"), "check", "--datasets", DATASETS], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr || run.stdout);
+});
+
+// Since 19 November 2026: the Complex Portal's forms and the vault's footings, on made-up inputs through the tools' own
+// functions. About 0.3 s (two small Python calls, nothing compiled or run). The reason: the rule of fit and the vault's rules
+// are what the page's words rest on, and a bug in either would only show as a wrong sentence.
+test("a form stands beneath one kind by the rule of fit, and the vault's footings are read per sentence and per protein", () => {
+  const script = [
+    "import sys, json",
+    `sys.path.insert(0, ${JSON.stringify(path.join(ROOT, "tools"))})`,
+    "import gather_machines as G, gather_vault as V",
+    "rule = {'share': 0.8, 'minimum': 2}",
+    "parts = {'P1', 'P2', 'P3', 'P4', 'P5'}",
+    "def entry(i, proteins, others=0, **kw):",
+    "    return {'id': i, 'name': i, 'members': dict(proteins), 'proteins': dict(proteins), 'other_members': others, 'evidence': 'ECO:0000353', 'evidence_name': '', 'inferred_from': [], **kw}",
+    "portal = {'complexes': [",
+    "  entry('CPX-1', {'P1': 1, 'P2': 1, 'P3': 1, 'P4': 1, 'P5': 1}, 2),",       // all parts; two non-protein members are not counted
+    "  entry('CPX-2', {'P1': 1, 'P2': 1, 'Q9': 1}),",                              // 2 of 3 is under 80 per cent: kept out
+    "  entry('CPX-3', {'P1': 1, 'Q8': 1}),",                                       // one part only: kept out
+    "  entry('CPX-4', {'P1': 2, 'P2': 0, 'P3': 0, 'P4': 0}),",                     // a sub-assembly: a form that says how many parts it holds
+    "  entry('CPX-5', {'P1': 1, 'P2': 1}),",                                       // an exception names it
+    "]}",
+    "forms = G.forms_for(portal, parts, {}, rule, {'CPX-5': {'fits': False}})",
+    "lines = V.lines_of({'comments': [{'commentType': 'SUBUNIT', 'texts': [{'value': 'Interacts with major vault protein (By similarity). Component of the vault particle (By similarity). The vault is a cage (PubMed:123, PubMed:456). Vaults may play a role.', 'evidences': [{'evidenceCode': 'ECO:0000250', 'source': 'UniProtKB', 'id': 'Q14764'}]}]}]})",
+    "answer = {'data': {'entries': [",
+    "  {'rcsb_id': '1AAA', 'struct': {'title': 'half'}, 'exptl': [{'method': 'X'}], 'rcsb_entry_info': {'resolution_combined': [3.0]}, 'assemblies': [{'rcsb_assembly_info': {'polymer_entity_instance_count': 1}}], 'polymer_entities': [{'rcsb_entity_source_organism': [{'ncbi_taxonomy_id': 7}], 'rcsb_polymer_entity_align': [{'reference_database_accession': 'M7'}], 'entity_poly': {'pdbx_seq_one_letter_code_can': 'A' * 40}}]},",
+    "  {'rcsb_id': '2BBB', 'struct': {'title': 'whole'}, 'exptl': [{'method': 'X'}], 'rcsb_entry_info': {'resolution_combined': [4.0]}, 'assemblies': [{'rcsb_assembly_info': {'polymer_entity_instance_count': 78}}], 'polymer_entities': [{'rcsb_entity_source_organism': [{'ncbi_taxonomy_id': 7}], 'rcsb_polymer_entity_align': [{'reference_database_accession': 'M7'}], 'entity_poly': {'pdbx_seq_one_letter_code_can': 'A' * 95}}]},",
+    "]}}",
+    "mine = V.own_structure(answer, 7, [{'entry': '2BBB'}], 0.7, 78, {'M7': 100})",
+    "print(json.dumps({'forms': [[f['id'], f['parts_held'], f['of_parts'], f['stoichiometry']] for f in forms], 'lines': [[l['evidence'], l['publications'], l['similar_to']] for l in lines], 'chosen': mine['chosen']['entry'], 'left_out': [[r['entry'], r['why']] for r in mine['left_out']]}))",
+  ].join("\n");
+  const run = spawnSync("python3", ["-I", "-c", script], { encoding: "utf8" });
+  assert.equal(run.status, 0, run.stderr);
+  const out = JSON.parse(run.stdout);
+  assert.deepEqual(out.forms.map((f) => f[0]), ["CPX-1", "CPX-4"], "a form needs 80 per cent of its proteins to be parts, two at least, and no exception to name it");
+  assert.deepEqual(out.forms[1].slice(1, 3), [4, 5]);
+  assert.deepEqual(out.forms[1][3], { most: 2, n_most: 1, except: [], not_given: 3 }, "the portal's 0 is none given");
+  // A sentence that names the vault is read per sentence with its own evidence; one that only names its major protein is not.
+  assert.deepEqual(out.lines, [["by similarity", [], ["Q14764"]], ["cited", ["123", "456"], []], ["unmarked", [], []]]);
+  // A fragment (40 per cent of the protein, one copy) is never the particle; the whole assembly is.
+  assert.equal(out.chosen, "2BBB");
+  assert.equal(out.left_out.length, 1);
+  assert.match(out.left_out[0][1], /holds 40 per cent of the protein's 100 residues; its first assembly holds 1 copy, not the particle's 78/);
+});
+
+test("the vault: three footings apart, the frog's reviewed entry by similarity, the mouse's fragments not the particle, a signature not found no absence", () => {
+  const vault = Object.fromEntries(Object.keys(dossiers).map((species) => [species, dossiers[species].machines.find((m) => m.kind === "vault")]));
+  assert.deepEqual(Object.keys(vault).filter((species) => vault[species]), ["human", "mouse", "planarian"], "the species whose signatures or records reach a protein");
+  const tiers = (species) => Object.fromEntries(vault[species].proteins.rows.map((row) => [row[0], row[3]]));
+  assert.deepEqual(tiers("human"), { Q14764: "part by record", Q99973: "part by record", Q9UKK3: "part by record" });
+  assert.deepEqual(Object.values(tiers("mouse")).sort(), ["named by a reviewed entry, by similarity", "named by a reviewed entry, citing publications", "named by a reviewed entry, citing publications"]);
+  assert.deepEqual(tiers("planarian"), { h1SMcG0002250: "candidate by family" });
+  assert.ok(vault.human.structure && !vault.mouse.structure && !vault.planarian.structure, "only the human's own entry holds the particle");
+  assert.deepEqual(vault.mouse.vault.structure.left_out.map((row) => row.entry), ["3GF5", "3GNF", "3GNG"], "the mouse's fragments of seven repeats are left out, each with why");
+  for (const species of ["ecoli", "fruitfly", "thalecress", "syn3a", "mpneumoniae"]) {
+    assert.ok(!vault[species] && /^(UniProt's list|No protein of)/.test(dossiers[species].vault_looked.words), `${species}: looked for, and not found`);
+    assert.ok(!Object.keys(dossiers[species].by_protein).some((id) => dossiers[species].by_protein[id].some((m) => m.machine === "vault")));
+  }
+  // The frog (a later round) by the same rule: Q6PF69's lines are all by similarity to the human protein.
+  const frog = path.join(DATASETS, "xenopus", "uniprot-vault-entries-e1", "Q6PF69.json");
+  if (existsSync(frog)) {
+    const script = ["import sys, json", `sys.path.insert(0, ${JSON.stringify(path.join(ROOT, "tools"))})`, "import gather_vault as V", `e = V.read_json(${JSON.stringify(frog)})`, "l = V.lines_of(e)", "print(json.dumps([e['entryType'], sorted({x['evidence'] for x in l}), sorted({a for x in l for a in x['similar_to']})]))"].join("\n");
+    const run = spawnSync("python3", ["-I", "-c", script], { encoding: "utf8" });
+    assert.equal(run.status, 0, run.stderr);
+    assert.deepEqual(JSON.parse(run.stdout), ["UniProtKB reviewed (Swiss-Prot)", ["by similarity"], ["Q14764"]]);
+  }
+  // The preprint's numbers are each in its saved page, in the section named.
+  for (const machine of Object.values(vault).filter(Boolean)) {
+    assert.ok(machine.vault.preprint.statements.length === 10 && machine.vault.preprint.licence.startsWith("CC BY 4.0"));
+  }
 });

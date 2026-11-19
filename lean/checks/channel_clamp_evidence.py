@@ -1,4 +1,4 @@
-"""Reproduce the whole-current Kv1.1 and NaV1.2 comparisons in the evidence note.
+"""Reproduce the whole-current Kv1.1, Kv1.4 and NaV1.2 comparisons in the evidence note.
 
 The registered Cells laws supply the gate rates and open fractions. Each clamp
 step is integrated analytically at fixed voltage and concentrations. At each
@@ -11,7 +11,7 @@ import json
 import numpy as np
 from scipy.optimize import brentq, minimize_scalar
 
-from cells.laws.channels import kv1p1_mh2, nav1p2_m3h_regularized
+from cells.laws.channels import kv1p1_mh2, kv1p4_mh, nav1p2_m3h_regularized
 
 
 def kinetics(law, voltage_mV):
@@ -67,6 +67,32 @@ def kv11_decay():
     }
 
 
+def kv14_endpoints():
+    """Current remaining after the Stühmer and Roeper voltage steps from a −80 mV hold."""
+    law = kv1p4_mh.LAW
+    initial, _ = kinetics(law, -80.0)
+    spacing_ms = 0.1
+    pulses = []
+    for step_mV, duration_ms in ((0.0, 3200.0), (40.0, 200.0)):
+        times = np.arange(round(duration_ms / spacing_ms) + 1) * spacing_ms
+        current = law.opening(gate_step(law, step_mV, initial, times), xp=np)
+        peak = np.argmax(current)
+        pulses.append(
+            dict(
+                step_mV=step_mV,
+                duration_ms=duration_ms,
+                peak_time_ms=float(times[peak]),
+                model_end_fraction_of_peak=float(current[-1] / current[peak]),
+            )
+        )
+    return dict(
+        law=law.law_id,
+        equilibrated_hold_mV=-80.0,
+        model_sample_spacing_ms=spacing_ms,
+        pulses=pulses,
+    )
+
+
 def nav12_kinetics():
     """Begemann et al., Figure 2 and Table 2."""
     law = nav1p2_m3h_regularized.LAW
@@ -112,4 +138,10 @@ def nav12_kinetics():
 
 
 if __name__ == "__main__":
-    print(json.dumps({"kv11": kv11_decay(), "nav12": nav12_kinetics()}, indent=2, allow_nan=False))
+    print(
+        json.dumps(
+            {"kv11": kv11_decay(), "kv14": kv14_endpoints(), "nav12": nav12_kinetics()},
+            indent=2,
+            allow_nan=False,
+        )
+    )

@@ -2,6 +2,7 @@
   "law": {
     "cells.atp_driven_transporter_mass_action_positive@1": "src/cells/laws/pumps/atp_transporter.py#L165",
     "cells.ca_atp_mass_action_positive@1": "src/cells/laws/pumps/ca_atp_mass_action_positive.py#L150",
+    "cells.clleak_always_open@1": "src/cells/laws/channels/clleak_always_open.py#L21",
     "cells.constant_field@1": "src/cells/laws/routes/constant_field.py#L13",
     "cells.gard_catalysis_pair_consistent@1": "src/cells/models/assembly_lineages/gard.py#L208",
     "cells.gard_catalysis_single_event@1": "src/cells/models/assembly_lineages/gard.py#L174",
@@ -45,7 +46,7 @@
     "cells.scheduled_cell_replacement@2": "src/cells/operators/cell_replacement_v2.py#L346",
     "cells.scheduled_membrane_insertion@1": "src/cells/operators/membrane_insertion.py#L468",
     "cells.scheduled_membrane_insertion@2": "src/cells/operators/membrane_insertion_v2.py#L263",
-    "cells.scheduled_membrane_trafficking@1": "src/cells/operators/membrane_trafficking.py#L814",
+    "cells.scheduled_membrane_trafficking@1": "src/cells/operators/membrane_trafficking.py#L826",
     "cells.scheduled_species_exchange@1": "src/cells/operators/species_exchange.py#L452",
     "cells.scheduled_species_turnover@1": "src/cells/operators/species_turnover.py#L415",
     "cells.site_occupancy@1": "src/cells/operators/site_occupancy.py#L1177",

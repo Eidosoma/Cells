@@ -233,6 +233,9 @@ export class LabelLayer {
         continue;
       }
       placed.push(box);
+      // A name may keep what it names clear of the names after it (clear: { at, radius }, a point of the scene and a
+      // radius there): the name under the pointer does, so that no other name comes over the marker pointed at.
+      if (label.clear) placed.push(this.clearBox(label.clear));
       if (forced) kept.push(box);
       if (left !== middle) label.element.style.setProperty("--tick", `${Math.round(tick)}px`);
       else if (label.ticked) label.element.style.removeProperty("--tick");
@@ -240,6 +243,14 @@ export class LabelLayer {
       label.element.style.transform = `translate(${left}px, ${top}px)`;
       this.show(label, true);
     }
+  }
+
+  /** The box on the screen that a label keeps clear: around its point `at`, as wide as `radius` is there (6 px at least). */
+  clearBox({ at, radius }) {
+    const centre = this.stage.project(at, at.clone());
+    const edge = this.stage.project(at.clone().setX(at.x + radius), at.clone());
+    const r = Math.max(6, Math.abs(edge.x - centre.x));
+    return { left: centre.x - r, top: centre.y - r, right: centre.x + r, bottom: centre.y + r };
   }
 
   /** Show or hide a label's leader line, matching the label's own emphasis. */
