@@ -7324,3 +7324,33 @@ scales in the main engine visualization tool".
   run.
 - **Visualization:** on multiple scales (embryo, tissue and cell) in the main viewer. The
   visualizer session gets the layers the analysis names.
+
+## D226: The Xenopus lane goes ahead as option B, with a first experiment that can fail
+
+2026-11-19, about 13:10 UTC. The user chose option B of the gap analysis ("1. B"). On whether a
+transport reconstruction with conditional tumour-incidence projections counts as XC1's success:
+"Yes but get adviser also in on this but lets go". The advisor reviewed it.
+- **Option B:** the review's first bundle (XC0, and XC1's local transport: one-cell and two-cell
+  preparations, a small mosaic, the matched three-arm replay) runs beside general features that
+  other users also need:
+  - charged species in the species operators (FR-15, its F2 part, whose first step is the
+    `check_impermeant` diagnosis);
+  - anatomy as data.
+
+  A decision point follows the matched replay. Cell migration and light-driven pumps stay as design
+  notes until then. XC4's regression claim and XC5 wait for a second decision.
+- **The regulation-to-behaviour path** (a regulatory state driving cell-kind rates) is logged with a
+  design note and not started. It belongs to FR-7's family, and the first bundle does not need it.
+- **XC1's success is defined so that it can fail.** Its registration lists every published
+  transport-level number it is scored against, and the outcomes that count as failure, taken from
+  the review's §6. Examples: justified ionic conditions cannot reproduce the electrical response;
+  voltage matches but uptake does not; a mechanism-disruption result is missed. If those numbers are
+  few, the first result is reported as "qualified physics plus conditional projections", not as a
+  replication. The user is told that before the mosaic is built.
+- **Order:** the evidence ledger first. It confirms the matched arms, KRAS in one assay, and the
+  effect sizes, including the 1.3-fold figure, which so far rests on one reading. A parse-only
+  engine probe of the carrier comes before any protocol is registered or law is coded.
+- **Agents and models:** after a safeguard stop on Opus 5.5 in the first gap analysis, the user
+  chose Sonnet. Lane-specific agents run on Sonnet. General laws and operators go to their file
+  owners, briefed as general features (D136). The lane's code-blind references agent is fresh and
+  briefed from the physics alone. Any further safeguard stop is held and put to the user.
