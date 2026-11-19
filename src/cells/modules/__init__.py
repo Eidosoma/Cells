@@ -21,7 +21,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   the kind contract's Kind, KindFields, KindView, KindRates and Schedule, with the roles its
   fields declare, EnergyRole and PartitionRole, the host of an own axis, AxisHost, and an
   entity's binding for §5.2's admission, EntityBinding, with MOVES_END and MOVES_ENDS, a
-  moves-only law's inside and its two ends (registry/kind_registry.py);
+  moves-only law's inside and its two ends, and a reaction-level standard free energy,
+  FreeEnergyEntry (registry/kind_registry.py);
 - the law readers a kind uses: hosted_laws(interface, host), and cycle_changes(law), a cycle law's
   declared change rows, with the interfaces' IDs CHANNEL_LAW, CYCLE_LAW, ROUTE_LAW, BINDING_LAW and
   JUNCTION_LAW (registry/laws.py);
@@ -83,6 +84,7 @@ HOMES = MappingProxyType(
             "EntityBinding",
             "MOVES_END",
             "MOVES_ENDS",
+            "FreeEnergyEntry",
             "parse_series",
             "series_to_dict",
             "qualified",
@@ -139,6 +141,7 @@ __all__ = (
     "EntityBinding",
     "MOVES_END",
     "MOVES_ENDS",
+    "FreeEnergyEntry",
     # The law readers a kind uses.
     "hosted_laws",
     "cycle_changes",
