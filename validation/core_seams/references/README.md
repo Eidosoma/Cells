@@ -507,6 +507,9 @@ s, cycles 0.67 s, registration 0.92 s. The record is
 After amendments C1–C3, the changed and new files were re-measured at 56dedfba the same way:
 binding 2.52 s (10 passed), envelope 1.42 s (5), registration 1.07 s (4). The record is
 `/mnt/workspaces/Cells/core-seams-references-c-20261118/gate-56dedfba/tiers/measure/measured.json`.
+After amendments F4, C4 and A2, they were re-measured at 6abadf3b: binding 3.43 s (11 passed),
+cycles 1.07 s (16), registration 1.12 s (4); envelope is unchanged. The record is
+`/mnt/workspaces/Cells/core-seams-references-f4-20261118/gate-6abadf3b/tiers/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
