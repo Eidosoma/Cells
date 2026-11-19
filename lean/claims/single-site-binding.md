@@ -32,7 +32,7 @@ Proof sources [Langmuir kinetic derivation, adapted from Lean 3](https://github.
 
 ## Biological evidence
 
-**Open.** Equilibrium bound fraction measured across a free ligand titration for an identified single-site binder at specified temperature and solution conditions.
+**Open.** Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions. Human myoglobin oxygenation at 10 °C supplies occupancy versus pressure. A retrospective two-point fit predicted three other figure readings with an occupancy RMSE of 0.0422. Pointwise experimental uncertainty remains open. [Primary study](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Figure digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)
 
 **Unit** fraction of sites occupied
 

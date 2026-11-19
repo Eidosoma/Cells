@@ -33,6 +33,24 @@
       "driver": "lean/checks/closed_enzyme.py",
       "record": "lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions"
     },
+    "membrane-insertion": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["scheduled_membrane_insertion@1", "scheduled_membrane_insertion@2", "membrane_entity_state@1"],
+      "engine_revision": "06e25525a39f3a2995bd5aa26a7e38bd67b211c3",
+      "record_revision": "6c495445518af429c1c163a374a3a25abef4c062",
+      "sources": {
+        "Fixed-charge field, heat and image charge": "src/cells/models/pump_composite_adapter.py#L959",
+        "Version 1 heat sign check": "src/cells/operators/membrane_insertion.py#L424",
+        "Version 2 heat sign check": "src/cells/operators/membrane_insertion_v2.py#L244",
+        "One-patch fixture": "tests/membrane_insertion_fixtures.py#L28",
+        "One-patch reference and tolerance": "tests/unit/test_membrane_insertion.py#L144",
+        "Two-version comparison": "tests/unit/test_membrane_insertion_v2.py#L203"
+      },
+      "driver": "lean/checks/membrane_insertion.py",
+      "record": "lean/PROGRESS.md#19-november-2026--membrane-insertion-heat"
+    },
     "regional-chain": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
@@ -265,7 +283,7 @@
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
-      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all measured species at a closed site.", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site. Five PGI time courses measured soluble G6P and F6P. Resolving the inventory needs shared calibration uncertainty, sample volume and coverage of unobserved pools. [Eicher et al., Fig. 5 and supplement](https://www.mdpi.com/2218-1989/2/4/818)", "unit": "fmol", "evidence": []}
     },
     {
       "id": "enzyme-inventories",
@@ -294,7 +312,24 @@
         "Bobbin et al., Digital Discovery": "https://doi.org/10.1039/D3DD00077J"
       }},
       "numerical": {"status": "checked", "comparisons": ["single-site-binding"], "result": "Across thirteen manufactured S1 states, the largest absolute occupancy difference from the independent reference was 3.33 × 10⁻¹⁶. Using total ligand in the same formula failed all thirteen. The first state also passed through the tissue’s stage read."},
-      "biology": {"status": "open", "observable": "Equilibrium bound fraction measured across a free ligand titration for an identified single-site binder at specified temperature and solution conditions.", "unit": "fraction of sites occupied", "evidence": []}
+      "biology": {"status": "open", "observable": "Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions. Human myoglobin oxygenation at 10 °C supplies occupancy versus pressure. A retrospective two-point fit predicted three other figure readings with an occupancy RMSE of 0.0422. Pointwise experimental uncertainty remains open. [Primary study](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Figure digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)", "unit": "fraction of sites occupied", "evidence": []}
+    },
+    {
+      "id": "membrane-insertion-heat",
+      "title": "Uncharged membrane insertion dissipates nonnegative capacitor heat",
+      "statement": "The exact network heat in pJ is (10¹²/2) times the sum of C(ΔV)² + ΔC(V + ΔV)² over patches and every allocated patch share is nonnegative. For a single patch against a held bath, the heat is (10¹²/2) C V² ΔC/(C + ΔC) and the bath supplies zero image charge during insertion.",
+      "assumptions": ["Inserted membrane arrives uncharged. Each free node keeps its charge and each held node keeps its potential. The network is finite and the voltage changes obey its capacitor equations.", "C and ΔC are nonnegative, expressed in F, with positive starting C in the one-patch formula. V and ΔV are in volts. The proof uses real arithmetic."],
+      "formal": {"status": "proved", "about": ["cells.scheduled_membrane_insertion@1", "cells.scheduled_membrane_insertion@2"], "theorems": {
+        "CellsProofs.Tissue.MembraneInsertion.node_patch_work": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.fixed_node_balance": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.heat_eq_squares": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.heat_nonneg": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.share_nonneg": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.one_patch_heat": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero": "lean/CellsProofs/Tissue/MembraneInsertion.lean"
+      }},
+      "numerical": {"status": "failed", "comparisons": ["membrane-insertion"], "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish."},
+      "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for. Neher and Marty measured capacitance steps in secreting chromaffin cells. The heat balance would require independent electrical work and energy measurements. [Neher and Marty (1982)](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
     },
     {
       "id": "regional-reaction-transport",
