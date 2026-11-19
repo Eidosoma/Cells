@@ -443,10 +443,14 @@ export function doorsFor(entity, scene, { species = null } = {}) {
   const catalogue = catalogueOf(scene);
   if (!catalogue || !entity?.id || !species) return [];
   const open = (id) => [{ label: "Show it in the Machines catalogue", lens: "machines", value: id }];
-  // Its machines are on its species' bench, read when first wanted; the page draws the panel again when it is in.
-  if (!catalogue.benchState(species)) catalogue.loadBench(species);
   // A protein of the species' own in the Protein atlas: the machines its dossier makes it a part of, or names it with.
   const own = /^own:([^:]+):p(?:@[^:]*)?:(.+)$/.exec(entity.id);
+  const kind = own ? null : [...catalogue.kinds.values()].find((value) => value.cell_part === entity.id);
+  // A part none of the doors below can open (a run of the Experiments view, a cell of a run) reads no bench: an address fetches
+  // what it draws (until 18 November 2026 a run chosen by the address fetched the species' bench too).
+  if (!own && !kind && !(entity.kind === "unit" && entity.group === "proteins") && !(entity.id.startsWith(PREFIX) && !entity.id.slice(PREFIX.length).includes(":"))) return [];
+  // Its machines are on its species' bench, read when first wanted; the page draws the panel again when it is in.
+  if (!catalogue.benchState(species)) catalogue.loadBench(species);
   if (own) {
     if (!catalogue.benchState(own[1])) catalogue.loadBench(own[1]);
     return catalogue.machinesOf(own[1], own[2]).flatMap(([kind, tier]) => {
@@ -457,7 +461,6 @@ export function doorsFor(entity, scene, { species = null } = {}) {
   }
   if (entity.kind === "unit" && entity.group === "proteins") return catalogue.item(species, entity.id) ? open(entity.id) : [];
   if (entity.id.startsWith(PREFIX) && !entity.id.slice(PREFIX.length).includes(":")) return catalogue.item(species, entity.id) ? open(entity.id) : [];
-  const kind = [...catalogue.kinds.values()].find((value) => value.cell_part === entity.id);
   return kind && catalogue.item(species, `${PREFIX}${kind.id}`) ? open(`${PREFIX}${kind.id}`) : [];
 }
 

@@ -1268,7 +1268,7 @@
     "cells.proton_constant_field_leak@1"
    ],
    "ledgers": null,
-   "line": 686,
+   "line": 663,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
@@ -1703,11 +1703,14 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
+    "charge_bound": null,
     "fuel_kinds": [
      "maintained_held_rows@1",
      "finite_fuel_rows@1"
     ],
     "loop_term": null,
+    "material_bound": null,
+    "material_term": null,
     "moves": [
      [
       "role",
@@ -1782,10 +1785,13 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
+    "charge_bound": null,
     "fuel_kinds": [
      "maintained_chemical_reservoirs@1"
     ],
     "loop_term": null,
+    "material_bound": null,
+    "material_term": null,
     "moves": [
      [
       "calcium",
@@ -1799,25 +1805,25 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.laws.pumps.calcium_atpase.domain_valid",
-     "line": 99,
-     "module_path": "src/cells/laws/pumps/calcium_atpase.py"
+     "function": "cells.laws.pumps.ca_atp_mass_action_positive.domain_valid",
+     "line": 108,
+     "module_path": "src/cells/laws/pumps/ca_atp_mass_action_positive.py"
     },
     "kinetics": {
-     "function": "cells.laws.pumps.calcium_atpase.kinetics",
-     "line": 79,
-     "module_path": "src/cells/laws/pumps/calcium_atpase.py"
+     "function": "cells.laws.pumps.ca_atp_mass_action_positive.kinetics",
+     "line": 88,
+     "module_path": "src/cells/laws/pumps/ca_atp_mass_action_positive.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 157,
+   "line": 150,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.pumps.ca_atp_mass_action_positive",
+   "module_path": "src/cells/laws/pumps/ca_atp_mass_action_positive.py",
    "name": "ca_atp_mass_action_positive",
    "namespace": "cells",
    "owns": null,
@@ -1849,11 +1855,15 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
-    "basis": "the Goldman-Hodgkin-Katz constant-field flux of each permeant species (coupling/selective.selective_flux)",
+    "basis": "the Goldman-Hodgkin-Katz constant-field flux of each permeant species (laws/junctions/selective.selective_flux)",
+    "charge_bound": null,
     "hosts": [
      "membrane",
      "junction"
-    ]
+    ],
+    "material_bound": null,
+    "material_term": null,
+    "stage_term": null
    },
    "host": "cells.resolved_pump_tissue@3",
    "id": "cells.constant_field@1",
@@ -1861,13 +1871,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 176,
+   "line": 13,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.routes.constant_field",
+   "module_path": "src/cells/laws/routes/constant_field.py",
    "name": "constant_field",
    "namespace": "cells",
    "owns": null,
@@ -2207,30 +2217,30 @@
    "interface": "cells.junction_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.laws.junctions.junction_gate.domain_valid",
-     "line": 73,
-     "module_path": "src/cells/laws/junctions/junction_gate.py"
+     "function": "cells.laws.junctions.junction_voltage_relaxation.domain_valid",
+     "line": 77,
+     "module_path": "src/cells/laws/junctions/junction_voltage_relaxation.py"
     },
     "kinetics": {
-     "function": "cells.laws.junctions.junction_gate.kinetics",
-     "line": 37,
-     "module_path": "src/cells/laws/junctions/junction_gate.py"
+     "function": "cells.laws.junctions.junction_voltage_relaxation.kinetics",
+     "line": 41,
+     "module_path": "src/cells/laws/junctions/junction_voltage_relaxation.py"
     },
     "rhs": {
-     "function": "cells.laws.junctions.junction_gate.rhs",
-     "line": 50,
-     "module_path": "src/cells/laws/junctions/junction_gate.py"
+     "function": "cells.laws.junctions.junction_voltage_relaxation.rhs",
+     "line": 54,
+     "module_path": "src/cells/laws/junctions/junction_voltage_relaxation.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 129,
+   "line": 100,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.junctions.junction_voltage_relaxation",
+   "module_path": "src/cells/laws/junctions/junction_voltage_relaxation.py",
    "name": "junction_voltage_relaxation",
    "namespace": "cells",
    "owns": null,
@@ -2293,25 +2303,25 @@
    "interface": "cells.channel_law@1",
    "kernels": {
     "kinetics": {
-     "function": "cells.models.inner_laws._kir2p1_kinetics",
-     "line": 75,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.kir2p1_mh2.kir2p1_kinetics",
+     "line": 22,
+     "module_path": "src/cells/laws/channels/kir2p1_mh2.py"
     },
     "opening": {
-     "function": "cells.models.inner_laws._open_mh2",
-     "line": 62,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.kir2p1_mh2.opening",
+     "line": 41,
+     "module_path": "src/cells/laws/channels/kir2p1_mh2.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 99,
+   "line": 47,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.channels.kir2p1_mh2",
+   "module_path": "src/cells/laws/channels/kir2p1_mh2.py",
    "name": "kir2p1_mh2",
    "namespace": "cells",
    "owns": null,
@@ -2375,13 +2385,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 121,
+   "line": 13,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.channels.kleak_always_open",
+   "module_path": "src/cells/laws/channels/kleak_always_open.py",
    "name": "kleak_always_open",
    "namespace": "cells",
    "owns": null,
@@ -2445,25 +2455,25 @@
    "interface": "cells.channel_law@1",
    "kernels": {
     "kinetics": {
-     "function": "cells.models.inner_laws._kv1p5_kinetics",
-     "line": 71,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.kv1p5_mh.kinetics",
+     "line": 25,
+     "module_path": "src/cells/laws/channels/kv1p5_mh.py"
     },
     "opening": {
-     "function": "cells.models.inner_laws._open_mh",
-     "line": 58,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.kv1p5_mh.opening",
+     "line": 42,
+     "module_path": "src/cells/laws/channels/kv1p5_mh.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 88,
+   "line": 47,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.channels.kv1p5_mh",
+   "module_path": "src/cells/laws/channels/kv1p5_mh.py",
    "name": "kv1p5_mh",
    "namespace": "cells",
    "owns": null,
@@ -2497,9 +2507,13 @@
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
     "basis": "Cells' own discrete electrodiffusion between two well-mixed outside nodes: the Nernst-Planck flux at the species' logarithmic-mean concentration (docs/SPATIAL_EXTRACELLULAR_SPEC.md: a design, not a reproduction of a paper)",
+    "charge_bound": null,
     "hosts": [
      "face"
-    ]
+    ],
+    "material_bound": null,
+    "material_term": null,
+    "stage_term": null
    },
    "host": "cells.resolved_pump_tissue@3",
    "id": "cells.logmean_electrodiffusion@1",
@@ -2507,13 +2521,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 185,
+   "line": 14,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.routes.logmean_electrodiffusion",
+   "module_path": "src/cells/laws/routes/logmean_electrodiffusion.py",
    "name": "logmean_electrodiffusion",
    "namespace": "cells",
    "owns": null,
@@ -2552,10 +2566,13 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
+    "charge_bound": null,
     "fuel_kinds": [
      "maintained_chemical_reservoirs@1"
     ],
     "loop_term": null,
+    "material_bound": null,
+    "material_term": null,
     "moves": [
      [
       "sodium",
@@ -2573,25 +2590,25 @@
    "interface": "cells.cycle_law@1",
    "kernels": {
     "domain_valid": {
-     "function": "cells.laws.pumps.kinetic_pump.domain_valid",
-     "line": 95,
-     "module_path": "src/cells/laws/pumps/kinetic_pump.py"
+     "function": "cells.laws.pumps.nak_atp_mass_action_positive.domain_valid",
+     "line": 101,
+     "module_path": "src/cells/laws/pumps/nak_atp_mass_action_positive.py"
     },
     "kinetics": {
-     "function": "cells.laws.pumps.kinetic_pump.kinetics",
-     "line": 57,
-     "module_path": "src/cells/laws/pumps/kinetic_pump.py"
+     "function": "cells.laws.pumps.nak_atp_mass_action_positive.kinetics",
+     "line": 63,
+     "module_path": "src/cells/laws/pumps/nak_atp_mass_action_positive.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 144,
+   "line": 153,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.pumps.nak_atp_mass_action_positive",
+   "module_path": "src/cells/laws/pumps/nak_atp_mass_action_positive.py",
    "name": "nak_atp_mass_action_positive",
    "namespace": "cells",
    "owns": null,
@@ -2654,13 +2671,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 122,
+   "line": 13,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.channels.naleak_always_open",
+   "module_path": "src/cells/laws/channels/naleak_always_open.py",
    "name": "naleak_always_open",
    "namespace": "cells",
    "owns": null,
@@ -2724,25 +2741,25 @@
    "interface": "cells.channel_law@1",
    "kernels": {
     "kinetics": {
-     "function": "cells.models.inner_laws._nav1p2_kinetics",
-     "line": 79,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.nav1p2_m3h_regularized.nav1p2_kinetics",
+     "line": 22,
+     "module_path": "src/cells/laws/channels/nav1p2_m3h_regularized.py"
     },
     "opening": {
-     "function": "cells.models.inner_laws._open_m3h",
-     "line": 67,
-     "module_path": "src/cells/models/inner_laws.py"
+     "function": "cells.laws.channels.nav1p2_m3h_regularized.opening",
+     "line": 42,
+     "module_path": "src/cells/laws/channels/nav1p2_m3h_regularized.py"
     }
    },
    "laws": null,
    "ledgers": null,
-   "line": 110,
+   "line": 47,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.models.inner_laws",
-   "module_path": "src/cells/models/inner_laws.py",
+   "module": "cells.laws.channels.nav1p2_m3h_regularized",
+   "module_path": "src/cells/laws/channels/nav1p2_m3h_regularized.py",
    "name": "nav1p2_m3h_regularized",
    "namespace": "cells",
    "owns": null,
@@ -2776,10 +2793,14 @@
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
     "basis": "Fick's law: the constant-field flux at valence 0 (laws/routes/passive_permeation.py), with the exact booking of docs/INNER_MODEL_V4_DESIGN.md §7.5",
+    "charge_bound": null,
     "hosts": [
      "membrane",
      "junction"
-    ]
+    ],
+    "material_bound": "bound_rate_per_s",
+    "material_term": null,
+    "stage_term": null
    },
    "host": "cells.passive_routes@1",
    "id": "cells.passive_neutral_permeation@1",
@@ -2787,13 +2808,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 86,
+   "line": 97,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.kinds.passive_routes",
-   "module_path": "src/cells/kinds/passive_routes.py",
+   "module": "cells.laws.routes.passive_permeation",
+   "module_path": "src/cells/laws/routes/passive_permeation.py",
    "name": "passive_neutral_permeation",
    "namespace": "cells",
    "owns": null,
@@ -2803,7 +2824,7 @@
      "departures": [],
      "licence": "no numbers taken: the law is a form, its permeability a definition's value",
      "place": "docs/INNER_MODEL_V4_DESIGN.md §11",
-     "source": "Fick's law of diffusion (A. Fick, 1855; standard theory)",
+     "source": "Fick's law of diffusion (A. Fick, 1855, named from memory and not read; standard theory)",
      "works": []
     },
     "source": null,
@@ -2834,10 +2855,13 @@
    "energy": null,
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
+    "charge_bound": null,
     "fuel_kinds": [
      "maintained_held_rows@1"
     ],
     "loop_term": "loop_rates_per_s",
+    "material_bound": null,
+    "material_term": null,
     "moves": [
      [
       "proton",
@@ -2915,9 +2939,13 @@
    "family": "cells.resolved_pump_tissue@3",
    "fields": {
     "basis": "the Goldman-Hodgkin-Katz constant-field flux at valence +1 of free h, read through each node's closure (laws/transport/proton_leak.py)",
+    "charge_bound": null,
     "hosts": [
      "membrane"
-    ]
+    ],
+    "material_bound": null,
+    "material_term": null,
+    "stage_term": "conductance_S"
    },
    "host": "cells.passive_routes@1",
    "id": "cells.proton_constant_field_leak@1",
@@ -2925,13 +2953,13 @@
    "kernels": {},
    "laws": null,
    "ledgers": null,
-   "line": 101,
+   "line": 52,
    "models": [
     "cells.resolved_pump_composite@1",
     "cells.resolved_pump_tissue@3"
    ],
-   "module": "cells.kinds.passive_routes",
-   "module_path": "src/cells/kinds/passive_routes.py",
+   "module": "cells.laws.transport.proton_leak",
+   "module_path": "src/cells/laws/transport/proton_leak.py",
    "name": "proton_constant_field_leak",
    "namespace": "cells",
    "owns": null,
@@ -2943,7 +2971,7 @@
      ],
      "licence": "no numbers taken: the law is a form, its permeability a definition's value",
      "place": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §7.1",
-     "source": "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and B. Katz, 1949; standard theory)",
+     "source": "the Goldman-Hodgkin-Katz constant-field flux (D. E. Goldman, 1943; A. L. Hodgkin and B. Katz, 1949; named from memory and not read; standard theory)",
      "works": []
     },
     "source": null,
@@ -6077,5 +6105,5 @@
    "writes": {}
   }
  ],
- "revision": "b5d3faf064444db7dbc9321ec0f7e77c9ccc9ee2"
+ "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
 }
