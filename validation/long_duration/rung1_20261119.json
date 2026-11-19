@@ -423,6 +423,46 @@
     "cannot_run": "a definition refusal at that step, or the plant time (1 s) off the step's grid",
     "risk": "FR-3's site-occupancy world (declared 1 ms; plant at 1 s; work x (1 + 1e-6)) may not run at coarse slow-phase steps; a plant in rung 1's own worlds is a question for X2's owner and the lead"
    }
+  },
+  {
+   "entry": "10.2",
+   "entry_utc": "2026-11-19T20:58Z",
+   "title": "the lead's two edits to section 10.1, before any run",
+   "location_rule_consequence": {
+    "today_at_1ms": "within the parity caps and the event criteria through the switch on stage 0's and rung 0's evidence: voltage 2.97 uV against R3 (stage 0) and 3.3 uV against rung 0's finest WA arm over WA's whole span, beside 20 uV; concentration 1.4e-7 relative against the same arm, beside 2e-4; peak within 9.8e-6 relative of R3's and crossing within 2.1 us of R3's (stage 0's judge); X2 judges and does not step, and FR-18's replay admitted H2 at 1 ms over 3600 s",
+    "cap": "no ID can claim a dt* above 1 ms on H2's (I)",
+    "gain": "at most 1 by construction, not by measurement, once rung 1's own reading confirms today's ID at 1 ms; otherwise reported as it falls",
+    "follows": "FR-8's acceptance of an intervention with a threshold event needs fine steps through the event: rung 2's fine windows",
+    "event_information": [
+     "the trajectory-only dt*",
+     "each coarse arm's own crossing, with its rows' spacing"
+    ],
+    "prediction": "the gain of about 1 on H2's (I) now rests on the rule, not on NaV resolution; NaV's part is seen only in the trajectory-only dt* (information)",
+    "binds": "the rung above 1 ms fails by the location rule if it completes; a refusal that ends it first is what binds (section 4), so the trigger can still fire",
+    "W0": "not capped: its events are information, so its (I) is read on the trajectory and its gain remains a measurement"
+   },
+   "histories": {
+    "status": "carried as a reported reading, information only (replaces section 10.1's 'not carried')",
+    "fields": "every accumulator of the state: membrane and channel transfers, pump cycles, reservoir supply, electrode charge, every dissipated-energy and work field",
+    "beside": {
+     "relative": 2e-05,
+     "floors": {
+      "amount_fmol": 1e-10,
+      "energy_pJ": 2e-08,
+      "charge_C": 3e-25
+     },
+     "source": "stage 0's section 5.3",
+     "and": "the reference's own bound (section 3)"
+    },
+    "judges": "nothing",
+    "where": "every arm; full runs from t = 0 against R3's or W0's reference; re-based windows as increments from the window's start (the arm's accumulator against the reference's less its value at that start)"
+   },
+   "plant_direction": {
+    "rule": "the plant guarding a claim sits in the world whose claim it guards",
+    "plants": "X2 plants inside H2 and W0, each at a time on every rung's grid, asked of the @3 owner and registered in that owner's dated section 10 entry before any new-ID run",
+    "from_then": "section 10.1's I3-at-the-largest-step rule applies to each world's plant for that world's claims",
+    "FR3_plant": "a cross-check, run as in section 10.1 and reported; it no longer caps claims"
+   }
   }
  ]
 }
