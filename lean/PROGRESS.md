@@ -1,5 +1,30 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Voltage-gated junction conductance
+
+At a fixed junction voltage the law has one equilibrium conductance and one relaxation time. Lean proves that increasing voltage magnitude lowers the equilibrium when the residual fraction is below one. Starting anywhere in the allowed interval preserves its bounds. Reversing voltage polarity preserves the clamped trajectory, and splitting a constant-voltage interval preserves its final conductance. For three equally spaced samples of the deviation from equilibrium, the middle sample squared equals the product of its neighbors. Two exponential decays with positive amplitudes and distinct rates give a strict inequality instead. [Proof](CellsProofs/Transport/JunctionGate.lean) · [Rate equation and clamp update](../src/cells/laws/junctions/junction_voltage_relaxation.py#L41)
+
+The compiled clamp update matched the reference at 45 voltage–time combinations. In a separate 62.5 ms run of `resolved_pump_tissue@3`, three cell pairs carried only a neutral tracer so their voltage differences stayed fixed at −80, 0 and +80 mV. External availability was zero for 31.25 ms. Tracer flux remained zero during the block while the intrinsic gates moved from 0.9 to **0.528734, 0.908373 and 0.528734**. On release the flux immediately reflected those three values. Both cell inventories and the junction transfers matched the integrated neutral-tracer solution. The reference evaluates the two voltage rates with 65-digit decimal arithmetic. The driver took 23.99 s on four CPU cores. Nineteen existing rate, clamp and host tests passed. [Driver and input world](checks/junction_gate.py) · [Scalar reference](../validation/betse/junction_gate/reference.py#L9) · [Clamp protocol](../validation/betse/junction_gate/protocol.json) · [Transport availability](../src/cells/models/surface_pump_v3.py#L733) · [Intrinsic gate derivative](../src/cells/models/surface_pump_v3.py#L779)
+
+In seven wild-type Cx43 cell pairs, voltage-clamp fits gave residual normalized conductances of **0.35 ± 0.01** on the positive branch and **0.33 ± 0.01** on the negative branch (SEM). At −100 mV the same preparation showed a fast **70 ± 5 ms** decay and a slow **931 ± 54 ms** decay. The Cells reference parameters give **one 50.001 ms** time constant at that voltage. The two measured components limit the model's use for the full Cx43 trace. The voltage series leaves exact transient polarity symmetry and the external availability factor open. [Evidence note and normalization](claims/incoming/junction-gate-evidence.md) · [Sahu and Bera, Table 2 and Figure S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/)
+
+```json
+{
+  "engine_revision": "6d74998581eab13d45327bc4801b463d0fb7a6f7",
+  "model": "resolved_pump_tissue@3", "law": "junction_voltage_relaxation@1",
+  "backend": "cpu", "dtype": "float64", "jax": "0.11.1", "jaxlib": "0.11.1",
+  "threshold_V": 0.015, "residual_fraction": 0.1, "initial_gate": 0.9,
+  "clamp_samples": 45, "max_clamp_error": 1.1102230246251565e-16,
+  "max_three_sample_residual": 5.551115123125783e-17, "tau_at_minus_100_mV_ms": 50.000551675513144,
+  "solver": "rk4", "dt_s": 0.00006103515625, "release_s": 0.03125, "duration_s": 0.0625,
+  "junction_voltages_V": [-0.08, 0, 0.08], "gate_at_release": [0.5287339724666028, 0.908373067432633, 0.5287339724666028],
+  "release_flux_fmol_s": [0.10574679449332056, 0.18167461348652658, 0.10574679449332056],
+  "final_transfer_fmol": [0.002614271383999489, 0.0056791335747008315, 0.002614271383999489],
+  "max_tissue_gate_error": 5.9396931817445875e-15, "max_transfer_error_fmol": 8.673617379884035e-18,
+  "gate_atol": 5e-12, "flux_atol_fmol_s": 3e-12, "material_atol_fmol": 1e-10
+}
+```
+
 ## 19 November 2026 · Sodium-potassium and calcium pump charge
 
 A forward Na⁺/K⁺-ATPase cycle exports three Na⁺ and imports two K⁺. The Cells plasma-membrane calcium pump exports one Ca²⁺ per forward cycle. Their outward charge flux in elementary-charge equivalents is therefore `J_NaK + 2 J_Ca`. Lean connects that count to the voltage term in the free energy of both pumps and proves each pump’s stall voltage and forward direction. Each pump runs forward above its own stall voltage when voltage is measured inside relative to outside. The seven theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ElectrogenicPumps.lean) · [Na⁺/K⁺ rate](../src/cells/laws/pumps/nak_atp_mass_action_positive.py#L63) · [Calcium rate](../src/cells/laws/pumps/ca_atp_mass_action_positive.py#L88) · [Ion flux and electrode current](../src/cells/models/surface_pump_v3.py#L783)
