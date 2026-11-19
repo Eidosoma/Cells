@@ -242,7 +242,10 @@ test("the two-subunit mode takes an entity the caller names for a subunit (by it
   }
 });
 
-test("the record the bacteria are drawn from is the tool's measure of the two entries saved with the downloads", { skip: !existsSync(path.join(ENTRIES, "7K00.cif.gz")) && "the entries are not on this machine" }, () => {
+test("the record the bacteria are drawn from is the tool's measure of the two entries saved with the downloads", { skip: !existsSync(path.join(ENTRIES, "7K00.cif.gz")) && "the entries are not on this machine" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [ENTRIES], files: [path.join(ENTRIES, "7K00.cif.gz"), path.join(ENTRIES, "5MDZ.cif.gz")], env: ["ECOLI_RIBOSOME"] })) return;
   const folder = mkdtempSync(path.join(tmpdir(), "particle-"));
   try {
     const out = path.join(folder, "record.json");

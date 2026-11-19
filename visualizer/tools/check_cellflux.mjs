@@ -30,6 +30,7 @@ import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { within } from "./lib/measures.mjs";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
@@ -261,7 +262,7 @@ try {
       note(`frame cost with the loop playing: ${JSON.stringify(cost)}`);
       // The flux's own work (its rates, its beads, its words) is held small; the whole frame's cost is reported, not judged here:
       // on the card it is the look's and the bloom's (see the hand-over of 16 November 2026, flux round 2).
-      check("the flux's own work in a frame is small beside a frame at 60 a second", cost.flux !== null && cost.flux < 1.5, JSON.stringify(cost));
+      check("the flux's own work in a frame is small beside a frame at 60 a second", cost.flux !== null && within("the flux's own work in a frame (the median)", cost.flux, 1.5), JSON.stringify(cost));
     }
     // The Speed slider, for real: a press at each mark and between, a drag along it, and the keyboard. At each place, measured in the
     // page over a few seconds: the beads set out a second on the busiest lane, how long one takes to cross, and how much of the

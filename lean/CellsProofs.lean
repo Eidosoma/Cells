@@ -1,5 +1,7 @@
 import CellsProofs.Accounting.Transfer
+import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.Enzyme
+import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Tissue.MembraneInsertion

@@ -490,9 +490,9 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
     .replace("/*__BUNDLE__*/", () => script.trim());
 }
 
-/** The page as a complete document, for a file on disk or the local server. */
-export function wrap(content, { theme = null, head = "" } = {}) {
-  const attribute = theme ? ` data-theme="${theme}"` : "";
+/** The page as a complete document, for a file on disk, the local server or the site's release (`lang`, tools/stage_site.mjs). */
+export function wrap(content, { theme = null, head = "", lang = null } = {}) {
+  const attribute = `${lang ? ` lang="${lang}"` : ""}${theme ? ` data-theme="${theme}"` : ""}`;
   return `<!doctype html><html${attribute}><head>${SKELETON_HEAD}${head}</head><body>\n${content}\n</body></html>\n`;
 }
 

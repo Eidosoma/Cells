@@ -37,6 +37,7 @@ import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { within } from "./lib/measures.mjs";
 
 const scenario = process.argv[2] || "syn3a";
 const scene = path.resolve(process.argv[3] || DEFAULT_SCENE);
@@ -1385,9 +1386,9 @@ try {
       }
       const opening = openings.filter((one) => one.frames > 0).sort((a, b) => a.most - b.most)[0] || { frames: 0, median: 0, most: Infinity };
       note(`${width} by ${height}, while the largest family opens, three times: ${JSON.stringify(openings)} (milliseconds of the view's update for each frame)`);
-      check(`${width} by ${height}: while it opens, the view's update on each frame leaves room at 60 frames a second (the least loaded of three openings; a median under 2 ms in each)`, opening.frames > 0 && opening.most < 8 && openings.every((one) => one.frames > 0 && one.median < 2), JSON.stringify(openings));
-      check(`${width} by ${height}: the view's own work on a frame leaves room at 60 frames a second`, cost.update + cost.labels < 8, JSON.stringify(cost));
-      check(`${width} by ${height}: a repaint of every marker's colour, as a hover asks, takes under 8 ms`, cost.paint < 8, JSON.stringify(cost));
+      check(`${width} by ${height}: while it opens, the view's update on each frame leaves room at 60 frames a second (the least loaded of three openings; a median under 2 ms in each)`, opening.frames > 0 && within(`${width} by ${height}: the most of the view's update on a frame while the largest family opens (the least loaded of three openings)`, opening.most, 8) && openings.every((one, n) => one.frames > 0 && within(`${width} by ${height}: the median of the view's update on a frame while the largest family opens (opening ${n + 1} of 3)`, one.median, 2)), JSON.stringify(openings));
+      check(`${width} by ${height}: the view's own work on a frame leaves room at 60 frames a second`, within(`${width} by ${height}: the view's own work on a frame, its update and the labels' layout (the medians, summed)`, cost.update + cost.labels, 8), JSON.stringify(cost));
+      check(`${width} by ${height}: a repaint of every marker's colour, as a hover asks, takes under 8 ms`, within(`${width} by ${height}: a repaint of every marker's colour (the median)`, cost.paint, 8), JSON.stringify(cost));
     }
     await size(WIDTH, HEIGHT);
   }

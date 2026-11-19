@@ -383,6 +383,29 @@ cells-timeline.has-stops { grid-template-columns: auto auto auto minmax(0, 1fr) 
 .tl-stop::before { content: ""; position: absolute; left: 5px; top: 2px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--accent); }
 .tl-stop:hover::before, .tl-stop:focus-visible::before { left: 3px; width: 6px; }
 .tl-stop:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+/* A species' life stages (schema/SPECIES_STAGES.md): the same timeline, each stage a dot on the track, a stage named and not
+   drawn hollow, the one shown ringed, and their short names under them on a wide window. The picture's words rise above it. */
+cells-timeline.no-play { grid-template-columns: minmax(0, 1fr); }
+cells-timeline.has-stops.no-play { grid-template-columns: auto auto minmax(0, 1fr); }
+cells-timeline.no-play .tl-speed { display: none; } /* a pace is for playing */
+cells-timeline.is-stages .tl-stop { width: 22px; margin-left: -11px; }
+cells-timeline.is-stages .tl-stop::before { left: 6px; top: 11px; bottom: auto; width: 10px; height: 10px; border-radius: 50%; background: var(--fg); }
+cells-timeline.is-stages .tl-stop:hover::before, cells-timeline.is-stages .tl-stop:focus-visible::before { left: 5px; top: 10px; width: 12px; height: 12px; }
+cells-timeline.is-stages .tl-stop.is-named::before { background: var(--bg-raised); box-shadow: inset 0 0 0 2px var(--muted); }
+cells-timeline.is-stages .tl-stop[aria-current]::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 50%, transparent); }
+cells-timeline.is-stages .tl-stop-name { position: absolute; top: 25px; left: 50%; transform: translateX(-50%); font-size: 11px; line-height: 1.2; white-space: nowrap; color: var(--muted); pointer-events: none; }
+cells-timeline.is-stages .tl-stop[aria-current] .tl-stop-name { color: var(--fg); font-weight: 600; }
+/* The names at the two ends stand inside the track, clear of the buttons beside it. */
+cells-timeline.is-stages .tl-stop:first-child .tl-stop-name { transform: none; margin-left: -6px; }
+cells-timeline.is-stages .tl-stop:last-child .tl-stop-name { left: auto; right: 50%; transform: none; margin-right: -6px; }
+cells-timeline.is-stages.has-names .tl-track { margin-bottom: 12px; }
+.has-stages .caveat { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+/* In Scope the look's note stands at the right of the foot, up to 266 px from the edge: the strip ends before it (at 1280 px it ran under the note's first words). */
+@media (min-width: 761px) { .has-stages cells-timeline { right: 280px; } }
+@media (max-width: 760px) { cells-timeline.is-stages .tl-stop { width: 44px; height: 44px; top: -6px; margin-left: -22px; } cells-timeline.is-stages .tl-stop::before { left: 17px; top: 17px; } cells-timeline.is-stages .tl-stop:hover::before, cells-timeline.is-stages .tl-stop:focus-visible::before { left: 16px; top: 16px; } }
+/* On a phone the strip takes the foot: the picture's words stand just above it and the scale bar above them, and the look's own notes
+   fold while the strip shows, so that the foot is about as tall as it is without a strip (the legend keeps what moves at rest and what is scenery). */
+@media (max-width: 760px) { .has-stages .caveat { bottom: calc(160px + env(safe-area-inset-bottom, 0px)); } .has-stages .look-note { display: none; } .has-stages .scalebar { bottom: calc(216px + env(safe-area-inset-bottom, 0px)); } }
 .tl-judged { stroke: var(--fg); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .tl-invalid { fill: var(--st-unstated); }
 .tl-flag { position: absolute; top: -3px; transform: translateX(-50%); padding: 0 4px; border-radius: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em; color: var(--fg); background: color-mix(in srgb, var(--bg-raised) 90%, transparent); pointer-events: none; white-space: nowrap; }

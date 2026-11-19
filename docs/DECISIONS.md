@@ -7502,3 +7502,42 @@ under that delegation, which covers these two questions only.
      - It is deferred because on the intervention reading the predicted limit is NaV resolution,
        which an exact booking would not lift.
      - I3 runs X2's plant at the largest step claimed, not only at 1 ms.
+
+## D232: FR-7's scoped exception to D177, and FR-8 measures before it builds
+
+2026-11-19, about 21:25 UTC. The user, choosing among the lead's options (after the advisor's
+review):
+
+1. **FR-7: option 2.** The first test proceeds as built.
+   - **A scoped exception to D177** covers both surface insertion and irreversible removal: FR-7's
+     unit producer (`population_unit_turnover@1`, landed at 7fb27a92) inserts its units and removes
+     them itself.
+   - **The declared lifetime applies to every unit in a routed population,** including units present
+     initially.
+   - **The producer's refusal stays simulation-wide.** It excludes recycling (FR-2's trafficking),
+     membrane insertion and division even on other populations, and this is documented.
+   - **References:** the independent chain and clearance references proceed now. The closed-loop
+     reference stays behind the agreed gain probe (D231).
+   - **For the later FR-2 design:** specify who owns insertion, and give each population one owner
+     for terminal removal, so that a retrieved unit can either return or be destroyed and its loss
+     is counted once.
+   - Whether recycling prolongs the response remains an open question.
+2. **FR-8: option B first.** Run rung 1's registered control, today's time integrator with X2
+   enabled, before building anything.
+   - **Report:** the largest passing step, what stops the next rung, and wall time per simulated
+     second. The roughly 71 ms figure is a predicted charge-stability ceiling.
+   - **In parallel,** check whether fine steps around events can run on today's integrator.
+   - **Then, by these rules:**
+     - if charge stability limits the calm stretch and the proposed method (N2) addresses that
+       limit, proceed to A (build N2, then rung 1 as registered);
+     - if today's integrator already gives adequate calm-stretch performance and event windows can
+       use it, prioritise C (the fine-window executor);
+     - if X2's cap binds today's integrator, report the evidence and keep the exact-accounting build
+       on hold. The registered build trigger (D231) applies to Stage A or the new integrator's
+       limiting rung; a refusal on today's integrator alone does not trigger it.
+   - **Rung 0's official verdict stays inconclusive.** The follow-up supports a transient in this
+     case. The 3.3 µV figure is the difference from the finest saved trace through one switch.
+   - **The 1 ms rule** governs the spacing of the samples bracketing the threshold crossing.
+   - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
+     that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
+     per-trace criterion.
