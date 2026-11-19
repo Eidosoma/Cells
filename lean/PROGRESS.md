@@ -1,5 +1,32 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Sodium-potassium and calcium pump charge
+
+A forward Na⁺/K⁺-ATPase cycle exports three Na⁺ and imports two K⁺. The Cells plasma-membrane calcium pump exports one Ca²⁺ per forward cycle. Their outward charge flux in elementary-charge equivalents is therefore `J_NaK + 2 J_Ca`. Lean connects that count to the voltage term in the free energy of both pumps and proves each pump’s stall voltage and forward direction. Each pump runs forward above its own stall voltage when voltage is measured inside relative to outside. The seven theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ElectrogenicPumps.lean) · [Na⁺/K⁺ rate](../src/cells/laws/pumps/nak_atp_mass_action_positive.py#L63) · [Calcium rate](../src/cells/laws/pumps/ca_atp_mass_action_positive.py#L88) · [Ion flux and electrode current](../src/cells/models/surface_pump_v3.py#L783)
+
+We initialized five independent cells in `resolved_pump_tissue@3` at each predicted stall, at the midpoint and 10 mV beyond each end of the interval. Each cell had its own held bath, the same maintained fuel concentrations and only the two pumps carrying current. Two independent 80-digit scalar calculations supplied the initial reference rates. The compiled tissue rates and energies matched at all five voltages, with stalls at **−99.365 mV for Na⁺/K⁺** and **−104.104 mV for Ca²⁺**. At the midpoint, we chose the calcium capacity so the two initial currents would cancel. Each contributed about 0.349 pA in opposite directions. The compiled electrode current was 2.04 × 10⁻²⁶ A. The 1 ms run accounted for Na⁺, K⁺ and Ca²⁺ in both the cells and the reservoirs and booked positive heat for each midpoint pump. The cancellation is an initial condition. The driver took 29.32 s on four CPU cores. Nine existing pump and declaration tests passed. [Driver and inputs](checks/electrogenic_pumps.py) · [Na⁺/K⁺ reference](../validation/betse/pump_contact/pump_reference.py#L83) · [Calcium reference](../validation/chemistry/finite_calcium_pump_reference.py#L19) · [Calcium tolerances](../validation/chemistry/finite_calcium_pump_protocol.json)
+
+The experimental comparisons constrain the ion counts. Squid axon measurements pair sodium flux with electrical current, while red-cell ghosts pair sodium loss with ATP hydrolysis. In purified pig-brain calcium pumps, the measured Ca²⁺ and ATP rates give 1.02 Ca²⁺ per ATP. Including the measured inward H⁺ flux gives about +1.4 net charges per ATP in that preparation. The Cells law books +2 because calcium is its only transported ion. Applying its current to this preparation would require accounting for the protons. Experimental validation of the two calculated stall voltages remains open. [Measurements, conditions and uncertainties](claims/incoming/pump-charge-evidence.md) · [Squid axons, Table I](https://doi.org/10.1085/jgp.93.5.903) · [Red-cell ghosts](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Calcium and proton flux, Table I](https://doi.org/10.1074/jbc.273.29.18230)
+
+```json
+{
+  "engine_revision": "a06ee308a8348a5392e4645ccc368ccf8a086604",
+  "model": "resolved_pump_tissue@3",
+  "laws": ["nak_atp_mass_action_positive@1", "ca_atp_mass_action_positive@1"],
+  "backend": "cpu", "dtype": "float64", "jax": "0.11.1", "jaxlib": "0.11.1",
+  "solver": "rk4", "dt_s": 0.00005, "duration_s": 0.001, "temperature_K": 298.15,
+  "concentrations_mM": {"inside": {"Na": 12, "K": 140, "Ca": 0.0001}, "bath": {"Na": 145, "K": 5, "Ca": 2}, "maintained": {"ATP": 1.5, "ADP": 1, "Pi": 5}},
+  "delta_g0_1M_J_mol": -30500, "nak_capacity_fmol_s": 0.1, "calcium_capacity_fmol_s": 0.1574830840232326,
+  "initial_voltages_V": [-0.11410448475867015, -0.10410448475867015, -0.10173467077150977, -0.09936485678434939, -0.0893648567843494],
+  "nak_stall_V": -0.09936485678434939, "calcium_stall_V": -0.10410448475867015,
+  "max_cycle_error_fmol_s": 3.5041414214731503e-16, "max_current_error_A": 3.7966297646476856e-26,
+  "midpoint_cycles_fmol_s": [-0.00361764979679795, 0.001808824898399081],
+  "midpoint_electrode_current_A": 2.0419795228050456e-26,
+  "midpoint_heat_pJ": [8.268047906450134e-7, 7.244105791341412e-7],
+  "cycle_atol_fmol_s": 2e-12, "current_atol_A": 2e-22, "integrated_inventory_atol_fmol": 1e-15
+}
+```
+
 ## 19 November 2026 · ATP-driven transport
 
 An enabled ATP cycle runs forward when its total free-energy change is negative, reverses when it is positive, and stalls at zero. Positive flux moves cargo from N to P and consumes ATP on side N. Lean proves these statements for the two branches of the engine’s rate formula and proves nonnegative heat in either direction. For a proton pump moving `n` protons per ATP, the stall voltage is `V_N − V_P = (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF)`. For a neutral cargo, voltage drops out of the rate at fixed activities and capacity. All eight theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ATPCycle.lean) · [Proton cycle](../src/cells/laws/pumps/proton_pump.py#L223) · [Neutral cycle](../src/cells/laws/pumps/atp_transporter.py#L135) · [Shared rate formula](../src/cells/laws/cycles/forms.py#L893)
