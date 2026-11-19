@@ -184,8 +184,58 @@ class Values(NamedTuple):
 
 
 def working_size(spec):
+    """Stored values per accepted step plus a margin (surface_pump.working_size): @2's, the
+    channel populations', and the declared kinds' (kind_row_values), each with the margin 2."""
     x, s = spec.execution, len(spec.model.species_ids)
-    return second.working_size(projection(spec)) + 2 * (2 + 2 * s) * x.channel_capacity
+    return (
+        second.working_size(projection(spec))
+        + 2 * (2 + 2 * s) * x.channel_capacity
+        + 2 * kind_row_values(spec)
+    )
+
+
+def kind_row_values(spec):
+    """The values the declared kinds add to every saved row (the runner stacks each state field
+    at every accepted step), read from the row's own structure rather than a formula kept per
+    kind: each kind state field (its bound state_axes, which the structure's state type holds)
+    sized by its axes, @3's shared axes from the execution's capacities and the species, a kind's
+    own axes from its view sets' IDs (view_sets, the run view's one list of its entities). So
+    every kind's saved arrays count; an axis with no size is refused, never left uncounted, and
+    check_definition refuses a count below the bound state's (the @3 owner's review; the lead's
+    ruling: an overcount is the safe direction, for memory), so the estimate never undercounts a
+    definition it admits. 0 without kinds, so a kind-free world's estimate is today's (the third
+    review's finding 3)."""
+    kinds = getattr(spec.model, "kinds", ())
+    if not kinds:
+        return 0
+    x = spec.execution
+    shared = {
+        "species": len(spec.model.species_ids),
+        "node": x.capacity + x.extracellular_capacity,  # Cells, then outside nodes.
+        "cell_slot": x.capacity,
+        "extracellular_slot": x.extracellular_capacity,
+        "membrane_slot": x.membrane_capacity,
+        "edge_slot": x.edge_capacity,
+        "face_slot": x.face_capacity,
+        "channel_slot": x.channel_capacity,
+    }
+    registry, declarations, total = kind_registry.active(), dict(kinds), 0
+    for kind_id, entry in structure(spec.model).kinds:
+        kind = kind_registry.bound(registry.lookup(kind_id), entry)
+        own = {} if kind.view_sets is None else kind.view_sets(spec, declarations[kind_id])
+        sizes = shared | {axis: len(entities["ids"]) for axis, entities in own.items()}
+        for name, axes in kind.state_axes:
+            unsized = [axis for axis in axes if axis not in sizes]
+            if unsized:
+                raise ConfigError(
+                    f"Kind {kind_id}'s state field {name} has axes {unsized} that the trace "
+                    "estimate cannot size: a kind's own axis is sized by its view set"
+                )
+            values = 1
+            for axis in axes:
+                values *= sizes[axis]
+            total += values
+    return total
 
 
 def initial_values(spec, *, structure=None):
@@ -1488,6 +1538,18 @@ def check_definition(spec, *, structure=None):
             tol=np.asarray(compact.execution.material_balance_atol_fmol),
         )
         _check_routes(spec, structure, kinds, state, p, control_type(*(v[0] for v in controls)))
+        # The trace estimate counts every kind value a row holds (the third review's finding 3):
+        # an undercount is refused, and an overcount is the safe direction (the lead's ruling).
+        estimated = kind_row_values(compact)
+        held = sum(
+            int(np.size(getattr(state, name))) for kind in kinds for name, _ in kind.state_axes
+        )
+        if estimated < held:
+            raise ConfigError(
+                f"The trace estimate counts {estimated} kind state values per row, while the "
+                f"bound state holds {held}: it would undercount the trace, so the definition is "
+                "refused (a kind's own axis is sized by its view set)"
+            )
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
             if not control_domain_valid(

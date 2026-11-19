@@ -67,7 +67,7 @@ def general(raw, *, kon=1e7):
     b["forms"] = [dict(id="HB", counts={"H": 1}, standard_mu_RT=b.pop("protonated_standard_mu_RT"))]
     read = m[proton_buffer.MODEL_KEY][0]
     m[proton_buffer.MODEL_KEY] = [
-        dict(read_id="rapid_binding@1", ligand_rows=["H"],
+        dict(read_id="rapid_binding@1", ligand_rows=["H"], proton_row="H",
              binders={node: list(rows) for node, rows in read["buffers"].items()},
              k_on_per_mM_s={"B": {"H": kon}})
     ]  # fmt: skip
@@ -214,6 +214,7 @@ def reference_cell(system, k):
             entry["schedule"] = [dict(time=0.0, availability=0.0)]
     m[proton_buffer.MODEL_KEY] = [
         dict(read_id="rapid_binding@1", ligand_rows=list(s["ligands"]),
+             **({"proton_row": "H"} if "H" in s["ligands"] else {}),
              binders={m["cells"][0]["id"]: list(s["binders"])},
              k_on_per_mM_s={b: dict.fromkeys(sorted({l for f in registry["binders"][b]["forms"]
                                                       for l in f.get("counts", {})}), 1e7)
@@ -248,15 +249,67 @@ def test_phase_1s_split_books_the_references_E_c_at_world_level(system, k):
     assert abs(s_c * scale - term["E_c_pJ"]) > floor
 
 
-@pytest.mark.parametrize("system, k", [("S4", 0), ("S7", 1)])
-def test_release_steps_inside_c5s_scope_are_admitted_and_outside_it_refused(system, k):
+def with_sodium(raw, *, only):
+    """raw (a reference cell) with the heredity cell's Na as a ligand row: its @3 movers removed
+    (patch permeability, NaV, the Na/K pump) and H's potential given it. only: Na takes H's place
+    (every count, row, rate and amount) and no proton row is declared; else nuc4 binds Na too."""
+    m, e = raw["model"], raw["experiment"]
+    species = {entry["id"]: entry for entry in m["species"]}
+    species["Na"]["standard_mu_RT"] = species["H"]["standard_mu_RT"]
+    for patch in m["membranes"]:
+        patch["permeability_m_per_s"]["Na"], patch["pump"] = 0.0, None
+    m["channels"] = [c for c in m["channels"] if c["id"] != "nav_0"]
+    e["channel_controls"] = [c for c in e["channel_controls"] if c["channel_id"] != "nav_0"]
+    e["pump_controls"] = []
+    read = m[proton_buffer.MODEL_KEY][0]
+    if not only:
+        species["nuc4"]["forms"].append(dict(id="nuc4_Na", counts={"Na": 1}, standard_mu_RT=10.0))
+        read["ligand_rows"].append("Na")
+        read["k_on_per_mM_s"]["nuc4"]["Na"] = 1e7
+        return raw
+
+    def na(rows):
+        return {"Na" if row == "H" else row: value for row, value in rows.items()}
+
+    m["species"].remove(species["H"])
+    for entry in m["species"]:
+        for form in entry.get("forms", ()):
+            form["counts"] = na(form["counts"])
+    for node in (*m["cells"], *m["extracellular"]):
+        amounts = node["initial_amount_fmol"]
+        node["fixed_charge_equivalent_fmol"] += amounts["Na"]  # The node's Na, replaced.
+        amounts["Na"] = amounts.pop("H")
+    for patch in m["membranes"]:
+        patch["permeability_m_per_s"].pop("H")
+    raw["execution"]["material_balance_atol_fmol"].pop("H")
+    del read["proton_row"]
+    read["ligand_rows"] = ["Na" if row == "H" else row for row in read["ligand_rows"]]
+    read["k_on_per_mM_s"] = {b: na(rates) for b, rates in read["k_on_per_mM_s"].items()}
+    return raw
+
+
+@pytest.mark.parametrize(
+    "system, k, sodium",
+    [("S4", 0, None), ("S7", 1, None), ("S4", 0, "only"), ("S4", 0, "beside H")],
+    ids=["S4-0", "S7-1", "S4-0-sodium only", "S4-0-sodium beside H"],  # The first two: today's IDs.
+)
+def test_release_steps_inside_c5s_scope_are_admitted_and_outside_it_refused(system, k, sodium):
     """Amendment C5 and the lead's ruling (19 November 2026): a release step inside C5's
     registered scope is admitted, here S4's pi2_PO4 (single-sign) and S7's mgx_MgmH (mixed), at
     a state with every total positive. Planted: pi2 given a form with H -2, a count below -1,
-    which C5 does not cover, is refused naming it."""
+    which C5 does not cover, is refused naming it. The proton is the declared proton_row, never
+    the one ligand of valence +1 (the third review's finding 1), through the parser: with Na in
+    H's place and no proton row, pi2's Na release is refused (the inference admitted it); with Na
+    declared beside H, pi2's H release is admitted (the inference, left with none, refused it)."""
     raw, _ = reference_cell(system, k)
+    if sodium is not None:
+        with_sodium(raw, only=sodium == "only")
+    if sodium == "only":
+        with pytest.raises(ConfigError, match=r"pi2_PO4 \+ Na <-> pi2 releases Na, not the proton"):
+            parse_spec(raw)
+        return
     parse_spec(raw)
-    if system == "S4":
+    if system == "S4" and sodium is None:
         pi2 = next(e for e in raw["model"]["species"] if e["id"] == "pi2")
         pi2["forms"].append(dict(id="pi2_PO4m", counts={"H": -2}, standard_mu_RT=60.0))
         with pytest.raises(ConfigError, match=r"pi2_PO4m has a count below -1.*Amendment C5"):
@@ -290,7 +343,7 @@ def lumen_general():
         entry = next(e for e in m["species"] if e["id"] == row)
         entry["forms"] = [dict(id="H" + row, counts={"H": 1},
                                standard_mu_RT=entry.pop("protonated_standard_mu_RT"))]
-    m["stage_reads"] = [dict(read_id="rapid_binding@1", ligand_rows=["H"],
+    m["stage_reads"] = [dict(read_id="rapid_binding@1", ligand_rows=["H"], proton_row="H",
                              binders={fr.CELL: ["B_c"], fr.LUMEN: ["B_L"]},
                              k_on_per_mM_s={"B_c": {"H": 1e7}, "B_L": {"H": 1e7}})]
     m.pop("transporters")

@@ -23,6 +23,9 @@ from pathlib import Path
 import numpy as np
 
 CLASSES = ("voltage", "concentration", "gate")
+# §5.3: each crossing is "located by linear interpolation between 1 ms rows" before its 0.5 ms
+# budget applies; one located between sparser rows (outside the 1 ms window) takes no timing pass.
+CROSSING_ROW_SPACING_S = 1e-3
 
 
 def class_error(test, ref, kind):
@@ -87,9 +90,10 @@ def judge_histories(test, ref, budget, floors, times=None):
 
 def crossings(times, values, level, after):
     """Times (s) at which values cross `level` after `after`, by linear interpolation between
-    the bracketing rows, with each crossing's direction and bracketing row spacing. A run of
-    rows exactly at the level is a crossing at its first row if the sign differs on either side
-    of it, and a tangency (no crossing) if it does not."""
+    the bracketing rows, with each crossing's direction and the spacing of the two rows that
+    locate it. A run of rows exactly at the level is a crossing at its first row if the sign
+    differs on either side of it, located by that row and the one before it, and a tangency (no
+    crossing) if it does not."""
     t, v = np.asarray(times, dtype=float), np.asarray(values, dtype=float) - level
     out = []
     i = 0
@@ -104,7 +108,7 @@ def crossings(times, values, level, after):
                     dict(
                         time_s=float(t[j]),
                         direction="up" if v[k] > v[i] else "down",
-                        spacing_s=0.0,
+                        spacing_s=float(t[j] - t[i]),
                     )
                 )
             i = max(k - 1, j)
@@ -123,16 +127,30 @@ def crossings(times, values, level, after):
     return out
 
 
-def timing_verdict(test, ref, budget, count=2):
-    """The first `count` crossings of each run, paired in order: each |dt| within the budget;
-    a crossing present in one run only fails."""
+def located(crossing, spacing):
+    """Whether a crossing was located between rows at most `spacing` apart, to the rounding of
+    the rows' time labels: two ulps of its time (a 1 ms bracket of float labels near 1800 s reads
+    up to 2e-13 s over 1 ms)."""
+    return crossing["spacing_s"] <= spacing + 2 * float(np.spacing(abs(crossing["time_s"])))
+
+
+def timing_verdict(test, ref, budget, spacing, count=2):
+    """The first `count` crossings of each run, paired in order: each |dt| within the budget,
+    with both crossings located between rows at most `spacing` apart (§5.3's 1 ms rows: a pair
+    located between sparser rows fails, since its interpolation cannot resolve the budget); a
+    crossing present in one run only fails."""
     a, b = test[:count], ref[:count]
     pairs = [
         dict(
             test_s=x["time_s"],
             ref_s=y["time_s"],
             difference_s=x["time_s"] - y["time_s"],
-            passed=abs(x["time_s"] - y["time_s"]) <= budget and x["direction"] == y["direction"],
+            test_spacing_s=x["spacing_s"],
+            ref_spacing_s=y["spacing_s"],
+            passed=abs(x["time_s"] - y["time_s"]) <= budget
+            and x["direction"] == y["direction"]
+            and located(x, spacing)
+            and located(y, spacing),
         )
         for x, y in zip(a, b, strict=False)
     ]
@@ -246,7 +264,7 @@ def compare(test, ref, reg):
     level = budgets["crossing_level_V"]
     timing = timing_verdict(
         crossings(t, v0, level, cue_start), crossings(rt, rv0, level, cue_start),
-        budgets["crossing_time_s"],
+        budgets["crossing_time_s"], CROSSING_ROW_SPACING_S,
     )  # fmt: skip
     through = budgets["recovery_through_s"] if t_rec["run_of_record"] else float(t[-1])
     timing["recovery"] = {

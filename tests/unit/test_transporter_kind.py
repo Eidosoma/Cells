@@ -153,13 +153,31 @@ def test_the_parse_refuses_with_its_reason(over, reason):
 def test_a_second_population_on_a_patch_takes_the_population_axis_and_ids_stay_unique():
     """Version 1's layout holds one population per patch; a declaration with two on one patch
     takes the population axis (the kinds owner's design statement 1, §1), where any number sit on
-    a host. IDs stay unique among the model's either way."""
+    a host. IDs stay unique among the model's either way. The trace estimate counts the axis's
+    saved rows (the third review's finding 3): a third population raises @3's working size by
+    twice its values in each bound state row, which a formula in the capacities leaves unchanged;
+    and the definition is refused where the estimate would undercount the bound row (planted: a
+    view set one population short). Host only: parsed and bound, never run."""
     with scoped():
         spec = parse_spec(held_world(population(), population(id="transporter_1")))
         ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
         assert isinstance(entry, transporter.CycleAxis)
         with pytest.raises(ConfigError, match="must be unique"):
             parse_spec(held_world(population(id="cell_0")))
+        three = parse_spec(held_world(*(population(id=f"transporter_{i}") for i in range(3))))
+        states = [get_model(s.model).initial_values(s)[0] for s in (spec, three)]
+        rows = [sum(np.size(v) for v in state) for state in states]
+        grown = surface_pump_v3.working_size(three) - surface_pump_v3.working_size(spec)
+        assert grown == 2 * (rows[1] - rows[0]) > 0
+
+    def short(spec, declaration):  # Planted: a view set one population short, an undercount.
+        sets = transporter.view_sets(spec, declaration)
+        ids = sets["cycle_population"]["ids"][:-1]
+        return sets | {"cycle_population": sets["cycle_population"] | {"ids": ids}}
+
+    with scoped(dataclasses.replace(transporter.TRANSPORTER, view_sets=short)):
+        with pytest.raises(ConfigError, match="The trace estimate counts .* undercount"):
+            parse_spec(held_world(*(population(id=f"transporter_{i}") for i in range(3))))
 
 
 def test_the_definition_check_names_its_reasons():

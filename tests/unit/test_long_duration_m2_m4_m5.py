@@ -5,7 +5,8 @@ values (no engine run):
 - M2: the declared split separates a spectrum with a gap, and reports a spectrum without one,
   or whose fast part does not match the fast mode's spectrum, as not separated;
 - M4: the settling time is the first row from which the trace stays inside for the hold, and a
-  re-crossing inside the hold moves it; a trace that never settles gives None;
+  re-crossing inside the hold moves it; a trace that never settles, or that ends inside the hold,
+  gives None;
 - M5: a residual at 1.01 times its bound gives rho above 1, and the order and extrapolated
   binding step of a second-order sequence are recovered.
 """
@@ -38,6 +39,8 @@ def test_the_settling_time_and_a_re_crossing_inside_the_hold():
     rate = np.where(t < 8.0, 1.0, 1e-6)
     gate = np.zeros_like(t)
     assert m4.settling_time(t, rate, gate, 1e-3, 1e-3, 5.0, 10.0, 20.0) == 8.0
+    short = t <= 8.5  # Planted: the trace ends one row after 8 s, inside its hold.
+    assert m4.settling_time(t[short], rate[short], gate[short], 1e-3, 1e-3, 5.0, 10.0, 20.0) is None
     rate[t == 12.0] = 1.0  # A re-crossing inside the hold: settling moves past it.
     assert m4.settling_time(t, rate, gate, 1e-3, 1e-3, 5.0, 10.0, 20.0) == 12.5
     gate[:] = 1.0  # The gate never settles.
