@@ -1490,7 +1490,10 @@ def _check_kinds_solver(spec):
 def _check_stage_rows(spec, kinds):
     """§7.4 (k): stage reads compose in hook order, so two that share a row would compose by ID,
     not physically. A kind's stage read declares the rows it reads or rewrites, and two kinds'
-    reads on a shared row are refused at binding (until a dependency order exists)."""
+    reads on a shared row are refused at binding (until a dependency order exists). A row is
+    (species, node ID), or (species, node ID, the read's law ID): the third item is P1's selector
+    (CORE_SEAMS §17; the binding owner's ruling (a), 19 November 2026). Rows are shared by their
+    (species, node), whatever law each names."""
     if not kinds:
         return
     declarations, claimed = dict(spec.model.kinds), {}
@@ -1500,10 +1503,16 @@ def _check_stage_rows(spec, kinds):
         if kind.stage_rows is None:
             raise ConfigError(f"Kind {kind.kind_id} has a stage read but declares no stage rows")
         for row in kind.stage_rows(declarations[kind.kind_id]):
-            other = claimed.setdefault(tuple(row), kind.kind_id)
+            row = tuple(row)
+            if len(row) not in (2, 3):
+                raise ConfigError(
+                    f"Kind {kind.kind_id}'s stage row {row} is not (species, node ID) or "
+                    "(species, node ID, the read's law ID)"
+                )
+            other = claimed.setdefault(row[:2], kind.kind_id)
             if other != kind.kind_id:
                 raise ConfigError(
-                    f"Kinds {other} and {kind.kind_id} both read row {tuple(row)} at each stage; "
+                    f"Kinds {other} and {kind.kind_id} both read row {row[:2]} at each stage; "
                     "stage reads on a shared row do not commute and are refused"
                 )
 
