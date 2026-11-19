@@ -317,8 +317,16 @@ enumeration (evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/`).
   single-event kernel fails Kolmogorov's criterion on every unit square for generic β. One
   hand-checkable square gives a cycle ratio of 44/63. The events-only form of T2-02 has the same
   cycle ratios, and so does the preprint's buffered reservoir.
-- **A rank-one β is the exception:** the chain is reversible, with a shifted equilibrium. So
-  "different factors, hence irreversible" holds generically, not always.
+- **The exception is a rank-one 1 + β, with one added to every entry, not a rank-one β.** If
+  1 + β_ij = u_i v_j with positive factors, the single-event kernel's extra heat is a difference of
+  state values and cancels around any closed path, so the chain is reversible, with a shifted
+  equilibrium; the corrected log weight is Φ(n) − ln(Σ_j v_j n_j / N). A rank-one β alone does not
+  suffice: with β_AA = 1 and every other entry 0, the four-step cycle +A, +B, −A, −B at counts
+  (1, 1) has a rate-product ratio of 81/80, not 1. So "different factors, hence irreversible" holds
+  generically, not always. (Corrected 19 November 2026 from the Lean proofs project's proof and
+  exact example, lean/PROGRESS.md and lean/CellsProofs/Chemistry/GardCatalysis.lean; the earlier
+  wording said "a rank-one β". The exact finite-reservoir reference already used the entrywise
+  shift.)
 - **The original authors' kernel is not established either way.** The three papers read (2000,
   2014, 2018) state the rate law but no event rates. The 2000 paper's stochastic scheme draws
   Poisson changes on the net rate. That is a different kernel, irreversible even at β = 0, for a
