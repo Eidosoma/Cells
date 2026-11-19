@@ -56,6 +56,7 @@ PARTITION = partition_operator.LAW_ID
 BRIDGE = "cytoplasmic_bridge_closure@1"
 TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange@1"
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
+COUPLING_2 = "species_regulated_availability@2"  # @1 plus operator targets (B1′).
 BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
@@ -269,7 +270,7 @@ def _tags():
     tags[("providers", REPLACEMENT_2, STATE, "channel_abundance")] = tags[
         ("providers", REPLACEMENT_1, STATE, "channel_abundance")
     ]
-    for pair in ((INSERTION_1, INSERTION_2), (LUMEN_1, LUMEN_2)):
+    for pair in ((INSERTION_1, INSERTION_2), (LUMEN_1, LUMEN_2), (COUPLING, COUPLING_2)):
         tags[("versions", *pair, None)] = tags[("versions", REPLACEMENT_1, REPLACEMENT_2, None)]
     for name in ("volume", "extracellular_volume"):
         tags[("reads", REPLACEMENT_1, WATER, name)] = (
@@ -689,6 +690,11 @@ def _tags():
         tags[("reads-closed", TRAFFICKING, PARTITION, "active")][1] + propagates,
         (),
     )
+    # The coupling's @2 (B1′) is @1 plus operator targets: it reads what @1 reads, so each of
+    # @1's refusals is @2's with the same tag and reason.
+    for key, value in list(tags.items()):
+        if COUPLING in key and COUPLING_2 not in key:
+            tags[tuple(COUPLING_2 if part == COUPLING else part for part in key)] = value
     return tags
 
 
@@ -883,6 +889,25 @@ RULES = (
         why="Version 1 has no occupant rule for the coupling",
     ),
     dict(
+        rule="no @2 coupling target, operator target element or regulatory state on a replaced "
+        "slot",
+        laws=(COUPLING_2, REPLACEMENT_1),
+        level="data",
+        check=OPS + "species_regulated_availability.py::check_replaced_operator_elements",
+        test=TESTS + "test_species_regulated_availability.py::test_refusals",
+        tag=REAL,
+        why="@2 has @1's occupant rule, none: an element's source is read in its cell",
+    ),
+    dict(
+        rule="a declared rate route's target follows its source",
+        laws=(COUPLING_2, TURNOVER, REACTIONS),
+        level="data",
+        check="src/cells/models/pump_composite.py::rate_route_definition_errors",
+        test=TESTS + "test_species_regulated_availability.py::test_refusals",
+        tag=REAL,
+        why="B1′: the split's halves are symmetric about the target only with its source first",
+    ),
+    dict(
         rule="no turnover route on a (species, node) the network writes",
         laws=(REACTIONS, TURNOVER),
         level="data",
@@ -894,7 +919,7 @@ RULES = (
     ),
     dict(
         rule="one identity per species across the species operators",
-        laws=(TURNOVER, EXCHANGE, REACTIONS, COUPLING),
+        laws=(TURNOVER, EXCHANGE, REACTIONS, COUPLING, COUPLING_2),
         level="data",
         check=OPS + "species_common.py::check_identities",
         test=TESTS + "test_species_reactions_refusals.py::"
@@ -904,7 +929,7 @@ RULES = (
     ),
     dict(
         rule="at most 16 species per world",
-        laws=(TURNOVER, EXCHANGE, REACTIONS, COUPLING),
+        laws=(TURNOVER, EXCHANGE, REACTIONS, COUPLING, COUPLING_2),
         level="data",
         check=OPS + "species_common.py::check_species_cap",
         test=TESTS

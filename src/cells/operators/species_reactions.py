@@ -1391,6 +1391,14 @@ class LocalSpeciesReactions(Operator):
         tables = route_tables(declaration, schedule)
         return (common.control_arrays(tables, times, 1)[..., 0],)
 
+    def routable_elements(self, declaration, field):
+        """B1′: reaction_multiplier's elements are its routes (reaction, site), by reaction ID,
+        each at its cell (None for an outside node), in control order."""
+        return tuple(
+            (route.reaction, route.node if route.kind == "cell" else None)
+            for route in declaration.routes
+        )
+
     def check_definition(self, spec, declaration, schedule, model):
         if spec.execution.solver == "rk4":
             raise ConfigError(

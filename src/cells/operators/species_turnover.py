@@ -488,6 +488,11 @@ class ScheduledSpeciesTurnover(Operator):
         )
         return (common.control_arrays(tables, times, 1)[..., 0],)
 
+    def routable_elements(self, declaration, field):
+        """B1′: turnover_rate's elements are its routes, by route ID, each at its cell (None for
+        an outside node), in control order."""
+        return tuple((route.id, route.cell) for route in declaration.routes)
+
     def species_identities(self, declaration):
         return declaration.species
 

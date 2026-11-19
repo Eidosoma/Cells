@@ -266,6 +266,12 @@ def test_operator_declarations_are_checked():
         bad = type("Routed", (Routed,), changes)
         with pytest.raises(ValueError, match=words):
             check_declarations(bad)
+    elementless = {
+        k: v for k, v in vars(Routed).items() if not k.startswith("__") and k != "routable_elements"
+    }
+    elementless["LAW_ID"] = "elementless@1"
+    with pytest.raises(ValueError, match="defines routable_elements"):
+        check_declarations(type("Elementless", (Operator,), elementless))
     check_declarations(Routed)
     check_declarations(RateSource)
     assert dict(OPERATORS[TURNOVER].ROUTABLE_CONTROLS) == {"turnover_rate": "rate"}
@@ -280,6 +286,9 @@ class Routed(Operator):
     RK4 = "split"
     CONTROL_FIELDS = ("rate_x",)
     ROUTABLE_CONTROLS = MappingProxyType({"rate_x": "rate"})
+
+    def routable_elements(self, declaration, field):
+        return ()
 
 
 class RateSource(Operator):

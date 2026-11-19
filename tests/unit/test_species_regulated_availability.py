@@ -29,6 +29,7 @@ from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as crfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
+from validation.tissue import secreted_species_fixtures as sfx
 
 LAW = sra.LAW_ID
 
@@ -421,6 +422,128 @@ REFUSALS = {
     ),
     "volume provider": (_watered, "volume"),
 }
+
+# ------------------------------------------------------------------ version 2's operator target
+# B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1; the lead's ruling C of 19 November 2026): @2 is @1
+# plus operator targets, a Hill factor of R on D150's production of X0 in cell_0, declared before
+# its target. Development, not judged.
+
+LAW_V2 = sra.LAW_ID_V2
+PRODUCTION = 2e-4  # fmol/s, X0's scheduled production in cell_0.
+
+
+def routed(*, coupling_first=True, ranged=(0.0, 1.0), routes=None, states=()):
+    """The sheet with R and X0, @2 routing a Hill activation of R (K 1e-3 mM, n 2, basal 0.1) to
+    the turnover's production of X0 in cell_0 (route make_x0), and that turnover."""
+    raw = rf.sheet(extra=1)
+    target = dict(
+        operator=sfx.TURNOVER,
+        control="turnover_rate",
+        ids=["make_x0"],
+        evaluation="target_half_steps",
+        operating_range=list(ranged),
+    )
+    entry = rf.hill_coupling("c_x", "junction", ["junction_0"], "R", "hill_activation", 1e-3, 2.0)
+    entry.update(target=target, basal=0.1)
+    raw = rf.with_coupling(raw, species=["R"], states=list(states), couplings=[entry])
+    block(raw)["law"] = LAW_V2
+    routes = routes or [("make_x0", "cell_0", "production", PRODUCTION)]
+    turnover = dict(
+        law=sfx.TURNOVER,
+        species=rf.identities(["X0"]),
+        routes=[dict(id=r, species="X0", node=n, kind=k) for r, n, k, _ in routes],
+        templates=[],
+    )
+    operators = raw["model"]["operators"]
+    operators.insert(len(operators) if coupling_first else 0, turnover)
+    raw["experiment"]["turnover_controls"] = [
+        dict(
+            route_id=r,
+            carrier_id=None if n.startswith("ecs") else n,
+            schedule=[dict(time=0.0, rate=v)],
+        )
+        for r, n, _, v in routes
+    ]
+    return raw
+
+
+def block_v2(raw):
+    return next(b for b in raw["model"]["operators"] if b["law"] == LAW_V2)
+
+
+def _edit_v2(path_fn, **kwargs):
+    def make():
+        raw = routed(**kwargs)
+        path_fn(raw)
+        return raw
+
+    return make
+
+
+def _target_v2(raw):
+    return block_v2(raw)["couplings"][0]["target"]
+
+
+STATE_INPUT = ("hill_activation", "R", 1e-3, 1.0)
+
+
+def _from_state(raw):
+    """The routed coupling reading state s's fraction in place of R's Hill factor."""
+    entry = block_v2(raw)["couplings"][0]
+    entry.update(source={"state": "s"}, law="state_fraction")
+    for key in ("half_saturation_mM", "hill_coefficient"):
+        del entry[key]
+
+
+REFUSALS.update(
+    {
+        "v2 unroutable target": (
+            _edit_v2(lambda r: _target_v2(r).update(operator="scheduled_species_exchange@1")),
+            "routable targets",
+        ),
+        "v2 operator target's evaluation": (
+            _edit_v2(lambda r: _target_v2(r).update(evaluation="step_view")),
+            "is evaluated at 'target_half_steps'",
+        ),
+        "v2 empty operating range": (
+            _edit_v2(lambda r: _target_v2(r).update(operating_range=[1.0, 0.0])),
+            "operating_range has low < high",
+        ),
+        "v2 unknown element": (
+            _edit_v2(lambda r: _target_v2(r).update(ids=["make_nothing"])),
+            "unknown element 'make_nothing'",
+        ),
+        "v2 target before its coupling": (
+            lambda: routed(coupling_first=False),
+            "which precedes it",
+        ),
+        "v2 inner target without its evaluation": (
+            _edit_v2(
+                lambda r: block_v2(r)["couplings"].append(
+                    rf.hill_coupling(
+                        "c_j",
+                        "junction",
+                        ["junction_0"],
+                        "R",
+                        "hill_inhibition",
+                        1e-3,
+                        1.0,
+                        side="first",
+                    )
+                )
+            ),
+            f"{LAW_V2} target: missing=['evaluation']",
+        ),
+        "v2 state source outside its cells": (
+            _edit_v2(_from_state, states=[rf.state("s", ["cell_3"], [STATE_INPUT])]),
+            "reads state s in cell_0, where it is not declared",
+        ),
+        "v2 state operating range above one": (
+            _edit_v2(_from_state, states=[rf.state("s", ["cell_0"], [STATE_INPUT])], ranged=(0, 2)),
+            "operating_range lies in [0, 1]",
+        ),
+    }
+)
 
 
 @pytest.mark.parametrize("case", sorted(REFUSALS))
@@ -869,3 +992,65 @@ def test_a_state_with_two_inputs_multiplies_an_activation_and_an_inhibition():
     np.testing.assert_allclose(
         new.regulatory_state, target + (0.2 - target) * np.exp(-lam * 0.5), rtol=1e-14
     )
+
+
+def test_version_2_routes_a_production_rate_in_the_targets_half_steps(monkeypatch):
+    """B1′ on @2 (development, not judged; its Hill reference is written out here): registered with
+    its routes; parses and round trips; binds make_x0's one route. The factor F = b + (1 - b) f is
+    the Hill law of R's concentration in cell_0, and the composite's half-step of the turnover is
+    bitwise the half-step at the product rate. Switched off (the cut control), F is exactly 1 and
+    the half-step is the scheduled one. Planted, each refused: R outside the declared operating
+    range, which refuses the half-step only while the coupling is on; and an outside-node element
+    (the turnover's elements planted at no cell), refused at the binding."""
+    op = OPERATORS[LAW_V2]
+    assert check_declarations(type(op)) is type(op)
+    assert op.RATE_ROUTES == tuple(sra.OPERATOR_TABLES)
+    assert op.LAYOUT_FIELDS[: len(sra.LAYOUT_FIELDS)] == sra.LAYOUT_FIELDS
+    spec = parse_spec(routed())
+    again = parse_spec(cs.to_dict(spec))
+    assert again.model.operators == spec.model.operators
+    assert again.experiment.operators == spec.experiment.operators
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    coupling = next(o for o in model.operators if o.LAW_ID == LAW_V2)
+    turnover = next(o for o in model.operators if o.LAW_ID == sfx.TURNOVER)
+    assert model.rate_routes == {turnover: ((coupling, "turnover_rate"),)}
+    assert np.asarray(p.coupling_turnover_rate_routes).tolist() == [[0]]
+    assert np.asarray(p.coupling_reaction_multiplier_routes).shape == (0, 0)
+    assert coupling.declared_rate_routes(spec.model.operators[0]) == (
+        (sfx.TURNOVER, "turnover_rate"),
+    )
+    c = _concentration(spec, state, p, "R", "cell_0")
+    expected = 0.1 + 0.9 * _hill(c, 1e-3, 2.0, "hill_activation")
+    factor, ok = coupling.rate_factors(state, p, sfx.TURNOVER, "turnover_rate", xp=np)
+    assert bool(ok) and float(factor[0]) == pytest.approx(expected, rel=1e-14) and expected < 1
+    values = cs.control_values(spec, [0.0])
+    control = model.CONTROL_TYPE(*(v[0] for v in values))
+    h = 0.5 * spec.execution.dt
+    routed_step, ok = model._half_step(turnover, state, h, control, p, xp=np)
+    scheduled = control._replace(turnover_rate=control.turnover_rate * factor)
+    by_hand, _ = turnover.half_step(state, h, scheduled, p, xp=np)
+    assert bool(ok)
+    for a, b in zip(routed_step, by_hand, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    off = state._replace(coupling_enabled=np.zeros_like(state.coupling_enabled))
+    cut, ok = model._half_step(turnover, off, h, control, p, xp=np)
+    plain, _ = turnover.half_step(off, h, control, p, xp=np)
+    assert bool(ok)
+    for a, b in zip(cut, plain, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    narrow = parse_spec(routed(ranged=(0.5, 1.0)))  # R at 1e-3 mM, below the range.
+    model2 = get_model(narrow.model)
+    state2, p2 = model2.initial_values(narrow)
+    _, ok = model2._half_step(turnover, state2, h, control, p2, xp=np)
+    assert not bool(ok)
+    off2 = state2._replace(coupling_enabled=np.zeros_like(state2.coupling_enabled))
+    _, ok = model2._half_step(turnover, off2, h, control, p2, xp=np)
+    assert bool(ok)
+    monkeypatch.setattr(
+        type(turnover),
+        "routable_elements",
+        lambda self, d, f: tuple((r.id, None) for r in d.routes),
+    )
+    with pytest.raises(ConfigError, match="routes cell-side elements only"):
+        parse_spec(routed())

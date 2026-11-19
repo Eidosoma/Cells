@@ -59,12 +59,35 @@ later switch change off the dt grid or outside 0 < t < end; a write off the dt g
 time a non-finite or out-of-range state or factor refuses the step (domain_valid, on every step's
 end state; also rate_checks, wherever the composite evaluates readouts), as does a stale write
 count (in the event map, as replacement's stale generation does).
+
+**species_regulated_availability@2** (B1′; docs/INVENTORY_COUPLING_DESIGN.md §2.1; the lead's
+ruling C of 19 November 2026; development, not judged) is @1 plus operator targets, rate routes
+to another operator's routable control (contract ROUTABLE_CONTROLS). @1 is unchanged, its
+programs included. Every @2 target declares its evaluation:
+* an inner target is "step_view", as @1's: held through @3's step.
+* an operator target {operator, control, ids, evaluation: "target_half_steps",
+  operating_range: [low, high]} names a target law and control of RATE_ROUTES (the turnover's
+  turnover_rate by route ID; the reactions' reaction_multiplier by reaction ID, every site).
+  Its factor, the same F = b + (1 - b) f, is evaluated at the start of each of the target's
+  half-steps, from the state that half-step receives (pump_composite._half_step), and multiplies
+  the scheduled rate, which is the maximum. Its source, a concentration (mM) or a state's
+  fraction, is held to the declared range at every evaluation of an enabled coupling: a value
+  outside refuses the half-step and is never clipped.
+The target's elements and their cells come from its declaration (routable_elements), bound
+against it. Refused at the binding: an operator target the definition does not declare; an
+unknown element; an outside-node element (version 2 routes cell-side elements only, since its
+source is read in the element's cell); a state source not declared in an element's cell; and an
+element on a replaced slot. The definition refuses a route to a target declared before the
+coupling (pump_composite.rate_route_definition_errors).
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+from types import MappingProxyType
 
 import numpy as np
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
@@ -118,6 +141,24 @@ LAYOUT_FIELDS = (
 )
 TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_channel_routes"}
 
+# Version 2 (the module docstring): the routable controls it routes to, each with its element
+# table ([elements, width] int64 route per element, -1 pads), and every route's operating range
+# ([route] low and high; -inf and inf on an inner target's route).
+LAW_ID_V2 = "species_regulated_availability@2"
+EVALUATIONS = MappingProxyType({"inner": "step_view", "operator": "target_half_steps"})
+OPERATOR_TABLES = MappingProxyType(
+    {
+        ("scheduled_species_turnover@1", "turnover_rate"): "coupling_turnover_rate_routes",
+        ("local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
+    }
+)
+LAYOUT_FIELDS_V2 = (
+    *LAYOUT_FIELDS,
+    *OPERATOR_TABLES.values(),
+    "coupling_route_low",
+    "coupling_route_high",
+)
+
 
 # ------------------------------------------------------------------ declaration
 
@@ -148,6 +189,19 @@ class Target:
     control: str
     ids: tuple
     side: str | None
+
+
+@dataclass(frozen=True)
+class OperatorTarget:
+    """Version 2's operator target (the module docstring): a routable control of another
+    operator, by its elements' IDs, evaluated in that operator's half-steps."""
+
+    operator: str
+    control: str
+    ids: tuple
+    evaluation: str  # "target_half_steps".
+    operating_range: tuple  # (low, high): the source's concentration (mM) or state fraction.
+    side: None = None  # An operator target takes no side.
 
 
 @dataclass(frozen=True)
@@ -298,7 +352,78 @@ def _target_cells(model, target, element):
     }[target.side]
 
 
-def _parse_couplings(raw, base, listed, states):
+def _operating_range(raw, name):
+    """Version 2: an operator target's [low, high], finite with low < high (the source kind's
+    own bounds are checked with the source)."""
+    if type(raw) is not list or len(raw) != 2:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name}'s operating_range is [low, high]")
+    low, high = (_number(v, f"{LAW_ID_V2}: coupling {name}'s operating_range bound") for v in raw)
+    if not low < high:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name}'s operating_range has low < high")
+    return (low, high)
+
+
+def _operator_target(raw, name):
+    """Version 2's operator target (the module docstring), its elements bound at binding."""
+    t = _fields(
+        raw,
+        {"operator", "control", "ids", "evaluation", "operating_range"},
+        f"{LAW_ID_V2} target",
+    )
+    if (t["operator"], t["control"]) not in OPERATOR_TABLES:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} targets {t['operator']!r}'s {t['control']!r}; "
+            "routable targets: " + ", ".join(f"{law}'s {field}" for law, field in OPERATOR_TABLES)
+        )
+    if t["evaluation"] != EVALUATIONS["operator"]:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s operator target is evaluated at "
+            f"{EVALUATIONS['operator']!r}: the start of each of its target's half-steps"
+        )
+    ids = _id_list(t["ids"], f"coupling {name}'s target ids")
+    return OperatorTarget(
+        t["operator"],
+        t["control"],
+        ids,
+        t["evaluation"],
+        _operating_range(t["operating_range"], name),
+    )
+
+
+def _inner_target(raw, name, elements, version):
+    """An inner target (@1's, unchanged; version 2 also declares its evaluation, "step_view")."""
+    keys = {"operator", "control", "ids", "side"} | ({"evaluation"} if version == 2 else set())
+    t = _fields(raw, keys, f"{LAW_ID} target")
+    if t["operator"] != "inner":
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} targets {t['operator']!r}; version 1 targets the inner "
+            "model's controls only (routes to other operators' controls are a later door, §2)"
+        )
+    if version == 2 and t["evaluation"] != EVALUATIONS["inner"]:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s inner target is evaluated at "
+            f"{EVALUATIONS['inner']!r}: once per step, held through @3's step"
+        )
+    if t["control"] not in TARGET_CONTROLS:
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} targets {t['control']!r}; admitted targets: "
+            + ", ".join(TARGET_CONTROLS)
+        )
+    ids = _id_list(t["ids"], f"coupling {name}'s target ids")
+    unknown = [i for i in ids if i not in elements[t["control"]]]
+    if unknown:
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}"
+        )
+    if t["control"] == "junction":
+        if t["side"] not in SIDES:
+            raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
+    elif t["side"] is not None:
+        raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
+    return Target("inner", t["control"], ids, t["side"])
+
+
+def _parse_couplings(raw, base, listed, states, *, version=1):
     if type(raw) is not list:
         raise ConfigError(f"{LAW_ID} declares its couplings in an explicit list")
     m = base.model
@@ -320,29 +445,11 @@ def _parse_couplings(raw, base, listed, states):
             )
         _fields(entry, keys, f"{LAW_ID} coupling")
         name = identifier(entry["id"])
-        t = _fields(entry["target"], {"operator", "control", "ids", "side"}, f"{LAW_ID} target")
-        if t["operator"] != "inner":
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} targets {t['operator']!r}; version 1 targets the inner "
-                "model's controls only (routes to other operators' controls are a later door, §2)"
-            )
-        if t["control"] not in TARGET_CONTROLS:
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} targets {t['control']!r}; admitted targets: "
-                + ", ".join(TARGET_CONTROLS)
-            )
-        ids = _id_list(t["ids"], f"coupling {name}'s target ids")
-        unknown = [i for i in ids if i not in elements[t["control"]]]
-        if unknown:
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}"
-            )
-        if t["control"] == "junction":
-            if t["side"] not in SIDES:
-                raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
-        elif t["side"] is not None:
-            raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
-        target = Target("inner", t["control"], ids, t["side"])
+        raw_target = entry["target"]
+        if version == 2 and isinstance(raw_target, dict) and raw_target.get("operator") != "inner":
+            target = _operator_target(raw_target, name)
+        else:
+            target = _inner_target(raw_target, name, elements, version)
         source = entry["source"]
         if (
             not isinstance(source, dict)
@@ -376,13 +483,20 @@ def _parse_couplings(raw, base, listed, states):
             if origin not in by_state:
                 raise ConfigError(f"{LAW_ID}: coupling {name} reads an undeclared state {origin!r}")
             k = n = None
-            for element in ids:
+            for element in target.ids if type(target) is Target else ():  # Operator: at binding.
                 for cell in _target_cells(m, target, element):
                     if cell not in by_state[origin].cells:
                         raise ConfigError(
                             f"{LAW_ID}: coupling {name} reads state {origin} in {cell}, where it "
                             "is not declared"
                         )
+        if type(target) is OperatorTarget:
+            low, high = target.operating_range
+            if low < 0 or (kind == "state" and high > 1):
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {name}'s operating_range lies in "
+                    + ("[0, 1], its state's fraction" if kind == "state" else "[0, inf) mM")
+                )
         basal = _fraction(entry["basal"], f"coupling {name}'s basal level", upper_open=True)
         couplings.append(Coupling(name, target, kind, origin, law, k, n, basal))
     if len({c.id for c in couplings}) != len(couplings):
@@ -390,15 +504,38 @@ def _parse_couplings(raw, base, listed, states):
     return tuple(couplings)
 
 
-def parse_declaration(raw, base):
+def parse_declaration(raw, base, *, version=1):
+    law = LAW_ID if version == 1 else LAW_ID_V2
     _fields(raw, {"law", "species", "states", "couplings"}, "species-regulated availability")
-    if raw["law"] != LAW_ID:
-        raise ConfigError("Species-regulated availability requires law " + LAW_ID)
-    species = common.parse_read_species(raw["species"], base, LAW_ID)
+    if raw["law"] != law:
+        raise ConfigError("Species-regulated availability requires law " + law)
+    species = common.parse_read_species(raw["species"], base, law)
     listed = {s.id for s in species}
     states = _parse_states(raw["states"], base, listed)
-    couplings = _parse_couplings(raw["couplings"], base, listed, states)
-    return Declaration(LAW_ID, species, states, couplings)
+    couplings = _parse_couplings(raw["couplings"], base, listed, states, version=version)
+    return Declaration(law, species, states, couplings)
+
+
+def _target_to_dict(target, law):
+    """A target's declaration: @1's form; version 2 adds an inner target's evaluation, and an
+    operator target is its own form."""
+    if type(target) is OperatorTarget:
+        return dict(
+            operator=target.operator,
+            control=target.control,
+            ids=list(target.ids),
+            evaluation=target.evaluation,
+            operating_range=list(target.operating_range),
+        )
+    out = dict(
+        operator=target.operator,
+        control=target.control,
+        ids=list(target.ids),
+        side=target.side,
+    )
+    if law == LAW_ID_V2:
+        out["evaluation"] = EVALUATIONS["inner"]
+    return out
 
 
 def _initial_to_dict(state):
@@ -446,12 +583,7 @@ def declaration_to_dict(declaration):
         couplings=[
             dict(
                 id=c.id,
-                target=dict(
-                    operator=c.target.operator,
-                    control=c.target.control,
-                    ids=list(c.target.ids),
-                    side=c.target.side,
-                ),
+                target=_target_to_dict(c.target, declaration.law),
                 source={c.source_kind: c.source},
                 law=c.law,
                 basal=c.basal,
@@ -575,6 +707,84 @@ def _writes_at(entries, time):
 # ------------------------------------------------------------------ binding
 
 
+def _operator_routes(spec, declaration, routes, slot_keys):
+    """Version 2: each operator target's routes, appended to `routes` after the inner ones, and
+    ({table field: [elements, width] route per element, -1 pads}, [(low, high) per appended
+    route]). The elements and their cells are the target's (routable_elements), bound against its
+    declaration. Refused here: a target the definition does not declare, an unknown element, an
+    outside-node element (its source is read in the element's cell), and a state source not
+    declared in an element's cell."""
+    m = spec.model
+    species, cells = list(m.species_ids), [c.id for c in m.cells]
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    by_state = {s.id: s for s in declaration.states}
+    on_element = {key: {} for key in OPERATOR_TABLES}
+    sizes = {
+        key: len(declared[key[0]][0].routable_elements(declared[key[0]][1], key[1]))
+        if key[0] in declared
+        else 0
+        for key in OPERATOR_TABLES
+    }
+    ranges = []
+    for c_index, coupling in enumerate(declaration.couplings):
+        target = coupling.target
+        if type(target) is not OperatorTarget:
+            continue
+        if target.operator not in declared:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}, which the "
+                "definition does not declare"
+            )
+        op, target_declaration = declared[target.operator]
+        elements = op.routable_elements(target_declaration, target.control)
+        named = {element for element, _ in elements}
+        unknown = [i for i in target.ids if i not in named]
+        if unknown:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {coupling.id} names {target.operator}'s unknown element "
+                f"{unknown[0]!r}"
+            )
+        law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
+        from_state = coupling.source_kind == "state"
+        for index, (element, cell) in enumerate(elements):
+            if element not in target.ids:
+                continue
+            if cell is None:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} routes {target.operator}'s {element} at "
+                    "an outside node; version 2 routes cell-side elements only, since its source "
+                    "is read in the element's cell"
+                )
+            if from_state and cell not in by_state[coupling.source].cells:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads state {coupling.source} in {cell}, "
+                    "where it is not declared"
+                )
+            key = (target.operator, target.control)
+            on_element[key].setdefault(index, []).append(len(routes))
+            routes.append(
+                dict(
+                    law=law,
+                    row=0 if from_state else species.index(coupling.source),
+                    cell=cells.index(cell),
+                    slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
+                    half=1.0 if from_state else coupling.half_saturation_mM,
+                    coefficient=1.0 if from_state else coupling.hill_coefficient,
+                    basal=coupling.basal,
+                    coupling=c_index,
+                )
+            )
+            ranges.append(target.operating_range)
+    tables = {}
+    for key, field in OPERATOR_TABLES.items():
+        depth = max((len(v) for v in on_element[key].values()), default=0)
+        table = -np.ones((sizes[key], depth), dtype=np.int64)
+        for index, members in on_element[key].items():
+            table[index, : len(members)] = members
+        tables[field] = table
+    return tables, ranges
+
+
 def bind(spec, declaration, schedule):
     m, x = spec.model, spec.execution
     species = list(m.species_ids)
@@ -612,6 +822,8 @@ def bind(spec, declaration, schedule):
             layout["regulatory_input_coefficient"][i, j] = item.hill_coefficient
     routes, on_element = [], {name: {} for name in TARGET_TABLES}
     for c_index, coupling in enumerate(declaration.couplings):
+        if type(coupling.target) is OperatorTarget:
+            continue  # Version 2's, after every inner route (_operator_routes).
         law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
         for element in coupling.target.ids:
             for cell in _target_cells(m, coupling.target, element):
@@ -631,6 +843,10 @@ def bind(spec, declaration, schedule):
                 )
                 on_element[coupling.target.control].setdefault(index, []).append(len(routes))
                 routes.append(route)
+    inner_routes = len(routes)
+    operator = None
+    if declaration.law == LAW_ID_V2:
+        operator = _operator_routes(spec, declaration, routes, slot_keys)
     layout.update(
         coupling_route_law=np.asarray([r["law"] for r in routes], dtype=np.int64),
         coupling_route_row=np.asarray([r["row"] for r in routes], dtype=np.int64),
@@ -648,6 +864,12 @@ def bind(spec, declaration, schedule):
         for index, members in on_element[name].items():
             table[index, : len(members)] = members
         layout[field] = table
+    if operator is not None:  # Version 2: its element tables and every route's range.
+        tables, ranges = operator
+        layout.update(tables)
+        unbounded = [(-np.inf, np.inf)] * inner_routes
+        bounds = np.asarray(unbounded + ranges, dtype=float).reshape(len(routes), 2)
+        layout.update(coupling_route_low=bounds[:, 0], coupling_route_high=bounds[:, 1])
     switches = np.asarray([changes[0][1] for _, changes in schedule.switches], dtype=float)
     state = dict(
         regulatory_state=np.asarray(
@@ -764,6 +986,22 @@ def factors_valid(state, p, *, xp):
     return xp.all(xp.isfinite(f) & (f >= 0) & (f <= 1))
 
 
+def range_valid(state, p, *, xp):
+    """Version 2: every enabled route's source inside its declared operating range, at the state
+    a target's half-step receives: a species route's concentration (mM, in its cell at the
+    declared volume) or a state route's fraction. An inner route's range is unbounded."""
+    law = p.coupling_route_law
+    rows, cells = p.coupling_route_row, p.coupling_route_cell
+    amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
+    source = amount / p.volume[cells]
+    if p.regulatory_slot_cell.shape[0] > 0:  # Static: states declared.
+        s = state.regulatory_state[p.coupling_route_slot]
+        source = xp.where(law >= STATE_FRACTION, s, source)
+    inside = (source >= p.coupling_route_low) & (source <= p.coupling_route_high)
+    on = state.coupling_enabled[p.coupling_route_coupling] > 0
+    return xp.all(inside | ~on)
+
+
 def own_valid(state, *, xp):
     s, total = state.regulatory_state, state.regulatory_input_integral
     valid = xp.all(xp.isfinite(s) & (s >= 0) & (s <= 1))
@@ -818,6 +1056,8 @@ def check_replaced_slots(spec, declaration):
                 "version 1)"
             )
     for coupling in declaration.couplings:
+        if type(coupling.target) is OperatorTarget:
+            continue  # Version 2: check_replaced_operator_elements.
         for element in coupling.target.ids:
             if coupling.target.control == "junction":
                 junction = next(j for j in m.junctions if j.id == element)
@@ -830,6 +1070,27 @@ def check_replaced_slots(spec, declaration):
                     f"{LAW_ID}: coupling {coupling.id} targets {element}, on "
                     f"{sorted(hit)[0]}, a slot "
                     f"{common.REPLACEMENT_LAW} replaces (refused in version 1)"
+                )
+
+
+def check_replaced_operator_elements(spec, declaration):
+    """Version 2: refuse an operator target's element on a slot replacement@1 replaces (its source
+    is read in that cell, which a newcomer would take over)."""
+    _, events = common.replacement_of(spec)
+    replaced = {v.slot for v in events}
+    if not replaced:
+        return
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    for coupling in declaration.couplings:
+        target = coupling.target
+        if type(target) is not OperatorTarget or target.operator not in declared:
+            continue
+        op, target_declaration = declared[target.operator]
+        for element, cell in op.routable_elements(target_declaration, target.control):
+            if element in target.ids and cell in replaced:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}'s {element}, "
+                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces (refused in version 2)"
                 )
 
 
@@ -1040,3 +1301,157 @@ class SpeciesRegulatedAvailability(Operator):
         else:
             columns["coupling_factor"] = np.zeros(0)
         return columns
+
+
+# ------------------------------------------------------------------ version 2
+
+
+@contextmanager
+def _named_v2():
+    """Version 2's refusals from the helpers it shares with @1, which name @1, name version 2."""
+    try:
+        yield
+    except ConfigError as error:
+        raise ConfigError(str(error).replace(LAW_ID, LAW_ID_V2)) from None
+
+
+class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
+    """species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′,
+    docs/INVENTORY_COUPLING_DESIGN.md §2.1). It shares @1's laws, states, events and inner
+    targets; its layout adds the operator targets' element tables and every route's operating
+    range. Development, not judged."""
+
+    LAW_ID = LAW_ID_V2
+    LAYOUT_FIELDS = LAYOUT_FIELDS_V2
+    RATE_ROUTES = tuple(OPERATOR_TABLES)
+    # Its run view (the contract; an operator registered after the run view declares it).
+    VIEW_LAYERS = (
+        {
+            "id": "regulation",
+            "label": "Regulated availability and rates",
+            "representation": "modelled",
+        },
+    )
+    UNITS = {
+        "regulatory_state": "1",
+        "regulatory_input_integral": "s",
+        "regulatory_crossing_step": "1",
+        "regulatory_writes_applied": "1",
+        "coupling_enabled": "1",
+        "coupling_step_count": "1",
+        "coupling_factor": "1",
+    }
+    RECORD_KINDS = {
+        "regulatory_state": "level",
+        "regulatory_input_integral": "cumulative",
+        "regulatory_crossing_step": "level",
+        "regulatory_writes_applied": "cumulative",
+        "coupling_enabled": "level",
+        "coupling_step_count": "cumulative",
+    }
+
+    def view_sets(self, spec, declaration):
+        """The run view's sets of its own axes: each regulatory slot (a state in a cell), each
+        coupling with its target, and the one step counter."""
+        keys = slots(declaration)
+        return {
+            "regulatory_slot": {
+                "id": "regulatory_slot",
+                "ids": tuple(f"{state}:{cell}" for state, cell in keys),
+                "holds": "regulatory state in a cell",
+                "at": tuple({"cell": cell} for _, cell in keys),
+            },
+            "coupling": {
+                "id": "coupling",
+                "ids": tuple(c.id for c in declaration.couplings),
+                "holds": "coupling",
+                "kinds": tuple(
+                    f"{c.target.operator}: {c.target.control}" for c in declaration.couplings
+                ),
+            },
+            "one": {"id": "regulation_step_counter", "ids": ("steps",), "holds": "step counter"},
+        }
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: each coupling's switch changes after the start, and each
+        regulatory write, at its cell."""
+        layer = self.VIEW_LAYERS[0]["id"]
+        events = [
+            dict(
+                time=float(t),
+                kind="switch",
+                layer=layer,
+                at={"coupling": coupling},
+                label=f"coupling {coupling} {'on' if value else 'off'}",
+            )
+            for coupling, changes in schedule.switches
+            for t, value in changes
+            if t > 0
+        ]
+        events += [
+            dict(
+                time=float(t),
+                kind="write",
+                layer=layer,
+                at={"cell": cell},
+                label=f"regulatory state {state} in {cell} written to {value!r}",
+            )
+            for (state, cell), entries in schedule.writes
+            for t, value in entries
+        ]
+        return tuple(sorted(events, key=lambda e: (e["time"], e["label"])))
+
+    def parse(self, raw, base, inner_model):
+        with _named_v2():
+            return parse_declaration(raw, base, version=2)
+
+    def parse_schedule(self, raw, base, declaration):
+        with _named_v2():
+            return parse_schedule(raw, base, declaration)
+
+    def check_definition(self, spec, declaration, schedule, model):
+        with _named_v2():
+            common.check_species_cap(spec, LAW_ID_V2)
+            common.check_identities(spec, LAW_ID_V2, declaration.species)
+            check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
+            check_replaced_slots(spec, declaration)
+            check_replaced_operator_elements(spec, declaration)
+            check_rate_limit(spec, declaration)
+
+    def batch_signature(self, declaration):
+        return (LAW_ID_V2, *super().batch_signature(declaration)[1:])
+
+    def summary(self, spec, declaration, schedule, history):
+        out = super().summary(spec, declaration, schedule, history)
+        out["coupling_law"] = LAW_ID_V2
+        for c in declaration.couplings:
+            if type(c.target) is OperatorTarget:
+                out["coupling_targets"][c.id].update(
+                    operator=c.target.operator,
+                    evaluation=c.target.evaluation,
+                    operating_range=list(c.target.operating_range),
+                )
+        return out
+
+    def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        with _named_v2():
+            return bind(spec, declaration, schedule)
+
+    def declared_rate_routes(self, declaration):
+        return tuple(
+            dict.fromkeys(
+                (c.target.operator, c.target.control)
+                for c in declaration.couplings
+                if type(c.target) is OperatorTarget
+            )
+        )
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        """(the product of the routes on each element of the target's control, every enabled
+        route's source in its range) from the state the target's half-step receives; None
+        without a route on that control (static, by its table's shape)."""
+        table = getattr(p, OPERATOR_TABLES[(target, field)])
+        if table.shape[1] == 0:
+            return None
+        values = route_factors(state, p, xp=xp)
+        return element_product(values, table, xp=xp), range_valid(state, p, xp=xp)

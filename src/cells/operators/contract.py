@@ -38,7 +38,9 @@ Declarations (class attributes):
   target control field), ...) names the routable controls a source may route to. Its
   ``rate_factors`` gives each its factor and validity from the state the target's half-step
   receives, or None where the definition declares no route there (static, by layout shape);
-  ``declared_rate_routes(declaration)`` names the routes a definition declares. The composite
+  ``declared_rate_routes(declaration)`` names the routes a definition declares, and a target's
+  ``routable_elements(declaration, field)`` names each element of a routable control with the
+  cell its source is read in. The composite
   multiplies the target's field by its sources' factors in declared order, at the start of each
   of the target's two half-steps. A declared route's source precedes its target (refused at the
   definition otherwise), and a composition without a route source is unchanged.
@@ -557,6 +559,12 @@ class Operator:
         at the definition with its target's place in the operator list (B1′)."""
         return ()
 
+    def routable_elements(self, declaration, field):
+        """((element id, cell id or None), ...) of a routable control field, aligned with its last
+        axis: the ids a route names and the cell where its source is read (None: an outside node)
+        (B1′, the target side; a routable operator defines it)."""
+        raise NotImplementedError
+
     def closures(self, state, p, q, *, xp):
         """{mask field: open (bool array)} for CLOSES, from state (q: the running view)."""
         return {}
@@ -990,6 +998,8 @@ def _check_routes(operator):
             f"{name}: a routable control is read in exact half-steps only: a split part kept "
             "split under RK4, and no in-step process"
         )
+    if routable and not _defined_below_operator(operator, "routable_elements"):
+        raise ValueError(f"{name}: a routable operator defines routable_elements")
     routes = operator.RATE_ROUTES
     pairs = isinstance(routes, tuple) and all(
         isinstance(route, tuple) and len(route) == 2 and all(map(_named_string, route))
