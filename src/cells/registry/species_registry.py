@@ -1036,7 +1036,11 @@ def check_stage_read_rows(spec):
     for kind_id, declaration in getattr(m, "kinds", ()):
         kind = registry.lookup(kind_id)
         if kind.stage_read is not None and kind.stage_rows is not None:
-            rows = tuple(kind.stage_rows(declaration))
+            rows = tuple(
+                tuple(row[:2])
+                for row in kind.stage_rows(declaration)
+                if isinstance(row, (tuple, list)) and len(row) in (2, 3)
+            )  # A malformed row is @3's to refuse, later (_check_stage_rows), as in P2's rule.
             if rows:  # A read that rewrites no row (an identity read) stores nothing.
                 reads.append((kind_registry.qualified(kind_id), rows))
     if not reads:
@@ -1106,7 +1110,7 @@ def check_amount_reading_routes(spec):
             rows = tuple(kind.stage_rows(declaration))
         rows += tuple(getattr(declaration, "closure_rows", ()))
         for row in rows:  # A malformed row (not species, node[, law]) is @3's to refuse, later.
-            if isinstance(row, tuple) and len(row) in (2, 3):
+            if isinstance(row, (tuple, list)) and len(row) in (2, 3):  # @3 admits list rows too.
                 held.setdefault((row[0], row[1]), qualified(kind_id))
     if not held:
         return
