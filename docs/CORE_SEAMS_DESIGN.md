@@ -1537,3 +1537,22 @@ confirmed with the advisor.
     beside any declared kind. The rule guards the day that refusal lifts.
   - Reading through the closure (free amounts for step-boundary operators, a free-particle osmolyte
     count) waits for an experiment that needs it. Its acceptance test is "equal free h gives equal u".
+
+**§18 amended on 19 November (the lead, 02:13 UTC), on the gate queue.**
+- **Seam D's first landing no longer follows the renewal** (the 18:31 amendment's last line).
+  - Their files are disjoint apart from the tier record. D's are the @3 spec and model files and
+    the run view. The renewal's are the crossrev modules and their tests.
+  - D changes no existing program: its eleven crossrev sets are identical to main's.
+  - D's crossrev world goes into a new `seams` set, one world per landed seam (§10). That set is
+    installed after the renewal, as an addition.
+  - The renewal's old format is proved again at main's `src/` when it lands, as the renewal rule
+    asks. Main's `src/` has moved four times since the renewal's base, so the proof was owed
+    anyway.
+- **The renewal lands in a declared freeze,** announced in the agents' common brief beforehand.
+  Its chain, the old-format proof, its landing and the install run back to back on empty lanes.
+  - The install swaps the record in place, so no against-record gate or merged check may run
+    meanwhile.
+  - Heads gated before the install land through a trial that includes the renewal.
+- **The lead's landing check is version 2** (`merged_check2.sh`). It runs version 1's replication
+  and crossrev checks, then every tier-1 or tier-2 test file changed on either side since the merge
+  base. Its self-test refused the unfixed F trial, where seven tests broke.
