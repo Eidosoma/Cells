@@ -1,0 +1,14 @@
+{
+ "kind": "a fixture's results",
+ "protocol_id": "fixture-mg0a-v1",
+ "verdict": {
+  "passed": true,
+  "criteria": [
+   {"id": "A1", "judged": true, "passed": true, "values": [0]},
+   {"id": "A2", "judged": true, "passed": true, "values": [0]},
+   {"id": "A3", "judged": true, "passed": true, "values": [0]},
+   {"id": "A4a", "judged": true, "passed": true, "values": [0]},
+   {"id": "A4b", "judged": true, "passed": true, "values": [0]}
+  ]
+ }
+}

@@ -213,3 +213,36 @@ def test_the_convergence_scale_is_the_total_unless_counts_mix_signs(s4):
         # planted: the |T_L| scale's tolerance at this state, in ulps of the residual's terms
         assert Decimal("1e-13") * ratio / exact.dec(exact.EPS) < 1
         assert abs(sp["residual_fmol"]["H"]) <= Decimal("1e-50") * sc["H"]
+
+
+def test_the_per_ligand_floors_admit_a_jointly_infeasible_state_and_the_margin_refuses_it():
+    """Amendment C4 (§19 amended at 19:52 UTC): mgx_MgmH frees a proton only by binding Mg²⁺. At
+    T_H = −2, T_Mg = 1, T_B = 10 fmol each per-ligand floor passes (H > −10, Mg > 0), but freeing
+    the protons takes more Mg²⁺ than there is. The exact margin is t* = −1/2 fmol; the LP agrees;
+    the dual and primal solves both refuse. At T_Mg = 3 it is +1/2 and both solve, alike."""
+    from fractions import Fraction
+
+    from validation.core_seams.references import primal
+    spec = {"ligands": ["H", "Mg"], "binders": ["mgx"]}
+    sy = B.System(spec, REG)
+    tB = {"mgx": 10.0}
+    bad = B.joint_margin(sy, {"H": -2.0, "Mg": 1.0}, tB)
+    assert bad["per_ligand_valid"] and not bad["valid"]
+    assert bad["t_star"] == Fraction(-1, 2)
+    assert abs(B.joint_margin_lp(sy, {"H": -2.0, "Mg": 1.0}, tB) + 0.5) < 1e-12
+    with pytest.raises(ValueError, match="jointly infeasible"):
+        B.solve(sy, {"H": -2.0, "Mg": 1.0}, tB, 1.0)
+    with pytest.raises(ValueError):
+        primal.solve_primal(spec, REG, {"H": -2.0, "Mg": 1.0}, tB, 1.0)
+    assert B.joint_margin(sy, {"H": -2.0, "Mg": 2.0}, tB)["t_star"] == 0      # the boundary
+    ok = B.joint_margin(sy, {"H": -2.0, "Mg": 3.0}, tB)
+    assert ok["valid"] and ok["t_star"] == Fraction(1, 2)
+    d = B.solve(sy, {"H": -2.0, "Mg": 3.0}, tB, 1.0)
+    p = primal.solve_primal(spec, REG, {"H": -2.0, "Mg": 3.0}, tB, 1.0)
+    with exact.context():
+        for L in ("H", "Mg"):
+            assert abs((d["x_mM"][L] / p["x_mM"][L]).ln()) < Decimal("1e-45")
+    # where no count is negative, the margin is the per-ligand floors' product region
+    s3 = B.System({"ligands": ["H", "Mg"], "binders": ["nuc4"]}, REG)
+    m = B.joint_margin(s3, {"H": 0.3, "Mg": 0.2}, {"nuc4": 5.0})
+    assert m["valid"] and m["t_star"] == min(m["per_ligand"].values())

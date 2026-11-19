@@ -24,7 +24,7 @@ class CellsLegend extends HTMLElement {
    *          the layers add to the scene (a key may list `chips`, [{ colour, label }]: each ion's colour beside its name),
    *          a hint on how to see a layer that waits for a cell to be chosen, and the id of the panel that says
    *          what stands behind them; `time` is the slow-down of a layer that moves (true speed, or slowed), and
-   *          `example` the words an example run keeps in the legend ("Example: invented numbers"), or an illustration in the
+   *          `example` the words an example run keeps in the legend ("Invented numbers · no run of Cells' engine"), or an illustration in the
    *          Cell view ("Illustration: not a run"); `compact` the one line under which a view with little room keeps the
    *          signs, the `cannot` entries and the door to the panel (the Cell view's flux), with the channel's name beside its options
    * folded   the keys and the note start closed (a short window)

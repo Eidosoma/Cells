@@ -506,6 +506,14 @@ are recorded here.
   - `pump_laws`: `nak_atp_mass_action_positive@1` when a patch declares a Na/K pump,
     `ca_atp_mass_action_positive@1` when a patch declares a calcium pump, each with its fuel kind;
   - `junction_heat_booking`;
+  - `heat_bookings` (seam D, CORE_SEAMS §6.1–6.2): ((mover class, booking ID), ...), the
+    definition's `heat_bookings` key for channels, membranes, pumps, calcium pumps and each declared
+    kind by its ID, never junctions (they keep `junction_heat_booking`) and never the tableau, so ()
+    for every definition of today's. The step books each class picked as `trapezoid_nonnegative@1`
+    once, in the core (`surface_pump_v3.trapezoid_fields`): its heat rates at the end state and the
+    last-stage potentials, through `explicit_rates` with the stage read and the door, averaged with
+    stage 0's. The water and replacement families run @3 through compositions whose inner carries
+    the structure, so they book what is picked too;
   - from later landings, each present only when declared: the passive law (A5), transporters (B5),
     stage reads (B4), implicit route kinds, and B7's flag for a free face-free node with an ion
     route.

@@ -101,6 +101,44 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The core-seams pass's next landings (18 November late evening to 19 November 2026).** Each
+  merge's message records its gates. The merged checks and the tier folds are in
+  `/mnt/workspaces/Cells/core-pass-kickoff-20261118/` (`replication-checks/`, `landings/`).
+  - c78462e7: composition's M1, the fixed-read rule with closures' exact reach.
+  - 5e2c78e9: the first external review's findings 1 and 4.
+  - de7dfeb9: seam C's three reference amendments, registered before any output of the general
+    closure.
+  - e515b87b: refusal 4 version 1.3, the compartments admission judged by the moves at the
+    compartment's node.
+  - 09ac1743: B1's first two slices, the operators' energy roles and E's standard_free_energies
+    hook.
+  - d64fb664: @3's guard landing, with B1's @3 part, the run view's format items and the
+    moved-rows guard.
+  - 34cdd34b: F's registry hand-offs, the kind fields' axes and hosts, `forms` and seam A's
+    `cycle` on cycle laws, and the general closure's fields on binding laws.
+    - Gate on lane B: tiers 555 files, 0 changed; G1 113 of 113; crossrev 11 of 11; IDs
+      additions only.
+    - main was the gate's base, so the merge's tree is the gated head's.
+    - It carries the second external review's finding 5: an ensemble adapter family's model ID
+      works in either form through the launch path.
+  - 51cd419f: the gate tools move into the repository (D220) as `scripts/gates/`.
+    - FR's landing set's lane check charges by process, so a waiting unit no longer refuses it.
+    - crossrev's set runner fails closed.
+    - `test_tiers.py fold` folds a landing's rows onto main's record.
+  - f5025e6f: FR-8's stage 0, the long-duration methods measured (development, not judged).
+    - Results: `validation/long_duration/RESULTS_20261118.md`.
+    - The method choice goes to the user as options.
+  - 6bc32a01: the core-seams references' amendments F4 (finding 4's zero-slope fix), C4 (the
+    closure's joint validity) and A2 (seam A's needs).
+    - Its merged check refused on one load-sensitive tooling test, which passed idle. Since then
+      the test waits for CPU time (39d51865).
+  - **Each of these lands through a stacked trial.** The trial merges are checked side by side,
+    and a landing's staged tree must equal its checked trial plus main's later paths
+    (`tools/assert_landing_tree.py`).
+  - **The landing check, version 2,** adds the test files changed on either side since the
+    merge base to the replication and crossrev checks. Its self-test refused the unfixed F trial,
+    where seven tests broke.
+
 - **The core-seams pass's first landings (18 November 2026, evening).** Four branches merged into
   main. Every core head is checked again on its merge with main, because main's src/ moved between
   them (CORE_SEAMS §18, amended at 18:31 UTC).

@@ -157,6 +157,50 @@ class Primal:
                 eps = eps / 2
                 if eps < Decimal("1e-40"):
                     break
+        return self._lp_start()
+
+    def _lp_start(self) -> list:
+        """Amendment C4: where the anchors fail (a form that frees one ligand binds another), the
+        start is the joint-margin LP's binder distribution (HiGHS, doubles, no dual variable of
+        the speciation), mixed with the uniform one until every species is positive. Refused
+        when no interior exists."""
+        import numpy as np
+        from scipy.optimize import linprog
+        cols = list(range(len(self.forms)))
+        nb = len(self.binders)
+        bases = {B: len(self.forms) + k for k, B in enumerate(self.binders)}
+        nv = len(self.forms) + nb + 1
+        c = np.zeros(nv)
+        c[-1] = -1.0
+        A_ub = np.zeros((len(self.ligands), nv))
+        for i, L in enumerate(self.ligands):
+            for j in cols:
+                B, _fid, counts, _mu = self.forms[j]
+                A_ub[i, j] = float(self.T_B[B]) * counts.get(L, 0)
+            A_ub[i, -1] = 1.0
+        b_ub = np.array([float(self.T_L[L]) for L in self.ligands])
+        A_eq = np.zeros((nb, nv))
+        for k, B in enumerate(self.binders):
+            A_eq[k, bases[B]] = 1.0
+            for j in cols:
+                if self.forms[j][0] == B:
+                    A_eq[k, j] = 1.0
+        bounds = [(0, None)] * (nv - 1) + [(None, None)]
+        r = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=np.ones(nb), bounds=bounds,
+                    method="highs")
+        if not r.success or -r.fun <= 0:
+            raise ValueError("no interior start found: the totals are not jointly valid")
+        mix = Decimal("0.5")
+        for _ in range(200):
+            xi = []
+            for j in cols:
+                B = self.forms[j][0]
+                k = sum(1 for f in self.forms if f[0] == B) + 1
+                xi.append(self.T_B[B] * ((1 - mix) * Decimal(float(r.x[j])) + mix / k))
+            n = self.amounts(xi)
+            if all(v > 0 for v in n.values()):
+                return xi
+            mix = mix / 2
         raise ValueError("no interior start found")
 
     def solve(self, max_iter: int = 400) -> dict:

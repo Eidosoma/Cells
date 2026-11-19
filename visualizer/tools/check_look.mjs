@@ -638,7 +638,8 @@ try {
       ["the Protein atlas with Cells' units", atlas("units")],
       ["the Protein atlas with the species' own proteins", atlas("own")],
       ["the Engine view", `${V}.setLens("engine")`],
-      ["the Experiments view", `${V}.setLens("experiments")`],
+      // The tab opens on its landing, a page of cards that draws nothing on the picture (18 November 2026): its runs' view is walked.
+      ["the Experiments view", `(() => { const v = ${V}; v.showExample(null); v.setLens("experiments"); })()`],
       ["the Laws library", `${V}.setLens("laws")`],
       ["the Machines catalogue", `${V}.setLens("machines")`],
       // A model system's own view in the first tab's place (src/lenses/lineage_entry.js), once its run file is read.

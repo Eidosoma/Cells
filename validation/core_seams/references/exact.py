@@ -214,3 +214,98 @@ def det(A):
                 f = M[r][col] / M[col][col]
                 M[r] = [a - f * c for a, c in zip(M[r], M[col], strict=True)]
     return out if sign > 0 else -out
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment F4 (the external review's finding 4): floors built from term sums
+# --------------------------------------------------------------------------------------------
+
+U_DEC = Decimal(5) * Decimal(10) ** (-PREC)       # ½ 10^(1 − PREC): one rounding at PREC digits
+
+
+def det_running(A, E0=None) -> tuple:
+    """(det, absolute error bound) by elimination with partial pivoting and a running error bound.
+
+    Each update a_ij − f a_kj adds u (|a_ij| + |f a_kj|) to the entry's bound, the propagated
+    bounds of its operands, and the multiplier's error times |a_kj|. These are the magnitudes of
+    the terms the elimination combines, so cancellation widens the bound. E0 holds the entries'
+    own bounds (default: one rounding each). First order in u."""
+    u = U_DEC
+    n = len(A)
+    with context():
+        if n == 0:
+            return Decimal(1), Decimal(0)
+        M = [[dec(x) for x in row] for row in A]
+        E = [[(dec(E0[i][j]) if E0 else u * abs(M[i][j])) for j in range(n)] for i in range(n)]
+        sign, det, rel = 1, Decimal(1), Decimal(0)
+        for col in range(n):
+            piv = max(range(col, n), key=lambda r: abs(M[r][col]))
+            if M[piv][col] == 0:
+                return Decimal(0), sum((E[r][col] for r in range(col, n)), Decimal(0))
+            if piv != col:
+                M[col], M[piv] = M[piv], M[col]
+                E[col], E[piv] = E[piv], E[col]
+                sign = -sign
+            p, ep = M[col][col], E[col][col]
+            det = det * p
+            rel += ep / abs(p) + u
+            for r in range(col + 1, n):
+                if M[r][col] == 0 and E[r][col] == 0:
+                    continue
+                f = M[r][col] / p
+                ef = (E[r][col] + abs(f) * ep) / abs(p) + u * abs(f)
+                for j in range(col + 1, n):
+                    t = f * M[col][j]
+                    new = M[r][j] - t
+                    E[r][j] = (E[r][j] + abs(f) * E[col][j] + ef * abs(M[col][j]) +
+                               u * (abs(M[r][j]) + abs(t)))
+                    M[r][j] = new
+        det = det if sign > 0 else -det
+        return det, abs(det) * rel
+
+
+def solve_running(A, b, E0=None) -> tuple:
+    """(x, absolute error bounds) of A x = b by elimination with partial pivoting and a running
+    error bound (as det_running), then back substitution with its own term sums."""
+    u = U_DEC
+    n = len(A)
+    with context():
+        M = [[dec(x) for x in row] + [dec(b[i])] for i, row in enumerate(A)]
+        E = [[(dec(E0[i][j]) if E0 else u * abs(M[i][j])) for j in range(n)] + [u * abs(M[i][n])]
+             for i in range(n)]
+        for col in range(n):
+            piv = max(range(col, n), key=lambda r: abs(M[r][col]))
+            if M[piv][col] == 0:
+                raise ValueError("singular system")
+            M[col], M[piv] = M[piv], M[col]
+            E[col], E[piv] = E[piv], E[col]
+            p, ep = M[col][col], E[col][col]
+            for r in range(col + 1, n):
+                if M[r][col] == 0 and E[r][col] == 0:
+                    continue
+                f = M[r][col] / p
+                ef = (E[r][col] + abs(f) * ep) / abs(p) + u * abs(f)
+                for j in range(col + 1, n + 1):
+                    t = f * M[col][j]
+                    new = M[r][j] - t
+                    E[r][j] = (E[r][j] + abs(f) * E[col][j] + ef * abs(M[col][j]) +
+                               u * (abs(M[r][j]) + abs(t)))
+                    M[r][j] = new
+        x = [Decimal(0)] * n
+        ex = [Decimal(0)] * n
+        for i in range(n - 1, -1, -1):
+            s, es, terms = M[i][n], E[i][n], abs(M[i][n])
+            for j in range(i + 1, n):
+                t = M[i][j] * x[j]
+                s -= t
+                es += E[i][j] * abs(x[j]) + abs(M[i][j]) * ex[j]
+                terms += abs(t)
+            x[i] = s / M[i][i]
+            ex[i] = (es + u * terms) / abs(M[i][i]) + abs(x[i]) * (E[i][i] / abs(M[i][i]) + u)
+        return x, ex
+
+
+def within(x, y, floor, k=10) -> bool:
+    """The zero-aware agreement rule: |x − y| ≤ k floor; a floor of exactly 0 demands x == y."""
+    with context():
+        return abs(dec(x) - dec(y)) <= k * dec(floor)

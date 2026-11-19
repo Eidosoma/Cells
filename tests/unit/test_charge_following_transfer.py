@@ -20,7 +20,10 @@ here from the patches (no adapter field arrays), each check beside a planted err
 * the carriers: check_carriers refuses a neutral carrier and transference numbers that do not sum
   to 1, and the carriers' amounts carry the moved charge;
 * a piece at its target's voltage (two patches of one cell on one node) dissipates exactly nothing;
-  one a node apart does. The kernel under jax.jit matches NumPy.
+  one a node apart does. The kernel under jax.jit matches NumPy;
+* the heat is a sum of squares (19 November 2026): on FR-2's 72 near-equal cases it is never
+  negative and equals the closed form to rounding. Planted: the difference-of-solves form used
+  before, from the same outputs, falls below zero there. A route of zero capacitance adds nothing.
 """
 
 from fractions import Fraction
@@ -348,6 +351,103 @@ def test_a_view_that_returns_to_the_declared_capacitances_refreshes_from_them(he
                 np.asarray(getattr(second.view, name)).tobytes()
                 == np.asarray(getattr(q, name)).tobytes()
             ), name
+
+
+def near_equal(pool, offset, *, vk=-0.06):
+    """FR-1's W with its pool's capacitance set to `pool` (F) and charges set so that the owner's
+    wall is at vk and the pool's patch at vk + offset (FR-2's probe heat_near_equal, 19 November
+    2026): a piece retrieved from the wall meets the pool at nearly its own voltage."""
+    spec, state, q0 = layout(cfx.loaded_compartment(end=0.004))
+    k, b = patch(spec, "wall_cell_0"), patch(spec, "contact_0")
+    c = np.array(q0.membrane_capacitance, dtype=float)
+    c[b] = pool
+    q = adapter.refresh_field(q0._replace(membrane_capacitance=c), q0, xp=np)
+    j = q.active.size + int(q.membrane_outside[b])
+    ck = float(q.membrane_capacitance[k])
+    q = charged(q, **{f"n{j}": -(vk + offset) * pool, "n0": vk * ck + (vk + offset) * pool})
+    return state, q, q0, k, b
+
+
+def difference_of_solves(out, q, state, source, target, dc):
+    """Planted: the heat as 1/2 sum dc jump^2 - 1/2 delta . r, the form used until 19 November
+    2026, from the kernel's own outputs and a re-solve of its new view: delta = K'^-1 r is the free
+    potentials' change, r = E D jump the ports' charge."""
+    n = q.active.size
+    charge = np.concatenate((q.initial_cell_charge_C, q.initial_outside_charge_C))
+    charge = charge + adapter.tissue.charge_increment(state, q, xp=np)
+    boundary = np.concatenate((np.zeros(n), q.boundary_V))
+    phi = adapter.node_potentials(state, q, xp=np)
+    after = adapter.field._capacitor_solve(
+        charge + out.charge_C, boundary, adapter.tissue.field_layout(out.view), xp=np
+    )
+    held = np.concatenate((np.zeros(n, dtype=bool), q.reservoir))
+    delta = np.where(held, 0.0, after - phi)
+    jump = out.before_V[source] - out.before_V[target]
+    port = np.zeros(phi.size)
+    np.add.at(port, np.asarray(q.membrane_cell)[target], dc * jump)
+    np.add.at(port, n + np.asarray(q.membrane_outside)[target], -dc * jump)
+    return 0.5e12 * (np.sum(dc * jump**2) - np.sum(delta * np.where(held, 0.0, port)))
+
+
+def test_the_heat_is_a_sum_of_squares_where_a_piece_meets_its_targets_voltage():
+    """The kernel's heat form (FR-2's finding of 19 November 2026; the lead's ruling): a sum of
+    squares, 1/2 |L^-1 sqrt(D) jump|^2 with L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D), K0 the network
+    with the pieces off their sources. On FR-2's 72 near-equal cases (pools of 1e-13, 1e-16 and
+    1e-19 F, the pool's patch within rounding of the wall's voltage or 1e-9 V apart, pieces of 1e-6,
+    1e-3 and 0.3 of the wall) it is never negative and equals the closed form C_b dc jump^2 / (2
+    (C_b + dc)) to 1e-12 of it, or to 1e-40 pJ where the closed form is below that. Planted: the
+    difference-of-solves form, from the same outputs, falls below zero in some of these cases."""
+    planted_negative = 0
+    for pool in (1e-13, 1e-16, 1e-19):
+        for offset in (0.0, 1e-18, -1e-18, 1e-16, -1e-16, 1e-14, -1e-14, 1e-9):
+            state, q, q0, k, b = near_equal(pool, offset)
+            for fraction in (1e-6, 1e-3, 0.3):
+                dc = fraction * float(q.membrane_capacitance[k])
+                out = adapter.charge_following_transfer(
+                    state, q, np.array([k]), np.array([b]), np.array([dc]), q0, xp=np
+                )
+                jump = float(out.before_V[k] - out.before_V[b])
+                closed = 1e12 * pool * dc * jump**2 / (2 * (pool + dc))
+                assert out.heat_pJ >= 0.0, (pool, offset, fraction, out.heat_pJ)
+                assert out.heat_pJ == pytest.approx(closed, rel=1e-12, abs=1e-40)
+                old = difference_of_solves(out, q, state, [k], [b], np.array([dc]))
+                planted_negative += old < 0.0
+    assert planted_negative > 0
+
+
+def test_a_route_of_zero_capacitance_dissipates_nothing_and_changes_no_other_heat(two_cells_q):
+    """A route that moves no capacitance this stage (its rate zero) adds the identity's row to the
+    heat's factor: the heat is finite and equals the other route's alone, against the dense
+    reference too."""
+    spec, state, q = two_cells_q
+    source = [patch(spec, "wall_cell_0"), patch(spec, "contact_1")]
+    target = [patch(spec, "contact_0"), patch(spec, "wall_cell_1")]
+    dc = np.array([0.1 * float(q.membrane_capacitance[source[0]]), 0.0])
+    both = transfer(q, state, source, target, dc)
+    alone = transfer(q, state, source[:1], target[:1], dc[:1])
+    assert np.isfinite(both.heat_pJ) and both.heat_pJ > 0
+    assert both.heat_pJ == pytest.approx(alone.heat_pJ, rel=1e-14)
+    r = reference(q, state, source, target, dc)
+    scale = 1e12 * 0.5 * np.sum(np.asarray(q.membrane_capacitance) * r["v"] ** 2)
+    assert both.heat_pJ == pytest.approx(r["heat"], rel=1e-9, abs=1e-12 * scale)
+
+
+def test_a_negative_piece_has_no_heat(held_bath):
+    """Outside the kernel's domain (dc >= 0) the heat is NaN, which its caller refuses as
+    non-finite; the former difference-of-solves form gave a finite number there (-2e-5 pJ for
+    this piece, a difference named on 19 November 2026). Every other output is the same."""
+    spec, state, q, k, b = held_bath
+    dc = -0.01 * float(q.membrane_capacitance[k])
+    with np.errstate(invalid="ignore"):
+        out = transfer(q, state, [k], [b], [dc])
+    assert np.isnan(out.heat_pJ)
+    for name in ("charge_C", "after_V", "electrode_C"):
+        assert np.all(np.isfinite(getattr(out, name))), name
+
+
+@pytest.fixture(scope="module")
+def two_cells_q():
+    return two_cells()
 
 
 def test_the_kernel_under_jit_matches_numpy(free_node):

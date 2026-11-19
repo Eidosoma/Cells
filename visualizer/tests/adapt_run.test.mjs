@@ -1032,8 +1032,8 @@ test("an exchange route's total is positive out of the cell by the engine's conf
 test("an example says of itself that it is one: its view carries the word, names no model, and it is listed only under an entry that says so", () => {
   const { view, file } = open(all, SHEET);
   assert.deepEqual(validateReplay(file), []);
-  assert.deepEqual(view.example, { says: "Example: invented numbers", made_by: "tools/make_run_fixture.py" });
-  assert.match(view.derivation[0], /^Example: invented numbers\. Every number of this run was written by the run-fixture tool.*No engine ran, and no model is named as the owner of a record\.$/);
+  assert.deepEqual(view.example, { says: "Invented numbers · no run of Cells' engine", made_by: "tools/make_run_fixture.py" });
+  assert.match(view.derivation[0], /^Invented numbers · no run of Cells' engine\. Every number of this run was written by the run-fixture tool.*No engine ran, and no model is named as the owner of a record\.$/);
   assert.deepEqual(view.run.engine_models, []);
   assert.deepEqual([...new Set(view.records.filter((item) => item.id !== "t").map((item) => item.owner))], [undefined], "no record names a model as its owner");
   assert.equal(view.run.class, undefined, "an example has no result class");

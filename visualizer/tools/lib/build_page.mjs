@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { PARTS_FORMAT, validatePart } from "../../src/replay/run.js";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const THREE_VERSION = "0.170.0";
@@ -257,17 +258,157 @@ export const DEFAULT_LAW_PORT = path.join(ROOT, "data", "laws", "law_port.json")
 /** The Machines catalogue (schema/MACHINE_CATALOGUE.md), carried in the scene as `catalogue`: the view is offered only with it. */
 export const DEFAULT_CATALOGUE = path.join(ROOT, "data", "catalogue", "catalogue.json");
 
+// The catalogue's overlay, where an experiment's entry may say that the parts of each of its runs are published together
+// (`parts_together`, read by the export: packageParts).
+export const DEFAULT_OVERLAY = path.join(ROOT, "data", "replays", "overlay.json");
+// A published file of a run stays under 1 MB, as the adapter keeps each one it writes (tools/adapt_run.py, LIMIT_BYTES).
+export const RUN_FILE_LIMIT = 1_000_000;
+
+/** The experiments whose overlay entry says that their runs' parts are published together. A word that is not true or false is refused. */
+export function partsTogether(overlay) {
+  const together = new Set();
+  for (const [id, entry] of Object.entries(overlay?.experiments || {})) {
+    if (entry?.parts_together === undefined) continue;
+    if (typeof entry.parts_together !== "boolean") throw new Error(`the overlay's ${id}: parts_together is true or false, not ${JSON.stringify(entry.parts_together)}`);
+    if (entry.parts_together) together.add(id);
+  }
+  return together;
+}
+
+/**
+ * Where to cut a run's parts, kept in their order, into files that each stay under `limit` (a file is `overhead` bytes, its
+ * parts' sizes, and one byte between two): as few files as can hold them, and of those cuts the one whose largest file is
+ * the smallest, so that the first part asked for brings as little else with it as can be. Returns the files as lists of
+ * the parts' places in the order; null where one part alone would reach the limit.
+ */
+export function cutInOrder(sizes, { overhead = 0, limit = RUN_FILE_LIMIT } = {}) {
+  const size = (from, to) => overhead + sizes.slice(from, to).reduce((sum, bytes) => sum + bytes, 0) + (to - from - 1);
+  if (!sizes.length || sizes.some((_, k) => size(k, k + 1) >= limit)) return null;
+  // The fewest files: each filled in order as far as it holds.
+  let fewest = 0;
+  for (let from = 0; from < sizes.length; fewest++) {
+    let to = from + 1;
+    while (to < sizes.length && size(from, to + 1) < limit) to++;
+    from = to;
+  }
+  // Of the cuts into that many files, the one whose largest file is the smallest (the first such, where several are).
+  const memo = new Map();
+  const best = (from, left) => {
+    const key = `${from}/${left}`;
+    if (memo.has(key)) return memo.get(key);
+    let found = null;
+    if (left === 1) found = size(from, sizes.length) < limit ? { largest: size(from, sizes.length), cuts: [[from, sizes.length]] } : null;
+    else {
+      for (let to = from + 1; to <= sizes.length - (left - 1) && size(from, to) < limit; to++) {
+        const rest = best(to, left - 1);
+        const largest = rest ? Math.max(size(from, to), rest.largest) : Infinity;
+        if (rest && (!found || largest < found.largest)) found = { largest, cuts: [[from, to], ...rest.cuts] };
+      }
+    }
+    memo.set(key, found);
+    return found;
+  };
+  return best(0, fewest).cuts.map(([from, to]) => Array.from({ length: to - from }, (_, k) => from + k));
+}
+
+/**
+ * The published layout of the runs' parts (schema/RUN_VIEW.md, "Parts published together"). The runs folder holds a run's
+ * own file and one file a part, as the adapter writes them, and is only read. For each run of an experiment in `together`,
+ * its parts are published in files of several parts (cells.visualizer.replay_parts@1), each part file in it as it is, in
+ * the run's order of parts: one file for the run, `runs/<run-id>.parts.json`, or where that would reach `limit`, as few as
+ * stay under it (`.parts-2.json` and on), cut where the largest of them is the smallest (cutInOrder). The runs of other
+ * experiments keep one file a part.
+ * Returns { replays, files }: the catalogue with, for each part so published, `file` the file that holds it and `bytes`
+ * that file's size; and the files to write beside the page, [{ path, run, parts: [part ids], text }].
+ */
+export async function packageParts(replays, { runsDir = DEFAULT_RUNS, together = new Set(), limit = RUN_FILE_LIMIT } = {}) {
+  if (!replays?.runs) return { replays, files: [] };
+  const files = [];
+  const runs = [];
+  for (const run of replays.runs) {
+    if (!together.has(run.experiment) || !(run.parts || []).length) {
+      runs.push(run);
+      continue;
+    }
+    const head = `{"format":${JSON.stringify(PARTS_FORMAT)},"run":${JSON.stringify(run.id)},"parts":[`, tail = "]}\n";
+    const texts = [];
+    for (const part of run.parts) {
+      if (/^parts(-\d+)?$/.test(part.id)) throw new Error(`${run.id}: its part ${part.id} would have the name of the file of its parts`);
+      const text = (await readFile(path.join(runsDir, path.basename(part.file)), "utf8")).trim();
+      const problems = validatePart(JSON.parse(text), run.id, part.id);
+      if (problems.length) throw new Error(`${path.basename(part.file)}: ${problems[0]}`);
+      texts.push(text);
+    }
+    const sizes = texts.map((text) => Buffer.byteLength(text));
+    const cuts = cutInOrder(sizes, { overhead: Buffer.byteLength(head) + Buffer.byteLength(tail), limit });
+    if (!cuts) throw new Error(`${run.id}: one of its parts alone would reach ${limit} bytes in a file of its parts; a file of a run stays under it`);
+    const placed = new Map();
+    cuts.forEach((places, k) => {
+      const name = `runs/${run.id}.${k === 0 ? "parts" : `parts-${k + 1}`}.json`;
+      const text = `${head}${places.map((at) => texts[at]).join(",")}${tail}`;
+      files.push({ path: name, run: run.id, parts: places.map((at) => run.parts[at].id), text });
+      for (const at of places) placed.set(run.parts[at].id, { file: name, bytes: Buffer.byteLength(text) });
+    });
+    runs.push({ ...run, parts: run.parts.map((part) => ({ ...part, ...placed.get(part.id) })) });
+  }
+  return { replays: { ...replays, runs }, files };
+}
+
+// The Experiments landing's cards (schema/EXPERIMENT_CARDS.md) and their stills, published beside the page as cards.json and
+// stills/<name>, and fetched when the landing first opens. The cards' `listing` is what the page lists and publishes.
+export const DEFAULT_CARDS = path.join(ROOT, "data", "replays", "cards.json");
+export const DEFAULT_STILLS = path.join(ROOT, "data", "replays", "stills");
+const STILL_PATH = /^stills\/([a-z0-9][a-z0-9._-]*\.(jpg|jpeg|png|webp))$/;
+
+/** The cards' file as read, or null where there is none. */
+export async function readCards(cardsPath = DEFAULT_CARDS) {
+  try {
+    return JSON.parse(await readFile(cardsPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The landing's files beside the page: the cards, and every still a card names (for each theme). Returns
+ * { files: [{ path, source }], problems: [text] }; a still whose file is not there is left out and said (its card then
+ * stands without a picture).
+ */
+export async function landingFiles({ cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS } = {}) {
+  const cards = await readCards(cardsPath);
+  if (!cards) return { files: [], problems: [`${path.relative(ROOT, cardsPath)} could not be read: the landing says so and offers to try again`] };
+  const files = [{ path: "cards.json", source: cardsPath }], problems = [], named = new Set();
+  for (const card of cards.cards || []) {
+    const still = card?.replay?.still;
+    if (!still || typeof still !== "object") continue;
+    for (const theme of ["light", "dark"]) {
+      const name = STILL_PATH.exec(still[theme] || "")?.[1];
+      if (!still[theme]) continue;
+      if (!name) problems.push(`${card.id}: its ${theme} still is not of the form stills/<name>`);
+      else if (!named.has(name)) {
+        named.add(name);
+        const source = path.join(stillsDir, name);
+        if ((await modified(source)) === null) problems.push(`${card.id}: ${path.relative(ROOT, source)} is not there`);
+        else files.push({ path: `stills/${name}`, source });
+      }
+    }
+  }
+  return { files, problems };
+}
+
 /** The page content, as published: no doctype, html, head or body tags of its own. */
 /**
- * The replays a published page carries: where the catalogue says which experiments are listed (an entry's `listed`),
- * those experiments and their runs, and the runs the scene itself names (a species' looping run, which its flux reads),
- * with their experiments' entries, unlisted. Everything else the folder holds is packaged for the checks and never
- * exported. A catalogue that says nothing of listing is carried whole.
+ * The replays a published page carries: the experiments the landing lists (`listing.experiments` of the cards' file:
+ * schema/EXPERIMENT_CARDS.md, since 18 November 2026) and their parts, and the runs the scene itself names (a species'
+ * looping run, which its flux reads), with their experiments' entries. Everything else the folder holds is packaged for
+ * the checks and never exported. Without a listing, the catalogue's own `listed` says which, as before; a catalogue that
+ * says nothing of listing is then carried whole.
  */
-export function publishedReplays(index, scene) {
-  if (!index || !index.experiments?.some((item) => "listed" in item)) return index;
+export function publishedReplays(index, scene, listing = null) {
+  const byCards = Array.isArray(listing?.experiments);
+  if (!index || (!byCards && !index.experiments?.some((item) => "listed" in item))) return index;
   const text = JSON.stringify(scene);
-  const listed = new Set(index.experiments.filter((item) => item.listed === true).map((item) => item.id));
+  const listed = new Set(byCards ? listing.experiments : index.experiments.filter((item) => item.listed === true).map((item) => item.id));
   // A part of a listed example (its tissue line: `part_of`) is published with it, though it is not listed itself.
   for (const item of index.experiments) if (listed.has(item.part_of)) listed.add(item.id);
   const runs = index.runs.filter((run) => listed.has(run.experiment) || text.includes(`"${run.id}"`));
@@ -275,13 +416,17 @@ export function publishedReplays(index, scene) {
   return { ...index, experiments: index.experiments.filter((item) => listed.has(item.id) || kept.has(item.id)), runs };
 }
 
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE } = {}) {
+/**
+ * `replays` is the catalogue the page carries where the caller has made it (the export, which packages the parts first:
+ * packageParts); else it is read from `runsDir`, as `published` says.
+ */
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE, cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS, replays: made = undefined } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
   if (lawPortPath && !data.law_port && (await modified(lawPortPath)) !== null) data.law_port = JSON.parse(await readFile(lawPortPath, "utf8"));
   if (cataloguePath && !data.catalogue && (await modified(cataloguePath)) !== null) data.catalogue = JSON.parse(await readFile(cataloguePath, "utf8"));
-  const replays = published ? publishedReplays(await readReplays(runsDir), data) : await readReplays(runsDir);
+  const replays = made !== undefined ? made : published ? publishedReplays(await readReplays(runsDir), data, (await readCards(cardsPath))?.listing) : await readReplays(runsDir);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
   // finds a species' looping run among them.
   if (replays) data.replays = hideExperiments ? { ...replays, hidden: true } : replays;
@@ -297,6 +442,14 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
         const more = (await readFile(path.join(runsDir, path.basename(part.file)), "utf8")).replaceAll("<", "\\u003c");
         inline += `\n<script type="application/json" data-replay-part="${run.id}/${part.id}">${more}</script>`;
       }
+    }
+  }
+  // The landing's cards and stills, for a file on disk: the cards as they are, each still as a data address (a JSON string).
+  if (inlineRuns && replays && !hideExperiments) {
+    for (const file of (await landingFiles({ cardsPath, stillsDir })).files) {
+      const raw = await readFile(file.source);
+      const text = file.path.endsWith(".json") ? raw.toString("utf8") : JSON.stringify(`data:image/${file.path.endsWith(".png") ? "png" : file.path.endsWith(".webp") ? "webp" : "jpeg"};base64,${raw.toString("base64")}`);
+      inline += `\n<script type="application/json" data-file="${file.path}">${text.replaceAll("<", "\\u003c")}</script>`;
     }
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.

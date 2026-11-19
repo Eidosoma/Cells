@@ -915,14 +915,21 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     carriers the two charges cancel.
 
     The heat is what attaching the pieces dissipates, the two-capacitor loss, with no bulk energy
-    subtracted (**S**): with r = sum_t dc_t (V_s - V_t) e_t, e_t the target's (inside cell) minus
-    (outside node) on the free nodes, and delta = K'^-1 r the free potentials' change,
-        H = 1/2 sum_t dc_t (V_s - V_t)^2 - 1/2 delta . r  >= 0,
-    exactly 0 where every piece meets its target's voltage. Into a free face-free node j that one
-    patch b bounds, from a patch k of b's cell, only phi_j moves: V_b' = (C_b V_b + dc V_k)/(C_b +
-    dc), and H = C_b dc (V_b - V_k)^2 / (2 (C_b + dc)), CORE_SEAMS §4.6's merge loss. The heat
-    with the clamps' and reservoirs' work closes the capacitor energy: H = sum_h phi_h (electrode_h
-    + supplied_h) - (U' - U), U = 1/2 sum C V^2 (the test's ledger).
+    subtracted (**S**). With e_t the target's port (inside cell +1, outside node -1) on the free
+    nodes, E = [e_t], D = diag(dc), jump_t = V_s - V_t and K0 the network with the pieces off their
+    sources and not yet attached (so K' = K0 + E D E^T),
+        H = 1/2 jump^T (D^-1 + E^T K0^-1 E)^-1 jump = 1/2 |L^-1 sqrt(D) jump|^2,
+        L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D),
+    a sum of squares, so H >= 0 at rounding and exactly 0 where every piece meets its target's
+    voltage; every eigenvalue of L L^T is at least 1, and a zero dc leaves its row the identity's.
+    By Woodbury it equals 1/2 sum_t dc_t jump_t^2 - 1/2 delta . r, with r = E D jump and delta =
+    K'^-1 r the free potentials' change, the form used until 19 November 2026: its difference of
+    two solves carries about 1/2 dc |jump| eps |V| and fell below zero where a piece met its target
+    at its own voltage to rounding (FR-2's probes). Into a free face-free node j that one patch b
+    bounds, from a patch k of b's cell, only phi_j moves: V_b' = (C_b V_b + dc V_k)/(C_b + dc), and
+    H = C_b dc (V_b - V_k)^2 / (2 (C_b + dc)), CORE_SEAMS §4.6's merge loss. The heat with the
+    clamps' and reservoirs' work closes the capacitor energy: H = sum_h phi_h (electrode_h +
+    supplied_h) - (U' - U), U = 1/2 sum C V^2 (the test's ledger).
 
     q: @3's layout at the current view, its field arrays refreshed; bound: the declared layout,
     refresh_field's reference; source, target: [T] active patch slots, distinct for each t; dc: [T]
@@ -954,12 +961,10 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     changed = xp.where(held, 0.0, moved)
     boundary = xp.concatenate((xp.zeros(n), q.boundary_V))
     after = field._capacitor_solve(charge + changed, boundary, tissue.field_layout(q1), xp=xp)
-    delta = xp.where(held, 0.0, after - phi)
     jump = v[source] - v[target]  # Each piece's voltage less its target's.
-    port = scatter(dc * jump, nodes, (q.membrane_cell[target],), xp=xp)
-    port = port - scatter(dc * jump, nodes, (n + q.membrane_outside[target],), xp=xp)
-    residual = xp.where(held, 0.0, port)
-    heat = 0.5e12 * (xp.sum(dc * jump**2) - xp.sum(delta * residual))
+    off = q.membrane_capacitance - scatter(dc, q.membrane_capacitance, (source,), xp=xp)
+    q0 = refresh_field(q._replace(membrane_capacitance=off, **derived), bound, xp=xp)
+    heat = merge_heat_pJ(q0, target, dc, jump, xp=xp)
     electrode = (q1.field_capacitor_matrix @ after - q.field_capacitor_matrix @ phi)[n:]
     return ChargeTransfer(
         view=q1,
@@ -971,6 +976,35 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
         before_V=v,
         after_V=patch_voltages(after, q1, xp=xp),
     )
+
+
+def merge_heat_pJ(q0, target, dc, jump, *, xp):
+    """The heat (pJ) of attaching pieces of capacitance dc[t] >= 0, each at its jump from its
+    target's voltage, jump[t] = V_s - V_t, to the network q0: the pieces off their sources and not
+    yet attached, its field arrays refreshed (charge_following_transfer's heat). A sum of squares,
+    1/2 |L^-1 sqrt(dc) jump|^2 with L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D), E the targets' ports
+    and K0 the free block, solved with q0's own factor (held nodes fixed). Every eigenvalue of
+    L L^T is at least 1, so the factor is well conditioned, and a piece of zero capacitance
+    contributes exactly nothing. Outside the domain the heat is NaN, which the caller refuses: a
+    negative dc (the former form gave a finite number there), or a singular q0 under JAX (in
+    NumPy its refresh raises first, for the new view as before)."""
+    n, o = q0.active.size, q0.outside_active.size
+    p0 = tissue.field_layout(q0)
+    nodes = xp.arange(n + o)[:, None]
+    ports = (nodes == q0.membrane_cell[target][None, :]).astype(float) - (
+        nodes == (n + q0.membrane_outside[target])[None, :]
+    ).astype(float)
+    rhs = xp.where(~p0.fixed[:, None], ports / p0.capacitor_scale, 0.0)
+    if isinstance(p0, (field.FactoredLayout, field.FloorLayout)):
+        solved = field.cholesky_solve(p0.capacitor_factor, rhs, xp=xp)
+    else:
+        solved = xp.linalg.solve(p0.capacitor_solve_matrix, rhs)
+    response = ports.T @ solved  # E^T K0^-1 E (1/F): the targets' ports seen through K0.
+    root = xp.sqrt(dc)
+    matrix = xp.eye(dc.size) + root[:, None] * response * root[None, :]
+    lower = xp.linalg.cholesky(0.5 * (matrix + matrix.T))  # One symmetric matrix on either xp.
+    scaled = xp.linalg.solve(lower, root * jump)
+    return 0.5e12 * xp.sum(scaled**2)
 
 
 def check_carriers(rows, transference, valence, what):

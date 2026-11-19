@@ -169,7 +169,7 @@ export function behind(record) {
   // A sign the run's view does not declare itself says where it comes from (the adapter's own table); one the view declares may say who confirmed it.
   const sign = record.sign?.says ? ` Positive means: ${record.sign.says}.${signedBy(record.sign)}` : "";
   // An example's numbers are invented: no model stands behind them, whatever the record is called.
-  if (record.example) return `Example: invented numbers. Written by the viewer's run-fixture tool under the engine's own name for this record; no model computed it.${sign}`;
+  if (record.example) return `Invented numbers. Written by the viewer's run-fixture tool under the engine's own name for this record; no model computed it.${sign}`;
   const who = record.owner ? `Saved by the run; computed by ${record.owner}` : "Saved by the run; its files do not say which model or law computed it";
   const how = record.representation ? `, ${REPRESENTED[record.representation]}.` : `. ${record.owner ? "Its files do not say" : "Nor do they say"} how that part of the engine is represented.`;
   return `${who}${how}${sign}`;

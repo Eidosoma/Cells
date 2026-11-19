@@ -5,6 +5,8 @@ import { reading } from "./format.js";
 
 export const REPLAY_FORMAT = "cells.visualizer.replay@1";
 export const PART_FORMAT = "cells.visualizer.replay_part@1";
+// Several parts of one run in one file, as a published page may package them (schema/RUN_VIEW.md, "Parts published together").
+export const PARTS_FORMAT = "cells.visualizer.replay_parts@1";
 export const VIEW_FORMAT = "cells.run_view@1";
 export const INDEX_FORMAT = "cells.visualizer.replay_index@1";
 // What kind of number a record is, where its view says (schema/QUANTITY_LAYERS.md).
@@ -188,6 +190,36 @@ export function validateReplay(file) {
     if (!Number.isFinite(event.time) || !event.at) problems.push("an event lacks its time or its place");
   }
   if (PATHS.test(JSON.stringify(view))) problems.push("the view holds a machine path");
+  return problems;
+}
+
+/**
+ * Structural checks of a file of one part of run `runId` (`cells.visualizer.replay_part@1`): the part `partId` where
+ * one is asked for. Returns a list of problems.
+ */
+export function validatePart(file, runId, partId = null) {
+  if (!file || typeof file !== "object" || file.format !== PART_FORMAT) return [`the file is ${file?.format}, not ${PART_FORMAT}`];
+  const problems = [];
+  if (file.run !== runId || (partId !== null && file.part !== partId)) problems.push(`the file holds ${file.part} of run ${file.run}, not ${partId ?? "a part"} of ${runId}`);
+  if (typeof file.part !== "string" || !/^[a-z0-9-]+$/.test(file.part)) problems.push("its part's id is missing or has other characters than a-z, 0-9 and hyphen");
+  if (file.payload?.encoding !== "base64" || typeof file.payload.data !== "string") problems.push("its arrays must be base64");
+  return problems;
+}
+
+/**
+ * Structural checks of a file of several parts of run `runId` (`cells.visualizer.replay_parts@1`): `parts` lists part
+ * files of that run, each as the run's own part file is (validatePart), and no part twice. Returns a list of problems.
+ */
+export function validateParts(file, runId) {
+  if (!file || typeof file !== "object" || file.format !== PARTS_FORMAT) return [`the file is ${file?.format}, not ${PARTS_FORMAT}`];
+  if (file.run !== runId) return [`the file holds parts of run ${file.run}, not of ${runId}`];
+  if (!Array.isArray(file.parts) || !file.parts.length) return ["the file lists no parts"];
+  const problems = [], seen = new Set();
+  for (const part of file.parts) {
+    problems.push(...validatePart(part, runId).map((problem) => `its part ${part?.part}: ${problem}`));
+    if (seen.has(part?.part)) problems.push(`its part ${part?.part} is there twice`);
+    seen.add(part?.part);
+  }
   return problems;
 }
 
