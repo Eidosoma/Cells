@@ -540,6 +540,19 @@ positive up to the stored amount.
     release L where it binds it, the forward flux unchanged). It is caught on every case, by at
     least 4.1e10 of the first order's floor (8 ε λ_max/λ_slowest) on some ligand, and by at least
     5.9e6 on every ligand.
+  - **The floor holds at high pH.** C3's floor was shown where free H⁺ is near 1e-4 mM. In these
+    cases it is 1e-9 fmol against fmol-scale forms, so W spans ten orders. The same linear
+    algebra in float64, from the float closure state on one BLAS thread
+    (`Network.first_order_float64`), differs from the 60-digit lag by at most 0.13 floors on
+    every C5 case (`float64_rerun_over_floor`). Done unregistered, it gives at most 0.0014 on
+    C3's cases.
+  - **What the seven cases do not span** (registered in `zero_power`, so the lift can be scoped):
+    - a release step in a ligand other than H⁺;
+    - a count below −1, or a binder with two release steps;
+    - a mixed-sign form reached by more than one path;
+    - also C3's plant of a k_on that ignores the ligand, on the H⁺ lag under an H⁺ drive at
+      high pH, which is weak at 1.6 floors (E3_pi2_release) and 3.1 (E3_s4_release). Its
+      remedy is the Mg²⁺ lag there.
   - **A finding, for the lead.** Under a drive in another row (Mg²⁺, or the binder's base form),
     the per-step estimate of the H⁺ lag is non-conservative:
     - by 1.46× on E4_mgx_mixed_mg_drive;
@@ -553,8 +566,9 @@ positive up to the stored amount.
     `envelope.one_blas_thread` (threadpoolctl) now pins the eigenvalues and the integrations to
     one thread, and the check is identical in either environment.
   - Earlier inputs and values are unchanged: every registered entry is byte-identical, and the
-    new ones are added. Four tests added (envelope: 9), and the registration test checks C5's
-    power.
+    new ones are added (claims and zero_power grow only at their ends). Four tests added
+    (envelope: 9), and the registration test checks C5's power, its float64 floor check and its
+    zero-power entries.
 
 ## Tests
 

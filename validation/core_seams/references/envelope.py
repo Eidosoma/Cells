@@ -217,6 +217,31 @@ class Network:
             K = [[-M[i][j] / dec(n[j]) for j in range(S)] for i in range(S)]
             return {"K": K, "dn_star_dt": dn_star, "PD": PD, "delta": delta, "F": F}
 
+    def first_order_float64(self, n: list, drive: list) -> dict:
+        """Amendment C5's floor check: the same linear algebra as ``linearised`` in float64
+        (NumPy, one BLAS thread) from the float closure state; {L: δ_L/n_L}."""
+        S, R = len(self.species), len(self.steps)
+        C = np.array([[float(x) for x in row] for row in self.conservation_matrix()])
+        nn = np.array([float(x) for x in n])
+        D = np.array([float(x) for x in drive])
+        V = float(self.V)
+        N = np.zeros((S, R))
+        F = np.zeros(R)
+        for r, (fa, lg, fb, k, _Kr, _B, _L) in enumerate(self.steps):
+            N[fa, r] -= 1
+            N[lg, r] -= 1
+            N[fb, r] += 1
+            F[r] = float(k) * nn[fa] * nn[lg] / V
+        with one_blas_thread():
+            M = (N * F) @ N.T
+            G = (C * nn) @ C.T
+            dn_star = nn * (C.T @ np.linalg.solve(G, C @ D))
+            y = np.linalg.solve(M + C.T @ C, D - dn_star)
+            yy = y - C.T @ np.linalg.solve(G, C @ (nn * y))
+        delta = nn * yy
+        return {L: float(delta[self.idx[("L", L)]] / nn[self.idx[("L", L)]])
+                for L in self.system.ligands}
+
     def slowest_rates(self, K: list, how_many: int = 3) -> list:
         """The network's slowest relaxation rates (1/s): −eigenvalues of K on the reaction space."""
         A = np.array([[fl(x) for x in row] for row in K])
@@ -295,6 +320,10 @@ def run_case(case: dict, registry: dict, kinetic: bool = True, flip_release: boo
         drive[net.idx[sp_]] = dec(rate)
     lin = net.linearised(n, drive, flip_release)
     lam = net.step_rates(n)
+    if case.get("amendment") == "C5" and not flip_release:
+        f64 = net.first_order_float64(n, drive)
+    else:
+        f64 = None
     out = {"species": ["/".join(s[1:]) for s in net.species],
            "closure_fmol": [fl(x) for x in n],
            "steps": [{"from": net.species[fa][2], "ligand": L, "to": net.species[fb][2],
@@ -302,6 +331,8 @@ def run_case(case: dict, registry: dict, kinetic: bool = True, flip_release: boo
                      for (fa, _l, fb, k, Kr, _B, L), lr in zip(net.steps, lam, strict=True)],
            "slowest_network_rates_per_s": net.slowest_rates(lin["K"]),
            "min_step_rate_per_s": fl(min(lam))}
+    if f64 is not None:
+        out["first_order_float64_dln"] = f64
     rel = net.release_steps()
     if rel:
         out["release_steps"] = [{"from": net.species[net.steps[r][0]][2],

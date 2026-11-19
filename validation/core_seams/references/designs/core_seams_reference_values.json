@@ -6534,6 +6534,9 @@
      ],
      "slowest_network_rates_per_s": [2452547.443708303],
      "min_step_rate_per_s": 2452547.4437083025,
+     "first_order_float64_dln": {
+      "H": 0.0012924464243337644
+     },
      "release_steps": [
       {
        "from": "rel1_mH",
@@ -6655,6 +6658,10 @@
      ],
      "slowest_network_rates_per_s": [529.1474423148675, 270522.48947901645, 98362580.12076186],
      "min_step_rate_per_s": 270522.48923179234,
+     "first_order_float64_dln": {
+      "H": 0.003045004362355625,
+      "Mg": 9.32044203150401e-09
+     },
      "release_steps": [
       {
        "from": "pi2_PO4",
@@ -6802,6 +6809,10 @@
      ],
      "slowest_network_rates_per_s": [529.1474423148675, 270522.48947901645, 98362580.12076186],
      "min_step_rate_per_s": 270522.48923179234,
+     "first_order_float64_dln": {
+      "H": 9.320442031535718e-08,
+      "Mg": 1.791090762932821e-09
+     },
      "release_steps": [
       {
        "from": "pi2_PO4",
@@ -7029,6 +7040,10 @@
      ],
      "slowest_network_rates_per_s": [204.8281187973384, 5326.620508188805, 6201.0365757350655],
      "min_step_rate_per_s": 7277.775802471283,
+     "first_order_float64_dln": {
+      "H": 0.002360580349801149,
+      "Mg": 1.7175232512470565e-08
+     },
      "release_steps": [
       {
        "from": "pi2_PO4",
@@ -7176,6 +7191,10 @@
      ],
      "slowest_network_rates_per_s": [1717.6524363717897, 35891.853800838624, 44016210.880022824],
      "min_step_rate_per_s": 35574.165723298785,
+     "first_order_float64_dln": {
+      "H": 2.432412150734348e-05,
+      "Mg": 1.003840667333852e-06
+     },
      "release_steps": [
       {
        "from": "mgx_MgmH",
@@ -7323,6 +7342,10 @@
      ],
      "slowest_network_rates_per_s": [1717.6524363717897, 35891.853800838624, 44016210.880022824],
      "min_step_rate_per_s": 35574.165723298785,
+     "first_order_float64_dln": {
+      "H": 3.346135557779512e-06,
+      "Mg": 8.323664731802666e-06
+     },
      "release_steps": [
       {
        "from": "mgx_MgmH",
@@ -7470,6 +7493,10 @@
      ],
      "slowest_network_rates_per_s": [1717.6524363717897, 35891.853800838624, 44016210.880022824],
      "min_step_rate_per_s": 35574.165723298785,
+     "first_order_float64_dln": {
+      "H": 7.913223381168379e-07,
+      "Mg": 1.106757406547725e-06
+     },
      "release_steps": [
       {
        "from": "mgx_MgmH",

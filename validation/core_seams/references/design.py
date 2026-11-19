@@ -1022,9 +1022,14 @@ def power_c(inputs, vc, dc) -> dict:
                 r, row = cases[cid], ec[cid]
                 flip = row["plants"]["release_sign_flipped"]
                 over = {L: x["over_floor"] for L, x in flip.items() if x is not None}
+                f64 = r["first_order_float64_dln"]
                 rows[cid] = {"release_steps": r["release_steps"],
                              "first_order_dln": r["first_order_dln"],
                              "first_order_floor_rel": r["first_order_floor_rel"],
+                             "float64_rerun_over_floor": {
+                                 L: (abs(f64[L] / r["first_order_dln"][L] - 1)
+                                     / r["first_order_floor_rel"])
+                                 for L in f64 if r["first_order_dln"][L] != 0},
                              "release_sign_flipped_over_floor": over,
                              "caught": max(over.values()) >= MIN_MARGIN,
                              "weak_ligands": [L for L, x in over.items() if x < MIN_MARGIN]}
@@ -1269,6 +1274,23 @@ ZERO_POWER = [
     {"control": "a declared form valence",
      "why": "if the engine derives valences and never reads a declared one, the plant cannot occur",
      "remedy": "the parse identity z_form = z_base + Σ n z_L (seam_c.parse.form_valences)"},
+    {"control": "amendment C5: a release step in a ligand other than H⁺",
+     "why": ("every registered release step is in H⁺: pi2_PO4, mgx_MgmH and rel1_mH sit one "
+             "proton below a form"),
+     "remedy": "a registered case with a form below its base in Mg²⁺ before the lift covers one"},
+    {"control": "amendment C5: a count below −1, or a binder with two release steps",
+     "why": "every release form has a count of −1, and each binder has one release step",
+     "remedy": "a registered case with such a form before the lift covers one"},
+    {"control": "amendment C5: a mixed-sign form reached by more than one path",
+     "why": ("mgx_MgmH is reached only through mgx_Mg; the step graph has no cycle, so a path's "
+             "order cannot be tested"),
+     "remedy": ("a binder with both intermediates, (H −1) and (Mg +1), before the lift covers "
+                "one")},
+    {"control": ("amendment C5: a k_on that ignores the ligand, on the H⁺ lag under an H⁺ drive "
+                 "at high pH"),
+     "why": ("only the Mg²⁺ steps' k_on changes, and they barely carry the H⁺ lag: 1.6 floors on "
+             "E3_pi2_release and 3.1 on E3_s4_release, under the 10-floor minimum"),
+     "remedy": "the Mg²⁺ lag in the same cases, and the Mg²⁺-driven cases"},
 ]
 
 READINGS = [

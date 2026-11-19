@@ -6344,6 +6344,9 @@
       "H": 0.0012924464243337641
      },
      "first_order_floor_rel": 1.77635683940025e-15,
+     "float64_rerun_over_floor": {
+      "H": 0.12500000000000003
+     },
      "release_sign_flipped_over_floor": {
       "H": 5374738063671332.0
      },
@@ -6364,6 +6367,10 @@
       "Mg": 9.32044203143376e-09
      },
      "first_order_floor_rel": 2.199654159261522e-10,
+     "float64_rerun_over_floor": {
+      "H": 0.023026617441740727,
+      "Mg": 0.034264850398599236
+     },
      "release_sign_flipped_over_floor": {
       "H": 46080676337.14141,
       "Mg": 41463298872.27066
@@ -6384,6 +6391,10 @@
       "Mg": 1.791090762932817e-09
      },
      "first_order_floor_rel": 2.199654159261522e-10,
+     "float64_rerun_over_floor": {
+      "H": 0.04973066977630778,
+      "Mg": 1.0094523449976207e-05
+     },
      "release_sign_flipped_over_floor": {
       "H": 41463298872.27066,
       "Mg": 5871025.445980188
@@ -6404,6 +6415,10 @@
       "Mg": 1.7175232512645242e-08
      },
      "first_order_floor_rel": 3.6639983404580295e-10,
+     "float64_rerun_over_floor": {
+      "H": 0.04717086453071799,
+      "Mg": 0.027757406238644304
+     },
      "release_sign_flipped_over_floor": {
       "H": 242349015114914.5,
       "Mg": 243131840664057.84
@@ -6424,6 +6439,10 @@
       "Mg": 1.0038406673338579e-06
      },
      "first_order_floor_rel": 3.4585741434402846e-11,
+     "float64_rerun_over_floor": {
+      "H": 9.63017976697881e-06,
+      "Mg": 0.0001701331758832923
+     },
      "release_sign_flipped_over_floor": {
       "H": 75844333080763.03,
       "Mg": 357119695596740.75
@@ -6444,6 +6463,10 @@
       "Mg": 8.323664731802668e-06
      },
      "first_order_floor_rel": 3.4585741434402846e-11,
+     "float64_rerun_over_floor": {
+      "H": 0.0001284023968930508,
+      "Mg": 6.42011984465254e-06
+     },
      "release_sign_flipped_over_floor": {
       "H": 357119695596740.75,
       "Mg": 27897182862684.43
@@ -6464,6 +6487,10 @@
       "Mg": 1.1067574065477256e-06
      },
      "first_order_floor_rel": 3.4585741434402846e-11,
+     "float64_rerun_over_floor": {
+      "H": 6.42011984465254e-06,
+      "Mg": 1.605029961163135e-05
+     },
      "release_sign_flipped_over_floor": {
       "H": 240703805281059.72,
       "Mg": 33442713286434.562
@@ -6678,6 +6705,26 @@
    "control": "a declared form valence",
    "why": "if the engine derives valences and never reads a declared one, the plant cannot occur",
    "remedy": "the parse identity z_form = z_base + \u03a3 n z_L (seam_c.parse.form_valences)"
+  },
+  {
+   "control": "amendment C5: a release step in a ligand other than H\u207a",
+   "why": "every registered release step is in H\u207a: pi2_PO4, mgx_MgmH and rel1_mH sit one proton below a form",
+   "remedy": "a registered case with a form below its base in Mg\u00b2\u207a before the lift covers one"
+  },
+  {
+   "control": "amendment C5: a count below \u22121, or a binder with two release steps",
+   "why": "every release form has a count of \u22121, and each binder has one release step",
+   "remedy": "a registered case with such a form before the lift covers one"
+  },
+  {
+   "control": "amendment C5: a mixed-sign form reached by more than one path",
+   "why": "mgx_MgmH is reached only through mgx_Mg; the step graph has no cycle, so a path's order cannot be tested",
+   "remedy": "a binder with both intermediates, (H \u22121) and (Mg +1), before the lift covers one"
+  },
+  {
+   "control": "amendment C5: a k_on that ignores the ligand, on the H\u207a lag under an H\u207a drive at high pH",
+   "why": "only the Mg\u00b2\u207a steps' k_on changes, and they barely carry the H\u207a lag: 1.6 floors on E3_pi2_release and 3.1 on E3_s4_release, under the 10-floor minimum",
+   "remedy": "the Mg\u00b2\u207a lag in the same cases, and the Mg\u00b2\u207a-driven cases"
   }
  ],
  "readings": ["Doubles carry rounding into the residual. Every passing cycle's constant term is about 1e-16, not 0, because a ratio of published k0 is irrational. A load fraction that is not dyadic leaves the voltage coefficient off by about 5e-17. So an algebraic Wegscheider check needs \u00a719's rounding band as well. The registered loads are dyadic, so every passing law's structural coefficients are exactly zero.", "A diagram's own backward flux \u03a0\u207b\u03a3_\u03ba/\u03a3 differs from the contract's J\u207a e^{\u0394G/RT} by e^{\u2212r}. The residual r is about 1e-16 for the passing laws (power.A1_sign_and_zero.*.max_abs_ln_diagram_over_contract_backward). Booked with its own backward flux, an admitted diagram law shows J \u0394G > 0 within |\u0394G/RT| < |r| of equilibrium, at about 1e-37 here. The contract's J\u207b keeps the sign exact.", "A form below its base (pi2_PO4) can make a ligand's total equivalents legitimately negative (S4's high-pH state, T_H = \u22121.86 fmol). The admissible floor is \u03a3_B T_B min_f n_{L,f}, not zero. Then @3's per-row ideal term RT n (ln(n/V) \u2212 1) on the H row is undefined, and so is 'G* less the stored rows' own terms'. The booked term's ruling (\u00a719 item 3) and any positivity guard on that row must account for it. P1b's floor is \u22120.5 fmol.", "The guard's teeth show only on net-flow laws, since factored and admitted diagram laws cannot trip it. So its plants are published as net-flow test laws."],
