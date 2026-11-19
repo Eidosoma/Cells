@@ -510,6 +510,12 @@ def test_the_probe_is_the_runs_own_arithmetic_with_its_slopes_against_difference
     pr = transporter.probe(state, v, control, p, xp=np)
     r = transporter.rates(state, v, control, p, xp=np)
     np.testing.assert_array_equal(r.derivatives["cycle_count"], pr.modes.j)
+    # The solver's own switch (the third review's finding 4): on a closed patch J is zero, and so
+    # are the diagram's population-scaled fields, which read its carriers (planted: k a alone).
+    closed = p._replace(membrane_active=np.zeros_like(np.asarray(p.membrane_active)))
+    off = transporter.probe(state, v, control, closed, xp=np)
+    assert not np.any(off.modes.j) and not np.any(off.edges.net_fmol_s)
+    assert not np.any(np.nan_to_num(off.modes.j_minus_diagram))
     fd_modes = p.cycle_form[None, :] != transporter.FORM_CODES["net_flow"]
     on = fd_modes & p.cycle_mode_present
     gap = np.abs(np.where(on, pr.modes.j_plus - pr.modes.j_minus - pr.modes.j, 0.0))

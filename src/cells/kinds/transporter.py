@@ -1396,6 +1396,9 @@ class Evaluation(NamedTuple):
     d_j_d_ln_c: object  # [M, K, P]
     diagram: object  # forms.DiagramLogs, or None
     active: object  # [P]
+    # [P]: the solver's switch, k > 0, a > 0 and active (its host active, itself present); J is
+    # zero elsewhere.
+    enabled: object
     valid: object  # [P]: the domain at the stage
     guard: object  # [P]: G = sum_m J x (RT fmol/s)
     allowance: object  # [P]: A (statement 1, §5.2, amendment 2)
@@ -1532,7 +1535,7 @@ def _evaluate(read, potentials, control, p, *, xp):
     valid = valid & xp.where(active, guard <= allowance, True)
     return Evaluation(
         ln_c, c, row_node, psi, x, x_terms, held_x, log_s, j_plus, j_minus, j, scale, y_terms,
-        d_j_d_psi, d_j_d_ln_c, diagram, active, valid, guard, allowance,
+        d_j_d_psi, d_j_d_ln_c, diagram, active, enabled, valid, guard, allowance,
     )  # fmt: skip
 
 
@@ -1843,6 +1846,7 @@ def probe(read, potentials, control, p, *, xp=np):
         modes.pi_minus = xp.where(is_diagram, xp.exp(d.log_minus), nan)
         modes.share = xp.where(is_diagram, xp.exp(d.log_share), nan)
         carriers = xp.exp(xp.log(xp.maximum(p.cycle_capacity_fmol_s * control.cycle_availability, 1e-300)) - p.cycle_dg_log_scale)
+        carriers = xp.where(e.enabled, carriers, 0.0)  # The solver's switch: off carries nothing.
         modes.j_minus_diagram = xp.where(is_diagram, carriers[None] * xp.exp(d.log_minus + d.log_share), nan)
         n_edges = p.cycle_dg_edge_present.shape[0]
         cols = xp.arange(p.cycle_host.shape[0])
