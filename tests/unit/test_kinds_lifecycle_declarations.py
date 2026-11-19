@@ -4,14 +4,17 @@ and §18's B1 lift; seam E's kind hook; the lead's rulings of 18 and 19 November
 Each claim with its plant (D187):
 - every field of cells.patch_damage@1 declares its partition role and its axes, its own axis (the
   damage entities) names its host and index, and F's declaration check holds; beside a closer the
-  kind now stops at B1's third step (its fields are per patch or per entity, refused until the
-  core gates a kind's rates by its host's activity), past the roles and the axes (planted: one
-  role removed, and one field's axes removed, each named at its own step);
+  kind passes the lift's roles and axes and stops at its presence step, since it declares no
+  presence for its entity axes, its patches' slots and its own source axis (fail-closed) (planted:
+  one role removed, and one field's axes removed, each named at its own step);
 - the same for cells.transporter@1 in both layouts, bound to each world's entry (version 1's, the
   general form's, §10's composed world with a diagram and a finite-fuel pump, a net-flow law and a
   diagram pump): every field's role and axes, every declared axis count equal to the field's own
-  dimensions in the world's layout, state and controls, the population axis's host on its patch
-  (planted: a diagram table's axes removed, and version 1's scalar's role removed);
+  dimensions in the world's layout, state and controls, the population axis's host on its patch;
+  beside a closer the lift admits each layout, its one entity axis declaring presence and, for the
+  population axis, its host (planted: a diagram table's axes removed, version 1's scalar's role
+  removed, version 1 without its presence, and the population axis without its host, each
+  refused at its own step);
 - Q2's presence and the laws' internal axes (F's contract): version 1's fuel-role axis and the
   population axis's law-internal axes are internal, so each layout's one entity axis is gated by its
   presence masks (version 1's three slot masks; each population's cycle_present, anded into its
@@ -58,8 +61,9 @@ def test_patch_damage_declares_every_fields_role_and_axes_and_its_entities_host(
     kind = patch_damage.PATCH_DAMAGE
     assert kind_registry.declaration_errors(kind) == []
     assert kind_registry.missing_partition_roles(kind) == ()
-    fields = kind_registry.partition_fields(kind)
-    assert adapter.kind_lifecycle_errors(kind) == ("entities", fields)  # Past roles and axes.
+    # Past the roles and the axes, the lift's presence step: no presence for either entity axis.
+    assert kind_registry.entity_axes(kind) == ("membrane_slot", patch_damage.SOURCE_AXIS)
+    assert adapter.kind_lifecycle_errors(kind) == ("presence", ("membrane_slot", patch_damage.SOURCE_AXIS))
     table = adapter.kind_role_table(kind)
     patch, source = ("membrane_slot",), (patch_damage.SOURCE_AXIS,)
     for name in ("patch_damage", "patch_damage_injury_rate_per_s", "patch_damage_injury"):
@@ -162,10 +166,12 @@ def test_the_transporters_two_layouts_declare_every_fields_role_and_axes():
         for field in bound.control_fields:  # control_values: [times, ...].
             assert np.ndim(getattr(controls, field)) - 1 == len(axes[field]), (name, field)
         fields = kind_registry.partition_fields(bound)
-        entities = tuple(f for f in fields if any(a not in adapter.SHARED_AXES for a in axes[f]))
-        assert adapter.kind_lifecycle_errors(bound) == ("entities", entities), name
+        per_entity = tuple(f for f in fields if any(a not in adapter.SHARED_AXES for a in axes[f]))
         scalars = {"transporter_c0_mM"} if name == "version_1" else set()
-        assert set(fields) - set(entities) == scalars, name
+        assert set(fields) - set(per_entity) == scalars, name
+        # The lift admits it beside a closer: its one entity axis declares presence, and the
+        # population axis also its host (version 1's slots are a gated slot axis of @3's).
+        assert adapter.kind_lifecycle_errors(bound) == (), name
         table = adapter.kind_role_table(bound)
         if name == "version_1":
             assert table["transporter_capacity_fmol_s"][0] == PartitionRole("extensive")
@@ -200,6 +206,11 @@ def test_the_transporters_two_layouts_declare_every_fields_role_and_axes():
     roles = {k: v for k, v in kind.partition_roles.items() if k != "transporter_c0_mM"}
     v1 = dataclasses.replace(built["version_1"][1], partition_roles=MappingProxyType(roles))
     assert adapter.kind_lifecycle_errors(v1) == ("roles", ("transporter_c0_mM",))
+    # Planted: version 1 without its presence, and the population axis without its host.
+    no_presence = dataclasses.replace(built["version_1"][1], presence=MappingProxyType({}))
+    assert adapter.kind_lifecycle_errors(no_presence) == ("presence", ("membrane_slot",))
+    unhosted = dataclasses.replace(built["general"][1], axis_hosts=MappingProxyType({}))
+    assert adapter.kind_lifecycle_errors(unhosted) == ("hosts", (transporter.POPULATION_AXIS,))
 
 
 def registry_sum(stoichiometry):
