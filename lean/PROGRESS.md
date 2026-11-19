@@ -1,5 +1,47 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Stochastic encounters and transition-state catalysis
+
+In `cells.assembly_lineages@2`, drawing two copies of one molecule with count n gives n(n − 1) ordered choices. For a general reaction the finite-place draws are falling factorials. Lean proves that their log, including the membrane normalization and dilute concentration scales, equals the change of ideal energy less the reactants’ standard potentials. On regular, finite two-way edges, log(forward rate / reverse rate) is the initial free energy minus the final free energy plus held-reservoir work. The proof also covers the cancelled membrane denominator for full consumption under the offset-one measure. If a membrane participant survives on both sides at the singular boundary, the numerator is positive and the denominator is zero. [Lean proofs](CellsProofs/Chemistry/AssemblyKinetics.lean) · [Encounter law](../src/cells/models/assembly_lineages_v2/mass_action.py#L74) · [Mathlib factorial identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368)
+
+For catalysis, the common state is the componentwise minimum of the two endpoint counts. A nonempty common membrane has a factor equal to its count-weighted mean of exp(ΔΔG‡), which is strictly positive even for inhibition. An empty common membrane has factor 1. On a positive two-way edge the original rate ratio survives exactly when both directions receive the same multiplier. The same equilibrium weights then satisfy detailed balance. These results allow shared reactants and products. [Factor and rate-ratio proofs](CellsProofs/Chemistry/AssemblyKinetics.lean#L96) · [Engine factor](../src/cells/models/assembly_lineages_v2/transition_state.py#L130)
+
+**Engine finding for the lead.** A valid two-molecule world stops as `inert` with both directions of an enabled reaction at zero. A ⇌ B has equal standard potentials, a base rate of 10⁹ s⁻¹, and one stationary C molecule. A and B have contact energies +20 kBT, C has −20 kBT, all within the declared range. In either direction C is the only common molecule. The exact rate is therefore 10⁹ exp(−20) = **2.0611536224 s⁻¹**. C contributes −1 + exp(−20) to the cached sum. Adding this to the large moving-molecule contribution rounds away exp(−20). Subtracting that moving term gives −1 on the common state, and adding 1 gives zero. The world passes its own balance probe (107 pairs, maximum residual 1.07 × 10⁻¹⁴ kBT). A zero forward rate is skipped by that probe. The 60 s compiled run records zero events and a passing ledger. [Two-state input and clock check](checks/assembly_kinetics.py#L90) · [Cached subtraction](../src/cells/models/assembly_lineages_v2/transition_state.py#L130) · [Balance probe](../src/cells/models/assembly_lineages_v2/balance.py#L87) · [Inert status](../src/cells/models/assembly_lineages_v2/kernel.py#L459)
+
+Absorbing the exact constant factor into the rate gives the identical two-state process on the reachable compositions. This control fires four alternating events, reaching the chosen event limit, with its first at **0.3459699807 s** on the same random draw. Moderate contacts of ±2 kBT also pass. At zero contact energy for the movers, retaining C at −20 kBT restores four events but the rate is still low by 2.00 × 10⁻⁸ relative. The remaining subtraction is in 1 + expm1(−20). A numerical reference for the operator owner is to form the positive weighted mean directly on the remaining integer counts, with weight 1 for unspecified species. [Exact common-state mean](CellsProofs/Chemistry/AssemblyKinetics.lean#L112) · [Reference-rate tolerance](../validation/ool/references/detailed_balance.py#L191)
+
+The ordinary comparison used the 592 registered OL1 states and two additional states with a single remaining inhibitor. Catalysed and bare rates matched the independent reference for both measures, including the zero and singular patterns. Across 1,925 two-way edges, the forward and reverse multipliers agreed with the reference common-state factor within 6.11 × 10⁻¹⁶ in log units. The six-state boundary world checked both orientations of a last leave and a two-copy leave under three token combinations. With extinction enabled those three rates were 0.125, 0.25 and 1 s⁻¹. The kept rule suppressed all three. The full driver exits with status 1 on the two clock discrepancies. [CPU driver](checks/assembly_kinetics.py) · [Independent rates](../validation/ool/references/laws.py#L222) · [Boundary world](../validation/ool/references/designs/ol1_boundary.world.json)
+
+**Biological measurements.** Shon and Cohen measured the probability that one labelled molecule binds a partner in a sealed chamber containing exactly one, two or three partners. We read the experimental bars in Fig. 4f for the 250 nm radius and used the one-partner measurement to set the equilibrium odds. Cells’ pool reaction R + G ⇌ D predicted the other two probabilities from their counts. The Lean result eliminates the unknown chamber volume from this comparison. [Shon and Cohen, Fig. 4f and Table 1](https://cohenweb.rc.fas.harvard.edu/Publications/Shon_Cohen_Dimples_JACS.pdf) · [Measurements and uncertainties](checks/data/shon2012_confined_binding.json) · [Engine comparison](checks/confined_binding.py)
+
+| Available partners | Observed bound probability (figure reading) | From one-partner odds | From bulk Kd, geometry volume | From bulk Kd, loading volume |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.48 | 0.48 (calibration) | 0.432 | 0.269 |
+| 2 | 0.64 | 0.649 | 0.603 | 0.424 |
+| 3 | 0.67 | 0.735 | 0.695 | 0.525 |
+
+For the last two columns we used the independently measured bulk Kd of 57 ± 12 nM. A cylinder with the reported radius and the midpoint of the measured depth range gives 38.29 aL. A separate loading experiment implies 79.07 aL from its mean occupancy at the nominal bath concentration. The assay’s effective volume remains uncertain. The comparison uses the measured association constant to set the time unit. It cancels from the equilibrium predictions. Numerical uncertainties for the individual bars are unavailable. These are two distinct reactants. Live-cell measurements of receptor homodimer kinetics report a 91 ± 16 ms lifetime, with surface densities in place of fixed small integer counts. The repeated-reactant count law remains open experimentally. [Shon and Cohen, Figs. 2c and 4f](https://doi.org/10.1021/ja3062425) · [Kasai et al., Figs. 4–6](https://doi.org/10.1083/jcb.201009128)
+
+For the catalyst claim, Leventis and Silvius measured cholesterol exchange between vesicles at 37 °C. The relaxation half-time fell from 195 ± 13 minutes to about 3.4 minutes with 1 mM β-cyclodextrin, approximately a 57-fold speedup. A separate equilibrium series at 0.5 mM gave a partition coefficient of 0.91 ± 0.06 for the same lipid pair. Matched forward and reverse rates with and without the catalyst remain open. These data concern a soluble transfer catalyst. The engine evaluates contact fractions on the membrane. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0)
+
+```json
+{
+  "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+  "model": "cells.assembly_lineages@2", "backend": "cpu", "dtype": "float64", "seed": 1,
+  "laws": ["cells.stochastic_mass_action@1", "cells.transition_state_factor@1"],
+  "states_per_measure": 594, "reversible_edges": [963, 962], "singular_rates": [0, 2],
+  "factor_range": [0.5, 2.5], "max_log_factor_error": 6.106226635438361e-16,
+  "opposed_contacts": {"expected_rate_per_s": 2.061153622438558, "rates_per_s": [0, 0],
+    "horizon_s": 60, "events": 0, "status": "inert", "ledger_holds": true},
+  "same_draw_control": {"first_event_s": 0.3459699806783901, "events": 4},
+  "neutral_movers_relative_rate_error": 2.0033979697409166e-8,
+  "measured_bound_probabilities_approx": [0.48, 0.64, 0.67],
+  "held_out_bound_probabilities": [0.648648648648649, 0.7346938775510207]
+}
+```
+
+The 18 public theorems compiled with only `propext`, `Classical.choice` and `Quot.sound`. The full comparison took 31.21 s on two CPU cores, the controls-only comparison passed in 33.06 s, and the confined-binding comparison took 2.31 s. The nine existing assembly kernel tests and the 82 repository guards passed. [Existing kernel tests](../tests/unit/test_assembly_lineages_v2_kernel.py) · [Confined-binding driver](checks/confined_binding.py)
+
 ## 19 November 2026 · Ideal and regular assembly mixing
 
 For the two mixing laws in `cells.assembly_lineages@2`, adding one molecule of species A costs an ideal mixing energy whose exponential, relative to the membrane standard state, is (a + 1)/(N + 1 − c). Here a is the count of A, N is the total membrane count, and c is 0 or 1 for the two registered measures. The formula holds for N ≥ c. Lean also checks the empty membrane, the first molecule’s energy and the cost of transferring one molecule from a finite dilute pool. At positive N the two membrane free energies differ by ln N. Event admission at extinction follows the world's boundary rule. [Lean derivation](CellsProofs/Chemistry/AssemblyMixing.lean) · [Ideal energy and increment](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64)
