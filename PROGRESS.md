@@ -108,6 +108,14 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not
+  judged).** Merge 7fb27a92, tag `fr7-f1-landed-2026-11-19`. A finite precursor is consumed at first
+  order into channel units, through m maturation pools, with first-order removal of every unit into
+  a booked sink. The half-step is the chain's exact solution, so the one material account closes by
+  construction. It departs from D177 by holding removal inside the producer. Gates: tiers 593 files
+  with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +40, FR's set; the lead's merged check on
+  trial aa2ef4fa.
+
 - **X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's
   criterion, D224).** Merge fd894b91, tag `x2-energy-check-landed-2026-11-19`. Selected by
   `spec.energy_check`, and required of registered and judged runs. Each window compares one step
