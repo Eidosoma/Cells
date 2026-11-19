@@ -101,6 +101,17 @@ Sets of operators' entities (view_sets) may give per-entity facts: the species e
 (``carries``), a declared word each (``direction``, ``kinds``) and the entity each acts at
 (``at``). So the view states, for instance, where a species is produced and by which routes it
 leaves a cell; a label such as "secreted" stays the reader's, from those facts.
+- **Kinds are words** (docs/CORE_SEAMS_DESIGN.md §9, item 1): a ``kinds`` value never holds a
+  versioned ID ("@"), in any set; a law's ID goes only under ``laws``. The writer refuses a kind
+  that holds one, and so does the reader's check.
+- **What ``carries`` means** (item 2): each species a route carries moves with its own flux, not
+  as a coupled set. Coupled stoichiometry is ``per_cycle``, as @3's pumps give it (the membrane
+  set's ``pumps``: each moved row's count per cycle, by role, inward-positive); a cycle kind's sets
+  give ``per_cycle`` per mode and population, with each mode's count per species and end.
+- The channel set gives each population's ``factors`` (its factor-source IDs, in declared order;
+  none for one that declares no factors) where any population declares factors: the routing
+  door scales its availability at every stage (docs/CORE_SEAMS_DESIGN.md §4.3), so its
+  ``channel_availability`` record is the held value (that record's note says so).
 
 The run (``run``): the caller's labels (RUN_KEYS), the engine models, the definition's
 fingerprint, the scale, how it ended (``end``: status, time and step, from the shared path's final
@@ -699,6 +710,16 @@ class Plan:
 
         basis = _layout_value(layout, "field_floating_basis")
         reservoir = _layout_value(layout, "reservoir").astype(bool).tolist()
+        factored = any(getattr(c, "factors", ()) for c in m.channels)  # B1's door (docstring).
+        channel_factors = (
+            {
+                "factors": padded(
+                    [list(getattr(c, "factors", ())) for c in m.channels], len(channels)
+                )
+            }
+            if factored
+            else {}
+        )
         return {
             "species": {
                 "id": "species",
@@ -812,6 +833,7 @@ class Plan:
                     ),
                 },
                 "laws": padded([channel_law(c) for c in m.channels], len(channels)),
+                **channel_factors,
                 "roles": dict(SET_ROLES["channel"]),
             },
             "gate": {
@@ -934,6 +956,11 @@ class Plan:
                 self.problems.append(f"{law}: set {set_id} acts at entities not the definition's")
             elif key not in ("carries", "at") and not all(isinstance(v, str) for v in values):
                 self.problems.append(f"{law}: set {set_id} gives {key} as words")
+            elif key == "kinds" and any("@" in v for v in values):
+                self.problems.append(
+                    f"{law}: set {set_id} gives a versioned ID as a kind; kinds are words, and a "
+                    "law's ID goes under laws"
+                )
             item[key] = [dict(v) for v in values] if key == "at" else values
         item |= entry
         self.sets[set_id] = item
@@ -1216,11 +1243,16 @@ class Plan:
             )
         # The fixed reference of each field stored as an increment over it (RECORD_REFERENCES),
         # where no view field states it already (a view field's reference is the constant above,
-        # or its merged view record where door S changes it).
+        # or its merged view record where door S changes it). Checked here, before any output,
+        # and written by view() only where a written record names it (§9's item 3).
+        self.references = {}
         for name, info in self.fields.items():
             reference = info.reference
-            if reference is None or reference in VIEW_FIELD_AXES or any(
-                c["id"] == reference for c in out
+            if (
+                reference is None
+                or reference in VIEW_FIELD_AXES
+                or reference in self.references
+                or any(c["id"] == reference for c in out)
             ):
                 continue
             value = _layout_value(layout, reference)
@@ -1230,17 +1262,15 @@ class Plan:
                     f"the reference {reference} of {name}: shape {value.shape}, its sets {shape}"
                 )
                 continue
-            out.append(
-                {
-                    "id": reference,
-                    "unit": info.unit,
-                    "axes": list(info.axes),
-                    "values": _finite_list(value, f"constant {reference}", self.problems),
-                    "from": "the definition (the bound layout)",
-                    "says": f"the fixed reference that {name} is stored over: its quantity is "
-                    "this plus the record",
-                }
-            )
+            self.references[reference] = {
+                "id": reference,
+                "unit": info.unit,
+                "axes": list(info.axes),
+                "values": _finite_list(value, f"constant {reference}", self.problems),
+                "from": "the definition (the bound layout)",
+                "says": f"the fixed reference that {name} is stored over: its quantity is "
+                "this plus the record",
+            }
         return out
 
     def _reference_of(self, reference, merged):
@@ -1716,6 +1746,8 @@ class Plan:
             unstated.append(
                 {"id": "end", "what": "end state", "why": "the run's end state was not given"}
             )
+        named = {r["reference"].get("constant") for r in records if "reference" in r}
+        constants = [*self.constants, *(c for k, c in self.references.items() if k in named)]
         return {
             "format": FORMAT,
             "run": self.run | ({"end": dict(end)} if end is not None else {}),
@@ -1725,7 +1757,7 @@ class Plan:
             "sets": list(self.sets.values()),
             "records": records,
             "events": self.events,
-            "constants": self.constants,
+            "constants": constants,
             "unstated": sorted(unstated, key=_unstated_order),
             "recording": {"mode": mode, "subset": self.recording},
         }
@@ -2112,10 +2144,17 @@ def validate(view, directory=None):
             "reservoir",
             "valence",
             "species",
+            "factors",
             *PER_ENTITY,
         ):
             if key in s:
                 _check(len(s[key]) == len(ids), problems, f"set {set_id}: {key} has one per id")
+        if "kinds" in s:  # Kinds are words; a law's versioned ID goes under laws (docstring).
+            _check(
+                all(isinstance(k, str) and "@" not in k for k in s["kinds"]),
+                problems,
+                f"set {set_id}: its kinds are words, never a versioned ID (that goes under laws)",
+            )
         if "roles" in s:
             roles = s["roles"]
             _check(
@@ -2230,16 +2269,20 @@ def validate(view, directory=None):
             reference = record["reference"]
             constants = {c.get("id") for c in view.get("constants") or []}
             ids = {r.get("id") for r in view.get("records") or []}
+            # A field reference (door S's merged view, not saved) names a field the view leaves
+            # unstated, with the reason (§9's item 3).
+            unstated = {u.get("id") for u in view.get("unstated") or [] if isinstance(u, dict)}
             _check(
                 isinstance(reference, dict)
                 and len(reference) == 1
                 and (
                     reference.get("constant") in constants
                     or reference.get("record") in ids
-                    or isinstance(reference.get("field"), str)
+                    or (isinstance(reference.get("field"), str) and reference["field"] in unstated)
                 ),
                 problems,
-                f"record {rid}: its reference is a constant, a record or a field of the view",
+                f"record {rid}: its reference is a constant, a record, or a field the view "
+                "leaves unstated (with the reason)",
             )
         if "resets" in record:
             resets = record["resets"]
