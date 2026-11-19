@@ -27,7 +27,8 @@
   "check": "step_doubled_energy@1",
   "integration_error_cap": 0.002,
   "cap_source": "today's registered value, stage 0's m5.energy_rtol_ars222 (the lead's ruling)",
-  "every_arm": true
+  "every_arm": true,
+  "I3_rows_keep_their_caps": "X2's qualification caps (3e-2 for the plant; the cap control's own)"
  },
  "budgets": {
   "B_P": {
@@ -78,11 +79,16 @@
  "nice": 10,
  "H2": {
   "reference": {
+   "other_rows": "R3, stage 0's 0.25 ms run of record",
+   "error_bound": "the difference from the next-coarser arm of its own ladder (rung 0's k = 8; stage 0's R2), valid where the observed order at that row and class from the three finest arms (k = 7, 8, 9; R1, R2, R3) is at least 1; otherwise the row is undetermined",
+   "why_not_R3_through_switch": "its error there is 0.36 uV and 8.7e-6 in gate, 0.18 and 0.87 of B_A",
    "rung0_arms": [
     "/mnt/workspaces/Cells/fr8-rung0-20261119/records-cf1ca34b",
     "/mnt/workspaces/Cells/fr8-rung0-20261119/records-58c336c0"
    ],
-   "r3_rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz"
+   "r3_rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
+   "window_arm_rows": "rung 0's k = 9 arm of the same window (records-cf1ca34b; WN in records-58c336c0)",
+   "full_run_rows_1799.990_to_1801.000_s": "rung 0's WA arm at k = 9"
   },
   "source": {
    "rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
@@ -125,12 +131,16 @@
    "new"
   ],
   "fallback_ii": {
-   "when": "X2 refuses the control on a window",
-   "then": "that window rerun for both IDs with X2 off as a development instrument check; its rows leave dt*",
+   "trigger": "per window and rung: X2 refuses the control at that rung",
+   "today": "rerun at that rung with X2 off, as a development instrument check",
+   "new": "cannot run without X2; keeps X2 on, result reported as it stands",
+   "dt_star": "that rung of that window leaves dt* for both IDs",
    "full_runs_added_ms": [
     0.5,
     0.25
-   ]
+   ],
+   "likely": "X2 allows at most max(8, ceil(0.02 |Q|)) out-of-band held steps per run",
+   "collision": "fallback (ii) reruns with X2 off, while the new ID refuses without X2; this handling is the draft's choice, for the lead to confirm"
   },
   "full_runs": {
    "through_cue": {
@@ -224,12 +234,7 @@
   },
   "reference": {
    "arm_ms": 0.125,
-   "richardson_from_ms": 0.25,
-   "order_from_ms": [
-    0.5,
-    0.25,
-    0.125
-   ]
+   "error_bound": "the difference from the 0.25 ms arm, valid where the observed order at that row and class from the 0.5, 0.25 and 0.125 ms arms is at least 1; otherwise the row is undetermined"
   },
   "phases": {
    "S_before_s": 20.0,
@@ -237,26 +242,31 @@
   }
  },
  "readings": {
-  "pass": "completes with every row accepted by the engine's checks (X2 included) and within the budget at every row of the reading, cumulative from t = 0",
+  "pass": "completes with every row accepted by the engine's checks (X2 included) and every row of the reading passes, cumulative from t = 0; no row failing but some undetermined makes the reading undetermined",
   "dt_star": "the largest rung on the ID's ladder that passes, every finer rung passing too; 'none on the ladder' otherwise",
   "gain": "dt*(new) / dt*(today); undefined where either is none",
-  "H2_join": "window rungs (below 1 ms) read on the window's rows; full-run rungs (1 ms and up) on R3's rows; both at 1 ms",
+  "H2_join": "(I): window rungs (below 1 ms) read inside their window only (common rows for dt*, their 1 ms rows beside) joined to full-run rungs (1 ms and up) on R3's rows, both read at 1 ms; (S): the full runs alone",
   "also_reported": [
    "order",
    "what binds",
    "X2 record: counted steps, q median and distribution, held steps, max sum|a|/F"
-  ]
+  ],
+  "rows": {
+   "common": {
+    "basis_of": "dt* and the gain",
+    "H2_I": "R3's rows on the 100 ms grid",
+    "H2_S": "the 10 s rows",
+    "W0": "the 1 s rows",
+    "window_rungs": "the common rows inside their window"
+   },
+   "own": "every reference row on the arm's grid, reported beside (favours coarse arms, which see fewer rows)"
+  },
+  "row_decision": "with the reference's bound e and budget b: pass if |d| + e <= b, fail if |d| - e > b, otherwise undetermined"
  },
  "instrument": {
   "I1a": "on each window, the control at k = 9 against rung 0's k = 9 within the readable floor; the control at k = 2 on WA against R3's kept rows within the floor",
   "I1b": "the new ID's finest arm against today's within the readable floor plus both estimated errors (H2 windows at k = 9; W0 at 0.125 ms)",
-  "I2": {
-   "reference_fraction": 0.1,
-   "W0_order_band": [
-    1.8,
-    2.2
-   ]
-  },
+  "I2": "the bound exists (observed order at least 1) at the rows that decide each dt*; rows without a bound are undetermined; decides readings, not the instrument",
   "I3": {
    "tool": "validation/energy_step_doubling/qualify_x2.py",
    "solver": "the new ID",
@@ -264,10 +274,13 @@
     "fr3plant-q1_eps_1e-1": "control resume admitted; planted resume refused with 'does not hold its state's residual'",
     "cap-control-fr18-fig5net100-16": "refused with 'exceeds the registration's cap at accepted step 1'"
    },
-   "limit": "tests X2's binding and cap, not a misbooking planted inside the new step"
+   "limit": "tests X2's binding and cap, not a misbooking planted inside the new step",
+   "run_by": "X2's owner, in the ID's landing (the solver is set in X2's own file)",
+   "caps": "X2's qualification caps",
+   "when": "on the N2-alone head before stage A is read, and on the final head before any other new-ID arm is read"
   },
   "I4": "the order function on synthetic sequences (rung 0's I1)",
-  "failure": "instrument not validated"
+  "failure": "instrument not validated, if I1, I3 or I4 fails"
  },
  "outcomes": {
   "gain_at_least_threshold": "converged within budget at dt*, development, X2 on",
@@ -289,6 +302,18 @@
   "dt_ms": 100,
   "rows": "R3's 10 s rows",
   "control": "today's ID at 100 ms (predicted refused at definition)",
-  "use": "reported in section 10; enters no dt*; a refusal goes to the lead before (a) is built"
- }
+  "use": "reported in section 10; enters no dt*; a refusal goes to the lead before (a) is built",
+  "head": "development only; N2 alone never lands under the final ID's name (D147)",
+  "after": "I3 passes on that head first"
+ },
+ "revised_utc": "2026-11-19T19:58Z",
+ "limits": [
+  "two worlds, one cue on H2, two interventions on W0 over 60 s",
+  "the references are the engine's own fine arms (development)",
+  "rows outside H2's windows at rungs below 1 ms are inferred",
+  "row density: errors between the coarsest arm's rows are unread",
+  "references' bounds can leave readings undetermined",
+  "I3 tests X2's binding and cap, not a misbooking planted inside the new step",
+  "X2's evidence ended at 5 ms before rung 1"
+ ]
 }
