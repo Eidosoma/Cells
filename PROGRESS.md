@@ -108,6 +108,16 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Seam E's checks and F's cleanup (19 November 2026).**
+  - Merge bd9881d5, tag `binding-item5-landed-2026-11-19`: the species registry checks every declared
+    `FreeEnergyEntry` against its own sum of ν μ°/RT, within the form's band. Gates: tiers 594 files
+    with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +11, FR's set; the lead's merged check on
+    trial b50835af.
+  - Merge 985c6a44, tag `f-energies-cleanup-landed-2026-11-19`: a bare 3-tuple from a
+    standard_free_energies hook is now refused, since every hook returns FreeEnergyEntry. Gates:
+    tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +0; the lead's merged check
+    on trial ee082f5d.
+
 - **FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under
   D148).** Merge ddb52790, tag `fr15-s1-landed-2026-11-19`. Reactions may involve charged species
   when every reaction conserves charge. A charged row stays impermeant on @3's routes unless it is a
