@@ -192,3 +192,9 @@ Nothing in FR-8's own measurements is judged here.
 clean snapshot of this amendment's commit. The run is
 `/mnt/workspaces/Cells/core-pass-at3-20261118/fr18-x/fr8/`, detached on the light CPUs at nice 10
 and memory-capped.
+
+**A note on admission, before the run (01:10 UTC).** H2's builder sets `max_trace_bytes` to 2 GB.
+`timeline()` estimates a trace for the whole 3600 s horizon at 1 ms (6.9 GB) and refuses the
+replay, which never keeps that trace: it keeps per-row values only. FR-8 ran H2 through the
+windowed runner instead. So the wrapper raises H2's `max_trace_bytes` to 14 GB. Only that
+admission estimate reads it. Nothing else in the rule, the worlds or the tools changes.
