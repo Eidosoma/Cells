@@ -31,6 +31,7 @@ from cells.registry.models import get_model
 from validation.tissue import pump_water_fixtures as water_fixtures
 
 END_S = 0.004
+U = np.finfo(float).eps / 2  # The unit roundoff, for the bounds derived from it.
 CAPACITY = 0.1  # fmol cycles/s
 DRIVE0_J_MOL = -30500.0
 ROWS = {"Y": (10.0, 10.0), "ATP": (3.0, 1e-6), "ADP": (0.3, 1e-6), "Pi": (3.0, 1e-6)}  # mM
@@ -113,7 +114,7 @@ def test_parse_round_trips_with_a_value_free_structure_entry():
         )
         _, p = surface_pump_v3.initial_values(spec, structure=surface_pump_v3.structure(spec.model))
     assert p.transporter_neutral.shape == (1,) and p.transporter_proton.shape == (0,)  # Static.
-    assert p.transporter_drive0_J_mol[0] == pytest.approx(DRIVE0_J_MOL, rel=1e-12)
+    assert p.transporter_drive0_J_mol[0] == pytest.approx(DRIVE0_J_MOL, rel=1e-12, abs=0)
 
 
 def fuel(**over):
@@ -203,26 +204,30 @@ def test_the_neutral_role_on_held_fuel_runs_with_every_ledger_closing():
     final, ids = result.final.state, list(spec.model.species_ids)
     y, atp, adp, pi = (ids.index(row) for row in ("Y", "ATP", "ADP", "Pi"))
     cycles = float(final.transporter_cycles[0])
-    assert cycles == pytest.approx(kernel_rate(spec) * END_S, rel=1e-4)  # Nearly constant rate.
+    assert cycles == pytest.approx(kernel_rate(spec) * END_S, rel=1e-4, abs=0)  # Nearly constant.
     assert float(result.observations.transporter_cycle_rate_fmol_s[0, 0]) == pytest.approx(
-        kernel_rate(spec), rel=1e-12
+        kernel_rate(spec), rel=1e-12, abs=0
     )
-    assert float(final.amount_increment[y, 0]) == pytest.approx(-cycles, rel=1e-12)
-    assert float(final.reservoir_supplied[y, 0]) == pytest.approx(-cycles, rel=1e-12)
+    # Y's rows, the supply record and the cycles sum the same per-step increments (nu = -1, the
+    # supply's +-1; nothing else moves them): each sum within (steps + 1) u of its terms, so twice
+    # that apart. (abs=0 throughout: approx's default abs of 1e-12 exceeds these fmol values.)
+    rel = 2 * (result.final.step_index + 1) * U
+    assert float(final.amount_increment[y, 0]) == pytest.approx(-cycles, rel=rel, abs=0)
+    assert float(final.reservoir_supplied[y, 0]) == pytest.approx(-cycles, rel=rel, abs=0)
     for row in (atp, adp, pi):  # Held: read at every stage, never moved.
         assert float(final.amount_increment[row, 0]) == 0.0
         assert float(final.extracellular_amount_increment[row, 0]) == 0.0
     record = final.transporter_fuel_supplied_fmol[:, 0]
     assert [float(record[r]) for r in (atp, adp, pi)] == pytest.approx(
-        [cycles, -cycles, -cycles], rel=1e-12
+        [cycles, -cycles, -cycles], rel=rel, abs=0
     )
-    assert float(np.sum(np.abs(record))) == pytest.approx(3 * cycles, rel=1e-12)
+    assert float(np.sum(np.abs(record))) == pytest.approx(3 * cycles, rel=rel + 2 * U, abs=0)
     heat, work = (
         float(final.transporter_dissipated_energy_pJ[0]),
         float(final.transporter_metabolic_work_pJ[0]),
     )
     drive = DRIVE0_J_MOL + R * spec.model.temperature_K * math.log(0.3 * 3.0 / (3.0 * 1000.0))
-    assert work == pytest.approx(-1e-3 * cycles * drive, rel=1e-9)  # Held rows: a fixed drive.
+    assert work == pytest.approx(-1e-3 * cycles * drive, rel=1e-9, abs=0)  # A fixed drive.
     assert 0 < heat < work  # Y climbs its gradient: the stored part is work - heat > 0.
     assert result.diagnostics["max_energy_balance_relative"] < 1e-6
     assert "transporter_cycles" in result.history._fields
@@ -348,24 +353,28 @@ def test_the_charged_pump_reads_free_h_and_closes_charge_field_and_ledgers():
     temperature = spec.model.temperature_K
     rate = proton.kinetics(*proton_kernel(obs.membrane_voltage_V[0, 0], temperature), 1.0, xp=np)
     cycles = float(final.transporter_cycles[0])
-    assert cycles == pytest.approx(float(rate.cycles_fmol_s) * END_S, rel=1e-4)
-    assert float(final.amount_increment[h, 0]) == pytest.approx(-2 * cycles, rel=1e-12)
-    assert float(final.reservoir_supplied[h, 0]) == pytest.approx(-2 * cycles, rel=1e-12)
+    assert cycles == pytest.approx(float(rate.cycles_fmol_s) * END_S, rel=1e-4, abs=0)
+    # H's rows and the cycles sum the same per-step increments (nu = -2, exact in binary): each
+    # sum within (steps + 1) u of its terms, so twice that apart. abs=0 throughout: approx's
+    # default abs of 1e-12 exceeds these fmol, coulomb and ampere values.
+    rel = 2 * (result.final.step_index + 1) * U
+    assert float(final.amount_increment[h, 0]) == pytest.approx(-2 * cycles, rel=rel, abs=0)
+    assert float(final.reservoir_supplied[h, 0]) == pytest.approx(-2 * cycles, rel=rel, abs=0)
     assert float(final.amount_increment[atp, 0]) == 0.0
     charge = CHARGE_PER_FMOL * 2 * cycles
-    assert float(final.electrode_charge_transferred_C[0]) == pytest.approx(charge, rel=1e-9)
+    assert float(final.electrode_charge_transferred_C[0]) == pytest.approx(charge, rel=1e-9, abs=0)
     dv = float(obs.membrane_voltage_V[-1, 0] - obs.membrane_voltage_V[0, 0])
-    assert dv == pytest.approx(-charge / HEREDITY_CAPACITANCE_F, rel=1e-9)
+    assert dv == pytest.approx(-charge / HEREDITY_CAPACITANCE_F, rel=1e-9, abs=0)
     flux = float(obs.membrane_flux_fmol_s[0, h, 0])  # Gap 9, at the start: 2 H+ per cycle.
-    assert flux == pytest.approx(2 * float(rate.cycles_fmol_s), rel=1e-8)
+    assert flux == pytest.approx(2 * float(rate.cycles_fmol_s), rel=1e-8, abs=0)
     # The readouts at the read and the potentials: the instantaneous rate at free h.
     assert float(obs.transporter_cycle_rate_fmol_s[0, 0]) == pytest.approx(
-        float(rate.cycles_fmol_s), rel=1e-8
+        float(rate.cycles_fmol_s), rel=1e-8, abs=0
     )
     assert float(obs.transporter_cycle_free_energy_J_mol[0, 0]) == pytest.approx(
-        float(rate.cycle_free_energy_J_mol), rel=1e-9
+        float(rate.cycle_free_energy_J_mol), rel=1e-9, abs=0
     )
-    assert float(current_A[0]) == pytest.approx(CHARGE_PER_FMOL * flux, rel=1e-12)
+    assert float(current_A[0]) == pytest.approx(CHARGE_PER_FMOL * flux, rel=1e-12, abs=0)
     heat = float(final.transporter_dissipated_energy_pJ[0])
     work = float(final.transporter_metabolic_work_pJ[0])
     assert 0 < heat < work
@@ -466,10 +475,11 @@ def test_the_pumps_slope_joins_the_step_rules():
     s_atp = 3.0 / (3.0 + 0.1)
     s_h = 1.0 / (1.0 + (1e-4 / h_in) ** 2)
     unit = 4 * F / (R * temperature) * CHARGE_PER_FMOL * PUMP["capacity_fmol_s"] * s_atp
-    assert float(term[:n][0]) == pytest.approx(unit * s_h, rel=1e-6)  # The read's free h.
+    # abs=0: approx's default abs of 1e-12 exceeds these slopes (siemens, about 1e-9).
+    assert float(term[:n][0]) == pytest.approx(unit * s_h, rel=1e-6, abs=0)  # The read's free h.
     assert float(term[bath]) == float(term[:n][0])  # Per node: the patch's both ends.
     capacitance = spec.model.membranes[0].capacitance_F
-    assert rate == pytest.approx(unit / capacitance, rel=1e-12)
+    assert rate == pytest.approx(unit / capacitance, rel=1e-12, abs=0)
 
 
 def test_the_pumps_slope_follows_the_voltage_past_its_static_head():
@@ -516,11 +526,12 @@ def test_the_pumps_slope_follows_the_voltage_past_its_static_head():
                     control.transporter_availability, xp=np,
                 )[0]
             )  # fmt: skip
-            assert term == pytest.approx(kernel, rel=1e-12)
-            assert term == pytest.approx(bare * math.exp(-a_unit * shift), rel=1e-9), shift
+            # abs=0: approx's default abs of 1e-12 exceeds these slopes (siemens, about 1e-9).
+            assert term == pytest.approx(kernel, rel=1e-12, abs=0)
+            assert term == pytest.approx(bare * math.exp(-a_unit * shift), rel=1e-9, abs=0), shift
         past = transporter.stage_term(read, potentials(head - 0.05), control, p, xp=np)
         past = float(past[:n][0])
-        assert past / bare == pytest.approx(math.exp(0.05 * a_unit), rel=1e-9)  # About 42.
+        assert past / bare == pytest.approx(math.exp(0.05 * a_unit), rel=1e-9, abs=0)  # About 42.
         assert -0.3 < head < -0.25  # FR-4's drive: d_rG'_ATP near -51 kJ/mol, n = 2.
         assert rate(head) <= surface_pump_v3.EXPLICIT_STEP_BOUND < rate(head - 0.2)
     assert bool(ok)
