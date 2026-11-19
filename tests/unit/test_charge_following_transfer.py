@@ -432,6 +432,19 @@ def test_a_route_of_zero_capacitance_dissipates_nothing_and_changes_no_other_hea
     assert both.heat_pJ == pytest.approx(r["heat"], rel=1e-9, abs=1e-12 * scale)
 
 
+def test_a_negative_piece_has_no_heat(held_bath):
+    """Outside the kernel's domain (dc >= 0) the heat is NaN, which its caller refuses as
+    non-finite; the former difference-of-solves form gave a finite number there (-2e-5 pJ for
+    this piece, a difference named on 19 November 2026). Every other output is the same."""
+    spec, state, q, k, b = held_bath
+    dc = -0.01 * float(q.membrane_capacitance[k])
+    with np.errstate(invalid="ignore"):
+        out = transfer(q, state, [k], [b], [dc])
+    assert np.isnan(out.heat_pJ)
+    for name in ("charge_C", "after_V", "electrode_C"):
+        assert np.all(np.isfinite(getattr(out, name))), name
+
+
 @pytest.fixture(scope="module")
 def two_cells_q():
     return two_cells()

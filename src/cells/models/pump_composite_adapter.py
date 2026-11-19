@@ -985,7 +985,9 @@ def merge_heat_pJ(q0, target, dc, jump, *, xp):
     1/2 |L^-1 sqrt(dc) jump|^2 with L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D), E the targets' ports
     and K0 the free block, solved with q0's own factor (held nodes fixed). Every eigenvalue of
     L L^T is at least 1, so the factor is well conditioned, and a piece of zero capacitance
-    contributes exactly nothing. A singular q0 gives NaN, which the caller refuses."""
+    contributes exactly nothing. Outside the domain the heat is NaN, which the caller refuses: a
+    negative dc (the former form gave a finite number there), or a singular q0 under JAX (in
+    NumPy its refresh raises first, for the new view as before)."""
     n, o = q0.active.size, q0.outside_active.size
     p0 = tissue.field_layout(q0)
     nodes = xp.arange(n + o)[:, None]
