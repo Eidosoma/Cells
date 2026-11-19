@@ -244,7 +244,9 @@ try {
   check("at the egg play shows again", s.play);
   const play = await evaluate(`(() => { const b = ${V}.shadowRoot.querySelector("cells-timeline .tl-play").getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
   await click(play.x, play.y);
-  const playing = await waitFor(`${L}.stagePlayer.playing ? ${V}.shadowRoot.querySelector(".caveat").textContent : null`, 6000);
+  // The picture's words follow the play's start by a frame (the page draws its words again on the next one): they are waited for
+  // on the page's own state, and what stands there is read if they never come (found under load on 19 November 2026).
+  const playing = (await waitFor(`${L}.stagePlayer.playing && /^Prescribed/.test(${V}.shadowRoot.querySelector(".caveat").textContent) ? ${V}.shadowRoot.querySelector(".caveat").textContent : null`, 6000)) ?? (await evaluate(`${V}.shadowRoot.querySelector(".caveat").textContent`));
   check("play plays the run's span, its words on the picture: prescribed by the run's caller, not grown, and not drawn here yet", playing && /^Prescribed by the run's caller: not grown in the run: .*Its frames are not drawn in this view yet\.$/.test(playing), String(playing));
   await shot("run-playing");
   const ended = await waitFor(`!${L}.stagePlayer.playing && ${L}.stagePlayer.time === 1`, 30000);
