@@ -71,6 +71,7 @@ from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators.contract import Operator
+from cells.registry import kind_registry
 
 LAW_ID = "isopotential_partition@1"
 FRACTION_TOLERANCE = 1e-12  # Transference numbers sum to 1.
@@ -537,10 +538,10 @@ KIND_SLOTS = dict(  # Each divided slot axis: its entity list, its capacity, its
 
 def kind_role_fields(model):
     """((bound kind, field, PartitionRole, entity axis, "layout" | "control"), ...): the bound
-    kinds' layout and control fields whose entity axis (their last: adapter.lifecycle_axis, which
-    refuses any other) is one a division maps (adapter.LIFECYCLE_AXES), of every kind whose fields
-    all declare roles and axes. The structure check refuses the others beside a closer
-    (pump_composite_adapter.kind_lifecycle_errors)."""
+    kinds' layout and control fields whose entity axis (their last, shared and internal axes aside:
+    adapter.lifecycle_axis, which refuses any other) is one a division maps
+    (adapter.LIFECYCLE_AXES), of every kind whose fields all declare roles and axes. The structure
+    check refuses the others beside a closer (pump_composite_adapter.kind_lifecycle_errors)."""
     out = []
     for kind in getattr(model.inner, "BOUND_KINDS", ()):
         reason = adapter.kind_lifecycle_errors(kind)
@@ -550,7 +551,7 @@ def kind_role_fields(model):
         for what, names in (("layout", kind.layout_fields), ("control", kind.control_fields)):
             for name in names:
                 role, axes = table[name]
-                axis = adapter.lifecycle_axis(name, axes)
+                axis = adapter.lifecycle_axis(name, axes, kind.internal_axes)
                 if axis in adapter.LIFECYCLE_AXES:
                     out.append((kind, name, role, axis, what))
     return tuple(out)
@@ -567,13 +568,23 @@ def check_kind_roles(spec, declaration, model):
     - intensive: the parent's value at both daughters;
     - structural: as declared (a law, host or orientation): the run-time split keeps the
       daughters' declared values, and @3's own hosts differ from their parent's, so none is
-      compared;
+      compared, but for a presence field (kind_registry.presence_fields), which must be equal at
+      the daughters: a population divides with its host (the lead's ruling 1 (c) of 19 November
+      2026, with the lift of Q7 (a));
     - history: refused, since a layout or control field accumulates nothing for a retirement's
       record to keep.
-    A control is checked at every change record. A value whose last axis is not its slot axis's
-    capacity is refused (fail-closed: it would be read along another axis). Without a field to
-    compare nothing is bound, so no world admitted today makes a new call."""
+    A control is checked at every change record. A value with no entries along its slot axis (a
+    law's mask the declaration leaves out, bound as [0]) holds no entities and is not compared. A
+    value whose last axis is otherwise not its slot axis's capacity is refused (fail-closed: it
+    would be read along another axis). Without a field to compare nothing is bound, so no world
+    admitted before the lift makes a new call."""
     fields = kind_role_fields(model)
+    presence = {
+        (kind.kind_id, name)
+        for kind in dict.fromkeys(f[0] for f in fields)
+        for names in kind_registry.presence_fields(kind).values()
+        for name in names
+    }
     for kind, name, role, axis, what in fields:
         where = f"the kind {kind.kind_id}'s {what} field {name} on {axis}, declared {role.role}"
         if role.role == "history":
@@ -591,7 +602,11 @@ def check_kind_roles(spec, declaration, model):
                 f"A partition cannot run beside {where}: the partition binds no contact fraction "
                 "to split it by"
             )
-    compared = [f for f in fields if f[2].role in ("extensive", "intensive")]
+    compared = [
+        f
+        for f in fields
+        if f[2].role in ("extensive", "intensive") or (f[0].kind_id, f[1]) in presence
+    ]
     if not compared:
         return
     m, execution = spec.model, spec.execution
@@ -605,6 +620,8 @@ def check_kind_roles(spec, declaration, model):
         value = np.asarray(getattr(p if what == "layout" else controls, name))
         entities, capacity, divisions = KIND_SLOTS[axis]
         size = getattr(execution, capacity)
+        if value.ndim and value.shape[-1] == 0:
+            continue  # No entities: a law's mask the declaration leaves out ([0]).
         if value.ndim == 0 or value.shape[-1] != size:
             raise ConfigError(
                 f"The kind {kind.kind_id}'s {what} field {name} binds shape {value.shape}, whose "
@@ -613,6 +630,7 @@ def check_kind_roles(spec, declaration, model):
         parent, kids, fraction, _ = maps[axis]
         x = value[..., parent]
         one, two = value[..., kids[:, 0]], value[..., kids[:, 1]]
+        label = role.role
         if role.role == "extensive":
             first = fraction * x
             ok = (one == first) & (two == x - first) & (one + two == x)
@@ -620,6 +638,8 @@ def check_kind_roles(spec, declaration, model):
         else:
             ok = (one == x) & (two == x)
             rule = "its value"
+            if role.role == "structural":  # A presence field: a population divides with its host.
+                label, rule = "a presence field", "its value (a population divides with its host)"
         if ok.all():
             continue
         index = tuple(int(i) for i in np.argwhere(~ok)[0])
@@ -628,7 +648,7 @@ def check_kind_roles(spec, declaration, model):
         ids = [e.id for e in getattr(m, entities)]
         when = f" at the change record at t = {clock[index[0]]!r}" if what == "control" else ""
         raise ConfigError(
-            f"Division {d.id}: the kind {kind.kind_id}'s {what} field {name} is {role.role}, so "
+            f"Division {d.id}: the kind {kind.kind_id}'s {what} field {name} is {label}, so "
             f"its values at {ids[kids[row, 0]]} and {ids[kids[row, 1]]} must be {rule} at "
             f"{ids[parent[row]]}{when}"
         )
