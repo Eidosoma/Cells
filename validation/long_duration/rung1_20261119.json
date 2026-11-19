@@ -463,6 +463,122 @@
     "from_then": "section 10.1's I3-at-the-largest-step rule applies to each world's plant for that world's claims",
     "FR3_plant": "a cross-check, run as in section 10.1 and reported; it no longer caps claims"
    }
+  },
+  {
+   "entry": "10.3",
+   "entry_utc": "2026-11-19T21:20Z",
+   "title": "D232, the control first, before any run",
+   "decision": "D232",
+   "main": "2bb3a253",
+   "n2_build": "on hold",
+   "control": {
+    "integrator": "imex_ars222_face_electromigration@1",
+    "energy_check": {
+     "check": "step_doubled_energy@1",
+     "integration_error_cap": 0.002
+    },
+    "horizons": "full registered horizons (X2's whole-run conditions never judged on a short run)",
+    "arms": {
+     "H2_windows": {
+      "windows": [
+       "WS",
+       "WA",
+       "WC",
+       "WB"
+      ],
+      "k": [
+       0,
+       9
+      ],
+      "import": "re-based (rule (b))"
+     },
+     "H2_WN": {
+      "k": [
+       0,
+       9
+      ],
+      "role": "instrument control"
+     },
+     "H2_full_through_cue": {
+      "dts_ms": [
+       1,
+       2,
+       5,
+       10,
+       20,
+       50,
+       100
+      ],
+      "end_s": 3600.0
+     },
+     "H2_slow_phase": {
+      "dts_ms": [
+       200,
+       500,
+       1000,
+       2000,
+       5000,
+       10000
+      ],
+      "end_s": 1790.0
+     },
+     "W0": {
+      "dts_ms": [
+       0.125,
+       0.25,
+       0.5,
+       1,
+       2,
+       5,
+       10
+      ],
+      "end_s": 60.0,
+      "also": "W0's reference"
+     }
+    },
+    "as_registered": [
+     "fallback (ii)",
+     "I1a",
+     "I2",
+     "I4",
+     "the readings of sections 4, 10.1 and 10.2",
+     "the cost reading"
+    ],
+    "waits_for_new_id": [
+     "I1b",
+     "I3 under the new ID"
+    ],
+    "plant": "section 10.1's plant at the largest step claimed applies to today's ID with FR-3's plant, until the @3 owner's entry registers plants inside H2 and W0"
+   },
+   "reports": {
+    "per": "each world and reading under B_P, with B_A beside",
+    "items": [
+     "the largest passing step (today's dt*)",
+     "what stops the next rung: its check, message and row (a refusal) or its first breach (class, row and value)",
+     "wall time per simulated second at dt* on the timed lane under its lock"
+    ],
+    "decides": "nothing; the calm stretch of D232's rules is rung 1's (S)"
+   },
+   "decision_rules_quoted_from_D232": [
+    "if charge stability limits the calm stretch and the proposed method (N2) addresses that limit, proceed to A (build N2, then rung 1 as registered);",
+    "if today's integrator already gives adequate calm-stretch performance and event windows can use it, prioritise C (the fine-window executor);",
+    "if X2's cap binds today's integrator, report the evidence and keep the exact-accounting build on hold. The registered build trigger (D231) applies to Stage A or the new integrator's limiting rung; a refusal on today's integrator alone does not trigger it."
+   ],
+   "wording": {
+    "ceiling": "about 71 ms is a predicted charge-stability ceiling (M1's Mc, 14.0 /s, at H2's declared initial state with the channels' initial openings); 'today's membrane charge bound (71.4 ms)' in sections 3.1, 5 and 6 reads so",
+    "prediction_mechanism_corrected": "from M1's own definitions, before any run: M (3.42 /s, definition-time on the channel-free projection) admits up to 292 ms; Mc is checked by each IMEX step at its own openings; so refused at definition from 500 ms, and at 100 and 200 ms admitted at definition and refused by the first step's own check; where and whether the ceiling binds is what the control measures",
+    "rung0": "rung 0's official verdict stays inconclusive ('instrument not validated'); its follow-up under amendment 1 supports a pre-asymptotic transient in this case; 'rung 0's outcome (C)' in sections 5 and 10.2 means that follow-up",
+    "3.3_uV": "the difference from the finest saved trace through one switch (rung 0's finest WA arm)"
+   },
+   "precision_to_10.2": "the 1 ms rule governs the spacing of the samples bracketing the threshold crossing; rung 1's single-rate arms sample at their steps, so for them it caps the intervention reading at 1 ms; a method sampling at 1 ms or finer around events, such as fine windows, is not excluded",
+   "retention": {
+    "kept": [
+     "per arm, the error at every row read in every class against its reference",
+     "the reference refinement: each reference's bound and its ladder's differences at those rows"
+    ],
+    "why": "so 6.25 uV per arm and 25 uV across four arms can be checked separately from FR-8's 20 uV per-trace criterion",
+    "judges": "nothing in rung 1"
+   }
   }
  ]
 }
