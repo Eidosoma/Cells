@@ -198,7 +198,10 @@
   "/mnt/workspaces/Cells/core-pass-f-20261118/gate-a5512058/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/tier-fold-fix-20261119/measure/measured.json",
   "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-d33aa217/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-bae02d29/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-bae02d29/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr2-references-20261119/gate-1104e41b/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-e2fb3cff/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-aeaa3c86/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1649,6 +1652,30 @@
    "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-bae02d29",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T03:47:15+00:00"
+  },
+  {
+   "git_revision": "1104e41bb4f78f95f67ac429ffb7ae078734c0f1",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-references-20261119/snapshot-1104e41b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T04:57:05+00:00"
+  },
+  {
+   "git_revision": "e2fb3cffd260e5d60c4ddd4900c04575a89b7d3f",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-e2fb3cff",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T03:59:12+00:00"
+  },
+  {
+   "git_revision": "aeaa3c86df09d60361b75d44835e4b6062982881",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-aeaa3c86",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T05:24:07+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3419,6 +3446,14 @@
     }
    },
    {
+    "file": "tests/unit/test_kind_presence_gate.py",
+    "seconds": 3.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_kind_rules.py",
     "seconds": 3.58,
     "exit_code": 0,
@@ -3592,6 +3627,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_references.py",
+    "seconds": 2.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
     }
    },
    {
@@ -4058,6 +4101,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_pump_composite_values.py",
+    "seconds": 3.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
