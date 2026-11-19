@@ -961,25 +961,14 @@ def check_amount_reading_routes(spec):
     rows at its buffered nodes) or a general closure's closure_rows, at either end of the route.
     The stored total there is not the free species the law would read. Beside check_closure_rows
     and check_stage_read_rows, which hold the same rows for the other movers; per (species, node),
-    from each declared kind's moved rows (the core's join, inner_movers). A world with no such
-    route, or no closure, is not checked."""
+    from each declared kind's moved rows (the core's join, inner_movers). A world with no closure
+    is not checked, and its movers are not built (no new path in a closure-free world)."""
     m = _inner_model(spec)
     kinds = getattr(m, "kinds", ())
     if not kinds:
         return
     from cells.registry.kind_registry import active, qualified
 
-    reading = {qualified(law) for law in AMOUNT_READING_ROUTE_LAWS}
-    _, movers = inner_movers(spec)
-    moves = [
-        (species, law, kind, node)
-        for species, entries in movers.items()
-        for kind, law, nodes in entries
-        if kind not in INNER_MOVERS and qualified(law) in reading
-        for node in nodes
-    ]
-    if not moves:
-        return
     registry, held = active(), {}
     for kind_id, declaration in kinds:
         kind = registry.lookup(kind_id)
@@ -989,6 +978,17 @@ def check_amount_reading_routes(spec):
         rows += tuple(getattr(declaration, "closure_rows", ()))
         for row in rows:
             held.setdefault((row[0], row[1]), qualified(kind_id))
+    if not held:
+        return
+    reading = {qualified(law) for law in AMOUNT_READING_ROUTE_LAWS}
+    _, movers = inner_movers(spec)
+    moves = [
+        (species, law, kind, node)
+        for species, entries in movers.items()
+        for kind, law, nodes in entries
+        if kind not in INNER_MOVERS and qualified(law) in reading
+        for node in nodes
+    ]
     for species, law, kind, node in moves:
         if (species, node) in held:
             raise ConfigError(
