@@ -1,5 +1,29 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Ten ion-channel laws
+
+For the eight voltage-dependent channel laws in `resolved_pump_tissue@3`, Lean proves that both gate targets lie in [0, 1] and both time constants are positive over the declared −120 to +60 mV domain. The exponential stage keeps the opening in [0, 1] for any nonnegative duration and any pair of admissible endpoint voltages. The proof covers the polynomial branch at small steps and the regularized NaV1.2 rates. The two gate-free leak laws have intrinsic opening one. On the permeant ion, opening times external availability scales the signed constant-field flux. The channel debits the cell and credits its exterior by that same flux. All other species receive zero. These theorems use the Cells constant-field and transfer proofs and Mathlib’s exponential inequalities. The 14 new theorems use only the standard Lean axioms. [Stage proof](CellsProofs/Transport/ChannelStep.lean) · [Channel laws and booking](CellsProofs/Transport/IonChannels.lean) · [Tissue stage](../src/cells/models/surface_pump_v3.py#L1257)
+
+The CPU driver checks each law’s declared ion and opening powers against Lean and the compiled tissue dispatcher. For the five Kv1 laws with coefficient tables it also checks the Lean targets and time constants against the engine’s table entries symbolically. Scalar references in mV and ms cover all eight gated laws at 25 voltages, including NaV1.2’s removable singularities. In 72 additional stage cases the driver checked every combination of gate and endpoint targets at zero or one, including the floats immediately below and above the series switch. [Driver and synthetic world](checks/ion_channels.py) · [Kv1 reference](../validation/tissue/kv1_reference.py) · [Kir2.1 reference](../validation/tissue/kir_reference.py) · [NaV1.2 reference](../validation/tissue/sodium_reference.py)
+
+One cell with a held bath carried all ten channels on one membrane. An external block lasted 0.24414 ms. All eight gate pairs moved during the block while every transfer stayed zero. After release the potassium routes carried outward flux and both sodium routes carried inward flux. Each channel’s flux and cumulative transfer, the cell and reservoir inventories, and the membrane voltage were checked against a separate adaptive integration of the capacitor and material balances with Decimal rates. Every off-ion and padding transfer was zero. The test used the ARS(2,2,2) integrator in float64. The driver took 29.62 s on four CPU cores. [Outward flux in the host](../src/cells/models/surface_pump_v3.py#L358) · [Independent constant-field calculation](../validation/betse/junction_transport/check.py#L10)
+
+```json
+{
+  "engine_revision": "ec46f7a4e940b86c6fc110230b2bd851081dee50",
+  "model": "resolved_pump_tissue@3", "backend": "cpu", "dtype": "float64",
+  "solver": "imex_ars222_face_electromigration@1", "independent_solver": "DOP853",
+  "dt_s": 0.0000019073486328125, "release_s": 0.000244140625, "end_s": 0.0009765625,
+  "voltages": 25, "gate_pairs": 6, "stage_cases": 72, "max_stage_error": 2.220446049250313e-16,
+  "max_target_error": 2.220446049250313e-16, "max_tau_error_s": 1.7763568394002505e-15,
+  "max_opening_error": 2.7755575615628914e-17, "max_tissue_gate_error": 4.3100384372607436e-11,
+  "max_flux_error_over_channel_peak": 3.8995113287681594e-10, "max_transfer_error_fmol": 2.3651329705171267e-13,
+  "final_voltage_V": -0.039793205071044134, "gate_atol": 2e-6, "flux_atol_over_channel_peak": 2e-6, "material_atol_fmol": 1e-10
+}
+```
+
+**Biological comparison.** Rat Kv1.1 whole-cell currents in CHO cells at 25 °C had a fitted decay time of 313 ± 82 ms (SD) at −20 mV. Under an assumed equilibrated −80 mV hold the same fit on the Cells current gave about 8.0 s, beyond the 1.5 s pulse. The model retained 88.3% of its peak current at pulse end. For adult human NaV1.2 at room temperature, the model current's 10–90% rise was 0.296 ms versus 0.38 ± 0.05 ms measured (SEM). Its inactivation midpoint was −54.9 mV versus −63.53 ± 0.79 mV. These are descriptive whole-current comparisons for the specified preparations. The evidence note also records the limitations for the other isoforms and the generic leak laws. [Search agent’s evidence and protocols](claims/incoming/channel-gating-evidence.md) · [Reproduce both model traces](checks/channel_clamp_evidence.py) · [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6)
+
 ## 19 November 2026 · Hill activation and inhibition
 
 The optional `grn-lean` check recompiled the original scalar monotonicity proofs and both Cells specializations on Lean 4.19.0. The axiom reports contain only `propext`, `Classical.choice` and `Quot.sound`. On the engine's 6 × 5 × 9 grid of half-saturations, exponents and concentrations, the compiled CPU factors were compared with the upstream formula evaluated at 65-digit precision using the exact binary inputs. All three engine Hill tests also passed, including the reaction-rate comparison in `resolved_pump_composite@1`. [Proof and upstream pin](checks/hill/check.sh) · [Numerical driver](checks/hill/compare.py) · [Reaction operator comparison](../tests/unit/test_hill_factors.py) · [Chemistry library assessment](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
