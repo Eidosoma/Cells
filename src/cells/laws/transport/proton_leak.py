@@ -13,7 +13,10 @@ m is the route's availability, or the routing door's factor for FR-5's damage le
 Booking: the passive contract. Over a step the heat is the exact decrease of free energy of what
 moved, from each node's divided-difference potentials (the closure's G* at buffered nodes) plus
 the electrical term V-bar times the charge moved, when the core's declared booking exists. Until
-then the instantaneous rate heat_pJ_s = J (mu_out - mu_in) applies, which is nonnegative.
+then the instantaneous rate heat_pJ_s = J (mu_out - mu_in) applies, which is >= 0 in exact
+arithmetic, and within rounding in float64: the small-|x| series can reverse sign in an interval of
+relative width about 1e-33 around reversal. The booking checks use RAW_SUM_FACTOR*eps floors, not
+an exact sign.
 """
 
 import jax.numpy as jnp
@@ -33,7 +36,10 @@ def flux_fmol_s(h_in_mM, h_out_mM, voltage_V, temperature_K, area_m2, permeabili
 
 
 def heat_pJ_s(flux_in_fmol_s, h_in_mM, h_out_mM, voltage_V, temperature_K, *, xp=jnp):
-    """Instantaneous dissipation (pJ/s): J_in (mu-tilde_out - mu-tilde_in) >= 0 for this flux."""
+    """Instantaneous dissipation (pJ/s): J_in (mu-tilde_out - mu-tilde_in), >= 0 for this flux in
+    exact arithmetic and within rounding in float64 (the small-|x| series can reverse sign in an
+    interval of relative width about 1e-33 around reversal); the booking checks use
+    RAW_SUM_FACTOR*eps floors, not an exact sign."""
     inward = electrochemical_potential(h_in_mM, h_out_mM, voltage_V, VALENCE, temperature_K, xp=xp)
     return -1e-3 * flux_in_fmol_s * inward
 
