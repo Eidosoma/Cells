@@ -214,16 +214,28 @@ def proton_bookkeeping(comp, y, h):
                     "the second proton stays on phosphate (the buffer formula absorbs it)."}
 
 
+def supply(comp, y, h):
+    """Eq. 1 has no reductant: its rate law vanishes at NADH/NAD = r, so it behaves as a
+    supply with implied affinity A = RT ln(r [NAD]/[NADH]) (kJ/mol); its power is J A."""
+    S = dict(zip(M.STATES, np.asarray(y, float)))
+    p = comp.params
+    NAD = p["NAD_tot"] - S["NADH_x"]
+    A = p["R"] * p["T"] * math.log(p["r"] * NAD / S["NADH_x"])
+    J = comp.fluxes(y, h)["J_DH"]
+    return {"implied_affinity_kJ": A, "J_DH": J, "power_kW_per_l": J * A}
+
+
 def audit_state(comp, y, h):
     dis, fl, dg = dissipation(comp, y, h)
-    return {"fluxes": fl, "delta_G_kJ": dg, "dissipation_kW_per_l": dis,
+    return {"fluxes": fl, "delta_G_kJ": dg, "dissipation_kW_per_l": dis, "supply": supply(comp, y, h),
             "total_dissipation_kW_per_l": sum(v for v in dis.values() if v is not None),
             "negative_dissipation": {k: v for k, v in dis.items() if v is not None and v < -1e-15},
             "charge": charge_bookkeeping(comp, y, h), "protons": proton_bookkeeping(comp, y, h)}
 
 
-ARMS = {"published": dict(), "eq24_with_eq7_proton_term": dict(J_C3="eq24_with_eq7_proton_term"),
-        "eq16_symport": dict(J_PiHt="eq16_symport"), "eq11_with_proton_term": dict(J_F1="eq11_with_proton_term")}
+ARMS = {"published": dict(), "eq24_printed": dict(J_C3="eq24_printed"),
+        "eq16_symport": dict(J_PiHt="eq16_symport"), "eq11_with_proton_term": dict(J_F1="eq11_with_proton_term"),
+        "thermo_consistent": dict(J_PiHt="eq16_symport", J_F1="eq11_with_proton_term")}
 
 
 def main(argv=None):

@@ -303,6 +303,11 @@ def arms():
         "plant_stale_xml_row": (P(H_x_row="stale_web_xml"), {}),
         "plant_DGo_ATP_text_sign": (P(DGo_ATP_sign=-1), {}),
         "plant_X_ANT_plus_1pct": (P(overrides={"X_ANT": 0.0079204 * 1.01}), {}),
+        # does the Eqs. 11/16 ranking survive the undeclared matrix Mg2+ total? (Q03, Q11, Q25)
+        "mg_x_15mM": (P(), {"mg_x_total": 15e-3}),
+        **{f"{k}_mg{tag}": (P(**sw), {"mg_x_total": mg}) for k, sw in
+           (("eq16_symport", {"J_PiHt": "eq16_symport"}), ("eq11_with_proton_term", {"J_F1": "eq11_with_proton_term"}))
+           for tag, mg in (("0.25", 0.25e-3), ("5", 5e-3), ("15", 15e-3))},
     }
 
 

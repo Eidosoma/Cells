@@ -226,15 +226,49 @@ def digitise(pdf: Path, workdir: Path) -> dict:
     return res
 
 
+TEXT_NUMBERS = {
+    "P50_uM": {"value": 0.373, "where": "Results, 'Behavior of Model at Low Oxygen Concentration'",
+               "conditions": "state 3, [ADP]e = 1.0 mM, [ATP]e = 0, [Pi]e unreported"},
+    "P50_mmHg": {"value": 0.287, "where": "same"},
+    "cytc_reduced_at_O2_50uM": {"value": 0.14, "where": "same", "conditions": "[ADP]e = 0.5 mM, [ATP]e = 0.87 mM, [Pi]e unreported"},
+    "outer_membrane_ATP_ADP_gradient_uM": {"value": 20, "where": "Materials, 'Parameter values', class B",
+                                           "conditions": "maximal respiration"},
+    "O2_at_20_mmHg_M": {"value": 2.6e-5, "where": "'Simulation of isolated mitochondria'"},
+}
+
+
+def targets(digitised: dict) -> dict:
+    """The committed targets file: the text's numbers and the digitised vertex values."""
+    sig = lambda x, n: float(f"{x:.{n}g}")
+    out = {
+        "kind": "cells.validation.mito_reference_targets@1",
+        "source": "Beard DA (2005) PLoS Comput Biol 1(4): e36, doi:10.1371/journal.pcbi.0010036 (CC BY). Numbers only; no figure is reproduced.",
+        "method": "Model curves digitised from the article PDF's embedded figure rasters (200 ppi) by digitize.py: axes box from its lines, axis limits from the printed corner labels, curve ink within a +-4 px corridor, value at each simulated vertex ([Pi]e = 1, 2, 3, 5, 10 mM) from straight-line fits on both neighbouring segments. unc = half the two sides' disagreement + 1 px. [Pi]e = 0 is read only for the flat matrix-pH curves.",
+        "text_numbers": TEXT_NUMBERS,
+        "figures": {},
+    }
+    for p, panel in digitised.items():
+        out["figures"][p] = {
+            "quantity": panel["quantity"], "x_axis": "[Pi]e (mM)", "y_limits": panel["y"],
+            "model": "with phosphate control" if p.startswith(("fig4", "fig5")) else "without phosphate control",
+            "curves": {c: {f"{float(k):g}": [sig(v["value"], 5), sig(v["unc"], 2)]
+                           for k, v in sorted(kv.items(), key=lambda t: float(t[0]))}
+                       for c, kv in panel["curves"].items()}}
+    return out
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("pdf", type=Path, help="local copy of the article PDF (kept outside the repository)")
     ap.add_argument("--out", type=Path, required=True, help="output JSON (workspace)")
+    ap.add_argument("--targets", type=Path, default=None, help="also write the targets file (published_targets.json)")
     args = ap.parse_args(argv)
     with tempfile.TemporaryDirectory() as td:
         res = digitise(args.pdf, Path(td))
     args.out.write_text(json.dumps(res, indent=1, default=float))
+    if args.targets is not None:
+        args.targets.write_text(json.dumps(targets(res), indent=1))
     for p, d in res.items():
         for c, kv in d["curves"].items():
             print(p, c, {k: f"{v['value']:.4g}+-{v['unc']:.2g}" for k, v in sorted(kv.items())})

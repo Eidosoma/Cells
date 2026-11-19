@@ -24,9 +24,10 @@ from validation.mitochondria.references import reproduce as R
 
 TARGETS = json.loads(R.TARGETS.read_text())
 
-# Documented reproduction bands of the published arm against the digitised published curves
-# (|reproduced - published|, per quantity and state; README "Reproduction"). They are this
-# reference's status, not an engine tolerance.
+# Reproduction bands of the published arm against the digitised published curves
+# (|reproduced - published|, per quantity and state), set just above the published arm's
+# measured agreement (reproduce.py, arm "published"). They record this reference's status;
+# they are not an engine tolerance.
 BANDS = {
     ("NADH_frac", "state4"): 0.006, ("NADH_frac", "state3"): 0.02,
     ("MVO2_per_cyta", "state4"): 1.5, ("MVO2_per_cyta", "state3"): 3.5,
@@ -73,17 +74,36 @@ def _state3_pi10(arm, charge):
     return R.outputs(run.comp, h, y)
 
 
+def test_steady_state_depends_only_on_the_two_inventories(published):
+    """Three far-apart starts with the same invariants reach the same steady state."""
+    run = published["run"]
+    h = run.held(ADP_e=1.3e-3, Pi_e=3e-3)
+    ends = []
+    for kw in (dict(), dict(pH_x=7.4, K_x=0.09, dPsi=60.0, NADH_frac=0.1, QH2_frac=0.9, cytc_red_frac=0.6, Pi_x=0.5e-3),
+               dict(pH_x=6.9, K_x=0.2, dPsi=220.0, NADH_frac=0.95, QH2_frac=0.05, cytc_red_frac=0.02, Pi_x=8e-3)):
+        y0 = M.with_invariants(run.comp, M.initial_state(run.comp, h, **kw), charge=published["charge"],
+                               mg_total=run.mg_x_total)
+        ends.append(M.integrate(run.comp, h, y0, t_end=20000.0).y[:, -1])
+    for e in ends[1:]:
+        assert np.max(np.abs(e - ends[0]) / np.maximum(np.abs(ends[0]), 1e-12)) < 1e-9
+
+
 def test_planted_controls_are_caught(published):
+    """Each plant moves its row: the 2005 Table 1 and the 2005 k_O2 move the steady state;
+    the web XML's stale proton row leaves the steady-state equations unchanged (its chain
+    coefficients also sum to -10) but breaks the matrix-charge invariant, which drifts."""
     base = next(r for r in published["sweeps"]["state3"] if r["Pi_e_mM"] == 10.0)
-    t2005 = _state3_pi10(M.Arm.published(table="e36"), published["charge"])
-    assert abs(t2005["cytc_red_frac"] - base["cytc_red_frac"]) > 0.05
     ko2 = _state3_pi10(M.Arm.published(overrides={"k_O2": 1.0e-6}), published["charge"])
     assert abs(ko2["cytc_red_frac"] - base["cytc_red_frac"]) > 0.05 and abs(ko2["dPsi_mV"] - base["dPsi_mV"]) > 1.0
-    # the stale row conserves a different combination, so the anchored inventory no longer
-    # holds the matrix charge: the steady state moves
-    stale = R.Runner(M.Arm.published(H_x_row="stale_web_xml"))
-    stale.calibrate_charge()
-    h = stale.held(ADP_e=1.3e-3, Pi_e=10e-3)
-    y, _ = stale.solve(h)
-    o = R.outputs(stale.comp, h, y)
-    assert abs(o["pH_x"] - base["pH_x"]) > 0.01 or abs(o["dPsi_mV"] - base["dPsi_mV"]) > 1.0
+    t2005 = R.Runner(M.Arm.published(table="e36"), charge=published["charge"])
+    h = t2005.held(ADP_e=1.3e-3, Pi_e=10e-3)
+    y = M.integrate(t2005.comp, h, t2005.start(h), t_end=4000.0).y[:, -1]
+    o = R.outputs(t2005.comp, h, y)
+    assert abs(o["cytc_red_frac"] - base["cytc_red_frac"]) > 0.05 or abs(o["dPsi_mV"] - base["dPsi_mV"]) > 1.0
+    stale = M.compile_model(M.load(), M.Arm.published(H_x_row="stale_web_xml"))
+    run = published["run"]
+    h = run.held(ADP_e=1.3e-3, Pi_e=3e-3)
+    y0 = M.with_invariants(run.comp, run.start(h), charge=published["charge"], mg_total=run.mg_x_total)
+    y1 = M.integrate(stale, h, y0, t_end=20.0).y[:, -1]
+    charge_drift = M.invariants(run.comp, y1)[1][1] - M.invariants(run.comp, y0)[1][1]
+    assert abs(charge_drift) > 1e-5          # mol per l mito; the published row holds it to ~1e-14
