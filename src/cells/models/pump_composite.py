@@ -995,6 +995,13 @@ def accepted_writers(operators):
     return {law: tuple((w, tuple(k)) for w, k in byw.values()) for law, byw in writers.items()}
 
 
+def _channel_targets(values):
+    """A composite's values' channel-gate targets: the inner model's, computed at the composite's
+    view and effective control (values.ionic), as surface_pump_projective.settling reads a model's
+    values.channel_targets (FR-8's engine gap, validation/long_duration/RESULTS_20261118.md §7)."""
+    return values.ionic.channel_targets
+
+
 class Composition:
     """The model protocol of one composition (attributes as a model module's)."""
 
@@ -1102,9 +1109,19 @@ class Composition:
         )
         self.CONTROL_TYPE = composite_spec.control_type(self.CONTROL_FIELDS)
         self.READOUTS = tuple(op.READOUT for op in operators if op.READOUT)
-        self.VALUES_TYPE = NamedTuple(
+        # FR-8's engine gap (validation/long_duration/RESULTS_20261118.md §7): a reader of a model's
+        # values finds the channel gates' targets as values.channel_targets
+        # (surface_pump_projective.settling). A composite's are the inner model's at its view,
+        # nested under `ionic`, so a property forwards them: the values' fields, every record and
+        # every traced program stay as they were.
+        values = NamedTuple(
             "CompositeValues",
             [(k, object) for k in ("field", "derivative", "ionic", *self.READOUTS, "valid")],
+        )
+        self.VALUES_TYPE = type(
+            "CompositeValues",
+            (values,),
+            {"__slots__": (), "channel_targets": property(_channel_targets)},
         )
         # The dissipation check's fields: each operator's heat fields whose declared energy role
         # is monotone (contract.monotone_heat; every heat field by default). A non-monotone heat
