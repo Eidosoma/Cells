@@ -2,7 +2,7 @@ import CellsProofs.Accounting.Transfer
 import CellsProofs.Transport.ChannelStep
 import CellsProofs.Transport.ProtonLeak
 
-/-! # The ten channel declarations of resolved_pump_tissue@3
+/-! # The channel declarations of resolved_pump_tissue@3
 
 Voltage is inside minus outside in volts. Both gate time constants are in
 seconds. The gate-free laws have no dynamic gate rows; their dispatch fills
@@ -16,9 +16,10 @@ noncomputable section
 inductive Law where
   | kv1p1_mh2 | kv1p2_mh | kv1p3_mh | kv1p4_mh | kv1p5_mh | kv1p6_mh
   | kir2p1_mh2 | nav1p2_m3h_regularized | kleak_always_open | naleak_always_open
+  | clleak_always_open
 
 inductive Ion where
-  | potassium | sodium | other
+  | potassium | sodium | chloride | other
   deriving DecidableEq
 
 def boltz (v mid slope : ℝ) : ℝ := 1 / (1 + Real.exp ((v - mid) / slope))
@@ -58,7 +59,7 @@ def targets (law : Law) (v : ℝ) : ℝ × ℝ :=
   | .kir2p1_mh2 => (boltz v (-0.09648) 0.02326, boltz v (-0.16828) (-0.04413))
   | .nav1p2_m3h_regularized =>
     (naActivation v / (naActivation v + naDeactivation v), boltz v (-0.055) 0.0062)
-  | .kleak_always_open | .naleak_always_open => (0, 0)
+  | .kleak_always_open | .naleak_always_open | .clleak_always_open => (0, 0)
 
 def times (law : Law) (v : ℝ) : ℝ × ℝ :=
   match law with
@@ -72,7 +73,7 @@ def times (law : Law) (v : ℝ) : ℝ × ℝ :=
     (0.0037 - 0.00337 * boltz v (-0.0329) 0.02793, 0.00085 + 0.3063 * boltz v (-0.11829) (-0.02723))
   | .nav1p2_m3h_regularized =>
     (0.001 / (naActivation v + naDeactivation v), 0.001 / (naRecovery v + naInactivation v))
-  | .kleak_always_open | .naleak_always_open => (1, 1)
+  | .kleak_always_open | .naleak_always_open | .clleak_always_open => (1, 1)
 
 private theorem sodium_rates_pos (v : ℝ) :
     0 < naActivation v ∧ 0 < naDeactivation v ∧ 0 < naRecovery v ∧ 0 < naInactivation v := by
@@ -105,12 +106,17 @@ def opening (law : Law) (m h : ℝ) : ℝ :=
   match law with
   | .kv1p1_mh2 | .kir2p1_mh2 => m * h * h
   | .nav1p2_m3h_regularized => m ^ 3 * h
-  | .kleak_always_open | .naleak_always_open => 1
+  | .kleak_always_open | .naleak_always_open | .clleak_always_open => 1
   | _ => m * h
 
 def permeant : Law → Ion
   | .nav1p2_m3h_regularized | .naleak_always_open => .sodium
+  | .clleak_always_open => .chloride
   | _ => .potassium
+
+def valence : Law → ℤ
+  | .clleak_always_open => -1
+  | _ => 1
 
 private theorem product_bounds {x y : ℝ} (hx : x ∈ Set.Icc 0 1) (hy : y ∈ Set.Icc 0 1) :
     x * y ∈ Set.Icc 0 1 := ⟨mul_nonneg hx.1 hy.1, mul_le_one₀ hx.2 hy.1 hy.2⟩
@@ -148,6 +154,35 @@ theorem stage_opening_bounded (law : Law) {v w dt m h : ℝ}
 
 theorem leak_opening (m h : ℝ) :
     opening .kleak_always_open m h = 1 ∧ opening .naleak_always_open m h = 1 := ⟨rfl, rfl⟩
+
+/-- With valence −1 the chloride flux outward has the same algebra as a positive
+ion flowing inward with the concentrations exchanged. This holds on both branches. -/
+theorem chloride_flux (m h availability scale vf inside outside voltage : ℝ) :
+    flux .clleak_always_open .chloride m h availability scale
+      ((valence .clleak_always_open : ℝ) * vf) inside outside voltage =
+      ProtonLeak.inward seriesFactor (scale * availability) outside inside (vf * voltage) := by
+  simp [flux, permeant, opening, valence, ProtonLeak.inward, constantFieldFlux]
+
+/-- For a conducting route, the chloride reversal voltage in volts on the analytic
+branch (and at zero). The general flux identity also covers the near-zero series. -/
+theorem chloride_reversal_iff {scale availability inside outside rt faraday : ℝ}
+    (hs : 0 < scale) (ha : 0 < availability) (hi : 0 < inside) (ho : 0 < outside)
+    (hrt : 0 < rt) (hf : 0 < faraday) (m h voltage : ℝ)
+    (branch : faraday * voltage / rt = 0 ∨ 1 / 10000 ≤ |faraday * voltage / rt|) :
+    flux .clleak_always_open .chloride m h availability scale
+      ((valence .clleak_always_open : ℝ) * (faraday / rt)) inside outside voltage = 0 ↔
+      voltage = rt / faraday * (Real.log inside - Real.log outside) := by
+  rw [chloride_flux, div_mul_eq_mul_div, ProtonLeak.series_eq_analytic branch]
+  exact ProtonLeak.reversal_voltage_iff (mul_pos hs ha) ho hi hrt hf voltage
+
+/-- Outward membrane current in A for signed outward material flux in fmol/s,
+with a positive monovalent conversion factor in C/fmol. -/
+def outwardCurrent (law : Law) (chargePerFmol materialFlux : ℝ) : ℝ :=
+  (valence law : ℝ) * chargePerFmol * materialFlux
+
+theorem chloride_current_positive_iff {chargePerFmol materialFlux : ℝ} (hq : 0 < chargePerFmol) :
+    0 < outwardCurrent .clleak_always_open chargePerFmol materialFlux ↔ materialFlux < 0 := by
+  simp [outwardCurrent, valence, neg_mul, mul_neg_iff, hq, not_lt_of_ge hq.le]
 
 /-- On its permeant ion a population scales the signed, inside-to-outside flux. -/
 theorem permeant_flux (law : Law) (m h availability scale vf inside outside voltage : ℝ) :

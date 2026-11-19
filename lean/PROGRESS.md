@@ -1,5 +1,29 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Chloride leak
+
+The newly registered `clleak_always_open@1` adds a monovalent anion to the channel populations of `resolved_pump_tissue@3`. Lean proves that outward Cl⁻ movement gives negative outward current. For positive permeability, availability and concentrations, the reversal voltage on the regular branch is `(RT/F) × (ln inside − ln outside)`. The identity also holds at zero voltage. The finite near-zero polynomial keeps its own Bernoulli ratio. The proof reuses the existing constant-field reversal theorem with the concentrations exchanged. [Channel and reversal proofs](CellsProofs/Transport/IonChannels.lean) · [Registered chloride declaration](../src/cells/laws/channels/clleak_always_open.py#L20) · [Current in the tissue host](../src/cells/models/surface_pump_v3.py#L872)
+
+Two one-cell runs started at −21.52 mV with 62.56 mM internal Cl⁻. With 147 mM in the held bath, chloride moved into the cell and the initial electrode current was **+0.573 pA**. With 70 mM outside, chloride left the cell and the current was **−5.733 pA**. The independent calculation integrated signed material transfer with a 70-digit constant-field rate and updated the capacitor voltage at each evaluation. The driver checked the cell and reservoir inventories, signed electrode charge, voltage, all other ions and a padding slot. It took 13.95 s on four CPU cores. [Two tissue worlds and comparison](checks/chloride_channel.py) · [Independent scalar flux](../validation/betse/junction_transport/check.py#L10)
+
+```json
+{
+  "engine_revision": "d4f1eaf723ee1bdd1e54d9be086cb81d67356bfa",
+  "model": "resolved_pump_tissue@3", "law": "clleak_always_open@1", "backend": "cpu", "dtype": "float64",
+  "solver": "imex_ars222_face_electromigration@1", "independent_solver": "DOP853",
+  "dt_s": 0.000030517578125, "end_s": 0.00048828125, "temperature_K": 310.0,
+  "bath_mM": [147, 70], "initial_voltage_V": -0.02151770525721294,
+  "initial_outward_flux_fmol_s": [-0.005942329617988368, 0.05942329617988358],
+  "initial_electrode_current_A": [5.733476467777896e-13, -5.733476467777887e-12],
+  "final_outward_transfer_fmol": [-2.8824350858087033e-6, 2.88820012833921e-5],
+  "max_transfer_error_fmol": 1.5791679555264733e-12, "material_atol_fmol": 1e-10,
+  "max_electrode_current_error_A": 2.875735404806082e-21, "current_rtol": 2e-6,
+  "paper_conditions": {"outside_mM": [145, 15], "temperature_K": 310.15, "model_reversal_shift_mV": 60.63433164318693}
+}
+```
+
+At 37 °C in rabbit collecting-tubule principal cells, lowering nominal pipette chloride from 145 to 15 mM shifted the single-channel reversal about **+45 mV**. For those concentrations the Cells chloride-only pathway gives **+60.6 mV** at fixed intracellular chloride. The cell-attached voltage is relative to rest, and the paper gives no uncertainty on the shift. The result supports the direction of the response. Absolute permeability and intrinsic opening remain open. [Ling et al., Fig. 1B](https://doi.org/10.1172/JCI117037) · [Preparation and selectivity](claims/incoming/channel-gating-evidence.md#chloride-leak)
+
 ## 19 November 2026 · Ten ion-channel laws
 
 For the eight voltage-dependent channel laws in `resolved_pump_tissue@3`, Lean proves that both gate targets lie in [0, 1] and both time constants are positive over the declared −120 to +60 mV domain. The exponential stage keeps the opening in [0, 1] for any nonnegative duration and any pair of admissible endpoint voltages. The proof covers the polynomial branch at small steps and the regularized NaV1.2 rates. The two gate-free leak laws have intrinsic opening one. On the permeant ion, opening times external availability scales the signed constant-field flux. The channel debits the cell and credits its exterior by that same flux. All other species receive zero. These theorems use the Cells constant-field and transfer proofs and Mathlib’s exponential inequalities. The 14 new theorems use only the standard Lean axioms. [Stage proof](CellsProofs/Transport/ChannelStep.lean) · [Channel laws and booking](CellsProofs/Transport/IonChannels.lean) · [Tissue stage](../src/cells/models/surface_pump_v3.py#L1257)
@@ -23,6 +47,8 @@ One cell with a held bath carried all ten channels on one membrane. An external 
 ```
 
 **Biological comparison.** Rat Kv1.1 whole-cell currents in CHO cells at 25 °C had a fitted decay time of 313 ± 82 ms (SD) at −20 mV. Under an assumed equilibrated −80 mV hold the same fit on the Cells current gave about 8.0 s, beyond the 1.5 s pulse. The model retained 88.3% of its peak current at pulse end. For adult human NaV1.2 at room temperature, the model current's 10–90% rise was 0.296 ms versus 0.38 ± 0.05 ms measured (SEM). Its inactivation midpoint was −54.9 mV versus −63.53 ± 0.79 mV. These are descriptive whole-current comparisons for the specified preparations. The evidence note also records the limitations for the other isoforms and the generic leak laws. [Search agent’s evidence and protocols](claims/incoming/channel-gating-evidence.md) · [Reproduce both model traces](checks/channel_clamp_evidence.py) · [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6)
+
+For rat Kv1.4 a 3.2 s depolarization from −80 to 0 mV left **less than 2%** of peak oocyte patch current. Cells retained **0.57%**. Four published voltage-dependence parameters coincide with the engine’s, which limits the independence of this comparison. In a separate 30 °C HEK293 preparation, a +40 mV pulse elicited two fitted decay components. The Cells law has a single inactivation gate and retained 21.0% of its peak at 200 ms under that pulse. [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Roeper et al., Fig. 1](https://doi.org/10.1523/JNEUROSCI.17-10-03379.1997) · [Pulse calculations and definitions](checks/channel_clamp_evidence.py)
 
 ## 19 November 2026 · Hill activation and inhibition
 
