@@ -22,6 +22,9 @@ with a planted error it must catch (D187):
   lift; planted, each refused: an axis on a state field, a malformed axis tuple, a host of an
   unknown kind, a host on @3's own slot axis, an axis no field is on, a host index that is not a
   layout field, and one on another axis);
+- a kind's internal axes (its laws' modes, rows, bands, edges: copied whole at a split, never
+  hosted; the kinds owner's Q5) are checked at registration (planted, each refused: one also
+  hosted, one no field is on, @3's slot axis, a repeated name);
 - an entry's `without` removes those hooks from the kind bound to it, so a hook a later layout
   adds never reaches an earlier entry (the kinds owner's design statement 1 §6; planted: a name
   that is no hook, refused at binding);
@@ -307,3 +310,29 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             kind_registry.kind_standard_free_energies(planted_kind, ())
     with pytest.raises(ValueError, match=PLANTED_ID):
         kind_registry.KindRegistry().register(planted(standard_free_energies="not a hook"))
+
+
+def test_internal_axes_are_unhosted_and_used_by_a_field():
+    # Routes hosted on patches, each with per-mode cycles on the law-internal axis booked_mode.
+    kind = replace(
+        planted(),
+        state_axes=(("booked_dissipated_energy_pJ", ("booked_route", "booked_mode")),),
+        field_axes={"booked_host": ("booked_route",), "booked_availability": ()},
+        axis_hosts={"booked_route": AxisHost("patch", "booked_host")},
+        internal_axes=("booked_mode",),
+    )
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    assert planted().internal_axes == ()  # None today.
+    plants = {
+        "it is hosted": dict(internal_axes=("booked_mode", "booked_route")),
+        "no field of the kind's is on it": dict(internal_axes=("booked_band",)),
+        "@3's own slot axis": dict(internal_axes=("membrane_slot",)),
+        "a tuple of distinct axis names": dict(internal_axes=("booked_mode", "booked_mode")),
+    }
+    for words, changes in plants.items():
+        planted_kind = replace(kind, **changes)
+        errors = kind_registry.declaration_errors(planted_kind)
+        assert any(words in e for e in errors), (words, errors)
+        with pytest.raises(ValueError, match=PLANTED_ID):
+            kind_registry.KindRegistry().register(planted_kind)

@@ -317,7 +317,11 @@ class Kind:
       index)}: for each axis of its own (an entity axis that is not one of @3's), the kind of host
       its entities sit on (AXIS_HOST_KINDS) and the layout field holding each entity's host index.
       The composite lifts its refusal beside closers only for a kind that declares these and all
-      its roles;
+      its roles; `internal_axes`, (axis, ...): the axes internal to its laws (modes, rows,
+      saturation factors, bands, diagram edges and terms), which carry no entities: a split copies
+      them whole and none is hosted (the kinds owner's Q5, ruled yes, 19 November 2026), so an
+      adapter counts an axis as an entity axis only when it is neither @3's shared axis nor one of
+      these;
     - `standard_free_energies(declaration)` -> ((((species, nu), ...), dG°/RT, c0 in mM), ...), the
       reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
       signed, products positive; () when it declares none. The species registry's check compares
@@ -376,6 +380,7 @@ class Kind:
     ledger_bounds: Callable | None = None  # (row, p, tol, steps, *, xp) -> their bounds
     field_axes: object = MappingProxyType({})  # {layout or control field: (axis, ...)}
     axis_hosts: object = MappingProxyType({})  # {own axis: AxisHost}
+    internal_axes: tuple = ()  # Its laws' internal axes: copied whole at a split, never hosted.
     standard_free_energies: Callable | None = (
         None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
     )
@@ -680,7 +685,8 @@ def declaration_errors(kind):
 
 
 def _axis_errors(kind, static):
-    """Why a kind's field_axes and axis_hosts break the contract (declaration_errors' part)."""
+    """Why a kind's field_axes, axis_hosts and internal_axes break the contract (declaration_errors'
+    part)."""
     out, axes = [], kind.field_axes
     if not isinstance(axes, Mapping) or not all(
         _named(field)
@@ -716,6 +722,27 @@ def _axis_errors(kind, static):
             )
         elif host.index in axes and axes[host.index] != (axis,):
             out.append(f"axis {axis}: its host index {host.index!r} is on {axes[host.index]}")
+    return out + _internal_axis_errors(kind, static, used)
+
+
+def _internal_axis_errors(kind, static, used):
+    """Why a kind's internal_axes break the contract: distinct names, none of @3's slot axes, none
+    hosted (an internal axis carries no entities), each one some field of the kind's is on."""
+    internal = kind.internal_axes
+    if not (
+        isinstance(internal, tuple)
+        and all(map(_named, internal))
+        and len(set(internal)) == len(internal)
+    ):
+        return ["its internal_axes are a tuple of distinct axis names"]
+    out = []
+    for axis in internal:
+        if axis in AXIS_HOST_KINDS.values():
+            out.append(f"internal axis {axis}: @3's own slot axis, an entity axis")
+        if isinstance(kind.axis_hosts, Mapping) and axis in kind.axis_hosts:
+            out.append(f"internal axis {axis}: it is hosted, so its entities are not internal")
+        if static and axis not in used:
+            out.append(f"internal axis {axis}: no field of the kind's is on it")
     return out
 
 
