@@ -3,6 +3,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport
+import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.NeutralPermeation
