@@ -29,6 +29,8 @@ def c0_c1_c2(R):
                  note="alternative reading, labelled; the lead rules by dated note" if r == "unit" else "")
         R.family(f"C0.cl_effect_sign_{r}", "C0", f"sign of the voltage change of an open Cl- patch at V_rest ({r}): +1 depolarises (E_Cl > V_rest), -1 hyperpolarises", "1", "sign", TOL_V_ZERO, 0, BORROWED_V,
                  note="aux = E_Cl - V_rest (V); compared only when |aux| exceeds the band")
+        R.family(f"C0.k_effect_sign_{r}", "C0", f"sign of the voltage change of an open K patch at V_rest ({r}): +1 depolarises (E_K > V_rest), -1 hyperpolarises", "1", "sign", TOL_V_ZERO, 0, BORROWED_V,
+                 note="aux = E_K - V_rest (V); compared only when |aux| exceeds the band")
         R.family(f"C0.cl_bound_{r}", "C0", f"bound |E_Cl - V_rest| on any change by an open Cl- patch ({r})", "V", "abs", TOL_V_ZERO, 0, BORROWED_V)
         R.family(f"C0.cl_i_critical_{r}", "C0", f"Cl_i below which an open Cl- patch hyperpolarises at V_rest = Cl_o exp(F V_rest/RT) ({r})", "mM", "abs", 0, 1e-6, "borrowed: relative 1e-6")
         R.family(f"C0.feasible_19p4_{r}", "C0", f"is a hyperpolarisation of 19.4 mV (T2) allowed by the bound ({r}): V_rest - E_Cl >= 0.0194 V", "bool", "flag")
@@ -63,6 +65,9 @@ def c0_c1_c2(R):
             fl = floor_closed(M.V_ghk, pp)
             R.add(f"C0.V_ghk_{r}", key, Vr, fl)
             R.add(f"C2.V_ghk_{r}", key, Vr, fl)
+            dK = EK - Vr
+            R.add(f"C0.k_effect_sign_{r}", key, sign(dK), aux=dK)
+            R.floors[f"C0.k_effect_sign_{r}"][key] = float(floor_closed(lambda q: M.E("K", q) - M.V_ghk(q), pp))
             dE = ECl - Vr
             R.add(f"C0.cl_effect_sign_{r}", key, sign(dE), aux=dE)
             R.floors[f"C0.cl_effect_sign_{r}"][key] = float(floor_closed(lambda q: M.E("Cl", q) - M.V_ghk(q), pp))

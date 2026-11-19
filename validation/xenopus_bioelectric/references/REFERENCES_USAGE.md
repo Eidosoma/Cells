@@ -68,8 +68,8 @@ this relation, not of the engine's affinity sign.
 
 ## How each claim compares
 
-- **C0:** `C0.E_*`, `C0.V_ghk_area` (primary) and `C0.V_ghk_unit` (the alternative reading, see README), the Cl- effect
-  sign rows (+1 depolarises) with their bound `C0.cl_bound_*`, the Cl_i threshold, and the feasibility flag of the
+- **C0:** `C0.E_*`, `C0.V_ghk_area` (primary) and `C0.V_ghk_unit` (the alternative reading, see README), the K and Cl- effect
+  sign rows (`C0.k_effect_sign_*`, `C0.cl_effect_sign_*`; +1 depolarises) with the Cl- bound `C0.cl_bound_*`, the Cl_i threshold, and the feasibility flag of the
   published 19.4 mV.
 - **C1:** `C1.zero_K`, `C1.zero_Cl` (the zero within the band), `C1.sign_I_*` (flux sign at E +/- 1 and 10 mV), the Kir
   route's zero, shape, slope and sqrt(K_o) ratio.

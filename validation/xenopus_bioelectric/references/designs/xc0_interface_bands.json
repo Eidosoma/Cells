@@ -2498,6 +2498,318 @@
    "tol_source": "",
    "unit": "bool"
   },
+  "C0.k_effect_sign_area": {
+   "claim": "C0",
+   "kind": "sign",
+   "note": "aux = E_K - V_rest (V); compared only when |aux| exceeds the band",
+   "quantity": "sign of the voltage change of an open K patch at V_rest (area): +1 depolarises (E_K > V_rest), -1 hyperpolarises",
+   "rows": {
+    "bracket_Cl_high|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 2.4855774224088947e-16
+    },
+    "bracket_Cl_high|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.520201520231063e-16
+    },
+    "bracket_Cl_high|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.9666359377990534e-16
+    },
+    "bracket_Cl_high|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.9940311798369995e-16
+    },
+    "bracket_Cl_high|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 2.0231622689134196e-16
+    },
+    "bracket_Cl_high|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 2.0513449228422152e-16
+    },
+    "bracket_Cl_high|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 2.0220577562718316e-16
+    },
+    "bracket_Cl_high|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 2.0502250243376068e-16
+    },
+    "bracket_Cl_high|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 2.0230617439076746e-16
+    },
+    "bracket_Cl_high|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 2.0512429975229653e-16
+    },
+    "bracket_Cl_high|local|T287.15": {
+     "band": 1e-06,
+     "floor": 1.2912799745097417e-16
+    },
+    "bracket_Cl_high|local|T291.15": {
+     "band": 1e-06,
+     "floor": 1.309267506803104e-16
+    },
+    "bracket_second_hand_table|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 2.279607564050154e-16
+    },
+    "bracket_second_hand_table|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.31136250138674e-16
+    },
+    "bracket_second_hand_table|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.6417699498889657e-16
+    },
+    "bracket_second_hand_table|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.6646398081496512e-16
+    },
+    "bracket_second_hand_table|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 1.7118035515793394e-16
+    },
+    "bracket_second_hand_table|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 1.7356489780335179e-16
+    },
+    "bracket_second_hand_table|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 1.7104138604483566e-16
+    },
+    "bracket_second_hand_table|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 1.7342399285026606e-16
+    },
+    "bracket_second_hand_table|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 1.711677034309907e-16
+    },
+    "bracket_second_hand_table|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 1.7355206983783022e-16
+    },
+    "bracket_second_hand_table|local|T287.15": {
+     "band": 1e-06,
+     "floor": 1.0978244568446905e-16
+    },
+    "bracket_second_hand_table|local|T291.15": {
+     "band": 1e-06,
+     "floor": 1.1131171534401242e-16
+    },
+    "primary|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 2.441676138937793e-16
+    },
+    "primary|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.475688691804765e-16
+    },
+    "primary|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.8038385247766045e-16
+    },
+    "primary|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.8289659985676768e-16
+    },
+    "primary|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 1.8603648558909707e-16
+    },
+    "primary|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 1.8862797415728927e-16
+    },
+    "primary|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 1.8592603432493827e-16
+    },
+    "primary|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 1.885159843068284e-16
+    },
+    "primary|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 1.8602643308852257e-16
+    },
+    "primary|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 1.8861778162536425e-16
+    },
+    "primary|local|T287.15": {
+     "band": 1e-06,
+     "floor": 1.2576946409767984e-16
+    },
+    "primary|local|T291.15": {
+     "band": 1e-06,
+     "floor": 1.2752143295155662e-16
+    }
+   },
+   "tol_abs": 1e-06,
+   "tol_rel": 0.0,
+   "tol_source": "borrowed from C1's 1e-6 V (DESIGN.md gives C0 no tolerance: arithmetic)",
+   "unit": "1"
+  },
+  "C0.k_effect_sign_unit": {
+   "claim": "C0",
+   "kind": "sign",
+   "note": "aux = E_K - V_rest (V); compared only when |aux| exceeds the band",
+   "quantity": "sign of the voltage change of an open K patch at V_rest (unit): +1 depolarises (E_K > V_rest), -1 hyperpolarises",
+   "rows": {
+    "bracket_Cl_high|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 2.1010947690937927e-16
+    },
+    "bracket_Cl_high|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.130363022885801e-16
+    },
+    "bracket_Cl_high|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.5869980641085614e-16
+    },
+    "bracket_Cl_high|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.6091049499049543e-16
+    },
+    "bracket_Cl_high|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 1.6095773923306314e-16
+    },
+    "bracket_Cl_high|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 1.6319988082084738e-16
+    },
+    "bracket_Cl_high|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 1.6091528265134375e-16
+    },
+    "bracket_Cl_high|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 1.6315683281887074e-16
+    },
+    "bracket_Cl_high|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 1.6095387784878676e-16
+    },
+    "bracket_Cl_high|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 1.6319596564748133e-16
+    },
+    "bracket_Cl_high|local|T287.15": {
+     "band": 1e-06,
+     "floor": 9.312151420207634e-17
+    },
+    "bracket_Cl_high|local|T291.15": {
+     "band": 1e-06,
+     "floor": 9.441869705705911e-17
+    },
+    "bracket_second_hand_table|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 1.9828065595321654e-16
+    },
+    "bracket_second_hand_table|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.010427058359011e-16
+    },
+    "bracket_second_hand_table|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.352693078620194e-16
+    },
+    "bracket_second_hand_table|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.3715360955607504e-16
+    },
+    "bracket_second_hand_table|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 1.3867554077335102e-16
+    },
+    "bracket_second_hand_table|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 1.4060729129779262e-16
+    },
+    "bracket_second_hand_table|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 1.3861065772390745e-16
+    },
+    "bracket_second_hand_table|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 1.4054150442735733e-16
+    },
+    "bracket_second_hand_table|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 1.3866963835508682e-16
+    },
+    "bracket_second_hand_table|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 1.4060130665883172e-16
+    },
+    "bracket_second_hand_table|local|T287.15": {
+     "band": 1e-06,
+     "floor": 8.27483265624889e-17
+    },
+    "bracket_second_hand_table|local|T291.15": {
+     "band": 1e-06,
+     "floor": 8.390101089558991e-17
+    },
+    "primary|bath70_Na|T287.15": {
+     "band": 1e-06,
+     "floor": 2.057420202063967e-16
+    },
+    "primary|bath70_Na|T291.15": {
+     "band": 1e-06,
+     "floor": 2.0860800690612013e-16
+    },
+    "primary|bath70_inert|T287.15": {
+     "band": 1e-06,
+     "floor": 1.4273067211519955e-16
+    },
+    "primary|bath70_inert|T291.15": {
+     "band": 1e-06,
+     "floor": 1.447189106262941e-16
+    },
+    "primary|bath_Cl10|T287.15": {
+     "band": 1e-06,
+     "floor": 1.4498860493740654e-16
+    },
+    "primary|bath_Cl10|T291.15": {
+     "band": 1e-06,
+     "floor": 1.4700829645664604e-16
+    },
+    "primary|bath_Cl11p1|T287.15": {
+     "band": 1e-06,
+     "floor": 1.4494614835568716e-16
+    },
+    "primary|bath_Cl11p1|T291.15": {
+     "band": 1e-06,
+     "floor": 1.469652484546694e-16
+    },
+    "primary|bath|T287.15": {
+     "band": 1e-06,
+     "floor": 1.4498474355313017e-16
+    },
+    "primary|bath|T291.15": {
+     "band": 1e-06,
+     "floor": 1.4700438128328e-16
+    },
+    "primary|local|T287.15": {
+     "band": 1e-06,
+     "floor": 9.001001824661885e-17
+    },
+    "primary|local|T291.15": {
+     "band": 1e-06,
+     "floor": 9.126385795752421e-17
+    }
+   },
+   "tol_abs": 1e-06,
+   "tol_rel": 0.0,
+   "tol_source": "borrowed from C1's 1e-6 V (DESIGN.md gives C0 no tolerance: arithmetic)",
+   "unit": "1"
+  },
   "C1.kir_I_u-0.02": {
    "claim": "C1",
    "kind": "abs",

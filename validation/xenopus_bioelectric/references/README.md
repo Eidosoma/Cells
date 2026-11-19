@@ -6,6 +6,11 @@ model. Nothing here imports `cells`, any reference simulator or any third-party 
 
 ## Registration
 
+**When.** Registered on 2026-11-19 at 15:44 UTC (`date -u` at this commit; a first commit of the same files, 16727134 at
+15:16 UTC, lacked this line and the K-patch sign family), before any engine result exists. The branch is
+`xenopus-xc0-references`, from main 9252236d. The generator was written and run under `/mnt/workspaces/Cells/venv-cpu/bin/python`;
+`design --check` printed "regenerates identically" and `tests/unit/test_xenopus_xc0_references.py` passed (6 tests), both on this
+commit's files.
 
 
 **What was read:**
@@ -45,6 +50,12 @@ There are none.
 | `designs/xc0_reference_values.json` | every reference, 50-digit strings, by family and key |
 | `designs/xc0_interface_bands.json` | band rule, floors, bands, plants, zero-power list |
 | `REFERENCES_USAGE.md` | the interface the engine side may read |
+
+**Published numbers** appear only as bare numbers with their citation, as DESIGN.md gives them (D227): the Xrel3 shift of
+about -11 mV, the GlyR F99A hyperpolarisation of 19.4 mV and the butyrate ratio 253 against 175 micrograms per 60 embryos
+(1.45) are from Chernet and Levin 2013 (Dis Model Mech 6(3), PMC3634644); n = 2 for the symporter rests on the abstract of
+Coady et al. 2007 (PMC1965447); the cytosolic ion set on the abstract of Gillespie 1983 (J Physiol 344); the leak
+permeabilities on the original abstract of Costa et al. 1989. No figure, table, text or supplement is reproduced.
 
 ## Method
 
@@ -103,7 +114,7 @@ summed over every real input (T, R, F, concentrations, permeabilities, areas, ..
 
     floor = G u ( |V*| + sum_j | I(V*; x_j (1+u)) - I(V*) | / |dI/dV| )
 
-ODE rows use G u |q| (the sensitivity to input rounding is far below the tolerance). Rows that are zero by an identity
+Rows without a sensitivity analysis (ODE outputs, one-rounding closed forms) take G u |q| by default; C5's steady voltages and the large-g_J limit take the larger of the two cells' root floors. Rows that are zero by an identity
 (J at the stall, I at E_K) take the floor of the argument's rounding (G u times the sum of the terms that cancel). The
 floor is a statement about float64 evaluation of the same formula; it is not an estimate of the engine's time-stepping
 error, which the tolerance covers.
@@ -130,6 +141,7 @@ Everything in DESIGN.md that leans on -70.5 mV is recomputed under both readings
 | 70 mM Cl-, inert cation | -21.26 | -50.32 | depolarises | -71.81 | depolarises |
 | 70 mM Cl-, sodium salt, Cl_i 60 mM | -3.87 | -11.40 | depolarises | -33.35 | depolarises |
 
+- An open K patch hyperpolarises in all 36 states under both readings (E_K is -78 mV or lower; `C0.k_effect_sign_*` are all -1).
 - In 0.1x MMR E_Cl is +27.3 mV, above V_rest under both readings: an open Cl- patch depolarises.
 - In the 70 mM Cl- bath as a sodium salt, **the area-weighted reading gives hyperpolarisation**: E_Cl -21.3 mV is below
   V_rest -13.9 mV (Na_out 69.8 mM raises V_rest). DESIGN's "an open Cl- patch therefore depolarises this cell" compares
@@ -176,7 +188,7 @@ with the heat-nonnegativity flag for each.
 
 ## Plants
 
-27 plants, 4435 plant rows. A margin is |plant - reference| / band. The smallest margin among rows expected to show a plant is 1.06.
+27 plants, 4435 plant rows. A margin is |plant - reference| / band. Three plants have weak rows (margin 1 to 10): `kir_route_inert` (smallest 1.06; the route is shut at these states), `temperature_298` (1.41; stall rows near zero) and `face_area_10pct_large` (1.82; a 9 % error against the 5 % band). Every other plant's smallest margin is 13.3 or more.
 
 | Plant | What is wrong | Size | Rows | Rows >= 10 bands | Smallest margin (rows expected to show it) | Weak (1-10) | Zero power (<1) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -211,9 +223,9 @@ with the heat-nonnegativity flag for each.
 ## Zero power (what these references cannot see)
 
 - **Charge identity rows** (`C3.Q_over_CV_error`, `C7.relax_dQ`, `C7.relax_charge_identity`, `C5.junction_charge_sum`): zero power at DESIGN's 1e-9 C (finding 7).
-- **Kir availability effects** on V_zero (`C4.V_zero_kir`, `C4.shift_kir`, C5's Kir asymmetry): below the band at most states (finding 4); the `kir_route_inert` plant is seen in 22 rows only.
+- **Kir availability effects** on V_zero (`C4.V_zero_kir`, `C4.shift_kir`, C5's Kir asymmetry): below the band at most states (finding 4); the `kir_route_inert` plant clears 10 bands in 22 rows, is weak (1 to 10 bands) in 53 and is unseen in 393.
 - **Sign rows with |aux| below the band** are not compared; the family says which quantity decides the sign.
-- **C3 and C7 trajectories** are `info` rows where DESIGN gives no tolerance (C7 is identities over records).
+- **C7 trajectories** (`C7.relax_ratio_t`, `C7.relax_dn`) are `info`: DESIGN gives no tolerance and C7 is identities over records. `C3.ratio_t` is banded: DESIGN's 2 % on tau carried to the decay (tol_abs = 0.02 (t/tau) ratio).
 - **Pump rates and heat:** `nak_atp_mass_action_positive@1`'s rate is not given by DESIGN.md, so only the stoichiometry and the energy partition per cycle are referenced.
 - **The plants below the full margin, by plant:**
 - `diagram_charge_sum_0p9` at `C6.v2_ratio_Jm_Jp` (27 rows): V = 0: the charge-sum error multiplies exp(0 x psi)
@@ -236,6 +248,7 @@ with the heat-nonnegativity flag for each.
     python -m validation.xenopus_bioelectric.references.design            # write
     python -m validation.xenopus_bioelectric.references.design --check    # regenerate, compare byte for byte
 
-Environment: `/mnt/workspaces/Cells/venv-cpu/bin/python` with `PYTHONPATH` at the checkout. The generator takes
-about 8 minutes of CPU on one core (about 20 minutes wall on the loaded shared CPUs it ran on). `tests/unit/test_xenopus_xc0_references.py`
-regenerates once and compares both files byte for byte, checks the internal agreements, and checks every plant's margin.
+Environment: `/mnt/workspaces/Cells/venv-cpu/bin/python` with `PYTHONPATH` at the checkout. The write takes
+about 5 minutes on one loaded core. `tests/unit/test_xenopus_xc0_references.py` regenerates once and compares both files
+byte for byte (291 s measured), checks the internal agreements, and checks that no plant has an undeclared zero-power row
+and that no row the plant is seen at falls below one band. It is in no tier yet.
