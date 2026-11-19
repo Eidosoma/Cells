@@ -86,6 +86,22 @@ const NAMED = {
   // The mouse's line, added with its data on 16 November 2026: the same eight tools, none new.
   mouse: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
 };
+// The register of the sources of no stated terms that a record may still rest on, each by a decision of its own: by
+// species, and by the source's key in the species' scan record (data/proteins/<species>/interproscan.json). It was decided
+// on 18 November 2026 that a database whose provider states no terms may be used for the planarian's InterProScan scan
+// where it is publicly available; CDD is the one such database the scan ran. A second source of that class behind a value
+// fails this file, so that it is put to the user before it is listed here; one listed and no longer in its record fails
+// it too. The dossiers and the catalogue copy the record's sources as `scan_<key>` and `gathered:<species>:scan_<key>`.
+const DECIDED = {
+  planarian: { cdd: { name: "CDD", decided: "18 November 2026" } },
+};
+/** A source that is not permissive and stands where DECIDED lets it: a scan record's own (by its key) or a copy of one, with the record's terms. */
+function decidedSource(species, key, source, records = scanRecords) {
+  const own = key.replace(/^(gathered:[^:]+:)?scan_/, "");
+  const entry = DECIDED[species]?.[own], held = records.get(species)?.sources?.[own];
+  return Boolean(entry && held && held.name === entry.name && held.class === "no stated terms" && source?.class === "no stated terms" && source.licence === held.licence);
+}
+
 // Papers that only a note cites, and that are not permissive: its section names them too.
 const NOTE_ONLY = {
   "docs/SYN3A.md": [["Hutchison", "2016"]],
@@ -107,6 +123,9 @@ const machineFiles = await listed(path.join(DATA, "machines"), isJson);
 // The switch's other entries (schema/ENTRIES.md): cell types of their own files, and model systems.
 const entryFiles = [...(await listed(path.join(DATA, "cells"), isJson)), ...(await listed(path.join(DATA, "models"), isJson))];
 const rel = (file) => path.relative(ROOT, file);
+// The species' scan records (data/proteins/<species>/interproscan.json), by their folders: the register DECIDED is held against them.
+const scanFiles = (await listed(path.join(DATA, "proteins"), (entry) => entry.isDirectory())).map((folder) => path.join(folder, "interproscan.json")).filter((file) => existsSync(file));
+const scanRecords = new Map(await Promise.all(scanFiles.map(async (file) => [path.basename(path.dirname(file)), JSON.parse(await readFile(file, "utf8"))])));
 
 /** A source's class and licence, checked: both there, the class one of three, and the two in agreement. */
 function held(source, where) {
@@ -265,7 +284,7 @@ test("the Machines catalogue: every source has its class, and what names a machi
     const entries = catalogue.entries || (await Promise.all(Object.values(catalogue.benches || {}).map((bench) => json(path.join(DATA, "catalogue", "benches", path.basename(bench.file)))))).flatMap((bench) => bench.entries);
     for (const entry of entries) {
       for (const [name, block] of Object.entries({ named: entry.named, count: entry.count, size: entry.size })) {
-        for (const key of block?.sources || []) assert.equal(catalogue.sources[key]?.class, "permissive", `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
+        for (const key of block?.sources || []) assert.ok(catalogue.sources[key]?.class === "permissive" || decidedSource(entry.species, key, catalogue.sources[key]), `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
       }
     }
   }
@@ -377,6 +396,59 @@ test("a species' shelves: every mark rests on a permissive source; any other sou
     for (const [name, through] of Object.entries(known)) assert.equal(byName.get(name)?.through, through, `${where}: NAMED lists ${name} through ${through}, and the record does not`);
   }
   for (const species of Object.keys(NAMED)) assert.ok(seen.has(species), `NAMED lists dependences for ${species}, and no shelves of it were found`);
+});
+
+/**
+ * A species' scan record held to the rules: every source has its class and licence, in agreement; each stands behind the
+ * entries the scan added, so each is permissive, or of no stated terms and in the register DECIDED; the register does not
+ * outlive the record; every database counted names its source, or is a program kept as counts only; the tool is named
+ * with its release and licence, and not classed. Gives back the sources the note must name (not plainly permissive).
+ */
+function holdScan(record, where, records = scanRecords) {
+  assert.equal(record.format, "cells.visualizer.interpro_scan@1", `${where}: a record this test does not know how to hold`);
+  assert.ok(record.tool?.name && record.tool.release && record.tool.licence && !("class" in record.tool), `${where}: the tool is named, with its release and its licence, and not classed`);
+  const sources = record.sources || {};
+  const toName = [];
+  for (const [key, source] of Object.entries(sources)) {
+    held(source, `${where}: source ${key}`);
+    assert.ok(source.class === "permissive" || decidedSource(record.species, key, source, records), `${where}: ${key} (${source.name}) is ${source.class} and stands behind the scan's entries. It is not in the register DECIDED for ${record.species}: a source of that class is put to the user before it is listed there`);
+    if (source.class !== "permissive" || /share-alike/.test(source.licence)) toName.push(source);
+  }
+  for (const [name, item] of Object.entries(record.databases || {})) assert.ok(item.source ? sources[item.source] : item.counts_only && item.terms, `${where}: ${name} names no source of the record`);
+  for (const [key, entry] of Object.entries(DECIDED[record.species] || {})) assert.equal(sources[key]?.name, entry.name, `${where}: DECIDED lists ${entry.name} for ${record.species}, and the record does not hold it`);
+  return toName;
+}
+
+test("a species' scan record: every source has its class; one of no stated terms stands behind its entries only by the register DECIDED; the tool is named and not classed", () => {
+  for (const file of scanFiles) {
+    const record = scanRecords.get(path.basename(path.dirname(file)));
+    assert.equal(record.species, path.basename(path.dirname(file)), rel(file));
+    const note = NOTES[record.species];
+    for (const source of holdScan(record, rel(file))) {
+      assert.ok(note, `${rel(file)}: ${source.name} is not plainly permissive, and no note is known for this species`);
+      mustName(note, `${source.name} (${rel(file)})`, new RegExp(`\\b${source.name}\\b`));
+    }
+  }
+  for (const species of Object.keys(DECIDED)) assert.ok(scanRecords.has(species), `DECIDED lists ${species}, and no scan record of it was found`);
+});
+
+test("the register DECIDED holds: a second source of no stated terms fails, in a scan record or in a copy of one, and so does a source it lists that the record lacks", () => {
+  const species = Object.keys(DECIDED)[0], record = scanRecords.get(species);
+  assert.ok(record, `no scan record of ${species}`);
+  const second = structuredClone(record);
+  second.sources.smart = { name: "SMART", text: "Made up for this test", url: null, licence: "No open licence stated (made up for this test)", class: "no stated terms" };
+  const records = new Map([[species, second]]);
+  assert.throws(() => holdScan(second, "made up", records), /not in the register DECIDED/);
+  assert.equal(decidedSource(species, `gathered:${species}:scan_smart`, second.sources.smart, records), false, "the catalogue's copy of a second such source");
+  assert.equal(decidedSource(species, "scan_smart", second.sources.smart, records), false, "a dossier's copy of a second such source");
+  for (const [key, entry] of Object.entries(DECIDED[species])) {
+    assert.equal(decidedSource(species, `gathered:${species}:scan_${key}`, record.sources[key]), true, `the catalogue's copy of ${entry.name}`);
+    assert.equal(decidedSource(species, `scan_${key}`, { ...record.sources[key], licence: "No open licence stated, in other words" }), false, `a copy of ${entry.name} with other terms`);
+    const without = structuredClone(record);
+    delete without.sources[key];
+    for (const item of Object.values(without.databases)) if (item.source === key) delete item.source, (item.counts_only = true), (item.terms = "made up");
+    assert.throws(() => holdScan(without, "made up", new Map([[species, without]])), /DECIDED lists/);
+  }
 });
 
 // A quantity: a number with a unit, a span of residues, or a number in words before a unit of time.

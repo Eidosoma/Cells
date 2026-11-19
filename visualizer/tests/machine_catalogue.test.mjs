@@ -12,7 +12,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { Catalogue, CATALOGUE_FORMAT, pageId, kindOf } from "../src/lenses/machines_data.js";
-import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf } from "../src/lenses/machines_card.js";
+import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf, lookedFor } from "../src/lenses/machines_card.js";
 import { layoutOf, shapeOf, UNIT_NM, CARD } from "../src/lenses/machines_layout.js";
 import { MachinesLens, MARKS } from "../src/lenses/machines.js";
 
@@ -31,6 +31,14 @@ const CLAIMED = /(?<!not |no )\b(modelled|modeled|qualified|judged|designed|simu
 /** A catalogue in which the thale cress has no size in hand (no species has none since 17 November 2026): the all-cards case. */
 const bare = { ...raw, entries: raw.entries.map((entry) => (entry.species === "thalecress" ? { ...entry, size: undefined } : entry)), unit_sizes: { ...raw.unit_sizes, species: raw.unit_sizes.species.filter((value) => value !== "thalecress") } };
 const bareScene = { ...scene, catalogue: bare };
+/** The catalogue's copy of a source of a species' own scan that is not permissive (CDD): it stands only as the species' scan record carries it, with the
+ * record's terms and class (`gathered:<species>:scan_<key>`); tests/licence_classes.test.mjs holds that record against its register DECIDED. */
+function scanCopy(key, source) {
+  const [, species, own] = /^gathered:([^:]+):scan_(\w+)$/.exec(key) || [];
+  const record = species && read("data/catalogue/gather.json").species[species]?.atlas?.scan?.record;
+  const held = record ? read(record).sources?.[own] : null;
+  return Boolean(held && held.licence === source?.licence && held.class === source?.class);
+}
 
 test("the catalogue is what its tool writes, from the files it names", () => {
   // The core and every bench are what the tool writes (`--check`), and together they are its whole catalogue.
@@ -61,7 +69,7 @@ test("each entry is a kind of the catalogue, once for its species, and a machine
 test("every number stands on a permissive source the entry names, and a size is its species file's own, never a second number", () => {
   for (const entry of raw.entries) {
     for (const block of [entry.count, entry.size, entry.named].filter(Boolean)) {
-      for (const key of block.sources || []) assert.equal(raw.sources[key]?.class, "permissive", `${entry.species} ${entry.id}: ${key}`);
+      for (const key of block.sources || []) assert.ok(raw.sources[key]?.class === "permissive" || scanCopy(key, raw.sources[key]), `${entry.species} ${entry.id}: ${key}`);
     }
     if (entry.count) assert.ok(entry.count.sources.length && /\d/.test(entry.count.text), `${entry.species} ${entry.id}: a count with its sources`);
     if (entry.size?.shape === "rod") assert.ok(entry.size.long_nm.every((n) => entry.size.text.includes(String(n))), `${entry.species} ${entry.id}`);
@@ -661,17 +669,20 @@ test("the eight dossiers on the benches: candidates by family said as such, and 
   assert.match(fact(proteasome, "Its proteins"), /candidates by their family \(InterPro\) for parts of Human's machine: candidates, not the machine's parts/);
   // Nothing of the species names it: its line says what was looked for, labelled so, and never "Named by".
   assert.equal(fact(proteasome, "Named by"), undefined);
-  assert.equal(fact(proteasome, "Looked for, by family"), "31 of Planarian's proteins are candidates, by their InterPro family, for 22 of the 32 parts of Human's machine. For 2 parts no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 8 the table cannot tell, its scan being older than the family; 0 have no family to look for.");
+  assert.equal(fact(proteasome, "Looked for, by family"), "64 of Planarian's proteins are candidates, by their InterPro family, for 31 of the 32 parts of Human's machine. For 1 part no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 0 the table cannot tell, its scan being older than the family; 0 have no family to look for.");
   assert.ok(section(proteasome, "Candidates by family, not its parts").items.length > 0);
   assert.ok(!proteasome.sections.some((value) => /^Its parts/.test(value.title)), "no list calls them parts");
   const looked = section(proteasome, "What was looked for, part by part").items.map((value) => value.detail);
-  assert.ok(looked.some((value) => /not in the table: no line of the species' table carries its family, which says what the table holds, not that the species lacks the protein/.test(value)) && looked.some((value) => /cannot tell/.test(value)));
+  // Since the planarian's own scan (19 November 2026) no part is left as "cannot tell": each has candidates, or no line of the table carries its family.
+  assert.ok(looked.some((value) => /not in the table: no line of the species' table carries its family, which says what the table holds, not that the species lacks the protein/.test(value)) && !looked.some((value) => /cannot tell/.test(value)));
+  // The words for a table that cannot tell stay, for a species whose table's scan is older than a family: on planted rows.
+  assert.match(lookedFor({ looked_for: [["A", "part", "cannot tell"], ["B", "part", "candidates"], ["C", "part", "cannot tell"]], proteins: [["p1"]] }, "Planarian", "Human"), /^1 of Planarian's proteins is a candidate, by its InterPro family, for 1 of the 3 parts of Human's machine\. For 0 parts no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 2 the table cannot tell, its scan being older than the family; 0 have no family to look for\.$/);
   assert.match(fact(proteasome, "A structure elsewhere"), /^Protein Data Bank entry 7QYB, “Proteasome-ZFAND5 Complex Z-C state” \(4\.1 Å\), a structure of Homo sapiens; none of Planarian's own is in hand$/);
   // The species' own records keep their place above the dossier's.
   const ribosome = words("planarian", "machine:ribosome");
   assert.match(fact(ribosome, "Named by"), /CELL_STRUCTURES/);
   assert.equal(fact(ribosome, "Also named by"), undefined);
-  assert.match(fact(ribosome, "Looked for, by family"), /^81 of Planarian's proteins are candidates, by their InterPro family, for 65 of the 95 parts of Human's machine \(56 of the 80 its entry holds\)\./);
+  assert.match(fact(ribosome, "Looked for, by family"), /^105 of Planarian's proteins are candidates, by their InterPro family, for 68 of the 95 parts of Human's machine \(59 of the 80 its entry holds\)\./);
   // Syn3A's own file names its ribosome ("Named by"); the family route beside it is what was looked for.
   const syn3a = words("syn3a", "machine:ribosome");
   assert.match(fact(syn3a, "Named by"), /^Syn3A's file: “/);
@@ -691,7 +702,7 @@ test("the eight dossiers on the benches: candidates by family said as such, and 
     assert.deepEqual([proteins, parts, found, heldFound, held, absent, unknown, none], own, `${entry.species} ${entry.id}: ${entry.gathered.route.text}`);
     assert.ok(!panel.facts.some(([label, text]) => /^(Also )?Named by$/.test(label) && text === entry.gathered.route.text), `${entry.species} ${entry.id}: the family route is not said to name it`);
   }
-  assert.equal(routes, 49, "the planarian's, Syn3A's and M. pneumoniae's machines by family, with candidates or named by their own records");
+  assert.equal(routes, 50, "the planarian's, Syn3A's and M. pneumoniae's machines by family, with candidates or named by their own records (49 until the planarian's own scan found candidates for myosin II)");
   // One "part", many "parts".
   assert.match(fact(words("syn3a", "machine:ftsh"), "Looked for, by family"), /^1 of Syn3A's proteins is a candidate, by its InterPro family, for 1 of the 3 parts of E\. coli's machine\. For 2 parts /);
   assert.match(fact(words("syn3a", "machine:lon"), "Looked for, by family"), /for 1 of the 1 part of E\. coli's machine\. For 0 parts /);
@@ -813,7 +824,8 @@ test("a bench by family holds only the machines its species' records name or tha
   }
   // The three benches by family: what stands on each, and what is listed apart.
   const shown = (species) => ({ machines: benchOf(species).entries.length, named: benchOf(species).entries.filter((entry) => entry.named?.by !== "family signature").length, family: benchOf(species).entries.filter((entry) => entry.named?.by === "family signature").length, none: (benchOf(species).none_found || []).map((row) => row.id) });
-  assert.deepEqual(shown("planarian"), { machines: 30, named: 1, family: 29, none: ["myosin-ii"] });
+  // Since the planarian's own scan (19 November 2026) every machine looked for has a candidate: myosin II stands on the bench, and none is listed apart.
+  assert.deepEqual(shown("planarian"), { machines: 31, named: 1, family: 30, none: [] });
   assert.deepEqual(shown("syn3a"), { machines: 9, named: 6, family: 3, none: ["tat-translocase", "bam-complex", "chaperonin", "clpxp", "hslv", "complex-i", "complex-ii", "cytochrome-bo3", "recbcd", "chemoreceptor-array"] });
   assert.deepEqual(shown("mpneumoniae"), { machines: 11, named: 7, family: 4, none: ["tat-translocase", "bam-complex", "clpxp", "hslv", "complex-i", "complex-ii", "cytochrome-bo3", "recbcd", "chemoreceptor-array"] });
   // What the species' own file names stays, whatever the family route found.
@@ -833,7 +845,7 @@ test("a bench by family holds only the machines its species' records name or tha
       assert.equal(faces.includes(said) && faces.includes("by family"), item.entry.named?.by === "family signature" ? true : faces.includes(said), `${species} ${item.id}`);
     }
   }
-  assert.ok(lensFor("planarian").lens.plaques.some((plaque) => plaque.text === "candidates for 22 of 32 parts," && plaque.tone === "soft"));
+  assert.ok(lensFor("planarian").lens.plaques.some((plaque) => plaque.text === "candidates for 31 of 32 parts," && plaque.tone === "soft"));
   // Listed apart: in the List under its own heading with the caveat, each with its reference; the search finds it there.
   const list = sections(catalogue, "syn3a");
   const apart = list.find((section) => section.label === "Looked for by family, no candidate found");

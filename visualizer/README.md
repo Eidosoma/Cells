@@ -193,6 +193,23 @@ entries, in 2.2 MB without sequences. They are predicted from the genome and fro
 transcripts, not measured, and the table is not the library. The viewer does not read it.
 Joining any catalogue to the engine's protein catalogue is for the user and the lead.
 
+**The planarian's own scan** (18 to 19 November 2026). The 18,882 proteins of the open set
+were scanned again with InterProScan 5.78-109.0, with the member databases whose terms
+allow it (`docs/PLANARIAN_ATLAS.md`, "The planarian's own scan"): all ten ran on every
+protein, and 4,466 proteins gain 5,103 InterPro entries that their own column lacks.
+`tools/read_planarian_scan.py` reads the scan's outputs into
+`data/proteins/planarian/interproscan_added.tsv` (the entries each line gains, each with
+the databases that found it) and `interproscan.json` (the scan's record: each database's
+release, terms and citation, and how many proteins its pass ran on); the table's own
+column is unchanged. The planarian's machine dossiers count the added entries as carried,
+and call a family "not in the table" by the scan only where a database run on every
+protein has a signature in it (`schema/MACHINE_DOSSIERS.md`): no part of its machines is
+left as "cannot tell" (60 were), and myosin II has candidates and stands on its bench.
+The Protein atlas and its shelves still read the table's own column: whether they take
+the scan's entries is not decided. CDD, which states no terms, stands by the decision of
+18 November 2026 and is held in a register of the licence test; NCBIfam is under a
+share-alike licence.
+
 ## Species
 
 The user, 14 November 2026: "for the visualization we must be able to switch species that

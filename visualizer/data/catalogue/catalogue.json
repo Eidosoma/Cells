@@ -817,6 +817,7 @@
    "species": [
     "human",
     "mouse",
+    "planarian",
     "fruitfly",
     "thalecress"
    ]
@@ -3848,6 +3849,30 @@
    "licence": "CC BY 4.0 (UniProt) and CC0 1.0 (the Protein Data Bank), as the reference dossier's sources state",
    "class": "permissive"
   },
+  "gathered:planarian:scan_interpro": {
+   "text": "InterPro, as the entry list of InterProScan 5.78-109.0 gives it: which member database's signature belongs to which InterPro entry, for the entries the species' own scan added; the scan's record (data/proteins/planarian/interproscan.json) names it.",
+   "url": "https://www.ebi.ac.uk/interpro/",
+   "licence": "CC0 1.0 (InterPro's licence page: all of the InterPro, Pfam, PRINTS and SFLD downloadable data is freely available under CC0 1.0 Universal)",
+   "class": "permissive"
+  },
+  "gathered:planarian:scan_ncbifam": {
+   "text": "NCBIfam 19.0, as InterProScan 5.78-109.0 ran it on the species' proteins: its signatures' matches, and the families it could show; the scan's record (data/proteins/planarian/interproscan.json) gives its terms and counts.",
+   "url": "https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/",
+   "licence": "CC BY-SA 4.0 (share-alike), as NCBI's page on TIGRFAMs states: TIGRFAMs data are made available under a Creative Commons Attribution-ShareAlike 4.0 license",
+   "class": "permissive"
+  },
+  "gathered:planarian:scan_panther": {
+   "text": "PANTHER 19.0, as InterProScan 5.78-109.0 ran it on the species' proteins: its signatures' matches, and the families it could show; the scan's record (data/proteins/planarian/interproscan.json) gives its terms and counts.",
+   "url": "https://www.pantherdb.org/",
+   "licence": "CC BY 4.0 for its data and data products, as PANTHER's terms page states; the page was read in a browser on 18 November 2026, its site refusing automated reads; its models as distributed with InterProScan may be copied and redistributed freely in accordance with InterPro's copyright agreement",
+   "class": "permissive"
+  },
+  "gathered:planarian:scan_pfam": {
+   "text": "Pfam 38.2, as InterProScan 5.78-109.0 ran it on the species' proteins: its signatures' matches, and the families it could show; the scan's record (data/proteins/planarian/interproscan.json) gives its terms and counts.",
+   "url": "https://www.ebi.ac.uk/interpro/entry/pfam/",
+   "licence": "CC0 1.0 (InterPro's licence page; Pfam's own page: freely available under the Creative Commons Zero licence)",
+   "class": "permissive"
+  },
   "gathered:syn3a:atlas_table": {
    "text": "The Syn3A atlas's own table (data/proteins/syn3a/proteins.tsv): the protein products of the genome record GenBank CP016816.2, with the InterPro signatures UniProt (UniParc, release 2026_04) computes on each sequence.",
    "url": null,
@@ -4047,7 +4072,7 @@
   },
   "planarian": {
    "file": "catalogue/planarian.json",
-   "machines": 30
+   "machines": 31
   },
   "fruitfly": {
    "file": "catalogue/fruitfly.json",

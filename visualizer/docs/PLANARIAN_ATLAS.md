@@ -13,6 +13,7 @@ as built on 14 November 2026; the build prints them again.
 | The open set, whole | `data/proteins/planarian/predicted_proteins.tsv` (18,882 proteins: 17,294 gene models and 1,588 UniProtKB entries; 2.2 MB, no sequences), brought in by the user's decision of 14 November 2026 |
 | The proteins the atlas names | `data/proteins/planarian/reference_proteins.tsv` (229 proteins: the 227 it names and 2 joined to them; 35 KB) and the folder's `README.md` |
 | The shelves | `data/proteins/planarian/shelves.json` (the families, 541 KB) and `shelf_members.tsv` (every protein's family, side and basis, 860 KB), in the form `schema/SPECIES_PROTEINS.md` fixes; see "The shelves" below |
+| The own scan | `data/proteins/planarian/interproscan_added.tsv` and `interproscan.json`: the InterPro entries a new scan of all 18,882 proteins added to the lines, and its record (18 November 2026); see "The planarian's own scan" below |
 | The tool | `tools/build_planarian_atlas.py`: `fetch` uses the network, `build` and `members` do not |
 | The check | `node --test tests/planarian_atlas.test.mjs` |
 | The evidence | `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01` (65 MB): 179 requests on record, one of them a refusal, and every response that came back |
@@ -283,6 +284,132 @@ Each line is what a reader outside the field needs, then what it rests on.
   `https://parasite.wormbase.org/Schmidtea_mediterranea_s2f19h1prjna885486/Gene/Summary?g={id}`
   (checked for one gene on 14 November 2026).
 
+## The planarian's own scan (InterProScan, 18 November 2026)
+
+**What it is.** The table's `interpro` column holds what each line's own source gave it:
+WormBase ParaSite's older scan for the gene models (its highest entry is IPR049704) and
+UniProt's current one for its entries. Where a machine's family is numbered above the gene
+models' scan, the machine dossiers could only say "cannot tell". So all 18,882 proteins were
+scanned again, with InterProScan 5.78-109.0 (EMBL-EBI; Apache License 2.0), run on the
+project's own machine with its service of precalculated matches switched off, so that no
+sequence was sent anywhere. The sequences were joined to the table one to one before the run,
+every length equal. The scan was approved on 18 November 2026.
+
+**What was run, and what was left out.** Three passes over six chunks of the table (3,200
+proteins each, the last 2,882): the first pass ran Pfam, SFLD, HAMAP, CATH-Gene3D, NCBIfam,
+AntiFam, CDD and Coils; PRINTS ran apart, because one of its jobs needs about 1.5 GB; PANTHER
+ran apart. Left out, each for its terms as its provider states them: PROSITE and SMART (not
+free to commercial users), SUPERFAMILY (a registration with its staff), PIRSF and PIRSR (PIR
+asks commercial users to inform it and report yearly), MobiDB-lite (it bundles a program under
+an academic licence agreement), FunFam (not needed), and SignalP, TMHMM and Phobius (vendors'
+licences). The pages read are saved with the datasets, in
+`planarian/terms-interproscan-member-databases`, whose MANIFEST's note gives each decision; the
+programs each analysis calls were read for their licences too, and none is for academic use
+only. The matches are the tool's own, with its own cutoffs: nothing is filtered.
+
+**The two files.** Both are written by `tools/read_planarian_scan.py`; the table's own column
+is never changed.
+
+| File | What it holds |
+| --- | --- |
+| `data/proteins/planarian/interproscan_added.tsv` | One line for each protein that the scan gives an InterPro entry its own column lacks: the entries, each with the databases whose signatures reached it (`IPR000001:Pfam,CDD`) |
+| `data/proteins/planarian/interproscan.json` | The scan's record: the tool and its release, the days of the run (from the outputs), every file read with its SHA-256; for each database its release as the outputs state it, its terms and class, how many of the 18,882 proteins its pass ran on, its matches, the proteins it matched, the signatures and entries it reached and the matches with no entry; the entries confirmed, added and not found (by cause); what each database could see; the check of the tool's entry list against the run; the entries dropped because the dossiers' InterPro release does not hold them |
+
+A chunk counts only when both of its outputs exist and its pass's log says it ended with exit
+0, and the outputs' JSON lists every protein of its input, matched or not; so the record's own
+count of proteins for each database says how much of the scan it rests on. An entry the
+dossiers' InterPro release (111.0) does not hold is dropped and counted. Coils and AntiFam have
+no InterPro entries and are kept as counts only. Every added entry keeps the databases that
+found it, so that the entries NCBIfam alone or CDD alone found can be counted or taken out
+without a new scan.
+
+**How the machine dossiers read it: two rules side by side.** A dossier looks for each part of
+a human machine by its narrowest InterPro families (`schema/MACHINE_DOSSIERS.md`). The scan's
+entries count as carried by the line they were found on. They are kept out of the number rule
+on purpose: if they were merged into the lines, the highest entry each group carries would jump
+past the families that only a database the scan did not run could show, and those would be
+called "not in the table", which would be false.
+
+| | The number rule (the table's own column) | The database rule (the scan) |
+| --- | --- | --- |
+| What it reads | For each group of lines (gene models, UniProtKB entries), the highest entry its own column carries | For each database run, how many of the proteins its pass ran on, and the Family entries in which the tool's own entry list has a signature of it |
+| "not in the table" where | no line carries the family, and it is numbered at or below the highest entry that every group carries | no line carries the family (in its own column or by an added entry), the number rule cannot place it, a database that was run has a signature in it, and that database's pass ran on all 18,882 proteins |
+| Otherwise | the nearest broader Family that some line carries ("broader"), else "cannot tell" | the same |
+
+Each dossier says which rule placed a family: the families whose level rests on the scan are
+listed with the databases they rest on, beside the count of family rows whose level the scan
+changed, the candidates found only by added entries (each says so in its row) and the
+candidates of the number rule alone that the scan's rule no longer gives. A family the scan
+shows absent, where a broader family stood in before, loses that broader family's candidates:
+the scan could see the family itself, on every protein, and no protein carries it.
+
+**The record's numbers.** The block below is written by the tool from the record
+(`python3 -I tools/read_planarian_scan.py note`), and the planarian scan's test fails when it
+is not the record's.
+
+<!-- planarian-scan: begin (written by tools/read_planarian_scan.py note) -->
+
+The record as built (2026-11-18 to 2026-11-19; 36 output files read). The full run replaces these numbers; the record's own count of proteins per database is what keeps a partial build truthful.
+
+| Pass | Chunks counted | Databases |
+| --- | --- | --- |
+| `pass1` | 6 of 6 (chunk-01, chunk-02, chunk-03, chunk-04, chunk-05, chunk-06) | Pfam, SFLD, HAMAP, CATH-Gene3D, NCBIfam, AntiFam, CDD, Coils |
+| `pass1-prints` | 6 of 6 (chunk-01, chunk-02, chunk-03, chunk-04, chunk-05, chunk-06) | PRINTS |
+| `pass2-panther` | 6 of 6 (chunk-01, chunk-02, chunk-03, chunk-04, chunk-05, chunk-06) | PANTHER |
+
+| Database | Release (outputs) | Proteins run on | Matches | Proteins matched | Entries reached | Matches with no entry | Added | Added by it alone |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Pfam | 38.2 | 18,882 of 18,882 | 20,990 | 13,767 | 4,686 | 846 | 1,441 | 1,421 |
+| PRINTS | 42.0 | 18,882 of 18,882 | 4,472 | 3,720 | 436 | 550 | 0 | 0 |
+| SFLD | 4 | 18,882 of 18,882 | 191 | 73 | 17 | 125 | 2 | 2 |
+| HAMAP | 2026_01 | 18,882 of 18,882 | 297 | 288 | 219 | 0 | 0 | 0 |
+| CATH-Gene3D | 4.3.0 | 18,882 of 18,882 | 24,574 | 12,493 | 977 | 10,211 | 28 | 28 |
+| NCBIfam | 19.0 | 18,882 of 18,882 | 1,354 | 1,088 | 443 | 320 | 13 | 12 |
+| PANTHER | 19.0 | 18,882 of 18,882 | 13,813 | 13,813 | 3,577 | 3,830 | 3,551 | 3,534 |
+| CDD | 3.21 | 18,882 of 18,882 | 7,640 | 5,265 | 750 | 4,864 | 89 | 85 |
+| AntiFam (counts only) | not stated | 18,882 of 18,882 | 0 | 0 |  |  |  |  |
+| Coils (counts only) | 2.2.1 | 18,882 of 18,882 | 7,704 | 3,606 |  |  |  |  |
+
+- Entries confirmed (a protein's own entry found again): 37,545; added: 5,103, on 4,466 proteins; added by NCBIfam alone: 12; by CDD alone: 85.
+- Dropped because the dossier's InterPro release (111.0) does not hold them: 154 (28 entries).
+- The table's own entries the scan did not find, on the proteins a counted pass ran on: 16,916; no database run on the protein has a signature in the entry: 13,698; one has and did not match: 3,063; not in the tool's list: 155.
+- The tool's entry list against the run: 14,868 signatures compared, 0 differences, 0 not in the list.
+
+<!-- planarian-scan: end -->
+
+**The sources, and what they rest on.** Each database behind a value is a source of the record,
+with its terms as read and its class; the tool is named as the tool.
+
+| Source | Terms, as read | Class |
+| --- | --- | --- |
+| InterProScan 5.78-109.0 (EMBL-EBI) | Apache License 2.0: the tool, not a database, so it is named and not classed | |
+| InterPro (which signature belongs to which entry) | CC0 1.0 | Permissive |
+| Pfam, PRINTS, SFLD | CC0 1.0, by InterPro's licence page | Permissive |
+| HAMAP | CC BY 4.0 | Permissive |
+| CATH-Gene3D | CC BY 4.0 | Permissive |
+| NCBIfam (with TIGRFAMs) | CC BY-SA 4.0, share-alike | Permissive by the classes' spelling, not by a ruling |
+| PANTHER | CC BY 4.0 for its data and data products; its terms page was read in a browser on 18 November 2026, its site refusing automated reads | Permissive |
+| CDD | No terms stated, on its own page or on NCBI's policies page | No stated terms; used by the decision of 18 November 2026 (next section) |
+| AntiFam | CC0 1.0, by InterPro's page on AntiFam (counts only) | Permissive |
+
+Where the saved pages give a citation (HAMAP, NCBIfam, AntiFam, and InterPro's from the
+atlas's own sources), the record carries it; for Pfam, PRINTS, SFLD, CATH-Gene3D, PANTHER, CDD
+and the tool itself no citation text was saved, and the record says so.
+
+**How to make the files again.**
+
+```bash
+python3 -I tools/read_planarian_scan.py build --scan SCAN --tool TOOL --datasets DATA  # the two files and the block above
+python3 -I tools/read_planarian_scan.py report --datasets DATA --out FILE              # what the added entries would change for the atlas and the shelves
+python3 -I tools/gather_machines.py build --datasets DATA                              # the dossiers
+python3 tools/build_catalogue.py                                                       # the benches and the catalogue
+node --test tests/planarian_scan.test.mjs
+```
+
+`SCAN` is the scan's folder (its `out/`, `logs/` and `input/`), `TOOL` the tool's unpacked
+folder (its entry list is `work/kvs/idb/entries.json`), `DATA` the datasets folder. Nothing is
+written in `SCAN`.
+
 ## Sources and terms
 
 | Source | What is taken | Terms |
@@ -331,6 +458,20 @@ said.** Each has its class on its citation in the atlas:
 
 **Values cited in this note only:** that the library covers about 10,000 proteins (Ying
 and others 2025, all rights reserved).
+
+**The planarian's own scan (18 November 2026).** Two of the databases behind the entries the
+scan added are not plainly permissive. **NCBIfam** (with TIGRFAMs) is under CC BY-SA 4.0, a
+share-alike licence: the classes count it permissive by its spelling, not by a ruling, and its
+matches are named as NCBIfam's wherever they are used. **CDD**, NCBI's Conserved Domain
+Database, states no terms, on its own page or on NCBI's policies page; NCBI's general sentence
+on its molecular databases is not CDD's own, and CDD is not classed by it. It was decided on
+18 November 2026 that a database whose provider states no terms may be used for this scan where
+it is publicly available. So CDD stands, of the class no stated terms, behind entries the scan
+added and behind the dossiers' values that rest on them, and the licence test keeps it in a
+register of its own (`DECIDED`, by species), so that a second source of that class fails the
+test and is put to the user. Every added entry keeps its databases, and the scan's record
+counts the entries NCBIfam alone and CDD alone added, so that either can be taken out without a
+new scan.
 
 **What the two databases give out that others computed.** The helices and signal
 peptides behind the sides were predicted by programs that WormBase ParaSite and UniProt

@@ -13,6 +13,7 @@ engine (D209).
 | --- | --- | --- |
 | `data/catalogue/gather.json` | Hand | The kinds looked for (id, label, group, a plain line), the groups proposed beside the catalogue's, and for each species: its UniProt proteome, the Gene Ontology terms (and keywords) that name each machine's proteins, an entry chosen by hand with why, the RNA chains of an entry that are parts, the entries the catalogue measures (to compare), and the numbers per cell with the paper and the place in it. A species with no curated record of its machines (`route: family`) names its reference species and its atlas table instead |
 | `data/catalogue/dossiers/<species>.json` | `tools/gather_machines.py` (generated: do not edit) | One dossier per machine, and `by_protein`: for each protein of the atlas, the machines it is a part of |
+| `data/proteins/planarian/interproscan.json`, `interproscan_added.tsv` | `tools/read_planarian_scan.py` (generated: do not edit) | The planarian's own scan, read by a dossier by family where gather.json's `atlas.scan` names it: its record, and the entries it added to each line, each with its databases (`docs/PLANARIAN_ATLAS.md`) |
 
 ```bash
 python3 -I tools/gather_machines.py fetch <species>        # asks RCSB, UniProt and Europe PMC for what is not saved
@@ -113,9 +114,34 @@ tool and its MANIFEST line says so.
   `narrowest` (some line carries it); `broader` (the family is numbered above the highest entry that
   some group of the table's lines carries, so it is taken to be newer than that group's scan, and the
   nearest broader Family that some line carries is used); `not in the table` (no line carries it,
-  though every scan knew it: this says what the table holds, never that the species lacks the
-  protein); `cannot tell` (newer than a scan, and no broader Family is carried). A candidate is never
-  called the part or a counterpart. The species' own entries are found by a search of the Protein
+  though a scan that could show it was run: this says what the table holds, never that the species
+  lacks the protein); `cannot tell` (newer than a scan, and no broader Family is carried). A candidate
+  is never called the part or a counterpart.
+- **A species' own scan** (the planarian since 18 November 2026: `atlas.scan` in gather.json names
+  the scan's record and its table of added entries, both written by `tools/read_planarian_scan.py`;
+  `docs/PLANARIAN_ATLAS.md` says what was run). The entries the scan found on a protein and its line
+  lacks count as carried by that line, so a protein is a candidate by them too, and its row's `how`
+  says so in words ("which only the entries the species' own scan added to its line carry", with the
+  databases). Two rules then stand side by side:
+
+  | | The number rule | The database rule |
+  | --- | --- | --- |
+  | Reads | the table's own column alone: `scans_newest`, the highest entry each group of lines carries | the scan's record: each database's proteins run on, and the Family entries it has a signature in (the tool's own entry list) |
+  | `not in the table` where | no line carries the family, and it is numbered at or below what every group carries | no line carries it (own column or added entry), the number rule cannot place it, a database the scan ran has a signature in it, and that database's pass ran on every protein of the table |
+  | Otherwise | up the tree: `broader` or `cannot tell` | the same |
+
+  The scan's entries are never folded into `scans_newest`: they would carry it past the families that
+  only a database the scan did not run could show, and those would be called `not in the table`
+  falsely. The order is: `narrowest`, the number rule, the database rule, the tree; so a family that
+  was `broader` and that the scan shows absent on every protein becomes `not in the table`, and its
+  broader family's candidates are no longer taken for that part. `looked_for.scan` gives the scan's
+  part: `rests_on_it` (each family whose level rests on the scan, with its level and the databases),
+  `family_rows_changed` and `changed` (each row whose level differs from the table's own column's),
+  `candidates_only_by_it`, `no_longer_candidates` and `candidates_lost_by_part`, and
+  `on_every_protein` (the databases the database rule may use). Each database a value of the machine
+  rests on is a source (`scan_<key>`, with the scan record's terms and class, and `scan_interpro`),
+  named in `named.sources`. The family rows keep their five columns. A species with no scan named is
+  written as before, byte for byte. The species' own entries are found by a search of the Protein
   Data Bank by its taxon; one is the machine's structure where it holds candidates for at least half
   of the parts that have candidates, and for at least two parts where the reference's machine has
   two or more (its parts grouped and framed as the reference groups them, such as a ribosome's two
@@ -124,7 +150,10 @@ tool and its MANIFEST line says so.
   names the reference's entry with its organism, and the entries the reference compares. Where the species' own data marks a machine's
   proteins (Syn3A's `complex`), `own_mark` sets the two sets side by side.
 - **Sources** carry `licence` and `class` as `tests/licence_classes.test.mjs` defines them; whatever
-  a value rests on is permissive. The file holds no clock time and no path of this machine.
+  a value rests on is permissive, except a source of a species' own scan that the scan's record
+  carries with the same terms and that the licence test's register `DECIDED` names (CDD for the
+  planarian, by the decision of 18 November 2026; `tests/machine_gather.test.mjs` defers to the
+  record). The file holds no clock time and no path of this machine.
 
 ## What the catalogue would read (the proposal to `schema/MACHINE_CATALOGUE.md`)
 

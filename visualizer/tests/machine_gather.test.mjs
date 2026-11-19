@@ -33,6 +33,14 @@ const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b/
 const NO_TERMS = /^(No open licence stated|no licence stated|no open licence|Terms not read\b)/;
 const PERMISSIVE = /^CC BY\b(?!-NC)|^CC0\b|[Nn]o restrictions?\b|places no restriction|[Ii]mposes no restrictions|no use restrictions|^Public domain|BSD 3-Clause|^Bibliographic facts only/;
 const classOf = (licence) => (NON_COMMERCIAL.test(licence) ? "non-commercial" : NO_TERMS.test(licence) ? "no stated terms" : PERMISSIVE.test(licence) ? "permissive" : null);
+// A source of a species' own scan that is not permissive (CDD) stands behind a value only as the species' scan record carries
+// it (`scan_<key>`, with the record's own terms and class): tests/licence_classes.test.mjs holds that record against its
+// register DECIDED, so a second such source fails there.
+function scanCopy(species, key, source) {
+  const record = gather.species[species].atlas?.scan?.record;
+  const held = record && key.startsWith("scan_") ? json(record).sources?.[key.slice("scan_".length)] : null;
+  return Boolean(held && held.licence === source.licence && held.class === source.class);
+}
 
 function atlasIds(species) {
   const atlas = gather.species[species].atlas;
@@ -225,7 +233,7 @@ test("every value rests on a source whose licence and class agree, and that is p
       for (const group of Object.values(machine.uniprot_fractions?.groups || {})) for (const id of group) assert.ok(partIds.has(id), `${species}, ${machine.kind}: fraction ${id}`);
       for (const key of behind) {
         assert.ok(dossier.sources[key], `${species}, ${machine.kind}: ${key} is not a source`);
-        assert.equal(dossier.sources[key].class, "permissive", `${species}, ${machine.kind}: ${key} is ${dossier.sources[key].class}`);
+        assert.ok(dossier.sources[key].class === "permissive" || scanCopy(species, key, dossier.sources[key]), `${species}, ${machine.kind}: ${key} is ${dossier.sources[key].class}`);
       }
       for (const item of machine.per_cell || []) {
         if (item.fact) continue;

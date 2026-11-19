@@ -1,0 +1,893 @@
+{
+ "Coil": {
+  "database": "COILS",
+  "description": "Coil",
+  "integrated": null,
+  "name": null,
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Region"
+ },
+ "G3DSA:1.10.10.60": {
+  "database": "CATH-Gene3D",
+  "description": "Homeodomain-like",
+  "integrated": null,
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:1.10.220.150": {
+  "database": "CATH-Gene3D",
+  "description": "Arf GTPase activating protein",
+  "integrated": "IPR038508",
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:1.20.5.110": {
+  "database": "CATH-Gene3D",
+  "description": null,
+  "integrated": null,
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:2.10.110.10": {
+  "database": "CATH-Gene3D",
+  "description": "Cysteine Rich Protein",
+  "integrated": null,
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:3.10.20.90": {
+  "database": "CATH-Gene3D",
+  "description": "Phosphatidylinositol 3-kinase Catalytic Subunit; Chain A, domain 1",
+  "integrated": null,
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:3.30.70.330": {
+  "database": "CATH-Gene3D",
+  "description": null,
+  "integrated": "IPR012677",
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:3.40.47.10": {
+  "database": "CATH-Gene3D",
+  "description": null,
+  "integrated": "IPR016039",
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:3.40.50.300": {
+  "database": "CATH-Gene3D",
+  "description": "P-loop containing nucleotide triphosphate hydrolases",
+  "integrated": "IPR027417",
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "G3DSA:3.80.10.10": {
+  "database": "CATH-Gene3D",
+  "description": "Ribonuclease Inhibitor",
+  "integrated": "IPR032675",
+  "name": null,
+  "representative": {
+   "index": 5,
+   "type": "domain"
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR000159": {
+  "database": "InterPro",
+  "description": "Ras-associating domain",
+  "integrated": null,
+  "name": "RA_dom",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR001164": {
+  "database": "InterPro",
+  "description": "Arf GTPase activating protein",
+  "integrated": null,
+  "name": "ArfGAP_dom",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR001356": {
+  "database": "InterPro",
+  "description": "Homeodomain",
+  "integrated": null,
+  "name": "HD",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR001611": {
+  "database": "InterPro",
+  "description": "Leucine-rich repeat",
+  "integrated": null,
+  "name": "Leu-rich_rpt",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Repeat"
+ },
+ "IPR001781": {
+  "database": "InterPro",
+  "description": "Zinc finger, LIM-type",
+  "integrated": null,
+  "name": "Znf_LIM",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR001806": {
+  "database": "InterPro",
+  "description": "Small GTPase",
+  "integrated": null,
+  "name": "Small_GTPase",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR002155": {
+  "database": "InterPro",
+  "description": "Thiolase",
+  "integrated": null,
+  "name": "Thiolase",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR003591": {
+  "database": "InterPro",
+  "description": "Leucine-rich repeat, typical subtype",
+  "integrated": null,
+  "name": "Leu-rich_rpt_typical-subtyp",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Repeat"
+ },
+ "IPR005120": {
+  "database": "InterPro",
+  "description": "UPF3 domain",
+  "integrated": null,
+  "name": "UPF3_dom",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR005225": {
+  "database": "InterPro",
+  "description": "Small GTP-binding domain",
+  "integrated": null,
+  "name": "Small_GTP-bd",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR009057": {
+  "database": "InterPro",
+  "description": "Homeodomain-like superfamily",
+  "integrated": null,
+  "name": "Homeodomain-like_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR011524": {
+  "database": "InterPro",
+  "description": "SARAH domain",
+  "integrated": null,
+  "name": "SARAH_dom",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR012677": {
+  "database": "InterPro",
+  "description": "Nucleotide-binding alpha-beta plait domain superfamily",
+  "integrated": null,
+  "name": "Nucleotide-bd_a/b_plait_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR016039": {
+  "database": "InterPro",
+  "description": "Thiolase-like",
+  "integrated": null,
+  "name": "Thiolase-like",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR020610": {
+  "database": "InterPro",
+  "description": "Thiolase, active site",
+  "integrated": null,
+  "name": "Thiolase_AS",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Active_site"
+ },
+ "IPR020613": {
+  "database": "InterPro",
+  "description": "Thiolase, conserved site",
+  "integrated": null,
+  "name": "Thiolase_CS",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Conserved_site"
+ },
+ "IPR020615": {
+  "database": "InterPro",
+  "description": "Thiolase, acyl-enzyme intermediate active site",
+  "integrated": null,
+  "name": "Thiolase_acyl_enz_int_AS",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Active_site"
+ },
+ "IPR020616": {
+  "database": "InterPro",
+  "description": "Thiolase, N-terminal",
+  "integrated": null,
+  "name": "Thiolase_N",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR020617": {
+  "database": "InterPro",
+  "description": "Thiolase, C-terminal",
+  "integrated": null,
+  "name": "Thiolase_C",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR027417": {
+  "database": "InterPro",
+  "description": "P-loop containing nucleoside triphosphate hydrolase",
+  "integrated": null,
+  "name": "P-loop_NTPase",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR029071": {
+  "database": "InterPro",
+  "description": "Ubiquitin-like domain superfamily",
+  "integrated": null,
+  "name": "Ubiquitin-like_domsf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR032675": {
+  "database": "InterPro",
+  "description": "Leucine-rich repeat domain superfamily",
+  "integrated": null,
+  "name": "LRR_dom_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR033614": {
+  "database": "InterPro",
+  "description": "Ras association domain-containing protein 1-6",
+  "integrated": null,
+  "name": "RASSF1-6",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR035979": {
+  "database": "InterPro",
+  "description": "RNA-binding domain superfamily",
+  "integrated": null,
+  "name": "RBD_domain_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR037278": {
+  "database": "InterPro",
+  "description": "ARFGAP/RecO-like, zinc finger superfamily",
+  "integrated": null,
+  "name": "ARFGAP/RecO_Zfn_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR038508": {
+  "database": "InterPro",
+  "description": "ArfGAP domain superfamily",
+  "integrated": null,
+  "name": "ArfGAP_dom_sf",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Homologous_superfamily"
+ },
+ "IPR039722": {
+  "database": "InterPro",
+  "description": "Nonsense-mediated mRNA decay protein 3",
+  "integrated": null,
+  "name": "Upf3",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR040050": {
+  "database": "InterPro",
+  "description": "Zinc finger protein 830-like",
+  "integrated": null,
+  "name": "ZNF830-like",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR047169": {
+  "database": "InterPro",
+  "description": "Insulin gene enhancer protein ISL-1/2-like",
+  "integrated": null,
+  "name": "ISL1/2-like",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR050216": {
+  "database": "InterPro",
+  "description": "Leucine-rich repeat domain-containing protein",
+  "integrated": null,
+  "name": "LRR_domain-containing",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR052248": {
+  "database": "InterPro",
+  "description": "Arf-GAP domain and FG repeat-containing protein",
+  "integrated": null,
+  "name": "Arf-GAP_FG-repeat_protein",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR055414": {
+  "database": "InterPro",
+  "description": "Disease resistance R13L4/SHOC-2-like, LRR domain",
+  "integrated": null,
+  "name": "LRR_R13L4/SHOC2-like",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR059039": {
+  "database": "InterPro",
+  "description": "ZNF380, coiled-coil",
+  "integrated": null,
+  "name": "ZNF380_CC",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Domain"
+ },
+ "IPR900000": {
+  "database": "InterPro",
+  "description": "Made-up broader family that a line carries",
+  "integrated": null,
+  "name": "IPR900000",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR900001": {
+  "database": "InterPro",
+  "description": "Made-up family with a Pfam signature",
+  "integrated": null,
+  "name": "IPR900001",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR900002": {
+  "database": "InterPro",
+  "description": "Made-up family with a PIRSF signature",
+  "integrated": null,
+  "name": "IPR900002",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR900003": {
+  "database": "InterPro",
+  "description": "Made-up family with a PANTHER signature under IPR900000",
+  "integrated": null,
+  "name": "IPR900003",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR900005": {
+  "database": "InterPro",
+  "description": "Made-up family with a PANTHER signature and nothing broader",
+  "integrated": null,
+  "name": "IPR900005",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "IPR900006": {
+  "database": "InterPro",
+  "description": "Made-up family with a Pfam signature under IPR900000",
+  "integrated": null,
+  "name": "IPR900006",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "PF00046": {
+  "database": "Pfam",
+  "description": "Homeodomain",
+  "integrated": "IPR001356",
+  "name": "Homeodomain",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF00071": {
+  "database": "Pfam",
+  "description": "Ras family",
+  "integrated": "IPR001806",
+  "name": "Ras",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF00108": {
+  "database": "Pfam",
+  "description": "Thiolase, N-terminal domain",
+  "integrated": "IPR020616",
+  "name": "Thiolase_N",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF00412": {
+  "database": "Pfam",
+  "description": "LIM domain",
+  "integrated": "IPR001781",
+  "name": "LIM",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF00560": {
+  "database": "Pfam",
+  "description": "Leucine Rich Repeat",
+  "integrated": "IPR001611",
+  "name": "LRR_1",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Repeat"
+ },
+ "PF00788": {
+  "database": "Pfam",
+  "description": "Ras association (RalGDS/AF-6) domain",
+  "integrated": "IPR000159",
+  "name": "RA",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF01412": {
+  "database": "Pfam",
+  "description": "Putative GTPase activating protein for Arf",
+  "integrated": "IPR001164",
+  "name": "ArfGap",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF02803": {
+  "database": "Pfam",
+  "description": "Thiolase, C-terminal domain",
+  "integrated": "IPR020617",
+  "name": "Thiolase_C",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF03467": {
+  "database": "Pfam",
+  "description": "Smg-4/UPF3 family",
+  "integrated": "IPR005120",
+  "name": "Smg4_UPF3",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PF13855": {
+  "database": "Pfam",
+  "description": "Leucine rich repeat",
+  "integrated": "IPR001611",
+  "name": "LRR_8",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Repeat"
+ },
+ "PF16517": {
+  "database": "Pfam",
+  "description": "Novel Ras effector 1 C-terminal SARAH (Sav/Rassf/Hpo) domain",
+  "integrated": "IPR011524",
+  "name": "Nore1-SARAH",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "PF23406": {
+  "database": "Pfam",
+  "description": "ZNF380 coiled-coil",
+  "integrated": "IPR059039",
+  "name": "ZNF380_CC",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Coiled_coil"
+ },
+ "PF23598": {
+  "database": "Pfam",
+  "description": "Leucine-rich repeat region",
+  "integrated": "IPR055414",
+  "name": "LRR_14",
+  "representative": {
+   "index": 0,
+   "type": "domain"
+  },
+  "type": "Repeat"
+ },
+ "PF90001": {
+  "database": "Pfam",
+  "description": "Made-up family with a Pfam signature",
+  "integrated": "IPR900001",
+  "name": "PF90001",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PF90006": {
+  "database": "Pfam",
+  "description": "Made-up family with a Pfam signature under IPR900000",
+  "integrated": "IPR900006",
+  "name": "PF90006",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PIRSF90002": {
+  "database": "PIRSF",
+  "description": "Made-up family with a PIRSF signature",
+  "integrated": "IPR900002",
+  "name": "PIRSF90002",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PR00405": {
+  "database": "PRINTS",
+  "description": null,
+  "integrated": "IPR001164",
+  "name": "REVINTRACTNG",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "PR00449": {
+  "database": "PRINTS",
+  "description": null,
+  "integrated": null,
+  "name": "RASTRNSFRMNG",
+  "representative": {
+   "index": 0,
+   "type": null
+  },
+  "type": "Family"
+ },
+ "PTHR22738": {
+  "database": "PANTHER",
+  "description": "RASSF",
+  "integrated": "IPR033614",
+  "name": null,
+  "representative": {
+   "index": 1,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR24204": {
+  "database": "PANTHER",
+  "description": "INSULIN GENE ENHANCER PROTEIN",
+  "integrated": "IPR047169",
+  "name": null,
+  "representative": {
+   "index": 1,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR46134": {
+  "database": "PANTHER",
+  "description": "DRONGO, ISOFORM F",
+  "integrated": "IPR052248",
+  "name": null,
+  "representative": {
+   "index": 1,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR48051": {
+  "database": "PANTHER",
+  "description": null,
+  "integrated": "IPR050216",
+  "name": null,
+  "representative": {
+   "index": 1,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR90000": {
+  "database": "PANTHER",
+  "description": "Made-up broader family that a line carries",
+  "integrated": "IPR900000",
+  "name": "PTHR90000",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR90003": {
+  "database": "PANTHER",
+  "description": "Made-up family with a PANTHER signature under IPR900000",
+  "integrated": "IPR900003",
+  "name": "PTHR90003",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "PTHR90005": {
+  "database": "PANTHER",
+  "description": "Made-up family with a PANTHER signature and nothing broader",
+  "integrated": "IPR900005",
+  "name": "PTHR90005",
+  "representative": {
+   "index": 0,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "TIGR00231": {
+  "database": "NCBIFAM",
+  "description": "small GTP-binding protein domain",
+  "integrated": "IPR005225",
+  "name": "small_GTP",
+  "representative": {
+   "index": 4,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "TIGR01930": {
+  "database": "NCBIFAM",
+  "description": "acetyl-CoA C-acyltransferase",
+  "integrated": "IPR002155",
+  "name": "AcCoA-C-Actrans",
+  "representative": {
+   "index": 4,
+   "type": "family"
+  },
+  "type": "Family"
+ },
+ "cd00086": {
+  "database": "CDD",
+  "description": null,
+  "integrated": "IPR001356",
+  "name": "homeodomain",
+  "representative": {
+   "index": 1,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "cd00751": {
+  "database": "CDD",
+  "description": null,
+  "integrated": "IPR002155",
+  "name": "thiolase",
+  "representative": {
+   "index": 1,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "cd08838": {
+  "database": "CDD",
+  "description": "ArfGAP domain of the AGFG subfamily (ArfGAP domain and FG repeat-containing proteins)",
+  "integrated": null,
+  "name": "ArfGap_AGFG",
+  "representative": {
+   "index": 1,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "cd12455": {
+  "database": "CDD",
+  "description": "RNA recognition motif (RRM)-like Smg4_UPF3 domain in yeast up-frameshift suppressor 3 (Upf3p), Caenorhabditis elegans SMG-4, their human orthologs Upf3A and Upf3B, and similar proteins",
+  "integrated": null,
+  "name": "RRM_like_Smg4_UPF3",
+  "representative": {
+   "index": 1,
+   "type": "domain"
+  },
+  "type": "Domain"
+ },
+ "cd21885": {
+  "database": "CDD",
+  "description": "C-terminal SARAH domain found in Ras-association domain proteins, RASSF1, RASSF3, and RASSF5",
+  "integrated": null,
+  "name": "SARAH_RASSF1-like",
+  "representative": {
+   "index": 1,
+   "type": "domain"
+  },
+  "type": "Domain"
+ }
+}
