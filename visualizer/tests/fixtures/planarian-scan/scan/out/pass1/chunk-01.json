@@ -1,0 +1,312 @@
+{
+ "interproscan-version": "5.78-109.0",
+ "results": [
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PF13855",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001611",
+       "type": "REPEAT"
+      }
+     },
+     "model-ac": "PF13855"
+    },
+    {
+     "signature": {
+      "accession": "PF23598",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR055414",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF23598"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.80.10.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR032675",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "4b8cD01"
+    },
+    {
+     "signature": {
+      "accession": "PF00560",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001611",
+       "type": "REPEAT"
+      }
+     },
+     "model-ac": "PF00560"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.80.10.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR032675",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "3e6jA00"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000011",
+     "name": "h1SMcG0000011"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "G3DSA:1.10.220.150",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR038508",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "2olmA00"
+    },
+    {
+     "signature": {
+      "accession": "cd08838",
+      "signatureLibraryRelease": {
+       "library": "CDD",
+       "version": "3.21"
+      },
+      "entry": null
+     },
+     "model-ac": "cd08838"
+    },
+    {
+     "signature": {
+      "accession": "Coil",
+      "signatureLibraryRelease": {
+       "library": "COILS",
+       "version": "2.2.1"
+      },
+      "entry": null
+     },
+     "model-ac": "Coil"
+    },
+    {
+     "signature": {
+      "accession": "PF01412",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001164",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF01412"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000014",
+     "name": "h1SMcG0000014"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "G3DSA:2.10.110.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": null
+     },
+     "model-ac": "6cmeA02"
+    },
+    {
+     "signature": {
+      "accession": "cd00086",
+      "signatureLibraryRelease": {
+       "library": "CDD",
+       "version": "3.21"
+      },
+      "entry": {
+       "accession": "IPR001356",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "cd00086"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:2.10.110.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": null
+     },
+     "model-ac": "6cmeA01"
+    },
+    {
+     "signature": {
+      "accession": "PF00046",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001356",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF00046"
+    },
+    {
+     "signature": {
+      "accession": "PF00412",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001781",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF00412"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:1.10.10.60",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": null
+     },
+     "model-ac": "1o4xA02"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000008",
+     "name": "h1SMcG0000008"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "cd21885",
+      "signatureLibraryRelease": {
+       "library": "CDD",
+       "version": "3.21"
+      },
+      "entry": null
+     },
+     "model-ac": "cd21885"
+    },
+    {
+     "signature": {
+      "accession": "Coil",
+      "signatureLibraryRelease": {
+       "library": "COILS",
+       "version": "2.2.1"
+      },
+      "entry": null
+     },
+     "model-ac": "Coil"
+    },
+    {
+     "signature": {
+      "accession": "PF16517",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR011524",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF16517"
+    },
+    {
+     "signature": {
+      "accession": "PF00788",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR000159",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF00788"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.10.20.90",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": null
+     },
+     "model-ac": "3ddcB00"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:1.20.5.110",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": null
+     },
+     "model-ac": "4oh8B00"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000009",
+     "name": "h1SMcG0000009"
+    }
+   ]
+  }
+ ]
+}

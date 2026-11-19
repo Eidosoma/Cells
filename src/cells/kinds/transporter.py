@@ -1396,6 +1396,9 @@ class Evaluation(NamedTuple):
     d_j_d_ln_c: object  # [M, K, P]
     diagram: object  # forms.DiagramLogs, or None
     active: object  # [P]
+    # [P]: the solver's switch, k > 0, a > 0 and active (its host active, itself present); J is
+    # zero elsewhere.
+    enabled: object
     valid: object  # [P]: the domain at the stage
     guard: object  # [P]: G = sum_m J x (RT fmol/s)
     allowance: object  # [P]: A (statement 1, §5.2, amendment 2)
@@ -1532,7 +1535,7 @@ def _evaluate(read, potentials, control, p, *, xp):
     valid = valid & xp.where(active, guard <= allowance, True)
     return Evaluation(
         ln_c, c, row_node, psi, x, x_terms, held_x, log_s, j_plus, j_minus, j, scale, y_terms,
-        d_j_d_psi, d_j_d_ln_c, diagram, active, valid, guard, allowance,
+        d_j_d_psi, d_j_d_ln_c, diagram, active, enabled, valid, guard, allowance,
     )  # fmt: skip
 
 
@@ -1758,7 +1761,9 @@ def _check_population_axis(spec, declaration):
     movers = moved_nodes(m)
     kinds = dict(m.kinds)
     closure = kinds.get("cells.rapid_proton_buffer@1")
-    proton = closure.proton if closure is not None else ("H" if "H" in m.species_ids else None)
+    proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
+    if proton is None:  # the row named H, as in a world with no closure (never skipped).
+        proton = "H" if "H" in m.species_ids else None
     for t in declaration:
         where = f"transporter {t.id!r}"
         form, roles = cycle_form(t.law), dict(t.roles)
@@ -1841,6 +1846,7 @@ def probe(read, potentials, control, p, *, xp=np):
         modes.pi_minus = xp.where(is_diagram, xp.exp(d.log_minus), nan)
         modes.share = xp.where(is_diagram, xp.exp(d.log_share), nan)
         carriers = xp.exp(xp.log(xp.maximum(p.cycle_capacity_fmol_s * control.cycle_availability, 1e-300)) - p.cycle_dg_log_scale)
+        carriers = xp.where(e.enabled, carriers, 0.0)  # The solver's switch: off carries nothing.
         modes.j_minus_diagram = xp.where(is_diagram, carriers[None] * xp.exp(d.log_minus + d.log_share), nan)
         n_edges = p.cycle_dg_edge_present.shape[0]
         cols = xp.arange(p.cycle_host.shape[0])
@@ -2195,11 +2201,15 @@ PRESENCE = MappingProxyType(
 
 def standard_free_energies(declaration):
     """Seam E's kind hook (the lead's answer of 19 November): each diagram-form population's cycles'
-    standard free energies implied by their own constants, ((((species, nu), ...), dG°/RT, c0 in
-    mM), ...) in declared order, for each cycle that converts a species (forms.implied_free_energy);
-    the species registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's
-    condition did at parse. Factored and net-flow laws have no constants of their own, and version
-    1's laws are factored: ()."""
+    standard free energies implied by their own constants, as F's FreeEnergyEntry, in declared
+    order, for each cycle that converts a species (forms.implied_free_energy): its stoichiometry
+    over the species its roles bind, dG°/RT and c0 in mM, and the law and the mode of its form that
+    produced it, so the binding owner's check computes its band from that form. The species
+    registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's condition did at
+    parse. Factored and net-flow laws have no constants of their own, and version 1's laws are
+    factored: ()."""
+    from cells.modules import FreeEnergyEntry
+
     if not isinstance(declaration, PopulationAxis):
         return ()
     hosted, out = hosted_laws(), []
@@ -2208,10 +2218,11 @@ def standard_free_energies(declaration):
         if form.kinetics != "diagram":
             continue
         roles = dict(t.roles)
-        for m in range(len(form.modes)):
+        for m, (mode, _) in enumerate(form.modes):
             net, value, c0 = forms.implied_free_energy(form, m)
             if net:
-                out.append((tuple((roles[r], n) for r, n in net.items()), value, c0))
+                stoichiometry = tuple((roles[r], n) for r, n in net.items())
+                out.append(FreeEnergyEntry(stoichiometry, value, c0, law_id=t.law, mode=mode))
     return tuple(out)
 
 
@@ -2248,5 +2259,8 @@ TRANSPORTER = BUILTIN.register(
         presence=PRESENCE,
         standard_free_energies=standard_free_energies,
         role_species=role_species,
+        # Version 1's per-law masks: full on the patches, or empty where their law is undeclared
+        # (the static dispatch), which F's array-axes check admits for these alone.
+        dispatch_masks=("transporter_neutral", "transporter_proton"),
     )
 )

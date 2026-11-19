@@ -1,0 +1,235 @@
+{
+ "interproscan-version": "5.78-109.0",
+ "results": [
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PF03467",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR005120",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF03467"
+    },
+    {
+     "signature": {
+      "accession": "cd12455",
+      "signatureLibraryRelease": {
+       "library": "CDD",
+       "version": "3.21"
+      },
+      "entry": null
+     },
+     "model-ac": "cd12455"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.30.70.330",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR012677",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "1uw4A00"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000027",
+     "name": "h1SMcG0000027"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "cd00751",
+      "signatureLibraryRelease": {
+       "library": "CDD",
+       "version": "3.21"
+      },
+      "entry": {
+       "accession": "IPR002155",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "cd00751"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.40.47.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR016039",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "3ss6A01"
+    },
+    {
+     "signature": {
+      "accession": "TIGR01930",
+      "signatureLibraryRelease": {
+       "library": "NCBIFAM",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR002155",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "TIGR01930"
+    },
+    {
+     "signature": {
+      "accession": "PF00108",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR020616",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF00108"
+    },
+    {
+     "signature": {
+      "accession": "PF02803",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR020617",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF02803"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.40.47.10",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR016039",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "3ss6A02"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000028",
+     "name": "h1SMcG0000028"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PF23406",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR059039",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PF23406"
+    },
+    {
+     "signature": {
+      "accession": "Coil",
+      "signatureLibraryRelease": {
+       "library": "COILS",
+       "version": "2.2.1"
+      },
+      "entry": null
+     },
+     "model-ac": "Coil"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000051",
+     "name": "h1SMcG0000051"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PF00071",
+      "signatureLibraryRelease": {
+       "library": "PFAM",
+       "version": "38.2"
+      },
+      "entry": {
+       "accession": "IPR001806",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "PF00071"
+    },
+    {
+     "signature": {
+      "accession": "TIGR00231",
+      "signatureLibraryRelease": {
+       "library": "NCBIFAM",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR005225",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "TIGR00231"
+    },
+    {
+     "signature": {
+      "accession": "G3DSA:3.40.50.300",
+      "signatureLibraryRelease": {
+       "library": "GENE3D",
+       "version": "4.3.0"
+      },
+      "entry": {
+       "accession": "IPR027417",
+       "type": "HOMOLOGOUS_SUPERFAMILY"
+      }
+     },
+     "model-ac": "3gj0A00"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000040",
+     "name": "h1SMcG0000040"
+    }
+   ]
+  }
+ ]
+}

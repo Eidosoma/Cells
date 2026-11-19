@@ -356,7 +356,9 @@ def _named_or_none(law, *names):
 @dataclass(frozen=True)
 class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
-    update; leaks have none."""
+    update; leaks have none. A host's codes are distinct. Code 99 is reserved for test plants (the
+    lead, 19 November 2026): no registered law takes it, so a planted law never meets one that
+    registers later."""
 
     code: int
     gates: tuple[str, ...]

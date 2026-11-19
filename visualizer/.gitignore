@@ -8,3 +8,7 @@ out/
 # folder's top level so that a download made here by mistake is not committed.
 /downloads/
 /datasets/
+# The planarian scan's fixture keeps the scan folder's own layout (out/<pass>/chunk-0N.*, logs/<pass>.log), which
+# the two rules above would leave out of the tree: these files are tracked.
+!/tests/fixtures/planarian-scan/scan/out/
+!/tests/fixtures/planarian-scan/scan/logs/*.log

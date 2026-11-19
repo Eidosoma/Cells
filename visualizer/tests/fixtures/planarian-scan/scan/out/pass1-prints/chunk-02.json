@@ -1,0 +1,53 @@
+{
+ "interproscan-version": "5.78-109.0",
+ "results": [
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000027",
+     "name": "h1SMcG0000027"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PR00449",
+      "signatureLibraryRelease": {
+       "library": "PRINTS",
+       "version": "42.0"
+      },
+      "entry": null
+     },
+     "model-ac": "PR00449"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000040",
+     "name": "h1SMcG0000040"
+    }
+   ]
+  },
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000028",
+     "name": "h1SMcG0000028"
+    }
+   ]
+  },
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000051",
+     "name": "h1SMcG0000051"
+    }
+   ]
+  }
+ ]
+}

@@ -38,6 +38,8 @@ Internal edges cancel when transfers are summed over a region. On the entire clo
 
 **Open.** Change in regional ion amount and net ion transfer across its boundary over the same interval.
 
+Perfused rat hearts lost 139 ± 12 μmol of K⁺ per g dry weight in effluent over 40 min. Tissue depletion was measured in separate hearts, leaving the within-heart balance open. [Kuki et al., Figs. 3–4](https://doi.org/10.1161/01.RES.67.2.401)
+
 **Unit** fmol
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

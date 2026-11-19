@@ -45,6 +45,7 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertFalse(notes.exists())
         generate(self.lane)
         canonical = first.read_text()
+        self.assertIn("**Measurement sought.** Amount", self.readme.read_text())
         first.write_text(canonical + "stale\n")
         with redirect_stderr(io.StringIO()):
             self.assertFalse(generate(self.lane, check=True))
@@ -54,6 +55,8 @@ class ClaimDocsTests(unittest.TestCase):
         handwritten = notes / "reading.md"
         handwritten.write_text("A handwritten note.\n")
         self.claim["id"] = "renamed"
+        finding = "Measured |charge| for one cell. [Paper](https://example.org/paper)"
+        self.claim["biology"]["finding"] = finding
         self.claim["formal"]["sources"] = {
             "Upstream": "https://github.com/ATOMSLab/LeanDimensionalAnalysis",
             "Local check": "lean/README.md",
@@ -65,7 +68,11 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertTrue(self.readme.read_text().startswith(self.intro))
         self.assertTrue(self.readme.read_text().endswith(self.footer))
         self.assertIn("(claims/renamed.md)", self.readme.read_text())
+        self.assertIn(
+            "**Partial evidence.** " + finding.replace("|", r"\|"), self.readme.read_text()
+        )
         renamed = notes / "renamed.md"
+        self.assertIn(finding, renamed.read_text())
         self.assertIn(
             "[Upstream](https://github.com/ATOMSLab/LeanDimensionalAnalysis)", renamed.read_text()
         )

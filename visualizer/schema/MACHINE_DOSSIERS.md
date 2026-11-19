@@ -13,6 +13,7 @@ engine (D209).
 | --- | --- | --- |
 | `data/catalogue/gather.json` | Hand | The kinds looked for (id, label, group, a plain line), the groups proposed beside the catalogue's, and for each species: its UniProt proteome, the Gene Ontology terms (and keywords) that name each machine's proteins, an entry chosen by hand with why, the RNA chains of an entry that are parts, the entries the catalogue measures (to compare), and the numbers per cell with the paper and the place in it. A species with no curated record of its machines (`route: family`) names its reference species and its atlas table instead |
 | `data/catalogue/dossiers/<species>.json` | `tools/gather_machines.py` (generated: do not edit) | One dossier per machine, and `by_protein`: for each protein of the atlas, the machines it is a part of |
+| `data/proteins/planarian/interproscan.json`, `interproscan_added.tsv` | `tools/read_planarian_scan.py` (generated: do not edit) | The planarian's own scan, read by a dossier by family where gather.json's `atlas.scan` names it: its record, and the entries it added to each line, each with its databases (`docs/PLANARIAN_ATLAS.md`) |
 
 ```bash
 python3 -I tools/gather_machines.py fetch <species>        # asks RCSB, UniProt and Europe PMC for what is not saved
@@ -87,13 +88,34 @@ tool and its MANIFEST line says so.
 - **The Complex Portal** (`complex_portal`, CC0 1.0 as its 2022 paper states): its curated complexes
   of the species that hold parts of the machine, matched by UniProt accession (the most parts
   first), each with its stoichiometry for those parts (0 where it gives none).
+- **Forms** (`forms`, since 19 November 2026; the Complex Portal's entries beneath a kind). An entry is a *form* of a kind
+  where at least 80 per cent of its protein members are parts of the kind in the species' own dossier (the tiers `part` and
+  `part by keyword`) and at least two are. A member that is no protein (an RNA, a ligand, an ion) is counted neither way;
+  an entry that holds other entries (the CMG helicase's entry holds the MCM and GINS complexes and CDC45) is judged by its
+  "Expanded participant list", the proteins with those entries opened. An entry that fits two kinds stops the build. A form
+  is never a machine: it makes no kind, no mark on a bench and no count of machines; it is a line of its kind's panel under
+  "Forms the Complex Portal curates", with its own name and identifier (a link to its page at the Complex Portal), the
+  proteins it holds, how many of the kind's parts they are (an entry may hold only a subunit's, as the 60S subunit does of
+  the ribosome's), its stoichiometry where it gives one (the commonest count and how many proteins have it, the proteins
+  that differ, how many it gives none for: 0 in the portal's file is "none given") and its evidence. gather.json
+  (`sources_held.complex_portal.forms`) holds the rule's two numbers, the evidence words, and a list of the exceptions the
+  rule cannot do, each with its reason (TREX-2 at the human nuclear pore: four of its five proteins are named with the
+  pore, but it is a complex of its own, not a form of the pore). The evidence is the portal's own term, with one plain line:
+  ECO:0000353 "Seen in this species' own proteins (a physical interaction)."; ECO:0005547 "Put together by the Complex
+  Portal's curators from the literature."; ECO:0005546 "Taken from a paralogous complex of this species."; ECO:0005544,
+  ECO:0005610 and ECO:0005543 "Inferred: not observed in this species. The Complex Portal takes it from the same complex
+  in <the species of the entry it names>." (the species of an entry the portal names as its source comes from the entry
+  lists of the other species' files, `sources_held.complex_portal.index`, read only for that; an entry in none of them is
+  said so); any other code is shown by its own name from the file, never guessed into one of these. The species of the
+  switch: the human, E. coli, the mouse and the fruit fly. The thale cress's set holds no entry with two proteins that are
+  parts of one of the kinds (as measured when its set was first read), the planarian, Syn3A and M. pneumoniae have no set at the portal.
 - **A held source.** gather.json's `sources_held.<name>` has `use` and a dated line saying why. While
   `use` is false, no step reads the source: `fetch` skips its downloads, and `build` writes no field
   that rests on it (for the Complex Portal: no `complex_portal`, no `sub_assemblies.complex_portal`,
   no source entry); what rests on other sources stays (the Gene Ontology's sub-assemblies). Its saved
   folders are kept. Switching it on is one edit and a rebuild. The Complex Portal was held on
   17 November 2026, because its licence is stated in its team's paper and not on its site; the user
-  decides.
+  decided on 18 November 2026 that its CC0 1.0, stated in its team's 2022 paper, is enough, and it is switched on.
 - **PaxDb** (`paxdb`, CC BY 4.0 as its home page declares): each part's abundance in one PaxDb
   dataset (its id and name kept), in parts per million of the dataset's protein molecules, joined by
   an identifier (E. coli's locus; the human's UniProt entry name, by PaxDb's own links). It is said
@@ -113,9 +135,34 @@ tool and its MANIFEST line says so.
   `narrowest` (some line carries it); `broader` (the family is numbered above the highest entry that
   some group of the table's lines carries, so it is taken to be newer than that group's scan, and the
   nearest broader Family that some line carries is used); `not in the table` (no line carries it,
-  though every scan knew it: this says what the table holds, never that the species lacks the
-  protein); `cannot tell` (newer than a scan, and no broader Family is carried). A candidate is never
-  called the part or a counterpart. The species' own entries are found by a search of the Protein
+  though a scan that could show it was run: this says what the table holds, never that the species
+  lacks the protein); `cannot tell` (newer than a scan, and no broader Family is carried). A candidate
+  is never called the part or a counterpart.
+- **A species' own scan** (the planarian since 18 November 2026: `atlas.scan` in gather.json names
+  the scan's record and its table of added entries, both written by `tools/read_planarian_scan.py`;
+  `docs/PLANARIAN_ATLAS.md` says what was run). The entries the scan found on a protein and its line
+  lacks count as carried by that line, so a protein is a candidate by them too, and its row's `how`
+  says so in words ("which only the entries the species' own scan added to its line carry", with the
+  databases). Two rules then stand side by side:
+
+  | | The number rule | The database rule |
+  | --- | --- | --- |
+  | Reads | the table's own column alone: `scans_newest`, the highest entry each group of lines carries | the scan's record: each database's proteins run on, and the Family entries it has a signature in (the tool's own entry list) |
+  | `not in the table` where | no line carries the family, and it is numbered at or below what every group carries | no line carries it (own column or added entry), the number rule cannot place it, a database the scan ran has a signature in it, and that database's pass ran on every protein of the table |
+  | Otherwise | up the tree: `broader` or `cannot tell` | the same |
+
+  The scan's entries are never folded into `scans_newest`: they would carry it past the families that
+  only a database the scan did not run could show, and those would be called `not in the table`
+  falsely. The order is: `narrowest`, the number rule, the database rule, the tree; so a family that
+  was `broader` and that the scan shows absent on every protein becomes `not in the table`, and its
+  broader family's candidates are no longer taken for that part. `looked_for.scan` gives the scan's
+  part: `rests_on_it` (each family whose level rests on the scan, with its level and the databases),
+  `family_rows_changed` and `changed` (each row whose level differs from the table's own column's),
+  `candidates_only_by_it`, `no_longer_candidates` and `candidates_lost_by_part`, and
+  `on_every_protein` (the databases the database rule may use). Each database a value of the machine
+  rests on is a source (`scan_<key>`, with the scan record's terms and class, and `scan_interpro`),
+  named in `named.sources`. The family rows keep their five columns. A species with no scan named is
+  written as before, byte for byte. The species' own entries are found by a search of the Protein
   Data Bank by its taxon; one is the machine's structure where it holds candidates for at least half
   of the parts that have candidates, and for at least two parts where the reference's machine has
   two or more (its parts grouped and framed as the reference groups them, such as a ribosome's two
@@ -124,7 +171,39 @@ tool and its MANIFEST line says so.
   names the reference's entry with its organism, and the entries the reference compares. Where the species' own data marks a machine's
   proteins (Syn3A's `complex`), `own_mark` sets the two sets side by side.
 - **Sources** carry `licence` and `class` as `tests/licence_classes.test.mjs` defines them; whatever
-  a value rests on is permissive. The file holds no clock time and no path of this machine.
+  a value rests on is permissive, except a source of a species' own scan that the scan's record
+  carries with the same terms and that the licence test's register `DECIDED` names (CDD for the
+  planarian, by the decision of 18 November 2026; `tests/machine_gather.test.mjs` defers to the
+  record). The file holds no clock time and no path of this machine.
+
+## The vault (a kind with an identity of its own, since 19 November 2026)
+
+The vault is a named exception to how a kind is identified: the Gene Ontology has no term for it and UniProt no keyword, so its
+proteins are not named by a term (gather.json: the kind's `identified_by: "vault"` and `identity`; no other kind changes its
+identity). `tools/gather_vault.py` finds them by three footings, kept apart in each protein's tier, never mixed:
+
+| Footing | Rule | Tier | What the card says |
+| --- | --- | --- | --- |
+| By record | the species' Complex Portal has an entry whose name holds the word gather.json gives; its protein members | `part by record` | a member of that entry, with the copies it states (0: none stated) |
+| Named by a reviewed UniProt entry | a reviewed entry of the species (by its own organism) whose FUNCTION or SUBUNIT sentences name the vault (the word, not "major vault protein"), in the saved entry files gather.json lists; each sentence with the evidence it closes with: "(By similarity)", with the accession the comment's evidence names, or the publications it cites | `named by a reviewed entry, by similarity` (every sentence by similarity) or `named by a reviewed entry, citing publications` (at least one cites) | the entry's own sentences with their evidence; the protein is not called a part |
+| By family alone | a protein of the species' table that carries IPR039059 or PARP4's marker IPR058904 and stands on no better footing | `candidate by family` | a candidate by its family |
+
+The evidence is read per sentence, not per comment. In the saved files the mouse's PARP4 (E9PYK3) is by similarity to the human
+Q9UKK3 in every sentence; the mouse's MVP (Q9EQK5) is by similarity to Q14764 in five sentences and cites PubMed:19779459 in the
+one on 39 subunits per half; the mouse's TEP1 (P97499) cites PubMed:11149928 in every sentence; the human's TEP1 (Q99973) is by
+similarity to the mouse's P97499, not to a human protein. A footing is therefore a protein's, not a species'. A species none of
+the footings reaches has no vault on its bench: the kind's `looked` says what was looked for, and `absence` that a signature not
+found is not an absence. The structure is the entry that holds the whole particle (a first assembly of 78 copies of a major vault
+protein entity covering at least 70 per cent of its protein), best resolution first, whose assembly file is held; a species'
+own entry that is a fragment (the mouse's 3GF5, 3GNF, 3GNG: 45 per cent of the protein and one copy) is never taken, and the
+vault takes the human's, said as the human's. The Complex Portal's and the preprint's sizes stand beside the viewer's own
+measure; the preprint's statements are each checked against its saved page, in the section named, before they are carried.
+The structure block names its protein as the records do: its entity's number, description and organism from the Protein Data
+Bank's answer, its gene from the saved UniProt entry of the accession that answer aligns the entity to; none is typed in the tool.
+Where the Complex Portal's entry gives a number of copies of one of its molecules (`reference_portal.copies_said`: the entry's own
+sentence, the name it uses, the member whose saved UniProt entry has that name as its gene's, and that entry's own sentence that
+gives a number of it, where it has one), the card sets both on that protein's line, each in its source's words, and reconciles
+nothing (the human's PARP4: about 9 per vault by the portal, up to 78 by UniProt's entry).
 
 ## What the catalogue would read (the proposal to `schema/MACHINE_CATALOGUE.md`)
 

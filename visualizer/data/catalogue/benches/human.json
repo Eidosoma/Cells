@@ -1203,6 +1203,69 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-7665",
+       "60S cytosolic large ribosomal subunit, striated muscle variant",
+       45,
+       45,
+       95,
+       {
+        "most": 1,
+        "n_most": 38,
+        "except": [],
+        "not_given": 7
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-5183",
+       "60S cytosolic large ribosomal subunit",
+       44,
+       44,
+       95,
+       {
+        "most": 1,
+        "n_most": 37,
+        "except": [],
+        "not_given": 7
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-7664",
+       "60S cytosolic large ribosomal subunit, testis-specific variant",
+       44,
+       44,
+       95,
+       {
+        "most": 1,
+        "n_most": 37,
+        "except": [],
+        "not_given": 7
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-5223",
+       "40S cytosolic small ribosomal subunit",
+       31,
+       31,
+       95,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "4V6X",
      "title": "Structure of the human 80S ribosome",
@@ -3844,6 +3907,393 @@
       "P28072",
       "Q99436"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005544": "Inferred: not observed in this species. The Complex Portal takes it from the same complex in {from}.",
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-5993",
+       "26S proteasome complex",
+       33,
+       32,
+       32,
+       {
+        "most": 1,
+        "n_most": 33,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-9082",
+       "19S-20S-PA28-alphabeta hybrid proteasome complex",
+       35,
+       32,
+       32,
+       {
+        "most": 1,
+        "n_most": 18,
+        "except": [
+         [
+          "O14818",
+          2
+         ],
+         [
+          "O43242",
+          2
+         ],
+         [
+          "P20618",
+          2
+         ],
+         [
+          "P25786",
+          2
+         ],
+         [
+          "P25787",
+          2
+         ],
+         [
+          "P25788",
+          2
+         ],
+         [
+          "P25789",
+          2
+         ],
+         [
+          "P28066",
+          2
+         ],
+         [
+          "P28070",
+          2
+         ],
+         [
+          "P28072",
+          2
+         ],
+         [
+          "P28074",
+          2
+         ],
+         [
+          "P49720",
+          2
+         ],
+         [
+          "P49721",
+          2
+         ],
+         [
+          "P60900",
+          2
+         ],
+         [
+          "Q06323",
+          4
+         ],
+         [
+          "Q99436",
+          2
+         ],
+         [
+          "Q9UL46",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-9085",
+       "19S-20S-PA28-gamma hybrid proteasome complex",
+       34,
+       32,
+       32,
+       {
+        "most": 1,
+        "n_most": 18,
+        "except": [
+         [
+          "O14818",
+          2
+         ],
+         [
+          "O43242",
+          2
+         ],
+         [
+          "P20618",
+          2
+         ],
+         [
+          "P25786",
+          2
+         ],
+         [
+          "P25787",
+          2
+         ],
+         [
+          "P25788",
+          2
+         ],
+         [
+          "P25789",
+          2
+         ],
+         [
+          "P28066",
+          2
+         ],
+         [
+          "P28070",
+          2
+         ],
+         [
+          "P28072",
+          2
+         ],
+         [
+          "P28074",
+          2
+         ],
+         [
+          "P49720",
+          2
+         ],
+         [
+          "P49721",
+          2
+         ],
+         [
+          "P60900",
+          2
+         ],
+         [
+          "P61289",
+          7
+         ],
+         [
+          "Q99436",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-9086",
+       "30S proteasome complex",
+       33,
+       32,
+       32,
+       {
+        "most": 2,
+        "n_most": 32,
+        "except": [
+         [
+          "O43242",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-8964",
+       "19S proteasome regulatory complex",
+       19,
+       18,
+       32,
+       {
+        "most": 1,
+        "n_most": 18,
+        "except": [
+         [
+          "O43242",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005544",
+       [
+        [
+         "CPX-8962",
+         "the rat"
+        ]
+       ]
+      ],
+      [
+       "CPX-8806",
+       "20S proteasome complex",
+       14,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-8841",
+       "PA200-20S single-capped proteasome",
+       15,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [
+         [
+          "Q14997",
+          1
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-8842",
+       "PA28-alphabeta double-capped 20S proteasome complex",
+       16,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [
+         [
+          "Q06323",
+          8
+         ],
+         [
+          "Q9UL46",
+          8
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-9001",
+       "PA28-gamma single-capped 20S proteasome complex",
+       15,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [
+         [
+          "P61289",
+          7
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-9002",
+       "PA28-alphabeta single-capped 20S proteasome complex",
+       16,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [
+         [
+          "Q06323",
+          4
+         ],
+         [
+          "Q9UL46",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-9022",
+       "PA28-gamma double-capped 20S proteasome complex",
+       15,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [
+         [
+          "P61289",
+          14
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-9063",
+       "PA200-20S-PA200 double-capped proteasome complex",
+       15,
+       14,
+       32,
+       {
+        "most": 2,
+        "n_most": 15,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-9021",
+       "20S spermatoproteasome complex",
+       14,
+       13,
+       32,
+       {
+        "most": 2,
+        "n_most": 14,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     }
    }
   },
@@ -6187,7 +6637,51 @@
        "Pol III complex consists of a ten-subunit catalytic core composed of POLR3A/RPC1, POLR3B/RPC2, POLR1C/RPAC1, POLR1D/RPAC2, POLR3K/RPC10, POLR2E/RPABC1, POLR2F/RPABC2, POLR2H/RPABC3, POLR2K/RPABC4 and POLR2L/RPABC5; a mobile stalk composed of two subunits POLR3H/RPC8 and CRCP/RPC9, protruding from the core and functioning primarily in transcription initiation; and additional subunits homologous to general transcription factors of the RNA polymerase II machinery, POLR3C/RPC3-POLR3F/RPC6-POLR3G/RPC7 heterotrimer required for transcription initiation and POLR3D/RPC4-POLR3E/RPC5 heterodimer involved in both transcription initiation and termination (PubMed:33335104, PubMed:33558764, PubMed:33558766, PubMed:33674783, PubMed:34675218)."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-2387",
+       "DNA-directed RNA polymerase II complex, Pol II(G) variant",
+       13,
+       13,
+       15,
+       {
+        "most": 1,
+        "n_most": 11,
+        "except": [],
+        "not_given": 2
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-7481",
+       "DNA-directed RNA polymerase II complex",
+       12,
+       12,
+       15,
+       {
+        "most": 1,
+        "n_most": 10,
+        "except": [],
+        "not_given": 2
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-2387",
+         "the human"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    }
    }
   },
   {
@@ -6949,7 +7443,30 @@
        "Pol III complex consists of a ten-subunit catalytic core composed of POLR3A/RPC1, POLR3B/RPC2, POLR1C/RPAC1, POLR1D/RPAC2, POLR3K/RPC10, POLR2E/RPABC1, POLR2F/RPABC2, POLR2H/RPABC3, POLR2K/RPABC4 and POLR2L/RPABC5; a mobile stalk composed of two subunits POLR3H/RPC8 and CRCP/RPC9, protruding from the core and functioning primarily in transcription initiation; and additional subunits homologous to general transcription factors of the RNA polymerase II machinery, POLR3C/RPC3-POLR3F/RPC6-POLR3G/RPC7 heterotrimer required for transcription initiation and POLR3D/RPC4-POLR3E/RPC5 heterodimer involved in both transcription initiation and termination (PubMed:33335104, PubMed:33558764, PubMed:33558766, PubMed:33674783, PubMed:34675218)."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2386",
+       "DNA-directed RNA polymerase I complex",
+       13,
+       13,
+       13,
+       {
+        "most": 1,
+        "n_most": 13,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    }
    }
   },
   {
@@ -7921,7 +8438,51 @@
        "Component of the RNA polymerase III complex consisting of 17 subunits: a ten-subunit horseshoe-shaped catalytic core composed of POLR3A/RPC1, POLR3B/RPC2, POLR1C/RPAC1, POLR1D/RPAC2, POLR3K/RPC10, POLR2E/RPABC1, POLR2F/RPABC2, POLR2H/RPABC3, POLR2K/RPABC4 and POLR2L/RPABC5; a mobile stalk composed of two subunits POLR3H/RPC8 and CRCP/RPC9, protruding from the core and functioning primarily in transcription initiation; and additional subunits homologous to general transcription factors of the RNA polymerase II machinery, POLR3C/RPC3-POLR3F/RPC6-POLR3G/RPC7 heterotrimer required for transcription initiation and POLR3D/RPC4-POLR3E/RPC5 heterodimer involved in both transcription initiation and termination."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-2393",
+       "DNA-directed RNA polymerase III complex, POLR3G variant",
+       17,
+       17,
+       17,
+       {
+        "most": 1,
+        "n_most": 17,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-7482",
+       "DNA-directed RNA polymerase III complex, POLR3GL variant",
+       17,
+       16,
+       17,
+       {
+        "most": 1,
+        "n_most": 17,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-2393",
+         "the human"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    }
    }
   },
   {
@@ -10313,6 +10874,24 @@
       "O75251",
       "O00217"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-577",
+       "Mitochondrial respiratory chain complex I",
+       44,
+       44,
+       44,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     }
    }
   },
@@ -14407,7 +14986,35 @@
        "Homodimer and homomultimer (By similarity)."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-5226",
+       "39S mitochondrial large ribosomal subunit",
+       52,
+       52,
+       82,
+       null,
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-5225",
+       "28S mitochondrial small ribosomal subunit",
+       30,
+       30,
+       82,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    }
    }
   },
   {
@@ -15207,7 +15814,61 @@
        "Component of the CMG helicase complex, a hexameric ring of related MCM2-7 subunits stabilized by CDC45 and the tetrameric GINS complex (PubMed:32453425, PubMed:34694004, PubMed:34700328)."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-4526",
+       "CMG helicase complex",
+       11,
+       11,
+       11,
+       {
+        "most": 1,
+        "n_most": 11,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-2940",
+       "MCM complex",
+       6,
+       6,
+       11,
+       {
+        "most": 1,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-787",
+       "GINS complex",
+       4,
+       4,
+       11,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    }
    }
   },
   {
@@ -16053,6 +16714,24 @@
       "P35658"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-873",
+       "Nuclear pore complex",
+       31,
+       30,
+       35,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9AAV",
      "title": "Integrative structure of the human nuclear pore complex nuclear basket",
@@ -16061,6 +16740,3280 @@
      "wanted": 96,
      "measurable": true,
      "source": "gathered:human:pdb9aav"
+    }
+   }
+  },
+  {
+   "id": "vault",
+   "species": "human",
+   "label": "Vault",
+   "named": {
+    "text": "The Complex Portal's entry CPX-10181, “Vault ribonucleoprotein complex”, lists 3 proteins of Human's table among its members. 3 reviewed UniProt entries of the species (Q14764, Q99973, Q9UKK3) name the vault particle in their own FUNCTION or SUBUNIT lines, found by rule.",
+    "by": "vault record",
+    "sources": [
+     "gathered:human:complex_portal",
+     "gathered:human:uniprot_vault"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "9MXV-assembly1",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/human.vault.json",
+    "whole": {
+     "across_nm": [
+      74.5,
+      50.4,
+      50.4
+     ],
+     "farthest_nm": [
+      68.1,
+      41.5,
+      41.5
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "half-a",
+      "label": "A half-vault: 39 chains, on the positive side of the long axis",
+      "across_nm": [
+       50.4,
+       50.4,
+       37.6
+      ],
+      "centre_nm": [
+       14.38,
+       0.0,
+       0.0
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        -0.001
+       ],
+       [
+        0.0,
+        0.001,
+        1.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       41.4,
+       41.4,
+       34.3
+      ],
+      "chains": [
+       "chain-B",
+       "chain-B-2",
+       "chain-B-3",
+       "chain-B-4",
+       "chain-B-5",
+       "chain-B-6",
+       "chain-B-7",
+       "chain-B-8",
+       "chain-B-9",
+       "chain-B-10",
+       "chain-B-11",
+       "chain-B-12",
+       "chain-B-13",
+       "chain-B-14",
+       "chain-B-15",
+       "chain-B-16",
+       "chain-B-17",
+       "chain-B-18",
+       "chain-B-19",
+       "chain-B-20",
+       "chain-B-21",
+       "chain-B-22",
+       "chain-B-23",
+       "chain-B-24",
+       "chain-B-25",
+       "chain-B-26",
+       "chain-B-27",
+       "chain-B-28",
+       "chain-B-29",
+       "chain-B-30",
+       "chain-B-31",
+       "chain-B-32",
+       "chain-B-33",
+       "chain-B-34",
+       "chain-B-35",
+       "chain-B-36",
+       "chain-B-37",
+       "chain-B-38",
+       "chain-B-39"
+      ],
+      "hue": "bioRibosome"
+     },
+     {
+      "id": "half-b",
+      "label": "The other half-vault: 39 chains, on the negative side",
+      "across_nm": [
+       50.4,
+       50.4,
+       37.6
+      ],
+      "centre_nm": [
+       -14.38,
+       0.0,
+       0.0
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        0.0003
+       ],
+       [
+        0.0,
+        -0.0003,
+        1.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       41.5,
+       41.4,
+       34.3
+      ],
+      "chains": [
+       "chain-A",
+       "chain-A-2",
+       "chain-A-3",
+       "chain-A-4",
+       "chain-A-5",
+       "chain-A-6",
+       "chain-A-7",
+       "chain-A-8",
+       "chain-A-9",
+       "chain-A-10",
+       "chain-A-11",
+       "chain-A-12",
+       "chain-A-13",
+       "chain-A-14",
+       "chain-A-15",
+       "chain-A-16",
+       "chain-A-17",
+       "chain-A-18",
+       "chain-A-19",
+       "chain-A-20",
+       "chain-A-21",
+       "chain-A-22",
+       "chain-A-23",
+       "chain-A-24",
+       "chain-A-25",
+       "chain-A-26",
+       "chain-A-27",
+       "chain-A-28",
+       "chain-A-29",
+       "chain-A-30",
+       "chain-A-31",
+       "chain-A-32",
+       "chain-A-33",
+       "chain-A-34",
+       "chain-A-35",
+       "chain-A-36",
+       "chain-A-37",
+       "chain-A-38",
+       "chain-A-39"
+      ],
+      "hue": "bioFuel"
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain-A",
+      "label": "Major vault protein, chain A",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -5.7,
+       13.47
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.448,
+        0.3625
+       ],
+       [
+        0.5391,
+        0.8166,
+        -0.2061
+       ],
+       [
+        -0.2037,
+        0.3638,
+        0.9089
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B",
+      "label": "Major vault protein, chain B",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -6.38,
+       13.16
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.0226,
+        -0.5758
+       ],
+       [
+        0.5391,
+        0.383,
+        0.7501
+       ],
+       [
+        0.2036,
+        -0.9235,
+        0.3252
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-2",
+      "label": "Major vault protein, chain A-2",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -7.78,
+       12.38
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5004,
+        0.2859
+       ],
+       [
+        0.5391,
+        0.8391,
+        -0.0724
+       ],
+       [
+        -0.2037,
+        0.2133,
+        0.9555
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-2",
+      "label": "Major vault protein, chain B-2",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -8.41,
+       11.97
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.07,
+        -0.572
+       ],
+       [
+        0.5391,
+        0.2577,
+        0.8018
+       ],
+       [
+        0.2036,
+        -0.9637,
+        0.1729
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-3",
+      "label": "Major vault protein, chain A-3",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -9.67,
+       10.97
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5398,
+        0.2019
+       ],
+       [
+        0.5391,
+        0.8399,
+        0.0631
+       ],
+       [
+        -0.2037,
+        0.0573,
+        0.9774
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-3",
+      "label": "Major vault protein, chain B-3",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -10.22,
+       10.46
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.1609,
+        -0.5534
+       ],
+       [
+        0.5391,
+        0.1258,
+        0.8328
+       ],
+       [
+        0.2036,
+        -0.9789,
+        0.0161
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-4",
+      "label": "Major vault protein, chain A-4",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -11.3,
+       9.28
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5652,
+        0.1127
+       ],
+       [
+        0.5391,
+        0.8189,
+        0.197
+       ],
+       [
+        -0.2037,
+        -0.1002,
+        0.9739
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-4",
+      "label": "Major vault protein, chain B-4",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -11.76,
+       8.69
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.2476,
+        -0.5204
+       ],
+       [
+        0.5391,
+        -0.0094,
+        0.8422
+       ],
+       [
+        0.2036,
+        -0.9688,
+        -0.1412
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-5",
+      "label": "Major vault protein, chain A-5",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -12.64,
+       7.35
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5759,
+        0.0206
+       ],
+       [
+        0.5391,
+        0.7766,
+        0.3258
+       ],
+       [
+        -0.2037,
+        -0.2552,
+        0.9452
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-5",
+      "label": "Major vault protein, chain B-5",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.01,
+       6.69
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3278,
+        -0.4739
+       ],
+       [
+        0.5391,
+        -0.1444,
+        0.8298
+       ],
+       [
+        0.2036,
+        -0.9336,
+        -0.2948
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-6",
+      "label": "Major vault protein, chain A-6",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -13.66,
+       5.22
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5718,
+        -0.072
+       ],
+       [
+        0.5391,
+        0.7143,
+        0.4462
+       ],
+       [
+        -0.2037,
+        -0.4035,
+        0.892
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-6",
+      "label": "Major vault protein, chain B-6",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.91,
+       4.52
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3996,
+        -0.4152
+       ],
+       [
+        0.5391,
+        -0.2756,
+        0.7959
+       ],
+       [
+        0.2036,
+        -0.8743,
+        -0.4407
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-7",
+      "label": "Major vault protein, chain A-7",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.32,
+       2.96
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5528,
+        -0.1628
+       ],
+       [
+        0.5391,
+        0.6335,
+        0.555
+       ],
+       [
+        -0.2037,
+        -0.5414,
+        0.8157
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-7",
+      "label": "Major vault protein, chain B-7",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.45,
+       2.23
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.461,
+        -0.3457
+       ],
+       [
+        0.5391,
+        -0.3997,
+        0.7413
+       ],
+       [
+        0.2036,
+        -0.7922,
+        -0.5752
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-8",
+      "label": "Major vault protein, chain A-8",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.61,
+       0.63
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5196,
+        -0.2494
+       ],
+       [
+        0.5391,
+        0.5363,
+        0.6494
+       ],
+       [
+        -0.2037,
+        -0.6652,
+        0.7183
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-8",
+      "label": "Major vault protein, chain B-8",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.62,
+       -0.12
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5105,
+        -0.2673
+       ],
+       [
+        0.5391,
+        -0.5135,
+        0.6676
+       ],
+       [
+        0.2036,
+        -0.6897,
+        -0.6949
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-9",
+      "label": "Major vault protein, chain A-9",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.52,
+       -1.72
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.4728,
+        -0.3295
+       ],
+       [
+        0.5391,
+        0.4251,
+        0.7271
+       ],
+       [
+        -0.2037,
+        -0.7718,
+        0.6023
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-9",
+      "label": "Major vault protein, chain B-9",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.42,
+       -2.47
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5468,
+        -0.1819
+       ],
+       [
+        -0.5391,
+        0.6139,
+        -0.5766
+       ],
+       [
+        -0.2036,
+        0.5693,
+        0.7965
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-10",
+      "label": "Major vault protein, chain A-10",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.06,
+       -4.03
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.4139,
+        -0.4011
+       ],
+       [
+        0.5391,
+        0.303,
+        0.7858
+       ],
+       [
+        -0.2037,
+        -0.8584,
+        0.4707
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-10",
+      "label": "Major vault protein, chain B-10",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.83,
+       -4.75
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5689,
+        -0.0919
+       ],
+       [
+        -0.5391,
+        0.6985,
+        -0.4706
+       ],
+       [
+        -0.2036,
+        0.4342,
+        0.8775
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-11",
+      "label": "Major vault protein, chain A-11",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -13.23,
+       -6.23
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3442,
+        -0.4623
+       ],
+       [
+        0.5391,
+        0.173,
+        0.8243
+       ],
+       [
+        -0.2037,
+        -0.9228,
+        0.3269
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-11",
+      "label": "Major vault protein, chain B-11",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -12.89,
+       -6.9
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5763,
+        0.0006
+       ],
+       [
+        -0.5391,
+        0.7649,
+        -0.3525
+       ],
+       [
+        -0.2036,
+        0.2878,
+        0.9358
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-12",
+      "label": "Major vault protein, chain A-12",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -12.06,
+       -8.27
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.2655,
+        -0.5115
+       ],
+       [
+        0.5391,
+        0.0386,
+        0.8413
+       ],
+       [
+        -0.2037,
+        -0.9633,
+        0.1747
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-12",
+      "label": "Major vault protein, chain B-12",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -11.62,
+       -8.88
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5687,
+        0.093
+       ],
+       [
+        -0.5391,
+        0.8116,
+        -0.2252
+       ],
+       [
+        -0.2036,
+        0.1339,
+        0.9699
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-13",
+      "label": "Major vault protein, chain A-13",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -10.57,
+       -10.1
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.1801,
+        -0.5475
+       ],
+       [
+        0.5391,
+        -0.0969,
+        0.8366
+       ],
+       [
+        -0.2037,
+        -0.9789,
+        0.0179
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-13",
+      "label": "Major vault protein, chain B-13",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -10.04,
+       -10.63
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5464,
+        0.183
+       ],
+       [
+        -0.5391,
+        0.8372,
+        -0.0921
+       ],
+       [
+        -0.2036,
+        -0.0234,
+        0.9788
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-14",
+      "label": "Major vault protein, chain A-14",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -8.82,
+       -11.67
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.0899,
+        -0.5693
+       ],
+       [
+        0.5391,
+        -0.2299,
+        0.8103
+       ],
+       [
+        -0.2037,
+        -0.9691,
+        -0.1394
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-14",
+      "label": "Major vault protein, chain B-14",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -8.21,
+       -12.1
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.51,
+        0.2683
+       ],
+       [
+        -0.5391,
+        0.8411,
+        0.0433
+       ],
+       [
+        -0.2036,
+        -0.1801,
+        0.9624
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-15",
+      "label": "Major vault protein, chain A-15",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -6.83,
+       -12.93
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.0026,
+        -0.5763
+       ],
+       [
+        0.5391,
+        -0.3569,
+        0.7629
+       ],
+       [
+        -0.2037,
+        -0.9342,
+        -0.293
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-15",
+      "label": "Major vault protein, chain B-15",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -6.16,
+       -13.26
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.4603,
+        0.3467
+       ],
+       [
+        -0.5391,
+        0.8233,
+        0.1777
+       ],
+       [
+        -0.2036,
+        -0.3321,
+        0.921
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-16",
+      "label": "Major vault protein, chain A-16",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -4.67,
+       -13.86
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.095,
+        -0.5684
+       ],
+       [
+        0.5391,
+        -0.4746,
+        0.6958
+       ],
+       [
+        -0.2037,
+        -0.8751,
+        -0.4391
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-16",
+      "label": "Major vault protein, chain B-16",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -3.95,
+       -14.08
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3988,
+        0.416
+       ],
+       [
+        -0.5391,
+        0.7841,
+        0.3075
+       ],
+       [
+        -0.2036,
+        -0.4756,
+        0.8558
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-17",
+      "label": "Major vault protein, chain A-17",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -2.39,
+       -14.43
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.1849,
+        -0.5458
+       ],
+       [
+        0.5391,
+        -0.5801,
+        0.6106
+       ],
+       [
+        -0.2037,
+        -0.7933,
+        -0.5738
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-17",
+      "label": "Major vault protein, chain B-17",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -1.64,
+       -14.53
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3269,
+        0.4746
+       ],
+       [
+        -0.5391,
+        0.7246,
+        0.4293
+       ],
+       [
+        -0.2036,
+        -0.6067,
+        0.7684
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-18",
+      "label": "Major vault protein, chain A-18",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -0.04,
+       -14.62
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.2701,
+        -0.5091
+       ],
+       [
+        -0.5391,
+        0.6705,
+        -0.5097
+       ],
+       [
+        0.2037,
+        0.691,
+        0.6936
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-18",
+      "label": "Major vault protein, chain B-18",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       0.71,
+       -14.61
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.2465,
+        0.5209
+       ],
+       [
+        -0.5391,
+        0.6464,
+        0.5399
+       ],
+       [
+        -0.2036,
+        -0.7221,
+        0.6612
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-19",
+      "label": "Major vault protein, chain A-19",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       2.31,
+       -14.44
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3483,
+        -0.4592
+       ],
+       [
+        -0.5391,
+        0.7436,
+        -0.3955
+       ],
+       [
+        0.2037,
+        0.5708,
+        0.7954
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-19",
+      "label": "Major vault protein, chain B-19",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       3.04,
+       -14.3
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.1598,
+        0.5537
+       ],
+       [
+        -0.5391,
+        0.5514,
+        0.6366
+       ],
+       [
+        -0.2036,
+        -0.8188,
+        0.5368
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-20",
+      "label": "Major vault protein, chain A-20",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       4.59,
+       -13.88
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4174,
+        -0.3974
+       ],
+       [
+        -0.5391,
+        0.7974,
+        -0.2711
+       ],
+       [
+        0.2037,
+        0.4358,
+        0.8767
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-20",
+      "label": "Major vault protein, chain B-20",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       5.3,
+       -13.63
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.0689,
+        0.5721
+       ],
+       [
+        -0.5391,
+        0.4421,
+        0.7169
+       ],
+       [
+        -0.2036,
+        -0.8943,
+        0.3985
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-21",
+      "label": "Major vault protein, chain A-21",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       6.76,
+       -12.97
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4758,
+        -0.3253
+       ],
+       [
+        -0.5391,
+        0.8306,
+        -0.1397
+       ],
+       [
+        0.2037,
+        0.2895,
+        0.9353
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-21",
+      "label": "Major vault protein, chain B-21",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       7.42,
+       -12.6
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.0238,
+        0.5758
+       ],
+       [
+        -0.5391,
+        0.3214,
+        0.7785
+       ],
+       [
+        -0.2036,
+        -0.9466,
+        0.2499
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-22",
+      "label": "Major vault protein, chain A-22",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       8.75,
+       -11.72
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5218,
+        -0.2447
+       ],
+       [
+        -0.5391,
+        0.8422,
+        -0.0046
+       ],
+       [
+        0.2037,
+        0.1357,
+        0.9696
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-22",
+      "label": "Major vault protein, chain B-22",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       9.34,
+       -11.25
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.1158,
+        0.5645
+       ],
+       [
+        -0.5391,
+        0.1924,
+        0.82
+       ],
+       [
+        -0.2036,
+        -0.9745,
+        0.0948
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-23",
+      "label": "Major vault protein, chain A-23",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       10.52,
+       -10.16
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5543,
+        -0.1579
+       ],
+       [
+        -0.5391,
+        0.8321,
+        0.1305
+       ],
+       [
+        0.2037,
+        -0.0216,
+        0.9788
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-23",
+      "label": "Major vault protein, chain B-23",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       11.03,
+       -9.61
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2049,
+        0.5386
+       ],
+       [
+        -0.5391,
+        0.0584,
+        0.8402
+       ],
+       [
+        -0.2036,
+        -0.977,
+        -0.0628
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-24",
+      "label": "Major vault protein, chain A-24",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       12.01,
+       -8.34
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5724,
+        -0.0669
+       ],
+       [
+        -0.5391,
+        0.8003,
+        0.2623
+       ],
+       [
+        0.2037,
+        -0.1783,
+        0.9627
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-24",
+      "label": "Major vault protein, chain B-24",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       12.43,
+       -7.71
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2886,
+        0.4988
+       ],
+       [
+        -0.5391,
+        -0.0772,
+        0.8387
+       ],
+       [
+        -0.2036,
+        -0.9543,
+        -0.2187
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-25",
+      "label": "Major vault protein, chain A-25",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       13.19,
+       -6.31
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5757,
+        0.0258
+       ],
+       [
+        -0.5391,
+        0.7479,
+        0.3873
+       ],
+       [
+        0.2037,
+        -0.3304,
+        0.9216
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-25",
+      "label": "Major vault protein, chain B-25",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       13.5,
+       -5.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.3649,
+        0.446
+       ],
+       [
+        -0.5391,
+        -0.2107,
+        0.8155
+       ],
+       [
+        -0.2036,
+        -0.9069,
+        -0.3689
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-26",
+      "label": "Major vault protein, chain A-26",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.04,
+       -4.11
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5642,
+        0.1178
+       ],
+       [
+        -0.5391,
+        0.6761,
+        0.5022
+       ],
+       [
+        0.2037,
+        -0.474,
+        0.8567
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-26",
+      "label": "Major vault protein, chain B-26",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.23,
+       -3.38
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4317,
+        0.3817
+       ],
+       [
+        -0.5391,
+        -0.3388,
+        0.7711
+       ],
+       [
+        -0.2036,
+        -0.836,
+        -0.5096
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-27",
+      "label": "Major vault protein, chain A-27",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.51,
+       -1.8
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5379,
+        0.2068
+       ],
+       [
+        -0.5391,
+        0.5868,
+        0.6042
+       ],
+       [
+        0.2037,
+        -0.6052,
+        0.7695
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-27",
+      "label": "Major vault protein, chain B-27",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.59,
+       -1.06
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4874,
+        0.3075
+       ],
+       [
+        -0.5391,
+        -0.4581,
+        0.7068
+       ],
+       [
+        -0.2036,
+        -0.7434,
+        -0.6371
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-28",
+      "label": "Major vault protein, chain A-28",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.61,
+       0.55
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4978,
+        0.2904
+       ],
+       [
+        -0.5391,
+        0.4823,
+        0.6905
+       ],
+       [
+        0.2037,
+        -0.7208,
+        0.6625
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-28",
+      "label": "Major vault protein, chain B-28",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.57,
+       1.3
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5304,
+        0.2253
+       ],
+       [
+        -0.5391,
+        -0.5655,
+        0.6241
+       ],
+       [
+        -0.2036,
+        -0.6316,
+        -0.7481
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-29",
+      "label": "Major vault protein, chain A-29",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.34,
+       2.89
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4448,
+        0.3665
+       ],
+       [
+        -0.5391,
+        0.3652,
+        0.7589
+       ],
+       [
+        0.2037,
+        -0.8178,
+        0.5383
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-29",
+      "label": "Major vault protein, chain B-29",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.17,
+       3.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5597,
+        0.1373
+       ],
+       [
+        0.5391,
+        0.6583,
+        -0.5253
+       ],
+       [
+        0.2036,
+        0.5034,
+        0.8397
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-30",
+      "label": "Major vault protein, chain A-30",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       13.69,
+       5.15
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3802,
+        0.4331
+       ],
+       [
+        -0.5391,
+        0.2388,
+        0.8077
+       ],
+       [
+        0.2037,
+        -0.8935,
+        0.4001
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-30",
+      "label": "Major vault protein, chain B-30",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       13.41,
+       5.84
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5744,
+        0.0458
+       ],
+       [
+        0.5391,
+        0.7341,
+        -0.4129
+       ],
+       [
+        0.2036,
+        0.3621,
+        0.9096
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-31",
+      "label": "Major vault protein, chain A-31",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       12.69,
+       7.28
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3058,
+        0.4885
+       ],
+       [
+        -0.5391,
+        0.1061,
+        0.8355
+       ],
+       [
+        0.2037,
+        -0.9462,
+        0.2516
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-31",
+      "label": "Major vault protein, chain B-31",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       12.29,
+       7.92
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5744,
+        -0.0469
+       ],
+       [
+        0.5391,
+        0.7908,
+        -0.2898
+       ],
+       [
+        0.2036,
+        0.2115,
+        0.9559
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-32",
+      "label": "Major vault protein, chain A-32",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       11.35,
+       9.22
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.2235,
+        0.5312
+       ],
+       [
+        -0.5391,
+        -0.0293,
+        0.8417
+       ],
+       [
+        0.2037,
+        -0.9743,
+        0.0966
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-32",
+      "label": "Major vault protein, chain B-32",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       10.87,
+       9.79
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5594,
+        -0.1385
+       ],
+       [
+        0.5391,
+        0.8271,
+        -0.1592
+       ],
+       [
+        0.2036,
+        0.0555,
+        0.9775
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-33",
+      "label": "Major vault protein, chain A-33",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       9.73,
+       10.92
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.1354,
+        0.5602
+       ],
+       [
+        -0.5391,
+        -0.1639,
+        0.8261
+       ],
+       [
+        0.2037,
+        -0.9771,
+        -0.061
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-33",
+      "label": "Major vault protein, chain B-33",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       9.15,
+       11.41
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5299,
+        -0.2264
+       ],
+       [
+        0.5391,
+        0.8419,
+        -0.0245
+       ],
+       [
+        0.2036,
+        -0.1021,
+        0.9737
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-34",
+      "label": "Major vault protein, chain A-34",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       7.85,
+       12.34
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.0438,
+        0.5747
+       ],
+       [
+        -0.5391,
+        -0.2943,
+        0.7891
+       ],
+       [
+        0.2037,
+        -0.9547,
+        -0.2169
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-34",
+      "label": "Major vault protein, chain B-34",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       7.21,
+       12.73
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4867,
+        -0.3085
+       ],
+       [
+        0.5391,
+        0.8349,
+        0.1109
+       ],
+       [
+        0.2036,
+        -0.2569,
+        0.9447
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-35",
+      "label": "Major vault protein, chain A-35",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       5.77,
+       13.44
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.0489,
+        0.5742
+       ],
+       [
+        -0.5391,
+        -0.4171,
+        0.7317
+       ],
+       [
+        0.2037,
+        -0.9075,
+        -0.3672
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-35",
+      "label": "Major vault protein, chain B-35",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       5.07,
+       13.72
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.431,
+        -0.3826
+       ],
+       [
+        0.5391,
+        0.8063,
+        0.2434
+       ],
+       [
+        0.2036,
+        -0.4051,
+        0.8913
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-36",
+      "label": "Major vault protein, chain A-36",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       3.54,
+       14.19
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.1404,
+        0.5589
+       ],
+       [
+        -0.5391,
+        -0.5291,
+        0.6553
+       ],
+       [
+        0.2037,
+        -0.8369,
+        -0.5081
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-36",
+      "label": "Major vault protein, chain B-36",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       2.81,
+       14.35
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.364,
+        -0.4467
+       ],
+       [
+        0.5391,
+        0.7568,
+        0.3696
+       ],
+       [
+        0.2036,
+        -0.5429,
+        0.8148
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-37",
+      "label": "Major vault protein, chain A-37",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       1.22,
+       14.57
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.2283,
+        0.5292
+       ],
+       [
+        0.5391,
+        0.6273,
+        -0.562
+       ],
+       [
+        -0.2037,
+        0.7445,
+        0.6357
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-37",
+      "label": "Major vault protein, chain B-37",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       0.47,
+       14.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2876,
+        -0.4994
+       ],
+       [
+        0.5391,
+        0.6877,
+        0.4862
+       ],
+       [
+        0.2036,
+        -0.6665,
+        0.7171
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-38",
+      "label": "Major vault protein, chain A-38",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -1.14,
+       14.58
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3102,
+        0.4857
+       ],
+       [
+        0.5391,
+        0.7094,
+        -0.4541
+       ],
+       [
+        -0.2037,
+        0.6329,
+        0.7469
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-38",
+      "label": "Major vault protein, chain B-38",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -1.88,
+       14.5
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2038,
+        -0.539
+       ],
+       [
+        0.5391,
+        0.6008,
+        0.5902
+       ],
+       [
+        0.2036,
+        -0.7729,
+        0.6009
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-A-39",
+      "label": "Major vault protein, chain A-39",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -3.46,
+       14.21
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3841,
+        0.4297
+       ],
+       [
+        0.5391,
+        0.773,
+        -0.3344
+       ],
+       [
+        -0.2037,
+        0.5049,
+        0.8388
+       ]
+      ],
+      "protein": "Q14764"
+     },
+     {
+      "id": "chain-B-39",
+      "label": "Major vault protein, chain B-39",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -4.19,
+       14.01
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.1147,
+        -0.5647
+       ],
+       [
+        0.5391,
+        0.4984,
+        0.6789
+       ],
+       [
+        0.2036,
+        -0.8593,
+        0.4691
+       ]
+      ],
+      "protein": "Q14764"
+     }
+    ],
+    "between_nm": null,
+    "kinds": 1,
+    "modelled": [
+     0.876,
+     0.876
+    ],
+    "beside": null,
+    "note": "the vault cage with ADP, the first biological assembly of 78 copies of the major vault protein; the entry holds no PARP4, TEP1 or vault RNA",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb9mxv"
+    ],
+    "surface": {
+     "file": "shapes/human.vault.json",
+     "of": "human",
+     "entry": "9MXV",
+     "assembly": "1",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2.7 nm wide weighted by its volume, on a grid 2.7 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped, each listed in the shape's file; for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.7,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 9268
+    }
+   },
+   "gathered": {
+    "proteins": [
+     [
+      "Q14764",
+      "MVP",
+      "Major vault protein",
+      "part by record"
+     ],
+     [
+      "Q99973",
+      "TEP1",
+      "Telomerase protein component 1",
+      "part by record"
+     ],
+     [
+      "Q9UKK3",
+      "PARP4",
+      "Protein mono-ADP-ribosyltransferase PARP4",
+      "part by record"
+     ]
+    ],
+    "in_atlas": true,
+    "vault": {
+     "footings": {
+      "record": true,
+      "entry": true,
+      "family": false
+     },
+     "proteins": {
+      "Q14764": {
+       "tier": "part by record",
+       "copies": 78,
+       "entry": {
+        "gene": "MVP",
+        "label": "Major vault protein",
+        "length": 893,
+        "lines": [
+         {
+          "comment": "function",
+          "says": "Structural component of the vault particle, which is a massive ribonucleoprotein complex that may play a role in cargo transport and signal transduction (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "function",
+          "says": "Oligomerizes to form a cage-like vault complex, which can house several minor vault components including PARP4 (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "function",
+          "says": "Vaults may play a role in nucleo-cytoplasmic transport (PubMed:15133037)",
+          "evidence": "cited",
+          "publications": [
+           "15133037"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "The vault is a massive cage-like structure; it consists of a dimer of half-vaults, with each half-vault comprising 39 identical MVP subunits (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "The two half-vaults assemble to form the complete vault, where minor vault components such as PARP4, TEP1 and vault RNAs (vRNAs) may bind to the interior (PubMed:40691181, PubMed:12177006, PubMed:16373071)",
+          "evidence": "cited",
+          "publications": [
+           "40691181",
+           "12177006",
+           "16373071"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "Interacts (via MVP repeats 3 and 4) with PARP4; each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         }
+        ]
+       }
+      },
+      "Q99973": {
+       "tier": "part by record",
+       "copies": 0,
+       "entry": {
+        "gene": "TEP1",
+        "label": "Telomerase protein component 1",
+        "length": 2627,
+        "lines": [
+         {
+          "comment": "function",
+          "says": "Component of the vault particle, which is a massive ribonucleoprotein complex that may play a role in cargo transport and signal transduction (By similarity)",
+          "evidence": "by similarity",
+          "publications": [],
+          "similar_to": [
+           "P97499"
+          ],
+          "similar_of": {
+           "P97499": "Mus musculus"
+          }
+         },
+         {
+          "comment": "function",
+          "says": "Responsible for the localizing and stabilizing vault RNA (vRNA) association in the vault ribonucleoprotein particle",
+          "evidence": "unmarked",
+          "publications": [],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "Associates with MVP to form part of the vault particle (By similarity)",
+          "evidence": "by similarity",
+          "publications": [],
+          "similar_to": [
+           "P97499"
+          ],
+          "similar_of": {
+           "P97499": "Mus musculus"
+          }
+         },
+         {
+          "comment": "subunit",
+          "says": "The vault is a massive cage-like structure; it consists of a dimer of half-vaults, with each half-vault comprising 39 identical MVP subunits (By similarity)",
+          "evidence": "by similarity",
+          "publications": [],
+          "similar_to": [
+           "P97499"
+          ],
+          "similar_of": {
+           "P97499": "Mus musculus"
+          }
+         },
+         {
+          "comment": "subunit",
+          "says": "The two half-vaults assemble to form the complete vault, where minor vault components such as PARP4, TEP1 and vault RNAs (vRNAs) may bind to the interior (By similarity)",
+          "evidence": "by similarity",
+          "publications": [],
+          "similar_to": [
+           "P97499"
+          ],
+          "similar_of": {
+           "P97499": "Mus musculus"
+          }
+         }
+        ],
+        "also": [
+         {
+          "comment": "function",
+          "says": "Component of the telomerase ribonucleoprotein complex that is essential for the replication of chromosome termini (PubMed:19179534)",
+          "evidence": "cited",
+          "publications": [
+           "19179534"
+          ],
+          "similar_to": []
+         }
+        ]
+       }
+      },
+      "Q9UKK3": {
+       "tier": "part by record",
+       "copies": 0,
+       "entry": {
+        "gene": "PARP4",
+        "label": "Protein mono-ADP-ribosyltransferase PARP4",
+        "length": 1724,
+        "lines": [
+         {
+          "comment": "function",
+          "says": "Component of the vault particle, which is a massive ribonucleoprotein complex that may play a role in cargo transport and signal transduction (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "Associates with MVP to form part of the vault particle (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "The vault is a massive cage-like structure; it consists of a dimer of half-vaults, with each half-vault comprising 39 identical MVP subunits (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "The two half-vaults assemble to form the complete vault, where minor vault components such as PARP4, TEP1 and vault RNAs (vRNAs) may bind to the interior (PubMed:40691181, PubMed:10477748)",
+          "evidence": "cited",
+          "publications": [
+           "40691181",
+           "10477748"
+          ],
+          "similar_to": []
+         },
+         {
+          "comment": "subunit",
+          "says": "Interacts with MVP (via MVP repeats 3 and 4); each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules (PubMed:40691181)",
+          "evidence": "cited",
+          "publications": [
+           "40691181"
+          ],
+          "similar_to": []
+         }
+        ]
+       }
+      }
+     },
+     "signatures": {
+      "family": "IPR039059",
+      "domains": [
+       "IPR021870",
+       "IPR041139",
+       "IPR041134",
+       "IPR040989",
+       "IPR041136"
+      ],
+      "parp4": "IPR058904"
+     },
+     "family_not_in_atlas": [
+      "H3BNF2",
+      "H3BNF6",
+      "H3BP76",
+      "H3BPZ2",
+      "H3BQE7",
+      "H3BQK6",
+      "H3BRL2",
+      "H3BUK7",
+      "H3BUP3",
+      "I3L155"
+     ],
+     "structure": {
+      "own": true,
+      "left_out": [
+       {
+        "entry": "11DR",
+        "title": "Human Brain RNA Vault Shoulder bound to ADPR, focused refinement (EMPIAR-10766)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "11DV",
+        "title": "RNA Vault waist region, focused refinement (MVP/TEP1 sample)",
+        "why": "its first assembly holds 6 copies, not the particle's 78"
+       },
+       {
+        "entry": "11EE",
+        "title": "RNA Vault shoulder region with BAD bound, focused refinement (MVP/TEP1 sample)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "11FH",
+        "title": "RNA Vault cap (MVP/PARP4/TEP1 sample)",
+        "why": "its first assembly holds 39 copies, not the particle's 78"
+       },
+       {
+        "entry": "11GZ",
+        "title": "TEP1 TIR/DUF4062 domain",
+        "why": "its entity holds 8 per cent of the protein's 2627 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "11JC",
+        "title": "RNA Vault Shoulder with ADPR bound, compact conformation, focused refinement (MVP/PARP4/TEP1 NADP sample)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "11JD",
+        "title": "RNA Vault Shoulder with ADPR bound, extended conformation, focused refinement (MVP/PARP4/TEP1 NADP sample)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "11JF",
+        "title": "RNA Vault bound to PARP4 MINT, focused refinement (MVP/PARP4/TEP1 NADP sample)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "11JF",
+        "title": "RNA Vault bound to PARP4 MINT, focused refinement (MVP/PARP4/TEP1 NADP sample)",
+        "why": "its first assembly holds 3 copies, not the particle's 78"
+       },
+       {
+        "entry": "1Y7X",
+        "title": "Solution structure of a two-repeat fragment of major vault protein",
+        "why": "its entity holds 13 per cent of the protein's 893 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "8SWY",
+        "title": "PARP4 ART domain bound to NADH",
+        "why": "its entity holds 15 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "8SWZ",
+        "title": "PARP4 ART domain bound to EB47",
+        "why": "its entity holds 15 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "8SX1",
+        "title": "PARP4 catalytic domain",
+        "why": "its entity holds 19 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "8SX2",
+        "title": "PARP4 catalytic domain bound to EB47",
+        "why": "its entity holds 19 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9DEV",
+        "title": "PARP4 BRCT domain",
+        "why": "its entity holds 6 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9DFO",
+        "title": "PARP4 BRCT domain K31Q mutant",
+        "why": "its entity holds 6 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9DFP",
+        "title": "PARP4 BRCT domain K23/24Q mutant",
+        "why": "its entity holds 6 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9DFQ",
+        "title": "PARP4 BRCT domain F39Q mutant",
+        "why": "its entity holds 6 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9DFR",
+        "title": "PARP4 BRCT domain F39A mutant",
+        "why": "its entity holds 6 per cent of the protein's 1724 residues; its first assembly holds 1 copy, not the particle's 78"
+       },
+       {
+        "entry": "9R86",
+        "title": "Major Vault Protein from Human Brain",
+        "why": "its first assembly holds 39 copies, not the particle's 78"
+       },
+       {
+        "entry": "9R87",
+        "title": "Cap of the vault protein from Human Brain",
+        "why": "its first assembly holds 39 copies, not the particle's 78"
+       }
+      ],
+      "asked": "2026-11-19",
+      "entries_read": 43
+     },
+     "reference_portal": {
+      "species": "human",
+      "id": "CPX-10181",
+      "name": "Vault ribonucleoprotein complex",
+      "evidence": "ECO:0005547",
+      "members": {
+       "Q14764": 78,
+       "Q99973": 0,
+       "Q9UKK3": 0
+      },
+      "others": [
+       "URS0000000A8C_9606",
+       "URS000058CD99_9606",
+       "URS00005CCF67_9606",
+       "URS0000A76E3A_9606"
+      ],
+      "size_nm": [
+       72.5,
+       41.0,
+       41.0
+      ],
+      "mass_MDa": 13.0,
+      "copies_said": {
+       "of": "PARP4",
+       "copies": 9,
+       "says": "There are about 9 copies of PARP4 per vault which may act to ADP-ribosylate itself and MVP",
+       "protein": "Q9UKK3",
+       "entry": {
+        "comment": "subunit",
+        "says": "Interacts with MVP (via MVP repeats 3 and 4); each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules (PubMed:40691181)",
+        "evidence": "cited",
+        "publications": [
+         "40691181"
+        ]
+       }
+      }
+     },
+     "preprint": {
+      "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+      "doi": "10.64898/2026.11.04.764334",
+      "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+      "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+      "statements": [
+       {
+        "id": "survey",
+        "quote": "found MVP homologs in 29 bacterial and 4 archaeal phyla",
+        "place": "Abstract"
+       },
+       {
+        "id": "eight",
+        "quote": "vault particles of eight homologs expressed in Escherichia coli",
+        "place": "Abstract"
+       },
+       {
+        "id": "shell",
+        "quote": "a shell of 96 MVP chains",
+        "place": "Abstract"
+       },
+       {
+        "id": "resolution",
+        "quote": "nominal resolution of 3.2 Å",
+        "place": "Results, the first paragraph of the subsection on the structure of the phage relative L05"
+       },
+       {
+        "id": "host",
+        "quote": "homologs assemble into vaults when expressed in Escherichia coli",
+        "place": "Introduction, the paragraph that begins “Here, we survey”"
+       },
+       {
+        "id": "rare",
+        "quote": "less than 1% of species-representative assemblies",
+        "place": "Introduction, the paragraph that begins “Here, we survey”"
+       },
+       {
+        "id": "mammal-size",
+        "quote": "about 67 nm long and 40 nm wide",
+        "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+       },
+       {
+        "id": "per-cell",
+        "quote": "a typical human cell is predicted to hold about 10,000 vaults",
+        "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+       },
+       {
+        "id": "function",
+        "quote": "Yet the function of vaults remains unknown",
+        "place": "Introduction, the paragraph that begins “In mammals, the shell encloses”"
+       },
+       {
+        "id": "not-established",
+        "quote": "we have likewise not yet established the function of prokaryotic vaults",
+        "place": "Discussion"
+       }
+      ],
+      "source": "gathered:human:vault_preprint"
+     },
+     "sources": [
+      "gathered:human:complex_portal",
+      "gathered:human:uniprot_vault"
+     ]
     }
    }
   },
@@ -16161,6 +20114,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-561",
+       "Mitochondrial respiratory chain complex II",
+       4,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9KC4",
      "title": "The Cryo-EM structure of human succinate dehydrogenase in complex with Benzovindiflupyr",
@@ -16405,6 +20381,34 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-560",
+       "Mitochondrial respiratory chain complex III",
+       10,
+       10,
+       10,
+       {
+        "most": 1,
+        "n_most": 9,
+        "except": [
+         [
+          "P47985",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "5XTE",
      "title": "Cryo-EM structure of human respiratory complex III (cytochrome bc1 complex)",
@@ -16750,6 +20754,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-6123",
+       "Mitochondrial respiratory chain complex IV",
+       14,
+       14,
+       14,
+       {
+        "most": 1,
+        "n_most": 14,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9I7U",
      "title": "Cryo-EM structure of NDUFA4 bound complex IV within the respirasome complex",
@@ -16828,6 +20855,29 @@
       ]
      ],
      "source": "gathered:human:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-8073",
+       "SEC61 protein-conducting channel complex, SEC1A1 variant",
+       3,
+       3,
+       3,
+       {
+        "most": 1,
+        "n_most": 3,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "8DNV",
@@ -16995,6 +21045,29 @@
       "P61165"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-5621",
+       "Oligosaccharyltransferase complex A",
+       9,
+       8,
+       8,
+       {
+        "most": 1,
+        "n_most": 8,
+        "except": [],
+        "not_given": 1
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "6S7O",
      "title": "Cryo-EM structure of human oligosaccharyltransferase complex OST-A",
@@ -17139,6 +21212,24 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-2652",
+       "Signal recognition particle",
+       6,
+       6,
+       6,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "7NFX",
      "title": "Mammalian ribosome nascent chain complex with SRP and SRP receptor in early state A",
@@ -17276,6 +21367,50 @@
       ]
      ],
      "source": "gathered:human:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-5848",
+       "Endoplasmic reticulum membrane complex, EMC8 variant",
+       9,
+       9,
+       9,
+       {
+        "most": 1,
+        "n_most": 9,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-5881",
+       "Endoplasmic reticulum membrane complex, EMC9 variant",
+       9,
+       8,
+       9,
+       {
+        "most": 1,
+        "n_most": 9,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-5848",
+         "the human"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "8J0N",
@@ -17439,6 +21574,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-6121",
+       "TOM40 mitochondrial outer membrane translocase complex",
+       7,
+       6,
+       6,
+       {
+        "most": 2,
+        "n_most": 7,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "7VBY",
      "title": "Tom core complex with Tom20 and Tom22 subunits.",
@@ -17660,6 +21818,78 @@
      ],
      "source": "gathered:human:paxdb"
     },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-6124",
+       "TIM22 mitochondrial inner membrane twin-pore carrier translocase complex",
+       6,
+       6,
+       6,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P62072",
+          6
+         ],
+         [
+          "Q9Y5J7",
+          5
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-6126",
+       "TIM9-TIM10-TIM10B mitochondrial intermembrane space protein transporter complex",
+       3,
+       3,
+       6,
+       {
+        "most": 1,
+        "n_most": 1,
+        "except": [
+         [
+          "P62072",
+          3
+         ],
+         [
+          "Q9Y5J7",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-6125",
+       "TIM9-TIM10 mitochondrial intermembrane space protein transporter complex",
+       2,
+       2,
+       6,
+       {
+        "most": 3,
+        "n_most": 2,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9WV1",
      "title": "Human TIM22 complex wtih substrate GGC1-sfGFP",
@@ -17858,6 +22088,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-6030",
+       "Chaperonin-containing T-complex",
+       8,
+       8,
+       8,
+       {
+        "most": 2,
+        "n_most": 8,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9S72",
      "title": "Human CCT in Closed Conformation",
@@ -18169,6 +22422,110 @@
       "P36543"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-2470",
+       "Vacuolar proton translocating ATPase complex, ATP6V0A1 variant",
+       10,
+       10,
+       16,
+       {
+        "most": 1,
+        "n_most": 8,
+        "except": [
+         [
+          "P27449",
+          9
+         ],
+         [
+          "P38606",
+          3
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-6904",
+       "Vacuolar proton translocating ATPase complex, ATP6V0A2 variant",
+       10,
+       9,
+       16,
+       {
+        "most": 1,
+        "n_most": 7,
+        "except": [
+         [
+          "P27449",
+          9
+         ],
+         [
+          "P38606",
+          3
+         ]
+        ],
+        "not_given": 1
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-6905",
+       "Vacuolar proton translocating ATPase complex, ATP6V0A3 variant",
+       10,
+       9,
+       16,
+       {
+        "most": 1,
+        "n_most": 8,
+        "except": [
+         [
+          "P27449",
+          9
+         ],
+         [
+          "P38606",
+          3
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-6912",
+       "Vacuolar proton translocating ATPase complex, ATP6V0A4 variant",
+       10,
+       9,
+       16,
+       {
+        "most": 1,
+        "n_most": 8,
+        "except": [
+         [
+          "P27449",
+          9
+         ],
+         [
+          "P38606",
+          3
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "6WM2",
      "title": "Human V-ATPase in state 1 with SidK and ADP",
@@ -18422,6 +22779,110 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-5025",
+       "Dynein-1 complex, variant 1",
+       6,
+       6,
+       6,
+       {
+        "most": 2,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26367",
+       "Dynein-1 complex, variant 2",
+       6,
+       5,
+       6,
+       {
+        "most": 2,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-5025",
+         "the human"
+        ]
+       ]
+      ],
+      [
+       "CPX-26369",
+       "Dynein-1 complex, variant 3",
+       6,
+       5,
+       6,
+       {
+        "most": 2,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-5025",
+         "the human"
+        ]
+       ]
+      ],
+      [
+       "CPX-26373",
+       "Dynein-1 complex, variant 7",
+       6,
+       5,
+       6,
+       {
+        "most": 2,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-5025",
+         "the human"
+        ]
+       ]
+      ],
+      [
+       "CPX-26380",
+       "Dynein-1 complex, variant 11",
+       6,
+       5,
+       6,
+       {
+        "most": 2,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-5025",
+         "the human"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "9BLY",
      "title": "Composite structure of full-length human dynein-1 in phi-particle conformation",
@@ -19184,6 +23645,29 @@
       "Q9Y5N6"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-1880",
+       "Nuclear origin recognition complex",
+       6,
+       6,
+       6,
+       {
+        "most": 1,
+        "n_most": 5,
+        "except": [],
+        "not_given": 1
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "8S0D",
      "title": "H. sapiens MCM bound to double stranded DNA and ORC1-6",
@@ -19329,6 +23813,29 @@
       "Q9UQE7"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-5989",
+       "Nuclear mitotic cohesin complex, STAG1 variant",
+       4,
+       4,
+       4,
+       null,
+       "ECO:0005546",
+       [
+        [
+         "CPX-5991",
+         "the human"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
+    },
     "pick": {
      "entry": "6WG3",
      "title": "Cryo-EM structure of human Cohesin-NIPBL-DNA complex",
@@ -19435,6 +23942,29 @@
       ]
      ],
      "source": "gathered:human:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-985",
+       "Condensin II complex",
+       5,
+       5,
+       5,
+       {
+        "most": 1,
+        "n_most": 5,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "9TSZ",
@@ -19674,6 +24204,89 @@
       "Q06265",
       "Q01780"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-476",
+       "Nuclear exosome complex, DIS3-EXOSC10 variant",
+       11,
+       11,
+       12,
+       {
+        "most": 1,
+        "n_most": 11,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-591",
+       "Nucleolar exosome complex, EXOSC10 variant",
+       10,
+       10,
+       12,
+       {
+        "most": 1,
+        "n_most": 10,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-593",
+       "Exosome complex, DIS3 variant",
+       10,
+       10,
+       12,
+       {
+        "most": 1,
+        "n_most": 10,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-600",
+       "Cytoplasmic exosome complex, DIS3L-EXOSC10 variant",
+       11,
+       10,
+       12,
+       {
+        "most": 1,
+        "n_most": 11,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-592",
+       "Cytoplasmic exosome complex, DIS3L variant",
+       10,
+       9,
+       12,
+       {
+        "most": 1,
+        "n_most": 10,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "6D6Q",
@@ -20065,6 +24678,54 @@
       ]
      ],
      "source": "gathered:human:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-3227",
+       "Core mediator complex",
+       26,
+       23,
+       27,
+       null,
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-3232",
+       "CKM complex variant 1",
+       4,
+       4,
+       27,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-1969",
+       "Cyclin C-CDK8 complex",
+       2,
+       2,
+       27,
+       {
+        "most": 1,
+        "n_most": 2,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "8TQW",
@@ -21169,6 +25830,592 @@
       "Q9UQ35",
       "Q9HCS7"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-26448",
+       "Major Spliceosomal B-act-I complex",
+       42,
+       40,
+       46,
+       {
+        "most": 1,
+        "n_most": 34,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q15428",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26451",
+       "Major Spliceosomal B-act-III complex",
+       42,
+       39,
+       46,
+       {
+        "most": 1,
+        "n_most": 33,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q15428",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26441",
+       "Major Spliceosomal Pre-B-act complex",
+       39,
+       36,
+       46,
+       {
+        "most": 1,
+        "n_most": 31,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q15428",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26450",
+       "Major Spliceosomal B-act-II complex",
+       39,
+       36,
+       46,
+       {
+        "most": 1,
+        "n_most": 31,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q15428",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26454",
+       "Major Spliceosomal B-act-IV complex",
+       39,
+       36,
+       46,
+       {
+        "most": 1,
+        "n_most": 32,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26458",
+       "Major Spliceosomal Post-B-act complex",
+       37,
+       34,
+       46,
+       {
+        "most": 1,
+        "n_most": 30,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26509",
+       "Minor Spliceosomal B-act complex",
+       38,
+       31,
+       46,
+       {
+        "most": 1,
+        "n_most": 30,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ]
+        ],
+        "not_given": 1
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26465",
+       "Major Spliceosomal Pre-C*-I complex",
+       35,
+       28,
+       46,
+       {
+        "most": 1,
+        "n_most": 27,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26480",
+       "Intron Lariat Spliceosome, type 1 complex",
+       28,
+       26,
+       46,
+       {
+        "most": 1,
+        "n_most": 20,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26481",
+       "Intron Lariat Spliceosome, type 2 complex",
+       29,
+       26,
+       46,
+       {
+        "most": 1,
+        "n_most": 21,
+        "except": [
+         [
+          "P14678",
+          2
+         ],
+         [
+          "P62304",
+          2
+         ],
+         [
+          "P62306",
+          2
+         ],
+         [
+          "P62308",
+          2
+         ],
+         [
+          "P62314",
+          2
+         ],
+         [
+          "P62316",
+          2
+         ],
+         [
+          "P62318",
+          2
+         ],
+         [
+          "Q9UMS4",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-2539",
+       "U2 small nuclear ribonucleoprotein complex",
+       24,
+       21,
+       46,
+       {
+        "most": 1,
+        "n_most": 7,
+        "except": [],
+        "not_given": 17
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-26487",
+       "U12 small nuclear ribonucleoprotein complex",
+       15,
+       13,
+       46,
+       {
+        "most": 1,
+        "n_most": 15,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-26552",
+       "U5 small nuclear ribonucleoprotein complex, AAR2 variant",
+       11,
+       10,
+       46,
+       null,
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-6033",
+       "Sm complex",
+       7,
+       7,
+       46,
+       null,
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-2227",
+       "SF3B complex",
+       7,
+       6,
+       46,
+       {
+        "most": 1,
+        "n_most": 7,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-8065",
+       "Intron-binding complex",
+       5,
+       4,
+       46,
+       {
+        "most": 1,
+        "n_most": 5,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-2565",
+       "SF3A complex",
+       3,
+       3,
+       46,
+       null,
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-26447",
+       "Retention and splicing complex",
+       3,
+       3,
+       46,
+       {
+        "most": 1,
+        "n_most": 3,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:human:complex_portal"
     },
     "pick": {
      "entry": "6FF7",
@@ -23259,6 +28506,12 @@
     "part"
    ]
   ],
+  "Q14764": [
+   [
+    "vault",
+    "part by record"
+   ]
+  ],
   "Q15006": [
    [
     "emc",
@@ -23889,6 +29142,12 @@
     "part"
    ]
   ],
+  "Q99973": [
+   [
+    "vault",
+    "part by record"
+   ]
+  ],
   "Q9BQ48": [
    [
     "mitochondrial-ribosome",
@@ -24409,6 +29668,12 @@
    [
     "dynactin",
     "part"
+   ]
+  ],
+  "Q9UKK3": [
+   [
+    "vault",
+    "part by record"
    ]
   ],
   "Q9UKX7": [

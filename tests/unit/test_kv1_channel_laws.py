@@ -203,8 +203,12 @@ def kv1_registration_errors(registry):
         codes, rows = spec3.law_codes(), dict(spec3.LAW_CODES)
     if rows != TODAYS_CODES:
         out.append(f"today's five rows are {rows}")
-    if codes != {**TODAYS_CODES, **{law.LAW_ID: code for law, code in CODES.items()}}:
-        out.append(f"@3's codes are {codes}")
+    expected = {**TODAYS_CODES, **{law.LAW_ID: code for law, code in CODES.items()}}
+    wrong = {
+        law_id: codes.get(law_id) for law_id, code in expected.items() if codes.get(law_id) != code
+    }
+    if wrong:  # Today's five and the Kv1 laws: later laws take codes of their own.
+        out.append(f"@3's codes for {sorted(wrong)} are {wrong}")
     return out
 
 
@@ -244,8 +248,7 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
     for key, law in sorted(active._laws.items()):
         if law is not kv1p3_mh.LAW:
             kept._register(law, active.module(key))
-    rest = {k: v for k, v in spec3.law_codes().items() if k != kv1p3_mh.LAW_ID}
     assert kv1_registration_errors(kept) == [
         f"{kv1p3_mh.LAW_ID}: not its module's declaration, from its module",
-        f"@3's codes are {rest}",
+        f"@3's codes for {[kv1p3_mh.LAW_ID]} are { ({kv1p3_mh.LAW_ID: None}) }",
     ]

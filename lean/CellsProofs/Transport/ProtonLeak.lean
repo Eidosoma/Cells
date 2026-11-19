@@ -53,7 +53,7 @@ private theorem regular_factor {x : ℝ} (regular : 1 / 10000 ≤ |x|) :
     norm_num at regular
   simp only [seriesFactor, analyticFactor, if_neg (not_lt.mpr regular), if_neg hx]
 
-private theorem series_pos (x : ℝ) : 0 < seriesFactor.eval x := by
+theorem series_pos (x : ℝ) : 0 < seriesFactor.eval x := by
   by_cases small : |x| < 1 / 10000
   · simp only [seriesFactor, if_pos small]
     obtain ⟨lo, hi⟩ := abs_lt.mp (lt_trans small (by norm_num : (1 : ℝ) / 10000 < 1))

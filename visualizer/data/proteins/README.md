@@ -32,6 +32,12 @@ structure's primary citation is kept with it. Both were checked in stage 1 of th
 Nothing is copied from Xenbase, the Human Protein Atlas or the AlphaFold DB. The view only
 links to the Human Protein Atlas and the AlphaFold DB. The import tool drops the
 inventory's Xenbase identifiers and refuses to write one, and a test checks the result.
+The frog's gene names (`xenopus/`) are UniProt's (CC BY 4.0), whose entries name Xenbase's
+nomenclature as their source: it was decided on 19 November 2026 that they are used as read
+from UniProt, with Xenbase named behind them on the frog's shelves (non-commercial, read
+through UniProt), and that nothing else of Xenbase is used. No Xenbase identifier or page is
+written or read, and its placeholder names (a word of XB and its digits) are not written for
+now (`docs/XENOPUS.md`).
 
 ## Species atlases
 

@@ -36,6 +36,8 @@ Direct proof subject `cells.logmean_electrodiffusion@1`
 
 **Open.** Species-resolved ion transfer rate between two extracellular compartments, with measured concentrations at both endpoints and their voltage difference.
 
+Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906)
+
 **Unit** fmol/s
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

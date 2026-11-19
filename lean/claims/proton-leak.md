@@ -37,7 +37,9 @@ Proof sources [Cells constant-field definitions](../CellsProofs/Transport/Consta
 
 ## Biological evidence
 
-**Open.** Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening. In Jurkat T cells, the reported reversal slope was −47 mV/pH against an ideal −58 mV/pH. The slope uncertainty and intracellular pH remain to be assessed. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)
+**Open.** Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.
+
+In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)
 
 **Unit** mV at reversal, fmol/s for signed proton flux
 

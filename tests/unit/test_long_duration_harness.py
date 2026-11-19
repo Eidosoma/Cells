@@ -6,7 +6,7 @@ synthetic rows (no engine run):
   class and for the histories;
 - the crossing locator finds a known linear crossing within 1e-9 s, with its direction;
 - the timing verdict passes a 0.4 ms difference and fails a planted 1 ms shift, and fails when one
-  run has a crossing the other has not;
+  run has a crossing the other has not, or a crossing located between rows sparser than 1 ms;
 - the recovery time is the first row from which the trace stays inside, and a re-exit inside the
   window moves it;
 - the observed order of a second-order sequence is 2;
@@ -69,12 +69,18 @@ def test_the_crossing_locator_finds_a_known_crossing():
 
 
 def test_the_timing_verdict_fails_a_planted_shift_and_a_missing_crossing():
-    ref = [dict(time_s=1800.5, direction="up"), dict(time_s=1801.2, direction="down")]
-    close = [dict(time_s=1800.5004, direction="up"), dict(time_s=1801.2, direction="down")]
-    assert hj.timing_verdict(close, ref, 5e-4)["passed"]
-    shifted = [dict(time_s=1800.501, direction="up"), dict(time_s=1801.2, direction="down")]
-    assert not hj.timing_verdict(shifted, ref, 5e-4)["passed"]
-    assert not hj.timing_verdict(ref[:1], ref, 5e-4)["passed"]
+    def at(*times, spacing=1.0000000002e-3):  # 1 ms rows, as float labels near 1800 s read them.
+        directions = ("up", "down")[: len(times)]
+        pairs = zip(times, directions, strict=True)
+        return [dict(time_s=t, direction=d, spacing_s=spacing) for t, d in pairs]
+
+    rows = hj.CROSSING_ROW_SPACING_S
+    ref = at(1800.5, 1801.2)
+    assert hj.timing_verdict(at(1800.5004, 1801.2), ref, 5e-4, rows)["passed"]
+    assert not hj.timing_verdict(at(1800.501, 1801.2), ref, 5e-4, rows)["passed"]
+    assert not hj.timing_verdict(ref[:1], ref, 5e-4, rows)["passed"]
+    # Planted: the same times located between 10 ms rows take no 0.5 ms timing pass.
+    assert not hj.timing_verdict(at(1800.5, 1801.2, spacing=1e-2), ref, 5e-4, rows)["passed"]
 
 
 def test_the_recovery_time_and_a_re_exit():

@@ -33,6 +33,8 @@ Uses [Only boundary transfers change a region’s inventory during transport](tr
 
 **Open.** Change in the amount of a named chemical group inside a defined tissue region and its net passage across that boundary over the same interval.
 
+A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811)
+
 **Unit** fmol
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

@@ -108,6 +108,69 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
+  kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
+  cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
+  FreeEnergyEntry. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on
+  trials 4361bf5a and 8d4e5f92 (stacked on the symporter's).
+
+- **The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`
+  (19 November 2026; D228 item 1).** Merge 845ee670, tag `symporter-v1-landed-2026-11-19`. A
+  fuel-free factored cycle law on the transporter (n_Na from 1 to 4), cited to Coady et al. 2007
+  (abstract) for 2:1; the Xenopus lane's XC0 world needs it. Refused at a compartment's node, as
+  stated. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on trials
+  6875e1bb and 3c923f22.
+
+- **The presence gate hosts channel and face slots (19 November 2026; the operators owner's
+  GATED_SLOT_AXES follow-up).** Merge 79d0fc7c, tag `ops3-gated-slot-axes-landed-2026-11-19`. A kind
+  with presence on channel populations or faces is admitted beside a closer, which closes those
+  populations by their hosts; an own axis without `axis_hosts` stays refused. Gates: tiers 592
+  files with 0 changed, G1, crossrev 11 of 11, IDs +0, FR's set; the lead's merged check on trial
+  2daf2363.
+
+- **The kind contract's array-axes check and `Kind.dispatch_masks` (19 November 2026; D228 item
+  6).** Merge c545be8e, tag `f-axes-check-landed-2026-11-19`. Each kind field's array must match
+  its declared axes where @3 binds it; fields empty by static dispatch are named. With the
+  operators owner's three review changes and the proton leak's docstring correction. Gates: tiers
+  591 files with 0 changed, G1, crossrev 11 of 11, IDs +1, FR's set; the lead's merged check on
+  trial 8b595e5c.
+
+- **Cl⁻ in @3's channel populations: the always-open chloride leak `cells.clleak_always_open@1`
+  (19 November 2026; D228 item 3).** Merge 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`. @3's
+  valence table admits Cl⁻ at −1, and the planted test laws move to code 99. The Xenopus lane's
+  Cl⁻-only patch needs it. Gates: tiers 590 files with 0 changed, G1, crossrev 11 of 11, IDs +3,
+  FR's set; the lead's merged check on trial 7e125758.
+
+- **The third external review's five findings, fixed (19 November 2026).** Merge 560da6a0, tag
+  `review3-fixes-landed-2026-11-19`. Engine models touched: the transporter, passive routes, pH
+  condition and proton buffer kinds; `surface_pump_v3`; `scheduled_membrane_trafficking@1`.
+  - The general closure's proton is declared (proton_row), never inferred from a charge.
+  - FR-2 version 1 holds one receiving pool per cell; two routes of one cell are refused.
+  - @3's trace estimate counts every declared kind's saved rows, and an undercount is refused. FR's
+    landing-set verdict reads the planner's estimate as information.
+  - The transporter's probe reads the solver's own switch for its population-scaled fields.
+  - FR-8 stage 0's judges get their observations, with the registration's amendment 5.
+  - Gates: tiers 591 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +6, FR's set, R1
+    274 of 274; the lead's merged check on trial c3171354.
+
+- **FR-8 rung 0: the fine engine's order through a switch (19 November 2026). Registered verdict:
+  "instrument not validated". Under a blind amendment, the weaker evidence: the cause is the
+  pre-asymptotic transient.**
+  - **Engine model it runs:** `resolved_pump_tissue@3` alone. Development, not judged.
+  - **Evidence:** [the registration and results](validation/long_duration/RUNG0_20261119.md), the
+    windows' inputs (`rung0_20261119.json`) and condensed results (`rung0_results_20261119.json`).
+    Landed at 6cec0fc4, tag `fr8-rung0-landed-2026-11-19`.
+  - **The registered verdict stands:** the slow-phase control had no power, so no cause is
+    identified (§9.1).
+  - **Under amendment 1** (§9.2), a powered control registered blind before the main windows were
+    read: the instruments pass, and the order drop in stage 0's switch transient is (C), the
+    pre-asymptotic transient. The observed orders climb toward 2 as the step halves; NaV activation
+    goes from 1.26 at 1 ms to 1.98. The cue's discontinuity is not implicated.
+  - **Provenance after the fact** (§9.5): the windows start from R3's saved state under the
+    continuity design's rule (b). R3's digest was recorded afterwards, and all 43 importing arms
+    start bitwise equal to R3's rows.
+  - **Next:** rung 1 (N2 with the exponential junction-gate update, opt-in) after X2 lands.
+
 - **FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows;
   run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1.**
   - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`

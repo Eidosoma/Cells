@@ -86,8 +86,8 @@ test("the page's overlay holds the replication's entry and GARD's door, each sou
   assert.deepEqual(overlay.doors, [{ entry: "gard" }]);
   const entry = overlay.experiments["gap-junction-linear-network"];
   // Its runs open on the quantity the driver states beside each (concentration.json), else on the amount; the two forms' units are said, never converted.
-  // Its card on the landing opens on the part `opens.part` names (the tumour tissue's line, until the user says otherwise).
-  assert.deepEqual([entry.development, entry.outcome.judged, entry.summary, entry.opens], [true, false, "summary.json", { run: "figure5-network-g1", record: ["stated.concentration", "amount.mR"], layers: ["junction-coupling"], part: "gap-junction-tissue-line" }]);
+  // Its card on the landing opens on the part `opens.part` names (the tumour tissue's sheet since 19 November 2026, when the user asked for it; its line until then).
+  assert.deepEqual([entry.development, entry.outcome.judged, entry.summary, entry.opens], [true, false, "summary.json", { run: "figure5-network-g1", record: ["stated.concentration", "amount.mR"], layers: ["junction-coupling"], part: "gap-junction-tissue-sheet" }]);
   assert.match(entry.units, /the Norton form's runs in mM, the as-written runs in µM .* never converts one to the other\.$/);
   assert.match(entry.outcome.status, /^Development work, not judged/);
   assert.match(entry.plain, /^How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state, and how do the tumor's membrane voltage and connexin expression change that\?/);

@@ -11,7 +11,10 @@ lifecycle acts on every field it holds, checked in order:
    presence gate, the lead's ruling of 19 November 2026): a planted per-patch kind without
    presence stays refused, and the transporter declaring its three masks is admitted. Entity
    axes are F's (kind_registry.entity_axes): neither the shared axes, one set with F's, nor a
-   kind's internal axes, so a kind whose only extra axis is internal needs no presence.
+   kind's internal axes, so a kind whose only extra axis is internal needs no presence;
+4. every entity axis has a host the presence gate reads: @3's slot axes it closes (one list with
+   the gate's, surface_pump_v3.PRESENCE_SLOT_AXES, channel populations and faces included), or an
+   own axis's declared axis_hosts: a planted own axis without them stays refused.
 A planted kind with roles and axes and no per-entity field is admitted beside every slot changer.
 Beside a dividing closer, a kind's own entity axes wait for B2's own-axis maps (refused).
 @3's role table is converted once (Q4): structural fields fill with 0, and the pumps' history is
@@ -26,7 +29,7 @@ import pytest
 
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.models import pump_composite
+from cells.models import pump_composite, surface_pump_v3
 from cells.models import pump_composite_adapter as pump3
 from cells.operators import OPERATORS, partition
 from cells.registry import kind_registry
@@ -55,12 +58,61 @@ def carrier_with_roles():
     return dataclasses.replace(carrier, partition_roles=roles_for(carrier))
 
 
+def _shared_initial(spec, declaration, layout, *, bands=None):
+    """The shared carrier's species-only state and layout ([bands, species] for its rate where it
+    has a band axis internal to its law)."""
+    species = len(spec.model.species_ids)
+    state = dict(carrier_transferred=np.zeros(species), carrier_work_pJ=np.zeros(species))
+    rate = np.zeros(species if bands is None else (bands, species))
+    return state, dict(carrier_rate_fmol_s=rate)
+
+
+def _shared_rates(state, potentials, control, p, *, xp):
+    """The shared carrier moves nothing: no node change, derivative, heat or work."""
+    return kind_registry.KindRates(
+        cell=xp.zeros_like(state.amount_increment),
+        outside=xp.zeros_like(state.extracellular_amount_increment),
+        derivatives=dict(
+            carrier_transferred=xp.zeros_like(state.carrier_transferred),
+            carrier_work_pJ=xp.zeros_like(state.carrier_work_pJ),
+        ),
+        heat_pJ_s=xp.zeros(()),
+        work_pJ_s=xp.zeros(()),
+    )
+
+
+def _shared_ledger_terms(state, p, *, xp):
+    return dict(
+        cell=xp.zeros_like(state.amount_increment),
+        outside=xp.zeros_like(state.extracellular_amount_increment),
+        work_pJ=state.carrier_work_pJ,
+    )
+
+
+def _shared_domain(state, p, *, xp):
+    moved, work = state.carrier_transferred, state.carrier_work_pJ
+    return xp.all(xp.isfinite(moved) & (moved >= 0)) & xp.all(xp.isfinite(work))
+
+
 def shared_carrier():
     """The carrier with every field on shared axes (no entity) and its axes declared: a planted
-    kind the lifecycle need not act on."""
+    kind the lifecycle need not act on. Its state and layout are species-only to match those axes,
+    so it moves nothing and carries no current (F's array-axes check, D228 item 6: the review found
+    the carrier's species x patches arrays here)."""
     carrier = kf.carrier()
     state = tuple((name, ("species",)) for name, _ in carrier.state_axes)
-    flat = dataclasses.replace(carrier, state_axes=state)
+    flat = dataclasses.replace(
+        carrier,
+        state_axes=state,
+        initial=_shared_initial,
+        rates=_shared_rates,
+        ledger_terms=_shared_ledger_terms,
+        domain=_shared_domain,
+        readouts=lambda state, read, potentials, control, p, *, xp: (
+            xp.zeros_like(p.membrane_area),
+        ),
+        moved_rows=lambda declaration: (),
+    )
     kind = axed(flat, {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
     return dataclasses.replace(kind, partition_roles=roles_for(kind))
 
@@ -161,6 +213,9 @@ def test_a_kind_whose_only_extra_axis_is_internal_needs_no_presence():
         shared_carrier(),
         {"carrier_rate_fmol_s": ("carrier_band", "species"), "carrier_availability": ()},
         internal_axes=("carrier_band",),
+        initial=lambda spec, declaration, layout: _shared_initial(
+            spec, declaration, layout, bands=1
+        ),
     )
     assert kind_registry.entity_axes(kind) == () and pump3.kind_lifecycle_errors(kind) == ()
     for law in SLOT_CHANGERS:
@@ -693,11 +748,20 @@ def test_the_lifecycle_acts_along_one_entity_axis_its_last():
 
 def per_patch_carrier(transferred="history"):
     """The carrier with its two state fields per patch (its transfers, history unless given, and
-    its work, history), its rate and availability on shared axes."""
-    kind = axed(kf.carrier(), {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
+    its work, history), its rate per patch as its arrays hold it (F's array-axes check, D228 item
+    6), and its availability on shared axes."""
+    kind = axed(
+        kf.carrier(),
+        {"carrier_rate_fmol_s": ("species", "membrane_slot"), "carrier_availability": ()},
+    )
     roles = roles_for(kind, "intensive") | {
         "carrier_transferred": PartitionRole(transferred),
         "carrier_work_pJ": PartitionRole("history"),
+        # Its rate is per patch, set at its declared patch alone: structural (as declared), so
+        # each daughter patch keeps the 0 the carrier's initial values give every other patch.
+        # Intensive or extensive would claim the parent's rate there, which step C refuses. The
+        # fill pads only a state field's retired slot, so nothing reads it for this layout field.
+        "carrier_rate_fmol_s": PartitionRole("structural", 0.0),
     }
     return dataclasses.replace(kind, partition_roles=roles)
 
@@ -930,6 +994,10 @@ def _thaw(value):
 
 
 def _planted_slots(spec, axis):
+    """(capacity, slot ids) of one of @3's slot axes; a kind's own axis has none in the world (its
+    field takes its length from `bound_on`)."""
+    if axis not in SLOT_LISTS:
+        return None, []
     capacity, entities = SLOT_LISTS[axis]
     return getattr(spec.execution, capacity), [e.id for e in getattr(spec.model, entities)]
 
@@ -939,8 +1007,8 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
     their roles and axes declared, every value given slot by slot in its model block ({field: {slot:
     value}}, a control's value a schedule [[time, value], ...]). `bound_on` {field: axis or a
     length} binds a field along another axis than it declares, or with that many entries (a planted
-    shape; 0, no entities). `presence`: F's declaration, {entity axis: (field, ...)}. A structural
-    field with fill False is a bool mask. No state, rates or moves."""
+    shape; 0, no entities; an own axis's length). `presence`: F's declaration, {entity axis:
+    (field, ...)}. A structural field with fill False is a bool mask. No state, rates or moves."""
     bound_on = bound_on or {}
     layout = tuple(k for k, (what, _, _) in fields.items() if what == "layout")
     control = tuple(k for k, (what, _, _) in fields.items() if what == "control")
@@ -962,9 +1030,11 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
     def control_values(spec, declaration, times):
         values, out = dict(declaration), {}
         for name in control:
-            size, ids = _planted_slots(spec, fields[name][1])
+            _, ids = _planted_slots(spec, fields[name][1])  # As initial's layout: `bound_on`.
+            bound = bound_on.get(name, fields[name][1])
+            size = bound if isinstance(bound, int) else _planted_slots(spec, bound)[0]
             out[name] = np.zeros((len(times), size))
-            for slot, schedule in values.get(name, ()):
+            for slot, schedule in values.get(name, ()) if size else ():
                 for start, value in schedule:  # Piecewise constant, each point from its time on.
                     out[name][np.asarray(times) >= start, ids.index(slot)] = value
         return out
@@ -987,6 +1057,9 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
         partition_roles=MappingProxyType({k: role for k, (_, _, role) in fields.items()}),
         field_axes=MappingProxyType({k: (axis,) for k, (_, axis, _) in fields.items()}),
         presence=MappingProxyType({a: tuple(names) for a, names in (presence or {}).items()}),
+        # A field bound with no entries is empty by static dispatch, as the transporter's mask of
+        # a law its declaration leaves out (F's dispatch_masks, D228 item 6).
+        dispatch_masks=tuple(name for name, bound in bound_on.items() if bound == 0),
     )
 
 
@@ -1176,10 +1249,17 @@ def test_an_intensive_field_per_cell_or_per_contact_follows_its_map(planted, axi
 
 def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
     """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
-    the patches' 3); read along the patches' maps it would be compared at the wrong slots."""
+    the patches' 3); read along the patches' maps it would be compared at the wrong slots. F's
+    array-axes check refuses it where @3 binds the kind's initial values (D228 item 6), before
+    step C's own refusal (partition.check_kind_roles). F's check binds state and layout only, so
+    the availability, a control, bound per population reaches step C's refusal (planted)."""
     raw, _ = planted_world()
-    with pytest.raises(ConfigError, match=r"planted_km_mM binds shape \(6,\)"):
+    with pytest.raises(
+        ValueError, match=r"planted_km_mM's axis membrane_slot has length 6, not the host's 3"
+    ):
         planted(raw, bound_on={"planted_km_mM": "channel_slot"})
+    with pytest.raises(ConfigError, match=r"planted_availability binds shape \(\d+, 6\), whose"):
+        planted(raw, bound_on={"planted_availability": "channel_slot"})
 
 
 def test_nothing_is_bound_without_a_field_to_compare(planted, monkeypatch):
@@ -1238,10 +1318,14 @@ def test_presence_is_equal_at_the_daughters():
 
 
 def test_an_entity_axis_the_presence_gate_cannot_host_is_refused():
-    """The core's presence gate reads the activity of cells, outside nodes, patches and junctions
-    (kind_registry.AXIS_HOST_KINDS) and of an own axis's declared host. A kind with entities on
-    @3's channel slots (or faces) declaring presence there could not be closed, so it is refused
-    beside a closer, fail-closed (Q2's gate met the planted kind's channel_slot as a KeyError)."""
+    """The core's presence gate closes the entities of @3's slot axes, channel populations and
+    faces included (surface_pump_v3.PRESENCE_SLOT_AXES, one list with the lifecycle's), and of an
+    own axis through its declared host. So the planted kind with presence on patches and channel
+    populations is admitted beside the partition with no bypass, and the gate closes its
+    populations (it met their channel_slot as a KeyError before the @3 owner's batch). Planted: an
+    own axis with presence and no axis_hosts could not be closed, so it is refused beside a closer,
+    fail-closed."""
+    assert pump3.GATED_SLOT_AXES is surface_pump_v3.PRESENCE_SLOT_AXES
     raw, division = planted_world()
     rows = [x for p in division["populations"] for x in (p["parent"], *p["daughters"])]
     (patch,) = division["patches"]
@@ -1260,9 +1344,27 @@ def test_an_entity_axis_the_presence_gate_cannot_host_is_refused():
     }
     kind = planted_population(fields, presence=presence)
     assert kind_registry.declaration_errors(kind) == []
-    assert pump3.kind_lifecycle_errors(kind) == ("hosts", ("channel_slot",))
+    assert pump3.kind_lifecycle_errors(kind) == ()
     with kind_registry.scope(kf.registry(kind)):
-        with pytest.raises(ConfigError, match=r"entity axes \(channel_slot\) have no host"):
+        spec = parse_spec(raw)  # Admitted, no bypass.
+        model = get_model(spec.model)
+        _, p = model.initial_values(spec)
+        layout = model.inner.inner_layout(p)
+        gated = surface_pump_v3.presence_gated(layout, model.inner.implementation.structure, xp=np)
+        hosts = surface_pump_v3.entity_activity(kind, "channel_slot", layout, xp=np)
+        np.testing.assert_array_equal(
+            gated.planted_population_present, layout.planted_population_present & hosts
+        )
+    own = ("layout", "planted_site", PartitionRole("structural", False))
+    unhosted = planted_population(
+        dict(fields, planted_site_present=own),
+        bound_on={"planted_site_present": 2},
+        presence=dict(presence, planted_site=("planted_site_present",)),
+    )
+    assert kind_registry.declaration_errors(unhosted) == []
+    assert pump3.kind_lifecycle_errors(unhosted) == ("hosts", ("planted_site",))
+    with kind_registry.scope(kf.registry(unhosted)):
+        with pytest.raises(ConfigError, match=r"entity axes \(planted_site\) have no host"):
             parse_spec(raw)
 
 

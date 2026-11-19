@@ -1,0 +1,56 @@
+{
+ "interproscan-version": "5.78-109.0",
+ "results": [
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000009",
+     "name": "h1SMcG0000009"
+    }
+   ]
+  },
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000011",
+     "name": "h1SMcG0000011"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PR00405",
+      "signatureLibraryRelease": {
+       "library": "PRINTS",
+       "version": "42.0"
+      },
+      "entry": {
+       "accession": "IPR001164",
+       "type": "DOMAIN"
+      }
+     },
+     "model-ac": "PR00405"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000014",
+     "name": "h1SMcG0000014"
+    }
+   ]
+  },
+  {
+   "matches": [],
+   "xref": [
+    {
+     "id": "h1SMcG0000008",
+     "name": "h1SMcG0000008"
+    }
+   ]
+  }
+ ]
+}

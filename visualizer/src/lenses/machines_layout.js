@@ -115,8 +115,11 @@ export function membraneOf(size) {
 
 /**
  * The layout for a species' machines (Catalogue.of): trays in rows, the units of the law inventory
- * in one wide tray behind the others; in each tray its cards in a grid at the back, then its shapes
- * in front, standing in rows at their own sizes. `columns` is how many trays stand side by side.
+ * in one wide tray behind them, and behind that the trays of the groups the catalogue says stand
+ * behind (a group's `stands: "behind"`, with its reason beside it: a tray whose shapes are so large
+ * that, further forward, they would hide what stands behind them); in each tray its cards in a grid
+ * at the back, then its shapes in front, standing in rows at their own sizes. `columns` is how many
+ * trays stand side by side.
  */
 export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "ions" } = {}) {
   const byGroup = new Map();
@@ -125,7 +128,8 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
     byGroup.get(item.group).push(item);
   }
   const ordered = groups.filter((group) => byGroup.has(group.id));
-  const small = ordered.filter((group) => group.id !== ions), wide = ordered.filter((group) => group.id === ions);
+  const behind = ordered.filter((group) => group.id !== ions && group.stands === "behind");
+  const small = ordered.filter((group) => group.id !== ions && group.stands !== "behind"), wide = ordered.filter((group) => group.id === ions);
   const columnsUsed = Math.max(1, Math.min(columns, small.length || 1));
   // A tray is as wide as its widest row of shapes, its cards (three across) or its name, whichever is widest, and no
   // narrower than the least; each row of trays is centred; the tray of the law inventory's units is at least six cards wide.
@@ -138,11 +142,12 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
     const name = Math.max(...nameLines(group.label).map((line) => line.length)) * 0.56 * TRAY.name + 1.2;
     return Math.max(TRAY.least, 2 * TRAY.pad + Math.max(Math.min(row, 60), cards ? cardsWide(Math.min(cards, TRAY.across)) : 0, name));
   };
-  const rows = [];
+  const rows = [], backRows = [];
   for (let start = 0; start < small.length; start += columnsUsed) rows.push(small.slice(start, start + columnsUsed));
+  for (let start = 0; start < behind.length; start += columnsUsed) backRows.push(behind.slice(start, start + columnsUsed));
   const widthOf = (row) => row.reduce((sum, group) => sum + need(group), 0) + (row.length - 1) * TRAY.gap;
   const rowsWidth = Math.max(0, ...rows.map(widthOf));
-  const fullWidth = Math.max(rowsWidth, wide.length ? 2 * TRAY.pad + cardsWide(columns > 1 ? TRAY.wideAcross : 3) : 0);
+  const fullWidth = Math.max(rowsWidth, ...backRows.map(widthOf), wide.length ? 2 * TRAY.pad + cardsWide(columns > 1 ? TRAY.wideAcross : 3) : 0);
   const trays = [], placed = [];
   const fill = (group, width) => {
     const inside = width - 2 * TRAY.pad;
@@ -180,9 +185,9 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
     const lines = nameLines(group.label), head = headOf(lines);
     return { out, depth: z + 0.9 + head, head, lines };
   };
-  // The small trays, in rows from the front, each row centred; each row as deep as its deepest tray.
+  // A row of trays, centred, as deep as its deepest tray, behind what is placed already.
   let front = 0;
-  for (const row of rows) {
+  const place = (row) => {
     const filled = row.map((group) => ({ group, width: need(group), ...fill(group, need(group)) }));
     const depth = Math.max(...filled.map((tray) => tray.depth));
     let left = -widthOf(row) / 2;
@@ -193,7 +198,9 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
       left += tray.width + TRAY.gap;
     }
     front -= depth + TRAY.gap;
-  }
+  };
+  // The small trays, in rows from the front.
+  for (const row of rows) place(row);
   // The units of the law inventory: one tray as wide as the rows, behind them.
   for (const group of wide) {
     const tray = fill(group, fullWidth);
@@ -202,6 +209,8 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
     for (const entry of tray.out) placed.push({ ...entry, group: group.id, x: -fullWidth / 2 + TRAY.pad + entry.x, z: back + entry.z, y: TRAY.h });
     front -= tray.depth + TRAY.gap;
   }
+  // The trays that stand behind (the vault's): rows of their own at the very back, where nothing stands behind them to be hidden.
+  for (const row of backRows) place(row);
   const minX = -fullWidth / 2 - BENCH.pad, maxX = fullWidth / 2 + BENCH.pad;
   const maxZ = BENCH.pad + 6, minZ = front + TRAY.gap - BENCH.pad;
   const maxY = Math.max(TRAY.h + 1, ...placed.map((entry) => entry.y + entry.h));

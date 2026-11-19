@@ -1,0 +1,109 @@
+{
+ "source_id": "terms-interproscan-member-databases",
+ "record": {
+  "what": "Stand-ins for the saved terms pages: each holds only the words tools/read_planarian_scan.py checks, as the real page states them",
+  "licence": "Made up for the test"
+ },
+ "files": [
+  {
+   "name": "cath_license.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 131,
+   "sha256": "f8cf6498ea80a87132131dd84d69695465c0e2a76c980b3cfd9cdd5513fbe83e",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "hamap_about.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 149,
+   "sha256": "aee1a6d2f9cb3bfcdf1e4c65e94e638926760834e0218826efbe3523c402d6cf",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "interpro_antifam.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 82,
+   "sha256": "151c4d02abbfb1a6347745883941966117a101462726fc518cc66f34ecebc2bf",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "interpro_license.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 181,
+   "sha256": "5fe87fe4055ab6c6b8451a6dea477d44b178bb62024e5fdbf3a8ed509ae505b6",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "interproscan5_howtorun.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 91,
+   "sha256": "c7fedb01dd0c85eb1bb0880511a3c35c3f2e60062323a962f0f9cace384584c1",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "ncbi_cdd.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 123,
+   "sha256": "aa22877c87f0205a49331b3dd269dce3eaea2431a931bedb5faf52cdeaa14832",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "ncbi_tigrfams.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 101,
+   "sha256": "de8313ed4fae4888c94fc3c2e04b48435020ee976c85850e32f1fb052b23408a",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "panther_terms_from_browser.txt",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 110,
+   "sha256": "8000d4a1713c78c9077b31fc3f4ad8c78407e510c62adeb3efe309a402ef1859",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "pfam.html",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 85,
+   "sha256": "561813f82342f05de53bd5a227de01a2ae338651123463df6a1b47c6f51f9d97",
+   "ok": true,
+   "error": null
+  }
+ ],
+ "note": "Made up for tests/planarian_scan.test.mjs; not a download."
+}

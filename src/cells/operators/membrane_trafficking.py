@@ -6,7 +6,8 @@ following the patches. Version 1 is:
 * R2: the retrieved membrane keeps its charge (R1, which strips it, is an artefact and has no
   declaration);
 * F0: no fluid moves;
-* D1: one lumped, well-mixed pool per route, declared with the world as an FR-1 compartment;
+* D1: one lumped, well-mixed receiving pool per cell (D217), declared with the world as an FR-1
+  compartment, so one route per cell (a cell's other compartments stay declared, with no route);
 * retrieval and recycling: one law's two schedules;
 * P0: internalised channel units are silent, held in this operator's record;
 * E2: no fuel draw for the machinery. The version claims no total trafficking energy and no
@@ -72,6 +73,8 @@ Refused at the definition, each with its reason:
 * a route's compartment that is undeclared;
 * a plasma patch that is undeclared, is not the owner's, or is a compartment's bounding patch;
 * two routes on one compartment or one plasma patch: version 1's routes are disjoint;
+* two routes of one cell, each into its own compartment: D1's one pool per cell (two pools would
+  keep two recycling histories for one cell's membrane);
 * carriers that are not distinct charged rows with transference numbers t_s > 0 summing to 1;
 * enrichments and records that do not name exactly the populations on the plasma patch, each
   finite and >= 0;
@@ -414,8 +417,9 @@ def compartment_map(spec):
 
 def resolved_routes(spec, declaration):
     """((route, plasma patch, pool patch, compartment), ...), each route checked against the
-    compartments' declaration (host). The composite binds before it runs the operators' definition
-    checks, so binding calls this too, and every refusal here fires with its reason."""
+    compartments' declaration, and at most one route per owner cell (D1) (host). The composite
+    binds before it runs the operators' definition checks, so binding calls this too, and every
+    refusal here fires with its reason."""
     pools = compartment_map(spec)
     bounding = {c.patch for c in pools.values()}
     membranes = {p.id: p for p in spec.model.membranes}
@@ -440,6 +444,14 @@ def resolved_routes(spec, declaration):
                 "bounding patch; trafficking between compartments is later work"
             )
         out.append((route, plasma, membranes[pool.patch], pool))
+    owners = [pool.owner for *_, pool in out]
+    shared = next((owner for owner in owners if owners.count(owner) > 1), None)
+    if shared is not None:
+        raise ConfigError(
+            f"{LAW_ID}: two routes fill receiving pools of one cell, {shared!r}; version 1 holds "
+            "one lumped, well-mixed receiving pool per cell (D1, D217), so a cell has one route "
+            "(its other compartments stay declared, with no route)"
+        )
     return tuple(out)
 
 

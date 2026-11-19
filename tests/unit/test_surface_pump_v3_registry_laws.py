@@ -2,9 +2,9 @@
 
 A definition may name any channel law the active law registry holds for @3, while today's five
 (codes 0-4) stay the full catalogue's. Each claim with a planted error (D187), on a planted law
-registered in a test-local registry (`tests.kv_planted@1`: code 10, K only, gates m and h, the
-Kv1.5 kernels, an RK4 bound of 2.5 us), as the five Kv1 laws are (codes 5-9, registered since the
-Kv1 trigger):
+registered in a test-local registry (`tests.kv_planted@1`: code 99, reserved for plants, K only,
+gates m and h, the Kv1.5 kernels, an RK4 bound of 2.5 us), as the five Kv1 laws are (codes 5-9,
+registered since the Kv1 trigger); the chloride leak holds code 10:
 - the parser's tables are the registry's, and today's five are unchanged by a registered law;
 - a population of the registered law binds with its code and runs on the declared structure's
   dispatch, its gates relaxing by the law's own kinetics;
@@ -39,12 +39,13 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 
 PLANTED = "tests.kv_planted@1"
 KV1_CODES = {"kv1p1_mh2@1": 5, "kv1p2_mh@1": 6, "kv1p3_mh@1": 7, "kv1p4_mh@1": 8, "kv1p6_mh@1": 9}
+CL_CODES = {"clleak_always_open@1": 10}  # The always-open Cl⁻ leak, gate-free (D228 item 3).
 BOUND_S = 2.5e-6
 
 
 def planted_law():
     kv1p5 = inner_laws.CHANNEL_LAWS[spec_v3.KV1P5_LAW_ID]
-    return dataclasses.replace(kv1p5, law_id=PLANTED, code=10, rk4_step_s=BOUND_S)
+    return dataclasses.replace(kv1p5, law_id=PLANTED, code=99, rk4_step_s=BOUND_S)
 
 
 def scoped():
@@ -75,14 +76,19 @@ def with_planted(raw, *, gate=(0.2, 0.9)):
 
 def test_the_parsers_tables_are_the_registrys_and_todays_five_stay():
     # Today's five rows, then the Kv1 pilot's five (K only, gates m and h), registered.
-    assert spec_v3.law_codes() == {**spec_v3.LAW_CODES, **KV1_CODES}
+    assert spec_v3.law_codes() == {**spec_v3.LAW_CODES, **KV1_CODES, **CL_CODES}
     assert spec_v3.law_permeabilities() == {
         **spec_v3.LAW_PERMEABILITIES,
         **dict.fromkeys(KV1_CODES, (("K", 1.0),)),
+        **dict.fromkeys(CL_CODES, (("Cl", 1.0),)),
     }
-    assert spec_v3.gate_counts() == {**spec_v3.GATE_COUNTS, **dict.fromkeys(KV1_CODES, 2)}
+    assert spec_v3.gate_counts() == {
+        **spec_v3.GATE_COUNTS,
+        **dict.fromkeys(KV1_CODES, 2),
+        **dict.fromkeys(CL_CODES, 0),
+    }
     with scoped():
-        assert spec_v3.law_codes() == {**spec_v3.LAW_CODES, **KV1_CODES, PLANTED: 10}
+        assert spec_v3.law_codes() == {**spec_v3.LAW_CODES, **KV1_CODES, **CL_CODES, PLANTED: 99}
         assert spec_v3.gate_counts()[PLANTED] == 2
         assert spec_v3.law_permeabilities()[PLANTED] == (("K", 1.0),)
     assert len(spec_v3.LAW_CODES) == 5 and PLANTED not in spec_v3.law_codes()
@@ -98,7 +104,7 @@ def test_a_registered_law_binds_with_its_code_and_runs_on_the_declared_dispatch(
         assert PLANTED in impl.structure.declared_channel_laws
         state, p = impl.initial_values(spec)
         slot = [c.id for c in spec.model.channels].index("kv_planted_0")
-        assert p.channel_laws[slot] == 10
+        assert p.channel_laws[slot] == 99
         control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
         end, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
         assert valid
@@ -199,7 +205,7 @@ def test_todays_five_tables_are_the_registrys_rows_with_todays_values():
     assert dict(spec_v3.GATE_COUNTS) == TODAYS_GATES
     assert v3.PADDING_FILL_LAW == spec_v3.KV1P5_LAW_ID
     with scoped():  # A registered law joins the registry's tables, never today's five.
-        assert spec_v3.law_codes()[PLANTED] == 10
+        assert spec_v3.law_codes()[PLANTED] == 99
         assert PLANTED not in spec_v3.LAW_CODES and len(spec_v3.LAW_CODES) == 5
         assert dict(spec_v3.LAW_CODES) == TODAYS_CODES
         assert dict(spec_v3.GATE_COUNTS) == TODAYS_GATES

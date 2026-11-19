@@ -29335,6 +29335,18 @@
    "url": "https://www.uniprot.org",
    "licence": "CC BY 4.0",
    "class": "permissive"
+  },
+  "uniprot_signatures": {
+   "text": "UniProtKB's lists of the entries of the reference proteome of Arabidopsis thaliana that carry InterPro entry IPR039059, saved in machines-expansion/uniprot-vault-family-counts-e1.",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
   }
+ },
+ "vault_looked": {
+  "words": "UniProt's list of the entries of the reference proteome of Arabidopsis thaliana that carry IPR039059 is empty, and no reviewed entry of the species names the vault particle.",
+  "sources": [
+   "uniprot_signatures"
+  ]
  }
 }
