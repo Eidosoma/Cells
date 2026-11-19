@@ -54,6 +54,7 @@ from cells.models.assembly_lineages_v2 import (
     permeation,
     population,
     regular_mixing,
+    transfer,
     transition_state,
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
@@ -83,7 +84,10 @@ HOMES = {
     # OL2 milestone 3.
     SHARED_POOL: (population, interfaces.PopulationStructure, POPULATION_INTERFACE, None),
 }  # fmt: skip
-OPERATORS = {SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE)}  # OL3
+OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
+    SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+}
 
 
 def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():

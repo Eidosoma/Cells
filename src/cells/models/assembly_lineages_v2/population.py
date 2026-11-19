@@ -353,6 +353,8 @@ class _Context:
         self.generation = np.zeros(self.K, dtype=np.int64)
         self.fission_counter = {}
         self.attempts, self.stops, self.lyses, self.lives = [], [], [], []
+        self.by_index = {s.index: s for s in spec.experiment.schedules}
+        self.transfers, self.transfer_counter, self.schedule_draws = [], {}, []
         self.life_of = {}  # slot -> index into lives
         for k in np.flatnonzero(state.alive):
             self._born(k, int(state.keys[k]), 0.0, "founder", "", int(k), "")
@@ -411,6 +413,7 @@ def run(spec):
     ctx = _Context(spec, layout, state, len(founders))
     horizon = spec.experiment.time_horizon_s
     plan, schedule_draws = single._plan(spec, layout.base_key)
+    ctx.schedule_draws = list(schedule_draws)
     stream = streams.stream_key_data(layout.base_key, streams.WORLD_CARRIER, "world")
     zero = np.float64(0.0)
     lane = Lane(state.pool, state.slots, state.alive, zero, np.int64(0), np.int64(0),
@@ -469,7 +472,7 @@ def run(spec):
     if end_status is not None:
         final = host
     return _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, draws,
-                     schedule_draws, final, end_status, world_f, run_seconds)  # fmt: skip
+                     ctx.schedule_draws, final, end_status, world_f, run_seconds)  # fmt: skip
 
 
 def _lyse(world, layout, state, ctx, world_f, s, time, n_events, at_birth=False):
@@ -498,6 +501,9 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
     world = spec.model.world
     places = len(world.places)
     for event in stop_events:
+        if ctx.by_index[event[1]].kind == "transfer":
+            _transfer(spec, layout, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
+            continue
         k = event[2]
         for s in [int(x) for x in np.flatnonzero(state.alive)]:
             parent = int(state.keys[s])
@@ -575,6 +581,50 @@ def _release(world, layout, state, s):
     state.slots[s] = 0
     state.alive[s] = False
     return {"returned": returned, "release_reservoir_work_kT": work, "sigma_N_per_m": sigma}
+
+
+def _transfer(spec, layout, state, ctx, world_f, time, schedule, n_events):
+    """A serial transfer on the host (transfer.py): the kept sample, the removed lives, the fresh
+    pool, and their booking (the sink, the schedule's work column)."""
+    from cells.models.assembly_lineages_v2 import transfer
+
+    world = spec.model.world
+    living = [int(x) for x in np.flatnonzero(state.alive)]
+    counter = ctx.transfer_counter.get(schedule.index, 0)
+    kept, drawn, ctx.transfer_counter[schedule.index] = transfer.sample(
+        layout.base_key, schedule, counter, living, schedule.keep
+    )
+    ctx.schedule_draws += drawn
+    empty = state.copy()
+    empty.alive[:] = False
+    pool_f = world_f(empty)
+    removed = [s for s in living if s not in kept]
+    vesicles = []
+    for s in removed:
+        alone = empty.copy()
+        alone.alive[s] = True
+        vesicles.append(world_f(alone) - pool_f)
+    sink = float(np.sum(vesicles)) + pool_f
+    event = f"event:transfer/{len(ctx.transfers)}"
+    for s in removed:
+        ctx.end(s, time, "removed", event)
+        state.slots[s], state.alive[s], state.keys[s], ctx.lineage[s] = 0, False, -1, -1
+    finite = np.zeros(state.pool.size, dtype=bool)
+    finite[[i for i, p in enumerate(world.places) if p.phase == "pool" and not p.held]] = True
+    state.pool = np.where(
+        finite, transfer.fresh_vector(world, schedule, state.pool.size), state.pool
+    )
+    empty = state.copy()
+    empty.alive[:] = False
+    work = world_f(empty)
+    ctx.extra[E_SINK] += sink
+    ctx.extra[E_TRANSFER] += work
+    ctx.extra[EXTRA + ctx.columns.index(schedule.index)] += work
+    ctx.extra[E_MAG] += abs(sink) + abs(work)
+    ctx.transfers.append({"id": event, "time_s": time, "schedule": schedule.index,
+                          "draws": [list(d[:3]) for d in drawn], "kept": kept,
+                          "removed": removed, "sink_kT": sink, "work_kT": work})  # fmt: skip
+    ctx.stops.append((n_events, TRANSFER, time, state.copy(), ctx.extra.copy()))
 
 
 def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, draws,
@@ -710,6 +760,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "lives": sorted(ctx.lives, key=lambda x: (x["birth_time"], x["key"])),
         "fissions": fissions,
         "schedule_draws": schedule_draws,
+        "transfers": ctx.transfers,
         "reads": "one world-level SSA (cells.shared_pool@1); each lysis frees its slot, and the "
         "world goes on; every daughter lives",
     }

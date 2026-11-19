@@ -387,12 +387,14 @@ def _population_record(run):
     """run.json's `population` block (population runs only): the report less its tables."""
     report = run.population
     out = {k: report[k] for k in ("slots", "founders", "lyses", "draws", "schedule_columns",
-                                  "reads")}  # fmt: skip
+                                  "transfers", "reads")}  # fmt: skip
     fissions = report["fissions"]
     if fissions is not None:
         outcomes = fissions["fission_outcome"].tolist()
         out["outcomes"] = {o: outcomes.count(i) for i, o in enumerate(division.POPULATION_OUTCOMES)}
-    out["schedule_draws"] = [list(d) for d in report["schedule_draws"]]
+    out["schedule_draws"] = [  # (index, counter, uniform, use, a gap's time or null)
+        [*d[:4], None if d[4] != d[4] else d[4]] for d in report["schedule_draws"]
+    ]
     out["payers"] = (
         "schedule_work_kT's column c is paid by the schedule whose declared index is "
         "schedule_columns[c] (source:shear/<index> or source:transfer/<index>); shear_work_kT is "
@@ -456,6 +458,13 @@ def population_tables(directory, run):
                       source=f"source:shear/{int(fissions['fission_schedule'][r])}")
             for r in np.flatnonzero(fissions["fission_outcome"] == 0)
         ]  # fmt: skip
+    from cells.models.assembly_lineages_v2.transfer import SERIAL_TRANSFER
+
+    events += [
+        rel.Event(t["id"], t["time_s"], "transfer", SERIAL_TRANSFER, scheduled=True, step=-1,
+                  source=f"source:transfer/{t['schedule']}")
+        for t in run.population["transfers"]
+    ]  # fmt: skip
     events += [
         rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
                   at=life.id, source="")
@@ -467,7 +476,9 @@ def population_tables(directory, run):
     sources, records = [], {}
     if run.population["schedule_columns"]:
         sources = [
-            rel.Source(f"source:shear/{s.index}", "schedule", "energy", SHEAR_FISSION,
+            rel.Source(f"source:{s.kind}/{s.index}", "schedule",
+                       "energy" if s.kind == "shear" else "substrate",
+                       SHEAR_FISSION if s.kind == "shear" else SERIAL_TRANSFER,
                        payer_of="schedule_work_kT")
             for s in run.spec.experiment.schedules
         ]  # fmt: skip

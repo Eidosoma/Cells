@@ -216,7 +216,7 @@ def _plan(spec, base_key):
     """(stops, schedule draws): a division world's schedule stops, [(time, [its events, in
     schedule-index order])], at or before the horizon (§0.2d item 10.1), and its schedules' draws
     (Poisson gaps); ([], []) for any other world."""
-    if spec.model.world.division is None:
+    if not spec.experiment.schedules:
         return [], []
     events, draws = division.timeline(
         spec.experiment.schedules, spec.experiment.time_horizon_s, base_key

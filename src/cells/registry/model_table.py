@@ -153,7 +153,10 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.lumen",
                 "cells.models.assembly_lineages_v2.population",
             ),
-            operator_homes=("cells.models.assembly_lineages_v2.division",),
+            operator_homes=(
+                "cells.models.assembly_lineages_v2.division",
+                "cells.models.assembly_lineages_v2.transfer",
+            ),
             interfaces=(
                 "cells.reaction_law@1",
                 "cells.rate_factor_law@2",

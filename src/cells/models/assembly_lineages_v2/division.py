@@ -95,24 +95,38 @@ class Schedule:
     its times: declared (times), or a Poisson process of rate `rate` (1/s) drawn per run."""
 
     index: int
-    kind: str
-    k: int
+    kind: str  # "shear" or "transfer"
+    k: int | None
     times: tuple | None
     rate: float | None
     stress: float | None
+    keep: int | None = None  # a transfer's K_keep
+    fresh: tuple | None = None  # a transfer's fresh pool: one count per finite pool place
 
 
 def parse_schedules(raw, world):
     """The experiment's shear schedules (Schedule), by index."""
     if type(raw) is not list or not raw:
         raise ConfigError("experiment: schedules is a non-empty list")
-    if world.division is None:
-        raise ConfigError("experiment: a shear schedule needs the world's division block")
-    critical = world.division["critical_stress_Pa"]
+    critical = None if world.division is None else world.division["critical_stress_Pa"]
     out, seen = [], set()
     for entry in raw:
+        if isinstance(entry, dict) and entry.get("kind") == "transfer":
+            from cells.models.assembly_lineages_v2 import transfer
+
+            schedule = transfer.parse(entry, world)
+            if schedule.index in seen:
+                raise ConfigError("experiment: schedule indices are unique")
+            seen.add(schedule.index)
+            out.append(schedule)
+            continue
         if not isinstance(entry, dict) or entry.get("kind") != "shear":
-            raise ConfigError("experiment: a schedule is {index, kind: shear, k, times_s, ...}")
+            raise ConfigError(
+                "experiment: a schedule is {index, kind: shear, k, times_s, ...} or "
+                "{index, kind: transfer, times_s, K_keep, fresh_pool}"
+            )
+        if world.division is None:
+            raise ConfigError("experiment: a shear schedule needs the world's division block")
         timing = {"poisson_rate_per_s"} if "poisson_rate_per_s" in entry else {"times_s"}
         keys = {"index", "kind", "k"} | timing | ({"stress_Pa"} if critical else set())
         if set(entry) != keys:
@@ -148,7 +162,7 @@ def parse_schedules(raw, world):
     first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
     for s in out:
         index = s.index
-        for t in s.times or ():
+        for t in (s.times or ()) if s.kind == "shear" else ():
             if t in first:
                 raise ConfigError(
                     f"experiment: shear schedules {first[t]} and {index} share the time {t} s; "
@@ -161,6 +175,10 @@ def parse_schedules(raw, world):
 def schedule_to_dict(schedules):
     out = []
     for s in schedules:
+        if s.kind == "transfer":
+            out.append({"index": s.index, "kind": s.kind, "times_s": list(s.times),
+                        "K_keep": s.keep, "fresh_pool": list(s.fresh)})  # fmt: skip
+            continue
         entry = {"index": s.index, "kind": s.kind, "k": s.k}
         if s.times is not None:
             entry["times_s"] = list(s.times)

@@ -21,7 +21,11 @@ Each claim with a planted error it must catch (D187):
 - P6: in a population every daughter lives: daughter 0 keeps its parent's slot and the parent's
   counter, the others take free slots in slot order and open sub-lineages in world event order;
   too few free slots stop the run `slots_full` before the draw; each schedule pays its own column
-  (planted: a key rule that numbers the second daughter's sub-lineage by generation differs).
+  (planted: a key rule that numbers the second daughter's sub-lineage by generation differs);
+- P7: a transfer keeps the K_keep smallest of one uniform per living assembly (its own draws on the
+  schedule's stream), removes the rest, refreshes the pool, books the sink and its work column, and
+  the books close (planted: keeping the largest picks other slots); the fresh pool above c_ext is
+  refused.
 
 World-compiling cost: one program (the division test's world, three runs of one structure); its
 seconds on the timed lane are stated with its tier row. Reason: the record is the run's own.
@@ -299,3 +303,36 @@ def test_every_daughter_lives_and_too_few_slots_stop_the_run(tmp_path):
     descriptor, tables = rel.read(tmp_path / "s")
     assert descriptor["format"] == rel.FORMAT_V2
     assert sum(1 for e in tables["events"] if e.kind == "fission") == 2
+
+
+def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
+    from cells.models.assembly_lineages_v2 import transfer
+
+    founders = [dict(FOUNDER, **{"L@membrane": n}) for n in (8, 9, 10)]
+    schedules = [{"index": 4, "kind": "transfer", "times_s": [1.0], "K_keep": 1,
+                  "fresh_pool": [5, 2, 0]}]  # fmt: skip
+    s = pop_spec(founders, 4, schedules=schedules, horizon=2.0)
+    run = runner.run(s).check()
+    (t,) = run.population["transfers"]
+    layout = model.layout(s)
+    key = streams.stream_key_data(layout.base_key, 4, "schedule")
+    us = [float(np.asarray(streams.uniforms(key, c, 1))[0]) for c in range(3)]
+    assert [d[2] for d in t["draws"]] == us and [d[1] for d in t["draws"]] == [0, 1, 2]
+    assert t["kept"] == [int(np.argmin(us))]  # the smallest; planted: the largest differs
+    assert t["kept"] != [int(np.argmax(us))]
+    assert sorted(t["removed"]) == sorted(set(range(3)) - set(t["kept"]))
+    rows = run.rows
+    after = np.flatnonzero(rows["row_kind"] == population.TRANSFER)[0]
+    assert rows["pool_count"][after, :3].tolist() == [5, 2, 0]  # the fresh pool
+    assert rows["schedule_work_kT"][after, 0] == pytest.approx(t["work_kT"], rel=1e-12)
+    assert rows["discarded_free_energy_kT"][after] == pytest.approx(t["sink_kT"], rel=1e-12)
+    assert run.closure["holds"]
+    ends = {life["key"]: life["end_reason"] for life in population.lives(run)}
+    assert sorted(ends.values()).count("removed") == 2
+    records.write_run(tmp_path / "t", run)
+    descriptor, tables = rel.read(tmp_path / "t")
+    assert sum(1 for e in tables["events"] if e.kind == "transfer") == 1
+    with pytest.raises(ConfigError, match="exceed c_ext"):
+        too_many = [dict(schedules[0], fresh_pool=[10**9, 0, 0])]
+        pop_spec(founders, 4, schedules=too_many)
+    assert transfer.SERIAL_TRANSFER == "cells.serial_transfer@1"
