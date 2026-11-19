@@ -1,5 +1,25 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Passive neutral permeation
+
+For `passive_neutral_permeation@1`, the zero-valence specialization of the existing constant-field theorem gives inward flux `J = scale × (cOut − cIn)` at any voltage. In a closed pair of fixed positive volumes, the outside-minus-inside concentration difference changes at rate `−k × (cOut − cIn)`, with `k = scale × (1/vIn + 1/vOut)`. The three Lean theorems use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. [Neutral proof](CellsProofs/Transport/NeutralPermeation.lean) · [Engine law](../src/cells/laws/routes/passive_permeation.py#L43) · [Tissue rate bound at full opening](../src/cells/kinds/passive_routes.py#L553)
+
+Five compiled CPU float64 cases exercised both directions, equilibrium, a blocked route and partial opening. With 1 fmol inside 0.5 pL and 2 fmol outside in 2 pL, the solute flowed outward at 50 fmol/s. Following the amount difference would reverse that result. In a separate 20 ms `resolved_pump_tissue@3` run, both final compartment amounts agreed with the independent closed-form solution within the existing relative tolerance. The driver took 9.94 s on four cores and three existing tests passed in 12.21 s. Biological measurements of neutral-solute flux remain open. [Driver](checks/neutral_permeation.py) · [Analytic reference](../validation/passive/passive_reference.py#L66) · [Tissue fixture and tolerance](../tests/unit/test_passive_routes_kind.py#L64)
+
+```json
+{
+  "engine_revision": "f130a109ad8861ce114f0f6fea3ece524465e80f",
+  "model": "resolved_pump_tissue@3", "law": "passive_neutral_permeation@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 5,
+  "max_flux_error_fmol_s": 7.105427357601002e-15,
+  "unequal_volume_inward_flux_fmol_s": -49.999999999999986,
+  "end_s": 0.02, "reference_rate_per_s": 99.99999999999999,
+  "inward_transfer_fmol": -0.0002160443856244789, "reference_transfer_fmol": -0.00021616617919084682,
+  "max_final_amount_error_fmol": 1.2179356636795365e-7,
+  "max_final_amount_relative_error": 0.0001700632756849268, "final_amount_rtol": 5e-4
+}
+```
+
 ## 19 November 2026 · Biological evidence review
 
 The first literature handoff covered 11 of the 12 claims registered at review time. The reaction time courses below give a direct comparison of two measured pools. At this checkpoint, 11 biological claims were open and the retrospective RPTEC comparison was not assessable. [Claim index](README.md#proof-index) · [RPTEC closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
