@@ -42,6 +42,8 @@ For the catalyst claim, Leventis and Silvius measured cholesterol exchange betwe
 
 The 18 public theorems compiled with only `propext`, `Classical.choice` and `Quot.sound`. The full comparison took 31.21 s on two CPU cores, the controls-only comparison passed in 33.06 s, and the confined-binding comparison took 2.31 s. The nine existing assembly kernel tests and the 82 repository guards passed. [Existing kernel tests](../tests/unit/test_assembly_lineages_v2_kernel.py) · [Confined-binding driver](checks/confined_binding.py)
 
+Test discovery returned the same 20,308 test IDs and the same five missing-fixture errors before and after the proof checkpoint. The live registry resolved both new claims, and all five documentation-generator tests passed. [Proof and evidence checkpoint](https://github.com/Eidosoma/Cells/commit/cb4194144bdccd3c4ce4fc24c28979d91a3943a8)
+
 ## 19 November 2026 · Ideal and regular assembly mixing
 
 For the two mixing laws in `cells.assembly_lineages@2`, adding one molecule of species A costs an ideal mixing energy whose exponential, relative to the membrane standard state, is (a + 1)/(N + 1 − c). Here a is the count of A, N is the total membrane count, and c is 0 or 1 for the two registered measures. The formula holds for N ≥ c. Lean also checks the empty membrane, the first molecule’s energy and the cost of transferring one molecule from a finite dilute pool. At positive N the two membrane free energies differ by ln N. Event admission at extinction follows the world's boundary rule. [Lean derivation](CellsProofs/Chemistry/AssemblyMixing.lean) · [Ideal energy and increment](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64)

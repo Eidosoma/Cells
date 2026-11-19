@@ -106,6 +106,39 @@
       "driver": "lean/checks/assembly_mixing.py",
       "record": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing"
     },
+    "assembly-kinetics": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.stochastic_mass_action@1", "cells.transition_state_factor@1", "cells.ideal_mixing@1", "cells.regular_mixing@1"],
+      "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+      "record_revision": "cb4194144bdccd3c4ce4fc24c28979d91a3943a8",
+      "sources": {
+        "Ordered draws and cancelled membrane denominator": "src/cells/models/assembly_lineages_v2/mass_action.py#L76",
+        "Rate factor on the common state": "src/cells/models/assembly_lineages_v2/transition_state.py#L130",
+        "Forward and reverse rate assembly": "src/cells/models/assembly_lineages_v2/kernel.py#L254",
+        "Inert status for zero total propensity": "src/cells/models/assembly_lineages_v2/kernel.py#L463",
+        "World balance probe": "src/cells/models/assembly_lineages_v2/balance.py#L74",
+        "Independent rational draw and factor": "validation/ool/references/laws.py#L222",
+        "Independent rate tolerance": "validation/ool/references/detailed_balance.py#L191",
+        "Registered boundary world": "validation/ool/references/designs/ol1_boundary.world.json"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+    },
+    "confined-binding": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.stochastic_mass_action@1", "cells.ideal_mixing@1"],
+      "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+      "record_revision": "cb4194144bdccd3c4ce4fc24c28979d91a3943a8",
+      "sources": {
+        "Pool encounters": "src/cells/models/assembly_lineages_v2/mass_action.py#L102",
+        "Concentration extent": "src/cells/models/assembly_lineages_v2/model.py#L51",
+        "Pool standard potential and factorial": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64"
+      },
+      "driver": "lean/checks/confined_binding.py",
+      "record": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+    },
     "gard-catalysis": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@1"],
@@ -788,6 +821,99 @@
             "assessment": "At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
           }
         ]
+      }
+    },
+    {
+      "id": "assembly-stochastic-encounter",
+      "title": "Finite molecule counts set stochastic encounter rates and paired event heat",
+      "statement": "A molecular encounter draws from the available counts without replacement. For a regular, finite two-way edge with a common locus extent and catalyst factor, log(forward rate / reverse rate) equals minus the free-energy change plus held-reservoir work. At full membrane consumption the declared cancellation determines the boundary rate.",
+      "assumptions": [
+        "Counts and reaction coefficients are natural numbers. The engine admits at most three reactants or products per side. The factorial identity holds for any finite integer order.",
+        "For the regular pair identity the residual membrane count after drawing all reactants is at least the measure offset. At offset one, full consumption without a shared participant uses the cancelled denominator. Overlap at full order can give a singular rate. The kept, extinct and reversible tokens govern which boundary events can fire.",
+        "The occupancy specialization uses one R molecule, distinct G partners, an ideal dilute pool and two reversible states at fixed volume."
+      ],
+      "uses": ["assembly-ideal-mixing", "single-site-binding"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.repeated_pair": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.log_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.encounter_energy": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.pair_heat": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.membrane_cancel": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.last_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.boundary_encounter_energy": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.singular_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.occupancy_by_count": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "about": ["cells.stochastic_mass_action@1"],
+        "sources": {
+          "Imported Mathlib falling-factorial identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-kinetics", "confined-binding"],
+        "result": "The reference and engine agreed on ordinary rates and zero and singular patterns across 594 compositions under both count measures. Three boundary conventions were checked on six additional states. The pool kernel reproduced the two-state occupancy formula at one, two and three partners."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bound probability for one molecule as the integer count of its distinct partner changes, and association events for identical reactants at known counts.",
+        "unit": "probability",
+        "finding": "For identical membrane partners, live-cell homodimer imaging measured a 91 ± 16 ms lifetime. It reported surface densities, leaving the repeated-reactant draw at fixed small counts open. [Kasai et al., Figs. 4–6](https://doi.org/10.1083/jcb.201009128)",
+        "evidence": [
+          {
+            "dataset_id": "shon2012_confined_binding@1",
+            "manifest": "lean/checks/data/shon2012_confined_binding.json",
+            "citation": "Shon and Cohen (2012), Fig. 4f",
+            "doi": "10.1021/ja3062425",
+            "locator": "Experimental grey bars for one dimer in the three classes with one red strand, at 250 nm radius. Table 1 and Fig. S8 provide the kinetic and independent bulk estimates.",
+            "context": "Red- and green-labelled complementary strands confined in sealed dimples. Each class fixes the counts of the two distinct partners.",
+            "role": "held_out_from_fitting",
+            "fit": ["One red molecule and one green partner"],
+            "evaluation": ["One red molecule and two green partners", "One red molecule and three green partners"],
+            "uncertainty": "The probabilities are approximate figure readings. Numerical uncertainties for the bars are unavailable. The one-partner calibration removes the common chamber volume. A separate calculation using bulk Kd depends appreciably on the volume estimate.",
+            "assessment": "From one partner’s measured 0.48 bound probability, Cells predicted 0.649 and 0.735 with two and three partners. The figure gives about 0.64 and 0.67, respectively.",
+            "report": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assembly-transition-state-factor",
+      "title": "A common catalyst factor preserves reversible rate ratios and equilibrium weights",
+      "statement": "On a positive reversible edge, catalysis preserves the forward-to-reverse rate ratio exactly when both rates receive the same multiplier. The transition-state law assigns a positive factor from the molecules common to both endpoints. The same equilibrium weights then balance the edge.",
+      "assumptions": [
+        "The stabilizations are finite, dimensionless contact energies in kBT. A nonempty common membrane uses its molecular fractions. An empty common membrane has factor 1.",
+        "The rate-ratio identity refers to an available two-way transition. The equilibrium statement assumes the original rates and weights obey detailed balance on each edge."
+      ],
+      "uses": ["assembly-stochastic-encounter"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.common_residual": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.common_weight": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.empty_factor": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.catalyst_mean": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.catalyst_pos": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.single_contact": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.shared_ratio": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.ratio_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "about": ["cells.transition_state_factor@1"]
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["assembly-kinetics"],
+        "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Forward and reverse molecular transfer rates and an independently measured equilibrium partition under matched temperature and catalyst concentration.",
+        "unit": "s⁻¹ for each direction, dimensionless equilibrium partition",
+        "finding": "At 37 °C, cholesterol exchange between vesicles sped up about 57-fold with 1 mM β-cyclodextrin. Half-times were 195 ± 13 and about 3.4 minutes. A separate 0.5 mM equilibrium series gave a partition coefficient of 0.91 ± 0.06. Equal scaling of the two directional rates remains unmeasured. This transfer catalyst is in solution. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0)",
+        "evidence": []
       }
     },
     {
