@@ -18,10 +18,18 @@ export function isPart(raw, id) {
   return Boolean(entry?.part_of) && partsOf(raw, entry.part_of).some((item) => item.id === id);
 }
 
-/** The part the Experiments tab opens on: the one its first listed example names (`opens.part`), where it is a part the page can show; else null. */
+/**
+ * The part an address of the tumour tissue opens on (a time, play, or a cell of it, with no run named): the first part an
+ * experiment's entry opens on (its `opens.part`), where it is one of its parts the page can show; else null. Until 18 November
+ * 2026 this was the part of the first listed experiment, and the tab opened on it; the tab opens on its landing now, whose
+ * card opens the same part (src/replay/landing.js, opensOf).
+ */
 export function openingPart(raw) {
-  const named = (raw?.experiments || []).filter((item) => item.listed === true).map((item) => item.opens?.part).find(Boolean);
-  return named && isPart(raw, named) ? named : null;
+  for (const item of raw?.experiments || []) {
+    const named = item.opens?.part;
+    if (typeof named === "string" && isPart(raw, named) && (raw.experiments || []).find((entry) => entry.id === named)?.part_of === item.id) return named;
+  }
+  return null;
 }
 
 /** The run a part's whole opens on (its first run), for the list's pressed row while the part is shown; null where none. */

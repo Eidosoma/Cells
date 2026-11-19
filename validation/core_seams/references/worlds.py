@@ -106,6 +106,17 @@ def _registry_c() -> dict:
     binder("coop2", -2, 0.75, [("coop2_H", {"H": 1}, pk(1.0)),
                                ("coop2_H2", {"H": 2}, pk(1.0) + pk(13.0)),
                                ("coop2_Mg", {"Mg": 1}, kd(1.0))])
+    # amendment C4 (§19's correction: the per-ligand floor is necessary, not sufficient, for
+    # mixed-sign counts): a binder whose Mg²⁺ binding releases a proton (mgx_MgmH: H −1, Mg +1),
+    # reached from its base by unit steps through mgx_Mg. ln β of MgmH is that of base + Mg ⇌
+    # MgmH + H. It joins no system of S1-S6.
+    binder("mgx", -2, -0.25, [("mgx_H", {"H": 1}, pk(7.0)),
+                              ("mgx_Mg", {"Mg": 1}, kd(2.0)),
+                              ("mgx_MgmH", {"H": -1, "Mg": 1}, math.log(2e-4))])
+    # amendment C5 (release steps in the envelope): a two-form buffer whose only other form sits
+    # below its base (rel1_mH: H −1, pK 9), so its one step is a release step. It joins no system
+    # of S1-S7.
+    binder("rel1", -1, 0.5, [("rel1_mH", {"H": -1}, -pk(9.0))])
     return {
         "temperature_K": T_K,
         "standard_concentration_mM": C0_MM,
@@ -859,6 +870,131 @@ def amendment_c3(c: dict) -> None:
                               "slowest relaxation time")}
 
 
+def amendment_c5(c: dict) -> None:
+    """Amendment C5 (19 November 2026): envelope cases with release steps, forms below their base
+    (single-sign: pi2_PO4, rel1_mH) and a form whose Mg²⁺ binding releases a proton (mixed-sign:
+    mgx_MgmH). Appended to amendment C3's cases, with its record times and budget; every value is
+    synthetic (D152 §2.4)."""
+    from . import binding
+
+    def case(tag, ligands, binders, V, free, bm, kon, drive, note):
+        spec = {"ligands": ligands, "binders": binders}
+        st = totals_from_manufactured(spec, {"free_mM": free, "binders_mM": bm}, V)
+        binding.System(spec, REGISTRY_C)               # parses
+        return tag, {"ligands": ligands, "binders": binders, "volume_pL": V, "free_mM": free,
+                     "binders_mM": bm, "totals": st,
+                     "kon_per_mM_per_s": [[B, L, k] for (B, L), k in kon.items()],
+                     "drive_fmol_per_s": [[k, v] for k, v in drive.items()],
+                     "record_slow_times": ENVELOPE_RECORD_SLOW_TIMES, "note": note,
+                     "amendment": "C5"}
+
+    pi2 = {("pi2", "H"): 1e7, ("pi2", "Mg"): 1e4}
+    mgx = {("mgx", "H"): 1e7, ("mgx", "Mg"): 1e4}
+    s4 = {(B, L): (1e7 if L == "H" else 1e4) for B in ("nuc4", "nuc3", "pi2") for L in ("H", "Mg")}
+    new = dict([
+        case("E3_rel1_b4", ["H"], ["rel1"], 0.05, {"H": 10 ** (3 - 9.2)}, {"rel1": 40.0},
+             {("rel1", "H"): 1e5}, {"H": 1e-4},
+             ("one ligand and a two-form buffer whose other form sits below its base: its one "
+              "step, rel1_mH + H ⇌ rel1_base, is a release step; the general lag must equal B4's "
+              "formula with the release form as the free one")),
+        case("E3_pi2_release", ["H", "Mg"], ["pi2"], 1.0, {"H": 10 ** (3 - 12.0), "Mg": 0.5},
+             {"pi2": 10.0}, pi2, {"H": 1e-4},
+             ("single-sign release: pi2 at pH 12, where pi2_PO4 + H ⇌ pi2_base carries the "
+              "buffering; an H⁺ drive")),
+        case("E3_pi2_release_mg_drive", ["H", "Mg"], ["pi2"], 1.0,
+             {"H": 10 ** (3 - 12.0), "Mg": 0.5}, {"pi2": 10.0}, pi2, {"Mg": 1e-3},
+             "E3_pi2_release under an Mg²⁺ drive, coupled to the release step through the base"),
+        case("E3_s4_release", ["H", "Mg"], ["nuc4", "nuc3", "pi2"], 2.0,
+             {"H": 10 ** (3 - 11.5), "Mg": 0.5}, {"nuc4": 2.0, "nuc3": 1.0, "pi2": 5.0}, s4,
+             {"H": 1e-4},
+             "single-sign release among S4's three binders at pH 11.5; an H⁺ drive"),
+        case("E4_mgx_mixed", ["H", "Mg"], ["mgx"], 1.0, {"H": 10 ** (3 - 7.5), "Mg": 0.5},
+             {"mgx": 5.0}, mgx, {"H": 3e-2},
+             ("mixed-sign: mgx at pH 7.5, two thirds of it as mgx_MgmH (H −1, Mg +1), reached "
+              "through mgx_Mg by the release step mgx_MgmH + H ⇌ mgx_Mg; an H⁺ drive")),
+        case("E4_mgx_mixed_mg_drive", ["H", "Mg"], ["mgx"], 1.0,
+             {"H": 10 ** (3 - 7.5), "Mg": 0.5}, {"mgx": 5.0}, mgx, {"Mg": 1e-1},
+             ("E4_mgx_mixed under an Mg²⁺ drive: binding Mg²⁺ releases H⁺ through the release "
+              "step, so the H⁺ lag comes from the Mg²⁺ drive")),
+        case("E4_mgx_mixed_binder_drive", ["H", "Mg"], ["mgx"], 1.0,
+             {"H": 10 ** (3 - 7.5), "Mg": 0.5}, {"mgx": 5.0}, mgx, {"mgx": 1e-2},
+             "E4_mgx_mixed with its binder's base form moved in (a moved binder row)"),
+    ])
+    assert not set(new) & set(c["envelope"]["cases"])
+    c["envelope"]["cases"].update(new)
+    c["envelope"]["amendment_c5"] = {
+        "cases": list(new),
+        "release_step": ("a unit step f′ + L ⇌ f whose bound form f holds count_f(L) ≤ 0: binding "
+                         "L only restores a ligand released below the base"),
+        "planted": ("the release steps' ligand written with the wrong sign in N (the step taken "
+                    "to release L where it binds it), the forward flux unchanged")}
+
+
+SYSTEM_S7 = {"ligands": ["H", "Mg"], "binders": ["mgx"], "volume_pL": 1.0,
+             "note": ("amendment C4: a binder whose Mg²⁺ binding releases H⁺, so the per-ligand "
+                      "floors are not the joint condition"),
+             "designated": "mgx_MgmH"}
+
+
+def amendment_c4(c: dict, rng) -> None:
+    """Amendment C4: S7, an ordinary system of the mixed-sign binder (drawn after every earlier
+    input), and four planted validity states of it, given by their totals:
+    - joint_infeasible: each per-ligand floor passes (H > −T_B, Mg > 0), but freeing the protons
+      takes more Mg²⁺ than there is: t* = −1/2 fmol;
+    - boundary: t* = 0 exactly, not an interior state;
+    - feasible_near: t* = +1/2 fmol, solvable;
+    - per_ligand_infeasible: below the H floor, refused by either test."""
+    c["systems"]["S7"] = SYSTEM_S7
+    spec = {"ligands": SYSTEM_S7["ligands"], "binders": SYSTEM_S7["binders"]}
+    V = SYSTEM_S7["volume_pL"]
+    out = []
+    for k in range(8):
+        free = {"H": 10.0 ** (3.0 - float(rng.uniform(6.0, 9.0))),
+                "Mg": float(np.exp(rng.uniform(math.log(0.01), math.log(5.0))))}
+        bm = {"mgx": float(np.exp(rng.uniform(math.log(1.0), math.log(20.0))))}
+        st = {"tag": f"random_{k}", "free_mM": free, "binders_mM": bm}
+        st["totals"] = totals_from_manufactured(spec, st, V)
+        out.append(st)
+    st = {"tag": "mostly_MgmH", "free_mM": {"H": 10 ** (3 - 9.5), "Mg": 2.0},
+          "binders_mM": {"mgx": 10.0}}
+    st["totals"] = totals_from_manufactured(spec, st, V)
+    out.append(st)
+    c["manufactured_states"]["S7"] = out
+
+    def planted(TH, TMg, note):
+        return {"system": "S7", "totals": {"ligands_fmol": {"H": TH, "Mg": TMg},
+                                           "binders_fmol": {"mgx": 10.0}}, "note": note}
+    c["validity"] = {
+        "note": ("amendment C4: t* = min over the ligand simplex of λ·T − Σ_B T_B min_f λ·n_f; "
+                 "a state is valid iff t* > 0; the per-ligand floors are t at λ = e_L"),
+        "planted": {
+            "joint_infeasible": planted(-2.0, 1.0, "per-ligand floors pass; jointly infeasible"),
+            "boundary": planted(-2.0, 2.0, "t* = 0: on the boundary, not interior"),
+            "feasible_near": planted(-2.0, 3.0, "t* = +1/2: valid, close to the boundary"),
+            "per_ligand_infeasible": planted(-11.0, 20.0, "below the H floor −T_B"),
+        }}
+
+
+def amendment_a2(a: dict) -> None:
+    """Amendment A2 (the kinds owner's batch, item 3, Q7): a diagram law's declared cycles must be
+    exactly its simple cycles, each once, with a consistent direction. Two plants on D2, beside
+    the declared bases: cycle A declared twice, and cycle A with one edge's direction flipped, so
+    its signed edges no longer form one closed walk."""
+    d2 = law_d2()
+    dup = copy.deepcopy(d2)
+    dup["id"] = "d2_slip_exchanger__duplicate_cycle"
+    dup["cycles"] = [dup["cycles"][0]] + copy.deepcopy(dup["cycles"])
+    dup["note"] = "PLANTED (Q7): cycle A declared twice; refused, each cycle is declared once"
+    flip = copy.deepcopy(d2)
+    flip["id"] = "d2_slip_exchanger__inconsistent_direction"
+    flip["cycles"][0]["edges"][1][1] = -flip["cycles"][0]["edges"][1][1]
+    flip["note"] = ("PLANTED (Q7): cycle A's second edge traversed backwards, so its walk breaks; "
+                    "refused")
+    a["planted_laws"] += [dup, flip]
+    for w in (dup, flip):
+        a["plant_states"][w["id"]] = "d2_slip_exchanger"
+
+
 def build() -> dict:
     rng = np.random.default_rng(SEED)
     a = seam_a(rng)
@@ -874,6 +1010,9 @@ def build() -> dict:
     amendment_1(a, rng)
     amendment_c2(c)
     amendment_c3(c)
+    amendment_c4(c, rng)
+    amendment_a2(a)
+    amendment_c5(c)
     return {
         "kind": "cells.core_seams_reference_inputs@1",
         "registered": REGISTERED,

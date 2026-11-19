@@ -181,6 +181,42 @@ the exact amount by which that booking misses ΔE_c.
 
 `values.seam_c.envelope.reachability` {binder: verdict}.
 
+**Release steps (amendment C5).** Seven more cases (`seam_c.envelope.amendment_c5.cases`, each
+marked `"amendment": "C5"`) carry release steps:
+- E3_rel1_b4, a two-form buffer whose other form sits below its base (registry binder `rel1`);
+- E3_pi2_release and E3_pi2_release_mg_drive, pi2 at pH 12;
+- E3_s4_release, S4's three binders at pH 11.5;
+- E4_mgx_mixed, E4_mgx_mixed_mg_drive and E4_mgx_mixed_binder_drive, mgx at pH 7.5.
+
+A release step is a unit step f′ + L ⇌ f whose bound form f holds count_f(L) ≤ 0, so binding L
+only restores a ligand that a form below its base released: pi2_PO4 + H ⇌ pi2_base,
+mgx_MgmH + H ⇌ mgx_Mg and rel1_mH + H ⇌ rel1_base.
+- It has the same ν, flux and K_r as any step.
+- The comparison reads the same fields as for amendment C3's cases, plus `release_steps`
+  [{from, ligand, to}].
+- The planted disagreement is `plants.release_sign_flipped` {L: relative deviation}, with the
+  release steps' ligand written with the wrong sign in N. Its lag is
+  `release_sign_flipped_dln`.
+- `design.power.C5_amendment_release_envelope` gives each case's deviation over
+  `first_order_floor_rel`, and whether it is caught (at least 10 floors on some ligand).
+- For E3_rel1_b4, `b4_formula_pH` is B4's formula with the release form as the free one.
+
+**Regenerating bitwise.** The values were computed with BLAS and LAPACK on one thread.
+`envelope.one_blas_thread` (threadpoolctl) now pins them. Without it, a multi-threaded OpenBLAS
+moves the network's eigenvalues (so the record times and the kinetic rows) at about 1e-10
+relative, and `design --check` differs. Where threadpoolctl is missing, set
+`OPENBLAS_NUM_THREADS=1`.
+
+**`values.seam_c.validity`** (amendment C4):
+- **`systems.<S>`:** per registered state, `t_star_fmol`, `t_star_exact` (a rational),
+  `lambda_star`, `per_ligand_fmol` (t at λ = e_L), `valid`, `per_ligand_valid` and
+  `lp_t_star_fmol`.
+- **`planted.<tag>`:** the same, with the `dual` and `primal` outcomes (solved, with `x_mM`, or
+  refused, with a reason).
+
+A state is valid iff t* > 0. The closure's validity report must agree, and the per-ligand floors
+alone must not decide it.
+
 **`values.seam_c.movers.<id>`** gives `verdict` and `reasons`. **`values.seam_c.parse`** gives
 `form_valences` and the planted declared valence.
 
@@ -203,3 +239,22 @@ the exact amount by which that booking misses ΔE_c.
 
 A tolerance has power where it lies below a plant's largest margin over ten floors, and above ten
 floors. For seam A's rounding bands that is §19 item 2's.
+
+**The engine's stated bands** (amendment A2; the kinds owner's batch). `api.engine_wegscheider_band`
+evaluates B, B_ψ and R0 against B_W = 32 ε (T + N) for a declared cycle. `api.engine_guard`
+evaluates the guard's G against A. The design file places both (`power.A2_amendment_engine_band`,
+`power.A3_population_guard.engine_allowance`). Q7 requires the declared cycles to be exactly the
+simple cycles, each once, each a closed walk.
+
+**Zero cases: an absolute floor** (amendment F4). Compare every pair absolutely, |x − y| ≤ 10 τ,
+with τ built from the computation's term sums, never relatively with the zero pairs skipped:
+- **A slope** (`api.slope_pairs`) has τ = (terms + 8) u M/h, with u = ½ 10^(1 − PREC) and M the
+  differenced function's magnitude. A neutral law's conductance has τ = 0 and must be exactly 0.
+- **The diagram's two routes** (`api.method_agreement`) have floors from the trees' positive
+  sums and from the elimination's running error bound (`exact.det_running`,
+  `exact.solve_running`).
+- **The basis against the Hill total** (`api.basis_signs`) has a floor from both totals' terms.
+
+An engine comparison where the reference value is exactly 0 takes the same form with its own
+rounding floor. A floor of exactly 0 demands exact equality. A plant whose deviation is
+undefined at a state (a zero reference) is weak there and is listed.

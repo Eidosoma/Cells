@@ -64,7 +64,7 @@ should be designed as a general engine feature. The decision reads:
 - `resolved_pump_composite@1` over `resolved_pump_tissue@3`;
 - one new operator, `local_species_reactions@1` (§2);
 - its passive law is `ideal_detailed_balance_mass_action@1`, the law `compartment_reactions@1`
-  qualified. It runs through that law's shared kernel `processes/mass_action.reversible_flux`,
+  qualified. It runs through that law's shared kernel `laws/reactions/mass_action.reversible_flux`,
   called unchanged;
 - it composes with D150 v1's `scheduled_species_turnover@1` and `scheduled_species_exchange@1` and
   with @3's transport.
@@ -303,7 +303,7 @@ advisor, with a door later; §9 question 3):
 5. **Scope of acceptance.** Its qualification is correspondence with captured reference outputs. A
    wrapper would inherit no acceptance that applies to the composite's conservation and energy.
 
-**What is reused.** `processes/mass_action.reversible_flux`, which is neutral and cited (Rao &
+**What is reused.** `laws/reactions/mass_action.reversible_flux`, which is neutral and cited (Rao &
 Esposito 2016). It is the kernel of `compartment_reactions@1`'s law. It is called unchanged, and no
 program that calls it today changes, so crossrev stays identical and D148 does not arise.
 

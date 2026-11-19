@@ -40,8 +40,17 @@ declarations manifest (registry/declarations.py) writes out.
   slope in the per-stage rule; `material_term`, its material slope per stage; `charge_bound` and
   `material_bound`, its definition-time bounds on a charged and on a neutral row. Its host's
   hooks evaluate them (registry/kind_registry.Kind: stage_term, material_term, bound_rate), and
-  refusal 4 reads which a law declares (operators/compartments.py);
-- `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C);
+  refusal 4 reads which a law declares (operators/compartments.py). Each may also declare `forms`:
+  "base" where its stoichiometry is written in base forms with every ligand out, so a rapid binding
+  closure's totals stay exact (§5.2's admission; None otherwise). A cycle law may carry its general
+  form, `cycle` (seam A's CycleForm, the kinds owner's type, checked by its own errors(): this
+  module imports no law module), whose changes() gives its change rows. cycle_changes(law) reads a
+  cycle law's change rows as declared, from its form or else its moves: the manifest's and §5.2's
+  single-mode admission's one source;
+- `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C). Its general form
+  (CORE_SEAMS §19 as amended) declares `forms="registry"` (its binders' forms are the species
+  registry's) and the kernels free_energy (G*), envelope (the lag envelope) and free_amounts (the
+  free forms from the totals, P1's predictor's), each None in version 1;
 - `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
   membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
@@ -75,7 +84,7 @@ import importlib
 import math
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import KW_ONLY, dataclass
@@ -108,6 +117,8 @@ __all__ = (
     "PumpLaw",
     "RouteLaw",
     "active",
+    "cycle_changes",
+    "hosted_laws",
     "scope",
 )
 
@@ -266,6 +277,74 @@ def _callables(law, *names):
 STEP_TERMS = ("stage_term", "material_term", "charge_bound", "material_bound")
 
 
+def _forms_errors(law):
+    return [] if law.forms in (None, "base") else ['its forms are "base", or None']
+
+
+def _cycle_errors(cycle):
+    """A cycle law's general form checked by its own errors(), then its change rows' form
+    (duck-typed, module docstring): a form that breaks its own contract is not asked for rows."""
+    if cycle is None:
+        return []
+    check = getattr(cycle, "errors", None)
+    if not callable(check):
+        return ["its cycle is a form with its own errors() and changes(), or None"]
+    problems = check()
+    if not isinstance(problems, list) or not all(map(_named, problems)):
+        return ["its cycle's errors() returns a list of reasons"]
+    if problems:
+        return [f"its cycle: {problem}" for problem in problems]
+    return _form_changes(cycle)[1]
+
+
+CHANGE_ROW = ("role", "per_cycle", "mode")  # A general form's change row's keys (cycle_changes).
+
+
+def _count(value):
+    """A declared count per cycle: an integer, or a population parameter's name (FR-4's form)."""
+    return _named(value) or (isinstance(value, int) and not isinstance(value, bool))
+
+
+def _form_changes(cycle):
+    """(rows, reasons) of a general form's changes(): its rows, each {role, per_cycle, mode} in
+    that key order, with the reasons they break the row form (rows () where they do)."""
+    changes = getattr(cycle, "changes", None)
+    if not callable(changes):
+        return (), ["its cycle is a form with its own changes()"]
+    rows = changes()
+    if not isinstance(rows, tuple) or not all(
+        isinstance(row, Mapping)
+        and set(row) == set(CHANGE_ROW)
+        and _named(row["role"])
+        and _count(row["per_cycle"])
+        and _named(row["mode"])
+        for row in rows
+    ):
+        return (), [
+            "its cycle's changes() returns a tuple of {role, per_cycle, mode} rows: a named role "
+            "and mode, and a count that is an integer or a parameter's name"
+        ]
+    return tuple({key: row[key] for key in CHANGE_ROW} for row in rows), []
+
+
+def cycle_changes(law):
+    """A cycle law's declared change rows: its general form's changes() where the form is set,
+    ({role, per_cycle, mode}, ...), each mode's rows, the role as "role@end"; otherwise its moves,
+    ({role, per_cycle}, ...). Each is inward-positive per forward cycle, and its count is as
+    declared, an integer or a population parameter's name negated by a leading "-": nothing is
+    resolved. The one source for the manifest (registry/declarations.py) and §5.2's single-mode
+    admission, which resolves named counts itself. Raises where a form's rows break the row form,
+    as the law's registration refuses it."""
+    if not isinstance(law, CycleLaw):
+        raise TypeError(f"cycle_changes reads a CycleLaw, not {type(law).__name__}")
+    if law.cycle is None:
+        return tuple(dict(role=role, per_cycle=count) for role, count in law.moves)
+    rows, problems = _form_changes(law.cycle)
+    if problems:
+        raise ValueError(f"Law {law.law_id}: {'; '.join(problems)}")
+    return rows
+
+
 def _named_or_none(law, *names):
     return [
         f"its {name} is named, or None"
@@ -277,7 +356,9 @@ def _named_or_none(law, *names):
 @dataclass(frozen=True)
 class ChannelLaw(Law):
     """A channel law (docs/INNER_MODEL_V4_DESIGN.md §7.1): gates relax by the exponential stage
-    update; leaks have none."""
+    update; leaks have none. A host's codes are distinct. Code 99 is reserved for test plants (the
+    lead, 19 November 2026): no registered law takes it, so a planted law never meets one that
+    registers later."""
 
     code: int
     gates: tuple[str, ...]
@@ -346,12 +427,15 @@ class CycleLaw(Law):
     """A membrane cycle law: the rows it moves per cycle by role, its fuel kinds, its kernel and
     its domain. moves: ((role, count), ...), inward-positive per cycle; a count is an integer, or
     the name of the population's parameter that holds it, negated by a leading "-" (FR-4's form).
-    Seam A adds its stoichiometric modes and its S or J as optional fields (§3.2)."""
+    Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
+    must hold and its changes() gives its change rows (cycle_changes), so `moves` may be empty and
+    kinetics and domain_valid None (the kinds owner's first gap). A law without a form keeps
+    version 1's checks: moves given, both kernels callable."""
 
-    moves: tuple[tuple[str, object], ...]
-    fuel_kinds: tuple[str, ...]
-    kinetics: Callable
-    domain_valid: Callable
+    moves: tuple[tuple[str, object], ...] = ()
+    fuel_kinds: tuple[str, ...] = ()
+    kinetics: Callable | None = None
+    domain_valid: Callable | None = None
     reads: tuple = ()  # Stage reads, such as rapid_proton_buffer@1's free h.
     stage_term: str | None = None  # Its charge slope in the stage rule, where its host takes one.
     loop_term: str | None = None
@@ -359,21 +443,29 @@ class CycleLaw(Law):
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
+    forms: str | None = None  # "base": its moves are in base forms (CORE_SEAMS §5.2), or None.
+    cycle: object = None  # Its general form: seam A's CycleForm, or None (module docstring).
 
     interface: ClassVar[str] = CYCLE_LAW
     SIGNS: ClassVar = MappingProxyType({"moves": "inward-positive, per forward cycle"})
 
     def errors(self):
-        out = super().errors() + _callables(self, "kinetics", "domain_valid")
+        out = super().errors()
+        formed = self.cycle is not None  # The form carries the law (class docstring).
+        if formed:
+            out += [
+                f"its {name} is callable, or None"
+                for name in ("kinetics", "domain_valid")
+                if getattr(self, name) is not None and not callable(getattr(self, name))
+            ]
+        else:
+            out += _callables(self, "kinetics", "domain_valid")
         moves = self.moves
         if not (
             isinstance(moves, tuple)
-            and moves
+            and (moves or formed)
             and all(
-                isinstance(m, tuple)
-                and len(m) == 2
-                and _named(m[0])
-                and (_named(m[1]) or (isinstance(m[1], int) and not isinstance(m[1], bool)))
+                isinstance(m, tuple) and len(m) == 2 and _named(m[0]) and _count(m[1])
                 for m in moves
             )
         ):
@@ -382,7 +474,8 @@ class CycleLaw(Law):
             out.append("its fuel kinds are a tuple of IDs")
         if not isinstance(self.reads, tuple):
             out.append("its reads are a tuple")
-        return out + _named_or_none(self, *STEP_TERMS, "loop_term")
+        out += _named_or_none(self, *STEP_TERMS, "loop_term") + _forms_errors(self)
+        return out + _cycle_errors(self.cycle)
 
 
 PumpLaw = CycleLaw  # @3's name for its pump laws' declarations: the same type (§8.1).
@@ -399,6 +492,7 @@ class RouteLaw(Law):
     material_term: str | None = None  # Its material slope per stage.
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
+    forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -408,7 +502,7 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
-        return out + _named_or_none(self, *STEP_TERMS)
+        return out + _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
 
 
 @dataclass(frozen=True)
@@ -419,6 +513,11 @@ class BindingLaw(Law):
     ligands: tuple[str, ...]
     closure: Callable
     domain_valid: Callable | None = None
+    # The general closure's (module docstring), each None in version 1.
+    forms: str | None = None  # "registry": its binders' forms are the species registry's.
+    free_energy: Callable | None = None  # G*, its free-energy term.
+    envelope: Callable | None = None  # The first-order lag envelope of its binding network.
+    free_amounts: Callable | None = None  # The free forms from the totals (P1's predictor's).
 
     interface: ClassVar[str] = BINDING_LAW
 
@@ -428,8 +527,11 @@ class BindingLaw(Law):
             isinstance(self.ligands, tuple) and self.ligands and all(map(_named, self.ligands))
         ):
             out.append("its ligands are a tuple of roles")
-        if self.domain_valid is not None and not callable(self.domain_valid):
-            out.append("its domain_valid is callable, or None")
+        for name in ("domain_valid", "free_energy", "envelope", "free_amounts"):
+            if getattr(self, name) is not None and not callable(getattr(self, name)):
+                out.append(f"its {name} is callable, or None")
+        if self.forms not in (None, "registry"):
+            out.append('its forms are "registry", or None')
         return out
 
 
@@ -585,6 +687,12 @@ def _load_builtins():
             if isinstance(law, Law) and BUILTIN._laws.get(qualified(law.law_id)) is not law:
                 BUILTIN._register(law, name)
         _builtins_loaded = True
+
+
+def hosted_laws(interface, host):
+    """The active registry's laws of `interface` that `host` runs, in canonical (sorted namespaced
+    ID) order: how a kind or the inner model finds its laws (§8.3), on the surface for kinds."""
+    return active().laws(interface, host)
 
 
 def active():

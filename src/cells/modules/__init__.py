@@ -19,7 +19,16 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   with Citation, the source a cited law gives, and CitedWork, a work it names (registry/laws.py);
   the operator template of a family's own operators, FamilyOperator (registry/operators.py); and
   the kind contract's Kind, KindFields, KindView, KindRates and Schedule, with the roles its
-  fields declare, EnergyRole and PartitionRole (registry/kind_registry.py);
+  fields declare, EnergyRole and PartitionRole, the host of an own axis, AxisHost, and an
+  entity's binding for §5.2's admission, EntityBinding, with MOVES_END and MOVES_ENDS, a
+  moves-only law's inside and its two ends, and a reaction-level standard free energy,
+  FreeEnergyEntry (registry/kind_registry.py);
+- the law readers a kind uses: hosted_laws(interface, host), and cycle_changes(law), a cycle law's
+  declared change rows, with the interfaces' IDs CHANNEL_LAW, CYCLE_LAW, ROUTE_LAW, BINDING_LAW and
+  JUNCTION_LAW (registry/laws.py);
+- the host table's readers (models/surface_pump_v3.py, the @3 owner's): HOST_KINDS, HostTable,
+  Host, host_table, host_ends, host_voltage, host_scatter, host_node_conductance,
+  node_concentrations, declared_hosts and host_index, with moved_nodes (each row's in-step movers);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (registry/kind_registry.py);
@@ -29,7 +38,6 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   entity_sum (numerics/species_sums.py), and physical_amounts (models/surface_tissue.py).
 
 **Not here yet**, with the work that brings them:
-- the host table's end readers, with the host table (§2);
 - Module, Registry and BUILTIN, and with them a registration entry, in module stage 1
   (MODULE_SYSTEM_DESIGN §2.3). Until then a built-in family's homes register through the
   registries' own call and are named in the static model table (registry/model_table.py).
@@ -55,6 +63,13 @@ HOMES = MappingProxyType(
             "JunctionLaw",
             "Citation",
             "CitedWork",
+            "hosted_laws",
+            "cycle_changes",
+            "CHANNEL_LAW",
+            "CYCLE_LAW",
+            "ROUTE_LAW",
+            "BINDING_LAW",
+            "JUNCTION_LAW",
         ),
         "cells.registry.operators": ("FamilyOperator",),
         "cells.registry.kind_registry": (
@@ -65,6 +80,11 @@ HOMES = MappingProxyType(
             "Schedule",
             "EnergyRole",
             "PartitionRole",
+            "AxisHost",
+            "EntityBinding",
+            "MOVES_END",
+            "MOVES_ENDS",
+            "FreeEnergyEntry",
             "parse_series",
             "series_to_dict",
             "qualified",
@@ -81,6 +101,20 @@ HOMES = MappingProxyType(
         "cells.numerics.extracellular_field": ("scatter",),
         "cells.numerics.species_sums": ("species_sum", "entity_sum"),
         "cells.models.surface_tissue": ("physical_amounts",),
+        "cells.models.surface_pump_v3": (
+            "HOST_KINDS",
+            "HostTable",
+            "Host",
+            "host_table",
+            "host_ends",
+            "host_voltage",
+            "host_scatter",
+            "host_node_conductance",
+            "node_concentrations",
+            "declared_hosts",
+            "host_index",
+            "moved_nodes",
+        ),
     }
 )
 _HOME = {name: home for home, names in HOMES.items() for name in names}
@@ -103,7 +137,19 @@ __all__ = (
     "Schedule",
     "EnergyRole",
     "PartitionRole",
-    # The parsing helpers.
+    "AxisHost",
+    "EntityBinding",
+    "MOVES_END",
+    "MOVES_ENDS",
+    "FreeEnergyEntry",
+    # The law readers a kind uses.
+    "hosted_laws",
+    "cycle_changes",
+    "CHANNEL_LAW",
+    "CYCLE_LAW",
+    "ROUTE_LAW",
+    "BINDING_LAW",
+    "JUNCTION_LAW",
     "ConfigError",
     "require_fields",
     "finite_number",
@@ -122,6 +168,19 @@ __all__ = (
     "species_sum",
     "entity_sum",
     "physical_amounts",
+    # The host table's readers.
+    "HOST_KINDS",
+    "HostTable",
+    "Host",
+    "host_table",
+    "host_ends",
+    "host_voltage",
+    "host_scatter",
+    "host_node_conductance",
+    "node_concentrations",
+    "declared_hosts",
+    "host_index",
+    "moved_nodes",
 )
 
 

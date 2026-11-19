@@ -349,9 +349,26 @@ try {
     await open("lens=experiments");
     const shown = await evaluate(`${VIEWER}.state.lens`);
     check("experiments: the view is offered when replays have been made", shown === "experiments", `${shown}; make them with npm run adapt:runs`);
-    // The tab opens on the part its listed example names (the example's opens.part, the tumour tissue) where its runs are
-    // packaged: the networks are a real press away, on the card's own button.
-    const part = await evaluate(`${VIEWER}.state.part || null`);
+    // The tab opens on its landing, a page of cards (18 November 2026); a real press on the card that opens a part (the
+    // tumour tissue's, as its experiment's opens.part names it) shows that part, and its networks are a real press away,
+    // on its card's own button. (Until then the tab opened on the part itself.)
+    let cards = 0;
+    for (let tries = 0; tries < 120 && !cards; tries++) {
+      await sleep(250);
+      cards = await evaluate(`${VIEWER}.state.landing ? ${VIEWER}.shadowRoot.querySelectorAll(".landing-card").length : 0`).catch(() => 0);
+    }
+    check("experiments: the tab opens on its landing of cards", cards > 0, String(cards));
+    const pressCard = async (pick) => {
+      const at = await evaluate(`(() => { const v = ${VIEWER}; const id = [...v.shadowRoot.querySelectorAll(".landing-card.is-replay")].map((el) => el.dataset.card).find((id) => (${pick})(v.landingView.opened(id))); if (!id) return null; const el = v.shadowRoot.querySelector('[data-card="' + id + '"] .landing-open'); el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { id, x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      if (at) await click(at.x, at.y);
+      return at;
+    };
+    const partCard = await pressCard("(opened) => Boolean(opened?.part)");
+    let part = null;
+    for (let tries = 0; tries < 120 && partCard && !part; tries++) {
+      await sleep(250);
+      part = await evaluate(`${VIEWER}.state.part || null`);
+    }
     if (shown === "experiments" && part) {
       await evaluate(`Promise.resolve(${VIEWER}.current.ready).then(() => true)`);
       await sleep(600);
@@ -362,7 +379,7 @@ try {
         await sleep(250);
         back = await evaluate(`Boolean(!${VIEWER}.state.part && ${VIEWER}.current?.run && ${VIEWER}.current.sheet)`).catch(() => false);
       }
-      check(`experiments: the tab opens on the example's part (${part}), and a real press on its card's button shows the example's networks`, Boolean(door) && back, JSON.stringify(door));
+      check(`experiments: a real press on a card of the landing (${partCard.id}) shows its part (${part}), and a real press on the part's card's button shows its networks`, Boolean(door) && back, JSON.stringify(door));
     }
     if (shown === "experiments") {
       const spot = (selector) =>
@@ -476,15 +493,17 @@ try {
         check("experiments: the class shown is the one the run's summary recorded", second.klass === second.recorded && (second.klass === null ? second.shown === null : second.shown?.toLowerCase() === second.klass), JSON.stringify(second));
       }
 
-      // Another experiment, when there is one: the selector switches, and what it found follows.
-      const experiments = await evaluate(`[...${VIEWER}.shadowRoot.querySelectorAll(".exp-row:not([data-door])")].length`);
-      if (experiments > 1) {
-        const before = await evaluate(`({ run: ${VIEWER}.current.runId, experiment: ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId).experiment })`);
-        const row = await spot('.exp-row:not([data-door])[aria-pressed="false"]');
-        await click(row.x, row.y);
-        await loaded(before.run);
+      // Another experiment, when there is one: the way back to all experiments, then another card, and what it found follows.
+      // (Until 18 November 2026 a list in the run's card switched the experiment; the landing is the list now.)
+      const left = await evaluate(`({ run: ${VIEWER}.current.runId, experiment: ${VIEWER}.current.catalogue.byId.get(${VIEWER}.current.runId).experiment })`);
+      const back = await spot(".exp-back");
+      if (back) await click(back.x, back.y);
+      await sleep(600);
+      const another = await pressCard(`(opened) => Boolean(opened?.run) && !opened.run.startsWith(${JSON.stringify(`${left.experiment}--`)})`);
+      if (another) {
+        await loaded(left.run);
         const after = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId), outcome = lens.catalogue.outcomeOf(lens.catalogue.experimentOf(entry)); return { experiment: entry.experiment, loaded: lens.run?.view.run.experiment, facts: [...${VIEWER}.shadowRoot.querySelectorAll(".found-facts .fact")].map((item) => item.textContent).join(" | "), expected: [outcome?.judgedLabel, outcome?.answer ? outcome.label : null].filter(Boolean).join(" | ") }; })()`);
-        check("experiments: the selector switches experiment", after.experiment !== before.experiment && after.loaded === after.experiment, `${before.experiment} -> ${after.experiment}`);
+        check("experiments: the way back and another card of the landing switch the experiment", after.experiment !== left.experiment && after.loaded === after.experiment, `${left.experiment} -> ${after.experiment}`);
         check("experiments: what it found is the catalogue's two facts for that experiment", after.facts === after.expected && after.facts.length > 0, after.facts);
       }
 

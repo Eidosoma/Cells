@@ -1,0 +1,12 @@
+{
+ "kind": "Judged verdict",
+ "protocol_id": "fixture-fr1-v1",
+ "source": {"kind": "snapshot", "git_revision": "4444444444444444444444444444444444444444"},
+ "passed": true,
+ "criteria": [
+  {"id": "C0_admission", "judged": true, "passed": true, "values": [1]},
+  {"id": "C1_reference", "judged": true, "passed": true, "values": [0.1]},
+  {"id": "C2_reported", "judged": false, "passed": false, "values": [3]},
+  {"id": "C3_controls", "judged": true, "passed": true, "values": [10]}
+ ]
+}

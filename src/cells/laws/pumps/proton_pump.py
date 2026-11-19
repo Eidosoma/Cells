@@ -23,7 +23,9 @@ from typing import Any, NamedTuple
 
 import jax.numpy as jnp
 
+from cells.laws.cycles.forms import CycleForm, Parameter, PhBand, Saturation
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.modules import Citation, CycleLaw
 
 LAW_ID = "proton_atp_mass_action_positive@1"
 STANDARD_STATE_mM = 1000.0
@@ -211,3 +213,63 @@ def domain_valid(inputs, parameters, availability, *, xp=jnp):
     )
     a = cycle_free_energy(safe, safe_p, xp=xp) / (R * safe.temperature_K)
     return valid & (xp.abs(a) <= MAX_ABS_AFFINITY_OVER_RT)
+
+
+# The same law in seam A's general form (docs/CORE_SEAMS_DESIGN.md §3; laws/cycles/forms.py), for the
+# cycle kind's population axis: data only, its free energy the kind's from the registry. Its rows,
+# in the form's order: the proton at N and at P, then the fuel at N; N is the inside end, where the
+# fuel is hydrolysed. Its S is version 1's, [1 + (K_H/h_N)^n]^-1 [1 + K_ATP/c_ATP]^-1, and its
+# domain version 1's: n an integer in 1..4, the fuel's pH band at N, temperature in its domain.
+CYCLE = CycleForm(
+    kinetics="factored",
+    roles=(("proton", 1), ("ATP", 0), ("ADP", 0), ("Pi", 0)),
+    rows=(("proton", "N"), ("proton", "P"), ("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+    modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 1)),),
+    parameters=(
+        Parameter(
+            "stoichiometry",
+            "1",
+            low=PROTONS_PER_CYCLE_RANGE[0],
+            high=PROTONS_PER_CYCLE_RANGE[1],
+            integer=True,
+            positive=True,
+        ),
+        Parameter("km_role_mM", "mM", positive=True),
+        Parameter("km_atp_mM", "mM", positive=True),
+        Parameter("ph_ref", "pH", positive=True),
+        Parameter("ph_band", "pH", low=0.0),
+    ),
+    fuel_roles=("ATP", "ADP", "Pi"),
+    saturation=(
+        (
+            Saturation(("proton", "N"), "km_role_mM", "stoichiometry"),
+            Saturation(("ATP", "N"), "km_atp_mM", 1),
+        ),
+    ),
+    ph_bands=(PhBand(("proton", "N"), "ph_ref", "ph_band"),),
+    temperature_K=TEMPERATURE_DOMAIN_K,
+)
+
+
+# Its declaration on the law template (registry/laws.py): inert, registered by the law registry's
+# loader as one of the model table's law homes, hosted by the transporter kind.
+DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+LAW = CycleLaw(
+    DECLARED_ID,
+    MOVES,
+    ("maintained_held_rows@1",),
+    kinetics,
+    domain_valid,
+    reads=READS,
+    stage_term=DECLARATION["stage_term"],
+    loop_term=DECLARATION["loop_term"],
+    cycle=CYCLE,
+    host="cells.transporter@1",
+    provenance=DECLARATION["provenance"],
+    source=Citation(
+        "an ATP-driven proton pump, in the Na/K law's mass-action form "
+        "(laws/pumps/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+        "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §6",
+        "no numbers taken: the law is a form, its parameters a definition's values",
+    ),
+)

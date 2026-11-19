@@ -15,8 +15,10 @@ moved beside the laws (D196's safeguard), which keeps its own family's tests.
 - the dispatcher, a recorded temporary second form, holds exactly these five laws and takes their
   numbers from their modules, so a new law only ever gets the single form (planted: a sixth law);
 - each law is declared on the template, channel codes 5-9 after @3's five, with BETSE as its cited
-  source and this file's test, and is held, inert and unregistered, while @3's parser still reads
-  its channel table as literals (the lead's ruling 3; the hold flips when that changes).
+  source and this file's test, and is registered from @3's row of the model table since @3's
+  parser reads its channel table from the law registry (the Kv1 trigger): each the registry's
+  own declaration from its module, under its code, while today's five keep their rows and stay
+  the full catalogue's (planted: a registry without one of the five).
 """
 
 import json
@@ -41,6 +43,14 @@ BETSE_PYTHON = "/mnt/workspaces/Cells/venv-betse/bin/python"
 PROTOCOL = ROOT / "validation/tissue/surface_calcium_kv1_protocol.json"
 LAWS = {1: kv1p1_mh2, 2: kv1p2_mh, 3: kv1p3_mh, 4: kv1p4_mh, 6: kv1p6_mh}  # BETSE family -> law
 CODES = {kv1p1_mh2: 5, kv1p2_mh: 6, kv1p3_mh: 7, kv1p4_mh: 8, kv1p6_mh: 9}  # @3's channel codes
+HOST3 = "cells.resolved_pump_tissue@3"
+TODAYS_CODES = {  # Today's five rows, codes 0-4, which the Kv1 laws leave as they were.
+    spec3.KV1P5_LAW_ID: 0,
+    spec3.KIR2P1_LAW_ID: 1,
+    spec3.NAV1P2_LAW_ID: 2,
+    spec3.KLEAK_LAW_ID: 3,
+    spec3.NALEAK_LAW_ID: 4,
+}
 RTOL, ATOL = 5e-14, 5e-15  # The Kv1 protocol's source and Decimal tolerances.
 ULP_BOUND = 32  # Per-law kernel against the dispatcher under JAX: the largest measured, 32 ulps.
 VOLTAGE = np.linspace(-0.12, 0.06, 20001)
@@ -180,14 +190,38 @@ def test_the_dispatcher_holds_these_five_and_takes_their_numbers():
     assert len(dispatcher_errors(planted, five)) == 3
 
 
+def kv1_registration_errors(registry):
+    """Why `registry` does not hold the Kv1 laws as declared on @3: each its own module's LAW,
+    declared by that module, under its code after today's five, which keep their rows."""
+    hosted = {law.law_id: law for law in registry.laws(law_registry.CHANNEL_LAW, HOST3)}
+    out = [
+        f"{law.LAW_ID}: not its module's declaration, from its module"
+        for law in CODES
+        if hosted.get(law.LAW_ID) is not law.LAW or registry.module(law.LAW_ID) != law.__name__
+    ]
+    with law_registry.scope(registry):
+        codes, rows = spec3.law_codes(), dict(spec3.LAW_CODES)
+    if rows != TODAYS_CODES:
+        out.append(f"today's five rows are {rows}")
+    expected = {**TODAYS_CODES, **{law.LAW_ID: code for law, code in CODES.items()}}
+    wrong = {
+        law_id: codes.get(law_id) for law_id, code in expected.items() if codes.get(law_id) != code
+    }
+    if wrong:  # Today's five and the Kv1 laws: later laws take codes of their own.
+        out.append(f"@3's codes for {sorted(wrong)} are {wrong}")
+    return out
+
+
 def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_registry():
-    hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, "cells.resolved_pump_tissue@3")
-    host_codes = {law.code for law in hosted}
-    homes = {home for model in MODELS.values() for home in model.law_homes}
+    """Its name is kept from the hold, which ended when @3's parser came to read the registry (the
+    Kv1 trigger), so the collected test IDs stay the base's: each law is now registered on @3."""
+    hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, HOST3)
+    today = {law.code for law in hosted if law.law_id in TODAYS_CODES}
+    at3_homes = MODELS["resolved_pump_tissue@3"].law_homes
     for law, code in CODES.items():
         declared = law.LAW
         assert declared.errors() == [] and declared.law_id == law.LAW_ID and declared.code == code
-        assert code not in host_codes  # After @3's five, none reused.
+        assert code not in today  # After @3's five, none reused.
         assert declared.gates == ("m", "h") and declared.permeant == (("K", 1, 1.0),)
         assert declared.rk4_step_s == 2.5e-6 and declared.voltage_domain_V == (-0.120, 0.060)
         assert declared.kinetics is law.kinetics and declared.opening is law.opening
@@ -197,6 +231,24 @@ def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_regis
         test_file, test_name = declared.test.split("::")
         assert (ROOT / test_file).resolve() == Path(__file__).resolve()
         assert callable(globals()[test_name])
-        # Held: inert and unregistered while @3's parser reads its channel table as literals.
-        assert law.__name__ not in homes and law.LAW_ID not in law_registry.active()
-        assert law.LAW_ID not in spec3.LAW_CODES
+        # Registered from @3's row of the model table since the Kv1 trigger: a definition may
+        # name it, while today's five stay the full catalogue's (LAW_CODES, GATE_COUNTS and
+        # LAW_PERMEABILITIES hold their five rows alone).
+        assert law.__name__ in at3_homes and law.LAW_ID not in spec3.LAW_CODES
+        assert spec3.gate_counts()[law.LAW_ID] == 2
+        assert spec3.law_permeabilities()[law.LAW_ID] == (("K", 1.0),)
+    assert kv1_registration_errors(law_registry.active()) == []
+    assert dict(spec3.GATE_COUNTS) == dict.fromkeys(TODAYS_CODES, 2) | {
+        spec3.KLEAK_LAW_ID: 0,
+        spec3.NALEAK_LAW_ID: 0,
+    }
+    # Planted, refused: a registry without one of the five, each other law from its own declarer
+    # as the loader registers it.
+    active, kept = law_registry.active(), law_registry.LawRegistry()
+    for key, law in sorted(active._laws.items()):
+        if law is not kv1p3_mh.LAW:
+            kept._register(law, active.module(key))
+    assert kv1_registration_errors(kept) == [
+        f"{kv1p3_mh.LAW_ID}: not its module's declaration, from its module",
+        f"@3's codes for {[kv1p3_mh.LAW_ID]} are { ({kv1p3_mh.LAW_ID: None}) }",
+    ]

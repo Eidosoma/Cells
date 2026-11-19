@@ -31,7 +31,9 @@ import { renderAtlasNav } from "./atlas_nav.js";
 import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
 import { makeTissueLens } from "../lenses/tissue_line.js";
-import { isPart, partDoors, wholeRunOf, openingPart } from "./tissue_part.js";
+import { isPart, partDoors, openingPart } from "./tissue_part.js";
+import { LandingLens, LANDING_CSS } from "./landing.js";
+import { CARD } from "../replay/landing.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
@@ -53,7 +55,8 @@ const LENSES = [
   // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
   { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
   // "hidden": a page exported without the Experiments view keeps its replays, since the cell view's flux reads a species' looping run from them.
-  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
+  // It opens on its landing, a page of cards (src/ui/landing.js), whose styles it brings.
+  { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, styles: LANDING_CSS, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
 ];
 
 class CellsViewer extends HTMLElement {
@@ -66,7 +69,7 @@ class CellsViewer extends HTMLElement {
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null };
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null, landing: false };
     this.lenses = new Map();
   }
 
@@ -120,6 +123,9 @@ class CellsViewer extends HTMLElement {
     // On a phone the rail folds behind this button, which names the level shown (styles.js); a wide window does not show it.
     this.railToggle = h("button", { class: "rail-toggle card", type: "button", hidden: true, "aria-expanded": "false", "aria-controls": "cells-rail", onclick: () => this.toggleRail() });
     this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
+    // In every view the Experiments tab opens from its landing (a run, a part, a model system's view), one control in one
+    // place, under the bar at the left, leads back to all experiments; the view's card stands under it (styles.js .has-back).
+    this.backButton = h("button", { class: "exp-back pill-button", type: "button", hidden: true, "aria-label": "All experiments", onclick: () => this.showLanding() }, h("span", { class: "exp-back-chevron", "aria-hidden": "true" }), h("span", {}, "All experiments"));
     // A sweep's chart, where the experiment shown has one: a card of its own at the right of a wide window (on a phone it stands in the experiment's card).
     this.sweepCard = h("section", { class: "sweep-card card", hidden: true, "aria-label": "Sweep" });
     // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
@@ -145,6 +151,7 @@ class CellsViewer extends HTMLElement {
       this.rail,
       this.viewToggle,
       this.viewCard,
+      this.backButton,
       this.sweepCard,
       this.scaleBar,
       this.legend,
@@ -202,7 +209,7 @@ class CellsViewer extends HTMLElement {
       this.switchBox.append(
         h(
           "button",
-          { type: "button", dataset: { lens: lens.id }, "aria-pressed": "false", "aria-label": lens.label, onclick: () => this.setLens(lens.id, true) },
+          { type: "button", dataset: { lens: lens.id }, "aria-pressed": "false", "aria-label": lens.label, onclick: () => (lens.id === "experiments" && this.state.lens === "experiments" && !this.state.landing ? this.showLanding() : this.setLens(lens.id, true)) },
           h("span", { class: "long" }, lens.label),
           h("span", { class: "short" }, lens.short)
         )
@@ -221,6 +228,7 @@ class CellsViewer extends HTMLElement {
       this.stage.onTick((dt, time, real) => this.current?.update(dt, time, real) || false);
       this.stage.onPalette((palette) => {
         for (const lens of this.lenses.values()) lens.applyPalette(palette);
+        this.landingView?.applyPalette(palette); // its stills, for the theme
       });
       this.listen();
       // The species switch moves between the bar and the card as the window crosses a width.
@@ -254,6 +262,8 @@ class CellsViewer extends HTMLElement {
       this.fallback.textContent = "3D drawing is not available in this browser. The list below gives the same content as text.";
       this.hint.hidden = true;
       this.state.indexOpen = true;
+      // The Experiments tab's landing stands under the bar with no 3D stage too.
+      new ResizeObserver(() => this.style.setProperty("--bar-height", `${this.bar.offsetHeight}px`)).observe(this.bar);
     }
     const query = new URLSearchParams(location.search);
     // "still" turns transitions off, so a screenshot shows the settled state.
@@ -274,10 +284,15 @@ class CellsViewer extends HTMLElement {
     // A model system's view in the Experiments tab's place, from its list (`example=gard`; showExample).
     if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
     else if (isPart(this.model.raw.replays, query.get("part"))) this.state.part = query.get("part"); // a part of an example (showPart)
-    // The Experiments tab opens on the part its listed example names (its entry's `opens.part`), unless the address names
-    // something of the runs' own view: a run, a record, layers or their strength, or, in this tab, a part to choose that is
-    // not a cell of the part's.
-    else if (!["run", "record", "layers", "strength"].some((key) => query.get(key)) && !(wanted === "experiments" && query.get("select") && !query.get("select").startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
+    // The Experiments tab opens on its landing, a page of cards (decided on 18 November 2026), unless the address names
+    // something of a view of its own: a run, a record, layers or their strength (the runs' view); a time, play, or a cell of
+    // the tumour tissue (its part, as before); or, in this tab, anything else to choose than a card's detail (`card:`).
+    else {
+      const own = ["run", "record", "layers", "strength"].some((key) => query.get(key)), select = query.get("select") || "";
+      const named = wanted === "experiments" && ((select && !select.startsWith(CARD)) || query.get("time") || query.get("play"));
+      if (!own && !named) this.state.landing = true;
+      else if (!own && !(wanted === "experiments" && select && !select.startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
+    }
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
@@ -319,8 +334,10 @@ class CellsViewer extends HTMLElement {
         });
       } else choose();
     };
-    // A view that loads its data first (a run) is ready a moment later; the others are ready now.
-    const loading = query.get("run") ? this.current?.show?.(query.get("run")) : this.current?.ready;
+    // A view that loads its data first (a run) is ready a moment later; the others are ready now. The run the address names
+    // (`run=`, or a run of the view chosen by `select=run:`) is the one shown and fetched, and not the view's opening run first.
+    const chosen = query.get("select")?.startsWith("run:") && this.current?.has?.(query.get("select")) ? query.get("select").slice("run:".length) : null;
+    const loading = query.get("run") || chosen ? this.current?.show?.(query.get("run") || chosen) : this.current?.ready;
     if (loading?.then) loading.then(settle).then(() => query.get("play") && this.current?.player?.play());
     else settle();
     if (query.get("index")) this.toggleIndex(true);
@@ -346,7 +363,12 @@ class CellsViewer extends HTMLElement {
     if (this.state.lens !== id && this.state.viewOpen) this.toggleViewCard(false); // a phone's folded card starts folded in the next view
     this.state.lens = id;
     this.state.isolate = null;
-    if (this.stage) {
+    if (id === "experiments" && this.state.landing) {
+      // The landing needs no 3D stage: it is made where none can be drawn too.
+      this.current = this.landingLens();
+      this.current.activate();
+      this.current.setSelection(this.current.has(this.state.selected) ? this.state.selected : null);
+    } else if (this.stage) {
       // A model system shown in the switch takes the Cell view's place (src/ui/entry_views.js): its card at once, its own view once its runs are read.
       // So does one the Experiments tab's list opens (showExample): the same view, in that tab's place.
       const entry = id === "cell" ? modelSystemOf(this.model.raw, this.state.model) : id === "experiments" && this.state.example ? modelSystemOf(this.model.raw, this.state.example) : null;
@@ -356,7 +378,9 @@ class CellsViewer extends HTMLElement {
       if (!this.lenses.has(key)) {
         const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still") }) : null;
         made?.ready?.then((view) => view && this.swapLens(key, view));
-        const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null), open: (id) => this.showPart(id) }) : spec.make(this.stage, this.model, this.labels);
+        // From a part, its networks: the whole's opening run, not whatever run the runs' view held last (another card's).
+        const whole = part ? (this.model.raw.replays?.experiments || []).find((item) => item.id === part)?.part_of : null;
+        const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null, { run: whole ? this.replays.openingRun(whole) : null }), open: (id) => this.showPart(id) }) : spec.make(this.stage, this.model, this.labels);
         lens.onChrome = () => {
           if (this.current === lens) this.renderChrome();
         };
@@ -392,10 +416,12 @@ class CellsViewer extends HTMLElement {
       this.current.activate();
       this.current.setIsolate(null);
       this.current.setSelection(this.current.has(this.state.selected) ? this.state.selected : null);
-    }
+    } else this.current = null;
     if (!this.shows(this.state.selected)) this.state.selected = null;
     for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
     this.showPressedTab();
+    // Leaving the Experiments tab, a card's detail named in the address is left behind with it.
+    if (fromUser && id !== "experiments" && new URLSearchParams(location.search).get("select")?.startsWith(CARD)) this.writeAddress({ select: null });
     if (fromUser && location.hash.slice(1) !== id) {
       try {
         history.replaceState(null, "", `#${id}`);
@@ -460,7 +486,13 @@ class CellsViewer extends HTMLElement {
    * ("show": which of the atlas's two drawings) with one set of them picked out (a mark and its value);
    * a structure of the cell opens it on the shelf of its membrane ("shelf"), with no set picked out.
    */
-  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find }) {
+  openDoor({ lens, show, mark, value, shelf, ids, look, machine, select, find, card }) {
+    // A replay's card on the Experiments landing, from its detail: the view the card opens (openCard).
+    if (card && this.landingView?.byId?.has(card)) {
+      const opened = this.landingView.opened(card);
+      if (opened) this.openCard(opened, this.landingView.byId.get(card));
+      return;
+    }
     // A closer view of a machine (Look closer), in the view shown or, from the Machines catalogue, in the Cell view; or back out of it.
     if (look === "closer") {
       if (lens && lens !== this.state.lens && this.views.some((view) => view.id === lens)) {
@@ -534,6 +566,8 @@ class CellsViewer extends HTMLElement {
     if (this.state.selected && this.state.indexOpen && this.clientWidth < 760) this.toggleIndex(false);
     this.renderPanel();
     this.renderIndex();
+    // On the landing a card's detail has an address of its own (writeAddress).
+    if (this.state.lens === "experiments" && this.state.landing && held !== this.state.selected && (held?.startsWith(CARD) || this.state.selected?.startsWith(CARD))) this.writeAddress({ select: this.state.selected?.startsWith(CARD) ? this.state.selected : null });
     this.dispatchEvent(new CustomEvent("cells-selected", { detail: { id: this.state.selected }, bubbles: true, composed: true }));
   }
 
@@ -586,9 +620,10 @@ class CellsViewer extends HTMLElement {
    */
   showExample(id, { run = null } = {}) {
     const example = (id && this.replays.doors.some((item) => item.entry === id) && modelSystemOf(this.model?.raw, id)?.id) || null;
-    if (example !== this.state.example || this.state.part) {
+    if (example !== this.state.example || this.state.part || this.state.landing) {
       this.state.example = example;
       this.state.part = null; // a part shown gives the tab back too
+      this.state.landing = false;
       if (this.state.lens === "experiments") this.setLens("experiments");
     }
     const lens = this.current, shown = lens?.catalogue?.byId.get(lens.runId);
@@ -598,11 +633,95 @@ class CellsViewer extends HTMLElement {
   /** A part of an example in the Experiments tab's place (src/lenses/tissue_line.js), opened from the example's card; null gives the tab back. */
   showPart(id) {
     const part = isPart(this.model?.raw?.replays, id) ? id : null;
-    if (part === this.state.part && !this.state.example) return;
+    if (part === this.state.part && !this.state.example && !this.state.landing) return;
     this.state.example = null;
     this.state.part = part;
+    this.state.landing = false;
     if (this.state.selected && !this.current?.has?.(this.state.selected)) this.state.selected = null;
     if (this.state.lens === "experiments") this.setLens("experiments");
+  }
+
+  // ------------------------------------------------------------ the Experiments tab's landing (src/ui/landing.js)
+
+  /** The landing, made once: its page of cards stands over the stage, under the bar and the panel. */
+  landingLens() {
+    if (this.landingView) return this.landingView;
+    const raw = this.model.raw;
+    const view = new LandingLens({
+      replays: raw.replays,
+      open: (opened, card) => this.openCard(opened, card),
+      choose: (id) => this.select(id),
+      openLens: (lens) => {
+        this.select(null);
+        this.setLens(lens, true);
+      },
+      sourceUrl: (source) => this.model.sourceUrl(source),
+      // A card's part on the Engine map: a door into the view that holds it, where the scene has it.
+      door: (part) => {
+        const entity = this.model.get(part), lens = entity ? this.model.lensOf(entity) : null;
+        const view_ = this.views.find((item) => item.id === lens);
+        return view_ ? { lens, select: part, label: lens === "engine" ? "Its part on the Engine map" : `Its part in the ${view_.label} tab` } : null;
+      },
+      statuses: new Set((raw.statuses || []).map((status) => status.id)),
+      lensLabel: (lens) => this.views.find((item) => item.id === lens)?.label || null,
+    });
+    view.onChrome = () => this.current === view && this.renderChrome();
+    view.onPanel = () => this.current === view && (this.renderIndex(), this.renderPanel());
+    view.setTheme(this.stage?.palette ? Boolean(this.stage.palette.dark) : getComputedStyle(this).getPropertyValue("--is-dark").trim() === "1");
+    this.frame.insertBefore(view.box, this.hint); // after the bar: under it, and after it for the keyboard
+    this.landingView = view;
+    return view;
+  }
+
+  /** A replay's card pressed on the landing: the view that exists for it, as the tab opens it (src/replay/landing.js, opensOf). */
+  openCard(opened, card = null) {
+    if (!opened) return;
+    this.openedCard = card?.id || null;
+    this.state.landing = false;
+    this.state.example = opened.example || null;
+    this.state.part = opened.part || null;
+    this.state.selected = null;
+    this.setLens("experiments", true);
+    if (opened.run) this.current?.show?.(opened.run);
+    // The view's own address (run=, part=, example=) is not written: a view may change what it shows by its own controls.
+    this.writeAddress({ select: null, views: true });
+  }
+
+  /** Back to all experiments (the control under the bar, or the tab pressed again): the landing, where it was left. */
+  showLanding() {
+    if (this.state.landing && this.state.lens === "experiments") return;
+    this.state.landing = true;
+    this.state.example = null;
+    this.state.part = null;
+    this.state.selected = null;
+    this.setLens("experiments", true);
+    // A run left for the landing lets its drawing go; the runs it keeps (ReplayLens.keep) stay for the way back to it.
+    for (const lens of this.lenses.values()) lens.rest?.();
+    this.writeAddress({ select: null, views: true });
+    // The keyboard comes back to the card it left from.
+    const card = this.openedCard && this.landingView?.box.querySelector(`[data-card="${CSS.escape(this.openedCard)}"] .landing-open`);
+    card?.focus({ preventScroll: true });
+  }
+
+  /**
+   * The page's own address follows the landing's own state, as it follows the switch's entry (writeEntry): a card's detail
+   * is `select=card:<id>`, written as it opens and taken away as it closes or the tab is left; going back to the landing,
+   * or opening a view from a card, takes away what an address of a view left in it (run=, part=, example=, time=, …). The
+   * view's name stays the page's own (`lens=` as the visitor's address gave it, `#<view>` as a tab press writes it): the
+   * landing writes no `lens=`, which would outrank a later tab's #name. A view opened from a card writes no address of its
+   * own (a view changes what it shows by its own controls). In a frame that keeps its address (a published artifact's)
+   * nothing is written and nothing breaks; there only the outer link's #name reaches the page, read as a view's id alone.
+   */
+  writeAddress({ select = undefined, views = false } = {}) {
+    try {
+      const url = new URL(location.href);
+      if (views) for (const key of ["run", "part", "example", "time", "record", "layers", "strength", "play"]) url.searchParams.delete(key);
+      if (select === null || (views && !select)) url.searchParams.delete("select");
+      else if (select) url.searchParams.set("select", select);
+      history.replaceState(null, "", url);
+    } catch {
+      // A frame that keeps its address: the choice holds while the page is open.
+    }
   }
 
   // ------------------------------------------------------------ the switch's entries (schema/ENTRIES.md)
@@ -745,6 +864,20 @@ class CellsViewer extends HTMLElement {
     renderAtlasNav(this, this.state.lens === "proteins" ? chrome.nav || null : null);
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
+    // The way back to all experiments, in every view the tab opens from its landing.
+    const back = this.state.lens === "experiments" && !this.state.landing;
+    this.backButton.hidden = !back;
+    this.frame.classList.toggle("has-back", back);
+    this.frame.classList.toggle("on-landing", this.state.lens === "experiments" && this.state.landing);
+    // The picture lies under the page of cards: the keyboard does not stop on it there.
+    const onLanding = this.state.lens === "experiments" && this.state.landing;
+    this.canvas.tabIndex = onLanding ? -1 : 0;
+    // Where no 3D can be drawn, the page's note on it and the list it opens stand over the views, not over the landing's cards.
+    if (!this.stage) {
+      this.fallback.hidden = onLanding;
+      this.index.hidden = onLanding || !this.state.indexOpen;
+    }
+    if (back) this.frame.style.setProperty("--back-width", `${Math.ceil(this.backButton.getBoundingClientRect().width)}px`);
     this.viewToggle.hidden = this.viewCard.hidden;
     const switches = chrome.view ? [chrome.view.species && !this.speciesInBar ? "species" : null, "colour", (chrome.view.sizes || ["schematic", "real"]).length > 1 && !chrome.view.machine ? "sizes" : null, chrome.view.machine ? "detail" : null].filter(Boolean) : [];
     // On a phone a view's card folds to one line saying what is shown (styles.js .card-folds): the protein atlas's, the Laws
@@ -773,12 +906,8 @@ class CellsViewer extends HTMLElement {
     // may cover the mark on the picture, so the card carries the words itself there (styles.js .view-notice; rule 11 of
     // schema/QUANTITY_LAYERS.md, as the Cell view's card does for an illustrated flux).
     const marked = chrome.card && chrome.legend?.example ? [h("p", { class: "layer-example view-notice", role: "status" }, chrome.legend.example)] : [];
-    // A model system's view in the Experiments tab's place (showExample): the tab's list at the head of its card, the way back to the runs.
-    // While a part is shown, the example's pressed row says which part of it is shown, in the part's own short name, so
-    // that the row (the example's name, with its authors) reads as the example and, within it, the part, not as the part's.
-    const partShown = this.state.part ? (this.model.raw.replays?.experiments || []).find((item) => item.id === this.state.part) : null;
-    const listed = example ? this.runCard({ heading: chrome.card.heading, experiments: this.replays.listRows(this.state.part ? wholeRunOf(this.model.raw.replays, this.state.part) : null), doors: this.replays.doors.map((item) => item.entry), listOnly: true, within: partShown ? partShown.short || partShown.label : null }) : [];
-    if (chrome.card) this.viewCard.replaceChildren(...marked, ...listed, ...this.card(chrome.card));
+    // (The tab's list of experiments stood at the head of this card until 18 November 2026: the landing is the list now.)
+    if (chrome.card) this.viewCard.replaceChildren(...marked, ...this.card(chrome.card));
     if (chrome.run) this.viewCard.replaceChildren(...this.runCard(chrome.run));
     // A sweep's chart beside the picture on a wide window, out of the experiment's card, which the legend leaves little room.
     const sweeps = chrome.run?.sweeps || [], wide = this.clientWidth >= 760;
@@ -1459,17 +1588,10 @@ class CellsViewer extends HTMLElement {
     return [choose, this.sweepChart(shown, pick), units ? h("p", { class: "card-text run-units" }, units) : null].filter(Boolean);
   }
 
-  runCard({ heading, text, outcome, experiments: listed = [], runs, klass, ended, colour, details, sweeps = [], doors = [], units = null, listOnly = false, within = null }) {
-    // The page's other examples (a model system's entry, e.g. GARD) stand in the list beside the experiments, in their entry's own words; a press opens their view.
-    const experiments = [...listed, ...doors.map((id) => modelSystemOf(this.model?.raw, id)).filter(Boolean).map((entry) => ({ id: entry.id, label: entry.label, door: true, plain: entry.plain, active: entry.id === this.state.example, first: `door:${entry.id}` }))];
+  runCard({ heading, text, outcome, experiment = null, example = false, development = false, runs, klass, ended, colour, details, sweeps = [], units = null }) {
     const lens = this.current;
-    // With a run's details open, the details follow the run picked.
-    // A door (`door:<entry>`) shows that entry's own view in this tab's place (showExample); from it, a run is shown here again.
-    const pick = (id) => (id?.startsWith("door:") ? this.showExample(id.slice("door:".length)) : this.state.example || this.state.part ? this.showExample(null, { run: id }) : this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
-    const chooser = (id, label, options, active) => {
-      const select = h("select", { id, class: "run-select", "aria-label": label, onchange: () => pick(select.value) }, options.map(([value, text_]) => h("option", { value, selected: value === active }, text_)));
-      return select;
-    };
+    // With a run's details open, the details follow the run picked. From a model system's view or a part in the tab's place, a run is shown here again.
+    const pick = (id) => (this.state.example || this.state.part ? this.showExample(null, { run: id }) : this.state.selected?.startsWith("run:") ? this.select(`run:${id}`) : lens.show(id));
     // A fact from the record is drawn as a mark with its words beside it, never as a colour alone.
     // The signs are drawn, not typed, so they do not depend on a font having them.
     const SIGNS = { yes: "M4 7.8l2.4 2.4L11 5.2", no: "M4.6 4.6l5.8 5.8M10.4 4.6l-5.8 5.8", mixed: "M7.5 3.4v5M5 5.9h5M5 11.2h5", none: "M4.6 7.5h5.8" };
@@ -1481,36 +1603,15 @@ class CellsViewer extends HTMLElement {
             item.answer ? h("span", { class: "fact" }, mark(item.answerMark), item.label) : null,
           ]
         : [];
-    // Development runs stand under a heading of their own, apart from the experiments: a catalogue entry says `development`.
-    // Examples (invented numbers) stand under "Examples", never among experiments: a catalogue entry says `example`.
-    const listPart = (() => {
-        const row = (item) =>
-          h(
-            "button",
-            { class: "exp-row", type: "button", "aria-pressed": String(item.active), "aria-label": `${item.label}. ${item.door ? item.plain || "" : item.outcome?.spoken || ""}${inside(item) ? ` Shown within it: ${within}.` : ""}`, title: item.door ? item.plain || "" : null, dataset: item.door ? { door: item.id } : {}, onclick: () => pick(item.first) },
-            h("span", { class: "exp-name" }, item.label),
-            h("span", { class: "exp-found" }, found(item.outcome)),
-            // The part of this example that is shown (its short name), on a line of its own under the example's.
-            inside(item) ? h("span", { class: "exp-within" }, within) : null
-          );
-        const inside = (item) => Boolean(within) && item.active && !item.door;
-        const judged = experiments.filter((item) => !item.development && !item.example && !item.door), development = experiments.filter((item) => item.development), examples = experiments.filter((item) => item.example), opened = experiments.filter((item) => item.door);
-        const page = experiments.every((item) => item.door || item.listed);
-        const group = (list, label) => [h("p", { class: "eyebrow" }, label), h("div", { class: "experiments", role: "group", "aria-label": label, dataset: page ? { examples: "page" } : {} }, list.map(row))];
-        // Many, or more than one on a phone, where rows would cover the picture: a list to choose from, with a development run and an example named as such.
-        if (experiments.length > 6 || (experiments.length > 1 && this.clientWidth < 760)) return [h("p", { class: "eyebrow" }, "Experiments"), chooser("cells-experiment", "Experiment", experiments.map((item) => [item.first, `${item.example ? "Example: " : item.development ? "Development run: " : item.door ? "Model system: " : ""}${item.label}${item.outcome ? ` · ${item.outcome.spoken}` : ""}${inside(item) ? ` · ${within}` : ""}`]), experiments.find((item) => item.active)?.first), experiments.some(inside) ? h("p", { class: "exp-within exp-within-chosen" }, within) : null].filter(Boolean);
-        // One: its name. Several: a row each, with what the record says it found.
-        if (experiments.length <= 1) return [h("p", { class: "eyebrow" }, examples.length ? "Example" : development.length ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
-        return [...(judged.length ? group(judged, judged.length > 1 ? "Experiments" : "Experiment") : []), ...(development.length ? group(development, development.length > 1 ? "Development runs" : "Development run") : []), ...(examples.length ? group(examples, examples.length > 1 ? "Examples" : "Example") : []), ...(opened.length ? group(opened, opened.length > 1 ? "Model systems" : "Model system") : [])];
-      })();
-    // A model system's view in the tab's place (showExample) has a card of its own: the list stands at its head.
-    if (listOnly) return listPart;
+    // The experiment shown, named as what it is: a development run is no experiment, and a sheet of invented numbers is neither.
+    // (The tab's list of every experiment stood here until 18 November 2026: the landing is the list now, a press away under the bar.)
+    const listPart = [h("p", { class: "eyebrow" }, example ? "Invented numbers" : development ? "Development run" : "Experiment"), h("p", { class: "card-title" }, heading)];
     return [
       ...listPart,
-      // A part of this example (its tissue line), shown in the tab's place by a press (showPart): under the list of examples and
+      // A part of this experiment (the tumour tissue's line), shown in the tab's place by a press (showPart): under its name and
       // above its runs, so that it is in sight with them.
-      ...partDoors(this.model?.raw?.replays, experiments.find((item) => item.active)?.id, (id) => this.showPart(id), { root: this.shadowRoot }),
-      // The runs, at the head under the list of examples, so that they are in sight: a few are rows to press; many are a
+      ...partDoors(this.model?.raw?.replays, experiment, (id) => this.showPart(id), { root: this.shadowRoot }),
+      // The runs, at the head under its name, so that they are in sight: a few are rows to press; many are a
       // list to choose from, grouped by the sweep that holds them, in the sweeps' order.
       h(
         "div",
@@ -1566,8 +1667,8 @@ class CellsViewer extends HTMLElement {
             h("details", { class: "run-class-note" }, h("summary", {}, "What this class means"), h("p", { class: "card-text" }, [klass.description, klass.note].filter(Boolean).join(" ")))
           )
         : null,
-      // How this run ended, in the experiment's plain words, and any refusal the run records. An example was not run: its line carries no sign of how a run ended.
-      ended?.label ? h("p", { class: "card-text run-ended" }, experiments.find((item) => item.active)?.example ? "" : mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
+      // How this run ended, in the experiment's plain words, and any refusal the run records. A sheet of invented numbers was not run: its line carries no sign of how a run ended.
+      ended?.label ? h("p", { class: "card-text run-ended" }, example ? "" : mark(ended.refusal ? "no" : ended.early ? "mixed" : "yes"), ended.label, ended.refusal ? ` Refused: ${ended.refusal}` : "") : null,
       colour ? this.segmented("Colour", colour.options.map(([value, label]) => [value, label.replace(/^Membrane /, "").replace(/^./, (letter) => letter.toUpperCase())]), colour.active, (value) => lens.setRecord(value)) : null,
       h("div", { class: "run-actions" }, h("button", { class: "pill-button pill-small", type: "button", onclick: () => this.select(details) }, "Run details")),
     ].filter(Boolean);
@@ -1580,11 +1681,9 @@ class CellsViewer extends HTMLElement {
    */
   fitCard() {
     const card = this.viewCard;
-    // The Experiments tab's card keeps the page's list of examples (the listed experiments and the model systems) in view above
-    // the legend; a card whose list also holds a run opened by its address keeps its least height, as before.
-    // With it, the run chooser under the list (many runs), so that the runs are in sight.
-    const listed = [...card.querySelectorAll('.experiments[data-examples="page"]')].pop();
-    const list = listed ? card.querySelector("#cells-run") || listed : null;
+    // A replay's card keeps its head in view above the legend: the experiment's name, its parts and its run chooser (many runs),
+    // so that the runs are in sight.
+    const list = card.classList.contains("run-card") ? card.querySelector("#cells-run") : null;
     const least = Math.max(150, list ? list.getBoundingClientRect().bottom - card.getBoundingClientRect().top + card.scrollTop + 14 : 0);
     this.placeFoot();
     if (this.clientWidth < 760) {
@@ -1620,7 +1719,7 @@ class CellsViewer extends HTMLElement {
     }
     const origin = this.getBoundingClientRect().top;
     // As far as the bar, or with a panel open as far as the folded card's button under it, which stands in front.
-    const over = [this.bar, open && !this.viewToggle.hidden ? this.viewToggle : null].filter(Boolean).map((element) => element.getBoundingClientRect()).filter((rect) => rect.height > 0);
+    const over = [this.bar, open && !this.viewToggle.hidden ? this.viewToggle : null, this.backButton.hidden ? null : this.backButton].filter(Boolean).map((element) => element.getBoundingClientRect()).filter((rect) => rect.height > 0);
     const bottom = this.legend.getBoundingClientRect().bottom - origin, top = Math.max(...over.map((rect) => rect.bottom)) - origin + 8;
     this.legend.style.maxHeight = `${Math.max(56, Math.floor(bottom - top))}px`;
   }
@@ -1655,7 +1754,7 @@ class CellsViewer extends HTMLElement {
     // bar (which moves up over the caveat where the two would meet, and on a phone stands on a panel's top edge), and
     // on a phone the folded rail's and view card's buttons.
     const look = this.lookBox.hidden ? null : this.lookBox.querySelector(".look-switch");
-    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.rail, this.railToggle, this.panel, this.index, this.timeline, look, this.atlasNav?.trail, this.atlasNav?.map]
+    return [this.switchBox, this.speciesBox, this.indexButton.parentElement, this.legend, this.viewCard, this.viewToggle, this.backButton, this.rail, this.railToggle, this.panel, this.index, this.timeline, look, this.atlasNav?.trail, this.atlasNav?.map]
       .filter((element) => element && !element.hidden)
       .map((element) => element.getBoundingClientRect())
       .filter((rect) => rect.width && rect.height)

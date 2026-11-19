@@ -7,6 +7,7 @@ import { readPalette, watchTheme } from "./theme.js";
 import { Look, Decoration } from "./look.js";
 import { Finish } from "./passes.js";
 import { lookNumbers } from "./materials.js";
+import { drawGuarded } from "./frame_guard.js";
 
 // What a view that asks for nothing gets of the look at rest: nothing (see dress()).
 const FIT = { rich: false, filmic: true, exposure: 1.08, contact: true, reach: 1, shade: 0.6 };
@@ -160,7 +161,8 @@ export class Stage {
     // What moves for decoration only keeps no frame coming by itself: it moves while a view does.
     if (animating && this.decoration.tick(dt)) this.numbers.time.value = this.decoration.time;
     if (this.needsRender || animating) {
-      this.draw();
+      // A frame drawn into a context just lost fails inside three.js; the frames go on, and the restore draws again (core/frame_guard.js).
+      drawGuarded(() => this.draw(), () => this.renderer.getContext().isContextLost());
       for (const callback of this.afterRender) callback();
       this.needsRender = false;
       // A device that cannot keep a moving picture smooth gives up part of the rich look.
@@ -185,11 +187,14 @@ export class Stage {
     const info = this.renderer.info;
     info.autoReset = false;
     info.reset();
-    finish.setSize(this.width, this.height);
-    finish.before(this.scene, this.camera);
-    this.renderer.render(this.scene, this.camera);
-    finish.after();
-    info.autoReset = true;
+    try {
+      finish.setSize(this.width, this.height);
+      finish.before(this.scene, this.camera);
+      this.renderer.render(this.scene, this.camera);
+      finish.after();
+    } finally {
+      info.autoReset = true; // also where a pass failed (a context lost within the frame)
+    }
   }
 
   // ------------------------------------------------------------ the look at rest

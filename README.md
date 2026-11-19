@@ -2,17 +2,22 @@
 
 ![Cells logo: three connected cells beside the Cells wordmark.](docs/assets/cells-logo.png)
 
-Cells is a GPU-native multiscale simulator: an instrument of science for
-exploring and understanding biology, and in a way a virtual microscope. Its
-models span molecular assembly, cells and tissues, and its runs can be followed
-through time. Its first questions are how molecular
-assembly, cell physiology and communication shape memory, inheritance and tissue
-organisation. We are building toward integrated whole-cell models,
-whole organs and interacting organ systems. It is written in **Python and JAX**,
-so the same models compile for NVIDIA GPUs and for CPUs, and the CPU runs serve
-as independent references. A [3D visualizer](#the-visualizer-and-its-replays)
-shows the engine, the proteins it models and replays of saved runs.
-[Progress](PROGRESS.md) holds the detailed current status and evidence.
+**Cells is a physics simulator for biology.** It builds cells and tissues from
+explicit physical laws, from electrodiffusion, chemistry and transport to
+mechanics and molecular assembly, with energy, charge and matter accounted for
+at every step. A growing set of properties of its laws, such as the direction of
+a flux and the conservation of what it moves, is proved in Lean
+([`lean/`](lean/README.md)) and checked numerically against the engine. It is
+multiscale: its models span molecular assembly, cells and
+tissues, and its runs can be followed through time. It is GPU-native, written in
+**Python and JAX**, so the same models compile for NVIDIA GPUs and for CPUs, and
+the CPU runs serve as independent references. Its first questions are how
+molecular assembly, cell physiology and communication shape memory, inheritance
+and tissue organisation. We are building toward integrated whole-cell models,
+whole organs and interacting organ systems. A
+[3D visualizer](#the-visualizer-and-its-replays) shows the engine, the proteins
+it models and replays of saved runs. [Progress](PROGRESS.md) holds the detailed
+current status and evidence.
 
 ![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, Golgi apparatus to protein modification, sorting and packaging, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
 

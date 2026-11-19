@@ -75,14 +75,15 @@ def test_the_closed_pair_relaxes_with_its_exact_heat():
         start[0] + final.amount_increment[s, 0],
         start[1] + final.extracellular_amount_increment[s, 1],
     )
-    assert end[0] + end[1] == pytest.approx(start[0] + start[1], rel=1e-14)  # Material.
+    # abs=0 throughout: approx's default abs of 1e-12 would hide a relative error in small values.
+    assert end[0] + end[1] == pytest.approx(start[0] + start[1], rel=1e-14, abs=0)  # Material.
     closed = reference.closed_pair(spec.experiment.end_time, *start, 1.0, 1.0, P * AREA)
-    assert end[0] == pytest.approx(float(closed["n_a"]), rel=5e-4)  # The independent form.
+    assert end[0] == pytest.approx(float(closed["n_a"]), rel=5e-4, abs=0)  # The independent form.
     rt = 1e-3 * R * spec.model.temperature_K
     g = [n * (np.log(n) - 1.0) for n in (*start, *end)]  # V = 1 pL.
     decrease = rt * ((g[0] + g[1]) - (g[2] + g[3]))
     heat = float(final.passive_dissipated_energy_pJ[0])
-    assert heat > 0 and heat == pytest.approx(decrease, rel=1e-10)  # Exact, to rounding.
+    assert heat > 0 and heat == pytest.approx(decrease, rel=1e-10, abs=0)  # Exact, to rounding.
 
 
 def test_a_trace_start_is_admitted_and_the_tableau_is_not():

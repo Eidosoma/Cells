@@ -11,11 +11,18 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
 
 **Milestone 1 built, 14 November 2026 (§12).** The declaration, the contract's fail-closed marker and the composite's branch for declarations alone are built. S1–S3 hold on every row of every program in a live-owner world, and a planted control breaks them in each program family. S5 is identical in all four pairs, and crossrev is identical in all seven sets. S4 and P2 (on the heredity sheet) are reported. Integration grants no acceptance: C1–C13 and their references come next.
 
-**Refusals 4 and 5, later versions (status 16 November 2026):**
+**Refusals 4 and 5, later versions (status 18 November 2026):**
 - **On main,** with D172's round (ab267c39): refusal 4 version 1.1 (§3.4.1, FR-4's kinds).
 - **On main since fr45-next merged (16 November):**
   - refusal 4 version 1.2 (§3.4.2, FR-5's source kinds);
   - refusal 5 version 1.1 (§3.4.3, the charge anchor where charged routes are admitted).
+- **Version 1.3 (§3.4.4, 18 November; CORE_SEAMS §18's option (a)):** refusal 4 checks the kinds
+  per move, from each law's declared step terms, in place of version 1.2's lists of kinds.
+- **The membrane-state wall's door (§4, 19 November; D217, FR-2):** membrane state composes
+  beside a compartment only together with `scheduled_membrane_trafficking@1`, and the declaration
+  reads the areas and capacitances as `reference` reads.
+- **Refusal 5 version 1.2 (§3.4.5, 19 November; D217, FR-2):** an anchor is also admitted where an
+  admitted operator's routes charge the compartment; checked at the definition.
 
 **As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
 after that review: no engine code was added or changed. One read-only probe ran on the engine as
@@ -137,9 +144,11 @@ is an addition, not a change to existing behaviour.
    - *Composes:* @3, injection, D150's exchange and turnover (degradation at the node), D152's
      reactions at the node, the coupling operator, replacement@1 away from owners and away from
      owners as donors, and FR-10's bath schedule.
-   - *Refused, each with its door:* water and what requires it, closers, membrane state (the
-     membrane-state wall, which FR-3's note names too), insertion, the lumens, and FR-3's
-     `site_occupancy@1` until its one-line admission.
+   - *Composes since 19 November 2026 (D217):* membrane state together with FR-2's
+     `scheduled_membrane_trafficking@1`, the membrane-state wall's door.
+   - *Refused, each with its door:* water and what requires it, closers, membrane state without
+     trafficking (the membrane-state wall, which FR-3's note names too), insertion, the lumens,
+     and FR-3's `site_occupancy@1` until its one-line admission.
    - **A wall on the requester's first world:** FR-10's bath schedule and D152's reactions refuse
      each other, through the view field the schedule provides. Version 1's workaround is
      degradation by turnover; the door is FR-10's door S.
@@ -790,6 +799,103 @@ see that string differ.
 **Then the protocol's check:** FR-5's declared world must run bitwise equal to its development
 world, as FR-4's did (§3.4.1).
 
+### 3.4.4 Version 1.3: refusal 4 per move (CORE_SEAMS_DESIGN §4.4; the lead's ruling, 18 November 2026)
+
+**Why.** Versions 1.1 and 1.2 admit kinds by ID, so coverage is judged per kind, but it is needed
+per law: the transporter has a `stage_term`, yet its neutral law has no term of any kind (§3.4.1's
+open item). Every new kind also meant an edit to the lists.
+
+**The rule.** @3's own routes keep version 1.2's rule and its messages: pumps and channel
+populations are refused on a bounding patch, a permeability is admitted only where the world
+declares kinds, and under RK4 no declared kind is admitted. With an IMEX tableau, each declared
+kind is checked per move:
+- **Every row a kind moves at the compartment's node,** as its `moved_rows` gives them, needs a step
+  term. A move across the bounding patch moves its row there, at the patch's outside end.
+  - A charged row needs a charge slope, `stage_term`, which the per-stage rule holds at the node.
+  - A neutral row needs a material slope, `material_term`, or a definition-time material bound,
+    `material_bound`.
+  - A charge bound, `charge_bound`, holds neither: it bounds the declared state only.
+- **The term is read by law ID from the law registry.** The law declares it on the law template,
+  and the kind that hosts the law must have the hook that supplies it: `stage_term` and
+  `material_term` by those names, both bounds through `bound_rate`. So a planted kind that reuses a
+  law's ID, as FR-4's K2 does, is admitted only where it keeps the hooks the law names.
+- **Fails closed.** A move is refused, naming its law, when the law declares no needed term, when
+  its kind lacks the hook, when the move names no law, when the law is unregistered, or when
+  another kind hosts it.
+- **The kind is read bound to its declaration's structure entry** (the adapter's `bound_kind`), as
+  the inner model binds it, never as the static kind, which may differ per entry: a static read
+  could admit what the bound kind refuses (the bound-kind sweep, 19 November 2026; planted in the
+  test by a bound kind that loses its `stage_term`).
+- **A kind with no moved rows** is admitted by its hooks, never its ID:
+  - as a stage read, which declares its rows and has no `rates`, `stage_term`, `material_term` or
+    `bound_rate` (B4's buffer);
+  - or as a source, with none of a mover's hooks (§3.4.2's list, which `material_term` joins: FR-5's
+    damage and pH condition).
+
+**What changes.**
+- `ROUTE_KINDS`, `READ_KINDS` and `FACTOR_KINDS` go. A new kind or law joins by declaring its
+  terms, with no edit here.
+- **Newly refused:** the transporter's neutral law at a compartment's node, until it declares D4's
+  material term. No world on main has it (CORE_SEAMS_STEP0 §3, redone call by call for this
+  version).
+- **Newly admitted:** a kind none of whose moves is at a compartment's node, whatever its ID.
+- **What it needs** (CORE_SEAMS §18 as amended), on main since seam F's landing (8c2cb523, merged
+  at 599b8610): the law template's step terms (`registry/laws.STEP_TERMS`), that is `stage_term`,
+  `material_term`, `charge_bound` and `material_bound` on the cycle and route law types, and the
+  passive routes' two laws declaring theirs (the leak a `stage_term`, the neutral law a
+  `material_bound`). Without them, FR-4's and FR-5's declared worlds would be refused; the premise
+  test fails if a declaration goes or the template gains a term refusal 4 does not map.
+- **Text.** The summary's scope string changes to version 1.3. No judged record holds it. Frozen
+  operator summaries see it differ. The unchanged branches keep version 1.2's messages, since FR-1's
+  judged refusal record holds the permeability one.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- FR-4's and FR-5's declared worlds are admitted, with their moves at the lumen and their terms;
+- planted moves at the node, charged and neutral, each refused case beside its admitted twin;
+- a move with no law, an unregistered law, a law another kind hosts, and K2's reuse of a law ID;
+- non-movers judged by their hooks;
+- the transporter's neutral law, refused on the bounding patch and admitted on the plasma patch;
+- the built-in laws' declared terms against their kinds' hooks: the premise.
+
+### 3.4.5 Refusal 5 version 1.2: the anchor where an admitted operator's routes charge the compartment (FR-2; the lead's rulings, 19 November 2026)
+
+**Why.** FR-2's retrieval follows the membrane's charge (R2,
+[retrieval design](MEMBRANE_RETRIEVAL_DESIGN.md) §6), so the pool takes the charge of the membrane
+it receives. Within one run that charge sits in @3's increments over a zero anchor. A checkpoint
+imported as a new definition (D153's rule (b)) carries it as the pool's anchor, which version 1.1
+refuses in a world without kinds.
+
+**The rule.** A nonzero anchor is admitted where the world's admitted routes charge the
+compartment:
+- version 1.1's branch, unchanged: the world declares kinds and steps with an IMEX tableau;
+- version 1.2's branch: an operator on the admitted list declares that its routes move charge into
+  that compartment, through the contract's host-side hook `charged_compartments(spec,
+  declaration)` (compartment IDs; default none), so the declaration never imports the operator.
+  `scheduled_membrane_trafficking@1` declares its routes' pools. The branch holds whatever the
+  solver: the pool keeps no conductance of its own, so V_b = -q/C_b exactly (§3.1).
+- **Fails closed:** an anchor on a compartment that no route enters stays refused, per compartment,
+  and so does a hook that names an ID the declaration does not declare.
+
+**Where it is checked: at the definition** (`check_definition`, after refusal 7's admitted list),
+since parse sees only the declaration's own block.
+- The composite prefixes a definition-check refusal with "Invalid composite definition: ". So a
+  re-run of FR-1's R5 world reports that prefix before version 1.1's message. The message is kept
+  byte for byte wherever no operator charges a compartment, and FR-1's `classify()` still puts it
+  in its judged class (tested). FR-1's frozen judged run (run-05a8d193) and its rehearsals are
+  unchanged.
+- Refusal 5 now follows refusal 6 in a world with both faults. FR-1's judged worlds each carry one.
+- Where an operator charges some compartment but not this one, the message names it.
+
+**Text.** The summary's scope string names version 1.2 in every compartment world, as version 1.3's
+did (the lead's ruling (a)). No saved result holds it.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- two compartments of one owner, with a route into one, through a stand-in for FR-2's operator
+  until its module lands: the anchor admitted on the routed one and refused on the other
+  (planted), and a route into an undeclared ID refused;
+- the rule at each solver and with kinds, and version 1.1's words where nothing charges;
+- FR-1's R5 world through its protocol's own `refusal_pairs()` and `classify()`.
+
 ### 3.5 Floating components and the gauge
 
 - **Version 1 requires a held-bath topology** (refusal 6). The owner's capacitor component holds a
@@ -839,9 +945,10 @@ world, as FR-4's did (§3.4.1).
 | `scheduled_cell_replacement@1` | Composes away from owners | Events on an owner's slot are refused (§1.5); door R |
 | `scheduled_bath_composition@1` (FR-10) | Composes, but not beside D152 | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)). D152 lists the field that the bath schedule provides in its `CONFLICTS_VIEW`, so a dose world with reactions anywhere is refused. The conflict is nominal, at the field level only: see below |
 | Water, the k-anion symport, replacement@2 | Refused | Volume: door V (§5.3). The symport and replacement@2 require water |
-| `membrane_entity_state@1` | Refused: **the membrane-state wall** | Membrane state provides the patches' capacitance, so it is a field-input provider (§3.6). FR-3 makes it the owner of binding sites, so sites on a bounding patch wait for this wall's door; the 64-node cap and the held-bath topology then apply. FR-3's note names the same wall |
+| `membrane_entity_state@1` | Composes only together with FR-2's trafficking: **the membrane-state wall's door** (19 November 2026) | Membrane state provides the patches' area and capacitance, so it is a field-input provider (§3.6): the 64-node cap and the held-bath topology apply. The declaration reads the areas and capacitances as `reference` reads (D217): its identity checks take the declared bounding patch as data, so a provider of them is no conflict. Membrane state is admitted only beside `scheduled_membrane_trafficking@1`, the one writer of them on the list; alone, or for FR-3's sites, the wall stands |
+| `scheduled_membrane_trafficking@1` (FR-2) | Composes, after membrane state and this declaration | Retrieval into a compartment's pool and recycling from it, the charges following the patches ([retrieval design](MEMBRANE_RETRIEVAL_DESIGN.md), D217). It changes a bounding patch's area and capacitance, not its identity: V_b = -q/C_b holds at the current C_b (§3.1). Named on the list before its module lands |
 | Insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. FR-2's door (§7) |
-| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. **That line is not sufficient alone:** the declaration's own `CONFLICTS_VIEW` refuses membrane state, the sites' owner (the membrane-state wall), so the wall's door comes first or with it |
+| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. **That line is not sufficient alone** if the sites move to membrane state, their owner in FR-3's note: the wall's door admits membrane state only beside trafficking |
 | The partition; the bridge | Refused | Closers; door D |
 | The restricted lumens | Refused | They require insertion; a compartment is not a lumen's onset node |
 | The stationary analysis | Refused | It does not admit the composite (D150 ruling 2) |
@@ -990,7 +1097,7 @@ snapshot.
 | Floating topology (§3.5) | The representative refusal, and a floating world's acceptance | Finite-extracellular tissues |
 | Coupling source and route (§4) | D156's source-semantics and routing doors | FR-5 |
 | S, slot-scoped provision (FR-10's note) | A provider and a reader of one view field declare their slots; only an intersection is refused | The requester's dose, uptake, compartment and reactions world (§4) |
-| The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology | FR-3's sites on a bounding patch; FR-2 |
+| The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology. Opened for FR-2's trafficking on 19 November 2026, with the areas and capacitances read as references (D217) | FR-2 (opened); FR-3's sites on a bounding patch (waiting) |
 | FR-3's `site_occupancy@1` (§4) | A one-line, host-only admission, on its two conditions | FR-3 |
 | Condensation (§3.6) | Face-free nodes eliminated from the dense solve: a new solver ID | Tissues with a compartment per cell |
 

@@ -37,6 +37,7 @@ layout. This adapter is the only place that knows @3's names:
 
 import math
 import sys
+from collections.abc import Mapping
 from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
@@ -261,6 +262,199 @@ TYPE_NAMES = (
 )
 KINDS = ()  # The declared kinds' namespaced IDs, in canonical order.
 KIND_FIELDS = MappingProxyType({})  # {state, layout or control field: the kind that declares it}
+BOUND_KINDS = ()  # The declared kinds bound to their structure entries, in KINDS' order.
+
+# ------------------------------------------------------------------ the lifecycle by roles
+# docs/CORE_SEAMS_DESIGN.md §4.2, with the lead's rulings of 18 November 2026 (CORE_SEAMS §18): each
+# per-entity field declares its partition role (kind_registry.PartitionRole: extensive, intensive,
+# history or structural), and close, split, retire and open act on every field by its role, once.
+# - Entity axes: @3's slot axes, which closure propagates along, and a kind's own axes, whose
+#   entities name a host (Q1: the kind contract's host declaration). Neither @3's shared axes nor a
+#   kind's laws' internal axes carry entities: one set, F's (kind_registry.SHARED_AXES and
+#   entity_axes; a field's internal axes ride along at a split, copied whole, as shared ones do).
+# - A kind beside a closer (an operator that closes, retires or provides activity masks) is
+#   admitted only when the lifecycle acts on every field it holds (kind_lifecycle_errors):
+#   1. every partition field declares a role (missing_partition_roles; §4.2, fail-closed);
+#   2. every layout and control field declares its axes (Q1; the state fields' are state_axes);
+#   3. every entity axis it has declares at least one presence field (kind_registry.presence_fields;
+#      the lift of Q7 (a) after Q2, the lead's ruling of 19 November 2026). Where a closer is
+#      declared, the core's presence gate makes an entity on a closed host absent to the kind's
+#      rates, readouts and stage terms; a kind without presence would keep running there at the
+#      view, so it stays refused (Q7 (a), checked at the structure).
+SLOT_AXES = (
+    "cell_slot",
+    "extracellular_slot",
+    "membrane_slot",
+    "edge_slot",
+    "channel_slot",
+    "face_slot",
+)
+SHARED_AXES = kind_registry.SHARED_AXES  # F's set: one for the contract and the lifecycle.
+# The slot axes whose hosts the core's presence gate reads (kind_registry.AXIS_HOST_KINDS: cells,
+# outside nodes, patches and junctions); an own axis is gated through its declared axis_hosts.
+GATED_SLOT_AXES = tuple(kind_registry.AXIS_HOST_KINDS.values())
+KIND_ROLE_STEPS = ("roles", "axes", "presence", "hosts")  # kind_lifecycle_errors' reasons.
+
+
+def bound_kind(kind, declaration):
+    """`kind` bound to its declaration's structure entry (kind_registry.bound), as the inner model
+    binds it. A check reads the bound kind's hooks and fields, never the static kind's, which may
+    differ per entry: a static read could admit what the bound kind refuses (fail-open)."""
+    entry = kind.structure_entry(declaration) if kind.structure_entry else ()
+    return kind_registry.bound(kind, entry)
+
+
+def kind_field_axes(kind):
+    """{field: axes or None} of a bound kind's partition fields (kind_registry.partition_fields'
+    order): a state field's from state_axes, and a layout or control field's as the kind declares
+    them (Q1's declaration, `field_axes` {field: (axis, ...)}), None where it declares none."""
+    declared = getattr(kind, "field_axes", None) or {}
+    axes = dict(kind.state_axes)
+    return {
+        name: tuple(axes[name]) if name in axes else declared.get(name)
+        for name in kind_registry.partition_fields(kind)
+    }
+
+
+def kind_role_table(kind):
+    """{field: (PartitionRole, axes)} of a bound kind whose every partition field declares its
+    role and axes (kind_lifecycle_errors empty of the first two reasons)."""
+    axes = kind_field_axes(kind)
+    return {name: (kind.partition_roles[name], axes[name]) for name in axes}
+
+
+def kind_lifecycle_errors(kind):
+    """(reason, names) for the first of KIND_ROLE_STEPS a bound kind fails beside a closer, or ()
+    when the lifecycle acts on all it holds (the module comment above): the fields without a role
+    or axes; the entity axes (kind_registry.entity_axes) that declare no presence field; or the
+    entity axes whose host the core's presence gate cannot read (hosts: neither one of
+    GATED_SLOT_AXES nor an own axis with its axis_hosts declared, such as @3's channel or face
+    slots), where the gate could not close an entity (fails closed). A presence that names a field
+    the kind does not hold is the contract's own refusal (kind_registry.presence_fields raises)."""
+    missing = kind_registry.missing_partition_roles(kind)
+    if missing:
+        return ("roles", missing)
+    axes = kind_field_axes(kind)
+    undeclared = tuple(name for name, a in axes.items() if a is None)
+    if undeclared:
+        return ("axes", undeclared)
+    entities = kind_registry.entity_axes(kind)
+    declared = kind.presence if isinstance(kind.presence, Mapping) else {}
+    lacking = tuple(axis for axis in entities if not declared.get(axis))
+    if lacking:
+        return ("presence", lacking)
+    kind_registry.presence_fields(kind)  # Raises on a presence field it does not hold.
+    hosts = kind.axis_hosts if isinstance(kind.axis_hosts, Mapping) else {}
+    unhosted = tuple(axis for axis in entities if axis not in GATED_SLOT_AXES and axis not in hosts)
+    if unhosted:
+        return ("hosts", unhosted)
+    return ()
+
+
+def inner_role_table(roles, axes, *, excluded=()):
+    """{field: (PartitionRole, axes)} of @3's fields from its role table (surface_pump_v3's
+    FIELD_ROLES: {field: role name}), converted once here (Q4): every padded value of @3's is 0,
+    so a structural field's fill is 0. `axes` gives each field's axes; `excluded` names fields the
+    lifecycle leaves to their closers' own records (the pumps' history until composition's M5
+    Q2)."""
+    out = {}
+    for name, role in roles.items():
+        if name in excluded:
+            continue
+        fill = 0 if role == "structural" else None
+        out[name] = (kind_registry.PartitionRole(role, fill), tuple(axes[name]))
+    return out
+
+
+# The single lifecycle implementation for kinds' state fields (B1's last slice; design statement 1,
+# the lead's rulings of 19 November 2026). A closer that divides passes its maps, one per slot axis
+# that has them: {axis: (parent rows, daughter rows [rows, 2], daughter 1's fraction, due rows)};
+# a closer that retires passes its masks, {axis: bool [slots]}, by the entity hierarchy (the
+# partition is their one source). A field is acted on along its entity axis, the last of its axes;
+# shared axes ride along. Axes without maps (outside nodes, faces) are never divided or retired.
+LIFECYCLE_AXES = ("cell_slot", "membrane_slot", "channel_slot", "edge_slot")
+
+
+def _put_last(array, index, values, *, xp):
+    """array with array[..., index] = values (distinct slots)."""
+    if xp is np:
+        out = np.array(array, copy=True)
+        out[..., index] = values
+        return out
+    return array.at[..., index].set(values)
+
+
+def lifecycle_axis(name, axes, internal=()):
+    """A field's entity axis for the lifecycle, or None for a field on shared axes or its kind's
+    internal axes (`internal`) only, as kind_registry.entity_axes counts them. Fails closed: a field
+    with two entity axes, or whose entity axis is not its last, is refused."""
+    entities = [axis for axis in axes if axis not in SHARED_AXES and axis not in internal]
+    if not entities:
+        return None
+    if len(entities) > 1 or axes[-1] != entities[0]:
+        raise ValueError(
+            f"{name}: the lifecycle acts along one entity axis, its last ({tuple(axes)})"
+        )
+    return entities[0]
+
+
+def lifecycle_split(values, table, maps, *, xp, internal=MappingProxyType({})):
+    """({field: array} after a division's split, valid): each state field of `table` ({field:
+    (PartitionRole, axes)}) on an axis with maps, by role: extensive by the anchor rule (daughter 1
+    fl(a x), daughter 2 x - fl(a x), the parent 0, so the daughters sum to the parent exactly);
+    intensive copied to the daughters; history left at the daughters' 0, which validity requires;
+    structural kept as declared. Fields not in `values`, on shared or internal axes only
+    (`internal`: {field: its kind's internal axes}) or on an unmapped axis are returned
+    unchanged."""
+    out, valid = dict(values), xp.asarray(True)
+    for name, (role, axes) in table.items():
+        axis = lifecycle_axis(name, axes, internal.get(name, ()))
+        if name not in values or axis not in maps:
+            continue
+        parent, daughters, fraction, due = maps[axis]
+        value = values[name]
+        x = value[..., parent]
+        k1, k2 = daughters[:, 0], daughters[:, 1]
+        if role.role == "extensive":
+            if fraction is None:  # Fails closed: no fraction to split by.
+                raise ValueError(f"{name}: an extensive field on {axis} needs its map's fraction")
+            first = fraction * x
+            second = x - first
+            value = _put_last(value, k1, xp.where(due, first, value[..., k1]), xp=xp)
+            value = _put_last(value, k2, xp.where(due, second, value[..., k2]), xp=xp)
+            value = _put_last(value, parent, xp.where(due, 0.0, value[..., parent]), xp=xp)
+        elif role.role == "intensive":
+            value = _put_last(value, k1, xp.where(due, x, value[..., k1]), xp=xp)
+            value = _put_last(value, k2, xp.where(due, x, value[..., k2]), xp=xp)
+        elif role.role == "history":
+            fresh = (value[..., k1] == 0) & (value[..., k2] == 0)
+            valid &= xp.all(xp.where(due, fresh, True))
+        out[name] = value
+    return out, valid
+
+
+def lifecycle_retire(values, table, masks, records, *, xp, internal=MappingProxyType({})):
+    """({field: array}, {record field: array}) after a retirement, by role: a history field's value
+    on the retired slots moves into its record (`records`: {field: (record field, array)}), then 0;
+    every other role takes its fill (a structural field's declared fill, else 0). A history field
+    with no record is refused (fails closed: its history would be lost). `internal` as for
+    lifecycle_split."""
+    out, kept = dict(values), {}
+    for name, (role, axes) in table.items():
+        axis = lifecycle_axis(name, axes, internal.get(name, ()))
+        if name not in values or axis not in masks:
+            continue
+        mask, value = masks[axis], values[name]
+        if role.role == "history":
+            if name not in records:
+                raise ValueError(f"{name}: a history field retires only into its record")
+            record, held = records[name]
+            kept[record] = xp.where(mask, held + value, held)
+            out[name] = xp.where(mask, 0.0, value)
+        else:
+            fill = role.fill if role.role == "structural" and role.fill is not None else 0
+            out[name] = xp.where(mask, xp.asarray(fill, dtype=value.dtype), value)
+    return out, kept
 
 
 def structure_names(implementation):
@@ -277,10 +471,11 @@ def structure_names(implementation):
     heat = tuple(k for k in added if k.endswith("_dissipated_energy_pJ"))
     work = tuple(k for k in added if k.endswith("_work_pJ"))
     kinds = tuple(kind_id for kind_id, _ in implementation.structure.kinds)
-    owned = {}
+    owned, bound = {}, []
     entries = dict(implementation.structure.kinds)
     for kind_id in kinds:  # The registry the object's types were built from (its cache key).
         kind = kind_registry.bound(kind_registry.active().lookup(kind_id), entries[kind_id])
+        bound.append(kind)
         owned |= dict.fromkeys(  # Its fields for the declaration (§7.4 (n) 5).
             (*kind.state_fields, *kind.layout_fields, *kind.control_fields), kind_id
         )
@@ -298,6 +493,7 @@ def structure_names(implementation):
         WORK_FIELDS=(*WORK_FIELDS, *work) if work else WORK_FIELDS,
         KINDS=kinds,
         KIND_FIELDS=MappingProxyType(owned) if owned else KIND_FIELDS,
+        BOUND_KINDS=tuple(bound) if bound else BOUND_KINDS,
     )
 
 
@@ -830,14 +1026,21 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     carriers the two charges cancel.
 
     The heat is what attaching the pieces dissipates, the two-capacitor loss, with no bulk energy
-    subtracted (**S**): with r = sum_t dc_t (V_s - V_t) e_t, e_t the target's (inside cell) minus
-    (outside node) on the free nodes, and delta = K'^-1 r the free potentials' change,
-        H = 1/2 sum_t dc_t (V_s - V_t)^2 - 1/2 delta . r  >= 0,
-    exactly 0 where every piece meets its target's voltage. Into a free face-free node j that one
-    patch b bounds, from a patch k of b's cell, only phi_j moves: V_b' = (C_b V_b + dc V_k)/(C_b +
-    dc), and H = C_b dc (V_b - V_k)^2 / (2 (C_b + dc)), CORE_SEAMS §4.6's merge loss. The heat
-    with the clamps' and reservoirs' work closes the capacitor energy: H = sum_h phi_h (electrode_h
-    + supplied_h) - (U' - U), U = 1/2 sum C V^2 (the test's ledger).
+    subtracted (**S**). With e_t the target's port (inside cell +1, outside node -1) on the free
+    nodes, E = [e_t], D = diag(dc), jump_t = V_s - V_t and K0 the network with the pieces off their
+    sources and not yet attached (so K' = K0 + E D E^T),
+        H = 1/2 jump^T (D^-1 + E^T K0^-1 E)^-1 jump = 1/2 |L^-1 sqrt(D) jump|^2,
+        L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D),
+    a sum of squares, so H >= 0 at rounding and exactly 0 where every piece meets its target's
+    voltage; every eigenvalue of L L^T is at least 1, and a zero dc leaves its row the identity's.
+    By Woodbury it equals 1/2 sum_t dc_t jump_t^2 - 1/2 delta . r, with r = E D jump and delta =
+    K'^-1 r the free potentials' change, the form used until 19 November 2026: its difference of
+    two solves carries about 1/2 dc |jump| eps |V| and fell below zero where a piece met its target
+    at its own voltage to rounding (FR-2's probes). Into a free face-free node j that one patch b
+    bounds, from a patch k of b's cell, only phi_j moves: V_b' = (C_b V_b + dc V_k)/(C_b + dc), and
+    H = C_b dc (V_b - V_k)^2 / (2 (C_b + dc)), CORE_SEAMS §4.6's merge loss. The heat with the
+    clamps' and reservoirs' work closes the capacitor energy: H = sum_h phi_h (electrode_h +
+    supplied_h) - (U' - U), U = 1/2 sum C V^2 (the test's ledger).
 
     q: @3's layout at the current view, its field arrays refreshed; bound: the declared layout,
     refresh_field's reference; source, target: [T] active patch slots, distinct for each t; dc: [T]
@@ -869,12 +1072,10 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
     changed = xp.where(held, 0.0, moved)
     boundary = xp.concatenate((xp.zeros(n), q.boundary_V))
     after = field._capacitor_solve(charge + changed, boundary, tissue.field_layout(q1), xp=xp)
-    delta = xp.where(held, 0.0, after - phi)
     jump = v[source] - v[target]  # Each piece's voltage less its target's.
-    port = scatter(dc * jump, nodes, (q.membrane_cell[target],), xp=xp)
-    port = port - scatter(dc * jump, nodes, (n + q.membrane_outside[target],), xp=xp)
-    residual = xp.where(held, 0.0, port)
-    heat = 0.5e12 * (xp.sum(dc * jump**2) - xp.sum(delta * residual))
+    off = q.membrane_capacitance - scatter(dc, q.membrane_capacitance, (source,), xp=xp)
+    q0 = refresh_field(q._replace(membrane_capacitance=off, **derived), bound, xp=xp)
+    heat = merge_heat_pJ(q0, target, dc, jump, xp=xp)
     electrode = (q1.field_capacitor_matrix @ after - q.field_capacitor_matrix @ phi)[n:]
     return ChargeTransfer(
         view=q1,
@@ -886,6 +1087,35 @@ def charge_following_transfer(state, q, source, target, dc, bound, *, xp):
         before_V=v,
         after_V=patch_voltages(after, q1, xp=xp),
     )
+
+
+def merge_heat_pJ(q0, target, dc, jump, *, xp):
+    """The heat (pJ) of attaching pieces of capacitance dc[t] >= 0, each at its jump from its
+    target's voltage, jump[t] = V_s - V_t, to the network q0: the pieces off their sources and not
+    yet attached, its field arrays refreshed (charge_following_transfer's heat). A sum of squares,
+    1/2 |L^-1 sqrt(dc) jump|^2 with L L^T = I + sqrt(D) E^T K0^-1 E sqrt(D), E the targets' ports
+    and K0 the free block, solved with q0's own factor (held nodes fixed). Every eigenvalue of
+    L L^T is at least 1, so the factor is well conditioned, and a piece of zero capacitance
+    contributes exactly nothing. Outside the domain the heat is NaN, which the caller refuses: a
+    negative dc (the former form gave a finite number there), or a singular q0 under JAX (in
+    NumPy its refresh raises first, for the new view as before)."""
+    n, o = q0.active.size, q0.outside_active.size
+    p0 = tissue.field_layout(q0)
+    nodes = xp.arange(n + o)[:, None]
+    ports = (nodes == q0.membrane_cell[target][None, :]).astype(float) - (
+        nodes == (n + q0.membrane_outside[target])[None, :]
+    ).astype(float)
+    rhs = xp.where(~p0.fixed[:, None], ports / p0.capacitor_scale, 0.0)
+    if isinstance(p0, (field.FactoredLayout, field.FloorLayout)):
+        solved = field.cholesky_solve(p0.capacitor_factor, rhs, xp=xp)
+    else:
+        solved = xp.linalg.solve(p0.capacitor_solve_matrix, rhs)
+    response = ports.T @ solved  # E^T K0^-1 E (1/F): the targets' ports seen through K0.
+    root = xp.sqrt(dc)
+    matrix = xp.eye(dc.size) + root[:, None] * response * root[None, :]
+    lower = xp.linalg.cholesky(0.5 * (matrix + matrix.T))  # One symmetric matrix on either xp.
+    scaled = xp.linalg.solve(lower, root * jump)
+    return 0.5e12 * xp.sum(scaled**2)
 
 
 def check_carriers(rows, transference, valence, what):

@@ -12,7 +12,17 @@ Declarations (class attributes):
   names non-float fields. ``HEAT_FIELDS`` and ``WORK_FIELDS`` declare which owned
   fields are booked as dissipation or work: the family's energy-flow sum reads
   every field ending in ``_dissipated_energy_pJ`` or ``_work_pJ`` by name, so no
-  other owned field may carry those suffixes.
+  other owned field may carry those suffixes. ``ENERGY_ROLES`` ({owned state field:
+  kind_registry.EnergyRole(role, monotone)}, the kinds' form; docs/CORE_SEAMS_DESIGN.md §6.1)
+  declares a field's energy role, heat, work or stored, and whether it never decreases per
+  element. An undeclared field of HEAT_FIELDS is heat and monotone, and one of WORK_FIELDS is
+  work and not monotone (energy_roles), so today's programs stand. A declaration keeps both
+  lists complete, since the run view and the declarations manifest read them: heat only on a
+  field of HEAT_FIELDS, work only on one of WORK_FIELDS, and stored on a field of neither,
+  without either suffix. The composite's dissipation check (non-negative and non-decreasing per
+  element) takes monotone heat only, and its energy ledger's flows every heat and work field, so
+  a non-monotone heat (GARD's event heat, closing against a state function) is booked but not
+  held monotone. A stored field is a level, in neither.
 * Entity writes, ``ENTITY_WRITES``: inner state fields it changes, each mapped to
   the owned accumulators that book the change, so the inner ledgers close with
   the operator's ledger terms (Δx = Σ over writers of their booked terms).
@@ -35,7 +45,10 @@ Declarations (class attributes):
   ``REQUIRES``) and its summary, and defines nothing else of the contract
   (``DECLARATION_MAY_DEFINE``, checked fail closed at registration): no field,
   schedule, view, factor, closure, ledger, readout, energy role, step method,
-  schedule hook or definition-check hook of its own.
+  schedule hook or definition-check hook of its own. Its ``SCOPED_READS`` may
+  only be unscoped ``reference`` reads (the bound values as data, D217): it has
+  no part to consume a view and no ``read_slots``, and a reference read
+  constrains no changer of its field.
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -94,6 +107,11 @@ Declarations (class attributes):
     record back, and the composite runs its ledger and dissipation checks on that adjusted
     row, so every inner ledger and every heat element read as if nothing moved (the domain is
     read on the actual row, at the view);
+  - ``TAKES_LIFECYCLE``: a retiring event map that takes ``lifecycle=``, the composite's
+    callable for the kinds' state fields by role (pump_composite_adapter.lifecycle_split and
+    lifecycle_retire), and calls it with its maps and retirement masks at every division.
+    Beside a kind with fields on its slot axes, a retiring operator without it is refused
+    (fails closed: the kinds' history would be lost);
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
 * Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
@@ -169,6 +187,7 @@ fields are the inner model's followed by each operator's in declared order.
 Defaults below are the idle answers: no parts, no terms, no columns.
 """
 
+from collections.abc import Mapping
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -247,6 +266,7 @@ class Operator:
     STATE_DTYPES = MappingProxyType({})
     HEAT_FIELDS = ()
     WORK_FIELDS = ()
+    ENERGY_ROLES = MappingProxyType({})  # {owned state field: kind_registry.EnergyRole}
     LAYOUT_FIELDS = ()
     CONTROL_FIELDS = ()
     EXPERIMENT_KEYS = ()
@@ -285,6 +305,7 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    TAKES_LIFECYCLE = False  # Its event map takes lifecycle= (module docstring).
     # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
     # field solve): the composite passes the inner implementation object as `inner=` to its
     # event, half_step and rates calls and to initial_values (static), and host methods reach
@@ -406,6 +427,14 @@ class Operator:
         as above)."""
         return {}
 
+    def charged_compartments(self, spec, declaration):
+        """The compartments, by their declared IDs (operators/compartments.py), into which its
+        routes move charge (host side, as above). Refusal 5 version 1.2 admits a nonzero charge
+        anchor on each, for the operators on the compartments declaration's admitted list: a world
+        whose admitted routes charge a compartment must be able to resume from its own checkpoint
+        (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.5). (): none."""
+        return ()
+
     def changed_slots(self, spec, declaration):
         """Door S, host: {field: entity indices} for each field its scoped Change covers (the union
         over the run: later doses, onsets and closures included)."""
@@ -429,6 +458,16 @@ class Operator:
     def species_potentials(self, declaration):
         """The standard potentials it declares, ((species, mu°/RT, c0 in mM), ...); ().
         core/species_registry.check_potentials refuses one that the registry gives otherwise."""
+        return ()
+
+    def standard_free_energies(self, declaration):
+        """The reaction-level standard free energies it declares (docs/CORE_SEAMS_DESIGN.md §7.1,
+        seam E): ((stoichiometry, dG°/RT, c0 in mM), ...), the stoichiometry ((species, nu), ...)
+        with nu signed (products positive); (). A law with constants of its own (a cycle's
+        equilibrium constant, say) declares them here, and the species registry's check compares
+        each with the registry's sum of nu mu°/RT, converted by (sum of nu) ln(c0_registry / c0).
+        A species' potential is the case of one species at nu = 1; species_potentials keeps
+        declaring those, as today's check reads them."""
         return ()
 
     def view_events(self, spec, declaration, schedule):
@@ -601,6 +640,7 @@ DECLARATION_MAY_DEFINE = frozenset(
         "summary",
         "VIEW_LAYERS",
         "view_events",
+        "SCOPED_READS",  # Unscoped reference reads only (_declaration_read_errors).
     }
 )
 
@@ -628,6 +668,25 @@ def declaration_errors(operator):
         if name not in DECLARATION_MAY_DEFINE and _defined_below_operator(operator, name):
             kind = "overrides" if callable(getattr(Operator, name)) else "declares"
             errors.append(f"{kind} {name}")
+    return errors + _declaration_read_errors(operator)
+
+
+def _declaration_read_errors(operator):
+    """A declaration's SCOPED_READS (D217): each Read is a reference read, the bound value as data,
+    and unscoped, since a declaration has no part to consume a view (current) and holds no field
+    as physical through them (fixed reads are its CONFLICTS_VIEW's), and defines no read_slots."""
+    reads = operator.SCOPED_READS
+    if not isinstance(reads, Mapping):
+        return ["declares SCOPED_READS that is not a mapping of fields to Reads"]
+    errors = []
+    for field, declared in reads.items():
+        if isinstance(declared, Read) or type(declared) is not tuple:
+            declared = (declared,)  # A malformed entry is refused here, read by read.
+        for read in declared:
+            if not (isinstance(read, Read) and read.mode == "reference" and not read.scoped):
+                errors.append(
+                    f"declares a read of {field} that is not an unscoped reference read ({read!r})"
+                )
     return errors
 
 
@@ -670,6 +729,7 @@ def check_declarations(operator):
     for field in (*operator.HEAT_FIELDS, *operator.WORK_FIELDS):
         if field not in operator.STATE_AXES:
             raise ValueError(f"{name}: heat and work fields must be owned state")
+    _check_energy_roles(operator)
     if set(operator.STATE_RESETS) & set(operator.ENTITY_WRITES):
         raise ValueError(f"{name}: a field is either a ledgered write or a kinetic reset")
     if operator.STATE_RESETS and not operator.EVENT:
@@ -700,6 +760,10 @@ def check_declarations(operator):
         raise ValueError(f"{name}: a mask is closed or provided, not both")
     if operator.RETIRES and not operator.EVENT:
         raise ValueError(f"{name}: retirement happens at events")
+    if not isinstance(operator.TAKES_LIFECYCLE, bool) or (
+        operator.TAKES_LIFECYCLE and not operator.RETIRES
+    ):
+        raise ValueError(f"{name}: TAKES_LIFECYCLE is a bool, true only for a retiring operator")
     if operator.EVENT_REPLACES and not operator.EVENT:
         raise ValueError(f"{name}: replaced fields need an event map")
     for field, accumulators in operator.EVENT_REPLACES.items():
@@ -718,6 +782,63 @@ def check_declarations(operator):
     _check_records(operator)
     _check_kinds(operator)
     return operator
+
+
+def energy_roles(operator):
+    """{owned state field: kind_registry.EnergyRole} of every field the operator books as energy,
+    in STATE_AXES order: its declaration (ENERGY_ROLES), else heat and monotone for a field of
+    HEAT_FIELDS and work, not monotone, for one of WORK_FIELDS (today's rule)."""
+    out = {}
+    for field in operator.STATE_AXES:
+        role = operator.ENERGY_ROLES.get(field)
+        if role is None and field in operator.HEAT_FIELDS:
+            role = kind_registry.EnergyRole("heat", True)
+        elif role is None and field in operator.WORK_FIELDS:
+            role = kind_registry.EnergyRole("work", False)
+        if role is not None:
+            out[field] = role
+    return out
+
+
+def monotone_heat(operator):
+    """The operator's HEAT_FIELDS whose energy role is monotone, in HEAT_FIELDS' order: the fields
+    the composite's dissipation check holds non-negative and non-decreasing per element."""
+    roles = energy_roles(operator)
+    return tuple(k for k in operator.HEAT_FIELDS if roles[k].monotone)
+
+
+def _check_energy_roles(operator):
+    """ENERGY_ROLES: kind_registry.EnergyRole values on owned state fields, consistent with
+    HEAT_FIELDS and WORK_FIELDS (heat only on a listed heat field, work only on a listed work field,
+    stored on neither and on no suffixed field)."""
+    name, roles = operator.LAW_ID, operator.ENERGY_ROLES
+    if not isinstance(roles, Mapping):
+        raise ValueError(f"{name}: ENERGY_ROLES maps owned state fields to EnergyRole")
+    lists = {"heat": operator.HEAT_FIELDS, "work": operator.WORK_FIELDS}
+    for field, role in roles.items():
+        if field not in operator.STATE_AXES:
+            raise ValueError(f"{name}: the energy role of {field} names no owned state field")
+        if not (
+            isinstance(role, kind_registry.EnergyRole)
+            and role.role in kind_registry.ENERGY_ROLES
+            and isinstance(role.monotone, bool)
+        ):
+            raise ValueError(
+                f"{name}: the energy role of {field} is an EnergyRole of "
+                f"{', '.join(kind_registry.ENERGY_ROLES)} with a bool monotone"
+            )
+        listed = [r for r, fields in lists.items() if field in fields]
+        if role.role == "stored":
+            if listed or field.endswith((HEAT_SUFFIX, WORK_SUFFIX)):
+                raise ValueError(
+                    f"{name}: {field} is stored energy, a level: it is neither a heat nor a work "
+                    f"field, and carries neither {HEAT_SUFFIX} nor {WORK_SUFFIX}"
+                )
+        elif listed != [role.role]:
+            raise ValueError(
+                f"{name}: {field} is declared {role.role}, so it is listed in "
+                f"{role.role.upper()}_FIELDS alone (listed in: {', '.join(listed) or 'neither'})"
+            )
 
 
 def _check_records(operator):

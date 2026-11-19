@@ -16,6 +16,13 @@ Code awaiting qualification belongs in the checkout with its existing guards
 and validation status intact; integration alone grants no scientific acceptance.
 Coordinate file ownership in this shared checkout and do not overwrite another
 developer's changes.
+Several agents commit to main in this one checkout (user direction, 19 November 2026, D227).
+Commit only your own paths, and name them: `git add <paths>`, then
+`git commit -m "..." -- <paths>`, so that another agent's staged changes are never swept into
+your commit. Never use `git add -A`, `git add .`, `git commit -a`, or a commit without paths
+while anything else is staged. Check `git diff --cached --name-only` before committing. If git
+reports a merge in progress, another agent is landing: wait, and do not commit, reset, stash or
+check out over it. Never rebase, amend a pushed commit or force-push main.
 
 # BETSE's role
 
@@ -65,6 +72,9 @@ as BETSE, BITSEY, tyssue, Chaste, Morpheus, CompuCell3D, PhysiCell and cellGPU.
   runs also freeze the module's files beside the snapshot.
 - If a check needs more than 30 minutes to reach the code under test, build a
   faster harness first.
+- Gates are sized to the change (D223, amended by D229). A landing with no src/ change runs the
+  tier-1/2 files it can reach (from recorded runtime imports and file reads), plus the always-run
+  guard set, and tiers 1+2 run in full nightly. Queued heads may be gated together as a stack.
 - The routine test gate is `scripts/test_tiers.py run --tiers tests/test_tiers.json
   --tier 1` (about 6 minutes on four cores). Add tier 2 (about 11 more minutes)
   before landing engine changes; run tier 3 deliberately. A gate passes when
@@ -79,7 +89,10 @@ or more, including acceptance, benchmark or regression jobs, launch detached
 with durable logs and result/failure artifacts, then return control to the user.
 Do not automatically wait or poll repeatedly for detached jobs; the user will
 request status checks.
-Do not interrupt an active computation merely to stop assistant polling.
+Do not interrupt an active computation merely to stop assistant polling. A running test gate
+whose head a newer head of the same change has replaced may be stopped as a whole unit, since
+its result is no longer needed (user direction, 19 November 2026, D224). Science runs, and any
+run whose result is still needed, are never interrupted.
 Follow-up audits and regression jobs should wait for the user's next instruction.
 
 From 8 November 2026 a single lead agent coordinates this checkout, with at most
@@ -101,6 +114,10 @@ the scientific and engineering risk.
 - Add a protocol or independent review when it resolves a concrete risk or
   supports a new scientific claim; explain that purpose briefly. Batch related
   low-risk work and validation where practical.
+- Keep the test suite's cost down (user direction, 19 November 2026, D224): a bug fix
+  adds a row to an existing parametrized test, or nothing, and never a new test file for a
+  small bug. A new test that compiles or runs a world states its seconds and its reason at
+  landing. Tests no longer needed are removed in batches with a removal list.
 - Preserve failed evidence, reproducibility, conservation/domain checks and
   numerical tolerances. Simplify the process, not the scientific standards;
   leave frozen evidence and active jobs untouched.

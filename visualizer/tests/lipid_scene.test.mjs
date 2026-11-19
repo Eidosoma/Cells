@@ -159,7 +159,7 @@ test("the picture says what is its own: on the picture, in the legend, and while
   assert.ok(gather && !gather.hidden, "said while the founder gathers");
   const chrome = lens.chrome();
   assert.match(chrome.legend.note.text, /No law of Cells computes how the lipids move and pack/);
-  assert.match(chrome.legend.note.text, /^Example: invented numbers · not a run of Cells' engine/);
+  assert.match(chrome.legend.note.text, /^Invented numbers · no run of Cells' engine/);
   assert.match(lens.describe("assembly:assembly").note, /No light shows what helped any one join: the run does not record it/, "no light for what helped a join, where the run records none, and the assembly's panel says so");
   for (const [slot, form] of FORMS.slice(0, 3).entries()) assert.ok(chrome.legend.items[slot].label.includes(form.replace("soft ", "")), `the legend says the form of a leading type's head: ${form}`);
   assert.match(chrome.legend.items[3].label, /round, grey/);

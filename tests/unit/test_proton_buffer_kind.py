@@ -10,8 +10,9 @@ and an unbuffered held bath at pH 7.4:
 - material and energy: protons carried out of the buffered cell (the planted charged carrier,
   B5's role) leave H_eq by exactly what moved, and the energy ledger closes with the closure's
   declared term as stored free energy; without that term it fails;
-- admission: an inner route for H at the buffered node is refused; the envelope refuses a k_on
-  outside it at the definition and admits the declared one;
+- admission: an inner route for H at the buffered node is refused; so is a buffered held bath,
+  whose supply @3 values at the stored total; the envelope refuses a k_on outside it at the
+  definition and admits the declared one;
 - a failed read (the protons gone) refuses the step.
 """
 
@@ -324,6 +325,21 @@ def test_an_inner_route_for_the_proton_at_a_buffered_node_is_refused():
     with pytest.raises(ConfigError, match="moves the proton row H at a buffered node"):
         parse_spec(buffered_world(h_route=1e-9))
     parse_spec(buffered_world(h_route=1e-9, declare=False))  # Unbuffered, @3's route is fine.
+
+
+def test_a_buffered_held_bath_is_refused():
+    """A held bath's supply is valued at its stored total's concentration (@3's reservoir work),
+    while every route there books against the free proton, so a buffered held bath's energy ledger
+    cannot close; it is refused at parse. The control: the cell's closure beside the unbuffered
+    bath is admitted. Planted: the same declaration with the bath named among the buffered nodes."""
+    parse_spec(buffered_world())
+    raw = buffered_world()
+    m = raw["model"]
+    cell, bath = m["cells"][0]["id"], m["extracellular"][0]["id"]
+    assert m["extracellular"][0]["reservoir"]
+    m[proton_buffer.MODEL_KEY] = read({cell: ["B"], bath: ["B"]}, {"B": 1e7})
+    with pytest.raises(ConfigError, match=f"node {bath} is a held bath"):
+        parse_spec(raw)
 
 
 def test_the_envelope_refuses_a_k_on_outside_it():

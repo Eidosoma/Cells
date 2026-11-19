@@ -2,7 +2,9 @@
 // beside the doors to other views the overlay names; a published page carries only the listed
 // experiments' runs and the runs its scene names (lib/build_page.mjs, publishedReplays); and the
 // page's own overlay and selection hold the replication's entry as data, each source with its own
-// revision (17 November 2026).
+// revision (17 November 2026). Since 18 November 2026 the tab opens on its landing, which lists from
+// the cards (data/replays/cards.json, `listing`): the page publishes what the cards list, and the
+// overlay says nothing of listing.
 //
 //   node --test tests/experiments_list.test.mjs
 import test from "node:test";
@@ -41,7 +43,6 @@ test("an experiment opens on the run its entry names (opens.run, an arm), where 
   const two = { ...index, runs: [...index.runs, { id: "listed-one--y", experiment: "listed-one", arm: "y" }] };
   const named = (arm) => new Catalogue({ ...two, experiments: two.experiments.map((item) => (item.id === "listed-one" ? { ...item, opens: { run: arm } } : item)) });
   assert.equal(named("y").firstListed(), "listed-one--y");
-  assert.equal(named("y").listRows().find((row) => row.id === "listed-one").first, "listed-one--y", "its row in the list opens the same run");
   assert.equal(named("not-packaged").firstListed(), "listed-one--x");
   assert.equal(new Catalogue(two).firstListed(), "listed-one--x");
 });
@@ -52,16 +53,40 @@ test("a published page carries the listed experiments' runs and the runs its sce
   assert.deepEqual(published.runs.map((run) => run.id), ["listed-one--x", "loop--planarian"]);
   assert.deepEqual(published.experiments.map((item) => item.id), ["listed-one", "loop"], "the loop's entry stays, unlisted, for the run the species names");
   assert.equal(publishedReplays({ ...index, experiments: index.experiments.map(({ listed, ...rest }) => rest) }, scene).runs.length, 3, "a catalogue that lists nothing is carried whole");
+  // The landing's listing (the cards' `listing.experiments`) says which, whatever the catalogue's `listed` says, with the parts of each.
+  const parted = { ...index, experiments: [...index.experiments, { id: "old-part", part_of: "old", label: "A part" }], runs: [...index.runs, { id: "old-part--p", experiment: "old-part", arm: "p" }] };
+  const byCards = publishedReplays(parted, scene, { experiments: ["old"] });
+  assert.deepEqual(byCards.runs.map((run) => run.id), ["old--a", "loop--planarian", "old-part--p"]);
+  assert.deepEqual(byCards.experiments.map((item) => item.id), ["old", "loop", "old-part"]);
+  assert.equal(publishedReplays(parted, scene, { experiments: [] }).runs.length, 1, "a listing of none carries only the runs the scene names");
 });
 
-test("the page's overlay lists the replication and GARD's door, each source with its own revision, in words that judge nothing", () => {
+test("the page publishes every experiment the landing's cards list, and the cards list every experiment a card opens", () => {
+  const cards = readJson("data/replays/cards.json"), overlay = readJson("data/replays/overlay.json");
+  const opened = cards.cards.flatMap((card) => card.replay?.experiments || []);
+  assert.deepEqual([...new Set(opened)], cards.listing.experiments);
+  for (const id of cards.listing.experiments) {
+    assert.ok(overlay.experiments[id], `${id}: the landing lists an experiment the catalogue has`);
+    // Every source of a listed entry carries its own revision: a commit of main (a link is built at it), or "pending"; the
+    // viewer's own files (visualizer/) link on the viewer's branch, as every source under visualizer/ does.
+    const entry = overlay.experiments[id];
+    for (const source of [...(entry.sources || []), ...(entry.outcome?.sources || [])]) assert.ok(source.path.startsWith("visualizer/") || (typeof source.revision === "string" && (/^[0-9a-f]{7,40}$/.test(source.revision) || source.revision === "pending")), `${id}: ${JSON.stringify(source)}`);
+    // And no word of its own calls invented numbers an example (its sources' places are the places' own headings).
+    if (entry.example === true) assert.doesNotMatch(JSON.stringify([entry.label, entry.plain, ...Object.values(entry.stops || {}).map((stop) => stop.label)]), /example/i, id);
+  }
+  const index = { format: "cells.visualizer.replay_index@1", experiments: Object.keys(overlay.experiments).map((id) => ({ id, ...(overlay.experiments[id].part_of ? { part_of: overlay.experiments[id].part_of } : {}) })), runs: Object.keys(overlay.experiments).map((id) => ({ id: `${id}--a`, experiment: id, arm: "a" })) };
+  const published = new Set(publishedReplays(index, {}, cards.listing).experiments.map((item) => item.id));
+  for (const id of cards.listing.experiments) assert.ok(published.has(id), `${id} is published`);
+});
+
+test("the page's overlay holds the replication's entry and GARD's door, each source with its own revision, in words that judge nothing", () => {
   const overlay = readJson("data/replays/overlay.json"), selection = readJson("data/replays/selection.json");
-  const listed = Object.entries(overlay.experiments).filter(([, entry]) => entry.listed === true).map(([id]) => id);
-  assert.deepEqual(listed, ["gap-junction-linear-network"]);
+  // The landing lists from the cards; the overlay says nothing of listing (18 November 2026).
+  assert.deepEqual(Object.entries(overlay.experiments).filter(([, entry]) => "listed" in entry).map(([id]) => id), []);
   assert.deepEqual(overlay.doors, [{ entry: "gard" }]);
   const entry = overlay.experiments["gap-junction-linear-network"];
   // Its runs open on the quantity the driver states beside each (concentration.json), else on the amount; the two forms' units are said, never converted.
-  // The tab opens on its part `opens.part` names (the tumour tissue's line, until the user says otherwise).
+  // Its card on the landing opens on the part `opens.part` names (the tumour tissue's line, until the user says otherwise).
   assert.deepEqual([entry.development, entry.outcome.judged, entry.summary, entry.opens], [true, false, "summary.json", { run: "figure5-network-g1", record: ["stated.concentration", "amount.mR"], layers: ["junction-coupling"], part: "gap-junction-tissue-line" }]);
   assert.match(entry.units, /the Norton form's runs in mM, the as-written runs in µM .* never converts one to the other\.$/);
   assert.match(entry.outcome.status, /^Development work, not judged/);

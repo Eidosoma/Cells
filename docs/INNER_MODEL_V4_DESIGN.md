@@ -506,6 +506,21 @@ are recorded here.
   - `pump_laws`: `nak_atp_mass_action_positive@1` when a patch declares a Na/K pump,
     `ca_atp_mass_action_positive@1` when a patch declares a calcium pump, each with its fuel kind;
   - `junction_heat_booking`;
+  - `heat_bookings` (seam D, CORE_SEAMS §6.1–6.2): ((mover class, booking ID), ...), the
+    definition's `heat_bookings` key for channels, membranes, pumps, calcium pumps and each declared
+    kind by its ID, never junctions (they keep `junction_heat_booking`) and never the tableau, so ()
+    for every definition of today's. The step books each class picked as `trapezoid_nonnegative@1`
+    once, in the core (`surface_pump_v3.trapezoid_fields`): its heat rates at the end state and the
+    last-stage potentials, through `explicit_rates` with the stage read and the door, averaged with
+    stage 0's. The water and replacement families run @3 through compositions whose inner carries
+    the structure, so they book what is picked too;
+  - `free_amount_reads` (P1, CORE_SEAMS §17; §19 as amended): the declared kinds, sorted, whose
+    stage rows all name, as their third item, a registered law that declares `free_amounts`
+    (`rapid_binding@1`). The step's positivity predictor then reads the quantity it
+    differentiates: the stage read at the predicted stored totals, whose failure refuses the step.
+    Everywhere else, version 1's reads included, it keeps today's form, the start read's amount
+    plus the stored derivative, so () for every definition of today's. A read whose rows mix the
+    two, and a free-amount read beside a read of today's form, are refused at binding;
   - from later landings, each present only when declared: the passive law (A5), transporters (B5),
     stage reads (B4), implicit route kinds, and B7's flag for a free face-free node with an ion
     route.
@@ -1274,7 +1289,9 @@ undeclared built-in changes nothing:
    at every checked state, the step's end included (§7.4 (g) 1). **The read changes
    concentrations, never charge:** the field solve takes the stored rows' charges (FR-4's H_eq
    and buffer totals), and only the rates see the read amounts. A stage read declares
-   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites.
+   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites. A row
+   may name its read's law as a third item (P1's selector, `free_amount_reads` above); rows are
+   shared by their (species, node), whatever law each names.
    - **`stage_check(read, cell, outside, p, *, xp)` → one bool,** after every rate of a stage
      (`readouts` and `explicit_rates`), with the read state and the stage's total node rates; a
      false check refuses the row or the step. FR-4's envelope (the closure's lag at the stage's
@@ -1818,6 +1835,22 @@ active), with check_onsets' refusal kept.
 - The composite passes its inner adapter to `inner.checked_rows` and itself to `row_checks`.
 - The in-place guard's quiet host check takes `ledgers`.
 - The tests are in `tests/unit/test_ledger_lists.py`.
+
+**The kind's hook, as built (E, CORE_SEAMS §7.3; the lead's ruling (b) of 19 November 2026).**
+- `structure(model)` reads each declared kind's ledgers once, through the kind contract's
+  `kind_ledgers(kind, declaration)`, into `InnerStructure.kind_ledgers`: ((kind ID, ((ledger,
+  diagnostic), ...)), ...) by kind ID, names only. A malformed result, or a name one of @1's ten
+  ledgers or their diagnostics holds, refuses the definition, naming the kind.
+- With no kind ledger, `ledger_lists` returns @1's own objects, so today's programs are unchanged.
+  Otherwise each kind's ledgers follow @1's ten: their names and diagnostics, their bounds
+  through `ledger_limits` (the kind's `ledger_bounds`, a function of the row and the layout at
+  check time) and their values through `balances` and `device_balances` (the kind's
+  `ledger_terms` under the same names).
+- At binding, a declared ledger its `ledger_terms` does not value is refused, and so is a
+  `ledger_bounds` that gives one bound per ledger in another number or shape.
+- The composite builds its lists from its inner model's, so it takes the ledgers with no edit.
+- The tests are in `tests/unit/test_kind_ledgers.py`: a planted producer's adenine moiety on both
+  check paths and through a composite, its off-by-one plant, and the refusals.
 
 **The D148 case.** This is an in-place change to shared qualified code, `checked_rows` and
 `row_checks`. Nothing should change, so the criteria are checked as "identical":

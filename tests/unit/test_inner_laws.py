@@ -34,7 +34,10 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 ARS = "imex_ars222_face_electromigration@1"
-GATED = [law for law in inner_laws.CHANNEL_LAWS.values() if law.gated]
+TODAYS = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
+GATED = [law for law in TODAYS.values() if law.gated]  # The Kv1 laws': test_kv1_channel_laws.
+KV1_CODES = {"kv1p1_mh2@1": 5, "kv1p2_mh@1": 6, "kv1p3_mh@1": 7, "kv1p4_mh@1": 8, "kv1p6_mh@1": 9}
+LATER_CODES = {**KV1_CODES, "clleak_always_open@1": 10}  # Registered after today's five.
 INNER_PROTOCOL = (
     "MODEL_ID",
     "STATE_AXES",
@@ -131,8 +134,11 @@ def voltages():
 
 
 def test_channel_declarations_match_todays_tables():
-    assert inner_laws.channel_codes() == dict(spec3.LAW_CODES)
-    for law_id, law in inner_laws.CHANNEL_LAWS.items():
+    # Today's five keep their rows; the Kv1 pilot's five follow, registered with codes 5-9, then
+    # the always-open chloride leak at 10.
+    assert inner_laws.channel_codes() == {**dict(spec3.LAW_CODES), **LATER_CODES}
+    assert list(inner_laws.CHANNEL_LAWS) == [*spec3.TODAYS_CHANNEL_LAWS, *LATER_CODES]
+    for law_id, law in TODAYS.items():
         assert law.law_id == law_id
         assert len(law.gates) == spec3.GATE_COUNTS[law_id]
         assert law.gated == (law.code < spec3.GATED_CODES)
@@ -143,7 +149,7 @@ def test_channel_declarations_match_todays_tables():
         assert (law.kinetics is None) == (law.opening is None) == (not law.gated)
         assert law.reads == () and law.loop_term is None and law.provenance == "parity"
         assert law.represents is law.preserves is law.supports is law.qualified is None
-    steps = {law_id: law.rk4_step_s for law_id, law in inner_laws.CHANNEL_LAWS.items()}
+    steps = {law_id: law.rk4_step_s for law_id, law in TODAYS.items()}
     assert steps == {
         spec3.KV1P5_LAW_ID: surface_pump_v3.RK4_POTASSIUM_STEP,
         spec3.KIR2P1_LAW_ID: surface_pump_v3.RK4_POTASSIUM_STEP,

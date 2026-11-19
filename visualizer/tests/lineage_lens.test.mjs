@@ -147,7 +147,7 @@ test("the clock counts fissions: its ladder, its opening step, molecule by molec
 
 test("words that must stand: the example's mark on the picture and in the legend, and the picture's choices said", () => {
   const { lens, shown } = lensFor();
-  const says = "Example: invented numbers · not a run of Cells' engine";
+  const says = "Invented numbers · no run of Cells' engine";
   for (const level of LEVELS) {
     lens.setLevel(level.id);
     assert.equal(shown.filter((label) => label.text === says).length, 1, `${level.id}: the mark stands at the place shown`);
@@ -161,7 +161,7 @@ test("words that must stand: the example's mark on the picture and in the legend
   assert.match(chrome.stamp, /Lineage A: the preprint's single-event form$/);
   assert.doesNotMatch(chrome.stamp, /comparison model|passive law/);
   assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.every(([, value]) => !/the comparison model|the engine's passive law/.test(String(value))));
-  assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.some(([label, value]) => label === "Example" && value.startsWith(says)));
+  assert.ok(lens.describe("assembly:fission:lineage-a:3").facts.some(([label, value]) => label === "Invented numbers" && value.startsWith(says)));
   assert.ok(shown.some((label) => /the shape is the picture's choice/.test(label.text)), "the shape is said to be the picture's");
   assert.ok(shown.some((label) => /the picture's choice/.test(label.text) && /map/i.test(label.text)), "the map's axes are said to be the picture's");
   assert.match(lens.describe("assembly:assembly").note, /the picture's choice/);
@@ -322,7 +322,7 @@ test("an example is never one of a pair of forms, nor two runs of different worl
   const offered = (file) => Boolean(lensFor({ file }).lens.chrome().card.pair);
   assert.equal(offered(example()), false, "the example's two lineages are no pair");
   const marked = forms();
-  marked.example = { says: "Example: invented numbers · not a run of Cells' engine", made_by: "a test" };
+  marked.example = { says: "Invented numbers · no run of Cells' engine", made_by: "a test" };
   for (const run of marked.runs) { run.engine_models = []; run.revision = null; }
   assert.equal(offered(marked), false, "an example stating two forms is still no pair");
   const worlds = forms();

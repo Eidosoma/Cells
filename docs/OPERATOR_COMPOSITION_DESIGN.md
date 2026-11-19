@@ -5,8 +5,9 @@ order. Proposed the same day, written by this lane's operators owner for the lea
 advisor reviews it before its options go to the user (D142: options first, then discussion). Docs
 only; nothing here is built. Branch `composition-design` from 3c10b833 (integration-d172's c1).
 
-**M1 built, 18 November 2026 (§17):** the composite's rules C1–C4, on branch
-`core-pass-operators-m1`. Every operator is unchanged. M2–M5 follow B1 (CORE_SEAMS §18 as amended).
+**M1 landed, 18 November 2026 (§17):** the composite's rules C1–C4, built on branch
+`core-pass-operators-m1` and merged into main as `core-pass-operators-b1` at 42ca1c94 (merge
+c78462e7). Every operator is unchanged. M2–M5 follow B1 (CORE_SEAMS §18 as amended).
 
 **Engine models:** `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with
 `membrane_entity_state@1`, `scheduled_membrane_insertion@2`, `ideal_osmosis_linear_compliance_water@1`,

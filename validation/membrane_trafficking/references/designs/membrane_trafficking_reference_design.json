@@ -1,0 +1,3550 @@
+{
+ "about": "FR-2 v1's code-blind references: plants, floors, zero power, primary comparisons",
+ "band_rule": "max(the test's tolerance, 10 x the floor)",
+ "floor_flags": {
+  "T6 naive_difference": [
+   {
+    "check": "T6 residual",
+    "floor_over_band": 1.0767016046421158,
+    "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+   },
+   {
+    "check": "T6 residual",
+    "floor_over_band": 1.0767016046421158,
+    "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+   },
+   {
+    "check": "T6 residual",
+    "floor_over_band": 2.729490260192835,
+    "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1"
+   }
+  ],
+  "T6 stable_change": [],
+  "absolute_storage": [
+   {
+    "band": 2.045800932210175e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.045800932210175e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+   },
+   {
+    "band": 2.06474489306311e-10,
+    "check": "T4_V_b_rel",
+    "floor": 2.0647448930631098e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+   },
+   {
+    "band": 1.9133245437548877e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9133245437548877e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+   },
+   {
+    "band": 3.0970230944871134e-10,
+    "check": "T4_V_b_rel",
+    "floor": 3.0970230944871134e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+   },
+   {
+    "band": 1.9578295063376963e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9578295063376964e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+   },
+   {
+    "band": 1.5486057923511079e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.548605792351108e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+   },
+   {
+    "band": 2.0044261756282433e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.0044261756282433e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+   },
+   {
+    "band": 1.0324666916391062e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.0324666916391063e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+   },
+   {
+    "band": 2.3229718443671413e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 2.3229718443671413e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+   },
+   {
+    "band": 9.90344101047338e-11,
+    "check": "T4_V_k_rel",
+    "floor": 9.90344101047338e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+   },
+   {
+    "band": 2.045800932210175e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.045800932210175e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+   },
+   {
+    "band": 2.06474489306311e-10,
+    "check": "T4_V_b_rel",
+    "floor": 2.0647448930631098e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+   },
+   {
+    "band": 1.9133245437548877e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9133245437548877e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+   },
+   {
+    "band": 3.0970230944871134e-10,
+    "check": "T4_V_b_rel",
+    "floor": 3.0970230944871134e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+   },
+   {
+    "band": 1.9578295063376963e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9578295063376964e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+   },
+   {
+    "band": 1.5486057923511079e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.548605792351108e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+   },
+   {
+    "band": 2.0044261756282433e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.0044261756282433e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+   },
+   {
+    "band": 1.0324666916391062e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.0324666916391063e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+   },
+   {
+    "band": 2.1681485636242028e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 2.1681485636242028e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+   },
+   {
+    "band": 9.972000153325098e-11,
+    "check": "T4_V_k_rel",
+    "floor": 9.972000153325098e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+   },
+   {
+    "band": 1.9133245437548877e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9133245437548877e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+   },
+   {
+    "band": 3.0970230944871134e-10,
+    "check": "T4_V_b_rel",
+    "floor": 3.0970230944871134e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+   },
+   {
+    "band": 1.9578295063376963e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9578295063376964e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+   },
+   {
+    "band": 1.5486057923511079e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.548605792351108e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+   },
+   {
+    "band": 2.045800932210175e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.045800932210175e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+   },
+   {
+    "band": 2.06474489306311e-10,
+    "check": "T4_V_b_rel",
+    "floor": 2.0647448930631098e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+   },
+   {
+    "band": 1.9133245437548877e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9133245437548877e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+   },
+   {
+    "band": 3.0970230944871134e-10,
+    "check": "T4_V_b_rel",
+    "floor": 3.0970230944871134e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+   },
+   {
+    "band": 1.9578295063376963e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.9578295063376964e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+   },
+   {
+    "band": 1.5486057923511079e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.548605792351108e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+   },
+   {
+    "band": 2.0044261756282433e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.0044261756282433e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+   },
+   {
+    "band": 1.0324666916391062e-10,
+    "check": "T4_V_b_rel",
+    "floor": 1.0324666916391063e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+   },
+   {
+    "band": 2.053263872401777e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 2.053263872401777e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+   },
+   {
+    "band": 7.743971412831053e-11,
+    "check": "T4_V_b_rel",
+    "floor": 7.743971412831053e-12,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+   },
+   {
+    "band": 1.563972913833019e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 1.5639729138330188e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+   },
+   {
+    "band": 1.0230777738917285e-10,
+    "check": "T4_V_k_rel",
+    "floor": 1.0230777738917285e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+   },
+   {
+    "band": 1.5949373352785883e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 1.5949373352785882e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+   },
+   {
+    "band": 1.0213727344235142e-10,
+    "check": "T4_V_k_rel",
+    "floor": 1.0213727344235142e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+   },
+   {
+    "band": 1.6271532474299503e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 1.6271532474299503e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+   },
+   {
+    "band": 1.0196733689635134e-10,
+    "check": "T4_V_k_rel",
+    "floor": 1.0196733689635134e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+   },
+   {
+    "band": 1.6606980937922727e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 1.660698093792273e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+   },
+   {
+    "band": 1.0179796492359379e-10,
+    "check": "T4_V_k_rel",
+    "floor": 1.0179796492359379e-11,
+    "tolerance": 1e-12,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+   },
+   {
+    "band": 6.172917541041062e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 6.172917541041062e-12,
+    "tolerance": 1e-12,
+    "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+   },
+   {
+    "band": 2.0646456432530266e-09,
+    "check": "T4_V_b_rel",
+    "floor": 2.0646456432530266e-10,
+    "tolerance": 1e-12,
+    "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+   },
+   {
+    "band": 6.172917541041062e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 6.172917541041062e-12,
+    "tolerance": 1e-12,
+    "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+   },
+   {
+    "band": 2.0646456432530266e-09,
+    "check": "T4_V_b_rel",
+    "floor": 2.0646456432530266e-10,
+    "tolerance": 1e-12,
+    "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+   },
+   {
+    "band": 1.1344283565241188e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.1344283565241188e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:retrieval #1"
+   },
+   {
+    "band": 1.029673515995932e-09,
+    "check": "T4_V_b_rel",
+    "floor": 1.029673515995932e-10,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:retrieval #1"
+   },
+   {
+    "band": 5.17419732162612e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 5.17419732162612e-11,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:recycling #1"
+   },
+   {
+    "band": 9.202689266594924e-11,
+    "check": "T4_V_k_rel",
+    "floor": 9.202689266594924e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:recycling #1"
+   },
+   {
+    "band": 1.0571279451915808e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.0571279451915807e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #1"
+   },
+   {
+    "band": 1.246861954930617e-09,
+    "check": "T4_V_b_rel",
+    "floor": 1.246861954930617e-10,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #1"
+   },
+   {
+    "band": 1.6436027917921942e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 1.6436027917921941e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #2"
+   },
+   {
+    "band": 3.6439346464107366e-10,
+    "check": "T4_V_b_rel",
+    "floor": 3.6439346464107366e-11,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #2"
+   },
+   {
+    "band": 7.502166463505727e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 7.502166463505727e-11,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #3"
+   },
+   {
+    "band": 9.52963234475443e-11,
+    "check": "T4_V_k_rel",
+    "floor": 9.52963234475443e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #3"
+   },
+   {
+    "band": 7.957548550865927e-10,
+    "check": "T4_V_b_unchanged_rel",
+    "floor": 7.957548550865927e-11,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #4"
+   },
+   {
+    "band": 9.521111487752404e-11,
+    "check": "T4_V_k_rel",
+    "floor": 9.521111487752404e-12,
+    "tolerance": 1e-12,
+    "where": "stress_held_bath:cycle #4"
+   },
+   {
+    "band": 3.1773905708347364e-11,
+    "check": "T4_unchanged_of_max_phi",
+    "floor": 3.1773905708347365e-12,
+    "tolerance": 1e-12,
+    "where": "stress_cleft:retrieval #1"
+   },
+   {
+    "band": 2.611499840655828e-10,
+    "check": "T4_V_b_rel",
+    "floor": 2.6114998406558283e-11,
+    "tolerance": 1e-12,
+    "where": "stress_cleft:retrieval #1"
+   }
+  ],
+  "increment_storage": []
+ },
+ "floor_flags_carriers": {
+  "naive_difference": [
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+    "who": "total"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+    "who": "total"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+    "who": "total"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+    "who": "total"
+   },
+   {
+    "band": 9.638601299076914e-14,
+    "floor": 1.310085871330643e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 5.869383773820923e-14,
+    "floor": 1.3101467007038103e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5",
+    "who": "total"
+   },
+   {
+    "band": 5.869383773820923e-14,
+    "floor": 1.3101467007038103e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5",
+    "who": "uptake_0"
+   },
+   {
+    "band": 5.755530168149761e-14,
+    "floor": 1.3101451407934143e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6",
+    "who": "total"
+   },
+   {
+    "band": 5.755530168149761e-14,
+    "floor": 1.3101451407934143e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6",
+    "who": "uptake_0"
+   },
+   {
+    "band": 5.64167201362918e-14,
+    "floor": 1.3101435808931304e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7",
+    "who": "total"
+   },
+   {
+    "band": 5.64167201362918e-14,
+    "floor": 1.3101435808931304e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7",
+    "who": "uptake_0"
+   },
+   {
+    "band": 5.527809309884e-14,
+    "floor": 1.3101420210029595e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8",
+    "who": "total"
+   },
+   {
+    "band": 5.527809309884e-14,
+    "floor": 1.3101420210029595e-13,
+    "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8",
+    "who": "uptake_0"
+   },
+   {
+    "band": 1.3015724241329599e-14,
+    "floor": 1.5720787185922432e-13,
+    "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+    "who": "total"
+   },
+   {
+    "band": 1.3015724241329599e-14,
+    "floor": 1.5720787185922432e-13,
+    "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 1.3015724241329599e-14,
+    "floor": 1.5720787185922432e-13,
+    "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1",
+    "who": "total"
+   },
+   {
+    "band": 1.3015724241329599e-14,
+    "floor": 1.5720787185922432e-13,
+    "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 2.7117969980716565e-14,
+    "floor": 2.882144317433571e-13,
+    "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1",
+    "who": "total"
+   },
+   {
+    "band": 8.677827184548708e-15,
+    "floor": 2.882144317433571e-13,
+    "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1",
+    "who": "uptake_0"
+   },
+   {
+    "band": 1.8440142796167857e-14,
+    "floor": 2.882144317433571e-13,
+    "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1",
+    "who": "uptake_1"
+   }
+  ],
+  "stable_change": []
+ },
+ "floors_by_half_step": {
+  "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.5720787185922432e-13,
+     "residual_of_band": 1.0767016046421158
+    },
+    "stable_change": {
+     "W_carriers_pJ": 5.780142693958368e-24,
+     "residual_of_band": 0.0002855770520739226
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.0646456432530266e-10,
+    "T4_heat_rel": 2.7541932920403005e-11,
+    "T4_unchanged_of_max_phi": 6.172917541041062e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.108721781381161e-14,
+    "T4_heat_rel": 2.9271394221447993e-13,
+    "T4_unchanged_of_max_phi": 3.0780096729540918e-15
+   }
+  },
+  "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.5720787185922432e-13,
+     "residual_of_band": 1.0767016046421158
+    },
+    "stable_change": {
+     "W_carriers_pJ": 5.780142693958368e-24,
+     "residual_of_band": 0.0002855770520739226
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.0646456432530266e-10,
+    "T4_heat_rel": 2.7541932920403005e-11,
+    "T4_unchanged_of_max_phi": 6.172917541041062e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.108721781381161e-14,
+    "T4_heat_rel": 2.9271394221447993e-13,
+    "T4_unchanged_of_max_phi": 3.0780096729540918e-15
+   }
+  },
+  "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3100960079275602e-13,
+     "residual_of_band": 0.031189184324915808
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.0409148858780618e-18,
+     "residual_of_band": 1.21573387845746e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.0647448930631098e-11,
+    "T4_heat_rel": 4.367828345554434e-11,
+    "T4_unchanged_of_max_phi": 2.045800932210175e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 4.10121988221544e-15,
+    "T4_heat_rel": 5.296654365220517e-14,
+    "T4_unchanged_of_max_phi": 1.805030529838903e-15
+   }
+  },
+  "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.310085871330643e-13,
+     "residual_of_band": 0.04678314589843094
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027255194158325e-18,
+     "residual_of_band": 1.761098388041831e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 3.0970230944871134e-11,
+    "T4_heat_rel": 4.3693086429206013e-11,
+    "T4_unchanged_of_max_phi": 1.9133245437548877e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 5.209378747810085e-15,
+    "T4_heat_rel": 6.776951731387392e-14,
+    "T4_unchanged_of_max_phi": 1.795277573907389e-15
+   }
+  },
+  "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101061451664075e-13,
+     "residual_of_band": 0.04678363588741703
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027340772447675e-18,
+     "residual_of_band": 1.7377286393079963e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.548605792351108e-11,
+    "T4_heat_rel": 5.1823932232867036e-11,
+    "T4_unchanged_of_max_phi": 1.9578295063376964e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.5471404494181183e-15,
+    "T4_heat_rel": 1.1862975283483255e-13,
+    "T4_unchanged_of_max_phi": 1.8263165087036545e-15
+   }
+  },
+  "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101264207132926e-13,
+     "residual_of_band": 0.04678422981661241
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.0274263062418432e-18,
+     "residual_of_band": 1.7247468017102926e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.0324666916391063e-11,
+    "T4_heat_rel": 6.030496820434005e-11,
+    "T4_unchanged_of_max_phi": 2.0044261756282433e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.993061016620796e-15,
+    "T4_heat_rel": 1.830140908286179e-13,
+    "T4_unchanged_of_max_phi": 1.8586655164619797e-15
+   }
+  },
+  "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101264214663413e-13,
+     "residual_of_band": 0.07797320923107315
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.2164660453102804e-18,
+     "residual_of_band": 2.7774672702961358e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 2.3229718443671413e-11,
+    "T4_V_k_rel": 9.90344101047338e-12,
+    "T4_heat_rel": 6.910511258200574e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.952269078921767e-15,
+    "T4_V_k_rel": 1.4979122625191817e-15,
+    "T4_heat_rel": 2.0835144635638759e-13
+   }
+  },
+  "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3100960079275602e-13,
+     "residual_of_band": 0.031189184324915808
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.0409148858780618e-18,
+     "residual_of_band": 1.21573387845746e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.0647448930631098e-11,
+    "T4_heat_rel": 4.367828345554434e-11,
+    "T4_unchanged_of_max_phi": 2.045800932210175e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 4.10121988221544e-15,
+    "T4_heat_rel": 5.296654365220517e-14,
+    "T4_unchanged_of_max_phi": 1.805030529838903e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.310085871330643e-13,
+     "residual_of_band": 0.04678314589843094
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027255194158325e-18,
+     "residual_of_band": 1.761098388041831e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 3.0970230944871134e-11,
+    "T4_heat_rel": 4.3693086429206013e-11,
+    "T4_unchanged_of_max_phi": 1.9133245437548877e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 5.209378747810085e-15,
+    "T4_heat_rel": 6.776951731387392e-14,
+    "T4_unchanged_of_max_phi": 1.795277573907389e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101061451664075e-13,
+     "residual_of_band": 0.04678363588741703
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027340772447675e-18,
+     "residual_of_band": 1.7377286393079963e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.548605792351108e-11,
+    "T4_heat_rel": 5.1823932232867036e-11,
+    "T4_unchanged_of_max_phi": 1.9578295063376964e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.5471404494181183e-15,
+    "T4_heat_rel": 1.1862975283483255e-13,
+    "T4_unchanged_of_max_phi": 1.8263165087036545e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101238598462363e-13,
+     "residual_of_band": 0.05354760914016441
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.7713396006007873e-18,
+     "residual_of_band": 1.9560195731648296e-05
+    }
+   },
+   "absolute_storage": {},
+   "increment_storage": {}
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.310085871330643e-13,
+     "residual_of_band": 0.04678314589843094
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027255194158325e-18,
+     "residual_of_band": 1.761098388041831e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 3.0970230944871134e-11,
+    "T4_heat_rel": 4.3693086429206013e-11,
+    "T4_unchanged_of_max_phi": 1.9133245437548877e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 5.209378747810085e-15,
+    "T4_heat_rel": 6.776951731387392e-14,
+    "T4_unchanged_of_max_phi": 1.795277573907389e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101061451664075e-13,
+     "residual_of_band": 0.04678363588741703
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027340772447675e-18,
+     "residual_of_band": 1.7377286393079963e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.548605792351108e-11,
+    "T4_heat_rel": 5.1823932232867036e-11,
+    "T4_unchanged_of_max_phi": 1.9578295063376964e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.5471404494181183e-15,
+    "T4_heat_rel": 1.1862975283483255e-13,
+    "T4_unchanged_of_max_phi": 1.8263165087036545e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101264207132926e-13,
+     "residual_of_band": 0.04678422981661241
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.0274263062418432e-18,
+     "residual_of_band": 1.7247468017102926e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.0324666916391063e-11,
+    "T4_heat_rel": 6.030496820434005e-11,
+    "T4_unchanged_of_max_phi": 2.0044261756282433e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.993061016620796e-15,
+    "T4_heat_rel": 1.830140908286179e-13,
+    "T4_unchanged_of_max_phi": 1.8586655164619797e-15
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101264221842443e-13,
+     "residual_of_band": 0.17154030631252237
+    },
+    "stable_change": {
+     "W_carriers_pJ": 5.529429273083844e-19,
+     "residual_of_band": 5.9604136512265414e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 2.1681485636242028e-11,
+    "T4_V_k_rel": 9.972000153325098e-12,
+    "T4_heat_rel": 6.933319680018474e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.9705399557029936e-15,
+    "T4_V_k_rel": 1.5051413573928397e-15,
+    "T4_heat_rel": 4.364356645353797e-13
+   }
+  },
+  "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3100960079275602e-13,
+     "residual_of_band": 0.031189184324915808
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.0409148858780618e-18,
+     "residual_of_band": 1.21573387845746e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.0647448930631098e-11,
+    "T4_heat_rel": 4.367828345554434e-11,
+    "T4_unchanged_of_max_phi": 2.045800932210175e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 4.10121988221544e-15,
+    "T4_heat_rel": 5.296654365220517e-14,
+    "T4_unchanged_of_max_phi": 1.805030529838903e-15
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.310085871330643e-13,
+     "residual_of_band": 0.04678314589843094
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027255194158325e-18,
+     "residual_of_band": 1.761098388041831e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 3.0970230944871134e-11,
+    "T4_heat_rel": 4.3693086429206013e-11,
+    "T4_unchanged_of_max_phi": 1.9133245437548877e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 5.209378747810085e-15,
+    "T4_heat_rel": 6.776951731387392e-14,
+    "T4_unchanged_of_max_phi": 1.795277573907389e-15
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101061451664075e-13,
+     "residual_of_band": 0.04678363588741703
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.027340772447675e-18,
+     "residual_of_band": 1.7377286393079963e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.548605792351108e-11,
+    "T4_heat_rel": 5.1823932232867036e-11,
+    "T4_unchanged_of_max_phi": 1.9578295063376964e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 3.5471404494181183e-15,
+    "T4_heat_rel": 1.1862975283483255e-13,
+    "T4_unchanged_of_max_phi": 1.8263165087036545e-15
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101264207132926e-13,
+     "residual_of_band": 0.04678422981661241
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.0274263062418432e-18,
+     "residual_of_band": 1.7247468017102926e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.0324666916391063e-11,
+    "T4_heat_rel": 6.030496820434005e-11,
+    "T4_unchanged_of_max_phi": 2.0044261756282433e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.993061016620796e-15,
+    "T4_heat_rel": 1.830140908286179e-13,
+    "T4_unchanged_of_max_phi": 1.8586655164619797e-15
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101466979704093e-13,
+     "residual_of_band": 0.046784871024643196
+    },
+    "stable_change": {
+     "W_carriers_pJ": 2.0275117955885578e-18,
+     "residual_of_band": 1.7164867410370714e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 7.743971412831053e-12,
+    "T4_heat_rel": 6.915768518548672e-11,
+    "T4_unchanged_of_max_phi": 2.053263872401777e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.716021300222135e-15,
+    "T4_heat_rel": 2.6092404983736094e-13,
+    "T4_unchanged_of_max_phi": 1.8924093367598485e-15
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101467007038103e-13,
+     "residual_of_band": 0.6081936594174131
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.5596547992848387e-19,
+     "residual_of_band": 0.00020739736661810041
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 1.5639729138330188e-11,
+    "T4_V_k_rel": 1.0230777738917285e-11,
+    "T4_heat_rel": 8.040377472173604e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.42903386596019e-15,
+    "T4_V_k_rel": 1.5250024016243734e-15,
+    "T4_heat_rel": 2.3506932151601613e-12
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101451407934143e-13,
+     "residual_of_band": 0.608192857080057
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.5596497431690605e-19,
+     "residual_of_band": 0.00020731891930062953
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 1.5949373352785882e-11,
+    "T4_V_k_rel": 1.0213727344235142e-11,
+    "T4_heat_rel": 8.096994651041477e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.4230326604216765e-15,
+    "T4_V_k_rel": 1.523362280339548e-15,
+    "T4_heat_rel": 2.3625040039338682e-12
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101435808931304e-13,
+     "residual_of_band": 0.6081920551714204
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.559644686851273e-19,
+     "residual_of_band": 0.00020724089600993582
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 1.6271532474299503e-11,
+    "T4_V_k_rel": 1.0196733689635134e-11,
+    "T4_heat_rel": 8.155832228907115e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.4170638502322365e-15,
+    "T4_V_k_rel": 1.5217276170290479e-15,
+    "T4_heat_rel": 2.3743443426890246e-12
+   }
+  },
+  "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3101420210029595e-13,
+     "residual_of_band": 0.6081912536880749
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.559639630331459e-19,
+     "residual_of_band": 0.00020716329331723065
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 1.660698093792273e-11,
+    "T4_V_k_rel": 1.0179796492359379e-11,
+    "T4_heat_rel": 8.217025967648045e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 5.411127173785534e-15,
+    "T4_V_k_rel": 1.520098384493666e-15,
+    "T4_heat_rel": 2.38621423142563e-12
+   }
+  },
+  "stress_cleft:retrieval #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.3766684559601003e-13,
+     "residual_of_band": 0.41752354812260833
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.7119552379692047e-20,
+     "residual_of_band": 0.0001346977849819064
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 2.6114998406558283e-11,
+    "T4_heat_rel": 1.7066756684611307e-11,
+    "T4_unchanged_of_max_phi": 3.1773905708347365e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 7.163424284720367e-15,
+    "T4_heat_rel": 1.4315195772102116e-13,
+    "T4_unchanged_of_max_phi": 2.800898962872067e-15
+   }
+  },
+  "stress_held_bath:both directions #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.156337568149519e-13,
+     "residual_of_band": 0.05454374546810349
+    },
+    "stable_change": {
+     "W_carriers_pJ": 8.014434728835803e-19,
+     "residual_of_band": 2.359212383478651e-05
+    }
+   },
+   "absolute_storage": {},
+   "increment_storage": {}
+  },
+  "stress_held_bath:cycle #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.1563371331511112e-13,
+     "residual_of_band": 0.06721795985901237
+    },
+    "stable_change": {
+     "W_carriers_pJ": 7.579436321045559e-19,
+     "residual_of_band": 2.9033459859917847e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.246861954930617e-10,
+    "T4_heat_rel": 2.7451561786640774e-11,
+    "T4_unchanged_of_max_phi": 1.0571279451915807e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.558311417159583e-14,
+    "T4_heat_rel": 3.451866382000505e-14,
+    "T4_unchanged_of_max_phi": 1.4883526363179994e-15
+   }
+  },
+  "stress_held_bath:cycle #2": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.156352113317164e-13,
+     "residual_of_band": 0.06777929430905032
+    },
+    "stable_change": {
+     "W_carriers_pJ": 7.579526228185019e-19,
+     "residual_of_band": 2.8380334823756122e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 3.6439346464107366e-11,
+    "T4_heat_rel": 3.273742820175903e-11,
+    "T4_unchanged_of_max_phi": 1.6436027917921941e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 9.407077122784296e-15,
+    "T4_heat_rel": 5.5508997803759666e-14,
+    "T4_unchanged_of_max_phi": 1.7587262506131153e-15
+   }
+  },
+  "stress_held_bath:cycle #3": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.1563591958742906e-13,
+     "residual_of_band": 0.6254807786434302
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.258593898299922e-20,
+     "residual_of_band": 0.00025098866436443516
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 7.502166463505727e-11,
+    "T4_V_k_rel": 9.52963234475443e-12,
+    "T4_heat_rel": 3.842441789804245e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 1.8831923279839316e-14,
+    "T4_V_k_rel": 1.5043649729992414e-15,
+    "T4_heat_rel": 2.5825277623873565e-13
+   }
+  },
+  "stress_held_bath:cycle #4": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.1563585518424617e-13,
+     "residual_of_band": 0.6319949185526933
+    },
+    "stable_change": {
+     "W_carriers_pJ": 3.258592236598349e-20,
+     "residual_of_band": 0.00025270568986869634
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 7.957548550865927e-11,
+    "T4_V_k_rel": 9.521111487752404e-12,
+    "T4_heat_rel": 3.939970910279424e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 1.8875679039240042e-14,
+    "T4_V_k_rel": 1.5019886233539566e-15,
+    "T4_heat_rel": 2.599921419528823e-13
+   }
+  },
+  "stress_held_bath:recycling #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.1563314124077677e-13,
+     "residual_of_band": 0.09698511562635255
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.8586929775518458e-19,
+     "residual_of_band": 4.111819641739804e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_unchanged_rel": 5.17419732162612e-11,
+    "T4_V_k_rel": 9.202689266594924e-12,
+    "T4_heat_rel": 2.7464105154802318e-11
+   },
+   "increment_storage": {
+    "T4_V_b_unchanged_rel": 9.35513856416114e-15,
+    "T4_V_k_rel": 2.3604358373222346e-15,
+    "T4_heat_rel": 4.7062031981550024e-14
+   }
+  },
+  "stress_held_bath:retrieval #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 1.1563409229029872e-13,
+     "residual_of_band": 0.04518685751964836
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.13691881969157e-18,
+     "residual_of_band": 1.9756020478752827e-05
+    }
+   },
+   "absolute_storage": {
+    "T4_V_b_rel": 1.029673515995932e-10,
+    "T4_heat_rel": 2.7444818040317362e-11,
+    "T4_unchanged_of_max_phi": 1.1344283565241188e-12
+   },
+   "increment_storage": {
+    "T4_V_b_rel": 2.3121069847303618e-14,
+    "T4_heat_rel": 2.7774917496593767e-14,
+    "T4_unchanged_of_max_phi": 1.4481235463803653e-15
+   }
+  },
+  "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1": {
+   "T6": {
+    "naive_difference": {
+     "W_carriers_pJ": 2.882144317433571e-13,
+     "residual_of_band": 2.729490260192835
+    },
+    "stable_change": {
+     "W_carriers_pJ": 1.2042797861474137e-23,
+     "residual_of_band": 0.0008049292232164161
+    }
+   },
+   "absolute_storage": {},
+   "increment_storage": {}
+  }
+ },
+ "min_margin": 10.0,
+ "plants": {
+  "R1 at a free node: the outside node's potential moves by -V_k dC/(C_k - dC)": {
+   "at": "stress_cleft:retrieval #1",
+   "cases": 3,
+   "check": "T4 every potential but the pool's unchanged",
+   "max_margin": 827321834.1468798,
+   "min_at": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+   "min_margin": 772464207.7661209,
+   "rows": [
+    {
+     "band": 3.185264589833608e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 772464207.7661209,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+    },
+    {
+     "band": 3.185264589833608e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 772464207.7661209,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+    },
+    {
+     "band": 2.9740577201718904e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 827321834.1468798,
+     "where": "stress_cleft:retrieval #1"
+    }
+   ],
+   "weak_at": []
+  },
+  "R1 at a held bath: the owner's potential moves by V_k dC/(C_k - dC)": {
+   "at": "stress_held_bath:retrieval #1",
+   "cases": 18,
+   "check": "T4 every potential but the pool's unchanged (<= 1e-12 of max|phi|)",
+   "max_margin": 2189389594.5825195,
+   "min_at": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4",
+   "min_margin": 1414309126.022308,
+   "rows": [
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 2019449928.2336655,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0016235971437237803,
+     "margin": 1424827269.8207693,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.001657422084218026,
+     "margin": 1421447533.688776,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0016926863838822393,
+     "margin": 1417943798.9638712,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 2019449928.2336655,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0016235971437237803,
+     "margin": 1424827269.8207693,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.001657422084218026,
+     "margin": 1421447533.688776,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0016926863838822393,
+     "margin": 1417943798.9638712,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0016235971437237803,
+     "margin": 1424827269.8207693,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.001657422084218026,
+     "margin": 1421447533.688776,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.002460502887911296,
+     "margin": 2019449928.2336655,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0016235971437237803,
+     "margin": 1424827269.8207693,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.001657422084218026,
+     "margin": 1421447533.688776,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0016926863838822393,
+     "margin": 1417943798.9638712,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 1.222847171205594e-12,
+     "deviation": 0.0017294839139666356,
+     "margin": 1414309126.022308,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.1520830117470988e-12,
+     "deviation": 0.0025223585580143888,
+     "margin": 2189389594.5825195,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.0735796050003312e-12,
+     "deviation": 0.0016644134702543927,
+     "margin": 1550340060.9532623,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.0983523585388027e-12,
+     "deviation": 0.0016990887508846926,
+     "margin": 1546943235.179175,
+     "where": "stress_held_bath:cycle #2"
+    }
+   ],
+   "weak_at": []
+  },
+  "T8 without the coupling": {
+   "at": "kir_0 at 0 ms",
+   "cases": 35,
+   "check": "T8 the factor = start x A(t)/A0 (relative 1e-12)",
+   "max_margin": 1000000000000.0,
+   "min_at": "kir_0 at 0 ms",
+   "min_margin": 1000000000000.0,
+   "rows": [
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_0 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_0 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_0 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_0 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_0 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_1 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_1 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_1 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_1 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_1 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_2 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_2 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_2 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_2 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_2 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_3 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_3 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_3 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_3 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_3 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_4 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_4 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_4 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_4 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_4 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_5 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_5 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_5 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_5 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_5 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_6 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_6 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_6 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_6 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 1.0,
+     "margin": 1000000000000.0,
+     "where": "kir_6 at 4 ms"
+    }
+   ],
+   "weak_at": []
+  },
+  "T8 without the retrieval": {
+   "at": "kir_0 at 4 ms",
+   "cases": 35,
+   "check": "T8 the factor = start x A(t)/A0",
+   "max_margin": 111111111111.11119,
+   "min_at": "kir_0 at 0 ms",
+   "min_margin": 5.7546262419458526e-05,
+   "rows": [
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_0 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_0 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_0 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_0 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_0 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_1 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_1 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_1 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_1 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_1 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_2 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_2 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_2 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_2 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_2 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_3 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_3 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_3 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_3 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_3 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_4 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_4 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_4 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_4 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_4 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_5 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_5 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_5 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_5 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_5 at 4 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 5.754626241945852e-17,
+     "margin": 5.7546262419458526e-05,
+     "where": "kir_6 at 0 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.025641025641025703,
+     "margin": 25641025641.025703,
+     "where": "kir_6 at 1 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.05263157894736849,
+     "margin": 52631578947.36849,
+     "where": "kir_6 at 2 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.08108108108108115,
+     "margin": 81081081081.08116,
+     "where": "kir_6 at 3 ms"
+    },
+    {
+     "band": 1e-12,
+     "deviation": 0.11111111111111119,
+     "margin": 111111111111.11119,
+     "where": "kir_6 at 4 ms"
+    }
+   ],
+   "weak_at": [
+    "kir_0 at 0 ms",
+    "kir_1 at 0 ms",
+    "kir_2 at 0 ms",
+    "kir_3 at 0 ms",
+    "kir_4 at 0 ms",
+    "kir_5 at 0 ms",
+    "kir_6 at 0 ms"
+   ]
+  },
+  "a merge heat of the wrong sign": {
+   "at": "stress_held_bath:both directions #1",
+   "cases": 33,
+   "check": "T6 the residual within 1e-9 max|term| + 1e-18 pJ",
+   "max_margin": 1999999057.0135794,
+   "min_at": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8",
+   "min_margin": 28576698.406528432,
+   "rows": [
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0019351161504063802,
+     "margin": 460520209.8182058,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0014743742098334326,
+     "margin": 526308748.59515613,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.000819096783240796,
+     "margin": 292393749.2195312,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005212434075168701,
+     "margin": 186068749.503338,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.6808094845180398e-12,
+     "deviation": 0.00045839077209903546,
+     "margin": 272720243.62146896,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0019351161504063802,
+     "margin": 460520209.8182058,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0014743742098334326,
+     "margin": 526308748.59515613,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.000819096783240796,
+     "margin": 292393749.2195312,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005212434075168701,
+     "margin": 186068749.503338,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.3105762712526589e-12,
+     "deviation": 0.00021099135060252255,
+     "margin": 160991279.35595492,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0014743742098334326,
+     "margin": 526308748.59515613,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.000819096783240796,
+     "margin": 292393749.2195312,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 2.4475133547464915e-12,
+     "deviation": 0.0006460207415700058,
+     "margin": 263949833.13049963,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0019351161504063802,
+     "margin": 460520209.8182058,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0014743742098334326,
+     "margin": 526308748.59515613,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.000819096783240796,
+     "margin": 292393749.2195312,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005212434075168701,
+     "margin": 186068749.503338,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0003608608205886024,
+     "margin": 128816826.57923402,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.3105920601146237e-12,
+     "deviation": 3.806453517153071e-05,
+     "margin": 29043770.620891448,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+    },
+    {
+     "band": 1.310590331163734e-12,
+     "deviation": 3.7858780927360276e-05,
+     "margin": 28886815.374064073,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+    },
+    {
+     "band": 1.3105886031366893e-12,
+     "deviation": 3.765469046414e-05,
+     "margin": 28731129.184260704,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+    },
+    {
+     "band": 1.310586876026101e-12,
+     "deviation": 3.745224589175216e-05,
+     "margin": 28576698.406528432,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+    },
+    {
+     "band": 1.5724957966850452e-12,
+     "deviation": 0.0002920930038349253,
+     "margin": 185751214.3756964,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+    },
+    {
+     "band": 1.5724957966850452e-12,
+     "deviation": 0.0002920930038349253,
+     "margin": 185751214.3756964,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+    },
+    {
+     "band": 2.882994515084283e-12,
+     "deviation": 0.00021124583313061562,
+     "margin": 73273061.05694757,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1"
+    },
+    {
+     "band": 2.5601145863567293e-12,
+     "deviation": 0.004517654139552222,
+     "margin": 1764629662.9172544,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.1927809708388706e-12,
+     "deviation": 0.0023855599416777408,
+     "margin": 1999998323.2462208,
+     "where": "stress_held_bath:recycling #1"
+    },
+    {
+     "band": 2.1209213158538306e-12,
+     "deviation": 0.004241840631707661,
+     "margin": 1999999057.0135794,
+     "where": "stress_held_bath:both directions #1"
+    },
+    {
+     "band": 1.7210121007817987e-12,
+     "deviation": 0.0034420222015635973,
+     "margin": 1999998837.8931215,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.7067585748449477e-12,
+     "deviation": 0.0019122345564242208,
+     "margin": 1120389599.6819232,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 1.1568230720938207e-12,
+     "deviation": 0.0003698968399300738,
+     "margin": 319752301.6726921,
+     "where": "stress_held_bath:cycle #3"
+    },
+    {
+     "band": 1.1568207853900383e-12,
+     "deviation": 0.0003660834704462586,
+     "margin": 316456511.73429465,
+     "where": "stress_held_bath:cycle #4"
+    },
+    {
+     "band": 1.3771123566743866e-12,
+     "deviation": 0.0006596553356719939,
+     "margin": 479013446.1250551,
+     "where": "stress_cleft:retrieval #1"
+    }
+   ],
+   "weak_at": []
+  },
+  "a unit dropped from the record": {
+   "at": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] kir_0",
+   "cases": 32,
+   "check": "T3 N + R = N0 + R0 per population (relative 1e-14, T5's conservation tolerance)",
+   "max_margin": 30662880900.982357,
+   "min_at": "stress_held_bath:retrieval kir_0",
+   "min_margin": 27312910779.7837,
+   "rows": [
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount kir_1"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount nav_1"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.000273129107797837,
+     "margin": 27312910779.7837,
+     "where": "stress_held_bath:retrieval kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0002889111148015628,
+     "margin": 28891111480.156284,
+     "where": "stress_held_bath:retrieval nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.000273129107797837,
+     "margin": 27312910779.7837,
+     "where": "stress_held_bath:recycling kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0002889111148015628,
+     "margin": 28891111480.156284,
+     "where": "stress_held_bath:recycling nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.000273129107797837,
+     "margin": 27312910779.7837,
+     "where": "stress_held_bath:both directions kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0002889111148015628,
+     "margin": 28891111480.156284,
+     "where": "stress_held_bath:both directions nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.000273129107797837,
+     "margin": 27312910779.7837,
+     "where": "stress_held_bath:cycle kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0002889111148015628,
+     "margin": 28891111480.156284,
+     "where": "stress_held_bath:cycle nav_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "stress_cleft:retrieval kir_0"
+    },
+    {
+     "band": 1e-14,
+     "deviation": 0.0003066288090098236,
+     "margin": 30662880900.982357,
+     "where": "stress_cleft:retrieval nav_0"
+    }
+   ],
+   "weak_at": []
+  },
+  "carriers without their valence (delta = t dq/F)": {
+   "at": "stress_held_bath:retrieval #1",
+   "cases": 21,
+   "check": "T4 every potential but the pool's unchanged",
+   "max_margin": 1090527177.504618,
+   "min_at": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+   "min_margin": 0.0,
+   "rows": [
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 1.2184025231382699e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 1.1395045407349724e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 1.1660100319825918e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 1.1937612655163976e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 1.222847171205594e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 3.185264589833608e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+    },
+    {
+     "band": 3.185264589833608e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+    },
+    {
+     "band": 1.1520830117470988e-12,
+     "deviation": 0.0012563778350515831,
+     "margin": 1090527177.504618,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.0735796050003312e-12,
+     "deviation": 0.0008301052029677842,
+     "margin": 773212530.39967,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.0983523585388027e-12,
+     "deviation": 0.0008473548280829588,
+     "margin": 771478134.0390989,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 2.9740577201718904e-12,
+     "deviation": 0.0012255677455649538,
+     "margin": 412086065.86630744,
+     "where": "stress_cleft:retrieval #1"
+    }
+   ],
+   "weak_at": [
+    "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2",
+    "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4",
+    "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+    "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+   ]
+  },
+  "e (or e_r) off by 1 part in 10^6": {
+   "at": "half-step 8 kir_0",
+   "cases": 16,
+   "check": "T5 the closed forms per half-step (relative 1e-13)",
+   "max_margin": 412385.7355516136,
+   "min_at": "half-step 1 nav_0",
+   "min_margin": 101013.5360774105,
+   "rows": [
+    {
+     "band": 1e-13,
+     "deviation": 2.020270711344476e-08,
+     "margin": 202027.0711344476,
+     "where": "half-step 1 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.0101353607741051e-08,
+     "margin": 101013.5360774105,
+     "where": "half-step 1 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 2.061928699015818e-08,
+     "margin": 206192.8699015818,
+     "where": "half-step 2 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.0309643548223465e-08,
+     "margin": 103096.43548223465,
+     "where": "half-step 2 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 2.1053408976209324e-08,
+     "margin": 210534.08976209324,
+     "where": "half-step 3 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.0526704543510417e-08,
+     "margin": 105267.04543510417,
+     "where": "half-step 3 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 2.1506204989705158e-08,
+     "margin": 215062.04989705156,
+     "where": "half-step 4 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.0753102552667185e-08,
+     "margin": 107531.02552667185,
+     "where": "half-step 4 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 3.883617096007906e-08,
+     "margin": 388361.70960079064,
+     "where": "half-step 5 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.9418085668570556e-08,
+     "margin": 194180.85668570554,
+     "where": "half-step 5 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 3.9605253808071345e-08,
+     "margin": 396052.5380807134,
+     "where": "half-step 6 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 1.980262710010769e-08,
+     "margin": 198026.27100107688,
+     "where": "half-step 6 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 4.040541381874014e-08,
+     "margin": 404054.1381874014,
+     "where": "half-step 7 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 2.020270711344476e-08,
+     "margin": 202027.0711344476,
+     "where": "half-step 7 nav_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 4.1238573555161364e-08,
+     "margin": 412385.7355516136,
+     "where": "half-step 8 kir_0"
+    },
+    {
+     "band": 1e-13,
+     "deviation": 2.061928699015818e-08,
+     "margin": 206192.8699015818,
+     "where": "half-step 8 nav_0"
+    }
+   ],
+   "weak_at": []
+  },
+  "the Lie split S_ret(h) S_rec(h)": {
+   "caught": true,
+   "check": "T5: err(8)/err(16) of Kir's N within (3.5, 4.5); the Lie plant below 2.5",
+   "lie_ratio_8_16": 1.935781364425938,
+   "palindrome_err16_rel": 3.4417906823955464e-05,
+   "palindrome_passes": true,
+   "palindrome_ratio_8_16": 3.9976037009407137
+  },
+  "the carriers' work with the wrong sign": {
+   "at": "stress_held_bath:retrieval #1",
+   "cases": 33,
+   "check": "T6 the residual",
+   "max_margin": 1999999218.7849674,
+   "min_at": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+   "min_margin": 16554.22452481953,
+   "rows": [
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 4.3369945030490877e-07,
+     "margin": 103212.07944572926,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 1.927720259815383e-07,
+     "margin": 68814.01145097248,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 5.781823780093989e-07,
+     "margin": 206394.30736127487,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 9.633923415533287e-07,
+     "margin": 343903.0704059675,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.6808094845180398e-12,
+     "deviation": 6.242493860281511e-07,
+     "margin": 371398.0625276815,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 4.3369945030490877e-07,
+     "margin": 103212.07944572926,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 1.927720259815383e-07,
+     "margin": 68814.01145097248,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 5.781823780093989e-07,
+     "margin": 206394.30736127487,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 9.633923415533287e-07,
+     "margin": 343903.0704059675,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.3105762712526589e-12,
+     "deviation": 3.0093457309516865e-07,
+     "margin": 229620.03791472057,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 1.927720259815383e-07,
+     "margin": 68814.01145097248,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 5.781823780093989e-07,
+     "margin": 206394.30736127487,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 2.4475133547464915e-12,
+     "deviation": 8.204592990758742e-07,
+     "margin": 335221.58213549596,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 4.3369945030490877e-07,
+     "margin": 103212.07944572926,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 1.927720259815383e-07,
+     "margin": 68814.01145097248,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 5.781823780093989e-07,
+     "margin": 206394.30736127487,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 9.633923415533287e-07,
+     "margin": 343903.0704059675,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 1.348402131561492e-06,
+     "margin": 481340.37731529877,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.3105920601146237e-12,
+     "deviation": 1.1738767547641846e-07,
+     "margin": 89568.4317408056,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+    },
+    {
+     "band": 1.310590331163734e-12,
+     "deviation": 1.1511060336299522e-07,
+     "margin": 87831.109863891,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+    },
+    {
+     "band": 1.3105886031366893e-12,
+     "deviation": 1.128334402725836e-07,
+     "margin": 86093.71392558608,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+    },
+    {
+     "band": 1.310586876026101e-12,
+     "deviation": 1.1055618619768001e-07,
+     "margin": 84356.24392402219,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+    },
+    {
+     "band": 1.5724957966850452e-12,
+     "deviation": 2.60314484826592e-08,
+     "margin": 16554.22452481953,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+    },
+    {
+     "band": 1.5724957966850452e-12,
+     "deviation": 2.60314484826592e-08,
+     "margin": 16554.22452481953,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+    },
+    {
+     "band": 2.882994515084283e-12,
+     "deviation": 5.423593996143313e-08,
+     "margin": 18812.36321389518,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1"
+    },
+    {
+     "band": 2.5601145863567293e-12,
+     "deviation": 0.005120227172713459,
+     "margin": 1999999218.7849674,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.1927809708388706e-12,
+     "deviation": 0.000837080900109865,
+     "margin": 701789281.1629571,
+     "where": "stress_held_bath:recycling #1"
+    },
+    {
+     "band": 2.1209213158538306e-12,
+     "deviation": 0.0036093805258370086,
+     "margin": 1701798411.3116243,
+     "where": "stress_held_bath:both directions #1"
+    },
+    {
+     "band": 1.7210121007817987e-12,
+     "deviation": 0.003413474659113918,
+     "margin": 1983411190.1730905,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.7067585748449477e-12,
+     "deviation": 0.0034135151496898952,
+     "margin": 1999998828.1881049,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 1.1568230720938207e-12,
+     "deviation": 0.00014675402266135302,
+     "margin": 126859522.60247707,
+     "where": "stress_held_bath:cycle #3"
+    },
+    {
+     "band": 1.1568207853900383e-12,
+     "deviation": 0.00014675394782496715,
+     "margin": 126859708.67603922,
+     "where": "stress_held_bath:cycle #4"
+    },
+    {
+     "band": 1.3771123566743866e-12,
+     "deviation": 0.0001671716022653407,
+     "margin": 121392856.18571198,
+     "where": "stress_cleft:retrieval #1"
+    }
+   ],
+   "weak_at": []
+  },
+  "the electrode work with the wrong sign": {
+   "at": "stress_held_bath:retrieval #1",
+   "cases": 29,
+   "check": "T6 the residual",
+   "max_margin": 623356069.0425549,
+   "min_at": "stress_held_bath:cycle #3",
+   "min_margin": 39538765.93771976,
+   "rows": [
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0015567276988624342,
+     "margin": 370471078.11042184,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.6808094845180398e-12,
+     "deviation": 0.0006226910795449738,
+     "margin": 370470945.8630441,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0015567276988624342,
+     "margin": 370471078.11042184,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.3105762712526589e-12,
+     "deviation": 0.0002830413997931699,
+     "margin": 215967132.93354285,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 2.4475133547464915e-12,
+     "deviation": 0.0009067327565363655,
+     "margin": 370471014.90904146,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0015567276988624342,
+     "margin": 370471078.11042184,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0010378184659082896,
+     "margin": 370471034.0279521,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.3105920601146237e-12,
+     "deviation": 7.983218968525305e-05,
+     "margin": 60913072.888806425,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+    },
+    {
+     "band": 1.310590331163734e-12,
+     "deviation": 7.983218968525305e-05,
+     "margin": 60913153.246267535,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+    },
+    {
+     "band": 1.3105886031366893e-12,
+     "deviation": 7.983218968525305e-05,
+     "margin": 60913233.56100241,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+    },
+    {
+     "band": 1.310586876026101e-12,
+     "deviation": 7.983218968525305e-05,
+     "margin": 60913313.833354115,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+    },
+    {
+     "band": 2.5601145863567293e-12,
+     "deviation": 0.0015958629648498372,
+     "margin": 623356069.0425549,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.1927809708388706e-12,
+     "deviation": 0.0002609017732493526,
+     "margin": 218734017.0809927,
+     "where": "stress_held_bath:recycling #1"
+    },
+    {
+     "band": 2.1209213158538306e-12,
+     "deviation": 0.001124968020717622,
+     "margin": 530414783.570006,
+     "where": "stress_held_bath:both directions #1"
+    },
+    {
+     "band": 1.7210121007817987e-12,
+     "deviation": 0.0010639086432332248,
+     "margin": 618187776.1056569,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.7067585748449477e-12,
+     "deviation": 0.0010639086432332248,
+     "margin": 623350401.6992425,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 1.1568230720938207e-12,
+     "deviation": 4.5739356678871494e-05,
+     "margin": 39538765.93771976,
+     "where": "stress_held_bath:cycle #3"
+    },
+    {
+     "band": 1.1568207853900383e-12,
+     "deviation": 4.5739356678871494e-05,
+     "margin": 39538844.0945499,
+     "where": "stress_held_bath:cycle #4"
+    }
+   ],
+   "weak_at": []
+  },
+  "the reservoir work without z F phi_b": {
+   "at": "stress_held_bath:retrieval #1",
+   "cases": 29,
+   "check": "T6 the residual",
+   "max_margin": 311678034.5212774,
+   "min_at": "stress_held_bath:cycle #3",
+   "min_margin": 19769382.96885988,
+   "rows": [
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0007783638494312171,
+     "margin": 185235539.05521092,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.6808094845180398e-12,
+     "deviation": 0.0003113455397724869,
+     "margin": 185235472.93152204,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0007783638494312171,
+     "margin": 185235539.05521092,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.3105762712526589e-12,
+     "deviation": 0.00014152069989658496,
+     "margin": 107983566.46677142,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 2.4475133547464915e-12,
+     "deviation": 0.00045336637826818275,
+     "margin": 185235507.45452073,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3"
+    },
+    {
+     "band": 4.2020222112950995e-12,
+     "deviation": 0.0007783638494312171,
+     "margin": 185235539.05521092,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 2.8013484741967332e-12,
+     "deviation": 0.0005189092329541448,
+     "margin": 185235517.01397604,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.3105920601146237e-12,
+     "deviation": 3.9916094842626525e-05,
+     "margin": 30456536.444403213,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+    },
+    {
+     "band": 1.310590331163734e-12,
+     "deviation": 3.9916094842626525e-05,
+     "margin": 30456576.623133767,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+    },
+    {
+     "band": 1.3105886031366893e-12,
+     "deviation": 3.9916094842626525e-05,
+     "margin": 30456616.780501205,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+    },
+    {
+     "band": 1.310586876026101e-12,
+     "deviation": 3.9916094842626525e-05,
+     "margin": 30456656.916677058,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+    },
+    {
+     "band": 2.5601145863567293e-12,
+     "deviation": 0.0007979314824249186,
+     "margin": 311678034.5212774,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 1.1927809708388706e-12,
+     "deviation": 0.0001304508866246763,
+     "margin": 109367008.54049635,
+     "where": "stress_held_bath:recycling #1"
+    },
+    {
+     "band": 2.1209213158538306e-12,
+     "deviation": 0.000562484010358811,
+     "margin": 265207391.785003,
+     "where": "stress_held_bath:both directions #1"
+    },
+    {
+     "band": 1.7210121007817987e-12,
+     "deviation": 0.0005319543216166124,
+     "margin": 309093888.05282843,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.7067585748449477e-12,
+     "deviation": 0.0005319543216166124,
+     "margin": 311675200.84962124,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 1.1568230720938207e-12,
+     "deviation": 2.2869678339435747e-05,
+     "margin": 19769382.96885988,
+     "where": "stress_held_bath:cycle #3"
+    },
+    {
+     "band": 1.1568207853900383e-12,
+     "deviation": 2.2869678339435747e-05,
+     "margin": 19769422.04727495,
+     "where": "stress_held_bath:cycle #4"
+    }
+   ],
+   "weak_at": []
+  },
+  "the two transference numbers swapped": {
+   "at": "stress_cleft:retrieval #1",
+   "cases": 33,
+   "check": "T6 the carriers' work (relative 1e-6, absolute 1e-15 max|term|)",
+   "max_margin": 733033.6675633113,
+   "min_at": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+   "min_margin": 0.0,
+   "rows": [
+    {
+     "band": 1.3100960079275602e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1"
+    },
+    {
+     "band": 1.310085871330643e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1"
+    },
+    {
+     "band": 1.3101061451664074e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2"
+    },
+    {
+     "band": 1.3101264207132925e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3"
+    },
+    {
+     "band": 1.3101264214663413e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4"
+    },
+    {
+     "band": 1.3100960079275602e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1"
+    },
+    {
+     "band": 1.310085871330643e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1"
+    },
+    {
+     "band": 1.3101061451664074e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2"
+    },
+    {
+     "band": 1.3101264207132925e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3"
+    },
+    {
+     "band": 1.3101264221842442e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4"
+    },
+    {
+     "band": 1.310085871330643e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1"
+    },
+    {
+     "band": 1.3101061451664074e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2"
+    },
+    {
+     "band": 1.3101238598462363e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3"
+    },
+    {
+     "band": 1.3100960079275602e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1"
+    },
+    {
+     "band": 1.310085871330643e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1"
+    },
+    {
+     "band": 1.3101061451664074e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2"
+    },
+    {
+     "band": 1.3101264207132925e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3"
+    },
+    {
+     "band": 1.3101466979704093e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4"
+    },
+    {
+     "band": 1.3101467007038103e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5"
+    },
+    {
+     "band": 1.3101451407934144e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6"
+    },
+    {
+     "band": 1.3101435808931303e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7"
+    },
+    {
+     "band": 1.3101420210029595e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8"
+    },
+    {
+     "band": 1.5720787185922433e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1"
+    },
+    {
+     "band": 1.5720787185922433e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1"
+    },
+    {
+     "band": 2.882144317433571e-12,
+     "deviation": 0.0,
+     "margin": 0.0,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1"
+    },
+    {
+     "band": 2.560113586356729e-09,
+     "deviation": 0.0016540731043705086,
+     "margin": 646093.6394327732,
+     "where": "stress_held_bath:retrieval #1"
+    },
+    {
+     "band": 4.185404500549325e-10,
+     "deviation": 0.00027041814203635785,
+     "margin": 646097.9864690881,
+     "where": "stress_held_bath:recycling #1"
+    },
+    {
+     "band": 1.8046902629185042e-09,
+     "deviation": 0.0011660016673196807,
+     "margin": 646095.1728270807,
+     "where": "stress_held_bath:both directions #1"
+    },
+    {
+     "band": 1.706737329556959e-09,
+     "deviation": 0.0011027150892588375,
+     "margin": 646095.3716557452,
+     "where": "stress_held_bath:cycle #1"
+    },
+    {
+     "band": 1.7067575748449475e-09,
+     "deviation": 0.001102723563695098,
+     "margin": 646092.6730003096,
+     "where": "stress_held_bath:cycle #2"
+    },
+    {
+     "band": 7.337701133067651e-11,
+     "deviation": 4.740841650954213e-05,
+     "margin": 646093.5877572631,
+     "where": "stress_held_bath:cycle #3"
+    },
+    {
+     "band": 7.337697391248357e-11,
+     "deviation": 4.7408400846844586e-05,
+     "margin": 646093.7037739987,
+     "where": "stress_held_bath:cycle #4"
+    },
+    {
+     "band": 8.358580113267035e-11,
+     "deviation": 6.127120636049892e-05,
+     "margin": 733033.6675633113,
+     "where": "stress_cleft:retrieval #1"
+    }
+   ],
+   "weak_at": [
+    "held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3",
+    "held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2",
+    "held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3",
+    "held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7",
+    "held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8",
+    "cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+    "cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1",
+    "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1"
+   ]
+  },
+  "the whole cleft change on one route (this route takes all)": {
+   "at": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_0 takes all",
+   "cases": 2,
+   "check": "T6 each route's carriers' work (relative 1e-6, absolute 1e-15 max|term|)",
+   "max_margin": 118782901.66729659,
+   "min_at": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_1 takes all",
+   "min_margin": 59391450.833648294,
+   "rows": [
+    {
+     "band": 2.882144317433571e-12,
+     "deviation": 0.00034234946504866953,
+     "margin": 118782901.66729659,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_0 takes all"
+    },
+    {
+     "band": 2.882144317433571e-12,
+     "deviation": 0.00017117473252433477,
+     "margin": 59391450.833648294,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_1 takes all"
+    }
+   ],
+   "weak_at": []
+  },
+  "the whole cleft change on one route (this route takes none)": {
+   "at": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_1 takes none",
+   "cases": 2,
+   "check": "T6 each route's carriers' work",
+   "max_margin": 118782901.66729659,
+   "min_at": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_0 takes none",
+   "min_margin": 59391450.833648294,
+   "rows": [
+    {
+     "band": 2.882144317433571e-12,
+     "deviation": 0.00017117473252433477,
+     "margin": 59391450.833648294,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_0 takes none"
+    },
+    {
+     "band": 2.882144317433571e-12,
+     "deviation": 0.00034234946504866953,
+     "margin": 118782901.66729659,
+     "where": "two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1 uptake_1 takes none"
+    }
+   ],
+   "weak_at": []
+  }
+ },
+ "primary_comparisons": {
+  "T3": "N + R = N0 + R0 per population (every drive's half-steps), per-cell sums of dA and dC zero; the planted dropped unit deviates by 1 unit",
+  "T4": "after one half-step: every potential but the pool's against the start (1e-12 of max|phi|), V_b (retrieval) or V_k (recycling) against the closed form (relative 1e-12, here with the floor: max(1e-12, 10 x floor)), the single route's booked heat against C_b dC (V_b - V_k)^2/(2 (C_b + dC)) (relative 1e-9); R1's owner shift V_k dC/(C_k - dC) (relative 1e-9)",
+  "T5": "the operator-level cycle's N and R per half-step against the closed forms (relative 1e-13), N + R (1e-14); both directions: Kir's N only, relative error at 4 ms, n = 8 and 16: 3.5 < err(8)/err(16) < 4.5 and err(16) < 1e-4, the Lie plant below 2.5; here also the scheme's own N at n = 8 and 16 to float64 floors; compiled: the closed forms at each observation (1e-12)",
+  "T6": "per half-step: |dG_chem + dU_view + H - W_res - W_elec - W_carriers| <= 1e-9 max|term| + 1e-18 pJ; the carriers' work against the independent value (relative 1e-6, absolute 1e-15 max|term|); a held bath (retrieval): electrode transfer = -F sum z supplied, electrode work = phi_b x transfer (1e-14), reservoir work = 1e-3 sum mu supplied (1e-12); two routes: each route's work its pool's change plus its |amount| share of the cleft's (1e-6), shares 1:2 (1e-3)",
+  "T8": "per Kir population: F x availability x abundance x area (m^2, abundance = N/(A rho)) = start x A(t)/A0 (relative 1e-12), start = 1/2 x availability x abundance x A0 (relative 1e-14)",
+  "dated": "2026-11-19, from design statement 1 \u00a713 (written 04:31 UTC), before any engine comparison"
+ },
+ "tolerances": {
+  "T4_R1_rel": 1e-09,
+  "T4_V_rel": 1e-12,
+  "T4_heat_rel": 1e-09,
+  "T4_unchanged_of_max_phi": 1e-12,
+  "T5_closed_rel": 1e-13,
+  "T5_compiled_rel": 1e-12,
+  "T5_conserved_rel": 1e-14,
+  "T5_err16_max": 0.0001,
+  "T5_lie_ratio_max": 2.5,
+  "T5_ratio_band": [
+   3.5,
+   4.5
+  ],
+  "T6_carriers_abs_of_max_term": 1e-15,
+  "T6_carriers_rel": 1e-06,
+  "T6_electrode_work_rel": 1e-14,
+  "T6_reservoir_work_rel": 1e-12,
+  "T6_residual_abs_pJ": 1e-18,
+  "T6_residual_rel_of_max_term": 1e-09,
+  "T6_share_rel": 0.001,
+  "T8_rel": 1e-12,
+  "T8_start_rel": 1e-14
+ },
+ "weak": [
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3",
+  "carriers without their valence (delta = t dq/F) @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4",
+  "carriers without their valence (delta = t dq/F) @ cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+  "carriers without their valence (delta = t dq/F) @ cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1",
+  "the two transference numbers swapped @ held_bath_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[held bath] #1",
+  "the two transference numbers swapped @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #1",
+  "the two transference numbers swapped @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #2",
+  "the two transference numbers swapped @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #3",
+  "the two transference numbers swapped @ held_bath_cell:test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form #4",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV] #1",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #1",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #2",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #3",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch] #4",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #1",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #2",
+  "the two transference numbers swapped @ held_bath_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once] #3",
+  "the two transference numbers swapped @ held_bath_cell:test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential #1",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #1",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #2",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #3",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #4",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #5",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #6",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #7",
+  "the two transference numbers swapped @ held_bath_cell_cycle_enrichments:test_a_cycle_follows_the_closed_forms_piecewise #8",
+  "the two transference numbers swapped @ cleft_cell:test_retrieval_moves_only_the_pool_into_its_closed_form[free node] #1",
+  "the two transference numbers swapped @ cleft_cell:test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node] #1",
+  "the two transference numbers swapped @ two_routes_one_cleft:test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount #1",
+  "T8 without the retrieval @ kir_0 at 0 ms",
+  "T8 without the retrieval @ kir_1 at 0 ms",
+  "T8 without the retrieval @ kir_2 at 0 ms",
+  "T8 without the retrieval @ kir_3 at 0 ms",
+  "T8 without the retrieval @ kir_4 at 0 ms",
+  "T8 without the retrieval @ kir_5 at 0 ms",
+  "T8 without the retrieval @ kir_6 at 0 ms"
+ ],
+ "zero_power": [
+  {
+   "what": "the potentials and the heat in the compiled worlds (cycle, t8_sheet)",
+   "why": "they depend on the pumps, leaks and channels, which these references do not model; only the units, areas and capacitances are referenced there"
+  },
+  {
+   "what": "T1's refusals, T2's idleness and T7's restart and batch equalities",
+   "why": "rules and bitwise equalities, with no number to reference (T7's batch worlds get T5's closed forms only)"
+  },
+  {
+   "what": "a dropped valence or swapped transference numbers, in the declared worlds",
+   "why": "both declared carriers are +1 at t = 0.5; the stress worlds (K 0.75, M at z = -1 0.25) carry those plants"
+  },
+  {
+   "what": "the per-species against the per-total sharing of a free node's free energy",
+   "why": "both routes on the declared shared cleft move K and Na in one ratio (1:2), so the two rules agree; the stress worlds keep one route per node"
+  },
+  {
+   "what": "the electrode and reservoir work's phi_b parts at a bath held at 0 V",
+   "why": "zero there; held_bath_cell (20 mV) and the stress worlds carry them"
+  },
+  {
+   "what": "recycling into a patch on a free node",
+   "why": "only the dense route exists for its heat; no registered drive does it"
+  },
+  {
+   "what": "per-route heats among several routes",
+   "why": "no test compares them (\u00a713); they are registered as the \u00a74 share for completeness"
+  }
+ ]
+}

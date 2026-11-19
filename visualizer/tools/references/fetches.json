@@ -1,0 +1,66 @@
+{
+ "format": "cells.visualizer.fetch_budgets@1",
+ "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one).",
+ "page_bytes": 4700000,
+ "addresses": [
+  {
+   "id": "scope",
+   "says": "The site's first entry: the Cell view's flux draws the planarian's looping run, and nothing else of the runs or the model systems is fetched, and nothing of the Experiments landing (cards.json, stills/).",
+   "query": "",
+   "must": ["runs/planarian-loop--*.json"],
+   "allowed": ["runs/planarian-loop--*"],
+   "bytes": 133000
+  },
+  {
+   "id": "experiments",
+   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/.",
+   "query": "lens=experiments",
+   "must": ["cards.json", "stills/*"],
+   "allowed": ["cards.json", "stills/*"],
+   "bytes": 256000
+  },
+  {
+   "id": "tissue",
+   "says": "The tumour tissue's own address (the part its card on the landing opens): the tissue line's runs and the parts it draws. Until 18 November 2026 this was the Experiments tab's opening.",
+   "query": "lens=experiments&part=gap-junction-tissue-line",
+   "must": ["runs/gap-junction-tissue-line--*.json"],
+   "allowed": ["runs/gap-junction-tissue-line--*"],
+   "bytes": 1463000
+  },
+  {
+   "id": "assembly",
+   "says": "The assembly's address: its two files.",
+   "query": "lens=experiments&example=gard",
+   "must": ["models/gard/*"],
+   "allowed": ["models/gard/*"],
+   "bytes": 304000
+  },
+  {
+   "id": "networks-pair",
+   "says": "A run that is not its experiment's opening run, by its address: its own files only.",
+   "query": "lens=experiments&run=gap-junction-linear-network--figure3-g0.5",
+   "must": ["runs/gap-junction-linear-network--figure3-g0.5.json"],
+   "allowed": ["runs/gap-junction-linear-network--figure3-g0.5.json", "runs/gap-junction-linear-network--figure3-g0.5.*.json"],
+   "bytes": 40000
+  },
+  {
+   "id": "networks-pair-chosen",
+   "says": "The same run chosen by the address (select=run:), with no run=: its own files only.",
+   "query": "lens=experiments&select=run:gap-junction-linear-network--figure3-g0.5",
+   "must": ["runs/gap-junction-linear-network--figure3-g0.5.json"],
+   "allowed": ["runs/gap-junction-linear-network--figure3-g0.5.json", "runs/gap-junction-linear-network--figure3-g0.5.*.json"],
+   "bytes": 40000
+  }
+ ],
+ "experiments": [
+  {"experiment": "gap-junction-linear-network", "bytes": 100000},
+  {"experiment": "gap-junction-tissue-line", "bytes": 323000},
+  {"experiment": "gap-junction-tissue-sheet", "bytes": 602000},
+  {"experiment": "gap-junction-tissue-ladder", "bytes": 328000},
+  {"experiment": "e07-v1", "bytes": 853000},
+  {"experiment": "heredity-turnover-literature", "bytes": 390000},
+  {"experiment": "secreted-species-dev-run", "bytes": 43000},
+  {"experiment": "planarian-loop", "bytes": 50000},
+  {"experiment": "example-sheet", "bytes": 43000}
+ ]
+}

@@ -26,6 +26,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     development work, and independent references for the passive law.
     On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
     against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
+    On 19 November: FR-2 version 1, `scheduled_membrane_trafficking@1` (merge 1bd35184). Its
+    registered comparison against its code-blind references (run entry below): run 1, 770 of
+    782 rows; run 2, after a blind references erratum, 782 of 782, which is weaker evidence
+    after the failed run 1. The comparison landed on main (merge d2dc7b8c, tag
+    `fr2-comparison-landed-2026-11-19`), so every row is checked in every gate.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -34,7 +39,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
     crossrev's new record). The next steps are D194's order, starting with D188's moves.
     D188's move 2 landed on 18 November (merge d5d56d1b, tag `d188-move2-landed-2026-11-18`).
-    The core-seams pass's code follows it.
+    The core-seams pass's code follows it. By 10:46 UTC on 19 November, seams A, C (stage 2) and
+    D had landed, with Q2's presence gate, the lift, P1 and B1's last slice (run entry "The
+    core-seams pass's morning landings" below).
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
@@ -100,6 +107,153 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Cl⁻ in @3's channel populations: the always-open chloride leak `cells.clleak_always_open@1`
+  (19 November 2026; D228 item 3).** Merge 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`. @3's
+  valence table admits Cl⁻ at −1, and the planted test laws move to code 99. The Xenopus lane's
+  Cl⁻-only patch needs it. Gates: tiers 590 files with 0 changed, G1, crossrev 11 of 11, IDs +3,
+  FR's set; the lead's merged check on trial 7e125758.
+
+- **The third external review's five findings, fixed (19 November 2026).** Merge 560da6a0, tag
+  `review3-fixes-landed-2026-11-19`. Engine models touched: the transporter, passive routes, pH
+  condition and proton buffer kinds; `surface_pump_v3`; `scheduled_membrane_trafficking@1`.
+  - The general closure's proton is declared (proton_row), never inferred from a charge.
+  - FR-2 version 1 holds one receiving pool per cell; two routes of one cell are refused.
+  - @3's trace estimate counts every declared kind's saved rows, and an undercount is refused. FR's
+    landing-set verdict reads the planner's estimate as information.
+  - The transporter's probe reads the solver's own switch for its population-scaled fields.
+  - FR-8 stage 0's judges get their observations, with the registration's amendment 5.
+  - Gates: tiers 591 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +6, FR's set, R1
+    274 of 274; the lead's merged check on trial c3171354.
+
+- **FR-8 rung 0: the fine engine's order through a switch (19 November 2026). Registered verdict:
+  "instrument not validated". Under a blind amendment, the weaker evidence: the cause is the
+  pre-asymptotic transient.**
+  - **Engine model it runs:** `resolved_pump_tissue@3` alone. Development, not judged.
+  - **Evidence:** [the registration and results](validation/long_duration/RUNG0_20261119.md), the
+    windows' inputs (`rung0_20261119.json`) and condensed results (`rung0_results_20261119.json`).
+    Landed at 6cec0fc4, tag `fr8-rung0-landed-2026-11-19`.
+  - **The registered verdict stands:** the slow-phase control had no power, so no cause is
+    identified (§9.1).
+  - **Under amendment 1** (§9.2), a powered control registered blind before the main windows were
+    read: the instruments pass, and the order drop in stage 0's switch transient is (C), the
+    pre-asymptotic transient. The observed orders climb toward 2 as the step halves; NaV activation
+    goes from 1.26 at 1 ms to 1.98. The cue's discontinuity is not implicated.
+  - **Provenance after the fact** (§9.5): the windows start from R3's saved state under the
+    continuity design's rule (b). R3's digest was recorded afterwards, and all 43 importing arms
+    start bitwise equal to R3's rows.
+  - **Next:** rung 1 (N2 with the exponential junction-gate update, opt-in) after X2 lands.
+
+- **FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows;
+  run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1.**
+  - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`
+    over `resolved_pump_tissue@3`.
+  - **Evidence:**
+    - branch `fr2-comparison` at 65d8c1e4, tag `fr2-comparison-run1-2026-11-19`;
+    - the bands registered beforehand on `fr2-references-interface` (77fd8a17, interface file
+      `comparison_bands.json`);
+    - the run's per-test outcomes in
+      `/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/runs/cmp-first/junit.xml`.
+
+    A timed second execution gave the same outcomes.
+  - **The failures:** electrode transfer, electrode work and image charge at the held bath node, on
+    four small recycling half-steps, at 1.2–9.2 times their bands (relative deviations 3.4e-14 to
+    1.8e-13).
+  - **The diagnosis, engine against engine:** an exact rational replay from the engine's own state
+    accounts for each deviation as double-precision rounding of the held node's plate charges, about
+    1.3e-12 C. Their difference is the transfer. The exact replay agrees with the references to about
+    2e-31 C.
+  - **The erratum:** the references agent audited the class blind, without seeing any result.
+    It found its floor for the held-node checks assumed an engine product form it had never
+    registered, and so did not follow from its registered model. It corrected the floor as a dated
+    erratum (bf8bbb4d), carrying the registered potential floor through Q_h = ΣC·V.
+    - 87 bands changed, 29 each for electrode transfer, electrode work and image charge, widened
+      133–2236×.
+    - No other row, tolerance, plant, criterion or band rule moved; the lead checked this.
+  - **Run 2** (12:55 UTC, branch `fr2-comparison` at 71a044cc, tag `fr2-comparison-run2-2026-11-19`;
+    outcomes in `runs/cmp-second/`): the engine is run 1's, plus the erratum's four reference
+    files only.
+    - All 782 engine values are bitwise equal to run 1's.
+    - 1110 of 1110 tests pass: 782 of 782 rows, 3 of 3 criteria and 322 of 322 plants.
+    - The largest margin is 0.0045 of its band, in the corrected class, and 0.0036 elsewhere.
+    - **This is weaker evidence after the failed run 1:** its bands were corrected after run 1 failed.
+  - **Landed** at d2dc7b8c (tiers-and-IDs gate at 97a9ca11; merged check on trial 9b24667a),
+    with the references' interface bands and their erratum.
+  - A kernel form that would avoid the cancellation is logged as an engine note for a later
+    declared-freeze batch.
+
+- **The core-seams pass's morning landings (19 November 2026, 03:56–10:46 UTC).** Twenty merges.
+  Each merge's message records its gates. The merged checks and the tier folds are in
+  `/mnt/workspaces/Cells/core-pass-kickoff-20261118/` (`replication-checks/`, `landings/`).
+  - **Seams:**
+    - seam A, the general cycle kind (ee30e5d9), with its comparison against the code-blind
+      references;
+    - seam C stage 2, the general rapid binding closure in whole worlds (aecbaed1), and its C4
+      follow-up, mixed-sign binder forms admitted against the exact joint margin (4736d974);
+    - seam D, heat bookings (6ca4a56f).
+  - **Kinds beside closers:** Q2's presence gate (e4f84d4a); the kind contract's internal_axes and
+    presence (266624d8); and the lift (b1ca8b68), which admits a kind beside a closer when every
+    entity axis declares presence.
+  - **The operators' lifecycle:**
+    - items 1–3 (4a9a696a);
+    - the composite's channel_targets, closing FR-8's settling gap (7d3f24ef);
+    - B1's last slice, the role-driven lifecycle at division and retirement (3fd9c17c).
+  - **P1** (9e181b08): the predictor for stage reads under a free-amount closure.
+  - **The registry:**
+    - the public cycle_changes reader (e1dc12d5);
+    - the five Kv1 channel laws as @3's law homes (c7d570a0), with @3's Kv1 trigger (c1e5d3d0);
+    - role_species (c08e6ea9).
+  - **References registered before the outputs they judge:** amendment A2's erratum (9e005bb9);
+    amendment C5, release steps in the binding envelope (8a9d7ae7); and FR-2's code-blind
+    references (8c92f6ac).
+  - **FR-2 version 1** (1bd35184; development, not judged).
+  - **The viewer:** Version 44 (8e6d6c18).
+  - **Tools:** `test_tiers.py fold` places a row that reached the cap in tier 3 (37855d1c).
+  - **Refusals kept, with their fixes:**
+    - seam A's merged checks refused twice. Trial 81a9fd5c failed 6 of Q2's tests, fixed by
+      declaring the internal axes and presence. Trial 5a986c1f failed 2 of seam A's own tests,
+      written before the lift landed, fixed by a test-only commit (90a4dd7e);
+    - the binding owner's cb01a837 failed its tiers (A7's sum guard, and a too-wide water
+      refusal), fixed at bae02d29;
+    - item 4's bed34e3d failed the S5 staleness guard, fixed at 317f6e95.
+
+- **The core-seams pass's next landings (18 November late evening to 19 November 2026).** Each
+  merge's message records its gates. The merged checks and the tier folds are in
+  `/mnt/workspaces/Cells/core-pass-kickoff-20261118/` (`replication-checks/`, `landings/`).
+  - c78462e7: composition's M1, the fixed-read rule with closures' exact reach.
+  - 5e2c78e9: the first external review's findings 1 and 4.
+  - de7dfeb9: seam C's three reference amendments, registered before any output of the general
+    closure.
+  - e515b87b: refusal 4 version 1.3, the compartments admission judged by the moves at the
+    compartment's node.
+  - 09ac1743: B1's first two slices, the operators' energy roles and E's standard_free_energies
+    hook.
+  - d64fb664: @3's guard landing, with B1's @3 part, the run view's format items and the
+    moved-rows guard.
+  - 34cdd34b: F's registry hand-offs, the kind fields' axes and hosts, `forms` and seam A's
+    `cycle` on cycle laws, and the general closure's fields on binding laws.
+    - Gate on lane B: tiers 555 files, 0 changed; G1 113 of 113; crossrev 11 of 11; IDs
+      additions only.
+    - main was the gate's base, so the merge's tree is the gated head's.
+    - It carries the second external review's finding 5: an ensemble adapter family's model ID
+      works in either form through the launch path.
+  - 51cd419f: the gate tools move into the repository (D220) as `scripts/gates/`.
+    - FR's landing set's lane check charges by process, so a waiting unit no longer refuses it.
+    - crossrev's set runner fails closed.
+    - `test_tiers.py fold` folds a landing's rows onto main's record.
+  - f5025e6f: FR-8's stage 0, the long-duration methods measured (development, not judged).
+    - Results: `validation/long_duration/RESULTS_20261118.md`.
+    - The method choice goes to the user as options.
+  - 6bc32a01: the core-seams references' amendments F4 (finding 4's zero-slope fix), C4 (the
+    closure's joint validity) and A2 (seam A's needs).
+    - Its merged check refused on one load-sensitive tooling test, which passed idle. Since then
+      the test waits for CPU time (39d51865).
+  - **Each of these lands through a stacked trial.** The trial merges are checked side by side,
+    and a landing's staged tree must equal its checked trial plus main's later paths
+    (`tools/assert_landing_tree.py`).
+  - **The landing check, version 2,** adds the test files changed on either side since the
+    merge base to the replication and crossrev checks. Its self-test refused the unfixed F trial,
+    where seven tests broke.
 
 - **The core-seams pass's first landings (18 November 2026, evening).** Four branches merged into
   main. Every core head is checked again on its merge with main, because main's src/ moved between

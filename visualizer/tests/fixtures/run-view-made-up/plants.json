@@ -1,0 +1,47 @@
+{
+  "format": "cells.visualizer.made_up_view_plants@1",
+  "made_up": "Made up by the viewer for its own tests (19 November 2026): no engine writer wrote any of this. Each plant is applied to a copy of a kept view of tests/engine-views/run-view-89bd2ffb before the adapter reads the copy; the arrays stay the writer's own. They hold what no small world of the engine shows at 89bd2ffb.",
+  "plants": [
+    {
+      "world": "condition",
+      "says": "A passive route that carries two species, and a cycle kind's set with its coupled stoichiometry (per_cycle) by mode and population. The passive routes kind gives each route one species, and no cycle kind gives a set of its own at 89bd2ffb: the shape of that set's per_cycle is the viewer's guess, written from the engine's one sentence on it (docs/RUN_VIEW_DESIGN.md §9: per mode and population, with each mode's count per species and end).",
+      "sets": {
+        "passive_route": {"carries": [["X"], ["X", "H"], ["H"], ["H"]]}
+      },
+      "add_sets": [
+        {
+          "id": "transporter_population",
+          "ids": ["pump_0"],
+          "scale": "cell",
+          "owner": "resolved_pump_tissue@3",
+          "roles": {"inside": "the population's patch's cell", "outside": "that patch's outside node"},
+          "kinds": ["cycle"],
+          "laws": [{"law_id": "cells.proton_atp_mass_action_positive@1"}],
+          "at": [{"membrane": "bounding_0"}],
+          "per_cycle": [
+            [
+              {
+                "mode": "forward",
+                "moves": [
+                  {"species": "H", "end": "inside", "count": -2},
+                  {"species": "H", "end": "outside", "count": 2},
+                  {"species": "ATP", "end": "inside", "count": -1},
+                  {"species": "ADP", "end": "inside", "count": 1},
+                  {"species": "Pi", "end": "inside", "count": 1}
+                ]
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "world": "secretion",
+      "says": "An operator's exchange route that carries two species: the exchange operator gives each route one species at 89bd2ffb.",
+      "sets": {
+        "exchange_route": {"carries": [["S", "Na"], "S"]}
+      },
+      "add_sets": []
+    }
+  ]
+}

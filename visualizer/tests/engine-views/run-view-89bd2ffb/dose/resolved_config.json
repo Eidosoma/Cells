@@ -1,0 +1,210 @@
+{
+  "execution": {
+    "backend": "cpu",
+    "capacity": 1,
+    "channel_capacity": 0,
+    "dt": 0.001,
+    "edge_capacity": 0,
+    "extracellular_capacity": 2,
+    "face_capacity": 1,
+    "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "jit": true,
+    "material_balance_atol_fmol": {
+      "Cl": 1e-10,
+      "K": 1e-10,
+      "Na": 1e-10,
+      "S": 1e-20
+    },
+    "max_steps": 16,
+    "max_trace_bytes": 2147483648,
+    "membrane_capacity": 2,
+    "precision": "float64",
+    "solver": "imex_ars222_face_electromigration@1"
+  },
+  "experiment": {
+    "bath_composition_events": [
+      {
+        "baths": [
+          "bath"
+        ],
+        "formula_units_mM": {
+          "cargo": 0.0005
+        },
+        "time": 0.004
+      }
+    ],
+    "calcium_pump_controls": [],
+    "channel_controls": [],
+    "end_time": 0.008,
+    "junction_controls": [],
+    "membrane_controls": [
+      {
+        "membrane_id": "wall_cell_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "contact_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ],
+    "observation_times": [
+      0.0,
+      0.001,
+      0.002,
+      0.003,
+      0.004,
+      0.005,
+      0.006,
+      0.007,
+      0.008
+    ],
+    "pump_controls": []
+  },
+  "model": {
+    "cells": [
+      {
+        "fixed_charge_equivalent_fmol": 0.0,
+        "id": "cell_0",
+        "initial_amount_fmol": {
+          "Cl": 150.0,
+          "K": 5.0,
+          "Na": 145.0,
+          "S": 0.0005
+        },
+        "initial_charge_C": 0.0,
+        "volume_pL": 1.0
+      }
+    ],
+    "channels": [],
+    "closure": {
+      "gauge_reference": null,
+      "law": "resolved_capacitor_components_current_continuity@1"
+    },
+    "extracellular": [
+      {
+        "boundary_potential_V": 0.0,
+        "fixed_charge_equivalent_fmol": 0.0,
+        "id": "bath",
+        "initial_amount_fmol": {
+          "Cl": 150.0,
+          "K": 5.0,
+          "Na": 145.0,
+          "S": 0.001
+        },
+        "initial_charge_C": 0.0,
+        "reservoir": true,
+        "volume_pL": 1.0
+      },
+      {
+        "boundary_potential_V": 0.0,
+        "fixed_charge_equivalent_fmol": 0.0,
+        "id": "ecs_0",
+        "initial_amount_fmol": {
+          "Cl": 150.0,
+          "K": 5.0,
+          "Na": 145.0,
+          "S": 0.0009000000000000001
+        },
+        "initial_charge_C": 0.0,
+        "reservoir": false,
+        "volume_pL": 1.0
+      }
+    ],
+    "faces": [
+      {
+        "area_m2": 1e-10,
+        "diffusivity_m2_per_s": {
+          "Cl": 0.0,
+          "K": 0.0,
+          "Na": 0.0,
+          "S": 1e-10
+        },
+        "id": "face_0",
+        "law": "logmean_electrodiffusion@1",
+        "length_m": 1e-05,
+        "receiver": "bath",
+        "sender": "ecs_0"
+      }
+    ],
+    "id": "resolved_pump_composite@1",
+    "inner_model": "resolved_pump_tissue@3",
+    "junctions": [],
+    "membranes": [
+      {
+        "area_m2": 1e-10,
+        "calcium_pump": null,
+        "capacitance_F": 1e-12,
+        "id": "wall_cell_0",
+        "inside": "cell_0",
+        "law": "constant_field@1",
+        "outside": "bath",
+        "permeability_m_per_s": {
+          "Cl": 0.0,
+          "K": 0.0,
+          "Na": 0.0,
+          "S": 0.0
+        },
+        "pump": null
+      },
+      {
+        "area_m2": 1e-11,
+        "calcium_pump": null,
+        "capacitance_F": 1e-13,
+        "id": "contact_0",
+        "inside": "cell_0",
+        "law": "constant_field@1",
+        "outside": "ecs_0",
+        "permeability_m_per_s": {
+          "Cl": 0.0,
+          "K": 0.0,
+          "Na": 0.0,
+          "S": 0.0
+        },
+        "pump": null
+      }
+    ],
+    "operators": [
+      {
+        "baths": [
+          "bath"
+        ],
+        "formula_units": {
+          "cargo": {
+            "S": 1
+          }
+        },
+        "law": "scheduled_bath_composition@1"
+      }
+    ],
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      },
+      {
+        "id": "S",
+        "valence": 0
+      }
+    ],
+    "temperature_K": 310.0
+  },
+  "schema_version": 1
+}

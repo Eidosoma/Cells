@@ -294,8 +294,8 @@
   "example-sheet": {
    "adapter": "standard-history",
    "example": true,
-   "label": "Example sheet (invented numbers)",
-   "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+   "label": "Test sheet (invented numbers)",
+   "plain": "Invented numbers: a small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
    "sources": [],
    "engine_entities": [],
    "stops": {

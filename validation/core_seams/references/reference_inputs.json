@@ -6256,6 +6256,585 @@
      }
     ],
     "note": "PLANTED: declares only the basis ['K1', 'K2']; its cycles share an edge, so it must be refused (\u00a716)"
+   },
+   {
+    "id": "d2_slip_exchanger__duplicate_cycle",
+    "kind": "diagram",
+    "rate_scale_per_s": 1000.0,
+    "states": [
+     "E_N",
+     "E_N.Y",
+     "E_P.Y",
+     "E_P",
+     "E_P.X3",
+     "E_N.X3"
+    ],
+    "edges": [
+     {
+      "id": "e01",
+      "from": 0,
+      "to": 1,
+      "fwd": {
+       "k0_per_s": 8007621023.863292,
+       "orders": [
+        [
+         "Y",
+         "N",
+         1
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 799.2386229227801,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e12",
+      "from": 1,
+      "to": 2,
+      "fwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e23",
+      "from": 2,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 899.9858764468293,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 500007.84654156264,
+       "orders": [
+        [
+         "Y",
+         "P",
+         1
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e34",
+      "from": 3,
+      "to": 4,
+      "fwd": {
+       "k0_per_s": 255314.046066425,
+       "orders": [
+        [
+         "X",
+         "P",
+         3
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 699.4187406554578,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e45",
+      "from": 4,
+      "to": 5,
+      "fwd": {
+       "k0_per_s": 196.2929327657591,
+       "orders": [],
+       "zeta": -0.375
+      },
+      "bwd": {
+       "k0_per_s": 1273.6067288695046,
+       "orders": [],
+       "zeta": 0.625
+      }
+     },
+     {
+      "id": "e50",
+      "from": 5,
+      "to": 0,
+      "fwd": {
+       "k0_per_s": 794.2251669709472,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 805816821.9988064,
+       "orders": [
+        [
+         "X",
+         "N",
+         3
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e03",
+      "from": 0,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 0.26857955936987105,
+       "orders": [],
+       "zeta": -1.0
+      },
+      "bwd": {
+       "k0_per_s": 1.4893166141848676e-05,
+       "orders": [],
+       "zeta": 1.0
+      }
+     }
+    ],
+    "cycles": [
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "B",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e03",
+        -1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ]
+      ]
+     },
+     {
+      "id": "C",
+      "edges": [
+       [
+        "e03",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     }
+    ],
+    "note": "PLANTED (Q7): cycle A declared twice; refused, each cycle is declared once"
+   },
+   {
+    "id": "d2_slip_exchanger__inconsistent_direction",
+    "kind": "diagram",
+    "rate_scale_per_s": 1000.0,
+    "states": [
+     "E_N",
+     "E_N.Y",
+     "E_P.Y",
+     "E_P",
+     "E_P.X3",
+     "E_N.X3"
+    ],
+    "edges": [
+     {
+      "id": "e01",
+      "from": 0,
+      "to": 1,
+      "fwd": {
+       "k0_per_s": 8007621023.863292,
+       "orders": [
+        [
+         "Y",
+         "N",
+         1
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 799.2386229227801,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e12",
+      "from": 1,
+      "to": 2,
+      "fwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 600.0,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e23",
+      "from": 2,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 899.9858764468293,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 500007.84654156264,
+       "orders": [
+        [
+         "Y",
+         "P",
+         1
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e34",
+      "from": 3,
+      "to": 4,
+      "fwd": {
+       "k0_per_s": 255314.046066425,
+       "orders": [
+        [
+         "X",
+         "P",
+         3
+        ]
+       ],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 699.4187406554578,
+       "orders": [],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e45",
+      "from": 4,
+      "to": 5,
+      "fwd": {
+       "k0_per_s": 196.2929327657591,
+       "orders": [],
+       "zeta": -0.375
+      },
+      "bwd": {
+       "k0_per_s": 1273.6067288695046,
+       "orders": [],
+       "zeta": 0.625
+      }
+     },
+     {
+      "id": "e50",
+      "from": 5,
+      "to": 0,
+      "fwd": {
+       "k0_per_s": 794.2251669709472,
+       "orders": [],
+       "zeta": 0.0
+      },
+      "bwd": {
+       "k0_per_s": 805816821.9988064,
+       "orders": [
+        [
+         "X",
+         "N",
+         3
+        ]
+       ],
+       "zeta": -0.0
+      }
+     },
+     {
+      "id": "e03",
+      "from": 0,
+      "to": 3,
+      "fwd": {
+       "k0_per_s": 0.26857955936987105,
+       "orders": [],
+       "zeta": -1.0
+      },
+      "bwd": {
+       "k0_per_s": 1.4893166141848676e-05,
+       "orders": [],
+       "zeta": 1.0
+      }
+     }
+    ],
+    "cycles": [
+     {
+      "id": "A",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        -1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ],
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     },
+     {
+      "id": "B",
+      "edges": [
+       [
+        "e01",
+        1
+       ],
+       [
+        "e12",
+        1
+       ],
+       [
+        "e23",
+        1
+       ],
+       [
+        "e03",
+        -1
+       ]
+      ],
+      "nu": [
+       [
+        "Y",
+        "N",
+        -1
+       ],
+       [
+        "Y",
+        "P",
+        1
+       ]
+      ]
+     },
+     {
+      "id": "C",
+      "edges": [
+       [
+        "e03",
+        1
+       ],
+       [
+        "e34",
+        1
+       ],
+       [
+        "e45",
+        1
+       ],
+       [
+        "e50",
+        1
+       ]
+      ],
+      "nu": [
+       [
+        "X",
+        "P",
+        -3
+       ],
+       [
+        "X",
+        "N",
+        3
+       ]
+      ]
+     }
+    ],
+    "note": "PLANTED (Q7): cycle A's second edge traversed backwards, so its walk breaks; refused"
    }
   ],
   "parse_plants": [
@@ -13706,7 +14285,9 @@
    "d4_parallel_branches__conc": "d4_parallel_branches",
    "d4_parallel_branches__swap": "d4_parallel_branches",
    "d2_slip_exchanger__basis_AB": "d2_slip_exchanger",
-   "d4_parallel_branches__basis_K1K2": "d4_parallel_branches"
+   "d4_parallel_branches__basis_K1K2": "d4_parallel_branches",
+   "d2_slip_exchanger__duplicate_cycle": "d2_slip_exchanger",
+   "d2_slip_exchanger__inconsistent_direction": "d2_slip_exchanger"
   },
   "amendments": [
    {
@@ -13968,6 +14549,53 @@
        }
       }
      ]
+    },
+    "mgx": {
+     "base_valence": -2,
+     "forms": [
+      {
+       "id": "mgx_base",
+       "mu0_RT": -0.25
+      },
+      {
+       "id": "mgx_H",
+       "mu0_RT": -16.36809565095832,
+       "counts": {
+        "H": 1
+       }
+      },
+      {
+       "id": "mgx_Mg",
+       "mu0_RT": -5.464608098422191,
+       "counts": {
+        "Mg": 1
+       }
+      },
+      {
+       "id": "mgx_MgmH",
+       "mu0_RT": 9.267193191416238,
+       "counts": {
+        "H": -1,
+        "Mg": 1
+       }
+      }
+     ]
+    },
+    "rel1": {
+     "base_valence": -1,
+     "forms": [
+      {
+       "id": "rel1_base",
+       "mu0_RT": 0.5
+      },
+      {
+       "id": "rel1_mH",
+       "mu0_RT": 21.223265836946414,
+       "counts": {
+        "H": -1
+       }
+      }
+     ]
     }
    },
    "moieties": {
@@ -14077,6 +14705,18 @@
     "volume_pL": 1.0,
     "note": "three ligands connected through shared binders",
     "designated": "cabuf_CaH"
+   },
+   "S7": {
+    "ligands": [
+     "H",
+     "Mg"
+    ],
+    "binders": [
+     "mgx"
+    ],
+    "volume_pL": 1.0,
+    "note": "amendment C4: a binder whose Mg\u00b2\u207a binding releases H\u207a, so the per-ligand floors are not the joint condition",
+    "designated": "mgx_MgmH"
    }
   },
   "manufactured_states": {
@@ -15533,6 +16173,179 @@
       }
      }
     }
+   ],
+   "S7": [
+    {
+     "tag": "random_0",
+     "free_mM": {
+      "H": 1.4749914799645697e-05,
+      "Mg": 2.120505150370552
+     },
+     "binders_mM": {
+      "mgx": 4.169265931671168
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.852083897713566,
+       "Mg": 6.13524436360794
+      },
+      "binders_fmol": {
+       "mgx": 4.169265931671168
+      }
+     }
+    },
+    {
+     "tag": "random_1",
+     "free_mM": {
+      "H": 0.0004888634062865346,
+      "Mg": 0.029091035592200408
+     },
+     "binders_mM": {
+      "mgx": 2.1414836584911354
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 1.7660509839387277,
+       "Mg": 0.03866585841392152
+      },
+      "binders_fmol": {
+       "mgx": 2.1414836584911354
+      }
+     }
+    },
+    {
+     "tag": "random_2",
+     "free_mM": {
+      "H": 0.0009208039422413167,
+      "Mg": 0.012160412707969566
+     },
+     "binders_mM": {
+      "mgx": 13.136650163752973
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 11.837166811497394,
+       "Mg": 0.023374421974710492
+      },
+      "binders_fmol": {
+       "mgx": 13.136650163752973
+      }
+     }
+    },
+    {
+     "tag": "random_3",
+     "free_mM": {
+      "H": 0.0007129799620336596,
+      "Mg": 1.652268600992041
+     },
+     "binders_mM": {
+      "mgx": 1.5757538708461798
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": 1.1159068087693669,
+       "Mg": 1.8680058129150856
+      },
+      "binders_fmol": {
+       "mgx": 1.5757538708461798
+      }
+     }
+    },
+    {
+     "tag": "random_4",
+     "free_mM": {
+      "H": 0.00010906791911308087,
+      "Mg": 1.919939872963956
+     },
+     "binders_mM": {
+      "mgx": 12.768510751585568
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -4.721478036816238,
+       "Mg": 10.626098034694454
+      },
+      "binders_fmol": {
+       "mgx": 12.768510751585568
+      }
+     }
+    },
+    {
+     "tag": "random_5",
+     "free_mM": {
+      "H": 7.117454263750017e-06,
+      "Mg": 0.041050169428217466
+     },
+     "binders_mM": {
+      "mgx": 1.3429424283588383
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -0.6473766095492859,
+       "Mg": 0.7432828864270014
+      },
+      "binders_fmol": {
+       "mgx": 1.3429424283588383
+      }
+     }
+    },
+    {
+     "tag": "random_6",
+     "free_mM": {
+      "H": 1.0421127870365655e-05,
+      "Mg": 0.08005642494672015
+     },
+     "binders_mM": {
+      "mgx": 3.439222348444517
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.8374824869685793,
+       "Mg": 2.102604799428228
+      },
+      "binders_fmol": {
+       "mgx": 3.439222348444517
+      }
+     }
+    },
+    {
+     "tag": "random_7",
+     "free_mM": {
+      "H": 1.6557449741963978e-05,
+      "Mg": 0.7570859437839187
+     },
+     "binders_mM": {
+      "mgx": 3.0154021670560622
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.5330792872900196,
+       "Mg": 3.4436780326649408
+      },
+      "binders_fmol": {
+       "mgx": 3.0154021670560622
+      }
+     }
+    },
+    {
+     "tag": "mostly_MgmH",
+     "free_mM": {
+      "H": 3.162277660168379e-07,
+      "Mg": 2.0
+     },
+     "binders_mM": {
+      "mgx": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -9.984163374465735,
+       "Mg": 11.99208184534675
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     }
+    }
    ]
   },
   "p1_nodes": {
@@ -16130,6 +16943,388 @@
       16.0
      ],
      "note": "E2 with its binder's base form moved in (a moved binder row)"
+    },
+    "E3_rel1_b4": {
+     "ligands": [
+      "H"
+     ],
+     "binders": [
+      "rel1"
+     ],
+     "volume_pL": 0.05,
+     "free_mM": {
+      "H": 6.309573444801942e-07
+     },
+     "binders_mM": {
+      "rel1": 40.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.2262736087584167
+      },
+      "binders_fmol": {
+       "rel1": 2.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "rel1",
+       "H",
+       100000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "one ligand and a two-form buffer whose other form sits below its base: its one step, rel1_mH + H \u21cc rel1_base, is a release step; the general lag must equal B4's formula with the release form as the free one",
+     "amendment": "C5"
+    },
+    "E3_pi2_release": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "pi2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 1e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "pi2": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.283862168949658,
+       "Mg": 0.6638062230794811
+      },
+      "binders_fmol": {
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "single-sign release: pi2 at pH 12, where pi2_PO4 + H \u21cc pi2_base carries the buffering; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E3_pi2_release_mg_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "pi2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 1e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "pi2": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.283862168949658,
+       "Mg": 0.6638062230794811
+      },
+      "binders_fmol": {
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "Mg",
+       0.001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E3_pi2_release under an Mg\u00b2\u207a drive, coupled to the release step through the base",
+     "amendment": "C5"
+    },
+    "E3_s4_release": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "nuc4",
+      "nuc3",
+      "pi2"
+     ],
+     "volume_pL": 2.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "nuc4": 2.0,
+      "nuc3": 1.0,
+      "pi2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.3389658749790587,
+       "Mg": 5.944562499974286
+      },
+      "binders_fmol": {
+       "nuc4": 4.0,
+       "nuc3": 2.0,
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "nuc4",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc4",
+       "Mg",
+       10000.0
+      ],
+      [
+       "nuc3",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc3",
+       "Mg",
+       10000.0
+      ],
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "single-sign release among S4's three binders at pH 11.5; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.03
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "mixed-sign: mgx at pH 7.5, two thirds of it as mgx_MgmH (H \u22121, Mg +1), reached through mgx_Mg by the release step mgx_MgmH + H \u21cc mgx_Mg; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed_mg_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "Mg",
+       0.1
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E4_mgx_mixed under an Mg\u00b2\u207a drive: binding Mg\u00b2\u207a releases H\u207a through the release step, so the H\u207a lag comes from the Mg\u00b2\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed_binder_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "mgx",
+       0.01
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E4_mgx_mixed with its binder's base form moved in (a moved binder row)",
+     "amendment": "C5"
     }
    },
    "planted_unreachable_binders": {
@@ -16150,7 +17345,77 @@
      ]
     }
    },
-   "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time"
+   "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time",
+   "amendment_c5": {
+    "cases": [
+     "E3_rel1_b4",
+     "E3_pi2_release",
+     "E3_pi2_release_mg_drive",
+     "E3_s4_release",
+     "E4_mgx_mixed",
+     "E4_mgx_mixed_mg_drive",
+     "E4_mgx_mixed_binder_drive"
+    ],
+    "release_step": "a unit step f\u2032 + L \u21cc f whose bound form f holds count_f(L) \u2264 0: binding L only restores a ligand released below the base",
+    "planted": "the release steps' ligand written with the wrong sign in N (the step taken to release L where it binds it), the forward flux unchanged"
+   }
+  },
+  "validity": {
+   "note": "amendment C4: t* = min over the ligand simplex of \u03bb\u00b7T \u2212 \u03a3_B T_B min_f \u03bb\u00b7n_f; a state is valid iff t* > 0; the per-ligand floors are t at \u03bb = e_L",
+   "planted": {
+    "joint_infeasible": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 1.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "per-ligand floors pass; jointly infeasible"
+    },
+    "boundary": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 2.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "t* = 0: on the boundary, not interior"
+    },
+    "feasible_near": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -2.0,
+       "Mg": 3.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "t* = +1/2: valid, close to the boundary"
+    },
+    "per_ligand_infeasible": {
+     "system": "S7",
+     "totals": {
+      "ligands_fmol": {
+       "H": -11.0,
+       "Mg": 20.0
+      },
+      "binders_fmol": {
+       "mgx": 10.0
+      }
+     },
+     "note": "below the H floor \u2212T_B"
+    }
+   }
   }
  }
 }

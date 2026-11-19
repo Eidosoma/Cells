@@ -64,7 +64,7 @@ def test_the_registered_power(registered):
             continue
         planted = "__" in lid
         assert w["verdict"] == ("refused" if planted else "admitted"), lid
-        if planted and "basis" not in lid:
+        if planted and not any(k in lid for k in ("basis", "duplicate", "inconsistent")):
             failing = [c for c in w["cycles"].values()
                        if not c["structurally_zero"] or c["r0_over_terms_eps"] > 64]
             assert failing and min(c["min_residual_eps_over_generic"] for c in failing) > 640
@@ -100,6 +100,37 @@ def test_the_registered_power(registered):
             assert row["min"] > design.MIN_MARGIN, (name, plant)
         assert c["conservation_max_rel"] < 1e-45 and c["charge_max_abs_fmol_e"] < 1e-45
     assert p["C5_p1"]["P1a"]["ratio_stored_over_free"] > 1e5
+    # amendment A2: the engine's stated band and allowance reproduce every verdict
+    eb = p["A2_amendment_engine_band"]
+    assert eb["every_verdict_agrees"] and eb["passing_R0_over_B_W_max"] < 1e-2
+    assert eb["planted_constant_R0_over_B_W_min"] > 1e5
+    lo, hi = eb["this_window_eps"]
+    assert lo < eb["B_W_in_eps_of_this_terms"][0] and eb["B_W_in_eps_of_this_terms"][1] < hi
+    ea = p["A3_population_guard"]["engine_allowance"]
+    assert ea["every_verdict_agrees"] and ea["inside_the_window"]
+    # amendment C4: every registered state is jointly valid; the per-ligand floors admit the
+    # two planted invalid states
+    c4 = p["C4_amendment_joint_validity"]
+    assert all(r["every_state_valid"] and r["exact_vs_lp_max_abs_fmol"] < 1e-9
+               for r in c4["registered"].values())
+    assert sorted(c4["per_ligand_floor_admits_an_invalid_state"]) == ["boundary",
+                                                                        "joint_infeasible"]
+    assert c4["planted"]["joint_infeasible"]["t_star_exact"] == "-1/2"
+    assert c4["planted"]["feasible_near"]["dual"] == c4["planted"]["feasible_near"]["primal"] \
+        == "solved"
+    # amendment F4: every slope pair, route pair and basis total compared, none skipped
+    for lid, c in p["A6_slopes"].items():
+        e = c["exact_vs_differences"]
+        assert e["failures"] == 0 and e["worst_over_floor"] < 1, lid
+        if lid.startswith(("v1_neutral", "ff_neutral")):
+            assert e["zero_cases_with_zero_floor"] == e["states"], lid
+    for lid, o in p["A4_one_way_fluxes"].items():
+        assert o["routes_failures"] == 0 and max(o["routes_over_floor"].values()) < 1, lid
+        if "basis_readout" in o:
+            assert o["basis_readout"]["every_state_agrees"]
+            assert o["basis_readout"]["states_with_a_zero_hill_total"]
+    for lid, row in p["A1_sign_and_zero"].items():
+        assert row.get("backward_zero_mismatches", 0) == 0, lid
     # amendment C3: the envelope's planted per-step minimum flips E1's verdict; first order holds
     ec = p["C3_amendment_envelope"]
     assert ec["E1_chain"]["verdict_first_order"] == "outside"
@@ -109,12 +140,21 @@ def test_the_registered_power(registered):
     assert 8 < ec["scalings"]["second_order_ratio"] < 12
     assert ec["reachability"]["unreach2"]["verdict"] == "refused"
     assert all(v["verdict"] == "admitted" for b, v in ec["reachability"].items() if b != "unreach2")
+    # amendment C5: release steps; the flipped sign is caught on every case, B4 on the buffer
+    c5 = p["C5_amendment_release_envelope"]
+    assert c5["all_caught"] and len(c5["cases"]) == 7
+    assert c5["cases"]["E3_rel1_b4"]["b4_formula_vs_general_rel"] < 1e-12
+    assert all(r["release_steps"] for r in c5["cases"].values())
+    assert all(x < 1 for r in c5["cases"].values() for x in r["float64_rerun_over_floor"].values())
+    assert sum(z["control"].startswith("amendment C5") for z in des["zero_power"]) == 4
+    mg = ec["E4_mgx_mixed_mg_drive"]
+    assert mg["per_step_pH"] < mg["first_order_pH"]
     # amendment C2: the scales part only in S4, and by 1e9 at its cancelling state
     for name, c in p["C2_amendment_convergence_scale"].items():
         if name == "S4":
             assert c["at"] == "near_zero_H_total" and c["min_total_over_scale"] < 1e-8
             assert c["old_scale_tolerance_ulps_at_min"] < 1
-        else:
+        elif name != "S7":                     # S7 (amendment C4) has a count of −1 as well
             assert c["states_where_the_scales_differ"] == [], name
     # amendment C1: the booked term's plants, its identity and the primal route
     for name, c in p["C1_amendment_booked_term_and_primal"].items():
@@ -122,8 +162,9 @@ def test_the_registered_power(registered):
         assert c["primal_vs_dual_max_abs_dln"] < 1e-45 and c["primal_certificate_max"] <= 1e-50
         for plant, row in c["plants"].items():
             assert row["max"] > 1e3 * design.MIN_MARGIN, (name, plant)
-        assert c["states_where_S_c_is_undefined"] == (["high_pH_negative_total"]
-                                                      if name == "S4" else [])
+        nonpositive = [st["tag"] for st in _inputs["seam_c"]["manufactured_states"][name]
+                       if any(v <= 0 for v in st["totals"]["ligands_fmol"].values())]
+        assert c["states_where_S_c_is_undefined"] == nonpositive, name
     assert {m: v["verdict"] for m, v in p["C3_movers"].items()} == \
         {m["id"]: m["expected"] for m in worlds.MOVERS}
     assert len(des["zero_power"]) >= 15 and des["readings"]
