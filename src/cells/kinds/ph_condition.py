@@ -160,7 +160,7 @@ def check_definition(spec):
         if read is not None and read.proton != c.proton:
             raise ConfigError(
                 f"pH condition {c.id!r}: its proton row {c.proton} is not the closure's proton "
-                f"row {read.proton}"
+                f"row {read.proton or '(none: the closure declares no proton_row)'}"
             )
 
 
@@ -214,7 +214,8 @@ def view_sets(spec, declaration):
             "id": AXIS,
             "ids": [c.id for c in declaration],
             "roles": {"node": "the node whose free proton read sets the condition's pH"},
-            "kinds": [LAW_ID for _ in declaration],
+            "kinds": ["factor" for _ in declaration],
+            "laws": [{"law_id": LAW_ID} for _ in declaration],
             "at": [{"node": c.node} for c in declaration],
             "ph50": [c.ph50 for c in declaration],
             "slope": [c.slope for c in declaration],

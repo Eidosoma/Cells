@@ -4,7 +4,10 @@
 the lead's ruling (a), 18 November 2026): its row of the static model table names its
 EnsembleAdapter (`ensemble`, "module:object"), loaded by name. MODELS holds the adapters' kinds,
 then today's five; each hook below dispatches to the adapter of the spec's or definition's model,
-falling back to today's chains for today's five families.
+falling back to today's chains for today's five families. A model ID is read in either form a
+definition writes, a string or {"id": ..., ...} (model_of), once, in model_id and row_model, so the
+planner, the launcher and the controller's summary compare strings (the second external review's
+finding 5).
 """
 
 import copy
@@ -30,7 +33,11 @@ class EnsembleAdapter(NamedTuple):
     population(spec) -> the part holding `recording` and `end_time_s`; output_bound(spec) ->
     bytes; parse_definition(data) -> spec; runtime(spec) -> (run, load_checkpoint,
     write_checkpoint); first_completion(spec, state) -> times or None; progress(spec, state) ->
-    {name: value}; failure_state(spec, state) -> {name: array}."""
+    {name: value}; failure_state(spec, state) -> {name: array}; and aggregate(rows) -> {arm:
+    summary}, the family's own summary of its completed tasks' result rows, which today's families
+    have in cli and an adapter family must give (finding 5). The controller adds each arm's timing
+    beside it (cli.ARM_TIMING_KEYS, which the family's summary may not use); a run's result row
+    holds its worlds, as every family's does."""
 
     kind: str
     model: str
@@ -42,6 +49,7 @@ class EnsembleAdapter(NamedTuple):
     first_completion: Callable
     progress: Callable
     failure_state: Callable
+    aggregate: Callable
 
 
 def adapter_errors(models):
@@ -54,7 +62,7 @@ def adapter_errors(models):
         module, _, name = row.ensemble.partition(":")
         try:
             adapter = getattr(importlib.import_module(module), name)
-        except (ImportError, AttributeError, ValueError) as error:
+        except Exception as error:  # Reported, never swallowed: adapters() refuses on it.
             out.append(f"{model_id}: ensemble {row.ensemble!r} does not resolve ({error})")
             continue
         if not isinstance(adapter, EnsembleAdapter):
@@ -99,19 +107,27 @@ class _Models(Mapping):
 MODELS = _Models()
 
 
-def _model_of(model):
+def model_of(model):
     """A definition's or a spec's model ID: today's families write a string, others {id, ...}."""
     return model.get("id") if isinstance(model, dict) else model
 
 
-def _adapter(model):
-    """The adapter of a model ID, or None for today's families."""
-    model = _model_of(model)
+def row_model(row):
+    """A completed task's result row's model ID: its own `model` where the run wrote one, else its
+    definition's (worker.py writes every row's definition)."""
+    if "model" in row:
+        return model_of(row["model"])
+    return model_of(row.get("definition", {}).get("model"))
+
+
+def adapter_of(model):
+    """The adapter of a model ID in either form, or None for today's families."""
+    model = model_of(model)
     return next((a for a in adapters().values() if a.model == model), None)
 
 
 def bind_definition(data, *, worlds, world_id_start, seed, reject_owned=False):
-    adapter = _adapter(data.get("model") if isinstance(data, dict) else None)
+    adapter = adapter_of(data.get("model") if isinstance(data, dict) else None)
     if adapter is not None:
         return adapter.bind_definition(
             data,
@@ -141,7 +157,8 @@ def bind_definition(data, *, worlds, world_id_start, seed, reject_owned=False):
 
 
 def model_id(spec):
-    return spec.to_dict()["model"]
+    """A spec's model ID as a string, whichever form its definition writes (model_of)."""
+    return model_of(spec.to_dict()["model"])
 
 
 def _older(model):
@@ -152,7 +169,7 @@ def _older(model):
 
 
 def population(spec):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.population(spec)
     return (
@@ -163,7 +180,7 @@ def population(spec):
 
 
 def output_bound(spec):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.output_bound(spec)
     if model_id(spec) == "assembly_regulated_cell@1":
@@ -174,7 +191,7 @@ def output_bound(spec):
 
 
 def parse_definition(data):
-    adapter = _adapter(data.get("model"))
+    adapter = adapter_of(data.get("model"))
     if adapter is not None:
         return adapter.parse_definition(data)
     if data.get("model") == "assembly_regulated_cluster@1":
@@ -191,7 +208,7 @@ def parse_definition(data):
 
 
 def runtime_for(spec):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.runtime(spec)
     if model_id(spec) == "assembly_regulated_cluster@1":
@@ -210,7 +227,7 @@ def runtime_for(spec):
 
 
 def first_completion(spec, state):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.first_completion(spec, state)
     if model_id(spec) == "assembly_regulated_cluster@1":
@@ -227,7 +244,7 @@ def first_completion(spec, state):
 
 
 def progress(spec, state):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.progress(spec, state)
     if model_id(spec) == "ionic_worlds@1":
@@ -247,7 +264,7 @@ def progress(spec, state):
 
 
 def failure_state(spec, state):
-    adapter = _adapter(model_id(spec))
+    adapter = adapter_of(model_id(spec))
     if adapter is not None:
         return adapter.failure_state(spec, state)
     if model_id(spec) in ("assembly_regulated_cell@1", "assembly_regulated_cluster@1"):

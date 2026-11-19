@@ -85,7 +85,7 @@ the five `cells` law interfaces; "operators" the composite's operators (`cells.o
 | `provenance` | What it rests on: a provenance object (below) | Laws, family operators; not extracted for kinds and operators |
 | `test` | The ID of the test that checks it against its reference with a planted error (D187). Null: no test is declared | Laws, family operators; not extracted for kinds and operators |
 | `reads` | What it reads, each a read object with its mode (below) | Cells laws (their stage reads), operators |
-| `changes` | The rows a law moves: a channel law's permeant ions, as `species`, `valence` and `relative_permeability`; a cycle law's moves, as `role` and `per_cycle`. An empty list: the law declares none | Cells laws |
+| `changes` | The rows a law moves: a channel law's permeant ions, as `species`, `valence` and `relative_permeability`; a cycle law's moves, as `role` and `per_cycle`, with each row's `mode` where its general form gives them. An empty list: the law declares none | Cells laws |
 | `owns` | Its own state fields, each with its axes | Kinds, operators |
 | `writes` | Its writes into the inner model's fields, each with the accumulators of its own that book them | Operators |
 | `provides` | The view fields and readout columns it provides: a kind's readout columns; an operator's view fields, then its readout columns | Kinds, operators |
@@ -222,6 +222,11 @@ repeat them.
   per stage; `charge_bound` and `material_bound`, its definition-time bounds on a charged and on
   a neutral row. Each names the kernel that supplies it, or is null where the law has none;
 - `loop_term`: its loop term, where its host takes one;
+- `forms`: `"base"` where its moves are written in base forms with every ligand out, so a rapid
+  binding closure's totals stay exact (CORE_SEAMS §5.2), or null;
+- `cycle`: its general form (seam A's cycle form), or null. Where it is set, the form carries the
+  law: the form's own checks apply, `moves` may be empty and the kernels null, and `changes` holds
+  the form's rows, one for each row a mode changes, with that `mode`;
 - its kernels: `kinetics` and `domain_valid`. Its stage reads are its `reads`.
 
 ### Route laws
@@ -230,7 +235,8 @@ repeat them.
 - `hosts`: the entities its routes sit on, such as membranes and junctions;
 - `basis`: what it is, in its sources' words.
 - `stage_term`, `material_term`, `charge_bound` and `material_bound`: its step terms, as for cycle
-  laws, each a kernel's name or null.
+  laws, each a kernel's name or null;
+- `forms`: as for cycle laws.
 
 A route law declares nothing it changes: a definition chooses the species of most routes.
 
@@ -238,7 +244,11 @@ A route law declares nothing it changes: a definition chooses the species of mos
 
 `cells.binding_law@1`: a rapid binding closure.
 - `ligands`: the ligands it binds, by role;
-- its kernels: `closure` (free forms from totals) and, optionally, `domain_valid`.
+- `forms`: `"registry"` where its binders' forms are the species registry's, or null;
+- its kernels: `closure` (free forms from totals) and, optionally, `domain_valid`. A general
+  closure (CORE_SEAMS §19) also declares `free_energy` (its free-energy term G*), `envelope` (the
+  first-order lag envelope of its binding network) and `free_amounts` (the free forms from the
+  totals, which P1's predictor reads); a version-1 closure declares none of the three.
 
 ### Junction laws
 

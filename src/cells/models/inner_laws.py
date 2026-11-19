@@ -169,6 +169,60 @@ def heat_booking_errors(bookings, kinds, junction_heat_booking=DEFAULT_JUNCTION_
     return out
 
 
+def kind_ledger_errors(ledgers, kinds):
+    """Why an InnerStructure's kind_ledgers break E's list (empty: they keep it), for a structure
+    whose declared kinds are `kinds` (namespaced IDs): (kind ID, ((ledger, diagnostic), ...))
+    entries of non-empty names, at most one per declared kind, sorted by kind ID, each with at
+    least one pair; every name distinct across them, none taken by @1's ten ledgers or their
+    diagnostics (surface_pump's, read only where a kind declares a ledger), and no ledger named
+    for one of ledger_terms' roles (kind_registry.LEDGER_TERM_ROLES, as kind_ledgers refuses).
+    Today's empty list reads nothing."""
+    if ledgers == ():
+        return []
+    if not (
+        isinstance(ledgers, tuple)
+        and all(
+            isinstance(entry, tuple)
+            and len(entry) == 2
+            and isinstance(entry[0], str)
+            and entry[0]
+            and isinstance(entry[1], tuple)
+            and entry[1]
+            and all(
+                isinstance(pair, tuple)
+                and len(pair) == 2
+                and all(isinstance(name, str) and name for name in pair)
+                for pair in entry[1]
+            )
+            for entry in ledgers
+        )
+    ):
+        return ["they are (kind ID, ((ledger, diagnostic), ...)) entries of names"]
+    from cells.models import surface_pump as today  # @1's ten, where a kind declares a ledger.
+
+    out, owners = [], [kind_id for kind_id, _ in ledgers]
+    if owners != sorted(set(owners)):
+        out.append("they are sorted, one entry per kind")
+    for kind_id in owners:
+        if kind_id not in kinds:
+            out.append(f"{kind_id} is not a declared kind")
+    names = [(kind_id, name) for kind_id, pairs in ledgers for pair in pairs for name in pair]
+    seen, taken = set(), {*today.LEDGERS, *today.LEDGER_DIAGNOSTICS}
+    for kind_id, name in names:
+        if name in taken:
+            out.append(f"kind {kind_id}'s {name} is one of @1's ledgers or diagnostics")
+        elif name in seen:
+            out.append(f"kind {kind_id}'s {name} is named twice")
+        seen.add(name)
+    reserved = sorted(
+        {ledger for _, pairs in ledgers for ledger, _ in pairs}
+        & set(kind_registry.LEDGER_TERM_ROLES)
+    )
+    if reserved:
+        out.append(f"ledgers {reserved} take names of ledger_terms' roles, as kind_ledgers refuses")
+    return out
+
+
 @dataclass(frozen=True)
 class InnerStructure:
     """What one definition declares (§7.4 (a)): Python values only, never a parameter value.
@@ -201,6 +255,20 @@ class InnerStructure:
     # never listed, so () for every definition of today's and no structure or fingerprint moves.
     # A JUNCTIONS pair agrees with junction_heat_booking.
     heat_bookings: tuple = ()
+    # P1's static switch (docs/CORE_SEAMS_DESIGN.md §17; §19 as amended, the general layout only;
+    # the binding owner's selector, ruling (a) of 19 November 2026): the declared kinds' IDs,
+    # sorted, whose stage rows all name, as their third item, a registered law that declares
+    # free_amounts. The IMEX step's positivity predictor reads those kinds' stage reads at the
+    # predicted stored totals. () for every definition of today's, so no structure or program
+    # moves. Added by the @3 owner at the lead's word (a recorded exception in this file).
+    free_amount_reads: tuple = ()
+    # E's kind ledgers (docs/CORE_SEAMS_DESIGN.md §7.3; INNER_MODEL_V4_DESIGN §7.4 (p)): each
+    # declared kind's own ledgers, ((kind ID, ((ledger, diagnostic), ...)), ...) in canonical
+    # (sorted ID) order, read once from its declaration (kind_registry.kind_ledgers). Names only:
+    # the values are the kind's ledger_terms under those names and the bounds its ledger_bounds,
+    # both at check time. () for every definition of today's, so no structure or program moves.
+    # Added by the @3 owner at the lead's word (a recorded exception in this file).
+    kind_ledgers: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -209,6 +277,16 @@ class InnerStructure:
         problems = heat_booking_errors(self.heat_bookings, ids, self.junction_heat_booking)
         if problems:
             raise ValueError("Heat bookings of an inner structure: " + "; ".join(problems))
+        reads = self.free_amount_reads
+        if not (isinstance(reads, tuple) and all(isinstance(k, str) and k for k in reads)):
+            raise ValueError("Free-amount reads are a tuple of declared kind IDs")
+        if list(reads) != sorted(set(reads)) or not set(reads) <= set(ids):
+            raise ValueError(
+                "Free-amount reads must be distinct declared kinds, in canonical (sorted ID) order"
+            )
+        problems = kind_ledger_errors(self.kind_ledgers, ids)
+        if problems:
+            raise ValueError("Kind ledgers of an inner structure: " + "; ".join(problems))
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.
         unknown = []
         for interface, declared in (

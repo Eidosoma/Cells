@@ -1,0 +1,8047 @@
+{
+ "about": "FR-2 v1's declared inputs (design statement 1 \u00a712), frozen for the code-blind references; sources listed per world",
+ "declared_by": {
+  "file": "fr2-retrieval-v1-20261119/declared_inputs.json (workspace)",
+  "generated_by": "make_declared_inputs.py",
+  "tree": {
+   "branch": "fr2-retrieval-v1",
+   "revision": "c710d8417c1bebef09bd70fddc54ff2d923b91c9",
+   "dirty": []
+  }
+ },
+ "conventions": {
+  "voltage": "V = phi_inside - phi_outside; a held node's potential is held_potential",
+  "charge_anchor": "each node's declared initial charge (C); amounts move it by F sum z n",
+  "half_step": "the composite's split part runs each half-step H = dt/2 as S_ret(H/2) S_rec(H) S_ret(H/2)"
+ },
+ "worlds": {
+  "held_bath_cell": {
+   "notes": "One heredity cell, its plasma patch membrane_0 on the held bath bath_0 at 20 mV, its pool pool_0 (compartment endosome_0) and route uptake_0. Its schedule is zero: the operator-level tests drive the half-steps themselves (test_drives). T4 (held bath), T6.",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.02,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "membrane_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_0": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_0": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "test_drives": [
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_retrieval_moves_only_the_pool_into_its_closed_form[held bath]",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.03,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.9567632993701436e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": ""
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_recycling_keeps_the_pool_and_merges_into_the_plasma_closed_form",
+     "half_steps": {
+      "value": 3,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.02,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.3045088662467625e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": "then one half-step of recycling at 0.2 of the pool patch's area after these three (A_b0 + 3 x 0.02 A_k0, by the law), per half-step"
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a held bath at 20 mV]",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.03,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.9567632993701436e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": ""
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[recycling into the held bath's patch]",
+     "half_steps": {
+      "value": 3,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.02,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.3045088662467625e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": "then one half-step of recycling at 0.2 of the pool patch's declared area"
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[both directions at once]",
+     "half_steps": {
+      "value": 2,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.02,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.3045088662467625e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": "then one half-step with retrieval 0.02 and recycling 0.1 of the declared areas"
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.03,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.9567632993701436e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": ""
+    }
+   ],
+   "sources": [
+    "tests/unit/test_membrane_trafficking_laws.py",
+    "tests/unit/test_membrane_trafficking_laws.py (H = dt/2)",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::pooled_cells (bath_V=0.02, the laws test's world())",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/surface_pump_v3_fixtures.py::heredity_cells"
+   ]
+  },
+  "held_bath_cell_cycle_enrichments": {
+   "notes": "held_bath_cell with the T5 enrichments (e: Kir 1, NaV 0.5; e_r: Kir 2, NaV 1). T5 at the operator level: the cycle, and the convergence of both directions at once.",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.02,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "membrane_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 0.5,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_0": {
+       "value": 2.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_0": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_0": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "test_drives": [
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_a_cycle_follows_the_closed_forms_piecewise",
+     "half_steps": {
+      "value": 4,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.02,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "membrane_0",
+      "rate": {
+       "value": 1.3045088662467625e-08,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": "then 4 half-steps of recycling at 0.05 of the pool patch's declared area"
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_both_directions_converge_at_second_order",
+     "note": "both directions at constant rates for 4 dt, at 8 and 16 equal steps h (the palindrome, then the Lie split as the plant); R0 = 0; the RK4 reference uses 20 000 steps",
+     "retrieval_rate": {
+      "value": 1.6306360828084532e-08,
+      "unit": "m^2/s",
+      "derived": "0.05 x A(membrane_0) / dt"
+     },
+     "recycling_rate": {
+      "value": 6.522544331233813e-09,
+      "unit": "m^2/s",
+      "derived": "0.4 x A(pool_membrane_0) / dt"
+     },
+     "duration": {
+      "value": 0.004,
+      "unit": "s"
+     }
+    }
+   ],
+   "sources": [
+    "tests/unit/test_membrane_trafficking_laws.py",
+    "tests/unit/test_membrane_trafficking_laws.py (H = dt/2)",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::pooled_cells (bath_V=0.02, the laws test's world())",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/surface_pump_v3_fixtures.py::heredity_cells"
+   ]
+  },
+  "cleft_cell": {
+   "notes": "held_bath_cell with the furrow furrow_0 (10% of membrane_0's area) on the free cleft cleft_0 (0.01 pL, joined to bath_0 by access_0), the route on the furrow. The cleft's charge anchor is -C_furrow x V, V the heredity cell's resting voltage. T4 and T6 (free node).",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.02,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cleft_0",
+     "held": false,
+     "volume": {
+      "value": 0.01,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 1.45,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.05,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 1.4000000000000001,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.1,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0013445288043654109,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 1.297273082385362e-13,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "furrow_0",
+     "inside": "cell_0",
+     "outside": "cleft_0",
+     "area": {
+      "value": 3.2612721656169065e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084533e-12,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [
+    {
+     "id": "access_0",
+     "sender": "cleft_0",
+     "receiver": "bath_0",
+     "area": {
+      "value": 1e-14,
+      "unit": "m^2"
+     },
+     "length": {
+      "value": 0.01,
+      "unit": "m"
+     },
+     "diffusivity": {
+      "Na": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "K": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "M": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "P": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      }
+     }
+    }
+   ],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "furrow_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {},
+     "recycling_enrichment": {},
+     "R0": {}
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "test_drives": [
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_retrieval_moves_only_the_pool_into_its_closed_form[free node]",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.03,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "furrow_0",
+      "rate": {
+       "value": 1.9567632993701437e-09,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": ""
+    },
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_the_energy_closes_exactly_and_the_carriers_work_is_their_free_energy[retrieval from a free node]",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval": {
+      "fraction": {
+       "value": 0.03,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "furrow_0",
+      "rate": {
+       "value": 1.9567632993701437e-09,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "recycling": {
+      "fraction": {
+       "value": 0.0,
+       "unit": "1 (of the patch's declared area, per half-step)"
+      },
+      "of": "pool_membrane_0",
+      "rate": {
+       "value": 0.0,
+       "unit": "m^2/s",
+       "derived": "fraction x the patch's declared area_m2 / H"
+      }
+     },
+     "note": ""
+    }
+   ],
+   "sources": [
+    "tests/unit/test_membrane_trafficking_laws.py",
+    "tests/unit/test_membrane_trafficking_laws.py (H = dt/2)",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_cleft",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::pooled_cells (bath_V=0.02, the laws test's world())",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/surface_pump_v3_fixtures.py::heredity_cells"
+   ]
+  },
+  "two_routes_one_cleft": {
+   "notes": "Two heredity cells whose furrows furrow_0 and furrow_1 both face cleft_0 (cleft_1 and access_1 removed; the laws test's shared_cleft), each with its pool and route. T6.",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_1",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_1",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cleft_0",
+     "held": false,
+     "volume": {
+      "value": 0.01,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 1.45,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.05,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 1.4000000000000001,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.1,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0013445288043654109,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 1.297273082385362e-13,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_1",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "membrane_1",
+     "inside": "cell_1",
+     "outside": "bath_1",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_1"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "furrow_0",
+     "inside": "cell_0",
+     "outside": "cleft_0",
+     "area": {
+      "value": 3.2612721656169065e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084533e-12,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_1",
+     "inside": "cell_1",
+     "outside": "pool_1",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "furrow_1",
+     "inside": "cell_1",
+     "outside": "cleft_0",
+     "area": {
+      "value": 3.2612721656169065e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084533e-12,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [
+    {
+     "id": "access_0",
+     "sender": "cleft_0",
+     "receiver": "bath_0",
+     "area": {
+      "value": 1e-14,
+      "unit": "m^2"
+     },
+     "length": {
+      "value": 0.01,
+      "unit": "m"
+     },
+     "diffusivity": {
+      "Na": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "K": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "M": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "P": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      }
+     }
+    }
+   ],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_1",
+     "patch": "membrane_1",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_1",
+     "patch": "membrane_1",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    },
+    {
+     "id": "endosome_1",
+     "node": "pool_1",
+     "bounding_patch": "pool_membrane_1",
+     "owner": "cell_1"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "furrow_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {},
+     "recycling_enrichment": {},
+     "R0": {}
+    },
+    {
+     "id": "uptake_1",
+     "source_patch": "furrow_1",
+     "destination": {
+      "compartment": "endosome_1",
+      "node": "pool_1",
+      "patch": "pool_membrane_1"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {},
+     "recycling_enrichment": {},
+     "R0": {}
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_1",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_1",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_1",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "test_drives": [
+    {
+     "test": "tests/unit/test_membrane_trafficking_laws.py::test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount",
+     "half_steps": {
+      "value": 1,
+      "unit": "half-steps"
+     },
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     },
+     "retrieval_rates": {
+      "uptake_0": {
+       "value": 1.9567632993701437e-09,
+       "unit": "m^2/s",
+       "derived": "0.03 x A(furrow_0) / H"
+      },
+      "uptake_1": {
+       "value": 3.9135265987402875e-09,
+       "unit": "m^2/s",
+       "derived": "0.06 x A(furrow_1) / H"
+      }
+     },
+     "recycling_rates": "0 on both routes"
+    }
+   ],
+   "sources": [
+    "tests/unit/test_membrane_trafficking_laws.py",
+    "tests/unit/test_membrane_trafficking_laws.py (H = dt/2)",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_cleft",
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::pooled_cells (bath_V=0.0)",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/surface_pump_v3_fixtures.py::heredity_cells"
+   ]
+  },
+  "cycle": {
+   "notes": "fx.cycle(): one heredity cell for 5 ms, observed every step; retrieval at 0.1 of A(membrane_0) per ms until 2 ms, then recycling at 0.3 of A(pool_membrane_0) per ms. T5 and T7 (compiled). T7's batch uses fx.cycle(retrieval=r) for r in 0.05, 0.1, 0.15 (schedules in cycle_batch_schedules).",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "membrane_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 0.5,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_0": {
+       "value": 2.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_0": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_0": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 3.2612721656169064e-08,
+        "unit": "m^2/s"
+       }
+      },
+      {
+       "time": {
+        "value": 0.002,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      },
+      {
+       "time": {
+        "value": 0.002,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 4.891908248425359e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.005,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.001,
+      "unit": "s"
+     },
+     {
+      "value": 0.002,
+      "unit": "s"
+     },
+     {
+      "value": 0.003,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     },
+     {
+      "value": 0.005,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "cycle_batch_schedules": {
+    "0.05": [
+     {
+      "route": "uptake_0",
+      "retrieval": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 1.6306360828084532e-08,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       }
+      ],
+      "recycling": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 4.891908248425359e-09,
+         "unit": "m^2/s"
+        }
+       }
+      ]
+     }
+    ],
+    "0.1": [
+     {
+      "route": "uptake_0",
+      "retrieval": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 3.2612721656169064e-08,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       }
+      ],
+      "recycling": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 4.891908248425359e-09,
+         "unit": "m^2/s"
+        }
+       }
+      ]
+     }
+    ],
+    "0.15": [
+     {
+      "route": "uptake_0",
+      "retrieval": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 4.891908248425359e-08,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       }
+      ],
+      "recycling": [
+       {
+        "time": {
+         "value": 0.0,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 0.0,
+         "unit": "m^2/s"
+        }
+       },
+       {
+        "time": {
+         "value": 0.002,
+         "unit": "s"
+        },
+        "rate": {
+         "value": 4.891908248425359e-09,
+         "unit": "m^2/s"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "sources": [
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::pooled_cells (bath_V=0.0)",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/surface_pump_v3_fixtures.py::heredity_cells"
+   ]
+  },
+  "t8_sheet": {
+   "notes": "T8: the seven-cell heredity sheet with a pool per cell (21 field nodes), membrane state, the compartments, a frozen regulatory state s = 1/2 coupled to every Kir population (species_regulated_availability@1), and retrieval of 0.1 of each plasma patch over 4 ms (e: Kir 1, NaV 0).",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "R",
+     "valence": {
+      "value": 0,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_1",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_2",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_3",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.602010148806759,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 140.66881734645872,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 46.95380207217221,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -3.356318462586432e-13,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_4",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_5",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "cell_6",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.0007505222518670603,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2988041072020746e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_1",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_2",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_3",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_4",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_5",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "bath_6",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.0,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "R": {
+       "value": 0.001,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_1",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_2",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_3",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_4",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_5",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    },
+    {
+     "id": "pool_6",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 7.25,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.25,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 7.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      },
+      "R": {
+       "value": 5e-05,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "membrane_1",
+     "inside": "cell_1",
+     "outside": "bath_1",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_1"
+    },
+    {
+     "id": "membrane_2",
+     "inside": "cell_2",
+     "outside": "bath_2",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_2"
+    },
+    {
+     "id": "membrane_3",
+     "inside": "cell_3",
+     "outside": "bath_3",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_3"
+    },
+    {
+     "id": "membrane_4",
+     "inside": "cell_4",
+     "outside": "bath_4",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_4"
+    },
+    {
+     "id": "membrane_5",
+     "inside": "cell_5",
+     "outside": "bath_5",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_5"
+    },
+    {
+     "id": "membrane_6",
+     "inside": "cell_6",
+     "outside": "bath_6",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_6"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_1",
+     "inside": "cell_1",
+     "outside": "pool_1",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_2",
+     "inside": "cell_2",
+     "outside": "pool_2",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_3",
+     "inside": "cell_3",
+     "outside": "pool_3",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_4",
+     "inside": "cell_4",
+     "outside": "pool_4",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_5",
+     "inside": "cell_5",
+     "outside": "pool_5",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "pool_membrane_6",
+     "inside": "cell_6",
+     "outside": "pool_6",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_1",
+     "patch": "membrane_1",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_1",
+     "patch": "membrane_1",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_2",
+     "patch": "membrane_2",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_2",
+     "patch": "membrane_2",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_3",
+     "patch": "membrane_3",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.03831672888202246,
+       "unit": "1"
+      },
+      {
+       "value": 0.9652993828874176,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_3",
+     "patch": "membrane_3",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.6836607842078941,
+       "unit": "1"
+      },
+      {
+       "value": 0.004494616787506011,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_4",
+     "patch": "membrane_4",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_4",
+     "patch": "membrane_4",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_5",
+     "patch": "membrane_5",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_5",
+     "patch": "membrane_5",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "kir_6",
+     "patch": "membrane_6",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_6",
+     "patch": "membrane_6",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    },
+    {
+     "id": "endosome_1",
+     "node": "pool_1",
+     "bounding_patch": "pool_membrane_1",
+     "owner": "cell_1"
+    },
+    {
+     "id": "endosome_2",
+     "node": "pool_2",
+     "bounding_patch": "pool_membrane_2",
+     "owner": "cell_2"
+    },
+    {
+     "id": "endosome_3",
+     "node": "pool_3",
+     "bounding_patch": "pool_membrane_3",
+     "owner": "cell_3"
+    },
+    {
+     "id": "endosome_4",
+     "node": "pool_4",
+     "bounding_patch": "pool_membrane_4",
+     "owner": "cell_4"
+    },
+    {
+     "id": "endosome_5",
+     "node": "pool_5",
+     "bounding_patch": "pool_membrane_5",
+     "owner": "cell_5"
+    },
+    {
+     "id": "endosome_6",
+     "node": "pool_6",
+     "bounding_patch": "pool_membrane_6",
+     "owner": "cell_6"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "membrane_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_0": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_0": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_1",
+     "source_patch": "membrane_1",
+     "destination": {
+      "compartment": "endosome_1",
+      "node": "pool_1",
+      "patch": "pool_membrane_1"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_1": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_1": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_1": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_1": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_1": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_1": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_2",
+     "source_patch": "membrane_2",
+     "destination": {
+      "compartment": "endosome_2",
+      "node": "pool_2",
+      "patch": "pool_membrane_2"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_2": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_2": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_2": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_2": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_2": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_2": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_3",
+     "source_patch": "membrane_3",
+     "destination": {
+      "compartment": "endosome_3",
+      "node": "pool_3",
+      "patch": "pool_membrane_3"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_3": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_3": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_3": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_3": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_3": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_3": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_4",
+     "source_patch": "membrane_4",
+     "destination": {
+      "compartment": "endosome_4",
+      "node": "pool_4",
+      "patch": "pool_membrane_4"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_4": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_4": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_4": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_4": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_4": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_4": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_5",
+     "source_patch": "membrane_5",
+     "destination": {
+      "compartment": "endosome_5",
+      "node": "pool_5",
+      "patch": "pool_membrane_5"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_5": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_5": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_5": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_5": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_5": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_5": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    },
+    {
+     "id": "uptake_6",
+     "source_patch": "membrane_6",
+     "destination": {
+      "compartment": "endosome_6",
+      "node": "pool_6",
+      "patch": "pool_membrane_6"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      },
+      "Na": {
+       "value": 0.5,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_6": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_6": {
+       "value": 0.0,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_6": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_6": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_6": {
+       "value": 0.0,
+       "unit": "units"
+      },
+      "nav_6": {
+       "value": 0.0,
+       "unit": "units"
+      }
+     }
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_1",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_2",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_3",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_4",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_5",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    },
+    {
+     "route": "uptake_6",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 8.153180414042266e-09,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_1",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_1",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_2",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_2",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_3",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_3",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_4",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_4",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_5",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_5",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "kir_6",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_6",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.001,
+      "unit": "s"
+     },
+     {
+      "value": 0.002,
+      "unit": "s"
+     },
+     {
+      "value": 0.003,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "coupling": {
+    "law": "species_regulated_availability@1",
+    "states": [
+     {
+      "id": "s",
+      "law": "hill_regulated_two_state@1",
+      "cells": [
+       "cell_0",
+       "cell_1",
+       "cell_2",
+       "cell_3",
+       "cell_4",
+       "cell_5",
+       "cell_6"
+      ],
+      "initial": {
+       "value": 0.5,
+       "unit": "1"
+      },
+      "on_rate": {
+       "value": 0.0,
+       "unit": "1/s"
+      },
+      "off_rate": {
+       "value": 0.0,
+       "unit": "1/s"
+      },
+      "note": "frozen: both rates 0, so s stays at its initial value"
+     }
+    ],
+    "couplings": [
+     {
+      "id": "kir",
+      "target": {
+       "control": "channel",
+       "ids": [
+        "kir_0",
+        "kir_1",
+        "kir_2",
+        "kir_3",
+        "kir_4",
+        "kir_5",
+        "kir_6"
+       ]
+      },
+      "source_state": "s",
+      "law": "state_fraction",
+      "basal": {
+       "value": 0.0,
+       "unit": "1"
+      },
+      "note": "state_fraction with basal 0: the factor F on each Kir population's availability is s"
+     }
+    ]
+   },
+   "junctions": [
+    {
+     "id": "junction_0",
+     "sender": "cell_0",
+     "receiver": "cell_3",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_1",
+     "sender": "cell_0",
+     "receiver": "cell_1",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_2",
+     "sender": "cell_1",
+     "receiver": "cell_4",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_3",
+     "sender": "cell_2",
+     "receiver": "cell_5",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_4",
+     "sender": "cell_2",
+     "receiver": "cell_3",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_5",
+     "sender": "cell_2",
+     "receiver": "cell_0",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_6",
+     "sender": "cell_3",
+     "receiver": "cell_6",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_7",
+     "sender": "cell_3",
+     "receiver": "cell_4",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_8",
+     "sender": "cell_3",
+     "receiver": "cell_1",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_9",
+     "sender": "cell_5",
+     "receiver": "cell_6",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_10",
+     "sender": "cell_5",
+     "receiver": "cell_3",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.10220144256685458,
+       "unit": "1"
+      }
+     }
+    },
+    {
+     "id": "junction_11",
+     "sender": "cell_6",
+     "receiver": "cell_4",
+     "area": {
+      "value": 5.340489990004038e-11,
+      "unit": "m^2"
+     },
+     "permeability": {
+      "Na": {
+       "value": 1.5346153846153844e-09,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 2.261538461538461e-09,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.1538461538461538e-09,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "R": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "gate": {
+      "law": "junction_voltage_relaxation@1",
+      "threshold_voltage": {
+       "value": 0.015,
+       "unit": "V"
+      },
+      "minimum_open_fraction": {
+       "value": 0.1,
+       "unit": "1"
+      },
+      "initial_gate": {
+       "value": 0.966821409225351,
+       "unit": "1"
+      }
+     }
+    }
+   ],
+   "plasma_areas": {
+    "membrane_0": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_1": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_2": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_3": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_4": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_5": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    },
+    "membrane_6": {
+     "value": 3.261272165616906e-10,
+     "unit": "m^2"
+    }
+   },
+   "sources": [
+    "validation/tissue/membrane_trafficking_fixtures.py::add_pool",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state",
+    "validation/tissue/membrane_trafficking_fixtures.py::membrane_state and the patch's area",
+    "validation/tissue/membrane_trafficking_fixtures.py::route",
+    "validation/tissue/membrane_trafficking_fixtures.py::schedule",
+    "validation/tissue/regulated_availability_fixtures.py::sheet (cell_replacement_fixtures.heredity_sheet)",
+    "validation/tissue/regulated_availability_fixtures.py::with_coupling, frozen, fraction (the sheet test's sheet())"
+   ]
+  }
+ },
+ "stress_worlds": {
+  "stress_held_bath": {
+   "notes": "Stress world from the declared held_bath_cell, changed as listed; every other number is the declared one. Its drives are explicit half-steps.",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.02,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 1.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 6.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 6.5,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.00033800704146915735,
+      "unit": "fmol",
+      "derived": "charge_anchor / CHARGE_PER_FMOL (sum z n0 = 0)"
+     },
+     "charge_anchor": {
+      "value": -3.261272165616907e-14,
+      "unit": "C",
+      "derived": "-C(pool_membrane_0) x 0.04 V, so V_b = +40 mV"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "membrane_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.75,
+       "unit": "1 (transference number)"
+      },
+      "M": {
+       "value": 0.25,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.630636082808453e-10,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {
+      "kir_0": {
+       "value": 1.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 0.5,
+       "unit": "1"
+      }
+     },
+     "recycling_enrichment": {
+      "kir_0": {
+       "value": 2.0,
+       "unit": "1"
+      },
+      "nav_0": {
+       "value": 1.0,
+       "unit": "1"
+      }
+     },
+     "R0": {
+      "kir_0": {
+       "value": 400.0,
+       "unit": "units"
+      },
+      "nav_0": {
+       "value": 200.0,
+       "unit": "units"
+      }
+     }
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "stress_drives": [
+    {
+     "id": "retrieval",
+     "checks": "T4 and T6",
+     "half_steps": [
+      {
+       "retrieval": {
+        "uptake_0": {
+         "value": 1.9567632993701436e-08,
+         "unit": "m^2/s",
+         "derived": "0.03 x A(membrane_0) / H"
+        }
+       },
+       "recycling": {}
+      }
+     ],
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     }
+    },
+    {
+     "id": "recycling",
+     "checks": "T4 and T6",
+     "half_steps": [
+      {
+       "retrieval": {},
+       "recycling": {
+        "uptake_0": {
+         "value": 6.522544331233813e-09,
+         "unit": "m^2/s",
+         "derived": "0.2 x A(pool_membrane_0) / H"
+        }
+       }
+      }
+     ],
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     }
+    },
+    {
+     "id": "both directions",
+     "checks": "T6",
+     "half_steps": [
+      {
+       "retrieval": {
+        "uptake_0": {
+         "value": 1.3045088662467625e-08,
+         "unit": "m^2/s",
+         "derived": "0.02 x A(membrane_0) / H"
+        }
+       },
+       "recycling": {
+        "uptake_0": {
+         "value": 3.2612721656169066e-09,
+         "unit": "m^2/s",
+         "derived": "0.1 x A(pool_membrane_0) / H"
+        }
+       }
+      }
+     ],
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     }
+    },
+    {
+     "id": "cycle",
+     "checks": "T3 and T5 (units with R0 > 0)",
+     "half_steps": [
+      {
+       "retrieval": {
+        "uptake_0": {
+         "value": 1.3045088662467625e-08,
+         "unit": "m^2/s",
+         "derived": "0.02 x A(membrane_0) / H"
+        }
+       },
+       "recycling": {}
+      },
+      {
+       "retrieval": {
+        "uptake_0": {
+         "value": 1.3045088662467625e-08,
+         "unit": "m^2/s",
+         "derived": "0.02 x A(membrane_0) / H"
+        }
+       },
+       "recycling": {}
+      },
+      {
+       "retrieval": {},
+       "recycling": {
+        "uptake_0": {
+         "value": 3.2612721656169066e-09,
+         "unit": "m^2/s",
+         "derived": "0.1 x A(pool_membrane_0) / H"
+        }
+       }
+      },
+      {
+       "retrieval": {},
+       "recycling": {
+        "uptake_0": {
+         "value": 3.2612721656169066e-09,
+         "unit": "m^2/s",
+         "derived": "0.1 x A(pool_membrane_0) / H"
+        }
+       }
+      }
+     ],
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     }
+    }
+   ],
+   "derived_from": "held_bath_cell",
+   "changes": [
+    "pool_0: 20/120/130/10 mM Na/K/M/P (1.0/6.0/6.5/0.5 fmol), anchor -C_b x 40 mV",
+    "uptake_0's carriers: K 0.75, M (z = -1) 0.25",
+    "enrichments e: Kir 1, NaV 0.5; e_r: Kir 2, NaV 1; R0: Kir 400, NaV 200 units"
+   ]
+  },
+  "stress_cleft": {
+   "notes": "Stress world from the declared cleft_cell, changed as listed; every other number is the declared one. Its drives are explicit half-steps.",
+   "temperature": {
+    "value": 310.0,
+    "unit": "K"
+   },
+   "species": [
+    {
+     "id": "Na",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "K",
+     "valence": {
+      "value": 1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "M",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    },
+    {
+     "id": "P",
+     "valence": {
+      "value": -1,
+      "unit": "1"
+     }
+    }
+   ],
+   "cells": [
+    {
+     "id": "cell_0",
+     "volume": {
+      "value": 0.7505222518670602,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 4.454019878031574,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 102.2001158140796,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 5.347092846055745,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 101.32050400205313,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 1.586795405084107e-05,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": -1.2972730823853619e-12,
+      "unit": "C"
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "bath_0",
+     "held": true,
+     "volume": {
+      "value": 1.0,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 145.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.0,
+      "unit": "fmol"
+     },
+     "charge_anchor": {
+      "value": 0.0,
+      "unit": "C"
+     },
+     "held_potential": {
+      "value": 0.02,
+      "unit": "V"
+     },
+     "reference_concentrations": {
+      "Na": {
+       "value": 145.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "K": {
+       "value": 5.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "M": {
+       "value": 140.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      },
+      "P": {
+       "value": 10.0,
+       "unit": "mM",
+       "derived": "initial_amount_fmol / volume_pL"
+      }
+     }
+    },
+    {
+     "id": "pool_0",
+     "held": false,
+     "volume": {
+      "value": 0.05,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 1.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 6.0,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 6.5,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.5,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": -0.00033800704146915735,
+      "unit": "fmol",
+      "derived": "charge_anchor / CHARGE_PER_FMOL (sum z n0 = 0)"
+     },
+     "charge_anchor": {
+      "value": -3.261272165616907e-14,
+      "unit": "C",
+      "derived": "-C(pool_membrane_0) x 0.04 V, so V_b = +40 mV"
+     }
+    },
+    {
+     "id": "cleft_0",
+     "held": false,
+     "volume": {
+      "value": 0.01,
+      "unit": "pL"
+     },
+     "initial_amounts": {
+      "Na": {
+       "value": 1.0,
+       "unit": "fmol"
+      },
+      "K": {
+       "value": 0.4,
+       "unit": "fmol"
+      },
+      "M": {
+       "value": 1.2,
+       "unit": "fmol"
+      },
+      "P": {
+       "value": 0.2,
+       "unit": "fmol"
+      }
+     },
+     "fixed_charge_equivalent": {
+      "value": 0.0013445288043651752,
+      "unit": "fmol",
+      "derived": "charge_anchor / CHARGE_PER_FMOL - sum z n0"
+     },
+     "charge_anchor": {
+      "value": 1.297273082385362e-13,
+      "unit": "C"
+     }
+    }
+   ],
+   "patches": [
+    {
+     "id": "membrane_0",
+     "inside": "cell_0",
+     "outside": "bath_0",
+     "area": {
+      "value": 3.261272165616906e-10,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084532e-11,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": "pump_0"
+    },
+    {
+     "id": "pool_membrane_0",
+     "inside": "cell_0",
+     "outside": "pool_0",
+     "area": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 8.153180414042266e-13,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 0.0,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    },
+    {
+     "id": "furrow_0",
+     "inside": "cell_0",
+     "outside": "cleft_0",
+     "area": {
+      "value": 3.2612721656169065e-11,
+      "unit": "m^2"
+     },
+     "capacitance": {
+      "value": 1.6306360828084533e-12,
+      "unit": "F"
+     },
+     "leak_permeability": {
+      "Na": {
+       "value": 5.3333333333333356e-11,
+       "unit": "m/s"
+      },
+      "K": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "M": {
+       "value": 1.333333333333334e-10,
+       "unit": "m/s"
+      },
+      "P": {
+       "value": 0.0,
+       "unit": "m/s"
+      }
+     },
+     "pump": null
+    }
+   ],
+   "faces": [
+    {
+     "id": "access_0",
+     "sender": "cleft_0",
+     "receiver": "bath_0",
+     "area": {
+      "value": 1e-14,
+      "unit": "m^2"
+     },
+     "length": {
+      "value": 0.01,
+      "unit": "m"
+     },
+     "diffusivity": {
+      "Na": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "K": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "M": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      },
+      "P": {
+       "value": 1e-09,
+       "unit": "m^2/s"
+      }
+     }
+    }
+   ],
+   "populations": [
+    {
+     "id": "kir_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 1e-08,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.3257238404690036,
+       "unit": "1"
+      },
+      {
+       "value": 0.8818959951742664,
+       "unit": "1"
+      }
+     ]
+    },
+    {
+     "id": "nav_0",
+     "patch": "membrane_0",
+     "abundance": {
+      "value": 1.0,
+      "unit": "1"
+     },
+     "reference_density": {
+      "value": 10000000000000.0,
+      "unit": "units/m^2"
+     },
+     "N0": {
+      "value": 3261.272165616906,
+      "unit": "units",
+      "derived": "abundance x patch area_m2 x reference_density_per_m2"
+     },
+     "max_permeability": {
+      "value": 2.5e-07,
+      "unit": "m/s"
+     },
+     "initial_gate": [
+      {
+       "value": 0.003408456163783261,
+       "unit": "1"
+      },
+      {
+       "value": 0.9813060987456566,
+       "unit": "1"
+      }
+     ]
+    }
+   ],
+   "compartments": [
+    {
+     "id": "endosome_0",
+     "node": "pool_0",
+     "bounding_patch": "pool_membrane_0",
+     "owner": "cell_0"
+    }
+   ],
+   "routes": [
+    {
+     "id": "uptake_0",
+     "source_patch": "furrow_0",
+     "destination": {
+      "compartment": "endosome_0",
+      "node": "pool_0",
+      "patch": "pool_membrane_0"
+     },
+     "carriers": {
+      "K": {
+       "value": 0.75,
+       "unit": "1 (transference number)"
+      },
+      "M": {
+       "value": 0.25,
+       "unit": "1 (transference number)"
+      }
+     },
+     "plasma_area_floor": {
+      "value": 1.6306360828084532e-11,
+      "unit": "m^2"
+     },
+     "pool_area_floor": {
+      "value": 8.153180414042266e-12,
+      "unit": "m^2"
+     },
+     "retrieval_enrichment": {},
+     "recycling_enrichment": {},
+     "R0": {}
+    }
+   ],
+   "schedules": [
+    {
+     "route": "uptake_0",
+     "retrieval": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ],
+     "recycling": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "rate": {
+        "value": 0.0,
+        "unit": "m^2/s"
+       }
+      }
+     ]
+    }
+   ],
+   "channel_availability": [
+    {
+     "channel": "kir_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    },
+    {
+     "channel": "nav_0",
+     "schedule": [
+      {
+       "time": {
+        "value": 0.0,
+        "unit": "s"
+       },
+       "availability": {
+        "value": 1.0,
+        "unit": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "clock": {
+    "dt": {
+     "value": 0.001,
+     "unit": "s"
+    },
+    "end_time": {
+     "value": 0.004,
+     "unit": "s"
+    },
+    "observation_times": [
+     {
+      "value": 0.0,
+      "unit": "s"
+     },
+     {
+      "value": 0.004,
+      "unit": "s"
+     }
+    ],
+    "solver": "imex_ars222_face_electromigration@1"
+   },
+   "stress_drives": [
+    {
+     "id": "retrieval",
+     "checks": "T4 and T6",
+     "half_steps": [
+      {
+       "retrieval": {
+        "uptake_0": {
+         "value": 1.9567632993701437e-09,
+         "unit": "m^2/s",
+         "derived": "0.03 x A(furrow_0) / H"
+        }
+       },
+       "recycling": {}
+      }
+     ],
+     "H": {
+      "value": 0.0005,
+      "unit": "s"
+     }
+    }
+   ],
+   "derived_from": "cleft_cell",
+   "changes": [
+    "pool_0: 20/120/130/10 mM Na/K/M/P (1.0/6.0/6.5/0.5 fmol), anchor -C_b x 40 mV",
+    "cleft_0: 100/40/120/20 mM Na/K/M/P (1.0/0.4/1.2/0.2 fmol), its declared anchor kept",
+    "uptake_0's carriers: K 0.75, M (z = -1) 0.25"
+   ]
+  }
+ }
+}

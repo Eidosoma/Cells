@@ -1,10 +1,190 @@
 {
- "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added.",
+ "_note": "A7's frozen allow-list of entity sums (tests/unit/test_species_sum_sites.py; the summation SPEC.md section 4): every entity_sum call in models/surface_pump_v3.py, operators/*.py and kinds/*.py as [module (its path under src/cells, the folders of D188 move 2), enclosing function, expression text]. Each sums entity axes only, never the species axis (the tag's site classification, operators/summation/SITES.md, regenerated on integration-d172, and the kinds' seams; the core, 16 November 2026), except the three entries of partition's summary: its host-only end-of-run figures (live, record and total) reduce each retired field whole (axis=None), so on the [species, slot] transfer fields they sum over species too, while the heat fields are [slot]. Those figures enter no ledger, check or program, and G1 compares none of them (the lead's ruling, 16 November 2026: the wording fixed, the sums kept). A full reduce over a species-leading array is entity_sum(species_sum(...)). A new entry is reviewed once before it is added. The population axis of kinds/transporter.py (seam A) sums over its own law-internal axes only (its modes, its law's rows, a net-flow mode's terms and a diagram's edge directions) and, for the kind's produced record, over nodes, never over the species axis (the kinds owner, 19 November 2026).",
  "entity_sums": [
   [
    "kinds/passive_routes.py",
    "rates",
    "entity_sum(heat, axis=None, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(j * x, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_conductance",
+   "entity_sum(p.cycle_charge_moved * e.d_j_d_psi, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "material_term",
+   "entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_ledger_terms",
+   "entity_sum(p.cycle_nu * state.cycle_count[:, None, :], axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_ledger_terms",
+   "entity_sum(nodes, axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['orders'][o['term_slots'][:, :, j], :, j], axis=1, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['zeta'][o['term_slots'][:, :, j], j], axis=1, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['orders'][o['plus_slots'][:, :, j], :, j], axis=1, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['zeta'][o['plus_slots'][:, :, j], j], axis=1, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['orders'][o['cut_slots'][:, :, :, j], :, j], axis=2, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_diagram_layout",
+   "entity_sum(o['zeta'][o['cut_slots'][:, :, :, j], j], axis=2, xp=np)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(xp.where(held_rows, nu * ln_c[None], 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(weight * -xp.expm1(xp.where(nf.present, y, 0.0)), axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(xp.abs(weight) * (1.0 + e_y), axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(present, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(modes, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(xp.where(on, scale * coefficient, 0.0), axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_rates",
+   "entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_rates",
+   "entity_sum(e.j * e.x, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_rates",
+   "entity_sum(e.j * e.held_x, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_rates",
+   "entity_sum(e.j * p.cycle_moved_standard_RT, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_ledger_terms",
+   "entity_sum(state.cycle_count * p.cycle_moved_standard_RT, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(nu * ln_c[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(xp.abs(nu) * (xp.abs(ln_c[None]) + 1.0), axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(weight * e_y * (nf.charge - nf.shift), axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(nf.present, axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_population_rates",
+   "entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(weight[:, :, None, :] * e_y[:, :, None, :] * nf.counts, axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(per_mode, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(e.j * e.x, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(e.j * e.held_x, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "probe",
+   "entity_sum(e.j * p.cycle_moved_standard_RT, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(nf.counts * ln_c[None, None], axis=2, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_evaluate",
+   "entity_sum(xp.abs(nf.counts) * (xp.abs(ln_c[None, None]) + 1.0), axis=2, xp=xp)"
   ],
   [
    "operators/bath_schedule.py",
@@ -180,6 +360,81 @@
    "operators/membrane_insertion_v2.py",
    "magnitude_terms",
    "entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "_per_route",
+   "entity_sum(by_node, axis=1, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "ledger_terms",
+   "entity_sum(row.trafficking_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "ledger_terms",
+   "entity_sum(row.trafficking_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(carriers, axis=1, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(row.trafficking_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(row.trafficking_image_charge_C, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(species_sum(supplied, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "own_ledgers",
+   "entity_sum(record, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(record), axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(contribution, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(first_order, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(moved, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(weight, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(xp.abs(electrode_work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(xp.abs(reservoir_work), axis=None, xp=xp)"
   ],
   [
    "operators/osmotic_water.py",

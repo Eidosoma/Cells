@@ -1,0 +1,600 @@
+{
+  "$schema": "./claims.schema.json",
+  "version": 1,
+  "comparisons": {
+    "junction": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["constant_field@1"],
+      "engine_revision": "109a7355ed85ff2e1e5a9c884c32801c07a2fd72",
+      "record_revision": "627c376c463ae66c0f9e53db6dbb1374ec8ac1fd",
+      "sources": {
+        "Junction flux": "src/cells/laws/junctions/selective.py#L19",
+        "Bernoulli evaluator": "src/cells/laws/electrochemistry.py#L17",
+        "Flux booking": "src/cells/numerics/surface_transport.py#L318",
+        "Surface comparisons": "tests/unit/test_surface_transport.py#L103",
+        "Per-cell tissue ledger": "tests/unit/test_surface_pump_v3_imex.py#L80"
+      },
+      "driver": "lean/checks/constant_field.py",
+      "record": "lean/README.md#cpu-comparison"
+    },
+    "junction-gate": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["junction_voltage_relaxation@1"],
+      "engine_revision": "6d74998581eab13d45327bc4801b463d0fb7a6f7",
+      "record_revision": "394a9294379f7636b7f75993fee850363c04bd26",
+      "sources": {
+        "Voltage dependence and constant-voltage update": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
+        "Tissue transport opening": "src/cells/models/surface_pump_v3.py#L733",
+        "Intrinsic gate rate in the tissue": "src/cells/models/surface_pump_v3.py#L779",
+        "Independent voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
+        "Independent rate calculation in mV and ms": "validation/betse/junction_gate/reference.py#L9"
+      },
+      "driver": "lean/checks/junction_gate.py",
+      "record": "lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance"
+    },
+    "ion-channels": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["kv1p1_mh2@1", "kv1p2_mh@1", "kv1p3_mh@1", "kv1p4_mh@1", "kv1p5_mh@1", "kv1p6_mh@1", "kir2p1_mh2@1", "nav1p2_m3h_regularized@1", "kleak_always_open@1", "naleak_always_open@1"],
+      "engine_revision": "ec46f7a4e940b86c6fc110230b2bd851081dee50",
+      "record_revision": "a45e076f2af4828a29058c06d40cdbafb7081db0",
+      "sources": {
+        "Tissue channel kinetics and opening": "src/cells/models/surface_pump_v3.py#L304",
+        "Tissue outward per-ion flux": "src/cells/models/surface_pump_v3.py#L358",
+        "Exponential stage and its small-step series": "src/cells/numerics/exponential_gates.py#L36",
+        "Gate update in the tissue integrator": "src/cells/models/surface_pump_v3.py#L1257",
+        "Per-channel transfer and membrane balance": "src/cells/models/surface_pump_v3.py#L2251",
+        "Independent Kv1 kinetics": "validation/tissue/kv1_reference.py#L13",
+        "Independent Kir2.1 kinetics": "validation/tissue/kir_reference.py#L10",
+        "Independent NaV1.2 kinetics": "validation/tissue/sodium_reference.py#L12",
+        "Independent constant-field flux": "validation/betse/junction_transport/check.py#L10"
+      },
+      "driver": "lean/checks/ion_channels.py",
+      "record": "lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws"
+    },
+    "chloride-channel": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["clleak_always_open@1"],
+      "engine_revision": "d4f1eaf723ee1bdd1e54d9be086cb81d67356bfa",
+      "record_revision": "f44a045e4d4d6f15ed9f4b0f7ab556bae104b8df",
+      "sources": {
+        "Chloride population and valence": "src/cells/laws/channels/clleak_always_open.py#L20",
+        "Outward population flux": "src/cells/models/surface_pump_v3.py#L358",
+        "Membrane and held-electrode currents": "src/cells/models/surface_pump_v3.py#L872",
+        "Cell, bath and chloride substitution": "tests/unit/test_chloride_leak_law.py#L37",
+        "Independent constant-field calculation": "validation/betse/junction_transport/check.py#L10"
+      },
+      "driver": "lean/checks/chloride_channel.py",
+      "record": "lean/PROGRESS.md#19-november-2026--chloride-leak"
+    },
+    "closed-enzyme": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1"],
+      "laws": [],
+      "operators": ["local_species_reactions@1"],
+      "engine_revision": "a124c937041353d395732a936a3d2b1001c2b63a",
+      "record_revision": "9c0b99d30676863d67dd8d30efea6ae490f2bd40",
+      "sources": {
+        "Reaction admission": "src/cells/operators/species_reactions.py#L431",
+        "Reaction half-step": "src/cells/operators/species_reactions.py#L1024",
+        "Enzyme fixture": "validation/tissue/species_reactions_fixtures.py#L248"
+      },
+      "driver": "lean/checks/closed_enzyme.py",
+      "record": "lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions"
+    },
+    "membrane-insertion": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["scheduled_membrane_insertion@1", "scheduled_membrane_insertion@2", "membrane_entity_state@1"],
+      "engine_revision": "06e25525a39f3a2995bd5aa26a7e38bd67b211c3",
+      "record_revision": "6c495445518af429c1c163a374a3a25abef4c062",
+      "sources": {
+        "Fixed-charge field, heat and image charge": "src/cells/models/pump_composite_adapter.py#L959",
+        "Version 1 heat sign check": "src/cells/operators/membrane_insertion.py#L424",
+        "Version 2 heat sign check": "src/cells/operators/membrane_insertion_v2.py#L244",
+        "One-patch fixture": "tests/membrane_insertion_fixtures.py#L28",
+        "One-patch reference and tolerance": "tests/unit/test_membrane_insertion.py#L144",
+        "Two-version comparison": "tests/unit/test_membrane_insertion_v2.py#L203"
+      },
+      "driver": "lean/checks/membrane_insertion.py",
+      "record": "lean/PROGRESS.md#19-november-2026--membrane-insertion-heat"
+    },
+    "regional-chain": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": ["logmean_electrodiffusion@1"],
+      "operators": ["local_species_reactions@1"],
+      "engine_revision": "030bd02a5f4bb74d15ef8bde4fdf1db03f69b801",
+      "record_revision": "9252236d3f6339d4dfdd18fd79fc1d73246faf7e",
+      "sources": {
+        "Split-step order": "src/cells/models/pump_composite.py#L1308",
+        "Closed pair": "validation/morphogenesis/mg0c_turing.py#L180",
+        "Independent trajectory comparison": "tests/unit/test_species_reactions_composition.py#L84"
+      },
+      "driver": "lean/checks/regional_balance.py",
+      "record": "lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance"
+    },
+    "neutral-permeation": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["passive_neutral_permeation@1"],
+      "engine_revision": "f130a109ad8861ce114f0f6fea3ece524465e80f",
+      "record_revision": "b6c7108c22c4c3ea3366672932f3d49ca8b8a3c8",
+      "sources": {
+        "Neutral route": "src/cells/laws/routes/passive_permeation.py#L43",
+        "Constant-field kernel": "src/cells/laws/electrochemistry.py#L32",
+        "Inward booking": "src/cells/kinds/passive_routes.py#L355",
+        "Full-opening rate bound": "src/cells/kinds/passive_routes.py#L553",
+        "Independent closed-form solution": "validation/passive/passive_reference.py#L66",
+        "Tissue fixture and tolerance": "tests/unit/test_passive_routes_kind.py#L64"
+      },
+      "driver": "lean/checks/neutral_permeation.py",
+      "record": "lean/PROGRESS.md#19-november-2026--passive-neutral-permeation"
+    },
+    "proton-leak": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["proton_constant_field_leak@1"],
+      "engine_revision": "1dee280f681af373071079c5f9b5921725dc7ed3",
+      "record_revision": "252cb83542e368e5572328d7eb0266ca8bd7417f",
+      "sources": {
+        "Inward flux and instantaneous heat": "src/cells/laws/transport/proton_leak.py#L28",
+        "Bernoulli evaluator": "src/cells/laws/electrochemistry.py#L17",
+        "Tissue patch rates and endpoints": "src/cells/kinds/passive_routes.py#L348",
+        "Independent Decimal flux": "validation/betse/junction_transport/check.py#L10",
+        "Independent free-proton closure": "validation/compartment_ph/ph_reference.py#L167",
+        "Buffered tissue fixture": "tests/unit/test_proton_buffer_kind.py#L258"
+      },
+      "driver": "lean/checks/proton_leak.py",
+      "record": "lean/PROGRESS.md#19-november-2026--passive-proton-leak"
+    },
+    "atp-cycle": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["proton_atp_mass_action_positive@1", "atp_driven_transporter_mass_action_positive@1"],
+      "engine_revision": "a6f4c7d9b8e84cbd7c23264215510ba93fb8e3d3",
+      "record_revision": "5f39e089a5f84fa4c2414d72536de844d0bd2503",
+      "sources": {
+        "Proton stoichiometry and saturation": "src/cells/laws/pumps/proton_pump.py#L223",
+        "Neutral cargo stoichiometry and saturation": "src/cells/laws/pumps/atp_transporter.py#L135",
+        "Free energy and availability": "src/cells/kinds/transporter.py#L1404",
+        "Signed rate": "src/cells/laws/cycles/forms.py#L893",
+        "Cycle heat and work": "src/cells/kinds/transporter.py#L1544",
+        "Independent Decimal rates": "validation/core_seams/references/cycles.py#L66",
+        "Frozen inputs": "validation/core_seams/references/reference_inputs.json",
+        "Frozen reference values": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Host comparison and tolerances": "tests/unit/test_cycle_kind_references.py#L296"
+      },
+      "driver": "lean/checks/atp_cycle.py",
+      "record": "lean/PROGRESS.md#19-november-2026--atp-driven-transport"
+    },
+    "electrogenic-pump-charge": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["nak_atp_mass_action_positive@1", "ca_atp_mass_action_positive@1"],
+      "engine_revision": "a06ee308a8348a5392e4645ccc368ccf8a086604",
+      "record_revision": "970598abe12fa2c19fd001f4bf32ec52a21d3d35",
+      "sources": {
+        "Na⁺/K⁺ drive and rate": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L55",
+        "Calcium standard state and rate": "src/cells/laws/pumps/ca_atp_mass_action_positive.py#L66",
+        "Plasma-membrane voltage convention": "src/cells/laws/reactions/plasma_calcium.py#L29",
+        "Calcium rate formula": "src/cells/laws/reactions/er_calcium.py#L36",
+        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L343",
+        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L783",
+        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L822",
+        "Na⁺/K⁺ scalar reference": "validation/betse/pump_contact/pump_reference.py#L83",
+        "Calcium scalar reference": "validation/chemistry/finite_calcium_pump_reference.py#L19",
+        "Na⁺/K⁺ rate tests": "tests/unit/test_kinetic_pump.py#L46",
+        "Calcium standard-state and stall tests": "tests/unit/test_surface_pump_v2.py#L86"
+      },
+      "driver": "lean/checks/electrogenic_pumps.py",
+      "record": "lean/PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge"
+    },
+    "extracellular-face": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["logmean_electrodiffusion@1"],
+      "engine_revision": "c9549dfc553ce2e9cce5d05160c24b1879e3077b",
+      "record_revision": "0c2e9f962480f430c2383bb1dddf97477f434335",
+      "sources": {
+        "Face law": "src/cells/laws/routes/logmean_electrodiffusion.py#L13",
+        "Piecewise logarithmic mean": "src/cells/numerics/extracellular_field.py#L48",
+        "Force, flux and power": "src/cells/numerics/surface_transport.py#L292",
+        "Independent scalar calculation": "validation/tissue/surface_reference.py#L98",
+        "Numerical tolerances": "validation/tissue/surface_protocol.json#L27"
+      },
+      "driver": "lean/checks/logmean_face.py",
+      "record": "lean/PROGRESS.md#19-november-2026--extracellular-face-electrodiffusion"
+    },
+    "single-site-binding": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["rapid_binding@1"],
+      "engine_revision": "9a5bc6b8211847888cbb83c41ad88941bac19213",
+      "record_revision": "c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c",
+      "sources": {
+        "Binding weights": "src/cells/laws/reactions/rapid_binding.py#L87",
+        "One-step branch": "src/cells/laws/reactions/rapid_binding.py#L217",
+        "Tissue stage read": "src/cells/kinds/proton_buffer.py#L707",
+        "Independent S1 design": "validation/core_seams/references/README.md#L101",
+        "Frozen reference values": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Numerical tolerances": "tests/unit/test_rapid_binding_kernel.py#L127"
+      },
+      "driver": "lean/checks/single_site_binding.py",
+      "record": "lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units"
+    },
+    "bio002-endpoint": {
+      "kind": "reference",
+      "models": ["conditioned_ghk_affine_exp@1"],
+      "laws": [],
+      "record_revision": "a71c3f35b795114b520cca9b56fb95031aac18ba",
+      "sources": {
+        "Two-condition fit": "tests/reference_conditioned_voltage.py#L76",
+        "Held-out prediction": "tests/reference_conditioned_voltage.py#L103",
+        "Fixed BIO-002 protocol": "configs/reference/bio002_conditioned_voltage_v1.json"
+      },
+      "driver": "scripts/evaluate_conditioned_voltage.py",
+      "record": "reports/BIO002_CONDITIONED_VOLTAGE.md"
+    }
+  },
+  "claims": [
+    {
+      "id": "junction-flux-reversal",
+      "title": "Reversing a junction reverses its flux",
+      "statement": "Exchanging the concentrations at the two ends of a constant-field junction and reversing the voltage difference negates the signed flux.",
+      "assumptions": ["The ion, temperature, area, permeability and opening are the same in both orientations. Voltage is sender potential minus receiver potential, scaled by zF/(RT).", "The proof treats both the analytic Bernoulli factor and the engine’s near-zero series in real arithmetic. A floating-point error bound for the series remains open."],
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+        "CellsProofs.Transport.flux_reverse": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference."},
+      "biology": {"status": "open", "observable": "Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.", "finding": "A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/)", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "junction-concentration-gradient",
+      "title": "At equal voltage, junction flux follows the concentration gradient",
+      "statement": "At equal potentials the signed flux is scale × (sender concentration − receiver concentration). A positive scale gives flow from higher to lower concentration.",
+      "assumptions": ["The transport factor has value one at zero voltage. The scale is area × permeability × opening divided by mol/fmol. The direction claim requires a positive scale."],
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+        "CellsProofs.Transport.flux_zero_voltage": "lean/CellsProofs/Transport/ConstantField.lean",
+        "CellsProofs.Transport.flux_down_gradient": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The equal-voltage CPU fixture exercised concentration differences of both signs and compared the signed flux with an independent scalar calculation."},
+      "biology": {"status": "open", "observable": "Ion transfer across a junction at equal potentials and a measured concentration difference.", "finding": "Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15)", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "junction-blocking",
+      "title": "A blocked junction carries zero flux",
+      "statement": "Setting the effective transport scale to zero gives zero junction flux at every voltage and concentration difference.",
+      "assumptions": ["The constant-field route multiplies the concentration-dependent term by its effective area, permeability and opening scale."],
+      "formal": {"status": "proved", "about": ["cells.constant_field@1"], "theorems": {
+        "CellsProofs.Transport.flux_blocked": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
+      "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "finding": "Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "junction-gate",
+      "title": "Junction conductance relaxes toward a voltage-dependent target",
+      "statement": "At fixed voltage the intrinsic gate approaches its target with one exponential time constant and stays between its residual conductance fraction and one. Increasing voltage magnitude lowers the target if the residual fraction is below one. Reversing polarity preserves the trajectory from the same initial state.",
+      "assumptions": ["The junction has one intrinsic conductance state, the declared opening and closing rates, and a fixed threshold. Elapsed time is nonnegative and the initial conductance lies between the residual fraction and one.", "The tissue applies an external availability multiplier to transport. The intrinsic gate keeps evolving during a block. The time-course identity assumes constant junction voltage throughout the interval."],
+      "formal": {"status": "proved", "about": ["cells.junction_voltage_relaxation@1"], "theorems": {
+        "CellsProofs.Transport.JunctionGate.target_bounds": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.target_decreases": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.rhs_eq_relaxation": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.clamp_residual": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.clamp_bounds": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.clamp_add": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.clamp_polarity": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.single_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction-gate"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol."},
+      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
+    },
+    {
+      "id": "channel-gate-bounds",
+      "title": "Voltage-gated channel openings stay between zero and one",
+      "statement": "For the six Kv1 laws, Kir2.1 and NaV1.2, both targets lie between zero and one and both time constants are positive on the declared voltage interval. An exponential tissue stage preserves the opening bounds when its two endpoint voltages differ. At a fixed voltage each gate’s deviation from its target decays exponentially. The whole-current response combines both gates.",
+      "assumptions": ["Voltage is inside minus outside. Both stage endpoint voltages are between −120 and +60 mV, the elapsed time is nonnegative, and both initial gates lie in [0, 1].", "The proof uses the declared kinetics and the tissue’s exponential stage in real arithmetic, including the small-step series and both branches of the regularized sodium rates. A whole-current trace at fixed voltage and concentrations is proportional to the open fraction."],
+      "formal": {"status": "proved", "about": ["cells.kv1p1_mh2@1", "cells.kv1p2_mh@1", "cells.kv1p3_mh@1", "cells.kv1p4_mh@1", "cells.kv1p5_mh@1", "cells.kv1p6_mh@1", "cells.kir2p1_mh2@1", "cells.nav1p2_m3h_regularized@1"], "theorems": {
+        "CellsProofs.Transport.ChannelStep.lag_bounds": "lean/CellsProofs/Transport/ChannelStep.lean",
+        "CellsProofs.Transport.ChannelStep.stage_bounds": "lean/CellsProofs/Transport/ChannelStep.lean",
+        "CellsProofs.Transport.ChannelStep.clamped_residual": "lean/CellsProofs/Transport/ChannelStep.lean",
+        "CellsProofs.Transport.IonChannels.stable_sigmoid": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.targets_bounded": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.times_positive": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.opening_bounded": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.stage_opening_bounded": "lean/CellsProofs/Transport/IonChannels.lean"
+      }, "sources": {
+        "Mathlib exponential inequalities used in the stage proof": "https://github.com/leanprover-community/mathlib4/blob/v4.19.0/Mathlib/Data/Complex/Exponential.lean#L641",
+        "Cells regularized Bernoulli positivity": "lean/CellsProofs/Transport/ProtonLeak.lean#L56"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["ion-channels"], "result": "The compiled dispatcher matched independent gate targets at 25 voltages within 2.23 × 10⁻¹⁶ and time constants within 1.78 × 10⁻¹⁵ s. All 72 stage cases stayed in [0, 1]. During the tissue block all eight gate pairs continued to move."},
+      "biology": {"status": "open", "observable": "Normalized whole-current activation, decay or recovery for the same isoform, temperature, holding state and voltage-step sequence.", "unit": "normalized current, ms and mV", "finding": "Rat Kv1.1 decay at −20 mV and 25 °C was 313 ± 82 ms (SD). Cells retained 88% of its peak after 1.5 s and gave a fit of about 8 s from an equilibrated −80 mV hold. Rat Kv1.4 retained under 2% after 3.2 s at 0 mV, versus 0.57% in Cells. Four gate parameters match that paper. Human NaV1.2 rose in 0.38 ± 0.05 ms (10–90%, SEM), versus 0.296 ms in Cells. Its fitted inactivation midpoint was −63.53 ± 0.79 mV, while Cells gave half of its −120 mV reference response at −54.9 mV. [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6)", "evidence": []}
+    },
+    {
+      "id": "channel-ion-transfer",
+      "title": "Channel opening scales the signed transfer of sodium or potassium",
+      "statement": "The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply the fully open constant-field flux by their opening and external availability. The opening is m h² for Kv1.1 and Kir2.1, m h for Kv1.2–Kv1.6, m³ h for NaV1.2 and one for the two leaks. With availability between zero and one the magnitude cannot exceed the fully open flux. Blocking gives zero. Only the declared ion crosses, debiting the cell and crediting the exterior.",
+      "assumptions": ["The declared population conducts K⁺ or Na⁺ with relative permeability one. The same area, permeability, abundance, voltage and concentrations define the fully open comparison. Positive flux points from the cell to the exterior.", "The gate values and external availability are in [0, 1]. The formal booking uses one cell–exterior pair. A held bath offsets the exterior credit with reservoir supply."],
+      "uses": ["channel-gate-bounds", "transfer-inventory"],
+      "formal": {"status": "proved", "about": ["cells.kv1p1_mh2@1", "cells.kv1p2_mh@1", "cells.kv1p3_mh@1", "cells.kv1p4_mh@1", "cells.kv1p5_mh@1", "cells.kv1p6_mh@1", "cells.kir2p1_mh2@1", "cells.nav1p2_m3h_regularized@1", "cells.kleak_always_open@1", "cells.naleak_always_open@1"], "theorems": {
+        "CellsProofs.Transport.IonChannels.leak_opening": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.permeant_flux": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.flux_bound": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.other_flux": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.blocked": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.patch_booking": "lean/CellsProofs/Transport/IonChannels.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["ion-channels"], "result": "All ten populations shared one membrane. Potassium moved out and sodium moved in after release. Every off-ion and padding transfer was zero. The largest per-channel cumulative discrepancy was 2.37 × 10⁻¹³ fmol against an independent adaptive solution."},
+      "biology": {"status": "open", "observable": "Ion-specific flux or current at known driving force, with an independently measured availability or single-channel open fraction.", "unit": "fmol/s or pA with the ion charge identified", "finding": "At −60 mV, 100 µM cytoplasmic spermine reduced the Kir2.1 single-channel current magnitude from 2.00 ± 0.04 to 1.40 ± 0.04 pA with no significant change in open probability. A voltage-only gate misses that change in unitary conductance. The two generic leak laws have no assigned molecular isoform or preparation-specific permeability. [Xie et al., Figs. 1–3](https://doi.org/10.1085/jgp.20028576)", "evidence": []}
+    },
+    {
+      "id": "chloride-channel-charge",
+      "title": "Chloride gradients set leak reversal and inward chloride carries positive outward current",
+      "statement": "For the gate-free Cl⁻ population, outward material flux J produces outward electrical current −F × 10⁻¹⁵ × J amperes for J in fmol/s. The conducting route reverses at V = (RT/F) × (ln inside − ln outside) on the regular Bernoulli branch and at zero voltage. On the small nonzero branch its reversal follows the implemented polynomial ratio.",
+      "assumptions": ["Voltage is inside minus outside. Concentrations, absolute temperature, F and RT are positive. Permeability, area, abundance and availability give a positive scale for the reversal claim.", "The formal calculation is over real numbers. The regular branch uses |FV/(RT)| ≥ 10⁻⁴. The sign conversion applies to either flux branch. In the tissue comparison, a single membrane connects the cell to a grounded bath and the chloride population is the only conductive route."],
+      "uses": ["proton-leak", "transfer-inventory"],
+      "formal": {"status": "proved", "about": ["cells.clleak_always_open@1"], "theorems": {
+        "CellsProofs.Transport.IonChannels.chloride_flux": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.chloride_reversal_iff": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.chloride_current_positive_iff": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.other_flux": "lean/CellsProofs/Transport/IonChannels.lean",
+        "CellsProofs.Transport.IonChannels.patch_booking": "lean/CellsProofs/Transport/IonChannels.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["chloride-channel"], "result": "At the same initial voltage, 147 and 70 mM bath chloride gave opposite fluxes and initial electrode currents of +0.573 and −5.733 pA. The two tissue trajectories matched an independent solution within 1.58 × 10⁻¹² fmol of transfer, with zero off-ion and padding flux."},
+      "biology": {"status": "open", "observable": "Shift in the single-channel reversal potential when the nominal extracellular chloride concentration changes at fixed intracellular chloride and temperature.", "unit": "mV", "evidence": [{
+        "dataset_id": "Ling 1994 chloride substitution",
+        "manifest": "lean/claims/incoming/channel-gating-evidence.md#chloride-leak",
+        "citation": "Ling et al., Fig. 1B", "doi": "10.1172/JCI117037",
+        "locator": "Figure 1B and accompanying Results.",
+        "context": "Cell-attached apical patches of cultured rabbit collecting-tubule principal cells at 37 °C. Pipette chloride was lowered from 145 to 15 mM by partial substitution with gluconate. The voltage scale is relative to the resting membrane potential.",
+        "role": "descriptive", "observed": 45, "predicted": 60.6,
+        "uncertainty": "The two conditions used 11 and 4 patches, with no endpoint uncertainty reported.",
+        "assessment": "The measured shift is approximate. Lowering nominal outside chloride from 145 to 15 mM in rabbit kidney patches at 37 °C shifted reversal in the predicted positive direction. The channels also passed bromide and showed regulated opening. Absolute permeability remains uncalibrated.",
+        "report": "lean/PROGRESS.md#19-november-2026--chloride-leak"
+      }]}
+    },
+    {
+      "id": "neutral-permeation",
+      "title": "Passive neutral solute follows its concentration gradient",
+      "statement": "For a neutral solute the inward constant-field flux is the route scale times outside minus inside concentration at any voltage. With a positive scale it is inward exactly when concentration is higher outside. In a closed pair the gradient changes at rate −k times the gradient, where k is the scale times the sum of the reciprocal compartment volumes.",
+      "assumptions": ["Valence is zero. The route scale is area × permeability × opening divided by mol/fmol. Concentrations are in mM and flux is in fmol/s.", "The relaxation identity applies to two well-mixed compartments at fixed positive volumes in pL, with this route as the sole transfer of the solute."],
+      "uses": ["junction-concentration-gradient"],
+      "formal": {"status": "proved", "about": ["cells.passive_neutral_permeation@1"], "theorems": {
+        "CellsProofs.Transport.Neutral.flux_eq_fick": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "CellsProofs.Transport.Neutral.inward_iff": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "CellsProofs.Transport.Neutral.closed_pair_gradient_rate": "lean/CellsProofs/Transport/NeutralPermeation.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["neutral-permeation"], "result": "Five compiled cases agreed with the independent flux within 7.11 × 10⁻¹⁵ fmol/s. In the closed tissue pair at 20 ms, the largest relative error in final compartment amount was 1.70 × 10⁻⁴ against a 5 × 10⁻⁴ tolerance."},
+      "biology": {"status": "open", "observable": "Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.", "finding": "Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67)", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "proton-leak",
+      "title": "Voltage and free proton concentrations set the leak reversal",
+      "statement": "For an open route, inward flux is positive exactly when hOut exceeds hIn × B(−x)/B(x), using the engine’s selected Bernoulli factor at x = FV/(RT). The analytic law reverses at V = (RT/F) × (ln hOut − ln hIn) and releases nonnegative instantaneous heat. The engine’s real-arithmetic evaluator gives the analytic flux at x = 0 and for |x| ≥ 10⁻⁴. At other x the polynomial has its own reversal ratio.",
+      "assumptions": ["Positive free H⁺ concentrations on both sides in mM, positive absolute temperature and proton valence +1. Voltage is inside minus outside, with positive flux inward.", "Area × permeability × opening is positive for directional claims and may be zero for the heat inequality. The proof interprets both evaluator branches in real arithmetic."],
+      "formal": {"status": "proved", "about": ["cells.proton_constant_field_leak@1"], "theorems": {
+        "CellsProofs.Transport.ProtonLeak.series_flux": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.series_inward_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.series_eq_analytic": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_inward_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_equilibrium_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.reversal_voltage_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_heat_nonneg": "lean/CellsProofs/Transport/ProtonLeak.lean"
+      }, "sources": {
+        "Cells constant-field definitions": "lean/CellsProofs/Transport/ConstantField.lean",
+        "Goldman’s constant-field model (1943)": "https://doi.org/10.1085/jgp.27.1.37"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
+      "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.", "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
+    },
+    {
+      "id": "atp-cycle",
+      "title": "Free energy sets ATP-driven transport direction and stall",
+      "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
+      "assumptions": ["One tightly coupled mode hydrolyses one ATP on side N and moves n cargo units from N to P. Cargo valence is +1 for free protons and zero for the neutral role. Voltage is V_N − V_P.", "Activities and absolute temperature are positive. In an enabled population, capacity, availability and the saturation factor are positive. Lean represents their product by its finite logarithm and uses real arithmetic."],
+      "formal": {"status": "proved", "about": ["cells.proton_atp_mass_action_positive@1", "cells.atp_driven_transporter_mass_action_positive@1"], "theorems": {
+        "CellsProofs.Transport.ATPCycle.flux_disabled": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.flux_eq_mass_action": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.forward_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.reverse_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.heat_nonneg": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.proton_stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.neutral_voltage_independent": "lean/CellsProofs/Transport/ATPCycle.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["atp-cycle"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work."},
+      "biology": {"status": "open", "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.", "finding": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
+    },
+    {
+      "id": "electrogenic-pump-charge",
+      "title": "Stall voltages and net charge of the sodium–potassium and calcium pumps",
+      "statement": "The Na⁺/K⁺ pump stalls at ψ = g_NaK − 3r_Na + 2r_K and the calcium pump at ψ = (g_Ca − r_Ca)/2. An enabled pump runs forward above its own stall voltage. Their outward charge flux in elementary-charge equivalents is J_NaK + 2J_Ca. The same sum determines their voltage-dependent free-energy change. The two currents cancel exactly when J_NaK = −2J_Ca.",
+      "assumptions": [
+        "For each ion, r is ln(inside activity / outside activity), ψ = F(V_inside − V_outside)/(RT), and each g is its pump’s ATP hydrolysis free energy divided by RT. Temperature and all activities are positive. The direction and stall results assume positive capacity, availability and saturation.",
+        "J denotes signed cycles per unit time. Each forward cycle consumes one ATP. The Na⁺/K⁺ pump exports three Na⁺ and imports two K⁺. The Cells calcium pump transports one Ca²⁺ outward and counts only that ion. The formula sums the currents of these two pumps."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.nak_atp_mass_action_positive@1", "cells.ca_atp_mass_action_positive@1"], "theorems": {
+        "CellsProofs.Transport.ElectrogenicPumps.nak_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.calcium_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.nak_forward_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.calcium_forward_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.charge_per_cycle": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.voltage_work": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.zero_current_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["electrogenic-pump-charge"], "result": "The compiled tissue matched two 80-digit references at five initial voltages, including both stalls (−99.365 and −104.104 mV). The largest cycle-rate error was 3.50 × 10⁻¹⁶ fmol/s. At the midpoint the pumps ran in opposite directions, each contributing 0.349 pA in magnitude. The net electrode current was 2.04 × 10⁻²⁶ A. The 1 ms trajectory accounted for all three ions and both midpoint pumps dissipated energy."},
+      "biology": {"status": "open", "observable": "Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities.", "finding": "Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230)", "unit": "ions per net elementary charge, ions and net elementary charges per ATP, mV for stall", "evidence": []}
+    },
+    {
+      "id": "extracellular-face-direction",
+      "title": "Extracellular face flux follows the electrochemical potential drop",
+      "statement": "Reversing the endpoints and voltage reverses the signed flux. A positive face coefficient gives positive flux exactly when the sender’s electrochemical potential is higher. At equilibrium the flux is zero, including when the concentration and electrical drives cancel.",
+      "assumptions": ["Both endpoint concentrations and RT are positive. The two orientations use the same ion, temperature, geometry and diffusivity.", "The proof evaluates the two log-ratio branches and the fourth-degree small-gradient mean in exact real arithmetic. The force uses the difference of the endpoint logs."],
+      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+        "CellsProofs.Transport.Face.stableLogRatio_eq": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.mean_swap": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.mean_pos": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_reverse": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_at_equilibrium": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.flux_pos_iff": "lean/CellsProofs/Transport/LogMeanFace.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Opposing voltage reversed a resolved concentration-driven flux. At zero voltage, 100.00000000000001 and 100 mM gave zero CPU flux versus 1.42 × 10⁻¹⁸ fmol/s in the scalar reference. The absolute tolerance was 3 × 10⁻¹² fmol/s. Across 60 tissue flux observations, the largest absolute discrepancy was 1.50 × 10⁻¹⁷ fmol/s."},
+      "biology": {"status": "open", "observable": "Species-resolved ion transfer rate between two extracellular compartments, with measured concentrations at both endpoints and their voltage difference.", "finding": "Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906)", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "extracellular-face-dissipation",
+      "title": "Passive extracellular face transport dissipates energy",
+      "statement": "Each ion’s signed flux multiplied by its electrochemical potential drop is nonnegative. Summing the contributions over all ions gives nonnegative instantaneous face power.",
+      "assumptions": ["Endpoint concentrations and RT are positive. Each ion has a nonnegative face coefficient. Power is evaluated at a single state."],
+      "uses": ["extracellular-face-direction"],
+      "formal": {"status": "proved", "about": ["cells.logmean_electrodiffusion@1"], "theorems": {
+        "CellsProofs.Transport.Face.dissipation_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.power_in_pJ_per_s": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "CellsProofs.Transport.Face.face_power_nonneg": "lean/CellsProofs/Transport/LogMeanFace.lean"
+      }, "sources": {
+        "Dimensional algebra used by the optional check": "https://github.com/ATOMSLab/LeanDimensionalAnalysis/tree/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis",
+        "Cells dimensional check": "lean/checks/units/FacePower.lean",
+        "SI prefixes": "https://www.bipm.org/en/measurement-units/si-prefixes"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["extracellular-face"], "result": "Face power agreed with the scalar reference across eleven CPU cases. Reversing a resolved flux and its endpoint bookings preserved the total material rate and gave −4.52 × 10⁻⁵ pJ/s, failing the direction and power checks."},
+      "biology": {"status": "open", "observable": "Instantaneous energy loss inferred from species-resolved fluxes and measured electrochemical potential differences across an extracellular interface.", "finding": "Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf)", "unit": "pJ/s", "evidence": []}
+    },
+    {
+      "id": "transfer-orientation",
+      "title": "Edge orientation preserves each compartment’s transfer balance",
+      "statement": "Reversing any subset of edge orientations and their signed fluxes preserves each compartment’s credit or debit.",
+      "assumptions": ["Every transfer is booked once at its sender and once at its receiver. The edge set is finite and multiple edges may share a compartment."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Accounting.nodeChange_reorient": "lean/CellsProofs/Accounting/Transfer.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The per-cell comparison passed for the declared owners. Swapping owners alone preserved the global total and produced a per-cell discrepancy of 2.40 × 10⁻⁴ fmol/s."},
+      "biology": {"status": "open", "observable": "Net ion gain or loss in each of two identified compartments over the same transfer interval.", "finding": "Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "transfer-inventory",
+      "title": "Only boundary transfers change a region’s inventory during transport",
+      "statement": "Internal edges cancel when transfers are summed over a region. On the entire closed graph each species and any charge-weighted sum are conserved.",
+      "assumptions": ["Each edge transfers equal amounts between its two endpoints. A held bath needs an external supply term when included in an inventory."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Accounting.region_balance": "lean/CellsProofs/Accounting/Transfer.lean",
+        "CellsProofs.Accounting.total_balance": "lean/CellsProofs/Accounting/Transfer.lean",
+        "CellsProofs.Accounting.charge_balance": "lean/CellsProofs/Accounting/Transfer.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction", "regional-chain"], "result": "The closed tissue run checked the potassium ledger, including membrane, pump and channel contributions. The chain comparison exercised both entering and leaving transfers on a four-compartment region."},
+      "biology": {"status": "open", "observable": "Change in regional ion amount and net ion transfer across its boundary over the same interval.", "finding": "Perfused rat hearts lost 139 ± 12 μmol of K⁺ per g dry weight in effluent over 40 min. Tissue depletion was measured in separate hearts, leaving the within-heart balance open. [Kuki et al., Figs. 3–4](https://doi.org/10.1161/01.RES.67.2.401)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "reaction-inventory",
+      "title": "Balanced reactions preserve a weighted inventory",
+      "statement": "If each reaction balances an integer-weighted inventory, the combined update preserves that inventory for any signed real reaction extents.",
+      "assumptions": ["The species and reaction sets at the site are finite. Each species change equals its signed stoichiometric coefficients times the extents, summed over reactions."],
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
+        "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "enzyme-inventories",
+      "title": "Binding and catalysis conserve enzyme and substrate",
+      "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
+      "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
+      "uses": ["reaction-inventory"],
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
+        "CellsProofs.Chemistry.Enzyme.enzyme_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
+        "CellsProofs.Chemistry.Enzyme.substrate_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
+        "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "Lean checked both fixture columns and both weight rows. The largest absolute inventory residual in the CPU half-step was about 1.12 × 10⁻²⁰ fmol, below the 6.94 × 10⁻¹⁸ fmol tolerance. The engine refused the missing-enzyme reaction."},
+      "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "finding": "NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "single-site-binding",
+      "title": "One-site binding follows the free ligand concentration",
+      "statement": "At equilibrium the occupied fraction of sites is c / (Kd + c), where c is free ligand concentration and Kd is the dissociation constant. The normalized weights of the two binder forms give the same fraction.",
+      "assumptions": ["One ligand binds one site. Each binder has a free and a singly occupied form, with positive total sites and positive association and dissociation rates. Kd is their off-rate divided by their on-rate.", "Both concentrations are expressed in mM. The rate-balance theorem allows zero free ligand. The log-weight theorem uses positive free ligand and a positive Kd."],
+      "formal": {"status": "proved", "about": ["cells.rapid_binding@1"], "theorems": {
+        "CellsProofs.Chemistry.SingleSite.occupancy_from_rates": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean",
+        "CellsProofs.Chemistry.SingleSite.occupancy_from_log_weights": "lean/CellsProofs/Chemistry/SingleSiteBinding.lean"
+      }, "sources": {
+        "Langmuir kinetic derivation, adapted from Lean 3": "https://github.com/ATOMSLab/LeanChemicalTheories/blob/00841fedb86c0af282f515eda7e83a525a42e048/src/adsorption/langmuir_kinetics.lean",
+        "Bobbin et al., Digital Discovery": "https://doi.org/10.1039/D3DD00077J"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["single-site-binding"], "result": "Across thirteen manufactured S1 states, the largest absolute occupancy difference from the independent reference was 3.33 × 10⁻¹⁶. Using total ligand in the same formula failed all thirteen. The first state also passed through the tissue’s stage read."},
+      "biology": {"status": "open", "observable": "Equilibrium bound fraction across a free ligand titration at specified temperature and solution conditions.", "finding": "For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html)", "unit": "fraction of sites occupied", "evidence": []}
+    },
+    {
+      "id": "membrane-insertion-heat",
+      "title": "Uncharged membrane insertion dissipates nonnegative capacitor heat",
+      "statement": "The exact network heat in pJ is (10¹²/2) times the sum of C(ΔV)² + ΔC(V + ΔV)² over patches and every allocated patch share is nonnegative. For a single patch against a held bath, the heat is (10¹²/2) C V² ΔC/(C + ΔC) and the bath supplies zero image charge during insertion.",
+      "assumptions": ["Inserted membrane arrives uncharged. Each free node keeps its charge and each held node keeps its potential. The network is finite and the voltage changes obey its capacitor equations.", "C and ΔC are nonnegative, expressed in F, with positive starting C in the one-patch formula. V and ΔV are in volts. The proof uses real arithmetic."],
+      "formal": {"status": "proved", "about": ["cells.scheduled_membrane_insertion@1", "cells.scheduled_membrane_insertion@2"], "theorems": {
+        "CellsProofs.Tissue.MembraneInsertion.node_patch_work": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.fixed_node_balance": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.heat_eq_squares": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.heat_nonneg": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.share_nonneg": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.one_patch_heat": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
+        "CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero": "lean/CellsProofs/Tissue/MembraneInsertion.lean"
+      }},
+      "numerical": {"status": "failed", "comparisons": ["membrane-insertion"], "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner."},
+      "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.", "finding": "Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
+    },
+    {
+      "id": "assembly-reservoir-exit",
+      "title": "The assembly’s lipid exit rate scales with its count of that species",
+      "statement": "In the uncatalyzed `reservoir_exchange@1` law of `cells.assembly_lineages@1`, each molecule of a given type contributes the same exit rate. The instantaneous exit propensity for that type is `leave_rate[i] × counts[i]` per nominal time unit. Applying that count to a bilayer experiment requires identifying the molecules exposed to the reservoir.",
+      "assumptions": ["The reservoir holds the activity of each species fixed. The assembly is well mixed and the base exchange law has no catalytic multiplier.", "For a washout comparison, the measured pool is the accessible tracer. Re-entry, extraction and the conversion of nominal time to seconds affect the comparison."],
+      "formal": {"status": "open", "theorems": {}, "sources": {
+        "Assembly exchange law and time convention": "src/cells/models/assembly_lineages/exchange.py#L1",
+        "Uncatalyzed entry and exit propensities": "src/cells/models/assembly_lineages/exchange.py#L108"
+      }},
+      "numerical": {"status": "open", "comparisons": [], "result": "A comparison of the assembly’s exit propensity with accessible lipid loss under the published washout conditions remains open."},
+      "biology": {"status": "open", "observable": "Decay of accessible tracer during buffer washout and its desorption rate in a separate capture assay.", "unit": "s⁻¹", "finding": "At 24 °C and 500 µL/min buffer flow, 14:0–6:0 NBD-PC fluorescence in 310 protein-free POPC/POPG vesicles decayed at 0.0108 ± 0.0045 s⁻¹ (mean ± SD). The 49.5 ± 8.5% plateau reflects label retained in the inner leaflet. The rate includes desorption and washout. Separate albumin capture gave about 0.07 s⁻¹ (11 measurements, three preparations). These measurements support first-order loss from the accessible pool. Entry and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8)", "evidence": []}
+    },
+    {
+      "id": "regional-reaction-transport",
+      "title": "Regional inventory changes by net boundary transfer across a split step",
+      "statement": "A reaction–transport–reaction step changes a region’s weighted inventory by exactly its signed boundary inflow. The total over a closed graph is conserved.",
+      "assumptions": ["Node identities and the region stay fixed. Every local reaction inside the region balances the inventory. Each transport edge debits and credits its endpoints."],
+      "uses": ["transfer-inventory", "reaction-inventory"],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Tissue.region_inventory_balance": "lean/CellsProofs/Tissue/ReactionTransport.lean",
+        "CellsProofs.Tissue.whole_inventory_conserved": "lean/CellsProofs/Tissue/ReactionTransport.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["regional-chain"], "result": "In a 50 ms CPU step, the change in A + B across four compartments agreed with boundary inflow within 1.07 × 10⁻¹⁹ fmol. Reversing a crossing face failed the regional check while the whole chain still balanced."},
+      "biology": {"status": "open", "observable": "Change in the amount of a named chemical group inside a defined tissue region and its net passage across that boundary over the same interval.", "finding": "A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "rptec-voltage-c3",
+      "title": "Membrane voltage in kidney epithelial cells under condition C3",
+      "statement": "Fit a conditioned voltage equation on C1 and C2 and predict the membrane voltage under the higher-potassium C3 solution.",
+      "assumptions": ["The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents."],
+      "formal": {"status": "open", "theorems": {}},
+      "numerical": {"status": "checked", "comparisons": ["bio002-endpoint"], "result": "The conditioned reference calculation agreed with an independent 60-digit calculation within 7.11 × 10⁻¹⁵ mV across twelve scalar checks."},
+      "biology": {
+        "status": "not_assessable", "observable": "Whole-cell resting membrane voltage after application of extracellular solution C3.", "unit": "mV",
+        "evidence": [{
+          "dataset_id": "bonzanni2020_rptec_endpoints@1",
+          "manifest": "data/biology/bonzanni2020_rptec_v1/manifest.json",
+          "measurements": "data/biology/bonzanni2020_rptec_v1/voltage_endpoints.csv",
+          "citation": "Bonzanni et al. (2020)", "doi": "10.1242/bio.048553",
+          "locator": "Figure 2A–B gives the solution series. The C3 measurement is an approximate mean read from the patch-clamp results in Figure 3C.",
+          "context": "RPTEC/TERT1 renal proximal tubule epithelial cells, whole-cell patch recording at zero applied current and 25 °C. C3 reports 20 cells across three experiments.",
+          "role": "held_out_from_fitting", "fit": ["C1", "C2"], "evaluation": ["C3"], "excluded": ["C4", "C5"],
+          "observed": -18, "predicted": -14.59,
+          "uncertainty": "The ±2 mV bound describes the curator’s figure reading. The numerical standard error of the mean and the dependence between condition summaries are unknown.",
+          "assessment": "The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized.",
+          "report": "reports/bio-003-closeout.json"
+        }]
+      }
+    }
+  ]
+}

@@ -22,7 +22,7 @@ import re
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 from functools import cache
 from types import MappingProxyType
 from typing import NamedTuple
@@ -38,11 +38,19 @@ __all__ = (
     "BUILTIN",
     "ENERGY_ROLES",
     "HEAT_SUFFIX",
+    "MOVES_END",
+    "MOVES_ENDS",
     "LEDGER_TERM_ROLES",
     "PARTITION_ROLES",
     "WORK_SUFFIX",
     "ConfigError",
+    "AXIS_HOST_KINDS",
+    "SHARED_AXES",
+    "AxisHost",
+    "EntityBinding",
+    "FreeEnergyEntry",
     "EnergyRole",
+    "HOOKS",
     "Kind",
     "KindFields",
     "KindRates",
@@ -57,7 +65,15 @@ __all__ = (
     "declared_schedule",
     "energy_role",
     "finite_number",
+    "free_energy_entries",
     "kind_ledgers",
+    "kind_role_species",
+    "kind_standard_free_energies",
+    "law_count_names",
+    "law_ends",
+    "law_roles",
+    "entity_axes",
+    "presence_fields",
     "missing_partition_roles",
     "parse_series",
     "partition_fields",
@@ -308,6 +324,39 @@ class Kind:
       structural with its fill, for each field a split, a retirement or a close acts on
       (partition_fields: state, layout and control). A kind with a field left undeclared stays
       refused beside closers (§4.2, fail-closed; missing_partition_roles);
+    - `field_axes`, {layout or control field: (axis, ...)}: the axes of each, as state_axes gives
+      a state field's (CORE_SEAMS §18, B1's lift); `axis_hosts`, {own axis: AxisHost(kind,
+      index)}: for each axis of its own (an entity axis that is not one of @3's), the kind of host
+      its entities sit on (AXIS_HOST_KINDS) and the layout field holding each entity's host index.
+      The composite lifts its refusal beside closers only for a kind that declares these and all
+      its roles; `internal_axes`, (axis, ...): the axes internal to its laws (modes, rows,
+      saturation factors, bands, diagram edges and terms), which carry no entities: a split copies
+      them whole and none is hosted (the kinds owner's Q5, ruled yes, 19 November 2026), so an
+      adapter counts an axis as an entity axis only when it is neither @3's shared axis nor one of
+      these; `presence`, {entity axis: (layout field, ...)}: for each entity axis, the fields
+      saying which of its entities are present, every mask its rates, readouts and stage terms
+      read (the transporter's transporter_present and its two law masks are the model), each a
+      bool layout field on exactly that axis, structural with fill False. They are Q2's presence
+      gate's declaration (CORE_SEAMS §18 at 931b6606, widened to a tuple on 19 November): once the
+      gate lands, the core ANDs each with its entity's host's activity, where a closer is
+      declared, before the kind's rates, readouts and stage checks. Until then every kind with an
+      entity axis stays refused beside a closer (Q7 (a)), and after it every kind that declares
+      none. entity_axes and presence_fields read them for the core;
+    - `standard_free_energies(declaration)` -> (FreeEnergyEntry, ...), the reaction-level standard
+      free energies it declares (§7.1, seam E), each with the cycle law and mode that produced it,
+      a law the kind hosts with a general form, or None for both; () when it declares none. The
+      species registry's check compares each with its own sum of nu mu°/RT
+      (kind_standard_free_energies checks the form; today's 3-tuples still read, transitionally);
+    - `role_species(declaration)` -> (EntityBinding, ...), one per entity the declaration declares
+      (a transporter population, say), in its own entity order: the cycle law the entity runs,
+      one the kind hosts; the species each of that law's roles binds, the roles being those its
+      change rows name (registry/laws.cycle_changes' role column, a general form's "role@end"
+      read as its role); the node at each end its rows name; and its values for the law's
+      parameter-named counts. Entities of one law may bind different species and values, so each
+      entity's rows resolve on their own. §5.2's admission reads it beside a general closure,
+      mapping entities to the closure node's rows through moved_rows and resolving the counts
+      itself, and refuses a mover kind without it (kind_role_species checks it when read;
+      law_roles and law_ends give a law's roles and ends);
     - `ledgers(declaration)` -> ((ledger, diagnostic), ...), the kind's own conserved quantities
       (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
       and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
@@ -360,6 +409,12 @@ class Kind:
     partition_roles: object = MappingProxyType({})  # {field: PartitionRole}
     ledgers: Callable | None = None  # (declaration) -> ((ledger, diagnostic), ...)
     ledger_bounds: Callable | None = None  # (row, p, tol, steps, *, xp) -> their bounds
+    field_axes: object = MappingProxyType({})  # {layout or control field: (axis, ...)}
+    axis_hosts: object = MappingProxyType({})  # {own axis: AxisHost}
+    internal_axes: tuple = ()  # Its laws' internal axes: copied whole at a split, never hosted.
+    presence: object = MappingProxyType({})  # {entity axis: (bool presence layout field, ...)}
+    standard_free_energies: Callable | None = None  # (declaration) -> (FreeEnergyEntry, ...)
+    role_species: Callable | None = None  # (declaration) -> (EntityBinding, ...)
 
     @property
     def state_fields(self):
@@ -367,13 +422,23 @@ class Kind:
         return tuple(field for field, _ in self.state_axes)
 
 
+# The kind contract's hooks: every field of Kind that holds a callable or None.
+HOOKS = tuple(
+    f.name for f in fields(Kind) if f.type == Callable | None and f.name != "declared_fields"
+)
+
+
 class KindFields(NamedTuple):
-    """A kind's fields for one structure entry (§7.4 (n) 5): its declared_fields(entry)."""
+    """A kind's fields for one structure entry (§7.4 (n) 5): its declared_fields(entry); and
+    `without`, the hooks that entry does not have (HOOKS' names), which bound() sets to None, so a
+    hook a later layout adds (material_term, say) never reaches an earlier entry's programs (the
+    kinds owner's request, design statement 1 §6)."""
 
     state_axes: tuple  # ((field, (axis, ...)), ...)
     layout_fields: tuple
     control_fields: tuple
     readout_columns: tuple
+    without: tuple = ()
 
 
 class KindRates(NamedTuple):
@@ -457,6 +522,240 @@ class PartitionRole(NamedTuple):
 
     role: str
     fill: object = None
+
+
+# @3's axes that carry no entities, shared by every field on them (B1's adapter's SHARED_AXES).
+SHARED_AXES = ("species", "gate")
+
+# The kinds of host a kind's own entities sit on, each with the slot axis of @3's that indexes them
+# (models/surface_pump_v3: HOST_KINDS' patch and junction, and the nodes).
+AXIS_HOST_KINDS = MappingProxyType(
+    {
+        "cell": "cell_slot",
+        "outside_node": "extracellular_slot",
+        "patch": "membrane_slot",
+        "junction": "edge_slot",
+    }
+)
+
+
+class AxisHost(NamedTuple):
+    """The host of a kind's own axis (Kind.axis_hosts): `kind`, one of AXIS_HOST_KINDS, and
+    `index`, the kind's layout field holding each entity's host index on that kind's slot axis."""
+
+    kind: str
+    index: str
+
+
+# The ends of a moves-only (version 1) cycle law, whose change rows carry no "@end": its host
+# patch's inside and outside. Its moves are inward-positive at the inside (MOVES_END), and the
+# same counts land with the opposite sign at the outside, so each role crosses the patch. A
+# general form's rows name their own ends.
+MOVES_END = "inside"
+MOVES_ENDS = (MOVES_END, "outside")
+
+
+class EntityBinding(NamedTuple):
+    """One entity of a declaration as §5.2's admission resolves its rows (Kind.role_species, D142):
+    `law_id`, the cycle law it runs, one its kind hosts; `roles`, {role: species ID}, the species
+    each of that law's roles binds; `ends`, {end: node ID}, the node at each end its change rows
+    name (a general form's "@end" names, as its patch's inside and outside; MOVES_ENDS for a
+    moves-only law, whose inward-positive moves at the inside land with the opposite sign at the
+    outside); and `parameters`, {name: value}, its values for the law's parameter-named
+    counts, since entities of one law may differ. kind_role_species checks it."""
+
+    law_id: str
+    roles: object = MappingProxyType({})  # {role: species ID}
+    ends: object = MappingProxyType({})  # {end: node ID}
+    parameters: object = MappingProxyType({})  # {name: value}
+
+
+class FreeEnergyEntry(NamedTuple):
+    """One reaction-level standard free energy a kind or an operator declares (seam E, §7.1;
+    D142): `stoichiometry`, ((species, nu), ...), nu signed, products positive; `dG_RT`, dG°/RT;
+    `c0`, the standard concentration in mM; and `law_id` and `mode`, the cycle law and the mode of
+    its form that produced it, or None where none did (an operator's reaction, say). The species
+    registry's check compares each with its own sum of nu mu°/RT, and the binding owner's check
+    computes each entry's band from the law's form, never from the entry, so no band is
+    self-certified. free_energy_entries checks it."""
+
+    stoichiometry: tuple
+    dG_RT: float
+    c0: float
+    law_id: str | None = None
+    mode: str | None = None
+
+
+def _named(value):
+    return isinstance(value, str) and bool(value)
+
+
+def _finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def free_energy_entries(entries, hosted, where):
+    """The checked entries of a standard_free_energies hook, a kind's or an operator's (`where`
+    names it in each refusal): a tuple of FreeEnergyEntry, each with a stoichiometry of distinct
+    named species with signed nonzero coefficients, dG°/RT finite and c0 finite and positive, and
+    law_id and mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle
+    law}; none for an operator, which hosts no law), a law with a general form, and its mode one of
+    that form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has
+    neither. Transitional: an entry may still be today's 3-tuple (stoichiometry, dG°/RT, c0), read
+    as an entry that names no law, until the kinds owner's transporter hook gives entries; remove
+    this reading then."""
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    if not isinstance(entries, tuple):
+        raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
+    out = []
+    for index, entry in enumerate(entries):
+        at = f"{where}, entry {index}"
+        if not isinstance(entry, FreeEnergyEntry):
+            if not (isinstance(entry, tuple) and len(entry) == 3):  # Transitional (docstring).
+                raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
+            entry = FreeEnergyEntry(*entry)
+        stoichiometry = entry.stoichiometry
+        if not (
+            isinstance(stoichiometry, tuple)
+            and stoichiometry
+            and all(
+                isinstance(pair, tuple)
+                and len(pair) == 2
+                and _named(pair[0])
+                and _finite(pair[1])
+                and pair[1] != 0
+                for pair in stoichiometry
+            )
+            and len({pair[0] for pair in stoichiometry}) == len(stoichiometry)
+        ):
+            raise ValueError(
+                f"{at}: its stoichiometry is ((species, nu), ...), distinct species, nu nonzero"
+            )
+        if not _finite(entry.dG_RT):
+            raise ValueError(f"{at}: its dG°/RT is finite")
+        if not (_finite(entry.c0) and entry.c0 > 0):
+            raise ValueError(f"{at}: its c0 is finite and positive")
+        if (entry.law_id is None) != (entry.mode is None):
+            raise ValueError(f"{at}: it names its law and its mode together, or neither")
+        if entry.law_id is not None:
+            law = hosted.get(qualified(entry.law_id)) if _named(entry.law_id) else None
+            if law is None:
+                raise ValueError(f"{at}: {entry.law_id!r} is not a cycle law it hosts")
+            if law.cycle is None:
+                raise ValueError(f"{at}: {entry.law_id} is a version-1 law, with no form or mode")
+            modes = {row["mode"] for row in law_registry.cycle_changes(law)}
+            if entry.mode not in modes:
+                raise ValueError(f"{at}: {entry.law_id}'s form has no mode {entry.mode!r}")
+        out.append(entry)
+    return tuple(out)
+
+
+def kind_standard_free_energies(kind, declaration):
+    """A kind's reaction-level standard free energies (Kind.standard_free_energies), checked by
+    free_energy_entries, any law an entry names being one of the cycle laws the kind hosts in the
+    active law registry: a tuple of FreeEnergyEntry; () for a kind that declares none."""
+    if kind.standard_free_energies is None:
+        return ()
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    hosted = {
+        qualified(law.law_id): law
+        for law in law_registry.active().laws(law_registry.CYCLE_LAW, kind.kind_id)
+    }
+    where = f"Kind {kind.kind_id}'s standard_free_energies"
+    return free_energy_entries(kind.standard_free_energies(declaration), hosted, where)
+
+
+def _form_role_end(row):
+    """(role, end) of a general form's change row, from its "role@end" (end None without one)."""
+    role, at, end = row["role"].rpartition("@")
+    return (role, end) if at else (row["role"], None)
+
+
+def law_roles(law):
+    """A cycle law's roles: each change row's role (registry/laws.cycle_changes), a general form's
+    read without the "@end" it adds."""
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    rows = law_registry.cycle_changes(law)
+    if law.cycle is None:
+        return {row["role"] for row in rows}
+    return {_form_role_end(row)[0] for row in rows}
+
+
+def law_ends(law):
+    """The ends a cycle law's change rows name: a general form's "@end" names, or MOVES_ENDS for a
+    moves-only law, whose moves are inward-positive at the inside and land with the opposite sign
+    at the outside, so a closure at either node places its rows."""
+    from cells.registry import laws as law_registry
+
+    if law.cycle is None:
+        return set(MOVES_ENDS)
+    return {_form_role_end(row)[1] for row in law_registry.cycle_changes(law)}
+
+
+def law_count_names(law):
+    """The population parameters a cycle law's change rows name as counts, each without the
+    leading "-" that negates it."""
+    from cells.registry import laws as law_registry
+
+    counts = [row["per_cycle"] for row in law_registry.cycle_changes(law)]
+    return {c[1:] if c.startswith("-") else c for c in counts if isinstance(c, str)}
+
+
+def kind_role_species(kind, declaration):
+    """A kind's entity bindings for one declaration (Kind.role_species), checked: a tuple of
+    EntityBinding, one per entity in its own order, each naming a cycle law the kind hosts in the
+    active law registry, binding exactly that law's roles (law_roles) to species IDs, placing every
+    end its rows name (law_ends) at a node ID, and giving a finite value for every count its rows
+    name as a parameter (law_count_names); every name and ID a non-empty string. Each refusal names
+    the entity. None for a kind that declares none: §5.2's admission, not this reader, refuses
+    such a kind beside a general closure."""
+    if kind.role_species is None:
+        return None
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    registry = law_registry.active()
+    hosted = {
+        qualified(law.law_id): law for law in registry.laws(law_registry.CYCLE_LAW, kind.kind_id)
+    }
+    entities = kind.role_species(declaration)
+    if not (
+        isinstance(entities, tuple)
+        and all(isinstance(entity, EntityBinding) for entity in entities)
+    ):
+        raise ValueError(f"Kind {kind.kind_id}'s role_species returns a tuple of EntityBinding")
+    for index, entity in enumerate(entities):
+        where = f"Kind {kind.kind_id}'s role_species, entity {index} ({entity.law_id!r})"
+        if not (_named(entity.law_id) and qualified(entity.law_id) in hosted):
+            raise ValueError(f"{where}: its law is not a cycle law the kind hosts")
+        law = hosted[qualified(entity.law_id)]
+        for name, mapping, valid in (
+            ("roles", entity.roles, _named),
+            ("ends", entity.ends, _named),
+            ("parameters", entity.parameters, _finite),
+        ):
+            if not (
+                isinstance(mapping, Mapping)
+                and all(_named(k) and valid(v) for k, v in mapping.items())
+            ):
+                kind_of = "a finite value" if valid is _finite else "a name"
+                raise ValueError(f"{where}: its {name} map names to {kind_of}")
+        roles = law_roles(law)
+        missing, extra = sorted(roles - set(entity.roles)), sorted(set(entity.roles) - roles)
+        if missing or extra:
+            raise ValueError(
+                f"{where}: the law's roles are {sorted(roles)}; it lacks {missing} and binds "
+                f"{extra}, which are not the law's"
+            )
+        ends = sorted(law_ends(law) - set(entity.ends))
+        if ends:
+            raise ValueError(f"{where}: it places no node at the ends {ends} its law's rows name")
+        counts = sorted(law_count_names(law) - set(entity.parameters))
+        if counts:
+            raise ValueError(f"{where}: it gives no value for the counts {counts} its law names")
+    return entities
 
 
 def _suffix_role(field):
@@ -584,6 +883,154 @@ def declaration_errors(kind):
         h is not None and not callable(h) for h in hooks
     ):
         out.append("it declares ledgers and ledger_bounds together, each a callable")
+    if kind.standard_free_energies is not None and not callable(kind.standard_free_energies):
+        out.append("its standard_free_energies is a callable, or None")
+    if kind.role_species is not None and not callable(kind.role_species):
+        out.append("its role_species is a callable, or None")
+    return out + _axis_errors(kind, static)
+
+
+def _axis_errors(kind, static):
+    """Why a kind's field_axes, axis_hosts and internal_axes break the contract (declaration_errors'
+    part)."""
+    out, axes = [], kind.field_axes
+    if not isinstance(axes, Mapping) or not all(
+        _named(field)
+        and isinstance(names, tuple)  # () for a field on no axis: a scalar.
+        and all(map(_named, names))
+        and len(set(names)) == len(names)
+        for field, names in axes.items()
+    ):
+        out.append("its field_axes map layout and control fields to tuples of distinct axis names")
+        axes = {}
+    elif static:
+        stray = sorted(set(axes) - {*kind.layout_fields, *kind.control_fields})
+        if stray:
+            out.append(f"field_axes name fields that are not its layout or control fields: {stray}")
+    hosts = kind.axis_hosts
+    if not isinstance(hosts, Mapping) or not all(
+        _named(axis) and isinstance(host, AxisHost) for axis, host in hosts.items()
+    ):
+        return [*out, "its axis_hosts map its own axes to AxisHost(kind, index)"]
+    used = {a for _, names in kind.state_axes for a in names} | {
+        a for names in axes.values() for a in names
+    }
+    for axis, host in hosts.items():
+        if host.kind not in AXIS_HOST_KINDS:
+            out.append(f"axis {axis}: its host kind is one of {', '.join(AXIS_HOST_KINDS)}")
+        if axis in AXIS_HOST_KINDS.values():
+            out.append(f"axis {axis}: @3's own slot axis, not one of the kind's")
+        if static and axis not in used:
+            out.append(f"axis {axis}: no field of the kind's is on it")
+        if static and host.index not in kind.layout_fields:
+            out.append(
+                f"axis {axis}: its host index {host.index!r} is not one of its layout fields"
+            )
+        elif host.index in axes and axes[host.index] != (axis,):
+            out.append(f"axis {axis}: its host index {host.index!r} is on {axes[host.index]}")
+    return out + _internal_axis_errors(kind, static, used) + _presence_errors(kind, static, axes)
+
+
+def entity_axes(kind):
+    """A kind's entity axes: the axes of its own fields that carry entities, neither @3's shared
+    axes nor its laws' internal ones, in first-use order (state fields, then its layout and control
+    fields' field_axes). field_axes may cover every entry's fields, and bound keeps it whole, so
+    only the kind's own fields count. For a kind that declares its fields per entry, bind it first
+    (bound)."""
+    axes = [a for _, names in kind.state_axes for a in names]
+    if isinstance(kind.field_axes, Mapping):
+        own = {*kind.layout_fields, *kind.control_fields}
+        axes += [a for field, names in kind.field_axes.items() if field in own for a in names]
+    internal = set(kind.internal_axes) if isinstance(kind.internal_axes, tuple) else set()
+    return tuple(a for a in dict.fromkeys(axes) if a not in SHARED_AXES and a not in internal)
+
+
+def presence_fields(kind):
+    """{entity axis: (presence field, ...)} of a kind bound to its entry (Q2's presence gate): {}
+    where it declares no presence, which leaves it refused beside a closer. A kind that declares
+    presence declares it for each entity axis it has, each field one of its layout fields; a key of
+    an axis this entry does not have belongs to another entry and is left out. Raises otherwise.
+    The core reads presence only through this, on the bound kind: a kind's own fields may differ
+    per entry, and declaration_errors checks these two only where they are static."""
+    if not kind.presence:
+        return {}
+    axes = entity_axes(kind)
+    missing = [a for a in axes if a not in kind.presence]
+    named = [f for a in axes if a in kind.presence for f in kind.presence[a]]
+    absent = [f for f in named if f not in kind.layout_fields]
+    if missing or absent:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s presence lacks its entity axes {missing} or names fields "
+            f"{absent} that are not its layout fields"
+        )
+    return {a: tuple(kind.presence[a]) for a in axes}
+
+
+def _presence_errors(kind, static, axes):
+    """Why a kind's presence breaks the contract (declaration_errors' part; the Kind docstring):
+    for each of its entity axes a non-empty tuple of distinct bool layout fields, each on exactly
+    that axis, structural with fill False; none on a shared or internal axis, and no field named
+    twice; where the fields are static, every entity axis covered and each field one of its layout
+    fields. A field's dtype is the layout's: fill False is what the declaration can say."""
+    presence = kind.presence
+    if not presence:
+        return []
+    if not isinstance(presence, Mapping) or not all(
+        _named(axis) and isinstance(names, tuple) and all(map(_named, names))
+        for axis, names in presence.items()
+    ):
+        return ["its presence maps its entity axes to tuples of layout fields"]
+    out = []
+    named = [field for names in presence.values() for field in names]
+    repeated = sorted({field for field in named if named.count(field) > 1})
+    if repeated:
+        out.append(f"its presence names fields more than once: {repeated}")
+    internal = set(kind.internal_axes) if isinstance(kind.internal_axes, tuple) else set()
+    roles = kind.partition_roles if isinstance(kind.partition_roles, Mapping) else {}
+    for axis, names in presence.items():
+        if not names:
+            out.append(f"presence of axis {axis}: an empty tuple, so no field gates its entities")
+        if axis in SHARED_AXES or axis in internal:
+            out.append(f"presence of axis {axis}: a shared or internal axis carries no entities")
+        for field in names:
+            if axes.get(field) != (axis,):
+                out.append(f"presence field {field}: on {axes.get(field)}, not exactly {(axis,)}")
+            role = roles.get(field)
+            if not (isinstance(role, PartitionRole) and role.role == "structural"):
+                out.append(f"presence field {field}: {role}, not structural with fill False")
+            elif role.fill is not False:
+                out.append(f"presence field {field}: its fill is {role.fill!r}, not False")
+            if static and field not in kind.layout_fields:
+                out.append(f"presence field {field}: not one of its layout fields")
+    if static:
+        own = entity_axes(kind)
+        uncovered = [a for a in own if a not in presence]
+        if uncovered:
+            out.append(f"its presence lacks its entity axes {uncovered}")
+        stray = sorted(set(presence) - set(own) - set(SHARED_AXES) - internal)
+        if stray:
+            out.append(f"its presence names axes no field of its own is on: {stray}")
+    return out
+
+
+def _internal_axis_errors(kind, static, used):
+    """Why a kind's internal_axes break the contract: distinct names, none of @3's slot axes, none
+    hosted (an internal axis carries no entities), each one some field of the kind's is on."""
+    internal = kind.internal_axes
+    if not (
+        isinstance(internal, tuple)
+        and all(map(_named, internal))
+        and len(set(internal)) == len(internal)
+    ):
+        return ["its internal_axes are a tuple of distinct axis names"]
+    out = []
+    for axis in internal:
+        if axis in AXIS_HOST_KINDS.values():
+            out.append(f"internal axis {axis}: @3's own slot axis, an entity axis")
+        if isinstance(kind.axis_hosts, Mapping) and axis in kind.axis_hosts:
+            out.append(f"internal axis {axis}: it is hosted, so its entities are not internal")
+        if static and axis not in used:
+            out.append(f"internal axis {axis}: no field of the kind's is on it")
     return out
 
 
@@ -617,6 +1064,12 @@ def bound(kind, entry):
     fields = kind.declared_fields(entry)
     if type(fields) is not KindFields:
         raise ValueError(f"Kind {kind.kind_id}'s declared_fields must return a KindFields")
+    without = fields.without
+    if not isinstance(without, tuple) or any(name not in HOOKS for name in without):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s declared_fields' `without` names its hooks only, not "
+            f"{sorted(set(without) - set(HOOKS)) if isinstance(without, tuple) else without!r}"
+        )
     return replace(
         kind,
         state_axes=tuple(fields.state_axes),
@@ -624,6 +1077,7 @@ def bound(kind, entry):
         control_fields=tuple(fields.control_fields),
         readout_columns=tuple(fields.readout_columns),
         declared_fields=None,
+        **dict.fromkeys(without),
     )
 
 

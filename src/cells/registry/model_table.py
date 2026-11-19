@@ -70,6 +70,15 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.nav1p2_m3h_regularized",
                 "cells.laws.channels.kleak_always_open",
                 "cells.laws.channels.naleak_always_open",
+                # The Kv1 pilot's five, codes 5-9 (D211, D213), since @3's parser reads its channel
+                # table from the law registry (the Kv1 trigger, eb91851e).
+                "cells.laws.channels.kv1p1_mh2",
+                "cells.laws.channels.kv1p2_mh",
+                "cells.laws.channels.kv1p3_mh",
+                "cells.laws.channels.kv1p4_mh",
+                "cells.laws.channels.kv1p6_mh",
+                # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
+                "cells.laws.channels.clleak_always_open",
                 "cells.laws.junctions.junction_voltage_relaxation",
                 "cells.laws.pumps.nak_atp_mass_action_positive",
                 "cells.laws.pumps.ca_atp_mass_action_positive",
@@ -77,6 +86,13 @@ MODELS = MappingProxyType(
                 "cells.laws.routes.logmean_electrodiffusion",
                 "cells.laws.routes.passive_permeation",
                 "cells.laws.transport.proton_leak",
+                # The transporter's two laws' modules: their declarations move in as inert LAWs
+                # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
+                "cells.laws.pumps.atp_transporter",
+                "cells.laws.pumps.proton_pump",
+                # The general binding closure (rapid_binding@1), seam C's: the binding owner's
+                # line, a recorded exception (the lead, 18 November 2026).
+                "cells.laws.reactions.rapid_binding",
                 "cells.kinds",
             ),
         ),

@@ -18,8 +18,8 @@ families (the lead's ruling (B), 18 November 2026). Held bitwise to it under Num
 within 32 ulps, because XLA on CPU rewrites x / constant as x * (1/constant) while the dispatcher
 divides by gathered arrays (tests/unit/test_kv1_channel_laws.py).
 
-Channel code 7 of resolved_pump_tissue@3 (cells.channel_law@1). Held, inert and unregistered, until
-@3's parser reads its channel table from the law registry; then the model table lists it.
+Channel code 7 of resolved_pump_tissue@3 (cells.channel_law@1), registered from @3's row of the
+model table since @3's parser reads its channel table from the law registry (the Kv1 trigger).
 """
 
 import jax.numpy as jnp
