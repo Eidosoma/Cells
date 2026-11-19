@@ -37,10 +37,12 @@ from cells.models import pump_composite
 from cells.operators import OPERATORS, compartments
 from cells.operators import membrane_trafficking as trafficking
 from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
 from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from validation.tissue import membrane_trafficking_fixtures as fx
+from validation.tissue import site_occupancy_fixtures as sfx
 
 LAW = trafficking.LAW_ID
 H = fx.DT / 2
@@ -179,6 +181,21 @@ BATH = dict(
 )
 
 
+def sites_beside():
+    """site_occupancy@1 beside the route: its ligand declared and one population on the furrow,
+    which faces the finite cleft (a population facing a held bath is site occupancy's own
+    refusal)."""
+    raw = fx.pooled_cells(1, cleft=True)
+    entry = fx.route(raw, 0)
+    raw = fx.with_trafficking(
+        raw, [entry], [fx.schedule(entry["id"], [(0.0, fx.rate(raw, 0, 0.1))])]
+    )
+    raw = add_inventory_species(
+        raw, sfx.LIGAND, trace_mM=sfx.TRACE_mM, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    return sfx.with_site_occupancy(raw, [sfx.population(patch="furrow_0")])
+
+
 def refusal_cases():
     yield (
         "membrane state is required",
@@ -313,6 +330,11 @@ def refusal_cases():
         "injection beside it",
         edited(with_operator(INJECTION, "injection_controls", INJECTION_CONTROLS)),
         "electrode_current_injection@1 is refused: it is not qualified beside membrane trafficking",
+    )
+    yield (  # The compartments' admitted list, which runs first, refuses it before this one does.
+        "site occupancy beside it",
+        sites_beside(),
+        f"{fx.COMPARTMENTS} composes only with .*; site_occupancy@1 is not on its admitted list",
     )
     yield (
         "the bath schedule beside it",
