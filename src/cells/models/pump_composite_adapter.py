@@ -290,7 +290,10 @@ SLOT_AXES = (
     "face_slot",
 )
 SHARED_AXES = kind_registry.SHARED_AXES  # F's set: one for the contract and the lifecycle.
-KIND_ROLE_STEPS = ("roles", "axes", "presence")  # kind_lifecycle_errors' reasons, in order.
+# The slot axes whose hosts the core's presence gate reads (kind_registry.AXIS_HOST_KINDS: cells,
+# outside nodes, patches and junctions); an own axis is gated through its declared axis_hosts.
+GATED_SLOT_AXES = tuple(kind_registry.AXIS_HOST_KINDS.values())
+KIND_ROLE_STEPS = ("roles", "axes", "presence", "hosts")  # kind_lifecycle_errors' reasons.
 
 
 def bound_kind(kind, declaration):
@@ -323,9 +326,11 @@ def kind_role_table(kind):
 def kind_lifecycle_errors(kind):
     """(reason, names) for the first of KIND_ROLE_STEPS a bound kind fails beside a closer, or ()
     when the lifecycle acts on all it holds (the module comment above): the fields without a role
-    or axes, or the entity axes (kind_registry.entity_axes) that declare no presence field. A
-    presence that names a field the kind does not hold is the contract's own refusal
-    (kind_registry.presence_fields raises)."""
+    or axes; the entity axes (kind_registry.entity_axes) that declare no presence field; or the
+    entity axes whose host the core's presence gate cannot read (hosts: neither one of
+    GATED_SLOT_AXES nor an own axis with its axis_hosts declared, such as @3's channel or face
+    slots), where the gate could not close an entity (fails closed). A presence that names a field
+    the kind does not hold is the contract's own refusal (kind_registry.presence_fields raises)."""
     missing = kind_registry.missing_partition_roles(kind)
     if missing:
         return ("roles", missing)
@@ -333,11 +338,16 @@ def kind_lifecycle_errors(kind):
     undeclared = tuple(name for name, a in axes.items() if a is None)
     if undeclared:
         return ("axes", undeclared)
+    entities = kind_registry.entity_axes(kind)
     declared = kind.presence if isinstance(kind.presence, Mapping) else {}
-    lacking = tuple(axis for axis in kind_registry.entity_axes(kind) if not declared.get(axis))
+    lacking = tuple(axis for axis in entities if not declared.get(axis))
     if lacking:
         return ("presence", lacking)
     kind_registry.presence_fields(kind)  # Raises on a presence field it does not hold.
+    hosts = kind.axis_hosts if isinstance(kind.axis_hosts, Mapping) else {}
+    unhosted = tuple(axis for axis in entities if axis not in GATED_SLOT_AXES and axis not in hosts)
+    if unhosted:
+        return ("hosts", unhosted)
     return ()
 
 

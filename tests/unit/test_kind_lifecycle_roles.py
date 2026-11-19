@@ -1208,32 +1208,58 @@ def test_nothing_is_bound_without_a_field_to_compare(planted, monkeypatch):
 # The lead's rulings of 19 November 2026: presence is equal at the daughters (ruling 1 (c)), and a
 # law's mask that a declaration leaves out, bound [0], holds no entities.
 
-PRESENT = {  # Presence on the planted kind's two entity axes: bool masks, structural, fill False.
-    "planted_present": ("layout", "membrane_slot", PartitionRole("structural", False)),
-    "planted_population_present": ("layout", "channel_slot", PartitionRole("structural", False)),
-}
-PRESENCE = {"membrane_slot": ("planted_present",), "channel_slot": ("planted_population_present",)}
+PRESENT = ("layout", "membrane_slot", PartitionRole("structural", False))  # A bool mask.
+ON_PATCHES = {k: v for k, v in PLANTED_FIELDS.items() if v[1] == "membrane_slot"}
 
 
 def test_presence_is_equal_at_the_daughters():
-    """With presence declared on both its entity axes, the planted kind is admitted beside the
-    partition with no bypass (the lift), its populations present at the parent and at both
-    daughters: a population divides with its host. Planted: a parent-present population whose
-    daughter patch is declared absent is refused."""
+    """The planted kind on patches only, its presence declared there, is admitted beside the
+    partition with no bypass (the lift), present at the parent patch and at both daughters: a
+    population divides with its host. Planted: a parent-present population whose daughter patch is
+    declared absent is refused."""
     raw, division = planted_world()
     (patch,) = division["patches"]
+    raw["model"][PLANTED_KEY].pop("planted_units")
     slots = (patch["parent"], *patch["daughters"])
-    rows = [x for p in division["populations"] for x in (p["parent"], *p["daughters"])]
     raw["model"][PLANTED_KEY]["planted_present"] = dict.fromkeys(slots, True)
-    raw["model"][PLANTED_KEY]["planted_population_present"] = dict.fromkeys(rows, True)
-    kind = planted_population(dict(PLANTED_FIELDS, **PRESENT), presence=PRESENCE)
+    fields = dict(ON_PATCHES, planted_present=PRESENT)
+    kind = planted_population(fields, presence={"membrane_slot": ("planted_present",)})
     with kind_registry.scope(kf.registry(kind)):
         assert kind_registry.declaration_errors(kind) == []
         spec = parse_spec(raw)  # Admitted, no bypass.
         checked = {f[1] for f in partition.kind_role_fields(get_model(spec.model))}
-        assert set(PRESENT) <= checked
+        assert "planted_present" in checked
         raw["model"][PLANTED_KEY]["planted_present"][patch["daughters"][1]] = False
         with pytest.raises(ConfigError, match="planted_present is a presence field, so its values"):
+            parse_spec(raw)
+
+
+def test_an_entity_axis_the_presence_gate_cannot_host_is_refused():
+    """The core's presence gate reads the activity of cells, outside nodes, patches and junctions
+    (kind_registry.AXIS_HOST_KINDS) and of an own axis's declared host. A kind with entities on
+    @3's channel slots (or faces) declaring presence there could not be closed, so it is refused
+    beside a closer, fail-closed (Q2's gate met the planted kind's channel_slot as a KeyError)."""
+    raw, division = planted_world()
+    rows = [x for p in division["populations"] for x in (p["parent"], *p["daughters"])]
+    (patch,) = division["patches"]
+    raw["model"][PLANTED_KEY]["planted_present"] = dict.fromkeys(
+        (patch["parent"], *patch["daughters"]), True
+    )
+    raw["model"][PLANTED_KEY]["planted_population_present"] = dict.fromkeys(rows, True)
+    fields = dict(
+        PLANTED_FIELDS,
+        planted_present=PRESENT,
+        planted_population_present=("layout", "channel_slot", PartitionRole("structural", False)),
+    )
+    presence = {
+        "membrane_slot": ("planted_present",),
+        "channel_slot": ("planted_population_present",),
+    }
+    kind = planted_population(fields, presence=presence)
+    assert kind_registry.declaration_errors(kind) == []
+    assert pump3.kind_lifecycle_errors(kind) == ("hosts", ("channel_slot",))
+    with kind_registry.scope(kf.registry(kind)):
+        with pytest.raises(ConfigError, match=r"entity axes \(channel_slot\) have no host"):
             parse_spec(raw)
 
 
