@@ -153,14 +153,24 @@ def row_checks(
         magnitudes=magnitudes(row, p, xp=jnp),
         xp=jnp,
     )
+    # The step-doubled energy check (execution/energy_check.py; FR-18's X2, D224), a static switch
+    # read from the constants' type: under its StepDoubledConstants today's energy bound is no
+    # verdict and no margin, while the energy ledger is still evaluated, held finite and reported.
+    apply_energy = getattr(type(constants), "APPLY_ENERGY_BOUND", True)
     values, ratios = [], []
-    for value, bound in zip(b.values(), bounds, strict=True):
+    for (name, value), bound in zip(b.items(), bounds, strict=True):
         magnitude = jnp.abs(value)
-        failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
+        bounded = apply_energy or name != "energy"
+        if bounded:
+            failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
+        else:
+            failed.append(~jnp.all(jnp.isfinite(value)))
         values.append(jnp.max(magnitude, initial=0.0))
-        if margins:
+        if margins and bounded:
             ratio = jnp.where(magnitude == 0, 0.0, magnitude / bound)
             ratios.append(jnp.max(jnp.where(jnp.isnan(ratio), jnp.inf, ratio), initial=0.0))
+        elif margins:
+            ratios.append(jnp.asarray(0.0))
     values.append(jnp.abs(b["energy"]) / jnp.maximum(flows, tissue.ENERGY_ATOL_PJ))
     values.append(jnp.abs(b["global_charge"]) / bounds[charge])
     decreasing = jnp.asarray(False)

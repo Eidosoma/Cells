@@ -21,7 +21,7 @@ from cells.definitions.specs import ConfigError, SimulationSpec, digest, parse_s
 from cells.execution import blas_threads
 from cells.execution import continuity as _continuity
 from cells.execution.devices import execution_device
-from cells.execution.runner import RunResult, validate_checkpoint
+from cells.execution.runner import RunResult, validate_checkpoint, with_energy_record
 from cells.execution.state import Checkpoint, initialise
 from cells.records import run_view, source_layout
 from cells.registry.models import get_model
@@ -84,7 +84,9 @@ class Snapshot:
 
 def write_snapshot(directory: str | Path, spec: SimulationSpec, checkpoint: Checkpoint) -> Path:
     spec = parse_spec(spec.to_dict())
-    validate_checkpoint(spec, checkpoint)
+    # A step-doubled run's record travels with its checkpoint; its initial row takes its first.
+    checkpoint = with_energy_record(spec, checkpoint)
+    validate_checkpoint(spec, checkpoint, energy_check=True)
     return _write_snapshot_payload(directory, spec, checkpoint)
 
 
@@ -118,6 +120,16 @@ def _write_snapshot_payload(directory, spec, checkpoint, *, identity=None):
         "source_hashes": identity["source_hashes"],
         "state_sha256": _sha256(path / "state.npz"),
     }
+    if checkpoint.energy_check is not None:
+        # The step-doubled energy check's run-level record (execution/energy_check.py; FR-18's
+        # X2, D224): its scalars in the manifest, its counted step ratios in their own exact
+        # array. Absent without the check, so every other snapshot keeps its bytes. Added by
+        # the @3 owner at the lead's word (a recorded exception in this file).
+        np.savez(path / "energy_check.npz", counted_q=checkpoint.energy_check.counted_q)
+        manifest["energy_check"] = {
+            "record": checkpoint.energy_check.to_dict(),
+            "counted_q_sha256": _sha256(path / "energy_check.npz"),
+        }
     manifest["manifest_sha256"] = digest(manifest)
     # Written last: a partial directory without a valid manifest cannot be restored.
     _write_json(path / "manifest.json", manifest)
@@ -147,6 +159,8 @@ def load_snapshot(directory: str | Path, *, continuity=None) -> Snapshot:
         "state_sha256",
         "manifest_sha256",
     }
+    if isinstance(manifest, dict) and "energy_check" in manifest:
+        expected_fields = expected_fields | {"energy_check"}  # A step-doubled run's record.
     if not isinstance(manifest, dict) or set(manifest) != expected_fields:
         raise ConfigError("Invalid checkpoint manifest fields")
     fingerprint = manifest.pop("manifest_sha256")
@@ -205,11 +219,35 @@ def load_snapshot(directory: str | Path, *, continuity=None) -> Snapshot:
             layout = kind(*(archive[name] for name in kind._fields))
     except (ValueError, OSError, zipfile.BadZipFile) as exc:
         raise ConfigError(f"Cannot read numeric checkpoint: {exc}") from exc
-    checkpoint = Checkpoint(state, layout, **clock)
-    validate_checkpoint(spec, checkpoint, initial=initial)
+    record = _load_energy_record(path, manifest)
+    checkpoint = Checkpoint(state, layout, **clock, energy_check=record)
+    validate_checkpoint(spec, checkpoint, initial=initial, energy_check=True)
     device = execution_device(spec.execution.backend)
-    checkpoint = Checkpoint(jax.device_put(state, device), jax.device_put(layout, device), **clock)
+    checkpoint = Checkpoint(
+        jax.device_put(state, device), jax.device_put(layout, device), **clock, energy_check=record
+    )
     return Snapshot(spec, checkpoint, fingerprint, admission)
+
+
+def _load_energy_record(path, manifest):
+    """The step-doubled energy check's record of a snapshot, or None without one."""
+    if "energy_check" not in manifest:
+        return None
+    from cells.execution.energy_check import EnergyCheckRecord
+
+    entry = manifest["energy_check"]
+    if not isinstance(entry, dict) or set(entry) != {"record", "counted_q_sha256"}:
+        raise ConfigError("Invalid step-doubled energy record in the checkpoint manifest")
+    if _sha256(path / "energy_check.npz") != entry["counted_q_sha256"]:
+        raise ConfigError("Checkpoint step-doubled energy record checksum mismatch")
+    try:
+        with np.load(path / "energy_check.npz", allow_pickle=False) as archive:
+            if set(archive.files) != {"counted_q"}:
+                raise ConfigError("Invalid step-doubled energy record arrays")
+            counted = archive["counted_q"]
+    except (ValueError, OSError, zipfile.BadZipFile) as exc:
+        raise ConfigError(f"Cannot read the step-doubled energy record: {exc}") from exc
+    return EnergyCheckRecord.from_dict(entry["record"], counted)
 
 
 def write_run(

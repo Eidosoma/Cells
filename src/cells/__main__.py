@@ -243,7 +243,9 @@ def main(argv=None) -> int:
             return 0
         if args.command == "validate":
             spec = _fixed_step(load_spec(args.config))
-            grid = timeline(spec)
+            # The scalar runner's grid, which a step-doubled energy check (execution.energy_check,
+            # FR-18's X2) runs on: a recorded exception, added by the @3 owner at the lead's word.
+            grid = timeline(spec, energy_check=True)
             print(
                 json.dumps({"status": "valid", "steps": len(grid) - 1, "sha256": spec.fingerprint})
             )

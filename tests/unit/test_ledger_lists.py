@@ -8,9 +8,13 @@ device) read them from the object they are given:
   composite's own (the inner's, then its operators');
 - a planted object with one extra ledger is checked against its own bound on both paths, reports
   its own diagnostic and is refused by its name: the paths read the object, not @1's literals;
-- ledgers=None is today's call, bit for bit, host and device, on an @1 IMEX run.
+- ledgers=None is today's call, bit for bit, host and device, on an @1 IMEX run;
+- FR-18's X2 (execution/energy_check.py, D224) switches off today's energy verdict alone, on both
+  paths, by static switches (the definition's energy_check on the host, the constants' type on the
+  device), at a row whose flows are 0.
 """
 
+import dataclasses
 from types import SimpleNamespace
 
 import jax
@@ -18,7 +22,9 @@ import numpy as np
 import pytest
 
 from cells.definitions import pump_composite_spec as cs
-from cells.definitions.specs import parse_spec
+from cells.definitions.energy_check_spec import CHECK_ID, EnergyCheck
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.energy_check import StepDoubledConstants
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
 from cells.models import surface_pump, surface_pump_v2
@@ -110,7 +116,7 @@ def host(spec, history, p, *, balances, magnitudes, ledgers=None):
     )
 
 
-def device(spec, history, p, *, balances, magnitudes, limits, ledgers=None):
+def device(spec, history, p, *, balances, magnitudes, limits, ledgers=None, constants=None):
     previous = type(history)(*(np.concatenate((v[:1], v[:-1])) for v in history))
 
     def one(previous, row, p, constants, steps):
@@ -130,7 +136,8 @@ def device(spec, history, p, *, balances, magnitudes, limits, ledgers=None):
 
     checks = jax.jit(jax.vmap(one, in_axes=(0, 0, None, None, 0)))
     steps = np.arange(len(history.amount_increment))
-    constants = surface_pump.device_check_constants(spec)
+    if constants is None:
+        constants = surface_pump.device_check_constants(spec)
     failed, values = checks(previous, history, p, constants, steps)
     return np.asarray(failed), np.asarray(values)
 
@@ -187,3 +194,67 @@ def test_no_object_is_todays_call_bit_for_bit(pump_run):
     assert not failed.any()
     assert failed.tobytes() == failed_object.tobytes()
     assert values.tobytes() == values_object.tobytes()
+
+
+def test_the_step_doubled_check_switches_off_todays_energy_verdict_alone(pump_run):
+    """X2's static switches at @1's first row, where the flows F are 0 (the row at which a bound
+    rtol x F with rtol = inf would be NaN). A planted energy residual of 1e-6 pJ, 50 times today's
+    bound there, is refused by today's check on both paths. Under the switches it is evaluated and
+    reported but not refused; a non-finite one still is. Honest rows give today's diagnostics and
+    device values bit for bit. @1 cannot select X2 itself: it lacks the channel magnitudes the
+    check reads, so it is refused at parse. (About 10 s: five small device checks, no new world.)"""
+    spec, history, p = pump_run
+    x2 = dataclasses.replace(spec, energy_check=EnergyCheck(CHECK_ID, 1e-2))
+    today = surface_pump.device_check_constants(spec)
+    switched = StepDoubledConstants(today.material_atol, today.energy_rtol, np.asarray(1e-2))
+    first = type(history)(*(v[:1] for v in history))
+    row = type(history)(*(v[0] for v in history))
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    rtol = surface_pump.ENERGY_RTOL[spec.execution.solver]
+    flows, _ = surface_pump.ledger_limits(
+        row, p, tol, rtol, steps=0, magnitudes=surface_pump.pump_magnitudes(row, p, xp=np), xp=np
+    )
+    assert np.all(np.asarray(flows) == 0.0)
+    energy = 1 + surface_pump.LEDGERS.index("energy")  # After the domain check.
+
+    def planted(value, base):
+        return lambda row, p: base(row, p) | {"energy": 0.0 * base(row, p)["energy"] + value}
+
+    pumps = surface_pump.pump_magnitudes
+    with pytest.raises(NumericalError, match="accounting failed: energy"):
+        host(spec, first, p, balances=planted(1e-6, surface_pump.balances), magnitudes=pumps)
+    out = host(x2, first, p, balances=planted(1e-6, surface_pump.balances), magnitudes=pumps)
+    assert out["max_energy_balance_error_pJ"] == 1e-6
+    with pytest.raises(NumericalError, match="accounting failed: energy"):
+        host(x2, first, p, balances=planted(np.nan, surface_pump.balances), magnitudes=pumps)
+    honest = dict(balances=surface_pump.balances, magnitudes=pumps)
+    assert host(x2, history, p, **honest) == host(spec, history, p, **honest)
+    for value, constants, refused in (
+        (1e-6, today, True),
+        (1e-6, switched, False),
+        (np.nan, switched, True),
+    ):
+        failed, values = device(
+            spec,
+            first,
+            p,
+            balances=planted(value, surface_pump.device_balances),
+            magnitudes=pumps,
+            limits=surface_pump.ledger_limits,
+            constants=constants,
+        )
+        assert bool(failed[0, energy]) is refused
+        assert not np.delete(failed, energy, axis=1).any()
+    dev = dict(
+        balances=surface_pump.device_balances,
+        magnitudes=pumps,
+        limits=surface_pump.ledger_limits,
+    )
+    failed, values = device(spec, history, p, **dev)
+    failed_x2, values_x2 = device(spec, history, p, **dev, constants=switched)
+    assert not failed.any() and not failed_x2.any()
+    assert values.tobytes() == values_x2.tobytes()
+    raw = surface_pump_fixtures.definition("release", solver=imex.ARS222_ID)
+    raw["execution"]["energy_check"] = dict(check=CHECK_ID, integration_error_cap=1e-2)
+    with pytest.raises(ConfigError, match="needs a model with channel_magnitudes"):
+        parse_spec(raw)
