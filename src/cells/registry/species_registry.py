@@ -722,6 +722,34 @@ def _entity_ends(m):
     return ends
 
 
+def mode_errors(valence, form_ids, rows, declares_base_forms):
+    """§5.2's admission of one mover mode at a general closure's rows, its charge half (the
+    moieties wait for item 6's registry moieties): the reasons the mode is refused, or () when it
+    is admitted. rows are ((species, node, count), ...), resolved: each count a number per forward
+    cycle, inward-positive, at its node. valence is {species: z} over the model's rows, and
+    form_ids are every binder form's ID.
+    - A mover whose law declares no base forms (its forms is not "base") is refused by name.
+    - A row that names a binder's form is refused: a form is moved only as its base row with every
+      ligand written out, so the closure's totals, counted from the base forms, stay exact.
+    - The mode's charge, the sum of valence x count over its rows at every node, must be zero: a
+      base-form reaction that drops a ligand changes the charge (the references' C3 movers)."""
+    if not declares_base_forms:
+        return ("its law declares no base forms (forms is not \"base\"): an undeclared mover",)
+    out = []
+    as_forms = sorted({species for species, _, _ in rows if species in form_ids})
+    if as_forms:
+        out.append(f"it moves the forms {as_forms} as rows: write each as its base row and ligands")
+    unknown = sorted({species for species, _, _ in rows
+                      if species not in valence and species not in form_ids})  # fmt: skip
+    if unknown:
+        out.append(f"it moves {unknown}, which are not rows of the model")
+    if not as_forms and not unknown:
+        charge = math.fsum(valence[species] * count for species, _, count in rows)
+        if charge != 0:
+            out.append(f"its charge per cycle is {charge:+g}, not zero")
+    return tuple(out)
+
+
 def check_closure_rows(spec):
     """The movers at a node where a general binding closure holds rows (seam C, version 2;
     docs/CORE_SEAMS_DESIGN.md §19 as amended at 20:09 UTC, 18 November 2026). A declared kind
