@@ -401,6 +401,60 @@ def host_gated_pumps(p, structure, *, xp=jnp):
     )
 
 
+# Q2, the presence gate (docs/CORE_SEAMS_DESIGN.md §18 at 931b6606), in the form of B1's pump gate:
+# where a closer is declared, each kind's entity is absent where its host is closed. @3's slot axes
+# that are hosts themselves, by the host kind they index (kind_registry.AXIS_HOST_KINDS reversed).
+SLOT_AXIS_HOSTS = MappingProxyType(
+    {axis: host for host, axis in kind_registry.AXIS_HOST_KINDS.items()}
+)
+
+
+def _host_activity(host_kind, p, *, xp):
+    """[host] one host kind's activity: cells' and outside nodes' masks, and patches' and
+    junctions' through the host table (patches first, then junctions)."""
+    if host_kind == "cell":
+        return p.active
+    if host_kind == "outside_node":
+        return p.outside_active
+    hosts, m = host_table(p, xp=xp).active, p.membrane_active.size
+    return hosts[:m] if host_kind == "patch" else hosts[m:]
+
+
+def entity_activity(kind, axis, p, *, xp=jnp):
+    """[entity] each of a kind's entities' host activity on one of its entity axes: an @3 slot
+    axis is its own host (SLOT_AXIS_HOSTS); an own axis names its host kind and the layout field
+    of each entity's host index (kind.axis_hosts, AxisHost(kind, index))."""
+    if axis in SLOT_AXIS_HOSTS:
+        return _host_activity(SLOT_AXIS_HOSTS[axis], p, xp=xp)
+    host = kind.axis_hosts[axis]
+    return _host_activity(host.kind, p, xp=xp)[getattr(p, host.index)]
+
+
+def presence_gated(p, structure, *, xp=jnp):
+    """Q2 (CORE_SEAMS §18 at 931b6606): the layout the declared kinds' rates, readouts, stage
+    checks and stage terms see, each entity absent where its host is closed.
+
+    Where the structure declares a closer (padding_fill) beside declared kinds, each presence field
+    a bound kind declares (kind_registry.presence_fields, F's contract: one or more bool
+    masks per entity axis, the lead's ruling (2)) is and-ed with its entities' host activity through
+    axis_hosts and the host table, on the host and the device. Kinds already give exact zeros where
+    an entity is absent, which the binding check holds them to (_check_presence), so kind code is
+    unchanged. The kinds' state, stage reads, bookings and ledger terms see the layout as it is, so
+    a closed entity's history keeps counting. Static: in every other structure the layout is
+    returned as it is, so closer-free worlds keep their programs."""
+    if structure is None or not (structure.padding_fill and structure.kinds):
+        return p
+    gated = {}
+    for kind in _kinds(structure):
+        for axis, names in kind_registry.presence_fields(kind).items():
+            activity = entity_activity(kind, axis, p, xp=xp)
+            for name in names:
+                mask = getattr(p, name)
+                if mask.shape[-1]:  # Static: an empty mask (an undeclared law's) stays empty.
+                    gated[name] = mask & activity
+    return p._replace(**gated) if gated else p
+
+
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
 OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
 
@@ -719,7 +773,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     out_extra = scatter(extra, r.outside_rate_fmol_s, (p.membrane_outside,), xp=xp)
     outside = r.outside_rate_fmol_s + xp.where(p.reservoir, 0.0, out_extra)
     supplied = r.reservoir_supply_fmol_s - xp.where(p.reservoir, out_extra, 0.0)
-    kind_rates = _kind_rates(kinds, read, v.potential_V, control, p, xp=xp)
+    gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
+    kind_rates = _kind_rates(kinds, read, v.potential_V, control, gated, xp=xp)
     for kr in kind_rates:  # §7.4 (k), rates: into the shared inventory (rule (c)).
         cell = cell + kr.cell
         outside = outside + xp.where(p.reservoir, 0.0, kr.outside)
@@ -815,7 +870,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     if process is not None:
         valid &= process.valid
     if kinds:  # A failed stage read, a kind's domain or a stage check refuses the row.
-        valid &= read_valid & _stage_checks(kinds, read, cell, outside, p, xp=xp)
+        valid &= read_valid & _stage_checks(kinds, read, cell, outside, gated, xp=xp)
         for kr in kind_rates:
             valid &= kr.valid
     for value in _availabilities(control, kinds) if kinds else control:
@@ -1030,7 +1085,8 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     )
     outside_zero = xp.zeros_like(p.boundary_V)
     cell_rate = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
-    kind_rates = _kind_rates(kinds, read, potential, control, p, xp=xp)
+    gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
+    kind_rates = _kind_rates(kinds, read, potential, control, gated, xp=xp)
     for kr in kind_rates:  # §7.4 (k), rates: into the shared inventory (rule (c)).
         cell_rate = cell_rate + kr.cell
         inflow = inflow + kr.outside
@@ -1063,7 +1119,9 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     valid = r.valid
     if kinds:  # A failed stage read, a kind's domain or a stage check refuses the step.
         outside_rate = xp.where(p.reservoir, 0.0, inflow)
-        valid = valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, p, xp=xp)
+        valid = (
+            valid & read_valid & _stage_checks(kinds, read, cell_rate, outside_rate, gated, xp=xp)
+        )
         for kr in kind_rates:
             valid = valid & kr.valid
     if args is not None:  # The Na/K pump's domain, where its law is declared.
@@ -1396,14 +1454,11 @@ def check_definition(spec, *, structure=None):
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
     if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
-        _check_moved_rows(
-            compact,
-            structure,
-            kinds,
-            state,
-            p,
-            [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))],
-        )
+        each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
+        _check_moved_rows(compact, structure, kinds, state, p, each)
+        _check_presence(structure, kinds, state, p, each)  # Q2's contract (no program change).
+        if structure.padding_fill:  # Q2: beside a closer, an entity the gate cannot close.
+            _check_closable(kinds)
 
 
 # The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
@@ -1468,6 +1523,85 @@ def _check_moved_rows(spec, structure, kinds, state, p, controls):
                             f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
                             "admits a kind by its moved_rows)"
                         )
+
+
+def _check_closable(kinds):
+    """Q2 beside a closer: a kind whose own fields carry entities (kind_registry.entity_axes) but
+    that declares no presence cannot be closed by the presence gate, so the definition is refused
+    (F's contract: {} from presence_fields with entity axes is a refusal)."""
+    for kind in kinds:
+        axes = kind_registry.entity_axes(kind)
+        if axes and not kind_registry.presence_fields(kind):
+            raise ConfigError(
+                f"Kind {kind.kind_id} has entities on {', '.join(axes)} but declares no "
+                "presence, so a closer cannot close them (Q2's presence gate)"
+            )
+
+
+def _check_presence(structure, kinds, state, p, controls):
+    """Q2's contract (CORE_SEAMS §18 at 931b6606): a kind that declares presence fields gives
+    exactly zero rates, readouts and stage terms with every entity absent, since the presence gate
+    (presence_gated) closes an entity by making it absent. Checked on the host at binding, with no
+    program change: each such kind with every presence field false, at the initial state's stage
+    read and node potentials and at every change record's control after the routing door; any
+    nonzero value (a move, a derivative, a heat, work, stored or patch flux rate, a readout
+    column, a stage or material term) refuses the definition, naming the kind and what does not
+    vanish."""
+    declared = [(kind, kind_registry.presence_fields(kind)) for kind in kinds]
+    declared = [(kind, fields) for kind, fields in declared if fields]
+    if not declared:
+        return
+    with np.errstate(all="ignore"):
+        potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
+        for kind, fields in declared:
+            names = [name for group in fields.values() for name in group]
+            loose = [n for n in names if np.asarray(getattr(p, n)).dtype != np.bool_]
+            if loose:  # F's declaration says fill False; the gate ands, so it binds bool masks.
+                raise ConfigError(
+                    f"Kind {kind.kind_id}'s presence fields {', '.join(loose)} bind "
+                    f"{', '.join(str(np.asarray(getattr(p, n)).dtype) for n in loose)} arrays, "
+                    "not bool masks (Q2's presence gate ands them)"
+                )
+            absent = p._replace(
+                **{name: np.zeros(np.shape(getattr(p, name)), dtype=bool) for name in names}
+            )
+            read, _ = _stage_read(state, absent, kinds, xp=np)
+            found = set()
+            for control in controls:
+                routed, _ = _route(structure, kinds, read, control, absent, xp=np)
+                values = {}
+                if kind.rates is not None:
+                    kr = kind.rates(read, potentials, routed, absent, xp=np)
+                    values.update(
+                        {
+                            "rates' cell moves": kr.cell,
+                            "rates' outside moves": kr.outside,
+                            "rates' heat": kr.heat_pJ_s,
+                            "rates' work": kr.work_pJ_s,
+                            "rates' patch flux": kr.membrane_flux,
+                            "rates' stored rate": kr.stored_pJ_s,
+                        }
+                    )
+                    values.update({f"derivative of {k}": v for k, v in kr.derivatives.items()})
+                if kind.readouts is not None:
+                    columns = kind.readouts(state, read, potentials, routed, absent, xp=np)
+                    values.update({f"readout column {i}": c for i, c in enumerate(columns)})
+                for hook in ("stage_term", "material_term"):
+                    term = getattr(kind, hook)
+                    if term is not None:
+                        values[hook] = term(read, potentials, routed, absent, xp=np)
+                found |= {
+                    what
+                    for what, value in values.items()
+                    if value is not None and np.any(np.asarray(value) != 0)
+                }
+            if found:
+                raise ConfigError(
+                    f"Kind {kind.kind_id} declares presence fields "
+                    f"({', '.join(names)}), but with every entity absent its "
+                    + ", ".join(sorted(found))
+                    + " do not vanish (the presence gate closes an entity by its absence)"
+                )
 
 
 def _check_kinds_solver(spec):
@@ -1671,9 +1805,10 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     read, _ = _stage_read(state, p, kinds, xp=xp)
     control, _ = _route(structure, kinds, read, control, p, xp=xp)  # §7.4 (n); its validity is
     nodes = xp.zeros(n + p.outside_active.size)  # the stage's (explicit_rates, readouts).
+    gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
     for kind in kinds:
         if kind.stage_term is not None:
-            nodes = nodes + kind.stage_term(read, potentials, control, p, xp=xp)
+            nodes = nodes + kind.stage_term(read, potentials, control, gated, xp=xp)
     total = total + nodes[:n]
     cells = xp.max(xp.where(p.active, total / xp.where(p.active, capacitance, 1.0), 0.0))
     o = p.outside_active.size
@@ -1700,8 +1835,9 @@ def material_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     control, _ = _route(structure, kinds, read, control, p, xp=xp)  # Validity: the stage's.
     n = p.active.size
     nodes = xp.zeros(n + p.outside_active.size)
+    gated = presence_gated(p, structure, xp=xp)  # Q2 (static).
     for kind in sloped:
-        nodes = nodes + kind.material_term(read, potentials, control, p, xp=xp)
+        nodes = nodes + kind.material_term(read, potentials, control, gated, xp=xp)
     cells = xp.max(xp.where(p.active, nodes[:n], 0.0), initial=0.0)
     moving = p.outside_active & ~p.reservoir
     return xp.maximum(cells, xp.max(xp.where(moving, nodes[n:], 0.0), initial=0.0))
@@ -2575,7 +2711,14 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                     column
                     for kind in kinds
                     if kind.readouts is not None
-                    for column in kind.readouts(state, read, v.potential_V, routed, p, xp=np)
+                    for column in kind.readouts(
+                        state,
+                        read,
+                        v.potential_V,
+                        routed,
+                        presence_gated(p, structure, xp=np),
+                        xp=np,
+                    )
                 ),
             )
         )
