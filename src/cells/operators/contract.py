@@ -45,7 +45,10 @@ Declarations (class attributes):
   ``REQUIRES``) and its summary, and defines nothing else of the contract
   (``DECLARATION_MAY_DEFINE``, checked fail closed at registration): no field,
   schedule, view, factor, closure, ledger, readout, energy role, step method,
-  schedule hook or definition-check hook of its own.
+  schedule hook or definition-check hook of its own. Its ``SCOPED_READS`` may
+  only be unscoped ``reference`` reads (the bound values as data, D217): it has
+  no part to consume a view and no ``read_slots``, and a reference read
+  constrains no changer of its field.
   ``RK4`` declares a split part's behaviour under an RK4 inner step: "coupled"
   (its rates join the coupled right-hand side, which RK4 integrates unsplit) or
   "split" (exact half-steps kept around the inner RK4 step).
@@ -418,6 +421,14 @@ class Operator:
         as above)."""
         return {}
 
+    def charged_compartments(self, spec, declaration):
+        """The compartments, by their declared IDs (operators/compartments.py), into which its
+        routes move charge (host side, as above). Refusal 5 version 1.2 admits a nonzero charge
+        anchor on each, for the operators on the compartments declaration's admitted list: a world
+        whose admitted routes charge a compartment must be able to resume from its own checkpoint
+        (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.5). (): none."""
+        return ()
+
     def changed_slots(self, spec, declaration):
         """Door S, host: {field: entity indices} for each field its scoped Change covers (the union
         over the run: later doses, onsets and closures included)."""
@@ -623,6 +634,7 @@ DECLARATION_MAY_DEFINE = frozenset(
         "summary",
         "VIEW_LAYERS",
         "view_events",
+        "SCOPED_READS",  # Unscoped reference reads only (_declaration_read_errors).
     }
 )
 
@@ -650,6 +662,25 @@ def declaration_errors(operator):
         if name not in DECLARATION_MAY_DEFINE and _defined_below_operator(operator, name):
             kind = "overrides" if callable(getattr(Operator, name)) else "declares"
             errors.append(f"{kind} {name}")
+    return errors + _declaration_read_errors(operator)
+
+
+def _declaration_read_errors(operator):
+    """A declaration's SCOPED_READS (D217): each Read is a reference read, the bound value as data,
+    and unscoped, since a declaration has no part to consume a view (current) and holds no field
+    as physical through them (fixed reads are its CONFLICTS_VIEW's), and defines no read_slots."""
+    reads = operator.SCOPED_READS
+    if not isinstance(reads, Mapping):
+        return ["declares SCOPED_READS that is not a mapping of fields to Reads"]
+    errors = []
+    for field, declared in reads.items():
+        if isinstance(declared, Read) or type(declared) is not tuple:
+            declared = (declared,)  # A malformed entry is refused here, read by read.
+        for read in declared:
+            if not (isinstance(read, Read) and read.mode == "reference" and not read.scoped):
+                errors.append(
+                    f"declares a read of {field} that is not an unscoped reference read ({read!r})"
+                )
     return errors
 
 
