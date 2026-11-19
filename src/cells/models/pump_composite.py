@@ -62,7 +62,9 @@ from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.operators.contract import (
     COMMUTING,
+    HEAT_SUFFIX,
     READ_STAGES,
+    WORK_SUFFIX,
     monotone_heat,
     part_stages,
     reads_of,
@@ -732,9 +734,92 @@ def structure_errors(inner, operators):
                     f"{op.LAW_ID} multiplies {name}, a control of the kind {owners[name]}; a "
                     "kind's control is not factored (observation holds only today's schedules)"
                 )
+    errors.extend(lifecycle_errors(inner, operators))
     if sum(op.PROCESS for op in operators) > 1:
         errors.append(
             "at most one in-step membrane process (the inner hook books one combined transfer)"
+        )
+    return errors
+
+
+def kind_lifecycle_table(inner, operators):
+    """{field: (PartitionRole, axes)}: the declared kinds' state fields that a retiring operator's
+    lifecycle acts on (B1's last slice; pump_composite_adapter.lifecycle_split and
+    lifecycle_retire): those on a slot axis the partition divides or retires, of every bound kind
+    whose fields all declare roles and axes. Empty without a retiring operator or such a field, so
+    no composition admitted today (Q7 (a) refuses kinds with entity fields beside a closer) gains
+    a field."""
+    if not any(op.RETIRES for op in operators):
+        return {}
+    out = {}
+    for kind in getattr(inner, "BOUND_KINDS", ()):
+        reason = pump3.kind_lifecycle_errors(kind)
+        if reason and reason[0] in ("roles", "axes"):  # Refused by the structure check anyway.
+            continue
+        table = pump3.kind_role_table(kind)
+        for name in kind.state_fields:
+            role, axes = table[name]
+            if pump3.lifecycle_axis(name, axes) in pump3.LIFECYCLE_AXES:
+                out[name] = (role, axes)
+    return out
+
+
+def lifecycle_field_name(name, what):
+    """The composite's field for a kind field's record (what: "retired") or moved accumulator
+    ("moved"): the energy suffix dropped, as the partition's records drop it (a heat's record
+    ends in _heat_pJ, a work's in _work_energy_pJ), so no name-based sum counts it twice."""
+    for suffix, word in ((HEAT_SUFFIX, "heat_pJ"), (WORK_SUFFIX, "work_energy_pJ")):
+        if name.endswith(suffix):
+            return f"{name[: -len(suffix)]}_{what}_{word}"
+    return f"{name}_{what}"
+
+
+def lifecycle_fields(table):
+    """{kind field: the composite's field}: a record for each history field and a moved accumulator
+    for each extensive one of a lifecycle table (kind_lifecycle_table)."""
+    what = {"history": "retired", "extensive": "moved"}
+    return {
+        k: lifecycle_field_name(k, what[r.role]) for k, (r, _) in table.items() if r.role in what
+    }
+
+
+def lifecycle_errors(inner, operators):
+    """The refusals of a retiring operator beside the kinds' lifecycle fields (the lead's rulings
+    1 and 7 of 19 November 2026 on design statement 1, CORE_SEAMS §18 at 02:25 UTC): one whose
+    event map takes no lifecycle= (TAKES_LIFECYCLE) would lose the kinds' history; a per-cell
+    extensive kind field, which a division would split by the volume fraction alone, waits for a
+    charge rule; and an extensive kind field on edge slots has no contact fraction to split by
+    (the partition binds none), so it is refused here rather than when the event is traced (fails
+    closed)."""
+    table = kind_lifecycle_table(inner, operators)
+    if not table:
+        return []
+    errors = []
+    for op in operators:
+        if op.RETIRES and not op.TAKES_LIFECYCLE:
+            errors.append(
+                f"{op.LAW_ID} retires slots beside the kinds' fields {sorted(table)}, but its "
+                "event map takes no lifecycle=, so their history would be lost (fails closed)"
+            )
+    cells = sorted(
+        k
+        for k, (role, axes) in table.items()
+        if role.role == "extensive" and axes[-1] == "cell_slot"
+    )
+    if cells:
+        errors.append(
+            f"The kinds' per-cell extensive fields {cells} are refused beside a dividing closer "
+            "until a charge rule exists: a division splits them by the volume fraction alone"
+        )
+    edges = sorted(
+        k
+        for k, (role, axes) in table.items()
+        if role.role == "extensive" and axes[-1] == "edge_slot"
+    )
+    if edges:
+        errors.append(
+            f"The kinds' extensive fields on edge slots {edges} are refused beside a dividing "
+            "closer: the partition binds no contact fraction to split them by"
         )
     return errors
 
@@ -787,6 +872,8 @@ def field_map(inner, operators):
     layout = dict.fromkeys(inner.LAYOUT_TYPE._fields, "inner")
     control = dict.fromkeys(inner.CONTROL_FIELDS, "inner")
     columns = {k: ["inner"] for k in inner.OBSERVATION_FIELDS}
+    for name in lifecycle_fields(kind_lifecycle_table(inner, operators)).values():
+        state[name] = {"owner": "composite", "writers": []}  # Q6 (b)'s records and moves.
     for op in operators:
         state |= {k: {"owner": op.LAW_ID, "writers": []} for k in op.STATE_AXES}
         layout |= dict.fromkeys(op.LAYOUT_FIELDS, op.LAW_ID)
@@ -909,6 +996,20 @@ class Composition:
         self.STATE_AXES = dict(inner.STATE_AXES)
         for op in operators:
             self.STATE_AXES.update(op.STATE_AXES)
+        # B1's last slice (Q6 (b), the lead's rulings on design statement 1): beside a retiring
+        # operator, the composite owns a record for each kind history field and a moved
+        # accumulator for each extensive one, on the slot axes; none in a composition admitted
+        # today (kind_lifecycle_table).
+        self.kind_lifecycle = kind_lifecycle_table(inner, operators)
+        names = lifecycle_fields(self.kind_lifecycle)
+        self.KIND_RECORDS = {
+            k: names[k] for k, (r, _) in self.kind_lifecycle.items() if r.role == "history"
+        }
+        self.KIND_MOVED = {
+            k: names[k] for k, (r, _) in self.kind_lifecycle.items() if r.role == "extensive"
+        }
+        for field, name in (*self.KIND_RECORDS.items(), *self.KIND_MOVED.items()):
+            self.STATE_AXES[name] = list(self.kind_lifecycle[field][1])  # Records, then moves.
         self.STATE_DTYPES = {k: v for op in operators for k, v in op.STATE_DTYPES.items()}
         self.STATE_TYPE = NamedTuple("CompositeState", [(k, object) for k in self.STATE_AXES])
         # The energy-role table (v2 design §1.1): every heat and work field by declaration
@@ -1015,6 +1116,8 @@ class Composition:
             )
             values.update(owned)
             layout.update(bound)
+        for field, name in (*self.KIND_RECORDS.items(), *self.KIND_MOVED.items()):
+            values[name] = np.zeros_like(np.asarray(values[field], dtype=float))
         kind = (
             self.FLOOR_LAYOUT_TYPE if type(p) is self.inner.FLOOR_LAYOUT_TYPE else self.LAYOUT_TYPE
         )
@@ -1134,8 +1237,14 @@ class Composition:
                 keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
                 if self._passes_view(op):  # Static: S5's partition; door S's current readers.
                     keywords["view"] = self._view_for(op, p, xp=xp)
+                lifecycle = op.RETIRES and bool(self.kind_lifecycle)  # Static: Q6 (b).
+                if lifecycle:
+                    keywords["lifecycle"] = self._lifecycle
+                before = current
                 current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
+                if lifecycle:
+                    valid = _and(valid, self._history_kept(before, current, xp=xp))
         h = 0.5 * dt
         splits = tuple(op for op in self.splits if op in active)
         for op in splits:
@@ -1240,6 +1349,11 @@ class Composition:
         derivative = list(v.derivative)
         for op, (rates, _, _) in zip(self.operators, computed, strict=True):
             derivative.extend(rates[k] for k in op.STATE_AXES)
+        # The composite's own fields (Q6 (b)'s records and moves) change only at retiring events.
+        derivative.extend(
+            xp.zeros_like(getattr(state, name))
+            for name in (*self.KIND_RECORDS.values(), *self.KIND_MOVED.values())
+        )
         valid = v.valid
         for _, ok, _ in computed:
             valid = _and(valid, ok)
@@ -1406,7 +1520,37 @@ class Composition:
     def _adjusted(self, row, p, *, xp):
         for op in self.operators:
             row = op.adjust_inner(row, p, xp=xp)
+        if self.kind_lifecycle:  # Static (Q6 (b)): the records added back, the moves taken out.
+            row = row._replace(
+                **{k: getattr(row, k) + getattr(row, r) for k, r in self.KIND_RECORDS.items()},
+                **{k: getattr(row, k) - getattr(row, m) for k, m in self.KIND_MOVED.items()},
+            )
         return row
+
+    def _lifecycle(self, state, maps, masks, *, xp):
+        """(state, valid): the kinds' lifecycle fields after a retiring event's division and
+        retirement (the closer's maps and masks), by role, through the single implementation
+        (pump_composite_adapter.lifecycle_split, then lifecycle_retire), with the records and the
+        moved accumulators written. The retiring operator calls it (TAKES_LIFECYCLE)."""
+        table = self.kind_lifecycle
+        values = {k: getattr(state, k) for k in table}
+        split, valid = pump3.lifecycle_split(values, table, maps, xp=xp)
+        records = {k: (r, getattr(state, r)) for k, r in self.KIND_RECORDS.items()}
+        retired, kept = pump3.lifecycle_retire(split, table, masks, records, xp=xp)
+        moved = {
+            m: getattr(state, m) + (retired[k] - values[k]) for k, m in self.KIND_MOVED.items()
+        }
+        return state._replace(**retired, **kept, **moved), valid
+
+    def _history_kept(self, before, after, *, xp):
+        """Whether every kind history field plus its record is unchanged across a retiring event,
+        element by element and exactly (the lead's ruling 4 (b)): a history no ledger reads, such as
+        a cycle count, is then still refused if a retirement loses it."""
+        ok = xp.asarray(True)
+        for field, record in self.KIND_RECORDS.items():
+            was = getattr(before, field) + getattr(before, record)
+            ok &= xp.all(getattr(after, field) + getattr(after, record) == was)
+        return ok
 
     def _ledgers(self, state, p, *, xp, own, adjust=True):
         """The inner ledgers (declared layout) with the operators' terms, in declared
