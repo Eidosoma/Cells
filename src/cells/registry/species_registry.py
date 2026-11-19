@@ -1105,8 +1105,9 @@ def check_amount_reading_routes(spec):
         if kind.stage_read is not None and kind.stage_rows is not None:
             rows = tuple(kind.stage_rows(declaration))
         rows += tuple(getattr(declaration, "closure_rows", ()))
-        for row in rows:
-            held.setdefault((row[0], row[1]), qualified(kind_id))
+        for row in rows:  # A malformed row (not species, node[, law]) is @3's to refuse, later.
+            if isinstance(row, tuple) and len(row) in (2, 3):
+                held.setdefault((row[0], row[1]), qualified(kind_id))
     if not held:
         return
     reading = {qualified(law) for law in AMOUNT_READING_ROUTE_LAWS}
