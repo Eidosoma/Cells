@@ -1,6 +1,6 @@
 # The experiment package: one way in for every experiment the viewer plays
 
-Status: **decided by the owner on 19 November 2026, and not yet built.** The owner asked whether
+Status: **decided by the owner on 19 November 2026; round one is built (section 5, "What is built").** The owner asked whether
 the Experiments tab has a standard package format, with future use in mind, then for a draft
 with options, and accepted the recommendations of section 4 the same evening: both levels, the
 words in the package, schema files with a validator and a conformance set, a required visibility
@@ -182,6 +182,30 @@ The last column is what the owner accepted on 19 November 2026.
   driver's `index.json` and `run.json`; the run view's note moved from proposed to accepted.
 - **Not proposed here:** a database, an API for packages, a binary container, runs on request,
   or any change to a frozen evidence folder.
+
+### What is built (round one)
+
+- **The contract** of the source package and its manifest: `schema/EXPERIMENT_PACKAGE.md`, with the
+  manifest's schema file `schema/experiment_package.schema.json`. The field names are still the
+  proposals of section 3 until the engine's lead accepts them; the contract says what it settled where
+  the proposal could not work as written (a sidecar and a refusal's file are named in their arm's
+  folder; a package's `path` is the folder named as its arm).
+- **The validator**, `python3 -I tools/check_package.py FOLDER [--json]` (Python, standard library
+  only, in place of the `tools/check_package.mjs` named above): it reads a folder with a manifest, or
+  one without as the adapter reads it today, writes nothing, and exits 0 when the package can be read,
+  1 with every problem found (a code and a sentence that names the file and the field), 2 for a wrong
+  call. Beyond its own checks it reads each package by the adapter's own reading, so a package it passes
+  is one `npm run adapt:runs` reads. It judges no science.
+- **The conformance set**: small packages built by `tests/check_package.test.mjs` from the fixtures
+  under `tests/engine-views/`; each breach gives its own code. The same test holds that the schema file
+  is what the validator writes and that the contract names exactly its codes and fields.
+- **The adapter reads a manifest** where a run folder has one (`package.json`): its arms, their sidecars
+  and its refused picks, in place of `index.json`, the overlay's `sidecar` and the search of the folder.
+  A folder with a manifest is packaged to the same bytes as without one. Nothing else moved: the
+  experiment's words still come from the overlay, and no folder written so far has a manifest.
+- **How a package is checked:** run the validator on the run folder before the viewer reads it. On a
+  folder with no manifest it says so in a note and gives the manifest the folder would need, with `null`
+  where the folder does not say (its title, visibility and licence).
 
 ## 6. Open points for the engine's lead
 
