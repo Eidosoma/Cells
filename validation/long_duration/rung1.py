@@ -76,21 +76,30 @@ def control_arms():
     return arms
 
 
+def step_of(text):
+    """(step in ms as a Fraction, dt in s): 2^-k ms as 1e-3 / 2^k (the 1 ms grid's own products
+    scaled), and a whole number of ms as its decimal."""
+    q = Fraction(text)
+    if q.numerator == 1 and q.denominator > 1:
+        k = q.denominator.bit_length() - 1
+        if q.denominator != 2**k:
+            raise ValueError(f"step {text} ms is neither 2^-k ms nor a whole number of ms")
+        return q, 1e-3 / 2**k
+    if q.denominator != 1:
+        raise ValueError(f"step {text} ms is neither 2^-k ms nor a whole number of ms")
+    return q, float(f"{int(q)}e-3")
+
+
 def parse_arm(arm):
     """(world, kind, step in ms as a Fraction, dt in s, window or None, k or None)."""
     parts = arm.split("-")
     if parts[0] == "H2" and parts[1] in (*WINDOWS, "WN"):
         k = int(parts[2].removeprefix("k"))
         return "H2", "window", Fraction(1, 2**k), 1e-3 / 2**k, parts[1], k
-    if parts[0] == "H2" and parts[1] in ("full", "slow"):
-        n = int(parts[2])
-        return "H2", parts[1], Fraction(n), float(f"{n}e-3"), None, None
+    if parts[0] == "H2" and parts[1] in ("full", "slow"):  # Fallback (ii) adds full-0.5, -0.25.
+        return "H2", parts[1], *step_of(parts[2]), None, None
     if parts[0] == "W0":
-        q = Fraction(parts[1])
-        if q.numerator == 1 and q.denominator in (2, 4, 8):
-            k = q.denominator.bit_length() - 1
-            return "W0", "full", q, 1e-3 / 2**k, None, None
-        return "W0", "full", q, float(f"{int(q)}e-3"), None, None
+        return "W0", "full", *step_of(parts[1]), None, None
     raise ValueError(f"unknown arm {arm!r}")
 
 
@@ -158,12 +167,15 @@ def source():
 
 def retimed(schedule, start_ms, end_ms, step_ms, dt):
     """A piecewise-constant schedule seen from the window's start: the value in force at the start
-    at t = 0, then each later change inside the window at its re-based grid time."""
-    from validation.tissue.excitable_import import value_at
-
-    first = value_at(schedule, start_ms * 1e-3)
-    out = [dict(time=0.0, availability=first)]
-    for row in sorted(schedule, key=lambda r: r["time"]):
+    (the last change at or before it, compared in integer milliseconds) at t = 0, then each later
+    change inside the window at its re-based grid time."""
+    rows = sorted(schedule, key=lambda r: ms_of(r["time"]))
+    first = rows[0]["availability"]
+    for row in rows:
+        if ms_of(row["time"]) <= start_ms:
+            first = row["availability"]
+    out = [dict(time=0.0, availability=float(first))]
+    for row in rows:
         m = ms_of(row["time"])
         if start_ms < m <= end_ms:
             at = grid_time(m - start_ms, step_ms, dt)
