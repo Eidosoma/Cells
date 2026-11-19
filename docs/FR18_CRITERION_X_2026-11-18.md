@@ -266,3 +266,105 @@ registered `evaluate_x.py` before the run).*
 - **So (b) on the full set, and FR-8's decision, would change.** By the amendment's own terms the
   running form is not adopted. The order condition and X2's cap stay as registered, decided over
   the whole run, and the engine decides them at the run's end.
+
+## Implementation of X2 as an opt-in energy check (design before code, D142)
+
+*19 November 2026, under D224 as amended (fe365fcb). The rule is X2 as registered, with its
+whole-run conditions. Engine code waits for the @3 owner's queued landings; this section fixes the
+design first.*
+
+**Selection, in the execution spec** (`definitions/specs.py`, a recorded exception).
+- The field is `execution.energy_check = {"check": "step_doubled_energy@1", "integration_error_cap": c}`.
+  Without it, a run keeps today's check. `to_dict` omits the default.
+- Refused at parse:
+  - an unknown check;
+  - a missing, non-finite or non-positive cap (there is no default);
+  - a solver other than ARS(2,2,2);
+  - a model without the step and residual functions the wrapper calls.
+- With X2 off nothing in a program or a constant moves: crossrev is identical, and R1's parse row
+  differs by the defaulted field's text, as seam D's did.
+
+**1. The step-doubling wrapper, at the model's step function** (`execution/runner.py`, an
+exception). It is generic, so composites are covered with their operators, as `recorder_x.py`'s
+`_scan` takes them.
+- With X2 on, the discrete and window rollouts step with a wrapper around `model.checked_step`.
+  Each step is taken whole and as two half steps from the same accepted state, with the step's held
+  control.
+- On the device, the wrapper evaluates the energy residual of the full step's end and of the half
+  steps' end with `model.device_balances(·, p)["energy"]`: `surface_pump_v3`'s and the composite's,
+  each with its own adjustments.
+- The scan carries R at the last accepted row. Each step emits d_k and d''_k, with d''_k NaN (held
+  under rule 1) where the halves are refused or the step is an operator's event step. The runner
+  passes the event steps as a mask, found from the schedule's operator-record changes, as the
+  probe's `event_steps` does.
+- With X2 off, the rollouts receive `model.checked_step` itself: today's programs.
+
+**2. The run-level record, in the checkpoint** (`execution/state.py`'s `Checkpoint` and the
+checkpoint IO in `records/io.py`, exceptions).
+- `Checkpoint.energy_check` is `None` with X2 off, so today's checkpoints and their files are
+  unchanged.
+- With X2 on, it carries:
+  - R at the checkpoint's row;
+  - Σa, Σ|a| and the held steps' Σd;
+  - every counted step's q, the whole-run median's input;
+  - the out-of-band held count;
+  - the running diagnostics.
+- k is the checkpoint's `step_index`.
+- Each window's final checkpoint carries the record forward. Files store its arrays exactly, so a
+  run restarted from a checkpoint continues the same record: two segments give exactly what one
+  gives.
+- `validate_checkpoint` refuses a record whose presence disagrees with the definition, and one
+  whose R is not the checkpoint state's residual.
+
+**3. The per-row check, with host and device parity** (`models/surface_pump_checks.py`, the @3
+owner's; `execution/row_checks.py`, an exception).
+- At each accepted row k, the step's d_k and d''_k and the record give the counted and held steps,
+  q_k, a_k, C_k and floor_k, as the registration defines them. M_k = F_k + T_k + O_k, with T and O
+  formed as `recorder_x.py` forms them: a composite's from its inner state and layout, its retiring
+  rows adjusted.
+- Refused at the row:
+  - |C_k| > floor_k + κ Σ|a| (κ = 1/16);
+  - a held step with |d_j| above today's bound at its row;
+  - the cap, form B: Σ_(j≤k)|a_j| > cap · F_k + floor_k.
+
+  Held steps carry a = 0, so the cap does not see them.
+- In an X2 run today's energy bound is not applied. The energy ledger is still evaluated and
+  reported, and every other ledger is checked as today.
+- The cap, κ and the registration's constants travel in their own constants type, used only with
+  X2 on, so `CheckConstants`, crossrev's bindings and `world_key` do not move when it is off.
+- The host runs the check on each segment after the model's `check_values`. The device runs the
+  same kernel in the window row checks (`row_checks="device"`).
+- Both give the same verdicts, and their diagnostics agree within the device checks' existing
+  criteria.
+
+**4. The run-end hook** (`runner.run` and `windows.run_windowed`). After the last accepted row the
+whole-run conditions are decided from the record:
+- the median of the counted q in [3.5, 4.6] (with none counted, the run is at rounding and the
+  condition does not apply);
+- the out-of-band held count at most max(8, ⌈0.02 |Q|⌉).
+
+A run failing either is refused at its end, naming the condition. The diagnostics report the
+largest check ratio, Σ|a|/F at its largest and at the end, the median, and the counted and held
+steps.
+
+**Scope and limits.**
+- ARS(2,2,2) only. The evidence on FR-8's worlds stops at 5 ms: W0 at 1, 2 and 5 ms, and H2 at 1 ms.
+- The cost is two extra half steps and two residual evaluations per step. It is measured once on W0
+  at 1 ms, X2 on against off, on the timed lane.
+- `validation/` keeps the harness (`recorder_x.py`, `evaluate_x.py`, `recorder_fr8.py`,
+  `evaluate_x_running.py`) as the check's independent reference.
+
+**Tests (D224's cost rule).** Rows in existing parametrized files, each world-compiling one with
+its seconds stated:
+- parse refusals;
+- host and device parity in the window row-check tests;
+- the restart row, two segments against one, exactly equal;
+- one plant row, FR-3's registered plant refused.
+
+The qualification run, once against the saved verdicts, is the boundary set:
+- the three refused arms;
+- X1's four mixed worlds;
+- `W1_P4@0.001` and its protocol twin;
+- `division_quartered_values`;
+- FR-3's plant;
+- cleft_egg.
