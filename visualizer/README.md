@@ -492,9 +492,10 @@ A replay draws what a run saved, and nothing else.
   today, and the report gives the manifest it would need. Where a run folder holds
   `package.json`, `npm run adapt:runs` takes its arms, sidecars and refused picks from it, and
   packages the folder to the same bytes as without one. The manifest's names are proposals
-  until the engine's lead has read them. Not yet: the adapter does not run the check itself
-  before it packages, nothing acts on a package's visibility or licence, and the portable play
-  package is the next round.
+  until the engine's lead has read them. The adapter's own reading stays inside a run's
+  folder too: a name that leaves it, and a link, are refused. Not yet: the adapter does not
+  run the whole check itself before it packages, nothing acts on a package's visibility or
+  licence, and the portable play package is the next round.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
   one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
   Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed
