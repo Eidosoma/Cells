@@ -420,16 +420,6 @@ def _host_activity(host_kind, p, *, xp):
     return hosts[:m] if host_kind == "patch" else hosts[m:]
 
 
-def presence_fields(kind):
-    """{entity axis: (presence layout field, ...)} a kind declares: F's declaration (CORE_SEAMS
-    §18 at 931b6606, with the lead's ruling (2) of 19 November 2026: one or more bool layout
-    fields per entity axis, structural, fill False, checked in declaration_errors, such as the
-    transporter's transporter_present, transporter_neutral and transporter_proton); {} for a kind
-    that declares none. Until F's contract carries it, it is read as the kind's optional
-    `presence_fields` attribute, ((axis, (field, ...)), ...) (the lead's stand-in)."""
-    return {axis: tuple(names) for axis, names in getattr(kind, "presence_fields", None) or ()}
-
-
 def entity_activity(kind, axis, p, *, xp=jnp):
     """[entity] each of a kind's entities' host activity on one of its entity axes: an @3 slot
     axis is its own host (SLOT_AXIS_HOSTS); an own axis names its host kind and the layout field
@@ -445,7 +435,8 @@ def presence_gated(p, structure, *, xp=jnp):
     checks and stage terms see, each entity absent where its host is closed.
 
     Where the structure declares a closer (padding_fill) beside declared kinds, each presence field
-    a kind declares (presence_fields) is and-ed with its entities' host activity through
+    a bound kind declares (kind_registry.presence_fields, F's contract: one or more bool
+    masks per entity axis, the lead's ruling (2)) is and-ed with its entities' host activity through
     axis_hosts and the host table, on the host and the device. Kinds already give exact zeros where
     an entity is absent, which the binding check holds them to (_check_presence), so kind code is
     unchanged. The kinds' state, stage reads, bookings and ledger terms see the layout as it is, so
@@ -455,7 +446,7 @@ def presence_gated(p, structure, *, xp=jnp):
         return p
     gated = {}
     for kind in _kinds(structure):
-        for axis, names in presence_fields(kind).items():
+        for axis, names in kind_registry.presence_fields(kind).items():
             activity = entity_activity(kind, axis, p, xp=xp)
             for name in names:
                 mask = getattr(p, name)
@@ -1466,6 +1457,8 @@ def check_definition(spec, *, structure=None):
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
         _check_moved_rows(compact, structure, kinds, state, p, each)
         _check_presence(structure, kinds, state, p, each)  # Q2's contract (no program change).
+        if structure.padding_fill:  # Q2: beside a closer, an entity the gate cannot close.
+            _check_closable(kinds)
 
 
 # The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
@@ -1532,6 +1525,19 @@ def _check_moved_rows(spec, structure, kinds, state, p, controls):
                         )
 
 
+def _check_closable(kinds):
+    """Q2 beside a closer: a kind whose own fields carry entities (kind_registry.entity_axes) but
+    that declares no presence cannot be closed by the presence gate, so the definition is refused
+    (F's contract: {} from presence_fields with entity axes is a refusal)."""
+    for kind in kinds:
+        axes = kind_registry.entity_axes(kind)
+        if axes and not kind_registry.presence_fields(kind):
+            raise ConfigError(
+                f"Kind {kind.kind_id} has entities on {', '.join(axes)} but declares no "
+                "presence, so a closer cannot close them (Q2's presence gate)"
+            )
+
+
 def _check_presence(structure, kinds, state, p, controls):
     """Q2's contract (CORE_SEAMS §18 at 931b6606): a kind that declares presence fields gives
     exactly zero rates, readouts and stage terms with every entity absent, since the presence gate
@@ -1541,13 +1547,21 @@ def _check_presence(structure, kinds, state, p, controls):
     nonzero value (a move, a derivative, a heat, work, stored or patch flux rate, a readout
     column, a stage or material term) refuses the definition, naming the kind and what does not
     vanish."""
-    declared = [(kind, presence_fields(kind)) for kind in kinds if presence_fields(kind)]
+    declared = [(kind, kind_registry.presence_fields(kind)) for kind in kinds]
+    declared = [(kind, fields) for kind, fields in declared if fields]
     if not declared:
         return
     with np.errstate(all="ignore"):
         potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
         for kind, fields in declared:
             names = [name for group in fields.values() for name in group]
+            loose = [n for n in names if np.asarray(getattr(p, n)).dtype != np.bool_]
+            if loose:  # F's declaration says fill False; the gate ands, so it binds bool masks.
+                raise ConfigError(
+                    f"Kind {kind.kind_id}'s presence fields {', '.join(loose)} bind "
+                    f"{', '.join(str(np.asarray(getattr(p, n)).dtype) for n in loose)} arrays, "
+                    "not bool masks (Q2's presence gate ands them)"
+                )
             absent = p._replace(
                 **{name: np.zeros(np.shape(getattr(p, name)), dtype=bool) for name in names}
             )

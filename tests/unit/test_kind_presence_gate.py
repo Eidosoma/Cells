@@ -1,9 +1,9 @@
 """Q2, the presence gate (docs/CORE_SEAMS_DESIGN.md §18 at 931b6606; the lead's ruling of 19
 November 2026, the @3 owner's option (a), in the form of B1's pump gate).
 
-Each kind declares one or more presence fields per entity axis (F's contract, with the lead's
-ruling (2) of 19 November 2026; here the stand-in attribute `presence_fields`, ((entity axis,
-(layout field, ...)), ...), on a test-local Kind). Where a closer is declared, @3 ands each with its
+Each kind declares one or more presence fields per entity axis (F's contract, Kind.presence,
+{entity axis: (layout field, ...)}, read through kind_registry.presence_fields on the bound kind;
+the lead's ruling (2) of 19 November 2026). Where a closer is declared, @3 ands each with its
 entities' host activity, through axis_hosts and the host table, before every rates, readouts and
 stage-term call (surface_pump_v3.presence_gated), and binding holds every presence-declaring kind to
 exact zeros with every entity absent (_check_presence). The plant is the real kind:
@@ -30,22 +30,23 @@ from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from tests.unit.test_transporter_kind import held_world, scoped
 
-ALONE = (("membrane_slot", ("transporter_present",)),)
-ALL_THREE = (
-    ("membrane_slot", ("transporter_present", "transporter_neutral", "transporter_proton")),
-)
-
-
-@dataclasses.dataclass(frozen=True, eq=False)
-class PresenceKind(kind_registry.Kind):
-    """A kind with the stand-in for F's presence declaration."""
-
-    presence_fields: tuple = ()  # ((entity axis, (presence layout field, ...)), ...)
+ALONE = {"membrane_slot": ("transporter_present",)}
+ALL_THREE = {"membrane_slot": ("transporter_present", "transporter_neutral", "transporter_proton")}
 
 
 def with_presence(kind, presence):
-    fields = {f.name: getattr(kind, f.name) for f in dataclasses.fields(kind_registry.Kind)}
-    return PresenceKind(**fields, presence_fields=presence)
+    """The kind with `presence`, {axis: (field, ...)}, and what F's declaration_errors asks of each
+    named field: its axes in field_axes and its role, structural with fill False."""
+    names = [name for group in presence.values() for name in group]
+    return dataclasses.replace(
+        kind,
+        presence=presence,
+        field_axes={**kind.field_axes, **{name: ("membrane_slot",) for name in names}},
+        partition_roles={
+            **kind.partition_roles,
+            **{name: kind_registry.PartitionRole("structural", False) for name in names},
+        },
+    )
 
 
 DECLARED = with_presence(transporter.TRANSPORTER, ALL_THREE)  # The built-in, all three masks.
@@ -143,3 +144,24 @@ def test_the_contract_refuses_the_transporter_declaring_its_presence_alone():
     assert "rates' heat" in message and "rates' work" in message
     with scoped(DECLARED):  # All three of its masks: admitted, with no change to its code.
         parse_spec(held_world())
+
+
+def test_a_presence_field_that_binds_no_bool_mask_is_refused():
+    # Plant: F's declaration says fill False and no dtype; the gate ands, so binding refuses a
+    # presence field whose array is not bool (the capacity, float).
+    loose = {"membrane_slot": (*ALL_THREE["membrane_slot"], "transporter_capacity_fmol_s")}
+    with scoped(with_presence(transporter.TRANSPORTER, loose)):
+        with pytest.raises(ConfigError, match="transporter_capacity_fmol_s bind float64 arrays"):
+            parse_spec(held_world())
+
+
+def test_beside_a_closer_a_kind_with_entities_and_no_presence_is_refused():
+    with scoped(transporter.TRANSPORTER):  # The built-in as it stands: no presence.
+        spec = parse_spec(held_world())
+        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
+        with pytest.raises(ConfigError, match="has entities on membrane_slot but declares no"):
+            surface_pump_v3.check_definition(spec, structure=closed)
+    with scoped(DECLARED):  # Declaring its three masks, it is admitted beside the closer.
+        spec = parse_spec(held_world())
+        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
+        surface_pump_v3.check_definition(spec, structure=closed)
