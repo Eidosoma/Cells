@@ -2,16 +2,19 @@
 
 docs/SHARED_INVENTORY_REACTIONS_DESIGN.md (accepted 14 November 2026; rulings in §9). One reaction
 network per composition, a split part (Strang halves) around @3's step. Every reaction is local: it
-acts within one node, a cell or a finite outside node, on @3's neutral species rows, which @3 owns.
-The operator writes those rows in place and books its writes in its own accumulators, as D150's
-operators do (§1.1): no second inventory, no @3 route accumulator, no membrane-process hook.
+acts within one node, a cell or a finite outside node, on @3's species rows, which @3 owns
+(neutral ones, and charged ones under FR-15 S1). The operator writes those rows in place and books
+its writes in its own accumulators, as D150's operators do (§1.1): no second inventory, no @3 route
+accumulator, no membrane-process hook.
 
-Declaration (§2.1): `standard_concentration_mM` (c0 > 0); `species`, each a neutral species of the
-inner model with `moieties` (integer counts; null: the species is its own moiety), `standard_mu_RT`
-(mu°/RT at c0) and D150's identity (`catalogue`, `evidence`; species_common.parse_species, which
-also refuses charged species and species with a membrane, junction or channel route); `reactions`,
-each with `sites` ({"cells": [...] or "all", "outside": [...] or "all"}: cells and finite outside
-nodes), integer `reactants` and `products`, a `law` with its parameters, and `factors`. Every
+Declaration (§2.1): `standard_concentration_mM` (c0 > 0); `species`, each a species of the inner
+model with `moieties` (integer counts; null: the species is its own moiety), `standard_mu_RT`
+(mu°/RT at c0), D150's identity (`catalogue`, `evidence`; species_common.parse_species, which
+refuses a species with a membrane, junction or channel route of @3's) and, optionally,
+`counter_ion` (FR-15 S1: a charged row that keeps @3's routes where @3's explicit-rate bound
+covers it, species_common.check_counter_ion); `reactions`, each with `sites` ({"cells": [...] or
+"all", "outside": [...] or "all"}: cells and finite outside nodes), integer `reactants` and
+`products`, a `law` with its parameters, and `factors`. Every
 species a reaction names (reactant, product, catalyst, factor) is listed. A route is one reaction
 at one site.
 
@@ -36,8 +39,16 @@ and bound per world as layout arrays, never closed-over constants (§2.3); the s
 
 Material (§3.1): integer coefficients; a reaction that conserves every declared moiety is closed,
 checked in integers; any other must be a pure source (every nu >= 0) or a pure sink (every nu <= 0),
-or it is refused, as is one that changes no species. Neutral species only, so every charge term the
-operator touches is an exact zero (§3.2).
+or it is refused, as is one that changes no species. Charged species (FR-15 S1, 19 November
+2026): every reaction conserves charge, sum nu z = 0 in integers, so a source or sink of a
+charged species carries its counter-ions. In exact arithmetic every node's charge is then
+unchanged and the z F phi terms of the booked rows cancel; in floating point each written row's
+stored increment rounds once per half-step, so a node's charge moves by at most
+(eps/2) F sum_s |z_s| (|d_s'| + |dn_s|) per half-step, d' the row's increment after the update,
+plus the rounding of each nu dxi. The capacitor ledger allows the stored increments' rounding,
+COMPONENT_STEP_ROUNDING (2.5) eps x steps x sum |z F d|, beside @3's own; the operator's two
+half-steps take at most 2 eps of it per step in the worst case, and the measured runs use about
+1e-4 of the allowance (surface_field's note) (§3.2). Neutral rows are as before.
 
 The half-step (§4.2, Appendix A): SSPRK(3,3) in Butcher form at one sub-step, h = dt/2, per node
 on the combined node axis (cells, then outside nodes): Y1 = n, Y2 = n + h nu J(Y1), Y3 = n + h nu
@@ -231,6 +242,9 @@ class ReactingSpecies:
     identity: common.SpeciesIdentity
     moieties: tuple | None  # ((moiety, count), ...) as declared; None: its own moiety.
     standard_mu_RT: float
+    # FR-15 S1: a charged row that carries a reaction's charge balance and keeps @3's own routes,
+    # admitted where @3's explicit-rate bound covers it (species_common.check_counter_ion).
+    counter_ion: bool = False
 
 
 @dataclass(frozen=True)
@@ -316,18 +330,28 @@ def moiety_counts(species):
 def _species(raw, base):
     if type(raw) is not list or not raw:
         raise ConfigError(f"{LAW_ID} declares the species its network names in a non-empty list")
-    identities = []
+    identities, counter_ions = [], set()
     for entry in raw:
-        _fields(
-            entry, {"id", "moieties", "standard_mu_RT", "catalogue", "evidence"}, "reacting species"
-        )
+        keys = {"id", "moieties", "standard_mu_RT", "catalogue", "evidence"}
+        if isinstance(entry, dict) and "counter_ion" in entry:
+            keys.add("counter_ion")  # Optional (FR-15 S1); absent, a row as before.
+        _fields(entry, keys, "reacting species")
         identities.append({k: entry[k] for k in ("id", "catalogue", "evidence")})
-    parsed = common.parse_species(identities, base, LAW_ID)  # Neutral, impermeant, identity.
+        flag = entry.get("counter_ion", False)
+        if type(flag) is not bool:
+            raise ConfigError(f"{LAW_ID}: species {entry['id']!r}'s counter_ion is true or false")
+        if flag:
+            counter_ions.add(identifier(entry["id"]))
+    # Charged rows admitted (FR-15 S1), each impermeant on @3's routes unless a covered counter-ion.
+    parsed = common.parse_species(
+        identities, base, LAW_ID, charged=True, counter_ions=frozenset(counter_ions)
+    )
     return tuple(
         ReactingSpecies(
             identity,
             _moieties(entry["moieties"], identity.id),
             _number(entry["standard_mu_RT"], f"species {identity.id}'s standard_mu_RT"),
+            identity.id in counter_ions,
         )
         for entry, identity in zip(raw, parsed, strict=True)
     )
@@ -429,8 +453,9 @@ def _factors(raw, listed, name, law):
     return tuple(out)
 
 
-def _kind(reactants, products, species, name):
-    """closed, source or sink (§3.1), in integer arithmetic; refused otherwise."""
+def _kind(reactants, products, species, name, valence):
+    """closed, source or sink (§3.1), in integer arithmetic; refused otherwise. Every reaction
+    conserves charge, sum nu z = 0, in integers (FR-15 S1; valence: {species: z})."""
     nu = {s.identity.id: 0 for s in species}
     for s, count in reactants:
         nu[s] -= count
@@ -438,6 +463,13 @@ def _kind(reactants, products, species, name):
         nu[s] += count
     if not any(nu.values()):
         raise ConfigError(f"{LAW_ID}: reaction {name} changes no species")
+    charge = sum(int(valence[s]) * v for s, v in nu.items())
+    if charge:
+        raise ConfigError(
+            f"{LAW_ID}: reaction {name} changes the net charge by sum(nu z) = {charge}: every "
+            "reaction conserves charge, so a source or sink of a charged species carries its "
+            "counter-ions (FR-15)"
+        )
     moieties = {}
     for s in species:
         for moiety, count in moiety_counts(s).items():
@@ -490,7 +522,8 @@ def _reaction(raw, base, species):
     reactants = _side(raw["reactants"], listed, name, "reactants")
     products = _side(raw["products"], listed, name, "products")
     factors = _factors(raw["factors"], listed, name, law)
-    kind = _kind(reactants, products, species, name)
+    valence = dict(zip(base.model.species_ids, base.model.valence, strict=True))
+    kind = _kind(reactants, products, species, name, valence)
     alpha, beta = sum(c for _, c in reactants), sum(c for _, c in products)
     catalyst, saturation = None, None
     if law == PASSIVE_LAW:
@@ -572,6 +605,7 @@ def reactions_to_dict(declaration):
             if s.identity.catalogue is None
             else dict(catalogue=s.identity.catalogue[0], entry=s.identity.catalogue[1]),
             evidence=s.identity.evidence,
+            **({"counter_ion": True} if s.counter_ion else {}),  # Absent as before (FR-15 S1).
         )
         for s in declaration.species
     ]
