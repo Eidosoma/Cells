@@ -127,6 +127,11 @@ when they reached main, a2af3899).
   division world's cells as points or spheres), and the writer checks it against the definition:
   known sets, one entry per declared entity, units stated. Static geometry is written inline in
   version 1.
+- **A heat record's `monotone` claim reads its field's declared energy role** (seam D, CORE_SEAMS
+  §6.1): heat and monotone, by a kind's `energy_roles` or an operator's `ENERGY_ROLES`, else
+  today's rule, a `*_dissipated_energy_pJ` name. A heat declared non-monotone claims nothing, as
+  the dissipation check then leaves it alone; a stored field is a level and claims nothing. Every
+  record of today's keeps its claim, since every declaration so far follows the suffix.
 - **Refusals,** with nothing written: a named array missing from its file; a shape that disagrees
   with its axes and sets; an axis with no set; an id that is not the definition's; geometry for an
   unknown set, with the wrong count, or without its unit or representation; a record without a

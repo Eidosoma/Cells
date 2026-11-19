@@ -1,0 +1,132 @@
+{
+  "registration": "fr8-stage0-20261118",
+  "text": "REGISTRATION_20261118.md",
+  "written_utc": "2026-11-18T20:34Z",
+  "branch": "fr8-stage0",
+  "base": "a15f443a",
+  "status": "registered before any measurement; amendments are dated additions in the text's section 10",
+  "outputs": "/mnt/workspaces/Cells/fr8-stage0-20261118",
+  "engine_models": [
+    "resolved_pump_tissue@3",
+    "resolved_pump_tissue@1",
+    "resolved_pump_composite@1",
+    "scheduled_species_turnover@1",
+    "species_regulated_availability@1",
+    "stationary_continuation_analysis@1"
+  ],
+  "benchmarks": {
+    "parity_caps": {"voltage_V": 2e-05, "relative_concentration": 0.0002},
+    "d1_slowest_modes_s": [0.26, 189.0, 16661.0],
+    "heredity_step_spectra_per_s": {
+      "H": {"slow": [0.00018181818181818182, 0.0045662100456621], "fast": ["-3.87+-0.78i", -140.0, -1159.0, -6804.0]},
+      "D": {"slow": [9.009009009009009e-05, 0.0047169811320754715], "fast": [-3.40, -11.2, "-430+-8.6i", -2891.0]}
+    },
+    "operators_share": {"d150_note_4.4": 0.03, "pump_composite_v2_3": [0.13, 0.40], "replacement_b13_ms": [1.5, 6.0, 7.0]},
+    "n1_gain_bound": [1.03, 1.4],
+    "one_core_step_ms": {"14": 1.72, "254": 7.68, "825": 75.7},
+    "cpu_hours_per_simulated_hour_sheet7": 1.7
+  },
+  "worlds": {
+    "S7a": "validation.tissue.pump_water_fixtures.gated_sheet(dt=1e-3, end_time=1.0)",
+    "S7b": "validation.tissue.cell_replacement_fixtures.heredity_sheet(radius=1, disc=0, scale=0.6, dt=1e-3, end_time=0.1)",
+    "S127": "validation.tissue.cell_replacement_fixtures.heredity_sheet(6, 3, scale=0.3, dt=1e-3, end_time=0.1)",
+    "T825": "validation.tissue.pump_water_fixtures.scale_world(dt=1e-3, end_time=0.01)",
+    "D1": "validation.stationary.worlds.default_world_cell()",
+    "H2": "validation.tissue.projective_study.case_cue3 at end 3600 s, execution.projective removed",
+    "W0": "regulated_availability_fixtures composition of the text's section 1.1"
+  },
+  "w0": {
+    "regulator": "R",
+    "regulator_anchor_mM": 0.001,
+    "clearance_per_s": 0.0033333333333333335,
+    "state": {"id": "s", "cells": ["cell_0", "cell_3"], "input": ["hill_activation", "Na", 12.0, 2.0],
+              "on_rate_per_s": 0.016666666666666666, "off_rate_per_s": 0.016666666666666666,
+              "initial": {"cell_0": 0.2, "cell_3": 0.2}, "crossing_level": 0.5},
+    "c_r": {"control": "junction", "ids": ["junction_0"], "species": "R", "law": "hill_inhibition",
+            "half_saturation_mM": 0.001, "hill_coefficient": 1.0, "side": "first", "basal": 0.0},
+    "c_s": {"control": "junction", "ids": ["junction_0"], "state": "s", "law": "state_complement",
+            "side": "both", "basal": 0.25},
+    "dose_factor": 2.0,
+    "write": {"state": "s", "cell": "cell_3", "value": 0.9},
+    "channel_step": {"channel": "kir_0", "from": 1.0, "to": 0.9},
+    "bookings": ["explicit_tableau", "trapezoid_nonnegative@1"]
+  },
+  "m1": {
+    "worlds": ["S7a", "S7b", "S127", "T825", "H2", "W0"],
+    "explicit_step_bound": 1.0,
+    "gate_step_bound": 0.125,
+    "admit_factor": 0.999,
+    "refuse_factor": 1.001,
+    "terms_today_definition": ["F", "J", "M", "N", "Z", "Ca", "K", "G"],
+    "terms_today_runtime": ["Mc", "Kc"],
+    "terms_reported_for_n2": ["Cm"],
+    "n2_removed": ["J", "M", "Mc"],
+    "n2_primary": {"Z": "removed", "N": "stays"},
+    "n2_alternative": {"Z": "stays", "N": "removed"},
+    "n2_stays": ["F", "Ca", "K", "Kc", "G", "Cm", "operators"],
+    "illustrative_cuts": [10, 100],
+    "e07_gate_rate_per_s_by_formula": 24.126230442785882,
+    "e07_gate_dt_max_s_by_formula": 0.005181082900473453
+  },
+  "m2": {
+    "worlds": ["D1", "S7b", "S7a"],
+    "mode": "slow",
+    "formulation": "rhs",
+    "globalization": "auto",
+    "fast_match_relative": 0.1,
+    "separation_max": 0.1,
+    "reading_factor": 100
+  },
+  "harness": {
+    "end_s": 3600.0,
+    "cue_s": [1800.0, 1800.3],
+    "observation_grids_s": [[0.0, 3600.0, 10.0], [1799.99, 1802.0, 0.001], [1802.0, 1830.0, 0.01], [1830.0, 1900.0, 1.0]],
+    "arms_dt_s": {"R1": 0.001, "R2": 0.0005, "R3": 0.00025},
+    "r3_cpu_hours_max": 6.0,
+    "window_steps": 2048,
+    "row_checks": "device",
+    "budgets": {
+      "voltage_V": 2e-06,
+      "relative_concentration": 2e-05,
+      "gate": 1e-05,
+      "peak_response_relative": 0.001,
+      "crossing_time_s": 0.0005,
+      "crossing_level_V": -0.05,
+      "recovery_deltas_V": [0.001, 0.0001],
+      "recovery_through_s": 1830.0,
+      "history_relative": 2e-05,
+      "history_floors": {"amount_fmol": 1e-10, "energy_pJ": 2e-08, "charge_C": 3e-25}
+    },
+    "order_window": [1.5, 2.5]
+  },
+  "m3": {
+    "window_steps": 2048,
+    "window_repeats": 7,
+    "call_repeats": 30,
+    "iqr_over_median_max": 0.10,
+    "timed_cpus": [4, 5, 20, 21],
+    "timed_lock": "/mnt/workspaces/Cells/locks/timed-cores-4-5.lock"
+  },
+  "m4": {
+    "dt_s": 0.001,
+    "end_s": 180.0,
+    "t0_s": 60.0,
+    "readout_window_s": [-1.0, 120.0],
+    "thresholds": [[0.01, 0.01], [0.001, 0.001], [0.0001, 0.0001], [1e-05, 1e-05]],
+    "hold_s": 10.0,
+    "not_settled_after_s": 110.0,
+    "residual_transient_V": 2e-06,
+    "arms": ["A0", "A1", "A2", "A3"]
+  },
+  "m5": {
+    "dts_s": [0.001, 0.002, 0.005, 0.01],
+    "bookings": ["explicit_tableau", "trapezoid_nonnegative@1"],
+    "end_s": 60.0,
+    "dose_s": 20.0,
+    "write_s": 40.0,
+    "observe_every_s": 1.0,
+    "energy_rtol_ars222": 0.002,
+    "energy_atol_pJ": 2e-08,
+    "predicted_definition_refusal": {"dt_s": 0.01, "check": "junction-gate bound at the latest; the first refusing check is the result", "dt_times_rate": 0.24126230442785882}
+  }
+}

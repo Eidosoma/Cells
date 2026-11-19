@@ -3250,7 +3250,8 @@ def main(argv=None):
                 disc = "" if "first_equals_disc" not in notes else f" ({'exactly the disc' if notes['first_equals_disc'] else 'NOT the disc'})"
                 checked = f"; D counts equal the run's own at {notes['counts_checked']} records" if notes.get("counts_checked") else ""
                 print(f"  cells above the D mark: {notes['above_mark_first']} at the first record{disc}, {notes['above_mark_last']} at the last{checked}")
-        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary", "sidecar")}
+        # How the runs' parts are published (parts_together) is the export's to read from the overlay, not the catalogue's.
+        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary", "sidecar", "parts_together")}
         # An experiment whose summary lists arms with a parameter and readouts: its sweeps, for the chart (a file's name in its evidence folder, never a path).
         if isinstance(entry.get("summary"), str):
             if "/" in entry["summary"] or entry["summary"].startswith("."):

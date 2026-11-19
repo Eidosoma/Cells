@@ -16,8 +16,8 @@
 // say crossed a border between two records; the picture then states what one bead stands
 // for and at what speed the replay runs (rule 3). The playhead is the replay's one clock:
 // the beads keep its time, stand while it is paused, and are slowed or made faster with it
-// from the timeline. A run whose numbers are invented says "Example:
-// invented numbers" on the picture for as long as it shows (rule 6).
+// from the timeline. A run whose numbers are invented says so ("Invented numbers · no run of
+// Cells' engine", the run's own words) on the picture for as long as it shows (rule 6).
 //
 // It shows what the run saved. Every step is a saved record and nothing is interpolated;
 // a record the run does not count as valid is drawn grey, never as data. The class shown
@@ -53,6 +53,9 @@ const LAYERS = "layers:shown"; // the panel that says what the layers show and w
 const BLOOM = { quiet: 0.6, bold: 1 }; // how strongly what flows shines, where the stage has a finishing pass for it
 const smooth = (t) => t * t * (3 - 2 * t);
 
+// How many opened runs the view keeps, the one drawn among them (ReplayLens.keep).
+export const KEPT_RUNS = 4;
+
 export class ReplayLens {
   constructor(stage, model, labels) {
     this.id = "experiments";
@@ -62,7 +65,7 @@ export class ReplayLens {
     this.catalogue = new Catalogue(model.raw.replays);
     this.player = new Player();
     this.root = new THREE.Group();
-    this.loaded = new Map(); // run id -> Run
+    this.loaded = new Map(); // run id -> Run: the few shown last, the least recently shown first (keep)
     this.run = null;
     this.runId = this.catalogue.firstListed();
     this.recordId = "vm";
@@ -112,13 +115,16 @@ export class ReplayLens {
       this.stage.invalidate();
       this.numbersMoved();
     });
-    this.ready = this.runId ? this.show(this.runId) : Promise.resolve();
+    // The opening run is asked for a moment later, once the page has read its address: where that has asked for a run of
+    // the catalogue (`run=`), only that one is fetched. (Until 18 November 2026 the opening run was fetched too, and dropped.)
+    this.ready = Promise.resolve().then(() => (this.token ? this.pending?.promise : this.runId ? this.show(this.runId) : undefined));
   }
 
   // ------------------------------------------------------------ loading a run
 
   /** Show a run of the catalogue. Resolves when it is drawn, or when it has failed to load. */
   show(id) {
+    this.rested = false;
     if (this.pending?.id === id) return this.pending.promise; // already on its way
     const promise = this.load(id);
     this.pending = { id, promise };
@@ -136,6 +142,7 @@ export class ReplayLens {
     this.error = null;
     this.player.pause();
     if (this.loaded.has(id)) {
+      this.keep(id, this.loaded.get(id));
       this.open(this.loaded.get(id));
       await this.settling;
       return;
@@ -145,7 +152,7 @@ export class ReplayLens {
     this.onChrome?.();
     try {
       const run = await loadRun(entry);
-      this.loaded.set(id, run);
+      this.keep(id, run);
       if (token !== this.token) return; // another run was asked for meanwhile
       this.loading = false;
       this.open(run);
@@ -159,6 +166,20 @@ export class ReplayLens {
       this.onChrome?.();
       this.onPanel?.();
       this.stage.invalidate();
+    }
+  }
+
+  /**
+   * Keep a run opened, as the last shown: a few are kept (KEPT_RUNS), so that going back to one needs no fetch, and the
+   * least recently shown beyond them is let go, never the run drawn or the one asked for. A run let go is fetched again
+   * when it is shown again.
+   */
+  keep(id, run) {
+    this.loaded.delete(id);
+    this.loaded.set(id, run);
+    for (const old of [...this.loaded.keys()]) {
+      if (this.loaded.size <= KEPT_RUNS) break;
+      if (old !== id && old !== this.runId && old !== this.run?.id) this.loaded.delete(old);
     }
   }
 
@@ -1129,13 +1150,14 @@ export class ReplayLens {
         text: experiment.plain || "",
         // What the experiment found, in the record's words, so one run is not read as the whole result.
         outcome: this.catalogue.outcomeOf(experiment),
-        // With runs of several experiments, the card also picks the experiment.
-        experiments: this.catalogue.listRows(this.runId),
+        // The experiment shown, for its parts' doors, and what it is: a development run, or a sheet of invented numbers.
+        // (Until 18 November 2026 the card also listed the page's experiments: the tab's landing is the list now.)
+        experiment: entry?.experiment ?? null,
+        example: Boolean(experiment.example),
+        development: Boolean(experiment.development),
         runs: this.catalogue.runs
           .filter((item) => item.experiment === entry?.experiment)
           .map((item) => ({ id: item.id, title: item.arm, sub: item.seed === null || item.seed === undefined ? "" : `seed ${item.seed}`, klass: this.catalogue.classOf(item)?.label || "", early: this.catalogue.endOf(item).early, active: item.id === this.runId })),
-        // The page's other examples, listed with the experiments: each opens a view of its own (its entry's id).
-        doors: this.catalogue.doors.map((door) => door.entry),
         // Where the experiment's summary lists arms with a parameter and readouts: its sweeps, for a small chart (replay/sweep.js).
         sweeps: sweepsOf(experiment, this.catalogue.runs.map((item) => item.id), this.runId),
         // Where its runs state one quantity in other units, the experiment's own line saying so.
@@ -1279,9 +1301,22 @@ export class ReplayLens {
     return [this.root];
   }
 
+  /**
+   * Left for the tab's landing: the run's drawing is let go (its meshes and their buffers), while the runs kept (keep) stay,
+   * so that coming back to one fetches nothing. The run asked for last is drawn again when the view is shown again.
+   */
+  rest() {
+    if (this.active || this.rested) return;
+    this.player.pause();
+    this.clear();
+    this.rested = true;
+  }
+
   activate() {
     const { stage } = this;
     this.active = true;
+    // Back from the landing: the run shown last is drawn again, unless another is asked for at once (the landing's card).
+    if (this.rested) queueMicrotask(() => this.rested && this.active && this.runId && this.show(this.runId));
     stage.scene.add(this.root);
     stage.sun.castShadow = false;
     this.tags = null;

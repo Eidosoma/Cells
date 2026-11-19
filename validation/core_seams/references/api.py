@@ -89,42 +89,175 @@ def cycle_state(law, population, registry, host_state, volumes_pL, with_slopes=T
     return _f(out)
 
 
+def _rate_rel(law: dict) -> Decimal:
+    """A rate's relative rounding: k0 × Π a^order × exp(ζ ψ), one rounding per factor and power."""
+    worst = 0
+    for e in law["edges"]:
+        for side in ("fwd", "bwd"):
+            worst = max(worst, sum(abs(int(o)) for _s, _e, o in e[side].get("orders", [])))
+    return (worst + 4) * exact.U_DEC
+
+
 def method_agreement(law, population, registry, host_state) -> dict:
-    """The diagram's two routes and the edge-cycle consistency at one state (relative)."""
+    """The diagram's two routes and the edge-cycle consistency at one state, each compared
+    absolutely, |x − y| ≤ 10 τ, with τ built from the routes' term sums (amendment F4):
+    - j± by trees and by minors: trees sums positive products, and its relative rounding is
+      (states − 1) rate roundings plus one per term; minors take det_running's bound, and the
+      scale is max(|x|, |y|), so a route that drops to zero is caught;
+    - the occupancies by trees and by the master equation's solve (solve_running's bound);
+    - each edge's net flux against its cycles' signed net fluxes: the one-way edge fluxes' and
+      the cycles' one-way fluxes' sums.
+    No pair is skipped. Zero cases (both routes exactly 0) are counted."""
     ls = C.law_state(population, host_state)
+    u = exact.U_DEC
     with context():
         rates = D.edge_rates(law, ls, registry)
         a = D.cycle_fluxes(law, rates, "trees")
         b = D.cycle_fluxes(law, rates, "minors")
         p = D.steady_state(law, rates)
-        worst_j = Decimal(0)
+        n = len(law["states"])
+        ends = {e["id"]: (int(e["from"]), int(e["to"])) for e in law["edges"]}
+        n_trees = len(D.spanning_trees(n, [e["id"] for e in law["edges"]], ends))
+        ra = _rate_rel(law)
+        rel_sum = (n - 1) * ra + (n_trees + 2) * u          # a positive sum of tree products
+        L = D.out_laplacian(law, rates)
+        deg = [sum(1 for e in law["edges"] if int(e["from"]) == i or int(e["to"]) == i)
+               for i in range(n)]
+        E0 = [[(ra + deg[i] * u) * abs(L[i][j]) if i == j else (ra + 2 * u) * abs(L[i][j])
+               for j in range(n)] for i in range(n)]
+        minors_rel = []
+        for i in range(n):
+            keep = [k for k in range(n) if k != i]
+            d, e = exact.det_running([[L[r][c] for c in keep] for r in keep],
+                                     [[E0[r][c] for c in keep] for r in keep])
+            minors_rel.append(e / abs(d) if d != 0 else Decimal(1))
+        rel_total_minors = max(minors_rel) + n * u
+        jrows, worst_j, zeros_j, fails = [], Decimal(0), 0, []
         for c in law["cycles"]:
-            for k in ("j_plus", "j_minus"):
-                x, y = a[c["id"]][k], b[c["id"]][k]
-                if x != 0:
-                    worst_j = max(worst_j, abs(x - y) / abs(x))
-        worst_p = max(abs(x - y) for x, y in zip(a["_p"], p, strict=True))
-        cons = D.hill_consistency(law, rates, a, p)
-        return {"trees_vs_minors_rel": fl(worst_j), "occupancy_trees_vs_solve_abs": fl(worst_p),
-                "edge_cycle_consistency_rel": fl(cons)}
+            on = D.cycle_states(law, c)
+            keep = [k for k in range(n) if k not in on]
+            if keep:
+                d, e = exact.det_running([[L[r][cc] for cc in keep] for r in keep],
+                                         [[E0[r][cc] for cc in keep] for r in keep])
+                rel_k_min = e / abs(d) if d != 0 else Decimal(1)
+            else:
+                rel_k_min = Decimal(0)
+            k_len = len(c["edges"])
+            rel_pi = k_len * (ra + u)
+            rel_trees = rel_pi + 2 * rel_sum + 2 * u
+            rel_minors = rel_pi + rel_k_min + rel_total_minors + 2 * u
+            for key in ("j_plus", "j_minus"):
+                x, y = a[c["id"]][key], b[c["id"]][key]
+                tau = (rel_trees + rel_minors) * max(abs(x), abs(y))
+                if x == 0 and y == 0:
+                    zeros_j += 1
+                elif tau > 0:
+                    worst_j = max(worst_j, abs(x - y) / tau)
+                if not exact.within(x, y, tau):
+                    fails.append(f"{c['id']}.{key}")
+                jrows.append(1)
+        # occupancies: trees against the master equation's solve, with solve_running's bound
+        Qt = [[-L[cc][r] for cc in range(n)] for r in range(n)]
+        Et = [[E0[cc][r] for cc in range(n)] for r in range(n)]
+        Qt[-1] = [Decimal(1)] * n
+        Et[-1] = [Decimal(0)] * n
+        _ps, ep = exact.solve_running(Qt, [Decimal(0)] * (n - 1) + [Decimal(1)], Et)
+        worst_p, zeros_p = Decimal(0), 0
+        for i in range(n):
+            x, y = a["_p"][i], p[i]
+            tau = (2 * rel_sum + u) * abs(x) + ep[i]
+            if x == 0 and y == 0:
+                zeros_p += 1
+            elif tau > 0:
+                worst_p = max(worst_p, abs(x - y) / tau)
+            if not exact.within(x, y, tau):
+                fails.append(f"p[{i}]")
+        # each edge's net flux against its cycles' signed net fluxes
+        flux = D.edge_fluxes(law, rates, a["_p"])
+        worst_e, zeros_e = Decimal(0), 0
+        for e in law["edges"]:
+            f_, b_, net = flux[e["id"]]
+            sm, terms = Decimal(0), Decimal(0)
+            for c in law["cycles"]:
+                for eid, d in c["edges"]:
+                    if eid == e["id"]:
+                        q = a[c["id"]]
+                        sm += int(d) * q["j_net"]
+                        terms += q["j_plus"] + q["j_minus"]
+            k_max = max(len(c["edges"]) for c in law["cycles"])
+            rel_j = k_max * (ra + u) + 2 * rel_sum + 3 * u
+            tau = (2 * rel_sum + ra + 2 * u) * (abs(f_) + abs(b_)) + rel_j * terms
+            if net == 0 and sm == 0:
+                zeros_e += 1
+            elif tau > 0:
+                worst_e = max(worst_e, abs(net - sm) / tau)
+            if not exact.within(net, sm, tau):
+                fails.append(f"edge {e['id']}")
+        return {"j_pairs": len(jrows), "j_zero_cases": zeros_j,
+                "trees_vs_minors_over_floor": fl(worst_j),
+                "occupancy_pairs": n, "occupancy_zero_cases": zeros_p,
+                "occupancy_trees_vs_solve_over_floor": fl(worst_p),
+                "edges": len(law["edges"]), "edge_zero_cases": zeros_e,
+                "edge_cycle_consistency_over_floor": fl(worst_e),
+                "failures": fails}
 
 
-def slope_agreement(law, population, registry, host_state, volumes_pL) -> float:
-    """max relative difference between the exact (dual) slopes and central differences."""
+def slope_pairs(law, population, registry, host_state, volumes_pL, ex=None, fd=None) -> list:
+    """(name, exact x, central difference y, floor τ) for every slope pair (amendment F4).
+
+    τ is the central difference's rounding at PREC digits, (terms + 8) u M/h, with u = ½ 10^(1 −
+    PREC), M the differenced function's magnitude (each mode's J⁺ + J⁻, weighted by |n_q| or |ν|),
+    and h the step (1e-22 V, or c × 1e-22 for a row), after the review's verifier. A neutral law's
+    conductance has τ = 0, so its two slopes must be exactly 0."""
+    u = exact.U_DEC
+    ls = C.law_state(population, host_state)
     with context():
-        ex = C.slopes(law, population, registry, host_state, volumes_pL)
-        fd = C.slopes_by_differences(law, population, registry, host_state, volumes_pL)
-        worst = Decimal(0)
-        pairs = [(ex["conductance_pS"], fd["conductance_pS"])]
-        for m in ex["dJ_dV"]:
-            pairs.append((ex["dJ_dV"][m], fd["dJ_dV"][m]))
-        for k in ex["material"]:
-            pairs.append((ex["material"][k]["row_self_slope_per_s"],
-                          fd["material"][k]["row_self_slope_per_s"]))
-        for x, y in pairs:
-            if x != 0:
-                worst = max(worst, abs(x - y) / abs(x))
-        return fl(worst)
+        ex = ex or C.slopes(law, population, registry, host_state, volumes_pL)
+        fd = fd or C.slopes_by_differences(law, population, registry, host_state, volumes_pL)
+        pr = C.population_rates(law, population, registry, host_state)
+        F = exact.F_C_per_mol()
+        h_V = Decimal("1e-22")
+        eta, scale, nq = {}, {}, {}
+        for m in C.modes(law):
+            q = pr["modes"][m["id"]]
+            eta[m["id"]] = (dec(dG_terms_abs(m["nu"], registry, ls)) + 8) * u
+            scale[m["id"]] = abs(q["J_scale"])
+            nq[m["id"]] = abs(C.parse_checks(m["nu"], registry)["n_q"])
+        out = [("conductance", ex["conductance_pS"], fd["conductance_pS"],
+                sum((nq[m] * eta[m] * scale[m] for m in eta), Decimal(0)) / h_V * F / 1000)]
+        out += [(f"dJ_dV[{m}]", ex["dJ_dV"][m], fd["dJ_dV"][m], eta[m] * scale[m] / h_V)
+                for m in ex["dJ_dV"]]
+        for key in ex["material"]:
+            sp_, he = key.split("@")
+            weight = Decimal(0)
+            for m in C.modes(law):
+                for s2, end2, n2 in m["nu"]:
+                    if s2 == sp_ and C.host_end(population, end2) == he:
+                        weight += abs(int(n2)) * eta[m["id"]] * scale[m["id"]]
+            hc = dec(host_state["c_mM"][he][sp_]) * Decimal("1e-22")
+            out.append((f"material[{key}]", ex["material"][key]["row_self_slope_per_s"],
+                        fd["material"][key]["row_self_slope_per_s"],
+                        weight / (hc * dec(volumes_pL[he]))))
+        return out
+
+
+def slope_agreement(law, population, registry, host_state, volumes_pL, ex=None, fd=None) -> dict:
+    """The exact (dual) slopes against central differences, |x − y| ≤ 10 τ for every pair
+    (amendment F4: the zero-skipping relative check it replaces passed a dropped seed)."""
+    prs = slope_pairs(law, population, registry, host_state, volumes_pL, ex, fd)
+    with context():
+        worst, fails, zeros, zero_floor = Decimal(0), [], 0, 0
+        for name, x, y, tau in prs:
+            if x == 0:
+                zeros += 1
+                if tau == 0:
+                    zero_floor += 1
+            if tau > 0:
+                worst = max(worst, abs(x - y) / tau)
+            if not exact.within(x, y, tau):
+                fails.append(name)
+        return {"pairs": len(prs), "zero_cases": zeros, "zero_cases_with_zero_floor": zero_floor,
+                "worst_over_floor": fl(worst), "failures": fails}
 
 
 def wegscheider(law, registry, law_states) -> dict:
@@ -211,11 +344,23 @@ def basis_signs(law, population, registry, host_state) -> dict:
         gA, gB = fl_[a_]["dG_RT"], fl_[b2]["dG_RT"]
         total_hill = sum((fl_[x]["J"] * fl_[x]["dG_RT"] for x in (a_, b2, c_)), Decimal(0))
         total_basis = JA * gA + JB * gB
+        # amendment F4: |basis − Hill| ≤ 10 τ, τ from the two totals' term sums. Each J carries
+        # its one-way fluxes' rounding through ΔG/RT's terms, and each product its own rounding;
+        # a zero Hill total is compared, not skipped
+        u = exact.U_DEC
+        terms = max(dec(dG_terms_abs(next(m["nu"] for m in C.modes(law) if m["id"] == x),
+                                     registry, ls)) for x in (a_, b2, c_)) + 8
+        S = sum((fl_[x]["J_scale"] * (abs(fl_[x]["dG_RT"]) + 1) for x in (a_, b2, c_)),
+                Decimal(0))
+        tau = 3 * terms * u * S
+        diff = abs(total_basis - total_hill)
         return {"mode_A_against_dG": bool(JA * gA > 0), "mode_B_against_dG": bool(JB * gB > 0),
                 "total_hill_pJ_per_s": fl(total_hill * RT / 1000),
                 "total_basis_pJ_per_s": fl(total_basis * RT / 1000),
-                "basis_vs_hill_rel": fl(abs(total_basis - total_hill) / abs(total_hill))
-                if total_hill != 0 else 0.0}
+                "hill_total_is_zero": bool(total_hill == 0),
+                "basis_vs_hill_over_floor": fl(diff / tau) if tau > 0 else
+                (0.0 if diff == 0 else None),
+                "agrees": exact.within(total_basis, total_hill, tau)}
 
 
 def guard_standin(law, population, registry, host_state) -> dict:
@@ -333,7 +478,13 @@ def binding_plants(system_spec, registry, totals, V, designated) -> dict:
     with context():
         for name, reg in plants.items():
             sy = Bd.System(system_spec, reg)
-            sp = Bd.solve(sy, totals["ligands_fmol"], totals["binders_fmol"], V)
+            try:
+                sp = Bd.solve(sy, totals["ligands_fmol"], totals["binders_fmol"], V)
+            except (ValueError, RuntimeError) as e:
+                # amendment C4: a plant can make a valid state unrepresentable (removing the only
+                # negative count): the planted closure refuses it, which is a detection
+                out[name] = {"max_abs_dln": None, "where": None, "variant_refused": str(e)}
+                continue
             worst, where = Decimal(0), None
             for L in sy_ref.ligands:
                 d = abs((sp["x_mM"][L] / ref["x_mM"][L]).ln())
@@ -395,7 +546,10 @@ def nonminimum_plant(system_spec, registry, totals, V, designated) -> dict:
                                      if f["id"] != designated]
     with context():
         ref = Bd.solve(sy, TL, TB, V)
-        sp2 = Bd.solve(Bd.System(system_spec, reg), TL, TB, V)
+        try:
+            sp2 = Bd.solve(Bd.System(system_spec, reg), TL, TB, V)
+        except (ValueError, RuntimeError) as e:
+            return {"excess_pJ": None, "variant_refused": str(e)}
         sp2["forms_mM"][B_of][designated] = Decimal(0)
         return {"excess_pJ": fl(Bd.free_energy(sy, sp2, V) - Bd.free_energy(sy, ref, V))}
 
@@ -428,3 +582,128 @@ def mover_verdict(mover, registry) -> dict:
         if charge != 0:
             reasons.append(f"charge in base forms is {charge}, not 0")
     return {"verdict": "refused" if reasons else "admitted", "reasons": reasons}
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment A2 (the kinds owner's reference-needs batch, statement 1 §5): the engine's bands,
+# evaluated by the stated formulas on this package's references (no engine code is read)
+# --------------------------------------------------------------------------------------------
+
+U_DOUBLE = 2.0 ** -53
+EPS_DOUBLE = 2.0 ** -52
+
+
+def engine_wegscheider_band(law: dict, cycle: dict, registry: dict) -> dict:
+    """The engine's parse-time decision, as stated: decided algebraically, never at a state.
+
+    - B per row = Σ_e s_e (order⁺ − order⁻) + ν, an integer, must be 0 exactly;
+    - B_ψ = Σ_e s_e (ζ⁺ − ζ⁻) − q, exact rationals of the declared doubles, admitted within
+      u Σ_e (|ζ⁺| + |ζ⁻|), u = 2⁻⁵³;
+    - R0 = Σ_e s_e (ln k0⁺ − ln k0⁻) + Σ_s Δ_s (μ°_s/RT − ln c0 + ln c°_law), at 50 digits from
+      the declared doubles, admitted within B_W = 32 ε (T + N), ε = 2⁻⁵², with
+      T = Σ_e (|ln k0⁺| + |ln k0⁻|) + Σ_s |Δ_s| (|μ°_s/RT| + |ln c0| + |ln c°_law|) over the
+      species the cycle converts, and N = 2 L (its rate constants).
+
+    Here c0 = c°_law = the registry's standard concentration (1000 mM)."""
+    from fractions import Fraction
+    aff = D.affine_residual(law, cycle, registry)
+    edges = {e["id"]: e for e in law["edges"]}
+    with context():
+        conv = {}
+        for s_, _e, n in cycle["nu"]:
+            conv[s_] = conv.get(s_, 0) + int(n)
+        conv = {k: v for k, v in conv.items() if v != 0}
+        c0 = dec(registry["standard_concentration_mM"])
+        lnc0 = abs(c0.ln())
+        T = Decimal(0)
+        R0 = Decimal(0)
+        zeta_abs = Fraction(0)
+        for eid, d in cycle["edges"]:
+            e = edges[eid]
+            lf, lb = dec(e["fwd"]["k0_per_s"]).ln(), dec(e["bwd"]["k0_per_s"]).ln()
+            T += abs(lf) + abs(lb)
+            R0 += int(d) * (lf - lb)
+            zeta_abs += abs(Fraction(float(e["fwd"].get("zeta", 0.0)))) + \
+                abs(Fraction(float(e["bwd"].get("zeta", 0.0))))
+        for s_, n in conv.items():
+            mu = dec(registry["species"][s_]["mu0_RT"])
+            T += abs(n) * (abs(mu) + 2 * lnc0)
+            R0 += n * mu                        # − ln c0 + ln c°_law = 0 here
+        N = 2 * len(cycle["edges"])
+        B_W = 32 * EPS_DOUBLE * (fl(T) + N)
+        mine = sum((abs(dec(edges[eid]["fwd"]["k0_per_s"]).ln()) +
+                    abs(dec(edges[eid]["bwd"]["k0_per_s"]).ln()) for eid, _d in cycle["edges"]),
+                   Decimal(0))
+        mine += sum((abs(int(n) * dec(registry["species"][s_]["mu0_RT"]))
+                     for s_, _e, n in cycle["nu"]), Decimal(0))
+        band_psi = U_DOUBLE * float(zeta_abs)
+        structural = not aff["b"]
+        psi_ok = abs(float(aff["b_psi"])) <= band_psi
+        return {"R0": fl(R0), "T": fl(T), "N": N, "B_W": B_W,
+                "R0_over_B_W": abs(fl(R0)) / B_W,
+                "B_W_in_eps_of_this_terms": B_W / (EPS_DOUBLE * fl(mine)),
+                "B": {f"{s_}@{e_}": int(v) for (s_, e_), v in sorted(aff["b"].items())},
+                "B_psi": str(aff["b_psi"]), "B_psi_band": band_psi,
+                "admitted": structural and psi_ok and abs(fl(R0)) <= B_W}
+
+
+def _ln_mM_terms(nu, ls) -> float:
+    return sum(abs(int(n)) * (abs(math.log(float(ls["c_mM"][e][s]))) + 1) for s, e, n in nu)
+
+
+def engine_guard(law: dict, population: dict, registry: dict, host_state: dict) -> dict:
+    """The engine's population guard as stated: G = fl(Σ_m fl(J_m x_m)) ≤ A in RT fmol/s, with
+
+        A = u Σ_m Φ_m [(K_m + 10) X_m + (T_m + M + 12 + (K_m + 11) Y_m) |x_m|],
+        X_m = |g°_m| + Σ_k |ν_mk| (|ln c_k| + 1) + |q_m ψ|   (c in mM, g° over converted species),
+        Y_m = max_t (X_mt + |ε_t ψ|) over a net-flow mode's terms (0 otherwise),
+        Φ_m = J⁺ + J⁻ (factored, diagram) or Σ_t a k |w_t| (1 + e^{y_t}) (net flow),
+
+    K_m the law's rows (the distinct rows its modes touch), T_m its terms (1 otherwise), M the
+    population's modes; g°_m in @3's 1 mM frame, Σ_s Δ_s (μ°_s/RT − ln c0), c0 in mM, so that
+    x = g° + Σ ν ln c (mM) + q ψ (the erratum of 19 November 2026). A net-flow term's weight
+    enters Φ as |w_t|, since a declared term weight may be negative (fb_basis). G is this
+    package's exact Σ J_m x_m; the verdict is G > A. Also: A in ε of this package's own scale
+    Σ_m (J⁺ + J⁻) × (ΔG/RT's terms), the window of §A3."""
+    ls = C.law_state(population, host_state)
+    with context():
+        fl_ = C.mode_fluxes(law, registry, ls, population["capacity_fmol_per_s"],
+                            population.get("availability", 1.0))
+        G = sum((fl_[m["id"]]["J"] * fl_[m["id"]]["dG_RT"] for m in C.modes(law)), Decimal(0))
+        ps = fl(D.psi(ls, registry["temperature_K"]))
+    mods = C.modes(law)
+    M = len(mods)
+    A, mine = 0.0, 0.0
+    # erratum to A2 (19 November 2026): K_m is the law's rows (the distinct rows its modes touch,
+    # the same for every mode), and g°_m is in @3's 1 mM frame, Σ_s Δ_s (μ°_s/RT − ln c0), c0 in
+    # mM, as X_m's "c in mM" requires; A2 read K_m as the mode's own rows and g° in the c° frame
+    K_law = len({(s_, e_) for mm in mods for s_, e_, _n in mm["nu"]})
+    ln_c0 = math.log(float(registry["standard_concentration_mM"]))
+
+    def X_of(nu):
+        conv = {}
+        for s_, _e, n in nu:
+            conv[s_] = conv.get(s_, 0) + int(n)
+        g0 = sum(n * (float(registry["species"][s_]["mu0_RT"]) - ln_c0)
+                 for s_, n in conv.items())
+        q = sum(int(registry["species"][s_]["valence"]) * int(n) for s_, e, n in nu if e == "P")
+        return abs(g0) + _ln_mM_terms(nu, ls) + abs(q * ps)
+
+    for m in mods:
+        q = fl_[m["id"]]
+        x = fl(q["dG_RT"])
+        K = K_law
+        if law["kind"] == "net_flow":
+            terms = m["flux_terms"]
+            Tm = len(terms)
+            Y = max(X_of(t["cycle_nu"]) + abs(float(t.get("shift_psi", 0.0)) * ps) for t in terms)
+            Phi = fl(q["J_scale"])
+        else:
+            Tm, Y, Phi = 1, 0.0, fl(q["J_scale"])
+        A += Phi * ((K + 10) * X_of(m["nu"]) + (Tm + M + 12 + (K + 11) * Y) * abs(x))
+        mine += Phi * dG_terms_abs(m["nu"], registry, ls)
+    A *= U_DOUBLE
+    Gf = fl(G)
+    return {"G_RT_fmol_per_s": Gf, "A_RT_fmol_per_s": A, "fires": Gf > A,
+            "G_over_A": Gf / A if A > 0 else None,
+            "A_in_eps_of_this_scale": A / (EPS_DOUBLE * mine) if mine > 0 else None}

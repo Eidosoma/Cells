@@ -105,7 +105,7 @@ export function readLoop(run, speciesId) {
   const no = (why) => ({ ok: false, why });
   const said = run?.view?.loop;
   if (!said || typeof said !== "object") return no("The run does not say that it is a loop.");
-  if (run.example) return no("The run is an example with invented numbers: it is no species' run.");
+  if (run.example) return no("The run's numbers are invented: it is no species' run.");
   const models = run.info?.engine_models || [];
   const revision = run.info?.revision || run.info?.source?.revision || null;
   if (!models.length || !revision) return no("The run names no model of the engine, or no revision: it is not shown as a species' run.");

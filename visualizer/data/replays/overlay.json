@@ -3,9 +3,9 @@
   "note": "Labels and plain lines for replays, curated from the experiments' own documents. The adapter copies an experiment's entry into the catalogue and copies from a run only the parameters and readouts named here. A replay shows what the run recorded and never computes a verdict of its own. Only the experiments whose entry says listed stand in the page's list (decided on 17 November 2026: the replication and GARD, which `doors` names and which opens its own view); the others are packaged for the checks and never exported, and the runs a species names (the planarian's looping run) are published unlisted.",
   "experiments": {
     "gap-junction-linear-network": {
+      "parts_together": true,
       "adapter": "standard-history",
       "development": true,
-      "listed": true,
       "summary": "summary.json",
       "opens": {
         "run": "figure5-network-g1",
@@ -669,19 +669,23 @@
       }
     },
     "e07-v1": {
+      "parts_together": true,
       "label": "E07-v1: renewal",
       "plain": "Can a voltage pattern written into a tissue survive while its cells are replaced? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Cells are then replaced one at a time by a copy of a neighbour, and each run is compared with plain copying on the same schedule.",
       "sources": [
         {
-          "path": "docs/HEREDITY_FIRST_EXPERIMENT.md"
+          "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "docs/E07_V1_DESIGN.md",
-          "where": "3. Design"
+          "where": "3. Design",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "docs/E07_V1_DESIGN.md",
-          "where": "6. Readouts, analysis rules and the proposed judged items"
+          "where": "6. Readouts, analysis rules and the proposed judged items",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         }
       ],
       "outcome": {
@@ -693,11 +697,13 @@
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "E07-v1 judged (13–14 November)"
+            "where": "E07-v1 judged (13–14 November)",
+            "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
           },
           {
             "path": "docs/CURRENT_PLAN.md",
-            "where": "Gate: coupled renewal"
+            "where": "Gate: coupled renewal",
+            "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
           }
         ]
       },
@@ -895,20 +901,24 @@
       }
     },
     "heredity-turnover-literature": {
+      "parts_together": true,
       "label": "Turnover pre-screen: the literature newcomer rule",
       "plain": "A development run before E07-v1: can a voltage pattern written into a tissue renew itself when its cells are replaced the way the literature describes? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Only the disc's cells are replaced, the oldest first. A newcomer arrives with no junctions and forms them over tens of minutes; it is either a fresh cell at the resting voltage or a copy of a neighbour. Each run starts two minutes after a brief cue wrote the disc.",
       "sources": [
         {
           "path": "validation/tissue/heredity_turnover_literature.py",
-          "where": "The driver's opening note: question, world and start, turnover, readouts, stop rules"
+          "where": "The driver's opening note: question, world and start, turnover, readouts, stop rules",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
-          "where": "Where the design stands (11 November 2026): Renewal"
+          "where": "Where the design stands (11 November 2026): Renewal",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "docs/DECISIONS.md",
-          "where": "D139: Cell replacement (G2) rules"
+          "where": "D139: Cell replacement (G2) rules",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         }
       ],
       "outcome": {
@@ -919,7 +929,8 @@
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "Runs: Heredity turnover under the literature newcomer rule (11–13 November)"
+            "where": "Runs: Heredity turnover under the literature newcomer rule (11–13 November)",
+            "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
           }
         ]
       },
@@ -1202,6 +1213,7 @@
       "readouts": {}
     },
     "secreted-species-dev-run": {
+      "parts_together": true,
       "adapter": "standard-history",
       "development": true,
       "label": "Secreted species (development run)",
@@ -1209,15 +1221,18 @@
       "sources": [
         {
           "path": "PROGRESS.md",
-          "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed"
+          "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "validation/tissue/secreted_species_fixtures.py",
-          "where": "secreting_cell: the world"
+          "where": "secreting_cell: the world",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "tests/unit/test_secreted_species_runs.py",
-          "where": "secretion: the parameters"
+          "where": "secretion: the parameters",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         }
       ],
       "outcome": {
@@ -1228,7 +1243,8 @@
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed"
+            "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed",
+            "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
           }
         ]
       },
@@ -1270,15 +1286,18 @@
       "sources": [
         {
           "path": "PROGRESS.md",
-          "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds"
+          "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "docs/LOOPING_REPLAY_DESIGN.md",
-          "where": "§4, the interim planarian loop"
+          "where": "§4, the interim planarian loop",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         },
         {
           "path": "validation/replay/planarian.py",
-          "where": "the builder: the world, the drive and the loop"
+          "where": "the builder: the world, the drive and the loop",
+          "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
         }
       ],
       "outcome": {
@@ -1289,7 +1308,8 @@
         "sources": [
           {
             "path": "PROGRESS.md",
-            "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds"
+            "where": "Runs: The run-view writer merged into main (16 November 2026, evening), What it adds",
+            "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
           }
         ]
       },
@@ -1330,18 +1350,19 @@
       }
     },
     "example-sheet": {
+      "parts_together": true,
       "adapter": "standard-history",
       "example": true,
-      "label": "Example sheet (invented numbers)",
-      "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+      "label": "Test sheet (invented numbers)",
+      "plain": "Invented numbers: a small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
       "sources": [
         {
           "path": "visualizer/schema/QUANTITY_LAYERS.md",
-          "where": "Rules: 6. Examples are marked and kept apart"
+          "where": "Rules: 6. Invented numbers are marked and kept apart"
         },
         {
           "path": "visualizer/tools/make_run_fixture.py",
-          "where": "The tool that writes the example's run folder"
+          "where": "The tool that writes the run folder of invented numbers"
         }
       ],
       "engine_entities": [],

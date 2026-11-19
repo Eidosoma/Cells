@@ -361,7 +361,7 @@ positive up to the stored amount.
   - **The correction to 17:33:** the per-ligand floor Σ T_B min n is necessary but not sufficient
     for mixed-sign counts. The joint condition is the closure's own validity. In the registered
     systems every n_L-minimising form binds no other ligand, so P1b's registered floor is
-    attained jointly.
+    attained jointly. Amendment C4 registers the case where it is not.
   - One test added (binding: 10).
 - **18 November 2026, 20:21 UTC, amendment C3, the envelope's two-ligand kinetic reference, before any
   output of the general closure** (§19 amended at 19:52 UTC; B4's Appendix A.2 generalised):
@@ -397,6 +397,120 @@ positive up to the stored amount.
   - A test file added (envelope: 5 tests). Earlier inputs and values are unchanged. The registry's
     new binder is appended, and its form valences join the parse table
     (`seam_c.parse.form_valences.coop2`), which covers every registry binder.
+- **18 November 2026, 22:50 UTC, amendment F4, the external review's finding 4, before any engine
+  comparison of seam A's slopes.** The finding was verified at main by an independent agent;
+  this package read only its evidence (f4_planted.py, f4_floor_only.py and f4/).
+  - **The fault:** the slope check compared relatively and skipped every pair whose exact slope
+    is 0. A dropped Dual seed gives exactly that 0, and all of the three neutral laws' voltage
+    slopes were skipped. Nothing was hidden: each difference was also exactly 0, but the check
+    was empty there.
+  - **The fix:** |x − y| ≤ 10 τ for every pair (`api.slope_pairs`, `api.slope_agreement`), now
+    at every state, not the first four.
+    - τ = (terms + 8) u M/h is the central difference's rounding at 60 digits, with u = ½ 10⁻⁵⁹
+      and M the differenced function's magnitude, after the verifier.
+    - All 1,592 pairs at 251 states are within 0.221 τ, a 45× margin.
+    - 139 pairs have an exact slope of 0. The 69 with τ = 0, the neutral laws' conductances,
+      are exactly 0.
+  - **The same class elsewhere,** each now compared absolutely against a floor from its term
+    sums:
+    - `method_agreement`: j± by trees against minors, through the elimination's running error
+      bound (`exact.det_running`); the occupancies against the master equation's solve
+      (`exact.solve_running`); and each edge against its cycles. All are within 0.051 of
+      their floors;
+    - `basis_signs`: within 0.0056, and the zero Hill total at the unit state is compared;
+    - A1's backward fluxes: no `J_minus > 0` filter, with zero cases counted;
+    - `summarise`: an undefined deviation (None, from `_rel`'s zero reference, or from
+      `oneway_plants`) is weak, listed and counted, never dropped.
+  - **The values file is unchanged byte for byte.** Only the design file's checks and
+    weak-state lists moved; one weak list grew, S4's masked-ideal plant now listing its
+    undefined pairs.
+  - **The verifier's four plants are tests** (cycles: 13): a dropped V seed, a spurious response
+    at a zero slope (100 τ fails, 0.1 τ passes, 1e-40 pS at a zero floor fails), a route's j⁺
+    dropped to 0, and a zero Hill total hiding a basis total.
+- **18 November 2026, 23:04 UTC, amendment C4, the closure's joint validity, before the general
+  closure's validity output** (offered at the C1–C3 hand-back; §19's correction that the
+  per-ligand floor Σ T_B min n is necessary, not sufficient, for mixed-sign counts):
+  - **The margin.** t* = min over the ligand simplex of λ·T − Σ_B T_B min_f λ·n_f, the largest
+    amount every free ligand can keep, by LP duality. A state is valid iff t* > 0. The per-ligand
+    floors are t at λ = e_L.
+    - `binding.joint_margin` computes it exactly in rationals, by the vertices of the convex
+      piecewise-linear arrangement.
+    - `binding.joint_margin_lp` computes it by the primal LP (HiGHS); the two agree to 9e-16
+      fmol.
+    - `binding.solve` now refuses a jointly infeasible state with its t*.
+  - **The registry gains `mgx`,** whose Mg²⁺ binding releases a proton (`mgx_MgmH`: H −1, Mg +1),
+    reached from its base by unit steps through `mgx_Mg`. It is appended, and joins no earlier
+    system.
+  - **S7** is an ordinary system of `mgx`, with 9 states drawn after every earlier input. It gets
+    every row: booked term, primal route, floors, plants and pairs. Its two plants that remove
+    the only negative count are caught by refusal at its negative-total states.
+  - **Four planted states,** given by their totals (`seam_c.validity`):
+
+    | State | t* (fmol) | Verdict | Solves |
+    | --- | --- | --- | --- |
+    | joint_infeasible: T_H −2, T_Mg 1, T_B 10 | −1/2 | per-ligand floors pass (+8 and +1); jointly invalid | dual and primal refuse |
+    | boundary (T_Mg 2) | 0 | not interior | both refuse |
+    | feasible_near (T_Mg 3) | +1/2 | valid | dual and primal agree to 1e-45 |
+    | per_ligand_infeasible (T_H −11) | −1 | refused by either test | both refuse |
+
+    Every registered state of S1–S7 is valid.
+  - **The primal route's start gains a fallback,** for where its anchors cannot free a ligand
+    without binding another. It takes the LP's binder distribution, mixed toward uniform. It runs
+    only where the anchors fail, so S1–S6's primal rows are unchanged.
+  - Earlier inputs and values are unchanged. S7, `validity`, and mgx's reachability and valences
+    are added. One test added (binding: 11).
+- **18 November 2026, 23:14 UTC, amendment A2, seam A's reference needs, before the kinds owner's
+  first output of A.** The source is the kinds owner's batch (statement 1 §5), read as that file
+  alone; none of their code was read. Each item is evaluated by its stated formula on this
+  package's references (`api.engine_wegscheider_band`, `api.engine_guard`):
+  - **1. The bands.**
+    - **Wegscheider:** B per row is exactly 0, B_ψ within u Σ(|ζ⁺| + |ζ⁻|), and R0 within
+      B_W = 32 ε (T + N), decided algebraically. The engine evaluates no float64 stand-in, so the
+      place registered is the declared doubles' own residual: at most 0.0029 B_W on every
+      passing cycle. A constant off by 1e-6 sits at least 7.4e5 B_W outside.
+      - B_W is 30–43 ε of this package's terms, inside its window of 0.93 to 1.4e6.
+      - Every verdict agrees.
+    - **The guard:** A = u Σ_m Φ_m [(K_m + 10) X_m + (T_m + M + 12 + (K_m + 11) Y_m) |x_m|], as
+      stated. It reproduces every registered verdict: fb_shift fires at its 12 band-interior
+      states, the planted negative S at its 2, and every admitted law and control stays silent.
+      - At fb_shift, A is 3.4–30 ε of this package's scale, inside its 0.064–9.1e3 window. The
+        kinds owner found about 5 ε at band0_eq.
+      - The admitted laws' honest stand-in sits at G ≤ 0, inside A.
+  - **2. S for diagram laws:** S = j⁺/ω, k = N ω, and J⁻ = J⁺ e^{ΔG/RT} from the contract only.
+    This is the registered convention, confirmed as the engine's.
+  - **3. Q7:** the declared cycles must be exactly the diagram's simple cycles, each once, each
+    with a consistent direction.
+    - D2 as {A, B} and D4 as {K1, K2} are refused, and D3's basis is admitted.
+    - Two plants are added, refused by the completeness check, which now catches both: D2 with
+      cycle A declared twice, and D2 with one edge of A traversed backwards.
+  - **4. The planted negative S** cannot be declared in the engine's Hill-product form (carried as
+    log S). The engine's plant injects S − 0.05 into the factored flux, and its guard refuses it
+    (G/A up to 1.4e14 after the erratum below). `planted_negative_S_n1`'s row registers that substitution.
+  - **5. Conventions; no number changes.**
+    - The engine's x sums no standard part for a transported species, which cancels exactly. So
+      its terms are fewer than `dG_RT_terms_abs`, and this package's floors are conservative.
+    - The stored rate is σ_m = Σ over moved rows of ν (μ°/RT − ln c0), with c0 in mM, in @3's
+      1 mM frame, as `stored_standard_pJ_per_s`.
+  - **6. Finding 4:** the engine's slope tests compare an analytic zero against the central
+    differences' absolute floor, as amendment F4 does here.
+  - **The files:** two planted laws added to the inputs and their verdicts to the values. Every
+    earlier input and value is unchanged. Three tests added (cycles: 16).
+- **19 November 2026, 03:58 UTC, erratum to amendment A2, before the kinds owner's rerun** (the lead's
+  check; the batch file and this package were the only things read):
+  - **K_m.** `api.engine_guard` read it as the mode's own rows. The batch's text says "K_m the
+    law's rows", so it is now the distinct rows the law's modes touch, the same for every mode.
+  - **g°_m.** It was read in the c° = 1000 mM frame, Σ_s Δ_s μ°_s/RT. X_m is stated "(c in mM;
+    g° over converted species only)", so x = g° + Σ ν ln c + q ψ holds only in @3's 1 mM frame:
+    g°_m = Σ_s Δ_s (μ°_s/RT − ln c0), with c0 in mM. That is the frame item 5 states for σ_m.
+  - **The effect.** A rises by up to 19% where a law's modes touch different rows or convert
+    species. fb_shift is unchanged: one mode, converting nothing.
+    - Every engine verdict still agrees, and fb_shift's A stays at 3.4–30 ε, inside the
+      0.064–9.1e3 window.
+    - This package's own 64-ε guard check is unchanged, and so are the values file and every
+      other registered number.
+    - A test now evaluates the stated A independently on D3 and on the neutral law (cycles: 17).
+  - **One reading kept, flagged:** a net-flow term's weight enters Φ_m as |w_t|, because fb_basis
+    declares a negative term weight. The batch writes w_t.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
@@ -409,6 +523,9 @@ s, cycles 0.67 s, registration 0.92 s. The record is
 After amendments C1–C3, the changed and new files were re-measured at 56dedfba the same way:
 binding 2.52 s (10 passed), envelope 1.42 s (5), registration 1.07 s (4). The record is
 `/mnt/workspaces/Cells/core-seams-references-c-20261118/gate-56dedfba/tiers/measure/measured.json`.
+After amendments F4, C4 and A2, they were re-measured at 6abadf3b: binding 3.43 s (11 passed),
+cycles 1.07 s (16), registration 1.12 s (4); envelope is unchanged. The record is
+`/mnt/workspaces/Cells/core-seams-references-f4-20261118/gate-6abadf3b/tiers/measure/measured.json`.
 
 | File | Tests | What it holds |
 | --- | --- | --- |
