@@ -519,3 +519,167 @@ def test_the_lifecycle_acts_along_one_entity_axis_its_last():
     for axes in (("membrane_slot", "species"), ("membrane_slot", "channel_slot")):
         with pytest.raises(ValueError, match="one entity axis, its last"):
             pump3.lifecycle_axis("planted", axes)
+
+
+# ------------------------------------------------------------------ the record and the door (B)
+# Q6 (b): the composite owns a record per kind history field (and a moved accumulator per
+# extensive one), written through the partition's event (lifecycle=), added back before the
+# checks; ruling 4 (b): field plus record unchanged across a retiring event. Q7 (a) refuses a
+# per-patch kind beside the partition, so these patch pump_composite._kinds_lifecycle only (the
+# accepted bypass, as the silence tests bypass refusals 4 and 5).
+
+
+def per_patch_carrier():
+    """The carrier with its two state fields per patch and history (its transfers and its work),
+    its rate and availability on shared axes."""
+    kind = axed(kf.carrier(), {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
+    roles = roles_for(kind, "intensive") | {
+        "carrier_transferred": PartitionRole("history"),
+        "carrier_work_pJ": PartitionRole("history"),
+    }
+    return dataclasses.replace(kind, partition_roles=roles)
+
+
+@pytest.fixture
+def lifecycle_world(monkeypatch):
+    """The division world with the carrier on its parent's first patch, parsed with the bypass:
+    (spec, model, a planted pre-event state with history on that patch, layout, patch slot)."""
+    import numpy as np
+
+    from cells.definitions.specs import parse_spec
+    from tests import partition_fixtures as pfx
+
+    monkeypatch.setattr(
+        pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
+    )
+    raw = pfx.divided()
+    division = next(o for o in raw["model"]["operators"] if o["law"] == "isopotential_partition@1")
+    parent = division["divisions"][0]["parent"]
+    patch = next(m["id"] for m in raw["model"]["membranes"] if m["inside"] == parent)
+    with kind_registry.scope(kf.registry(per_patch_carrier())):
+        spec = parse_spec(kf.declare_carrier(raw, species="K", membrane=patch))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        k = [m.id for m in spec.model.membranes].index(patch)
+        transferred = np.array(state.carrier_transferred, copy=True)
+        transferred[:, k] = 0.2
+        work = np.array(state.carrier_work_pJ, copy=True)
+        work[k] = 1e-6
+        yield (
+            spec,
+            model,
+            state._replace(carrier_transferred=transferred, carrier_work_pJ=work),
+            p,
+            k,
+        )
+
+
+def retire(model, state, p):
+    from types import SimpleNamespace
+
+    import numpy as np
+
+    from cells.operators import partition
+
+    op = next(o for o in model.operators if o.LAW_ID == partition.LAW_ID)
+    control = SimpleNamespace(partition_due=np.ones(1))
+    view = lambda s: model.view(p, s, xp=np)  # noqa: E731
+    return op.event(state, control, p, xp=np, view=view, lifecycle=model._lifecycle)
+
+
+def test_the_composite_owns_a_record_per_kind_history_field(lifecycle_world):
+    """The records are composite state, named without the energy suffix (ruling 3)."""
+    spec, model, state, p, k = lifecycle_world
+    assert model.KIND_RECORDS == {
+        "carrier_transferred": "carrier_transferred_retired",
+        "carrier_work_pJ": "carrier_retired_work_energy_pJ",
+    }
+    assert model.KIND_MOVED == {}
+    assert model.FIELD_MAP["state"]["carrier_transferred_retired"]["owner"] == "composite"
+    records = set(model.KIND_RECORDS.values())
+    assert not records & set(model.ENERGY_FLOW_FIELDS)  # In no energy sum by role,
+    assert not any(r.endswith(("_dissipated_energy_pJ", "_work_pJ")) for r in records)  # nor name.
+
+
+def test_a_retirement_moves_the_kinds_history_into_the_record_and_back_for_the_checks(
+    lifecycle_world,
+):
+    import numpy as np
+
+    spec, model, state, p, k = lifecycle_world
+    after, ok = retire(model, state, p)
+    assert bool(ok)
+    assert (np.asarray(after.carrier_transferred)[:, k] == 0).all()
+    assert (np.asarray(after.carrier_transferred_retired)[:, k] == 0.2).all()
+    assert float(np.asarray(after.carrier_retired_work_energy_pJ)[k]) == 1e-6
+    assert bool(model._history_kept(state, after, xp=np))
+    adjusted = model._adjusted(after, p, xp=np)
+    assert (np.asarray(adjusted.carrier_transferred) == np.asarray(state.carrier_transferred)).all()
+    # The ledgers read the adjusted row as if nothing moved: each equals the pre-event one.
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    for name in ("local", "energy"):
+        np.testing.assert_allclose(after_l[name], before_l[name], rtol=1e-9, atol=1e-15)
+
+
+def test_a_retirement_that_loses_history_is_refused(lifecycle_world, monkeypatch):
+    """Planted (ruling 4): the lifecycle's retirement drops the record. The field-plus-record check
+    refuses it whatever the field (a cycle count no ledger reads included), and the material ledger
+    that reads the transfers sees them gone."""
+    import numpy as np
+
+    spec, model, state, p, k = lifecycle_world
+    real = pump3.lifecycle_retire
+
+    def losing(values, table, masks, records, *, xp):
+        out, kept = real(values, table, masks, records, xp=xp)
+        return out, {r: held for r, held in records.values()}  # The history zeroed, not kept.
+
+    monkeypatch.setattr(pump3, "lifecycle_retire", losing)
+    after, ok = retire(model, state, p)
+    assert not bool(model._history_kept(state, after, xp=np))
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    assert np.max(np.abs(np.asarray(after_l["local"]) - np.asarray(before_l["local"]))) > 0.1
+
+
+def test_a_retiring_operator_without_the_lifecycle_door_is_refused(lifecycle_world, monkeypatch):
+    """Ruling 1, fail closed: beside the kinds' lifecycle fields, a retiring operator whose event
+    map takes no lifecycle= is refused at the structure. Planted: the partition with
+    TAKES_LIFECYCLE false."""
+    from cells.operators import partition
+
+    spec, model, state, p, k = lifecycle_world
+    op = next(o for o in model.operators if o.LAW_ID == partition.LAW_ID)
+    assert pump_composite.lifecycle_errors(model.inner, model.operators) == []
+    monkeypatch.setattr(type(op), "TAKES_LIFECYCLE", False)
+    (error,) = pump_composite.lifecycle_errors(model.inner, model.operators)
+    assert error.startswith(f"{partition.LAW_ID} retires slots beside the kinds' fields")
+
+
+def test_a_per_cell_extensive_kind_field_is_refused_beside_a_dividing_closer(lifecycle_world):
+    """Ruling 7 (c): a per-cell extensive kind field waits for a charge rule. Planted: the table
+    with one such field."""
+    spec, model, state, p, k = lifecycle_world
+    table = dict(
+        model.kind_lifecycle, planted_cell_fmol=(PartitionRole("extensive"), ("cell_slot",))
+    )
+    import unittest.mock
+
+    with unittest.mock.patch.object(
+        pump_composite, "kind_lifecycle_table", lambda inner, ops: table
+    ):
+        errors = pump_composite.lifecycle_errors(model.inner, model.operators)
+    assert errors == [
+        "The kinds' per-cell extensive fields ['planted_cell_fmol'] are refused beside a dividing "
+        "closer until a charge rule exists: a division splits them by the volume fraction alone"
+    ]
+
+
+def test_no_composition_admitted_today_gains_a_lifecycle_field():
+    """Q7 (a) refuses a kind with entity fields beside a closer, so every registered composition
+    keeps its types: the table is empty beside the partition with a shared-axis kind, and without
+    a retiring operator."""
+    with kind_registry.scope(kf.registry(shared_carrier())):
+        inner = get_model(composite(kf.declare_carrier(world(), species="K")).model).inner
+        partition_op = OPERATORS["isopotential_partition@1"]
+        assert pump_composite.kind_lifecycle_table(inner, (partition_op,)) == {}
+    assert pump_composite.kind_lifecycle_table(pump3, (partition_op,)) == {}

@@ -737,8 +737,10 @@ def retirement_masks(due, p, *, xp):
     )
 
 
-def event_map(state, due, p, *, xp, view):
-    """(state after the due divisions, validity) (module docstring)."""
+def event_map(state, due, p, *, xp, view, lifecycle=None):
+    """(state after the due divisions, validity) (module docstring). With `lifecycle` (the
+    composite's, beside a kind with fields on the slot axes), the kinds' fields follow the same
+    division by role, from division_maps and retirement_masks; without it nothing here changes."""
     n = p.active.size
     z = xp.reshape(p.valence, (-1,))
     before = view(state)
@@ -847,6 +849,11 @@ def event_map(state, due, p, *, xp, view):
         updates[field] = xp.where(mask, 0.0, value)
     updates["division_applied"] = xp.where(due, 1, state.division_applied)
     new = state._replace(**updates)
+    kinds_valid = None
+    if lifecycle is not None:  # Static: only beside a kind with fields on the slot axes.
+        new, kinds_valid = lifecycle(
+            new, division_maps(due, p), retirement_masks(due, p, xp=xp), xp=xp
+        )
     # After the event, at the view: isopotential, plate charges, free energy.
     after = view(new)
     # Contacts (a view reads no gate): one that opens takes the parent contact's gate when it
@@ -893,22 +900,25 @@ def event_map(state, due, p, *, xp, view):
     )
     for value in new:
         valid &= xp.all(xp.isfinite(value))
+    if kinds_valid is not None:
+        valid &= kinds_valid
     return new, valid
 
 
-def apply_divisions(state, control, p, *, xp, view):
-    """(state after the divisions due at the step start, validity and schedule consistency)."""
+def apply_divisions(state, control, p, *, xp, view, lifecycle=None):
+    """(state after the divisions due at the step start, validity and schedule consistency);
+    `lifecycle`: the composite's callable for the kinds' fields, or None (event_map)."""
     due = (control.partition_due > 0) & (state.division_applied == 0)
     stale = (control.partition_due == 0) & (state.division_applied != 0)
     ok = ~xp.any(stale)
     if xp is np:
         if np.any(due):
-            new, valid = event_map(state, due, p, xp=np, view=view)
+            new, valid = event_map(state, due, p, xp=np, view=view, lifecycle=lifecycle)
             return new, ok & valid
         return state, ok
     new, valid = jax.lax.cond(
         jnp.any(due),
-        lambda s: event_map(s, due, p, xp=jnp, view=view),
+        lambda s: event_map(s, due, p, xp=jnp, view=view, lifecycle=lifecycle),
         lambda s: (s, jnp.asarray(True)),
         state,
     )
@@ -958,6 +968,7 @@ class IsopotentialPartition(Operator):
     EVENT = True
     BOOKS_AT_VIEW = True  # Its event books at the composite's view.
     RETIRES = True
+    TAKES_LIFECYCLE = True  # The kinds' lifecycle at each division (event_map).
     CLOSES = ("active",)  # Cells only: patches, populations and contacts follow (§2).
     STATE_AXES = STATE_AXES
     STATE_DTYPES = {"division_applied": np.int64}
@@ -1093,10 +1104,10 @@ class IsopotentialPartition(Operator):
     def closures(self, state, p, q, *, xp):
         return dict(active=phases(state, p, xp=xp) == 1)
 
-    def event(self, state, control, p, *, xp, view=None):
+    def event(self, state, control, p, *, xp, view=None, lifecycle=None):
         if view is None:
             raise ConfigError("The partition books at the composite's view")
-        return apply_divisions(state, control, p, xp=xp, view=view)
+        return apply_divisions(state, control, p, xp=xp, view=view, lifecycle=lifecycle)
 
     def control_valid(self, control, p, *, xp):
         due = control.partition_due
