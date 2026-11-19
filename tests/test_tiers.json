@@ -197,7 +197,8 @@
   "/mnt/workspaces/Cells/core-seams-references-f4-20261118/gate-21653b59/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-f-20261118/gate-a5512058/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/tier-fold-fix-20261119/measure/measured.json",
-  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-d33aa217/measure/measured.json"
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-d33aa217/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-bae02d29/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1640,6 +1641,14 @@
    "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/head-d33aa217",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T04:34:12+00:00"
+  },
+  {
+   "git_revision": "bae02d2931b5d5e8b66c33b7142898f3a6c41170",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-bae02d29",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T03:47:15+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4076,6 +4085,30 @@
     }
    },
    {
+    "file": "tests/unit/test_rapid_binding_kernel.py",
+    "seconds": 7.23,
+    "exit_code": 0,
+    "counts": {
+     "passed": 38
+    }
+   },
+   {
+    "file": "tests/unit/test_rapid_binding_parse.py",
+    "seconds": 13.46,
+    "exit_code": 0,
+    "counts": {
+     "passed": 21
+    }
+   },
+   {
+    "file": "tests/unit/test_rapid_binding_world.py",
+    "seconds": 12.04,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
+    }
+   },
+   {
     "file": "tests/unit/test_reaction_references.py",
     "seconds": 5.81,
     "exit_code": 0,
@@ -4501,6 +4534,14 @@
     }
    },
    {
+    "file": "tests/unit/test_species_registry_multiform.py",
+    "seconds": 4.93,
+    "exit_code": 0,
+    "counts": {
+     "passed": 29
+    }
+   },
+   {
     "file": "tests/unit/test_species_regulated_availability.py",
     "seconds": 16.59,
     "exit_code": 0,
@@ -4570,6 +4611,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_stage_read_operators.py",
+    "seconds": 5.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -5797,6 +5846,30 @@
     "exit_code": 0,
     "counts": {
      "passed": 22
+    }
+   },
+   {
+    "file": "tests/unit/test_rapid_binding_world_run.py",
+    "seconds": 57.43,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_rapid_binding_world_two_ligands.py",
+    "seconds": 65.56,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_rapid_binding_world_zero_total.py",
+    "seconds": 32.96,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
