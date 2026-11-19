@@ -46,7 +46,8 @@ front. Any static file server that does what section 9 lists will serve as well.
 
 ## The two forms, and the lines that differ
 
-Whether something on the machine already terminates HTTPS is not known, so both forms are given. They share
+The owner said on 19 November 2026 that nothing on the machine terminates HTTPS, so **the form to use is the
+server's own certificate** (`--profile https`). The form behind a proxy is kept for a machine that has one. They share
 `site.caddy` and the `x-site` block of `compose.yaml` whole. Only these lines differ:
 
 | | Behind a proxy (`--profile http`) | Its own certificate (`--profile https`) |
@@ -62,11 +63,15 @@ Whether something on the machine already terminates HTTPS is not known, so both 
 1. Stage a release into the site folder and move the pointer (`docs/HOSTING_AND_API.md`, section 10):
    `node tools/stage_site.mjs --staged out/publish-vNN --site SITE --id vNN --compress`, then
    `node tools/check_site.mjs --site SITE --id vNN`, then `node tools/stage_site.mjs --site SITE --id vNN --release`.
-2. Behind a proxy: `CELLS_SITE=SITE docker compose --profile http up -d --build`, and point the proxy at
-   `127.0.0.1:8080`. On its own: point the domain's DNS at the machine, open ports 80 and 443, then
-   `CELLS_SITE=SITE ACME_EMAIL=… docker compose --profile https up -d --build`.
-3. Check what the server sends: `curl -sI http://127.0.0.1:8080/` (no `Content-Encoding` without `Accept-Encoding`;
+2. With its own certificate, the form decided: point the domain's DNS at the machine's public address (a fixed
+   one, so that it does not change when the machine restarts), and admit ports 80 and 443 (TCP, and UDP 443 for
+   HTTP/3) in the machine's own firewall and in its provider's firewall rules. The certificate is issued only once
+   both hold. Then `CELLS_SITE=SITE ACME_EMAIL=… docker compose --profile https up -d --build`.
+   Behind a proxy instead: `CELLS_SITE=SITE docker compose --profile http up -d --build`, and point the proxy at
+   `127.0.0.1:8080`.
+3. Check what the server sends, at the site's own address (`https://cells.eidosoma.ai`; behind a proxy,
+   `http://127.0.0.1:8080`): `curl -sI ADDRESS/` (no `Content-Encoding` without `Accept-Encoding`;
    `Cache-Control: no-cache`) and
-   `curl -sI -H 'Accept-Encoding: br' http://127.0.0.1:8080/r/vNN/index.html` (`Content-Encoding: br`, `immutable`).
+   `curl -sI -H 'Accept-Encoding: br' ADDRESS/r/vNN/index.html` (`Content-Encoding: br`, `immutable`).
 4. Later releases need no restart. A release folder is written beside the others under a hidden name and moved into
    place whole, and so is the pointer, so the server sees either the old or the new, never half of one.
