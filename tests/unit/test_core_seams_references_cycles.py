@@ -241,3 +241,166 @@ def test_an_N_b_population_is_the_mirror_of_its_N_a_twin(d2):
         wrong = C.population_rates(d2, na, REG, host)
         assert any(abs(wrong["modes"][c["id"]]["J"] / rb["modes"][c["id"]]["J"] - 1) > 0.01
                    for c in d2["cycles"])
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment F4: the external review's finding 4, its verifier's four plants
+# --------------------------------------------------------------------------------------------
+
+def _a(law_id):
+    import json
+    inp = json.loads(worlds.INPUTS.read_text())
+    A = inp["seam_a"]
+    law = next(x for x in A["laws"] if x["id"] == law_id)
+    return law, A["populations"][law_id], A["registry"], A["states"][law_id], A["volumes_pL"]
+
+
+def test_a_dropped_dual_seed_fails_the_zero_aware_slope_check(monkeypatch):
+    """Plant (a): the V seed dropped in the exact path makes every voltage slope exactly 0. The
+    old relative check skipped those pairs; |x − y| ≤ 10 τ catches them on every charged law."""
+    from validation.core_seams.references import api
+    original = C._seeded
+
+    def dropped(host_state, what, h=None):
+        st = original(host_state, what, h)
+        if what[0] == "V" and h is None:
+            st["phi_V"]["a"] = exact.value(st["phi_V"]["a"])
+        return st
+
+    for law_id in ("d1_pump", "v1_proton_n2"):
+        law, pop, reg, sts, vol = _a(law_id)
+        assert api.slope_agreement(law, pop, reg, sts[0], vol)["failures"] == []
+        monkeypatch.setattr(C, "_seeded", dropped)
+        bad = api.slope_agreement(law, pop, reg, sts[0], vol)["failures"]
+        monkeypatch.setattr(C, "_seeded", original)
+        assert "conductance" in bad and any(n.startswith("dJ_dV") for n in bad)
+
+
+def test_a_spurious_response_where_the_slope_is_zero_is_caught():
+    """Plant (b), on ff_neutral_n1, whose voltage slopes are exactly 0: a difference 100 τ off
+    fails, 0.1 τ off passes, and a conductance 1e-40 pS off fails because its floor is exactly 0
+    (no charge moves)."""
+    import copy
+
+    from validation.core_seams.references import api
+    law, pop, reg, sts, vol = _a("ff_neutral_n1")
+    ex = C.slopes(law, pop, reg, sts[0], vol)
+    fd = C.slopes_by_differences(law, pop, reg, sts[0], vol)
+    tau = {n: t for n, _x, _y, t in api.slope_pairs(law, pop, reg, sts[0], vol, ex, fd)}
+    m = next(iter(fd["dJ_dV"]))
+    assert ex["dJ_dV"][m] == 0 and tau[f"dJ_dV[{m}]"] > 0 and tau["conductance"] == 0
+    for factor, fails in ((Decimal(100), True), (Decimal("0.1"), False)):
+        f2 = copy.deepcopy(fd)
+        with exact.context():
+            f2["dJ_dV"][m] += factor * tau[f"dJ_dV[{m}]"]
+        got = api.slope_agreement(law, pop, reg, sts[0], vol, ex, f2)["failures"]
+        assert (f"dJ_dV[{m}]" in got) is fails
+    f2 = copy.deepcopy(fd)
+    with exact.context():
+        f2["conductance_pS"] += Decimal("1e-40")
+    assert api.slope_agreement(law, pop, reg, sts[0], vol, ex, f2)["failures"] == ["conductance"]
+
+
+def test_a_route_dropped_to_zero_fails_method_agreement(monkeypatch):
+    """Plant (c): one cycle's trees j⁺ set to 0. The old relative check skipped it."""
+    from validation.core_seams.references import api
+    law, pop, reg, sts, _vol = _a("d2_slip_exchanger")
+    assert api.method_agreement(law, pop, reg, sts[0])["failures"] == []
+    original = D.cycle_fluxes
+
+    def zeroed(law_, rates, method):
+        r = original(law_, rates, method)
+        if method == "trees":
+            first = law_["cycles"][0]["id"]
+            r[first] = dict(r[first], j_plus=Decimal(0))
+        return r
+
+    monkeypatch.setattr(D, "cycle_fluxes", zeroed)
+    assert "A.j_plus" in api.method_agreement(law, pop, reg, sts[0])["failures"]
+
+
+def test_a_zero_hill_total_does_not_hide_a_basis_total(monkeypatch):
+    """Plant (d): J_A = J_B = 0 and ΔG_C = 0 make the Hill total exactly 0 while the basis total
+    J_C (g_A − g_B) is not. The old relative check reported agreement there."""
+    from validation.core_seams.references import api
+    law, pop, reg, sts, _vol = _a("d2_slip_exchanger")
+    unit = next(s for s in sts if s["tag"] == "unit_activity_zero_voltage")
+    ok = api.basis_signs(law, pop, reg, unit)
+    assert ok["hill_total_is_zero"] and ok["agrees"]
+    original = C.mode_fluxes
+
+    def hill_zero(law_, registry, state, capacity, availability):
+        r = dict(original(law_, registry, state, capacity, availability))
+        for k in ("A", "B", "C"):
+            r[k] = dict(r[k])
+        r["A"]["J"], r["B"]["J"], r["C"]["dG_RT"] = Decimal(0), Decimal(0), Decimal(0)
+        return r
+
+    monkeypatch.setattr(C, "mode_fluxes", hill_zero)
+    bad = api.basis_signs(law, pop, reg, sts[0])
+    assert bad["hill_total_is_zero"] and not bad["agrees"]
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment A2: the kinds owner's batch (statement 1 §5), its stated formulas on the references
+# --------------------------------------------------------------------------------------------
+
+def test_the_engines_stated_band_admits_the_declared_doubles_and_refuses_each_plant():
+    """B per row exactly 0, B_ψ within u Σ|ζ|, and R0 within B_W = 32 ε (T + N): the declared
+    doubles' own residual sits far inside B_W; a constant off by 1e-6 sits far outside it."""
+    from validation.core_seams.references import api
+    d2 = worlds.law_d2()
+    for c in d2["cycles"]:
+        b = api.engine_wegscheider_band(d2, c, REG)
+        assert b["admitted"] and b["R0_over_B_W"] < 1e-2 and 1 < b["B_W_in_eps_of_this_terms"] < 1e3
+    plants = {p["id"]: p for p in worlds.planted_diagrams(worlds.law_d1(), d2, worlds.law_d3(),
+                                                          worlds.law_d4())}
+    bad = plants["d2_slip_exchanger__k_1e-6"]
+    out = [api.engine_wegscheider_band(bad, c, REG) for c in bad["cycles"]]
+    assert any(not o["admitted"] and o["R0_over_B_W"] > 1e5 for o in out)
+    for suffix in ("__charge", "__conc", "__swap"):
+        law = plants["d2_slip_exchanger" + suffix]
+        assert not all(api.engine_wegscheider_band(law, c, REG)["admitted"] for c in law["cycles"])
+
+
+def test_q7_refuses_a_duplicate_and_an_inconsistent_direction():
+    """Q7: the declared cycles are exactly the simple cycles, each once, each a closed walk."""
+    from validation.core_seams.references import design
+    a = {"planted_laws": [], "plant_states": {}}
+    worlds.amendment_a2(a)
+    st = [{"phi_V": {"N": -0.04, "P": 0.0},
+           "c_mM": {"N": {"X": 12.0, "Y": 2e-4}, "P": {"X": 140.0, "Y": 1.5}}}]
+    reasons = {law["id"]: design.wegscheider_verdict(law, REG, st)[0] for law in a["planted_laws"]}
+    assert reasons["d2_slip_exchanger__duplicate_cycle"]["verdict"] == "refused"
+    assert any("more than once" in r
+               for r in reasons["d2_slip_exchanger__duplicate_cycle"]["reasons"])
+    assert reasons["d2_slip_exchanger__inconsistent_direction"]["verdict"] == "refused"
+    assert any("inconsistent direction" in r
+               for r in reasons["d2_slip_exchanger__inconsistent_direction"]["reasons"])
+    st3 = [{"phi_V": {"N": -0.04, "P": 0.0},
+            "c_mM": {"N": {"X": 12.0, "Z": 2.0}, "P": {"X": 140.0, "Z": 3.0}}}]
+    assert design.wegscheider_verdict(worlds.law_d3(), REG, st3)[0]["verdict"] == "admitted"
+
+
+def test_the_engines_stated_allowance_reproduces_the_guards_verdicts():
+    """The stated A fires fb_shift inside its band and not at its edges, fires the planted
+    negative S where S < 0 (the engine's substitution: S − 0.05 injected into the factored
+    flux), and leaves an admitted law silent; fb_shift's A sits inside this package's window."""
+    import json
+
+    from validation.core_seams.references import api
+    inp = json.loads(worlds.INPUTS.read_text())
+    A = inp["seam_a"]
+    laws = {law["id"]: law for law in A["laws"]}
+    for st in A["states"]["fb_shift"]:
+        r = api.engine_guard(laws["fb_shift"], A["populations"]["fb_shift"], REG, st)
+        inside = st["tag"].endswith(("_eq_inside", "_mid", "_z_inside"))
+        assert r["fires"] is inside, st["tag"]
+        assert 0.064 < r["A_in_eps_of_this_scale"] < 9.1e3
+    lid = "planted_negative_S_n1"
+    neg = [api.engine_guard(laws[lid], A["populations"][lid], REG, st)["fires"]
+           for st in A["states"][lid]]
+    assert neg[:2] == [True, True] and not any(neg[2:])
+    lid = "d2_slip_exchanger"
+    assert not any(api.engine_guard(laws[lid], A["populations"][lid], REG, st)["fires"]
+                   for st in A["states"][lid])
