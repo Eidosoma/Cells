@@ -14,7 +14,12 @@ exact zeros with every entity absent (_check_presence). The plant is the real ki
   moves exactly nothing, its rates and readouts are zero, and without a closer the same closed patch
   keeps cycling;
 - a closer-free structure sees its layout unchanged, so its programs are today's;
-- an own axis reads its entities' hosts through axis_hosts.
+- an own axis reads its entities' hosts through axis_hosts;
+- @3's channel and face slots have hosts (the lead's ruling of 19 November 2026, matching the
+  composite's close()): a channel population is active where its slot and its patch are, a face
+  where its slot and both its outside nodes are. A planted kind on channel slots, its presence
+  declared there, moves exactly nothing on a closed patch, its moves those of the same world with
+  the kind absent, and without a closer the same closed patch keeps it carrying (the plant).
 """
 
 import dataclasses
@@ -26,8 +31,12 @@ import pytest
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.kinds import transporter
+from cells.laws.electrochemistry import F, R
 from cells.models import surface_pump_v3
+from cells.numerics.extracellular_field import scatter
+from cells.numerics.species_sums import species_sum
 from cells.registry import kind_registry
+from tests import kind_fixtures
 from tests.unit.test_transporter_kind import held_world, scoped
 
 ALONE = {"membrane_slot": ("transporter_present",)}
@@ -155,13 +164,181 @@ def test_a_presence_field_that_binds_no_bool_mask_is_refused():
             parse_spec(held_world())
 
 
-def test_beside_a_closer_a_kind_with_entities_and_no_presence_is_refused():
-    with scoped(dataclasses.replace(transporter.TRANSPORTER, presence={})):  # Without presence.
-        spec = parse_spec(held_world())
-        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
-        with pytest.raises(ConfigError, match="has entities on membrane_slot but declares no"):
-            surface_pump_v3.check_definition(spec, structure=closed)
-    with scoped(DECLARED):  # Declaring its three masks, it is admitted beside the closer.
-        spec = parse_spec(held_world())
-        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
-        surface_pump_v3.check_definition(spec, structure=closed)
+# ------------------------------------------------------------------ the channel and face hosts
+# `tests.channel_carrier@1`: one channel population carries a declared species outward across
+# its patch at a declared rate while its presence mask holds (kind_fixtures' charged carrier, per
+# population). Its work is the carried species' electrochemical free-energy change. A kind parses
+# against @3's base definition, which holds patches but no populations, so the declaration names
+# the population's patch too, and the population is placed at binding (initial).
+
+CHANNEL_CARRIER_KEY = "test_channel_carrier"
+
+
+def _channel_carrier_parse(entries, base):
+    m = base.model
+    if set(entries) != {"species", "channel", "membrane", "rate_fmol_s"}:
+        raise ConfigError("test_channel_carrier declares species, channel, membrane, rate_fmol_s")
+    (patch,) = [x for x in m.membranes if x.id == entries["membrane"]]
+    rate = float(entries["rate_fmol_s"])
+    return (entries["species"], entries["channel"], patch.id, patch.inside, patch.outside, rate)
+
+
+def _channel_carrier_to_dict(declaration):
+    species, channel, membrane, _, _, rate = declaration
+    return dict(species=species, channel=channel, membrane=membrane, rate_fmol_s=rate)
+
+
+def _channel_carrier_initial(spec, declaration, layout):
+    species, channel, membrane, _, _, rate = declaration
+    m, k = spec.model, spec.execution.channel_capacity
+    slot = [c.id for c in m.channels].index(channel)
+    if m.channels[slot].membrane_id != membrane:
+        raise ConfigError(f"test_channel_carrier: {channel} is not on {membrane}")
+    rates = np.zeros((len(m.species_ids), k))
+    rates[m.species_ids.index(species), slot] = rate
+    present = np.zeros(k, dtype=bool)
+    present[slot] = True
+    state = dict(channel_carried=np.zeros_like(rates), channel_carrier_work_pJ=np.zeros(k))
+    return state, dict(channel_carrier_rate_fmol_s=rates, channel_carrier_present=present)
+
+
+def _channel_carrier_flow(p, control, *, xp):
+    """Outward flow [species, channel] (fmol/s) of the present population."""
+    rate = p.channel_carrier_rate_fmol_s * control.channel_carrier_availability[0]
+    return xp.where(p.channel_carrier_present, rate, 0.0)
+
+
+def _channel_carrier_rates(state, potentials, control, p, *, xp):
+    flow = _channel_carrier_flow(p, control, xp=xp)
+    ci, co = kind_fixtures._potentials(state, p, xp=xp)
+    patch, n = p.channel_membranes, p.active.size
+    cell, node = p.membrane_cell[patch], p.membrane_outside[patch]
+    mu = R * p.temperature * (xp.log(co[:, node]) - xp.log(ci[:, cell]))  # J/mol, out - in
+    mu = mu + p.valence * F * (potentials[n + node] - potentials[cell])
+    work = 1e-3 * species_sum(flow * mu, xp=xp)  # pJ/s per population.
+    return kind_registry.KindRates(
+        cell=-scatter(flow, ci, (cell,), xp=xp),
+        outside=scatter(flow, co, (node,), xp=xp),
+        derivatives=dict(channel_carried=flow, channel_carrier_work_pJ=work),
+        heat_pJ_s=xp.zeros(()),
+        work_pJ_s=work,
+    )
+
+
+def _channel_carrier_ledger_terms(state, p, *, xp):
+    moved, patch = state.channel_carried, p.channel_membranes
+    return dict(
+        cell=-scatter(moved, state.amount_increment, (p.membrane_cell[patch],), xp=xp),
+        outside=scatter(
+            moved, state.extracellular_amount_increment, (p.membrane_outside[patch],), xp=xp
+        ),
+        work_pJ=state.channel_carrier_work_pJ,
+    )
+
+
+def _channel_carrier_domain(state, p, *, xp):
+    return xp.all(xp.isfinite(state.channel_carried)) & xp.all(
+        xp.isfinite(state.channel_carrier_work_pJ)
+    )
+
+
+def _channel_carrier_moved_rows(declaration):
+    species, _, _, inside, outside, _ = declaration
+    return ((species, inside), (species, outside))
+
+
+CHANNEL_CARRIER = kind_registry.Kind(
+    kind_id="tests.channel_carrier@1",
+    model_key=CHANNEL_CARRIER_KEY,
+    state_axes=(
+        ("channel_carried", ("species", "channel_slot")),
+        ("channel_carrier_work_pJ", ("channel_slot",)),
+    ),
+    layout_fields=("channel_carrier_rate_fmol_s", "channel_carrier_present"),
+    control_fields=("channel_carrier_availability",),
+    parse=_channel_carrier_parse,
+    to_dict=_channel_carrier_to_dict,
+    structure_entry=lambda declaration: (),
+    initial=_channel_carrier_initial,
+    control_values=lambda spec, declaration, times: dict(
+        channel_carrier_availability=np.ones((len(times), 1))
+    ),
+    rates=_channel_carrier_rates,
+    ledger_terms=_channel_carrier_ledger_terms,
+    domain=_channel_carrier_domain,
+    moved_rows=_channel_carrier_moved_rows,
+    field_axes={
+        "channel_carrier_rate_fmol_s": ("species", "channel_slot"),
+        "channel_carrier_present": ("channel_slot",),
+        "channel_carrier_availability": (),
+    },
+    partition_roles={"channel_carrier_present": kind_registry.PartitionRole("structural", False)},
+    presence={"channel_slot": ("channel_carrier_present",)},
+)
+
+
+def channel_world():
+    """The held world without its transporter, the planted kind carrying Y (10 mM on both sides)
+    outward through kir_0, a population on membrane_0."""
+    raw = held_world()
+    m = raw["model"]
+    del m[transporter.MODEL_KEY]
+    m[CHANNEL_CARRIER_KEY] = dict(
+        species="Y", channel="kir_0", membrane="membrane_0", rate_fmol_s=1e-3
+    )
+    return raw
+
+
+def test_a_kind_on_channel_slots_moves_exactly_nothing_on_a_closed_patch():
+    assert kind_registry.declaration_errors(CHANNEL_CARRIER) == []
+    with scoped(CHANNEL_CARRIER):
+        spec = parse_spec(channel_world())
+        y = list(spec.model.species_ids).index("Y")
+        structure, state, p, control = _bound(spec, closer=True)
+        opened, _ = _rates(structure, state, p, control)
+        assert np.asarray(opened.channel_carried)[y, 0] == 1e-3  # It carries on an open patch.
+        closed = _closed(p)  # membrane_0: kir_0's patch.
+        rates, _ = _rates(structure, state, closed, control)
+        assert np.all(np.asarray(rates.channel_carried) == 0.0)
+        assert np.all(np.asarray(rates.channel_carrier_work_pJ) == 0.0)
+        # Its moves: the totals equal the same closed world's with the kind absent.
+        absent = closed._replace(channel_carrier_present=np.zeros_like(p.channel_carrier_present))
+        without, _ = _rates(structure, state, absent, control)
+        np.testing.assert_array_equal(rates.amount_increment, without.amount_increment)
+        np.testing.assert_array_equal(
+            rates.extracellular_amount_increment, without.extracellular_amount_increment
+        )
+        # Planted: without a closer the gate is absent, and the closed patch keeps it carrying.
+        open_structure, _, _, _ = _bound(spec, closer=False)
+        leaking, _ = _rates(open_structure, state, closed, control)
+        assert np.asarray(leaking.channel_carried)[y, 0] == 1e-3
+
+
+def test_channel_and_face_slots_read_their_hosts():
+    assert set(surface_pump_v3.PRESENCE_SLOT_AXES) == {
+        "cell_slot", "extracellular_slot", "membrane_slot", "edge_slot", "channel_slot",
+        "face_slot",
+    }  # fmt: skip
+    kind = SimpleNamespace(axis_hosts={})
+    hosts = SimpleNamespace(
+        channel_active=np.array([True, True, True, False]),
+        channel_membranes=np.array([0, 0, 1, 1]),
+        membrane_active=np.array([False, True]),  # Patch 0 closed.
+        junction_active=np.zeros(0, dtype=bool),
+        active=np.array([True]),
+        membrane_cell=np.array([0, 0]),
+        membrane_outside=np.array([0, 1]),
+        junction_sender=np.zeros(0, dtype=np.int64),
+        junction_receiver=np.zeros(0, dtype=np.int64),
+        face_active=np.array([True, True, False]),
+        face_sender=np.array([0, 1, 0]),
+        face_receiver=np.array([1, 2, 2]),
+        outside_active=np.array([True, False, True]),  # Outside node 1 closed.
+    )
+    channels = surface_pump_v3.entity_activity(kind, "channel_slot", hosts, xp=np)
+    np.testing.assert_array_equal(channels, [False, False, True, False])
+    faces = surface_pump_v3.entity_activity(kind, "face_slot", hosts, xp=np)
+    np.testing.assert_array_equal(faces, [False, False, False])
+    hosts.outside_active = np.array([True, True, True])
+    faces = surface_pump_v3.entity_activity(kind, "face_slot", hosts, xp=np)
+    np.testing.assert_array_equal(faces, [True, True, False])  # The third's own slot is closed.

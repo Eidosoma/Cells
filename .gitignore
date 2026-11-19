@@ -21,3 +21,8 @@ reports/ref-*.xml
 
 # Local agent worktrees.
 /.claude/worktrees/
+
+# Lean build outputs (the Lean proofs project in lean/, 19 November 2026)
+lean/**/.lake/
+lean/**/build/
+lean/**/lake-packages/
