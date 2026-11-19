@@ -461,6 +461,78 @@ def test_the_first_order_lag_meets_the_envelope_reference(name):
     assert bool(ph > kernel.LAG_BUDGET_PX) == bool(ref["first_order_pH"] > kernel.LAG_BUDGET_PX)
 
 
+C5_CASES = tuple(INPUTS["envelope"]["amendment_c5"]["cases"])
+
+
+def release_steps_of(net, binders):
+    """The network's release steps, ((step, from form, ligand, to form), ...) by the registry's IDs:
+    a unit step whose bound form holds count_f(L) <= 0 (amendment C5)."""
+    _, width, nl = net["counts"].shape
+    m = net["step_matrix"]
+    out = []
+    for s in range(m.shape[1]):
+        ligand = int(net["step_ligand"][s])
+        to = int(np.flatnonzero(m[nl:, s] > 0)[0]) + nl
+        b, g = divmod(to - nl, width)
+        if net["counts"][b, g, ligand] <= 0:
+            f = (int(net["step_from"][s]) - nl) % width
+            forms = REGISTRY["binders"][binders[b]]["forms"]
+            out.append((s, forms[f]["id"], ligand, forms[g]["id"]))
+    return out
+
+
+@pytest.mark.parametrize("name", C5_CASES)
+def test_the_first_order_lag_bounds_the_kinetic_lag_on_every_release_step_case(name):
+    """Amendment C5, the comparison frozen at 07:11:51 UTC (frozen_constants_c5.json):
+    - the network's release steps are the references';
+    - every ligand's kinetic lag at the last record time is at most the engine's first-order lag,
+      to the first order's registered accuracy, (1 + 2e-3) |lag| + two floors (the first
+      order's and the kinetic row's), the cross-row drives included;
+    - the budget verdict over every ligand is the kinetic reference's.
+    The first order meeting the references' first order within twice its floor is the envelope
+    test above, which reads every case."""
+    ligands, binders, net, _, _, _, valid, lag = envelope_case(name)
+    ref = VALUES["envelope"]["cases"][name]
+    assert valid.all()
+    found = [(f, ligands[l], g) for _, f, l, g in release_steps_of(net, binders)]
+    assert sorted(found) == sorted((r["from"], r["ligand"], r["to"]) for r in ref["release_steps"])
+    last = ref["kinetic"]["rows"][-1]
+    for l, s in enumerate(ligands):
+        mine = abs(float(lag[l, 0]))
+        floors = ref["first_order_floor_rel"] * abs(ref["first_order_dln"][s]) + last["floor_dln"][s]
+        assert abs(last["lag_dln"][s]) <= (1 + 2e-3) * mine + 2 * floors, (s, last, mine)
+    engine = max(abs(float(v)) for v in lag[:, 0]) / kernel.LN10 > kernel.LAG_BUDGET_PX
+    kinetic = max(abs(v) for v in last["lag_dln"].values()) / kernel.LN10 > kernel.LAG_BUDGET_PX
+    assert engine is kinetic, (name, engine, kinetic)
+
+
+@pytest.mark.parametrize("name", C5_CASES)
+def test_a_release_steps_sign_flip_is_caught(name):
+    """C5's plant: the release steps' ligand written with the wrong sign (taken to release L where
+    it binds it), the forward flux unchanged. The engine's lag then misses the references' first
+    order by more than twice its floor on some ligand."""
+    ligands, binders, net, tl, tb, u, _, _ = envelope_case(name)
+    ref = VALUES["envelope"]["cases"][name]
+    matrix = net["step_matrix"].copy()
+    for s, _, ligand, _ in release_steps_of(net, binders):
+        matrix[ligand, s] = -matrix[ligand, s]
+    case = INPUTS["envelope"]["cases"][name]
+    volume = case["volume_pL"]
+    drives = dict(case["drive_fmol_per_s"])
+    d_l = np.array([[drives.get(s, 0.0) / volume] for s in ligands])
+    d_b = np.array([[drives.get(b, 0.0) / volume] for b in binders])
+    held, _, _ = masks(net, 1)
+    _, forms = kernel.speciation(u, tb, net["log_beta"], net["counts"], net["present"], xp=np)
+    planted = kernel.lag_first_order(u, forms, tb, d_l, d_b, net["log_beta"], net["counts"],
+                                     net["present"], held, matrix, net["step_from"],
+                                     net["step_ligand"], net["step_kon"], net["conservation"],
+                                     xp=np)  # fmt: skip
+    misses = [abs(float(planted[l, 0]) - ref["first_order_dln"][s])
+              / (ref["first_order_floor_rel"] * abs(ref["first_order_dln"][s]))
+              for l, s in enumerate(ligands)]  # fmt: skip
+    assert max(misses) > 2, (name, misses)
+
+
 def test_the_envelope_reduces_to_b4_and_its_plants_are_caught():
     ligands, binders, net, tl, tb, u, _, lag = envelope_case("E0_b4")
     case = INPUTS["envelope"]["cases"]["E0_b4"]

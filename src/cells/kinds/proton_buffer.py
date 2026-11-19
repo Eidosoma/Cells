@@ -70,11 +70,13 @@ declaration:
   its total. So the margin never refuses an admitted world today: it is the exact condition, kept
   fail-closed, for when totals at or below zero are admitted. Its vertices are the layout's
   binding_margin_vertices, and a network past the enumeration's caps is refused at the definition.
-- A form below its base in any ligand is refused beside the envelope, whether single-sign (S4's
-  pi2_PO4) or mixed (S7's mgx_MgmH), fail-closed (the lead's ruling, 19 November 2026). Such a
-  form makes a release step, and the envelope's references register no release-step case, so its
-  lag has no reference. The species registry and the kernel's margin admit those forms; the
-  refusal lifts once a release-step case is registered and the envelope meets it.
+- A form below its base in some ligand makes a release step, a unit step whose bound form holds
+  count <= 0 in its ligand. Amendment C5 registers seven release-step cases, and the envelope
+  bounds their kinetic lag, the cross-row drives included, within its first order's registered
+  accuracy. So release steps are admitted within C5's registered scope (the lead's ruling, 19
+  November 2026): in the proton row, with counts of -1, one release step per binder, and one path
+  to each mixed-sign form (S4's pi2_PO4, S7's mgx_MgmH). Everything outside that scope is
+  refused, fail-closed, naming what C5 does not cover.
 """
 
 import math
@@ -520,15 +522,70 @@ def _unit_steps_reach(counts):
     return seen == forms
 
 
+def _release_scope_error(forms, proton):
+    """The first way a binder's forms ((ID, counts, mu°/RT), ..., base first) leave amendment C5's
+    registered release-step scope, or None. A release step is a unit step f' + L <-> f whose bound
+    form f holds count_f(L) <= 0, so binding L only restores a ligand a form below its base
+    released. In scope: no count below -1; every release step in the proton row; at most one
+    release step; and each mixed-sign form reached from its base by exactly one simple path of
+    unit steps (C5's zero_power names the rest)."""
+    names = sorted({ligand for _, counts, _ in forms for ligand, _ in counts})
+    vectors = {
+        fid: tuple(dict(counts).get(ligand, 0) for ligand in names) for fid, counts, _ in forms
+    }
+    low = [(fid, dict(counts)) for fid, counts, _ in forms if any(n < -1 for _, n in counts)]
+    if low:
+        return f"its form {low[0][0]} has a count below -1, {low[0][1]}"
+    by_vector = {vector: fid for fid, vector in vectors.items()}
+    releases = []
+    for fid, vector in vectors.items():
+        for k, ligand in enumerate(names):
+            below = vector[:k] + (vector[k] - 1,) + vector[k + 1 :]
+            if below in by_vector and vector[k] <= 0:
+                releases.append((by_vector[below], ligand, fid))
+    foreign = [step for step in releases if step[1] != proton]
+    if foreign:
+        f, ligand, g = foreign[0]
+        return f"its release step {f} + {ligand} <-> {g} releases {ligand}, not the proton row"
+    if len(releases) > 1:
+        named = ", ".join(f"{f} + {ligand} <-> {g}" for f, ligand, g in releases)
+        return f"it has {len(releases)} release steps ({named}), more than one"
+    nodes = set(vectors.values())
+    base = vectors[forms[0][0]]
+    for fid, vector in vectors.items():
+        if any(n > 0 for n in vector) and any(n < 0 for n in vector):
+            paths = _simple_paths(nodes, base, vector)
+            if paths != 1:
+                return f"its mixed-sign form {fid} is reached from its base by {paths} paths"
+    return None
+
+
+def _simple_paths(nodes, start, end):
+    """The number of simple paths of unit steps (one ligand count up or down) from start to end
+    through the count vectors `nodes`."""
+
+    def walk(here, seen):
+        if here == end:
+            return 1
+        total = 0
+        for k in range(len(here)):
+            for step in (1, -1):
+                there = here[:k] + (here[k] + step,) + here[k + 1 :]
+                if there in nodes and there not in seen:
+                    total += walk(there, seen | {there})
+        return total
+
+    return walk(start, {start})
+
+
 def _check_general(spec, declaration):
     """The general closure's admission against the species registry (module docstring): each
     ligand row a single-form species with a standard potential; each binder row a multi-form row
     whose forms bind only declared ligands (every ligand written out), with k_on declared for
     exactly the ligands its forms bind; every declared ligand bound somewhere; every form
     reachable from its base by unit steps (the envelope's network, CORE_SEAMS §19 as amended); and
-    no form below its base in any ligand. That last refusal is fail-closed (the lead's ruling, 19
-    November 2026): a negative count makes a release step, and the envelope has no reference for
-    one until the references register a release-step case. The movers' rules are the species
+    every release step inside amendment C5's registered scope (_release_scope_error), the rest
+    refused, fail-closed (the lead's ruling, 19 November 2026). The movers' rules are the species
     registry's (check_closure_rows), ahead of this."""
     where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
     model = species_registry.declared(spec)
@@ -568,16 +625,13 @@ def _check_general(spec, declaration):
                 f"{where}: a form of binder row {row} is not reachable from its base by unit "
                 "steps (one ligand more or fewer at a time) through declared forms"
             )
-        released = [
-            (fid, dict(counts)) for fid, counts, _ in forms if any(n < 0 for _, n in counts)
-        ]
-        if released:
-            fid, counts = released[0]
+        problem = _release_scope_error(forms, declaration.proton)
+        if problem is not None:
             raise ConfigError(
-                f"{where}: binder row {row}'s form {fid} has a negative count {counts}, so its "
-                "network has a release step, and the envelope's references register no "
-                "release-step case: its lag has no reference, so the closure refuses it "
-                "(fail-closed) until one is registered"
+                f"{where}: binder row {row}: {problem}. Amendment C5 registers the envelope's "
+                "release steps only in the proton row, with counts of -1, one per binder, and one "
+                "path to each mixed-sign form, so the lag has no reference here: refused "
+                "(fail-closed)"
             )
         bound |= set(binds)
     unbound = sorted(ligands - bound)
