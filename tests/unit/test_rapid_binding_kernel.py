@@ -11,7 +11,8 @@ values at the tolerances frozen before any read of the values
   off by one;
 - B4's path is B4's kernel bit for bit, and Newton agrees with it within the floor. A node's
   disjoint ligand sets solve exactly as if alone;
-- the booked terms E_c, G* and S_c are within 16 eps of their terms, with S4[10]'s S_c undefined.
+- the booked terms E_c, G* and S_c are within 16 eps of their terms, with S4[10]'s S_c undefined;
+- the registered law declares the general form (seam F's fields), its free_energy G*.
   The pairs' changes are within twice their floor, and each of the three planted bookings misses by
   its named sum;
 - P1's nodes: the free amount, the admissible floor and the ladder's equilibrated free amounts,
@@ -209,6 +210,24 @@ def test_the_booked_terms_meet_the_references(name):
             assert abs(s_c[k] - term["S_c_pJ"]) <= floor
     if name == "S4":
         assert not defined[10] and np.isfinite(e_c[10])  # H total < 0: E_c defined, S_c not.
+
+
+def test_the_registered_law_declares_the_general_form_and_its_free_energy_is_g_star():
+    """rapid_binding@1 as registered carries seam F's BindingLaw fields. Its forms are the
+    registry's, its envelope and P1's free amounts are the kernel's, and its free_energy is G*,
+    bit for bit with booked_terms_pJ's at S3's states. Planted: G* and E_c differ there, so a
+    free_energy that returned E_c would be caught."""
+    from cells.registry import laws
+
+    law = laws.active().lookup(kernel.READ_ID)
+    assert law is kernel.LAW and law.forms == "registry"
+    assert law.envelope is kernel.lag_first_order and law.free_amounts is kernel.free_amounts
+    ligands, binders, volume, net, tl, tb, held, u, valid = solve("S3")
+    lig, bind = mu0p(ligands, binders)
+    args = (u, tl, tb, net["log_beta"], net["counts"], net["present"], held, lig, bind, volume, T_K)
+    e_c, g_star, _, _ = kernel.booked_terms_pJ(*args, xp=np)
+    assert np.array_equal(law.free_energy(*args, xp=np), g_star)
+    assert np.all(np.abs(g_star - e_c) > 16 * EPS * np.abs(g_star))
 
 
 @pytest.mark.parametrize("name", SYSTEMS)

@@ -455,10 +455,25 @@ def connected_sets(member, counts):
 # closure's kind and registered by the law registry's loader from @3's law homes. Its general
 # fields beyond version 1's (forms, free_energy, envelope and free_amounts) join when the law
 # template's hand-off lands on main (the F owner's e74d3599).
+def free_energy_pJ(u, total_ligand, total_binder, log_beta, counts, present, held,
+                   mu0p_ligand_RT, mu0p_binder_RT, volume_pL, temperature_K, *, xp):
+    """G* per node, pJ: the closure's free-energy term at ln x u (booked_terms_pJ's second part;
+    the law's free_energy). Defined wherever the solve is, whatever the totals' signs."""
+    return booked_terms_pJ(u, total_ligand, total_binder, log_beta, counts, present, held,
+                           mu0p_ligand_RT, mu0p_binder_RT, volume_pL, temperature_K, xp=xp)[1]
+
+
+# The general form's declarations (CORE_SEAMS §19 as amended; seam F's BindingLaw fields): the
+# binders' forms are the species registry's, and its kernels are G*, the envelope's first-order
+# lag and P1's free amounts.
 LAW = BindingLaw(
     READ_ID,
     ("ligand",),
     free_ligands,
+    forms="registry",
+    free_energy=free_energy_pJ,
+    envelope=lag_first_order,
+    free_amounts=free_amounts,
     host="cells.rapid_proton_buffer@1",
     provenance="cited",
     source=Citation(
