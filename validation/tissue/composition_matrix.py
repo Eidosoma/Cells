@@ -35,6 +35,7 @@ from pathlib import Path
 from cells.models import pump_composite
 from cells.operators import OPERATORS
 from cells.operators import compartments as compartments_operator
+from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -58,6 +59,7 @@ REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availabili
 BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
+TRAFFICKING = trafficking_operator.LAW_ID
 
 OPS = "src/cells/operators/"
 TESTS = "tests/unit/"
@@ -588,19 +590,121 @@ def _tags():
         anchors + "; a population's facing pool may be one (not shown nominal)",
         (),
     )
+    # FR-2's trafficking (membrane_trafficking.py; FR-2's design statement §11): its split part
+    # moves area, capacitance and units between a plasma patch and a compartment's pool through
+    # membrane state, and it reads as declared (CONFLICTS_VIEW) the outside nodes' volumes and
+    # anchors (the carriers' exact free-energy change at free nodes, a held bath's mu) and the
+    # activity masks of its capacitor view. Its definition refuses each of these operators too
+    # (membrane_trafficking.REFUSED; RULES).
+    lagged = "a read lagged by half a step (C2's order rule)"
+    two_writers = "both write capacitances, and one operator books the view's capacitor term"
+    free_nodes = "The carriers' work is the exact free-energy change at the free nodes it touches"
+    masks = "Trafficking's capacitor view reads the masks as declared"
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("order", lumen, TRAFFICKING, "membrane_area")] = (
+            REAL,
+            "The lumen's split part reads its patch's area before trafficking's split part writes "
+            f"areas through membrane state, {lagged}; a route's plasma patch may face the lumen "
+            "(not shown nominal), and no fluid moves beside trafficking in version 1 (F0)",
+            (),
+        )
+        tags[("reads", TRAFFICKING, lumen, "extracellular_volume")] = (
+            REAL,
+            f"{free_nodes}, at their declared volumes; a lumen changes its node's volume, and a "
+            "route's plasma patch may face it (not shown nominal; F0)",
+            (),
+        )
+    for insertion in (INSERTION_1, INSERTION_2):
+        tags[("order", insertion, TRAFFICKING, "membrane_capacitance")] = (
+            REAL,
+            "Insertion's split part reads the capacitances before trafficking's split part writes "
+            f"them through membrane state, {lagged}; {two_writers}",
+            (),
+        )
+        for name, what in (
+            ("membrane_area", "area"),
+            ("membrane_capacitance", "capacitance"),
+            ("channel_abundance", "populations' units"),
+        ):
+            pronoun = "them" if name == "channel_abundance" else "it"
+            tags[("order", TRAFFICKING, insertion, name)] = (
+                REAL,
+                f"Trafficking's split part reads its plasma patch's {what} before insertion's "
+                f"split part changes {pronoun} through membrane state, {lagged}; {two_writers}",
+                (),
+            )
+    for replacement in (REPLACEMENT_1, REPLACEMENT_2):
+        tags[("order", TRAFFICKING, replacement, "channel_abundance")] = (
+            REAL,
+            "Trafficking's split part reads its populations' units before replacement changes "
+            f"abundances there, {lagged} (not shown nominal); an owner must not be replaced "
+            "(FR-1's door R)",
+            (),
+        )
+    tags[("reads", TRAFFICKING, WATER, "extracellular_volume")] = (
+        REAL,
+        f"{free_nodes}, at their declared volumes; water changes finite nodes' volumes, and no "
+        "fluid moves beside trafficking in version 1 (F0)",
+        (),
+    )
+    tags[("reads", TRAFFICKING, BATH, "extracellular_amount_reference")] = (
+        REAL,
+        "A held bath supplies or takes the carriers at the declared bath's mu (the reservoir "
+        "work), and the bath schedule changes a held bath's composition; a route's plasma patch "
+        "may face one",
+        (),
+    )
+    tags[("reads", TRAFFICKING, INSERTION_1, "extracellular_amount_reference")] = (
+        REAL,
+        f"{free_nodes}, from their declared anchors; insertion@1 changes its onset nodes' "
+        "anchors, and a route's plasma patch may face one (not shown nominal)",
+        (),
+    )
+    tags[("reads-closed", TRAFFICKING, INSERTION_2, "extracellular_amount_reference")] = (
+        REAL,
+        anchors + "; a route's plasma patch may face one (not shown nominal)",
+        (),
+    )
+    for name in ("membrane_active", "outside_active"):
+        tags[("reads", TRAFFICKING, INSERTION_1, name)] = (
+            REAL,
+            f"{masks}, and insertion@1 opens onset patches and nodes; a route's patch or node "
+            "may be one (not shown nominal)",
+            (),
+        )
+        tags[("reads-closed", TRAFFICKING, INSERTION_2, name)] = (
+            REAL,
+            f"{masks}, and insertion@2 closes onset patches and nodes until their onset; a "
+            "route's patch or node may be one (not shown nominal)",
+            (),
+        )
+    tags[("reads-closed", TRAFFICKING, PARTITION, "active")] = (
+        REAL,
+        "The partition closes and retires cells, an owner included: an owner must not divide "
+        "(FR-1's door D)",
+        (),
+    )
+    tags[("reads-closed", TRAFFICKING, PARTITION, "membrane_active")] = (
+        REAL,
+        tags[("reads-closed", TRAFFICKING, PARTITION, "active")][1] + propagates,
+        (),
+    )
     return tags
 
 
 TAGS = _tags()
 
 
-def _off_list(admitted_by_declarations):
-    """The compartments' off-list pairs that the declarations admit (marks) or refuse (behind)."""
+def _off_list(admitted_by_declarations, law=COMPARTMENTS, admitted=None):
+    """A law's off-list pairs that the declarations admit (marks) or refuse (behind): the pairs of
+    `law` with each registered law outside `admitted`, its admitted list (the compartments' by
+    default)."""
+    admitted = compartments_operator.ADMITTED if admitted is None else admitted
     out = []
-    for law in LAWS:
-        if law in compartments_operator.ADMITTED:
+    for other in LAWS:
+        if other in admitted:
             continue
-        for pair in ((COMPARTMENTS, law), (law, COMPARTMENTS)):
+        for pair in ((law, other), (other, law)):
             if (not errors(sequence(*pair))) == admitted_by_declarations:
                 out.append(pair)
     return tuple(out)
@@ -820,6 +924,22 @@ RULES = (
         "it, §4) and stands behind the declarations' refusals of the rest",
         marks=_off_list(True),
         behind=_off_list(False),
+    ),
+    dict(
+        rule="scheduled_membrane_trafficking@1 composes only with its admitted list, which fails "
+        "closed",
+        laws=(TRAFFICKING,),
+        level="law",
+        check=OPS + "membrane_trafficking.py::check_definition",
+        test=TESTS + "test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="Version 1 is qualified beside membrane state, the compartments, turnover, reactions "
+        "and the coupling only (FR-2's design statement §6; D217). It marks the off-list pairs "
+        "the declarations admit (injection, not qualified beside it; site occupancy, whose sites "
+        "move with their membrane only from version 1.1) and stands behind the declarations' "
+        "refusals of the rest",
+        marks=_off_list(True, TRAFFICKING, trafficking_operator.ADMITTED),
+        behind=_off_list(False, TRAFFICKING, trafficking_operator.ADMITTED),
     ),
     dict(
         rule="membrane state beside a compartment only together with trafficking",
