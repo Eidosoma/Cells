@@ -473,15 +473,18 @@ def floor_of(key, steps):
     return registration()["order"]["readable_factor"] * np.asarray(steps, float) * EPS * SCALES[key]
 
 
-def bound(d_coarse, d_fine, floor_coarse, floor_fine):
-    """A reference's error bound at a row and class (§3, §10.4, §10.5): its finest ladder
-    difference where the order from its three finest arms is at least 1; its floor where that
-    difference sits at or below it; otherwise the ladder's larger spread (no order)."""
+def bound(d_coarse, d_fine, floor_coarse, floor_fine, tenth):
+    """A reference's error bound at a row and class (§3, §10.4, §10.6), or None (undetermined):
+    its finest ladder difference where the order from its three finest arms is at least 1; its
+    floor where that difference sits at or below it; with no order (below 1), its larger
+    difference or floor only if that is at most `tenth`, a tenth of the adequacy bar for its
+    class (stage 0's own ratio); otherwise undetermined."""
     if d_fine <= floor_fine:
         return floor_fine
     if d_coarse > floor_coarse and d_coarse >= 2.0 * d_fine:  # log2(coarse / fine) >= 1.
         return d_fine
-    return max(d_coarse, d_fine, floor_fine)
+    spread = max(d_coarse, d_fine, floor_fine)
+    return spread if spread <= tenth else None
 
 
 class Series:
@@ -529,7 +532,8 @@ class Ladder:
             dc = difference(self.coarse.c[key][ic], self.middle.c[key][im], key)
             df = difference(self.middle.c[key][im], self.finest.c[key][i_f], key)
             fc, ff = floor_of(key, self.middle.steps(ms)), floor_of(key, self.finest.steps(ms))
-            e = np.asarray([bound(*v) for v in zip(dc, df, fc, ff, strict=True)])
+            e = np.asarray([b if (b := bound(*v, B_A[key] / 10)) is not None else np.nan
+                            for v in zip(dc, df, fc, ff, strict=True)])  # fmt: skip
             out[key] = dict(bound=e, d_coarse=dc, d_fine=df, floor_coarse=fc, floor_fine=ff)
         return out
 
@@ -587,21 +591,43 @@ def verdict_rows(table, ms, bar):
     return dict(verdict="pass")
 
 
+REFUSAL_KINDS = (  # (message fragment, what stops the rung); X2's kinds kept apart (§10.6).
+    ("exceeds the registration's cap", "X2: the per-row integration-error cap (the cap binds)"),
+    ("out-of-band steps are held", "X2: the whole-run count of out-of-band held steps"),
+    ("the order condition", "X2: the whole-run order band of the step ratio"),
+    ("corrected residual exceeds", "X2: the per-row allowance (a misbooking's signature)"),
+    ("held step's change exceeds", "X2: a held step's change above today's bound"),
+    ("non-finite residual", "X2: a non-finite residual, flow or magnitude"),
+    ("domain failure", "the step's own check (its domain, with the membrane-rate ceiling)"),
+    ("Resolved junction step exceeds", "the junction-gate bound (definition)"),
+    ("explicit-rate stability bound", "the explicit-rate bound (definition)"),
+    ("calcium pump rate bound", "the calcium pump bound (definition)"),
+    ("kind's explicit-rate bound", "a kind's explicit-rate bound (definition)"),
+    ("accounting failed", "a row's ledger checks"),
+    ("Invalid resolved inventory", "a row's inventory checks"),
+    ("dissipation cannot be negative", "a row's dissipation check"),
+    ("observation field failed", "a row's field check"),
+)
+
+
 def refusal_of(record):
-    """An incomplete arm's verdict: the engine's refusal (a result), or an unclassified fault."""
+    """An incomplete arm's verdict and what stopped it: the engine's refusal (a result, of a
+    named kind), or an unclassified fault."""
     error_type, message = record.get("error_type"), str(record.get("error") or "")
     result = error_type == "NumericalError" or (
         error_type == "ConfigError" and any(m in message for m in STEP_BOUND_MESSAGES)
     )
-    kind = "refusal" if result else "unclassified (a fault)"
+    named = next((label for fragment, label in REFUSAL_KINDS if fragment in message), None)
     cause = dict(
-        kind=kind,
-        error_type=record.get("error_type"),
+        kind="refusal" if result else "unclassified (a fault)",
+        stops=named if result else None,
+        error_type=error_type,
         message=record.get("error"),
         last_row_s=record.get("last_row_s"),
-        x2=str(record.get("error", "")).startswith(X2_MESSAGE),
+        x2=message.startswith(X2_MESSAGE),
+        x2_cap_binds=result and "exceeds the registration's cap" in message,
     )
-    return dict(verdict="fail" if kind == "refusal" else "fault", cause=cause)
+    return dict(verdict="fail" if result else "fault", cause=cause)
 
 
 def worst(verdicts):
@@ -690,16 +716,16 @@ def decide_event(diff, e, criterion):
 
 def ladder_events(ladder):
     """The reference's events on its three arms, with the bounds of its peak and crossing times
-    (§10.5: the same rule as rows; the peak's floor is twice the voltage floor at its row, a
-    crossing time's is the voltage floor over the reference's slope between its bracketing
-    rows)."""
+    (§10.5, §10.6: the same rule as rows, the tenth being a tenth of stage 0's event criterion;
+    the peak's floor is twice the voltage floor at its row, a crossing time's is the voltage floor
+    over the reference's slope between its bracketing rows)."""
     ev = [series_events(s) for s in (ladder.coarse, ladder.middle, ladder.finest)]
     c, m, f = ev
     peak_ms = [f["peak_ms"]]
     fv_m = 2 * float(floor_of("voltage", ladder.middle.steps(peak_ms))[0])
     fv_f = 2 * float(floor_of("voltage", ladder.finest.steps(peak_ms))[0])
     f["peak_bound_V"] = bound(abs(c["peak_V"] - m["peak_V"]), abs(m["peak_V"] - f["peak_V"]),
-                              fv_m, fv_f)  # fmt: skip
+                              fv_m, fv_f, PEAK_RELATIVE * f["peak_V"] / 10)  # fmt: skip
     t, v = ladder.finest.times, ladder.finest.c["voltage"][:, 0]
     for j, (xc, xm, xf) in enumerate(zip(c["crossings"], m["crossings"], f["crossings"],
                                          strict=False)):  # fmt: skip
@@ -712,7 +738,7 @@ def ladder_events(ladder):
                     if slope else math.inf)  # fmt: skip
         f["crossings"][j] = dict(xf, bound_s=bound(abs(xc["time_s"] - xm["time_s"]),
                                                    abs(xm["time_s"] - xf["time_s"]),
-                                                   floor_tm, floor_t))  # fmt: skip
+                                                   floor_tm, floor_t, CROSSING_S / 10))  # fmt: skip
     return f
 
 
@@ -942,6 +968,22 @@ def save_retention(directory, name, tables):
     np.savez_compressed(Path(directory) / f"{name}.npz", **arrays)
 
 
+def reference_count(ladder):
+    """§10.6: a reference ladder's rows by how their bound arises, per class (reported)."""
+    ms = ladder.finest.ms
+    b = ladder.bounds(ms)
+    out = {}
+    for key in CLASS_KEYS:
+        e, df, ff = b[key]["bound"], b[key]["d_fine"], b[key]["floor_fine"]
+        dc, fc = b[key]["d_coarse"], b[key]["floor_coarse"]
+        ordered = (df > ff) & (dc > fc) & (dc >= 2.0 * df)
+        out[key] = dict(rows=len(ms), at_floor=int((df <= ff).sum()), order_at_least_1=int(
+            ordered.sum()), no_order_within_a_tenth=int((np.isfinite(e) & (df > ff) & ~ordered)
+            .sum()), undetermined=int((~np.isfinite(e)).sum()),
+            undetermined_ms=[int(m) for m in ms[~np.isfinite(e)][:20]])  # fmt: skip
+    return out
+
+
 def x2_of(arm):
     r = arm.record
     return dict(status=r.get("status"), steps=r.get("steps"), summary=r.get("energy_check_summary"),
@@ -1107,6 +1149,29 @@ def analyse(output, root, instrument_output):
         }
 
     out["orders"] = orders(root)
+    # §10.6: until the in-world plants are run, no claimed step has X2's sensitivity shown in its
+    # world; X2's refusals are reported by kind, and only the per-row cap is "the cap binds".
+    for reading in out["readings"].values():
+        for bar in reading.values():
+            for result in bar.values():
+                if isinstance(result.get("dt_star_ms"), (int, float)):
+                    result["x2_sensitivity"] = "not shown (the in-world plants are not yet run)"
+    out["refusals_by_kind"] = {}
+    for name, arm in out["arms"].items():
+        refusal = (arm.get("x2") or {}).get("refusal")
+        if refusal:
+            out["refusals_by_kind"].setdefault(refusal.get("stops") or refusal["kind"], []).append(
+                name
+            )
+    out["x2_cap_binds_today"] = sorted(
+        name for name, arm in out["arms"].items()
+        if ((arm.get("x2") or {}).get("refusal") or {}).get("x2_cap_binds")
+    )  # fmt: skip
+    out["reference_counts"] = {
+        "W0": reference_count(w0),
+        "R1-R3": reference_count(stage0),
+        **{f"rung 0 {w}": reference_count(r0[w]) for w in WINDOWS},
+    }
     Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
     print(
         json.dumps(

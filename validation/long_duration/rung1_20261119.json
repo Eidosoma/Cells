@@ -668,6 +668,61 @@
    "changed": "no registered number, budget or outcome",
    "refusals": "an arm's result: any run-time NumericalError, or a ConfigError from a step bound; any other exception is unclassified, a fault that stops the ladder's walk, is fixed under a new head and is never what binds",
    "revised_utc": "2026-11-19T21:58Z (before any run and before the lead's tag)"
+  },
+  {
+   "entry": "10.6",
+   "entry_utc": "2026-11-19T22:08Z",
+   "title": "the lead's rulings on sections 10.4 and 10.5, before any run",
+   "I1a": {
+    "accepted": "B_A, with the import's measured effect in every window row's bound",
+    "prompted_by": "development runs only: the re-based smoke at 600 s (50 ms at k = 0) against rung 0's DEV600 checkpoint-import smoke; none covered a switch window",
+    "second_leg": "WA at k = 2 against R3: both at 0.25 ms, so R3's own error there (0.87 of B_A in gate) is common and does not enter; only the import's effect does; on the stand-in (rung 0's own arm) it passes at 0, bitwise",
+    "can_fail": "a stand-in with WA at k = 9 offset above the bar (gates +2e-5 after the first row) is refused: 'instrument not validated' (WA's gate 2.0e-5 against 1e-5), and analyse refuses to read; records in dev/standin2/fail/",
+    "if_it_fails": "if I1a fails through the switch under this bar, that result stands, with no second amendment"
+   },
+   "slow_phase_arms": "section 10.4 item 1 accepted (about 1 CPU-hour more)",
+   "reference_rule": {
+    "replaces": "section 10.5 item 2",
+    "why": "below order 1 a ladder difference understates the error (d / (2^p - 1) for order p)",
+    "rule": "a reference row with order below 1 is determined only if its larger ladder difference, or its floor, is at most a tenth of B_A for its class (stage 0's own ratio); that is then its bound; otherwise it stays undetermined",
+    "events": "a tenth of stage 0's event criterion: 1e-4 of the peak, and 0.05 ms for a crossing time",
+    "on_references": "H2's counted rows pass by orders of magnitude (spreads at most 5e-12 V and 5e-10 in gate against tenths of 2e-7 V and 1e-6); R3's ladder leaves 12 voltage and 11 gate rows undetermined, all inside 1800.138-1800.152 s, where every arm reads WA's ladder (section 3), so none is read",
+    "W0": "control data; its count is reported with the results"
+   },
+   "what_stops_a_rung": {
+    "x2_kinds": [
+     "the per-row integration-error cap (the cap binds)",
+     "the whole-run count of out-of-band held steps",
+     "the whole-run order band of the step ratio"
+    ],
+    "x2_other_per_row": [
+     "the allowance (a misbooking's signature)",
+     "a held step over today's bound",
+     "a non-finite value"
+    ],
+    "beside": [
+     "the step's own check (a domain failure, holding the membrane-rate ceiling)",
+     "the junction-gate bound at definition (W0's 5.18 ms)",
+     "the explicit-rate bound at definition",
+     "a row's ledger checks"
+    ],
+    "cap_binds_today": "evidence for D232's third rule; does not fire D231's trigger"
+   },
+   "plants": {
+    "builder": "the @3 owner, under today's method",
+    "edit": "FR-3's: the booked work x (1 + 1e-6), FR-3's registered size",
+    "field": "metabolic_work_pJ at cell_0's pump (a term of X2's residual)",
+    "times_s": {
+     "H2": 1000.0,
+     "W0": 10.0
+    },
+    "resume_steps": 10,
+    "caught": "control resume admitted, planted resume refused with 'does not hold its state's residual'",
+    "run": "in each world at the largest step claimed (section 10.1)",
+    "until_in": "every claimed step is reported with 'X2's sensitivity not shown'",
+    "FR3_cross_check": "reported; at 1 ms the wrapper reproduces X2's qualification row: caught (|R(state) - R| 1.6e-11 pJ against a floor of 1.3e-16 pJ)"
+   },
+   "changed": "no registered number, budget or outcome; nothing has run"
   }
  ]
 }
