@@ -91,6 +91,11 @@ def test_eq22_conserves_matrix_mg_and_charge_exactly(mod):
     assert M.conservation_laws(mod, M.Arm.without_control()) == laws
     stale = M.conservation_laws(mod, M.Arm.published(H_x_row="stale_web_xml"))
     assert stale != laws and "cytCred" in stale[1] and stale[1]["NADH_x"] == one
+    # each reaction's declared charge (matrix -> outside) is its coefficient in Eq. 22's dPsi row
+    env = {k: Fraction(repr(v)) for k, v in M.parameters(mod, M.Arm.published()).items()}
+    row = mod["ode"]["rows"]["dPsi"]["terms"]
+    for name, f in mod["fluxes"].items():
+        assert M.eval_fraction(str(f["charge_N_to_P"]), env) == M.eval_fraction(row.get(name, "0"), env), name
 
 
 def test_rate_law_zeros(mod):

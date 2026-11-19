@@ -7,8 +7,9 @@ text's P50, within this reference's documented reproduction bands. The integrato
 match the exact Newton solve. Three planted controls must be caught: the 2005 Table 1,
 the web XML's stale proton row, and the 2005 k_O2.
 
-It costs about 1-2 minutes on one free core. It runs two integrations, about 40
-50-digit Newton solves, and one low-oxygen sweep. The cost was measured at landing.
+Measured at landing (19 Nov 2026, one core shared with other jobs, nice 10): about 80 s,
+96 MB. The cost is in the 50-digit Newton solves (two sweeps and one low-oxygen sweep) and
+seven integrations.
 """
 
 from __future__ import annotations
@@ -61,7 +62,8 @@ def test_published_curves_within_documented_bands(published):
 
 def test_p50_and_cytochrome_c_from_the_text(published):
     run = published["run"]
-    lo = run.low_oxygen(1.0e-3, 0.0, 10e-3)
+    grid = np.array([50.0, 20.0, 8.0, 4.0, 2.0, 1.2, 0.8, 0.6, 0.5, 0.42, 0.37, 0.33, 0.28, 0.2])
+    lo = run.low_oxygen(1.0e-3, 0.0, 10e-3, o2_uM=grid)
     assert lo["P50_uM"] == pytest.approx(0.373, rel=0.02)
     cc = run.low_oxygen(0.5e-3, 0.87e-3, 10e-3, o2_uM=np.array([50.0]))
     assert cc["cytc_at_50uM"] == pytest.approx(0.14, abs=0.015)

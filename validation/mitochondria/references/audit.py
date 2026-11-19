@@ -181,12 +181,13 @@ def dissipation(comp, y, h):
 
 
 def charge_bookkeeping(comp, y, h):
-    """Charge carried matrix -> outside per second (mol/s/l mito), by process, from the
-    reactions' own charges, against Eq. 22's dPsi row."""
+    """Positive charge carried matrix -> outside per second (mol/s/l mito), by process, from
+    the reactions' own charges (the ANT moves one negative charge out: -1), against Eq. 22's
+    dPsi row."""
     fl = comp.fluxes(y, h)
     n_A = comp.params["n_A"]
     by_reaction = {"J_C1": 4 * fl["J_C1"], "J_C3": 2 * fl["J_C3"], "J_C4": 4 * fl["J_C4"],
-                   "J_F1": -n_A * fl["J_F1"], "J_ANT": fl["J_ANT"], "J_Hle": -fl["J_Hle"], "J_K": -fl["J_K"],
+                   "J_F1": -n_A * fl["J_F1"], "J_ANT": -fl["J_ANT"], "J_Hle": -fl["J_Hle"], "J_K": -fl["J_K"],
                    "J_PiHt": 0.0, "J_KH": 0.0}
     total = sum(by_reaction.values())
     row = M.ode_rows(comp.model, comp.arm)["dPsi"]["terms"]

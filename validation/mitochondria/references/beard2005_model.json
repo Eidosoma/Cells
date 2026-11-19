@@ -17,6 +17,7 @@
   },
   "independence": "Written from B05 and B06 alone (PDF read as images for every equation and both Table 1s; XML used for the text). No engine code, engine test, CellML, SBML or author code was read.",
   "parameter_provenance": "Each parameter carries its printed strings from B05's Table 1 ('e36') and from B06's corrected Table 1 ('e8'), per column (without / with phosphate control), with its class (A fitted, B literature, C set large), the equations it enters, and Table 1's sensitivity. The 2006 correction changed a parameter if and only if its two strings differ: nine do (Q13). The model uses e8.",
+  "charge_N_to_P_convention": "positive charge moved from the matrix (N) to the outside (P) per turnover in the printed direction; it equals each flux's coefficient in Eq. 22's dPsi row",
   "units": {
     "concentration": "M (mol per litre of the compartment's water)",
     "time": "s",
@@ -182,7 +183,7 @@
     "J_Pit": {"eq": 13, "expr": "gamma*p_Pi*(Pi_e - Pi_i)", "reaction": "Pi buffer -> IMS", "charge_N_to_P": 0},
     "J_ANT": {"eq": 14, "expr": "X_ANT*(ratio0(fADP_i, fADP_i + fATP_i*exp(-0.35*u)) - ratio0(fADP_x, fADP_x + fATP_x*exp(0.65*u)))*(fADP_i/(fADP_i + km_ADP))",
       "printed_note": "Eq. 14's last factor 1/(1 + k_m,ADP/[fADP]i) is written fADP_i/(fADP_i + k_m,ADP), identical for fADP_i > 0 and defined at 0; ratio0(a, b) = a/b, and 0 when b = 0 (then the factor is 0)",
-      "reaction": "ADP3-(i) + ATP4-(x) -> ADP3-(x) + ATP4-(i), free forms", "charge_N_to_P": 1},
+      "reaction": "ADP3-(i) + ATP4-(x) -> ADP3-(x) + ATP4-(i), free forms; one negative charge leaves the matrix", "charge_N_to_P": -1},
     "J_PiHt": {"eq": 16, "variants": {
         "eq16_printed": "X_PiHt*(H2PO4_i*H_x - H2PO4_x*H_e)/(H2PO4_i + k_PiHt)",
         "eq16_symport": "X_PiHt*(H2PO4_i*H_e - H2PO4_x*H_x)/(H2PO4_i + k_PiHt)"},
