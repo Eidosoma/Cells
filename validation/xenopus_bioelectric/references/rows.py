@@ -70,7 +70,9 @@ class Rows:
 
     def add(self, fam, key, value, floor=Decimal(0), aux=None, tol_abs=None):
         kind = self.meta[fam]["kind"]
-        if kind in ("sign",):
+        if isinstance(value, bool):
+            self.values[fam][key] = "true" if value else "false"
+        elif kind in ("sign",) or (kind == "info" and isinstance(value, int)):
             self.values[fam][key] = str(int(value))
         elif kind == "flag":
             self.values[fam][key] = "true" if value else "false"
@@ -103,6 +105,8 @@ class Rows:
             rows = {}
             for key in self.values[fam]:
                 rows[key] = {"floor": self.floors[fam][key], "band": self.band(fam, key)}
+                if key in self.tol_row[fam]:
+                    rows[key]["tol_abs"] = self.tol_row[fam][key]
             out[fam] = dict(m, rows=rows)
         return out
 
@@ -113,3 +117,16 @@ class Rows:
             if self.aux[fam]:
                 out[fam]["aux"] = self.aux[fam]
         return out
+
+    @classmethod
+    def from_documents(cls, values, bands):
+        """Rebuild a registry from the stored files (for the fast integrity test)."""
+        R = cls()
+        for fam, meta in bands["families"].items():
+            m = {k: meta[k] for k in ("claim", "quantity", "unit", "kind", "tol_abs", "tol_rel", "tol_source", "note")}
+            R.meta[fam] = m
+            R.values[fam] = dict(values["families"][fam]["values"])
+            R.aux[fam] = dict(values["families"][fam].get("aux", {}))
+            R.floors[fam] = {k: r["floor"] for k, r in meta["rows"].items()}
+            R.tol_row[fam] = {k: r["tol_abs"] for k, r in meta["rows"].items() if "tol_abs" in r}
+        return R

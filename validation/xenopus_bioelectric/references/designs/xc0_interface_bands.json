@@ -628,152 +628,152 @@
   },
   "C0.V_ghk_unit": {
    "claim": "C0",
-   "kind": "abs",
-   "note": "alternative reading, labelled; the lead rules by dated note",
+   "kind": "info",
+   "note": "information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "GHK zero-current voltage, whole-membrane permeabilities without area weights (the reading that reproduces DESIGN.md's quoted -70.5 and -26.7 mV)",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.842474981887005e-17
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.923860668557902e-17
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0983442031739319e-16
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.1136441398366367e-16
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0757648749518619e-16
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0907502815331172e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0761894407690557e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0911807615528837e-16
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0758034887946255e-16
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0907894332667777e-16
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.3734197510143204e-17
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.434341495761168e-17
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.528762328866739e-17
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.5918479959935614e-17
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0829897137986454e-16
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0980757623976167e-16
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0489273846853291e-16
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0635389449804409e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0495762151797649e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0641968136847938e-16
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0489864088679711e-16
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0635987913700498e-16
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.914143766336526e-17
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.954737794075847e-17
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 6.279220652185263e-17
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 6.366690206803897e-17
     },
     "primary|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2580355461304977e-16
     },
     "primary|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2755599834786504e-16
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2354562179084277e-16
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2526661251751306e-16
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2358807837256216e-16
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2530966051948973e-16
     },
     "primary|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2354948317511914e-16
     },
     "primary|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.252705276908791e-16
     },
     "primary|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.684569346560069e-17
     },
     "primary|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.749825405714658e-17
     }
    },
@@ -940,152 +940,152 @@
   },
   "C0.cl_bound_unit": {
    "claim": "C0",
-   "kind": "abs",
-   "note": "",
+   "kind": "info",
+   "note": "information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "bound |E_Cl - V_rest| on any change by an open Cl- patch (unit)",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.1648999933756367e-17
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.2368470592767426e-17
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.030586704322795e-16
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0449427789085209e-16
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8633393463312978e-16
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8892956666702328e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8178920831928166e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8432153230770976e-16
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8590042556136436e-16
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8849001881313333e-16
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.4472960583578425e-17
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.5092469001946225e-17
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.044333887614221e-18
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.156391472675885e-18
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 7.105568197881137e-17
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 7.204548775250193e-17
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5318264609053702e-16
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5531648061730752e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4866034624441309e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5073118512645262e-16
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5275117805275945e-16
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.548790022290124e-16
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.873387791390571e-19
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.955204093551679e-19
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.5548917120799454e-17
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.590481358077925e-17
     },
     "primary|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.85602652119966e-17
     },
     "primary|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.97939098606053e-17
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7183552941284687e-16
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.742291986367765e-16
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6729080309899876e-16
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6962116427746297e-16
     },
     "primary|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7140202034108148e-16
     },
     "primary|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7378965078288654e-16
     },
     "primary|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7116917023096422e-17
     },
     "primary|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.735535570703299e-17
     }
    },
@@ -1252,152 +1252,152 @@
   },
   "C0.cl_effect_sign_unit": {
    "claim": "C0",
-   "kind": "sign",
-   "note": "aux = E_Cl - V_rest (V); compared only when |aux| exceeds the band",
+   "kind": "info",
+   "note": "aux = E_Cl - V_rest (V); compared only when |aux| exceeds the band information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "sign of the voltage change of an open Cl- patch at V_rest (unit): +1 depolarises (E_Cl > V_rest), -1 hyperpolarises",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.1648999933756367e-17
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.2368470592767426e-17
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.030586704322795e-16
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0449427789085209e-16
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8633393463312978e-16
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8892956666702328e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8178920831928166e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8432153230770976e-16
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8590042556136436e-16
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.8849001881313333e-16
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.4472960583578425e-17
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.5092469001946225e-17
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.044333887614221e-18
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.156391472675885e-18
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 7.105568197881137e-17
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 7.204548775250193e-17
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5318264609053702e-16
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5531648061730752e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4866034624441309e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5073118512645262e-16
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5275117805275945e-16
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.548790022290124e-16
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.873387791390571e-19
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.955204093551679e-19
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.5548917120799454e-17
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.590481358077925e-17
     },
     "primary|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.85602652119966e-17
     },
     "primary|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.97939098606053e-17
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7183552941284687e-16
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.742291986367765e-16
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6729080309899876e-16
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6962116427746297e-16
     },
     "primary|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7140202034108148e-16
     },
     "primary|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7378965078288654e-16
     },
     "primary|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.7116917023096422e-17
     },
     "primary|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.735535570703299e-17
     }
    },
@@ -1564,152 +1564,152 @@
   },
   "C0.cl_i_critical_unit": {
    "claim": "C0",
-   "kind": "abs",
-   "note": "",
+   "kind": "info",
+   "note": "information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "Cl_i below which an open Cl- patch hyperpolarises at V_rest = Cl_o exp(F V_rest/RT) (unit)",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1.8528530782328164e-05,
+     "band": 0.0,
      "floor": 3.291328237922673e-14
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1.8528530782328164e-05,
+     "band": 0.0,
      "floor": 3.291328237922673e-14
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 5.753013262837172e-06,
+     "band": 0.0,
      "floor": 1.0219404456601166e-14
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 5.753013262837172e-06,
+     "band": 0.0,
      "floor": 1.0219404456601166e-14
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 8.651800665078654e-07,
+     "band": 0.0,
      "floor": 1.536868528454011e-15
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 8.651800665078654e-07,
+     "band": 0.0,
      "floor": 1.536868528454011e-15
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 9.594227177222548e-07,
+     "band": 0.0,
      "floor": 1.7042771065019043e-15
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 9.594227177222548e-07,
+     "band": 0.0,
      "floor": 1.7042771065019043e-15
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 8.737551063000644e-07,
+     "band": 0.0,
      "floor": 1.552100859037013e-15
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 8.737551063000644e-07,
+     "band": 0.0,
      "floor": 1.552100859037013e-15
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 2.1814374947005452e-05,
+     "band": 0.0,
      "floor": 3.8750114134354634e-14
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 2.1814374947005452e-05,
+     "band": 0.0,
      "floor": 3.8750114134354634e-14
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 2.4982759627334368e-05,
+     "band": 0.0,
      "floor": 4.437829593110789e-14
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 2.4982759627334368e-05,
+     "band": 0.0,
      "floor": 4.437829593110789e-14
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 5.957528796510221e-06,
+     "band": 0.0,
      "floor": 1.058269702360488e-14
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 5.957528796510221e-06,
+     "band": 0.0,
      "floor": 1.058269702360488e-14
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 9.196506628932971e-07,
+     "band": 0.0,
      "floor": 1.6336277448894832e-15
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 9.196506628932971e-07,
+     "band": 0.0,
      "floor": 1.6336277448894832e-15
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1.0193065141306136e-06,
+     "band": 0.0,
      "floor": 1.810652097821145e-15
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1.0193065141306136e-06,
+     "band": 0.0,
      "floor": 1.810652097821145e-15
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 9.287224503662771e-07,
+     "band": 0.0,
      "floor": 1.6497424766126968e-15
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 9.287224503662771e-07,
+     "band": 0.0,
      "floor": 1.6497424766126968e-15
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 3.0403555059448304e-05,
+     "band": 0.0,
      "floor": 5.400756297193311e-14
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 3.0403555059448304e-05,
+     "band": 0.0,
      "floor": 5.400756297193311e-14
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1.6776021596917285e-05,
+     "band": 0.0,
      "floor": 2.9800200701610344e-14
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1.6776021596917285e-05,
+     "band": 0.0,
      "floor": 2.9800200701610344e-14
     },
     "primary|bath70_inert|T287.15": {
-     "band": 4.0005040774262926e-06,
+     "band": 0.0,
      "floor": 7.106322778984788e-15
     },
     "primary|bath70_inert|T291.15": {
-     "band": 4.0005040774262926e-06,
+     "band": 0.0,
      "floor": 7.106322778984788e-15
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 6.016249616754321e-07,
+     "band": 0.0,
      "floor": 1.068700615426068e-15
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 6.016249616754321e-07,
+     "band": 0.0,
      "floor": 1.068700615426068e-15
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 6.671589858860243e-07,
+     "band": 0.0,
      "floor": 1.1851124275459752e-15
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 6.671589858860243e-07,
+     "band": 0.0,
      "floor": 1.1851124275459752e-15
     },
     "primary|bath|T287.15": {
-     "band": 6.075878336671207e-07,
+     "band": 0.0,
      "floor": 1.0792928038709723e-15
     },
     "primary|bath|T291.15": {
-     "band": 6.075878336671207e-07,
+     "band": 0.0,
      "floor": 1.0792928038709723e-15
     },
     "primary|local|T287.15": {
-     "band": 2.0323574800033913e-05,
+     "band": 0.0,
      "floor": 3.610192109710284e-14
     },
     "primary|local|T291.15": {
-     "band": 2.0323574800033913e-05,
+     "band": 0.0,
      "floor": 3.610192109710284e-14
     }
    },
@@ -2344,8 +2344,8 @@
   },
   "C0.feasible_19p4_unit": {
    "claim": "C0",
-   "kind": "flag",
-   "note": "",
+   "kind": "info",
+   "note": "information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "is a hyperpolarisation of 19.4 mV (T2) allowed by the bound (unit): V_rest - E_Cl >= 0.0194 V",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
@@ -2656,152 +2656,152 @@
   },
   "C0.k_effect_sign_unit": {
    "claim": "C0",
-   "kind": "sign",
-   "note": "aux = E_K - V_rest (V); compared only when |aux| exceeds the band",
+   "kind": "info",
+   "note": "aux = E_K - V_rest (V); compared only when |aux| exceeds the band information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)",
    "quantity": "sign of the voltage change of an open K patch at V_rest (unit): +1 depolarises (E_K > V_rest), -1 hyperpolarises",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.1010947690937927e-16
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.130363022885801e-16
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.5869980641085614e-16
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6091049499049543e-16
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6095773923306314e-16
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6319988082084738e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6091528265134375e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6315683281887074e-16
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6095387784878676e-16
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.6319596564748133e-16
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 9.312151420207634e-17
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 9.441869705705911e-17
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.9828065595321654e-16
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.010427058359011e-16
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.352693078620194e-16
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.3715360955607504e-16
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.3867554077335102e-16
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4060729129779262e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.3861065772390745e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4054150442735733e-16
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.3866963835508682e-16
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4060130665883172e-16
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.27483265624889e-17
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 8.390101089558991e-17
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.057420202063967e-16
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.0860800690612013e-16
     },
     "primary|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4273067211519955e-16
     },
     "primary|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.447189106262941e-16
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4498860493740654e-16
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4700829645664604e-16
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4494614835568716e-16
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.469652484546694e-16
     },
     "primary|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4498474355313017e-16
     },
     "primary|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.4700438128328e-16
     },
     "primary|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 9.001001824661885e-17
     },
     "primary|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 9.126385795752421e-17
     }
    },
@@ -6280,152 +6280,152 @@
   },
   "C2.V_ghk_unit": {
    "claim": "C2",
-   "kind": "abs",
-   "note": "",
-   "quantity": "GHK zero-current voltage, whole-membrane permeabilities (alternative reading)",
+   "kind": "info",
+   "note": "information only (DESIGN erratum 15:46 UTC, item 1)",
+   "quantity": "GHK zero-current voltage, whole-membrane permeabilities (superseded reading)",
    "rows": {
     "bracket_Cl_high|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.842474981887005e-17
     },
     "bracket_Cl_high|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 5.923860668557902e-17
     },
     "bracket_Cl_high|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0983442031739319e-16
     },
     "bracket_Cl_high|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.1136441398366367e-16
     },
     "bracket_Cl_high|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0757648749518619e-16
     },
     "bracket_Cl_high|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0907502815331172e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0761894407690557e-16
     },
     "bracket_Cl_high|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0911807615528837e-16
     },
     "bracket_Cl_high|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0758034887946255e-16
     },
     "bracket_Cl_high|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0907894332667777e-16
     },
     "bracket_Cl_high|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.3734197510143204e-17
     },
     "bracket_Cl_high|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.434341495761168e-17
     },
     "bracket_second_hand_table|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.528762328866739e-17
     },
     "bracket_second_hand_table|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.5918479959935614e-17
     },
     "bracket_second_hand_table|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0829897137986454e-16
     },
     "bracket_second_hand_table|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0980757623976167e-16
     },
     "bracket_second_hand_table|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0489273846853291e-16
     },
     "bracket_second_hand_table|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0635389449804409e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0495762151797649e-16
     },
     "bracket_second_hand_table|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0641968136847938e-16
     },
     "bracket_second_hand_table|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0489864088679711e-16
     },
     "bracket_second_hand_table|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.0635987913700498e-16
     },
     "bracket_second_hand_table|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.914143766336526e-17
     },
     "bracket_second_hand_table|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 2.954737794075847e-17
     },
     "primary|bath70_Na|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 6.279220652185263e-17
     },
     "primary|bath70_Na|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 6.366690206803897e-17
     },
     "primary|bath70_inert|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2580355461304977e-16
     },
     "primary|bath70_inert|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2755599834786504e-16
     },
     "primary|bath_Cl10|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2354562179084277e-16
     },
     "primary|bath_Cl10|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2526661251751306e-16
     },
     "primary|bath_Cl11p1|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2358807837256216e-16
     },
     "primary|bath_Cl11p1|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2530966051948973e-16
     },
     "primary|bath|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.2354948317511914e-16
     },
     "primary|bath|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 1.252705276908791e-16
     },
     "primary|local|T287.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.684569346560069e-17
     },
     "primary|local|T291.15": {
-     "band": 1e-06,
+     "band": 0.0,
      "floor": 4.749825405714658e-17
     }
    },
@@ -6749,589 +6749,589 @@
   "C3.Q_over_CV_error": {
    "claim": "C3",
    "kind": "abs",
-   "note": "reference 0; ZERO POWER: C_total x 100 mV = 7.9e-12 C is 100 times below the band",
+   "note": "reference 0",
    "quantity": "charge identity Q - C_total V at every observation",
    "rows": {
     "S1_leaks_bath|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S3_glycine3e-8_bath|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S5_glycine1e-8_bath70inert|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S6_kir3_bath|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S7_leaks_bath_Clhigh|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S8_leaks_bath_secondhand|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S9_leaks_bath_T287|d0.002|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     }
    },
-   "tol_abs": 1e-09,
+   "tol_abs": 1e-14,
    "tol_rel": 0.0,
-   "tol_source": "DESIGN C3: charge identity 1e-9 C",
+   "tol_source": "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C",
    "unit": "C"
   },
   "C3.V_inf": {
@@ -8050,1731 +8050,2163 @@
    "rows": {
     "S1_leaks_bath|d-0.002|k1": {
      "band": 0.003904103557090455,
-     "floor": 1.3870162110728951e-15
+     "floor": 1.3870162110728951e-15,
+     "tol_abs": 0.003904103557090455
     },
     "S1_leaks_bath|d-0.002|k10": {
      "band": 0.004148935326868473,
-     "floor": 1.473997928822425e-16
+     "floor": 1.473997928822425e-16,
+     "tol_abs": 0.004148935326868473
     },
     "S1_leaks_bath|d-0.002|k11": {
      "band": 0.0035550825190945948,
-     "floor": 1.14819911771381e-16
+     "floor": 1.14819911771381e-16,
+     "tol_abs": 0.0035550825190945948
     },
     "S1_leaks_bath|d-0.002|k12": {
      "band": 0.003020910262456361,
-     "floor": 8.943691009881271e-17
+     "floor": 8.943691009881271e-17,
+     "tol_abs": 0.003020910262456361
     },
     "S1_leaks_bath|d-0.002|k13": {
      "band": 0.002549079219478494,
-     "floor": 6.966268162605654e-17
+     "floor": 6.966268162605654e-17,
+     "tol_abs": 0.002549079219478494
     },
     "S1_leaks_bath|d-0.002|k14": {
      "band": 0.002138153171623198,
-     "floor": 5.4258900144260085e-17
+     "floor": 5.4258900144260085e-17,
+     "tol_abs": 0.002138153171623198
     },
     "S1_leaks_bath|d-0.002|k15": {
      "band": 0.0017842800316516174,
-     "floor": 4.2260240501728615e-17
+     "floor": 4.2260240501728615e-17,
+     "tol_abs": 0.0017842800316516174
     },
     "S1_leaks_bath|d-0.002|k16": {
      "band": 0.0014823305770145072,
-     "floor": 3.2914350734148e-17
+     "floor": 3.2914350734148e-17,
+     "tol_abs": 0.0014823305770145072
     },
     "S1_leaks_bath|d-0.002|k2": {
      "band": 0.0060933687574298585,
-     "floor": 1.0823997267248336e-15
+     "floor": 1.0823997267248336e-15,
+     "tol_abs": 0.0060933687574298585
     },
     "S1_leaks_bath|d-0.002|k3": {
      "band": 0.007129555987649701,
-     "floor": 8.443090360365702e-16
+     "floor": 8.443090360365702e-16,
+     "tol_abs": 0.007129555987649701
     },
     "S1_leaks_bath|d-0.002|k4": {
      "band": 0.007412492949685108,
-     "floor": 6.583616274089639e-16
+     "floor": 6.583616274089639e-16,
+     "tol_abs": 0.007412492949685108
     },
     "S1_leaks_bath|d-0.002|k5": {
      "band": 0.007223031189493173,
-     "floor": 5.13227234186301e-16
+     "floor": 5.13227234186301e-16,
+     "tol_abs": 0.007223031189493173
     },
     "S1_leaks_bath|d-0.002|k6": {
      "band": 0.006755442226081319,
-     "floor": 4.0000253338242684e-16
+     "floor": 4.0000253338242684e-16,
+     "tol_abs": 0.006755442226081319
     },
     "S1_leaks_bath|d-0.002|k7": {
      "band": 0.006141601998420369,
-     "floor": 3.117050489933791e-16
+     "floor": 3.117050489933791e-16,
+     "tol_abs": 0.006141601998420369
     },
     "S1_leaks_bath|d-0.002|k8": {
      "band": 0.005468882015078598,
-     "floor": 2.4286714928394727e-16
+     "floor": 2.4286714928394727e-16,
+     "tol_abs": 0.005468882015078598
     },
     "S1_leaks_bath|d-0.002|k9": {
      "band": 0.004793273460815897,
-     "floor": 1.8921253544968953e-16
+     "floor": 1.8921253544968953e-16,
+     "tol_abs": 0.004793273460815897
     },
     "S1_leaks_bath|d0.001|k1": {
      "band": 0.0038889103049633573,
-     "floor": 1.3816184836071547e-15
+     "floor": 1.3816184836071547e-15,
+     "tol_abs": 0.0038889103049633573
     },
     "S1_leaks_bath|d0.001|k10": {
      "band": 0.004082098868326165,
-     "floor": 1.450252848771841e-16
+     "floor": 1.450252848771841e-16,
+     "tol_abs": 0.004082098868326165
     },
     "S1_leaks_bath|d0.001|k11": {
      "band": 0.003496683485004676,
-     "floor": 1.1293377497829018e-16
+     "floor": 1.1293377497829018e-16,
+     "tol_abs": 0.003496683485004676
     },
     "S1_leaks_bath|d0.001|k12": {
      "band": 0.002970538875915868,
-     "floor": 8.79456174822914e-17
+     "floor": 8.79456174822914e-17,
+     "tol_abs": 0.002970538875915868
     },
     "S1_leaks_bath|d0.001|k13": {
      "band": 0.0025060842996839734,
-     "floor": 6.848769209011098e-17
+     "floor": 6.848769209011098e-17,
+     "tol_abs": 0.0025060842996839734
     },
     "S1_leaks_bath|d0.001|k14": {
      "band": 0.0021017685787700644,
-     "floor": 5.333558556763925e-17
+     "floor": 5.333558556763925e-17,
+     "tol_abs": 0.0021017685787700644
     },
     "S1_leaks_bath|d0.001|k15": {
      "band": 0.0017537088257075575,
-     "floor": 4.1536168891496026e-17
+     "floor": 4.1536168891496026e-17,
+     "tol_abs": 0.0017537088257075575
     },
     "S1_leaks_bath|d0.001|k16": {
      "band": 0.0014567980245220385,
-     "floor": 3.234741418105621e-17
+     "floor": 3.234741418105621e-17,
+     "tol_abs": 0.0014567980245220385
     },
     "S1_leaks_bath|d0.001|k2": {
      "band": 0.006051213937525095,
-     "floor": 1.074911526459682e-15
+     "floor": 1.074911526459682e-15,
+     "tol_abs": 0.006051213937525095
     },
     "S1_leaks_bath|d0.001|k3": {
      "band": 0.007063446058281579,
-     "floor": 8.364800476908816e-16
+     "floor": 8.364800476908816e-16,
+     "tol_abs": 0.007063446058281579
     },
     "S1_leaks_bath|d0.001|k4": {
      "band": 0.00733017861922093,
-     "floor": 6.510506462139292e-16
+     "floor": 6.510506462139292e-16,
+     "tol_abs": 0.00733017861922093
     },
     "S1_leaks_bath|d0.001|k5": {
      "band": 0.007132521096754626,
-     "floor": 5.067961052954663e-16
+     "floor": 5.067961052954663e-16,
+     "tol_abs": 0.007132521096754626
     },
     "S1_leaks_bath|d0.001|k6": {
      "band": 0.006663293033950363,
-     "floor": 3.9454620512619247e-16
+     "floor": 3.9454620512619247e-16,
+     "tol_abs": 0.006663293033950363
     },
     "S1_leaks_bath|d0.001|k7": {
      "band": 0.0060525190380033645,
-     "floor": 3.0718381682164288e-16
+     "floor": 3.0718381682164288e-16,
+     "tol_abs": 0.0060525190380033645
     },
     "S1_leaks_bath|d0.001|k8": {
      "band": 0.005385877497743232,
-     "floor": 2.3918100823220244e-16
+     "floor": 2.3918100823220244e-16,
+     "tol_abs": 0.005385877497743232
     },
     "S1_leaks_bath|d0.001|k9": {
      "band": 0.004718012235704766,
-     "floor": 1.8624162896151619e-16
+     "floor": 1.8624162896151619e-16,
+     "tol_abs": 0.004718012235704766
     },
     "S1_leaks_bath|d0.002|k1": {
      "band": 0.0038837881589017993,
-     "floor": 1.3797987317693835e-15
+     "floor": 1.3797987317693835e-15,
+     "tol_abs": 0.0038837881589017993
     },
     "S1_leaks_bath|d0.002|k10": {
      "band": 0.004060076440444657,
-     "floor": 1.442428910694338e-16
+     "floor": 1.442428910694338e-16,
+     "tol_abs": 0.004060076440444657
     },
     "S1_leaks_bath|d0.002|k11": {
      "band": 0.0034774526494690946,
-     "floor": 1.1231266904681723e-16
+     "floor": 1.1231266904681723e-16,
+     "tol_abs": 0.0034774526494690946
     },
     "S1_leaks_bath|d0.002|k12": {
      "band": 0.0029539592598076467,
-     "floor": 8.745476224115023e-17
+     "floor": 8.745476224115023e-17,
+     "tol_abs": 0.0029539592598076467
     },
     "S1_leaks_bath|d0.002|k13": {
      "band": 0.0024919377526144318,
-     "floor": 6.810108723409746e-17
+     "floor": 6.810108723409746e-17,
+     "tol_abs": 0.0024919377526144318
     },
     "S1_leaks_bath|d0.002|k14": {
      "band": 0.0020898003921695036,
-     "floor": 5.303187456588033e-17
+     "floor": 5.303187456588033e-17,
+     "tol_abs": 0.0020898003921695036
     },
     "S1_leaks_bath|d0.002|k15": {
      "band": 0.0017436550771216686,
-     "floor": 4.129804829066729e-17
+     "floor": 4.129804829066729e-17,
+     "tol_abs": 0.0017436550771216686
     },
     "S1_leaks_bath|d0.002|k16": {
      "band": 0.0014484027403823287,
-     "floor": 3.216100142605269e-17
+     "floor": 3.216100142605269e-17,
+     "tol_abs": 0.0014484027403823287
     },
     "S1_leaks_bath|d0.002|k2": {
      "band": 0.006037082440274005,
-     "floor": 1.0724012682803881e-15
+     "floor": 1.0724012682803881e-15,
+     "tol_abs": 0.006037082440274005
     },
     "S1_leaks_bath|d0.002|k3": {
      "band": 0.0070413816813976885,
-     "floor": 8.338671005718947e-16
+     "floor": 8.338671005718947e-16,
+     "tol_abs": 0.0070413816813976885
     },
     "S1_leaks_bath|d0.002|k4": {
      "band": 0.007302800203443301,
-     "floor": 6.486189544080025e-16
+     "floor": 6.486189544080025e-16,
+     "tol_abs": 0.007302800203443301
     },
     "S1_leaks_bath|d0.002|k5": {
      "band": 0.007102497145878857,
-     "floor": 5.046627752761066e-16
+     "floor": 5.046627752761066e-16,
+     "tol_abs": 0.007102497145878857
     },
     "S1_leaks_bath|d0.002|k6": {
      "band": 0.006632788992577574,
-     "floor": 3.9274000304212903e-16
+     "floor": 3.9274000304212903e-16,
+     "tol_abs": 0.006632788992577574
     },
     "S1_leaks_bath|d0.002|k7": {
      "band": 0.00602307782528666,
-     "floor": 3.0568958540536985e-16
+     "floor": 3.0568958540536985e-16,
+     "tol_abs": 0.00602307782528666
     },
     "S1_leaks_bath|d0.002|k8": {
      "band": 0.005358479811360268,
-     "floor": 2.379643065424494e-16
+     "floor": 2.379643065424494e-16,
+     "tol_abs": 0.005358479811360268
     },
     "S1_leaks_bath|d0.002|k9": {
      "band": 0.004693194853538621,
-     "floor": 1.852619728160308e-16
+     "floor": 1.852619728160308e-16,
+     "tol_abs": 0.004693194853538621
     },
     "S2_glycine1e-8_bath|d-0.002|k1": {
      "band": 0.0038957885715886886,
-     "floor": 1.3840621347997799e-15
+     "floor": 1.3840621347997799e-15,
+     "tol_abs": 0.0038957885715886886
     },
     "S2_glycine1e-8_bath|d-0.002|k10": {
      "band": 0.004112071776821805,
-     "floor": 1.4609013649724308e-16
+     "floor": 1.4609013649724308e-16,
+     "tol_abs": 0.004112071776821805
     },
     "S2_glycine1e-8_bath|d-0.002|k11": {
      "band": 0.0035228661055614835,
-     "floor": 1.1377940547100846e-16
+     "floor": 1.1377940547100846e-16,
+     "tol_abs": 0.0035228661055614835
     },
     "S2_glycine1e-8_bath|d-0.002|k12": {
      "band": 0.002993118006009345,
-     "floor": 8.861409401844566e-17
+     "floor": 8.861409401844566e-17,
+     "tol_abs": 0.002993118006009345
     },
     "S2_glycine1e-8_bath|d-0.002|k13": {
      "band": 0.0025253539969325683,
-     "floor": 6.901430529781426e-17
+     "floor": 6.901430529781426e-17,
+     "tol_abs": 0.0025253539969325683
     },
     "S2_glycine1e-8_bath|d-0.002|k14": {
      "band": 0.0021180737064891136,
-     "floor": 5.3749353069653936e-17
+     "floor": 5.3749353069653936e-17,
+     "tol_abs": 0.0021180737064891136
     },
     "S2_glycine1e-8_bath|d-0.002|k15": {
      "band": 0.0017674075297195286,
-     "floor": 4.186061937899714e-17
+     "floor": 4.186061937899714e-17,
+     "tol_abs": 0.0017674075297195286
     },
     "S2_glycine1e-8_bath|d-0.002|k16": {
      "band": 0.001468238133578401,
-     "floor": 3.2601435630628137e-17
+     "floor": 3.2601435630628137e-17,
+     "tol_abs": 0.001468238133578401
     },
     "S2_glycine1e-8_bath|d-0.002|k2": {
      "band": 0.006070253820817395,
-     "floor": 1.0782936891504482e-15
+     "floor": 1.0782936891504482e-15,
+     "tol_abs": 0.006070253820817395
     },
     "S2_glycine1e-8_bath|d-0.002|k3": {
      "band": 0.0070932513660290405,
-     "floor": 8.400097051753904e-16
+     "floor": 8.400097051753904e-16,
+     "tol_abs": 0.0070932513660290405
     },
     "S2_glycine1e-8_bath|d-0.002|k4": {
      "band": 0.007367236914582506,
-     "floor": 6.543420840350317e-16
+     "floor": 6.543420840350317e-16,
+     "tol_abs": 0.007367236914582506
     },
     "S2_glycine1e-8_bath|d-0.002|k5": {
      "band": 0.00717322401739724,
-     "floor": 5.096882217541491e-16
+     "floor": 5.096882217541491e-16,
+     "tol_abs": 0.00717322401739724
     },
     "S2_glycine1e-8_bath|d-0.002|k6": {
      "band": 0.006704697251048181,
-     "floor": 3.969978272669165e-16
+     "floor": 3.969978272669165e-16,
+     "tol_abs": 0.006704697251048181
     },
     "S2_glycine1e-8_bath|d-0.002|k7": {
      "band": 0.006092518566963098,
-     "floor": 3.092139150170832e-16
+     "floor": 3.092139150170832e-16,
+     "tol_abs": 0.006092518566963098
     },
     "S2_glycine1e-8_bath|d-0.002|k8": {
      "band": 0.005423128135175359,
-     "floor": 2.408352688465669e-16
+     "floor": 2.408352688465669e-16,
+     "tol_abs": 0.005423128135175359
     },
     "S2_glycine1e-8_bath|d-0.002|k9": {
      "band": 0.004751774018155415,
-     "floor": 1.875743616985507e-16
+     "floor": 1.875743616985507e-16,
+     "tol_abs": 0.004751774018155415
     },
     "S2_glycine1e-8_bath|d0.001|k1": {
      "band": 0.0038931101689851553,
-     "floor": 1.3831105750430892e-15
+     "floor": 1.3831105750430892e-15,
+     "tol_abs": 0.0038931101689851553
     },
     "S2_glycine1e-8_bath|d0.001|k10": {
      "band": 0.0041003447939046795,
-     "floor": 1.4567351037103576e-16
+     "floor": 1.4567351037103576e-16,
+     "tol_abs": 0.0041003447939046795
     },
     "S2_glycine1e-8_bath|d0.001|k11": {
      "band": 0.0035126208232214595,
-     "floor": 1.1344850951907595e-16
+     "floor": 1.1344850951907595e-16,
+     "tol_abs": 0.0035126208232214595
     },
     "S2_glycine1e-8_bath|d0.001|k12": {
      "band": 0.002984281926512749,
-     "floor": 8.835249351432463e-17
+     "floor": 8.835249351432463e-17,
+     "tol_abs": 0.002984281926512749
     },
     "S2_glycine1e-8_bath|d0.001|k13": {
      "band": 0.002517812463099004,
-     "floor": 6.880820598697087e-17
+     "floor": 6.880820598697087e-17,
+     "tol_abs": 0.002517812463099004
     },
     "S2_glycine1e-8_bath|d0.001|k14": {
      "band": 0.00211169203837946,
-     "floor": 5.358740850117728e-17
+     "floor": 5.358740850117728e-17,
+     "tol_abs": 0.00211169203837946
     },
     "S2_glycine1e-8_bath|d0.001|k15": {
      "band": 0.0017620457480240998,
-     "floor": 4.173362687784987e-17
+     "floor": 4.173362687784987e-17,
+     "tol_abs": 0.0017620457480240998
     },
     "S2_glycine1e-8_bath|d0.001|k16": {
      "band": 0.0014637602262452544,
-     "floor": 3.250200611416019e-17
+     "floor": 3.250200611416019e-17,
+     "tol_abs": 0.0014637602262452544
     },
     "S2_glycine1e-8_bath|d0.001|k2": {
      "band": 0.0060628309377883036,
-     "floor": 1.0769751202467686e-15
+     "floor": 1.0769751202467686e-15,
+     "tol_abs": 0.0060628309377883036
     },
     "S2_glycine1e-8_bath|d0.001|k3": {
      "band": 0.007081620839343558,
-     "floor": 8.386323741338181e-16
+     "floor": 8.386323741338181e-16,
+     "tol_abs": 0.007081620839343558
     },
     "S2_glycine1e-8_bath|d0.001|k4": {
      "band": 0.007352765859891281,
-     "floor": 6.530567961863271e-16
+     "floor": 6.530567961863271e-16,
+     "tol_abs": 0.007352765859891281
     },
     "S2_glycine1e-8_bath|d0.001|k5": {
      "band": 0.00715732096035888,
-     "floor": 5.085582415886506e-16
+     "floor": 5.085582415886506e-16,
+     "tol_abs": 0.00715732096035888
     },
     "S2_glycine1e-8_bath|d0.001|k6": {
      "band": 0.006688513225245051,
-     "floor": 3.960395404361025e-16
+     "floor": 3.960395404361025e-16,
+     "tol_abs": 0.006688513225245051
     },
     "S2_glycine1e-8_bath|d0.001|k7": {
      "band": 0.006076878365960487,
-     "floor": 3.0842012707363795e-16
+     "floor": 3.0842012707363795e-16,
+     "tol_abs": 0.006076878365960487
     },
     "S2_glycine1e-8_bath|d0.001|k8": {
      "band": 0.005408558979684764,
-     "floor": 2.4018826837156674e-16
+     "floor": 2.4018826837156674e-16,
+     "tol_abs": 0.005408558979684764
     },
     "S2_glycine1e-8_bath|d0.001|k9": {
      "band": 0.00473856671444614,
-     "floor": 1.8705300871468386e-16
+     "floor": 1.8705300871468386e-16,
+     "tol_abs": 0.00473856671444614
     },
     "S2_glycine1e-8_bath|d0.002|k1": {
      "band": 0.0038922156266733726,
-     "floor": 1.3827927697723555e-15
+     "floor": 1.3827927697723555e-15,
+     "tol_abs": 0.0038922156266733726
     },
     "S2_glycine1e-8_bath|d0.002|k10": {
      "band": 0.004096443810815537,
-     "floor": 1.455349196112201e-16
+     "floor": 1.455349196112201e-16,
+     "tol_abs": 0.004096443810815537
     },
     "S2_glycine1e-8_bath|d0.002|k11": {
      "band": 0.00350921308490536,
-     "floor": 1.1333844844153615e-16
+     "floor": 1.1333844844153615e-16,
+     "tol_abs": 0.00350921308490536
     },
     "S2_glycine1e-8_bath|d0.002|k12": {
      "band": 0.002981343150389069,
-     "floor": 8.826548826321187e-17
+     "floor": 8.826548826321187e-17,
+     "tol_abs": 0.002981343150389069
     },
     "S2_glycine1e-8_bath|d0.002|k13": {
      "band": 0.0025153043969630244,
-     "floor": 6.873966413413525e-17
+     "floor": 6.873966413413525e-17,
+     "tol_abs": 0.0025153043969630244
     },
     "S2_glycine1e-8_bath|d0.002|k14": {
      "band": 0.0021095698104438886,
-     "floor": 5.353355372820416e-17
+     "floor": 5.353355372820416e-17,
+     "tol_abs": 0.0021095698104438886
     },
     "S2_glycine1e-8_bath|d0.002|k15": {
      "band": 0.0017602627526994536,
-     "floor": 4.169139706532248e-17
+     "floor": 4.169139706532248e-17,
+     "tol_abs": 0.0017602627526994536
     },
     "S2_glycine1e-8_bath|d0.002|k16": {
      "band": 0.001462271197288281,
-     "floor": 3.2468943029512886e-17
+     "floor": 3.2468943029512886e-17,
+     "tol_abs": 0.001462271197288281
     },
     "S2_glycine1e-8_bath|d0.002|k2": {
      "band": 0.006060354260306105,
-     "floor": 1.0765351739483196e-15
+     "floor": 1.0765351739483196e-15,
+     "tol_abs": 0.006060354260306105
     },
     "S2_glycine1e-8_bath|d0.002|k3": {
      "band": 0.007077743247246229,
-     "floor": 8.381731749843185e-16
+     "floor": 8.381731749843185e-16,
+     "tol_abs": 0.007077743247246229
     },
     "S2_glycine1e-8_bath|d0.002|k4": {
      "band": 0.0073479441358448635,
-     "floor": 6.526285410619493e-16
+     "floor": 6.526285410619493e-16,
+     "tol_abs": 0.0073479441358448635
     },
     "S2_glycine1e-8_bath|d0.002|k5": {
      "band": 0.00715202457444566,
-     "floor": 5.081819107350086e-16
+     "floor": 5.081819107350086e-16,
+     "tol_abs": 0.00715202457444566
     },
     "S2_glycine1e-8_bath|d0.002|k6": {
      "band": 0.006683125229948875,
-     "floor": 3.957205070262685e-16
+     "floor": 3.957205070262685e-16,
+     "tol_abs": 0.006683125229948875
     },
     "S2_glycine1e-8_bath|d0.002|k7": {
      "band": 0.006071672900580773,
-     "floor": 3.081559338156518e-16
+     "floor": 3.081559338156518e-16,
+     "tol_abs": 0.006071672900580773
     },
     "S2_glycine1e-8_bath|d0.002|k8": {
      "band": 0.005403711059668866,
-     "floor": 2.399729774746391e-16
+     "floor": 2.399729774746391e-16,
+     "tol_abs": 0.005403711059668866
     },
     "S2_glycine1e-8_bath|d0.002|k9": {
      "band": 0.004734172711853444,
-     "floor": 1.8687955723561995e-16
+     "floor": 1.8687955723561995e-16,
+     "tol_abs": 0.004734172711853444
     },
     "S3_glycine3e-8_bath|d-0.002|k1": {
      "band": 0.0038921494622832084,
-     "floor": 1.382769263458957e-15
+     "floor": 1.382769263458957e-15,
+     "tol_abs": 0.0038921494622832084
     },
     "S3_glycine3e-8_bath|d-0.002|k10": {
      "band": 0.004096155599552726,
-     "floor": 1.4552468029026235e-16
+     "floor": 1.4552468029026235e-16,
+     "tol_abs": 0.004096155599552726
     },
     "S3_glycine3e-8_bath|d-0.002|k11": {
      "band": 0.003508961322652299,
-     "floor": 1.1333031717607927e-16
+     "floor": 1.1333031717607927e-16,
+     "tol_abs": 0.003508961322652299
     },
     "S3_glycine3e-8_bath|d-0.002|k12": {
      "band": 0.002981126039726949,
-     "floor": 8.825906049638581e-17
+     "floor": 8.825906049638581e-17,
+     "tol_abs": 0.002981126039726949
     },
     "S3_glycine3e-8_bath|d-0.002|k13": {
      "band": 0.002515119109489508,
-     "floor": 6.873460049304546e-17
+     "floor": 6.873460049304546e-17,
+     "tol_abs": 0.002515119109489508
     },
     "S3_glycine3e-8_bath|d-0.002|k14": {
      "band": 0.002109413029524845,
-     "floor": 5.352957517309229e-17
+     "floor": 5.352957517309229e-17,
+     "tol_abs": 0.002109413029524845
     },
     "S3_glycine3e-8_bath|d-0.002|k15": {
      "band": 0.0017601310341944908,
-     "floor": 4.1688277344426936e-17
+     "floor": 4.1688277344426936e-17,
+     "tol_abs": 0.0017601310341944908
     },
     "S3_glycine3e-8_bath|d-0.002|k16": {
      "band": 0.0014621611964087762,
-     "floor": 3.246650051932978e-17
+     "floor": 3.246650051932978e-17,
+     "tol_abs": 0.0014621611964087762
     },
     "S3_glycine3e-8_bath|d-0.002|k2": {
      "band": 0.00606017112531155,
-     "floor": 1.0765026426383084e-15
+     "floor": 1.0765026426383084e-15,
+     "tol_abs": 0.00606017112531155
     },
     "S3_glycine3e-8_bath|d-0.002|k3": {
      "band": 0.007077456585388029,
-     "floor": 8.381392274008245e-16
+     "floor": 8.381392274008245e-16,
+     "tol_abs": 0.007077456585388029
     },
     "S3_glycine3e-8_bath|d-0.002|k4": {
      "band": 0.007347587736248963,
-     "floor": 6.525968864189624e-16
+     "floor": 6.525968864189624e-16,
+     "tol_abs": 0.007347587736248963
     },
     "S3_glycine3e-8_bath|d-0.002|k5": {
      "band": 0.007151633141049262,
-     "floor": 5.081540977193741e-16
+     "floor": 5.081540977193741e-16,
+     "tol_abs": 0.007151633141049262
     },
     "S3_glycine3e-8_bath|d-0.002|k6": {
      "band": 0.006682727066389256,
-     "floor": 3.9569693100752424e-16
+     "floor": 3.9569693100752424e-16,
+     "tol_abs": 0.006682727066389256
     },
     "S3_glycine3e-8_bath|d-0.002|k7": {
      "band": 0.006071288255917113,
-     "floor": 3.0813641192482235e-16
+     "floor": 3.0813641192482235e-16,
+     "tol_abs": 0.006071288255917113
     },
     "S3_glycine3e-8_bath|d-0.002|k8": {
      "band": 0.0054033528568138665,
-     "floor": 2.3995707007235486e-16
+     "floor": 2.3995707007235486e-16,
+     "tol_abs": 0.0054033528568138665
     },
     "S3_glycine3e-8_bath|d-0.002|k9": {
      "band": 0.004733848063462139,
-     "floor": 1.8686674187139115e-16
+     "floor": 1.8686674187139115e-16,
+     "tol_abs": 0.004733848063462139
     },
     "S3_glycine3e-8_bath|d0.001|k1": {
      "band": 0.003894929735118356,
-     "floor": 1.3837570147921797e-15
+     "floor": 1.3837570147921797e-15,
+     "tol_abs": 0.003894929735118356
     },
     "S3_glycine3e-8_bath|d0.001|k10": {
      "band": 0.004108303552606722,
-     "floor": 1.4595626228010598e-16
+     "floor": 1.4595626228010598e-16,
+     "tol_abs": 0.004108303552606722
     },
     "S3_glycine3e-8_bath|d0.001|k11": {
      "band": 0.0035195738158809633,
-     "floor": 1.136730730838943e-16
+     "floor": 1.136730730838943e-16,
+     "tol_abs": 0.0035195738158809633
     },
     "S3_glycine3e-8_bath|d0.001|k12": {
      "band": 0.00299027843882908,
-     "floor": 8.853002594208566e-17
+     "floor": 8.853002594208566e-17,
+     "tol_abs": 0.00299027843882908
     },
     "S3_glycine3e-8_bath|d0.001|k13": {
      "band": 0.0025229303655826844,
-     "floor": 6.894807092666732e-17
+     "floor": 6.894807092666732e-17,
+     "tol_abs": 0.0025229303655826844
     },
     "S3_glycine3e-8_bath|d0.001|k14": {
      "band": 0.0021160227697698693,
-     "floor": 5.3697307420105265e-17
+     "floor": 5.3697307420105265e-17,
+     "tol_abs": 0.0021160227697698693
     },
     "S3_glycine3e-8_bath|d0.001|k15": {
      "band": 0.0017656843289861263,
-     "floor": 4.1819805786884635e-17
+     "floor": 4.1819805786884635e-17,
+     "tol_abs": 0.0017656843289861263
     },
     "S3_glycine3e-8_bath|d0.001|k16": {
      "band": 0.0014667989751119066,
-     "floor": 3.256947989331641e-17
+     "floor": 3.256947989331641e-17,
+     "tol_abs": 0.0014667989751119066
     },
     "S3_glycine3e-8_bath|d0.001|k2": {
      "band": 0.006067872405840293,
-     "floor": 1.0778706648722457e-15
+     "floor": 1.0778706648722457e-15,
+     "tol_abs": 0.006067872405840293
     },
     "S3_glycine3e-8_bath|d0.001|k3": {
      "band": 0.00708951853220666,
-     "floor": 8.395676488493417e-16
+     "floor": 8.395676488493417e-16,
+     "tol_abs": 0.00708951853220666
     },
     "S3_glycine3e-8_bath|d0.001|k4": {
      "band": 0.007362590940593927,
-     "floor": 6.539294386515173e-16
+     "floor": 6.539294386515173e-16,
+     "tol_abs": 0.007362590940593927
     },
     "S3_glycine3e-8_bath|d0.001|k5": {
      "band": 0.007168117040277346,
-     "floor": 5.093253492047257e-16
+     "floor": 5.093253492047257e-16,
+     "tol_abs": 0.007168117040277346
     },
     "S3_glycine3e-8_bath|d0.001|k6": {
      "band": 0.006699499053040657,
-     "floor": 3.9669003211414243e-16
+     "floor": 3.9669003211414243e-16,
+     "tol_abs": 0.006699499053040657
     },
     "S3_glycine3e-8_bath|d0.001|k7": {
      "band": 0.006087494295344925,
-     "floor": 3.0895891789559904e-16
+     "floor": 3.0895891789559904e-16,
+     "tol_abs": 0.006087494295344925
     },
     "S3_glycine3e-8_bath|d0.001|k8": {
      "band": 0.00541844738613999,
-     "floor": 2.406274018325045e-16
+     "floor": 2.406274018325045e-16,
+     "tol_abs": 0.00541844738613999
     },
     "S3_glycine3e-8_bath|d0.001|k9": {
      "band": 0.004747530420452862,
-     "floor": 1.8740684739182639e-16
+     "floor": 1.8740684739182639e-16,
+     "tol_abs": 0.004747530420452862
     },
     "S3_glycine3e-8_bath|d0.002|k1": {
      "band": 0.0038958544626180114,
-     "floor": 1.3840855439958984e-15
+     "floor": 1.3840855439958984e-15,
+     "tol_abs": 0.0038958544626180114
     },
     "S3_glycine3e-8_bath|d0.002|k10": {
      "band": 0.004112361172348874,
-     "floor": 1.461004178917191e-16
+     "floor": 1.461004178917191e-16,
+     "tol_abs": 0.004112361172348874
     },
     "S3_glycine3e-8_bath|d0.002|k11": {
      "band": 0.0035231189566091565,
-     "floor": 1.1378757190169726e-16
+     "floor": 1.1378757190169726e-16,
+     "tol_abs": 0.0035231189566091565
     },
     "S3_glycine3e-8_bath|d0.002|k12": {
      "band": 0.0029933360920838684,
-     "floor": 8.862055066327997e-17
+     "floor": 8.862055066327997e-17,
+     "tol_abs": 0.0029933360920838684
     },
     "S3_glycine3e-8_bath|d0.002|k13": {
      "band": 0.002525540141093382,
-     "floor": 6.901939235094004e-17
+     "floor": 6.901939235094004e-17,
+     "tol_abs": 0.002525540141093382
     },
     "S3_glycine3e-8_bath|d0.002|k14": {
      "band": 0.002118231228273843,
-     "floor": 5.3753350425363346e-17
+     "floor": 5.3753350425363346e-17,
+     "tol_abs": 0.002118231228273843
     },
     "S3_glycine3e-8_bath|d0.002|k15": {
      "band": 0.0017675398811149343,
-     "floor": 4.186375408974959e-17
+     "floor": 4.186375408974959e-17,
+     "tol_abs": 0.0017675398811149343
     },
     "S3_glycine3e-8_bath|d0.002|k16": {
      "band": 0.0014683486697994563,
-     "floor": 3.2603890027781553e-17
+     "floor": 3.2603890027781553e-17,
+     "tol_abs": 0.0014683486697994563
     },
     "S3_glycine3e-8_bath|d0.002|k2": {
      "band": 0.006070436571150555,
-     "floor": 1.0783261521308693e-15
+     "floor": 1.0783261521308693e-15,
+     "tol_abs": 0.006070436571150555
     },
     "S3_glycine3e-8_bath|d0.002|k3": {
      "band": 0.007093537880070708,
-     "floor": 8.400436352538903e-16
+     "floor": 8.400436352538903e-16,
+     "tol_abs": 0.007093537880070708
     },
     "S3_glycine3e-8_bath|d0.002|k4": {
      "band": 0.007367593570913509,
-     "floor": 6.543737614806763e-16
+     "floor": 6.543737614806763e-16,
+     "tol_abs": 0.007367593570913509
     },
     "S3_glycine3e-8_bath|d0.002|k5": {
      "band": 0.007173616109981256,
-     "floor": 5.09716081607881e-16
+     "floor": 5.09716081607881e-16,
+     "tol_abs": 0.007173616109981256
     },
     "S3_glycine3e-8_bath|d0.002|k6": {
      "band": 0.006705096384215433,
-     "floor": 3.970214606979658e-16
+     "floor": 3.970214606979658e-16,
+     "tol_abs": 0.006705096384215433
     },
     "S3_glycine3e-8_bath|d0.002|k7": {
      "band": 0.00609290437348473,
-     "floor": 3.0923349587575133e-16
+     "floor": 3.0923349587575133e-16,
+     "tol_abs": 0.00609290437348473
     },
     "S3_glycine3e-8_bath|d0.002|k8": {
      "band": 0.005423487583412377,
-     "floor": 2.408512315549228e-16
+     "floor": 2.408512315549228e-16,
+     "tol_abs": 0.005423487583412377
     },
     "S3_glycine3e-8_bath|d0.002|k9": {
      "band": 0.004752099910646511,
-     "floor": 1.8758722617311667e-16
+     "floor": 1.8758722617311667e-16,
+     "tol_abs": 0.004752099910646511
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k1": {
      "band": 0.0038980961251799113,
-     "floor": 1.38488194252059e-15
+     "floor": 1.38488194252059e-15,
+     "tol_abs": 0.0038980961251799113
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k10": {
      "band": 0.004122232447969552,
-     "floor": 1.4645111605096703e-16
+     "floor": 1.4645111605096703e-16,
+     "tol_abs": 0.004122232447969552
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k11": {
      "band": 0.0035317442924125884,
-     "floor": 1.1406614779708909e-16
+     "floor": 1.1406614779708909e-16,
+     "tol_abs": 0.0035317442924125884
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k12": {
      "band": 0.00300077591153546,
-     "floor": 8.884081356605892e-17
+     "floor": 8.884081356605892e-17,
+     "tol_abs": 0.00300077591153546
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k13": {
      "band": 0.002531890553854805,
-     "floor": 6.919294003004417e-17
+     "floor": 6.919294003004417e-17,
+     "tol_abs": 0.002531890553854805
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k14": {
      "band": 0.002123605346796552,
-     "floor": 5.3889726885271375e-17
+     "floor": 5.3889726885271375e-17,
+     "tol_abs": 0.002123605346796552
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k15": {
      "band": 0.0017720553838262247,
-     "floor": 4.197070267807667e-17
+     "floor": 4.197070267807667e-17,
+     "tol_abs": 0.0017720553838262247
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k16": {
      "band": 0.0014721199668134403,
-     "floor": 3.268762964333406e-17
+     "floor": 3.268762964333406e-17,
+     "tol_abs": 0.0014721199668134403
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k2": {
      "band": 0.006076657888693055,
-     "floor": 1.0794312801275393e-15
+     "floor": 1.0794312801275393e-15,
+     "tol_abs": 0.006076657888693055
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k3": {
      "band": 0.0071032965093814045,
-     "floor": 8.411992891151722e-16
+     "floor": 8.411992891151722e-16,
+     "tol_abs": 0.0071032965093814045
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k4": {
      "band": 0.007379746010403697,
-     "floor": 6.55453114930866e-16
+     "floor": 6.55453114930866e-16,
+     "tol_abs": 0.007379746010403697
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k5": {
      "band": 0.007186980071198762,
-     "floor": 5.106656481642888e-16
+     "floor": 5.106656481642888e-16,
+     "tol_abs": 0.007186980071198762
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k6": {
      "band": 0.006718703563856907,
-     "floor": 3.9782716758533514e-16
+     "floor": 3.9782716758533514e-16,
+     "tol_abs": 0.006718703563856907
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k7": {
      "band": 0.0061060596719432975,
-     "floor": 3.0990116742978645e-16
+     "floor": 3.0990116742978645e-16,
+     "tol_abs": 0.0061060596719432975
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k8": {
      "band": 0.005435745890464179,
-     "floor": 2.413956097441962e-16
+     "floor": 2.413956097441962e-16,
+     "tol_abs": 0.005435745890464179
     },
     "S4_glycine1e-8_bath70Na|d-0.002|k9": {
      "band": 0.0047632151181981825,
-     "floor": 1.8802599450546697e-16
+     "floor": 1.8802599450546697e-16,
+     "tol_abs": 0.0047632151181981825
     },
     "S4_glycine1e-8_bath70Na|d0.001|k1": {
      "band": 0.0038919505155568163,
-     "floor": 1.3826985833833365e-15
+     "floor": 1.3826985833833365e-15,
+     "tol_abs": 0.0038919505155568163
     },
     "S4_glycine1e-8_bath70Na|d0.001|k10": {
      "band": 0.004095289551186943,
-     "floor": 1.4549391207150615e-16
+     "floor": 1.4549391207150615e-16,
+     "tol_abs": 0.004095289551186943
     },
     "S4_glycine1e-8_bath70Na|d0.001|k11": {
      "band": 0.0035082048102694175,
-     "floor": 1.1330588379525341e-16
+     "floor": 1.1330588379525341e-16,
+     "tol_abs": 0.0035082048102694175
     },
     "S4_glycine1e-8_bath70Na|d0.001|k12": {
      "band": 0.0029804736574795005,
-     "floor": 8.823974610193316e-17
+     "floor": 8.823974610193316e-17,
+     "tol_abs": 0.0029804736574795005
     },
     "S4_glycine1e-8_bath70Na|d0.001|k13": {
      "band": 0.002514562355143168,
-     "floor": 6.87193851947226e-17
+     "floor": 6.87193851947226e-17,
+     "tol_abs": 0.002514562355143168
     },
     "S4_glycine1e-8_bath70Na|d0.001|k14": {
      "band": 0.002108941934937746,
-     "floor": 5.351762042892376e-17
+     "floor": 5.351762042892376e-17,
+     "tol_abs": 0.002108941934937746
     },
     "S4_glycine1e-8_bath70Na|d0.001|k15": {
      "band": 0.0017597352489028674,
-     "floor": 4.167890326563081e-17
+     "floor": 4.167890326563081e-17,
+     "tol_abs": 0.0017597352489028674
     },
     "S4_glycine1e-8_bath70Na|d0.001|k16": {
      "band": 0.0014618306690401602,
-     "floor": 3.245916133743166e-17
+     "floor": 3.245916133743166e-17,
+     "tol_abs": 0.0014618306690401602
     },
     "S4_glycine1e-8_bath70Na|d0.001|k2": {
      "band": 0.006059620566889945,
-     "floor": 1.0764048438165377e-15
+     "floor": 1.0764048438165377e-15,
+     "tol_abs": 0.006059620566889945
     },
     "S4_glycine1e-8_bath70Na|d0.001|k3": {
      "band": 0.007076594908771905,
-     "floor": 8.380371843907977e-16
+     "floor": 8.380371843907977e-16,
+     "tol_abs": 0.007076594908771905
     },
     "S4_glycine1e-8_bath70Na|d0.001|k4": {
      "band": 0.007346516538430878,
-     "floor": 6.525017449404371e-16
+     "floor": 6.525017449404371e-16,
+     "tol_abs": 0.007346516538430878
     },
     "S4_glycine1e-8_bath70Na|d0.001|k5": {
      "band": 0.007150456728843825,
-     "floor": 5.080705086046908e-16
+     "floor": 5.080705086046908e-16,
+     "tol_abs": 0.007150456728843825
     },
     "S4_glycine1e-8_bath70Na|d0.001|k6": {
      "band": 0.006681530490507152,
-     "floor": 3.956260794824563e-16
+     "floor": 3.956260794824563e-16,
+     "tol_abs": 0.006681530490507152
     },
     "S4_glycine1e-8_bath70Na|d0.001|k7": {
      "band": 0.006070132353238809,
-     "floor": 3.080777463354427e-16
+     "floor": 3.080777463354427e-16,
+     "tol_abs": 0.006070132353238809
     },
     "S4_glycine1e-8_bath70Na|d0.001|k8": {
      "band": 0.005402276447049848,
-     "floor": 2.3990926787619704e-16
+     "floor": 2.3990926787619704e-16,
+     "tol_abs": 0.005402276447049848
     },
     "S4_glycine1e-8_bath70Na|d0.001|k9": {
      "band": 0.004732872507960403,
-     "floor": 1.8682823221166396e-16
+     "floor": 1.8682823221166396e-16,
+     "tol_abs": 0.004732872507960403
     },
     "S4_glycine1e-8_bath70Na|d0.002|k1": {
      "band": 0.0038898925849472172,
-     "floor": 1.3819674595606618e-15
+     "floor": 1.3819674595606618e-15,
+     "tol_abs": 0.0038898925849472172
     },
     "S4_glycine1e-8_bath70Na|d0.002|k10": {
      "band": 0.00408635039326466,
-     "floor": 1.4517632938523164e-16
+     "floor": 1.4517632938523164e-16,
+     "tol_abs": 0.00408635039326466
     },
     "S4_glycine1e-8_bath70Na|d0.002|k11": {
      "band": 0.0035003967264606774,
-     "floor": 1.1305370301204859e-16
+     "floor": 1.1305370301204859e-16,
+     "tol_abs": 0.0035003967264606774
     },
     "S4_glycine1e-8_bath70Na|d0.002|k12": {
      "band": 0.002973740632485081,
-     "floor": 8.804040851862168e-17
+     "floor": 8.804040851862168e-17,
+     "tol_abs": 0.002973740632485081
     },
     "S4_glycine1e-8_bath70Na|d0.002|k13": {
      "band": 0.002508816484562443,
-     "floor": 6.856235878696291e-17
+     "floor": 6.856235878696291e-17,
+     "tol_abs": 0.002508816484562443
     },
     "S4_glycine1e-8_bath70Na|d0.002|k14": {
      "band": 0.0021040802371416023,
-     "floor": 5.339424742704838e-17
+     "floor": 5.339424742704838e-17,
+     "tol_abs": 0.0021040802371416023
     },
     "S4_glycine1e-8_bath70Na|d0.002|k15": {
      "band": 0.0017556508340803583,
-     "floor": 4.1582164889565316e-17
+     "floor": 4.1582164889565316e-17,
+     "tol_abs": 0.0017556508340803583
     },
     "S4_glycine1e-8_bath70Na|d0.002|k16": {
      "band": 0.0014584197603435389,
-     "floor": 3.2383423950033994e-17
+     "floor": 3.2383423950033994e-17,
+     "tol_abs": 0.0014584197603435389
     },
     "S4_glycine1e-8_bath70Na|d0.002|k2": {
      "band": 0.006053928422644107,
-     "floor": 1.075393715880343e-15
+     "floor": 1.075393715880343e-15,
+     "tol_abs": 0.006053928422644107
     },
     "S4_glycine1e-8_bath70Na|d0.002|k3": {
      "band": 0.007067689796734029,
-     "floor": 8.369826072791905e-16
+     "floor": 8.369826072791905e-16,
+     "tol_abs": 0.007067689796734029
     },
     "S4_glycine1e-8_bath70Na|d0.002|k4": {
      "band": 0.007335449699195279,
-     "floor": 6.515188121621022e-16
+     "floor": 6.515188121621022e-16,
+     "tol_abs": 0.007335449699195279
     },
     "S4_glycine1e-8_bath70Na|d0.002|k5": {
      "band": 0.007138306017727961,
-     "floor": 5.072071486529212e-16
+     "floor": 5.072071486529212e-16,
+     "tol_abs": 0.007138306017727961
     },
     "S4_glycine1e-8_bath70Na|d0.002|k6": {
      "band": 0.0066691740241480784,
-     "floor": 3.948944296981977e-16
+     "floor": 3.948944296981977e-16,
+     "tol_abs": 0.0066691740241480784
     },
     "S4_glycine1e-8_bath70Na|d0.002|k7": {
      "band": 0.006058197804113343,
-     "floor": 3.0747203153646613e-16
+     "floor": 3.0747203153646613e-16,
+     "tol_abs": 0.006058197804113343
     },
     "S4_glycine1e-8_bath70Na|d0.002|k8": {
      "band": 0.005391164043590403,
-     "floor": 2.394157780290131e-16
+     "floor": 2.394157780290131e-16,
+     "tol_abs": 0.005391164043590403
     },
     "S4_glycine1e-8_bath70Na|d0.002|k9": {
      "band": 0.004722802269285281,
-     "floor": 1.8643071360399849e-16
+     "floor": 1.8643071360399849e-16,
+     "tol_abs": 0.004722802269285281
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k1": {
      "band": 0.0039004572314917407,
-     "floor": 1.385720775989704e-15
+     "floor": 1.385720775989704e-15,
+     "tol_abs": 0.0039004572314917407
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k10": {
      "band": 0.004132684154212851,
-     "floor": 1.4682243524834075e-16
+     "floor": 1.4682243524834075e-16,
+     "tol_abs": 0.004132684154212851
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k11": {
      "band": 0.003540878049934518,
-     "floor": 1.143611443906073e-16
+     "floor": 1.143611443906073e-16,
+     "tol_abs": 0.003540878049934518
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k12": {
      "band": 0.0030086551138894524,
-     "floor": 8.907408481590114e-17
+     "floor": 8.907408481590114e-17,
+     "tol_abs": 0.0030086551138894524
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k13": {
      "band": 0.002538616570712657,
-     "floor": 6.937675243077289e-17
+     "floor": 6.937675243077289e-17,
+     "tol_abs": 0.002538616570712657
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k14": {
      "band": 0.002129297694083727,
-     "floor": 5.403417888578301e-17
+     "floor": 5.403417888578301e-17,
+     "tol_abs": 0.002129297694083727
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k15": {
      "band": 0.0017768385138040759,
-     "floor": 4.2083989953408625e-17
+     "floor": 4.2083989953408625e-17,
+     "tol_abs": 0.0017768385138040759
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k16": {
      "band": 0.0014761149402092374,
-     "floor": 3.2776335872269634e-17
+     "floor": 3.2776335872269634e-17,
+     "tol_abs": 0.0014761149402092374
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k2": {
      "band": 0.006083219124474548,
-     "floor": 1.0805967897330767e-15
+     "floor": 1.0805967897330767e-15,
+     "tol_abs": 0.006083219124474548
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k3": {
      "band": 0.007113598662354169,
-     "floor": 8.424193091080868e-16
+     "floor": 8.424193091080868e-16,
+     "tol_abs": 0.007113598662354169
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k4": {
      "band": 0.007392585357386608,
-     "floor": 6.565934780221923e-16
+     "floor": 6.565934780221923e-16,
+     "tol_abs": 0.007392585357386608
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k5": {
      "band": 0.007201108055204434,
-     "floor": 5.116695018049053e-16
+     "floor": 5.116695018049053e-16,
+     "tol_abs": 0.007201108055204434
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k6": {
      "band": 0.006733095532188525,
-     "floor": 3.986793432979452e-16
+     "floor": 3.986793432979452e-16,
+     "tol_abs": 0.006733095532188525
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k7": {
      "band": 0.0061199788709965595,
-     "floor": 3.106076092708503e-16
+     "floor": 3.106076092708503e-16,
+     "tol_abs": 0.0061199788709965595
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k8": {
      "band": 0.005448719771005095,
-     "floor": 2.419717657800067e-16
+     "floor": 2.419717657800067e-16,
+     "tol_abs": 0.005448719771005095
     },
     "S5_glycine1e-8_bath70inert|d-0.002|k9": {
      "band": 0.004774981828533576,
-     "floor": 1.884904806472785e-16
+     "floor": 1.884904806472785e-16,
+     "tol_abs": 0.004774981828533576
     },
     "S5_glycine1e-8_bath70inert|d0.001|k1": {
      "band": 0.003890759242195481,
-     "floor": 1.3822753580667355e-15
+     "floor": 1.3822753580667355e-15,
+     "tol_abs": 0.003890759242195481
     },
     "S5_glycine1e-8_bath70inert|d0.001|k10": {
      "band": 0.004090110213116296,
-     "floor": 1.45309905019399e-16
+     "floor": 1.45309905019399e-16,
+     "tol_abs": 0.004090110213116296
     },
     "S5_glycine1e-8_bath70inert|d0.001|k11": {
      "band": 0.0035036807050593346,
-     "floor": 1.1315976697285165e-16
+     "floor": 1.1315976697285165e-16,
+     "tol_abs": 0.0035036807050593346
     },
     "S5_glycine1e-8_bath70inert|d0.001|k12": {
      "band": 0.0029765723812245665,
-     "floor": 8.81242451226358e-17
+     "floor": 8.81242451226358e-17,
+     "tol_abs": 0.0029765723812245665
     },
     "S5_glycine1e-8_bath70inert|d0.001|k13": {
      "band": 0.002511233010563821,
-     "floor": 6.862839897911884e-17
+     "floor": 6.862839897911884e-17,
+     "tol_abs": 0.002511233010563821
     },
     "S5_glycine1e-8_bath70inert|d0.001|k14": {
      "band": 0.0021061248763768353,
-     "floor": 5.3446133268328555e-17
+     "floor": 5.3446133268328555e-17,
+     "tol_abs": 0.0021061248763768353
     },
     "S5_glycine1e-8_bath70inert|d0.001|k15": {
      "band": 0.0017573685573405793,
-     "floor": 4.162284874905186e-17
+     "floor": 4.162284874905186e-17,
+     "tol_abs": 0.0017573685573405793
     },
     "S5_glycine1e-8_bath70inert|d0.001|k16": {
      "band": 0.0014598542230357659,
-     "floor": 3.2415275420211517e-17
+     "floor": 3.2415275420211517e-17,
+     "tol_abs": 0.0014598542230357659
     },
     "S5_glycine1e-8_bath70inert|d0.001|k2": {
      "band": 0.006056324825697047,
-     "floor": 1.075819402575648e-15
+     "floor": 1.075819402575648e-15,
+     "tol_abs": 0.006056324825697047
     },
     "S5_glycine1e-8_bath70inert|d0.001|k3": {
      "band": 0.007071437963770976,
-     "floor": 8.374264794226102e-16
+     "floor": 8.374264794226102e-16,
+     "tol_abs": 0.007071437963770976
     },
     "S5_glycine1e-8_bath70inert|d0.001|k4": {
      "band": 0.0073401068593495974,
-     "floor": 6.519324510767174e-16
+     "floor": 6.519324510767174e-16,
+     "tol_abs": 0.0073401068593495974
     },
     "S5_glycine1e-8_bath70inert|d0.001|k5": {
      "band": 0.007143418537808724,
-     "floor": 5.075704150534025e-16
+     "floor": 5.075704150534025e-16,
+     "tol_abs": 0.007143418537808724
     },
     "S5_glycine1e-8_bath70inert|d0.001|k6": {
      "band": 0.006674372515808468,
-     "floor": 3.952022422387142e-16
+     "floor": 3.952022422387142e-16,
+     "tol_abs": 0.006674372515808468
     },
     "S5_glycine1e-8_bath70inert|d0.001|k7": {
      "band": 0.006063218336589729,
-     "floor": 3.077268388850907e-16
+     "floor": 3.077268388850907e-16,
+     "tol_abs": 0.006063218336589729
     },
     "S5_glycine1e-8_bath70inert|d0.001|k8": {
      "band": 0.005395838391928286,
-     "floor": 2.396233607950065e-16
+     "floor": 2.396233607950065e-16,
+     "tol_abs": 0.005395838391928286
     },
     "S5_glycine1e-8_bath70inert|d0.001|k9": {
      "band": 0.004727038005246807,
-     "floor": 1.865979175716685e-16
+     "floor": 1.865979175716685e-16,
+     "tol_abs": 0.004727038005246807
     },
     "S5_glycine1e-8_bath70inert|d0.002|k1": {
      "band": 0.0038875030524782557,
-     "floor": 1.38111852709182e-15
+     "floor": 1.38111852709182e-15,
+     "tol_abs": 0.0038875030524782557
     },
     "S5_glycine1e-8_bath70inert|d0.002|k10": {
      "band": 0.004076022967312649,
-     "floor": 1.4480942551076657e-16
+     "floor": 1.4480942551076657e-16,
+     "tol_abs": 0.004076022967312649
     },
     "S5_glycine1e-8_bath70inert|d0.002|k11": {
      "band": 0.00349137720462636,
-     "floor": 1.1276239593389387e-16
+     "floor": 1.1276239593389387e-16,
+     "tol_abs": 0.00349137720462636
     },
     "S5_glycine1e-8_bath70inert|d0.002|k12": {
      "band": 0.0029659637534297126,
-     "floor": 8.781016664696848e-17
+     "floor": 8.781016664696848e-17,
+     "tol_abs": 0.0029659637534297126
     },
     "S5_glycine1e-8_bath70inert|d0.002|k13": {
      "band": 0.0025021803259542264,
-     "floor": 6.838100208340828e-17
+     "floor": 6.838100208340828e-17,
+     "tol_abs": 0.0025021803259542264
     },
     "S5_glycine1e-8_bath70inert|d0.002|k14": {
      "band": 0.0020984655928304626,
-     "floor": 5.325176725814991e-17
+     "floor": 5.325176725814991e-17,
+     "tol_abs": 0.0020984655928304626
     },
     "S5_glycine1e-8_bath70inert|d0.002|k15": {
      "band": 0.0017509340782050648,
-     "floor": 4.147044966878053e-17
+     "floor": 4.147044966878053e-17,
+     "tol_abs": 0.0017509340782050648
     },
     "S5_glycine1e-8_bath70inert|d0.002|k16": {
      "band": 0.0014544809279135372,
-     "floor": 3.2295964300955434e-17
+     "floor": 3.2295964300955434e-17,
+     "tol_abs": 0.0014544809279135372
     },
     "S5_glycine1e-8_bath70inert|d0.002|k2": {
      "band": 0.0060473273648284425,
-     "floor": 1.0742211324605299e-15
+     "floor": 1.0742211324605299e-15,
+     "tol_abs": 0.0060473273648284425
     },
     "S5_glycine1e-8_bath70inert|d0.002|k3": {
      "band": 0.00705737276698946,
-     "floor": 8.357608255225865e-16
+     "floor": 8.357608255225865e-16,
+     "tol_abs": 0.00705737276698946
     },
     "S5_glycine1e-8_bath70inert|d0.002|k4": {
      "band": 0.00732263787283326,
-     "floor": 6.503808933929331e-16
+     "floor": 6.503808933929331e-16,
+     "tol_abs": 0.00732263787283326
     },
     "S5_glycine1e-8_bath70inert|d0.002|k5": {
      "band": 0.00712424766434435,
-     "floor": 5.062082425655738e-16
+     "floor": 5.062082425655738e-16,
+     "tol_abs": 0.00712424766434435
     },
     "S5_glycine1e-8_bath70inert|d0.002|k6": {
      "band": 0.006654884127173575,
-     "floor": 3.9404829782403154e-16
+     "floor": 3.9404829782403154e-16,
+     "tol_abs": 0.006654884127173575
     },
     "S5_glycine1e-8_bath70inert|d0.002|k7": {
      "band": 0.006044400733251696,
-     "floor": 3.0677178807392966e-16
+     "floor": 3.0677178807392966e-16,
+     "tol_abs": 0.006044400733251696
     },
     "S5_glycine1e-8_bath70inert|d0.002|k8": {
      "band": 0.005378320964871179,
-     "floor": 2.3884543076096684e-16
+     "floor": 2.3884543076096684e-16,
+     "tol_abs": 0.005378320964871179
     },
     "S5_glycine1e-8_bath70inert|d0.002|k9": {
      "band": 0.004711166161233569,
-     "floor": 1.859713829346283e-16
+     "floor": 1.859713829346283e-16,
+     "tol_abs": 0.004711166161233569
     },
     "S6_kir3_bath|d-0.002|k1": {
      "band": 0.0039041726434850686,
-     "floor": 1.3870407554908113e-15
+     "floor": 1.3870407554908113e-15,
+     "tol_abs": 0.0039041726434850686
     },
     "S6_kir3_bath|d-0.002|k10": {
      "band": 0.0041492370430237634,
-     "floor": 1.4741051199336266e-16
+     "floor": 1.4741051199336266e-16,
+     "tol_abs": 0.0041492370430237634
     },
     "S6_kir3_bath|d-0.002|k11": {
      "band": 0.0035553460978906683,
-     "floor": 1.1482842468041965e-16
+     "floor": 1.1482842468041965e-16,
+     "tol_abs": 0.0035553460978906683
     },
     "S6_kir3_bath|d-0.002|k12": {
      "band": 0.0030211375764749404,
-     "floor": 8.944363994567263e-17
+     "floor": 8.944363994567263e-17,
+     "tol_abs": 0.0030211375764749404
     },
     "S6_kir3_bath|d-0.002|k13": {
      "band": 0.0025492732235436622,
-     "floor": 6.96679834791032e-17
+     "floor": 6.96679834791032e-17,
+     "tol_abs": 0.0025492732235436622
     },
     "S6_kir3_bath|d-0.002|k14": {
      "band": 0.0021383173338978393,
-     "floor": 5.426306601253623e-17
+     "floor": 5.426306601253623e-17,
+     "tol_abs": 0.0021383173338978393
     },
     "S6_kir3_bath|d-0.002|k15": {
      "band": 0.0017844179553688532,
-     "floor": 4.226350719157431e-17
+     "floor": 4.226350719157431e-17,
+     "tol_abs": 0.0017844179553688532
     },
     "S6_kir3_bath|d-0.002|k16": {
      "band": 0.0014824457624803258,
-     "floor": 3.2916908365273075e-17
+     "floor": 3.2916908365273075e-17,
+     "tol_abs": 0.0014824457624803258
     },
     "S6_kir3_bath|d-0.002|k2": {
      "band": 0.006093560092726899,
-     "floor": 1.082433714701185e-15
+     "floor": 1.082433714701185e-15,
+     "tol_abs": 0.006093560092726899
     },
     "S6_kir3_bath|d-0.002|k3": {
      "band": 0.007129855629397193,
-     "floor": 8.443445207477388e-16
+     "floor": 8.443445207477388e-16,
+     "tol_abs": 0.007129855629397193
     },
     "S6_kir3_bath|d-0.002|k4": {
      "band": 0.007412865631306926,
-     "floor": 6.583947281863557e-16
+     "floor": 6.583947281863557e-16,
+     "tol_abs": 0.007412865631306926
     },
     "S6_kir3_bath|d-0.002|k5": {
      "band": 0.0072234406323863085,
-     "floor": 5.132563268536436e-16
+     "floor": 5.132563268536436e-16,
+     "tol_abs": 0.0072234406323863085
     },
     "S6_kir3_bath|d-0.002|k6": {
      "band": 0.006755858811468972,
-     "floor": 4.000272001925118e-16
+     "floor": 4.000272001925118e-16,
+     "tol_abs": 0.006755858811468972
     },
     "S6_kir3_bath|d-0.002|k7": {
      "band": 0.006142004517923937,
-     "floor": 3.117254780868978e-16
+     "floor": 3.117254780868978e-16,
+     "tol_abs": 0.006142004517923937
     },
     "S6_kir3_bath|d-0.002|k8": {
      "band": 0.00546925692162076,
-     "floor": 2.4288379847895496e-16
+     "floor": 2.4288379847895496e-16,
+     "tol_abs": 0.00546925692162076
     },
     "S6_kir3_bath|d-0.002|k9": {
      "band": 0.004793613289245287,
-     "floor": 1.8922595003979548e-16
+     "floor": 1.8922595003979548e-16,
+     "tol_abs": 0.004793613289245287
     },
     "S6_kir3_bath|d0.001|k1": {
      "band": 0.0038888783018870355,
-     "floor": 1.3816071138304535e-15
+     "floor": 1.3816071138304535e-15,
+     "tol_abs": 0.0038888783018870355
     },
     "S6_kir3_bath|d0.001|k10": {
      "band": 0.004081958815157925,
-     "floor": 1.4502030918911847e-16
+     "floor": 1.4502030918911847e-16,
+     "tol_abs": 0.004081958815157925
     },
     "S6_kir3_bath|d0.001|k11": {
      "band": 0.003496561128810641,
-     "floor": 1.1292982319170623e-16
+     "floor": 1.1292982319170623e-16,
+     "tol_abs": 0.003496561128810641
     },
     "S6_kir3_bath|d0.001|k12": {
      "band": 0.0029704333502560136,
-     "floor": 8.79424932951645e-17
+     "floor": 8.79424932951645e-17,
+     "tol_abs": 0.0029704333502560136
     },
     "S6_kir3_bath|d0.001|k13": {
      "band": 0.002505994234822346,
-     "floor": 6.848523074652725e-17
+     "floor": 6.848523074652725e-17,
+     "tol_abs": 0.002505994234822346
     },
     "S6_kir3_bath|d0.001|k14": {
      "band": 0.0021016923659945377,
-     "floor": 5.333365155213845e-17
+     "floor": 5.333365155213845e-17,
+     "tol_abs": 0.0021016923659945377
     },
     "S6_kir3_bath|d0.001|k15": {
      "band": 0.0017536447931228306,
-     "floor": 4.15346522952317e-17
+     "floor": 4.15346522952317e-17,
+     "tol_abs": 0.0017536447931228306
     },
     "S6_kir3_bath|d0.001|k16": {
      "band": 0.0014567445476841767,
-     "floor": 3.2346226756722645e-17
+     "floor": 3.2346226756722645e-17,
+     "tol_abs": 0.0014567445476841767
     },
     "S6_kir3_bath|d0.001|k2": {
      "band": 0.006051125256454177,
-     "floor": 1.0748957735369972e-15
+     "floor": 1.0748957735369972e-15,
+     "tol_abs": 0.006051125256454177
     },
     "S6_kir3_bath|d0.001|k3": {
      "band": 0.007063307122047907,
-     "floor": 8.3646359433562e-16
+     "floor": 8.3646359433562e-16,
+     "tol_abs": 0.007063307122047907
     },
     "S6_kir3_bath|d0.001|k4": {
      "band": 0.00733000576297059,
-     "floor": 6.51035293494803e-16
+     "floor": 6.51035293494803e-16,
+     "tol_abs": 0.00733000576297059
     },
     "S6_kir3_bath|d0.001|k5": {
      "band": 0.007132331145499868,
-     "floor": 5.067826084470445e-16
+     "floor": 5.067826084470445e-16,
+     "tol_abs": 0.007132331145499868
     },
     "S6_kir3_bath|d0.001|k6": {
      "band": 0.006663099734546103,
-     "floor": 3.9453475950223213e-16
+     "floor": 3.9453475950223213e-16,
+     "tol_abs": 0.006663099734546103
     },
     "S6_kir3_bath|d0.001|k7": {
      "band": 0.006052332239695764,
-     "floor": 3.0717433623732017e-16
+     "floor": 3.0717433623732017e-16,
+     "tol_abs": 0.006052332239695764
     },
     "S6_kir3_bath|d0.001|k8": {
      "band": 0.005385703495515594,
-     "floor": 2.3917328098102407e-16
+     "floor": 2.3917328098102407e-16,
+     "tol_abs": 0.005385703495515594
     },
     "S6_kir3_bath|d0.001|k9": {
      "band": 0.004717854501165916,
-     "floor": 1.862354024542518e-16
+     "floor": 1.862354024542518e-16,
+     "tol_abs": 0.004717854501165916
     },
     "S6_kir3_bath|d0.002|k1": {
      "band": 0.0038837257127161498,
-     "floor": 1.3797765464275889e-15
+     "floor": 1.3797765464275889e-15,
+     "tol_abs": 0.0038837257127161498
     },
     "S6_kir3_bath|d0.002|k10": {
      "band": 0.004059803040495245,
-     "floor": 1.442331779520332e-16
+     "floor": 1.442331779520332e-16,
+     "tol_abs": 0.004059803040495245
     },
     "S6_kir3_bath|d0.002|k11": {
      "band": 0.0034772137921295337,
-     "floor": 1.1230495457647595e-16
+     "floor": 1.1230495457647595e-16,
+     "tol_abs": 0.0034772137921295337
     },
     "S6_kir3_bath|d0.002|k12": {
      "band": 0.002953753255480496,
-     "floor": 8.744866328789224e-17
+     "floor": 8.744866328789224e-17,
+     "tol_abs": 0.002953753255480496
     },
     "S6_kir3_bath|d0.002|k13": {
      "band": 0.002491761928642453,
-     "floor": 6.809628221694124e-17
+     "floor": 6.809628221694124e-17,
+     "tol_abs": 0.002491761928642453
     },
     "S6_kir3_bath|d0.002|k14": {
      "band": 0.0020896516089473293,
-     "floor": 5.3028098964533225e-17
+     "floor": 5.3028098964533225e-17,
+     "tol_abs": 0.0020896516089473293
     },
     "S6_kir3_bath|d0.002|k15": {
      "band": 0.0017435300713853662,
-     "floor": 4.129508756007203e-17
+     "floor": 4.129508756007203e-17,
+     "tol_abs": 0.0017435300713853662
     },
     "S6_kir3_bath|d0.002|k16": {
      "band": 0.0014482983412802434,
-     "floor": 3.2158683300314985e-17
+     "floor": 3.2158683300314985e-17,
+     "tol_abs": 0.0014482983412802434
     },
     "S6_kir3_bath|d0.002|k2": {
      "band": 0.006036909387982805,
-     "floor": 1.0723705280182836e-15
+     "floor": 1.0723705280182836e-15,
+     "tol_abs": 0.006036909387982805
     },
     "S6_kir3_bath|d0.002|k3": {
      "band": 0.007041110541184908,
-     "floor": 8.338349911204674e-16
+     "floor": 8.338349911204674e-16,
+     "tol_abs": 0.007041110541184908
     },
     "S6_kir3_bath|d0.002|k4": {
      "band": 0.00730246284423644,
-     "floor": 6.485889908912803e-16
+     "floor": 6.485889908912803e-16,
+     "tol_abs": 0.00730246284423644
     },
     "S6_kir3_bath|d0.002|k5": {
      "band": 0.00710212640130951,
-     "floor": 5.046364322900495e-16
+     "floor": 5.046364322900495e-16,
+     "tol_abs": 0.00710212640130951
     },
     "S6_kir3_bath|d0.002|k6": {
      "band": 0.006632411694791289,
-     "floor": 3.927176625253571e-16
+     "floor": 3.927176625253571e-16,
+     "tol_abs": 0.006632411694791289
     },
     "S6_kir3_bath|d0.002|k7": {
      "band": 0.006022713202303239,
-     "floor": 3.056710796759298e-16
+     "floor": 3.056710796759298e-16,
+     "tol_abs": 0.006022713202303239
     },
     "S6_kir3_bath|d0.002|k8": {
      "band": 0.0053581401548131345,
-     "floor": 2.379492227616857e-16
+     "floor": 2.379492227616857e-16,
+     "tol_abs": 0.0053581401548131345
     },
     "S6_kir3_bath|d0.002|k9": {
      "band": 0.004692886943899167,
-     "floor": 1.852498182072761e-16
+     "floor": 1.852498182072761e-16,
+     "tol_abs": 0.004692886943899167
     },
     "S7_leaks_bath_Clhigh|d-0.002|k1": {
      "band": 0.003902276022001344,
-     "floor": 1.386366940181938e-15
+     "floor": 1.386366940181938e-15,
+     "tol_abs": 0.003902276022001344
     },
     "S7_leaks_bath_Clhigh|d-0.002|k10": {
      "band": 0.004140773488792958,
-     "floor": 1.4710982614449214e-16
+     "floor": 1.4710982614449214e-16,
+     "tol_abs": 0.004140773488792958
     },
     "S7_leaks_bath_Clhigh|d-0.002|k11": {
      "band": 0.0035479482109934024,
-     "floor": 1.1458949218974569e-16
+     "floor": 1.1458949218974569e-16,
+     "tol_abs": 0.0035479482109934024
     },
     "S7_leaks_bath_Clhigh|d-0.002|k12": {
      "band": 0.00301475475573057,
-     "floor": 8.925467049094049e-17
+     "floor": 8.925467049094049e-17,
+     "tol_abs": 0.00301475475573057
     },
     "S7_leaks_bath_Clhigh|d-0.002|k13": {
      "band": 0.002543823874925873,
-     "floor": 6.95190605916034e-17
+     "floor": 6.95190605916034e-17,
+     "tol_abs": 0.002543823874925873
     },
     "S7_leaks_bath_Clhigh|d-0.002|k14": {
      "band": 0.0021337049881733077,
-     "floor": 5.414602070005836e-17
+     "floor": 5.414602070005836e-17,
+     "tol_abs": 0.0021337049881733077
     },
     "S7_leaks_bath_Clhigh|d-0.002|k15": {
      "band": 0.001780542017664129,
-     "floor": 4.217170654556263e-17
+     "floor": 4.217170654556263e-17,
+     "tol_abs": 0.001780542017664129
     },
     "S7_leaks_bath_Clhigh|d-0.002|k16": {
      "band": 0.0014792082973986603,
-     "floor": 3.2845022199771375e-17
+     "floor": 3.2845022199771375e-17,
+     "tol_abs": 0.0014792082973986603
     },
     "S7_leaks_bath_Clhigh|d-0.002|k2": {
      "band": 0.0060882792087146665,
-     "floor": 1.0814956412578643e-15
+     "floor": 1.0814956412578643e-15,
+     "tol_abs": 0.0060882792087146665
     },
     "S7_leaks_bath_Clhigh|d-0.002|k3": {
      "band": 0.0071215510067803595,
-     "floor": 8.433610558688021e-16
+     "floor": 8.433610558688021e-16,
+     "tol_abs": 0.0071215510067803595
     },
     "S7_leaks_bath_Clhigh|d-0.002|k4": {
      "band": 0.007402503239074376,
-     "floor": 6.574743628706138e-16
+     "floor": 6.574743628706138e-16,
+     "tol_abs": 0.007402503239074376
     },
     "S7_leaks_bath_Clhigh|d-0.002|k5": {
      "band": 0.007212027419360512,
-     "floor": 5.124453692929273e-16
+     "floor": 5.124453692929273e-16,
+     "tol_abs": 0.007212027419360512
     },
     "S7_leaks_bath_Clhigh|d-0.002|k6": {
      "band": 0.006744223749079859,
-     "floor": 3.993382661041202e-16
+     "floor": 3.993382661041202e-16,
+     "tol_abs": 0.006744223749079859
     },
     "S7_leaks_bath_Clhigh|d-0.002|k7": {
      "band": 0.006130745170982284,
-     "floor": 3.111540318598411e-16
+     "floor": 3.111540318598411e-16,
+     "tol_abs": 0.006130745170982284
     },
     "S7_leaks_bath_Clhigh|d-0.002|k8": {
      "band": 0.005458757527119918,
-     "floor": 2.424175316981766e-16
+     "floor": 2.424175316981766e-16,
+     "tol_abs": 0.005458757527119918
     },
     "S7_leaks_bath_Clhigh|d-0.002|k9": {
      "band": 0.004784087481248183,
-     "floor": 1.888499226134295e-16
+     "floor": 1.888499226134295e-16,
+     "tol_abs": 0.004784087481248183
     },
     "S7_leaks_bath_Clhigh|d0.001|k1": {
      "band": 0.0038898383733798067,
-     "floor": 1.3819481997429529e-15
+     "floor": 1.3819481997429529e-15,
+     "tol_abs": 0.0038898383733798067
     },
     "S7_leaks_bath_Clhigh|d0.001|k10": {
      "band": 0.004086116003723479,
-     "floor": 1.4516800219594043e-16
+     "floor": 1.4516800219594043e-16,
+     "tol_abs": 0.004086116003723479
     },
     "S7_leaks_bath_Clhigh|d0.001|k11": {
      "band": 0.003500192013528524,
-     "floor": 1.1304709131719141e-16
+     "floor": 1.1304709131719141e-16,
+     "tol_abs": 0.003500192013528524
     },
     "S7_leaks_bath_Clhigh|d0.001|k12": {
      "band": 0.0029735641182751424,
-     "floor": 8.803518264822041e-17
+     "floor": 8.803518264822041e-17,
+     "tol_abs": 0.0029735641182751424
     },
     "S7_leaks_bath_Clhigh|d0.001|k13": {
      "band": 0.0025086658581579715,
-     "floor": 6.855824238321248e-17
+     "floor": 6.855824238321248e-17,
+     "tol_abs": 0.0025086658581579715
     },
     "S7_leaks_bath_Clhigh|d0.001|k14": {
      "band": 0.002103952794562341,
-     "floor": 5.339101337708692e-17
+     "floor": 5.339101337708692e-17,
+     "tol_abs": 0.002103952794562341
     },
     "S7_leaks_bath_Clhigh|d0.001|k15": {
      "band": 0.0017555437704456194,
-     "floor": 4.157962911330106e-17
+     "floor": 4.157962911330106e-17,
+     "tol_abs": 0.0017555437704456194
     },
     "S7_leaks_bath_Clhigh|d0.001|k16": {
      "band": 0.0014583303534441495,
-     "floor": 3.238143871806874e-17
+     "floor": 3.238143871806874e-17,
+     "tol_abs": 0.0014583303534441495
     },
     "S7_leaks_bath_Clhigh|d0.001|k2": {
      "band": 0.0060537786766677835,
-     "floor": 1.0753671156514215e-15
+     "floor": 1.0753671156514215e-15,
+     "tol_abs": 0.0060537786766677835
     },
     "S7_leaks_bath_Clhigh|d0.001|k3": {
      "band": 0.007067455749730115,
-     "floor": 8.369548905461143e-16
+     "floor": 8.369548905461143e-16,
+     "tol_abs": 0.007067455749730115
     },
     "S7_leaks_bath_Clhigh|d0.001|k4": {
      "band": 0.007335159038402243,
-     "floor": 6.514929962977195e-16
+     "floor": 6.514929962977195e-16,
+     "tol_abs": 0.007335159038402243
     },
     "S7_leaks_bath_Clhigh|d0.001|k5": {
      "band": 0.007137987051978465,
-     "floor": 5.071844847732952e-16
+     "floor": 5.071844847732952e-16,
+     "tol_abs": 0.007137987051978465
     },
     "S7_leaks_bath_Clhigh|d0.001|k6": {
      "band": 0.006668849779153835,
-     "floor": 3.948752305377589e-16
+     "floor": 3.948752305377589e-16,
+     "tol_abs": 0.006668849779153835
     },
     "S7_leaks_bath_Clhigh|d0.001|k7": {
      "band": 0.006057884718697599,
-     "floor": 3.074561414959069e-16
+     "floor": 3.074561414959069e-16,
+     "tol_abs": 0.006057884718697599
     },
     "S7_leaks_bath_Clhigh|d0.001|k8": {
      "band": 0.005390872587761799,
-     "floor": 2.3940283479014997e-16
+     "floor": 2.3940283479014997e-16,
+     "tol_abs": 0.005390872587761799
     },
     "S7_leaks_bath_Clhigh|d0.001|k9": {
      "band": 0.004722538189805003,
-     "floor": 1.864202891730888e-16
+     "floor": 1.864202891730888e-16,
+     "tol_abs": 0.004722538189805003
     },
     "S7_leaks_bath_Clhigh|d0.002|k1": {
      "band": 0.0038856537627147618,
-     "floor": 1.3804615273879369e-15
+     "floor": 1.3804615273879369e-15,
+     "tol_abs": 0.0038856537627147618
     },
     "S7_leaks_bath_Clhigh|d0.002|k10": {
      "band": 0.004068068256649549,
-     "floor": 1.445268174169296e-16
+     "floor": 1.445268174169296e-16,
+     "tol_abs": 0.004068068256649549
     },
     "S7_leaks_bath_Clhigh|d0.002|k11": {
      "band": 0.0034844307580354575,
-     "floor": 1.1253804379005242e-16
+     "floor": 1.1253804379005242e-16,
+     "tol_abs": 0.0034844307580354575
     },
     "S7_leaks_bath_Clhigh|d0.002|k12": {
      "band": 0.0029599749068399397,
-     "floor": 8.76328611703041e-17
+     "floor": 8.76328611703041e-17,
+     "tol_abs": 0.0029599749068399397
     },
     "S7_leaks_bath_Clhigh|d0.002|k13": {
      "band": 0.002497070308134316,
-     "floor": 6.824135262027204e-17
+     "floor": 6.824135262027204e-17,
+     "tol_abs": 0.002497070308134316
     },
     "S7_leaks_bath_Clhigh|d0.002|k14": {
      "band": 0.002094142417523441,
-     "floor": 5.314206008637056e-17
+     "floor": 5.314206008637056e-17,
+     "tol_abs": 0.002094142417523441
     },
     "S7_leaks_bath_Clhigh|d0.002|k15": {
      "band": 0.0017473024240369042,
-     "floor": 4.138443481918122e-17
+     "floor": 4.138443481918122e-17,
+     "tol_abs": 0.0017473024240369042
     },
     "S7_leaks_bath_Clhigh|d0.002|k16": {
      "band": 0.0014514483400122776,
-     "floor": 3.222862732271187e-17
+     "floor": 3.222862732271187e-17,
+     "tol_abs": 0.0014514483400122776
     },
     "S7_leaks_bath_Clhigh|d0.002|k2": {
      "band": 0.0060422247556782575,
-     "floor": 1.073314726994258e-15
+     "floor": 1.073314726994258e-15,
+     "tol_abs": 0.0060422247556782575
     },
     "S7_leaks_bath_Clhigh|d0.002|k3": {
      "band": 0.007049405019987842,
-     "floor": 8.348172547305243e-16
+     "floor": 8.348172547305243e-16,
+     "tol_abs": 0.007049405019987842
     },
     "S7_leaks_bath_Clhigh|d0.002|k4": {
      "band": 0.0073127504502169625,
-     "floor": 6.495027138535081e-16
+     "floor": 6.495027138535081e-16,
+     "tol_abs": 0.0073127504502169625
     },
     "S7_leaks_bath_Clhigh|d0.002|k5": {
      "band": 0.007113404234379207,
-     "floor": 5.054377705263283e-16
+     "floor": 5.054377705263283e-16,
+     "tol_abs": 0.007113404234379207
     },
     "S7_leaks_bath_Clhigh|d0.002|k6": {
      "band": 0.0066438668331149,
-     "floor": 3.933959429689378e-16
+     "floor": 3.933959429689378e-16,
+     "tol_abs": 0.0066438668331149
     },
     "S7_leaks_bath_Clhigh|d0.002|k7": {
      "band": 0.006033766949394491,
-     "floor": 3.06232091082974e-16
+     "floor": 3.06232091082974e-16,
+     "tol_abs": 0.006033766949394491
     },
     "S7_leaks_bath_Clhigh|d0.002|k8": {
      "band": 0.00536842501767372,
-     "floor": 2.384059624238031e-16
+     "floor": 2.384059624238031e-16,
+     "tol_abs": 0.00536842501767372
     },
     "S7_leaks_bath_Clhigh|d0.002|k9": {
      "band": 0.004702202028440453,
-     "floor": 1.856175274102651e-16
+     "floor": 1.856175274102651e-16,
+     "tol_abs": 0.004702202028440453
     },
     "S8_leaks_bath_secondhand|d-0.002|k1": {
      "band": 0.0039029817137220886,
-     "floor": 1.3866176522448684e-15
+     "floor": 1.3866176522448684e-15,
+     "tol_abs": 0.0039029817137220886
     },
     "S8_leaks_bath_secondhand|d-0.002|k10": {
      "band": 0.004143921138147514,
-     "floor": 1.4722165311367216e-16
+     "floor": 1.4722165311367216e-16,
+     "tol_abs": 0.004143921138147514
     },
     "S8_leaks_bath_secondhand|d-0.002|k11": {
      "band": 0.003550699496370381,
-     "floor": 1.1467835154604638e-16
+     "floor": 1.1467835154604638e-16,
+     "tol_abs": 0.003550699496370381
     },
     "S8_leaks_bath_secondhand|d-0.002|k12": {
      "band": 0.0030171285124988177,
-     "floor": 8.932494780877964e-17
+     "floor": 8.932494780877964e-17,
+     "tol_abs": 0.0030171285124988177
     },
     "S8_leaks_bath_secondhand|d-0.002|k13": {
      "band": 0.0025458504595249256,
-     "floor": 6.957444424411342e-17
+     "floor": 6.957444424411342e-17,
+     "tol_abs": 0.0025458504595249256
     },
     "S8_leaks_bath_secondhand|d-0.002|k14": {
      "band": 0.00213542028517269,
-     "floor": 5.4189548979436306e-17
+     "floor": 5.4189548979436306e-17,
+     "tol_abs": 0.00213542028517269
     },
     "S8_leaks_bath_secondhand|d-0.002|k15": {
      "band": 0.0017819834430964137,
-     "floor": 4.2205846357897617e-17
+     "floor": 4.2205846357897617e-17,
+     "tol_abs": 0.0017819834430964137
     },
     "S8_leaks_bath_secondhand|d-0.002|k16": {
      "band": 0.0014804122762577135,
-     "floor": 3.287175590078103e-17
+     "floor": 3.287175590078103e-17,
+     "tol_abs": 0.0014804122762577135
     },
     "S8_leaks_bath_secondhand|d-0.002|k2": {
      "band": 0.00609024389841979,
-     "floor": 1.0818446402573639e-15
+     "floor": 1.0818446402573639e-15,
+     "tol_abs": 0.00609024389841979
     },
     "S8_leaks_bath_secondhand|d-0.002|k3": {
      "band": 0.007124640373274121,
-     "floor": 8.437269103555092e-16
+     "floor": 8.437269103555092e-16,
+     "tol_abs": 0.007124640373274121
     },
     "S8_leaks_bath_secondhand|d-0.002|k4": {
      "band": 0.007406357839668519,
-     "floor": 6.578167201770419e-16
+     "floor": 6.578167201770419e-16,
+     "tol_abs": 0.007406357839668519
     },
     "S8_leaks_bath_secondhand|d-0.002|k5": {
      "band": 0.007216272670036998,
-     "floor": 5.127470124958931e-16
+     "floor": 5.127470124958931e-16,
+     "tol_abs": 0.007216272670036998
     },
     "S8_leaks_bath_secondhand|d-0.002|k6": {
      "band": 0.006748551330221467,
-     "floor": 3.99594510382752e-16
+     "floor": 3.99594510382752e-16,
+     "tol_abs": 0.006748551330221467
     },
     "S8_leaks_bath_secondhand|d-0.002|k7": {
      "band": 0.006134932863751373,
-     "floor": 3.113665700510319e-16
+     "floor": 3.113665700510319e-16,
+     "tol_abs": 0.006134932863751373
     },
     "S8_leaks_bath_secondhand|d-0.002|k8": {
      "band": 0.005462662465339097,
-     "floor": 2.4259094579100344e-16
+     "floor": 2.4259094579100344e-16,
+     "tol_abs": 0.005462662465339097
     },
     "S8_leaks_bath_secondhand|d-0.002|k9": {
      "band": 0.004787630248052633,
-     "floor": 1.8898977190328474e-16
+     "floor": 1.8898977190328474e-16,
+     "tol_abs": 0.004787630248052633
     },
     "S8_leaks_bath_secondhand|d0.001|k1": {
      "band": 0.0038894803316099186,
-     "floor": 1.3818209977536066e-15
+     "floor": 1.3818209977536066e-15,
+     "tol_abs": 0.0038894803316099186
     },
     "S8_leaks_bath_secondhand|d0.001|k10": {
      "band": 0.004084565239441509,
-     "floor": 1.4511290798116894e-16
+     "floor": 1.4511290798116894e-16,
+     "tol_abs": 0.004084565239441509
     },
     "S8_leaks_bath_secondhand|d0.001|k11": {
      "band": 0.0034988375682723314,
-     "floor": 1.1300334626092903e-16
+     "floor": 1.1300334626092903e-16,
+     "tol_abs": 0.0034988375682723314
     },
     "S8_leaks_bath_secondhand|d0.001|k12": {
      "band": 0.002972396227670693,
-     "floor": 8.800060614050566e-17
+     "floor": 8.800060614050566e-17,
+     "tol_abs": 0.002972396227670693
     },
     "S8_leaks_bath_secondhand|d0.001|k13": {
      "band": 0.0025076692411894865,
-     "floor": 6.853100626985508e-17
+     "floor": 6.853100626985508e-17,
+     "tol_abs": 0.0025076692411894865
     },
     "S8_leaks_bath_secondhand|d0.001|k14": {
      "band": 0.002103109566179703,
-     "floor": 5.336961516987727e-17
+     "floor": 5.336961516987727e-17,
+     "tol_abs": 0.002103109566179703
     },
     "S8_leaks_bath_secondhand|d0.001|k15": {
      "band": 0.0017548353757814493,
-     "floor": 4.156285095721181e-17
+     "floor": 4.156285095721181e-17,
+     "tol_abs": 0.0017548353757814493
     },
     "S8_leaks_bath_secondhand|d0.001|k16": {
      "band": 0.001457738783188102,
-     "floor": 3.23683032196898e-17
+     "floor": 3.23683032196898e-17,
+     "tol_abs": 0.001457738783188102
     },
     "S8_leaks_bath_secondhand|d0.001|k2": {
      "band": 0.006052789063522423,
-     "floor": 1.0751913250435092e-15
+     "floor": 1.0751913250435092e-15,
+     "tol_abs": 0.006052789063522423
     },
     "S8_leaks_bath_secondhand|d0.001|k3": {
      "band": 0.007065908407370858,
-     "floor": 8.367716484005969e-16
+     "floor": 8.367716484005969e-16,
+     "tol_abs": 0.007065908407370858
     },
     "S8_leaks_bath_secondhand|d0.001|k4": {
      "band": 0.007333236908734999,
-     "floor": 6.513222768886882e-16
+     "floor": 6.513222768886882e-16,
+     "tol_abs": 0.007333236908734999
     },
     "S8_leaks_bath_secondhand|d0.001|k5": {
      "band": 0.007135877379824213,
-     "floor": 5.070345835508912e-16
+     "floor": 5.070345835508912e-16,
+     "tol_abs": 0.007135877379824213
     },
     "S8_leaks_bath_secondhand|d0.001|k6": {
      "band": 0.00666670494184513,
-     "floor": 3.9474823065700155e-16
+     "floor": 3.9474823065700155e-16,
+     "tol_abs": 0.00666670494184513
     },
     "S8_leaks_bath_secondhand|d0.001|k7": {
      "band": 0.006055813537381208,
-     "floor": 3.0735102272170666e-16
+     "floor": 3.0735102272170666e-16,
+     "tol_abs": 0.006055813537381208
     },
     "S8_leaks_bath_secondhand|d0.001|k8": {
      "band": 0.005388944389327289,
-     "floor": 2.393172055782284e-16
+     "floor": 2.393172055782284e-16,
+     "tol_abs": 0.005388944389327289
     },
     "S8_leaks_bath_secondhand|d0.001|k9": {
      "band": 0.0047207910393250825,
-     "floor": 1.863513211129895e-16
+     "floor": 1.863513211129895e-16,
+     "tol_abs": 0.0047207910393250825
     },
     "S8_leaks_bath_secondhand|d0.002|k1": {
      "band": 0.0038849342449967287,
-     "floor": 1.3802059033440375e-15
+     "floor": 1.3802059033440375e-15,
+     "tol_abs": 0.0038849342449967287
     },
     "S8_leaks_bath_secondhand|d0.002|k10": {
      "band": 0.004064982093767435,
-     "floor": 1.4441717488606665e-16
+     "floor": 1.4441717488606665e-16,
+     "tol_abs": 0.004064982093767435
     },
     "S8_leaks_bath_secondhand|d0.002|k11": {
      "band": 0.003481735966245786,
-     "floor": 1.1245100902957349e-16
+     "floor": 1.1245100902957349e-16,
+     "tol_abs": 0.003481735966245786
     },
     "S8_leaks_bath_secondhand|d0.002|k12": {
      "band": 0.002957651737636725,
-     "floor": 8.756408154525054e-17
+     "floor": 8.756408154525054e-17,
+     "tol_abs": 0.002957651737636725
     },
     "S8_leaks_bath_secondhand|d0.002|k13": {
      "band": 0.0024950881389715113,
-     "floor": 6.818718277797672e-17
+     "floor": 6.818718277797672e-17,
+     "tol_abs": 0.0024950881389715113
     },
     "S8_leaks_bath_secondhand|d0.002|k14": {
      "band": 0.0020924655217077156,
-     "floor": 5.309950629563877e-17
+     "floor": 5.309950629563877e-17,
+     "tol_abs": 0.0020924655217077156
     },
     "S8_leaks_bath_secondhand|d0.002|k15": {
      "band": 0.0017458937971000514,
-     "floor": 4.135107183126866e-17
+     "floor": 4.135107183126866e-17,
+     "tol_abs": 0.0017458937971000514
     },
     "S8_leaks_bath_secondhand|d0.002|k16": {
      "band": 0.0014502721004891923,
-     "floor": 3.22025095586918e-17
+     "floor": 3.22025095586918e-17,
+     "tol_abs": 0.0014502721004891923
     },
     "S8_leaks_bath_secondhand|d0.002|k2": {
      "band": 0.0060402408605567505,
-     "floor": 1.0729623164274838e-15
+     "floor": 1.0729623164274838e-15,
+     "tol_abs": 0.0060402408605567505
     },
     "S8_leaks_bath_secondhand|d0.002|k3": {
      "band": 0.007046308871397265,
-     "floor": 8.344505970822128e-16
+     "floor": 8.344505970822128e-16,
+     "tol_abs": 0.007046308871397265
     },
     "S8_leaks_bath_secondhand|d0.002|k4": {
      "band": 0.0073089099909740525,
-     "floor": 6.49161612551379e-16
+     "floor": 6.49161612551379e-16,
+     "tol_abs": 0.0073089099909740525
     },
     "S8_leaks_bath_secondhand|d0.002|k5": {
      "band": 0.007109193845282929,
-     "floor": 5.051386043876199e-16
+     "floor": 5.051386043876199e-16,
+     "tol_abs": 0.007109193845282929
     },
     "S8_leaks_bath_secondhand|d0.002|k6": {
      "band": 0.006639590039893608,
-     "floor": 3.931427059392931e-16
+     "floor": 3.931427059392931e-16,
+     "tol_abs": 0.006639590039893608
     },
     "S8_leaks_bath_secondhand|d0.002|k7": {
      "band": 0.006029639859681499,
-     "floor": 3.0602262868187423e-16
+     "floor": 3.0602262868187423e-16,
+     "tol_abs": 0.006029639859681499
     },
     "S8_leaks_bath_secondhand|d0.002|k8": {
      "band": 0.005364584890338769,
-     "floor": 2.382354265124129e-16
+     "floor": 2.382354265124129e-16,
+     "tol_abs": 0.005364584890338769
     },
     "S8_leaks_bath_secondhand|d0.002|k9": {
      "band": 0.0046987239146807245,
-     "floor": 1.854802302732583e-16
+     "floor": 1.854802302732583e-16,
+     "tol_abs": 0.0046987239146807245
     },
     "S9_leaks_bath_T287|d-0.002|k1": {
      "band": 0.003904243406815081,
-     "floor": 1.3870658956758607e-15
+     "floor": 1.3870658956758607e-15,
+     "tol_abs": 0.003904243406815081
     },
     "S9_leaks_bath_T287|d-0.002|k10": {
      "band": 0.004149561383762118,
-     "floor": 1.4742203489114012e-16
+     "floor": 1.4742203489114012e-16,
+     "tol_abs": 0.004149561383762118
     },
     "S9_leaks_bath_T287|d-0.002|k11": {
      "band": 0.0035556297927512946,
-     "floor": 1.1483758728598287e-16
+     "floor": 1.1483758728598287e-16,
+     "tol_abs": 0.0035556297927512946
     },
     "S9_leaks_bath_T287|d-0.002|k12": {
      "band": 0.003021382474879474,
-     "floor": 8.945089039493681e-17
+     "floor": 8.945089039493681e-17,
+     "tol_abs": 0.003021382474879474
     },
     "S9_leaks_bath_T287|d-0.002|k13": {
      "band": 0.00254948239214605,
-     "floor": 6.967369975721765e-17
+     "floor": 6.967369975721765e-17,
+     "tol_abs": 0.00254948239214605
     },
     "S9_leaks_bath_T287|d-0.002|k14": {
      "band": 0.0021384944315266836,
-     "floor": 5.4267560135168216e-17
+     "floor": 5.4267560135168216e-17,
+     "tol_abs": 0.0021384944315266836
     },
     "S9_leaks_bath_T287|d-0.002|k15": {
      "band": 0.0017845668146334352,
-     "floor": 4.226703288721095e-17
+     "floor": 4.226703288721095e-17,
+     "tol_abs": 0.0017845668146334352
     },
     "S9_leaks_bath_T287|d-0.002|k16": {
      "band": 0.001482570124679714,
-     "floor": 3.291966976081615e-17
+     "floor": 3.291966976081615e-17,
+     "tol_abs": 0.001482570124679714
     },
     "S9_leaks_bath_T287|d-0.002|k2": {
      "band": 0.006093758456820107,
-     "floor": 1.0824689512425514e-15
+     "floor": 1.0824689512425514e-15,
+     "tol_abs": 0.006093758456820107
     },
     "S9_leaks_bath_T287|d-0.002|k3": {
      "band": 0.00713016919739537,
-     "floor": 8.443816546582839e-16
+     "floor": 8.443816546582839e-16,
+     "tol_abs": 0.00713016919739537
     },
     "S9_leaks_bath_T287|d-0.002|k4": {
      "band": 0.007413258468944885,
-     "floor": 6.584296191776038e-16
+     "floor": 6.584296191776038e-16,
+     "tol_abs": 0.007413258468944885
     },
     "S9_leaks_bath_T287|d-0.002|k5": {
      "band": 0.0072238746505528,
-     "floor": 5.132871656991824e-16
+     "floor": 5.132871656991824e-16,
+     "tol_abs": 0.0072238746505528
     },
     "S9_leaks_bath_T287|d-0.002|k6": {
      "band": 0.006756302330422828,
-     "floor": 4.0005346179008137e-16
+     "floor": 4.0005346179008137e-16,
+     "tol_abs": 0.006756302330422828
     },
     "S9_leaks_bath_T287|d-0.002|k7": {
      "band": 0.006142434515515976,
-     "floor": 3.117473017772848e-16
+     "floor": 3.117473017772848e-16,
+     "tol_abs": 0.006142434515515976
     },
     "S9_leaks_bath_T287|d-0.002|k8": {
      "band": 0.005469658476959841,
-     "floor": 2.4290163111827927e-16
+     "floor": 2.4290163111827927e-16,
+     "tol_abs": 0.005469658476959841
     },
     "S9_leaks_bath_T287|d-0.002|k9": {
      "band": 0.004793978018929789,
-     "floor": 1.8924034759689766e-16
+     "floor": 1.8924034759689766e-16,
+     "tol_abs": 0.004793978018929789
     },
     "S9_leaks_bath_T287|d0.001|k1": {
      "band": 0.003888839148274733,
-     "floor": 1.3815932036730534e-15
+     "floor": 1.3815932036730534e-15,
+     "tol_abs": 0.003888839148274733
     },
     "S9_leaks_bath_T287|d0.001|k10": {
      "band": 0.0040817912109395275,
-     "floor": 1.450143546911252e-16
+     "floor": 1.450143546911252e-16,
+     "tol_abs": 0.0040817912109395275
     },
     "S9_leaks_bath_T287|d0.001|k11": {
      "band": 0.0034964147877357033,
-     "floor": 1.1292509675589984e-16
+     "floor": 1.1292509675589984e-16,
+     "tol_abs": 0.0034964147877357033
     },
     "S9_leaks_bath_T287|d0.001|k12": {
      "band": 0.0029703071959010065,
-     "floor": 8.793875837597554e-17
+     "floor": 8.793875837597554e-17,
+     "tol_abs": 0.0029703071959010065
     },
     "S9_leaks_bath_T287|d0.001|k13": {
      "band": 0.002505886601489975,
-     "floor": 6.848228928181796e-17
+     "floor": 6.848228928181796e-17,
+     "tol_abs": 0.002505886601489975
     },
     "S9_leaks_bath_T287|d0.001|k14": {
      "band": 0.002101601311754032,
-     "floor": 5.333134091181161e-17
+     "floor": 5.333134091181161e-17,
+     "tol_abs": 0.002101601311754032
     },
     "S9_leaks_bath_T287|d0.001|k15": {
      "band": 0.0017535683073362643,
-     "floor": 4.1532840747897245e-17
+     "floor": 4.1532840747897245e-17,
+     "tol_abs": 0.0017535683073362643
     },
     "S9_leaks_bath_T287|d0.001|k16": {
      "band": 0.0014566806811682942,
-     "floor": 3.234480863519394e-17
+     "floor": 3.234480863519394e-17,
+     "tol_abs": 0.0014566806811682942
     },
     "S9_leaks_bath_T287|d0.001|k2": {
      "band": 0.006051017348598334,
-     "floor": 1.074876605251222e-15
+     "floor": 1.074876605251222e-15,
+     "tol_abs": 0.006051017348598334
     },
     "S9_leaks_bath_T287|d0.001|k3": {
      "band": 0.007063138778886746,
-     "floor": 8.364436585005737e-16
+     "floor": 8.364436585005737e-16,
+     "tol_abs": 0.007063138778886746
     },
     "S9_leaks_bath_T287|d0.001|k4": {
      "band": 0.007329797012806144,
-     "floor": 6.51016752755686e-16
+     "floor": 6.51016752755686e-16,
+     "tol_abs": 0.007329797012806144
     },
     "S9_leaks_bath_T287|d0.001|k5": {
      "band": 0.007132102342523307,
-     "floor": 5.06766351017753e-16
+     "floor": 5.06766351017753e-16,
+     "tol_abs": 0.007132102342523307
     },
     "S9_leaks_bath_T287|d0.001|k6": {
      "band": 0.00666286736740599,
-     "floor": 3.9452100060361237e-16
+     "floor": 3.9452100060361237e-16,
+     "tol_abs": 0.00666286736740599
     },
     "S9_leaks_bath_T287|d0.001|k7": {
      "band": 0.006052108040190548,
-     "floor": 3.0716295742804933e-16
+     "floor": 3.0716295742804933e-16,
+     "tol_abs": 0.006052108040190548
     },
     "S9_leaks_bath_T287|d0.001|k8": {
      "band": 0.0053854949098221,
-     "floor": 2.3916401791544304e-16
+     "floor": 2.3916401791544304e-16,
+     "tol_abs": 0.0053854949098221
     },
     "S9_leaks_bath_T287|d0.001|k9": {
      "band": 0.004717665596845227,
-     "floor": 1.8622794553242852e-16
+     "floor": 1.8622794553242852e-16,
+     "tol_abs": 0.004717665596845227
     },
     "S9_leaks_bath_T287|d0.002|k1": {
      "band": 0.0038836450522198515,
-     "floor": 1.3797478900627351e-15
+     "floor": 1.3797478900627351e-15,
+     "tol_abs": 0.0038836450522198515
     },
     "S9_leaks_bath_T287|d0.002|k10": {
      "band": 0.004059464743378387,
-     "floor": 1.442211592240876e-16
+     "floor": 1.442211592240876e-16,
+     "tol_abs": 0.004059464743378387
     },
     "S9_leaks_bath_T287|d0.002|k11": {
      "band": 0.0034769185724643193,
-     "floor": 1.1229541974972272e-16
+     "floor": 1.1229541974972272e-16,
+     "tol_abs": 0.0034769185724643193
     },
     "S9_leaks_bath_T287|d0.002|k12": {
      "band": 0.0029534988662626416,
-     "floor": 8.744113185410882e-17
+     "floor": 8.744113185410882e-17,
+     "tol_abs": 0.0029534988662626416
     },
     "S9_leaks_bath_T287|d0.002|k13": {
      "band": 0.002491544958002152,
-     "floor": 6.809035272031281e-17
+     "floor": 6.809035272031281e-17,
+     "tol_abs": 0.002491544958002152
     },
     "S9_leaks_bath_T287|d0.002|k14": {
      "band": 0.0020894681057984604,
-     "floor": 5.3023442292054015e-17
+     "floor": 5.3023442292054015e-17,
+     "tol_abs": 0.0020894681057984604
     },
     "S9_leaks_bath_T287|d0.002|k15": {
      "band": 0.0017433759589315224,
-     "floor": 4.129143744391974e-17
+     "floor": 4.129143744391974e-17,
+     "tol_abs": 0.0017433759589315224
     },
     "S9_leaks_bath_T287|d0.002|k16": {
      "band": 0.001448169675528676,
-     "floor": 3.2155826346717565e-17
+     "floor": 3.2155826346717565e-17,
+     "tol_abs": 0.001448169675528676
     },
     "S9_leaks_bath_T287|d0.002|k2": {
      "band": 0.006036688196853967,
-     "floor": 1.0723312365808309e-15
+     "floor": 1.0723312365808309e-15,
+     "tol_abs": 0.006036688196853967
     },
     "S9_leaks_bath_T287|d0.002|k3": {
      "band": 0.00704076681888112,
-     "floor": 8.337942862227882e-16
+     "floor": 8.337942862227882e-16,
+     "tol_abs": 0.00704076681888112
     },
     "S9_leaks_bath_T287|d0.002|k4": {
      "band": 0.007302037923772501,
-     "floor": 6.485512503726643e-16
+     "floor": 6.485512503726643e-16,
+     "tol_abs": 0.007302037923772501
     },
     "S9_leaks_bath_T287|d0.002|k5": {
      "band": 0.007101661776781522,
-     "floor": 5.046034187317277e-16
+     "floor": 5.046034187317277e-16,
+     "tol_abs": 0.007101661776781522
     },
     "S9_leaks_bath_T287|d0.002|k6": {
      "band": 0.006631940714407076,
-     "floor": 3.926897748844664e-16
+     "floor": 3.926897748844664e-16,
+     "tol_abs": 0.006631940714407076
     },
     "S9_leaks_bath_T287|d0.002|k7": {
      "band": 0.006022259439607605,
-     "floor": 3.0564804983399113e-16
+     "floor": 3.0564804983399113e-16,
+     "tol_abs": 0.006022259439607605
     },
     "S9_leaks_bath_T287|d0.002|k8": {
      "band": 0.005357718473724259,
-     "floor": 2.3793049635952896e-16
+     "floor": 2.3793049635952896e-16,
+     "tol_abs": 0.005357718473724259
     },
     "S9_leaks_bath_T287|d0.002|k9": {
      "band": 0.004692505390023989,
-     "floor": 1.8523475652203672e-16
+     "floor": 1.8523475652203672e-16,
+     "tol_abs": 0.004692505390023989
     }
    },
    "tol_abs": 0.0,
@@ -22336,6 +22768,10 @@
      "band": 3.323809523809524e-06,
      "floor": 5.904271780482738e-15
     },
+    "n1|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 3.323809523809524e-06,
+     "floor": 5.904271780482738e-15
+    },
     "n1|Nain21|Naout9.9|V-0.04": {
      "band": 4.714285714285714e-07,
      "floor": 8.374253671458325e-16
@@ -22356,6 +22792,10 @@
      "band": 4.714285714285714e-07,
      "floor": 8.374253671458325e-16
     },
+    "n1|Nain21|Naout9.9|Vrest_bath": {
+     "band": 4.714285714285714e-07,
+     "floor": 8.374253671458325e-16
+    },
     "n1|Nain21|Naout91|V-0.04": {
      "band": 4.333333333333333e-06,
      "floor": 7.697546304067753e-15
@@ -22373,6 +22813,10 @@
      "floor": 7.697546304067753e-15
     },
     "n1|Nain21|Naout91|V0.02": {
+     "band": 4.333333333333333e-06,
+     "floor": 7.697546304067753e-15
+    },
+    "n1|Nain21|Naout91|Vrest_local": {
      "band": 4.333333333333333e-06,
      "floor": 7.697546304067753e-15
     },
@@ -22496,6 +22940,10 @@
      "band": 4.978221324521294e-06,
      "floor": 8.843097497861582e-15
     },
+    "n2|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 1.9231933657103554e-05,
+     "floor": 3.4162776886687794e-14
+    },
     "n2|Nain21|Naout9.9|V-0.04": {
      "band": 1.0945306049001151e-06,
      "floor": 1.944276925947215e-15
@@ -22516,6 +22964,10 @@
      "band": 1.0014603164512853e-07,
      "floor": 1.7789508825161813e-16
     },
+    "n2|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1.452237982446865e-06,
+     "floor": 2.5796928725563126e-15
+    },
     "n2|Nain21|Naout91|V-0.04": {
      "band": 9.247839954267781e-05,
      "floor": 1.6427463752442494e-13
@@ -22535,6 +22987,10 @@
     "n2|Nain21|Naout91|V0.02": {
      "band": 8.46147625806866e-06,
      "floor": 1.5030601222443117e-14
+    },
+    "n2|Nain21|Naout91|Vrest_local": {
+     "band": 2.4164633737156033e-05,
+     "floor": 4.292501241059918e-14
     },
     "n2|Nain38|Naout19.9|V-0.04": {
      "band": 1.350625887270987e-06,
@@ -22656,6 +23112,10 @@
      "band": 7.456109436594405e-06,
      "floor": 1.3244710993011238e-14
     },
+    "n3|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 0.00011127811914062868,
+     "floor": 1.9766964801105192e-13
+    },
     "n3|Nain21|Naout9.9|V-0.04": {
      "band": 2.5412062774063887e-06,
      "floor": 4.5140891511976984e-15
@@ -22676,6 +23136,10 @@
      "band": 2.1274119266627152e-08,
      "floor": 3.779042726148984e-17
     },
+    "n3|Nain21|Naout9.9|Vrest_bath": {
+     "band": 4.473626092008905e-06,
+     "floor": 7.946756305459451e-15
+    },
     "n3|Nain21|Naout91|V-0.04": {
      "band": 0.0019735971650711895,
      "floor": 3.5058128223951598e-12
@@ -22695,6 +23159,10 @@
     "n3|Nain21|Naout91|V0.02": {
      "band": 1.6522287799813758e-05,
      "floor": 2.934947893573853e-14
+    },
+    "n3|Nain21|Naout91|Vrest_local": {
+     "band": 0.00013475296699636143,
+     "floor": 2.3936935455346307e-13
     },
     "n3|Nain38|Naout19.9|V-0.04": {
      "band": 3.483378438187365e-06,
@@ -22816,6 +23284,10 @@
      "band": 1.1167355628933999e-05,
      "floor": 1.9837208549471832e-14
     },
+    "n4|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 0.0006438676432778876,
+     "floor": 1.1437386918051982e-12
+    },
     "n4|Nain21|Naout9.9|V-0.04": {
      "band": 5.899998881181544e-06,
      "floor": 1.0480503365040693e-14
@@ -22836,6 +23308,10 @@
      "band": 4.519281923965203e-09,
      "floor": 8.027857354813526e-18
     },
+    "n4|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1.3781026700171107e-05,
+     "floor": 2.4480021032806494e-14
+    },
     "n4|Nain21|Naout91|V-0.04": {
      "band": 0.04211887088486532,
      "floor": 7.481814436414682e-11
@@ -22855,6 +23331,10 @@
     "n4|Nain21|Naout91|V0.02": {
      "band": 3.2262218295484984e-05,
      "floor": 5.730921212340876e-14
+    },
+    "n4|Nain21|Naout91|Vrest_local": {
+     "band": 0.0007514437136451114,
+     "floor": 1.3348321801578186e-12
     },
     "n4|Nain38|Naout19.9|V-0.04": {
      "band": 8.983927716760931e-06,
@@ -22988,6 +23468,10 @@
      "band": 1e-06,
      "floor": 4.267205511769503e-15
     },
+    "n1|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 1e-06,
+     "floor": 4.267205511769503e-15
+    },
     "n1|Nain21|Naout9.9|V-0.04": {
      "band": 1e-06,
      "floor": 2.6715969190962553e-15
@@ -23008,6 +23492,10 @@
      "band": 1e-06,
      "floor": 2.6715969190962553e-15
     },
+    "n1|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1e-06,
+     "floor": 2.6715969190962553e-15
+    },
     "n1|Nain21|Naout91|V-0.04": {
      "band": 1e-06,
      "floor": 5.209475762034639e-15
@@ -23025,6 +23513,10 @@
      "floor": 5.209475762034639e-15
     },
     "n1|Nain21|Naout91|V0.02": {
+     "band": 1e-06,
+     "floor": 5.209475762034639e-15
+    },
+    "n1|Nain21|Naout91|Vrest_local": {
      "band": 1e-06,
      "floor": 5.209475762034639e-15
     },
@@ -23148,6 +23640,10 @@
      "band": 1e-06,
      "floor": 8.534411023539006e-15
     },
+    "n2|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 1e-06,
+     "floor": 1.0503854173070007e-14
+    },
     "n2|Nain21|Naout9.9|V-0.04": {
      "band": 1e-06,
      "floor": 5.664094832995332e-15
@@ -23168,6 +23664,10 @@
      "band": 1e-06,
      "floor": 8.175241254690177e-15
     },
+    "n2|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1e-06,
+     "floor": 6.668731927188738e-15
+    },
     "n2|Nain21|Naout91|V-0.04": {
      "band": 1e-06,
      "floor": 1.608304635706461e-14
@@ -23187,6 +23687,10 @@
     "n2|Nain21|Naout91|V0.02": {
      "band": 1e-06,
      "floor": 1.0418951524069278e-14
+    },
+    "n2|Nain21|Naout91|Vrest_local": {
+     "band": 1e-06,
+     "floor": 1.1315002795814881e-14
     },
     "n2|Nain38|Naout19.9|V-0.04": {
      "band": 1e-06,
@@ -23308,6 +23812,10 @@
      "band": 1e-06,
      "floor": 1.2801616535308509e-14
     },
+    "n3|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 1e-06,
+     "floor": 1.674050283437051e-14
+    },
     "n3|Nain21|Naout9.9|V-0.04": {
      "band": 1e-06,
      "floor": 1.1328189665990663e-14
@@ -23328,6 +23836,10 @@
      "band": 1e-06,
      "floor": 1.3678885590284097e-14
     },
+    "n3|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1e-06,
+     "floor": 1.3337463854377476e-14
+    },
     "n3|Nain21|Naout91|V-0.04": {
      "band": 1e-06,
      "floor": 2.695661695209458e-14
@@ -23347,6 +23859,10 @@
     "n3|Nain21|Naout91|V0.02": {
      "band": 1e-06,
      "floor": 1.562842728610392e-14
+    },
+    "n3|Nain21|Naout91|Vrest_local": {
+     "band": 1e-06,
+     "floor": 1.7420529829595126e-14
     },
     "n3|Nain38|Naout19.9|V-0.04": {
      "band": 1e-06,
@@ -23468,6 +23984,10 @@
      "band": 1e-06,
      "floor": 1.706882204707801e-14
     },
+    "n4|Nain21|Naout69.8|Vrest_bath70_Na": {
+     "band": 1e-06,
+     "floor": 2.2977151495671014e-14
+    },
     "n4|Nain21|Naout9.9|V-0.04": {
      "band": 1e-06,
      "floor": 1.6992284498985996e-14
@@ -23488,6 +24008,10 @@
      "band": 1e-06,
      "floor": 1.918252992587802e-14
     },
+    "n4|Nain21|Naout9.9|Vrest_bath": {
+     "band": 1e-06,
+     "floor": 2.0006195781566215e-14
+    },
     "n4|Nain21|Naout91|V-0.04": {
      "band": 1e-06,
      "floor": 3.783018754712455e-14
@@ -23507,6 +24031,10 @@
     "n4|Nain21|Naout91|V0.02": {
      "band": 1e-06,
      "floor": 2.0837903048138556e-14
+    },
+    "n4|Nain21|Naout91|Vrest_local": {
+     "band": 1e-06,
+     "floor": 2.3526056863375367e-14
     },
     "n4|Nain38|Naout19.9|V-0.04": {
      "band": 1e-06,
@@ -27986,6 +28514,54 @@
    "tol_source": "DESIGN 3.4/C6: King-Altman value, 1e-6 relative",
    "unit": "1"
   },
+  "C6.v2_early_ratio_rest": {
+   "claim": "C6",
+   "kind": "abs",
+   "note": "",
+   "quantity": "version 2 early uptake (B_in = 0) at the corrected rest voltage: J(V_rest - 0.0194 V)/J(V_rest), V_rest the area-weighted 0.1x MMR zero-current voltage",
+   "rows": {
+    "NaP19.9|BP0.1": {
+     "band": 1.910469416288386e-06,
+     "floor": 3.3936754140888802e-15
+    },
+    "NaP19.9|BP1": {
+     "band": 1.7453834845715601e-06,
+     "floor": 3.100423890194933e-15
+    },
+    "NaP19.9|BP10": {
+     "band": 1.6917162665937487e-06,
+     "floor": 3.0050917604884636e-15
+    },
+    "NaP69.8|BP0.1": {
+     "band": 1.6213426771248916e-06,
+     "floor": 2.8800831535223135e-15
+    },
+    "NaP69.8|BP1": {
+     "band": 1.6733545975341905e-06,
+     "floor": 2.9724748840717133e-15
+    },
+    "NaP69.8|BP10": {
+     "band": 1.6806398228741281e-06,
+     "floor": 2.9854160439308835e-15
+    },
+    "NaP9.9|BP0.1": {
+     "band": 2.069672363195747e-06,
+     "floor": 3.676476657680445e-15
+    },
+    "NaP9.9|BP1": {
+     "band": 1.8836197756176108e-06,
+     "floor": 3.345980871247909e-15
+    },
+    "NaP9.9|BP10": {
+     "band": 1.725063386338143e-06,
+     "floor": 3.0643281447207174e-15
+    }
+   },
+   "tol_abs": 0.0,
+   "tol_rel": 1e-06,
+   "tol_source": "DESIGN 3.4/C6 with the erratum's rest voltage: King-Altman, 1e-6 relative",
+   "unit": "1"
+  },
   "C6.v2_ratio_Jm_Jp": {
    "claim": "C6",
    "kind": "abs",
@@ -28686,6 +29262,34 @@
    "tol_source": "DESIGN C7: pump moves 3 Na out, 2 K in, net outward charge one",
    "unit": "1"
   },
+  "C7.pump_dG_atp": {
+   "claim": "C7",
+   "kind": "abs",
+   "note": "",
+   "quantity": "pump, J per mole of cycles: dG_ATP = delta_g0 + RT [ln c_ADP + ln c_Pi - ln c_ATP - ln 1000 mM] (1 M standard state, DESIGN erratum item 4)",
+   "rows": {
+    "primary|bath|T291.15|V-0.04": {
+     "band": 0.0658515130019289,
+     "floor": 1.1697578550583093e-10
+    },
+    "primary|bath|T291.15|Vghk": {
+     "band": 0.0658515130019289,
+     "floor": 1.1697578550583093e-10
+    },
+    "primary|local|T291.15|V-0.04": {
+     "band": 0.0658515130019289,
+     "floor": 1.1697578550583093e-10
+    },
+    "primary|local|T291.15|Vghk": {
+     "band": 0.0658515130019289,
+     "floor": 1.1697578550583093e-10
+    }
+   },
+   "tol_abs": 0.0,
+   "tol_rel": 1e-06,
+   "tol_source": "proposed: relative 1e-6",
+   "unit": "J/mol"
+  },
   "C7.pump_dG_chem": {
    "claim": "C7",
    "kind": "abs",
@@ -28742,95 +29346,39 @@
    "tol_source": "proposed: relative 1e-6",
    "unit": "J/mol"
   },
-  "C7.pump_heat_mM": {
+  "C7.pump_heat": {
    "claim": "C7",
-   "kind": "info",
+   "kind": "abs",
    "note": "",
-   "quantity": "pump, J per mole of cycles, heat = -dG_ATP - dG_chem - dU_cap; dG_ATP with the log argument in mM (the standard-state reading is NOT stated by DESIGN.md)",
+   "quantity": "pump, J per mole of cycles, heat = -dG_ATP - dG_chem - dU_cap (1 M standard state)",
    "rows": {
     "primary|bath|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
+     "band": 0.037875242383166356,
+     "floor": 6.727994585127981e-11
     },
     "primary|bath|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
+     "band": 0.03719070056985733,
+     "floor": 6.606395531935287e-11
     },
     "primary|local|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
+     "band": 0.03626904743188217,
+     "floor": 6.4426770464156e-11
     },
     "primary|local|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
+     "band": 0.03951790734778526,
+     "floor": 7.019790499602377e-11
     }
    },
    "tol_abs": 0.0,
-   "tol_rel": 0.0,
-   "tol_source": "",
+   "tol_rel": 1e-06,
+   "tol_source": "proposed: relative 1e-6",
    "unit": "J/mol"
   },
-  "C7.pump_heat_molar": {
-   "claim": "C7",
-   "kind": "info",
-   "note": "",
-   "quantity": "pump, J per mole of cycles, heat = -dG_ATP - dG_chem - dU_cap; dG_ATP with the log argument in molar (the standard-state reading is NOT stated by DESIGN.md)",
-   "rows": {
-    "primary|bath|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|bath|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|local|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|local|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
-    }
-   },
-   "tol_abs": 0.0,
-   "tol_rel": 0.0,
-   "tol_source": "",
-   "unit": "J/mol"
-  },
-  "C7.pump_heat_nonneg_mM": {
+  "C7.pump_heat_nonneg": {
    "claim": "C7",
    "kind": "flag",
    "note": "",
-   "quantity": "pump heat nonnegative, standard state read as mM",
-   "rows": {
-    "primary|bath|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|bath|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|local|T291.15|V-0.04": {
-     "band": 0.0,
-     "floor": 0.0
-    },
-    "primary|local|T291.15|Vghk": {
-     "band": 0.0,
-     "floor": 0.0
-    }
-   },
-   "tol_abs": 0.0,
-   "tol_rel": 0.0,
-   "tol_source": "",
-   "unit": "bool"
-  },
-  "C7.pump_heat_nonneg_molar": {
-   "claim": "C7",
-   "kind": "flag",
-   "note": "",
-   "quantity": "pump heat nonnegative, standard state read as molar",
+   "quantity": "pump heat nonnegative",
    "rows": {
     "primary|bath|T291.15|V-0.04": {
      "band": 0.0,
@@ -28858,600 +29406,600 @@
    "claim": "C7",
    "kind": "abs",
    "note": "reference 0",
-   "quantity": "Q change C_total (V - V_0) minus CHARGE_PER_FMOL sum_i z_i dn_i (fmol of charge)",
+   "quantity": "ionic charge change against the integrated current: C_total (V - V_0) minus F sum_i z_i dn_i (C)",
    "rows": {
     "S1_leaks_bath|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S1_leaks_bath|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S2_glycine1e-8_bath|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     },
     "S4_glycine1e-8_bath70Na|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 0.0
     }
    },
-   "tol_abs": 1e-09,
+   "tol_abs": 1e-14,
    "tol_rel": 0.0,
-   "tol_source": "DESIGN C7: 1e-9 (material/charge) ",
-   "unit": "fmol"
+   "tol_source": "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C",
+   "unit": "C"
   },
   "C7.relax_dQ": {
    "claim": "C7",
    "kind": "abs",
-   "note": "ZERO POWER for any plant: |dQ| <= 3e-12 C",
+   "note": "the integral of the current; |dQ| <= 3e-12 C",
    "quantity": "ionic charge change of the cell C_total (V - V_0)",
    "rows": {
     "S1_leaks_bath|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.2622104706545317e-28
     },
     "S1_leaks_bath|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.116331460141304e-28
     },
     "S1_leaks_bath|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.289747094950008e-28
     },
     "S1_leaks_bath|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.424628808444172e-28
     },
     "S1_leaks_bath|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.529569773132586e-28
     },
     "S1_leaks_bath|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.611234874897485e-28
     },
     "S1_leaks_bath|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.67479813483243e-28
     },
     "S1_leaks_bath|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.724279051909187e-28
     },
     "S1_leaks_bath|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.762801945969321e-28
     },
     "S1_leaks_bath|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.792796366246214e-28
     },
     "S1_leaks_bath|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.816152223116147e-28
     },
     "S1_leaks_bath|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.9943963274824383e-28
     },
     "S1_leaks_bath|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.834340032810017e-28
     },
     "S1_leaks_bath|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.84850421812894e-28
     },
     "S1_leaks_bath|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.859535561741622e-28
     },
     "S1_leaks_bath|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.86812750609471e-28
     },
     "S1_leaks_bath|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.874819923036146e-28
     },
     "S1_leaks_bath|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 5.326003588494299e-28
     },
     "S1_leaks_bath|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 6.352744049610518e-28
     },
     "S1_leaks_bath|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 7.146228025999963e-28
     },
     "S1_leaks_bath|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 7.760521819478926e-28
     },
     "S1_leaks_bath|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 8.236732096948252e-28
     },
     "S1_leaks_bath|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 8.606281306665217e-28
     },
     "S1_leaks_bath|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 8.893289542784272e-28
     },
     "S2_glycine1e-8_bath|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 9.674400325498148e-28
     },
     "S2_glycine1e-8_bath|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.106233811082241e-27
     },
     "S2_glycine1e-8_bath|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.1900036741038486e-27
     },
     "S2_glycine1e-8_bath|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.2553151100033126e-27
     },
     "S2_glycine1e-8_bath|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.30622275647392e-27
     },
     "S2_glycine1e-8_bath|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.345895470189155e-27
     },
     "S2_glycine1e-8_bath|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.376807919904053e-27
     },
     "S2_glycine1e-8_bath|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.400891493049422e-27
     },
     "S2_glycine1e-8_bath|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.419652856826387e-27
     },
     "S2_glycine1e-8_bath|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.4342669249347184e-27
     },
     "S2_glycine1e-8_bath|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.4456496446618596e-27
     },
     "S2_glycine1e-8_bath|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 1.730256777211426e-27
     },
     "S2_glycine1e-8_bath|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.4545149175256304e-27
     },
     "S2_glycine1e-8_bath|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.4614190714064074e-27
     },
     "S2_glycine1e-8_bath|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.466795581953407e-27
     },
     "S2_glycine1e-8_bath|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.470982166174392e-27
     },
     "S2_glycine1e-8_bath|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 4.474241914846203e-27
     },
     "S2_glycine1e-8_bath|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.3302350749600996e-27
     },
     "S2_glycine1e-8_bath|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.801171560131704e-27
     },
     "S2_glycine1e-8_bath|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.1702092579949018e-27
     },
     "S2_glycine1e-8_bath|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.4590142826877145e-27
     },
     "S2_glycine1e-8_bath|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.684792987358075e-27
     },
     "S2_glycine1e-8_bath|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.861153505230219e-27
     },
     "S2_glycine1e-8_bath|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.998822642697322e-27
     },
     "S4_glycine1e-8_bath70Na|k1": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 6.481189512467229e-28
     },
     "S4_glycine1e-8_bath70Na|k10": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.7868369752616644e-27
     },
     "S4_glycine1e-8_bath70Na|k11": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.8447024028418184e-27
     },
     "S4_glycine1e-8_bath70Na|k12": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.889847328561732e-27
     },
     "S4_glycine1e-8_bath70Na|k13": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.92505450795488e-27
     },
     "S4_glycine1e-8_bath70Na|k14": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.9525032709707227e-27
     },
     "S4_glycine1e-8_bath70Na|k15": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.9738982756978766e-27
     },
     "S4_glycine1e-8_bath70Na|k16": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.9905716169556517e-27
     },
     "S4_glycine1e-8_bath70Na|k17": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0035634739592185e-27
     },
     "S4_glycine1e-8_bath70Na|k18": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0136856072441292e-27
     },
     "S4_glycine1e-8_bath70Na|k19": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.021571230465777e-27
     },
     "S4_glycine1e-8_bath70Na|k2": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 1.1627536111793216e-27
     },
     "S4_glycine1e-8_bath70Na|k20": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0277141068580634e-27
     },
     "S4_glycine1e-8_bath70Na|k21": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0324991536348525e-27
     },
     "S4_glycine1e-8_bath70Na|k22": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.036226371660967e-27
     },
     "S4_glycine1e-8_bath70Na|k23": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0391295396185424e-27
     },
     "S4_glycine1e-8_bath70Na|k24": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 3.0413908081107896e-27
     },
     "S4_glycine1e-8_bath70Na|k3": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 1.5698047397635442e-27
     },
     "S4_glycine1e-8_bath70Na|k4": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 1.8907365287679246e-27
     },
     "S4_glycine1e-8_bath70Na|k5": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.1431175458698282e-27
     },
     "S4_glycine1e-8_bath70Na|k6": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.3411809630071636e-27
     },
     "S4_glycine1e-8_bath70Na|k7": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.4963621964747184e-27
     },
     "S4_glycine1e-8_bath70Na|k8": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.6177878335837178e-27
     },
     "S4_glycine1e-8_bath70Na|k9": {
-     "band": 1e-09,
+     "band": 1e-14,
      "floor": 2.7127033713023394e-27
     }
    },
-   "tol_abs": 1e-09,
+   "tol_abs": 1e-14,
    "tol_rel": 0.0,
-   "tol_source": "DESIGN C7: 1e-9 C",
+   "tol_source": "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C",
    "unit": "C"
   },
   "C7.relax_dn": {
@@ -35723,98 +36271,98 @@
   },
   "C8.b_c_t": {
    "claim": "C8",
-   "kind": "abs",
-   "note": "",
+   "kind": "info",
+   "note": "information only (erratum item 2)",
    "quantity": "concentration (mM) at t (bare node, log-mean flux)",
    "rows": {
     "Cl|t1": {
-     "band": 2.4550452328198813,
+     "band": 0.0,
      "floor": 8.722072780713152e-14
     },
     "Cl|t16": {
-     "band": 0.1871092080851391,
+     "band": 0.0,
      "floor": 6.647454429936029e-15
     },
     "Cl|t2": {
-     "band": 2.0382466783466056,
+     "band": 0.0,
      "floor": 7.24130685493167e-14
     },
     "Cl|t32": {
-     "band": 0.13228749540953247,
+     "band": 0.0,
      "floor": 4.6997959447570446e-15
     },
     "Cl|t4": {
-     "band": 1.394874284566687,
+     "band": 0.0,
      "floor": 4.955588950987131e-14
     },
     "Cl|t64": {
-     "band": 0.1319996379192991,
+     "band": 0.0,
      "floor": 4.689569192326073e-15
     },
     "Cl|t8": {
-     "band": 0.6419398702853224,
+     "band": 0.0,
      "floor": 2.280628558130084e-14
     },
     "K|t1": {
-     "band": 0.16820237740994992,
+     "band": 0.0,
      "floor": 5.9757488703109346e-15
     },
     "K|t16": {
-     "band": 0.043455303043973964,
+     "band": 0.0,
      "floor": 1.5438424954074733e-15
     },
     "K|t2": {
-     "band": 0.14261875346046196,
+     "band": 0.0,
      "floor": 5.066835962724595e-15
     },
     "K|t32": {
-     "band": 0.03885446631382833,
+     "band": 0.0,
      "floor": 1.3803879395563116e-15
     },
     "K|t4": {
-     "band": 0.10547054436503822,
+     "band": 0.0,
      "floor": 3.747066456762064e-15
     },
     "K|t64": {
-     "band": 0.038276609788203075,
+     "band": 0.0,
      "floor": 1.359858351726582e-15
     },
     "K|t8": {
-     "band": 0.06597242453514084,
+     "band": 0.0,
      "floor": 2.343811350696286e-15
     },
     "Na|t1": {
-     "band": 4.086842855409931,
+     "band": 0.0,
      "floor": 1.451938251552296e-13
     },
     "Na|t16": {
-     "band": 1.943653905041165,
+     "band": 0.0,
      "floor": 6.905245815293757e-14
     },
     "Na|t2": {
-     "band": 3.6956279248861437,
+     "band": 0.0,
      "floor": 1.3129507880500112e-13
     },
     "Na|t32": {
-     "band": 1.8934330290957044,
+     "band": 0.0,
      "floor": 6.726825422360975e-14
     },
     "Na|t4": {
-     "band": 3.0894037402016488,
+     "band": 0.0,
      "floor": 1.0975766927151826e-13
     },
     "Na|t64": {
-     "band": 1.8937230281310962,
+     "band": 0.0,
      "floor": 6.72785570590085e-14
     },
     "Na|t8": {
-     "band": 2.375967445750182,
+     "band": 0.0,
      "floor": 8.441132044901357e-14
     }
    },
    "tol_abs": 0.0,
-   "tol_rel": 0.05,
-   "tol_source": "proposed: relative 5 % (DESIGN's time-constant band)",
+   "tol_rel": 0.0,
+   "tol_source": "",
    "unit": "mM"
   },
   "C8.b_final_c": {
@@ -35875,66 +36423,66 @@
   },
   "C8.b_psi_t": {
    "claim": "C8",
-   "kind": "abs",
-   "note": "",
+   "kind": "info",
+   "note": "information only (erratum item 2)",
    "quantity": "node potential against the bath (V) at t",
    "rows": {
     "t1": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 1.0315590031205895e-17
     },
     "t16": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 5.589073131835637e-17
     },
     "t2": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 1.407681905303123e-17
     },
     "t32": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 5.978071243949352e-17
     },
     "t4": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 2.1811599507796868e-17
     },
     "t64": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 5.979900886386609e-17
     },
     "t8": {
-     "band": 0.001,
+     "band": 0.0,
      "floor": 3.698774974916226e-17
     }
    },
-   "tol_abs": 0.001,
+   "tol_abs": 0.0,
    "tol_rel": 0.0,
-   "tol_source": "proposed: 1 mV",
+   "tol_source": "",
    "unit": "V"
   },
   "C8.b_t_e": {
    "claim": "C8",
-   "kind": "abs",
-   "note": "",
+   "kind": "info",
+   "note": "information only: the bare node and face (DESIGN erratum 15:46 UTC, item 2)",
    "quantity": "time for the deviation of the species' concentration from its end state to fall to 1/e (bare node, log-mean flux)",
    "rows": {
     "Cl": {
-     "band": 0.24589652447037774,
-     "floor": 8.73599946055413e-15
+     "band": 0.0,
+     "floor": 0.0
     },
     "K": {
-     "band": 0.22761236753248607,
-     "floor": 8.086415715968302e-15
+     "band": 0.0,
+     "floor": 0.0
     },
     "Na": {
-     "band": 0.24697643404966063,
-     "floor": 8.77436555589599e-15
+     "band": 0.0,
+     "floor": 0.0
     }
    },
    "tol_abs": 0.0,
-   "tol_rel": 0.05,
-   "tol_source": "DESIGN C8b: 5 % on the time constant",
+   "tol_rel": 0.0,
+   "tol_source": "",
    "unit": "s"
   },
   "C8.b_tau_ambipolar": {
@@ -36145,7 +36693,7 @@
    "claim": "C8",
    "kind": "abs",
    "note": "",
-   "quantity": "t_1/e as C8.b_t_e, with the cell coupled through its passive membrane (the preparation P1LB has a cell); a labelled reading, the lead rules which one the engine run is compared with",
+   "quantity": "t_1/e as C8.b_t_e, with the cell coupled through its passive membrane (the preparation P1LB has a cell); the compared reading for P1LB (erratum item 2)",
    "rows": {
     "Cl": {
      "band": 0.2458794050199522,
@@ -36175,8 +36723,8 @@
   "u": "2**-53"
  },
  "plant_summary": {
-  "plants": 27,
-  "rows_total": 4435,
+  "plants": 29,
+  "rows_total": 4671,
   "smallest_margin_expected_visible": 1.0643266104876097
  },
  "plants": {
@@ -36261,6 +36809,29 @@
    "zero_power_rows": {},
    "zero_power_undeclared_rows": {}
   },
+  "charge_on_main_patch_capacitance_only": {
+   "description": "Q = C_main V (60 % of the capacitance) in the charge identities",
+   "families": [
+    "C3.Q_over_CV_error",
+    "C7.relax_dQ"
+   ],
+   "rows": 216,
+   "rows_below_1_band": 0,
+   "rows_between_1_and_10": 2,
+   "rows_ge_10_bands": 214,
+   "size": "Q - C_total V = -0.4 C_total V (1e-13 to 1e-12 C)",
+   "smallest_margin_all_rows": 5.094045116336693,
+   "smallest_margin_expected_visible_rows": 5.094045116336693,
+   "weak_rows": {
+    "C7.relax_dQ": [
+     "S1_leaks_bath|k1",
+     "S1_leaks_bath|k2"
+    ]
+   },
+   "zero_power_declared_reasons": [],
+   "zero_power_rows": {},
+   "zero_power_undeclared_rows": {}
+  },
   "diagram_charge_sum_0p9": {
    "description": "electric distances summing to 0.9 (e8 q = -0.1) in place of 1.0",
    "families": [
@@ -36330,22 +36901,16 @@
   "face_area_10pct_large": {
    "description": "face area 1.1e-10 m2 in place of 1e-10 m2",
    "families": [
-    "C8.b_t_e",
     "C8.bc_t_e"
    ],
-   "rows": 6,
+   "rows": 3,
    "rows_below_1_band": 0,
-   "rows_between_1_and_10": 6,
+   "rows_between_1_and_10": 3,
    "rows_ge_10_bands": 0,
    "size": "every t_1/e x 0.909 (-9 %)",
-   "smallest_margin_all_rows": 1.818181818181818,
-   "smallest_margin_expected_visible_rows": 1.818181818181818,
+   "smallest_margin_all_rows": 1.8181818181818181,
+   "smallest_margin_expected_visible_rows": 1.8181818181818181,
    "weak_rows": {
-    "C8.b_t_e": [
-     "Cl",
-     "K",
-     "Na"
-    ],
     "C8.bc_t_e": [
      "Cl",
      "K",
@@ -36359,13 +36924,12 @@
   "face_length_doubled": {
    "description": "face length 2e-4 m in place of 1e-4 m",
    "families": [
-    "C8.b_t_e",
     "C8.bc_t_e"
    ],
-   "rows": 6,
+   "rows": 3,
    "rows_below_1_band": 0,
    "rows_between_1_and_10": 0,
-   "rows_ge_10_bands": 6,
+   "rows_ge_10_bands": 3,
    "size": "every t_1/e x 2",
    "smallest_margin_all_rows": 19.999999999999996,
    "smallest_margin_expected_visible_rows": 19.999999999999996,
@@ -37014,10 +37578,10 @@
     "C6.v1_ratio_Jm_Jp",
     "C6.v1_x_offset"
    ],
-   "rows": 920,
+   "rows": 923,
    "rows_below_1_band": 0,
    "rows_between_1_and_10": 0,
-   "rows_ge_10_bands": 920,
+   "rows_ge_10_bands": 923,
    "size": "stall shifts by about -37 to -190 mV",
    "smallest_margin_all_rows": 66.5665168700031,
    "smallest_margin_expected_visible_rows": 66.5665168700031,
@@ -37097,16 +37661,34 @@
    },
    "zero_power_undeclared_rows": {}
   },
+  "pump_standard_state_mM": {
+   "description": "the pump's ATP hydrolysis free energy with the log argument in mM (no 1 M factor)",
+   "families": [
+    "C7.pump_dG_atp",
+    "C7.pump_heat"
+   ],
+   "rows": 8,
+   "rows_below_1_band": 0,
+   "rows_between_1_and_10": 0,
+   "rows_ge_10_bands": 8,
+   "size": "dG_ATP shifted by RT ln 1000 = 16.7 kJ/mol",
+   "smallest_margin_all_rows": 253934.76677613516,
+   "smallest_margin_expected_visible_rows": 253934.76677613516,
+   "weak_rows": {},
+   "zero_power_declared_reasons": [],
+   "zero_power_rows": {},
+   "zero_power_undeclared_rows": {}
+  },
   "symporter_charge_n_not_n_minus_1": {
    "description": "the electrical term n F V in dG_cyc where (n - 1) F V is declared",
    "families": [
     "C6.v1_V_stall",
     "C6.v1_eq_ratio"
    ],
-   "rows": 200,
+   "rows": 203,
    "rows_below_1_band": 8,
    "rows_between_1_and_10": 0,
-   "rows_ge_10_bands": 192,
+   "rows_ge_10_bands": 195,
    "size": "stall x (n-1)/n = x 0.5 (n = 2)",
    "smallest_margin_all_rows": 2.4151672307209275e-46,
    "smallest_margin_expected_visible_rows": 123.27554695903432,
@@ -37152,10 +37734,10 @@
     "C6.v1_V_stall",
     "C6.v1_eq_ratio"
    ],
-   "rows": 480,
-   "rows_below_1_band": 64,
+   "rows": 492,
+   "rows_below_1_band": 67,
    "rows_between_1_and_10": 0,
-   "rows_ge_10_bands": 416,
+   "rows_ge_10_bands": 425,
    "size": "stall -> -stall; equilibrium ratio exponent flips",
    "smallest_margin_all_rows": 2.4151672307209275e-46,
    "smallest_margin_expected_visible_rows": 116.97176977223148,
@@ -37175,16 +37757,19 @@
      "n1|Nain21|Naout69.8|V-0.09",
      "n1|Nain21|Naout69.8|V0",
      "n1|Nain21|Naout69.8|V0.02",
+     "n1|Nain21|Naout69.8|Vrest_bath70_Na",
      "n1|Nain21|Naout9.9|V-0.04",
      "n1|Nain21|Naout9.9|V-0.0705",
      "n1|Nain21|Naout9.9|V-0.09",
      "n1|Nain21|Naout9.9|V0",
      "n1|Nain21|Naout9.9|V0.02",
+     "n1|Nain21|Naout9.9|Vrest_bath",
      "n1|Nain21|Naout91|V-0.04",
      "n1|Nain21|Naout91|V-0.0705",
      "n1|Nain21|Naout91|V-0.09",
      "n1|Nain21|Naout91|V0",
      "n1|Nain21|Naout91|V0.02",
+     "n1|Nain21|Naout91|Vrest_local",
      "n1|Nain38|Naout19.9|V-0.04",
      "n1|Nain38|Naout19.9|V-0.0705",
      "n1|Nain38|Naout19.9|V-0.09",
@@ -37347,7 +37932,7 @@
    "family": "C6.v1_eq_ratio",
    "plant": "symporter_voltage_sign_flipped",
    "reason": "V = 0 or n = 1: no electrical term",
-   "rows": 64
+   "rows": 67
   },
   {
    "family": "C7.pump_cycle_counts",

@@ -100,3 +100,12 @@ formula; the tolerance covers time stepping.
 `plants` in the bands file: each plant's description, size, number of rows, `rows_ge_10_bands`, `smallest_margin_*`,
 the `weak_rows` (margin between 1 and 10) and the `zero_power_rows` (margin below 1) with the reason. A margin is
 |plant - reference| / band.
+
+## After the erratum of 19 November 2026 (15:46 UTC)
+
+- `*_unit` families and `C2.V_ghk_unit`, `C8.a_dV_ghk_unit` are `info`: the area-weighted `*_area` rows are compared.
+- P1LB is compared on `C8.bc_*`; `C8.b_t_e`, `C8.b_c_t`, `C8.b_psi_t` are `info`.
+- Charge identities (`C3.Q_over_CV_error`, `C7.relax_dQ`, `C7.relax_charge_identity`) have the band 1e-14 C.
+- The pump uses the 1 M standard state: `C7.pump_dG_atp`, `C7.pump_heat`, `C7.pump_heat_nonneg` are compared.
+- New rows: C6 equilibrium ratios at `Vrest_<exterior>` and `C6.v2_early_ratio_rest`.
+- Per-row tolerance overrides are stored as `tol_abs` in the row's entry of the bands file.

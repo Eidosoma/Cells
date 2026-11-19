@@ -222,6 +222,7 @@ def c6_c7(R, report):
     R.family("C6.v2_J_over_k", "C6", "version 2: King-Altman net cycle rate per carrier per omega (J/k)", "1", "abs", 0, REL, "DESIGN C6: 1e-6 relative")
     R.family("C6.v2_V_stall", "C6", "version 2: the zero of the King-Altman net rate in V (equals version 1's V_stall)", "V", "abs", TOLV, 0, "DESIGN C6: stall within 0.01 mV")
     R.family("C6.v2_early_ratio", "C6", "version 2 early uptake (B_in = 0): J(V = -0.0899)/J(V = -0.0705); version 1 has exactly 1", "1", "abs", 0, REL, "DESIGN 3.4/C6: King-Altman value, 1e-6 relative")
+    R.family("C6.v2_early_ratio_rest", "C6", "version 2 early uptake (B_in = 0) at the corrected rest voltage: J(V_rest - 0.0194 V)/J(V_rest), V_rest the area-weighted 0.1x MMR zero-current voltage", "1", "abs", 0, REL, "DESIGN 3.4/C6 with the erratum's rest voltage: King-Altman, 1e-6 relative")
     R.family("C6.v2_alt_set_ratio", "C6", "a second consistent constant set (e1 rates x3, e4 rates x0.5, q = 0.1,.3,-.2,.5,-.4,.4,.3,0): J-/J+ = exp(dG_cyc/RT) still", "1", "abs", 0, REL, "DESIGN C6.7: every consistent set")
     R.family("C6.T3_inverse", "C6", "T3's inverse check at quasi-equilibrium, n = 2: voltage difference RT/F ln(ratio) for a B ratio, and the ratio for 19.4 mV (information)", "V or 1", "info", note="the 1.45 is DESIGN's rounding of 253/175; no pass or fail in XC0")
     R.family("C7.sym_dG_chem", "C7", "symporter, per mole of cycles: chemical part n RT ln(Na_N/Na_P) + RT ln(B_N/B_P)", "J/mol", "abs", 0, REL, "proposed: relative 1e-6")
@@ -232,9 +233,9 @@ def c6_c7(R, report):
     R.family("C7.sym_cycle_counts", "C7", "per cycle: dNa_in, dB_in, dNa_out, dB_out, charge inward (e), in that order, as n, 1, -n, -1, n-1", "1", "abs", 1e-9, 0, "DESIGN C7: material 1e-9 (borrowed absolute)")
     R.family("C7.pump_cycle_counts", "C7", "pump, per cycle: dNa_cell, dK_cell, outward charge, as -3, +2, +1", "1", "abs", 1e-9, 0, "DESIGN C7: pump moves 3 Na out, 2 K in, net outward charge one")
     R.family("C7.pump_cell_charge_per_fmol", "C7", "pump: ionic charge change of the cell per fmol of cycles = -CHARGE_PER_FMOL", "C/fmol", "abs", 0, 1e-12, "DESIGN C7: charge 1e-9 C; relative 1e-12 proposed")
-    for nm in ("molar", "mM"):
-        R.family(f"C7.pump_heat_{nm}", "C7", f"pump, J per mole of cycles, heat = -dG_ATP - dG_chem - dU_cap; dG_ATP with the log argument in {nm} (the standard-state reading is NOT stated by DESIGN.md)", "J/mol", "info")
-        R.family(f"C7.pump_heat_nonneg_{nm}", "C7", f"pump heat nonnegative, standard state read as {nm}", "bool", "flag")
+    R.family("C7.pump_dG_atp", "C7", "pump, J per mole of cycles: dG_ATP = delta_g0 + RT [ln c_ADP + ln c_Pi - ln c_ATP - ln 1000 mM] (1 M standard state, DESIGN erratum item 4)", "J/mol", "abs", 0, REL, "proposed: relative 1e-6")
+    R.family("C7.pump_heat", "C7", "pump, J per mole of cycles, heat = -dG_ATP - dG_chem - dU_cap (1 M standard state)", "J/mol", "abs", 0, REL, "proposed: relative 1e-6")
+    R.family("C7.pump_heat_nonneg", "C7", "pump heat nonnegative", "bool", "flag")
     R.family("C7.pump_dG_chem", "C7", "pump, per mole of cycles: 3 RT ln(Na_o/Na_i) + 2 RT ln(K_i/K_o)", "J/mol", "abs", 0, REL, "proposed: relative 1e-6")
     R.family("C7.pump_dU_cap", "C7", "pump, per mole of cycles: -F V (the cell loses one positive charge per cycle)", "J/mol", "abs", 0, REL, "proposed: relative 1e-6")
 
@@ -308,6 +309,16 @@ def c6_c7(R, report):
                     s["BN"] = rq * s["BP"]
                     R.add("C6.v1_eq_x", key, D(0), x_floor_at_zero(s))
                     assert abs(x_cyc(s)) < D("1e-45")
+    # the C6 illustrations at the corrected (area-weighted) rest voltage (DESIGN erratum item 1)
+    for n in (1, 2, 3, 4):
+        for ext, Nao in (("bath", "9.9"), ("local", "91"), ("bath70_Na", "69.8")):
+            Vr = M.V_ghk(M.build("primary", ext, "291.15"))
+            s = s_params(n=n, NaN="21", NaP=Nao, V=Vr, BP="1")
+            key = f"n{n}|Nain21|Naout{Nao}|Vrest_{ext}"
+            rq = ratio_eq(s)
+            R.add("C6.v1_eq_ratio", key, rq, floor_closed(ratio_eq, s))
+            s["BN"] = rq * s["BP"]
+            R.add("C6.v1_eq_x", key, D(0), x_floor_at_zero(s))
     # n = 1: no voltage dependence
     for Nao in NA_OUT:
         for bn in ("0.0001", "1", "30"):
@@ -351,6 +362,13 @@ def c6_c7(R, report):
             s2 = dict(s1, V=D("-0.0705"))
             rr = v2_ka(s1)[2] / v2_ka(s2)[2]
             R.add("C6.v2_early_ratio", f"NaP{NaP}|BP{BP}", rr, v2_floor(lambda q: v2_ka(dict(q, V=D("-0.0899")))[2] / v2_ka(dict(q, V=D("-0.0705")))[2], s1))
+    Vrest_bath = M.V_ghk(M.build("primary", "bath", "291.15"))
+    for NaP in ("9.9", "19.9", "69.8"):
+        for BP in ("0.1", "1", "10"):
+            s1 = s_params(NaP=NaP, BP=BP, BN="0", NaN="21", V=Vrest_bath - D("0.0194"))
+            s2 = dict(s1, V=Vrest_bath)
+            R.add("C6.v2_early_ratio_rest", f"NaP{NaP}|BP{BP}", v2_ka(s1)[2] / v2_ka(s2)[2],
+                  v2_floor(lambda q: v2_ka(dict(q, V=Vrest_bath - D("0.0194")))[2] / v2_ka(dict(q, V=Vrest_bath))[2], s1))
     for NaP in ("9.9", "19.9", "69.8"):
         for BP in ("0.1", "1", "10"):
             for bn in ("0.0001", "0.1", "1"):
@@ -401,8 +419,13 @@ def c6_c7(R, report):
             R.add("C7.pump_dG_chem", key, dGc, floor_closed(fn, p))
             R.add("C7.pump_dU_cap", key, dUc, floor_closed(lambda q, VV=V: -q["F"] * VV, p))
             q_mM = D(pm["adp_mM"]) * D(pm["pi_mM"]) / D(pm["atp_mM"])
-            for nm, Q in (("molar", q_mM / D(1000)), ("mM", q_mM)):
-                dGatp = D(pm["delta_g0_J_per_mol"]) + RT * Q.ln()
-                heat = -dGatp - dGc - dUc
-                R.add(f"C7.pump_heat_{nm}", key, heat)
-                R.add(f"C7.pump_heat_nonneg_{nm}", key, heat >= 0)
+            pq = dict(p, dg0=D(pm["delta_g0_J_per_mol"]), qatp=q_mM, Vv=V)
+
+            def dG_atp(q):
+                return q["dg0"] + q["R"] * q["T"] * (q["qatp"] / D(1000)).ln()
+
+            def heat_fn(q):
+                return -dG_atp(q) - (3 * q["R"] * q["T"] * (q["cNa_o"] / q["cNa_i"]).ln() + 2 * q["R"] * q["T"] * (q["cK_i"] / q["cK_o"]).ln()) + q["F"] * q["Vv"]
+            R.add("C7.pump_dG_atp", key, dG_atp(pq), floor_closed(dG_atp, pq))
+            R.add("C7.pump_heat", key, heat_fn(pq), floor_closed(heat_fn, pq))
+            R.add("C7.pump_heat_nonneg", key, heat_fn(pq) >= 0)

@@ -39,7 +39,7 @@ branch from main's head (9252236d); the stall formula is computed arithmetically
 corrected (DESIGN.md is frozen; the lead routes corrections as a dated erratum).
 
 **Amendments** are made only by dated amendment, and each states whether it came before or after any engine output.
-There are none.
+There is one, below (19 November 2026, after the design erratum, before any engine output).
 
 ## What is in this directory
 
@@ -128,7 +128,7 @@ local node (primary ion set). DESIGN's quoted -70.5 mV and -26.7 mV (in C0, C8a 
 reproduced only when each leak permeability is used as a whole-membrane value without area weights
 (-70.52 and -26.74 mV). I registered the **area-weighted value as primary**
 (`*_area`: what the declared patches give, and what an engine reading the declared inputs will compute) and the
-**unweighted value as a labelled alternative reading** (`*_unit`), not a plant. The lead rules by dated note.
+**unweighted value as a labelled alternative reading** (`*_unit`), not a plant. The lead ruled (erratum item 1): **area-weighted is primary**; the unweighted rows are `info`, not compared.
 Everything in DESIGN.md that leans on -70.5 mV is recomputed under both readings below.
 
 **2. C0's sign conclusion changes with the reading, and in one bath it reverses.**
@@ -171,24 +171,23 @@ tau_diff for the declared junction (g_J 5.42 nS) is 6.98 ms, 28 times shorter th
 Cl 2.6400 mM and a node potential of -33.66 mV against the bath (`C8.b_final_is_bath` is false; the log-mean flux has the exact
 Donnan zero). DESIGN's "about 8 s for Na" is Na alone without a field (7.52 s, `info`); the declared mixture's 1/e times are 4.94 s (Na), 4.55 s (K),
 4.92 s (Cl) for the bare node and face, and 4.79 s for K with the cell coupled through its passive membrane (5.2 % from the bare value, beyond the 5 % band). P1LB has a cell, so both are
-registered (`C8.b_*`, `C8.bc_*`) and the lead rules which the engine run is compared with. A constant-field flux in place of the log-mean one moves the times by up to 3 % (`info`).
+registered; **the lead ruled (erratum item 2) that P1LB is compared on the cell-coupled `C8.bc_*` rows**; the bare `C8.b_t_e`, `C8.b_c_t`, `C8.b_psi_t` are `info`. A constant-field flux in place of the log-mean one moves the times by up to 3 % (`info`).
 The node's quasi-neutrality (zero net face current) is my assumption about the node's potential.
 
-**7. C3, C5 and C7 charge identities have no power.** C_total x 100 mV is 7.9e-12 C and the DESIGN tolerance is 1e-9 C, 100 times larger, so no plausible wrong booking
-(a wrong capacitance included) shows at a charge row; the capacitance-split plants are caught at the tau rows instead. A tighter band (about 1e-14 C) would give the rows
-power; that is the lead's to rule.
+**7. Charge identities (resolved by erratum item 3):** C_total x 100 mV is 7.9e-12 C, so DESIGN's 1e-9 C had no power. The erratum sets 1e-14 C for C3's Q = C V and C7's ionic
+charge against the integrated current; the registered bands now use it (`C3.Q_over_CV_error`, `C7.relax_dQ`, `C7.relax_charge_identity`) and the plant `charge_on_main_patch_capacitance_only` is seen at them.
+C5's junction charge sum stays at 1e-9 C (the erratum does not name it) and is zero power.
 
-**8. The pump's heat** depends on the standard state of delta_g0 (DESIGN does not say): the molar reading (log argument in mol/L) and the mM reading are both registered as `info`,
-with the heat-nonnegativity flag for each.
+**8. The pump's heat** (resolved by erratum item 4): 1 M standard state, dG_ATP = delta_g0 + RT[ln c_ADP + ln c_Pi - ln c_ATP - ln 1000 mM]; `C7.pump_dG_atp`, `C7.pump_heat` and `C7.pump_heat_nonneg` are compared rows. The mM reading is a plant (`pump_standard_state_mM`).
 
 **9. T3 inverse check** (`info`): the voltage difference for a ratio 1.45 is 9.322 mV (n = 2, 291.15 K; 9.248 mV from 253/175), and 19.4 mV gives a ratio of
 2.1668 (DESIGN: 2.17). Version 2's early-uptake ratio J(-0.0899 V)/J(-0.0705 V) at B_in = 0 lies between 1.466 and 1.885 across the nine states; version 1's is exactly 1.
 
-**10. A supplementary scenario family, `C5x`**, and the `C8.bc_*` reading are outside DESIGN.md's claims; they are labelled and can be dropped by the lead.
+**10. The supplementary scenario family `C5x`** is accepted (erratum). **Kir:** the erratum records that no Kir-dependent claim can be scored until V_h, s and the conductance are sourced.
 
 ## Plants
 
-27 plants, 4435 plant rows. A margin is |plant - reference| / band. Three plants have weak rows (margin 1 to 10): `kir_route_inert` (smallest 1.06; the route is shut at these states), `temperature_298` (1.41; stall rows near zero) and `face_area_10pct_large` (1.82; a 9 % error against the 5 % band). Every other plant's smallest margin is 13.3 or more.
+29 plants, 4671 plant rows. A margin is |plant - reference| / band. Three plants have weak rows (margin 1 to 10): `kir_route_inert` (smallest 1.06; the route is shut at these states), `temperature_298` (1.41; stall rows near zero) and `face_area_10pct_large` (1.82; a 9 % error against the 5 % band). Every other plant's smallest margin is 13.3 or more.
 
 | Plant | What is wrong | Size | Rows | Rows >= 10 bands | Smallest margin (rows expected to show it) | Weak (1-10) | Zero power (<1) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -196,10 +195,11 @@ with the heat-nonnegativity flag for each.
 | `bath_Cl_11p1_for_10p1` | bath Cl 11.1 mM in place of 10.1 mM (the 2016 table value) | E_Cl shifts by -2.4 mV; V_GHK by about -0.3 mV | 18 | 18 | 56.5 | 0 | 0 |
 | `capacitance_full_on_each_patch` | every patch given the full capacitance (the split missing) | tau x 4 (+300 %) | 54 | 54 | 100 | 0 | 0 |
 | `capacitance_main_patch_only` | tau from the main patch's 60 % of the capacitance only | tau x 0.6 (-40 %) | 54 | 54 | 13.3 | 0 | 0 |
+| `charge_on_main_patch_capacitance_only` | Q = C_main V (60 % of the capacitance) in the charge identities | Q - C_total V = -0.4 C_total V (1e-13 to 1e-12 C) | 216 | 214 | 5.09 | 2 | 0 |
 | `diagram_charge_sum_0p9` | electric distances summing to 0.9 (e8 q = -0.1) in place of 1.0 | J-/J+ x exp(-0.1 psi) | 162 | 135 | 1.47e+05 | 0 | 27 |
 | `diagram_detailed_balance_broken` | one backward constant (e1) 10 % too large: the loop product no longer balances | J-/J+ x 1.1 | 162 | 162 | 1e+05 | 0 | 0 |
-| `face_area_10pct_large` | face area 1.1e-10 m2 in place of 1e-10 m2 | every t_1/e x 0.909 (-9 %) | 6 | 0 | 1.82 | 6 | 0 |
-| `face_length_doubled` | face length 2e-4 m in place of 1e-4 m | every t_1/e x 2 | 6 | 6 | 20 | 0 | 0 |
+| `face_area_10pct_large` | face area 1.1e-10 m2 in place of 1e-10 m2 | every t_1/e x 0.909 (-9 %) | 3 | 0 | 1.82 | 3 | 0 |
+| `face_length_doubled` | face length 2e-4 m in place of 1e-4 m | every t_1/e x 2 | 3 | 3 | 20 | 0 | 0 |
 | `junction_absent` | no junction in the difference mode | tau_diff changes by a factor (g+2gJ)/(g+2 f gJ) | 7 | 7 | 133 | 0 | 0 |
 | `junction_conductance_x0.5` | g_J halved | tau_diff changes by a factor (g+2gJ)/(g+2 f gJ) | 7 | 7 | 24.9 | 0 | 0 |
 | `junction_conductance_x2` | g_J doubled (counted from both ends) | tau_diff changes by a factor (g+2gJ)/(g+2 f gJ) | 7 | 7 | 15.5 | 0 | 0 |
@@ -209,13 +209,14 @@ with the heat-nonnegativity flag for each.
 | `kir_without_sqrt_Ko` | Kir current without the sqrt(K_o/K_ref) factor | current x sqrt(K_ref/K_o): x5.0 (bath), x1.1 (local) | 186 | 186 | 1.18e+05 | 0 | 0 |
 | `local_final_state_is_bath` | the node's end state taken as the bath (the trapped A ignored) | Na 37.9 -> 9.9 mM and so on | 4 | 4 | 7.39e+05 | 0 | 0 |
 | `local_values_replaced_by_bath` | the local compartment's membranes silently take the bath's values | E_K -78.1 -> -153.3 mV; V_GHK shifts by tens of mV | 24 | 24 | 3.29e+04 | 0 | 0 |
-| `n3_for_n2` | n_Na = 3 where the declared value is 2 (stall, equilibrium ratio, J offsets) | stall shifts by about -37 to -190 mV | 920 | 920 | 66.6 | 0 | 0 |
+| `n3_for_n2` | n_Na = 3 where the declared value is 2 (stall, equilibrium ratio, J offsets) | stall shifts by about -37 to -190 mV | 923 | 923 | 66.6 | 0 | 0 |
 | `nernst_sign_flipped` | E = -(RT/zF) ln(c_out/c_in) for K, Na and Cl | 2|E| for each ion (22-306 mV) | 108 | 108 | 832 | 0 | 0 |
 | `pump_2Na_3K` | pump moves 2 Na out and 3 K in | counts differ by 1 | 4 | 2 | 1e+09 | 0 | 2 |
 | `pump_3Na_3K_neutral` | pump moves 3 Na out and 3 K in (electroneutral) | counts differ by 1 | 4 | 3 | 1e+09 | 0 | 1 |
-| `symporter_charge_n_not_n_minus_1` | the electrical term n F V in dG_cyc where (n - 1) F V is declared | stall x (n-1)/n = x 0.5 (n = 2) | 200 | 192 | 123 | 0 | 8 |
+| `pump_standard_state_mM` | the pump's ATP hydrolysis free energy with the log argument in mM (no 1 M factor) | dG_ATP shifted by RT ln 1000 = 16.7 kJ/mol | 8 | 8 | 2.54e+05 | 0 | 0 |
+| `symporter_charge_n_not_n_minus_1` | the electrical term n F V in dG_cyc where (n - 1) F V is declared | stall x (n-1)/n = x 0.5 (n = 2) | 203 | 195 | 123 | 0 | 8 |
 | `symporter_heat_sign` | heat booked as +dG_cyc per cycle (negative for a favourable cycle) | sign of the heat reversed | 480 | 480 | 2e+06 | 0 | 0 |
-| `symporter_voltage_sign_flipped` | V -> -V in dG_cyc (the wrong inside/outside convention) | stall -> -stall; equilibrium ratio exponent flips | 480 | 416 | 117 | 0 | 64 |
+| `symporter_voltage_sign_flipped` | V -> -V in dG_cyc (the wrong inside/outside convention) | stall -> -stall; equilibrium ratio exponent flips | 492 | 425 | 117 | 0 | 67 |
 | `temperature_298` | T = 298.15 K in place of 291.15 K | RT/F x 1.024 | 312 | 292 | 1.41 | 20 | 0 |
 | `valence_swap_Cl` | Cl- treated as a cation (z = +1) in the Nernst term and the GHK sum | E_Cl sign flips: 2|E_Cl| (about 40-120 mV) | 108 | 108 | 112 | 0 | 0 |
 | `vito_c_factor_on_forward_rate_only` | capacity factor f multiplies J+ but not J- | J(f)/J(1) = (f - e^x)/(1 - e^x) in place of f | 6 | 3 | 2.33e+05 | 0 | 3 |
@@ -228,8 +229,8 @@ with the heat-nonnegativity flag for each.
 - **C7 trajectories** (`C7.relax_ratio_t`, `C7.relax_dn`) are `info`: DESIGN gives no tolerance and C7 is identities over records. `C3.ratio_t` is banded: DESIGN's 2 % on tau carried to the decay (tol_abs = 0.02 (t/tau) ratio).
 - **Pump rates and heat:** `nak_atp_mass_action_positive@1`'s rate is not given by DESIGN.md, so only the stoichiometry and the energy partition per cycle are referenced.
 - **The plants below the full margin, by plant:**
+- `charge_on_main_patch_capacitance_only` at `C7.relax_dQ` (2 rows) is weak: margin between 1 and 10 bands
 - `diagram_charge_sum_0p9` at `C6.v2_ratio_Jm_Jp` (27 rows): V = 0: the charge-sum error multiplies exp(0 x psi)
-- `face_area_10pct_large` at `C8.b_t_e` (3 rows) is weak: margin between 1 and 10 bands
 - `face_area_10pct_large` at `C8.bc_t_e` (3 rows) is weak: margin between 1 and 10 bands
 - `kir_route_inert` at `C4.V_zero_both` (30 rows): the Cl- patch dominates; the route adds microvolts; the route shifts V_zero by less than the 1e-5 V band at these states
 - `kir_route_inert` at `C4.V_zero_kir` (363 rows): the Cl- patch dominates; the route adds microvolts; the route shifts V_zero by less than the 1e-5 V band at these states
@@ -239,9 +240,17 @@ with the heat-nonnegativity flag for each.
 - `pump_2Na_3K` at `C7.pump_cycle_counts` (1 rows): the same charge per cycle; this count is the same as the declared one
 - `pump_3Na_3K_neutral` at `C7.pump_cycle_counts` (1 rows): this count is the same as the declared one
 - `symporter_charge_n_not_n_minus_1` at `C6.v1_eq_ratio` (8 rows): V = 0: the electrical term vanishes
-- `symporter_voltage_sign_flipped` at `C6.v1_eq_ratio` (64 rows): V = 0 or n = 1: no electrical term
+- `symporter_voltage_sign_flipped` at `C6.v1_eq_ratio` (67 rows): V = 0 or n = 1: no electrical term
 - `temperature_298` at `C6.v1_V_stall` (20 rows) is weak: margin between 1 and 10 bands
 - `vito_c_factor_on_forward_rate_only` at `C6.v1_capacity_ratio` (3 rows): x << 0: J- is negligible against J+, so f on J+ only equals f on both
+
+## Amendment, 19 November 2026 (after DESIGN's erratum of 15:46 UTC)
+
+Applied before any engine result exists, as one dated commit on top of 676f9545. The lead's rulings: (1) area-weighted zero-current
+voltage primary, unweighted rows `info` (`C0.*_unit`, `C2.V_ghk_unit`, `C8.a_dV_ghk_unit`); (2) P1LB compared on `C8.bc_*`, the bare
+node and face `info`; (3) charge-identity tolerance 1e-14 C; (4) pump standard state 1 M, heat rows compared; (5) C5x accepted. Also added:
+the C6 equilibrium ratios at the corrected rest voltage (`...|Vrest_<exterior>`; for n = 2, Na_out 9.9 mM it is 1.45) and
+`C6.v2_early_ratio_rest`. No reference value changed; the changes are in kinds and bands (see the commit message for counts).
 
 ## Regenerating
 
@@ -249,6 +258,6 @@ with the heat-nonnegativity flag for each.
     python -m validation.xenopus_bioelectric.references.design --check    # regenerate, compare byte for byte
 
 Environment: `/mnt/workspaces/Cells/venv-cpu/bin/python` with `PYTHONPATH` at the checkout. The write takes
-about 5 minutes on one loaded core. `tests/unit/test_xenopus_xc0_references.py` regenerates once and compares both files
-byte for byte (291 s measured), checks the internal agreements, and checks that no plant has an undeclared zero-power row
-and that no row the plant is seen at falls below one band. It is in no tier yet.
+about 5 minutes on one loaded core. Two test files (D224): `tests/unit/test_xenopus_xc0_references.py` is the fast integrity check (about 9 s: the files parse and agree,
+the band rule is recomputed from the stored references and floors, the plant margins are recomputed from the stored rows, a small subset is regenerated);
+`tests/unit/test_xenopus_xc0_references_regenerate.py` is the full regeneration (about 5 minutes, for tier 3).

@@ -40,6 +40,8 @@ def s_from_key(key, **over):
             kw["_rb"] = part[2:]
         elif part.startswith("T") and part[1:2].isdigit():
             kw["T"] = part[1:]
+        elif part.startswith("Vrest_"):
+            kw["V"] = M.V_ghk(M.build("primary", part[6:], "291.15"))
         elif part.startswith("V") and part[1:2] in "-0123456789":
             kw["V"] = part[1:]
         elif part.startswith("n") and part[1:].isdigit():
@@ -311,10 +313,28 @@ def build_plants(R):
     for name, fac, desc, size in (("face_length_doubled", D(2), "face length 2e-4 m in place of 1e-4 m", "every t_1/e x 2"),
                                   ("face_area_10pct_large", 1 / D("1.1"), "face area 1.1e-10 m2 in place of 1e-10 m2", "every t_1/e x 0.909 (-9 %)")):
         pl = Plant(name, desc, size)
-        for fam in ("C8.b_t_e", "C8.bc_t_e"):
+        for fam in ("C8.bc_t_e",):
             for key in R.values[fam]:
                 pl.add(fam, key, Decimal(R.values[fam][key]) * fac)
         P.append(pl)
+    # 22 charge booked on the main patch's capacitance only (the identity band is 1e-14 C, erratum item 3)
+    p22 = Plant("charge_on_main_patch_capacitance_only", "Q = C_main V (60 % of the capacitance) in the charge identities", "Q - C_total V = -0.4 C_total V (1e-13 to 1e-12 C)")
+    cm_frac = D(M.build()["C_main"] / M.C_total(M.build()))
+    for key in R.values["C3.Q_over_CV_error"]:
+        scn, dl, k = key.split("|")
+        Vt = Decimal(R.values["C3.V_inf"][scn]) + Decimal(R.values["C3.ratio_t"][key]) * D(dl[1:])
+        p22.add("C3.Q_over_CV_error", key, -(1 - cm_frac) * M.C_total(M.build()) * Vt)
+    for key in R.values["C7.relax_dQ"]:
+        scn = key.split("|")[0]
+        Vt = Decimal(R.values["C3.V_inf"][scn]) + Decimal(R.values["C7.relax_ratio_t"][key]) * (D("-0.04") - Decimal(R.values["C3.V_inf"][scn]))
+        wrong = cm_frac * M.C_total(M.build()) * (Vt - D("-0.04"))
+        p22.add("C7.relax_dQ", key, wrong, "dQ tiny: the early observation changes by less than the band" if abs(wrong - Decimal(R.values["C7.relax_dQ"][key])) < 1e-14 else None)
+    P.append(p22)
+    p23 = Plant("pump_standard_state_mM", "the pump's ATP hydrolysis free energy with the log argument in mM (no 1 M factor)", "dG_ATP shifted by RT ln 1000 = 16.7 kJ/mol")
+    for key in R.values["C7.pump_heat"]:
+        p23.add("C7.pump_dG_atp", key, Decimal(R.values["C7.pump_dG_atp"][key]) + M.build()["R"] * M.build()["T"] * D(1000).ln())
+        p23.add("C7.pump_heat", key, Decimal(R.values["C7.pump_heat"][key]) - M.build()["R"] * M.build()["T"] * D(1000).ln())
+    P.append(p23)
     p21 = Plant("local_final_state_is_bath", "the node's end state taken as the bath (the trapped A ignored)", "Na 37.9 -> 9.9 mM and so on")
     for i, cb in M.exterior_mM("bath").items():
         p21.add("C8.b_final_c", i, cb)

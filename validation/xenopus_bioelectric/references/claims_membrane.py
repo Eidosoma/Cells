@@ -19,21 +19,22 @@ def split_key(key):
     return ionset, ext, t[1:]
 
 
-def c0_c1_c2(R):
+def c0_c1_c2(R, states=None):
     R.family("C0.E_K", "C0", "Nernst potential of K", "V", "abs", TOL_V_ZERO, 0, BORROWED_V)
     R.family("C0.E_Na", "C0", "Nernst potential of Na", "V", "abs", TOL_V_ZERO, 0, BORROWED_V)
     R.family("C0.E_Cl", "C0", "Nernst potential of Cl (z = -1)", "V", "abs", TOL_V_ZERO, 0, BORROWED_V)
     for r, label in (("area", "area-weighted permeabilities (the declared patches; primary)"),
                      ("unit", "whole-membrane permeabilities without area weights (the reading that reproduces DESIGN.md's quoted -70.5 and -26.7 mV)")):
-        R.family(f"C0.V_ghk_{r}", "C0", f"GHK zero-current voltage, {label}", "V", "abs", TOL_V_ZERO, 0, BORROWED_V,
-                 note="alternative reading, labelled; the lead rules by dated note" if r == "unit" else "")
-        R.family(f"C0.cl_effect_sign_{r}", "C0", f"sign of the voltage change of an open Cl- patch at V_rest ({r}): +1 depolarises (E_Cl > V_rest), -1 hyperpolarises", "1", "sign", TOL_V_ZERO, 0, BORROWED_V,
-                 note="aux = E_Cl - V_rest (V); compared only when |aux| exceeds the band")
-        R.family(f"C0.k_effect_sign_{r}", "C0", f"sign of the voltage change of an open K patch at V_rest ({r}): +1 depolarises (E_K > V_rest), -1 hyperpolarises", "1", "sign", TOL_V_ZERO, 0, BORROWED_V,
-                 note="aux = E_K - V_rest (V); compared only when |aux| exceeds the band")
-        R.family(f"C0.cl_bound_{r}", "C0", f"bound |E_Cl - V_rest| on any change by an open Cl- patch ({r})", "V", "abs", TOL_V_ZERO, 0, BORROWED_V)
-        R.family(f"C0.cl_i_critical_{r}", "C0", f"Cl_i below which an open Cl- patch hyperpolarises at V_rest = Cl_o exp(F V_rest/RT) ({r})", "mM", "abs", 0, 1e-6, "borrowed: relative 1e-6")
-        R.family(f"C0.feasible_19p4_{r}", "C0", f"is a hyperpolarisation of 19.4 mV (T2) allowed by the bound ({r}): V_rest - E_Cl >= 0.0194 V", "bool", "flag")
+        INFO = "info" if r == "unit" else None
+        UNOTE = "information only (DESIGN erratum 15:46 UTC, item 1: the unweighted voltage was an arithmetic error)" if r == "unit" else ""
+        R.family(f"C0.V_ghk_{r}", "C0", f"GHK zero-current voltage, {label}", "V", INFO or "abs", TOL_V_ZERO, 0, BORROWED_V, note=UNOTE)
+        R.family(f"C0.cl_effect_sign_{r}", "C0", f"sign of the voltage change of an open Cl- patch at V_rest ({r}): +1 depolarises (E_Cl > V_rest), -1 hyperpolarises", "1", INFO or "sign", TOL_V_ZERO, 0, BORROWED_V,
+                 note="aux = E_Cl - V_rest (V); compared only when |aux| exceeds the band" + (" " + UNOTE if UNOTE else ""))
+        R.family(f"C0.k_effect_sign_{r}", "C0", f"sign of the voltage change of an open K patch at V_rest ({r}): +1 depolarises (E_K > V_rest), -1 hyperpolarises", "1", INFO or "sign", TOL_V_ZERO, 0, BORROWED_V,
+                 note="aux = E_K - V_rest (V); compared only when |aux| exceeds the band" + (" " + UNOTE if UNOTE else ""))
+        R.family(f"C0.cl_bound_{r}", "C0", f"bound |E_Cl - V_rest| on any change by an open Cl- patch ({r})", "V", INFO or "abs", TOL_V_ZERO, 0, BORROWED_V, note=UNOTE)
+        R.family(f"C0.cl_i_critical_{r}", "C0", f"Cl_i below which an open Cl- patch hyperpolarises at V_rest = Cl_o exp(F V_rest/RT) ({r})", "mM", INFO or "abs", 0, 1e-6, "borrowed: relative 1e-6", note=UNOTE)
+        R.family(f"C0.feasible_19p4_{r}", "C0", f"is a hyperpolarisation of 19.4 mV (T2) allowed by the bound ({r}): V_rest - E_Cl >= 0.0194 V", "bool", "info" if r == "unit" else "flag", note=UNOTE)
     for v in ("-0.01", "-0.03", "-0.05"):
         R.family(f"C0.cl_i_threshold_V{v}", "C0", f"Cl_i threshold Cl_o exp(F V/RT) at V = {v} V", "mM", "abs", 0, 1e-6, "borrowed: relative 1e-6")
     R.family("C1.zero_K", "C1", "zero of the K current of the K-only patch m_kleak (= E_K)", "V", "abs", TOL_V_ZERO, 0, "DESIGN C1: 1e-6 V on the zero")
@@ -47,11 +48,11 @@ def c0_c1_c2(R):
     R.family("C1.kir_zero_at_EK", "C1", "Kir route current at V = E_K (zero for any parameters)", "A", "abs", 0, 0, "DESIGN C1: zero; the band is the float64 floor of u = V - E_K", note="reference 0")
     R.family("C1.kir_sqrtKo_ratio", "C1", "Kir current at fixed u = 0.02 V, local over bath = sqrt(K_o,local / K_o,bath)", "1", "abs", 0, 1e-9, "proposed: relative 1e-9")
     R.family("C2.V_ghk_area", "C2", "GHK zero-current voltage of the multi-ion membrane, area-weighted (primary)", "V", "abs", TOL_V_ZERO, 0, "DESIGN C2: 1e-6 V on the crossing")
-    R.family("C2.V_ghk_unit", "C2", "GHK zero-current voltage, whole-membrane permeabilities (alternative reading)", "V", "abs", TOL_V_ZERO, 0, "DESIGN C2: 1e-6 V on the crossing")
+    R.family("C2.V_ghk_unit", "C2", "GHK zero-current voltage, whole-membrane permeabilities (superseded reading)", "V", "info", TOL_V_ZERO, 0, "DESIGN C2: 1e-6 V on the crossing", note="information only (DESIGN erratum 15:46 UTC, item 1)")
     for d in ("-0.001", "0.001"):
         R.family(f"C2.sign_dVdt_dV{d}", "C2", f"sign of dV/dt (pump off, fixed amounts) at V = V_GHK + {d} V; dV/dt = -I_total/C_total", "1", "sign", 1e-30, 0, "DESIGN C2: crossing", note="aux = dV/dt (V/s)")
 
-    for key in M.state_keys():
+    for key in (states or M.state_keys()):
         ionset, ext, T = split_key(key)
         p = M.build(ionset, ext, T)
         pu = M.build(ionset, ext, T, weights="unit")
@@ -205,12 +206,12 @@ def c3_c7_relaxation(R, report):
     R.family("C3.ratio_t", "C3", "(V(t) - V_inf)/(V_0 - V_inf) from the fixed-amount nonlinear ODE at t = k tau_lin/4", "1", "abs", 0.0, 0.0, "DESIGN C3's 2 % on tau carried to the decay: tol_abs = 0.02 (t/tau) ratio per row")
     R.family("C3.ratio_exp", "C3", "the linear prediction exp(-t/tau_lin) at the same times", "1", "info")
     R.family("C3.tau_doubling", "C3", "tau(2 C_total)/tau(C_total) at fixed g", "1", "abs", 0.0, 0.02, "DESIGN C3: tau within 2 %")
-    R.family("C3.Q_over_CV_error", "C3", "charge identity Q - C_total V at every observation", "C", "abs", 1e-9, 0, "DESIGN C3: charge identity 1e-9 C", note="reference 0; ZERO POWER: C_total x 100 mV = 7.9e-12 C is 100 times below the band")
+    R.family("C3.Q_over_CV_error", "C3", "charge identity Q - C_total V at every observation", "C", "abs", 1e-14, 0, "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C", note="reference 0")
     R.family("C3.drift_amounts", "C3", "|V(t) - V_inf| with amounts evolving minus with amounts fixed, relative to the step, at t = 4 tau_lin", "1", "info")
     R.family("C7.relax_ratio_t", "C7", "relaxation from V_0 = -0.04 V (the baseline): (V(t) - V_inf)/(V_0 - V_inf), amounts evolving, t = k tau_lin/4, pump off", "1", "info", note="information: C7 is a set of identities over records and DESIGN gives no tolerance for a trajectory; the lead rules")
     R.family("C7.relax_dn", "C7", "amount change of a species in the cell during that relaxation (fmol), t = k tau_lin/4; the bath is held", "fmol", "info", note="information: DESIGN gives no tolerance for a trajectory; the lead rules")
-    R.family("C7.relax_charge_identity", "C7", "Q change C_total (V - V_0) minus CHARGE_PER_FMOL sum_i z_i dn_i (fmol of charge)", "fmol", "abs", 1e-9, 0, "DESIGN C7: 1e-9 (material/charge) ", note="reference 0")
-    R.family("C7.relax_dQ", "C7", "ionic charge change of the cell C_total (V - V_0)", "C", "abs", 1e-9, 0, "DESIGN C7: 1e-9 C", note="ZERO POWER for any plant: |dQ| <= 3e-12 C")
+    R.family("C7.relax_charge_identity", "C7", "ionic charge change against the integrated current: C_total (V - V_0) minus F sum_i z_i dn_i (C)", "C", "abs", 1e-14, 0, "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C", note="reference 0")
+    R.family("C7.relax_dQ", "C7", "ionic charge change of the cell C_total (V - V_0)", "C", "abs", 1e-14, 0, "DESIGN erratum 15:46 UTC, item 3: charge identity 1e-14 C", note="the integral of the current; |dQ| <= 3e-12 C")
     R.family("C7.relax_integrated_current", "C7", "integral of -I_total dt from 0 to t equals the charge change (by the ODE: identical)", "C", "info")
     for name, kw in c3_scenarios().items():
         p = M.build(kw["ionset"], kw["ext"], kw["T"], **{k: v for k, v in kw.items() if k not in ("ionset", "ext", "T")})

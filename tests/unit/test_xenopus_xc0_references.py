@@ -1,9 +1,14 @@
-"""XC0's code-blind references: the registered files regenerate identically (one test file, D224)."""
+"""XC0's code-blind references: a fast integrity check of the registered files (about 10 s).
+
+The full regeneration is test_xenopus_xc0_references_regenerate.py. Here: the files parse and agree; the band rule
+is recomputed from the stored references and floors; the plant margins are recomputed from the stored rows; a small
+deterministic subset of rows is regenerated from the formulas.
+"""
 
 from __future__ import annotations
 
+import json
 import sys
-from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -12,58 +17,75 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from validation.xenopus_bioelectric.references import design  # noqa: E402
-
-REFS = ROOT / "validation" / "xenopus_bioelectric" / "references"
+from validation.xenopus_bioelectric.references import claims_membrane, design, plants, symporter  # noqa: E402
+from validation.xenopus_bioelectric.references.exact import context  # noqa: E402
+from validation.xenopus_bioelectric.references.rows import Rows  # noqa: E402
 
 
 @pytest.fixture(scope="module")
-def docs():
-    return design.documents()
+def stored():
+    return json.loads(design.VALUES_FILE.read_text()), json.loads(design.BANDS_FILE.read_text())
 
 
-def test_reference_values_regenerate_byte_for_byte(docs):
-    values, _ = docs
-    assert design.VALUES_FILE.read_text() == design.dumps(values)
+@pytest.fixture(scope="module")
+def registry(stored):
+    values, bands = stored
+    return Rows.from_documents(values, bands)
 
 
-def test_bands_and_plants_regenerate_byte_for_byte(docs):
-    _, bands = docs
+def test_files_parse_and_agree(stored):
+    values, bands = stored
+    assert set(values["families"]) == set(bands["families"])
+    for fam, meta in bands["families"].items():
+        assert set(meta["rows"]) == set(values["families"][fam]["values"]), fam
+        assert meta["kind"] in {"abs", "sign", "exact_zero", "flag", "info"}
+    assert design.VALUES_FILE.read_text() == design.dumps(values)       # canonical bytes
     assert design.BANDS_FILE.read_text() == design.dumps(bands)
 
 
-def test_internal_checks_hold(docs):
-    values, bands = docs
-    checks = values["internal_checks"]
-    assert checks["max_abs_identity_residual_fmol"] < 1e-40       # RK4 keeps the charge identity exactly
-    assert checks["max_ode_error_estimate"] < 1e-8                # Richardson error estimates of every ODE row
-    fams = bands["families"]
-    for fam, meta in fams.items():
-        assert set(meta["rows"]) == set(values["families"][fam]["values"]), fam
-        for row in meta["rows"].values():
-            assert row["band"] >= 0 and row["floor"] >= 0
+def test_band_rule_recomputed_from_stored_references_and_floors(stored, registry):
+    _, bands = stored
+    assert registry.bands_json() == bands["families"]
+    for fam, meta in bands["families"].items():
+        if meta["kind"] in ("abs", "sign"):
+            for key, row in meta["rows"].items():
+                assert row["band"] >= 10 * row["floor"], (fam, key)
 
 
-def test_every_plant_is_seen_where_it_is_expected_to_be(docs):
-    _, bands = docs
-    for name, plant in bands["plants"].items():
+def test_registered_choices_of_the_erratum(stored):
+    _, bands = stored
+    fam = bands["families"]
+    assert fam["C2.V_ghk_area"]["kind"] == "abs" and fam["C2.V_ghk_unit"]["kind"] == "info"
+    assert fam["C8.bc_t_e"]["kind"] == "abs" and fam["C8.b_t_e"]["kind"] == "info"
+    assert fam["C3.Q_over_CV_error"]["tol_abs"] == 1e-14 and fam["C7.relax_dQ"]["tol_abs"] == 1e-14
+    assert fam["C7.pump_heat"]["kind"] == "abs" and fam["C7.pump_heat_nonneg"]["kind"] == "flag"
+
+
+def test_plant_margins_recomputed_from_the_stored_rows(stored, registry):
+    _, bands = stored
+    with context():
+        out = plants.run_plants(registry)
+    assert out["plants"] == bands["plants"]
+    assert out["zero_power"] == bands["zero_power"]
+    for name, plant in out["plants"].items():
         assert plant["zero_power_undeclared_rows"] == {}, name
         smallest = plant["smallest_margin_expected_visible_rows"]
-        assert smallest is None or smallest >= 1.0, name       # None: every row is a declared zero-power row
+        assert smallest is None or smallest >= 1.0, name
 
 
-def test_nothing_here_imports_the_engine_or_a_reference_simulator():
-    for path in REFS.glob("*.py"):
-        text = path.read_text()
-        for line in text.splitlines():
-            stripped = line.strip()
-            assert not stripped.startswith(("import cells", "from cells", "import betse", "from betse")), (path.name, line)
-
-
-def test_inputs_copy_is_the_frozen_declared_input_set():
-    import json
-
-    inputs = json.loads((REFS / "reference_inputs.json").read_text())
-    assert inputs["schema"] == "xenopus_xc0_declared_inputs@2"
-    assert inputs["frozen_for_the_references"] == "19 November 2026, 13:35 UTC"
-    assert Decimal(str(inputs["temperature_K"]["value"])) == Decimal("291.15")
+def test_a_small_subset_is_regenerated_from_the_formulas(stored):
+    values, _ = stored
+    fams = values["families"]
+    key = "primary|local|T291.15"
+    with context():
+        sub = Rows()
+        claims_membrane.c0_c1_c2(sub, states=[key])
+        for fam, rows in sub.values.items():
+            for k, v in rows.items():
+                assert fams[fam]["values"][k] == v, (fam, k)
+        # a stall row and a King-Altman row
+        s = symporter.s_params(n=2, NaN="21", NaP="9.9", BN="0.1", BP="0.1")
+        from validation.xenopus_bioelectric.references.exact import fmt
+        assert fmt(symporter.V_stall(s)) == fams["C6.v1_V_stall"]["values"]["n2|Nain21|Naout9.9|BP0.1|rB1|T291.15"]
+        s2 = symporter.s_params(NaP="19.9", BP="10", BN="0.1", NaN="21", V="-0.0899")
+        assert fmt(symporter.v2_ka(s2)[2]) == fams["C6.v2_J_over_k"]["values"]["NaP19.9|BP10|BN0.1|V-0.0899"]
