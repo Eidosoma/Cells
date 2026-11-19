@@ -94,6 +94,7 @@ from cells.numerics.extracellular_field import scatter
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 
 OBSERVER_ID = kinetic.OBSERVER_ID
 OBSERVATION_SAMPLING = kinetic.OBSERVATION_SAMPLING
@@ -1212,10 +1213,23 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= read_valid
     else:
         read = state
-    amount = p.extracellular_amount_reference + read.extracellular_amount_increment
-    predicted = (
-        amount + p.imex_operator_time * dt * first_values.derivative.extracellular_amount_increment
-    )
+    drift = first_values.derivative.extracellular_amount_increment  # The stored totals' rate.
+    if structure is not None and structure.free_amount_reads:
+        # P1 (CORE_SEAMS §17; §19 as amended, static): the predictor reads the quantity it
+        # differentiates. The stored totals are predicted, and the stage read at them gives the
+        # free amounts, its closure's after equilibration; a failed read refuses the step. Every
+        # stage read here takes this form (_check_stage_rows), and the read leaves rows it does
+        # not hold as stored. Elsewhere, today's form: the start read's amount plus the stored
+        # derivative.
+        stored = state.extracellular_amount_increment + p.imex_operator_time * dt * drift
+        ahead, ahead_ok = _stage_read(
+            state._replace(extracellular_amount_increment=stored), p, kinds, xp=xp
+        )
+        valid &= ahead_ok
+        predicted = p.extracellular_amount_reference + ahead.extracellular_amount_increment
+    else:
+        amount = p.extracellular_amount_reference + read.extracellular_amount_increment
+        predicted = amount + p.imex_operator_time * dt * drift
     predicted = xp.where(p.outside_active, predicted / p.extracellular_volume, 1.0)
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
@@ -1624,22 +1638,51 @@ def _check_kinds_solver(spec):
 def _check_stage_rows(spec, kinds):
     """§7.4 (k): stage reads compose in hook order, so two that share a row would compose by ID,
     not physically. A kind's stage read declares the rows it reads or rewrites, and two kinds'
-    reads on a shared row are refused at binding (until a dependency order exists)."""
+    reads on a shared row are refused at binding (until a dependency order exists). A row is
+    (species, node ID), or (species, node ID, the read's law ID): the third item is P1's selector
+    (CORE_SEAMS §17; the binding owner's ruling (a), 19 November 2026). Rows are shared by their
+    (species, node), whatever law each names.
+
+    P1's predictor takes a stage read whole, so two more refusals hold until a world needs them:
+    a read whose rows name a law that declares free_amounts on some rows and not on others, and a
+    free-amount read beside another kind's read of today's form."""
     if not kinds:
         return
-    declarations, claimed = dict(spec.model.kinds), {}
+    declarations, claimed, laws = dict(spec.model.kinds), {}, law_registry.active()
+    forms = {True: [], False: []}  # P1's form, or today's: the kinds whose reads hold rows.
     for kind in kinds:
         if kind.stage_read is None:
             continue
         if kind.stage_rows is None:
             raise ConfigError(f"Kind {kind.kind_id} has a stage read but declares no stage rows")
+        marks = set()
         for row in kind.stage_rows(declarations[kind.kind_id]):
-            other = claimed.setdefault(tuple(row), kind.kind_id)
+            row = tuple(row)
+            if len(row) not in (2, 3):
+                raise ConfigError(
+                    f"Kind {kind.kind_id}'s stage row {row} is not (species, node ID) or "
+                    "(species, node ID, the read's law ID)"
+                )
+            other = claimed.setdefault(row[:2], kind.kind_id)
             if other != kind.kind_id:
                 raise ConfigError(
-                    f"Kinds {other} and {kind.kind_id} both read row {tuple(row)} at each stage; "
+                    f"Kinds {other} and {kind.kind_id} both read row {row[:2]} at each stage; "
                     "stage reads on a shared row do not commute and are refused"
                 )
+            marks.add(reads_free_amounts(row, laws))
+        if len(marks) > 1:
+            raise ConfigError(
+                f"Kind {kind.kind_id}'s stage rows name a law that declares free_amounts on some "
+                "rows and not on others; P1's predictor takes a stage read whole, so it is refused"
+            )
+        for mark in marks:
+            forms[mark].append(kind.kind_id)
+    if forms[True] and forms[False]:
+        raise ConfigError(
+            f"P1's predictor reads {forms[True][0]}'s stage read at the predicted totals, while "
+            f"{forms[False][0]}'s read keeps today's form; the two together are refused until a "
+            "world needs them"
+        )
 
 
 def moved_nodes(model):
@@ -2800,7 +2843,36 @@ def structure(model):
         kinds=_kind_entries(model),
         routes=_routes(model),
         heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
+        free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
     )
+
+
+def reads_free_amounts(row, laws):
+    """Whether a stage row's third item names a law of `laws` (a law registry) that declares
+    free_amounts (P1's selector, the binding owner's ruling (a) of 19 November 2026). A row with
+    no third item, or one naming a law the registry does not hold (version 1's read,
+    rapid_proton_buffer@1) or a law without free_amounts, keeps today's predictor."""
+    return (
+        len(row) == 3
+        and row[2] in laws
+        and getattr(laws.lookup(row[2]), "free_amounts", None) is not None
+    )
+
+
+def _free_amount_reads(model):
+    """P1's switch (InnerStructure.free_amount_reads): the declared kinds, sorted, whose stage
+    rows all name a law that declares free_amounts. _check_stage_rows refuses a read whose rows
+    mix the two forms, and a free-amount read beside a read of today's form."""
+    kinds, laws = kind_registry.active(), law_registry.active()
+    out = []
+    for kind_id, declaration in getattr(model, "kinds", ()):
+        kind = kinds.lookup(kind_id)
+        if kind.stage_read is None or kind.stage_rows is None:
+            continue
+        rows = tuple(tuple(row) for row in kind.stage_rows(declaration))
+        if rows and all(reads_free_amounts(row, laws) for row in rows):
+            out.append(kind_id)
+    return tuple(sorted(out))
 
 
 def _kind_entries(model):

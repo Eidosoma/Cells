@@ -514,6 +514,13 @@ are recorded here.
     last-stage potentials, through `explicit_rates` with the stage read and the door, averaged with
     stage 0's. The water and replacement families run @3 through compositions whose inner carries
     the structure, so they book what is picked too;
+  - `free_amount_reads` (P1, CORE_SEAMS §17; §19 as amended): the declared kinds, sorted, whose
+    stage rows all name, as their third item, a registered law that declares `free_amounts`
+    (`rapid_binding@1`). The step's positivity predictor then reads the quantity it
+    differentiates: the stage read at the predicted stored totals, whose failure refuses the step.
+    Everywhere else, version 1's reads included, it keeps today's form, the start read's amount
+    plus the stored derivative, so () for every definition of today's. A read whose rows mix the
+    two, and a free-amount read beside a read of today's form, are refused at binding;
   - from later landings, each present only when declared: the passive law (A5), transporters (B5),
     stage reads (B4), implicit route kinds, and B7's flag for a free face-free node with an ion
     route.
@@ -1282,7 +1289,9 @@ undeclared built-in changes nothing:
    at every checked state, the step's end included (§7.4 (g) 1). **The read changes
    concentrations, never charge:** the field solve takes the stored rows' charges (FR-4's H_eq
    and buffer totals), and only the rates see the read amounts. A stage read declares
-   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites.
+   `stage_rows(declaration)` → ((species, node ID), ...), every row it reads or rewrites. A row
+   may name its read's law as a third item (P1's selector, `free_amount_reads` above); rows are
+   shared by their (species, node), whatever law each names.
    - **`stage_check(read, cell, outside, p, *, xp)` → one bool,** after every rate of a stage
      (`readouts` and `explicit_rates`), with the read state and the stage's total node rates; a
      false check refuses the row or the step. FR-4's envelope (the closure's lag at the stage's

@@ -201,6 +201,13 @@ class InnerStructure:
     # never listed, so () for every definition of today's and no structure or fingerprint moves.
     # A JUNCTIONS pair agrees with junction_heat_booking.
     heat_bookings: tuple = ()
+    # P1's static switch (docs/CORE_SEAMS_DESIGN.md §17; §19 as amended, the general layout only;
+    # the binding owner's selector, ruling (a) of 19 November 2026): the declared kinds' IDs,
+    # sorted, whose stage rows all name, as their third item, a registered law that declares
+    # free_amounts. The IMEX step's positivity predictor reads those kinds' stage reads at the
+    # predicted stored totals. () for every definition of today's, so no structure or program
+    # moves. Added by the @3 owner at the lead's word (a recorded exception in this file).
+    free_amount_reads: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -209,6 +216,13 @@ class InnerStructure:
         problems = heat_booking_errors(self.heat_bookings, ids, self.junction_heat_booking)
         if problems:
             raise ValueError("Heat bookings of an inner structure: " + "; ".join(problems))
+        reads = self.free_amount_reads
+        if not (isinstance(reads, tuple) and all(isinstance(k, str) and k for k in reads)):
+            raise ValueError("Free-amount reads are a tuple of declared kind IDs")
+        if list(reads) != sorted(set(reads)) or not set(reads) <= set(ids):
+            raise ValueError(
+                "Free-amount reads must be distinct declared kinds, in canonical (sorted ID) order"
+            )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.
         unknown = []
         for interface, declared in (
