@@ -909,9 +909,9 @@ def _kinds_beside_closer(op, kinds, blocked, *, bound=None, gated=True):
         elif reason == "hosts":
             out.append(
                 f"{op.LAW_ID} opens, closes or retires slots, and the kind {k}'s entity axes "
-                f"({', '.join(fields)}) have no host the core's presence gate reads (cell, outside "
-                "node, patch or junction slots, or an own axis's declared host), so it cannot "
-                "close their entities"
+                f"({', '.join(fields)}) have no host the core's presence gate reads (@3's slots "
+                "of cells, outside nodes, patches, junctions, channel populations or faces, or an "
+                "own axis's declared host), so it cannot close their entities"
             )
         elif reason is None and not gated:
             entities = kind_registry.entity_axes(bound[k]) if k in (bound or {}) else ("?",)
