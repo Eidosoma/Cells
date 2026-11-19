@@ -383,8 +383,9 @@ export async function stageRelease({ staged, site, id, compress = false, files: 
       format: RELEASE_FORMAT,
       release: id,
       date,
-      // The viewer's commit where the site's staging ran; the page itself was built where the staged folder was made.
-      viewer: viewerState(),
+      // The viewer's commit where the site's staging ran. The page itself was built where the staged folder was made,
+      // which may be an earlier commit: the record says so beside the commit, so that nobody takes one for the other.
+      viewer: { ...viewerState(), note: "the viewer's commit where the site's staging ran; the page was built where its staged folder was made, at that commit or an earlier one" },
       engine: { revision: scene.revision, dirty: scene.dirty, note: "the engine revision the page's scene states" },
       staged: { folder: path.basename(path.resolve(staged)), page: { bytes: Buffer.byteLength(content), sha256: sha256(Buffer.from(content)) } },
       host: hostProfileOf(id),

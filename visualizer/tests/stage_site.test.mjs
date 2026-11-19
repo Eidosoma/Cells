@@ -107,6 +107,7 @@ test("a release holds the staged page but for the declared insertions and the tw
     assert.deepEqual([listed.release, listed.date, listed.staged.folder, listed.engine.revision], ["v1", "2026-11-19", "publish-v1", "abc12345"]);
     assert.equal(listed.staged.page.sha256, sha(Buffer.from(page)));
     assert.ok(listed.viewer.commit === null || /^[0-9a-f]{40}$/.test(listed.viewer.commit));
+    assert.match(listed.viewer.note, /where the site's staging ran; the page was built where its staged folder was made/, "the commit is the staging's, and the record says so");
     assert.deepEqual(listed.inline_scripts.map((script) => script.type), ["classic", "module"], "the JSON blocks are not scripts that run");
     // The staged folder is only read, and no path of the machine stands in any file written.
     assert.deepEqual(await snapshot(staged), before);
