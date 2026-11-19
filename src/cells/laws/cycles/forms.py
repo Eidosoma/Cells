@@ -712,6 +712,31 @@ def wegscheider(form, mode_index, valence, potential, c0_mM):
     )
 
 
+def implied_free_energy(form, mode_index):
+    """A diagram form's cycle's standard free energy implied by its own constants (seam E's kind
+    hook; the lead's answer of 19 November): ({role: net change over both ends}, dG°/RT, c0 in mM),
+    dG°/RT = -sum_e s_e (ln k0+ - ln k0-) at the diagram's standard state c0, evaluated at DIGITS
+    digits from the declared doubles and rounded once. Wegscheider's condition (wegscheider) holds
+    when it equals the registry's sum of nu mu°/RT at that standard state, within its band; the
+    species registry's check of a kind's free energies confirms it. An empty change: the cycle
+    converts nothing (it only transports)."""
+    d = form.diagram
+    _, counts = form.modes[mode_index]
+    _, signed = d.cycles[mode_index]
+    by_id = {edge.id: edge for edge in d.edges}
+    net = {}
+    for k, (role, _) in enumerate(form.rows):
+        net[role] = net.get(role, 0) + counts[k]
+    with localcontext() as ctx:
+        ctx.prec = DIGITS
+        constant = Decimal(0)
+        for e, sign in signed:
+            edge = by_id[e]
+            constant += sign * (Decimal(edge.forward.k0_per_s).ln() - Decimal(edge.backward.k0_per_s).ln())
+        value = float(-constant)
+    return {role: n for role, n in net.items() if n != 0}, value, d.standard_state_mM
+
+
 # ------------------------------------------------------------------ a diagram's tables
 
 

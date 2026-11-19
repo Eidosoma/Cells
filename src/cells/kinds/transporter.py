@@ -104,10 +104,12 @@ from cells.laws.pumps import atp_transporter as neutral
 from cells.laws.pumps import proton_pump as proton
 from cells.modules import (
     CYCLE_LAW,
+    AxisHost,
     ConfigError,
     Kind,
     KindFields,
     KindView,
+    PartitionRole,
     bounded_integer,
     finite_number,
     qualified,
@@ -828,7 +830,7 @@ GENERAL_READOUT_COLUMNS = (
 )
 # The hooks only the population axis has: absent for version 1's entry, so its programs stay
 # today's (KindFields.without; @3's material_rate adds a check when any kind declares one).
-POPULATION_HOOKS = ("material_term", "view_sets")
+POPULATION_HOOKS = ("material_term", "view_sets", "standard_free_energies")
 INV_LN10 = 1.0 / math.log(10.0)
 LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 
@@ -2021,6 +2023,135 @@ VIEW = KindView(
 )
 
 
+# ---------------------------------------------------------------------------- the lifecycle's declarations
+# Item 3, B1's kind-side roles (CORE_SEAMS §4.2 and §18's B1 lift; the lead's rulings of 18 and 19
+# November 2026): every field of both layouts declares its partition role (F's PartitionRole) and
+# its axes, and the population axis names its host. They are read on the host only, so no program
+# changes; a kind beside a closer stays refused until the core gates its rates by its host's
+# activity (B1's third step). Structural fields fill with the layout's own padding (version 1's
+# saturation constants and stoichiometry pad with 1, the population axis's slots and indices with
+# 0, which its presence masks keep out of every sum). The law-internal axes (modes, rows, Hill
+# factors, bands, a diagram's edge directions, edges and terms, a net-flow law's terms) are
+# declared as they are, pending F's internal_axes (the lead's answer of 19 November), which B2's
+# own-axis maps honour: they are copied whole at a split and never hosted. Version 1's per-law
+# masks have the slot axis, or size 0 where their law is undeclared (the static dispatch).
+_STRUCTURAL = {
+    "transporter_present": False,
+    "transporter_neutral": False,
+    "transporter_proton": False,
+    "transporter_role": 0,
+    "transporter_fuel_rows": 0,
+    "transporter_held": False,
+    "transporter_stoichiometry": 1.0,
+    "transporter_km_role_mM": 1.0,
+    "transporter_km_atp_mM": 1.0,
+    MARK: 0,
+    "cycle_n_at_b": False,
+    "cycle_form": 0,
+    "cycle_row_species": 0,
+    "cycle_row_at_n": False,
+    "cycle_row_present": False,
+    "cycle_row_held": False,
+    "cycle_row_charged": False,
+    "cycle_nu": 0,
+    "cycle_mode_present": False,
+    "cycle_sat_row": 0,
+    "cycle_sat_present": False,
+    "cycle_band_row": 0,
+    "cycle_band_present": False,
+    **{f"cycle_dg_{n}": 0 for n in ("term_slots", "term_root", "plus_slots", "minus_slots")},
+    **{f"cycle_dg_{n}": 0 for n in ("cut_slots", "edge_states")},
+    **{f"cycle_dg_{n}": False for n in ("term_present", "cut_present", "edge_present")},
+    "cycle_dg_state_present": False,
+    "cycle_nf_counts": 0,
+    "cycle_nf_present": False,
+}
+_EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
+_PER_ENTITY = (*LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *GENERAL_CONTROL_FIELDS)
+PARTITION_ROLES = MappingProxyType(
+    {
+        **{name: PartitionRole("history") for name, _ in (*STATE_AXES, *GENERAL_STATE_AXES)},
+        **{name: PartitionRole("structural", fill) for name, fill in _STRUCTURAL.items()},
+        **{name: PartitionRole("extensive") for name in _EXTENSIVE},
+        **{
+            name: PartitionRole("intensive")
+            for name in _PER_ENTITY
+            if name not in _STRUCTURAL and name not in _EXTENSIVE
+        },
+    }
+)
+POPULATION_AXIS = "cycle_population"
+_AXIS = MappingProxyType(  # The population axis's shapes' letters (GENERAL_LAYOUT_FIELDS' notes).
+    {
+        "P": POPULATION_AXIS,
+        "M": "cycle_mode",
+        "K": "cycle_row",
+        "F": "cycle_saturation",
+        "B": "cycle_band",
+        "D": "cycle_direction",
+        "T": "cycle_term",
+        "J": "cycle_term_edge",
+        "L": "cycle_mode_edge",
+        "C": "cycle_cut",
+        "I": "cycle_cut_edge",
+        "E": "cycle_edge",
+        "X": "cycle_edge_end",
+        "S": "cycle_state",
+        "U": "cycle_flux_term",
+    }
+)
+_SHAPES = {
+    MARK: "P", "cycle_n_at_b": "P", "cycle_capacity_fmol_s": "P", "cycle_form": "P",
+    "cycle_row_species": "KP", "cycle_row_at_n": "KP", "cycle_row_present": "KP",
+    "cycle_row_held": "KP", "cycle_row_charged": "KP", "cycle_nu": "MKP",
+    "cycle_mode_present": "MP", "cycle_standard_RT": "MP", "cycle_charge_moved": "MP",
+    "cycle_moved_standard_RT": "MP", "cycle_held_standard_RT": "MP",
+    **{f"cycle_sat_{n}": "MFP" for n in ("row", "log_k", "hill", "present")},
+    **{f"cycle_band_{n}": "BP" for n in ("row", "center", "width", "present")},
+    "cycle_dg_log_k0": "DP", "cycle_dg_orders": "DKP", "cycle_dg_zeta": "DP",
+    "cycle_dg_term_slots": "TJP", "cycle_dg_term_root": "TP", "cycle_dg_term_present": "TP",
+    "cycle_dg_term_orders": "TKP", "cycle_dg_term_zeta": "TP", "cycle_dg_plus_slots": "MLP",
+    "cycle_dg_minus_slots": "MLP", "cycle_dg_plus_orders": "MKP", "cycle_dg_plus_zeta": "MP",
+    "cycle_dg_cut_slots": "MCIP", "cycle_dg_cut_present": "MCP", "cycle_dg_cut_orders": "MCKP",
+    "cycle_dg_cut_zeta": "MCP", "cycle_dg_edge_states": "EXP", "cycle_dg_edge_present": "EP",
+    "cycle_dg_state_present": "SP", "cycle_dg_log_scale": "P", "cycle_dg_ln_standard": "P",
+    "cycle_nf_counts": "MUKP",
+    **{f"cycle_nf_{n}": "MUP" for n in ("weight", "standard_RT", "charge", "shift", "present")},
+    "cycle_availability": "P",
+}  # fmt: skip
+FIELD_AXES = MappingProxyType(
+    {
+        **{name: ("membrane_slot",) for name in (*LAYOUT_FIELDS, *CONTROL_FIELDS)},
+        "transporter_fuel_rows": ("transporter_fuel_role", "membrane_slot"),
+        "transporter_c0_mM": (),  # One value: the registry's standard concentration.
+        **{name: tuple(_AXIS[c] for c in letters) for name, letters in _SHAPES.items()},
+    }
+)
+AXIS_HOSTS = MappingProxyType({POPULATION_AXIS: AxisHost("patch", MARK)})
+
+
+def standard_free_energies(declaration):
+    """Seam E's kind hook (the lead's answer of 19 November): each diagram-form population's cycles'
+    standard free energies implied by their own constants, ((((species, nu), ...), dG°/RT, c0 in
+    mM), ...) in declared order, for each cycle that converts a species (forms.implied_free_energy);
+    the species registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's
+    condition did at parse. Factored and net-flow laws have no constants of their own, and version
+    1's laws are factored: ()."""
+    if not isinstance(declaration, PopulationAxis):
+        return ()
+    hosted, out = hosted_laws(), []
+    for t in declaration:
+        form = hosted[t.law].cycle
+        if form.kinetics != "diagram":
+            continue
+        roles = dict(t.roles)
+        for m in range(len(form.modes)):
+            net, value, c0 = forms.implied_free_energy(form, m)
+            if net:
+                out.append((tuple((roles[r], n) for r, n in net.items()), value, c0))
+    return tuple(out)
+
+
 TRANSPORTER = BUILTIN.register(
     Kind(
         kind_id=KIND_ID,
@@ -2047,5 +2178,9 @@ TRANSPORTER = BUILTIN.register(
         material_term=material_term,
         view=VIEW,
         view_sets=view_sets,
+        partition_roles=PARTITION_ROLES,
+        field_axes=FIELD_AXES,
+        axis_hosts=AXIS_HOSTS,
+        standard_free_energies=standard_free_energies,
     )
 )
