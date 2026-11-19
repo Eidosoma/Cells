@@ -985,6 +985,31 @@ def test_extensive_fields_per_cell_or_per_contact_are_refused(planted):
             planted(raw, fields)
 
 
+@pytest.mark.parametrize("axis", ["cell_slot", "edge_slot"])
+def test_an_intensive_field_per_cell_or_per_contact_follows_its_map(planted, axis):
+    """The cell and contact maps' rows and their divisions, on the neighbour world (the parent's
+    contact mapped to both daughters): an intensive field per cell or per contact is admitted equal
+    at the daughters and refused, naming the division and the slots, when one differs."""
+    raw = pfx.divided(neighbour=True)
+    block = next(o for o in raw["model"]["operators"] if o["law"] == partition.LAW_ID)
+    (division,) = block["divisions"]
+    if axis == "cell_slot":
+        parent, kids = division["parent"], division["daughters"]
+    else:
+        (contact,) = division["contacts"]
+        parent, kids = contact["parent"], contact["daughters"]
+    fields = {"planted_entity_km_mM": ("layout", axis, PartitionRole("intensive"))}
+    raw["model"][PLANTED_KEY] = {"planted_entity_km_mM": dict.fromkeys((parent, *kids), KM)}
+    planted(raw, fields)
+    raw["model"][PLANTED_KEY]["planted_entity_km_mM"][kids[1]] = 0.25
+    refused = (
+        f"Division {division['id']}: .* planted_entity_km_mM is intensive, so its values at "
+        f"{kids[0]} and {kids[1]} must be its value at {parent}"
+    )
+    with pytest.raises(ConfigError, match=refused):
+        planted(raw, fields)
+
+
 def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
     """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
     the patches' 3); read along the patches' maps it would be compared at the wrong slots."""
