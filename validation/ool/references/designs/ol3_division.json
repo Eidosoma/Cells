@@ -1,0 +1,24 @@
+{
+ "format": "ool_references.division_inputs@1",
+ "registered": "2026-11-19",
+ "amends": "the OL2/OL3 inputs registered 2026-11-18",
+ "keys": {
+  "continuation": "first: the lineage follows daughter 0 (single-lineage worlds only)",
+  "critical_stress_Pa": "null: no critical stress is declared"
+ },
+ "worlds": {
+  "ol3_lineage": {
+   "continuation": "first",
+   "critical_stress_Pa": null
+  },
+  "ol3_population": {
+   "critical_stress_Pa": null
+  },
+  "ol3_shear_probe": {
+   "critical_stress_Pa": null
+  },
+  "ol3_slots_full": {
+   "critical_stress_Pa": null
+  }
+ }
+}
