@@ -7,8 +7,7 @@ The world is FR-4's development world re-expressed for the general closure: its 
 written as forms (one form holding one more H each), and the read declared as rapid_binding@1 on
 the ligand H at the cell and the lumen.
 - The declaration parses, writes back canonically, keeps version 1's entries and types apart, and
-  names its closure rows; an admitted world is refused at the end of the kind's check (NOT_BUILT),
-  fail-closed, until the solve is built.
+  names its closure rows; an admitted world parses (its solve is stage 1's kernel).
 - At a closure row, @3's own routes and pumps are refused, and so is a kind's move whose law's
   reads lack rapid_binding@1: FR-4's proton pump (its reads name version 1's read) and its proton
   leak (a route law declares no reads). Planted control: the pump's reads with rapid_binding@1
@@ -30,7 +29,6 @@ from cells.registry import species_registry as registry
 from validation.compartment_ph_engine import definitions as fr
 
 KIND = proton_buffer.KIND_ID
-NOT_BUILT = "the general closure rapid_binding@1 is admitted, but its solve is not built"
 
 
 def general_entry(**overrides):
@@ -72,7 +70,7 @@ def refused(raw, match):
         parse_spec(raw)
 
 
-def test_the_general_declaration_parses_writes_back_and_is_refused_until_its_solve():
+def test_the_general_declaration_parses_writes_back_and_is_admitted():
     v1 = parse_spec(fr.development_world(fr.fr4_world()))  # Version 1's world, as registered.
     declaration = proton_buffer._parse_general(general_entry(), v1.model)
     assert declaration == proton_buffer.GeneralDeclaration(
@@ -93,8 +91,7 @@ def test_the_general_declaration_parses_writes_back_and_is_refused_until_its_sol
     assert type(v1_declaration) is proton_buffer.Declaration
     assert proton_buffer.structure_entry(v1_declaration) == (2,)
     assert proton_buffer.structure_entry(declaration) == proton_buffer.GeneralEntry(1, 2)
-    # The admitted world is refused, fail-closed, until the solve is built (seam C's item 3).
-    refused(general_world(), NOT_BUILT)
+    parse_spec(general_world())  # The admitted world parses.
 
 
 def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
@@ -111,7 +108,7 @@ def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     monkeypatch.setattr(
         registry, "_law_reads", lambda law: (*reads(law), "rapid_binding@1")
     )
-    refused(general_world(pump=True), NOT_BUILT)
+    parse_spec(general_world(pump=True))
     monkeypatch.undo()
     refused(general_world(leak=True), r"cells.passive_routes@1 moves it under .*, whose reads \[\]")
 
@@ -131,7 +128,7 @@ def test_a_held_total_at_or_below_zero_is_refused_before_any_logarithm():
 
         return edit
 
-    refused(general_world(), NOT_BUILT)
+    parse_spec(general_world())
     for value in (0.0, -1e-3):  # Either the registry's refusal or @2's own, both at parse.
         refused(
             general_world(edit=lumen_h(value)),
@@ -160,7 +157,7 @@ def test_at3s_own_routes_and_pumps_are_refused_at_a_closure_row(monkeypatch):
         rows["H"] = (*rows.get("H", ()), ("pump", calcium_atpase.LAW_ID, (fr.BOUNDING,)))
         return rows
 
-    refused(general_world(), NOT_BUILT)  # The control: nothing of @3's moves H there.
+    parse_spec(general_world())  # The control: nothing of @3's moves H there.
     monkeypatch.setattr(surface_pump_v3, "moved_rows", with_pump)
     refused(general_world(), rf"the pump {fr.BOUNDING} moves it in the step")
 
@@ -287,7 +284,7 @@ REFUSALS = {
 @pytest.mark.parametrize("case", sorted(REFUSALS))
 def test_each_inadmissible_general_declaration_is_refused(case):
     entry, edit, message = REFUSALS[case]
-    refused(general_world(), NOT_BUILT)  # The control: the declared world is admitted.
+    parse_spec(general_world())  # The control: the declared world is admitted.
     refused(general_world(entry=copy.deepcopy(entry), edit=edit), message)
 
 

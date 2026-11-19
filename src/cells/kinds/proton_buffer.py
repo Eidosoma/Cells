@@ -56,12 +56,14 @@ declaration:
   admitted general declaration is refused at the end of its check, fail-closed.
 """
 
+import math
 from types import MappingProxyType, SimpleNamespace
 from typing import NamedTuple
 
 import numpy as np
 
 from cells.laws.electrochemistry import R
+from cells.laws.reactions import rapid_binding as binding
 from cells.laws.reactions import rapid_proton_buffer as closure
 from cells.registry import species_registry
 from cells.modules import KindFields, finite_number
@@ -251,6 +253,8 @@ def _buffer_rows(declaration):
 
 
 def initial(spec, declaration, layout):
+    if isinstance(declaration, GeneralDeclaration):
+        return _general_initial(spec, declaration, layout)
     m = spec.model
     ids, rows = list(m.species_ids), _buffer_rows(declaration)
     n, o = spec.execution.capacity, spec.execution.extracellular_capacity
@@ -323,6 +327,8 @@ def _closure(amounts, p, xp):
 
 def stage_read(state, p, *, xp):
     """The stage's read: the proton row holds free h V at buffered nodes, for the rates."""
+    if _is_general(p):
+        return _general_read(state, p, xp)
     amounts = _amounts(state, p, xp)
     h, buffered, ok, _, _ = _closure(amounts, p, xp)
     volume, active = _nodes(p, xp)
@@ -377,12 +383,22 @@ def stage_check(read, cell, outside, p, *, xp):
     """FR-4's envelope (§4.2): the closure's estimated lag behind the kinetic system, at the
     stage's transport, within the budget at every buffered node; a breach refuses the step (the
     verdict), and stage_values reports the margin."""
+    if _is_general(p):
+        lag, _, _ = _general_stage(read, cell, outside, p, xp)
+        return xp.all(lag <= binding.LAG_BUDGET_PX)
     lag, _, _ = _stage(read, cell, outside, p, xp)
     return xp.all(lag <= closure.LAG_BUDGET_PH)
 
 
 def stage_values(read, cell, outside, p, *, xp):
     """Gap 7: the stage's lag and pH per node, for their running extrema over every stage."""
+    if _is_general(p):
+        lag, px, held = _general_stage(read, cell, outside, p, xp)
+        return dict(
+            binding_max_lag_pX=lag,
+            binding_min_pX=xp.where(held, px, xp.inf),
+            binding_max_pX=xp.where(held, px, -xp.inf),
+        )
     lag, ph, active = _stage(read, cell, outside, p, xp)
     return dict(
         proton_buffer_max_lag_pH=lag,
@@ -392,7 +408,12 @@ def stage_values(read, cell, outside, p, *, xp):
 
 
 def domain(state, p, *, xp):
-    """The extrema fields stay finite, the lag nonnegative, and min pH <= max pH."""
+    """The extrema fields stay finite, the lag nonnegative, and min pH <= max pH (the general
+    closure's: its lag and every ligand's pX)."""
+    if _is_general(p):
+        lag, low, high = state.binding_max_lag_pX, state.binding_min_pX, state.binding_max_pX
+        finite = xp.all(xp.isfinite(lag)) & xp.all(xp.isfinite(low) & xp.isfinite(high))
+        return finite & xp.all(lag >= 0) & xp.all(low <= high)
     lag, low, high = (
         state.proton_buffer_max_lag_pH,
         state.proton_buffer_min_pH,
@@ -435,13 +456,19 @@ def _declared_terms(p, amounts, *, xp):
 
 
 def ledger_terms(state, p, *, xp):
-    """The declared term's change since the start, as stored free energy (rule (a))."""
+    """The declared term's change since the start, as stored free energy (rule (a)). The general
+    closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows."""
+    if _is_general(p):
+        terms = _general_terms(p, _amounts(state, p, xp), xp)
+        return dict(stored_pJ=terms - p.binding_initial_pJ)
     return dict(
         stored_pJ=_declared_terms(p, _amounts(state, p, xp), xp=xp) - p.proton_buffer_initial_pJ
     )
 
 
 def readouts(state, read, potentials, control, p, *, xp):
+    if _is_general(p):
+        return _general_readouts(read, p, xp)
     h, buffered, _, _, _ = _closure(_amounts(state, p, xp), p, xp)
     _, active = _nodes(p, xp)
     h = xp.where(active, h, 0.0)
@@ -450,12 +477,6 @@ def readouts(state, read, potentials, control, p, *, xp):
 
 
 INNER_ROUTES = ("membrane", "junction", "channel", "face")
-
-
-NOT_BUILT = (
-    f"{MODEL_KEY}: the general closure {GENERAL_READ_ID} is admitted, but its solve is not built "
-    "yet (seam C's item 3), so the definition is refused"
-)
 
 
 def _unit_steps_reach(counts):
@@ -525,18 +546,191 @@ def _check_general(spec, declaration):
         raise ConfigError(f"{where}: ligand rows {unbound} are bound by no declared binder")
 
 
+
+# ---------------------------------------------------------------------------- the general closure
+# rapid_binding@1 on the general layout (module docstring; laws/reactions/rapid_binding.py). Each
+# hook above dispatches here statically, on the layout type's fields (_is_general), so version 1's
+# traced operations are today's.
+
+
+def _is_general(p):
+    """Static: the layout of a world that declares rapid_binding@1 (its type holds binding_*)."""
+    return "binding_rows" in type(p)._fields
+
+
+def _general_binders(declaration):
+    return tuple(row for row, _ in declaration.k_on)
+
+
+def _general_network(spec, declaration):
+    """The kernel's network arrays, from the species registry's forms (one authority)."""
+    binders = []
+    for row, rates in declaration.k_on:
+        forms = species_registry.forms_of(spec, row)
+        logs, c0 = species_registry.form_log_constants(spec, row)
+        spec_forms = tuple((fid, counts, log) for (fid, counts, _), log in zip(forms, logs, strict=True))
+        binders.append((row, spec_forms, c0, rates))
+    return binding.network(declaration.ligands, tuple(binders))
+
+
+def _general_solve(amounts, p, xp):
+    """(ln x [L, node], valid, T_L [L, node], T_B [B, node], held [L, node], member [B, node],
+    volume [node]) at stored amounts [species, node]: the closure at every active node."""
+    volume, active = _nodes(p, xp)
+    nl = p.binding_held.shape[0]
+    rows = p.binding_rows
+    safe_v = xp.where(active, volume, 1.0)
+    member = p.binding_member & active[None, :]
+    held = p.binding_held & active[None, :]
+    comp_l = p.binding_comp_ligand * active
+    comp_b = p.binding_comp_binder * active
+    total_l = amounts[rows[:nl]] / safe_v
+    total_b = xp.where(member, amounts[rows[nl:]] / safe_v, 0.0)
+    u, ok = binding.free_ligands(total_l, total_b, p.binding_log_beta, p.binding_counts,
+                                 p.binding_present, held, comp_l, comp_b, xp=xp)
+    valid = xp.all(xp.where(xp.any(held, axis=0), ok, True))
+    return u, valid, total_l, total_b, held, member, safe_v
+
+
+def _general_terms(p, amounts, xp):
+    """Phase 1's booked term per node (pJ): S_c at a closure node (NaN where a held total is <= 0,
+    so the ledger refuses), 0 elsewhere."""
+    u, _, total_l, total_b, held, _, safe_v = _general_solve(amounts, p, xp)
+    nl = held.shape[0]
+    _, _, s_c, defined = binding.booked_terms_pJ(
+        u, total_l, total_b, p.binding_log_beta, p.binding_counts, p.binding_present, held,
+        p.binding_mu0p[:nl], p.binding_mu0p[nl:], safe_v, p.temperature, xp=xp,
+    )  # fmt: skip
+    return xp.where(xp.any(held, axis=0), xp.where(defined, s_c, xp.nan), 0.0)
+
+
+def _general_read(state, p, xp):
+    """The stage's read: each held ligand row holds its free ligand x V, each held binder row its
+    free base form c_base V, for the rates; every other row as stored."""
+    amounts = _amounts(state, p, xp)
+    u, valid, _, total_b, held, member, safe_v = _general_solve(amounts, p, xp)
+    x, forms = binding.speciation(u, total_b, p.binding_log_beta, p.binding_counts,
+                                  p.binding_present, xp=xp)
+    free = xp.concatenate((x * safe_v, forms[:, 0] * safe_v), axis=0)  # [L + B, node]
+    hold = xp.concatenate((held, member), axis=0)
+    onehot = (p.binding_rows[:, None] == xp.arange(amounts.shape[0])[None, :]).astype(float)
+    mask = xp.einsum("ks,kn->sn", onehot, hold.astype(float)) > 0
+    value = xp.einsum("ks,kn->sn", onehot, xp.where(hold, free, 0.0))
+    reference = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
+    increment = xp.concatenate(
+        (state.amount_increment, state.extracellular_amount_increment), axis=1
+    )
+    read = xp.where(mask, value - reference, increment)
+    n = p.active.size
+    return state._replace(
+        amount_increment=read[:, :n], extracellular_amount_increment=read[:, n:]
+    ), valid
+
+
+def _general_stage(read, cell, outside, p, xp):
+    """(lag [node] in log10 units, the largest over its ligands, 0 off the closure; pX [L, node];
+    held [L, node]) at a stage: the network's first-order lag at the stage's transport of the held
+    rows, from the read's free forms (no re-solve)."""
+    volume, active = _nodes(p, xp)
+    amounts = _amounts(read, p, xp)
+    nl = p.binding_held.shape[0]
+    rows = p.binding_rows
+    held = p.binding_held & active[None, :]
+    member = p.binding_member & active[None, :]
+    safe_v = xp.where(active, volume, 1.0)
+    x = xp.where(held, amounts[rows[:nl]] / safe_v, 1.0)
+    base = xp.where(member, amounts[rows[nl:]] / safe_v, 0.0)
+    u = xp.log(x)
+    forms = binding.forms_from_free(u, base, p.binding_log_beta, p.binding_counts,
+                                    p.binding_present, xp=xp)
+    rates = xp.concatenate((cell, outside), axis=1)
+    lag = binding.lag_first_order(
+        u, forms, xp.sum(forms, axis=1), xp.where(held, rates[rows[:nl]] / safe_v, 0.0),
+        xp.where(member, rates[rows[nl:]] / safe_v, 0.0), p.binding_log_beta, p.binding_counts,
+        p.binding_present, held, p.binding_step_matrix, p.binding_step_from,
+        p.binding_step_ligand, p.binding_step_kon, p.binding_conservation, xp=xp,
+    )  # fmt: skip
+    lag_px = xp.max(xp.abs(lag), axis=0) / binding.LN10
+    px = -xp.log10(x / closure.PH_REFERENCE_mM)
+    return xp.where(xp.any(held, axis=0), lag_px, 0.0), px, held
+
+
+def _general_readouts(read, p, xp):
+    """free_ligand_mM [L, node]: the read's ligand rows over the volume at active nodes (free at a
+    closure node, as stored elsewhere), 0 at inactive ones."""
+    volume, active = _nodes(p, xp)
+    nl = p.binding_held.shape[0]
+    amounts = _amounts(read, p, xp)
+    x = amounts[p.binding_rows[:nl]] / xp.where(active, volume, 1.0)
+    return (xp.where(active[None, :], x, 0.0),)
+
+
+def _general_initial(spec, declaration, layout):
+    m = spec.model
+    ids = list(m.species_ids)
+    n, o = spec.execution.capacity, spec.execution.extracellular_capacity
+    nodes = [c.id for c in m.cells] + [None] * (n - len(m.cells))
+    nodes += [x.id for x in m.extracellular] + [None] * (o - len(m.extracellular))
+    net = _general_network(spec, declaration)
+    binders = _general_binders(declaration)
+    rows = (*declaration.ligands, *binders)
+    member = np.zeros((len(binders), n + o), dtype=bool)
+    for node, named in declaration.binders:
+        for row in named:
+            member[binders.index(row), nodes.index(node)] = True
+    held, comp_l, comp_b = binding.connected_sets(member, net["counts"])
+    c0 = species_registry.declared(spec).standard_concentration_mM
+    mu0p = [species_registry.standard_potential(spec, r)[0] - math.log(c0) for r in rows]
+    own = dict(
+        binding_rows=np.asarray([ids.index(r) for r in rows]),
+        binding_counts=net["counts"],
+        binding_present=net["present"],
+        binding_log_beta=net["log_beta"],
+        binding_member=member,
+        binding_held=held,
+        binding_comp_ligand=comp_l,
+        binding_comp_binder=comp_b,
+        binding_step_matrix=net["step_matrix"],
+        binding_step_from=net["step_from"],
+        binding_step_ligand=net["step_ligand"],
+        binding_step_kon=net["step_kon"],
+        binding_conservation=net["conservation"],
+        binding_mu0p=np.asarray(mu0p),
+        binding_initial_pJ=np.zeros(n + o),
+    )
+    start = SimpleNamespace(**(dict(layout) | own))
+    amounts = np.concatenate((start.amount_reference, start.extracellular_amount_reference), axis=1)
+    u, valid, *_ = _general_solve(amounts, start, np)
+    if not valid:
+        raise ConfigError(
+            f"{MODEL_KEY} ({GENERAL_READ_ID}): the closure has no speciation at the start's totals "
+            "at every node it holds"
+        )
+    terms = _general_terms(start, amounts, np)
+    if not np.all(np.isfinite(terms)):
+        raise ConfigError(
+            f"{MODEL_KEY} ({GENERAL_READ_ID}): a held total is at or below zero at the start, "
+            "where phase 1 books @3's ideal terms on the closure's rows"
+        )
+    own["binding_initial_pJ"] = terms
+    _, active = _nodes(start, np)
+    px = np.where(held & active[None, :], -np.log10(np.exp(u) / closure.PH_REFERENCE_mM), 0.0)
+    state = dict(
+        binding_max_lag_pX=np.zeros(n + o), binding_min_pX=px, binding_max_pX=px.copy()
+    )
+    return state, own
+
 def check_definition(spec):
     """Version 1's admission: no inner-model route (membrane, junction, channel or face) moves
     the proton row at a buffered node, since those routes read stored rows as concentrations.
     Kinds' movers (a transporter) read the stage's read and are admitted. The general closure's
-    admission is _check_general's, and an admitted general declaration is refused (NOT_BUILT)
-    until its solve is built."""
+    admission is _check_general's (and the species registry's check_closure_rows, ahead of it)."""
     from cells.models import surface_pump_v3
 
     declaration = dict(spec.model.kinds)[KIND_ID]
     if isinstance(declaration, GeneralDeclaration):
         _check_general(spec, declaration)
-        raise ConfigError(NOT_BUILT)
+        return
     buffered = {node for node, _ in declaration.buffers}
     m = spec.model
     ends = {p.id: (p.inside, p.outside) for p in m.membranes}
