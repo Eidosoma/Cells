@@ -425,9 +425,11 @@ def test_the_step_checks_read_the_schedules_extremes():
 
 def test_run_time_refusals_return_an_invalid_step(monkeypatch):
     """At run time a step is refused, never repaired: a negative merge heat from the kernel (the
-    strict rule that stands in for the kernel item), a piece as large as its source's whole area,
-    and a carrier amount driven non-positive at a free node. Each is planted against the same
-    step admitted."""
+    strict rule, kept as a guard now that the kernel's heat is a sum of squares), a piece as large
+    as its source's whole area, a negative rate (the schedule's parser refuses one, so it is
+    planted at the step; its piece never reaches the kernel, whose heat form gives NaN for a
+    negative piece), and a carrier amount driven non-positive at a free node. Each is planted
+    against the same step admitted."""
     _, model, state, p = bind(one_route())
     op = operator(model)
     area = float(p.membrane_area[int(p.trafficking_route_plasma[0])])
@@ -444,6 +446,16 @@ def test_run_time_refusals_return_an_invalid_step(monkeypatch):
     monkeypatch.setattr(trafficking.adapter, "charge_following_transfer", real)
     _, ok = op.half_step(state, H, control([area / (H / 2)], [0.0]), p, xp=np)  # The whole patch.
     assert not ok
+    seen = []
+
+    def spy(*args, **kwargs):  # The pieces the kernel is given.
+        seen.append(np.asarray(args[4]))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(trafficking.adapter, "charge_following_transfer", spy)
+    _, ok = op.half_step(state, H, control([-0.02 * area / H], [0.0]), p, xp=np)
+    assert not ok and seen and all(np.all(pieces >= 0) for pieces in seen)
+    monkeypatch.setattr(trafficking.adapter, "charge_following_transfer", real)
     raw = fx.pooled_cells(1, cleft=True, cleft_pL=1e-5)  # A cleft of 5e-5 fmol of K.
     entry = fx.route(raw, 0, plasma="furrow_0")
     _, model, state, p = bind(

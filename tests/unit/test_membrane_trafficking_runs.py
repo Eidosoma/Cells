@@ -44,6 +44,13 @@ from validation.tissue import regulated_availability_fixtures as rafx
 END = 0.004
 TIMES = [0.0, 0.001, 0.002, 0.003, END]
 CHANGE = 0.002
+# The cycle world runs one step past END, so every resume below leaves two steps or more. A resume
+# that leaves one step is another program (a scan of one step, which XLA may replace by its body
+# and fuse differently), so its last rounding is the compiler's: with this operator's arithmetic
+# unchanged, it differed by one rounding at one version and not at the next
+# (fr2-retrieval-v1-20261119/probes/restart_one_step.*, reported to the lead).
+CYCLE_END = 0.005
+CYCLE_TIMES = [*TIMES[:-1], END, CYCLE_END]
 E = {"kir_0": 1.0, "nav_0": 0.5}
 E_R = {"kir_0": 2.0, "nav_0": 1.0}
 
@@ -65,7 +72,7 @@ def admitted():
 def cycle(retrieval=0.1, recycling=0.3):
     """One cell: retrieval at `retrieval` of the plasma area per ms until CHANGE, then recycling
     at `recycling` of the pool's declared area per ms."""
-    raw = fx.pooled_cells(1, end=END, observation_times=TIMES)
+    raw = fx.pooled_cells(1, end=CYCLE_END, observation_times=CYCLE_TIMES)
     entry = fx.route(raw, 0, retrieval=E, recycling=E_R)
     plasma = fx.patch(raw, "membrane_0")["area_m2"]
     pool = fx.patch(raw, "pool_membrane_0")["area_m2"]
@@ -150,7 +157,7 @@ def test_a_scheduled_cycle_follows_the_closed_forms_under_the_host_checks(cycle_
 def test_restart_across_the_schedule_change_is_bitwise(cycle_run, tmp_path):
     spec, value = cycle_run
     names = type(value.history)._fields
-    for time in (0.001, CHANGE, 0.003):  # Before, at and after the change.
+    for time in (0.001, CHANGE, 0.003):  # Before, at and after the change (2+ steps left).
         checkpoint = value.checkpoint_at(time)
         resumed = run(spec, checkpoint)
         rows = zip(names, resumed.history, value.history, strict=True)

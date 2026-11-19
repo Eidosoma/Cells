@@ -109,7 +109,7 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
 from cells.numerics.extracellular_field import scatter
-from cells.numerics.species_sums import entity_sum, species_sum
+from cells.numerics.species_sums import species_sum
 from cells.operators import compartments, membrane_state
 from cells.operators.contract import Operator
 
@@ -605,9 +605,15 @@ def _indicator(condition, *, xp):
 
 def _fold(values, *, xp):
     """The serial left fold over the leading axis (species_sum's, with its barrier). Every sum
-    that writes state is folded so: XLA fixes no order for a reduction, and a restarted run is a
-    different program, so a plain sum could round differently there."""
+    here is one (D182), over species, routes or nodes, so bitwise-equal terms give bitwise-equal
+    sums on the host and the device; tests/unit/test_species_sum_sites.py refuses any other sum
+    in an operator, and this module has no entity_sum to list."""
     return species_sum(values, xp=xp)
+
+
+def _total(values, *, xp):
+    """The full sum of [species, outside] values: species first, then nodes, each folded."""
+    return _fold(_fold(values, xp=xp), xp=xp)
 
 
 def _per_route(values, *, xp):
@@ -645,9 +651,10 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
         dc, xp.zeros(nm), (source,), xp=xp
     )
     # The charges follow the pieces: one kernel call for every route. A piece as large as its
-    # source refuses the step (below); the kernel sees only admissible pieces, so the host path
-    # refuses it as the device does, never factorising a patch left with no capacitance.
-    admissible = da < source_area
+    # source, or a negative one (a negative rate), refuses the step (below); the kernel sees only
+    # admissible pieces, so the host path refuses them as the device does, never factorising a
+    # patch left with no capacitance or taking the root of a negative piece.
+    admissible = (da >= 0) & (da < source_area)
     view, bound = capacitor_view(state, p, xp=xp)
     pieces = xp.where(admissible, dc, 0.0)
     out = adapter.charge_following_transfer(state, view, source, target, pieces, bound, xp=xp)
@@ -795,7 +802,7 @@ def own_ledgers(row, p, *, xp):
     cells = xp.zeros(p.active.size)
     record = row.trafficking_internalised_units - p.trafficking_internalised_reference
     return dict(
-        trafficking_units=row.trafficking_units + xp.sum(record, axis=0),
+        trafficking_units=row.trafficking_units + _fold(record, xp=xp),  # Over routes.
         trafficking_area=scatter(row.trafficking_area_m2, cells, (p.membrane_cell,), xp=xp),
         trafficking_capacitance=scatter(
             row.trafficking_capacitance_F, cells, (p.membrane_cell,), xp=xp
@@ -1028,8 +1035,8 @@ class ScheduledMembraneTrafficking(Operator):
         result["energy"] = (
             result["energy"]
             + energy
-            + entity_sum(row.trafficking_dissipated_energy_pJ, axis=None, xp=xp)
-            - entity_sum(row.trafficking_work_pJ, axis=None, xp=xp)
+            + _fold(row.trafficking_dissipated_energy_pJ, xp=xp)
+            - _fold(row.trafficking_work_pJ, xp=xp)
         )
         result["electrode"] = result["electrode"] - electrode
         result["outside"] = result["outside"] - row.trafficking_carrier_fmol
@@ -1043,14 +1050,14 @@ class ScheduledMembraneTrafficking(Operator):
         _, _, energy, electrode = adapter.view_capacitor_terms(row, view, bound, xp=xp)
         carriers = xp.abs(row.trafficking_carrier_fmol)
         magnitudes[1] = magnitudes[1] + carriers
-        magnitudes[2] = magnitudes[2] + 2.0 * xp.sum(carriers, axis=1)
+        magnitudes[2] = magnitudes[2] + 2.0 * _fold(xp.moveaxis(carriers, 1, 0), xp=xp)
         image = row.trafficking_image_charge_C + electrode
         magnitudes[4] = image if magnitudes[4] is None else magnitudes[4] + image
         held = p.reservoir & p.outside_active
-        supply = CHARGE_PER_FMOL * xp.sum(xp.abs(p.valence * xp.where(held, carriers, 0.0)))
-        charge = entity_sum(row.trafficking_image_charge_C, axis=None, xp=xp) + supply
+        supply = CHARGE_PER_FMOL * _total(xp.abs(p.valence * xp.where(held, carriers, 0.0)), xp=xp)
+        charge = _fold(row.trafficking_image_charge_C, xp=xp) + supply
         magnitudes[5] = charge if magnitudes[5] is None else magnitudes[5] + charge
-        energy = energy + entity_sum(row.trafficking_energy_magnitude_pJ, axis=None, xp=xp)
+        energy = energy + _fold(row.trafficking_energy_magnitude_pJ, xp=xp)
         magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
         return magnitudes
 
@@ -1061,7 +1068,7 @@ class ScheduledMembraneTrafficking(Operator):
         cells = xp.zeros(p.active.size)
         record = row.trafficking_internalised_units - p.trafficking_internalised_reference
         return (
-            xp.abs(row.trafficking_units) + xp.sum(xp.abs(record), axis=0),
+            xp.abs(row.trafficking_units) + _fold(xp.abs(record), xp=xp),
             scatter(xp.abs(row.trafficking_area_m2), cells, (p.membrane_cell,), xp=xp),
             scatter(xp.abs(row.trafficking_capacitance_F), cells, (p.membrane_cell,), xp=xp),
         )
