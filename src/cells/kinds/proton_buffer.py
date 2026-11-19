@@ -810,7 +810,10 @@ def view_sets(spec, declaration):
         "binding_ligand": {
             "id": "binding_ligand",
             "ids": list(declaration.ligands),
-            "roles": {},
+            "roles": {
+                "ligand": "a ligand row of the closure: its stored total counts every bound "
+                "equivalent from the base forms, and the closure solves its free amount per node"
+            },
             "carries": [[ligand] for ligand in declaration.ligands],
         }
     }

@@ -7,17 +7,19 @@ cases here run a test-namespace law whose reads name it, in a scoped registry. W
 for a real mover waits for one.
 - The read: on B4's buffered cell re-expressed for the general closure, the free h equals version
   1's within the residual criterion, and the potentials are the same bits.
-- The split (phase 1, CORE_SEAMS §19): protons carried out of the general closure's cell close
-  every ledger, the energy ledger with the closure's term S_c beside @3's ideal terms. Without the
-  term it fails.
+- The split through the engine (phase 1, CORE_SEAMS §19) is in test_rapid_binding_world_run.py
+  (one ligand) and test_rapid_binding_world_two_ligands.py (H and Mg on one binder), split out for
+  the tiers; their helpers stay here.
 - The world-level split check against the core-seams references: a cell holding a registered
   state's totals (S1, and S3 with H and Mg on nuc4) books S_c plus @3's ideal terms on its rows
   equal to the references' E_c.
 - P1's case (CORE_SEAMS §17), at an outside node under the general closure: after a draw of ten
   times the free amount, today's predictor form (the read's free amount less the draw) is
   negative, while the stage read at the predicted stored totals is valid with a positive free
-  amount, until the draw passes the stored floor.
+  amount, until the draw passes the stored floor; past it the read, the model's domain check and
+  the closure's term (NaN, so the ledger refuses) each refuse the state.
 - The current injection carried by H+ into a general closure's cell is refused at the definition.
+- The run view of a general world, from its definition: the ligand set and the reader's check.
 Each test carries its planted error.
 """
 
@@ -32,11 +34,11 @@ import pytest
 
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.execution.errors import NumericalError
-from cells.execution.runner import run
+from cells.execution.state import initialise
 from cells.kinds import proton_buffer
 from cells.laws.electrochemistry import R
-from cells.registry import kind_registry, laws
+from cells.records import run_view
+from cells.registry import kind_registry
 from cells.registry.laws import CycleLaw
 from tests import kind_fixtures
 from tests.unit.test_proton_buffer_kind import buffered_world, host
@@ -120,33 +122,6 @@ def carried(*, ledger=True, rate=1e-3, carrier=reading_carrier):
     kinds = kind_fixtures.registry(carrier(), kind)
     raw = general(buffered_world(quiet=True))
     return kinds, kind_fixtures.declare_carrier(raw, species="H", rate=rate)
-
-
-def test_carried_protons_close_every_ledger_with_the_general_term_and_fail_without_it():
-    registry = laws.active().extended(reads_law())
-    kinds, raw = carried()
-    with kind_registry.scope(kinds), laws.scope(registry):
-        spec = parse_spec(raw)
-        result = run(spec)  # Every row's host checks: the energy ledger with the stored term.
-    final = result.final.state
-    ids = list(spec.model.species_ids)
-    h, b = ids.index("H"), ids.index("B")
-    moved = 1e-3 * spec.experiment.end_time
-    assert float(final.carrier_transferred[h, 0]) == pytest.approx(moved, rel=1e-12)
-    assert float(final.amount_increment[h, 0]) == pytest.approx(-moved, rel=1e-12)  # H's total.
-    assert float(final.amount_increment[b, 0]) == 0.0  # The binder's total never moves.
-    assert result.diagnostics["max_energy_balance_relative"] < 1e-3
-    lag = np.asarray(final.binding_max_lag_pX)
-    assert 0.0 < float(lag[0]) <= 1e-3 and float(lag[1]) == 0.0  # The closure's cell; the bath.
-    # Planted: without the closure's term, the energy ledger fails.
-    kinds, raw = carried(ledger=False)
-    with kind_registry.scope(kinds), laws.scope(registry):
-        with pytest.raises(NumericalError, match="accounting failed: energy"):
-            run(parse_spec(raw))
-    # And the carrier whose law reads only the stored row is refused at the definition.
-    kinds, raw = carried(carrier=kind_fixtures.carrier)
-    with kind_registry.scope(kinds), pytest.raises(ConfigError, match="lack rapid_binding@1"):
-        parse_spec(raw)
 
 
 def reference_cell(system, k):
@@ -244,7 +219,7 @@ def test_p1s_predictor_reads_the_free_amount_at_the_predicted_totals():
     positive free amount, while D stays below the stored total less its floor (0 here), and
     invalid past it."""
     spec = parse_spec(lumen_general())
-    _, state, p, _ = host(spec)
+    impl, state, p, _ = host(spec)
     h = list(spec.model.species_ids).index("H")
     lumen = len(spec.model.cells) + [n.id for n in spec.model.extracellular].index(fr.LUMEN)
     read, ok = proton_buffer.stage_read(state, p, xp=np)
@@ -256,10 +231,14 @@ def test_p1s_predictor_reads_the_free_amount_at_the_predicted_totals():
         increment[h, lumen - len(spec.model.cells)] -= draw
         predicted = state._replace(extracellular_amount_increment=increment)
         today = n_free - draw
-        with np.errstate(over="ignore", invalid="ignore"):  # Past the floor the solve fails.
+        # Past the floor the solve fails: numpy's warnings there are silenced, its outputs checked.
+        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
             read_p, ok_p = proton_buffer.stage_read(predicted, p, xp=np)
+            valid = impl.domain_valid(predicted, p, p.active, xp=np)
+            term = proton_buffer.ledger_terms(predicted, p, xp=np)["stored_pJ"][lumen]
         assert today < 0
-        assert bool(ok_p) is admitted
+        assert bool(ok_p) is admitted and bool(valid) is admitted
+        assert bool(np.isfinite(term)) is admitted  # S_c is NaN past it, so the ledger refuses.
         if admitted:
             assert float(amounts(read_p, p)[h, lumen]) > 0
 
@@ -278,3 +257,27 @@ def test_an_h_carried_injection_into_a_general_closure_cell_is_refused():
     k_carried = copy.deepcopy(raw)
     k_carried["model"]["operators"][-1]["electrodes"][0]["carriers"] = {"K": 1.0}
     parse_spec(k_carried)  # The control.
+
+
+def test_the_run_view_states_the_ligand_set_from_the_definition():
+    """The run view of a general world (D154), prepared from its definition with no run: the
+    binding_ligand set lists the ligand rows in order, each carrying its species, its role named,
+    and the view passes the reader's check (every closure field declares its axes, unit and layer,
+    or prepare refuses). Planted: the set's roles left empty, as at 2d2d9d20, are refused."""
+    spec = parse_spec(reference_cell("S3", 0)[0])
+    plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+    view = plan.view({}, "write_run")
+    run_view.validate(view)
+    ligands = {s["id"]: s for s in view["sets"]}["binding_ligand"]
+    assert ligands["ids"] == ["H", "Mg"] and ligands["carries"] == [["H"], ["Mg"]]
+    assert set(ligands["roles"]) == {"ligand"}
+
+    def empty_roles(spec, declaration):
+        sets = proton_buffer.view_sets(spec, declaration)
+        return {key: {**entry, "roles": {}} for key, entry in sets.items()}
+
+    planted = replace(proton_buffer.PROTON_BUFFER, view_sets=empty_roles)
+    with kind_registry.scope(kind_fixtures.registry(planted)):
+        spec = parse_spec(reference_cell("S3", 0)[0])
+        with pytest.raises(run_view.ViewRefused, match="the roles of set binding_ligand name"):
+            run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
