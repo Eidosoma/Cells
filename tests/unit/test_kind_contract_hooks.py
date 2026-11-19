@@ -231,7 +231,7 @@ def test_field_axes_and_own_axes_hosts_are_checked_at_registration():
     )
     good = replace(
         on_routes,
-        field_axes={"booked_host": ("booked_route",), "booked_availability": ("booked_route",)},
+        field_axes={"booked_host": ("booked_route",), "booked_availability": ()},  # () a scalar.
         axis_hosts={"booked_route": AxisHost("patch", "booked_host")},
     )
     assert kind_registry.declaration_errors(good) == []

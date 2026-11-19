@@ -684,8 +684,7 @@ def _axis_errors(kind, static):
     out, axes = [], kind.field_axes
     if not isinstance(axes, Mapping) or not all(
         _named(field)
-        and isinstance(names, tuple)
-        and bool(names)
+        and isinstance(names, tuple)  # () for a field on no axis: a scalar.
         and all(map(_named, names))
         and len(set(names)) == len(names)
         for field, names in axes.items()

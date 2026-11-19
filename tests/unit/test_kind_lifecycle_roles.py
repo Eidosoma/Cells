@@ -31,23 +31,15 @@ from tests.unit.test_pump_composite_kinds import SLOT_CHANGERS, composite, world
 RETIRES = "opens, closes or retires slots"
 
 
-@dataclasses.dataclass(frozen=True, eq=False)  # Hashed by identity, as Kind is.
-class AxedKind(kind_registry.Kind):
-    """A planted kind with Q1's axes declaration, `field_axes` {layout or control field: axes},
-    standing in for the kind contract's until it lands (F's)."""
-
-    field_axes: object = MappingProxyType({})
-
-
 def roles_for(kind, role="intensive"):
     """Every partition field of `kind` with `role`."""
     return {name: PartitionRole(role) for name in kind_registry.partition_fields(kind)}
 
 
 def axed(kind, axes, **changes):
-    """`kind` as an AxedKind with `axes` for its layout and control fields."""
-    values = {f.name: getattr(kind, f.name) for f in dataclasses.fields(kind_registry.Kind)}
-    return AxedKind(**{**values, **changes}, field_axes=MappingProxyType(axes))
+    """`kind` with `axes` for its layout and control fields: the kind contract's `field_axes`
+    (Q1's declaration, F's, which stood in here as a subclass until it landed)."""
+    return dataclasses.replace(kind, **changes, field_axes=MappingProxyType(axes))
 
 
 def carrier_with_roles():
