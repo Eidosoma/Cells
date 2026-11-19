@@ -20,8 +20,10 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
 - the probe is the run's own arithmetic: its rates are the rates hook's, J = J+ - J-, heat,
   rows, current, and its conductance and material slopes against central differences;
 - the guard (§5.2): factored and diagram populations give G <= 0 exactly at every draw; an honest
-  net-flow law stays within the allowance at states down to equilibrium; an effective-charge
-  net-flow law and a planted factored evaluation (S - 0.05) are refused;
+  net-flow law stays within the allowance at states down to equilibrium, and so does one booked in
+  a cycle basis with a signed weight, whose mode runs against its own free energy at some states;
+  an effective-charge net-flow law, the basis law with a wrong sign and a planted factored
+  evaluation (S - 0.05) are refused;
 - Wegscheider at the definition: a diagram whose constants are off by 1e-9 is refused;
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
@@ -147,7 +149,43 @@ AT_P = law_registry.CycleLaw(
     provenance="calibrated",
     source="a test-only law converting at P, refused in this pass (Q3)",
 )
-TEST_LAWS = (SLIP, OFFSET, HONEST, AT_P)
+BASIS_ROWS = (("X", "N"), ("X", "P"), ("Y", "N"), ("Y", "P"))
+CYCLE_A, CYCLE_B = (-1, 1, 0, 0), (0, 0, -1, 1)  # X, then Y, from N to P.
+CYCLE_C = (-1, 1, 1, -1)  # C = A - B: X from N to P against Y from P to N.
+
+
+def basis_law(law_id, sign, k=(0.02, 0.01, 0.4)):
+    """Cycles A, B and C = A - B booked in the basis {A, B}: mode A runs J_A + J_C and mode B runs
+    J_B + sign J_C, each J_x = k_x (1 - e^(x_x)) dissipative alone. With sign = -1 (a signed weight)
+    sum_m J_m x_m = J_A x_A + J_B x_B + J_C x_C <= 0, though mode B may run against its own x_B;
+    sign = +1 books C into B with the wrong sign, adding J_C (x_A + x_B) - J_C x_C, which the large
+    k_C drives positive wherever |x_A| < |x_B|."""
+    k_a, k_b, k_c = k
+    return law_registry.CycleLaw(
+        law_id,
+        (),
+        (),
+        None,
+        None,
+        cycle=CycleForm(
+            kinetics="net_flow",
+            roles=(("X", 1), ("Y", 0)),
+            rows=BASIS_ROWS,
+            modes=(("A", CYCLE_A), ("B", CYCLE_B)),
+            flux_terms=(
+                (FluxTerm(k_a, CYCLE_A), FluxTerm(k_c, CYCLE_C)),
+                (FluxTerm(k_b, CYCLE_B), FluxTerm(sign * k_c, CYCLE_C)),
+            ),
+        ),
+        host=transporter.KIND_ID,
+        provenance="calibrated",
+        source="a test-only net-flow law booked in a cycle basis, never shipped",
+    )
+
+
+SIGNED = basis_law("seamtest.signed_basis@1", -1)
+WRONG_SIGN = basis_law("seamtest.wrong_sign_basis@1", +1)
+TEST_LAWS = (SLIP, OFFSET, HONEST, AT_P, SIGNED, WRONG_SIGN)
 
 
 @contextlib.contextmanager
@@ -538,6 +576,41 @@ def test_an_honest_net_flow_law_stays_within_the_allowance_and_an_offset_one_is_
     assert any(refused)
     margins = [g[0] / a[0] for g, a, v, _ in evaluate_guard(offset, volts) if not v[0]]
     assert min(margins) > 1.0
+
+
+def test_a_signed_cycle_basis_is_admitted_and_silent_and_its_wrong_sign_is_refused():
+    """A net-flow law booked in a cycle basis (a signed weight, J_B - J_C) is admitted, and the
+    guard stays silent at every swept state, though mode B runs against its own free energy at
+    some of them; each mode's one-way scale is its terms' own, with |w|; the same law with C booked
+    into B with the wrong sign breaks sum J x <= 0, and the guard refuses it there, by a margin."""
+    signed = exchange_world(exchanger(law=SIGNED.law_id, capacity=1.0))
+    wrong = exchange_world(exchanger(law=WRONG_SIGN.law_id, capacity=1.0))
+    # x_A = ln(140/12) - F V / RT and x_B = ln(0.2/0.8): |x_A| < |x_B| for V in about 29-103 mV.
+    volts = np.linspace(-0.2, 0.2, 801)
+    for guard, allowance, valid, _ in evaluate_guard(signed, volts):
+        assert guard[0] <= allowance[0] and valid[0]
+    with scoped():
+        spec = parse_spec(signed)
+        _, state, p, control = start(spec)
+    against = []
+    for volt in volts[::8]:
+        modes = transporter.probe(state, potentials_for(p, volt, 0.0), control, p, xp=np).modes
+        against.append(float(modes.j[1, 0] * modes.x[1, 0]) > 0.0)  # Mode B against its own x_B.
+    assert any(against)
+    # Each mode's one-way scale is its terms' own, k a sum_t |w_t| (1 + e^(y_t)), with y_A = x_A,
+    # y_B = x_B and y_C = x_A - x_B here (planted: the signed sum, which a negative weight shrinks).
+    modes = transporter.probe(state, potentials_for(p, 0.05, 0.0), control, p, xp=np).modes
+    k_a, k_b, k_c = 0.02, 0.01, 0.4
+    ka = float(p.cycle_capacity_fmol_s[0] * control.cycle_availability[0])
+    x_a, x_b = float(modes.x[0, 0]), float(modes.x[1, 0])
+    expected = (
+        ka * (k_a * (1 + math.exp(x_a)) + k_c * (1 + math.exp(x_a - x_b))),
+        ka * (k_b * (1 + math.exp(x_b)) + abs(-k_c) * (1 + math.exp(x_a - x_b))),
+    )
+    for m, phi in enumerate(expected):
+        assert float(modes.scale[m, 0]) == pytest.approx(phi, rel=64 * U, abs=0), m
+    refused = [(g[0], a[0]) for g, a, v, _ in evaluate_guard(wrong, volts) if not v[0]]
+    assert refused and min(g / a for g, a in refused) > 1.0
 
 
 def test_a_planted_factored_evaluation_is_refused_by_the_guard(monkeypatch):

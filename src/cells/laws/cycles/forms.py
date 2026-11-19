@@ -20,7 +20,9 @@ population axis), so the kind can run any declared cycle with one generic progra
     alpha = k0 prod a^order exp(zeta psi), a = c/c°, psi = F (phi_N - phi_P)/RT; its modes are
     every one of its Hill cycles, each with its edges' directions;
   - `net_flow`: per mode, terms J = k a sum_t w_t (1 - exp(x_t + eps_t psi)), x_t the free energy of
-    the term's own stoichiometry (the fallback of §3.2; it exposes no one-way flux, D202);
+    the term's own stoichiometry (the fallback of §3.2; it exposes no one-way flux, D202). A weight
+    is signed and nonzero, so a mode may be booked as a signed combination of cycle fluxes, as a
+    cycle basis gives it (J_B - J_C for C = A - B; each term is dissipative alone);
 - its **pH bands** (a row's pH within a declared band, the proton law's fuel band, §5.2) and its
   temperature domain, if it has one.
 
@@ -132,7 +134,8 @@ class Diagram(NamedTuple):
 
 class FluxTerm(NamedTuple):
     """One term of a net-flow mode, w (1 - exp(x_t + eps psi)): its weight w (dimensionless, times
-    the population's k a), its own stoichiometry (one integer count per row) and its shift eps."""
+    the population's k a; finite, nonzero and signed, so a mode may book a cycle's flux with either
+    sign), its own stoichiometry (one integer count per row) and its shift eps."""
 
     weight: float
     counts: tuple
@@ -326,15 +329,15 @@ class CycleForm(NamedTuple):
                 if not (
                     isinstance(t, FluxTerm)
                     and _finite(t.weight)
-                    and t.weight > 0
+                    and t.weight != 0
                     and isinstance(t.counts, tuple)
                     and len(t.counts) == len(self.rows)
                     and all(map(_int, t.counts))
                     and _finite(t.shift)
                 ):
                     out.append(
-                        f"mode {mode_id}'s flux terms are FluxTerms: a positive weight, an integer "
-                        "count per row and a finite shift"
+                        f"mode {mode_id}'s flux terms are FluxTerms: a finite nonzero weight (either "
+                        "sign), an integer count per row and a finite shift"
                     )
         return out
 

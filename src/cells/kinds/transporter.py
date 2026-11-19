@@ -1348,7 +1348,7 @@ class Evaluation(NamedTuple):
     j_plus: object  # [M, P]
     j_minus: object  # [M, P]
     j: object  # [M, P]
-    scale: object  # [M, P]: Phi, the one-way scale
+    scale: object  # [M, P]: Phi, the one-way scale (a net-flow mode's sum_t k a |w_t| (1 + e^y_t))
     y_terms: object  # [M, P]: Y, the net-flow arguments' largest absolute sum (0 elsewhere)
     d_j_d_psi: object  # [M, P]
     d_j_d_ln_c: object  # [M, K, P]
@@ -1445,7 +1445,7 @@ def _evaluate(read, potentials, control, p, *, xp):
         weight = xp.where(nf.present & on[:, None, :], nf.weight * ka, 0.0)
         e_y = xp.exp(xp.where(nf.present, y, 0.0))
         j_nf = xp.sum(weight * -xp.expm1(xp.where(nf.present, y, 0.0)), axis=1)
-        phi_nf = xp.sum(weight * (1.0 + e_y), axis=1)
+        phi_nf = xp.sum(xp.abs(weight) * (1.0 + e_y), axis=1)  # A signed term's own scale.
         flow = form == FORM_CODES["net_flow"]
         j = xp.where(flow, j_nf, j)
         scale = xp.where(flow, phi_nf, scale)

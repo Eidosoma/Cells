@@ -2,10 +2,11 @@
 
 Each claim is checked against an independent computation, with a planted error it must catch
 (D187). The diagrams here are this file's own; none comes from the seam-A references.
-- errors(): a form that keeps its contract is admitted; planted breaches are refused by name (a
-  role without a row, a count naming a non-integer parameter, a factor on a row the form lacks, a
-  diagram whose declared cycles miss one of its Hill cycles, a count that disagrees with its edges'
-  orders);
+- errors(): a form that keeps its contract is admitted, a net-flow mode with a signed weight among
+  them; planted breaches are refused by name (a role without a row, a count naming a non-integer
+  parameter, a factor on a row the form lacks, a diagram whose declared cycles miss one of its Hill
+  cycles, a count that disagrees with its edges' orders, a net-flow weight of 0, of inf or of
+  nan);
 - the topology: simple cycles and spanning trees counted against closed forms (a cycle graph, a
   triangle with a parallel edge, a figure-eight, K4);
 - Wegscheider at parse (§5.1): decided algebraically, exactly (integers, rationals, 50 digits); a
@@ -138,6 +139,19 @@ def test_a_form_that_keeps_its_contract_is_admitted_and_planted_breaches_are_ref
         saturation=((Saturation(("Z", "N"), "K", "n"),),),
     )
     assert factored.errors() == []
+    exchange = (-1, 1, 1, -1)  # A net-flow mode booked J_X - J_C: one signed weight (a cycle basis).
+    signed = CycleForm(
+        kinetics="net_flow",
+        roles=(("X", 1), ("Y", 0)),
+        rows=(("X", "N"), ("X", "P"), ("Y", "N"), ("Y", "P")),
+        modes=(("m", exchange),),
+        flux_terms=((FluxTerm(0.5, exchange), FluxTerm(-0.25, exchange)),),
+    )
+    assert signed.errors() == []
+
+    def weighted(w):
+        return signed._replace(flux_terms=((FluxTerm(0.5, exchange), FluxTerm(w, exchange)),))
+
     plants = {
         "roles \\['Q'\\] have no row": factored._replace(roles=(*factored.roles, ("Q", 0))),
         "is an integer or an integer parameter's name": factored._replace(
@@ -161,6 +175,9 @@ def test_a_form_that_keeps_its_contract_is_admitted_and_planted_breaches_are_ref
     for reason, form in plants.items():
         found = "; ".join(form.errors())
         assert re.search(reason, found), (reason, found)
+    for w in (0.0, 0, math.inf, -math.inf, math.nan):  # A weight of 0, or not finite.
+        found = "; ".join(weighted(w).errors())
+        assert re.search("a finite nonzero weight", found), (w, found)
 
 
 # ------------------------------------------------------------------ the topology
