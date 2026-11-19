@@ -16,7 +16,7 @@
         "layers": [
           "junction-coupling"
         ],
-        "part": "gap-junction-tissue-line"
+        "part": "gap-junction-tissue-sheet"
       },
       "units": "The two forms state [mR] in their own units: the Norton form's runs in mM, the as-written runs in µM (in each, the preprint's scaled unit is one of them). The page never converts one to the other.",
       "label": "Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026)",

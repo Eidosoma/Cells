@@ -198,6 +198,18 @@ export function opensOf(card, replays) {
   return run ? { run } : null;
 }
 
+/**
+ * The name of the part a card opens, where what it opens is a part of its experiment (`opened.part`): the part's own
+ * short name in the catalogue, else its label; null for a card that opens a run or a model system's view. A card's
+ * still pictures what the card opens, so the card says which part that is, in the part's own words (the gap-junction
+ * example's sheet is Cells' extension, and its name says so: the card's other words are of the work as a whole).
+ */
+export function partNameOf(opened, replays) {
+  if (!opened?.part) return null;
+  const entry = (replays?.experiments || []).find((item) => item?.id === opened.part);
+  return text(entry?.short) || text(entry?.label) || null;
+}
+
 /** The part an experiment's entry opens on (`opens.part`), where it is a part of it the catalogue carries with runs; else null. */
 export function partOpenedBy(replays, experimentId) {
   const entry = (replays?.experiments || []).find((item) => item.id === experimentId);

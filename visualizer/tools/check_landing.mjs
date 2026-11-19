@@ -287,7 +287,7 @@ try {
       }
       return worst;
     })()`);
-  const CARD_WORDS = ".landing-card .landing-title, .landing-card .landing-asks, .landing-card .landing-first, .landing-card .landing-says, .landing-card .landing-level, .landing-card .landing-answer, .landing-card .landing-verdict, .landing-card .landing-scope, .landing-card .landing-runs, .landing-card .landing-more";
+  const CARD_WORDS = ".landing-card .landing-part, .landing-card .landing-title, .landing-card .landing-asks, .landing-card .landing-first, .landing-card .landing-says, .landing-card .landing-level, .landing-card .landing-answer, .landing-card .landing-verdict, .landing-card .landing-scope, .landing-card .landing-runs, .landing-card .landing-more";
   const HEAD_WORDS = ".landing-band-title, .landing-band-says, .landing-fold-words, .landing-fold-count, .landing-not-run, .landing-not-run .link-button, .landing-built";
   const THUMB = ".landing-open, .landing-more, .landing-fold, .landing-not-run .link-button, .switch button";
   const smallControls = () => evaluate(`[...${R}.querySelectorAll(${JSON.stringify(THUMB)})].filter((el) => el.checkVisibility()).map((el) => [el.className || el.textContent, Math.round(el.getBoundingClientRect().height), Math.round(el.getBoundingClientRect().width)]).filter(([, h, w]) => h < 44 || w < 44)`);

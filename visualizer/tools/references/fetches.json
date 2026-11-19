@@ -21,11 +21,11 @@
   },
   {
    "id": "tissue",
-   "says": "The tumour tissue's own address (the part its card on the landing opens): the tissue line's runs and the parts it draws. Until 18 November 2026 this was the Experiments tab's opening.",
-   "query": "lens=experiments&part=gap-junction-tissue-line",
-   "must": ["runs/gap-junction-tissue-line--*.json"],
-   "allowed": ["runs/gap-junction-tissue-line--*"],
-   "bytes": 1463000
+   "says": "The tumour tissue's own address (the part its card on the landing opens): since 19 November 2026 the tissue sheet, Cells' own tissue of hexagons, with the line beside it as the record its threshold comes from; the runs of both and the parts they draw. Until then the card opened the line, which fetched less than half as much (and until 18 November 2026 this was the Experiments tab's opening). Its bound was set on 19 November 2026 a tenth above that day's measure (10 files, 2,817,063 bytes).",
+   "query": "lens=experiments&part=gap-junction-tissue-sheet",
+   "must": ["runs/gap-junction-tissue-sheet--*.json"],
+   "allowed": ["runs/gap-junction-tissue-sheet--*", "runs/gap-junction-tissue-line--*"],
+   "bytes": 3100000
   },
   {
    "id": "assembly",

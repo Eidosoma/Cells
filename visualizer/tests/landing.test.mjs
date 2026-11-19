@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CARD, CARDS_FORMAT, FACE, KEPT, addressOf, bandHolding, cardsProblems, controlOf, countWords, detailOf, faceOf, landingOf, openFirst, opensOf, readKept, shorten, standingWords, stillOf, verdictsOf, writeKept } from "../src/replay/landing.js";
+import { CARD, CARDS_FORMAT, FACE, KEPT, addressOf, bandHolding, cardsProblems, controlOf, countWords, detailOf, faceOf, landingOf, openFirst, opensOf, partNameOf, readKept, shorten, standingWords, stillOf, verdictsOf, writeKept } from "../src/replay/landing.js";
 import { landingFiles, publishedReplays } from "../tools/lib/build_page.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -226,6 +226,17 @@ test("a press on a replay's card opens, by rule, what the tab opens: a model sys
       assert.deepEqual(opened, part ? { part } : { run: `${opens.experiment}--${overlay.experiments[opens.experiment]?.opens?.run || "a"}` }, card.id);
     }
   }
+  // A card that opens a part of its experiment says which, in the part's own name (its still pictures that part); a card
+  // that opens a run or a model system's view names none. The gap-junction example opens its sheet since 19 November 2026,
+  // and the sheet's own name says that it is Cells' extension.
+  for (const card of cards.cards.filter((item) => item.kind === "replay")) {
+    const opened = opensOf(card, replays), name = partNameOf(opened, replays);
+    if (opened?.part) assert.equal(name, overlay.experiments[opened.part].short || overlay.experiments[opened.part].label, card.id);
+    else assert.equal(name, null, card.id);
+  }
+  assert.match(partNameOf(opensOf(cards.cards.find((item) => item.id === "tumour-tissue"), replays), replays), /Cells' extension/);
+  assert.equal(partNameOf({ part: "no-such-part" }, replays), null);
+  assert.equal(partNameOf({ part: "p" }, { experiments: [{ id: "p", label: "A made-up part" }] }), "A made-up part");
   // What the page does not carry does not play: no door, no run, no part.
   assert.equal(opensOf({ replay: { opens: { entry: "no-such-entry" } } }, replays), null);
   assert.equal(opensOf({ replay: { opens: { experiment: "no-such-experiment" } } }, replays), null);

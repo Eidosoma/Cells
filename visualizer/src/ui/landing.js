@@ -16,7 +16,7 @@
 
 import { h, svg, statusSwatch, formatDate } from "./dom.js";
 import { loadBeside } from "../lenses/protein_shelves.js";
-import { CARDS_FILE, CARD, cardsProblems, landingOf, faceOf, detailOf, opensOf, stillOf, openFirst, bandHolding, controlOf, readKept, writeKept } from "../replay/landing.js";
+import { CARDS_FILE, CARD, cardsProblems, landingOf, faceOf, detailOf, opensOf, partNameOf, stillOf, openFirst, bandHolding, controlOf, readKept, writeKept } from "../replay/landing.js";
 
 // How near the screen a still must come before it is fetched, in pixels above and below what is in sight.
 export const STILL_MARGIN = 120;
@@ -235,9 +235,11 @@ export class LandingLens {
     const face = faceOf(card, { plays: opened });
     const replay = Boolean(opened);
     const still = stillOf(card, this.dark);
+    // Where the card opens a part of its experiment, it says which, in the part's own name: its still pictures that part.
+    const part = partNameOf(opened, this.replays);
     let image = null;
     if (still) {
-      image = h("img", { class: "landing-still", width: still.width, height: still.height, alt: [face.first, `A still of ${face.title}`].filter(Boolean).join(" "), decoding: "async", draggable: false });
+      image = h("img", { class: "landing-still", width: still.width, height: still.height, alt: [face.first, `A still of ${face.title}${part ? `: ${part}` : ""}`].filter(Boolean).join(" "), decoding: "async", draggable: false });
       this.stills.set(image, card);
     }
     const level = face.level;
@@ -256,6 +258,7 @@ export class LandingLens {
       "article",
       { class: `landing-card is-${replay ? "replay" : "record"}`, dataset: { card: card.id, kind: String(card.kind || "") } },
       image ? h("div", { class: "landing-still-box", style: `aspect-ratio: ${still.width} / ${still.height}` }, image) : null,
+      part ? h("p", { class: "landing-part" }, h("span", { class: "landing-part-label" }, "Opens on"), part) : null,
       h(
         "h3",
         { class: "landing-title" },
@@ -416,6 +419,9 @@ export const LANDING_CSS = /* css */ `
 .landing-open:focus-visible { outline: none; }
 .landing-still-box { margin: -12px -14px 2px; border-radius: 12px 12px 0 0; overflow: hidden; background: var(--plate); }
 .landing-still-box.is-missing { display: none; }
+/* Which part of its experiment a card opens (and its still pictures), in the part's own name. */
+.landing-part { font-size: 12px; line-height: 1.35; color: var(--muted); }
+.landing-part-label { margin-right: 7px; font-family: var(--font-display); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
 .landing-still { display: block; width: 100%; height: 100%; object-fit: cover; }
 .landing-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
 .landing-band.is-first .landing-title { font-size: 19px; }

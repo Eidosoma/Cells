@@ -538,7 +538,8 @@ system, played in the tab's place).
   (`tests/engine-views/sweep-made-up/`).
 - **The gap-junction example's tumour tissue** (added on 17 November 2026, redrawn on 18
   November; development work, not judged). Its card on the landing opens on it: the
-  example's entry names the part (`opens.part`, one field: the line), and an address that
+  example's entry names the part (`opens.part`, one field: the sheet, Cells' own tissue of
+  hexagons, since the user asked for it on 19 November 2026; the line until then), and an address that
   names a run, a record, layers, `part=` or `example=` opens its view without the landing.
   `src/lenses/tissue_line.js` draws each run's cells from straight above as the
   Experiments view draws a run's (`src/layers/sheet.js`), standing where its view places
