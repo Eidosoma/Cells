@@ -1172,3 +1172,22 @@ With it come the cost of 300 s of protocol, at that note's 3.6 ms per step.
 
 The probe is scratch, as P1's was: `p1prime/` in the @3 owner's workspace, with its sha256 recorded
 in the result.
+
+**Amendment 1 to §9.1 (20 November 2026), committed before host C's two-cycle arm runs.**
+- **What was found.** A development smoke at an off-ladder rung (0.03), not a rung of the ladder,
+  found the two-cycle world as declared refused at definition: "Initial resolved
+  channel/junction/pump domain invalid".
+  - With the currents cancelling 10 mV past A's head, B's capacity is 13.8 fmol/s, 3.3 times A's.
+    The two populations' draw then lies past what the initial domain admits, as P1's thousandfold
+    capacity did (§5.2's second amendment).
+  - Host-side parses with nothing stepped admit B up to 10.4 fmol/s.
+- **The change.** V_ss moves to 5 mV past A's head, which needs B at 4.4 fmol/s.
+  - The start stays 5 mV past V_ss toward A's head, which is A's head itself.
+  - ΣG/C is then about 4.0 × 10³ /s at the start and about 8.6 × 10³ /s at V_ss, P1's start value.
+  - Each rung still runs ten relaxation times at V_ss.
+- **The same smoke, at host P (P-a) and rung 0.03 in reading (b),** was refused by X2 at accepted
+  step 1: "a held step's change exceeds today's bound at its row". It is reported with the results
+  and changes nothing here.
+- **The windows' width is 16 steps,** an execution choice that changes no row. With JAX's persistent
+  compilation cache, every rung of one arm and reading then reuses one compiled program. It is
+  recorded with the run.
