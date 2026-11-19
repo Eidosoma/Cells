@@ -2,7 +2,7 @@
 
 *Status: proposed, 19 November 2026, for the lead and the advisor, then the user. Desk work only:
 no engine code and no runs. Written on branch `core-laws-roadmap` from main 7f357cfb, where the
-code was read. Main's later commits, up to ced58d2a at writing, touch only `lean/` and
+code was read. Main's later commits, up to 2098b52c at hand-off, touch only `lean/` and
 `visualizer/`.*
 
 **What it answers.** The user asked for two things:
@@ -64,7 +64,7 @@ and **MT-2**.
 | 3 | Chemistry | MG0c's reactions (`mg0c-v1-qualified-2026-11-15`); D150's faces and turnover clearance (`secreted-species-v1-qualified-2026-11-14`); exchange, with FR-1; FR-10 (`fr10-v1-qualified-2026-11-17`) | FR-15 S1, charged species in reactions | FR-15 P2 (branch); metabolism at scale and a stochastic regime (not designed as notes) | Exchange stays neutral; the 16-row cap rises only by D148 changes (D165) |
 | 4 | Binding, buffers, pH | FR-4; FR-3 (`fr3-v1-qualified-2026-11-18`) | The general closure `rapid_binding@1` (compared); P1's predictor | A first real mover of closure rows; registry moieties | — |
 | 5 | Compartments, organelles | FR-1 (`fr1-v1-qualified-2026-11-18`); FR-5 (`fr5-v1-qualified-2026-11-17`) | Refusal 4 version 1.3; refusal 5 version 1.2 | FR-1's later doors; pools at the cell's potential; mitochondria | Subspace Ca²⁺; nested capacitors |
-| 6 | Trafficking, abundance | S5a's insertion (`cell-division-s5a-qualified-2026-11-14`); the coupling operator (`coupling-v1-qualified-2026-11-15`); FR-6's A5″ (`fr6-a5pp-v1-qualified-2026-11-18`) | FR-2 version 1 (compared, weaker evidence); FR-7 F1; B1′ | FR-7 F2–F4 | Catalogue stage 3 (D145) |
+| 6 | Trafficking, abundance | S5a's insertion@2 (`cell-division-s5a-qualified-2026-11-14`); the coupling operator (`coupling-v1-qualified-2026-11-15`); FR-6's A5″ (`fr6-a5pp-v1-qualified-2026-11-18`) | FR-2 version 1 (compared, weaker evidence); FR-7 F1; B1′ | FR-7 F2–F4 | Catalogue stage 3 (D145) |
 | 7 | Gene expression, regulation | — | Building blocks only | A design note | D145, narrowed by D218 |
 | 8 | Metabolism, energy | FR-4, on held fuel | Finite fuel rows (compared at component level) | The first finite-fuel acceptance; pumps on finite fuel | — |
 | 9 | Signalling | FR-6's A5″; D150 | FR-15 S1; @2's Ca²⁺ ion (BETSE parity rung 1) | Cardiac H2; FR-15 P2; FR-16 | Subspace Ca²⁺ |
@@ -72,6 +72,32 @@ and **MT-2**.
 | 11 | Assemblies, origin of life | — | GARD G1; OL1 (compared with OL5) | OL2 milestone 1 (branch); OL2 milestones 2–3; OL3 milestone 1 | Behind core and FR-1 to FR-10 (D230) |
 | 12 | Long duration (FR-8) | — | FR-8 stage 0 and rung 0; X2 | Rung 1's control run (D232) | A full solver and an exact booking need approval (D217) |
 | 13 | Shared needs | — | — | D175's fields; `cells.relations@2`; keyed streams; condensation | Module stage 1 at low priority (D214) |
+
+**The judged register.** Every judged protocol on main that this note relies on, with its scope in
+brief. Each verdict covers only its scope line and the build it judged.
+
+| Protocol | Registered | Tag | Result | Scope, in brief |
+| --- | --- | --- | --- | --- |
+| `d150-v1-held-sphere` (`validation/tissue/secreted_species_protocol.json`) | 14 Nov | `secreted-species-v1-qualified-2026-11-14` | Every item passed | @3's faces and turnover's first-order clearance in a held sphere; exchange only in guard tests |
+| The S5 protocol | 14 Nov (3b73579b) | `cell-division-s5a-qualified-2026-11-14` | Every judged item passed | Partition, bridge closure, insertion@2 and lumen@2, against R-ops and R-tissue |
+| E07-v1 | Scorer frozen at 6b6912b | `e07-v1-judged-2026-11-14` | 8 of 15 predictions held | An experiment on @3's sheet; it qualifies no law |
+| The coupling operator's protocol | abe4ef5c | `coupling-v1-qualified-2026-11-15` | 47 of 47 | `species_regulated_availability@1`, numerically |
+| `mg0c-turing-v1` | 5ab4326a | `mg0c-v1-qualified-2026-11-15` | 55 of 55 | `local_species_reactions@1`'s driven mass action of orders 0, 1 and 3 at outside nodes |
+| `fr4-acidification-v1` | 17 Nov, on main | `fr4-v1-qualified-2026-11-17` | 21 of 21 | Maintained fuel only; the K⁺ counter-ion only; a lumped population of 1,000; fixed volume |
+| `fr5-transfer-v1` | 17 Nov, on main | `fr5-v1-qualified-2026-11-17` | 51 of 51 | FR-4's scope plus damage, a proton pore and a neutral cargo pore; ionic pores refused; the build at 32a1d439 |
+| `fr10-dose-schedule-v1` | 407ba164 | `fr10-v1-qualified-2026-11-17` | 31 of 31 | Neutral formula units, held baths, steps inside the measured region |
+| `fr1-closed-compartment-v1` | 05a8d193 | `fr1-v1-qualified-2026-11-18` | 44 of 44 | The neutral first version: no ion route, a zero charge anchor, a held-bath topology, one compartment per node |
+| `fr3-site-occupancy-v1` | 1b838d75 | `fr3-v1-qualified-2026-11-18` | 51 of 51 | One neutral, impermeant ligand; the face-free first acceptance |
+| `fr6-a5pp-v1` | 555d8771 | `fr6-a5pp-v1-qualified-2026-11-18` | 18 of 18 | Two pump-free cells; a gate-free K⁺ leak driven through the regulatory state from a per-cell prior |
+
+Also judged, before these: the BETSE parity rungs (PROGRESS's plan table); MG0a and MG0b; MG1's
+version 2 (57 of 57, weaker evidence after version 1's 52 of 57); and `resolved_pump_water@1` and
+`@2` (11 November, ROADMAP).
+
+**A caution on the FR verdicts.** FR-1's, FR-4's and FR-5's verdicts predate refusal 4 version 1.3,
+refusal 5 version 1.2 and seam A. Each covers the build it judged; FR-5's scope names 32a1d439. Later
+core landings keep those worlds' programs bitwise, through crossrev's FR set and FR's landing set
+(CORE_SEAMS §18). That is a gate, not a new verdict.
 
 ## 1.3 The families
 
@@ -304,7 +330,7 @@ to D173's licence condition); FR-15 P2.
   - Refusal 5 version 1.2 (af1206e2) admits a charged anchor where an admitted operator charges the
     node.
 - FR-5's transfer, with leak and reseal, judged (51 of 51; `fr5-v1-qualified-2026-11-17`).
-- The division cleft: `restricted_cleft_lumen@1` and `@2` (S5a, judged).
+- The division cleft: `restricted_cleft_lumen@2`, judged with S5a. Its `@1` is on main too.
 - The host-side identity map (D174), which "partly holds" B2 of INNER_MODEL_V4_DESIGN.
 - **Legacy:** `er_calcium@1` and `ip3_er_release@1`. And `resolved_calcium_energy_mitochondria@1`,
   whose mitochondrial law is passive: no respiration and no ATP.
@@ -358,15 +384,18 @@ partition of discrete organelles, which is outside door D's first version.
   - Development. Compared against code-blind references: run 1 matched 770 of 782 rows; run 2
     matched 782 of 782 after a blind erratum, which is weaker evidence (d2dc7b8c, tag
     `fr2-comparison-landed-2026-11-19`).
-- `scheduled_membrane_insertion@1` and `@2`, and `membrane_entity_state@1` (S5a judged).
+- `scheduled_membrane_insertion@2`, judged with S5a. `scheduled_membrane_insertion@1` and
+  `membrane_entity_state@1` are on main too.
 - `population_unit_turnover@1`, FR-7 F1 (7fb27a92, tag `fr7-f1-landed-2026-11-19`; development).
   - A finite precursor becomes channel units through maturation pools, with first-order removal.
   - It is a scoped exception to D177, and its refusal is simulation-wide (D232).
 - `species_regulated_availability@1`, judged for the coupling operator and FR-6's A5″.
 - Its `@2` with B1′'s rate route (ee43b082; development), and R2's control view (6c501ab3).
 
-**Built on branches, not on main.** FR-7's references (tag `fr7-references-registered-2026-11-19`)
-and its F2 and F3 (branches fr7-f2 and fr7-f3).
+**On branches, not on main** (development):
+- FR-7's references (tag `fr7-references-registered-2026-11-19`);
+- F2, the population abundance source on `species_regulated_availability@2` (fr7-f2 at dbd4d9e0);
+- F3, the producer's assembly rate as a B1′ target (fr7-f3 at cf7145ad).
 
 **Designed.**
 - FR-7's F2–F4 and its closed loop: the Na/K pump with Na-leak units, gated on an engine probe of
@@ -498,6 +527,8 @@ pump's fuel pools); origin of life, in its own family.
   passed, weaker evidence after version 1 failed).
 - **Legacy:** the calcium families, `er_calcium@1` and `ip3_er_release@1`.
 - **Not on @3:** Ca²⁺ in channel populations, Ca²⁺ buffers and pools.
+- **Second messengers:** only the legacy IP₃ release. No modular design exists for IP₃, cAMP or
+  others. FR-15 names second messengers among the junction-crossing species it would serve.
 
 **Designed.**
 - Cardiac H2 (HUMAN_CARDIAC_LAWS_DESIGN §3):
@@ -554,8 +585,8 @@ mitochondria (inheritance, door D); FR-4 and FR-5 on a growing compartment (D217
 the Xenopus lane later (migration).
 
 **Prerequisites, effort, risk.**
-- Composition M2–M5: 12–15.5 days. B2: 1–1.5 days (CORE_SEAMS_STEP0 §4.2). Pumps on dividing cells:
-  about 3 more (D191).
+- Composition M2–M5: 9.5–12 days, from CORE_SEAMS_STEP0 §4.2's series without M1, which has
+  landed. B2: 1–1.5 days (the same table). Pumps on dividing cells: about 3 more (D191).
 - **Main risk:** geometry as state. A changing capacitance needs its own charge law and work
   accounting (CELL_DIVISION_PLAN).
 
@@ -694,16 +725,18 @@ Xenopus lane on the others.** *(Recommended.)*
     nodes, the trapezoid for the kind, and the Δp readout (Part 2, K1–K4).
   - Binding owner: item 6 (moieties), then the nucleotide forms (Part 2, B1–B2).
   - @3 owner: P1′, half a day, then Option 1's order.
-  - A new laws owner and a references agent start MT-1. The code-blind reference R1 starts on day
-    one.
+  - Two new agents start MT-1: the mitochondria lane agent (the laws and `validation/mitochondria/`)
+    and the R1 agent (the code-blind reference, from day one). A component-references agent joins
+    once the laws' appendix exists.
   - Operators and F owners: Option 1's order.
   - After MT-1a: `finite-fuel-v1`, and the Na/K pump on the kind with finite fuel.
 - **It unlocks first:** mitochondria MT-1 within days; R1 at once. Then finite fuel, which serves
   FR-7's pump, cardiac H2's exchanger pieces, machines M1's synthesis law and Syn3A's synthesis
   cycle.
-- **It delays** nothing in D222's order, if the two new seats exist. The Na/K pump's move slips by
+- **It delays** nothing in D222's order, if the new seats exist. The Na/K pump's move slips by
   about a week (estimate).
-- **Its risk:** the kinds owner is the bottleneck, and the option needs two seats.
+- **Its risk:** the kinds owner is the bottleneck. The option needs two new seats at the start and
+  three at peak.
 
 **Option 3. The excitable cell first.**
 - **The order.** F owner: H1's seams. @3 owner: Ca²⁺ in channel populations and a host kind for pool
@@ -747,11 +780,11 @@ the rest follow in order).
   moieties, the cycle kind's booking and §5.2's exception are general features. Mitochondria, cardiac
   H2, Syn3A's fuel and machines M1 all need them, and FR-7's loop already declares its pump's fuel
   pools (D231).
-- **It keeps one owner per file.** New mitochondrial law modules go to a laws owner, as D209 says
-  (Part 2, §2.4); the kind file stays with the kinds owner.
-- **Its cost is two seats** (a laws owner and a references agent), within the cap of seven. If they
-  do not exist, Option 2 becomes Option 1 with mitochondria's readiness steps (R1, P1′) running
-  first.
+- **It keeps one owner per file.** New mitochondrial law modules go to the mitochondria lane, as
+  D209 says (Part 2, §2.4); the kind file stays with the kinds owner.
+- **Its cost is two new seats at the start and three at peak** (section 2.4 lists the roles). Whether
+  they fit the cap of seven beside today's seats is the lead's count. If they do not fit, Option 2
+  becomes Option 1, with mitochondria's readiness steps (R1, P1′) running first.
 
 **In every option:**
 - gene expression stays at a design note until the user decides on D145;
@@ -791,9 +824,10 @@ the rest follow in order).
 - **D209:** the synthesis law, `proton_coupled_atp_synthesis_cycle@1`, is one law with one owner, the
   mitochondria lane. Machines M1 consumes it. Beard's Eq. 11 needs a departure on which the user
   rules. The zero-rate run is the mitochondria lane's (L5).
-- **Licences, re-read on 19 November 2026 from the PLOS article pages:** Beard 2005 is CC BY
-  ("© 2005 Beard"); the 2006 correction is CC BY ("© 2006 Public Library of Science"). The correction
-  changes Table 1's parameter values.
+- **Licences, re-read on 19 November 2026** from the PLOS article pages, through a page-reading tool
+  that quoted the licence lines: Beard 2005 is CC BY ("© 2005 Beard"); the 2006 correction is CC BY
+  ("© 2006 Public Library of Science"). The correction changes Table 1's parameter values. The R1
+  agent re-reads both in the PDFs (section 2.6).
 
 ## 2.2 The prerequisites, and their state on main
 
@@ -839,18 +873,22 @@ note is cited.
 
 **@3 owner** (`models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py`):
 - **A1. P1′:** P1's ladder rerun with the buffer declared as `rapid_binding@1`, on the chosen host,
-  with the criterion written first. 0.25–0.5 days.
+  with the criterion written first. 0.25–0.5 days. It edits no file under `src/`. Giving it to the
+  @3 owner is this note's proposal, since it reads @3's predictor; CORE_SEAMS §13 gave P1 to the
+  kinds owner, who is the busier of the two.
 - **A2. Branch I, only if P1′ asks for it:** an implicit cycle block, a new IMEX ID (D147), with X2's
   scope extended to it. 6–9 days (MITOCHONDRIA_DESIGN §8).
 - **A3. Branch X, only if the ledger binds first** (CORE_SEAMS §6.3). 2–3 days.
 
-**A mitochondria laws owner** (new files in `laws/cycles/`; the lead's ruling, §2.4):
+**The mitochondria lane agent, for the laws** (new files in `laws/cycles/`; the lead's ruling,
+§2.4):
 - **L1. The six laws of §2.4.** Each is data on seam A's forms, and declares its base forms, its read
   of `rapid_binding@1`, its step terms for refusal 4 version 1.3, its `FreeEnergyEntry` and its
   cited parameters. A short appendix of the declared equations comes first, for the component
   references. 2–4 days (MITOCHONDRIA_DESIGN §8, mitochondria M3's laws).
 
-**A mitochondria builder** (new `validation/mitochondria/`):
+**The mitochondria lane agent, for validation** (new `validation/mitochondria/`, except its
+`references/` folder):
 - **V1.** The organism definition: cited parameter sets for isolated cardiac mitochondria. Nothing
   species-specific goes into `src/cells` (D144).
 - **V2.** Worlds for host P (the matrix as a cell, the IMS as a finite node, the outer membrane as a
@@ -865,6 +903,12 @@ once they declare their terms, so no edit is expected.
 **Files outside the owner table** (the lead assigns them if they are touched):
 `operators/species_common.py`, if the 16-row cap binds; `operators/bath_schedule.py`, if a dose step
 is kept.
+
+**Held NADH is not needed in MT-1.** On the population axis held rows must be neutral, and the
+registry may declare NADH and NAD⁺ with charge. MT-1's single-law checks run on the laws' kernels at
+clamped concentrations, with no world, and the organelle uses the driven supply. If a world must
+hold them, the lead either admits zero valences there as a declared departure, or the kinds owner
+lifts the neutral-held-row limit (about 1 day, estimate).
 
 **For later milestones, not MT-1:**
 - `finite-fuel-v1`, and the Na/K pump as a cycle law on finite fuel: mitochondria M6's demand pulse;
@@ -885,8 +929,8 @@ the respiratory-control protocol against an independent integration of the same 
 - **MT-1b.** Cells' own organelle in a medium, on host P (or host C by the lead's ruling), with
   §7's protocol, registered and judged (mitochondria M4).
 - **From day one, in parallel:** R1, the code-blind whole-organelle reference of Beard 2005 (approved,
-  D193 (A)), and the feasibility check for R2 (D193 (B)). Both belong to MT-2. Section 2.6 is
-  their brief.
+  D193 (A)). R2, the published model run out of process (D193 (B)), follows once R1 is registered.
+  Both belong to MT-2. Section 2.6 is their brief.
 
 **The engine models it runs** (AGENTS.md):
 - `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with IMEX ARS(2,2,2);
@@ -926,7 +970,8 @@ Later, not in MT-1: `electrophoretic_calcium_uniport@1`, and the cardiac lane's
 - **The organelle's independent integration** (§5.2): the same declared equations, integrated with
   tight tolerances.
 - **R1 and R2,** for MT-2 (section 2.6).
-- **Licences:** Beard 2005 and its correction are CC BY (read on 19 November 2026). The Physiome
+- **Licences:** Beard 2005 and its correction are CC BY (read on 19 November 2026 through a
+  page-reading tool; section 2.1). The Physiome
   Model Repository's CellML encoding is CC BY 3.0 on its metadata page, and libOpenCOR is Apache 2.0
   (both as read on 16 November, MITOCHONDRIA_DESIGN §5.5). Nothing from them is committed; only saved
   outputs enter the evidence.
@@ -938,16 +983,23 @@ Later, not in MT-1: `electrophoretic_calcium_uniport@1`, and the cardiac lane's
 | `kinds/transporter.py`, `laws/cycles/forms.py` | Kinds owner | K1, K2, K4, K5; K3 and K6 if needed |
 | `registry/species_registry.py`, `kinds/proton_buffer.py`, `laws/reactions/rapid_binding.py` | Binding owner | B1, B2 |
 | `models/surface_pump_v3.py`, `definitions/surface_pump_v3_spec.py` | @3 owner | A1; A2 and A3 only if triggered |
-| New law modules in `laws/cycles/` | A mitochondria laws owner (the lead's ruling) | L1 |
-| `validation/mitochondria/` (new) | A mitochondria builder (new) | V1–V3, the protocol |
-| `validation/mitochondria/references/` (new) | A fresh references agent | Component references, the integration, R1 |
+| New law modules in `laws/cycles/` | The mitochondria lane agent (new; the lead's ruling) | L1 |
+| `validation/mitochondria/`, except `references/` | The mitochondria lane agent | V1–V3, the protocol |
+| `validation/mitochondria/references/components/` (new) | A fresh component-references agent. It reads L1's appendix and the paper; no code and no model file | The component references, and the organelle's independent integration |
+| `validation/mitochondria/references/organelle/` (new) | A fresh R1 agent. It reads the paper only; section 2.6 is its whole brief | R1; then R2, only after R1 is registered |
 | `operators/compartments.py` | Operators owner | Nothing expected |
 | `registry/laws.py`, `registry/kind_registry.py` | F owner | Nothing expected |
 
 **One conflict for the lead.** The owner table gives "any new cycle-law module" to the kinds owner.
 D209 gives the synthesis law to the mitochondria lane. Recommended: amend the table so that the new
-mitochondrial law modules (new files only) go to a mitochondria laws owner. The kind file stays with
-the kinds owner.
+mitochondrial law modules (new files only) go to the mitochondria lane agent. The kind file stays
+with the kinds owner.
+
+**The new seats.** Two at the start: the mitochondria lane agent and the R1 agent. A third, the
+component-references agent, joins when L1's appendix exists. The kinds, binding and @3 owners work
+part-time from their current seats. The two reference agents stay separate: the component agent
+reads the engine's declared equations, and R1's agent must not (D193 (A)). R2 follows R1 in the same
+agent, so that R1 is registered before any model file is opened.
 
 **Test cost, under D224.**
 - **The laws' kernels:** rows in a parametrized test of pure functions, with no world compiled. For
@@ -971,8 +1023,8 @@ the kinds owner.
 | R1, in parallel (part of MT-2) | About 3–4 |
 | MT-2 after MT-1: R2, its registration and the judged comparison | About 3–5 |
 
-- **Elapsed:** about 8–12 working days for MT-1, with the kinds and binding owners part-time, a laws
-  owner and a references agent (estimate).
+- **Elapsed:** about 8–12 working days for MT-1, with the kinds and binding owners part-time, the
+  lane agent and the two reference agents (estimate).
 - **CPU:** P1′ and the component references take minutes. MT-1b's protocol takes minutes at a 1 ms
   step and tens of CPU-hours at 10 µs (MITOCHONDRIA_DESIGN §8). A run of 10 minutes or more goes
   detached, with durable logs (AGENTS.md).
@@ -1006,8 +1058,9 @@ the kinds owner.
      with inheritance second and discrete units drawn at fission as the source of asymmetry?
    - **U2:** option O1, with individuals (mitochondria M8) ahead of calcium (mitochondria M7)?
    - **U3:** split and merge, or fixed segments with gated links (option O4)?
-4. **Seats and order.** MT-1 needs a laws owner and a references agent, beside part-time work by the
-   kinds and binding owners. Which of Part 1's options do you choose?
+4. **Seats and order.** MT-1 needs two new seats at the start (the mitochondria lane agent and the
+   R1 agent) and a third at peak (the component-references agent), beside part-time work by the
+   kinds, binding and @3 owners. Which of Part 1's options do you choose?
 
 **For the lead** (not the user's).
 1. Host P or host C for the isolated organelle (MITOCHONDRIA_DESIGN §3.6). P1′ runs the chosen host's
@@ -1026,8 +1079,13 @@ the kinds owner.
 
 *Give this section alone to the references agent. It names no part of the engine.*
 
-**Do not read:** `src/`; the engine's design notes; any model file of this paper (a CellML encoding,
-a BioModels entry, the authors' code); any other part of this document.
+**Do not read:**
+- `src/` and `tests/`;
+- anything under `validation/` outside your own folder, `validation/mitochondria/references/organelle/`;
+- the engine's design notes, decisions and progress files, and any other part of this document;
+- engine run outputs, under `/mnt/workspaces/Cells` or anywhere else;
+- any model file of this paper (a CellML encoding, a BioModels entry, the authors' code), until R1 is
+  registered.
 
 **Read:** D. A. Beard, "A Biophysical Model of the Mitochondrial Respiratory System and Oxidative
 Phosphorylation", PLoS Comput Biol 1(4):e36 (2005), doi:10.1371/journal.pcbi.0010036; and its
@@ -1066,22 +1124,25 @@ correction only.**
 6. **Method:** your own stiff integrator with a convergence check, run out of process. Take
    tolerances from your own convergence or a stated physical scale. Plant a coefficient change that
    must be caught.
-7. **Where:** `validation/mitochondria/references/`, a new folder. Write the design files before any
-   engine output exists. Deliver the values as a registered interface file.
+7. **Where:** `validation/mitochondria/references/organelle/`, a new folder. Write the design files
+   before any engine output exists. Deliver the values as a registered interface file.
 
-**R2, separately approved (D193 (B)).** Run the Physiome Model Repository's curated CellML encoding of
-Beard 2005 unmodified, in libOpenCOR, in its own environment under `/mnt/workspaces/Cells`. Use the
-file by reference and never commit it. First check whether it carries the 2006 correction. If any
-wall appears (an account, a guard, a missing tool), stop and report; do not work around it. R2 may go
-to a second fresh agent.
+**R2, separately approved (D193 (B)), after R1 is registered.** Run the Physiome Model Repository's
+curated CellML encoding of Beard 2005 unmodified, in libOpenCOR, in its own environment under
+`/mnt/workspaces/Cells`. Use the file by reference and never commit it. First check whether it
+carries the 2006 correction. If any wall appears (an account, a guard, a missing tool), stop and
+report; do not work around it.
 
 ---
 
 ## Sources read
 
-- AGENTS.md; [DECISIONS.md](DECISIONS.md): D136, D138, D141, D144, D145, D150, D152, D155–D156 (their
-  headings), D163, D167, D173, D175–D177, D179, D183, D184, D186, D191–D196, D199, D201, D207, D209,
-  D210, D212, D216–D232.
+- AGENTS.md; [DECISIONS.md](DECISIONS.md):
+  - read in full: D136, D138, D141, D144, D145, D173, D175, D176, D183, D184, D191–D196, D209, D210,
+    D212, D216–D232;
+  - read in part: D167, D177 (FR-7's lines), D179 (the hold), D185;
+  - read by heading only: D057, D135, D140, D147, D148, D150, D152, D155, D156, D163, D165, D172,
+    D174, D186, D188, D197, D199, D200, D201, D202, D207, D214, D215.
 - [CURRENT_PLAN.md](CURRENT_PLAN.md); [ROADMAP.md](ROADMAP.md); [PROGRESS.md](../PROGRESS.md)'s
   current position and run entries of 17–19 November; [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md).
 - [CORE_SEAMS_DESIGN.md](CORE_SEAMS_DESIGN.md) (§0–§2, §13, §16, §18); [CORE_SEAMS_STEP0.md](CORE_SEAMS_STEP0.md)
