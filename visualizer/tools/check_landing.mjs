@@ -190,6 +190,9 @@ try {
     check("the rest of the page works: Scope opens from the bar", scope);
     await press(`${R}.querySelector('[data-lens="experiments"]')`);
     await until(`${V}.state.landing && !${V}.landingView.box.hidden`, 10000);
+    // Shown again, the landing asks for the cards by itself and is refused once more: "Try again" is pressed when that
+    // second answer has come and the button stands again (pressed while it was on its way, the press met no button).
+    await until(`Boolean(${R}.querySelector(".landing-again")) && !${V}.landingView.fetching`, 15000);
     hold = null;
     await press(`${R}.querySelector(".landing-again")`);
     const back = await until(`${R}.querySelectorAll(".landing-card").length === ${cards.cards.length}`, 20000);
