@@ -152,3 +152,43 @@ Per world and variant:
   digests are recorded in the run's `tools.sha256` before the first world runs.
 - **Run:** `/mnt/workspaces/Cells/core-pass-at3-20261118/fr18-x/`, one detached unit on the light
   CPUs at nice 10, memory-capped.
+
+## Amendment 1: FR-8's worlds, registered before X runs on them
+
+*19 November 2026, 01:00 UTC, at the lead's direction, after the run on the full set. The rule,
+both variants and their parameters are unchanged.*
+
+**Why these worlds:**
+- FR-8 measured the order falling to 1.25–1.7 through H2's switch.
+- Seam D changes the bookings, and M5's trapezoid arms already use `trapezoid_nonnegative@1`.
+
+**The worlds** are built by FR-8's own stage-0 builders, read only, as FR-8 registered them:
+`validation/long_duration/worlds.py` and its `registration_20261118.json`, from the snapshot of
+FR-8's branch at c5183aba. The two fixture modules those builders call
+(`validation/tissue/projective_study.py`, `regulated_availability_fixtures.py`) are byte-identical
+in that snapshot and in this run's.
+- **H2:** `case_cue3`'s two heredity cells to the registered 3600 s horizon, with the 9× Na-leak cue
+  on at 1800 s and off at 1800.3 s. It runs at FR-8's declared dt of 1 ms (arm R1), with FR-8's
+  §5.2 observation times. Engine model: `resolved_pump_tissue@3` alone.
+- **W0, as M5 builds it:** 60 s, with the dose step at 20 s and the write at 40 s, observed every
+  1 s, with the default booking (`explicit_tableau`) at dt 1, 2, 5 and 10 ms. Engine model:
+  `resolved_pump_composite@1` with `scheduled_species_turnover@1` and
+  `species_regulated_availability@1`.
+- **M5's trapezoid arms:** the same W0 arms with the junction booking `trapezoid_nonnegative@1`.
+
+The 10 ms arms are refused at definition time, which is M5's registered result. They are reported
+with the check that refuses them.
+
+**The decision, for X2 in each world:**
+- every accepted row passes the check;
+- every held step passes its own bound;
+- the order condition holds, and so does the cap.
+
+This is condition (b) for these worlds. X1 is reported. P1 and P2 are reported but not decided.
+Nothing in FR-8's own measurements is judged here.
+
+**Tools:** `recorder_x.py` and `evaluate_x.py` run unchanged, through a world wrapper,
+`recorder_fr8.py`, which builds these definitions and is digested beside them. The source is a
+clean snapshot of this amendment's commit. The run is
+`/mnt/workspaces/Cells/core-pass-at3-20261118/fr18-x/fr8/`, detached on the light CPUs at nice 10
+and memory-capped.
