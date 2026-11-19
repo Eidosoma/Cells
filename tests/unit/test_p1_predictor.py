@@ -11,8 +11,9 @@ stored derivative.
   would admit them (the plant). A row of any other length is refused.
 - The switch: today's definitions list no read, and rows naming rapid_binding@1 list the buffer.
   Rows naming version 1's read (rapid_proton_buffer@1, not a registered law) or a registered law
-  without free_amounts list none. A composite's model block reaches the same switch, and the
-  structure refuses an entry that is not a declared kind.
+  without free_amounts list none. A composite's model block reaches the same switch.
+- The structure's check (F's review): it refuses an undeclared entry, a repeated entry, an
+  unsorted pair of declared kinds, a list in place of a tuple, and a non-string entry.
 - The step, on the binding owner's lumen world under the general closure, with a planted drawer
   (its reading carrier run inward, taking H from the lumen into the cell across bounding_0). At
   the dt where the predicted draw is ten times the lumen's free H, today's form refuses the step,
@@ -165,12 +166,9 @@ def test_the_predictor_reads_the_free_amount_at_the_predicted_totals_where_the_l
         assert past[0] is False
 
 
-def test_the_switch_reaches_a_composite_and_refuses_an_undeclared_entry():
+def test_the_switch_reaches_a_composite():
     plain = surface_pump_v3.structure(parse_spec(lumen_general()).model)
     assert plain.free_amount_reads == ()  # Today's definitions list no read.
-    with pytest.raises(ValueError, match="Free-amount reads must be distinct declared kinds"):
-        replace(plain, free_amount_reads=("tests.undeclared@1",))
-    assert replace(plain, free_amount_reads=(proton_buffer.KIND_ID,)).free_amount_reads
     raw = cs.frozen_definition(lumen_general())
     electrode = dict(cell_id=fr.CELL, carriers={"K": 1.0})
     raw["model"].setdefault("operators", []).append(
@@ -210,3 +208,24 @@ def test_a_read_mixing_the_two_forms_and_a_free_amount_read_beside_todays_are_re
         spec = parse_spec(declaring("alpha_block", "beta_block"))
         listed = surface_pump_v3.structure(spec.model).free_amount_reads
     assert listed == ("tests.alpha@1", "tests.beta@1")
+
+
+def test_the_structure_refuses_entries_that_are_not_a_sorted_tuple_of_declared_kinds():
+    """F's review: each half of the check carries its plant. Two declared kinds, alpha and beta."""
+    both = registry(
+        reader("alpha", "alpha_block", (("K", "cell_0", GENERAL),)),
+        reader("beta", "beta_block", (("Na", "cell_0", GENERAL),)),
+    )
+    with kind_registry.scope(both):
+        spec = parse_spec(declaring("alpha_block", "beta_block"))
+        structure = surface_pump_v3.structure(spec.model)
+    alpha, beta = "tests.alpha@1", "tests.beta@1"
+    assert structure.free_amount_reads == (alpha, beta)
+    order = "must be distinct declared kinds, in canonical \\(sorted ID\\) order"
+    for planted in ((alpha, "tests.undeclared@1"), (alpha, alpha), (beta, alpha)):
+        with pytest.raises(ValueError, match=order):
+            replace(structure, free_amount_reads=planted)
+    for planted in ([alpha, beta], (alpha, 1), (alpha, "")):
+        with pytest.raises(ValueError, match="Free-amount reads are a tuple of declared kind IDs"):
+            replace(structure, free_amount_reads=planted)
+    assert replace(structure, free_amount_reads=(beta,)).free_amount_reads == (beta,)

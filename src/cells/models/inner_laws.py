@@ -216,9 +216,13 @@ class InnerStructure:
         problems = heat_booking_errors(self.heat_bookings, ids, self.junction_heat_booking)
         if problems:
             raise ValueError("Heat bookings of an inner structure: " + "; ".join(problems))
-        reads = list(self.free_amount_reads)
-        if reads != sorted(set(reads)) or not set(reads) <= set(ids):
-            raise ValueError("Free-amount reads must be distinct declared kinds, in sorted order")
+        reads = self.free_amount_reads
+        if not (isinstance(reads, tuple) and all(isinstance(k, str) and k for k in reads)):
+            raise ValueError("Free-amount reads are a tuple of declared kind IDs")
+        if list(reads) != sorted(set(reads)) or not set(reads) <= set(ids):
+            raise ValueError(
+                "Free-amount reads must be distinct declared kinds, in canonical (sorted ID) order"
+            )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.
         unknown = []
         for interface, declared in (
