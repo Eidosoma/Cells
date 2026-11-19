@@ -49,7 +49,7 @@ case "${1:-}" in
     mkdir -p "$OUT"
     REV=$(git -C "$REPO" rev-parse --verify main^{commit}) || { log "no main in $REPO"; stop_selection "main unreadable"; finish 2; }
     log "nightly of main $REV from $REPO into $OUT"
-    git -C "$REPO" worktree add --detach "$OUT/tree" "$REV" >> "$OUT/nightly.log" 2>&1 \
+    git -C "$REPO" worktree add --quiet --detach "$OUT/tree" "$REV" >> "$OUT/nightly.log" 2>&1 \
       && "$PY" -B "$G/freeze_snapshot.py" "$OUT/tree" "$OUT/snapshot" --scope full --require-clean >> "$OUT/nightly.log" 2>&1
     rc=$?
     git -C "$REPO" worktree remove --force "$OUT/tree" >> "$OUT/nightly.log" 2>&1
