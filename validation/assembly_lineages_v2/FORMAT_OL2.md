@@ -212,3 +212,52 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
     shear work, sink, heat, reservoir work, and the pool after;
   - the initial and final states (each slot's key and counts, and the pool);
   - the world's key, the end reason and the environment record.
+
+### The shared pool (`cells.shared_pool@1`, the first `cells.population_structure@1`)
+
+- **The world** declares `population = {structure, slots: K, founders: [{place: count} of every
+  finite membrane and lumen place]}`, with a geometry.
+  - Its `founder` holds the pool, with every vesicle place 0.
+  - The execution's `mode` is `population` exactly when a population is declared.
+  - Founder i takes slot i and key `i:0`. The other slots start empty.
+- **The selection map:** the groups are the pool, then slots 0 to K − 1.
+  - A step with any membrane or lumen place belongs to every slot's group. The others belong to the
+    pool's group.
+  - Three uniforms per draw come from domain 5 at the world's draw count: τ, then the group, then
+    the channel. Every total is a serial fold.
+  - Each slot's rates are `kernel.rates` evaluated at the slot's vesicle together with the pool.
+- **A lysis** sends the vesicle's molecules to their pool places, releases the closure cost, frees
+  the slot and books one row. The world then goes on.
+- **A shear stop** (declared or Poisson times) discards the crossing draw. Every daughter lives:
+  - daughter 0 keeps its parent's slot and continues the parent's sub-lineage counter;
+  - the other daughters take free slots in slot order, and each opens a new sub-lineage, numbered in
+    world event order;
+  - with too few free slots the run stops `slots_full` before the draw.
+
+  The division block declares no `continuation` in a population.
+- **A transfer** (`cells.serial_transfer@1`, `{index, kind: transfer, times_s, K_keep,
+  fresh_pool}`, one fresh count per finite pool place) works as follows:
+  - it draws one uniform per living assembly on its own stream and keeps the K_keep smallest;
+  - the others end `removed`;
+  - the pool's finite places take the fresh composition;
+  - the sink takes F of the removed vesicles and of the old pool, and the transfer's column takes F
+    of the fresh pool.
+- **Records:**
+  - rows: `pool_count` [row, place], `slot_count` [row, slot, place], `slot_key` [row, slot] (−1
+    for an empty slot), and the geometry rows as [row, slot];
+  - ledger terms: `schedule_work_kT` [row, schedule], one column per declared schedule, with
+    run.json's `population.schedule_columns` naming each column's schedule and payer;
+    `shear_work_kT` (the shears' total) and `discarded_free_energy_kT` (the sink). Every row checks
+    that the columns sum to the shear total plus the transfers' work;
+  - `row_kind` adds `shear`, `lysis` and `transfer`;
+  - the fission table adds `fission_slot`, `fission_daughter_slots` and the outcome `slots_full`;
+  - the trace adds `event_group`, and `event_uniforms` holds three uniforms per event;
+  - run.json's `population` block lists the lyses, the transfers, the schedule draws and the
+    payers;
+  - relations@2 holds the lives (founders, divisions, `lysed`, `removed`, censored), the fission,
+    lysis and transfer events, the slots, and each schedule's source.
+- **The diagnostic record of a population:**
+  - the world's draws (domain 5), read from the device and checked against their addresses;
+  - every crossing draw is discarded at its stop, and the last ends the run when the device ended
+    it;
+  - `event_group`, the attempts with their slots, the transfer events and the lyses.

@@ -659,6 +659,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     replay, e, applied = start.copy(), 0, 0
     extra = np.zeros_like(ctx.extra)
     rows = []
+    diagnose = spec.experiment.diagnostic
+    after_events = []  # (the changed vesicle's places, the pool's) after each event, when declared
     for n, kind, t, stop in marks:
         while e < n:  # replay the events up to this row, in exact integers
             change = count_change[index[e]]
@@ -666,6 +668,10 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
             if codes[e, 0] > 0:
                 replay.slots[codes[e, 0] - 1] += np.where(m.place_vesicle, change, 0)
             replay.supplied += supply_change[index[e]]
+            if diagnose:
+                g = codes[e, 0]
+                vesicle = replay.slots[g - 1] if g > 0 else np.zeros_like(replay.pool)
+                after_events.append((vesicle[:places].copy(), replay.pool[:places].copy()))
             e += 1
         if kind in (SHEAR, LYSIS, TRANSFER):
             replay, extra = ctx.stops[stop][3].copy(), ctx.stops[stop][4]
@@ -765,13 +771,24 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "world goes on; every daughter lives",
     }
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
+    record = None
+    if diagnose:  # §0.2d item 10.5 (diagnostic.py)
+        from cells.models.assembly_lineages_v2 import diagnostic
+        from cells.models.assembly_lineages_v2.spec import world_id
+
+        body, arrays = diagnostic.build_population(
+            spec, layout, ctx, all_draws, committed, codes, values, after_events, status, start,
+            replay, world_id(world), ended=status in ("complete", "inert", "stalled", "capacity")
+            and not any(n == len(codes) and t >= horizon for n, k, t, *_ in ctx.stops),
+        )  # fmt: skip
+        record = {"body": body, "arrays": arrays}
     return single.WorldRun(
         spec=spec, structure=structure, verdict=verdict,
         world_report={"population": "the kernel's check on its probe; each slot's rates are the "
                       "single assembly's (kernel.rates)"},
         status=status, rows=row_arrays, trace=trace, diagnostics=diagnostics, closure=closure,
         qualifier=keys_rules.qualifier(spec.fingerprint, "fresh", None), final=final._asdict(),
-        timings=timings, osmotic=None, division=None, diagnostic=None, population=report,
+        timings=timings, osmotic=None, division=None, diagnostic=record, population=report,
     )  # fmt: skip
 
 

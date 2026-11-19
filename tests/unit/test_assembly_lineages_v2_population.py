@@ -311,9 +311,17 @@ def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
     founders = [dict(FOUNDER, **{"L@membrane": n}) for n in (8, 9, 10)]
     schedules = [{"index": 4, "kind": "transfer", "times_s": [1.0], "K_keep": 1,
                   "fresh_pool": [5, 2, 0]}]  # fmt: skip
-    s = pop_spec(founders, 4, schedules=schedules, horizon=2.0)
+    s = with_diagnostic(pop_spec(founders, 4, schedules=schedules, horizon=2.0))
     run = runner.run(s).check()
     (t,) = run.population["transfers"]
+    # The diagnostic record: the world's draws at counters 0, 1, ...; the crossing draw at the
+    # transfer is discarded, the last ends the run; the transfer's three draws are recorded.
+    arrays, body = run.diagnostic["arrays"], run.diagnostic["body"]
+    assert arrays["draw_counter"].tolist() == list(range(len(arrays["draw_counter"])))
+    fates = arrays["draw_fate"].tolist()
+    assert fates.count(diagnostic.DISCARDED) == 1 and fates[-1] == diagnostic.ENDED
+    assert arrays["schedule_draw_use"].tolist() == [1, 1, 1]
+    assert body["transfer_events"][0]["kept"] == t["kept"]
     layout = model.layout(s)
     key = streams.stream_key_data(layout.base_key, 4, "schedule")
     us = [float(np.asarray(streams.uniforms(key, c, 1))[0]) for c in range(3)]

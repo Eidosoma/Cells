@@ -199,3 +199,113 @@ def _shear_events(spec, layout, holder):
         stop["attempts"].append(entry)
     out = sorted(events.values(), key=lambda e: (e["time"], e["schedule"]))
     return out, (np.concatenate(blocks) if blocks else np.zeros(0))
+
+
+def build_population(spec, layout, ctx, draws, committed, codes, values, after_events, status,
+                     start, final, world_key, ended):  # fmt: skip
+    """(diagnostic.json's body, diagnostic.npz's arrays) of a population run: the world's draws
+    (domain 5, carrier word 0, counter = the draw's index) read from the device, each crossing draw
+    discarded at its schedule stop and the last one ending the run when the device ended it."""
+    from cells.models.assembly_lineages import keys as keys_rules
+
+    world = spec.model.world
+    fates = np.where(committed, COMMITTED, DISCARDED).astype(np.int8)
+    if ended and (~committed).any():
+        fates[np.flatnonzero(~committed)[-1]] = ENDED
+    stream = streams.stream_key_data(layout.base_key, streams.WORLD_CARRIER, "world")
+    import jax
+
+    counters = np.arange(len(draws), dtype=np.int64)
+    again = np.asarray(jax.vmap(lambda c: streams.uniforms(stream, c, 3))(counters))
+    if not np.array_equal(again, draws):
+        raise AssertionError("The world's draws differ from their addresses' uniforms: a fault")
+    heat = values[:, 1] if len(values) else np.zeros(0)
+    work = values[:, 3] if len(values) else np.zeros(0)
+    lysed = np.zeros(len(codes), dtype=bool)
+    for record in ctx.lyses:
+        if not record["at_birth"]:
+            lysed[record["event"] - 1] = True
+    arrays = {
+        "draw_domain": np.full(len(draws), 5, dtype=np.int8),
+        "draw_key": np.zeros(len(draws), dtype=np.int64),
+        "draw_counter": counters,
+        "draw_uniforms": np.asarray(draws, dtype=np.float64).reshape(len(draws), 3),
+        "draw_fate": fates,
+        "event_time": values[:, 0] if len(values) else np.zeros(0),
+        "event_group": codes[:, 0].astype(np.int32),
+        "event_channel": codes[:, 1].astype(np.int32),
+        "event_lysed": lysed,
+        "event_heat_kT": np.diff(np.concatenate(([0.0], heat))),
+        "event_reservoir_work_kT": np.diff(np.concatenate(([0.0], work))),
+        "event_vesicle_after": np.asarray([a for a, _ in after_events]).reshape(len(codes), -1),
+        "event_pool_after": np.asarray([b for _, b in after_events]).reshape(len(codes), -1),
+    }
+    sched = ctx.schedule_draws
+    arrays |= {
+        "schedule_draw_index": np.asarray([d[0] for d in sched], dtype=np.int64),
+        "schedule_draw_counter": np.asarray([d[1] for d in sched], dtype=np.int64),
+        "schedule_draw_uniform": np.asarray([d[2] for d in sched], dtype=np.float64),
+        "schedule_draw_use": np.asarray([USES.index(d[3]) for d in sched], dtype=np.int8),
+        "schedule_draw_time": np.asarray([d[4] for d in sched], dtype=np.float64),
+    }
+    stops, blocks, offset = {}, [], 0
+    places = len(world.places)
+    membrane, inside = division.vesicle_places(world)
+    for a, _, slot, homes in ctx.attempts:
+        entry = {"slot": int(slot), "key": int(a.parent), "counter": int(a.counter),
+                 "outcome": a.outcome, "uniforms_offset": offset, "uniforms_count": 0}  # fmt: skip
+        if a.counter >= 0:
+            size = int(a.parent_counts[membrane].sum()) + a.k + int(a.parent_counts[inside].sum())
+            blocks.append(division.block(layout.base_key, a.parent, a.counter, size))
+            entry["uniforms_count"], offset = size, offset + size
+        if a.outcome == "split":
+            vesicle = np.concatenate((membrane, inside))
+            entry["daughters"] = [
+                {"key": int(key), "slot": int(homes[j]),
+                 "counts": a.daughters[j][vesicle].tolist(), "lysed_at_birth": bool(a.lysed[j])}
+                for j, key in enumerate(a.keys)
+            ]  # fmt: skip
+            entry |= {"shear_work_kT": a.shear_work, "heat_kT": 0.0, "reservoir_work_kT": 0.0,
+                      "sink_kT": 0.0}  # fmt: skip
+        stop = stops.setdefault(
+            (a.time, a.schedule),
+            {"time": a.time, "schedule": a.schedule, "not_admitted": [], "attempts": []},
+        )
+        if a.outcome in ("refused_stress", "refused_volume"):
+            stop["not_admitted"].append(int(slot))
+        stop["attempts"].append(entry)
+    arrays["attempt_uniforms"] = np.concatenate(blocks) if blocks else np.zeros(0)
+
+    def state_of(s):
+        return {"slots": [{"slot": int(k), "key": int(s.keys[k]),
+                           "counts": s.slots[k][: places].tolist()}
+                          for k in np.flatnonzero(s.alive)],
+                "pool": s.pool[: places].tolist()}  # fmt: skip
+
+    groups = {"pool": [], "vesicle": []}
+    for direction in ("forward", "reverse"):
+        for step in world.steps:
+            names = [n for n, _ in (*step.reactants, *step.products)]
+            vesicle = any(world.places[world.place_index(n)].phase != "pool" for n in names)
+            groups["vesicle" if vesicle else "pool"].append([step.id, direction])
+    body = {
+        "format": "cells.assembly_lineages.diagnostic@1",
+        "fates": list(FATES),
+        "schedule_uses": list(USES),
+        "groups": "event_group 0 is the pool, 1 + k slot k",
+        "channels": groups,
+        "event_channel": "the kernel's signed code: +(r+1) step r's forward, -(r+1) its reverse",
+        "places": [p.name for p in world.places],
+        "after": "event_vesicle_after is the event's slot over every place (pool places 0; all 0 "
+        "for a pool event); event_pool_after the pool over every place (vesicle places 0)",
+        "shear_events": sorted(stops.values(), key=lambda e: (e["time"], e["schedule"])),
+        "transfer_events": ctx.transfers,
+        "lyses": ctx.lyses,
+        "states": {"initial": state_of(start), "final": state_of(final)},
+        "keys": keys_rules.SPELLING,
+        "world": world_key,
+        "end": status,
+        "environment": environment(),
+        "uniforms": "the world's draws are the device's own, checked against their addresses",
+    }
+    return body, arrays
