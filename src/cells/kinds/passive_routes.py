@@ -107,7 +107,7 @@ from cells.laws.transport import proton_leak as leak
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry import laws as law_registry
-from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView, active
+from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView
 
 KIND_ID = "cells.passive_routes@1"
 MODEL_KEY = "passive_routes"
@@ -335,7 +335,7 @@ def to_dict(declaration):
             "law": r.law,
             "permeability_m_per_s": r.permeability,
         }
-        if r.law == LAW_ID or r.species != DEFAULT_PROTON:
+        if r.law in (LAW_ID, CHARGED_LAW_ID) or r.species != DEFAULT_PROTON:  # The leak's default.
             entry["species"] = r.species
         if r.factors:
             entry["factors"] = list(r.factors)
@@ -791,14 +791,24 @@ def material_term(read, potentials, control, p, *, xp):
     """D4 for the charged law (FR-15 P2): [cells, then outside nodes] the kind's material slope
     (1/s), per node the largest over the rows its charged routes move there of the sum over those
     routes of |dJ/dn| at that end (the law's material_slope_per_s), at the stage's read amounts and
-    patch voltage (V = 0 where no potentials are given; the step passes the stage's). It follows
-    the voltage with no assumed range: a charged trace row's bound, which @3's static bound cannot
-    hold. Only a definition that declares the charged law has this hook (declared_fields)."""
+    patch voltage. It follows the voltage with no assumed range: a charged trace row's bound,
+    which @3's static bound cannot hold. Only a definition that declares the charged law has this
+    hook (declared_fields).
+
+    Without potentials it fails closed: +inf at every node a charged route touches, because
+    |dJ/dn| = A P m B(-+x)/V grows without limit in |x|, so no voltage-free value bounds it (the
+    lead's ruling, 19 November 2026). Every engine caller passes the stage's potentials today; a
+    future caller without them refuses rather than reads a silent non-bound."""
     opening = _opening(read, control, p, xp)
-    voltage = 0.0
-    if potentials is not None:
-        voltage = potentials[p.passive_inside] - potentials[p.passive_outside]
     volume, _ = _volumes(p, xp)
+    if potentials is None:
+        permeable = entity_sum(p.passive_permeability, axis=0, xp=xp) > 0  # [route]
+        moving = xp.where(p.passive_charged & permeable, 1.0, 0.0)
+        nodes = xp.zeros(volume.shape[0])
+        count = scatter(moving, nodes, (p.passive_inside,), xp=xp)
+        count = count + scatter(moving, nodes, (p.passive_outside,), xp=xp)
+        return xp.where(count > 0, xp.inf, 0.0)
+    voltage = potentials[p.passive_inside] - potentials[p.passive_outside]
     to_in, to_out = charged_law.material_slope_per_s(
         voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability, opening,
         volume[p.passive_inside], volume[p.passive_outside], xp=xp,
@@ -826,31 +836,14 @@ def bound_rate(spec, declaration):
     return max(totals.values(), default=0.0)
 
 
-def _held_rows(m):
-    """{(species, node): kind ID} of every row a declared kind's closure owns: the rows a stage read
-    that stores totals rewrites (its stage_rows; B4's proton and buffer rows at buffered nodes) and
-    a general closure's closure_rows (FR-15 P2's fail-closed rule: the charged law reads
-    amounts)."""
-    registry = active()
-    out = {}
-    for kind_id, declaration in m.kinds:
-        kind = registry.lookup(kind_id)
-        rows = ()
-        if kind.stage_read is not None and kind.stage_rows is not None:
-            rows = tuple(kind.stage_rows(declaration))
-        rows += tuple(getattr(declaration, "closure_rows", ()))
-        for row in rows:
-            out.setdefault((row[0], row[1]), kind_id)
-    return out
-
-
 def check_definition(spec):
     """Admission: the neutral law carries a valence-0 row, the leak a valence +1 row (B4's proton
     row where B4 is declared), the rectifier a valence +1 row (its E reads both ends, whose
-    initial amounts the host's parse admits only positive), the charged law a charged row that no
-    declared closure holds at either end (_held_rows; FR-15 P2, fail-closed); the host route's own
-    permeability for the carried row is zero; route IDs are unique among the definition's entity
-    IDs."""
+    initial amounts the host's parse admits only positive), the charged law a charged row; the host
+    route's own permeability for the carried row is zero; route IDs are unique among the
+    definition's entity IDs. A row a declared closure holds is refused on the charged law by the
+    species registry (check_amount_reading_routes, beside its other closure rules: FR-15 P2,
+    fail-closed), so this kind does no registry lookup."""
     m = spec.model
     kinds = dict(m.kinds)
     declaration = kinds[KIND_ID]
@@ -858,7 +851,6 @@ def check_definition(spec):
     junctions = {j.id: j for j in m.junctions}
     taken = {x.id for x in (*m.cells, *m.extracellular, *m.membranes, *m.junctions, *m.faces)}
     closure = kinds.get("cells.rapid_proton_buffer@1")
-    held = _held_rows(m) if any(route.law == CHARGED_LAW_ID for route in declaration) else {}
     for route in declaration:
         if route.id in taken:
             raise ConfigError(f"{MODEL_KEY} {route.id}: the ID is already an entity's")
@@ -884,19 +876,11 @@ def check_definition(spec):
                 f"{MODEL_KEY} {route.id}: {RECTIFIER_LAW_ID} carries a valence +1 row, not "
                 f"{route.species}"
             )
-        if route.law == CHARGED_LAW_ID:
-            if m.valence[row] == 0:
-                raise ConfigError(
-                    f"{MODEL_KEY} {route.id}: {CHARGED_LAW_ID} carries a charged row, not the "
-                    f"neutral {route.species} ({LAW_ID} carries neutral rows)"
-                )
-            for node in (route.inside, route.outside):
-                if (route.species, node) in held:
-                    raise ConfigError(
-                        f"{MODEL_KEY} {route.id}: {route.species} at {node} is held by "
-                        f"{held[(route.species, node)]}, which owns its free/total split; "
-                        f"{CHARGED_LAW_ID} reads amounts, so it is refused there (FR-15)"
-                    )
+        if route.law == CHARGED_LAW_ID and m.valence[row] == 0:
+            raise ConfigError(
+                f"{MODEL_KEY} {route.id}: {CHARGED_LAW_ID} carries a charged row, not the "
+                f"neutral {route.species} ({LAW_ID} carries neutral rows)"
+            )
         if _moves(route) and host.permeability_m_per_s[row]:
             raise ConfigError(
                 f"{MODEL_KEY} {route.id}: its {route.host_kind} {route.host} has its own "

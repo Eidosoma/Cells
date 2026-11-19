@@ -291,23 +291,26 @@ def charged(rid, permeability, *, species="X", host=("patch", "contact_0")):
 CHARGED = passive_routes.CHARGED_LAW_ID
 
 
-def charged_pair(*, voltage_fmol=0.0, pool_mM=1e-9, node_mM=5e-10, end=0.02, dt=1e-3):
-    """The closed pair with a trace anion X (z = -1) on the contact patch under the charged law,
-    and S as before; the pair's anchors carry +-voltage_fmol of charge, so the contact patch holds
-    a voltage that no ion moves (every ion is impermeant here) and the trace barely changes."""
-    raw = closed_pair(end=end, dt=dt, routes=[charged("charged_X", P)])
+def charged_pair(
+    *, voltage_fmol=0.0, pool_mM=1e-9, node_mM=5e-10, end=0.02, dt=1e-3, species="X", valence=-1
+):
+    """The closed pair with a trace row `species` (default the anion X, z = -1) on the contact
+    patch under the charged law, and S as before; the pair's anchors carry +-voltage_fmol of
+    charge, so the contact patch holds a voltage that no ion moves (every ion is impermeant here)
+    and the trace barely changes."""
+    raw = closed_pair(end=end, dt=dt, routes=[charged(f"charged_{species}", P, species=species)])
     raw = add_inventory_species(
         raw,
-        "X",
+        species,
         trace_mM=fx.TRACE_mM,
         diffusivity_m2_per_s=fx.D_S,
         floor_fmol=fx.FLOOR_FMOL,
         concentrations_mM=dict(cell_0=pool_mM, ecs_0=node_mM),
     )
     m = raw["model"]
-    next(s for s in m["species"] if s["id"] == "X")["valence"] = -1
-    for node in (*m["cells"], *m["extracellular"]):
-        node["fixed_charge_equivalent_fmol"] += node["initial_amount_fmol"]["X"]  # Neutral nodes.
+    next(s for s in m["species"] if s["id"] == species)["valence"] = valence
+    for node in (*m["cells"], *m["extracellular"]):  # Each node stays neutral.
+        node["fixed_charge_equivalent_fmol"] -= valence * node["initial_amount_fmol"][species]
     cell = next(c for c in m["cells"] if c["id"] == "cell_0")
     node = next(o for o in m["extracellular"] if o["id"] == "ecs_0")
     cell["fixed_charge_equivalent_fmol"] += voltage_fmol
@@ -340,15 +343,31 @@ def test_the_charged_law_refuses_a_neutral_row_a_junction_and_a_second_law(chang
         parse_spec(raw)
 
 
+@pytest.mark.parametrize("species, valence", [("X", -1), ("H", 1)])
+def test_a_charged_route_round_trips_its_species(species, valence):
+    """to_dict keeps a charged route's species, the leak's default H included (the kinds owner's
+    review: dropping it made the re-parse fail on species None). Host side."""
+    spec = parse_spec(charged_pair(species=species, valence=valence))
+    again = parse_spec(copy.deepcopy(spec.to_dict()))
+    assert (
+        dict(again.model.kinds)[passive_routes.KIND_ID]
+        == dict(spec.model.kinds)[passive_routes.KIND_ID]
+    )
+    assert spec.to_dict()["model"][passive_routes.MODEL_KEY][0]["species"] == species
+
+
 def test_the_charged_law_refuses_a_row_a_closure_holds():
-    """FR-15 P2, fail-closed (the lead's ruling of 19 November 2026): the law reads amounts, so a
+    """FR-15 P2, fail-closed (the lead's rulings of 19 November 2026): the law reads amounts, so a
     row whose free/total split B4's closure owns (the FR-4 world's buffered proton row) is refused
-    on it; the leak beside it reads free h through the closure as before."""
+    on it, by the species registry (check_amount_reading_routes, option (a)); the leak beside it
+    reads free h through the closure as before."""
     raw = fr.declared_world(fr.fr4_world())
     routes = raw["model"][passive_routes.MODEL_KEY]
     routes.append(dict(id="charged_h", patch=fr.BOUNDING, law=CHARGED, species="H",
                        permeability_m_per_s=1e-9))  # fmt: skip
-    with pytest.raises(ConfigError, match=r"H at .* is held by .*rapid_proton_buffer"):
+    with pytest.raises(
+        ConfigError, match=r"species H at .* is held by .*rapid_proton_buffer@1.*reads amounts"
+    ):
         parse_spec(raw)
 
 
@@ -360,7 +379,8 @@ def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_f
     k_b n_b - k_a n_a with k_a = A P B(-x)/V_a, k_b = A P B(x)/V_b (1e15 m^3 -> pL), x = z F V/RT,
     an exponential to its equilibrium n_a/n_b = k_b/k_a = e^-x, the independent closed form here.
     Material is conserved, the heat is >= 0, and the definition-only kind fields appear (the
-    charged mask and the material term). At -50 mV the relaxation is 2.6 times faster, so its row
+    charged mask and the material term, which fails closed, +inf, where no potentials are given).
+    At -50 mV the relaxation is 2.6 times faster, so its row
     takes dt/4 to keep the step's second-order error inside 5e-4. One compile per row, about
     10 s each."""
     spec = parse_spec(charged_pair(voltage_fmol=voltage_fmol, dt=dt))
@@ -368,6 +388,12 @@ def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_f
     bound = dict(model.structure.kinds)[passive_routes.KIND_ID]
     kind = kind_registry.bound(kind_registry.active().lookup(passive_routes.KIND_ID), bound)
     assert kind.material_term is not None and "passive_charged" in kind.layout_fields
+    # Without potentials the material term fails closed: +inf at the charged route's two ends.
+    start_state, layout = model.initial_values(spec)
+    control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+    blind = np.asarray(kind.material_term(start_state, None, control, layout, xp=np))
+    ends = [layout.passive_inside[0], layout.passive_outside[0]]
+    assert np.isinf(blind[ends]).all() and not np.any(np.delete(blind, ends))
     result = run(spec)
     state, p = model.initial_values(spec)
     x_row = list(spec.model.species_ids).index("X")
