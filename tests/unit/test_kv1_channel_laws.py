@@ -208,7 +208,9 @@ def kv1_registration_errors(registry):
     return out
 
 
-def test_each_law_is_declared_on_the_template_and_registered_on_at3():
+def test_each_law_is_declared_on_the_template_and_held_until_at3_reads_the_registry():
+    """Its name is kept from the hold, which ended when @3's parser came to read the registry (the
+    Kv1 trigger), so the collected test IDs stay the base's: each law is now registered on @3."""
     hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, HOST3)
     today = {law.code for law in hosted if law.law_id in TODAYS_CODES}
     at3_homes = MODELS["resolved_pump_tissue@3"].law_homes
