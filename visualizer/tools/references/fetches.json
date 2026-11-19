@@ -13,11 +13,11 @@
   },
   {
    "id": "experiments",
-   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen.",
+   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes).",
    "query": "lens=experiments",
    "must": ["cards.json", "stills/*"],
    "allowed": ["cards.json", "stills/*"],
-   "bytes": 241000
+   "bytes": 262000
   },
   {
    "id": "tissue",
