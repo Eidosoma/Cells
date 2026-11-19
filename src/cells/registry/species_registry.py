@@ -65,6 +65,31 @@ ln(c0_registry / c0), and refuses one that differs from the registry's at more t
 species' potential would otherwise book the same rows at two values (F2's one authority; the
 FR-4/FR-5 note's §17, D3). A species the registry gives no potential is not compared.
 
+One standard free energy per reaction (check_free_energies)
+-----------------------------------------------------------
+Seam E's check (docs/CORE_SEAMS_DESIGN.md §7.1; the lead's ruling (d) of 19 November 2026). An
+operator or a kind that declares reaction-level standard free energies gives them through
+``standard_free_energies(declaration)`` -> (FreeEnergyEntry, ...), each a stoichiometry ((species,
+nu), ...), dG°/RT at its c0 in mM, and the cycle law and mode that produced it, or neither (F's
+contract, read through its checks: kind_registry.kind_standard_free_energies, each kind bound to
+its structure entry, and operators.operator_standard_free_energies). check_free_energies, part of
+check_definition after check_potentials, converts each to the registry's c0, dG°/RT + (sum nu)
+ln(c0_registry / c0), and refuses one that differs from the registry's sum of nu mu°/RT by more
+than its band, naming the declarer and the entry:
+* an entry that names a cycle law whose form has constants of its own takes that form's band for
+  its mode (``free_energy_band(mode, terms, c0_mM)``, terms the entry's ((nu, the registry's
+  mu°/RT), ...)): Wegscheider's B_W over the mode's cycle and the registry's potentials, plus one
+  ulp of the mode's implied dG°/RT, the entry's one rounding from the exact value, so every law
+  Wegscheider's condition admits, this check admits. The band comes from the law's form, never from
+  the entry, so no band is self-certified, and the registry reads no diagram;
+* any other entry (one that names no law, or a law whose form gives no band) takes
+  check_potentials' rounding: POTENTIAL_ULPS ulps of sum |nu mu°/RT| + |dG°/RT| + |(sum nu)
+  ln(c0_registry / c0)|, to which a species' potential at nu = 1 reduces.
+The residual is evaluated at FREE_ENERGY_DIGITS digits from the declared doubles, so its verdict
+does not depend on the order of its terms. An entry with a species the registry gives no potential
+is not compared. Its power is for energies no parse-time Wegscheider check covers: where one does
+(the transporter's diagram cycles), it holds the same band, and its refusal comes first.
+
 Moved by the step (moved_in_step)
 ---------------------------------
 For each species, the in-step movers of its cell rows and of its outside rows, derived from
@@ -79,6 +104,7 @@ held through the step: a moved row would make it lag (docs/INVENTORY_COUPLING_DE
 
 import math
 from dataclasses import dataclass
+from decimal import Decimal, localcontext
 
 from cells.definitions.specs import ConfigError, _fields
 
@@ -89,6 +115,8 @@ ROLES = ("author", "user")
 # registry's within this many ulps of |mu°/RT| (both) + |ln(c0 ratio)|, the conversion's inputs.
 POTENTIAL_ULPS = 16
 EPS = math.ulp(1.0)
+# check_free_energies' residual is evaluated at this many digits from the declared doubles.
+FREE_ENERGY_DIGITS = 50
 
 
 @dataclass(frozen=True)
@@ -475,6 +503,98 @@ def check_potentials(spec):
                     f"{converted!r} at the registry's {registry_c0!r} mM, where the species "
                     f"registry gives {registry_mu_RT!r}: one authority for each standard potential"
                 )
+
+
+def declared_free_energies(spec):
+    """Every reaction-level standard free energy the definition declares (seam E, module
+    docstring): ((where, (FreeEnergyEntry, ...)), ...), each composite operator's in declared order
+    (operators.operator_standard_free_energies: an operator hosts no law, so its entries name
+    none), then each declared kind's, the kind bound to its structure entry so that an entry
+    without the hook declares none (kind_registry.kind_standard_free_energies: a law an entry names
+    is a cycle law the kind hosts, and its mode one of that law's form's). Each is read through F's
+    checks, whose refusal is the definition's."""
+    from cells.registry import kind_registry
+    from cells.registry import operators as operator_registry
+
+    out = []
+    try:
+        for op, declaration in _entries(spec):
+            entries = operator_registry.operator_standard_free_energies(op, declaration)
+            out.append((f"Operator {op.LAW_ID}'s standard_free_energies", entries))
+        registry = kind_registry.active()
+        for kind_id, declaration in getattr(_inner_model(spec), "kinds", ()):
+            kind = registry.lookup(kind_id)
+            entry = kind.structure_entry(declaration) if kind.structure_entry else ()
+            bound = kind_registry.bound(kind, entry)
+            entries = kind_registry.kind_standard_free_energies(bound, declaration)
+            out.append((f"Kind {kind.kind_id}'s standard_free_energies", entries))
+    except ValueError as error:
+        raise ConfigError(str(error)) from error
+    return tuple(out)
+
+
+def _law_band(entry, terms, c0_mM, where):
+    """The band of an entry that names a cycle law, from that law's form (module docstring): its
+    free_energy_band for the entry's mode, as a Decimal; None for an entry that names no law, or
+    whose law's form gives no band (no constants of its own)."""
+    if entry.law_id is None:
+        return None
+    from cells.registry import laws as law_registry
+
+    form = law_registry.active().lookup(entry.law_id).cycle
+    method = getattr(form, "free_energy_band", None)
+    band = method(entry.mode, terms, c0_mM) if callable(method) else None
+    if band is None:
+        return None
+    band = Decimal(band)
+    if not (band.is_finite() and band >= 0):
+        raise ConfigError(
+            f"{where}: {entry.law_id}'s form gives mode {entry.mode} the band {band!r}, not a "
+            "finite non-negative number"
+        )
+    return band
+
+
+def check_free_energies(spec):
+    """Refuse a declared reaction-level standard free energy that, converted to the registry's c0
+    by (sum nu) ln(c0_registry / c0), differs from the registry's sum of nu mu°/RT by more than its
+    band, naming the declarer and the entry (module docstring). The band of an entry naming a
+    cycle law whose form gives one is that form's for its mode: Wegscheider's B_W plus one ulp of
+    the mode's implied dG°/RT, the entry's one rounding, so every law Wegscheider's condition
+    admits, this check admits. Any other entry's is check_potentials' rounding. Every declared
+    entry is read through F's checks, in a world without a registry too; an entry with a species
+    the registry gives no potential is not compared."""
+    for where, entries in declared_free_energies(spec):
+        for index, entry in enumerate(entries):
+            found = [standard_potential(spec, species) for species, _ in entry.stoichiometry]
+            if any(item is None for item in found):
+                continue  # Not compared, as check_potentials.
+            c0_registry = found[0][1]
+            terms = tuple(
+                (nu, mu) for (_, nu), (mu, _) in zip(entry.stoichiometry, found, strict=True)
+            )
+            at = f"{where}, entry {index}"
+            law = "" if entry.law_id is None else f" ({entry.law_id}'s cycle, mode {entry.mode})"
+            with localcontext() as ctx:
+                ctx.prec = FREE_ENERGY_DIGITS
+                net = sum(Decimal(nu) for nu, _ in terms)
+                shift = net * (Decimal(c0_registry).ln() - Decimal(entry.c0).ln())
+                registry_sum = sum(Decimal(nu) * Decimal(mu) for nu, mu in terms)
+                converted = Decimal(entry.dG_RT) + shift
+                residual = converted - registry_sum
+                band, source = _law_band(entry, terms, c0_registry, at), "its law's form's band"
+                if band is None:
+                    magnitude = sum(abs(Decimal(nu) * Decimal(mu)) for nu, mu in terms)
+                    magnitude += abs(Decimal(entry.dG_RT)) + abs(shift)
+                    band, source = POTENTIAL_ULPS * Decimal(EPS) * magnitude, "the rounding bound"
+                if abs(residual) <= band:
+                    continue
+            raise ConfigError(
+                f"{at}{law}: dG°/RT {entry.dG_RT!r} at {entry.c0!r} mM is {float(converted)!r} at "
+                f"the registry's {c0_registry!r} mM, where the species registry's sum of nu "
+                f"mu°/RT gives {float(registry_sum)!r}: {float(residual):.3e} apart, beyond "
+                f"{source} {float(band):.3e}: one authority for each standard free energy"
+            )
 
 
 def standard_potential(spec, species):
@@ -953,13 +1073,14 @@ def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
     model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
     the movers at a general closure's rows, the operators beside a stage read, then operators'
-    potentials."""
+    potentials and the reaction-level standard free energies of operators and kinds."""
     check_background(spec)
     check_two_form_rows(spec)
     check_forms(spec)
     check_closure_rows(spec)
     check_stage_read_rows(spec)
     check_potentials(spec)
+    check_free_energies(spec)
 
 
 # ------------------------------------------------------------------ moved by the step
