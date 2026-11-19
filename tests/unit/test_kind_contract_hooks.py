@@ -22,6 +22,19 @@ with a planted error it must catch (D187):
   lift; planted, each refused: an axis on a state field, a malformed axis tuple, a host of an
   unknown kind, a host on @3's own slot axis, an axis no field is on, a host index that is not a
   layout field, and one on another axis);
+- a kind's internal axes (its laws' modes, rows, bands, edges: copied whole at a split, never
+  hosted; the kinds owner's Q5) are checked at registration (planted, each refused: one also
+  hosted, one no field is on, @3's slot axis, a repeated name);
+- a kind's presence fields (Q2's presence gate, CORE_SEAMS §18 at 931b6606, widened to a tuple
+  on 19 November) are checked at registration: for each entity axis a non-empty tuple of distinct
+  bool layout fields, each on exactly that axis, structural with fill False (planted, each
+  refused: a field that is not a layout field, a fill of 0, an intensive role, no role, a field on
+  another axis too, presence on a shared axis and on an internal one, an entity axis left
+  uncovered, an axis no field is on, an empty tuple, a repeated field, a name for a tuple, a
+  non-name); a bound kind's presence_fields covers its own entity axes with its own layout fields
+  (planted: an entry with an entity axis uncovered, an entry without one of the masks), and the
+  shared axes are B1's; two entries with disjoint fields, and one field_axes and presence covering
+  both, each bind to their own axis's masks only;
 - an entry's `without` removes those hooks from the kind bound to it, so a hook a later layout
   adds never reaches an earlier entry (the kinds owner's design statement 1 §6; planted: a name
   that is no hook, refused at binding);
@@ -38,7 +51,7 @@ import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import parse_spec
-from cells.models import inner_laws, surface_pump_v3
+from cells.models import inner_laws, pump_composite_adapter, surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry.kind_registry import AxisHost, EnergyRole, Kind, KindFields, PartitionRole
 from validation.tissue import pump_water_fixtures as water_fixtures
@@ -307,3 +320,176 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             kind_registry.kind_standard_free_energies(planted_kind, ())
     with pytest.raises(ValueError, match=PLANTED_ID):
         kind_registry.KindRegistry().register(planted(standard_free_energies="not a hook"))
+
+
+def test_internal_axes_are_unhosted_and_used_by_a_field():
+    # Routes hosted on patches, each with per-mode cycles on the law-internal axis booked_mode.
+    kind = replace(
+        planted(),
+        state_axes=(("booked_dissipated_energy_pJ", ("booked_route", "booked_mode")),),
+        field_axes={"booked_host": ("booked_route",), "booked_availability": ()},
+        axis_hosts={"booked_route": AxisHost("patch", "booked_host")},
+        internal_axes=("booked_mode",),
+    )
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    assert planted().internal_axes == ()  # None today.
+    plants = {
+        "it is hosted": dict(internal_axes=("booked_mode", "booked_route")),
+        "no field of the kind's is on it": dict(internal_axes=("booked_band",)),
+        "@3's own slot axis": dict(internal_axes=("membrane_slot",)),
+        "a tuple of distinct axis names": dict(internal_axes=("booked_mode", "booked_mode")),
+    }
+    for words, changes in plants.items():
+        planted_kind = replace(kind, **changes)
+        errors = kind_registry.declaration_errors(planted_kind)
+        assert any(words in e for e in errors), (words, errors)
+        with pytest.raises(ValueError, match=PLANTED_ID):
+            kind_registry.KindRegistry().register(planted_kind)
+
+
+STRUCTURAL_FALSE = PartitionRole("structural", False)
+MASKS = ("booked_present", "booked_open")  # A population mask and a law's, as the transporter's.
+
+
+def present_kind(**changes):
+    """A kind with an entity axis of its own (routes on patches), a law-internal mode axis, and two
+    presence masks for its routes."""
+    kind = replace(
+        planted(),
+        state_axes=(("booked_dissipated_energy_pJ", ("booked_route", "booked_mode")),),
+        layout_fields=("booked_host", *MASKS),
+        field_axes={
+            "booked_host": ("booked_route",),
+            **dict.fromkeys(MASKS, ("booked_route",)),
+            "booked_availability": (),
+        },
+        axis_hosts={"booked_route": AxisHost("patch", "booked_host")},
+        internal_axes=("booked_mode",),
+        presence={"booked_route": MASKS},
+        partition_roles=dict.fromkeys(MASKS, STRUCTURAL_FALSE),
+    )
+    return replace(kind, **changes)
+
+
+def test_presence_fields_are_bool_structural_fields_on_each_entity_axis():
+    kind = present_kind()
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    assert kind_registry.entity_axes(kind) == ("booked_route",)  # The mode axis is internal.
+    assert kind_registry.presence_fields(kind) == {"booked_route": MASKS}
+    assert kind_registry.presence_fields(planted()) == {}  # None declared: refused by closers.
+    one = present_kind(presence={"booked_route": ("booked_present",)})
+    assert kind_registry.declaration_errors(one) == []  # One mask is a tuple of one.
+    plants = {
+        "booked_availability: not one of its layout fields": dict(
+            presence={"booked_route": (*MASKS, "booked_availability")}
+        ),
+        "booked_open: its fill is 0, not False": dict(
+            partition_roles={
+                "booked_present": STRUCTURAL_FALSE,
+                "booked_open": PartitionRole("structural", 0),
+            }
+        ),
+        "fill=None), not structural with fill False": dict(
+            partition_roles={
+                "booked_present": PartitionRole("intensive"),
+                "booked_open": STRUCTURAL_FALSE,
+            }
+        ),
+        "booked_open: None, not structural with fill False": dict(
+            partition_roles={"booked_present": STRUCTURAL_FALSE}
+        ),
+        "on ('booked_route', 'booked_mode'), not exactly ('booked_route',)": dict(
+            field_axes={
+                "booked_host": ("booked_route",),
+                "booked_present": ("booked_route",),
+                "booked_open": ("booked_route", "booked_mode"),
+            }
+        ),
+        "presence of axis booked_mode: a shared or internal axis": dict(
+            presence={"booked_route": MASKS, "booked_mode": ("booked_host",)}
+        ),
+        "presence of axis species: a shared or internal axis": dict(
+            presence={"booked_route": MASKS, "species": ("booked_host",)}
+        ),
+        "lacks its entity axes ['membrane_slot']": dict(
+            state_axes=(
+                ("booked_dissipated_energy_pJ", ("booked_route", "booked_mode")),
+                ("booked_work_pJ", ("membrane_slot",)),  # @3's slot axis: an entity axis.
+            )
+        ),
+        "names axes no field of its own is on: ['booked_band']": dict(
+            presence={"booked_route": MASKS, "booked_band": ("booked_host",)}
+        ),
+        "an empty tuple": dict(presence={"booked_route": ()}),
+        "names fields more than once: ['booked_present']": dict(
+            presence={"booked_route": ("booked_present", "booked_open", "booked_present")}
+        ),
+        "maps its entity axes to tuples of layout fields": dict(
+            presence={"booked_route": "booked_present"}  # A name, not a tuple of names.
+        ),
+        "to tuples of layout fields": dict(presence={"booked_route": ("booked_present", 1)}),
+    }
+    for words, changes in plants.items():
+        planted_kind = present_kind(**changes)
+        errors = kind_registry.declaration_errors(planted_kind)
+        assert any(words in e for e in errors), (words, errors)
+        with pytest.raises(ValueError, match=PLANTED_ID):
+            kind_registry.KindRegistry().register(planted_kind)
+    # A kind whose fields follow its entry: each bound kind's presence covers its own entity axes
+    # with its own layout fields.
+    fields = present_kind()
+    entries = {
+        "routes": KindFields(fields.state_axes, fields.layout_fields, (), ()),
+        "patches": KindFields(
+            (("booked_work_pJ", ("membrane_slot",)),), fields.layout_fields, (), ()
+        ),
+        "bare": KindFields(fields.state_axes, ("booked_host", "booked_present"), (), ()),
+    }
+    per_entry = replace(fields, declared_fields=entries.get)
+    assert kind_registry.presence_fields(kind_registry.bound(per_entry, "routes")) == {
+        "booked_route": MASKS
+    }
+    with pytest.raises(ValueError, match=r"lacks its entity axes \['membrane_slot'\]"):
+        kind_registry.presence_fields(kind_registry.bound(per_entry, "patches"))
+    with pytest.raises(ValueError, match=r"names fields \['booked_open'\] that are not its"):
+        kind_registry.presence_fields(kind_registry.bound(per_entry, "bare"))
+    # B1's adapter's shared axes are the contract's.
+    assert kind_registry.SHARED_AXES == pump_composite_adapter.SHARED_AXES
+
+
+def test_a_bound_entry_s_presence_reads_its_own_fields_only():
+    """Two entries with disjoint fields and one field_axes and presence covering both, as the
+    transporter's two layouts declare them: each bound entry's presence is its own axis's masks
+    (bound keeps field_axes whole, so entity_axes reads only the entry's own fields)."""
+    routes = present_kind()
+    bands = KindFields(
+        (("booked_work_pJ", ("booked_band",)),), ("booked_band_host", "booked_band_present"), (), ()
+    )
+    entries = {
+        "routes": KindFields(routes.state_axes, routes.layout_fields, (), ()),
+        "bands": bands,
+    }
+    kind = replace(
+        routes,
+        declared_fields=entries.get,
+        field_axes={
+            **routes.field_axes,
+            "booked_band_host": ("booked_band",),
+            "booked_band_present": ("booked_band",),
+        },
+        axis_hosts={
+            **routes.axis_hosts,
+            "booked_band": AxisHost("junction", "booked_band_host"),
+        },
+        presence={"booked_route": MASKS, "booked_band": ("booked_band_present",)},
+        partition_roles={**routes.partition_roles, "booked_band_present": STRUCTURAL_FALSE},
+    )
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    on_routes, on_bands = (kind_registry.bound(kind, entry) for entry in ("routes", "bands"))
+    assert kind_registry.entity_axes(on_routes) == ("booked_route",)
+    assert kind_registry.entity_axes(on_bands) == ("booked_band",)
+    assert kind_registry.presence_fields(on_routes) == {"booked_route": MASKS}
+    assert kind_registry.presence_fields(on_bands) == {"booked_band": ("booked_band_present",)}
