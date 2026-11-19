@@ -60,7 +60,13 @@ from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
 from cells.numerics.fixed_step import rk4_checked_step
-from cells.operators.contract import COMMUTING, READ_STAGES, part_stages, reads_of
+from cells.operators.contract import (
+    COMMUTING,
+    READ_STAGES,
+    monotone_heat,
+    part_stages,
+    reads_of,
+)
 from cells.registry import kind_registry, species_registry
 
 OBSERVER_ID = "resolved_pump_composite_accepted_grid_readouts@1"
@@ -433,7 +439,8 @@ def held_row_errors(entries, spec):
         return []
     errors, registry = [], kind_registry.active()
     for kind_id, declaration in declared:
-        kind = registry.lookup(kind_id)
+        # The kind bound to its entry, whose hooks the step runs (never the static kind's).
+        kind = pump3.bound_kind(registry.lookup(kind_id), declaration)
         if kind.held_rows is None:
             continue
         for species, node in kind.held_rows(declaration):
@@ -691,11 +698,15 @@ def structure_errors(inner, operators):
     # control is refused: observation holds only today's schedules (held_schedules). An operator
     # that builds the inner types with today's fields (FIXED_INNER_FIELDS) is refused beside any
     # declared kind, and so is one that opens, closes or retires slots (CLOSES, RETIRES, or an
-    # activity mask it provides): no closer resets a kind's per-slot fields (state on cell_slot,
-    # membrane_slot, ...), which would be left stale where a slot closes, retires or opens.
+    # activity mask it provides) beside a kind the lifecycle cannot act on by role
+    # (docs/CORE_SEAMS_DESIGN.md §4.2; the inner's kind_lifecycle_errors): a kind that declares no
+    # roles keeps the refusal's words, since no closer resets its per-slot fields (state on
+    # cell_slot, membrane_slot, ...), which would be left stale where a slot closes, retires or
+    # opens; one with roles is refused while a field lacks declared axes or is per-entity.
     kinds = tuple(getattr(inner, "KINDS", ()))
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
+    blocked = _kinds_lifecycle(inner, kinds)
     for op in operators:
         if kinds and op.FIXED_INNER_FIELDS:
             errors.append(
@@ -703,10 +714,7 @@ def structure_errors(inner, operators):
                 f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
-            errors.append(
-                f"{op.LAW_ID} opens, closes or retires slots, and no closer resets a kind's "
-                f"per-slot fields, so it does not run beside declared kinds ({', '.join(kinds)})"
-            )
+            errors.extend(_kinds_beside_closer(op, kinds, blocked))
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
@@ -729,6 +737,42 @@ def structure_errors(inner, operators):
             "at most one in-step membrane process (the inner hook books one combined transfer)"
         )
     return errors
+
+
+def _kinds_lifecycle(inner, kinds):
+    """{kind ID: (reason, fields) or ()} of the declared kinds beside a closer (the inner's
+    kind_lifecycle_errors on its BOUND_KINDS); every kind is refused for its roles, fail-closed,
+    where the inner declares neither."""
+    check = getattr(inner, "kind_lifecycle_errors", None)
+    bound = tuple(getattr(inner, "BOUND_KINDS", ()))
+    if check is None or len(bound) != len(kinds):
+        return {k: ("roles", ()) for k in kinds}
+    return {k: check(kind) for k, kind in zip(kinds, bound, strict=True)}
+
+
+def _kinds_beside_closer(op, kinds, blocked):
+    """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on."""
+    roleless = [k for k in kinds if blocked[k] and blocked[k][0] == "roles"]
+    out = []
+    if roleless:
+        out.append(
+            f"{op.LAW_ID} opens, closes or retires slots, and no closer resets a kind's "
+            f"per-slot fields, so it does not run beside declared kinds ({', '.join(roleless)})"
+        )
+    for k in kinds:
+        reason, fields = blocked[k] or (None, ())
+        if reason == "axes":
+            out.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {k} declares no axes "
+                f"for {', '.join(fields)}, so the lifecycle cannot act on them by role"
+            )
+        elif reason == "entities":
+            out.append(
+                f"{op.LAW_ID} opens, closes or retires slots, and the kind {k} holds per-entity "
+                f"fields ({', '.join(fields)}), which keep running on a closed host until the core "
+                "gates every kind entity's rates by its host's activity"
+            )
+    return out
 
 
 def field_map(inner, operators):
@@ -895,9 +939,12 @@ class Composition:
             "CompositeValues",
             [(k, object) for k in ("field", "derivative", "ionic", *self.READOUTS, "valid")],
         )
+        # The dissipation check's fields: each operator's heat fields whose declared energy role
+        # is monotone (contract.monotone_heat; every heat field by default). A non-monotone heat
+        # stays among the energy flows above.
         self.DISSIPATION_FIELDS = (
             *inner.DISSIPATION_FIELDS,
-            *(k for op in operators for k in op.HEAT_FIELDS),
+            *(k for op in operators for k in monotone_heat(op)),
         )
         self.own_ledger_operators = tuple(op for op in operators if op.LEDGERS)
         self.LEDGERS = (*inner.LEDGERS, *(k for op in operators for k in op.LEDGERS))

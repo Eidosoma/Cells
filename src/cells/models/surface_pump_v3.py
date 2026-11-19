@@ -68,6 +68,9 @@ from cells.definitions.surface_pump_v3_spec import (
     NAV1P2_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
+    channel_factors,
+    channel_laws,
+    law_codes,
     projection,
 )
 from cells.execution.errors import NumericalError
@@ -227,11 +230,12 @@ def _todays_initial_values(spec):
         junction_heat_trapezoid=np.zeros(int(m.junction_heat_booking == TRAPEZOID_JUNCTION_HEAT)),
     )
     gate, mids = np.zeros((2, nc)), [p.id for p in m.membranes]
+    codes = law_codes()  # The registry's codes (today's five keep theirs, 0-4).
     for i, c in enumerate(m.channels):
         v["channel_membranes"][i] = mids.index(c.membrane_id)
         v["channel_permeability"][i] = c.max_permeability_m_per_s
         v["channel_abundance"][i] = c.abundance
-        v["channel_laws"][i] = LAW_CODES[c.kinetic_law]
+        v["channel_laws"][i] = codes[c.kinetic_law]
         for ion in c.permeant_ions:
             row = m.species_ids.index(ion.species_id)
             v["channel_relative_permeability"][row, i] = ion.relative_permeability
@@ -377,7 +381,28 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
     return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
 
 
+def host_gated_pumps(p, structure, *, xp=jnp):
+    """B1 (docs/CORE_SEAMS_DESIGN.md §4.2, §4.5 Q1): the layout @3's pump laws see, each pump idle
+    where its host is closed.
+
+    Where the structure declares a closer (padding_fill) beside a pump law, each Na/K and Ca²⁺
+    pump's presence is and-ed with its patch's activity through the host table: the view's, so a
+    pump on a patch a closer has closed reads as a padded slot's (neutral inputs inside its domain;
+    exact zeros for its cycles, heat, work and affinity) at every stage, on the host and the
+    device. Its state (cycles and booked energy, history) is untouched. Static: in every other
+    structure the layout is returned as it is, so closer-free and pump-free worlds keep their
+    programs; no world of G1's or crossrev's declares both (18 November 2026)."""
+    if structure is None or not (structure.padding_fill and structure.pump_laws):
+        return p
+    patches = host_table(p, xp=xp).active[: p.membrane_active.size]
+    return p._replace(
+        pump_present=p.pump_present & patches,
+        calcium_pump_present=p.calcium_pump_present & patches,
+    )
+
+
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
+OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
 
 
 def _kinds(structure):
@@ -396,7 +421,8 @@ def _route(structure, kinds, read, control, p, *, xp):
     """§7.4 (n), the routing door, at one stage: (the control with each routed slot set to its
     held value x its sources' factors, a left fold in declared order; valid: every factor finite
     and in [0, 1]). The factors are the sources' at the stage's read state. Static: without
-    routes the control is returned as it is, and no factor is evaluated."""
+    routes the control is returned as it is, and no factor is evaluated. The routed slots are the
+    kinds' own control fields' and @3's own channel slots (B1's door)."""
     if structure is None or not structure.routes:
         return control, True
     by_id = {kind_registry.qualified(kind.kind_id): kind for kind in kinds}
@@ -424,8 +450,13 @@ def _route(structure, kinds, read, control, p, *, xp):
 def _routes(model):
     """§7.4 (n): the routing door's table for a parsed model block, resolved at binding: ((sink
     kind ID, control field, slot, ((source kind ID, position), ...)), ...) in canonical kind
-    order; () without a sink. Refused: an unknown source ID, one that two kinds expose, a field
-    that is not the sink's own control field, and a slot routed twice."""
+    order, then @3's own channel slots; () without a sink. Refused: an unknown source ID, one that
+    two kinds expose, a field that is not the sink's own control field, and a slot routed twice.
+
+    @3 is the sink of its own `channel` field (B1's door, docs/CORE_SEAMS_DESIGN.md §4.3): each
+    population whose entry declares factors routes its slot, its position among the channels,
+    through its sources, so "a sink routes its own control fields only" holds (sink ID: @3's
+    namespaced model ID)."""
     registry, declared = kind_registry.active(), getattr(model, "kinds", ())
     sources = {}
     for kind_id, declaration in declared:
@@ -456,6 +487,14 @@ def _routes(model):
             if unknown:
                 raise ConfigError(f"{where} names unknown factor sources {unknown}")
             routes.append((kind_id, name, slot, tuple(sources[source] for source in named)))
+    for slot, channel_id, named in channel_factors(model):  # B1: @3, the sink of its channels.
+        unknown = [source for source in named if source not in sources]
+        if unknown:
+            raise ConfigError(
+                f"Channel population {channel_id}'s factors name unknown factor sources {unknown}"
+                + ("" if declared else " (only a declared kind exposes factors)")
+            )
+        routes.append((OWN_SINK, "channel", slot, tuple(sources[source] for source in named)))
     return tuple(routes)
 
 
@@ -633,16 +672,17 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         structure=structure,
     )
     gate_rate = xp.where(p.channel_gate_active, (target - state.channel_gate) / tau, 0.0)
+    pumped = host_gated_pumps(p, structure, xp=xp)  # B1: idle on a closed host (static).
     pr, args = nak_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_delta_mu_J_mol,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
-    cycles = xp.where(p.pump_present, pr.cycles_fmol_s, 0.0)
+    cycles = xp.where(pumped.pump_present, pr.cycles_fmol_s, 0.0)
     pump_d = -1e-3 * cycles * pr.cycle_free_energy_J_mol
     metabolic = -1e-3 * cycles * pr.chemical_drive_J_mol
     ca_cycles, ca_d, ca_metabolic, ca_affinity, ca_args = calcium_pump_rates(
@@ -650,7 +690,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         co[:, p.membrane_outside],
         r.membrane_voltage_V,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
@@ -818,7 +858,7 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         channel,
         target,
         tau,
-        xp.where(p.pump_present, pr.cycle_free_energy_J_mol, 0.0),
+        xp.where(pumped.pump_present, pr.cycle_free_energy_J_mol, 0.0),
         ca_affinity,
         valid,
     )
@@ -837,7 +877,8 @@ def rhs(state, control, p, active, *, xp=jnp, structure=None):
 def domain_valid(state, p, active, *, xp=jnp, structure=None):
     valid = tissue.domain_valid(kinetic.passive_state(state), p, active, xp=xp)
     laws = p.channel_laws
-    if structure is None:  # Today's check against the whole registry.
+    if structure is None:  # Today's five (codes 0-4), the only laws the full catalogue runs: a code
+        # the registry adds from 5 is refused here, so it never meets that path's dispatch.
         valid &= xp.all((laws >= 0) & (laws < len(LAW_CODES)))
     else:  # An active slot runs a declared law; no literal comes from the registry.
         declared = xp.zeros(laws.shape, dtype=bool)
@@ -943,22 +984,23 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
         xp=xp,
         structure=structure,
     )
+    pumped = host_gated_pumps(p, structure, xp=xp)  # B1: idle on a closed host (static).
     rate, args = nak_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_delta_mu_J_mol,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
-    cycles = xp.where(p.pump_present, rate.cycles_fmol_s, 0.0)
+    cycles = xp.where(pumped.pump_present, rate.cycles_fmol_s, 0.0)
     ca_cycles, ca_d, ca_metabolic, _, ca_args = calcium_pump_rates(
         ci[:, p.membrane_cell],
         co[:, p.membrane_outside],
         r.membrane_voltage_V,
         control,
-        p,
+        pumped,
         xp=xp,
         structure=structure,
     )
@@ -1253,7 +1295,7 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
     """Each junction's dissipation (pJ/s) at the given node potentials.
 
     The junction part of numerics/surface_transport.transport: constant-field
-    flux (coupling/selective.selective_flux) at the gated opening times the
+    flux (laws/junctions/selective.selective_flux) at the gated opening times the
     species' electrochemical potential difference, summed over species.
     """
     s = tissue.field_layout(p).surface
@@ -1331,6 +1373,79 @@ def check_definition(spec, *, structure=None):
                 structure=structure,
             ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
+    if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
+        _check_moved_rows(
+            compact,
+            structure,
+            kinds,
+            state,
+            p,
+            [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))],
+        )
+
+
+# The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
+# reference, by a fixed pattern over (species, node), so a rate that moves a row only away from the
+# initial concentrations is seen too.
+GUARD_PERTURBATION = 0.1
+
+
+def _perturbed(state, p):
+    """The guard's second state: the initial amounts raised by a fixed pattern (all positive)."""
+
+    def pattern(reference):
+        s, n = np.indices(np.shape(reference))
+        return GUARD_PERTURBATION * (1 + (7 * s + 3 * n) % 10) / 10 * np.asarray(reference)
+
+    return state._replace(
+        amount_increment=np.asarray(state.amount_increment) + pattern(p.amount_reference),
+        extracellular_amount_increment=np.asarray(state.extracellular_amount_increment)
+        + pattern(p.extracellular_amount_reference),
+    )
+
+
+def _check_moved_rows(spec, structure, kinds, state, p, controls):
+    """The operators owner's ruling (CORE_SEAMS §18, amended at f609dd7f; the lead's ruling 3 (a)):
+    a kind's rates move only the rows its `moved_rows` declares, since refusal 4 admits a kind by
+    them (a source kind, which declares none, moves nothing). Checked on the host at binding, with
+    no program change: each kind's rates at the stage read of the initial state and of a perturbed
+    state (_perturbed), at every change record's control after the routing door and at the initial
+    state's node potentials; a nonzero cell or outside change at a (species, node) its moved_rows
+    does not name refuses the definition, naming the kind and the row. Not exhaustive: a rate that
+    moves a row only at states neither reaches would pass; a run-time check is the later option."""
+    movers = [kind for kind in kinds if kind.rates is not None]
+    if not movers:
+        return
+    declarations, nodes = dict(spec.model.kinds), node_ids(spec)
+    species = list(spec.model.species_ids)
+    allowed = {}
+    for kind in movers:
+        mask = np.zeros((len(species), len(nodes)), dtype=bool)
+        declaration = declarations[kind_registry.qualified(kind.kind_id)]
+        declared = kind.moved_rows(declaration) if kind.moved_rows is not None else ()
+        for entry in declared:
+            mask[species.index(entry[0]), nodes.index(entry[1])] = True
+        allowed[kind.kind_id] = mask
+    with np.errstate(all="ignore"):
+        potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
+        for x in (state, _perturbed(state, p)):
+            read, _ = _stage_read(x, p, kinds, xp=np)
+            for control in controls:
+                routed, _ = _route(structure, kinds, read, control, p, xp=np)
+                for kind, rates in zip(
+                    movers, _kind_rates(movers, read, potentials, routed, p, xp=np), strict=True
+                ):
+                    moved = np.concatenate(
+                        (np.asarray(rates.cell), np.asarray(rates.outside)), axis=1
+                    )
+                    stray = np.argwhere((moved != 0) & ~allowed[kind.kind_id])
+                    if len(stray):
+                        row, node = stray[0]
+                        raise ConfigError(
+                            f"Kind {kind.kind_id}'s rates move {species[row]} at "
+                            f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
+                            "admits a kind by its moved_rows)"
+                        )
 
 
 def _check_kinds_solver(spec):
@@ -1499,6 +1614,9 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     its patch (o its opening, v its availability). max(c) bounds the
     constant-field slope, so this bounds the explicit channel stiffness.
     Quasi-steady gating slopes are not included; the step studies measure them.
+    A channel population that the routing door factors (B1, docs/CORE_SEAMS_DESIGN.md §4.3) enters
+    at its held availability: its factors are at most 1, so the held value bounds the routed one
+    (conservative), and the door's order here stays the kinds' (after this term).
     """
     ci, co = physical_amounts(state, p)
     ci = xp.where(p.active, ci / p.volume, 0.0)
@@ -1784,6 +1902,17 @@ class StepChecks(first.StepChecks):
         return {c.kinetic_law for c in self.spec.model.channels if c.initial_gate}
 
     @cached_property
+    def rk4_bound(self):
+        """(the smallest declared rk4_step_s over the world's gated laws, a law that has it), or
+        None without gated laws: each law's declaration holds its reference RK4 step bound."""
+        laws = channel_laws()
+        unbounded = sorted(law for law in self.gated_laws if laws[law].rk4_step_s is None)
+        if unbounded:  # Fail closed: a gated law without its bound runs on no RK4 grid.
+            return (0.0, unbounded[0])
+        bounds = sorted((laws[law].rk4_step_s, law) for law in self.gated_laws)
+        return bounds[0] if bounds else None
+
+    @cached_property
     def kind_rate(self):
         """Gap 5: the declared kinds' definition-time bound terms (1/s; the passive law's
         dt L <= 1, say), each its own rule: the largest."""
@@ -1798,11 +1927,16 @@ class StepChecks(first.StepChecks):
         spec, step = self.spec, np.max(steps, initial=0)
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
-            laws = self.gated_laws
+            laws, bound = self.gated_laws, self.rk4_bound
             if NAV1P2_LAW_ID in laws and step > RK4_SODIUM_STEP + 1e-16:
                 raise ConfigError("Resolved NaV1.2 channels require RK4 steps <= 2.5 us")
-            if laws and step > RK4_POTASSIUM_STEP + 1e-16:
-                raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+            if bound is not None and step > bound[0] + 1e-16:  # Each gated law's own bound.
+                if bound[0] == RK4_POTASSIUM_STEP:
+                    raise ConfigError("Resolved gated channels require RK4 steps <= 25 us")
+                raise ConfigError(
+                    f"Resolved gated channels ({bound[1]}) require RK4 steps <= "
+                    f"{bound[0] * 1e6:g} us"
+                )
         else:
             self.require_accepted_observations()
             if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
@@ -1985,6 +2119,82 @@ OBSERVATION_FIELDS = second.OBSERVATION_FIELDS
 Observations = make_dataclass(
     "SurfacePumpChannelObservations", [(k, np.ndarray) for k in OBSERVATION_FIELDS], frozen=True
 )
+
+# ------------------------------------------------------------------ field roles (B1, seam B)
+# docs/CORE_SEAMS_DESIGN.md §4.2: each per-entity field declares its partition role, and the
+# lifecycle (close, split, retire and open) is implemented once for every role:
+# - extensive: divided by the host's fraction with the anchor rule, so the daughters sum to the
+#   parent exactly; padded at retirement (its amount went to the daughters);
+# - intensive: copied at a split; padded at retirement;
+# - history: each daughter starts from 0; at retirement it moves into the closer's record, which
+#   adjust_inner adds back;
+# - structural: as declared at a split (law, host, ends); padded with its fill at retirement.
+# Every padded value of @3's is 0 (the adapter's PADDED_FIELDS; a closed contact's gate), so no
+# fill is declared. @3's own fields take these roles in place of the partition's hand-written
+# lists: every state field, and the per-entity layout fields that the lifecycle splits, copies or
+# pads today. These are host-side declarations: no program reads them.
+ROLES = ("extensive", "intensive", "history", "structural")
+FIELD_ROLES = MappingProxyType(
+    {
+        # State.
+        "amount_increment": "extensive",  # The partition's carriers move its charge mismatch.
+        "extracellular_amount_increment": "extensive",
+        "membrane_transferred": "history",
+        "junction_transferred": "history",
+        "face_transferred": "history",
+        "reservoir_supplied": "history",
+        "membrane_dissipated_energy_pJ": "history",
+        "junction_dissipated_energy_pJ": "history",
+        "face_dissipated_energy_pJ": "history",
+        "electrode_charge_transferred_C": "history",
+        "reservoir_work_pJ": "history",
+        "electrode_work_pJ": "history",
+        # A closed slot keeps the code-0 law's gate update (docs/INNER_MODEL_V4_DESIGN.md §7.4
+        # (b), (o)): its fill is that padding's, until an explicit absent marker.
+        "channel_gate": "intensive",
+        "channel_transferred": "history",
+        "channel_dissipated_energy_pJ": "history",
+        "junction_gate": "intensive",  # A closed contact holds 0.
+        "pump_cycles": "history",
+        "pump_dissipated_energy_pJ": "history",
+        "metabolic_work_pJ": "history",
+        "calcium_pump_cycles": "history",
+        "calcium_pump_dissipated_energy_pJ": "history",
+        "calcium_metabolic_work_pJ": "history",
+        # Layout: the anchors the partition splits (volume, amounts, charge, area, capacitance,
+        # contact area) and the pumps' per-patch capacities (composition's level (a)).
+        "volume": "extensive",
+        "amount_reference": "extensive",
+        "initial_cell_charge_C": "extensive",
+        "extracellular_volume": "extensive",
+        "extracellular_amount_reference": "extensive",
+        "initial_outside_charge_C": "extensive",
+        "membrane_area": "extensive",
+        "membrane_capacitance": "extensive",
+        "pump_capacity": "extensive",
+        "calcium_pump_capacity": "extensive",
+        "junction_area": "extensive",
+        # Layout copied at a split. A population takes its patch's fraction through the patch's
+        # area: its abundance and permeability are copied.
+        "membrane_permeability": "intensive",
+        "channel_abundance": "intensive",
+        "channel_permeability": "intensive",
+        "channel_relative_permeability": "intensive",
+        "junction_permeability": "intensive",
+        "junction_threshold_voltage": "intensive",
+        "junction_minimum": "intensive",  # A closed contact's minimum open fraction is 0.
+        # Layout as declared: laws, hosts and ends.
+        "channel_laws": "structural",  # Padded with code 0, the padding code.
+        "channel_membranes": "structural",
+        "membrane_cell": "structural",
+        "membrane_outside": "structural",
+        "junction_sender": "structural",
+        "junction_receiver": "structural",
+        "pump_present": "structural",
+        "calcium_pump_present": "structural",
+    }
+)
+
 
 # ------------------------------------------------------------------ the run view's declarations
 # docs/RUN_VIEW_DESIGN.md §3 (D154), in the operator contract's forms: host-side metadata read
@@ -2200,11 +2410,15 @@ def view_declarations(structure):
             if k in present and v in types.LAYOUT_TYPE._fields
         }
     out = {name: MappingProxyType(value) for name, value in merged.items()}
+    notes = dict(RECORD_NOTES)
+    if any(sink == OWN_SINK for sink, *_ in structure.routes):  # B1's door into @3.
+        notes["channel_availability"] = ROUTED_CHANNEL_NOTE
     return out | dict(
         VIEW_LAYERS=tuple(layers),
         VIEW_AXIS_SETS=MappingProxyType(axis_sets),
         RECORD_DIAGNOSTICS=tuple(diagnostics),
         RECORD_REFERENCES=MappingProxyType(references),
+        RECORD_NOTES=MappingProxyType(notes),
     )
 
 
@@ -2216,6 +2430,15 @@ RECORD_NOTES = MappingProxyType(
         "populations, less each pump's per-cycle rows times its cycles (pump_cycles); the pump is "
         "a separate term, never in this record",
     }
+)
+
+
+# B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): what channel_availability records where a population
+# declares factors.
+ROUTED_CHANNEL_NOTE = (
+    "the held availability, before the routing door: a population that declares factors runs, at "
+    "every stage, at this times its sources' factors (a left fold in declared order), so its flux "
+    "follows the routed value, not this record"
 )
 
 
