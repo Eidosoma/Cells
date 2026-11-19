@@ -31,20 +31,42 @@ makes the network's slowest mode slower than every single step, it is shown non-
 **The kinetic reference.** The full nonlinear network under the drive is integrated from the
 closure's state by Radau and by BDF (scipy), at rtol 1e-12 with per-species atol. At each record
 time the lag is measured against the closure at that state's own totals, solved at 60 digits.
+
+**Release steps (amendment C5).** A unit step f′ + L ⇌ f is a release step when its bound side f
+still holds no more L than the base (count_f(L) ≤ 0): binding L there only restores a ligand a
+form below its base released, as pi2_PO4 + H ⇌ pi2_base or mgx_MgmH + H ⇌ mgx_Mg. Nothing in the
+network treats them differently: the same ν, flux and K_r. The planted disagreement
+(``flip_release``) writes each release step's ligand with the wrong sign in N, the step taken to
+release L where it binds it, the forward flux unchanged.
 """
 
 from __future__ import annotations
 
+import contextlib
 import math
 from decimal import Decimal
 
 import numpy as np
+
+try:
+    from threadpoolctl import threadpool_limits as _threadpool_limits
+except ImportError:                     # pragma: no cover - documented in the usage note
+    _threadpool_limits = None
 
 from . import binding as Bd
 from . import exact
 from .exact import context, dec, fl
 
 LN10 = math.log(10.0)
+
+
+def one_blas_thread():
+    """BLAS and LAPACK on one thread (amendment C5's finding): the registered values were
+    computed so, and a multi-threaded OpenBLAS moves the network's eigenvalues, so the record
+    times and the kinetic rows, at about 1e-10 relative, so ``design --check`` then differs."""
+    if _threadpool_limits is None:
+        return contextlib.nullcontext()
+    return _threadpool_limits(limits=1)
 
 
 class Network:
@@ -100,6 +122,17 @@ class Network:
                 raise ValueError(f"{B}: forms {missing} are not reachable from the base by unit "
                                  f"steps")
 
+    def release_steps(self) -> list:
+        """Amendment C5: the indices of the release steps, whose bound form f has count_f(L) ≤ 0."""
+        sy = self.system
+        out = []
+        for r, (_fa, _lg, fb, _k, _Kr, B, L) in enumerate(self.steps):
+            fid = self.species[fb][2]
+            f = next(x for x in sy.forms[B] if x["id"] == fid)
+            if f["counts"].get(L, 0) <= 0:
+                out.append(r)
+        return out
+
     # ----------------------------------------------------------------------------------------
     def closure_state(self, totals_L: dict, totals_B: dict) -> list:
         """n* (fmol) of every species at the closure's speciation (60 digits)."""
@@ -146,16 +179,18 @@ class Network:
             return [k * (n[lg] / self.V + n[fa] / self.V + Kr)
                     for fa, lg, _fb, k, Kr, _B, _L in self.steps]
 
-    def linearised(self, n: list, drive: list) -> dict:
-        """K = −N diag(F) Nᵀ W, ∂n*/∂T, P D and the first-order lag δ (60 digits)."""
+    def linearised(self, n: list, drive: list, flip_release: bool = False) -> dict:
+        """K = −N diag(F) Nᵀ W, ∂n*/∂T, P D and the first-order lag δ (60 digits).
+        ``flip_release`` plants the release steps' ligand with the wrong sign (amendment C5)."""
         S, R = len(self.species), len(self.steps)
         C = self.conservation_matrix()
+        release = set(self.release_steps()) if flip_release else set()
         with context():
             N = [[Decimal(0)] * R for _ in range(S)]
             F = []
             for r, (fa, lg, fb, k, _Kr, _B, _L) in enumerate(self.steps):
                 N[fa][r] -= 1
-                N[lg][r] -= 1
+                N[lg][r] += 1 if r in release else -1
                 N[fb][r] += 1
                 F.append(k * n[fa] * n[lg] / self.V)
             M = [[sum((N[i][r] * F[r] * N[j][r] for r in range(R)), Decimal(0))
@@ -182,10 +217,36 @@ class Network:
             K = [[-M[i][j] / dec(n[j]) for j in range(S)] for i in range(S)]
             return {"K": K, "dn_star_dt": dn_star, "PD": PD, "delta": delta, "F": F}
 
+    def first_order_float64(self, n: list, drive: list) -> dict:
+        """Amendment C5's floor check: the same linear algebra as ``linearised`` in float64
+        (NumPy, one BLAS thread) from the float closure state; {L: δ_L/n_L}."""
+        S, R = len(self.species), len(self.steps)
+        C = np.array([[float(x) for x in row] for row in self.conservation_matrix()])
+        nn = np.array([float(x) for x in n])
+        D = np.array([float(x) for x in drive])
+        V = float(self.V)
+        N = np.zeros((S, R))
+        F = np.zeros(R)
+        for r, (fa, lg, fb, k, _Kr, _B, _L) in enumerate(self.steps):
+            N[fa, r] -= 1
+            N[lg, r] -= 1
+            N[fb, r] += 1
+            F[r] = float(k) * nn[fa] * nn[lg] / V
+        with one_blas_thread():
+            M = (N * F) @ N.T
+            G = (C * nn) @ C.T
+            dn_star = nn * (C.T @ np.linalg.solve(G, C @ D))
+            y = np.linalg.solve(M + C.T @ C, D - dn_star)
+            yy = y - C.T @ np.linalg.solve(G, C @ (nn * y))
+        delta = nn * yy
+        return {L: float(delta[self.idx[("L", L)]] / nn[self.idx[("L", L)]])
+                for L in self.system.ligands}
+
     def slowest_rates(self, K: list, how_many: int = 3) -> list:
         """The network's slowest relaxation rates (1/s): −eigenvalues of K on the reaction space."""
         A = np.array([[fl(x) for x in row] for row in K])
-        ev = np.sort(-np.linalg.eigvals(A).real)
+        with one_blas_thread():
+            ev = np.sort(-np.linalg.eigvals(A).real)
         scale = max(abs(ev))
         nonzero = [float(x) for x in ev if abs(x) > 1e-9 * scale]
         return nonzero[:how_many]
@@ -226,8 +287,9 @@ class Network:
         rhs, jac = self.rhs_jac(drive)
         y0 = np.array([float(x) for x in n0])
         atol = np.maximum(np.abs(y0), 1e-30) * rtol * 1e-2
-        sol = solve_ivp(rhs, (0.0, float(times[-1])), y0, method=method, jac=jac, rtol=rtol,
-                        atol=atol, t_eval=[float(t) for t in times], dense_output=False)
+        with one_blas_thread():
+            sol = solve_ivp(rhs, (0.0, float(times[-1])), y0, method=method, jac=jac, rtol=rtol,
+                            atol=atol, t_eval=[float(t) for t in times], dense_output=False)
         if not sol.success:
             raise RuntimeError(sol.message)
         return [sol.y[:, k].copy() for k in range(sol.y.shape[1])]
@@ -243,8 +305,9 @@ def b4_lag_pH(h_mM, B_mM, K_mM, kon, dHdt_mM_s) -> float:
     return (rho / lam) * (beta_ln10 - h_mM) / (h_mM * LN10)
 
 
-def run_case(case: dict, registry: dict, kinetic: bool = True) -> dict:
-    """Every envelope quantity for one registered case (see the usage note)."""
+def run_case(case: dict, registry: dict, kinetic: bool = True, flip_release: bool = False) -> dict:
+    """Every envelope quantity for one registered case (see the usage note); ``flip_release``
+    plants amendment C5's sign error in the first-order lag."""
     spec = {"ligands": case["ligands"], "binders": case["binders"]}
     kon = {(B, L): k for B, L, k in case["kon_per_mM_per_s"]}
     net = Network(spec, registry, kon, case["volume_pL"])
@@ -255,8 +318,12 @@ def run_case(case: dict, registry: dict, kinetic: bool = True) -> dict:
         sp_ = ("L", key) if key in case["ligands"] else ("f", key,
                                                          net.system.forms[key][0]["id"])
         drive[net.idx[sp_]] = dec(rate)
-    lin = net.linearised(n, drive)
+    lin = net.linearised(n, drive, flip_release)
     lam = net.step_rates(n)
+    if case.get("amendment") == "C5" and not flip_release:
+        f64 = net.first_order_float64(n, drive)
+    else:
+        f64 = None
     out = {"species": ["/".join(s[1:]) for s in net.species],
            "closure_fmol": [fl(x) for x in n],
            "steps": [{"from": net.species[fa][2], "ligand": L, "to": net.species[fb][2],
@@ -264,6 +331,13 @@ def run_case(case: dict, registry: dict, kinetic: bool = True) -> dict:
                      for (fa, _l, fb, k, Kr, _B, L), lr in zip(net.steps, lam, strict=True)],
            "slowest_network_rates_per_s": net.slowest_rates(lin["K"]),
            "min_step_rate_per_s": fl(min(lam))}
+    if f64 is not None:
+        out["first_order_float64_dln"] = f64
+    rel = net.release_steps()
+    if rel:
+        out["release_steps"] = [{"from": net.species[net.steps[r][0]][2],
+                                 "ligand": net.steps[r][6],
+                                 "to": net.species[net.steps[r][2]][2]} for r in rel]
     with context():
         lag = {}
         per_step_all, per_step_own = {}, {}
