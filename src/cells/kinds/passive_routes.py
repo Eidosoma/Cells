@@ -802,7 +802,7 @@ def material_term(read, potentials, control, p, *, xp):
     opening = _opening(read, control, p, xp)
     volume, _ = _volumes(p, xp)
     if potentials is None:
-        permeable = entity_sum(p.passive_permeability, axis=0, xp=xp) > 0  # [route]
+        permeable = xp.any(p.passive_permeability > 0, axis=0)  # [route]: no species sum (A7).
         moving = xp.where(p.passive_charged & permeable, 1.0, 0.0)
         nodes = xp.zeros(volume.shape[0])
         count = scatter(moving, nodes, (p.passive_inside,), xp=xp)
