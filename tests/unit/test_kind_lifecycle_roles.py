@@ -55,12 +55,61 @@ def carrier_with_roles():
     return dataclasses.replace(carrier, partition_roles=roles_for(carrier))
 
 
+def _shared_initial(spec, declaration, layout, *, bands=None):
+    """The shared carrier's species-only state and layout ([bands, species] for its rate where it
+    has a band axis internal to its law)."""
+    species = len(spec.model.species_ids)
+    state = dict(carrier_transferred=np.zeros(species), carrier_work_pJ=np.zeros(species))
+    rate = np.zeros(species if bands is None else (bands, species))
+    return state, dict(carrier_rate_fmol_s=rate)
+
+
+def _shared_rates(state, potentials, control, p, *, xp):
+    """The shared carrier moves nothing: no node change, derivative, heat or work."""
+    return kind_registry.KindRates(
+        cell=xp.zeros_like(state.amount_increment),
+        outside=xp.zeros_like(state.extracellular_amount_increment),
+        derivatives=dict(
+            carrier_transferred=xp.zeros_like(state.carrier_transferred),
+            carrier_work_pJ=xp.zeros_like(state.carrier_work_pJ),
+        ),
+        heat_pJ_s=xp.zeros(()),
+        work_pJ_s=xp.zeros(()),
+    )
+
+
+def _shared_ledger_terms(state, p, *, xp):
+    return dict(
+        cell=xp.zeros_like(state.amount_increment),
+        outside=xp.zeros_like(state.extracellular_amount_increment),
+        work_pJ=state.carrier_work_pJ,
+    )
+
+
+def _shared_domain(state, p, *, xp):
+    moved, work = state.carrier_transferred, state.carrier_work_pJ
+    return xp.all(xp.isfinite(moved) & (moved >= 0)) & xp.all(xp.isfinite(work))
+
+
 def shared_carrier():
     """The carrier with every field on shared axes (no entity) and its axes declared: a planted
-    kind the lifecycle need not act on."""
+    kind the lifecycle need not act on. Its state and layout are species-only to match those axes,
+    so it moves nothing and carries no current (F's array-axes check, D228 item 6: the review found
+    the carrier's species x patches arrays here)."""
     carrier = kf.carrier()
     state = tuple((name, ("species",)) for name, _ in carrier.state_axes)
-    flat = dataclasses.replace(carrier, state_axes=state)
+    flat = dataclasses.replace(
+        carrier,
+        state_axes=state,
+        initial=_shared_initial,
+        rates=_shared_rates,
+        ledger_terms=_shared_ledger_terms,
+        domain=_shared_domain,
+        readouts=lambda state, read, potentials, control, p, *, xp: (
+            xp.zeros_like(p.membrane_area),
+        ),
+        moved_rows=lambda declaration: (),
+    )
     kind = axed(flat, {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
     return dataclasses.replace(kind, partition_roles=roles_for(kind))
 
@@ -161,6 +210,9 @@ def test_a_kind_whose_only_extra_axis_is_internal_needs_no_presence():
         shared_carrier(),
         {"carrier_rate_fmol_s": ("carrier_band", "species"), "carrier_availability": ()},
         internal_axes=("carrier_band",),
+        initial=lambda spec, declaration, layout: _shared_initial(
+            spec, declaration, layout, bands=1
+        ),
     )
     assert kind_registry.entity_axes(kind) == () and pump3.kind_lifecycle_errors(kind) == ()
     for law in SLOT_CHANGERS:
@@ -693,11 +745,18 @@ def test_the_lifecycle_acts_along_one_entity_axis_its_last():
 
 def per_patch_carrier(transferred="history"):
     """The carrier with its two state fields per patch (its transfers, history unless given, and
-    its work, history), its rate and availability on shared axes."""
-    kind = axed(kf.carrier(), {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
+    its work, history), its rate per patch as its arrays hold it (F's array-axes check, D228 item
+    6), and its availability on shared axes."""
+    kind = axed(
+        kf.carrier(),
+        {"carrier_rate_fmol_s": ("species", "membrane_slot"), "carrier_availability": ()},
+    )
     roles = roles_for(kind, "intensive") | {
         "carrier_transferred": PartitionRole(transferred),
         "carrier_work_pJ": PartitionRole("history"),
+        # Its rate is per patch, set at its declared patch alone: structural, so a daughter patch
+        # takes the fill, as the carrier's own initial values give every other patch.
+        "carrier_rate_fmol_s": PartitionRole("structural", 0.0),
     }
     return dataclasses.replace(kind, partition_roles=roles)
 
@@ -987,6 +1046,9 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
         partition_roles=MappingProxyType({k: role for k, (_, _, role) in fields.items()}),
         field_axes=MappingProxyType({k: (axis,) for k, (_, axis, _) in fields.items()}),
         presence=MappingProxyType({a: tuple(names) for a, names in (presence or {}).items()}),
+        # A field bound with no entries is empty by static dispatch, as the transporter's mask of
+        # a law its declaration leaves out (F's dispatch_masks, D228 item 6).
+        dispatch_masks=tuple(name for name, bound in bound_on.items() if bound == 0),
     )
 
 
@@ -1176,9 +1238,13 @@ def test_an_intensive_field_per_cell_or_per_contact_follows_its_map(planted, axi
 
 def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
     """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
-    the patches' 3); read along the patches' maps it would be compared at the wrong slots."""
+    the patches' 3); read along the patches' maps it would be compared at the wrong slots. F's
+    array-axes check refuses it where @3 binds the kind's initial values (D228 item 6), before
+    the lifecycle's own refusal, which stays as defence in depth."""
     raw, _ = planted_world()
-    with pytest.raises(ConfigError, match=r"planted_km_mM binds shape \(6,\)"):
+    with pytest.raises(
+        ValueError, match=r"planted_km_mM's axis membrane_slot has length 6, not the host's 3"
+    ):
         planted(raw, bound_on={"planted_km_mM": "channel_slot"})
 
 
