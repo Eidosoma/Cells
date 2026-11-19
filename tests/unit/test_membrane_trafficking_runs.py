@@ -45,9 +45,10 @@ END = 0.004
 TIMES = [0.0, 0.001, 0.002, 0.003, END]
 CHANGE = 0.002
 # The cycle world runs one step past END, so every resume below leaves two steps or more. A resume
-# that leaves one step is another program (a scan of one step, which XLA may replace by its body
-# and fuse differently), so its last rounding is the compiler's: with this operator's arithmetic
-# unchanged, it differed by one rounding at one version and not at the next
+# that leaves one step compiles a scan of one step, which XLA's while-loop simplifier replaces by
+# its body; fused differently there, that step rounds as the compiler chooses. The 3 ms resume of
+# a 4 ms world differed in the carriers' work at one version of this operator, and was bitwise with
+# that pass disabled and at the next version, whose valid steps compute the same arithmetic
 # (fr2-retrieval-v1-20261119/probes/restart_one_step.*, reported to the lead).
 CYCLE_END = 0.005
 CYCLE_TIMES = [*TIMES[:-1], END, CYCLE_END]
@@ -196,6 +197,9 @@ def test_the_vmapped_batch_reproduces_each_world(cycle_run):
         for name in type(final)._fields:
             a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single.history, name))[-1]
             scale = np.max(np.abs(b), initial=0.0)
+            if name == "trafficking_work_pJ":  # Its terms cancel: their accumulated magnitude.
+                terms = np.asarray(single.history.trafficking_energy_magnitude_pJ)[-1]
+                scale = max(scale, float(np.max(terms)))
             assert np.max(np.abs(a - b), initial=0.0) <= 1e-12 * scale + 1e-30, (world, name)
         assert np.isfinite(batch.worlds[world].diagnostics["max_energy_balance_error_pJ"])
 
