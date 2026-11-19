@@ -214,7 +214,9 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-f49557fd/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/seam-a-decl-remeasure-20261119/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-b442f464/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/fr2-references-interface-20261119/tiers-309cfb50/measure/measured.json"
+  "/mnt/workspaces/Cells/fr2-references-interface-20261119/tiers-309cfb50/measure/measured.json",
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-65d8c1e4/measured.three.json",
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-71a044cc/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1792,6 +1794,22 @@
    "root": "/mnt/workspaces/Cells/fr2-references-interface-20261119/snapshot-309cfb50",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T11:32:15+00:00"
+  },
+  {
+   "git_revision": "65d8c1e43fdfcfea0dc0633b8edfc1a60643dc77",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/cmp-65d8c1e4",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T12:12:05+00:00"
+  },
+  {
+   "git_revision": "71a044cc42aa9abe359122cf640907cb8b24dacb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/cmp-71a044cc",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T12:56:10+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3767,6 +3785,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_comparison.py",
+    "seconds": 5.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 802
     }
    },
    {
@@ -5905,26 +5931,26 @@
    },
    {
     "file": "tests/unit/test_membrane_trafficking_batch.py",
-    "seconds": 76.05,
+    "seconds": 71.6,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 145
     }
    },
    {
     "file": "tests/unit/test_membrane_trafficking_runs.py",
-    "seconds": 70.81,
+    "seconds": 72.7,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 50
     }
    },
    {
     "file": "tests/unit/test_membrane_trafficking_sheet.py",
-    "seconds": 68.7,
+    "seconds": 73.65,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 113
     }
    },
    {
