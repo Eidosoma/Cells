@@ -320,7 +320,10 @@ def fold_rows(record, measured_records, sources, files):
     unknown = sorted(f for f in latest if f not in set(files))
     if unknown:
         raise SystemExit(f"fold refused: measured files {unknown} are not under tests/")
-    failing = sorted(f for f, r in latest.items() if r["exit_code"] != 0
+    # A row that reached the cap (timed_out, exit code None) is not a failure: it goes to tier 3,
+    # as tier_of places it. A failed or erroring count still refuses, timed out or not.
+    failing = sorted(f for f, r in latest.items()
+                     if (r["exit_code"] != 0 and not r.get("timed_out"))
                      or r["counts"].get("failed") or r["counts"].get("error"))
     if failing:
         raise SystemExit(f"fold refused: measured rows {failing} did not pass")
