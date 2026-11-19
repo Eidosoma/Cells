@@ -111,6 +111,7 @@ from cells.modules import (
     KindView,
     PartitionRole,
     bounded_integer,
+    entity_sum,
     finite_number,
     qualified,
     require_fields,
@@ -1288,12 +1289,18 @@ def _diagram_layout(declaration, all_forms, K, M):
         o["log_scale"][j] = math.log(form.diagram.rate_scale_per_s)
         o["ln_standard"][j] = math.log(form.diagram.standard_state_mM)
         # Each directional-diagram term's exponents: the sum of its edge directions' (static).
-        o["term_orders"][:, :, j] = o["orders"][o["term_slots"][:, :, j], :, j].sum(axis=1)
-        o["term_zeta"][:, j] = o["zeta"][o["term_slots"][:, :, j], j].sum(axis=1)
-        o["plus_orders"][:, :, j] = o["orders"][o["plus_slots"][:, :, j], :, j].sum(axis=1)
-        o["plus_zeta"][:, j] = o["zeta"][o["plus_slots"][:, :, j], j].sum(axis=1)
-        o["cut_orders"][:, :, :, j] = o["orders"][o["cut_slots"][:, :, :, j], :, j].sum(axis=2)
-        o["cut_zeta"][:, :, j] = o["zeta"][o["cut_slots"][:, :, :, j], j].sum(axis=2)
+        o["term_orders"][:, :, j] = entity_sum(
+            o["orders"][o["term_slots"][:, :, j], :, j], axis=1, xp=np
+        )
+        o["term_zeta"][:, j] = entity_sum(o["zeta"][o["term_slots"][:, :, j], j], axis=1, xp=np)
+        o["plus_orders"][:, :, j] = entity_sum(
+            o["orders"][o["plus_slots"][:, :, j], :, j], axis=1, xp=np
+        )
+        o["plus_zeta"][:, j] = entity_sum(o["zeta"][o["plus_slots"][:, :, j], j], axis=1, xp=np)
+        o["cut_orders"][:, :, :, j] = entity_sum(
+            o["orders"][o["cut_slots"][:, :, :, j], :, j], axis=2, xp=np
+        )
+        o["cut_zeta"][:, :, j] = entity_sum(o["zeta"][o["cut_slots"][:, :, :, j], j], axis=2, xp=np)
     out = {f"cycle_dg_{name}": value for name, value in o.items()}
     assert set(out) == names
     return out
@@ -1385,15 +1392,17 @@ def _evaluate(read, potentials, control, p, *, xp):
     modes = p.cycle_mode_present
     nu = p.cycle_nu
     q = p.cycle_charge_moved
-    x = p.cycle_standard_RT + xp.sum(nu * ln_c[None], axis=1) - q * psi[None, :]
+    x = p.cycle_standard_RT + entity_sum(nu * ln_c[None], axis=1, xp=xp) - q * psi[None, :]
     x = xp.where(modes, x, 0.0)
     x_terms = (
         xp.abs(p.cycle_standard_RT)
-        + xp.sum(xp.abs(nu) * (xp.abs(ln_c[None]) + 1.0), axis=1)
+        + entity_sum(xp.abs(nu) * (xp.abs(ln_c[None]) + 1.0), axis=1, xp=xp)
         + xp.abs(q * psi[None, :])
     )
     held_rows = p.cycle_row_held[None]
-    held_x = p.cycle_held_standard_RT + xp.sum(xp.where(held_rows, nu * ln_c[None], 0.0), axis=1)
+    held_x = p.cycle_held_standard_RT + entity_sum(
+        xp.where(held_rows, nu * ln_c[None], 0.0), axis=1, xp=xp
+    )
     k, a = p.cycle_capacity_fmol_s, control.cycle_availability
     enabled = (k > 0) & (a > 0) & active
     log_ka = xp.log(xp.where(enabled, k, 1.0)) + xp.log(xp.where(enabled, a, 1.0))
@@ -1431,33 +1440,35 @@ def _evaluate(read, potentials, control, p, *, xp):
         nf = SimpleNamespace(**{n: getattr(p, f"cycle_nf_{n}") for n in NET_FLOW_FIELDS})
         y = (
             nf.standard_RT
-            + xp.sum(nf.counts * ln_c[None, None], axis=2)
+            + entity_sum(nf.counts * ln_c[None, None], axis=2, xp=xp)
             - nf.charge * psi[None, None, :]
             + nf.shift * psi[None, None, :]
         )  # [M, U, P]
         y_abs = (
             xp.abs(nf.standard_RT)
-            + xp.sum(xp.abs(nf.counts) * (xp.abs(ln_c[None, None]) + 1.0), axis=2)
+            + entity_sum(xp.abs(nf.counts) * (xp.abs(ln_c[None, None]) + 1.0), axis=2, xp=xp)
             + xp.abs(nf.charge * psi[None, None, :])
             + xp.abs(nf.shift * psi[None, None, :])
         )
         ka = xp.exp(log_ka)[None, None, :]
         weight = xp.where(nf.present & on[:, None, :], nf.weight * ka, 0.0)
         e_y = xp.exp(xp.where(nf.present, y, 0.0))
-        j_nf = xp.sum(weight * -xp.expm1(xp.where(nf.present, y, 0.0)), axis=1)
-        phi_nf = xp.sum(xp.abs(weight) * (1.0 + e_y), axis=1)  # A signed term's own scale.
+        j_nf = entity_sum(weight * -xp.expm1(xp.where(nf.present, y, 0.0)), axis=1, xp=xp)
+        phi_nf = entity_sum(xp.abs(weight) * (1.0 + e_y), axis=1, xp=xp)  # Each term's own scale.
         flow = form == FORM_CODES["net_flow"]
         j = xp.where(flow, j_nf, j)
         scale = xp.where(flow, phi_nf, scale)
         d_j_d_psi = xp.where(
-            flow, xp.sum(weight * e_y * (nf.charge - nf.shift), axis=1), d_j_d_psi
+            flow, entity_sum(weight * e_y * (nf.charge - nf.shift), axis=1, xp=xp), d_j_d_psi
         )
         d_j_d_ln_c = xp.where(
-            flow[:, None, :], -xp.sum(weight[:, :, None, :] * e_y[:, :, None, :] * nf.counts, axis=1),
+            flow[:, None, :],
+            -entity_sum(weight[:, :, None, :] * e_y[:, :, None, :] * nf.counts, axis=1, xp=xp),
             d_j_d_ln_c,
         )  # fmt: skip
         y_terms = xp.where(flow, xp.max(xp.where(nf.present, y_abs, 0.0), axis=1), y_terms)
-        terms_count = xp.where(flow, xp.maximum(xp.sum(nf.present, axis=1), 1), terms_count)
+        counted = xp.maximum(entity_sum(nf.present, axis=1, xp=xp), 1)
+        terms_count = xp.where(flow, counted, terms_count)
         j_plus = xp.where(flow, xp.nan, j_plus)
         j_minus = xp.where(flow, xp.nan, j_minus)
     # The domain at the stage: positive finite reads, |x| <= 80, the declared pH bands, finite
@@ -1474,13 +1485,15 @@ def _evaluate(read, potentials, control, p, *, xp):
         bands_ok = True
     valid = xp.where(active, rows_ok & x_ok & finite & bands_ok, True)
     # The guard (statement 1, §5.2; amendment 2): G = sum_m J x <= A.
-    guard = xp.sum(j * x, axis=0)
-    rows_count = xp.sum(present, axis=0)[None, :]
-    mode_count = xp.sum(modes, axis=0)[None, :]
+    guard = entity_sum(j * x, axis=0, xp=xp)
+    rows_count = entity_sum(present, axis=0, xp=xp)[None, :]
+    mode_count = entity_sum(modes, axis=0, xp=xp)[None, :]
     coefficient = (rows_count + 10.0) * x_terms + (
         terms_count + mode_count + 12.0 + (rows_count + 11.0) * y_terms
     ) * xp.abs(x)
-    allowance = forms.UNIT_ROUNDOFF * xp.sum(xp.where(on, scale * coefficient, 0.0), axis=0)
+    allowance = forms.UNIT_ROUNDOFF * entity_sum(
+        xp.where(on, scale * coefficient, 0.0), axis=0, xp=xp
+    )
     valid = valid & xp.where(active, guard <= allowance, True)
     return Evaluation(
         ln_c, c, row_node, psi, x, x_terms, held_x, log_s, j_plus, j_minus, j, scale, y_terms,
@@ -1500,14 +1513,14 @@ def _population_rates(state, potentials, control, p, *, xp):
     n, o = p.active.size, p.outside_active.size
     species = state.amount_increment.shape[0]
     moved = p.cycle_row_present & ~p.cycle_row_held
-    row_rate = xp.where(moved, xp.sum(p.cycle_nu * e.j[:, None, :], axis=0), 0.0)  # [K, P]
+    row_rate = xp.where(moved, entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp), 0.0)
     nodes = _flat_scatter(row_rate, p.cycle_row_species, e.row_node, (species, n + o), xp=xp)
     rt = R * p.temperature
-    heat = -1e-3 * rt * xp.sum(e.j * e.x, axis=0)
-    work = -1e-3 * rt * xp.sum(e.j * e.held_x, axis=0)
-    stored = 1e-3 * rt * xp.sum(e.j * p.cycle_moved_standard_RT, axis=0)
+    heat = -1e-3 * rt * entity_sum(e.j * e.x, axis=0, xp=xp)
+    work = -1e-3 * rt * entity_sum(e.j * e.held_x, axis=0, xp=xp)
+    stored = 1e-3 * rt * entity_sum(e.j * p.cycle_moved_standard_RT, axis=0, xp=xp)
     held = p.cycle_row_present & p.cycle_row_held
-    supply_rows = xp.where(held, -xp.sum(p.cycle_nu * e.j[:, None, :], axis=0), 0.0)
+    supply_rows = xp.where(held, -entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp), 0.0)
     cols = xp.broadcast_to(xp.arange(supply_rows.shape[-1])[None, :], supply_rows.shape)
     supply = scatter(supply_rows, xp.zeros((species, supply_rows.shape[-1])), (p.cycle_row_species, cols), xp=xp)
     at_p = moved & ~p.cycle_row_at_n
@@ -1548,7 +1561,7 @@ def _population_readouts(read, potentials, control, p, *, xp):
 def _conductance(e, p, *, xp):
     """[P] each population's |dI/dV| (S), I its current a to b and V = phi_a - phi_b."""
     rt = R * p.temperature
-    total = xp.sum(p.cycle_charge_moved * e.d_j_d_psi, axis=0)
+    total = entity_sum(p.cycle_charge_moved * e.d_j_d_psi, axis=0, xp=xp)
     return CHARGE_PER_FMOL * (F / rt) * xp.abs(total)
 
 
@@ -1575,7 +1588,7 @@ def material_term(read, potentials, control, p, *, xp):
     volume = xp.concatenate((xp.where(p.active, p.volume, 1.0), xp.where(p.outside_active, p.extracellular_volume, 1.0)))
     amount = e.c * volume[e.row_node]  # [K, P] fmol
     neutral = p.cycle_row_present & ~p.cycle_row_held & ~p.cycle_row_charged
-    per_row = xp.sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0)  # [K, P] fmol/s per ln c
+    per_row = entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)  # [K, P] fmol/s per ln c
     slope = xp.where(neutral & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
     species = read.amount_increment.shape[0]
     nodes = _flat_scatter(slope, p.cycle_row_species, e.row_node, (species, n + o), xp=xp)
@@ -1593,11 +1606,12 @@ def _population_ledger_terms(state, p, *, xp):
     p_node = xp.where(p.cycle_n_at_b, table.end_a[host], table.end_b[host])
     row_node = xp.where(p.cycle_row_at_n, n_node[None, :], p_node[None, :])
     moved = p.cycle_row_present & ~p.cycle_row_held
-    rows = xp.where(moved, xp.sum(p.cycle_nu * state.cycle_count[:, None, :], axis=0), 0.0)
+    counted = entity_sum(p.cycle_nu * state.cycle_count[:, None, :], axis=0, xp=xp)
+    rows = xp.where(moved, counted, 0.0)
     nodes = _flat_scatter(rows, p.cycle_row_species, row_node, (species, n + o), xp=xp)
-    produced = xp.sum(nodes, axis=1)
+    produced = entity_sum(nodes, axis=1, xp=xp)
     rt = R * p.temperature
-    stored = 1e-3 * rt * xp.sum(state.cycle_count * p.cycle_moved_standard_RT, axis=0)
+    stored = 1e-3 * rt * entity_sum(state.cycle_count * p.cycle_moved_standard_RT, axis=0, xp=xp)
     return dict(
         cell=nodes[:, :n],
         outside=nodes[:, n:],
@@ -1808,7 +1822,7 @@ def probe(read, potentials, control, p, *, xp=np):
         occupancy = d.occupancy
     moved = p.cycle_row_present & ~p.cycle_row_held
     held = p.cycle_row_present & p.cycle_row_held
-    change = xp.sum(p.cycle_nu * e.j[:, None, :], axis=0)
+    change = entity_sum(p.cycle_nu * e.j[:, None, :], axis=0, xp=xp)
     volume = xp.concatenate((xp.where(p.active, p.volume, 1.0), xp.where(p.outside_active, p.extracellular_volume, 1.0)))
     amount = e.c * volume[e.row_node]
     per_mode = p.cycle_nu * e.d_j_d_ln_c / xp.where(amount > 0, amount, 1.0)[None]
@@ -1816,14 +1830,14 @@ def probe(read, potentials, control, p, *, xp=np):
         species=p.cycle_row_species, at_n=p.cycle_row_at_n, held=p.cycle_row_held,
         present=p.cycle_row_present, rate=xp.where(moved, change, 0.0),
         held_supply=xp.where(held, -change, 0.0),
-        self_slope=xp.where(moved, xp.sum(per_mode, axis=0), 0.0),
+        self_slope=xp.where(moved, entity_sum(per_mode, axis=0, xp=xp), 0.0),
         max_mode_slope=xp.where(moved, xp.max(xp.abs(per_mode), axis=0), 0.0),
     )  # fmt: skip
-    charge = xp.sum(p.cycle_charge_moved * e.j, axis=0) * sign
+    charge = entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp) * sign
     populations = SimpleNamespace(
-        heat_pJ_s=-1e-3 * rt * xp.sum(e.j * e.x, axis=0),
-        work_pJ_s=-1e-3 * rt * xp.sum(e.j * e.held_x, axis=0),
-        stored_pJ_s=1e-3 * rt * xp.sum(e.j * p.cycle_moved_standard_RT, axis=0),
+        heat_pJ_s=-1e-3 * rt * entity_sum(e.j * e.x, axis=0, xp=xp),
+        work_pJ_s=-1e-3 * rt * entity_sum(e.j * e.held_x, axis=0, xp=xp),
+        stored_pJ_s=1e-3 * rt * entity_sum(e.j * p.cycle_moved_standard_RT, axis=0, xp=xp),
         charge_a_to_b_fmol_s=charge, current_a_to_b_pA=1e12 * CHARGE_PER_FMOL * charge,
         conductance_pS=1e12 * _conductance(e, p, xp=xp), guard=e.guard, allowance=e.allowance,
         valid=e.valid,
