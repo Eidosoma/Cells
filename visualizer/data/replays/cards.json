@@ -1,0 +1,4918 @@
+{
+ "format": "cells.visualizer.experiment_cards@1",
+ "note": "The Experiments landing's cards, built by tools/build_cards.py from data/replays/cards.source.json (what is typed), the Engine map's overlay, the catalogue's overlay and selection, the model-system entries, and data/replays/cards.readings.json (what was read from the record). Not edited by hand: schema/EXPERIMENT_CARDS.md.",
+ "built_from": {
+  "map": {
+   "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+   "as_of": "2026-11-18"
+  },
+  "record": {
+   "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+  }
+ },
+ "bands": [
+  {
+   "id": "examples",
+   "label": "Examples to start with",
+   "says": "Two experiments to start with, each opening a view of its own.",
+   "cards": [
+    "tumour-tissue",
+    "assembly"
+   ]
+  },
+  {
+   "id": "judged",
+   "label": "Judged under a registered protocol",
+   "says": "Each card here was judged under a registered protocol, experiment or qualification. Passes and failures stand side by side, and each card shows its own level from the Engine map.",
+   "status": null,
+   "levels": [
+    {
+     "id": "qualified",
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    {
+     "id": "failed",
+     "label": "Failed qualification",
+     "says": "Built, then failed its registered qualification. Kept as evidence and not relied on."
+    },
+    {
+     "id": "landed",
+     "label": "Implemented and guarded",
+     "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
+    }
+   ],
+   "cards": [
+    "e07-v1",
+    "fr1",
+    "fr3",
+    "fr4",
+    "fr5",
+    "fr6",
+    "fr10",
+    "mg0",
+    "mg0c",
+    "mg1",
+    "d150",
+    "division",
+    "parity",
+    "water",
+    "replacement",
+    "l4-agreement",
+    "fixed-points",
+    "projective"
+   ]
+  },
+  {
+   "id": "development",
+   "label": "Development runs",
+   "says": "Runs of the engine made while it is built, each with its standing in the record's words.",
+   "cards": [
+    "turnover",
+    "secreted-species",
+    "planarian-loop",
+    "origin-laws",
+    "w1",
+    "conduction"
+   ]
+  },
+  {
+   "id": "invented",
+   "label": "Invented numbers",
+   "says": "A test sheet written by the viewer's own tool. No engine ran.",
+   "cards": [
+    "test-sheet"
+   ]
+  }
+ ],
+ "not_run": {
+  "says": "What is designed or planned and has not run stands on the Engine map.",
+  "lens": "engine"
+ },
+ "listing": {
+  "experiments": [
+   "gap-junction-tissue-line",
+   "gap-junction-tissue-ladder",
+   "gap-junction-tissue-sheet",
+   "gap-junction-linear-network",
+   "e07-v1",
+   "heredity-turnover-literature",
+   "secreted-species-dev-run",
+   "planarian-loop",
+   "example-sheet"
+  ],
+  "entries": [
+   "gard"
+  ]
+ },
+ "cards": [
+  {
+   "id": "tumour-tissue",
+   "band": "examples",
+   "kind": "replay",
+   "title": "The tumour tissue",
+   "asks": "How strongly must gap junctions couple cells for healthy tissue to turn a tumor back to the healthy state?",
+   "standing": {
+    "from": "map",
+    "part": "exp.gap_junction",
+    "label": "Gap-junction networks and tumour tissue (development)",
+    "status": null,
+    "level": null,
+    "as_of": "2026-11-18",
+    "says": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "The gap-junction replication's first stage, on main (17 November 2026, evening; D207)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+      "where": "Status: development work, not judged (D138).",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D207: The gap-junction replication has the highest priority",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Landed on main, 17 November",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "F1, narrower than first reported.",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D213: The tissue search reruns now; the core pass restarts through retire, then move 2",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The gap-junction tissue line, dense records, and the sheet (17 November 2026, night)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The coupling ladder",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D219: The gap-junction replication's next bundle and two judged comparisons",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+      "where": "The user's answers (18 November 2026; D219).",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D222: Core and FRs first",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "crossrev's replication set, merged at 460d766d",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CORE_SEAMS_DESIGN.md",
+      "where": "The replication set's baseline is fixed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [],
+    "first": "Development work, not judged (D138).",
+    "none": "The Engine map states no level for this work."
+   },
+   "cite": {
+    "says": "J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, 2026, doi:10.64898/2026.09.02.748840 (v1, CC BY 4.0)",
+    "from": {
+     "catalogue": "gap-junction-linear-network",
+     "field": "plain"
+    }
+   },
+   "switch": {
+    "heading": "The switch, in plain words",
+    "items": [
+     "Each cell carries a switch made of two molecules that suppress each other: the microRNA miR200 blocks the making of the protein ZEB, and ZEB blocks the making of miR200.",
+     "With miR200 high and ZEB low, the cell is epithelial (E), the healthy state here. With ZEB high and miR200 low, it is mesenchymal (M), the tumour state.",
+     "Each state sustains itself, which is what makes it a switch.",
+     "Only miR200 passes through gap junctions, so healthy neighbours can feed it into a tumour cell. With enough coupling, that tips the cell's switch back to E. With too little, the tumour holds. §7's \"neither\" search finds that threshold."
+    ],
+    "source": {
+     "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+     "where": "Section 1, Regulation: The switch, in plain words",
+     "revision": "a4b2db3d0c2f1114121f612579e4dfde2cb64bd5"
+    }
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "experiment": "gap-junction-linear-network"
+    },
+    "experiments": [
+     "gap-junction-tissue-line",
+     "gap-junction-tissue-ladder",
+     "gap-junction-tissue-sheet",
+     "gap-junction-linear-network"
+    ],
+    "runs": 50,
+    "runs_from": [
+     {
+      "experiment": "gap-junction-tissue-line",
+      "runs": 4,
+      "from": {
+       "evidence": "gap-junction-20261117",
+       "within": [
+        "runs",
+        "dense-01",
+        "viewer"
+       ],
+       "file": [],
+       "field": "every package holding a view.json"
+      }
+     },
+     {
+      "experiment": "gap-junction-tissue-ladder",
+      "runs": 10,
+      "from": {
+       "evidence": "gap-junction-20261117",
+       "within": [
+        "runs",
+        "ladder-01",
+        "viewer"
+       ],
+       "file": [],
+       "field": "every package holding a view.json"
+      }
+     },
+     {
+      "experiment": "gap-junction-tissue-sheet",
+      "runs": 6,
+      "from": {
+       "evidence": "gap-junction-20261117",
+       "within": [
+        "runs",
+        "sheet-01",
+        "viewer"
+       ],
+       "file": [],
+       "field": "every package holding a view.json"
+      }
+     },
+     {
+      "experiment": "gap-junction-linear-network",
+      "runs": 30,
+      "from": {
+       "evidence": "gap-junction-20261117",
+       "within": [
+        "runs",
+        "dev-06",
+        "viewer"
+       ],
+       "file": [
+        "index.json"
+       ],
+       "field": "index.json: its selected runs"
+      }
+     }
+    ],
+    "parts": [
+     {
+      "experiment": "gap-junction-tissue-line",
+      "label": "The tissue line",
+      "status": "Development work, not judged; 17 November 2026",
+      "runs": 4
+     },
+     {
+      "experiment": "gap-junction-tissue-ladder",
+      "label": "The ladder",
+      "status": "Development work, not judged; 17 November 2026",
+      "runs": 10
+     },
+     {
+      "experiment": "gap-junction-tissue-sheet",
+      "label": "The tissue sheet, Cells' extension",
+      "status": "Development work, not judged; 17 November 2026",
+      "runs": 6
+     },
+     {
+      "experiment": "gap-junction-linear-network",
+      "label": "Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026)",
+      "status": "Development work, not judged; 17 November 2026",
+      "runs": 30
+     }
+    ],
+    "still": {
+     "light": "stills/tumour-tissue.light.jpg",
+     "dark": "stills/tumour-tissue.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "assembly",
+   "band": "examples",
+   "kind": "replay",
+   "title": "The assembly",
+   "asks": "How could heredity begin before genes?",
+   "standing": {
+    "from": "entry",
+    "entry": "gard",
+    "label": "GARD assembly",
+    "status": null,
+    "level": null,
+    "state": "modelled",
+    "as_of": null,
+    "says": "Modelled for comparison only (D197): GARD's two forms are one law set on Cells' stochastic assembly family, on main since 17 November 2026 with its own tests. Its runs so far are development runs, not judged; the comparison is still to come.",
+    "sources": [
+     {
+      "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
+      "where": "Its opening: the user's request of 16 November 2026; Decided; and Status",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/GARD_DESIGN.md",
+      "where": "Status: DECIDED, 16 November 2026 (D192)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D192, the design choices; D194, the order; D197, GARD is one law set, for comparison only",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "GARD's G1, part 2, on main (17 November 2026, evening)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D199: The origin-of-life engine's first decisions, and relationship tracking",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ]
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "entry": "gard"
+    },
+    "experiments": [],
+    "run_labels": [
+     "A development run of the engine: the pair-consistent form",
+     "A development run of the engine: the preprint's single-event form"
+    ],
+    "runs": 2,
+    "runs_from": [
+     {
+      "entry": "gard",
+      "runs": 2,
+      "from": {
+       "file": "data/models/gard.json",
+       "field": "runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/assembly.light.jpg",
+     "dark": "stills/assembly.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "e07-v1",
+   "band": "judged",
+   "kind": "replay",
+   "title": "E07-v1: renewal",
+   "asks": "Can a voltage pattern written into a tissue survive while its cells are replaced?",
+   "standing": {
+    "from": "map",
+    "part": "exp.e07v1",
+    "label": "E07-v1: renewal",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-14",
+    "says": "Can a voltage pattern written into a tissue survive while its cells are replaced? Judged: under donor-copy turnover it did not renew, and 8 of 15 predictions held. Its re-run on the rebuilt tissue model is held by the user: its worlds are covered by the rework's results comparison instead (D181), which the rework passed before it landed on 16 November 2026.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "E07-v1 judged (13–14 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/E07_V1_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "answer": {
+    "from": "catalogue",
+    "experiment": "e07-v1",
+    "judged": true,
+    "answer": "no",
+    "label": "The disc did not renew",
+    "text": "Under donor-copy turnover the written disc did not renew, and the coupling's effect was far smaller than predicted. 8 of 15 scored predictions held.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "E07-v1 judged (13–14 November)",
+      "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Gate: coupled renewal",
+      "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
+     }
+    ]
+   },
+   "record": [
+    {
+     "says": "E07-v1 judged (13–14 November): under donor-copy turnover the written disc did not renew. The pattern followed neutral copying closely, and 8 of 15 scored predictions held.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "E07-v1 judged (13–14 November): under donor-copy turnover the written disc did not renew",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "replay": {
+    "opens": {
+     "experiment": "e07-v1"
+    },
+    "experiments": [
+     "e07-v1"
+    ],
+    "runs": 38,
+    "runs_from": [
+     {
+      "experiment": "e07-v1",
+      "runs": 38,
+      "from": {
+       "file": "data/replays/selection.json",
+       "field": "e07-v1.runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/e07-v1.light.jpg",
+     "dark": "stills/e07-v1.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "fr1",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-1: a closed compartment",
+   "asks": "Can a cell hold a closed compartment of its own, with its own volume and amounts, that exchanges species with the cell?",
+   "standing": {
+    "from": "map",
+    "part": "fr.internal_compartment",
+    "label": "Internal compartment (FR-1)",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-18",
+    "says": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator. Since the rework landed on 16 November 2026, the operator admits the kinds of piece the engine knows on the compartment's bounding membrane, such as the proton pump and the proton leak, only under the implicit–explicit step whose checks hold their rates, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). Its protocol, fr1-closed-compartment-v1, was registered and judged on 18 November 2026: it passed all 44 judged criteria against independent references written without the engine's code, and it is the exchange operator's first judged acceptance. Numerically qualified, on CPU only, within its scope line: the neutral first version as built at 05a8d193, with the exchange, turnover and reactions operators, no ion route and a zero anchor on the compartment, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms. The later doors, a compartment's creation, division, fission and fusion, and retirement, come with seam B of the core pass and the mitochondria work (D216).",
+    "sources": [
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "3.4.1 Version 1.1: refusal 4 for the admitted kinds",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "3.4.2 Version 1.2: the routing door's source kinds",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-1 judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Judged (numerically qualified, CPU only, each within its scope line)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "Qualified, 18 November 2026.",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "The later doors (creation, division, fission and fusion, retirement) with seam B and the mitochondria work",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-1 judged: passed (18 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-1 judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: cell_owned_compartments@1 with exchange@1, turnover@1 and local_species_reactions@1 as built at 05a8d193: the neutral first version, ARS at 1 ms and RK4 at 0.1 ms. V_b's orientation is not shown, and a dropped -1 in G has power only in C6.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-1 judged: passed (18 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "closed-compartment-fr1-20261117",
+       "within": [
+        "judged",
+        "run-05a8d193"
+       ]
+      },
+      "protocol": "fr1-closed-compartment-v1",
+      "passed": true,
+      "count": {
+       "passed": 44,
+       "of": 44,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "closed-compartment-fr1-20261117",
+        "within": [
+         "judged",
+         "run-05a8d193"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "evidence": "closed-compartment-fr1-20261117",
+         "within": [
+          "judged",
+          "run-05a8d193"
+         ],
+         "file": [
+          "reading.json"
+         ],
+         "field": "judged_passed of judged_criteria"
+        },
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-1 judged: passed (18 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "44 of 44 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-18",
+       "from": {
+        "evidence": "closed-compartment-fr1-20261117",
+        "within": [
+         "judged",
+         "run-05a8d193"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "05a8d1934e785ea9a575fbe5673569f589bdbc42",
+       "from": {
+        "evidence": "closed-compartment-fr1-20261117",
+        "within": [
+         "judged",
+         "run-05a8d193"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fr3",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-3: site occupancy",
+   "asks": "Can binding sites on a membrane hold molecules as state, with bound and free molecules in one ledger?",
+   "standing": {
+    "from": "map",
+    "part": "fr.site_occupancy",
+    "label": "Site occupancy (FR-3)",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-18",
+    "says": "Binding sites as state on a membrane domain or contact, with bound and free molecules in one material ledger. Its design is accepted (D169, 14 November 2026). Its first milestone landed on 15 November 2026 as an operator, and a first set of independent references landed the same day. Its protocol, fr3-site-occupancy-v1, was judged on 18 November 2026 and passed all 51 judged criteria, against the feature-request lane's own independent references, which also register its worlds (D216). Numerically qualified, on CPU only, within its scope line: version 1's first acceptance without faces, as built at 1b838d75: one neutral ligand that does not cross membranes, patch populations facing out and in, internalisation that conserves sites and a static α. Contact populations in a run, composition with the secreted-species or reactions operators, faces, RK4 and site occupancy beside a bath schedule are not shown. On 18 November 2026, after the judged run, the operator's share of a run's estimate of its stored trace was corrected, as an external review found (its finding 1); the scope line stays as built at 1b838d75, and nothing was judged again.",
+    "sources": [
+     {
+      "path": "docs/SITE_OCCUPANCY_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-3",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-3's independent site-occupancy references landed (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-3 judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Judged (numerically qualified, CPU only, each within its scope line)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/SITE_OCCUPANCY_DESIGN.md",
+      "where": "Qualified, 18 November 2026.",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "tests/unit/test_site_occupancy_estimate.py",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [
+     "tests/unit/test_site_occupancy_estimate.py"
+    ]
+   },
+   "record": [
+    {
+     "says": "FR-3 judged: passed (18 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-3 judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: site_occupancy@1 as built at 1b838d75, version 1's face-free first acceptance (one neutral, impermeant ligand; patch populations outward and inward; site-conserving internalisation; a static alpha; ARS(2,2,2) at 1 ms). Not shown: contact populations in a run, composition with D150's or D152's operators, faces, RK4, site occupancy beside a bath schedule (refused), the per-law R-dG test and the references' zero-power cases.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-3 judged: passed (18 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "site-occupancy-fr3-20261118",
+       "within": [
+        "judged",
+        "run-1b838d75"
+       ]
+      },
+      "protocol": "fr3-site-occupancy-v1",
+      "passed": true,
+      "count": {
+       "passed": 51,
+       "of": 51,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "site-occupancy-fr3-20261118",
+        "within": [
+         "judged",
+         "run-1b838d75"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "evidence": "site-occupancy-fr3-20261118",
+         "within": [
+          "judged",
+          "run-1b838d75"
+         ],
+         "file": [
+          "reading.json"
+         ],
+         "field": "judged_passed of judged_criteria"
+        },
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-3 judged: passed (18 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "51 of 51 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-18",
+       "from": {
+        "evidence": "site-occupancy-fr3-20261118",
+        "within": [
+         "judged",
+         "run-1b838d75"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "1b838d752030282c9af81e8444ee2ccf150f807a",
+       "from": {
+        "evidence": "site-occupancy-fr3-20261118",
+        "within": [
+         "judged",
+         "run-1b838d75"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fr4",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-4: compartment pH",
+   "asks": "Can a pump acidify a compartment against its gradient, with its protons buffered?",
+   "standing": {
+    "from": "map",
+    "part": "fr.compartment_ph",
+    "label": "Compartment pH (FR-4)",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-17",
+    "says": "Protons as a species, a pump that acidifies a compartment against its gradient, and buffering (feature request FR-4), one of the two priority users of the modular rework (D176). Protons are one species whose free part is set by a fast buffer rule at every stage, the proton pump is a transporter on the compartment's membrane, counterions are explicit, and its first case runs on fuel held constant. Its pump, its buffer and a proton leak landed on main with the rework on 16 November 2026, as pieces of the tissue model, together with the drivers that build its first world and the tools for its qualification. In a development run of that world, which is not a verdict, the compartment's pH stays within 1.4e-12 of the independent reference at a step of 1 ms, the energy accounts converge at second order as the step shrinks, and the planted errors are caught. Its independent references, written by a separate agent that read no engine code, show the compartment acidifying from pH 7.2 to about 5.1 against its gradient while the cytoplasm stays within 0.02 pH; without the counterion route it stalls. A kernel for treating the compartment's membrane implicitly in the step is on main too, with its tests; no model uses it yet, and chloride and pores wait for it. Its protocol, fr4-acidification-v1, was registered on 17 November 2026, after its rehearsal passed 21 of 21 criteria, and judged once the same day: it passed all 21 judged criteria against the independent references. Numerically qualified, on CPU only, within its scope line: the compartment operator as built at the registration commit, 32a1d439, with refusal 4 version 1.2 and refusal 5 version 1.1.",
+    "sources": [
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-4",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/INNER_MODEL_V4_DESIGN.md",
+      "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4's and the passive law's independent references landed (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "validation/compartment_ph/REFERENCES_USAGE.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round on the evening of 15 November 2026",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Now, after the landing, in order",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "README.md",
+      "where": "Where things stand (17 November 2026): Engine restructure",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "where": "7.3 The implicit patch: design",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Feature requests (D157–D167)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "where": "FR-4 is built and on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4 and FR-5 judged: both passed (17 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Judged (numerically qualified, CPU only, each within its scope line)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "Done: fr4-acidification-v1 judged on 17 November 2026",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-4 and FR-5 judged: both passed (17 November 2026).",
+     "item": "FR-4: 21 of 21 judged criteria.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-4",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: cell_owned_compartments@1 as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-4 and FR-5 judged: both passed (17 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "d172-restructure-20261115-01",
+       "within": [
+        "fr45",
+        "judged-20261117",
+        "run-32a1d439"
+       ]
+      },
+      "protocol": "fr4-acidification-v1",
+      "passed": true,
+      "count": {
+       "passed": 21,
+       "of": 21,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "fr4",
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-4",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "21 of 21 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-17",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "32a1d4394cb50278c43eb13c4b128607eceef4c2",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "fr4",
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      },
+      "also_on": [
+       "fr5"
+      ]
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fr5",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-5: transfer across an internal membrane",
+   "asks": "Can a compartment's membrane leak and reseal, with transfer across it at a rate set by the compartment's own state, such as its pH?",
+   "standing": {
+    "from": "map",
+    "part": "fr.internal_transfer",
+    "label": "Transfer across an internal membrane (FR-5)",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-17",
+    "says": "A compartment's membrane that can leak and reseal, with transfer across it at a rate that reads the compartment's own state, such as its pH (feature request FR-5), the other priority user of the modular rework (D176). It is built and on main since the evening of 16 November 2026, for development. Two kinds of piece, the damage of the compartment's membrane and a pH condition, act on the compartment's passive routes as factors, through a routing door the core built for any kind, and a compartment that holds charge can now resume from its own checkpoint, so FR-5's world starts from FR-4's steady state. In development runs, which are not verdicts, its declared world and its development world gave the same results bit for bit over 400 s on both of its arms, 800,000 steps each, including the burst of release after damage. Its independent references show the transfer slowing about 14-fold while the compartment is not acid enough, the leak releasing most of the compartment's cargo after damage, and the compartment acid enough again after about 330 s and 370 s. Its study of the time step passed its development reading late on 16 November 2026: every criterion holds on both arms, so the declared step of 0.5 ms stands. Its protocol, fr5-transfer-v1, was registered on 17 November 2026, after its rehearsal passed 51 of 51 criteria, and judged once the same day: it passed all 51 judged criteria against the independent references. Numerically qualified, on CPU only, within its scope line: the compartment operator as built at the registration commit, 32a1d439, with refusal 4 version 1.2 and refusal 5 version 1.1.",
+    "sources": [
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-5",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/INNER_MODEL_V4_DESIGN.md",
+      "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-5's and the finite-fuel case's independent references landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "validation/compartment_ph/REFERENCES_USAGE.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Now, after the landing, in order",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "core-next merged into main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "where": "16. FR-5 on the kind interface",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "3.4.2 Version 1.2: the routing door's source kinds",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+      "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
+      "where": "built and on main since fr45-next merged (16 November), for development, not judged",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "README.md",
+      "where": "Engine restructure",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-5's dt study: the development reading passes (16 November 2026, late evening)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-4 and FR-5 judged: both passed (17 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Judged (numerically qualified, CPU only, each within its scope line)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "fr5-transfer-v1, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-4 and FR-5 judged: both passed (17 November 2026).",
+     "item": "FR-5: 51 of 51.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-5",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: cell_owned_compartments@1 as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-4 and FR-5 judged: both passed (17 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "d172-restructure-20261115-01",
+       "within": [
+        "fr45",
+        "judged-20261117",
+        "run-32a1d439"
+       ]
+      },
+      "protocol": "fr5-transfer-v1",
+      "passed": true,
+      "count": {
+       "passed": 51,
+       "of": 51,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "fr5",
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-5",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "51 of 51"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-17",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "32a1d4394cb50278c43eb13c4b128607eceef4c2",
+       "from": {
+        "evidence": "d172-restructure-20261115-01",
+        "within": [
+         "fr45",
+         "judged-20261117",
+         "run-32a1d439"
+        ],
+        "file": [
+         "fr5",
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      },
+      "also_on": [
+       "fr4"
+      ]
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fr6",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-6: a species sets a channel's availability",
+   "asks": "Can the amount of a species set how available a channel population is, so that chemistry changes electrical behaviour?",
+   "standing": {
+    "from": "map",
+    "part": "laws.inventory_coupling",
+    "label": "Coupling out of the inventory",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-18",
+    "says": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Nothing of the loop is built.",
+    "sources": [
+     {
+      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Combined landing (14 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The inventory-coupling design (D155 item 1, scoped by D156) is accepted",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D155 and D156",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Status on 14 November 2026, and the working order (D156)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-6",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "qualified for gate-free channel populations",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-6's A5″ judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
+      "where": "A5″ qualified, 18 November 2026 (FR-6 items 1 and 3)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
+      "where": "Status: proposed, 18 November 2026, for the lead and the user (D216)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "Amended 18 November (the lead). FR-7's design note found that B1 as written covers",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D218: D145's hold, narrowed again: physical production feedback through the one routing door",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
+      "where": "9. The user's answers (18 November 2026; D217, D218)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-6's A5″ judged: passed (18 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-6's A5″ judged: passed (18 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: species_regulated_availability@1 with hill_regulated_two_state@1 and D150's turnover as built at 555d8771: two pump-free 2 pL cells over 2 s, synthetic values, CPU only. Zero power: a state reading the other cell's regulator (both cells get the same dose) and the references' basal control in V at 1 and 0.5 ms. Not covered: gated channels (A5′), the routing door, leak and pump targets, any biological comparison.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-6's A5″ judged: passed (18 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "fr6-a5pp-20261118",
+       "within": [
+        "judged",
+        "run-555d8771"
+       ]
+      },
+      "protocol": "fr6-a5pp-v1",
+      "passed": true,
+      "count": {
+       "passed": 18,
+       "of": 18,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "fr6-a5pp-20261118",
+        "within": [
+         "judged",
+         "run-555d8771"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "evidence": "fr6-a5pp-20261118",
+         "within": [
+          "judged",
+          "run-555d8771"
+         ],
+         "file": [
+          "reading.json"
+         ],
+         "field": "judged_passed of judged_criteria"
+        },
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-6's A5″ judged: passed (18 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "18 of 18 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-18",
+       "from": {
+        "evidence": "fr6-a5pp-20261118",
+        "within": [
+         "judged",
+         "run-555d8771"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "555d87716178774abf9725129877cbe2b2b6d67d",
+       "from": {
+        "evidence": "fr6-a5pp-20261118",
+        "within": [
+         "judged",
+         "run-555d8771"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "The scope: CPU only, in version 1; A4 starts from the reference's state at 50 ms and sits at the explicit-rate bound's edge; the horizons are 2 s and 1 s; no pumps or gated channels; A10 is out of scope.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026); The scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "inventory-coupling-m4-20261114-01",
+       "within": [
+        "judged"
+       ]
+      },
+      "protocol": "coupling_regulated_availability_v1",
+      "passed": true,
+      "count": {
+       "passed": 47,
+       "of": 47,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "inventory-coupling-m4-20261114-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "all 47 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-15",
+       "from": {
+        "evidence": "inventory-coupling-m4-20261114-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "judged.log"
+        ],
+        "field": "the date of the first line matching '\\\\bend:'"
+       }
+      },
+      "snapshot": {
+       "revision": "abe4ef5c34ed9f7e3dc032df5679e68b5a039274",
+       "from": {
+        "evidence": "inventory-coupling-m4-20261114-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fr10",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-10: a dose schedule",
+   "asks": "Can a held bath's composition change on a schedule, for a wash-in, a wash-out or a dose?",
+   "standing": {
+    "from": "map",
+    "part": "op.scheduled_bath_composition@1",
+    "label": "Scheduled bath",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-17",
+    "says": "A held bath whose composition changes on a schedule in the composite model, for a wash-in, a wash-out or a dose. Each dose, its work and its compensating charge are booked in the operator's own records. Its first two milestones landed on 14 and 15 November 2026, for feature request FR-10. A dose step is admitted only where a measured passing point covers it; every other step is refused. Its protocol, fr10-dose-schedule-v1, was judged on 17 November 2026 and passed all 31 judged criteria, against independent references for the bath's faces, its ions and its records. Numerically qualified, on CPU only, within its scope line: the operator as built at 407ba164, neutral formula units only, held baths only and steps only inside the measured region, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms. Its step rule bounds the face's rate but not the membrane's.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Combined landing (14 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/BATH_SCHEDULE_DESIGN.md",
+      "where": "7. Milestone 1 as built (14 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-10",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/BATH_SCHEDULE_DESIGN.md",
+      "where": "8. Milestone 2: the step refusal and the species cap (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-10 judged: passed (17 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/BATH_SCHEDULE_DESIGN.md",
+      "where": "Qualified, 17 November 2026.",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-10 judged: passed (17 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-10 judged: passed (17 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: scheduled_bath_composition@1 as built at 407ba164. It covers neutral formula units only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal found that the run-time energy guard holds there (R12's neighbour, disclosed).",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-10 judged: passed (17 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "bath-schedule-20261114-01",
+       "within": [
+        "fr10-protocol",
+        "judged",
+        "run-407ba164"
+       ]
+      },
+      "protocol": "fr10-dose-schedule-v1",
+      "passed": true,
+      "count": {
+       "passed": 31,
+       "of": 31,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "bath-schedule-20261114-01",
+        "within": [
+         "fr10-protocol",
+         "judged",
+         "run-407ba164"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "evidence": "bath-schedule-20261114-01",
+         "within": [
+          "fr10-protocol",
+          "judged",
+          "run-407ba164"
+         ],
+         "file": [
+          "reading.json"
+         ],
+         "field": "judged_passed of judged_criteria"
+        },
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-10 judged: passed (17 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "31 of 31 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-17",
+       "from": {
+        "evidence": "bath-schedule-20261114-01",
+        "within": [
+         "fr10-protocol",
+         "judged",
+         "run-407ba164"
+        ],
+        "file": [
+         "judged.done"
+        ],
+        "field": "the date of its first timestamp"
+       }
+      },
+      "snapshot": {
+       "revision": "407ba164830d29954882c4040f8a6d422fa8f8f2",
+       "from": {
+        "evidence": "bath-schedule-20261114-01",
+        "within": [
+         "fr10-protocol",
+         "judged",
+         "run-407ba164"
+        ],
+        "file": [
+         "verdict",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "mg0",
+   "band": "judged",
+   "kind": "standing",
+   "title": "MG0: a gradient and a domain wall",
+   "asks": "Does a morphogen gradient form as theory says, and does a bistable voltage domain wall hold?",
+   "standing": {
+    "from": "map",
+    "part": "exp.mg0",
+    "label": "MG0: gradient and wall",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-09",
+    "says": "Two morphogenesis checks: a morphogen gradient and a bistable voltage domain wall. Both passed. MG0b's registered protocol was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "MG0a morphogen gradient passes; MG0b bistable domain wall passes",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "MG0a morphogen gradient passes (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "MG0a morphogen gradient passes (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "morphogenesis-mg0-20261109-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": "mg0a-gradient-v1",
+      "passed": true,
+      "count": {
+       "passed": 13,
+       "of": 13,
+       "unit": "criteria",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "results",
+         "results.json"
+        ],
+        "field": "verdict.criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "evidence": "morphogenesis-mg0-20261109-01",
+         "within": [
+          "judged-01"
+         ],
+         "file": [
+          "source",
+          "validation",
+          "morphogenesis",
+          "protocols",
+          "mg0a_gradient_v1.json"
+         ],
+         "field": "criteria: its 13 entries",
+         "says": "13 entries"
+        }
+       ],
+       "differs_from": [
+        {
+         "path": "PROGRESS.md",
+         "where": "MG0a morphogen gradient passes (9 November)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "All 12 criteria"
+        }
+       ],
+       "note": "A6 is judged in 2 parts: A6_timestep_order and A6_resolution."
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "e8ded038e23426adfd348930794f480567e3506d",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "MG0b bistable domain wall passes (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "MG0b bistable domain wall passes (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "morphogenesis-mg0-20261109-01",
+       "within": [
+        "judged-02-mg0b"
+       ]
+      },
+      "protocol": "mg0b-domain-wall-v1",
+      "passed": true,
+      "count": {
+       "passed": 19,
+       "of": 19,
+       "unit": "criteria",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-02-mg0b"
+        ],
+        "file": [
+         "results",
+         "judgement.json"
+        ],
+        "field": "verdict.criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "MG0b bistable domain wall passes (9 November)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "All 19 criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-02-mg0b"
+        ],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "f7e8b6bb64e335a7b3945c8081cf8ae1b5c447d4",
+       "from": {
+        "evidence": "morphogenesis-mg0-20261109-01",
+        "within": [
+         "judged-02-mg0b"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "mg0c",
+   "band": "judged",
+   "kind": "standing",
+   "title": "MG0c: Turing patterns",
+   "asks": "Do reactions and diffusion on the tissue's shared inventory form the patterns theory predicts?",
+   "standing": {
+    "from": "map",
+    "part": "exp.mg0c",
+    "label": "MG0c: Turing patterns",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-15",
+    "says": "Pattern formation by reaction and diffusion: the qualification of the shared-inventory reactions. Its driver and development runs have landed. Its protocol has 55 judged criteria. The protocol was registered and judged on 15 November 2026: the one judged run passed all 55 criteria, with the guards and every kept control, and was identical to its rehearsal. It was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D152 v1 milestone 3 landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "validation/morphogenesis/protocols/mg0c_turing_v1.json",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "MG0c (D152): the protocol after its rehearsal on main and the final check",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Combined landing (14 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Status on 14 November 2026, and the working order (D156)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "The scope is driven mass action of orders 0, 1 and 3 (Schnakenberg) at outside nodes, with @3's species transport on faces in the composite, on CPU. The items not judged are listed in the verdict.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026); The scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "shared-inventory-reactions-v1-20261114-01",
+       "within": [
+        "judged-5ab4326a"
+       ]
+      },
+      "protocol": "mg0c-turing-v1",
+      "passed": true,
+      "count": {
+       "passed": 55,
+       "of": 55,
+       "unit": "judged criteria",
+       "from": {
+        "evidence": "shared-inventory-reactions-v1-20261114-01",
+        "within": [
+         "judged-5ab4326a"
+        ],
+        "file": [
+         "combine",
+         "verdict.json"
+        ],
+        "field": "criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "all 55 judged criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-15",
+       "from": {
+        "evidence": "shared-inventory-reactions-v1-20261114-01",
+        "within": [
+         "judged-5ab4326a"
+        ],
+        "file": [
+         "combine.run.txt"
+        ],
+        "field": "the date of the first line matching '^end '"
+       }
+      },
+      "snapshot": {
+       "revision": "5ab4326abbbed07f025bc5e9d1f590f19fbafd50",
+       "from": {
+        "evidence": "shared-inventory-reactions-v1-20261114-01",
+        "within": [
+         "judged-5ab4326a"
+        ],
+        "file": [
+         "combine",
+         "verdict.json"
+        ],
+        "field": "source.git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "mg1",
+   "band": "judged",
+   "kind": "standing",
+   "title": "MG1: vertex mechanics",
+   "asks": "Does a mechanical cell sheet relax to known equilibria?",
+   "standing": {
+    "from": "map",
+    "part": "exp.mg1",
+    "label": "MG1: vertex mechanics",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-12",
+    "says": "Does a mechanical cell sheet relax to known equilibria? Passed on its second protocol, 57 of 57.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "MG1 qualified and landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "MG1 qualified and landed (11–12 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "MG1 qualified and landed (11–12 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "morphogenesis-mg1-20261111-01",
+       "within": [
+        "judged-02"
+       ]
+      },
+      "protocol": "mg1-vertex-mechanics-v2",
+      "passed": true,
+      "count": {
+       "passed": 57,
+       "of": 57,
+       "unit": "criteria",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "results",
+         "judgement.json"
+        ],
+        "field": "verdict.criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "MG1 qualified and landed (11–12 November)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "57 of 57 criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "840488e0bfe29ee1e28e91e11cb105fe9e42a896",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "MG1 (2-D vertex mechanics) judged run: FAIL (11 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "MG1 (2-D vertex mechanics) judged run: FAIL (11 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "morphogenesis-mg1-20261111-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": "mg1-vertex-mechanics-v1",
+      "passed": false,
+      "count": {
+       "passed": 52,
+       "of": 57,
+       "unit": "criteria",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "results",
+         "results.json"
+        ],
+        "field": "verdict.criteria: the entries whose judged is true, and those of them whose passed is true"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "MG1 (2-D vertex mechanics) judged run: FAIL (11 November)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "52 of 57 criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": null,
+       "says": "The snapshot this run was made from is not on main, so no revision is named for it.",
+       "from": {
+        "evidence": "morphogenesis-mg1-20261111-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "d150",
+   "band": "judged",
+   "kind": "standing",
+   "title": "D150: secreted species",
+   "asks": "Does a species secreted into the space around cells spread and clear as an exact finite-volume solution and a continuum closed form say?",
+   "standing": {
+    "from": "map",
+    "part": "exp.d150",
+    "label": "D150: secreted-species qualification",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-14",
+    "says": "The registered protocol for secreted-species transport: checked against an exact finite-volume solution and a continuum closed form, with controls that must fail. Every item passed, in its stated scope. It was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Secreted-species transport (D150 v1) is numerically qualified",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "Secreted-species transport (D150 v1) is numerically qualified: every item of its registered protocol passed (14 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Secreted-species transport (D150 v1) is numerically qualified: every item of its registered protocol passed (14 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope, as the qualified statement carries it: @3's faces with exact radial conductances, and turnover's first-order clearance, with a held-bath source, in the composite. Exchange, turnover's production and the occupant rule entered only through Q5's test files.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "Secreted-species transport (D150 v1) is numerically qualified: every item of its registered protocol passed (14 November); Scope, as the qualified statement carries it",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "secreted-species-v1-20261114-01",
+       "within": [
+        "judged-f7f0592"
+       ]
+      },
+      "protocol": "d150-v1-held-sphere",
+      "passed": true,
+      "count": {
+       "passed": 5,
+       "of": 5,
+       "unit": "judged items",
+       "from": {
+        "evidence": "secreted-species-v1-20261114-01",
+        "within": [
+         "judged-f7f0592"
+        ],
+        "file": [
+         "combined",
+         "verdict.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "secreted-species-v1-20261114-01",
+        "within": [
+         "judged-f7f0592"
+        ],
+        "file": [
+         "results.txt"
+        ],
+        "field": "the date of the first line matching 'combine exit'"
+       }
+      },
+      "snapshot": {
+       "revision": "f7f0592eac5cb3d6de4c268aaa96cfa3f28f5de1",
+       "from": {
+        "evidence": "secreted-species-v1-20261114-01",
+        "within": [
+         "judged-f7f0592"
+        ],
+        "file": [
+         "combined",
+         "verdict.json"
+        ],
+        "field": "snapshot_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "division",
+   "band": "judged",
+   "kind": "standing",
+   "title": "Cell division",
+   "asks": "Can the engine carry the early frog egg through prescribed division, stage by stage, against references written apart from it?",
+   "standing": {
+    "from": "map",
+    "part": "exp.division",
+    "label": "Cell division S2–S5a",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-14",
+    "says": "Prescribed division of the early frog egg, judged against independently written references. Stages through S5a passed. The registered protocols of S3, current injection and S5a were each run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Gate: lifecycle operators",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "S5a is qualified",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "S5a is qualified: every judged item passed (14 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "S5a is qualified: every judged item passed (14 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "What this qualifies: partition, bridge closure, insertion@2 and lumen@2 in division worlds. Q7(b), S3's egg on @2, is deferred to its own registered variant.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "S5a is qualified: every judged item passed (14 November); What this qualifies",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "cell-division-s5-20261113-01",
+       "within": [
+        "judged-s5j1"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 4,
+       "of": 4,
+       "unit": "judged parts",
+       "from": {
+        "evidence": "cell-division-s5-20261113-01",
+        "within": [
+         "judged-s5j1"
+        ],
+        "file": [
+         "q2",
+         "q2_judged.json"
+        ],
+        "field": "each file's verdict.verdict, and those that passed",
+        "files": [
+         [
+          "q2",
+          "q2_judged.json"
+         ],
+         [
+          "q3",
+          "q3_judged.json"
+         ],
+         [
+          "q5",
+          "q5_judged.json"
+         ],
+         [
+          "egg",
+          "egg_judged.json"
+         ]
+        ]
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "cell-division-s5-20261113-01",
+        "within": [
+         "judged-s5j1"
+        ],
+        "file": [
+         "results.txt"
+        ],
+        "field": "the date of the first line matching 'egg exit'"
+       }
+      },
+      "snapshot": {
+       "revision": "7f9c473c1cfb48d22014204fc37a939510340b7c",
+       "from": {
+        "evidence": "cell-division-s5-20261113-01",
+        "within": [
+         "judged-s5j1"
+        ],
+        "file": [
+         "SETUP.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Stage S3 judged: the engine's cleft egg agrees with R-full (13 November; registered protocol 486cc60; verdict pass).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Stage S3 judged: the engine's cleft egg agrees with R-full (13 November; registered protocol 486cc60; verdict pass)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "cell-division-s3-20261113-01",
+       "within": [
+        "judged"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 5,
+       "of": 5,
+       "unit": "judged quantities",
+       "from": {
+        "evidence": "cell-division-s3-20261113-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "judged.json"
+        ],
+        "field": "items: the items whose judged is true, and those of them that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-13",
+       "from": {
+        "evidence": "cell-division-s3-20261113-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "results.txt"
+        ],
+        "field": "the date of the first line matching 'judge exit'"
+       }
+      },
+      "snapshot": {
+       "revision": "4465b48dd36e095b4cd4fdf923a6c767b845b4ae",
+       "from": {
+        "evidence": "cell-division-s3-20261113-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "judged.json"
+        ],
+        "field": "source_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "Current injection: first acceptance passed (Rm1 on the uncleaved egg against R-full; 12 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Current injection: first acceptance passed (Rm1 on the uncleaved egg against R-full; 12 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-v2-20261112-01",
+       "within": [
+        "rm1-judged"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 1,
+       "of": 1,
+       "unit": "judged quantity",
+       "from": {
+        "evidence": "composite-v2-20261112-01",
+        "within": [
+         "rm1-judged"
+        ],
+        "file": [
+         "judged.json"
+        ],
+        "field": "verdict: its one verdict"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-12",
+       "from": {
+        "evidence": "composite-v2-20261112-01",
+        "within": [
+         "rm1-judged"
+        ],
+        "file": [
+         "exit.txt"
+        ],
+        "field": "the date of the first line matching 'judge exit'"
+       }
+      },
+      "snapshot": {
+       "revision": "2aa27930a6c88deea279d9dfd3703c97b8e4adda",
+       "from": {
+        "evidence": "composite-v2-20261112-01",
+        "within": [
+         "rm1-judged"
+        ],
+        "file": [
+         "judged.json"
+        ],
+        "field": "source_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    },
+    {
+     "says": "Cell division S0b: the registered J1 combination round is parked (13 November; development, judged by its own registered criteria).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Cell division S0b: the registered J1 combination round is parked (13 November; development, judged by its own registered criteria)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "parity",
+   "band": "judged",
+   "kind": "standing",
+   "title": "The BETSE parity ladder",
+   "asks": "Does Cells' own physics give what the BETSE simulator gives, one mechanism family at a time?",
+   "standing": {
+    "from": "map",
+    "part": "exp.parity",
+    "label": "BETSE parity ladder",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-11",
+    "says": "Cells' own physics compared with saved output from the BETSE simulator, one mechanism family at a time. Every family tested so far passes, on CPU and GPU. Before the rework landed on 16 November 2026, the ten parity cases that run on the tissue model @3 passed again on the L4, and their runs again on the CPU were bit for bit the same as their registered judged results.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Plan table",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/BETSE_CAPABILITY_ROADMAP.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "First BETSE parity of Cells' own physics: default world passes (8 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "First BETSE parity of Cells' own physics: default world passes (8 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "default-world-parity-20261108-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 3,
+       "of": 3,
+       "unit": "judged runs",
+       "from": {
+        "evidence": "default-world-parity-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "summary.json"
+        ],
+        "field": "runs: every name with a verdict, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-08",
+       "from": {
+        "evidence": "default-world-parity-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "D-cpu",
+         "comparison",
+         "result.json"
+        ],
+        "field": "the date of the first line matching 'created_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "ba8694f87cc2b0831ce45f51eb726235f6d05cc4",
+       "from": {
+        "evidence": "default-world-parity-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "summary.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity rung 1 (mammal ion profile): pre-registered FAIL (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity rung 1 (mammal ion profile): pre-registered FAIL (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-rung1-20261108-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": "physical-default-world-mammal-dense",
+      "passed": false,
+      "count": {
+       "passed": 0,
+       "of": 3,
+       "unit": "judged runs",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "D-cpu",
+         "comparison",
+         "result.json"
+        ],
+        "field": "each file's verdict, and those that passed",
+        "files": [
+         [
+          "D-cpu",
+          "comparison",
+          "result.json"
+         ],
+         [
+          "D-l4",
+          "comparison",
+          "result.json"
+         ],
+         [
+          "F-l4",
+          "comparison",
+          "result.json"
+         ]
+        ]
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "D-cpu",
+         "comparison",
+         "result.json"
+        ],
+        "field": "the date of the first line matching 'created_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "82452a0eacd192f912035fb8bca39f0bea49d589",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity rung 1 v2 passes (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity rung 1 v2 passes (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-rung1-20261108-01",
+       "within": [
+        "judged-02"
+       ]
+      },
+      "protocol": "physical-default-world-mammal-dense-v2",
+      "passed": true,
+      "count": {
+       "passed": 3,
+       "of": 3,
+       "unit": "judged runs",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "D-cpu",
+         "comparison",
+         "result.json"
+        ],
+        "field": "each file's verdict, and those that passed",
+        "files": [
+         [
+          "D-cpu",
+          "comparison",
+          "result.json"
+         ],
+         [
+          "D-l4",
+          "comparison",
+          "result.json"
+         ],
+         [
+          "F-l4",
+          "comparison",
+          "result.json"
+         ]
+        ]
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "D-cpu",
+         "comparison",
+         "result.json"
+        ],
+        "field": "the date of the first line matching 'created_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "cecfb13dc9b9c037cc1b8d88773674e69d811f86",
+       "from": {
+        "evidence": "parity-rung1-20261108-01",
+        "within": [
+         "judged-02"
+        ],
+        "file": [
+         "git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity rungs P2 and P4 pass (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity rungs P2 and P4 pass (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-rung2-4-20261109-03",
+       "within": []
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 5,
+       "of": 5,
+       "unit": "protocols",
+       "from": {
+        "evidence": "parity-rung2-4-20261109-03",
+        "within": [],
+        "file": [
+         "margins.json"
+        ],
+        "field": "every name with a verdict, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "parity-rung2-4-20261109-03",
+        "within": [],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "621e2bebd42be75c5b4a442a4b0900b5acde5ff0",
+       "from": {
+        "evidence": "parity-rung2-4-20261109-03",
+        "within": [],
+        "file": [
+         "source.git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity P3 (scheduled interventions, first subset) passes (10 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity P3 (scheduled interventions, first subset) passes (10 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-p3-interventions-20261110-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 4,
+       "of": 4,
+       "unit": "protocols",
+       "from": {
+        "evidence": "parity-p3-interventions-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "margins.json"
+        ],
+        "field": "every name with a verdict, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-10",
+       "from": {
+        "evidence": "parity-p3-interventions-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "95f30b5533366bd72fa6f047f989c2b9f61226a0",
+       "from": {
+        "evidence": "parity-p3-interventions-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "source.git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity P4b, the heredity carrier channels, passes (10 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity P4b, the heredity carrier channels, passes (10 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-p4b-channels-20261110-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 2,
+       "of": 2,
+       "unit": "protocols",
+       "from": {
+        "evidence": "parity-p4b-channels-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "margins.json"
+        ],
+        "field": "every name with a verdict, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-10",
+       "from": {
+        "evidence": "parity-p4b-channels-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "acd4ead96a3e96af70adc7387ec1a02991dff543",
+       "from": {
+        "evidence": "parity-p4b-channels-20261110-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "source.git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "Parity on the L4: variants registered (11 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Parity on the L4: variants registered (11 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "parity-l4-20261111-01",
+       "within": [
+        "judged"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 12,
+       "of": 12,
+       "unit": "protocols",
+       "from": {
+        "evidence": "parity-l4-20261111-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "margins.json"
+        ],
+        "field": "every name with a verdict, and those that passed"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "parity-l4-20261111-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "25d0fe97fc84e2806b6f2d630c072df189eb902f",
+       "from": {
+        "evidence": "parity-l4-20261111-01",
+        "within": [
+         "judged"
+        ],
+        "file": [
+         "source.git-revision.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "water",
+   "band": "judged",
+   "kind": "standing",
+   "title": "Osmotic water and volume",
+   "asks": "Can the tissue model carry osmotic water, changing cell volumes and their regulation, as an independent reference computes them?",
+   "standing": {
+    "from": "map",
+    "part": "models.water",
+    "label": "Water and volume",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-11",
+    "says": "The pump tissue with osmotic water, changing cell volume and volume regulation. Now a thin composition of operators.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Osmotic water and volume qualified and landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "Osmotic water and volume qualified and landed (11 November).",
+     "item": "W1 judge: 25 of 25 pass, one run from 628a3d0, against predictions P1–P6 frozen from an independent numpy/scipy reference (b0ff7e2). Every trajectory sits at about 1/3 of its tolerance, i.e. the engine's own 1 ms step error. The engine converges on the reference at second order.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Osmotic water and volume qualified and landed (11 November); W1 judge: 25 of 25 pass,",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "water-volume-pump-20261110-01",
+       "within": [
+        "w1-judge-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 25,
+       "of": 25,
+       "unit": "items",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w1-judge-01"
+        ],
+        "file": [
+         "out",
+         "judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "Osmotic water and volume qualified and landed (11 November); W1 judge: 25 of 25 pass,",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "25 of 25"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w1-judge-01"
+        ],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": "628a3d0b5b417683b73eaabb300f22cc327beeed",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w1-judge-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "Osmotic water and volume qualified and landed (11 November).",
+     "item": "resolved_pump_water@2: adds a KCC-type K⁺/anion symport (k_anion_symport_mass_action@1). Its stationary judge passed 24 of 24; D swells 1.1–1.5× instead of 1.76×.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Osmotic water and volume qualified and landed (11 November); resolved_pump_water@2",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "water-volume-pump-20261110-01",
+       "within": [
+        "w2-judge-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 24,
+       "of": 24,
+       "unit": "items",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w2-judge-01"
+        ],
+        "file": [
+         "out",
+         "w2-judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "Osmotic water and volume qualified and landed (11 November); resolved_pump_water@2",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "24 of 24"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w2-judge-01"
+        ],
+        "file": [
+         "launch.log"
+        ],
+        "field": "the date of the first line matching 'done_utc'"
+       }
+      },
+      "snapshot": {
+       "revision": null,
+       "says": "The snapshot this run was made from is not on main, so no revision is named for it.",
+       "from": {
+        "evidence": "water-volume-pump-20261110-01",
+        "within": [
+         "w2-judge-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "W1: 25 of 25 items pass. W2: 24 of 24 pass.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 25,
+       "of": 25,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "w1",
+         "judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "25 of 25 items"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"w1-judge\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "l4-agreement",
+       "replacement"
+      ]
+     }
+    },
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "W1: 25 of 25 items pass. W2: 24 of 24 pass.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 24,
+       "of": 24,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "w2",
+         "w2-judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "24 of 24"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"w2-judge\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "l4-agreement",
+       "replacement"
+      ]
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "replacement",
+   "band": "judged",
+   "kind": "standing",
+   "title": "Cell replacement",
+   "asks": "Can the tissue model replace cells on a schedule, with waste, supply and lineage recorded, as independent references compute it?",
+   "standing": {
+    "from": "map",
+    "part": "models.replacement",
+    "label": "Cell replacement",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-11",
+    "says": "The pump tissue with scheduled replacement of cells. Now a thin composition of operators. Its registered protocol was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Cell replacement qualified and landed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "Cell replacement qualified and landed (11 November).",
+     "item": "Judged run G2-Q1: one run from a clean snapshot of 81d5de7, with protocol and predictions byte-equal to main 2cd2b3a (evidence). All 7 items pass: | Item | Result | | --- | --- | | Ledgers | Worst energy residual 9.8e-7 of flows | | Event map against an independent operator | 0.0041 of tolerance | | Trajectories against an independent reference | 0.44 of tolerance, as second order predicts | | Fast-chain end states | Identical in all six cases | | Order | 2.05 and 2.07 (amendment A3) | | Restart and vmap | Bitwise, or within 9.5e-15 | | 825-node no-event equivalence | Bitwise |",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Cell replacement qualified and landed (11 November); Judged run G2-Q1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Limits: in-place swap only (no vacancy); the donor copy does not halve the parent; the water inner model and finite extracellular worlds are stage 3.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "Cell replacement qualified and landed (11 November); Limits",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "cell-replacement-g2-20261111-01",
+       "within": [
+        "qualification",
+        "judged-01"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 7,
+       "of": 7,
+       "unit": "items",
+       "from": {
+        "evidence": "cell-replacement-g2-20261111-01",
+        "within": [
+         "qualification",
+         "judged-01"
+        ],
+        "file": [
+         "margins.json"
+        ],
+        "field": "verdicts: every name with a verdict, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "Cell replacement qualified and landed (11 November); Judged run G2-Q1",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "All 7 items"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-11",
+       "from": {
+        "evidence": "cell-replacement-g2-20261111-01",
+        "within": [
+         "qualification",
+         "judged-01"
+        ],
+        "file": [
+         "README.md"
+        ],
+        "field": "the date of the first line matching 'Run once'"
+       }
+      },
+      "snapshot": {
+       "revision": "81d5de7b48b6164e0f449a2b22d11b739de4a7f2",
+       "from": {
+        "evidence": "cell-replacement-g2-20261111-01",
+        "within": [
+         "qualification",
+         "judged-01"
+        ],
+        "file": [
+         "snapshot",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "G2-Q1: Q1–Q6 pass. Q7 fails. Q7 judges replacement with no events against resolved_pump_tissue@3 bitwise on the 825-node tissue. On the L4, almost every state field and diagnostic differs.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; G2-Q1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": false,
+      "count": {
+       "passed": 6,
+       "of": 7,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "g2-a",
+         "Q1.json"
+        ],
+        "field": "each file's verdict, and those that passed",
+        "files": [
+         [
+          "g2-a",
+          "Q1.json"
+         ],
+         [
+          "g2-a",
+          "Q2.json"
+         ],
+         [
+          "g2-a",
+          "Q3.json"
+         ],
+         [
+          "g2-a",
+          "Q4.json"
+         ],
+         [
+          "g2-b",
+          "Q5.json"
+         ],
+         [
+          "g2-b",
+          "Q6.json"
+         ],
+         [
+          "g2-b",
+          "Q7.json"
+         ]
+        ]
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"g2-judge-b\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "l4-agreement",
+       "water"
+      ]
+     }
+    },
+    {
+     "says": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3).",
+     "item": "The judged run. Q7 was then judged alone under the flag, with the registered G2 variant, from a clean snapshot of main cfbe7122. It passed: every state field and observation is bitwise, every diagnostic equal, the replacement fields zero, and XLA_FLAGS is in the item record.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); The judged run",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Its scope. The verdict holds in the declared flagged mode only (D168, D181). C's Q7 failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged mode's run-to-run term stays as measured.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); Its scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "q7-judged",
+        "judged-q7"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 1,
+       "of": 1,
+       "unit": "judged item",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged",
+         "judged-q7"
+        ],
+        "file": [
+         "Q7.json"
+        ],
+        "field": "verdict: its one verdict"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-16",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged"
+        ],
+        "file": [
+         "chain.jsonl"
+        ],
+        "field": "the date of the first line matching 'lock-acquired'"
+       }
+      },
+      "snapshot": {
+       "revision": "cfbe7122ede8af49b6362d8ebb122f0b5287844a",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged"
+        ],
+        "file": [
+         "source-main-cfbe7122",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "l4-agreement"
+      ]
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "l4-agreement",
+   "band": "judged",
+   "kind": "standing",
+   "title": "The composite on the L4",
+   "asks": "Does the composite model give the same answers on the L4 GPU as on the CPU, within a registered tolerance?",
+   "standing": {
+    "from": "map",
+    "part": "exp.l4_agreement",
+    "label": "Composite on the L4",
+    "status": "landed",
+    "level": {
+     "label": "Implemented and guarded",
+     "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
+    },
+    "as_of": "2026-11-16",
+    "says": "Does the composite model give the same answers on the L4 GPU as on the CPU, within a registered tolerance? On the judged run, W1 and W2 pass and G2-Q1 passes Q1 to Q6. Q7, which asks for bitwise equality, failed on that run because of the L4's own nondeterminism at 825 nodes, and that verdict stands, since the protocol judges once. Under a deterministic GPU setting, repeated runs became identical bit for bit, and Q7, judged alone in that setting on 16 November 2026, passed. That pass holds in the deterministic setting only (D168, D181). Before the rework landed on 16 November 2026, the same setting's block of GPU runs passed W1, W2 and all seven criteria of G2-Q1 on the rework's candidate, with none failing.",
+    "sources": [
+     {
+      "path": "docs/CURRENT_PLAN.md",
+      "where": "Status on 14 November 2026, and the working order (D156)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 agreement",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D168: G2-Q1's Q7 on the L4: a deterministic setting first, then a tolerance item if needed",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "W1: 25 of 25 items pass. W2: 24 of 24 pass.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 25,
+       "of": 25,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "w1",
+         "judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "25 of 25 items"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"w1-judge\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "replacement",
+       "water"
+      ]
+     }
+    },
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "W1: 25 of 25 items pass. W2: 24 of 24 pass.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 24,
+       "of": 24,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "w2",
+         "w2-judge.json"
+        ],
+        "field": "items: every item, and those that passed"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "24 of 24"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"w2-judge\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "replacement",
+       "water"
+      ]
+     }
+    },
+    {
+     "says": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7.",
+     "item": "G2-Q1: Q1–Q6 pass. Q7 fails. Q7 judges replacement with no events against resolved_pump_tissue@3 bitwise on the 825-node tissue. On the L4, almost every state field and diagnostic differs.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; G2-Q1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "c"
+       ]
+      },
+      "protocol": null,
+      "passed": false,
+      "count": {
+       "passed": 6,
+       "of": 7,
+       "unit": "items",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "g2-a",
+         "Q1.json"
+        ],
+        "field": "each file's verdict, and those that passed",
+        "files": [
+         [
+          "g2-a",
+          "Q1.json"
+         ],
+         [
+          "g2-a",
+          "Q2.json"
+         ],
+         [
+          "g2-a",
+          "Q3.json"
+         ],
+         [
+          "g2-a",
+          "Q4.json"
+         ],
+         [
+          "g2-b",
+          "Q5.json"
+         ],
+         [
+          "g2-b",
+          "Q6.json"
+         ],
+         [
+          "g2-b",
+          "Q7.json"
+         ]
+        ]
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-14",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "c"
+        ],
+        "file": [
+         "runs.jsonl"
+        ],
+        "field": "the date of the first line matching '\"label\": \"g2-judge-b\"'"
+       }
+      },
+      "snapshot": {
+       "revision": "265ed66c155491eab6671e522916c89d0c68afcc",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [],
+        "file": [
+         "source-c-265ed66",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "replacement",
+       "water"
+      ]
+     }
+    },
+    {
+     "says": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3).",
+     "item": "The judged run. Q7 was then judged alone under the flag, with the registered G2 variant, from a clean snapshot of main cfbe7122. It passed: every state field and observation is bitwise, every diagnostic equal, the replacement fields zero, and XLA_FLAGS is in the item record.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); The judged run",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Its scope. The verdict holds in the declared flagged mode only (D168, D181). C's Q7 failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged mode's run-to-run term stays as measured.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); Its scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "composite-l4-agreement-20261114-01",
+       "within": [
+        "q7-judged",
+        "judged-q7"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 1,
+       "of": 1,
+       "unit": "judged item",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged",
+         "judged-q7"
+        ],
+        "file": [
+         "Q7.json"
+        ],
+        "field": "verdict: its one verdict"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-16",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged"
+        ],
+        "file": [
+         "chain.jsonl"
+        ],
+        "field": "the date of the first line matching 'lock-acquired'"
+       }
+      },
+      "snapshot": {
+       "revision": "cfbe7122ede8af49b6362d8ebb122f0b5287844a",
+       "from": {
+        "evidence": "composite-l4-agreement-20261114-01",
+        "within": [
+         "q7-judged"
+        ],
+        "file": [
+         "source-main-cfbe7122",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      },
+      "also_on": [
+       "replacement"
+      ]
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "fixed-points",
+   "band": "judged",
+   "kind": "standing",
+   "title": "Fixed points",
+   "asks": "Does the engine find a tissue's resting states and follow them as parameters change, as independent references compute them?",
+   "standing": {
+    "from": "map",
+    "part": "num.stationary",
+    "label": "Fixed points",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-09",
+    "says": "Finds a tissue's resting states and follows them as parameters change. Passed all 16 criteria of its protocol. That protocol was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Stationary-state analysis (E) qualified",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's end game, paused for a planned machine restart",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "D172's round landed on main",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "Stationary-state analysis (E) qualified (9 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Stationary-state analysis (E) qualified (9 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "fixed-points-e-20261109-01",
+       "within": [
+        "judged-01"
+       ]
+      },
+      "protocol": "fixed-points-e-v1",
+      "passed": true,
+      "count": {
+       "passed": 16,
+       "of": 16,
+       "unit": "criteria",
+       "from": {
+        "evidence": "fixed-points-e-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "judgement.json"
+        ],
+        "field": "passed, failed and not_evaluable: the file's own numbers"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "Stationary-state analysis (E) qualified (9 November)",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "all 16 criteria"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-09",
+       "from": {
+        "evidence": "fixed-points-e-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "2b4dd5e49f5707902bea800886bbc0bba5fdd90b",
+       "from": {
+        "evidence": "fixed-points-e-20261109-01",
+        "within": [
+         "judged-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "projective",
+   "band": "judged",
+   "kind": "standing",
+   "title": "Projective stepping",
+   "asks": "Can a long-time mode that takes bursts of fine steps and then jumps ahead stay within the error caps of the fine engine?",
+   "standing": {
+    "from": "map",
+    "part": "num.projective",
+    "label": "Projective stepping",
+    "status": "failed",
+    "level": {
+     "label": "Failed qualification",
+     "says": "Built, then failed its registered qualification. Kept as evidence and not relied on."
+    },
+    "as_of": "2026-11-10",
+    "says": "A long-time mode that takes bursts of fine steps and then jumps ahead. It failed its qualification on the absolute error caps.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Projective (C) qualification qual-01: FAIL",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "Projective (C) qualification qual-01: FAIL (9–10 November).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Projective (C) qualification qual-01: FAIL (9–10 November)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "projective-c-20261109-01",
+       "within": [
+        "qual-01"
+       ]
+      },
+      "protocol": "projective-c-qualification-v1",
+      "passed": false,
+      "count": {
+       "passed": 2,
+       "of": 7,
+       "unit": "cases",
+       "from": {
+        "evidence": "projective-c-20261109-01",
+        "within": [
+         "qual-01"
+        ],
+        "file": [
+         "judgement.json"
+        ],
+        "field": "passed, failed and not_evaluable_or_incomplete: the file's own numbers"
+       },
+       "confirmed_by": [],
+       "not_evaluable": 1
+      },
+      "day": {
+       "date": "2026-11-10",
+       "from": {
+        "evidence": "projective-c-20261109-01",
+        "within": [
+         "qual-01"
+        ],
+        "file": [
+         "judge.log"
+        ],
+        "field": "the date of the first line matching 'exit judge'"
+       }
+      },
+      "snapshot": {
+       "revision": "ca70d4a68456559e37e4c86218203d4c2fe62839",
+       "from": {
+        "evidence": "projective-c-20261109-01",
+        "within": [
+         "qual-01"
+        ],
+        "file": [
+         "source",
+         "SNAPSHOT.json"
+        ],
+        "field": "git_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "turnover",
+   "band": "development",
+   "kind": "replay",
+   "title": "Turnover pre-screen",
+   "asks": "Can a voltage pattern written into a tissue renew itself when its cells are replaced the way the literature describes?",
+   "standing": {
+    "from": "catalogue",
+    "experiment": "heredity-turnover-literature",
+    "status": null,
+    "level": null,
+    "as_of": null,
+    "says": "Development pre-screen, not judged; 11 to 13 November 2026",
+    "text": "Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed in all 21 arms, as predicted (11–13 November; development pre-screen, not judged).",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Runs: Heredity turnover under the literature newcomer rule (11–13 November)",
+      "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
+     }
+    ]
+   },
+   "record": [
+    {
+     "says": "Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed in all 21 arms, as predicted (11–13 November; development pre-screen, not judged).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed in all 21 arms, as predicted (11–13 November; development pre-screen, not judged)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "replay": {
+    "opens": {
+     "experiment": "heredity-turnover-literature"
+    },
+    "experiments": [
+     "heredity-turnover-literature"
+    ],
+    "runs": 21,
+    "runs_from": [
+     {
+      "experiment": "heredity-turnover-literature",
+      "runs": 21,
+      "from": {
+       "file": "data/replays/selection.json",
+       "field": "heredity-turnover-literature.runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/turnover.light.jpg",
+     "dark": "stills/turnover.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "secreted-species",
+   "band": "development",
+   "kind": "replay",
+   "title": "Secreted species: the first run for the viewer",
+   "asks": null,
+   "shows": "One cell makes a species and releases it into a small space outside, which leaks through a face to a held bath: the first run the engine wrote for the viewer.",
+   "standing": {
+    "from": "catalogue",
+    "experiment": "secreted-species-dev-run",
+    "status": null,
+    "level": null,
+    "as_of": null,
+    "says": "Development run, no verdict; 15 November 2026",
+    "text": "The first viewer feed, a development run of the secreted-species world through the shared output path (15 November; development, not judged).",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "The coupling operator's matched-arm export ran (15 November 2026, D177): The first viewer feed",
+      "revision": "718405b287d0d5623d522d4e7ca0523a7d151722"
+     }
+    ]
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "experiment": "secreted-species-dev-run"
+    },
+    "experiments": [
+     "secreted-species-dev-run"
+    ],
+    "runs": 1,
+    "runs_from": [
+     {
+      "experiment": "secreted-species-dev-run",
+      "runs": 1,
+      "from": {
+       "file": "data/replays/selection.json",
+       "field": "secreted-species-dev-run.runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/secreted-species.light.jpg",
+     "dark": "stills/secreted-species.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "planarian-loop",
+   "band": "development",
+   "kind": "replay",
+   "title": "Planarian loop",
+   "asks": null,
+   "shows": "Seven planarian heredity cells on a hexagonal patch, a small current into the centre cell, packaged to loop: an illustration, not a measurement of a planarian.",
+   "standing": {
+    "from": "map",
+    "part": "fr.loop_planarian",
+    "label": "Planarian loop (FR-11)",
+    "status": "landed",
+    "level": {
+     "label": "Implemented and guarded",
+     "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
+    },
+    "as_of": "2026-11-16",
+    "says": "The first living-cell loop, on main since the evening of 16 November 2026 with the run-view writer: a builder for the planarian's loop and one driver for every package. The world is a seven-cell planarian patch whose centre cell receives a small current that alternates in sign each half period, so that it nets to zero, far below the voltage that would switch the cell. The writer's loop block measures how well one period closes. One development run of the loop was made, not judged: over its period it closes within 2.76e-5, against a tolerance of 1e-4. It is an illustration, never a result. Implemented and guarded.",
+    "sources": [
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-11",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "README.md",
+      "where": "Looping replay packages per species",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/LOOPING_REPLAY_DESIGN.md",
+      "where": "9. The lead's rulings (16 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "tests/unit/test_replay_packages.py",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [
+     "tests/unit/test_replay_packages.py"
+    ]
+   },
+   "record": [
+    {
+     "says": "The run-view writer merged into main (16 November 2026, evening): run-view-d154, cells.run_view@1.",
+     "item": "FR-11's first looping run: a planarian development run (not judged) that closes within 2.76e-5 against a tolerance of 1e-4, bitwise the same before and after the adoption.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154, cells.run_view@1; FR-11's first looping run",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "replay": {
+    "opens": {
+     "experiment": "planarian-loop"
+    },
+    "experiments": [
+     "planarian-loop"
+    ],
+    "runs": 1,
+    "runs_from": [
+     {
+      "experiment": "planarian-loop",
+      "runs": 1,
+      "from": {
+       "file": "data/replays/selection.json",
+       "field": "planarian-loop.runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/planarian-loop.light.jpg",
+     "dark": "stills/planarian-loop.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "origin-laws",
+   "band": "development",
+   "kind": "rows",
+   "title": "Origin-of-life laws (OL1)",
+   "asks": "Do the origin-of-life engine's first laws hold against references written without the engine's code?",
+   "standing": {
+    "from": "map",
+    "part": "laws.origin_laws",
+    "label": "Origin-of-life laws (OL1)",
+    "status": "landed",
+    "level": {
+     "label": "Implemented and guarded",
+     "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
+    },
+    "as_of": "2026-11-18",
+    "says": "Landed for development, not judged (18 November 2026). The four laws of the origin-of-life engine's first milestone (OL1), physical chemistry in an assembly: mass action for a step's encounter, in exact molecule counts (cells.stochastic_mass_action@1); catalysis as a factor on the state a step and its reverse share, so that a catalyst speeds or slows both alike and never moves an equilibrium (cells.transition_state_factor@1); and two terms of one free energy of the counts, ideal mixing, exact in the counts, and the membrane's regular mixing (cells.ideal_mixing@1, cells.regular_mixing@1). Each step comes as a forward and reverse pair, the reverse rate from the exact change of that free energy, so every pair keeps local detailed balance. Each law is declared on the family's own interfaces of seam F's template, with the works it cites, and the engine's declarations list all four. They follow the lead's rulings written into the design note. Against OL5's references, registered before any engine output, they passed 6 of 6 rows on 18 November 2026. Nothing is judged under a registered protocol, and nothing is compared with experiment. Implemented and guarded: on main with their tests, among them the laws' registration and the kernel's detailed balance, in tiers 1 and 2 of the engine's test tiers.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026).",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+      "where": "0.2a The lead's rulings for OL1 (17 November 2026; D215)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+      "where": "2.1 The event-pair contract",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+      "where": "2.4 Catalysis that keeps detailed balance",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "tests/unit/test_assembly_lineages_v2_registration.py",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "tests/unit/test_assembly_lineages_v2_kernel.py",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [
+     "tests/unit/test_assembly_lineages_v2_registration.py",
+     "tests/unit/test_assembly_lineages_v2_kernel.py"
+    ]
+   },
+   "record": [
+    {
+     "says": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026).",
+     "item": "Verified against code-blind references. OL5 wrote validation/ool/references, registered before any engine output; its five amendments all came before it too. The references passed 6 of 6 rows on the probe set at 3e39bcc5, with inputs pinned at ab3dd700: Four planted errors applied to the engine's own records were all caught.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Verified against code-blind references",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "scope": {
+      "says": "Scope: the stochastic family with general stoichiometry over places, regular mixing, catalysis on the common state and exact ledgers. Geometry, an osmotic lumen and division come in OL2 and OL3. Nothing is judged under a registered protocol, and nothing is compared with experiment.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Scope",
+       "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "ool-references-harness-20261118",
+       "within": []
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 6,
+       "of": 6,
+       "unit": "rows",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "result-3e39bcc5",
+         "verdict.json"
+        ],
+        "field": "rows: every row, and those whose passed is true (its tally gives the same)"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Verified against code-blind references",
+         "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+         "says": "6 of 6 rows"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-18",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "run-3e39bcc5.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "3e39bcc55206832d8dbd75aae7079883bf6a21a1",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "result-3e39bcc5",
+         "verdict.json"
+        ],
+        "field": "engine.engine_revision"
+       }
+      }
+     }
+    },
+    {
+     "says": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026).",
+     "item": "The first harness run failed one row on a record rule. The ladder's stream identities repeated across rungs, though the row's physics parts passed. The references were not amended. Instead the driver was fixed, with a planted test (efb3c739), and the probe set regenerated. Both verdicts are kept.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); The first harness run failed one row on a record rule",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "ool-references-harness-20261118",
+       "within": []
+      },
+      "protocol": null,
+      "passed": false,
+      "count": {
+       "passed": 5,
+       "of": 6,
+       "unit": "rows",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "result",
+         "verdict.json"
+        ],
+        "field": "rows: every row, and those whose passed is true (its tally gives the same)"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-18",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "run.log"
+        ],
+        "field": "the date of the first line matching '\\\\bexit \\\\d'"
+       }
+      },
+      "snapshot": {
+       "revision": "7688e9f466dbd2f9756f94b944732de5c0587932",
+       "from": {
+        "evidence": "ool-references-harness-20261118",
+        "within": [],
+        "file": [
+         "result",
+         "verdict.json"
+        ],
+        "field": "engine.engine_revision"
+       }
+      }
+     }
+    }
+   ],
+   "rows": [
+    {
+     "id": "OL1-1",
+     "claim": "Every channel keeps local detailed balance",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-1",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/detailed_balance.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      },
+      {
+       "path": "validation/ool/references/laws.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    },
+    {
+     "id": "OL1-2",
+     "claim": "A closed world relaxes to exp(-F/k_BT)",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-2",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/closed_world.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    },
+    {
+     "id": "OL1-3",
+     "claim": "Catalysis is kinetic only",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-3",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/catalysis.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    },
+    {
+     "id": "OL1-4",
+     "claim": "Mass action with registry potentials",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-4",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/laws.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      },
+      {
+       "path": "validation/ool/references/mass_action.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      },
+      {
+       "path": "validation/ool/references/ssa_oracle.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      },
+      {
+       "path": "validation/ool/references/world.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    },
+    {
+     "id": "OL1-5",
+     "claim": "The ledgers for reactions",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-5",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/ledger.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    },
+    {
+     "id": "OL1-6",
+     "claim": "Streams and replay",
+     "passed": true,
+     "reference": {
+      "path": "validation/ool/references/README.md",
+      "where": "The rows (OL1): row OL1-6",
+      "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+     },
+     "modules": [
+      {
+       "path": "validation/ool/references/streams.py",
+       "revision": "a9f4013094be5b8769845827e6c2e5cd764216da"
+      }
+     ]
+    }
+   ],
+   "rows_from": {
+    "evidence": "ool-references-harness-20261118",
+    "within": [],
+    "file": [
+     "result-3e39bcc5",
+     "verdict.json"
+    ],
+    "field": "rows: each row's passed, and the claim its pairs state"
+   },
+   "rerun": null
+  },
+  {
+   "id": "w1",
+   "band": "development",
+   "kind": "standing",
+   "title": "W1: heredity pilot",
+   "asks": "Can a brief cue write a voltage pattern into a tissue, and does it hold?",
+   "standing": {
+    "from": "map",
+    "part": "exp.w1",
+    "label": "W1: heredity pilot",
+    "status": null,
+    "level": null,
+    "as_of": "2026-11-18",
+    "says": "Development runs, not judged: the record states none of this map's levels for them. A brief cue writes a depolarised disc, and written discs held for 70 minutes, also with water. On the full tissue of 825 nodes, on the L4 GPU, the 70-minute hold completed on 16 November 2026; its comparison with the predictions written before the run is development analysis, still to do. Its driver has no test of its own: the tests that import it check other things, the field solver's choice on its tissue, which modules the drivers import, and the threshold E07-v1's scorer takes from it.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Heredity pilot W1",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Its comparison with the predictions written before the run is development analysis, still to do",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [],
+    "first": "Development runs, not judged: the record states none of this map's levels for them.",
+    "none": "The Engine map states no level for these runs."
+   },
+   "record": [
+    {
+     "says": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    },
+    {
+     "says": "Heredity pilot W1, water arms: held discs also hold under water; the osmotically balanced start, not water itself, makes the marginal loss 3× earlier (11–12 November; development, not judged).",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Heredity pilot W1, water arms: held discs also hold under water; the osmotically balanced start, not water itself, makes the marginal loss 3× earlier (11–12 November; development, not judged)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "conduction",
+   "band": "development",
+   "kind": "standing",
+   "title": "Conduction probe",
+   "asks": "Can the tissue model's channel laws carry an action potential along a chain of cells?",
+   "standing": {
+    "from": "map",
+    "part": "exp.conduction",
+    "label": "Conduction probe",
+    "status": null,
+    "level": null,
+    "as_of": "2026-11-18",
+    "says": "A probe for a design note's acceptance, not a qualification: the record states none of this map's levels for it. Can the tissue model's channel laws carry an action potential along a chain of cells? An exploratory probe on the engine as it stands, run on 14 November 2026 as the evidence on which the excitable-tissue design note was accepted narrowly (D170). Its driver landed with the note and has no test of its own. As registered, at 0.05 F/m², it failed its first criterion: every perturbed segment blocked. A second probe at 0.01 F/m², post hoc but written before its runs, met all four criteria. An independent reference's junction voltages, computed blind, match the engine's to 0.02 mV.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "Track E (excitable tissue, D155): the design note accepted narrowly",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D156, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "docs/EXCITABLE_TISSUE_DESIGN.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "Landed: the note, its equations appendix and the probe driver",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ],
+    "tests": [],
+    "first": "A probe for a design note's acceptance, not a qualification: the record states none of this map's levels for it.",
+    "none": "The Engine map states no level for this probe."
+   },
+   "record": [
+    {
+     "says": "Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3 (D170, 14 November 2026)",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3 (D170, 14 November 2026)",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
+   "id": "test-sheet",
+   "band": "invented",
+   "kind": "replay",
+   "title": "A test sheet",
+   "asks": null,
+   "shows": "The quantity layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated.",
+   "standing": {
+    "from": "catalogue",
+    "experiment": "example-sheet",
+    "status": null,
+    "level": null,
+    "as_of": null,
+    "none": "No engine ran: the numbers are invented",
+    "sources": [
+     {
+      "path": "visualizer/schema/QUANTITY_LAYERS.md",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     },
+     {
+      "path": "visualizer/tools/make_run_fixture.py",
+      "revision": "4dda2285ad39a74c160b74de2d70542360115d37"
+     }
+    ]
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "experiment": "example-sheet"
+    },
+    "experiments": [
+     "example-sheet"
+    ],
+    "runs": 1,
+    "runs_from": [
+     {
+      "experiment": "example-sheet",
+      "runs": 1,
+      "from": {
+       "folder": "tests/fixtures/run-example",
+       "field": "its folders holding a summary.json"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/test-sheet.light.jpg",
+     "dark": "stills/test-sheet.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "format": "a fixture's harness verdict",
+ "references": {"revision": "3333333333333333333333333333333333333333"},
+ "engine": {"engine_revision": "4444444444444444444444444444444444444444"},
+ "rows": {
+  "OL1-1": {"passed": true, "by_pairs": {"one pair": {"title": "Claim one", "passed": true}, "another pair": {"title": "Claim one", "passed": true}}},
+  "OL1-2": {"passed": true, "by_pairs": {"one pair": {"title": "Claim two", "passed": true}}}
+ },
+ "tally": {"rows": 2, "passed": 2},
+ "status": 0
+}

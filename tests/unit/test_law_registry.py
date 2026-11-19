@@ -15,10 +15,20 @@ Each claim is checked once, with a planted error it must catch (D187):
   material_term, charge_bound and material_bound, each a kernel's name or None after today's
   fields; the passive kind's leak names its charge slope and its neutral law its material bound,
   each a kernel of its own module, and only the proton pump's charge slope besides (planted, each
-  refused: an empty name and a non-name in each of the four, on each type).
+  refused: an empty name and a non-name in each of the four, on each type);
+- a cycle and a route law may declare `forms` "base" (CORE_SEAMS §5.2), a cycle law its general
+  form, checked by the form's own errors(), and a binding law its general closure's fields
+  (§19 as amended); each is None today (planted, each refused: other forms, a form whose errors()
+  reports, a form without errors(), a malformed report, binding forms other than "registry", and
+  a non-callable kernel); hosted_laws is the active registry's lookup by interface and host;
+- a cycle law whose form carries it may leave its moves empty and its kernels None, the form's
+  own errors() then holding, while a law without a form keeps version 1's checks (planted, each
+  refused: such a law whose form reports, a formed law with a non-callable kernel, and a law
+  without a form missing its moves or a kernel).
 """
 
 import dataclasses
+import re
 
 import jax
 import pytest
@@ -153,12 +163,15 @@ def test_cycle_and_route_laws_name_their_step_terms():
         "stage_term",
         "loop_term",
         *laws.STEP_TERMS[1:],
+        "forms",
+        "cycle",
     ]
     assert [f.name for f in dataclasses.fields(laws.RouteLaw) if not f.kw_only] == [
         "law_id",
         "hosts",
         "basis",
         *laws.STEP_TERMS,
+        "forms",
     ]
     _, cycle, route_law, _ = planted_laws()
     for law in (cycle, route_law):
@@ -288,3 +301,66 @@ def test_a_registered_but_undeclared_law_changes_no_program(monkeypatch):
     with laws.scope(extended):
         _, _, registered = programs(worlds["heredity"])
     assert registered["checked_step"][0] != today["checked_step"][0]
+
+
+class PlantedForm:
+    """A planted general form: its own errors() reports `problems`."""
+
+    def __init__(self, *problems):
+        self.problems = list(problems)
+
+    def errors(self):
+        return self.problems
+
+
+def test_forms_a_cycle_form_and_a_general_closure_are_declared_and_checked():
+    _, cycle, route_law, binding = planted_laws()
+    for law in (cycle, route_law):
+        assert law.forms is None
+        assert dataclasses.replace(law, forms="base").errors() == []
+        assert "its forms are" in " ".join(dataclasses.replace(law, forms="free").errors())
+    assert cycle.cycle is None
+    form = PlantedForm()
+    assert laws.LawRegistry().register(dataclasses.replace(cycle, cycle=form)).cycle is form
+    for planted_form, words in (
+        (PlantedForm("its modes share an edge"), "its cycle: its modes share an edge"),
+        (object(), "a form with its own errors()"),
+        (type("Bad", (), {"errors": lambda self: "one string"})(), "returns a list of reasons"),
+    ):
+        with pytest.raises(ValueError, match=words):
+            laws.LawRegistry().register(dataclasses.replace(cycle, cycle=planted_form))
+    assert (binding.forms, binding.free_energy, binding.envelope, binding.free_amounts) == (
+        (None,) * 4
+    )
+    general = dataclasses.replace(
+        binding, forms="registry", free_energy=len, envelope=len, free_amounts=len
+    )
+    assert general.errors() == []
+    for changes, words in (
+        (dict(forms="base"), 'its forms are "registry"'),
+        (dict(free_amounts="free_proton"), "its free_amounts is callable"),
+        (dict(envelope=1.0), "its envelope is callable"),
+    ):
+        with pytest.raises(ValueError, match=words):
+            laws.LawRegistry().register(dataclasses.replace(binding, **changes))
+    hosted = laws.hosted_laws(laws.CHANNEL_LAW, HOST)
+    assert hosted == laws.active().laws(laws.CHANNEL_LAW, HOST) and KV1P5 in hosted
+
+
+def test_a_cycle_form_carries_its_law_and_version_1_keeps_its_checks():
+    _, cycle, _, _ = planted_laws()
+    host = transporter.KIND_ID
+    carried = laws.CycleLaw("tests.planted_carried_cycle@1", cycle=PlantedForm(), host=host)
+    assert (carried.moves, carried.kinetics, carried.domain_valid) == ((), None, None)
+    assert carried.errors() == [] and laws.LawRegistry().register(carried) is carried
+    # Planted, each refused: the carried law's form reporting, a non-callable kernel beside a form,
+    # and version 1's law without its moves or a kernel.
+    for law, words in (
+        (dataclasses.replace(carried, cycle=PlantedForm("a mode without a cycle")), "its cycle:"),
+        (dataclasses.replace(carried, kinetics="kinetics"), "its kinetics is callable, or None"),
+        (dataclasses.replace(cycle, moves=()), "its moves are (role, count) pairs"),
+        (dataclasses.replace(cycle, kinetics=None), "its kinetics is callable"),
+        (laws.CycleLaw("tests.planted_bare_cycle@1", host=host), "its moves are"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            laws.LawRegistry().register(law)

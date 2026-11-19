@@ -84,7 +84,7 @@ class CellsPanel extends HTMLElement {
     // says `says` is words in a door's place and opens nothing (the Laws library on a unit's laws that it does not show).
     for (const door of entity.doors || []) body.append(!door.says ? h("p", { class: "panel-door" }, h("button", { class: "link-button", type: "button", onclick: () => emit(this, "cells-door", door) }, `${door.label} →`)) : h("p", { class: "panel-door quiet" }, door.label));
     for (const section of entity.sections || []) {
-      if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items", section.note));
+      if (section.items?.length) body.append(this.list(section.title, section.items.map(item), "items", section.note, section.count === false ? null : section.items.length));
     }
     // Background a reader may want but need not see at once (how a replay was derived).
     for (const more of entity.disclosures || []) {
@@ -172,7 +172,8 @@ class CellsPanel extends HTMLElement {
 
   list(title, items, className = "", note = null, count = items.length) {
     const first = items.slice(0, SHOWN), rest = items.slice(SHOWN);
-    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, h("span", { class: "quiet" }, ` ${count.toLocaleString("en-US")}`)), note ? h("p", { class: "list-note" }, note) : null, h("ul", {}, first));
+    // A list whose items are no count of anything (a card's standing, in the Experiments landing's detail) says no number.
+    const block = h("div", { class: `panel-list ${className}` }, h("h4", {}, title, count === null ? null : h("span", { class: "quiet" }, ` ${count.toLocaleString("en-US")}`)), note ? h("p", { class: "list-note" }, note) : null, h("ul", {}, first));
     if (rest.length) block.append(h("details", {}, h("summary", {}, `Show ${rest.length} more`), h("ul", {}, rest)));
     return block;
   }

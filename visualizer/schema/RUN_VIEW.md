@@ -610,7 +610,45 @@ limits its colour scale uses in every run of the experiment, so one value has on
 A run that reaches beyond them widens the scale.
 
 A run's `parts` (optional) list its files of records of their own, so that whoever
-publishes the runs knows every file without opening one.
+publishes the runs knows every file without opening one. A published page may name, for a
+part, a file that holds several of the run's parts (below).
+
+**Parts published together: `cells.visualizer.replay_parts@1`.** The runs folder keeps a
+run's own file and one file a part, as the adapter writes them; the export only reads it
+(`--runs`). A published page may hold 511 files, so an experiment may say, in its entry of
+`data/replays/overlay.json`, `"parts_together": true` (true or false; absent is false). The
+export (`tools/export_page.mjs`, `packageParts` in `tools/lib/build_page.mjs`) then
+publishes the parts of each of its runs as one file for the run, written into a folder of
+the export's own beside the page (`<page's name>.runs/`) and listed beside the page at:
+
+```
+runs/<run-id>.parts.json     the run's parts, in the run's own order of parts
+runs/<run-id>.parts-2.json   and on, only where one file would reach the size limit
+```
+
+```json
+{"format": "cells.visualizer.replay_parts@1", "run": "<run-id>", "parts": [
+  {"format": "cells.visualizer.replay_part@1", "run": "<run-id>", "part": "<part id>", "payload": {"…": "…"}}
+]}
+```
+
+- Each item of `parts` is the run's part file as the adapter wrote it, word for word; no
+  part is in two files, and no part's id is `parts` or `parts-<n>`.
+- Each file stays under the size limit of a run's file (1 MB: `RUN_FILE_LIMIT`, the
+  adapter's `LIMIT_BYTES`). Where one file would reach it, the parts go into as few files
+  as hold them, kept in the run's order and cut where the largest file is the smallest
+  (`cutInOrder`): an E07-v1 run's gate and three concentrations (1.30 MB) are two files of
+  0.59 and 0.71 MB. A run's own file is unchanged.
+- The published catalogue's line for the run names, for each such part, the file that
+  holds it (`parts[].file`) and that file's size (`bytes`). The adapter leaves
+  `parts_together` out of the catalogue it writes: the export reads it from the overlay.
+- The page asks for one part at a time, as before (`loadPart` in `src/replay/source.js`):
+  the file the catalogue names for the part is fetched once for the run, however many of
+  its parts are asked for, and only the part asked for is taken in; the others' arrays wait
+  in the page until they are asked for. A file that could not be fetched, or whose part
+  could not be taken in, is fetched again when asked for again. An error names the file
+  and the part. `validatePart` and `validateParts` (`src/replay/run.js`) check the shapes.
+- A page with its runs inside it (`--inline-runs`, `--standalone`) keeps one script a part.
 
 **Several experiments.** One catalogue holds every experiment adapted into the folder,
 each with its runs; adapting one experiment leaves the others' entries and files in place.
