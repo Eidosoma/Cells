@@ -175,8 +175,9 @@ inference for 1,096, on likeness for 592 and on an experiment for 836; 993 carry
 A family is an InterPro entry of the type Family (InterPro 111.0, the release of the
 planarian's file), chosen by the planarian's rule: the narrowest family among the
 InterPro entries UniProt gives the protein. So a family has the same id and name in
-both species: 3,207 of the planarian's 3,457 families are among the human's 7,948, and
-1,331 of them have lines here (the others are families of one in the human).
+both species: 3,898 of the planarian's 4,232 families are among the human's 7,948, and
+1,727 of them have lines here (the others are families of one in the human). Before the
+planarian's filing read its own scan (19 November 2026) these were 3,207 of 3,457, and 1,331.
 
 | | Families or parts | Proteins |
 | --- | ---: | ---: |

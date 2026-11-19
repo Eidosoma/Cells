@@ -101,17 +101,30 @@ and how that side is known.
 **Everything here is a prediction on a predicted protein.** Nothing says that the animal
 makes a protein, where it was seen, or which membrane it is in.
 
-- **Families.** A family is an InterPro entry of the type Family (InterPro 111.0). 3,457
-  families hold 8,861 proteins. A protein is filed under the narrowest family among
-  its signatures; for 221 proteins several unrelated families remained and a rule
+- **Families.** A family is an InterPro entry of the type Family (InterPro 111.0). 4,232
+  families hold 11,511 proteins. A protein is filed under the narrowest family among
+  its signatures; for 972 proteins several unrelated families remained and a rule
   chose one (the deepest in InterPro's tree, then the smallest here, then the first).
-  2,153 families have one member and 114 have ten or more; the largest are
-  G protein-coupled receptor, rhodopsin-like (415), Major facilitator superfamily (122) and Alpha tubulin (98).
-- **No family.** 10,021 proteins carry no family signature. None is dropped: they
-  are listed under "No family assigned", in parts. 507 parts are InterPro
-  superfamilies, a wider grouping by shared structure, and hold 5,247; 887
-  proteins carry only a domain, repeat or site signature; 3,887 carry no signature
+  2,476 families have one member and 170 have ten or more; the largest are
+  G protein-coupled receptor, rhodopsin-like (349), Alpha tubulin (98) and GPCR_Ligand_Interaction (94).
+- **No family.** 7,371 proteins carry no family signature. None is dropped: they
+  are listed under "No family assigned", in parts. 378 parts are InterPro
+  superfamilies, a wider grouping by shared structure, and hold 2,949; 671
+  proteins carry only a domain, repeat or site signature; 3,751 carry no signature
   of any kind.
+- **The species' own scan.** On 19 November 2026 it was decided that the shelves take the scan's added
+  entries: a protein's signatures are those of the table's own column and the InterPro entries that
+  InterProScan 5.78-109.0 found on its line (18 to 19 November 2026) and the column lacks (`interproscan_added.tsv`). 3,117 proteins
+  are filed by what the scan added (3,056 under a family, 7 under a superfamily, 54 with only a domain,
+  repeat or site signature), and each says so in the members' files: the mark `scan` names the databases
+  whose signatures reached it (Pfam 77, CATH-Gene3D 7, NCBIfam 3, PANTHER 3,031, CDD 8; NCBIfam alone 2, CDD alone 7). By the column alone 10,021 proteins had
+  no family: 2,650 have one now, and 0 lost one. 3,147 proteins stand on another shelf than by the
+  column alone; 30 of them gained nothing: each carries several unrelated families of its own, and the
+  rule's second step (the family fewer proteins are in) now counts what the scan added to other lines. The
+  sides and their bases, the districts and the places named for a family still read the column alone. Had
+  they read the added entries too, 0 sides and 0 bases would change, 0 of the 795 proteins
+  not placed would be placed, 112 proteins would fall in another district (31 families), and the
+  places named for 6 families would change.
 - **Sides.** 5,384 span a membrane, 1,218 are beyond one, 11,485 are inside the cell
   and 795 are not placed. By how it is known: 17,565 predicted,
   520 by function, 2 stated.
@@ -147,19 +160,19 @@ A family, and a part of "No family assigned", stands in a district:
 
 | District | Families | Their proteins | From |
 | --- | ---: | ---: | --- |
-| Channels | 66 | 545 | Gene Ontology terms: channel activity (GO:0015267) |
-| Transporters and pumps | 141 | 856 | Gene Ontology terms: transporter activity (GO:0005215), transmembrane transport (GO:0055085), monoatomic ion transport (GO:0006811) |
-| Receptors and signalling | 156 | 1,083 | Gene Ontology terms: signaling receptor activity (GO:0038023), molecular transducer activity (GO:0060089), signal transduction (GO:0007165), signaling receptor binding (GO:0005102) |
-| DNA, RNA and making proteins | 789 | 1,533 | Gene Ontology terms: gene expression (GO:0010467), DNA metabolic process (GO:0006259), DNA binding (GO:0003677), RNA binding (GO:0003723), transcription regulator activity (GO:0140110), regulation of DNA-templated transcription (GO:0006355), chromatin organization (GO:0006325), ribosome (GO:0005840), catalytic activity, acting on a nucleic acid (GO:0140640) |
-| Protein folding, change, sorting and breakdown | 320 | 701 | Gene Ontology terms: protein folding (GO:0006457), proteolysis (GO:0006508), protein modification process (GO:0036211), protein transport (GO:0015031), vesicle-mediated transport (GO:0016192), catalytic activity, acting on a protein (GO:0140096) |
-| Cytoskeleton, movement and adhesion | 133 | 482 | Gene Ontology terms: cytoskeleton (GO:0005856), cytoskeleton organization (GO:0007010), cytoskeletal motor activity (GO:0003774), microtubule-based movement (GO:0007018), cell adhesion (GO:0007155), extracellular matrix (GO:0031012), cilium (GO:0005929), structural molecule activity (GO:0005198) |
-| Enzymes and metabolism | 593 | 1,329 | Gene Ontology terms: catalytic activity (GO:0003824), metabolic process (GO:0008152) |
-| Other functions | 588 | 1,225 | The family's proteins carry Gene Ontology terms, and none of the districts' terms |
-| Not classed by function | 671 | 1,107 | The family's proteins carry no Gene Ontology term |
+| Channels | 71 | 591 | Gene Ontology terms: channel activity (GO:0015267) |
+| Transporters and pumps | 150 | 893 | Gene Ontology terms: transporter activity (GO:0005215), transmembrane transport (GO:0055085), monoatomic ion transport (GO:0006811) |
+| Receptors and signalling | 168 | 1,227 | Gene Ontology terms: signaling receptor activity (GO:0038023), molecular transducer activity (GO:0060089), signal transduction (GO:0007165), signaling receptor binding (GO:0005102) |
+| DNA, RNA and making proteins | 861 | 1,894 | Gene Ontology terms: gene expression (GO:0010467), DNA metabolic process (GO:0006259), DNA binding (GO:0003677), RNA binding (GO:0003723), transcription regulator activity (GO:0140110), regulation of DNA-templated transcription (GO:0006355), chromatin organization (GO:0006325), ribosome (GO:0005840), catalytic activity, acting on a nucleic acid (GO:0140640) |
+| Protein folding, change, sorting and breakdown | 387 | 1,171 | Gene Ontology terms: protein folding (GO:0006457), proteolysis (GO:0006508), protein modification process (GO:0036211), protein transport (GO:0015031), vesicle-mediated transport (GO:0016192), catalytic activity, acting on a protein (GO:0140096) |
+| Cytoskeleton, movement and adhesion | 140 | 601 | Gene Ontology terms: cytoskeleton (GO:0005856), cytoskeleton organization (GO:0007010), cytoskeletal motor activity (GO:0003774), microtubule-based movement (GO:0007018), cell adhesion (GO:0007155), extracellular matrix (GO:0031012), cilium (GO:0005929), structural molecule activity (GO:0005198) |
+| Enzymes and metabolism | 683 | 1,525 | Gene Ontology terms: catalytic activity (GO:0003824), metabolic process (GO:0008152) |
+| Other functions | 830 | 1,912 | The family's proteins carry Gene Ontology terms, and none of the districts' terms |
+| Not classed by function | 942 | 1,697 | The family's proteins carry no Gene Ontology term |
 
-A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
-those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
-joined to it. The protein falls in the first district, in the order of the table, one of
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures in the
+table's own column and those UniProt gives a UniProtKB entry; a gene model takes also the
+terms of the entries joined to it. The protein falls in the first district, in the order of the table, one of
 whose terms it carries, and a family stands where most of its classed members fall. The
 choice of the terms and their order is the viewer's.
 
@@ -181,7 +194,7 @@ each, the order of `predicted_proteins.tsv`.
 
 **How a family's members are read.** A family's members are the lines whose `under` is
 its id, in the table's order. For the page they are cut into 9 files of at most
-2,000 members where families allow (the largest holds 3,887, one part alone): a
+2,000 members where families allow (the largest holds 3,751, one part alone): a
 file holds consecutive families and a family is never split. `shelves.json` gives each
 family's file and its place there (`file`, `at`). `python3
 tools/build_planarian_atlas.py members --out DIR` writes the files; they are published
@@ -201,17 +214,23 @@ Cite:
 - WormBase ParaSite: Howe and others (2017) WormBase ParaSite - a comprehensive resource for helminth genomics. Mol Biochem Parasitol 215:2-10. Genome: Ivanković and others (2024) A comparative analysis of planarian genomes reveals regulatory conservation in the face of rapid structural divergence. Nat Commun 15:8215. The database's page of this annotation names no paper. That it is the annotation this paper describes is inferred, not stated by either: the assembly has the paper's name (schMedS3 haplotype 1), the count of coding genes in the second haplotype is the same in both (21,310), and in the first it is 21,392 here against the paper's 21,401.
 - InterPro: Blum and others (2025) InterPro: the protein sequence classification resource in 2025. Nucleic Acids Res 53:D444-D456.
 
-For the shelves, more was taken from the same sources, and the Gene Ontology was added:
+For the shelves, more was taken from the same sources, and the Gene Ontology was added;
+since 19 November 2026 the filing also takes the entries of the species' own scan, and each
+database whose signatures stand behind a placement is listed with the terms its record gives:
 
 | Source | What the shelves take | Terms |
 | --- | --- | --- |
 | [WormBase ParaSite](https://parasite.wormbase.org/), release WBPS19, read 2026-11-15 | The gene models; and, from its BioMart, the helices TMHMM predicts and the signal peptides SignalP predicts on each predicted protein | The database's disclaimer: "Ensembl imposes no restrictions on access to, or use of, the data provided and the software used to analyse and present it. Ensembl data generated by members of the project are available without restriction." It goes on: "Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions." It asks that the genome's paper and the database be cited. |
-| [InterPro](https://www.ebi.ac.uk/interpro/), release 111.0, read 2026-11-15 | The type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms | CC0 1.0 |
+| [InterPro](https://www.ebi.ac.uk/interpro/), release 111.0, read 2026-11-15 | The type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms; for the scan's entries, which member signature is of which entry (interproscan.json) | CC0 1.0 |
 | [Gene Ontology](https://geneontology.org/), release releases/2026-07-26, read 2026-11-15 | The names of terms and which term is a kind or a part of which; no term's text is copied beyond the names of the districts' and the places' terms | CC BY 4.0 |
 | [UniProt](https://www.uniprot.org/), release 2026_04, read 2026-11-15 | For each of the species' entries: the membrane-spanning segments, the signal peptide and the subcellular location it gives, whether the sequence's beginning is missing, and its Gene Ontology terms | CC BY 4.0 |
+| [Pfam](https://www.ebi.ac.uk/interpro/entry/pfam/), release 38.2, read 2026-11-18 | Its signatures' matches in the species' own scan: 77 proteins are filed by them | CC0 1.0 (InterPro's licence page; Pfam's own page: freely available under the Creative Commons Zero licence) |
+| [CATH-Gene3D](https://www.cathdb.info/), release 4.3.0, read 2026-11-18 | Its signatures' matches in the species' own scan: 7 proteins are filed by them | CC BY 4.0 (CATH's own pages: the CATH Protein Structure Classification Database is licensed under a Creative Commons Attribution 4.0 International License) |
+| [NCBIfam](https://www.ncbi.nlm.nih.gov/genome/annotation_prok/evidence/), release 19.0, read 2026-11-18 | Its signatures' matches in the species' own scan: 3 proteins are filed by them | CC BY-SA 4.0 (share-alike), as NCBI's page on TIGRFAMs states: TIGRFAMs data are made available under a Creative Commons Attribution-ShareAlike 4.0 license |
+| [PANTHER](https://www.pantherdb.org/), release 19.0, read 2026-11-18 | Its signatures' matches in the species' own scan: 3,031 proteins are filed by them | CC BY 4.0 for its data and data products, as PANTHER's terms page states; the page was read in a browser on 18 November 2026, its site refusing automated reads; its models as distributed with InterProScan may be copied and redistributed freely in accordance with InterPro's copyright agreement |
+| [CDD](https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml), release 3.21, read 2026-11-18 | Its signatures' matches in the species' own scan: 8 proteins are filed by them | No open licence stated: CDD's own page states no terms, and NCBI's policies page none for CDD itself; it was decided on 18 November 2026 that a database whose provider states no terms may be used for this scan where it is publicly available |
 
-Every source in the two tables is permissive: its terms allow what is taken, with
-attribution.
+Two of the scan's databases are not plainly permissive. NCBIfam is under CC BY-SA 4.0 (share-alike), and stands behind 3 placements (2 on it alone). CDD states no terms, and stands behind 8 placements (7 on it alone) by the decision its terms give; `tests/licence_classes.test.mjs` keeps it in its register `DECIDED`, so that a second source of that class is put to the user. Every other source in the two tables is permissive: its terms allow what is taken, with attribution. The tool that ran the scan, InterProScan 5.78-109.0, is named and is not a source: it is a program, under its own licence (Apache License 2.0).
 
 **What the two databases give out that a tool or a rule system computed.** The sides
 are predictions, and the programs and rules that made them have terms of their own.

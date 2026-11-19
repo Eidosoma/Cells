@@ -1,0 +1,4 @@
+2026-11-18 pass1-prints chunk-01: start (4 sequences; PRINTS; cpu 2; heap 2g)
+2026-11-18 pass1-prints chunk-01: exit 0 after 1 s; the unit's memory peak 1 bytes; 1 lines of matches
+2026-11-18 pass1-prints chunk-02: start (4 sequences; PRINTS; cpu 2; heap 2g)
+2026-11-18 pass1-prints chunk-02: exit 0 after 1 s; the unit's memory peak 1 bytes; 1 lines of matches

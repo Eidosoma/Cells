@@ -1,0 +1,101 @@
+{
+ "interproscan-version": "5.78-109.0",
+ "results": [
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PTHR48051",
+      "signatureLibraryRelease": {
+       "library": "PANTHER",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR050216",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "PTHR48051:SF1"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000011",
+     "name": "h1SMcG0000011"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PTHR46134",
+      "signatureLibraryRelease": {
+       "library": "PANTHER",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR052248",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "PTHR46134:SF3"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000014",
+     "name": "h1SMcG0000014"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PTHR24204",
+      "signatureLibraryRelease": {
+       "library": "PANTHER",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR047169",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "PTHR24204:SF8"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000008",
+     "name": "h1SMcG0000008"
+    }
+   ]
+  },
+  {
+   "matches": [
+    {
+     "signature": {
+      "accession": "PTHR22738",
+      "signatureLibraryRelease": {
+       "library": "PANTHER",
+       "version": "19.0"
+      },
+      "entry": {
+       "accession": "IPR033614",
+       "type": "FAMILY"
+      }
+     },
+     "model-ac": "PTHR22738:SF10"
+    }
+   ],
+   "xref": [
+    {
+     "id": "h1SMcG0000009",
+     "name": "h1SMcG0000009"
+    }
+   ]
+  }
+ ]
+}
