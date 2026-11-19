@@ -1609,12 +1609,16 @@ owner's design statement 1, core-pass-operators-2-20261119/item4_design_statemen
 - **A kind's extensive split is booked** in a composite-owned moved accumulator per extensive
   state field, added to the kind's ledger terms, as partition_*_moved does for @3's fields.
 - **Layout and control roles are checked at the definition** in check_structure, by role.
-- **Cell-slot extensive kind fields split by the volume fraction alone.** One that enters the
-  charge ledger is refused beside a dividing closer until a charge rule is designed.
+- **Per-cell extensive kind fields are refused beside a dividing closer** until a charge rule is
+  designed (corrected at 02:45 UTC). The kind contract does not say which fields enter the charge
+  ledger, a probe can miss a charge path, and no planned world needs a neutral one there. When a
+  world needs one, a declaration in F's contract is added, with the probe as its test. Extensive
+  kind fields on edge slots are refused too, since the partition binds no contact fraction.
 - **@3's hand-written lists stay.**
   - The equalities with RECORD, STATE_RESETS and the anchors are tests only.
-  - PADDED_FIELDS is tested as the padded roles less the geometry list, which is written in the
-    test.
+  - PADDED_FIELDS is tested as the padded roles less the fields closure keeps, written in the test
+    by group (corrected at 02:45 UTC): geometry, the parameters read only on active slots, the
+    hosts and ends, and the pump fields.
   - So §4.2's "in place of" is deferred: replacing the lists would be a dated change, gated
     bitwise.
 - **Nothing runs in an admitted world until Q2's presence gate lands** (Q7 (a)). The tests patch
