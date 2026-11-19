@@ -30,7 +30,9 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   the change records are today's, by value and type; it is refused with its reason (an unknown or
   repeated population, a value outside [0, 1], a breakpoint past the horizon, the key on version
   1's layout); the held value is right-continuous (planted: a left-continuous read), J+ scales
-  with it, and a breakpoint to 0 stops the cycles there, every ledger closing;
+  with it, and a breakpoint to 0 stops the cycles there, every ledger closing; in every kinetic
+  form (neutral and charged factored, diagram, net flow) a held availability is the capacity
+  times it, and 0 runs no cycle;
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
 """
@@ -763,6 +765,73 @@ def test_the_held_availability_scales_j_and_a_breakpoint_to_zero_stops_the_cycle
         assert cycles[2] == cycles[3] == cycles[4]  # Unavailable from the breakpoint: none.
         history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
         impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+
+
+def _charged_general(**over):
+    raw = tk.charged_world(**over)
+    raw["model"][transporter.MODEL_KEY] = [general(e) for e in raw["model"][transporter.MODEL_KEY]]
+    return raw
+
+
+def _neutral(**over):
+    return scheduled(None, general(tk.population(**over)))
+
+
+def _net_flow(**over):
+    return exchange_world(exchanger(law="seamtest.net_exchange@1", **over))
+
+
+FORMS = {  # Each kinetic form's world, its population and the kinds it needs.
+    "neutral factored": (_neutral, "transporter_0", ()),
+    "charged factored": (_charged_general, "transporter_0", tk.CHARGED_KINDS),
+    "diagram": (lambda **over: exchange_world(exchanger(**over)), "exchanger_0", ()),
+    "net flow": (_net_flow, "exchanger_0", ()),
+}
+
+
+def four_steps(raw, kinds):
+    """The states after four of @3's own IMEX steps at dt 1e-4 (a step every form admits), with
+    every step valid and every ledger closing."""
+    raw = copy.deepcopy(raw)
+    raw["execution"]["dt"] = 1e-4
+    with scoped(*kinds):
+        spec = parse_spec(raw)
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(4):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))
+    return state
+
+
+@pytest.mark.parametrize("form", list(FORMS))
+def test_a_held_availability_is_the_capacity_times_it_in_every_kinetic_form(form):
+    """The availability enters every form only through k a: a schedule at 0.3 gives the steps of
+    the capacity times 0.3 with none (within J+'s log-space rounding, ln k + ln a against ln(k a)),
+    and a schedule at 0 runs no cycle."""
+    build, pid, kinds = FORMS[form]
+    raw = build()
+    (entry,) = raw["model"][transporter.MODEL_KEY]
+    k = entry["capacity_fmol_s"]
+    at = {}
+    for a in (0.3, 0.0):
+        given = copy.deepcopy(raw)
+        given["experiment"][transporter.SCHEDULE_KEY] = [
+            dict(transporter_id=pid, schedule=series((0.0, a)))
+        ]
+        at[a] = four_steps(given, kinds)
+    scaled = four_steps(build(capacity_fmol_s=k * 0.3), kinds)
+    cycles = float(np.sum(at[0.3].cycle_count))
+    assert cycles != 0 and cycles == pytest.approx(
+        float(np.sum(scaled.cycle_count)), rel=1e-12, abs=0
+    )
+    np.testing.assert_allclose(at[0.3].amount_increment, scaled.amount_increment, rtol=1e-12)
+    assert float(np.sum(np.abs(at[0.0].cycle_count))) == 0.0  # Unavailable: no cycle at all.
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
