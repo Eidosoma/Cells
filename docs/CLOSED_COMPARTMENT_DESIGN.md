@@ -18,6 +18,9 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
   - refusal 5 version 1.1 (§3.4.3, the charge anchor where charged routes are admitted).
 - **Version 1.3 (§3.4.4, 18 November; CORE_SEAMS §18's option (a)):** refusal 4 checks the kinds
   per move, from each law's declared step terms, in place of version 1.2's lists of kinds.
+- **The membrane-state wall's door (§4, 19 November; D217, FR-2):** membrane state composes
+  beside a compartment only together with `scheduled_membrane_trafficking@1`, and the declaration
+  reads the areas and capacitances as `reference` reads.
 
 **As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
 after that review: no engine code was added or changed. One read-only probe ran on the engine as
@@ -139,9 +142,11 @@ is an addition, not a change to existing behaviour.
    - *Composes:* @3, injection, D150's exchange and turnover (degradation at the node), D152's
      reactions at the node, the coupling operator, replacement@1 away from owners and away from
      owners as donors, and FR-10's bath schedule.
-   - *Refused, each with its door:* water and what requires it, closers, membrane state (the
-     membrane-state wall, which FR-3's note names too), insertion, the lumens, and FR-3's
-     `site_occupancy@1` until its one-line admission.
+   - *Composes since 19 November 2026 (D217):* membrane state together with FR-2's
+     `scheduled_membrane_trafficking@1`, the membrane-state wall's door.
+   - *Refused, each with its door:* water and what requires it, closers, membrane state without
+     trafficking (the membrane-state wall, which FR-3's note names too), insertion, the lumens,
+     and FR-3's `site_occupancy@1` until its one-line admission.
    - **A wall on the requester's first world:** FR-10's bath schedule and D152's reactions refuse
      each other, through the view field the schedule provides. Version 1's workaround is
      degradation by turnover; the door is FR-10's door S.
@@ -895,9 +900,10 @@ kind is checked per move:
 | `scheduled_cell_replacement@1` | Composes away from owners | Events on an owner's slot are refused (§1.5); door R |
 | `scheduled_bath_composition@1` (FR-10) | Composes, but not beside D152 | It acts on held baths only ([its note](BATH_SCHEDULE_DESIGN.md)). D152 lists the field that the bath schedule provides in its `CONFLICTS_VIEW`, so a dose world with reactions anywhere is refused. The conflict is nominal, at the field level only: see below |
 | Water, the k-anion symport, replacement@2 | Refused | Volume: door V (§5.3). The symport and replacement@2 require water |
-| `membrane_entity_state@1` | Refused: **the membrane-state wall** | Membrane state provides the patches' capacitance, so it is a field-input provider (§3.6). FR-3 makes it the owner of binding sites, so sites on a bounding patch wait for this wall's door; the 64-node cap and the held-bath topology then apply. FR-3's note names the same wall |
+| `membrane_entity_state@1` | Composes only together with FR-2's trafficking: **the membrane-state wall's door** (19 November 2026) | Membrane state provides the patches' area and capacitance, so it is a field-input provider (§3.6): the 64-node cap and the held-bath topology apply. The declaration reads the areas and capacitances as `reference` reads (D217): its identity checks take the declared bounding patch as data, so a provider of them is no conflict. Membrane state is admitted only beside `scheduled_membrane_trafficking@1`, the one writer of them on the list; alone, or for FR-3's sites, the wall stands |
+| `scheduled_membrane_trafficking@1` (FR-2) | Composes, after membrane state and this declaration | Retrieval into a compartment's pool and recycling from it, the charges following the patches ([retrieval design](MEMBRANE_RETRIEVAL_DESIGN.md), D217). It changes a bounding patch's area and capacitance, not its identity: V_b = -q/C_b holds at the current C_b (§3.1). Named on the list before its module lands |
 | Insertion@1 and @2 | Refused | Field-input providers; exchange also refuses an area provider. FR-2's door (§7) |
-| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. **That line is not sufficient alone:** the declaration's own `CONFLICTS_VIEW` refuses membrane state, the sites' owner (the membrane-state wall), so the wall's door comes first or with it |
+| `site_occupancy@1` (FR-3) | Refused: the list fails closed | **Door:** admitted by a host-only, one-line addition when FR-3's operator exists, on two conditions: binding and release only on a bounding patch's outward-facing populations, which face the lumen; and refusal of internalisation from a compartment-facing patch, read from this declaration. **That line is not sufficient alone** if the sites move to membrane state, their owner in FR-3's note: the wall's door admits membrane state only beside trafficking |
 | The partition; the bridge | Refused | Closers; door D |
 | The restricted lumens | Refused | They require insertion; a compartment is not a lumen's onset node |
 | The stationary analysis | Refused | It does not admit the composite (D150 ruling 2) |
@@ -1046,7 +1052,7 @@ snapshot.
 | Floating topology (§3.5) | The representative refusal, and a floating world's acceptance | Finite-extracellular tissues |
 | Coupling source and route (§4) | D156's source-semantics and routing doors | FR-5 |
 | S, slot-scoped provision (FR-10's note) | A provider and a reader of one view field declare their slots; only an intersection is refused | The requester's dose, uptake, compartment and reactions world (§4) |
-| The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology | FR-3's sites on a bounding patch; FR-2 |
+| The membrane-state wall (§4) | Membrane state beside a compartment: a field-input provider, so the 64-node cap and the held-bath topology. Opened for FR-2's trafficking on 19 November 2026, with the areas and capacitances read as references (D217) | FR-2 (opened); FR-3's sites on a bounding patch (waiting) |
 | FR-3's `site_occupancy@1` (§4) | A one-line, host-only admission, on its two conditions | FR-3 |
 | Condensation (§3.6) | Face-free nodes eliminated from the dense solve: a new solver ID | Tissues with a compartment per cell |
 

@@ -41,9 +41,13 @@ Refused at the definition, each with its reason (§1.4, §1.5):
 7. a composition beyond the admitted list of §4, which fails closed: a new operator may treat
    outside nodes as environment. Replacement@1 schedules no event on an owner's slot and names no
    owner as a donor (§1.5): a newcomer would inherit the compartment's content, and a donor copy
-   takes the donor's cytosolic amounts only. Providers and closers of the volumes, the areas, the
-   capacitances and the masks are refused through CONFLICTS_VIEW by the composite's structure check:
-   water and what requires it, membrane state, insertion, the lumens, and S5's closers (division).
+   takes the donor's cytosolic amounts only. Providers and closers of the volumes and the masks
+   are refused through CONFLICTS_VIEW by the composite's structure check: water and what requires
+   it, insertion, the lumens, and S5's closers (division). The areas and capacitances are
+   reference reads (D217): the declaration reads the declared bounding patch as data, its
+   identity, so a provider of them is no conflict. Membrane state, which provides them, is
+   admitted only together with scheduled_membrane_trafficking@1 (FR-2; the membrane-state wall's
+   door), whose routes are the one writer of them that the list admits.
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -67,7 +71,7 @@ from dataclasses import dataclass
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 
@@ -112,7 +116,12 @@ SOURCE_ABSENT = (
 # routes beside a compartment only with an IMEX tableau (§3.4.1).
 RK4_SOLVER = "rk4"
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-# §4's admitted list (fails closed). @3 itself is the composite's inner model.
+STATE_LAW = "membrane_entity_state@1"
+# FR-2's operator (docs/MEMBRANE_RETRIEVAL_DESIGN.md; D217): named here before its module lands,
+# so that the admission is on main for its builder (the lead's ruling of 19 November 2026).
+TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
+# §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
+# admitted only together with trafficking (check_definition).
 ADMITTED = (
     LAW_ID,
     "electrode_current_injection@1",
@@ -122,13 +131,13 @@ ADMITTED = (
     "species_regulated_availability@1",
     REPLACEMENT_LAW,
     "scheduled_bath_composition@1",
+    STATE_LAW,
+    TRAFFICKING_LAW,
 )
-# Read as declared: the volumes, the areas, the capacitances and the activity masks (§1.4, 7).
+# Read as declared: the volumes and the activity masks (§1.4, 7).
 CONFLICTS_VIEW = (
     "volume",
     "extracellular_volume",
-    "membrane_area",
-    "membrane_capacitance",
     "active",
     "outside_active",
     "membrane_active",
@@ -136,6 +145,15 @@ CONFLICTS_VIEW = (
     "junction_active",
     "face_active",
 )
+# The areas and capacitances are reference reads (D217; docs/MEMBRANE_RETRIEVAL_DESIGN.md §6): the
+# declaration's identity checks read the declared bounding patch as data, so a provider of them
+# (membrane state, written by trafficking) is no conflict. A declaration's reads are unscoped
+# reference reads (the contract's DECLARATION_ONLY), at end, a stage a part-less operator's read
+# may name; a reference read takes the bound value whatever its stage.
+SCOPED_READS = {
+    "membrane_area": Read("reference", "end"),
+    "membrane_capacitance": Read("reference", "end"),
+}
 COMPARTMENT_FIELDS = {"id", "node", "patch", "owner", "label", "reference"}
 OPTIONAL_FIELDS = {"role"}
 ROLE = "lumen"  # The default role when a declaration omits it; no physics depends on a role.
@@ -450,10 +468,26 @@ def declaration_to_dict(declaration):
     )
 
 
+def refuse_untrafficked_state(laws):
+    """7. Membrane state beside a compartment only together with trafficking (FR-2, D217; the lead's
+    ruling of 19 November 2026 on its question 11): membrane state provides every patch's area and
+    capacitance, a bounding patch's included, and trafficking is the one writer of them on the
+    admitted list. Alone it would provide the declared values only, a composition no world
+    needs, so it fails closed."""
+    if STATE_LAW in laws and TRAFFICKING_LAW not in laws:
+        raise ConfigError(
+            f"{LAW_ID} admits {STATE_LAW} only together with {TRAFFICKING_LAW}: membrane state "
+            "provides every patch's area and capacitance, a bounding patch's included, and "
+            "trafficking is the one writer of them on its admitted list (fails closed)"
+        )
+
+
 def check_definition(spec, declaration):
-    """7. The admitted list, which fails closed, and replacement@1's owners."""
+    """7. The admitted list, which fails closed, replacement@1's owners, and membrane state only
+    with trafficking."""
     owners = {c.owner for c in declaration.compartments}
-    for op, _, schedule in composite_spec.entries(spec):
+    entries = composite_spec.entries(spec)
+    for op, _, schedule in entries:
         if op.LAW_ID not in ADMITTED:
             raise ConfigError(
                 f"{LAW_ID} composes only with {', '.join(ADMITTED[1:])}; {op.LAW_ID} is not on "
@@ -474,6 +508,7 @@ def check_definition(spec, declaration):
                     "a donor; a donor copy takes the donor's cytosolic amounts only, so the "
                     "newcomer would not be a copy (door R)"
                 )
+    refuse_untrafficked_state([op.LAW_ID for op, _, _ in entries])
 
 
 def identity_map(model, declaration):
@@ -513,6 +548,7 @@ class CellOwnedCompartments(Operator):
     LAW_ID = LAW_ID
     DECLARATION_ONLY = True
     CONFLICTS_VIEW = CONFLICTS_VIEW
+    SCOPED_READS = SCOPED_READS
 
     def parse(self, raw, base, inner_model):
         return parse_declaration(raw, base)

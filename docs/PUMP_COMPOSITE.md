@@ -141,7 +141,7 @@ fills from its source bath at the declared composition without declaring that re
 | 15 | `local_species_reactions@1` |  |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `extracellular_amount_reference` |
 | 16 | `species_regulated_availability@1` |  |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `membrane_active` |
 | 17 | `scheduled_bath_composition@1` |  | `extracellular_amount_reference` |  |  |
-| 18 | `cell_owned_compartments@1` |  |  |  | `volume`, `extracellular_volume`, `membrane_area`, `membrane_capacitance`, `active`, `outside_active`, `membrane_active`, `channel_active`, `junction_active`, `face_active` |
+| 18 | `cell_owned_compartments@1` |  |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `membrane_active`, `channel_active`, `junction_active`, `face_active` |
 | 19 | `site_occupancy@1` |  |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `membrane_active`, `extracellular_amount_reference` |
 
 Row: the earlier operator in the list; column: the later. ✓ admitted by the declarations; R refused, with a real conflict among the refusals; n refused, every refusal nominal; d admitted by the declarations, refused at the definition by a law-level rule; · the same law.
@@ -153,7 +153,7 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | **3** | R | R | · | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **4** | ✓ | ✓ | R | · | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R |
 | **5** | R | R | ✓ | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **6** | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | R | ✓ |
+| **6** | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | d | ✓ |
 | **7** | R | R | R | R | ✓ | ✓ | · | ✓ | R | R | R | R | R | R | R | n | R | R | R |
 | **8** | R | R | R | R | ✓ | ✓ | ✓ | · | R | R | R | R | R | R | R | n | R | R | R |
 | **9** | R | R | R | R | ✓ | ✓ | R | R | · | ✓ | d | d | R | R | R | R | R | R | R |
@@ -165,7 +165,7 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ |
 | **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ |
 | **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | n |
-| **18** | R | R | ✓ | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d |
+| **18** | R | R | ✓ | R | ✓ | d | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d |
 | **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | n | d | · |
 
 **Refusals from the declarations**, with the number of ordered pairs each refuses:
@@ -237,7 +237,6 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | bath_schedule (17) provides `extracellular_amount_reference` beside the closer partition (9) | 4 | real | Real as the bath-schedule design §3.1 classes it: beside a closer the adapter pads the field (door S). The partition closes no held bath (not shown nominal: the design does not class it so) |
 | bath_schedule (17) provides `extracellular_amount_reference` beside the closer membrane_insertion_v2 (11) | 4 | real | Real as the bath-schedule design §3.1 classes it: beside a closer the adapter pads the field (door S). Insertion@2 closes only finite onset nodes, but a lumen, which requires it, fills from its source bath at the declared composition and does not declare that read |
 | compartments (18) reads `extracellular_volume`, `volume` as declared; osmotic_water (1) provides them | 6 | real | A compartment's volume is fixed in version 1 (door V, the closed-compartment design §5.3); water changes the volumes of cells and finite nodes, an owner's and a compartment's included |
-| compartments (18) reads `membrane_area`, `membrane_capacitance` as declared; membrane_state (6) provides them | 14 | real | The membrane-state wall (the closed-compartment design §4): membrane state provides every patch's area and capacitance as field inputs, a bounding patch's included; sites on a bounding patch wait for this wall's door |
 | compartments (18) reads `face_active` as declared; membrane_insertion (7) provides it | 4 | nominal | No face names a compartment's node (refusal 1, parse_declaration), and insertion@1's face view differs from the declared only at faces naming its onset nodes (masks, onset_entities): the slots are disjoint |
 | compartments (18) reads `membrane_active`, `outside_active` as declared; membrane_insertion (7) provides them | 4 | real | Insertion@1 closes its onset patches and nodes until their onset, and a bounding patch may be one: a compartment created at an event is FR-2's door C (the closed-compartment design §7) |
 | compartments (18) reads `extracellular_volume` as declared; restricted_lumen (8) provides it | 2 | real | A lumen changes its node's volume and requires insertion; a lumen's onset node is not refused as a compartment (not shown nominal) |
@@ -280,6 +279,7 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | at most 16 species per world | 13, 14, 15, 16 | data | `src/cells/operators/species_common.py::check_species_cap` | `tests/unit/test_secreted_species.py::test_more_than_sixteen_species_are_refused_with_the_reason` | real | Probed to 16 (FR-9 / D165); above it, another probe |
 | beside water@1 every bath step is isosmotic | 17, 1 | data | `src/cells/operators/bath_schedule.py::check_definition` | `tests/unit/test_bath_schedule.py::test_beside_water_only_an_isosmotic_step_is_admitted` | real | Water reads the declared bath, its water potential bound at the definition (the bath-schedule design §3.1, door W) |
 | cell_owned_compartments@1 composes only with its admitted list, which fails closed | 18 | law, marks 18→19, 19→18 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_the_admitted_list_fails_closed` | real | A new operator may treat outside nodes as environment (the closed-compartment design §4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for it, §4) and stands behind the declarations' refusals of the rest |
+| membrane state beside a compartment only together with trafficking | 18, 6 | law, marks 18→6, 6→18 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_membrane_state_beside_a_compartment_only_with_trafficking` | real | The membrane-state wall's door (the closed-compartment design §4; FR-2, D217): the declaration reads the areas and capacitances as references, and membrane state, which provides them, composes with it only beside scheduled_membrane_trafficking@1, the one writer of them on its admitted list |
 | replacement@1 schedules no event on a compartment's owner and names no owner as a donor | 18, 3 | data | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_replacement_composes_away_from_owners_and_never_on_or_from_one` | real | A newcomer would inherit the compartment's content, and a donor copy takes the donor's cytosolic amounts only (door R, the closed-compartment design §1.5) |
 | D152 refuses RK4 | 15 | data | `src/cells/operators/species_reactions.py::LocalSpeciesReactions.check_definition` | `tests/unit/test_species_reactions_refusals.py::test_rk4_is_refused_with_its_reasons` | real | Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6) |
 

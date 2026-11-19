@@ -407,22 +407,15 @@ def _tags():
             "definition",
             (),
         )
-    # FR-1's declaration reads the volumes, areas, capacitances and masks as declared
-    # (compartments.CONFLICTS_VIEW, docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 and §4).
+    # FR-1's declaration reads the volumes and masks as declared (compartments.CONFLICTS_VIEW,
+    # docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 and §4). Its areas and capacitances are reference reads
+    # (D217): membrane state beside it is a rule at the definition (RULES), not a refusal here.
     for name in ("volume", "extracellular_volume"):
         tags[("reads", COMPARTMENTS, WATER, name)] = (
             REAL,
             "A compartment's volume is fixed in version 1 (door V, the closed-compartment design "
             "§5.3); water changes the volumes of cells and finite nodes, an owner's and a "
             "compartment's included",
-            (),
-        )
-    for name in ("membrane_area", "membrane_capacitance"):
-        tags[("reads", COMPARTMENTS, STATE, name)] = (
-            REAL,
-            "The membrane-state wall (the closed-compartment design §4): membrane state provides "
-            "every patch's area and capacitance as field inputs, a bounding patch's included; "
-            "sites on a bounding patch wait for this wall's door",
             (),
         )
     for lumen in (LUMEN_1, LUMEN_2):
@@ -827,6 +820,20 @@ RULES = (
         "it, §4) and stands behind the declarations' refusals of the rest",
         marks=_off_list(True),
         behind=_off_list(False),
+    ),
+    dict(
+        rule="membrane state beside a compartment only together with trafficking",
+        laws=(COMPARTMENTS, STATE),
+        level="law",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_cell_owned_compartments.py::"
+        "test_membrane_state_beside_a_compartment_only_with_trafficking",
+        tag=REAL,
+        why="The membrane-state wall's door (the closed-compartment design §4; FR-2, D217): the "
+        "declaration reads the areas and capacitances as references, and membrane state, which "
+        "provides them, composes with it only beside scheduled_membrane_trafficking@1, the one "
+        "writer of them on its admitted list",
+        marks=((COMPARTMENTS, STATE), (STATE, COMPARTMENTS)),
     ),
     dict(
         rule="replacement@1 schedules no event on a compartment's owner and names no owner as a "
