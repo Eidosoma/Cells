@@ -1101,7 +1101,9 @@ all 112 runs, in 341 files).
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
-   for each and `summary.json`. Each
+   for each and `summary.json`. A scenario that holds a time bound (what a frame costs:
+   `shelves-frame`) runs alone, after the others: beside three other browsers its measure
+   says more of them than of the page. Each
    check says at its end whether the page's own font had arrived: with the stand-in, words
    run longer and cards stand taller, and a miss is read against that. `fetches` exports
    the page as the landing's cards list it and holds what each address fetches beside the

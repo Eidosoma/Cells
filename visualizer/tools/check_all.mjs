@@ -7,7 +7,11 @@
 // Each scenario is one run of one of the check tools, with its own browser. A run takes
 // a place of the browser lock (tools/lib/browser_lock.mjs), so as many run at once as there
 // are places (four on the project's machine: one core each), and --jobs asks for fewer.
-// The longest scenarios start first. --only runs the scenarios whose names match a regular
+// The longest scenarios start first. A scenario marked `alone` holds a time bound (what a frame
+// costs): it runs after all the others, with no other browser beside it, because measured beside
+// three other browsers a frame's cost says more of them than of the page (on 19 November 2026 the
+// shelves' frame check missed its bound in two of three whole runs and passed each time it ran alone).
+// --only runs the scenarios whose names match a regular
 // expression; --list names them and runs nothing. A scenario that has not ended after
 // --limit minutes (40 unless given) is stopped together with its browser and counted as
 // failed, so that one browser that hangs cannot hold the whole command.
@@ -160,7 +164,7 @@ const SUITE = [
   { name: "shelves-map", tool: "check_shelves.mjs", args: ["map"], env: { SPECIES: "thalecress" }, minutes: 1 },
   { name: "shelves-colours", tool: "check_shelves.mjs", args: ["colours"], minutes: 1 },
   { name: "shelves-gathering", tool: "check_shelves.mjs", args: ["gathering"], minutes: 1 },
-  { name: "shelves-frame", tool: "check_shelves.mjs", args: ["frame"], minutes: 2 },
+  { name: "shelves-frame", tool: "check_shelves.mjs", args: ["frame"], minutes: 2, alone: true },
   { name: "shelves-accessory-human", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "human" }, minutes: 2 },
   { name: "shelves-doors", tool: "check_shelves.mjs", args: ["doors"], minutes: 2 },
   { name: "layers-zero", tool: "check_layers.mjs", args: ["zero"], env: { RUN: SHEET }, minutes: 1 },
@@ -172,7 +176,7 @@ const SUITE = [
 const only = value("--only") ? new RegExp(value("--only")) : null;
 const chosen = SUITE.filter((item) => !only || only.test(item.name));
 if (args.includes("--list")) {
-  for (const item of chosen) console.log(`${item.name}  (${item.tool}${item.args?.length ? " " + item.args.map((word) => path.relative(ROOT, word) || word).join(" ") : ""}${Object.keys(item.env || {}).length ? "; " + Object.entries(item.env).map(([key, word]) => `${key}=${word}`).join(" ") : ""})`);
+  for (const item of chosen) console.log(`${item.name}${item.alone ? "  [alone, after the others]" : ""}  (${item.tool}${item.args?.length ? " " + item.args.map((word) => path.relative(ROOT, word) || word).join(" ") : ""}${Object.keys(item.env || {}).length ? "; " + Object.entries(item.env).map(([key, word]) => `${key}=${word}`).join(" ") : ""})`);
   process.exit(0);
 }
 if (!chosen.length) {
@@ -219,7 +223,9 @@ console.log(`${chosen.length} scenarios on ${revision ?? "an unknown revision"}$
 // ---------------------------------------------------------------- the scenarios, a few at a time
 const began = Date.now();
 const results = new Map();
-const waiting = [...chosen].sort((a, b) => (b.minutes || 1) - (a.minutes || 1));
+const waiting = chosen.filter((item) => !item.alone).sort((a, b) => (b.minutes || 1) - (a.minutes || 1));
+// Those that hold a time bound, for after the others (the head of this file says why).
+const apart = chosen.filter((item) => item.alone);
 
 function run(item, attempt = 1) {
   return new Promise((resolve) => {
@@ -279,6 +285,11 @@ async function worker() {
   }
 }
 await Promise.all(Array.from({ length: jobs }, worker));
+if (apart.length) {
+  console.log(`${apart.length === 1 ? "one scenario runs" : `${apart.length} scenarios run`} alone, after the others: ${apart.map((item) => item.name).join(", ")}`);
+  waiting.push(...apart);
+  await worker();
+}
 
 // ---------------------------------------------------------------- what passed
 const list = chosen.map((item) => results.get(item.name));
@@ -296,6 +307,7 @@ const summary = {
   passed: list.length - bad.length - list.filter((result) => good(result) && result.skipped).length,
   skipped: list.filter((result) => good(result) && result.skipped).map((result) => result.name),
   failed: bad.map((result) => result.name),
+  alone: apart.map((item) => item.name),
   checks: { passed: list.reduce((sum, result) => sum + (result.passed || 0), 0), of: list.reduce((sum, result) => sum + (result.checks || 0), 0) },
 };
 await writeFile(path.join(out, "summary.json"), JSON.stringify(summary, null, 1) + "\n");
