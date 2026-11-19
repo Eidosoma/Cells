@@ -27,8 +27,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
     against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
     On 19 November: FR-2 version 1, `scheduled_membrane_trafficking@1` (merge 1bd35184). Its
-    registered comparison against its code-blind references ran once at 12:17 UTC (run entry
-    below): 770 of 782 rows, 3 of 3 criteria and 322 of 322 plants pass; 12 rows fail.
+    registered comparison against its code-blind references (run entry below): run 1, 770 of
+    782 rows; run 2, after a blind references erratum, 782 of 782, which is weaker evidence
+    after the failed run 1.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -106,8 +107,8 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
-- **FR-2 version 1 against its code-blind references: the registered first run (19 November 2026,
-  12:17 UTC). 770 of 782 rows, 3 of 3 criteria and 322 of 322 plants pass; 12 rows fail.**
+- **FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows;
+  run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1.**
   - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`
     over `resolved_pump_tissue@3`.
   - **Evidence:**
@@ -125,9 +126,20 @@ machine-readable inputs, results, checks and failures.
     accounts for each deviation as double-precision rounding of the held node's plate charges, about
     1.3e-12 C. Their difference is the transfer. The exact replay agrees with the references to about
     2e-31 C.
-  - **Next:** the references agent audits, without seeing these numbers, whether its registered
-    floor model, carried through correctly, covers this class of rows. If it does not, this result
-    stands. Any second run keeps the engine at 65d8c1e4 and is reported beside this one.
+  - **The erratum:** the references agent audited the class blind, without seeing any result.
+    It found its floor for the held-node checks assumed an engine product form it had never
+    registered, and so did not follow from its registered model. It corrected the floor as a dated
+    erratum (bf8bbb4d), carrying the registered potential floor through Q_h = ΣC·V.
+    - 87 bands changed, 29 each for electrode transfer, electrode work and image charge, widened
+      133–2236×.
+    - No other row, tolerance, plant, criterion or band rule moved; the lead checked this.
+  - **Run 2** (12:55 UTC, branch `fr2-comparison` at 71a044cc, tag `fr2-comparison-run2-2026-11-19`;
+    outcomes in `runs/cmp-second/`): the engine is run 1's, plus the erratum's four reference
+    files only.
+    - All 782 engine values are bitwise equal to run 1's.
+    - 1110 of 1110 tests pass: 782 of 782 rows, 3 of 3 criteria and 322 of 322 plants.
+    - The largest margin is 0.0045 of its band, in the corrected class, and 0.0036 elsewhere.
+    - **This is weaker evidence after the failed run 1:** its bands were corrected after run 1 failed.
   - A kernel form that would avoid the cancellation is logged as an engine note for a later
     declared-freeze batch.
 
