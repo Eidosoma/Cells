@@ -1738,7 +1738,11 @@ class Composition:
         return (*inner, *own)
 
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
-        count = len(self.inner.LEDGERS)
+        # magnitudes() holds the inner model's magnitudes, then one per own ledger of each
+        # operator. The inner model's are what is left once the operators' are counted from the
+        # end: they can be fewer than its ledgers, since a kind's own ledgers are bounded by its
+        # ledger_bounds, without magnitudes (E, CORE_SEAMS §7.3; the fourth review's finding 1).
+        count = len(magnitudes) - sum(len(op.LEDGERS) for op in self.own_ledger_operators)
         flows, bounds = self.inner.ledger_limits(
             row,
             p,
