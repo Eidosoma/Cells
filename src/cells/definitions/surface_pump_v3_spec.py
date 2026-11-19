@@ -38,6 +38,7 @@ enters the constant-field flux, the affinities and the pumps only.
 
 import copy
 from bisect import bisect_right
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
 
 import numpy as np
@@ -59,22 +60,55 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
-# Today's five channel laws, the full catalogue's (structure None): codes 0-2 are those of
+# Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
 # replacement operator's tables are sized and checked by these five, so a law the registry adds
 # (a code from 5) never reaches them. What a definition may name is the law registry's: law_codes,
-# law_permeabilities and gate_counts below.
-LAW_CODES = {KV1P5_LAW_ID: 0, KIR2P1_LAW_ID: 1, NAV1P2_LAW_ID: 2, KLEAK_LAW_ID: 3, NALEAK_LAW_ID: 4}
+# law_permeabilities and gate_counts below. LAW_CODES, LAW_PERMEABILITIES and GATE_COUNTS are
+# these five's rows of those tables, read from the registry on use (the Kv1 trigger, the lead's
+# ruling of 19 November 2026), so the law modules' declarations are their one source.
+TODAYS_CHANNEL_LAWS = (KV1P5_LAW_ID, KIR2P1_LAW_ID, NAV1P2_LAW_ID, KLEAK_LAW_ID, NALEAK_LAW_ID)
 GATED_CODES = 3  # Codes below this have two relaxation gates (m, h).
-LAW_PERMEABILITIES = {
-    KV1P5_LAW_ID: (("K", 1.0),),
-    KIR2P1_LAW_ID: (("K", 1.0),),
-    NAV1P2_LAW_ID: (("Na", 1.0),),
-    KLEAK_LAW_ID: (("K", 1.0),),
-    NALEAK_LAW_ID: (("Na", 1.0),),
-}
-GATE_COUNTS = {law: 2 if code < GATED_CODES else 0 for law, code in LAW_CODES.items()}
+
+
+class _TodaysLaws(Mapping):
+    """{one of today's five channel laws: its row of a law-registry table}, in TODAYS_CHANNEL_LAWS'
+    order (code order), read from the active law registry on each use and never at import:
+    models/inner_laws, which registers the five, imports this module. Membership and size are
+    the five names' alone, so a law the registry adds is never one of them."""
+
+    def __init__(self, name, table):
+        self._name, self._table = name, table
+
+    def _rows(self):
+        rows = self._table()
+        missing = [law for law in TODAYS_CHANNEL_LAWS if law not in rows]
+        if missing:
+            raise KeyError(f"{self._name}: the active law registry lacks {', '.join(missing)}")
+        return {law: rows[law] for law in TODAYS_CHANNEL_LAWS}
+
+    def __getitem__(self, law):
+        if law not in TODAYS_CHANNEL_LAWS:
+            raise KeyError(law)
+        return self._rows()[law]
+
+    def __iter__(self):
+        return iter(TODAYS_CHANNEL_LAWS)
+
+    def __len__(self):
+        return len(TODAYS_CHANNEL_LAWS)
+
+    def __contains__(self, law):
+        return law in TODAYS_CHANNEL_LAWS
+
+    def __repr__(self):
+        return f"{self._name}({self._rows()!r})"
+
+
+LAW_CODES = _TodaysLaws("LAW_CODES", lambda: law_codes())
+LAW_PERMEABILITIES = _TodaysLaws("LAW_PERMEABILITIES", lambda: law_permeabilities())
+GATE_COUNTS = _TodaysLaws("GATE_COUNTS", lambda: gate_counts())
 
 
 def channel_laws():
