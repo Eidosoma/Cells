@@ -32,6 +32,8 @@ For each of three matrices and both laws, the CPU driver checked 45 compositions
 }
 ```
 
+Full test discovery at the tested engine revision and the proof checkpoint returned the same 20,300 test IDs. Both collections reported the same five missing-fixture errors in the finite extracellular, kinetic finite and physical ionic graph tests.
+
 **Biological measurements.** Sampaio, Moreno and Vaz compared the same fluorescent lysophospholipid (NBD-lysoMPE) in protein-free vesicles at 308 K. From pure POPC to 1:1 POPC/cholesterol, the insertion constant fell from (3.4 ± 0.3) × 10¹⁰ to (1.7 ± 0.1) × 10¹⁰ M⁻¹ s⁻¹ per molar vesicles. The corresponding exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent equilibrium titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. The kinetic fit used the measured equilibrium constant and assumed slow lipid exchange between leaflets. Changing a shared rate multiplier at fixed affinity cannot account for that composition change. Testing GARD’s specific multiplier or a four-transfer cycle would require event rates at known neighboring molecular counts. [Sampaio et al., Figs. 1–3 and Table 1](https://doi.org/10.1529/biophysj.104.054007)
 
 ## 19 November 2026 · Assembly reservoir exchange
