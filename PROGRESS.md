@@ -108,6 +108,13 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **R2, the view into `control_factors` for a factor operator's current reads (19 November 2026;
+  @2 only; FR-7's F2 prerequisite).** Merge 6c501ab3, tag `r2-landed-2026-11-19`. A factor
+  operator may declare a current read at the control view, and the composite passes C4's reader
+  view to its hooks. No registered operator declares one, so no existing program changes. Gates:
+  tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +1, FR's set; the lead's
+  merged check on trial 25128f4e.
+
 - **The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;
   D228 item 2).** Merge 2db46727, tag `rectifier-landed-2026-11-19`. An instantaneous inward
   rectifier on the passive-routes kind: E_K-referenced rectification, √K_o scaling, coefficients in
