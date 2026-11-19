@@ -181,6 +181,32 @@ the exact amount by which that booking misses ΔE_c.
 
 `values.seam_c.envelope.reachability` {binder: verdict}.
 
+**Release steps (amendment C5).** Seven more cases (`seam_c.envelope.amendment_c5.cases`, each
+marked `"amendment": "C5"`) carry release steps:
+- E3_rel1_b4, a two-form buffer whose other form sits below its base (registry binder `rel1`);
+- E3_pi2_release and E3_pi2_release_mg_drive, pi2 at pH 12;
+- E3_s4_release, S4's three binders at pH 11.5;
+- E4_mgx_mixed, E4_mgx_mixed_mg_drive and E4_mgx_mixed_binder_drive, mgx at pH 7.5.
+
+A release step is a unit step f′ + L ⇌ f whose bound form f holds count_f(L) ≤ 0, so binding L
+only restores a ligand that a form below its base released: pi2_PO4 + H ⇌ pi2_base,
+mgx_MgmH + H ⇌ mgx_Mg and rel1_mH + H ⇌ rel1_base.
+- It has the same ν, flux and K_r as any step.
+- The comparison reads the same fields as for amendment C3's cases, plus `release_steps`
+  [{from, ligand, to}].
+- The planted disagreement is `plants.release_sign_flipped` {L: relative deviation}, with the
+  release steps' ligand written with the wrong sign in N. Its lag is
+  `release_sign_flipped_dln`.
+- `design.power.C5_amendment_release_envelope` gives each case's deviation over
+  `first_order_floor_rel`, and whether it is caught (at least 10 floors on some ligand).
+- For E3_rel1_b4, `b4_formula_pH` is B4's formula with the release form as the free one.
+
+**Regenerating bitwise.** The values were computed with BLAS and LAPACK on one thread.
+`envelope.one_blas_thread` (threadpoolctl) now pins them. Without it, a multi-threaded OpenBLAS
+moves the network's eigenvalues (so the record times and the kinetic rows) at about 1e-10
+relative, and `design --check` differs. Where threadpoolctl is missing, set
+`OPENBLAS_NUM_THREADS=1`.
+
 **`values.seam_c.validity`** (amendment C4):
 - **`systems.<S>`:** per registered state, `t_star_fmol`, `t_star_exact` (a rational),
   `lambda_star`, `per_ligand_fmol` (t at λ = e_L), `valid`, `per_ligand_valid` and
