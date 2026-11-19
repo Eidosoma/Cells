@@ -97,9 +97,12 @@ def drawer():
 
 def buffer(third=None):
     """The closure's kind with `third` as each stage row's third item (None: today's two)."""
-    if third is None:
-        return proton_buffer.PROTON_BUFFER
     rows = proton_buffer.stage_rows
+    if third is None:  # Today's two items, pinned (the binding owner's rows name their law).
+        return replace(
+            proton_buffer.PROTON_BUFFER,
+            stage_rows=lambda declaration: tuple(row[:2] for row in rows(declaration)),
+        )
     return replace(
         proton_buffer.PROTON_BUFFER,
         stage_rows=lambda declaration: tuple((*row[:2], third) for row in rows(declaration)),
@@ -168,7 +171,8 @@ def test_the_predictor_reads_the_free_amount_at_the_predicted_totals_where_the_l
 
 def test_the_switch_reaches_a_composite():
     plain = surface_pump_v3.structure(parse_spec(lumen_general()).model)
-    assert plain.free_amount_reads == ()  # Today's definitions list no read.
+    # The general closure's own rows name rapid_binding@1 (the binding owner's third item).
+    assert plain.free_amount_reads == (proton_buffer.KIND_ID,)
     raw = cs.frozen_definition(lumen_general())
     electrode = dict(cell_id=fr.CELL, carriers={"K": 1.0})
     raw["model"].setdefault("operators", []).append(
@@ -177,12 +181,12 @@ def test_the_switch_reaches_a_composite():
     raw["experiment"]["injection_controls"] = [
         dict(cell_id=fr.CELL, schedule=[dict(time=0.0, current_A=2e-12)])
     ]
-    # Parsed with today's rows: the species registry's stage-read check reads two items until the
-    # binding owner's third item lands. The composite's model block then binds through @3's
-    # structure (pump_composite_adapter.inner_structure), which lists the read under the third item.
+    # The species registry's stage-read check reads each row's (species, node), so the composite
+    # parses with the binding owner's third item. Its model block binds through @3's structure
+    # (pump_composite_adapter.inner_structure), which lists the read under the third item.
     spec = parse_spec(raw)
     assert pump_composite_adapter.inner_structure is surface_pump_v3.structure
-    assert surface_pump_v3.structure(spec.model).free_amount_reads == ()
+    assert surface_pump_v3.structure(spec.model).free_amount_reads == (proton_buffer.KIND_ID,)
     with kind_registry.scope(kind_fixtures.registry(buffer(GENERAL))):
         listed = surface_pump_v3.structure(spec.model).free_amount_reads
     assert listed == (proton_buffer.KIND_ID,)
