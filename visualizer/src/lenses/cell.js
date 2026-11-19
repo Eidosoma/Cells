@@ -411,7 +411,14 @@ export class CellLens {
     this.species = speciesAt(this.file, id);
     this.cellType = cellTypeOf(this.species, this.cellType?.id);
     this.rebuild();
-    if (seek) this.seekStrip(id);
+    if (seek) {
+      this.seekStrip(id);
+      // The picture's words are read from where the strip's playhead rests (stageWords), and the rebuild above drew them
+      // with the playhead still at the stage left behind: from the egg they read as the passage to the adult. Drawn
+      // again now that the playhead is at this stage. (A stage entered at once, with no change played: the camera
+      // set to move at once, or a visitor who asks for less motion.)
+      this.onChrome?.();
+    }
   }
 
   /**
