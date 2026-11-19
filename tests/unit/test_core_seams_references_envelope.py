@@ -1,4 +1,4 @@
-"""Seam C's envelope reference (amendment C3, CORE_SEAMS_DESIGN §19 amended at 19:52 UTC).
+"""Seam C's envelope reference (amendments C3 and C5, CORE_SEAMS_DESIGN §19 amended at 19:52 UTC).
 
 The first-order lag of the linearised binding network, with k_on per (binder, ligand), against
 B4's formula, against the full kinetic network, and against a planted per-step minimum λ:
@@ -6,7 +6,10 @@ B4's formula, against the full kinetic network, and against a planted per-step m
 - a cooperative chain's slowest mode is slower than every single step, so a per-step minimum
   puts an outside case inside the budget;
 - the kinetic network meets the first order at second order, and the lag falls as 1/k_on;
-- a form not reachable from its base by unit steps is refused.
+- a form not reachable from its base by unit steps is refused;
+- amendment C5: release steps (forms below their base) are found, a release buffer gives B4's lag,
+  a mixed-sign release under an Mg²⁺ drive defeats a per-step bound, a release network meets its
+  kinetic reference, and the release steps' flipped sign is caught.
 """
 
 from __future__ import annotations
@@ -74,3 +77,52 @@ def test_an_unreachable_form_is_refused():
         En.Network({"ligands": ["H"], "binders": ["unreach2"]}, reg, {("unreach2", "H"): 1.0}, 1.0)
     En.Network({"ligands": ["H", "Mg"], "binders": ["coop2"]}, REG,
                {("coop2", "H"): 1.0, ("coop2", "Mg"): 1.0}, 1.0)
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment C5: release steps (forms below their base, single-sign and mixed-sign)
+# --------------------------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def release_cases():
+    c = {"manufactured_states": {}}
+    worlds.amendment_c3(c)
+    worlds.amendment_c5(c)
+    return {cid: c["envelope"]["cases"][cid] for cid in c["envelope"]["amendment_c5"]["cases"]}
+
+
+def test_a_release_buffer_gives_b4s_lag_with_the_release_form_free(release_cases):
+    r = En.run_case(release_cases["E3_rel1_b4"], REG, kinetic=False)
+    assert r["release_steps"] == [{"from": "rel1_mH", "ligand": "H", "to": "rel1_base"}]
+    assert abs(r["b4_formula_pH"] / r["first_order_pH"] - 1) < 1e-12
+    # plant: the release step's ligand with the wrong sign
+    rv = En.run_case(release_cases["E3_rel1_b4"], REG, kinetic=False, flip_release=True)
+    assert abs(rv["first_order_dln"]["H"] / r["first_order_dln"]["H"] - 1) > 1e-3
+
+
+def test_release_steps_are_found_and_their_flipped_sign_is_caught(release_cases):
+    expected = {"pi2": ("pi2_PO4", "H", "pi2_base"), "mgx": ("mgx_MgmH", "H", "mgx_Mg"),
+                "rel1": ("rel1_mH", "H", "rel1_base")}
+    for cid, case in release_cases.items():
+        r = En.run_case(case, REG, kinetic=False)
+        got = {(s["from"], s["ligand"], s["to"]) for s in r["release_steps"]}
+        want = {expected[B] for B in case["binders"] if B in expected}
+        assert got == want, cid
+        rv = En.run_case(case, REG, kinetic=False, flip_release=True)["first_order_dln"]
+        floor = 8 * 2.0 ** -52 * max(s["lambda_per_s"] for s in r["steps"]) / \
+            r["slowest_network_rates_per_s"][0]
+        dev = max(abs(rv[L] / r["first_order_dln"][L] - 1) for L in case["ligands"])
+        assert dev > 1e3 * floor, cid
+
+
+def test_a_mixed_sign_release_under_an_mg_drive_defeats_a_per_step_bound(release_cases):
+    r = En.run_case(release_cases["E4_mgx_mixed_mg_drive"], REG, kinetic=False)
+    assert r["first_order_pH"] > 1.3 * r["per_step_pH"]
+    assert r["slowest_network_rates_per_s"][0] < 0.1 * r["min_step_rate_per_s"]
+
+
+def test_a_release_network_meets_its_kinetic_reference(release_cases):
+    r = En.run_case(release_cases["E3_pi2_release"], REG)
+    last = r["kinetic"]["rows"][-1]
+    assert abs(last["lag_dln"]["H"] / last["first_order_dln"]["H"] - 1) < 5e-3
+    assert max(max(x["floor_dln"].values()) for x in r["kinetic"]["rows"]) < 1e-10

@@ -201,7 +201,9 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-bae02d29/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr2-references-20261119/gate-1104e41b/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-e2fb3cff/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-aeaa3c86/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-aeaa3c86/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-seams-references-c5-20261119/tiers-24fc0beb/measure/measured.json",
+  "/mnt/workspaces/Cells/core-seams-references-c5-20261119/tiers-12660384/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1676,6 +1678,22 @@
    "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-aeaa3c86",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T05:24:07+00:00"
+  },
+  {
+   "git_revision": "24fc0bebe17d589ac73c26f21121e6303ebbb723",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-seams-references-c5-20261119/snapshot-24fc0beb",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T06:55:07+00:00"
+  },
+  {
+   "git_revision": "126603844e88df5548eba10e8888f0377a7516c8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-seams-references-c5-20261119/snapshot-12660384",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T07:05:56+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2573,15 +2591,15 @@
    },
    {
     "file": "tests/unit/test_core_seams_references_envelope.py",
-    "seconds": 1.42,
+    "seconds": 1.98,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 9
     }
    },
    {
     "file": "tests/unit/test_core_seams_references_registration.py",
-    "seconds": 1.12,
+    "seconds": 1.27,
     "exit_code": 0,
     "counts": {
      "passed": 4
