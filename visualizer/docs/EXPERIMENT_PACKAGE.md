@@ -1,11 +1,15 @@
-# The experiment package: one way in for every experiment the viewer plays (draft)
+# The experiment package: one way in for every experiment the viewer plays
 
-Status: **draft for the owner's decision, 19 November 2026.** Nothing here is built, and every
-new name is a proposal. The owner asked whether the Experiments tab has a standard package
-format, with future use in mind, and then for a draft with options. Sections 1 and 2 describe
-what exists, read from the files. Section 3 is the proposal. Section 4 lists the decisions, each
-with its options and a recommendation. The engine's side of it (the run view and its writer) is
-the engine's lead's; this note changes nothing there.
+Status: **decided by the owner on 19 November 2026, and not yet built.** The owner asked whether
+the Experiments tab has a standard package format, with future use in mind, then for a draft
+with options, and accepted the recommendations of section 4 the same evening: both levels, the
+words in the package, schema files with a validator and a conformance set, a required visibility
+and licence, the arrays as they are, the three older experiments left as derived, and the
+specification kept by the engine's lead. Sections 1 and 2 describe what exists, read from the
+files. Section 3 is what was accepted; its names stay proposals until the engine's lead has read
+them, since the source level is the engine's to write. Building is in two rounds on the viewer's
+side (section 5): the manifest's contract and the validator, then the play package. The engine's
+side of it (the run view and its writer) is the engine's lead's; this note changes nothing there.
 
 ## 1. What exists today
 
@@ -153,9 +157,11 @@ record whose array is not in the files the view names, an absolute path anywhere
 The adapter runs it before packaging, and anyone who makes a package can run it first. The
 small runs already kept as fixtures (`tests/engine-views/`) become its conformance set.
 
-## 4. The decisions, with options
+## 4. The decisions, with their options, as decided
 
-| | Decision | Options | Recommended |
+The last column is what the owner accepted on 19 November 2026.
+
+| | Decision | Options | Decided |
 | --- | --- | --- | --- |
 | 1 | What "the package" is | **A.** The engine's run folder, named and made portable. **B.** A portable play package only. **C.** Both levels, with one tool from the first to the second | **C.** The first is nearly there, and the second is today's `runs/` folder cut to one experiment |
 | 2 | Where an experiment's words live | **A.** In the viewer's files, as today. **B.** In the package's manifest, with only the picture's choices left in the viewer | **B.** A package then describes itself, and a new experiment needs no edit in the viewer |
