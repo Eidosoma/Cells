@@ -40,10 +40,16 @@ with a planted error it must catch (D187):
   that is no hook, refused at binding);
 - a kind's standard free energies are () by default and checked to the operators' form when read
   (planted, each refused: a bare species, a zero coefficient, a repeated species, a non-finite
-  energy, a non-positive c0, a list).
+  energy, a non-positive c0, a list);
+- a kind's role_species is None by default, not refused by its reader, and where set binds
+  exactly the roles of the cycle laws it hosts, a version-1 law's moves and a general form's
+  "role@end" rows read as their roles, each to a species ID (planted, each refused: a missing
+  role, an extra role, a non-string species, an empty role, a list, and a hook that is not a
+  callable, refused at registration).
 """
 
 import math
+import re
 from dataclasses import replace
 from types import MappingProxyType
 
@@ -53,6 +59,7 @@ from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import parse_spec
 from cells.models import inner_laws, pump_composite_adapter, surface_pump_v3
 from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 from cells.registry.kind_registry import AxisHost, EnergyRole, Kind, KindFields, PartitionRole
 from validation.tissue import pump_water_fixtures as water_fixtures
 
@@ -493,3 +500,59 @@ def test_a_bound_entry_s_presence_reads_its_own_fields_only():
     assert kind_registry.entity_axes(on_bands) == ("booked_band",)
     assert kind_registry.presence_fields(on_routes) == {"booked_route": MASKS}
     assert kind_registry.presence_fields(on_bands) == {"booked_band": ("booked_band_present",)}
+
+
+class RolesForm:
+    """A planted general form, as seam A's CycleForm gives its change rows: "role@end"."""
+
+    def errors(self):
+        return []
+
+    def changes(self):
+        return (
+            {"role": "cofactor@in", "per_cycle": -1, "mode": "coupled"},
+            {"role": "cofactor@out", "per_cycle": 1, "mode": "coupled"},
+            {"role": "substrate@in", "per_cycle": "-n_coupled", "mode": "coupled"},
+        )
+
+
+def test_role_species_binds_each_role_its_laws_declare_and_is_checked_when_read():
+    def kernel(*args, **kwargs):
+        raise AssertionError("a planted law's kernel is never called")
+
+    version_1 = law_registry.CycleLaw(  # Its moves name substrate and product, counts as declared.
+        "tests.booked_cycle@1",
+        (("substrate", -1), ("product", "n_coupled")),
+        (),
+        kernel,
+        kernel,
+        host=PLANTED_ID,
+    )
+    formed = law_registry.CycleLaw(
+        "tests.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
+    )
+    bindings = {"substrate": "glucose", "product": "lactate", "cofactor": "ATP"}
+    kind = planted(role_species=lambda declaration: dict(bindings))
+    assert kind_registry.declaration_errors(kind) == []
+    assert kind_registry.KindRegistry().register(kind) is kind
+    with law_registry.scope(law_registry.BUILTIN.extended(version_1, formed)):
+        assert kind_registry.law_roles(kind) == {"substrate", "product", "cofactor"}
+        assert kind_registry.kind_role_species(kind, ()) == bindings
+        assert planted().role_species is None
+        assert kind_registry.kind_role_species(planted(), ()) is None  # Not refused here.
+        for bound, words in (  # Planted, each refused when read.
+            ({"substrate": "glucose", "cofactor": "ATP"}, "it lacks ['product']"),
+            ({**bindings, "stray": "Na"}, "binds ['stray'], which are not its laws'"),
+            ({**bindings, "cofactor": 1}, "returns {role: species ID}, each a name"),
+            ({**bindings, "": "Na"}, "returns {role: species ID}, each a name"),
+            (list(bindings.items()), "returns {role: species ID}, each a name"),
+        ):
+            planted_kind = planted(role_species=lambda declaration, bound=bound: bound)
+            with pytest.raises(ValueError, match=re.escape(words)):
+                kind_registry.kind_role_species(planted_kind, ())
+    with law_registry.scope(law_registry.BUILTIN.extended(version_1)):  # Its laws' roles alone.
+        assert kind_registry.law_roles(kind) == {"substrate", "product"}
+        with pytest.raises(ValueError, match=re.escape("binds ['cofactor']")):
+            kind_registry.kind_role_species(kind, ())
+    with pytest.raises(ValueError, match=PLANTED_ID):
+        kind_registry.KindRegistry().register(planted(role_species=bindings))

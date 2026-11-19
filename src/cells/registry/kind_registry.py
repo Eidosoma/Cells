@@ -62,7 +62,9 @@ __all__ = (
     "energy_role",
     "finite_number",
     "kind_ledgers",
+    "kind_role_species",
     "kind_standard_free_energies",
+    "law_roles",
     "entity_axes",
     "presence_fields",
     "missing_partition_roles",
@@ -337,6 +339,11 @@ class Kind:
       reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
       signed, products positive; () when it declares none. The species registry's check compares
       each with its own sum of nu mu°/RT (kind_standard_free_energies checks the form);
+    - `role_species(declaration)` -> {role: species ID}, for one declaration: the species each role
+      of the kind's laws binds, the roles being those its cycle laws' change rows name
+      (registry/laws.cycle_changes' role column, a general form's "role@end" read as its role).
+      §5.2's admission reads it beside a general closure, which refuses a mover kind without it
+      (kind_role_species checks it when read; law_roles gives the roles);
     - `ledgers(declaration)` -> ((ledger, diagnostic), ...), the kind's own conserved quantities
       (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
       and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
@@ -396,6 +403,7 @@ class Kind:
     standard_free_energies: Callable | None = (
         None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
     )
+    role_species: Callable | None = None  # (declaration) -> {its laws' role: species ID}
 
     @property
     def state_fields(self):
@@ -569,6 +577,41 @@ def kind_standard_free_energies(kind, declaration):
     return declared
 
 
+def law_roles(kind):
+    """The roles of the cycle laws a kind hosts in the active law registry: each change row's role
+    (registry/laws.cycle_changes), read without the "@end" a general form adds to it."""
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    out = set()
+    for law in law_registry.active().laws(law_registry.CYCLE_LAW, kind.kind_id):
+        for row in law_registry.cycle_changes(law):
+            role, at, _ = row["role"].rpartition("@")
+            out.add(role if law.cycle is not None and at else row["role"])
+    return out
+
+
+def kind_role_species(kind, declaration):
+    """A kind's binding of its laws' roles to species for one declaration (Kind.role_species),
+    checked: a mapping of role names to species IDs, each a non-empty string, binding exactly the
+    roles of the cycle laws the kind hosts (law_roles). None for a kind that declares none: §5.2's
+    admission, not this reader, refuses such a kind beside a general closure."""
+    if kind.role_species is None:
+        return None
+    bound = kind.role_species(declaration)
+    if not (isinstance(bound, Mapping) and all(_named(r) and _named(s) for r, s in bound.items())):
+        raise ValueError(
+            f"Kind {kind.kind_id}'s role_species returns {{role: species ID}}, each a name"
+        )
+    roles = law_roles(kind)
+    missing, extra = sorted(roles - set(bound)), sorted(set(bound) - roles)
+    if missing or extra:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s role_species binds its laws' roles {sorted(roles)}: it lacks "
+            f"{missing} and binds {extra}, which are not its laws'"
+        )
+    return dict(bound)
+
+
 def _suffix_role(field):
     if field.endswith(HEAT_SUFFIX):
         return EnergyRole("heat", True)
@@ -696,6 +739,8 @@ def declaration_errors(kind):
         out.append("it declares ledgers and ledger_bounds together, each a callable")
     if kind.standard_free_energies is not None and not callable(kind.standard_free_energies):
         out.append("its standard_free_energies is a callable, or None")
+    if kind.role_species is not None and not callable(kind.role_species):
+        out.append("its role_species is a callable, or None")
     return out + _axis_errors(kind, static)
 
 
