@@ -218,6 +218,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
     assert declared == {
         (passive_routes.LEAK_LAW_ID, "stage_term"): "conductance_S",
         (passive_routes.LAW_ID, "material_bound"): "bound_rate_per_s",
+        (passive_routes.RECTIFIER_LAW_ID, "stage_term"): "slope_conductance_S",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
     }
 
@@ -256,6 +257,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     assert passive_routes.hosted_laws() == {
         passive_routes.LAW_ID: passive_routes.NEUTRAL,
         passive_routes.LEAK_LAW_ID: passive_routes.LEAK,
+        passive_routes.RECTIFIER_LAW_ID: passive_routes.RECTIFIER,
     }
     builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()
@@ -277,8 +279,9 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     with laws.scope(without(transporter.PROTON_LAW)):
         with pytest.raises(ConfigError, match="law is one of cells.atp_driven"):
             parse_spec(held_world(proton))
+    rest = [law for law in passive_routes.hosted_laws() if law != passive_routes.LAW_ID]  # Bare.
     with laws.scope(without(passive_routes.LAW_ID)):
-        with pytest.raises(ConfigError, match="law must be one of proton_constant_field_leak@1$"):
+        with pytest.raises(ConfigError, match=f"law must be one of {re.escape(', '.join(rest))}$"):
             parse_spec(closed_pair())
     parse_spec(closed_pair())  # Both admitted under BUILTIN.
     structure = surface_pump_v3.structure(parse_spec(water_fixtures.heredity_cell("D")).model)

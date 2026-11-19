@@ -228,6 +228,12 @@
   "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-9cf397a5/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-dcfeeb27/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-75505e27/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-284002b2/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-97c0516e/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-f1/measured-e6fb45a1.json/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-ba2c7697/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-d7928c90/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-0851ba20/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-43155110/measured.json",
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-78729acf/measured.json",
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-a098e4af/measured.json",
@@ -1919,6 +1925,53 @@
    "utc": "2026-11-19T15:32:52+00:00"
   },
   {
+   "git_revision": "284002b2a9cca55bd8ca56b1c7338a329e137b62",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-284002b2",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T18:12:21+00:00"
+  },
+  {
+   "git_revision": "97c0516e0a74aa9968321359f423123055d78700",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-97c0516e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T15:42:33+00:00"
+  },
+  {
+   "git_revision": "e6fb45a16859643f25d476440da185bcc0dbb84f",
+   "dirty": false,
+   "root": ".claude/worktrees/fr7-loop",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T17:57:31+00:00"
+  },
+  {
+   "git_revision": "ba2c76978202bc0d5e966d74beb0bf9ced58186a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-ba2c7697",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T18:32:04+00:00"
+  },
+  {
+   "git_revision": "d7928c90c2cd94f1b9dd75c99b6db5b591835010",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-d7928c90",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T19:13:45+00:00"
+  },
+  {
+   "git_revision": "0851ba205cdef531880c001829e0d6379b41651d",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-0851ba20",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T18:50:29+00:00"
+  },
+  {
    "git_revision": "431551105f1214dc80899f2d28b22c9ef477858c",
    "dirty": false,
    "root": "/mnt/workspaces/Cells/ol2-engine-20261118/tree-43155110",
@@ -2661,7 +2714,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.75,
+    "seconds": 9.94,
     "exit_code": 0,
     "counts": {
      "passed": 191
@@ -2958,7 +3011,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind_references.py",
-    "seconds": 12.41,
+    "seconds": 11.34,
     "exit_code": 0,
     "counts": {
      "passed": 15
@@ -3652,6 +3705,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_inward_rectifier_route.py",
+    "seconds": 19.92,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
     }
    },
    {
@@ -4442,10 +4503,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 4.53,
+    "seconds": 4.18,
     "exit_code": 0,
     "counts": {
-     "passed": 16
+     "passed": 17
     }
    },
    {
@@ -4930,6 +4991,14 @@
     }
    },
    {
+    "file": "tests/unit/test_species_registry_free_energies.py",
+    "seconds": 3.53,
+    "exit_code": 0,
+    "counts": {
+     "passed": 11
+    }
+   },
+   {
     "file": "tests/unit/test_species_registry_hook.py",
     "seconds": 5.83,
     "exit_code": 0,
@@ -4955,10 +5024,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 16.59,
+    "seconds": 8.09,
     "exit_code": 0,
     "counts": {
-     "passed": 83
+     "passed": 94
     }
    },
    {
@@ -4995,10 +5064,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 3.58,
+    "seconds": 3.57,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 19
     }
    },
    {
@@ -6094,7 +6163,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 24.49,
+    "seconds": 22.58,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -6102,10 +6171,10 @@
    },
    {
     "file": "tests/unit/test_ledger_lists.py",
-    "seconds": 38.92,
+    "seconds": 57.92,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 4
     }
    },
    {
@@ -6274,6 +6343,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 5
+    }
+   },
+   {
+    "file": "tests/unit/test_population_unit_turnover.py",
+    "seconds": 35.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 40
     }
    },
    {
@@ -6589,6 +6666,14 @@
     }
    },
    {
+    "file": "tests/unit/test_step_doubled_energy_windows.py",
+    "seconds": 47.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_surface_active_profile_interventions_dispatch.py",
     "seconds": 63.62,
     "exit_code": 0,
@@ -6678,10 +6763,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_definitions.py",
-    "seconds": 41.39,
+    "seconds": 33.16,
     "exit_code": 0,
     "counts": {
-     "passed": 14
+     "passed": 19
     }
    },
    {

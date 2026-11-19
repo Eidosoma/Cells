@@ -20,6 +20,29 @@ from validation.tissue import surface_pump_v3_fixtures as fixtures
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
 SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
 CHANNEL_FIELDS = ("channel_gate", "channel_transferred", "channel_dissipated_energy_pJ")
+# execution.energy_check's refusals at parse (definitions/energy_check_spec.py): (edit, message).
+ENERGY_CHECK_FAULTS = {
+    "energy_check_unknown": (
+        lambda x: x["energy_check"].update(check="step_doubled_energy@2"),
+        "requires check step_doubled_energy@1",
+    ),
+    "energy_check_no_cap": (
+        lambda x: x["energy_check"].pop("integration_error_cap"),
+        r"missing=\['integration_error_cap'\]",
+    ),
+    "energy_check_zero_cap": (
+        lambda x: x["energy_check"].update(integration_error_cap=0.0),
+        "integration_error_cap must be finite and positive",
+    ),
+    "energy_check_infinite_cap": (
+        lambda x: x["energy_check"].update(integration_error_cap=float("inf")),
+        "integration_error_cap must be finite and positive",
+    ),
+    "energy_check_euler": (
+        lambda x: x.update(solver=imex.EULER_ID),
+        "runs only with imex_ars222",
+    ),
+}
 CHANNEL_OBSERVATIONS = (
     *CHANNEL_FIELDS,
     "channel_flux_fmol_s",
@@ -96,13 +119,17 @@ def test_explicit_stage_guard_refuses_open_sodium_channels():
         "capacity",
         "missing_channels",
         "hot",
+        *ENERGY_CHECK_FAULTS,
     ],
 )
 def test_definition_errors_reject(fault):
     raw = fixtures.definition("clamped", solver=imex.ARS222_ID)
     m, e, x = raw["model"], raw["experiment"], raw["execution"]
     channel = m["channels"][2]  # NaV1.2 on patch 2.
-    if fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
+    if fault in ENERGY_CHECK_FAULTS:  # FR-18's X2 (D224): its block, then its own edit.
+        x["energy_check"] = dict(check="step_doubled_energy@1", integration_error_cap=1e-2)
+        ENERGY_CHECK_FAULTS[fault][0](x)
+    elif fault == "retired_law_id":  # Renamed to nav1p2_m3h_regularized@1 (stage B).
         channel["kinetic_law"] = "betse_nav1p2_m3h_regularized@1"
     elif fault == "unknown_law":
         channel["kinetic_law"] = "nav1p3_m3h_regularized@1"
@@ -128,5 +155,5 @@ def test_definition_errors_reject(fault):
         del m["channels"]
     else:
         m["temperature_K"] = 400.5
-    with pytest.raises(ConfigError):
+    with pytest.raises(ConfigError, match=ENERGY_CHECK_FAULTS.get(fault, (None, None))[1]):
         parse_spec(raw)

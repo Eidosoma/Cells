@@ -55,6 +55,7 @@ face diffusivity that carries the species is the effective (FRAP) kind (§6).
 """
 
 from dataclasses import dataclass
+from types import MappingProxyType
 
 import jax.numpy as jnp
 import numpy as np
@@ -422,6 +423,9 @@ class ScheduledSpeciesTurnover(Operator):
     WORK_FIELDS = ("turnover_work_pJ", "turnover_outside_work_pJ")
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = ("turnover_rate",)
+    # B1′: production P and clearance k per route, which a rate route may multiply in the
+    # half-steps (docs/INVENTORY_COUPLING_DESIGN.md §2.1; the scheduled rate is the maximum).
+    ROUTABLE_CONTROLS = MappingProxyType({"turnover_rate": "rate"})
     EXPERIMENT_KEYS = ("turnover_controls",)
     CONFLICTS_VIEW = common.CONFLICTS_VIEW
     ENTITY_WRITES = {
@@ -483,6 +487,11 @@ class ScheduledSpeciesTurnover(Operator):
             spec, declaration.routes, schedule, declaration.templates, LAW_ID
         )
         return (common.control_arrays(tables, times, 1)[..., 0],)
+
+    def routable_elements(self, declaration, field):
+        """B1′: turnover_rate's elements are its routes, by route ID, each at its cell (None for
+        an outside node), in control order."""
+        return tuple((route.id, route.cell) for route in declaration.routes)
 
     def species_identities(self, declaration):
         return declaration.species

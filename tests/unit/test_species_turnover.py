@@ -5,17 +5,22 @@ n' = n e^{-kh} + (P/k)(1 - e^{-kh}) at O(1) fractions, the bookings, the booked 
 exact free-energy change written out independently (Decimal, 50 digits: the NumPy dG test of record
 for this law), the host checks closing at the species' own scale with a negative control, the start
 state selected bitwise at zero rate, untouched rows and nodes bitwise, the anchored-amount limit of
-a pool cleared far below its anchor, and the definition refusals with their messages.
+a pool cleared far below its anchor, the definition refusals with their messages, and the half-step
+beside a planted rate-route source (B1′), bitwise the half-step at the product rates.
 """
 
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
+from typing import NamedTuple
 
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.errors import NumericalError
+from cells.models import pump_composite
+from cells.operators.contract import Operator
+from cells.operators.species_turnover import LAW_ID as LAW_ID_TURNOVER
 from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -29,6 +34,7 @@ ROUTES = [
     ("clear_b", "ecs_0", "clearance"),
 ]
 RATES = np.array([2e-4, 0.3, 0.4, 0.6])  # fmol/s, then 1/s.
+Routed = NamedTuple("Routed", [("turnover_rate", object)])  # The composite passes a NamedTuple.
 
 
 def definition(routes=ROUTES, rates=RATES, **kwargs):
@@ -146,6 +152,54 @@ def test_zero_rates_select_the_start_state_and_untouched_entries_stay_bitwise(bo
     assert (
         moved.extracellular_amount_increment[s, 1] != planted.extracellular_amount_increment[s, 1]
     )
+
+
+class _Planted(Operator):
+    """A planted rate-route source (B1′): a declared factor on the turnover's rates and its
+    validity, or no route (factor None)."""
+
+    LAW_ID = "tests.planted_rate_route@1"
+    SPLIT = True
+    RK4 = "split"
+    RATE_ROUTES = ((LAW_ID_TURNOVER, "turnover_rate"),)
+
+    def __init__(self, factor, valid=True):
+        self.factor, self.valid = factor, valid
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        if self.factor is None:
+            return None
+        return np.asarray(self.factor), np.asarray(self.valid)
+
+
+def test_a_routed_rate_is_the_scheduled_rate_times_its_factor_in_the_half_step(bound):
+    """B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1): beside a route source declared before it,
+    the composite's half-step of the turnover multiplies its scheduled rates by the source's
+    factors from the state the half-step receives. That equals, bit for bit, the half-step at the
+    product rates. Planted: a source whose evaluation is invalid (an operating-range breach)
+    refuses the half-step. A source with no route in the definition leaves the call unchanged."""
+    _, model, op, state, p, _ = bound
+    factor = np.array([0.5, 1.0, 0.25, 0.75])
+    composite = pump_composite.Composition(model.inner, (_Planted(factor), op))
+    assert composite.rate_routes == {op: ((composite.operators[0], "turnover_rate"),)}
+    control = Routed(turnover_rate=RATES)
+    routed, ok = composite._half_step(op, state, H, control, p, xp=np)
+    expected, ok_expected = step(op, state, p, RATES * factor)
+    assert bool(ok) and bool(ok_expected)
+    for a, b in zip(routed, expected, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
+    breach = pump_composite.Composition(model.inner, (_Planted(factor, valid=False), op))
+    _, ok = breach._half_step(op, state, H, control, p, xp=np)
+    assert not bool(ok)
+    idle = pump_composite.Composition(model.inner, (_Planted(None), op))
+    unrouted, ok = idle._half_step(op, state, H, control, p, xp=np)
+    plain, _ = step(op, state, p, RATES)
+    assert bool(ok)
+    for a, b in zip(unrouted, plain, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes()
 
 
 def test_a_pool_cleared_far_below_its_anchor_stalls_at_the_anchors_resolution(bound):

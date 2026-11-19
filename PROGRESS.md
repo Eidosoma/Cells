@@ -108,6 +108,45 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **R2, the view into `control_factors` for a factor operator's current reads (19 November 2026;
+  @2 only; FR-7's F2 prerequisite).** Merge 6c501ab3, tag `r2-landed-2026-11-19`. A factor
+  operator may declare a current read at the control view, and the composite passes C4's reader
+  view to its hooks. No registered operator declares one, so no existing program changes. Gates:
+  tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +1, FR's set; the lead's
+  merged check on trial 25128f4e.
+
+- **The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;
+  D228 item 2).** Merge 2db46727, tag `rectifier-landed-2026-11-19`. An instantaneous inward
+  rectifier on the passive-routes kind: E_K-referenced rectification, √K_o scaling, coefficients in
+  the route's declaration (unsourced today), weak rectifiers through V_h and s. Kir4.1 for the
+  Xenopus lane's XC0 is its first use. Gates: tiers 594 files with 0 changed, G1 113 of 113,
+  crossrev 11 of 11, IDs +5, FR's set; the lead's merged check on trial 4da4ec58.
+
+- **FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not
+  judged).** Merge 7fb27a92, tag `fr7-f1-landed-2026-11-19`. A finite precursor is consumed at first
+  order into channel units, through m maturation pools, with first-order removal of every unit into
+  a booked sink. The half-step is the chain's exact solution, so the one material account closes by
+  construction. It departs from D177 by holding removal inside the producer. Gates: tiers 593 files
+  with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +40, FR's set; the lead's merged check on
+  trial aa2ef4fa.
+
+- **X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's
+  criterion, D224).** Merge fd894b91, tag `x2-energy-check-landed-2026-11-19`. Selected by
+  `spec.energy_check`, and required of registered and judged runs. Each window compares one step
+  against two half steps, within the registered band. Qualification: 13 rows, each with its saved
+  verdict; FR-3's planted energy error is refused at its step. Overhead about 1.22× per run
+  without compile. Gates: pre-gate, tiers 593 files with 0 changed, G1, crossrev 11 of 11, IDs +9,
+  FR's set; R1 differs only by the declared field default; the lead's merged check on trial
+  050c8f17.
+
+- **B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's
+  part (a), D218; development, not judged).** Merge ee43b082, tag `b1prime-landed-2026-11-19`.
+  Turnover's and reactions' rates may be scaled by a coupling factor F ∈ [b, 1], evaluated at the
+  start of each target half-step, with a declared operating range refused when breached and the
+  applied factor recorded exactly. @1 is untouched, so FR-6's judged result stands. Gates: tiers 593
+  files with 0 changed, G1 113 of 113, crossrev 11 of 11 identical (coupling and acceptances), FR's
+  set; IDs with the contract-enumerating file declared; the lead's merged check on trial 8a482a26.
+
 - **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
   kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
   cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
