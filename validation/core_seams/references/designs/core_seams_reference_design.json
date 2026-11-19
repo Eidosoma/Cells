@@ -4,7 +4,7 @@
  "status": "registered before any engine output for seams A and C (CORE_SEAMS_DESIGN \u00a719 item 7: the kinds and binding owners had not started)",
  "inputs": {
   "path": "validation/core_seams/references/reference_inputs.json",
-  "git_blob": "74dc4a10b49ac0ef0cdcd324109a0bda088be6a0"
+  "git_blob": "71f36e33aaf5f83ad361dec9d2f4e06fef5a513f"
  },
  "min_margin": 10.0,
  "verdict_band_eps": 64.0,
@@ -117,6 +117,12 @@
    "claim": "P1's buffered node: a predictor must read the quantity it differentiates (\u00a717, \u00a718)",
    "reference": "rate-normalised thresholds (the free amount, the stored equivalents above their admissible floor, the linearised free amount) and the equilibrated free amount on a ladder of draws",
    "plants": ["today's predictor: the free amount against the stored derivative"]
+  },
+  {
+   "row": "C6b",
+   "claim": "Amendment C5: the envelope holds for release steps, unit steps whose bound form has count_f(L) \u2264 0 (forms below their base, single-sign like pi2_PO4 and mixed-sign like mgx_MgmH), with the same \u03bd, flux and K_r as any step",
+   "reference": "amendment C3's machinery on seven cases: a two-form release buffer (B4's formula with the release form free), pi2 at pH 12 under H\u207a and Mg\u00b2\u207a drives, S4's three binders at pH 11.5, and mgx at pH 7.5 under H\u207a, Mg\u00b2\u207a and binder drives",
+   "plants": ["the release steps' ligand written with the wrong sign in N"]
   }
  ],
  "power": {
@@ -5902,6 +5908,384 @@
     "verdict_per_step": "inside",
     "kinetic_pH_last": 9.85031115999624e-09
    },
+   "E3_rel1_b4": {
+    "slowest_network_rate_per_s": 2452547.443708303,
+    "min_step_rate_per_s": 2452547.4437083025,
+    "network_over_min_step": 1.0000000000000002,
+    "first_order_floor_rel": 1.77635683940025e-15,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.0006457794056394794
+    },
+    "radau_vs_bdf_max_dln": 7.97513929176608e-12,
+    "plants": {
+     "per_step_minimum": {
+      "H": {
+       "value": 1.0,
+       "over_floor": 562949953421312.1
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 9.547452719387428,
+       "over_floor": 5374738063671332.0
+      }
+     }
+    },
+    "first_order_pH": 0.0005613023502437424,
+    "per_step_pH": 0.0005613023502437424,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 0.0005609398722726506,
+    "b4_formula_vs_general_rel": 2.220446049250313e-16
+   },
+   "E3_pi2_release": {
+    "slowest_network_rate_per_s": 529.1474423148675,
+    "min_step_rate_per_s": 270522.48923179234,
+    "network_over_min_step": 0.001956020158684393,
+    "first_order_floor_rel": 2.199654159261522e-10,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.0015195878159627307,
+     "Mg": 2.6877585856954767e-07
+    },
+    "radau_vs_bdf_max_dln": 7.201952924314598e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 3.420637106898994e-10,
+       "over_floor": 1.5550795076110446
+      },
+      "Mg": {
+       "value": 0.0014645383149862745,
+       "over_floor": 6658038.986810345
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.9999996575942,
+       "over_floor": 4541623034018.144
+      },
+      "Mg": {
+       "value": 997.5339971466987,
+       "over_floor": 4534958338548.98
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 0.008237421601961633,
+       "over_floor": 37448712.41362387
+      },
+      "Mg": {
+       "value": 682.1265485303192,
+       "over_floor": 3101062708691.1055
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 10.13615513665771,
+       "over_floor": 46080676337.14141
+      },
+      "Mg": {
+       "value": 9.120491782109372,
+       "over_floor": 41463298872.27066
+      }
+     }
+    },
+    "first_order_pH": 0.0013224285919356796,
+    "per_step_pH": 0.16053914147368162,
+    "verdict_first_order": "outside",
+    "verdict_per_step": "outside",
+    "kinetic_pH_last": 0.001320418447369051
+   },
+   "E3_pi2_release_mg_drive": {
+    "slowest_network_rate_per_s": 529.1474423148675,
+    "min_step_rate_per_s": 270522.48923179234,
+    "network_over_min_step": 0.001956020158684393,
+    "first_order_floor_rel": 2.199654159261522e-10,
+    "kinetic_vs_first_order_rel": {
+     "H": 2.195342085897778e-08,
+     "Mg": 1.9503130888054443e-08
+    },
+    "radau_vs_bdf_max_dln": 1.4248186026761122e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.0014645383149863855,
+       "over_floor": 6658038.98681085
+      },
+      "Mg": {
+       "value": 0.9987618223901998,
+       "over_floor": 4540540239.859837
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 997.5339971466985,
+       "over_floor": 4534958338548.98
+      },
+      "Mg": {
+       "value": 0.7605842125899858,
+       "over_floor": 3457744524.918102
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 682.1265485303193,
+       "over_floor": 3101062708691.106
+      },
+      "Mg": {
+       "value": 1.0002389394513314,
+       "over_floor": 4547255463.955008
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 9.120491782109372,
+       "over_floor": 41463298872.27066
+      },
+      "Mg": {
+       "value": 0.0012914225541380553,
+       "over_floor": 5871025.445980188
+      }
+     }
+    },
+    "first_order_pH": 4.0478165431508166e-08,
+    "per_step_pH": 5.934113767998137e-11,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 4.047809778949114e-08
+   },
+   "E3_s4_release": {
+    "slowest_network_rate_per_s": 204.8281187973384,
+    "min_step_rate_per_s": 7277.775802471283,
+    "network_over_min_step": 0.02814432930563563,
+    "first_order_floor_rel": 3.6639983404580295e-10,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.0011792170644387978,
+     "Mg": 8.7974642737354e-07
+    },
+    "radau_vs_bdf_max_dln": 5.484849673721807e-12,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 1.1275564926194193e-09,
+       "over_floor": 3.077393568028924
+      },
+      "Mg": {
+       "value": 0.003214056089083206,
+       "over_floor": 8771991.11580772
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 998.9999988713064,
+       "over_floor": 2726529616130.8394
+      },
+      "Mg": {
+       "value": 1002.2172699984689,
+       "over_floor": 2735310381917.868
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 0.0010865443512413546,
+       "over_floor": 2965460.817063383
+      },
+      "Mg": {
+       "value": 109.3658892851296,
+       "over_floor": 298487824291.5852
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 88796.63891926846,
+       "over_floor": 242349015114914.5
+      },
+      "Mg": {
+       "value": 89083.4660705614,
+       "over_floor": 243131840664057.84
+      }
+     }
+    },
+    "first_order_pH": 0.0010251870200256056,
+    "per_step_pH": 0.9435298419750199,
+    "verdict_first_order": "outside",
+    "verdict_per_step": "outside",
+    "kinetic_pH_last": 0.001023977172238563
+   },
+   "E4_mgx_mixed": {
+    "slowest_network_rate_per_s": 1717.6524363717897,
+    "min_step_rate_per_s": 35574.165723298785,
+    "network_over_min_step": 0.04828370255347515,
+    "first_order_floor_rel": 3.4585741434402846e-11,
+    "kinetic_vs_first_order_rel": {
+     "H": 1.2586430564898166e-05,
+     "Mg": 8.608638582985328e-06
+    },
+    "radau_vs_bdf_max_dln": 4.996946594420495e-13,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.03888497125916279,
+       "over_floor": 1124306423.5853984
+      },
+      "Mg": {
+       "value": 0.8058889744179845,
+       "over_floor": 23301191213.33502
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 960.076143769578,
+       "over_floor": 27759304960702.07
+      },
+      "Mg": {
+       "value": 1805.6948633924023,
+       "over_floor": 52209228095259.41
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 0.0009121474203871839,
+       "over_floor": 26373510.65950722
+      },
+      "Mg": {
+       "value": 1.4570488048876349,
+       "over_floor": 42128598215.86162
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 2623.1324931959966,
+       "over_floor": 75844333080763.03
+      },
+      "Mg": {
+       "value": 12351.249453041528,
+       "over_floor": 357119695596740.75
+      }
+     }
+    },
+    "first_order_pH": 1.0563831747783483e-05,
+    "per_step_pH": 0.011581276788898224,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "outside",
+    "kinetic_pH_last": 1.0561074909629634e-05
+   },
+   "E4_mgx_mixed_mg_drive": {
+    "slowest_network_rate_per_s": 1717.6524363717897,
+    "min_step_rate_per_s": 35574.165723298785,
+    "network_over_min_step": 0.04828370255347515,
+    "first_order_floor_rel": 3.4585741434402846e-11,
+    "kinetic_vs_first_order_rel": {
+     "H": 0.00018104957303610725,
+     "Mg": 7.434452021781723e-05
+    },
+    "radau_vs_bdf_max_dln": 7.299666446053151e-13,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.8058889744179842,
+       "over_floor": 23301191213.33501
+      },
+      "Mg": {
+       "value": 0.27709278615875066,
+       "over_floor": 8011763653.651883
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 1805.6948633924023,
+       "over_floor": 52209228095259.41
+      },
+      "Mg": {
+       "value": 721.6301210550905,
+       "over_floor": 20864960273405.516
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 1.4570488048876349,
+       "over_floor": 42128598215.86162
+      },
+      "Mg": {
+       "value": 4.237640334581345,
+       "over_floor": 122525646663.34184
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 12351.249453041528,
+       "over_floor": 357119695596740.75
+      },
+      "Mg": {
+       "value": 964.844753237058,
+       "over_floor": 27897182862684.43
+      }
+     }
+    },
+    "first_order_pH": 1.453208208443908e-06,
+    "per_step_pH": 9.97364126424013e-07,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 1.4505315102179033e-06
+   },
+   "E4_mgx_mixed_binder_drive": {
+    "slowest_network_rate_per_s": 1717.6524363717897,
+    "min_step_rate_per_s": 35574.165723298785,
+    "network_over_min_step": 0.04828370255347515,
+    "first_order_floor_rel": 3.4585741434402846e-11,
+    "kinetic_vs_first_order_rel": {
+     "H": 1.2439387566676174e-06,
+     "Mg": 4.1604070066814103e-07
+    },
+    "radau_vs_bdf_max_dln": 3.192834461815585e-13,
+    "plants": {
+     "kon_ignores_the_ligand": {
+      "H": {
+       "value": 0.2181439520629631,
+       "over_floor": 6307337735.601433
+      },
+      "Mg": {
+       "value": 0.13340288405670264,
+       "over_floor": 3857164210.566994
+      }
+     },
+     "kon_swapped": {
+      "H": {
+       "value": 1217.3620960150258,
+       "over_floor": 35198380764048.08
+      },
+      "Mg": {
+       "value": 865.4637130592406,
+       "over_floor": 25023714315933.492
+      }
+     },
+     "per_step_minimum": {
+      "H": {
+       "value": 67.71798252058655,
+       "over_floor": 1957974000615.9495
+      },
+      "Mg": {
+       "value": 8.802055332992243,
+       "over_floor": 254499541369.86447
+      }
+     },
+     "release_sign_flipped": {
+      "H": {
+       "value": 8324.919571727582,
+       "over_floor": 240703805281059.72
+      },
+      "Mg": {
+       "value": 1156.6410345894944,
+       "over_floor": 33442713286434.562
+      }
+     }
+    },
+    "first_order_pH": 3.4366692485092206e-07,
+    "per_step_pH": 5.074972881043021e-09,
+    "verdict_first_order": "inside",
+    "verdict_per_step": "inside",
+    "kinetic_pH_last": 3.4365360966217404e-07
+   },
    "scalings": {
     "E1_chain_over_kon10": 10.0,
     "E1_chain_over_kon100": 100.0,
@@ -5936,12 +6320,161 @@
     "mgx": {
      "verdict": "admitted"
     },
+    "rel1": {
+     "verdict": "admitted"
+    },
     "unreach2": {
      "verdict": "refused",
      "reason": "unreach2: forms ['unreach2_H2'] are not reachable from the base by unit steps",
      "planted": true
     }
    }
+  },
+  "C5_amendment_release_envelope": {
+   "cases": {
+    "E3_rel1_b4": {
+     "release_steps": [
+      {
+       "from": "rel1_mH",
+       "ligand": "H",
+       "to": "rel1_base"
+      }
+     ],
+     "first_order_dln": {
+      "H": 0.0012924464243337641
+     },
+     "first_order_floor_rel": 1.77635683940025e-15,
+     "release_sign_flipped_over_floor": {
+      "H": 5374738063671332.0
+     },
+     "caught": true,
+     "weak_ligands": [],
+     "b4_formula_vs_general_rel": 2.220446049250313e-16
+    },
+    "E3_pi2_release": {
+     "release_steps": [
+      {
+       "from": "pi2_PO4",
+       "ligand": "H",
+       "to": "pi2_base"
+      }
+     ],
+     "first_order_dln": {
+      "H": 0.003045004362340202,
+      "Mg": 9.32044203143376e-09
+     },
+     "first_order_floor_rel": 2.199654159261522e-10,
+     "release_sign_flipped_over_floor": {
+      "H": 46080676337.14141,
+      "Mg": 41463298872.27066
+     },
+     "caught": true,
+     "weak_ligands": []
+    },
+    "E3_pi2_release_mg_drive": {
+     "release_steps": [
+      {
+       "from": "pi2_PO4",
+       "ligand": "H",
+       "to": "pi2_base"
+      }
+     ],
+     "first_order_dln": {
+      "H": 9.320442031433761e-08,
+      "Mg": 1.791090762932817e-09
+     },
+     "first_order_floor_rel": 2.199654159261522e-10,
+     "release_sign_flipped_over_floor": {
+      "H": 41463298872.27066,
+      "Mg": 5871025.445980188
+     },
+     "caught": true,
+     "weak_ligands": []
+    },
+    "E3_s4_release": {
+     "release_steps": [
+      {
+       "from": "pi2_PO4",
+       "ligand": "H",
+       "to": "pi2_base"
+      }
+     ],
+     "first_order_dln": {
+      "H": 0.002360580349841948,
+      "Mg": 1.7175232512645242e-08
+     },
+     "first_order_floor_rel": 3.6639983404580295e-10,
+     "release_sign_flipped_over_floor": {
+      "H": 242349015114914.5,
+      "Mg": 243131840664057.84
+     },
+     "caught": true,
+     "weak_ligands": []
+    },
+    "E4_mgx_mixed": {
+     "release_steps": [
+      {
+       "from": "mgx_MgmH",
+       "ligand": "H",
+       "to": "mgx_Mg"
+      }
+     ],
+     "first_order_dln": {
+      "H": 2.4324121507343486e-05,
+      "Mg": 1.0038406673338579e-06
+     },
+     "first_order_floor_rel": 3.4585741434402846e-11,
+     "release_sign_flipped_over_floor": {
+      "H": 75844333080763.03,
+      "Mg": 357119695596740.75
+     },
+     "caught": true,
+     "weak_ligands": []
+    },
+    "E4_mgx_mixed_mg_drive": {
+     "release_steps": [
+      {
+       "from": "mgx_MgmH",
+       "ligand": "H",
+       "to": "mgx_Mg"
+      }
+     ],
+     "first_order_dln": {
+      "H": 3.3461355577795267e-06,
+      "Mg": 8.323664731802668e-06
+     },
+     "first_order_floor_rel": 3.4585741434402846e-11,
+     "release_sign_flipped_over_floor": {
+      "H": 357119695596740.75,
+      "Mg": 27897182862684.43
+     },
+     "caught": true,
+     "weak_ligands": []
+    },
+    "E4_mgx_mixed_binder_drive": {
+     "release_steps": [
+      {
+       "from": "mgx_MgmH",
+       "ligand": "H",
+       "to": "mgx_Mg"
+      }
+     ],
+     "first_order_dln": {
+      "H": 7.913223381168381e-07,
+      "Mg": 1.1067574065477256e-06
+     },
+     "first_order_floor_rel": 3.4585741434402846e-11,
+     "release_sign_flipped_over_floor": {
+      "H": 240703805281059.72,
+      "Mg": 33442713286434.562
+     },
+     "caught": true,
+     "weak_ligands": []
+    }
+   },
+   "all_caught": true,
+   "release_step": "a unit step f\u2032 + L \u21cc f whose bound form f holds count_f(L) \u2264 0: binding L only restores a ligand released below the base",
+   "planted": "the release steps' ligand written with the wrong sign in N (the step taken to release L where it binds it), the forward flux unchanged"
   },
   "C3_movers": {
    "base_form_hydrolysis": {

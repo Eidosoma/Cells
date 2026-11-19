@@ -518,6 +518,12 @@ def envelope_values(Cc) -> dict:
             L: (abs(lag[L]) / abs(r["per_step_estimate_dln"]["min_over_all_steps"][L])
                 if r["per_step_estimate_dln"]["min_over_all_steps"][L] != 0 else None)
             for L in case["ligands"]}
+        if r.get("release_steps"):
+            # amendment C5: the release steps' ligand with the wrong sign in N
+            rv = En.run_case(case, reg, kinetic=False, flip_release=True)["first_order_dln"]
+            plants["release_sign_flipped"] = {L: (abs(rv[L] / lag[L] - 1) if lag[L] != 0
+                                                  else None) for L in case["ligands"]}
+            r["release_sign_flipped_dln"] = rv
         r["plants"] = plants
         rates = r["slowest_network_rates_per_s"]
         lam_max = max(st["lambda_per_s"] for st in r["steps"])
@@ -1009,6 +1015,24 @@ def power_c(inputs, vc, dc) -> dict:
                                                  ["kinetic_vs_first_order_rel"]["H"])}
         ec["reachability"] = vc["envelope"]["reachability"]
         power["C3_amendment_envelope"] = ec
+        c5 = inputs["seam_c"]["envelope"].get("amendment_c5")
+        if c5:
+            rows = {}
+            for cid in c5["cases"]:
+                r, row = cases[cid], ec[cid]
+                flip = row["plants"]["release_sign_flipped"]
+                over = {L: x["over_floor"] for L, x in flip.items() if x is not None}
+                rows[cid] = {"release_steps": r["release_steps"],
+                             "first_order_dln": r["first_order_dln"],
+                             "first_order_floor_rel": r["first_order_floor_rel"],
+                             "release_sign_flipped_over_floor": over,
+                             "caught": max(over.values()) >= MIN_MARGIN,
+                             "weak_ligands": [L for L, x in over.items() if x < MIN_MARGIN]}
+                if "b4_formula_vs_general_rel" in row:
+                    rows[cid]["b4_formula_vs_general_rel"] = row["b4_formula_vs_general_rel"]
+            power["C5_amendment_release_envelope"] = {
+                "cases": rows, "all_caught": all(x["caught"] for x in rows.values()),
+                "release_step": c5["release_step"], "planted": c5["planted"]}
     power["C3_movers"] = vc["movers"]
     power["C2_parse"] = vc["parse"]["planted_declared_valence"]
     power["C5_p1"] = {k: {kk: v[kk] for kk in ("threshold_free_fmol", "threshold_stored_fmol",
@@ -1135,6 +1159,15 @@ CLAIMS = [
                    "their admissible floor, the linearised free amount) and the equilibrated "
                    "free amount on a ladder of draws"),
      "plants": ["today's predictor: the free amount against the stored derivative"]},
+    {"row": "C6b", "claim": ("Amendment C5: the envelope holds for release steps, unit steps "
+                             "whose bound form has count_f(L) ≤ 0 (forms below their base, "
+                             "single-sign like pi2_PO4 and mixed-sign like mgx_MgmH), with the "
+                             "same ν, flux and K_r as any step"),
+     "reference": ("amendment C3's machinery on seven cases: a two-form release buffer (B4's "
+                   "formula with the release form free), pi2 at pH 12 under H⁺ and Mg²⁺ drives, "
+                   "S4's three binders at pH 11.5, and mgx at pH 7.5 under H⁺, Mg²⁺ and binder "
+                   "drives"),
+     "plants": ["the release steps' ligand written with the wrong sign in N"]},
 ]
 
 ZERO_POWER = [

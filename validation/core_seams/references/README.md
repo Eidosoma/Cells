@@ -19,7 +19,7 @@ references.
 | `cycles.py` | Cycle laws on a population: free energies, fluxes, rows per host end, heat, work, the stored rate, charge, exact slopes, and the parse-time checks |
 | `binding.py` | The multi-ligand closure: speciation by Newton and by nested bisection, conservation, charge, G*, the floors, P1's thresholds, and (amendment C1) the booked term |
 | `primal.py` | Amendment C1: the second route, the primal Gibbs minimum by Newton on reaction extents, sharing only the registry's inputs with the dual |
-| `envelope.py` | Amendment C3: the binding network's first-order lag and its kinetic reference |
+| `envelope.py` | Amendment C3: the binding network's first-order lag and its kinetic reference. Amendment C5: release steps and their planted sign |
 | `api.py` | The entry points |
 | `worlds.py` | Writes the inputs (`--check` compares) |
 | `design.py` | Writes both design files in about a minute of one CPU (`--check` regenerates and compares) |
@@ -513,6 +513,48 @@ positive up to the stored amount.
     declares a negative term weight. The batch writes w_t.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
+- **19 November 2026, 06:53 UTC, amendment C5, the envelope's release steps, before the binding
+  owner's envelope output for them** (the lead's brief; this package and §19 were the only things
+  read). The general closure's first-order lag had no reference for release steps, so until now
+  the binding owner refuses such networks at parse.
+  - **A release step** is a unit step f′ + L ⇌ f whose bound form f holds count_f(L) ≤ 0, so
+    binding L only restores a ligand that a form below its base released:
+    pi2_PO4 + H ⇌ pi2_base, or mgx_MgmH + H ⇌ mgx_Mg. Amendment C3's network already gives it the
+    same ν, flux and K_r as any step. `envelope.Network.release_steps` names them.
+  - **Seven cases**, appended to C3's with its record times and budget, every value synthetic:
+    - **E3_rel1_b4:** a two-form buffer whose other form sits below its base. Its one step is a
+      release step, and the general lag equals B4's formula with the release form free (2.2e-16).
+      The registry gains `rel1` (rel1_mH: H −1, pK 9), appended; it joins no system.
+    - **E3_pi2_release and E3_pi2_release_mg_drive:** single-sign, pi2 at pH 12, where
+      pi2_PO4 + H ⇌ pi2_base carries the buffering. ΔpH is 1.32e-3 under the H⁺ drive, outside
+      the 1e-3 budget. The slowest mode is 0.002 of the slowest single step.
+    - **E3_s4_release:** single-sign, S4's three binders at pH 11.5. ΔpH is 1.03e-3, outside the
+      budget.
+    - **E4_mgx_mixed, E4_mgx_mixed_mg_drive and E4_mgx_mixed_binder_drive:** mixed-sign, mgx at
+      pH 7.5, two thirds of it as mgx_MgmH (H −1, Mg +1), reached through mgx_Mg by the release
+      step. The drives are H⁺, Mg²⁺ (binding Mg²⁺ releases H⁺) and the binder's base form.
+    - **Kinetic reference:** in every case Radau and BDF agree within 8e-12 in ln x. At the last
+      record time the kinetic lag meets the first order within 1.5e-3 relative where the lag is
+      largest (E3_pi2_release, E3_s4_release, E3_rel1_b4), and within 2e-4 elsewhere.
+  - **The plant:** the release steps' ligand written with the wrong sign in N (the step taken to
+    release L where it binds it, the forward flux unchanged). It is caught on every case, by at
+    least 4.1e10 of the first order's floor (8 ε λ_max/λ_slowest) on some ligand, and by at least
+    5.9e6 on every ligand.
+  - **A finding, for the lead.** Under a drive in another row (Mg²⁺, or the binder's base form),
+    the per-step estimate of the H⁺ lag is non-conservative:
+    - by 1.46× on E4_mgx_mixed_mg_drive;
+    - by 68× on E4_mgx_mixed_binder_drive;
+    - by 680× on E3_pi2_release_mg_drive.
+
+    Every one of these lags is inside the budget here, so no verdict flips.
+  - **A second finding: regenerating bitwise needs BLAS on one thread.** On main, `design --check`
+    differed when OpenBLAS ran its 32 threads: the network's eigenvalues, and so C3's record times
+    and kinetic rows, moved at about 1e-10 relative. Single-threaded, it was identical.
+    `envelope.one_blas_thread` (threadpoolctl) now pins the eigenvalues and the integrations to
+    one thread, and the check is identical in either environment.
+  - Earlier inputs and values are unchanged: every registered entry is byte-identical, and the
+    new ones are added. Four tests added (envelope: 9), and the registration test checks C5's
+    power.
 
 ## Tests
 
@@ -532,7 +574,7 @@ cycles 1.07 s (16), registration 1.12 s (4); envelope is unchanged. The record i
 | `tests/unit/test_core_seams_references_cycles.py` | 9 | Seam A's machinery, amendment 1's finite fuel and N = b included, each test with its plant |
 | `tests/unit/test_core_seams_references_binding.py` | 6 | Seam C's, each test with its plant |
 | `tests/unit/test_core_seams_references_registration.py` | 4 | The inputs equal their generator, sampled values recompute, the registered power holds, and no engine import |
-| `tests/unit/test_core_seams_references_envelope.py` | 5 | Amendment C3: B4's reduction, the chain's non-conservative per-step bound, second order and 1/k_on, a shared k_on, and reachability |
+| `tests/unit/test_core_seams_references_envelope.py` | 9 | Amendment C3: B4's reduction, the chain's non-conservative per-step bound, second order and 1/k_on, a shared k_on, and reachability. Amendment C5: the release buffer's B4 reduction, the release steps found and their flipped sign caught, a mixed-sign release defeating a per-step bound, and a release network's kinetic reference |
 
 ## Sources
 
