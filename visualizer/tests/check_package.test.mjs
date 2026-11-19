@@ -340,6 +340,22 @@ test("where a folder holds a manifest, the adapter takes its arms, sidecars and 
     assert.match(refused.stderr, reason, label);
     assert.ok(!existsSync(path.join(scratch, `out-${name}`, "index.json")), `${label}: nothing is catalogued`);
   }
+  // The adapter itself reads a package from its own folder and from nowhere else, with or without the check before it:
+  // a name its files give that leaves the folder, and a link, are refused, and nothing is written.
+  for (const [label, breach, reason] of [
+    ["a view's file that leaves the folder", (folder) => edit(path.join(folder, "alpha", "view.json"), (view) => { for (const base of view.time.bases) for (const part of base.files) part.file = `../beta/${part.file}`; }), /alpha: its view names a file of the time base \w+ that is not in the run's folder/],
+    ["a link in a package", (folder) => symlinkSync(path.join(folder, "beta", "summary.json"), path.join(folder, "alpha", "kept-elsewhere.json")), /alpha holds a link \(kept-elsewhere\.json\): a run folder holds its files itself, and no link is followed/],
+    ["a sidecar that is a link", (folder) => { unlinkSync(path.join(folder, "alpha", "concentration.json")); symlinkSync(path.join(folder, "beta", "concentration.json"), path.join(folder, "alpha", "concentration.json")); }, /alpha holds a link \(concentration\.json\)/],
+    ["a manifest that is a link", (folder) => { const kept = path.join(scratch, "kept-manifest.json"); writeFileSync(kept, readFileSync(path.join(folder, "package.json"))); unlinkSync(path.join(folder, "package.json")); symlinkSync(kept, path.join(folder, "package.json")); }, /[\w-]+\/package\.json is a link: a file is read where it stands, and no link is followed/],
+  ]) {
+    const name = `adapt-outside-${label.replace(/\W+/g, "-")}`;
+    const folder = sound(name);
+    breach(folder);
+    const [refused] = adapt(folder, path.join(scratch, `out-${name}`));
+    assert.notEqual(refused.status, 0, label);
+    assert.match(refused.stderr, reason, label);
+    assert.ok(!existsSync(path.join(scratch, `out-${name}`, "index.json")), `${label}: nothing is catalogued`);
+  }
 });
 
 // ---------------------------------------------------------------- the schema file and the contract, kept from drifting

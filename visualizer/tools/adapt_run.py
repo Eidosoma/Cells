@@ -69,6 +69,8 @@ class Refused(SystemExit):
 
 
 def read_json(path):
+    if Path(path).is_symlink():
+        raise Refused(f"{Path(path).name} in {Path(path).parent.name}/ is a link: a file is read where it stands, and no link is followed")
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -1461,6 +1463,18 @@ EXAMPLE_FILE = "example.json"  # the run-fixture tool writes it into a run folde
 HISTORY_MAIN = ("membrane_voltage_V", "cell_potential_V")
 HISTORY_SETS = {"cell": "cells", "membrane": "membranes", "junction": "junctions", "outside": "extracellular", "face": "faces", "channel": "channels"}
 RUN_FOLDER = re.compile(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
+
+
+def inside(folder, text):
+    """Whether a name that a run's own files give stays inside its folder: file names joined by /, none of them made of dots
+    alone, and nowhere led out of the folder through a link. A package is read from its own folder and from nowhere else
+    (schema/EXPERIMENT_PACKAGE.md); tools/check_package.py says the same of a whole package, with a code for each breach."""
+    if not (isinstance(text, str) and RUN_FOLDER.match(text)) or any(not part.strip(".") for part in text.split("/")):
+        return False
+    try:
+        return (Path(folder) / text).resolve().is_relative_to(Path(folder).resolve())
+    except OSError:
+        return False
 SIGN_FROM_ARRAYS = "the viewer's reading of the run's own saved arrays, not a declaration by the run"
 # An exchange route's total (scheduled_species_exchange@1) is positive out of the cell, for an export and an import route alike: the
 # engine's lead confirmed it on 15 November 2026 from the operator's own code, whose domain check holds an export's total at nought
@@ -1494,7 +1508,7 @@ def history_arrays(name, folder, derivation):
                 raise Refused(f"{name}: windows.jsonl has a line that is not JSON") from None
             if not (isinstance(item, dict) and item.get("kind") == "window" and item.get("observation_records") and isinstance(item.get("path"), str)):
                 continue
-            if not RUN_FOLDER.match(item["path"]) or not (folder / item["path"]).is_file():
+            if not inside(folder, item["path"]) or not (folder / item["path"]).is_file():
                 raise Refused(f"{name}: windows.jsonl names a chunk that is not in the run's folder")
             names = set(npz_names(folder / item["path"]))
             chunks.append(read_npz(folder / item["path"], [entry for entry in wanted if entry in names]))
@@ -1759,7 +1773,7 @@ def view_rows(name, folder, base, array_name):
     shape, values, rows = None, array("d"), 0
     for part in base.get("files") or []:
         file, span = part.get("file") if isinstance(part, dict) else None, part.get("rows") if isinstance(part, dict) else None
-        if not isinstance(file, str) or not RUN_FOLDER.match(file) or not (folder / file).is_file():
+        if not inside(folder, file) or not (folder / file).is_file():
             raise Refused(f"{name}: its view names a file of the time base {base.get('id')} that is not in the run's folder")
         if array_name not in npz_names(folder / file):
             raise Refused(f"{name}: {Path(file).name} does not hold {array_name}, which its view says is saved there")
@@ -2788,11 +2802,15 @@ def adapt_engine_view(root, name, experiment, entry):
 
 def adapt_history(root, name, experiment, entry):
     """One run written by the engine's shared output path (a folder that holds resolved_config.json and its arrays)."""
-    if not RUN_FOLDER.match(name):
+    if not inside(root, name):
         raise Refused(f"'{name}' is not a run folder's name")
     folder = root / name
     if not folder.is_dir():
         raise Refused(f"no run folder {name} in {root.name}/")
+    # A package holds its files itself: one that holds a link is refused before anything of it is read.
+    link = next((item for item in sorted(folder.rglob("*")) if item.is_symlink()), None)
+    if link is not None:
+        raise Refused(f"{name} holds a link ({link.relative_to(folder).as_posix()}): a run folder holds its files itself, and no link is followed")
     # A run with the engine's own view beside its files is packaged from that view, and from none of the adapter's tables.
     if (folder / VIEW_FILE).is_file():
         return adapt_engine_view(root, name, experiment, entry)
@@ -3192,6 +3210,8 @@ def package_manifest(root):
     if not path.is_file():
         return None
     where = f"{Path(root).name}/{MANIFEST_FILE}"
+    if path.is_symlink():
+        raise Refused(f"{where} is a link: a file is read where it stands, and no link is followed")
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (ValueError, RecursionError):
