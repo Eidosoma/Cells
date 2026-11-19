@@ -17,7 +17,8 @@
 #      the explanation; the last passing map is kept.
 # Environment: REPO (default $HOME/Cells), NIGHTLY (default /mnt/workspaces/Cells/nightly),
 #   GATE_CACHE (default /mnt/workspaces/Cells/gate-cache), PY, HOSTPY, PRE_CPU (default 23), POLL
-#   (default 60), WAIT_FREE (default 10800), and LOCK_A, CPUS_A, LOCK_B, CPUS_B (tests only).
+#   (default 60), WAIT_FREE (default 10800), and LOCK_A, CPUS_A, LOCK_B, CPUS_B and TIERS (a reduced
+#   tier record, whose map then fails as incomplete; tests and rehearsals only).
 # Usage: nightly_tiers.sh              the unit's command: freeze main, then run the frozen copy
 #        nightly_tiers.sh --run OUT    the frozen copy, from OUT/snapshot
 #   OUT/done holds 0 (passed), 1 (failed) or 2 (not run).
@@ -85,7 +86,7 @@ case "${1:-}" in
     taskset -cp "$CPUS" $$ > /dev/null || { log "could not pin to lane $LANE's CPUs $CPUS"; done_locked 2; }
     log "lane $LANE, lock held; affinity $(taskset -pc $$ | sed 's/.*: //')"
     start=$(date +%s)
-    (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers tests/test_tiers.json \
+    (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers "${TIERS:-tests/test_tiers.json}" \
       --tier 1 2 --out "$OUT/tiers-1+2" --cpus "$CPUS" --cap 300 --scope-map "$OUT/tiers-1+2/scope" \
       > "$OUT/tiers-1+2.log" 2>&1)
     tiers=$?
