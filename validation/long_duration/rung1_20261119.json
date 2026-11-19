@@ -631,6 +631,40 @@
     "why": "the engine's grid is the float products i x dt, and an observation or an edge must equal one exactly"
    },
    "changed": "no registered number, criterion or outcome"
+  },
+  {
+   "entry": "10.5",
+   "entry_utc": "2026-11-19T21:51Z",
+   "title": "the instrument's tolerance, a bound without an order, and event bounds, before any run",
+   "I1a": {
+    "finding": "development only: a smoke re-based at 600 s (50 ms at k = 0) against rung 0's DEV600 smoke exceeds rung 0's readable floor: voltage up to 1.3e-14 V against 1.1e-14 V (8 of 51 rows; the first row at 1.2e-14 V with identical amounts and gates, the readout's rounding), gates up to 2.9e-13 against 1.1e-13 (41 of 51 rows)",
+    "tolerance": "B_A: the control at k = 9 against rung 0's k = 9 on each re-based window, and WA's control at k = 2 against R3's kept rows, at every row and class",
+    "carried": "the import's measured effect |control k = 9 - rung 0's k = 9| per window row and class is added to that row's reference bound for every arm of that window",
+    "x2": "no effect on the trajectory: a development smoke with X2 on and off gave bitwise equal rows; WN's control at k = 9 against rung 0's WN at k = 9 is reported"
+   },
+   "bound_without_order": {
+    "finding": "references only (stage 0's R1-R3, rung 0's k = 7-9): rows with the finest difference 1.0-5.4 times the floor and an order below 1 (rounding noise): none on (S)'s and (I)'s rows outside WA's span; WS 14 voltage and 12 gate rows of 1001; WA 42 and 21 of 1011, including one voltage row on (I)'s common rows (1800.000 s) and two gate rows; WC and WB none",
+    "rule": "where a reference's ladder gives an order below 1 above the floor, its bound is the largest of its two ladder differences and its floor; B_A still judges every bound",
+    "largest_such_bounds": {
+     "voltage_V": 5e-12,
+     "gate": 5e-10
+    }
+   },
+   "event_bounds": {
+    "rule": "as rows: the difference from the next-coarser arm where the order from the three finest is at least 1; the floor where that difference is at or below it; otherwise the larger spread",
+    "floors": {
+     "peak": "twice the voltage floor at its row",
+     "crossing_time": "the voltage floor at its row over the reference's slope between its bracketing rows"
+    },
+    "on_WA": {
+     "peak_bound_V": 7e-11,
+     "peak_criterion_V": 7.4e-05,
+     "crossing_bound_s": 4.3e-11,
+     "crossing_criterion_s": 0.0005
+    }
+   },
+   "analysis": "committed with this entry before any registered row exists (rung1.py instrument and analyse); analyse refuses unless I1a and I4 pass; an exception other than the engine's ConfigError or NumericalError is a driver fault, fixed under a new head and never what binds",
+   "changed": "no registered number, budget or outcome"
   }
  ]
 }

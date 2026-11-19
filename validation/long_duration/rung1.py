@@ -26,10 +26,15 @@ run ARM OUT_DIR [--x2-off]   one arm: H2-WA-k3, H2-WN-k0, H2-full-5, H2-slow-200
                              --x2-off is fallback (ii)'s instrument check (today's ID only).
 arms                         the control's arms, one per line.
 smoke OUT_DIR                development smokes of each path (no registered window or row).
+instrument OUTPUT ROOT       I1a and I4 (§5, §10.5), read before any reading.
+analyse OUTPUT ROOT INSTR    the readings (§4, §5, §10); refuses unless INSTR validated.
+timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR's, bitwise.
+plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1 at the largest step claimed).
 """
 
 import hashlib
 import json
+import math
 import os
 import sys
 import time
@@ -382,6 +387,843 @@ def run(arm, out_dir, x2=True, development=None):
     return 0 if record["status"] == "complete" else 1
 
 
+# ------------------------------------------------------------------ the readings (§4, §5, §10)
+
+CLASS_KEYS = ("voltage", "concentration", "gate")
+SCALES = dict(voltage=0.1, concentration=1.0, gate=1.0)  # Rung 0's floor scales.
+B_P = dict(voltage=2e-5, concentration=2e-4, gate=None)  # The method's bar (§10.1); gates: info.
+B_A = dict(voltage=2e-6, concentration=2e-5, gate=1e-5)  # The reference's bar (§10.1).
+BARS = dict(B_P=B_P, B_A=B_A)
+LEVEL_V, CROSSING_S, PEAK_RELATIVE = -0.05, 5e-4, 1e-3  # Stage 0's §5.3 event criteria.
+CUE_MS, CUE_OFF_MS, RECOVERY_THROUGH_MS = 1_800_000, 1_800_300, 1_830_000
+WA_SPAN_MS = (1_799_990, 1_801_000)
+RUNG0_ROOTS = dict(
+    window="/mnt/workspaces/Cells/fr8-rung0-20261119/records-cf1ca34b",
+    WN="/mnt/workspaces/Cells/fr8-rung0-20261119/records-58c336c0",
+)
+STAGE0_HARNESS = "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness"
+HISTORY_FLOORS = (("_pJ", 2e-8), ("_C", 3e-25))  # Else amounts and cycles: 1e-10 fmol.
+ENGINE_REFUSALS = ("ConfigError", "NumericalError")  # Any other exception is a driver fault.
+X2_MESSAGE = "Step-doubled energy check failed"
+
+
+def load_rows(directory):
+    """(record, rows dict with 'times') of an arm directory; rows is None without kept rows."""
+    directory = Path(directory)
+    record = json.loads((directory / "run.json").read_text())
+    path = directory / "rows.npz"
+    if not path.is_file():
+        return record, None
+    with np.load(path) as archive:  # Each array once: an indexed npz decompresses per access.
+        return record, {f: archive[f] for f in archive.files}
+
+
+def model_of(raw):
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.registry.models import get_model
+
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    return model, model.initial_values(spec)[1]
+
+
+def classes(raw, rows):
+    """Per row: voltages [patch], concentrations [species, cell] and gates [flat], from the
+    engine's own readouts on the definition's own layout (H2: @3; W0: the composite's inner
+    view)."""
+    from cells.models import surface_pump_projective as projective
+
+    model, p = model_of(raw)
+    composite = hasattr(model, "inner_state")
+    fields = model.STATE_TYPE._fields
+    out = dict(voltage=[], concentration=[], gate=[])
+    for i in range(len(rows["times"])):
+        row = model.STATE_TYPE(*(rows[f][i] for f in fields))
+        if composite:
+            state, view = model.inner_state(row), model.view(p, row, xp=np)
+            ci, _ = model.inner.physical_amounts(state, view)
+        else:
+            state, view = row, p
+            ci, _ = model.physical_amounts(row, p)
+        cells = np.asarray(view.active, dtype=bool)
+        out["voltage"].append(np.asarray(projective.membrane_voltage(state, view)))
+        out["concentration"].append(np.asarray(ci)[:, cells] / np.asarray(view.volume)[cells])
+        gates = [np.asarray(state.channel_gate)[np.asarray(view.channel_gate_active, dtype=bool)]]
+        if np.asarray(state.junction_gate).size:
+            gates.append(np.asarray(state.junction_gate)[np.asarray(view.junction_active, bool)])
+        out["gate"].append(np.concatenate(gates))
+    return {key: np.asarray(v) for key, v in out.items()}
+
+
+def difference(a, b, key):
+    """Per row: the largest |a - b| over a class's entries (relative for concentration)."""
+    d = np.abs(np.asarray(a) - np.asarray(b))
+    if key == "concentration":
+        d = d / np.abs(np.asarray(b))
+    return d.reshape(len(d), -1).max(axis=1, initial=0.0)
+
+
+def floor_of(key, steps):
+    return registration()["order"]["readable_factor"] * np.asarray(steps, float) * EPS * SCALES[key]
+
+
+def bound(d_coarse, d_fine, floor_coarse, floor_fine):
+    """A reference's error bound at a row and class (§3, §10.4, §10.5): its finest ladder
+    difference where the order from its three finest arms is at least 1; its floor where that
+    difference sits at or below it; otherwise the ladder's larger spread (no order)."""
+    if d_fine <= floor_fine:
+        return floor_fine
+    if d_coarse > floor_coarse and d_coarse >= 2.0 * d_fine:  # log2(coarse / fine) >= 1.
+        return d_fine
+    return max(d_coarse, d_fine, floor_fine)
+
+
+class Series:
+    """A trajectory at integer-millisecond rows: its classes, its steps from its start, its
+    record. start_ms: where its steps start; offset_ms: added to its row times (a re-based
+    window's start; 0 for absolute times; by default start_ms)."""
+
+    def __init__(self, directory, raw=None, start_ms=0, steps_per_ms=1.0, offset_ms=None):
+        self.directory = Path(directory)
+        self.record, self.rows = load_rows(directory)
+        self.complete = self.record.get("status", "complete") == "complete"
+        self.start_ms, self.steps_per_ms = start_ms, float(steps_per_ms)
+        self.offset_ms = start_ms if offset_ms is None else offset_ms
+        if self.rows is None:
+            self.ms, self.c, self.times = np.zeros(0, dtype=np.int64), None, np.zeros(0)
+            return
+        if raw is None:
+            raw = json.loads((self.directory / "definition.json").read_text())
+        self.raw = raw
+        self.ms = np.asarray([self.offset_ms + ms_of(t) for t in self.rows["times"]], np.int64)
+        self.times = self.offset_ms * 1e-3 + np.asarray(self.rows["times"], dtype=float)
+        self.c = classes(raw, self.rows)
+        self.index = {int(m): i for i, m in enumerate(self.ms)}
+
+    def at(self, ms):
+        return np.asarray([self.index[int(m)] for m in ms], dtype=np.int64)
+
+    def steps(self, ms):
+        return (np.asarray(ms, dtype=np.int64) - self.start_ms) * self.steps_per_ms
+
+
+class Ladder:
+    """A reference (finest) and its two coarser arms: the §3 bound per row and class."""
+
+    def __init__(self, coarse, middle, finest, name):
+        self.coarse, self.middle, self.finest, self.name = coarse, middle, finest, name
+
+    def has(self, m):
+        return int(m) in self.finest.index
+
+    def bounds(self, ms):
+        ic, im, i_f = (s.at(ms) for s in (self.coarse, self.middle, self.finest))
+        out = {}
+        for key in CLASS_KEYS:
+            dc = difference(self.coarse.c[key][ic], self.middle.c[key][im], key)
+            df = difference(self.middle.c[key][im], self.finest.c[key][i_f], key)
+            fc, ff = floor_of(key, self.middle.steps(ms)), floor_of(key, self.finest.steps(ms))
+            e = np.asarray([bound(*v) for v in zip(dc, df, fc, ff, strict=True)])
+            out[key] = dict(bound=e, d_coarse=dc, d_fine=df, floor_coarse=fc, floor_fine=ff)
+        return out
+
+
+def decide(delta, e, budget, key):
+    """One row and class (§4; §10.1: B_A judges the reference's bound): 'pass', 'fail',
+    'undetermined', or 'info' where the bar has no cap for the class."""
+    if budget is None:
+        return "info"
+    if not np.isfinite(e) or e > B_A[key]:
+        return "undetermined"
+    if delta + e <= budget:
+        return "pass"
+    if delta - e > budget:
+        return "fail"
+    return "undetermined"
+
+
+def compare(arm, parts, ms):
+    """The arm's rows `ms` against their references: parts is [(ladder, mask over ms, extra
+    bound per class or None)]. Per class: deltas, bounds and the reference refinement."""
+    n = len(ms)
+    out = {key: dict(delta=np.full(n, np.nan), bound=np.full(n, np.nan),
+                     d_coarse=np.full(n, np.nan), d_fine=np.full(n, np.nan),
+                     floor_fine=np.full(n, np.nan)) for key in CLASS_KEYS}  # fmt: skip
+    for ladder, mask, extra in parts:
+        if not mask.any():
+            continue
+        sub = ms[mask]
+        ia, ir = arm.at(sub), ladder.finest.at(sub)
+        b = ladder.bounds(sub)
+        for key in CLASS_KEYS:
+            out[key]["delta"][mask] = difference(arm.c[key][ia], ladder.finest.c[key][ir], key)
+            e = b[key]["bound"] + (0.0 if extra is None else extra[key](sub))
+            out[key]["bound"][mask] = e
+            for name in ("d_coarse", "d_fine", "floor_fine"):
+                out[key][name][mask] = b[key][name]
+    return out
+
+
+def verdict_rows(table, ms, bar):
+    """The rows' verdict under a bar: fail (with its first failing row), undetermined, or pass."""
+    first_fail, undetermined = None, 0
+    for key in CLASS_KEYS:
+        for j, (d, e) in enumerate(zip(table[key]["delta"], table[key]["bound"], strict=True)):
+            v = decide(d, e, BARS[bar][key], key)
+            if v == "fail" and (first_fail is None or ms[j] < first_fail["ms"]):
+                first_fail = dict(ms=int(ms[j]), cls=key, value=float(d), bound=float(e),
+                                  budget=BARS[bar][key])  # fmt: skip
+            undetermined += v == "undetermined"
+    if first_fail:
+        return dict(verdict="fail", cause=dict(kind="breach", **first_fail))
+    if undetermined:
+        return dict(verdict="undetermined", undetermined_row_classes=undetermined)
+    return dict(verdict="pass")
+
+
+def refusal_of(record):
+    """An incomplete arm's verdict: the engine's refusal (a result), or a driver fault."""
+    kind = "refusal" if record.get("error_type") in ENGINE_REFUSALS else "driver fault"
+    cause = dict(
+        kind=kind,
+        error_type=record.get("error_type"),
+        message=record.get("error"),
+        last_row_s=record.get("last_row_s"),
+        x2=str(record.get("error", "")).startswith(X2_MESSAGE),
+    )
+    return dict(verdict="fail" if kind == "refusal" else "fault", cause=cause)
+
+
+def worst(verdicts):
+    for v in ("fault", "fail", "undetermined"):
+        if v in verdicts:
+            return v
+    return "pass"
+
+
+# ------------------------------------------------------------------ references
+
+
+def rung0_ladder(window):
+    from validation.long_duration import rung0
+
+    raw = rung0.window_raw(window, 0)
+    start = 0 if window == "WN" else int(registration()["H2"]["windows"][window]["start_ms"])
+    root = Path(RUNG0_ROOTS["WN" if window == "WN" else "window"]) / window
+    arms = [Series(root / f"k{k}", raw, start, 2**k, offset_ms=0) for k in (7, 8, 9)]
+    return Ladder(*arms, f"rung 0's {window} k = 7-9")
+
+
+def stage0_ladder():
+    from validation.long_duration import worlds
+
+    arms = [Series(Path(STAGE0_HARNESS) / name, worlds.h2(dt), 0, per)
+            for name, dt, per in (("R1", 1e-3, 1), ("R2", 5e-4, 2), ("R3", 2.5e-4, 4))]  # fmt: skip
+    return Ladder(*arms, "stage 0's R1-R3")
+
+
+def w0_ladder(root):
+    arms = [Series(Path(root) / f"W0-{q}", None, 0, per)
+            for q, per in (("0.5", 2), ("0.25", 4), ("0.125", 8))]  # fmt: skip
+    return Ladder(*arms, "W0 at 0.5, 0.25 and 0.125 ms")
+
+
+def window_start(window):
+    return 0 if window == "WN" else int(registration()["H2"]["windows"][window]["start_ms"])
+
+
+def window_arm(root, window, k, sub=""):
+    return Series(Path(root) / sub / f"H2-{window}-k{k}", None, window_start(window), 2**k)
+
+
+# ------------------------------------------------------------------ events (§10.1, §10.2)
+
+
+def events(times_s, v0, through_ms=RECOVERY_THROUGH_MS):
+    """Cell_0's pre-value at 1800 s, its peak response after it, its first two crossings of -50 mV
+    after it and its recovery times (stage 0's §5.3), on the rows given."""
+    from validation.long_duration import harness_judge as hj
+
+    t, v = np.asarray(times_s, dtype=float), np.asarray(v0, dtype=float)
+    at = np.flatnonzero(np.round(t * 1000).astype(np.int64) == CUE_MS)
+    if not len(at):
+        return None
+    pre = float(v[at[0]])
+    after = np.flatnonzero(t > CUE_MS * 1e-3 + 1e-9)
+    peak_i = after[np.argmax(np.abs(v[after] - pre))]
+    through = min(through_ms * 1e-3, float(t[-1]))
+    return dict(
+        pre_V=pre,
+        peak_V=float(abs(v[peak_i] - pre)),
+        peak_ms=int(round(t[peak_i] * 1000)),
+        crossings=hj.crossings(t, v, LEVEL_V, CUE_MS * 1e-3)[:2],
+        recovery_s={
+            f"{d * 1e3:g}_mV": hj.recovery_time(t, v, pre, d, CUE_OFF_MS * 1e-3, through)
+            for d in (1e-3, 1e-4)
+        },
+    )
+
+
+def series_events(s):
+    return events(s.times, s.c["voltage"][:, 0])
+
+
+def decide_event(diff, e, criterion):
+    if e is None or not np.isfinite(e):
+        return "undetermined"
+    if diff + e <= criterion:
+        return "pass"
+    if diff - e > criterion:
+        return "fail"
+    return "undetermined"
+
+
+def ladder_events(ladder):
+    """The reference's events on its three arms, with the bounds of its peak and crossing times
+    (§10.5: the same rule as rows; the peak's floor is twice the voltage floor at its row, a
+    crossing time's is the voltage floor over the reference's slope between its bracketing
+    rows)."""
+    ev = [series_events(s) for s in (ladder.coarse, ladder.middle, ladder.finest)]
+    c, m, f = ev
+    peak_ms = [f["peak_ms"]]
+    fv_m = 2 * float(floor_of("voltage", ladder.middle.steps(peak_ms))[0])
+    fv_f = 2 * float(floor_of("voltage", ladder.finest.steps(peak_ms))[0])
+    f["peak_bound_V"] = bound(abs(c["peak_V"] - m["peak_V"]), abs(m["peak_V"] - f["peak_V"]),
+                              fv_m, fv_f)  # fmt: skip
+    t, v = ladder.finest.times, ladder.finest.c["voltage"][:, 0]
+    for j, (xc, xm, xf) in enumerate(zip(c["crossings"], m["crossings"], f["crossings"],
+                                         strict=False)):  # fmt: skip
+        i = int(np.searchsorted(t, xf["time_s"]))
+        slope = abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) if 0 < i < len(t) else 0.0
+        row_ms = [int(round(t[min(i, len(t) - 1)] * 1000))]
+        floor_t = (float(floor_of("voltage", ladder.finest.steps(row_ms))[0]) / slope
+                   if slope else math.inf)  # fmt: skip
+        floor_tm = (float(floor_of("voltage", ladder.middle.steps(row_ms))[0]) / slope
+                    if slope else math.inf)  # fmt: skip
+        f["crossings"][j] = dict(xf, bound_s=bound(abs(xc["time_s"] - xm["time_s"]),
+                                                   abs(xm["time_s"] - xf["time_s"]),
+                                                   floor_tm, floor_t))  # fmt: skip
+    return f
+
+
+def judge_events(arm_ev, ref_ev):
+    """§10.1: the peak and the timing pairs against the reference, decided with its bounds; a
+    pair located between rows over 1 ms apart takes no timing pass; recovery is reported."""
+    from validation.long_duration import harness_judge as hj
+
+    if arm_ev is None:
+        return dict(verdict="fail", reason="no row at 1800 s")
+    d_peak = abs(arm_ev["peak_V"] - ref_ev["peak_V"])
+    crit = PEAK_RELATIVE * ref_ev["peak_V"]
+    peak = dict(test_V=arm_ev["peak_V"], ref_V=ref_ev["peak_V"], test_ms=arm_ev["peak_ms"],
+                ref_ms=ref_ev["peak_ms"], difference_V=d_peak, bound_V=ref_ev["peak_bound_V"],
+                criterion_V=crit)  # fmt: skip
+    peak["verdict"] = decide_event(d_peak, ref_ev["peak_bound_V"], crit)
+    pairs, verdicts = [], []
+    a, b = arm_ev["crossings"], ref_ev["crossings"]
+    for x, y in zip(a, b, strict=False):
+        dt = abs(x["time_s"] - y["time_s"])
+        located = hj.located(x, 1e-3) and hj.located(y, 1e-3)
+        v = ("fail" if x["direction"] != y["direction"] or not located
+             else decide_event(dt, y.get("bound_s"), CROSSING_S))  # fmt: skip
+        pairs.append(dict(test_s=x["time_s"], ref_s=y["time_s"], difference_s=dt,
+                          bound_s=y.get("bound_s"), test_spacing_s=x["spacing_s"],
+                          ref_spacing_s=y["spacing_s"], located=located,
+                          direction=[x["direction"], y["direction"]], verdict=v))  # fmt: skip
+        verdicts.append(v)
+    if len(a) != len(b):
+        verdicts.append("fail")
+    timing = dict(pairs=pairs, crossings_test=len(a), crossings_ref=len(b),
+                  verdict=worst(verdicts or ["pass"]))  # fmt: skip
+    return dict(peak=peak, timing=timing, verdict=worst([peak["verdict"], timing["verdict"]]),
+                recovery=dict(test=arm_ev["recovery_s"], ref=ref_ev["recovery_s"]))  # fmt: skip
+
+
+def w0_events(arm, ref):
+    """Information (§10.1): per intervention, the peak over patches of |Vm - Vm(t)| from t to the
+    next intervention or the end, against the reference's; and any crossing of -50 mV after it."""
+    from validation.long_duration import harness_judge as hj
+
+    out = {}
+    for name, t0, t1 in (("dose", W0_DOSE_MS, W0_WRITE_MS), ("write", W0_WRITE_MS, W0_END_MS)):
+        row = {}
+        for label, s in (("test", arm), ("ref", ref)):
+            i0 = s.index.get(t0)
+            if i0 is None:
+                row[label] = None
+                continue
+            v = s.c["voltage"]
+            span = np.flatnonzero((s.ms > t0) & (s.ms <= t1))
+            peak = float(np.max(np.abs(v[span] - v[i0]), initial=0.0)) if len(span) else None
+            crossings = [c | dict(patch=j) for j in range(v.shape[1])
+                         for c in hj.crossings(s.times, v[:, j], LEVEL_V, t0 * 1e-3)
+                         if c["time_s"] <= t1 * 1e-3]  # fmt: skip
+            row[label] = dict(peak_V=peak, crossings=crossings)
+        if row.get("test") and row.get("ref") and row["ref"]["peak_V"]:
+            row["relative_difference"] = (abs(row["test"]["peak_V"] - row["ref"]["peak_V"])
+                                          / row["ref"]["peak_V"])  # fmt: skip
+        out[name] = row
+    return out
+
+
+# ------------------------------------------------------------------ histories (§10.2)
+
+
+def history_floor(name):
+    for suffix, floor in HISTORY_FLOORS:
+        if name.endswith(suffix):
+            return floor
+    return 1e-10
+
+
+def histories(arm, parts, ms, base=None):
+    """Information: each accumulator's largest |delta| / max(|ref|, floor) over the rows, against
+    the reference's (a re-based window's as increments from its start: base, the reference row
+    there)."""
+    fields = json.loads((Path(STAGE0_HARNESS) / "R3" / "run.json").read_text())["history_fields"]
+    out = {}
+    for name in fields:
+        if name not in arm.rows:
+            continue
+        best = dict(relative=0.0, ms=None)
+        for ladder, mask, _ in parts:
+            if not mask.any():
+                continue
+            sub = ms[mask]
+            a = np.asarray(arm.rows[name])[arm.at(sub)]
+            r = np.asarray(ladder.finest.rows[name])[ladder.finest.at(sub)]
+            if base is not None:
+                r = r - np.asarray(ladder.finest.rows[name])[ladder.finest.at([base])][0]
+            rel = np.abs(a - r) / np.maximum(np.abs(r), history_floor(name))
+            rel = rel.reshape(len(sub), -1).max(axis=1, initial=0.0)
+            j = int(np.argmax(rel))
+            if rel[j] > best["relative"]:
+                best = dict(relative=float(rel[j]), ms=int(sub[j]))
+        out[name] = best | dict(stage0_budget=2e-5, floor=history_floor(name))
+    return out
+
+
+# ------------------------------------------------------------------ the instrument (§5, §10.5)
+
+
+def instrument(output, root):
+    """I1a and I4, read before any reading: the re-based control at k = 9 against rung 0's k = 9
+    on each window, and WA at k = 2 against R3's kept rows, within B_A at every row and class
+    (§10.5); WN against rung 0's WN (X2 alone; reported). Writes OUTPUT (JSON) and the import's
+    effect per row (OUTPUT.npz) that §10.5 carries into each window row's bound."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from validation.long_duration import rung0
+
+    out = dict(study="FR-8 rung 1, the control", I4=rung0.synthetic(), I1a={}, effect={})
+    effects = {}
+    for window in (*WINDOWS, "WN"):
+        arm = window_arm(root, window, 9)
+        used = "X2 on"
+        if not arm.complete and Path(root, "x2-off", f"H2-{window}-k9").is_dir():
+            arm, used = window_arm(root, window, 9, "x2-off"), "fallback (ii): X2 off"
+        if not arm.complete:
+            out["I1a"][window] = dict(passed=False, reason="the control at k = 9 is incomplete",
+                                      record=refusal_of(arm.record))  # fmt: skip
+            continue
+        ref = rung0_ladder(window).finest
+        ms = np.asarray([m for m in arm.ms if m in ref.index], dtype=np.int64)
+        row, eff = dict(rows=len(ms), arm=used), {}
+        for key in CLASS_KEYS:
+            d = difference(arm.c[key][arm.at(ms)], ref.c[key][ref.at(ms)], key)
+            eff[key] = d
+            j = int(np.argmax(d))
+            row[key] = dict(max=float(d[j]), at_ms=int(ms[j]), B_A=B_A[key],
+                            within=bool(np.all(d <= B_A[key])))  # fmt: skip
+        row["bitwise"] = bool(all(np.array_equal(arm.rows[f], ref.rows[f])
+                                  for f in arm.rows if f != "times"))  # fmt: skip
+        row["passed"] = all(row[key]["within"] for key in CLASS_KEYS)
+        out["I1a"][window] = row
+        effects[window] = (ms, eff)
+    arm = window_arm(root, "WA", 2)
+    if arm.complete:
+        r3 = stage0_ladder().finest
+        ms = np.asarray([m for m in arm.ms if m in r3.index], dtype=np.int64)
+        row = dict(rows=len(ms))
+        for key in CLASS_KEYS:
+            d = difference(arm.c[key][arm.at(ms)], r3.c[key][r3.at(ms)], key)
+            j = int(np.argmax(d))
+            row[key] = dict(max=float(d[j]), at_ms=int(ms[j]), B_A=B_A[key],
+                            within=bool(np.all(d <= B_A[key])))  # fmt: skip
+        row["passed"] = all(row[key]["within"] for key in CLASS_KEYS)
+    else:
+        row = dict(passed=False, record=refusal_of(arm.record))
+    out["I1a"]["WA_k2_against_R3"] = row
+    out["passed"] = bool(out["I4"]["passed"] and all(
+        out["I1a"][w].get("passed") for w in (*WINDOWS, "WA_k2_against_R3")))  # fmt: skip
+    out["verdict"] = "validated" if out["passed"] else "instrument not validated"
+    arrays = {}
+    for w, (ms, eff) in effects.items():
+        arrays[f"{w}_ms"] = ms
+        arrays.update({f"{w}_{key}": v for key, v in eff.items()})
+    np.savez_compressed(Path(output).with_suffix(".npz"), **arrays)
+    Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(
+        json.dumps(
+            dict(verdict=out["verdict"], I1a={w: r.get("passed") for w, r in out["I1a"].items()})
+        )
+    )
+    return 0 if out["passed"] else 1
+
+
+def import_effect(instrument_output, window):
+    """§10.5: the import's measured effect per row and class on a window, carried into its rows'
+    bounds."""
+    with np.load(Path(instrument_output).with_suffix(".npz")) as archive:
+        ms = archive[f"{window}_ms"]
+        eff = {key: archive[f"{window}_{key}"] for key in CLASS_KEYS}
+    index = {int(m): i for i, m in enumerate(ms)}
+    return {key: (lambda sub, key=key: np.asarray([eff[key][index[int(m)]] for m in sub]))
+            for key in CLASS_KEYS}  # fmt: skip
+
+
+# ------------------------------------------------------------------ the analysis
+
+
+def dt_star(rungs):
+    """rungs: [(step in ms, verdict, cause)] ascending. dt*: the largest rung passing with every
+    finer rung passing (§4); what binds: the first rung above it that does not pass."""
+    last = None
+    for step, verdict, cause in rungs:
+        if verdict == "pass":
+            last = step
+            continue
+        out = dict(binds=dict(rung_ms=step, verdict=verdict, cause=cause))
+        if verdict == "fail":
+            return out | dict(dt_star_ms=last if last is not None else "none on the ladder")
+        return out | dict(dt_star_ms="undetermined", at_least_ms=last)
+    return dict(dt_star_ms=last, binds="the ladder's coarsest rung passes")
+
+
+def arm_reading(arm, parts, ms_sets, extra_verdicts=()):
+    """An arm's verdict per bar and row set ('common', 'own'), with its retention table."""
+    if not arm.complete:
+        r = refusal_of(arm.record)
+        return {bar: {s: r for s in ms_sets} for bar in BARS}, None
+    out, tables = {}, {}
+    for name, ms in ms_sets.items():
+        tables[name] = (ms, compare(arm, parts(ms), ms))
+    for bar in BARS:
+        out[bar] = {}
+        for name, (ms, table) in tables.items():
+            v = verdict_rows(table, ms, bar)
+            for label, ev in extra_verdicts:
+                if ev in ("fail", "undetermined") and worst([v["verdict"], ev]) == ev:
+                    v = dict(verdict=ev, cause=dict(kind="events", which=label))
+            out[bar][name] = v
+    return out, tables
+
+
+def save_retention(directory, name, tables):
+    """§10.3: per arm, the error at every row read and class, and the reference refinement."""
+    arrays = {}
+    for rows, (ms, table) in tables.items():
+        arrays[f"{rows}_ms"] = ms
+        for key, values in table.items():
+            for field, v in values.items():
+                arrays[f"{rows}_{key}_{field}"] = v
+    np.savez_compressed(Path(directory) / f"{name}.npz", **arrays)
+
+
+def x2_of(arm):
+    r = arm.record
+    return dict(status=r.get("status"), steps=r.get("steps"), summary=r.get("energy_check_summary"),
+                refusal=None if arm.complete else refusal_of(r)["cause"])  # fmt: skip
+
+
+def analyse(output, root, instrument_output):
+    """The control's readings (§4, §5, §10). Refuses unless the instrument was validated."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    check = json.loads(Path(instrument_output).read_text())
+    if not check.get("passed"):
+        raise SystemExit("the instrument was not validated: no reading is read (§5)")
+    root = Path(root)
+    retention = Path(output).with_suffix("")
+    retention.mkdir(exist_ok=True)
+    out = dict(study="FR-8 rung 1, the control (today's ID, X2 on)", instrument=check["verdict"],
+               readings={}, arms={}, events={}, histories={}, orders={})  # fmt: skip
+    stage0 = stage0_ladder()
+    r0 = {w: rung0_ladder(w) for w in WINDOWS}
+    effects = {w: import_effect(instrument_output, w) for w in WINDOWS}
+    wa_events = ladder_events(r0["WA"])
+    wa_events["recovery_s"] = series_events(stage0.finest)["recovery_s"]
+
+    def full_parts(ms):
+        span = (ms >= WA_SPAN_MS[0]) & (ms <= WA_SPAN_MS[1])
+        return [(r0["WA"], span, None), (stage0, ~span, None)]
+
+    # H2 (S): the slow-phase arms (§10.4), on R3's rows.
+    rungs = {bar: {s: [] for s in ("common", "own")} for bar in BARS}
+    for n in SLOW_MS:
+        arm = Series(root / f"H2-slow-{n}", None, 0, 1.0 / n)
+        ms_sets = dict(own=arm.ms, common=arm.ms[arm.ms % 10_000 == 0]) if arm.c is not None else {}
+        verdicts, tables = arm_reading(arm, lambda ms: [(stage0, np.ones(len(ms), bool), None)],
+                                       ms_sets or dict(own=None, common=None))  # fmt: skip
+        if tables:
+            save_retention(retention, f"H2-slow-{n}", tables)
+            out["histories"][f"H2-slow-{n}"] = histories(
+                arm, [(stage0, np.ones(len(arm.ms), bool), None)], arm.ms
+            )
+        out["arms"][f"H2-slow-{n}"] = dict(x2=x2_of(arm), readings=verdicts)
+        for bar in BARS:
+            for s in ("common", "own"):
+                v = verdicts[bar][s]
+                rungs[bar][s].append((n, v["verdict"], v.get("cause")))
+    out["readings"]["H2 (S)"] = {
+        bar: {s: dt_star(rungs[bar][s]) for s in rungs[bar]} for bar in BARS
+    }
+
+    # H2 (I): window rungs (k = 9..0) and the full runs through the cue.
+    ladder_I = {bar: {s: [] for s in ("common", "own", "trajectory_only")} for bar in BARS}
+    x2_dropped = []
+    for k in range(9, -1, -1):
+        step = 1.0 / 2**k
+        comp = {bar: {s: [] for s in ladder_I[bar]} for bar in BARS}
+        for window in WINDOWS:
+            arm = window_arm(root, window, k)
+            name = f"H2-{window}-k{k}"
+            if not arm.complete and refusal_of(arm.record)["cause"]["x2"]:
+                x2_dropped.append(name)  # Fallback (ii): this rung of this window leaves dt*.
+                out["arms"][name] = dict(x2=x2_of(arm), left_dt_star="fallback (ii)")
+                continue
+            ev_verdict = []
+            if window == "WA" and arm.complete:
+                ev = judge_events(series_events(arm), wa_events)
+                out["events"][name] = ev
+                ev_verdict = [("WA events", ev["verdict"])]
+            ms_sets = (
+                dict(own=arm.ms, common=arm.ms[arm.ms % 100 == 0])
+                if arm.c is not None
+                else dict(own=None, common=None)
+            )
+            extra = effects[window]
+            parts = lambda ms, w=window, x=extra: [(r0[w], np.ones(len(ms), bool), x)]  # noqa: E731
+            verdicts, tables = arm_reading(arm, parts, ms_sets, ev_verdict)
+            traj, _ = arm_reading(arm, parts, dict(common=ms_sets["common"]))
+            if tables:
+                save_retention(retention, name, tables)
+                out["histories"][name] = histories(
+                    arm, parts(arm.ms), arm.ms, base=window_start(window)
+                )
+            out["arms"][name] = dict(x2=x2_of(arm), readings=verdicts)
+            for bar in BARS:
+                comp[bar]["common"].append(verdicts[bar]["common"])
+                comp[bar]["own"].append(verdicts[bar]["own"])
+                comp[bar]["trajectory_only"].append(traj[bar]["common"])
+        full_name = {0: "H2-full-1", 1: "H2-full-0.5", 2: "H2-full-0.25"}.get(k)
+        if full_name and (k == 0 or (root / full_name).is_dir()):  # 1 ms; fallback (ii)'s runs.
+            arm = Series(root / full_name, None, 0, float(2**k))
+            _, verdicts, traj = full_reading(arm, full_parts, out, retention, wa_events, full_name)
+            for bar in BARS:
+                comp[bar]["common"].append(verdicts[bar]["common"])
+                comp[bar]["own"].append(verdicts[bar]["own"])
+                comp[bar]["trajectory_only"].append(traj[bar]["common"])
+        for bar in BARS:
+            for s in ladder_I[bar]:
+                if comp[bar][s]:
+                    v = worst([c["verdict"] for c in comp[bar][s]])
+                    cause = next((c.get("cause") for c in comp[bar][s] if c["verdict"] == v), None)
+                    ladder_I[bar][s].append((step, v, cause))
+    for n in FULL_MS[1:]:
+        arm = Series(root / f"H2-full-{n}", None, 0, 1.0 / n)
+        _, verdicts, traj = full_reading(arm, full_parts, out, retention, wa_events, f"H2-full-{n}")
+        for bar in BARS:
+            ladder_I[bar]["common"].append(
+                (n, verdicts[bar]["common"]["verdict"], verdicts[bar]["common"].get("cause"))
+            )
+            ladder_I[bar]["own"].append(
+                (n, verdicts[bar]["own"]["verdict"], verdicts[bar]["own"].get("cause"))
+            )
+            ladder_I[bar]["trajectory_only"].append(
+                (n, traj[bar]["common"]["verdict"], traj[bar]["common"].get("cause"))
+            )
+    for bar in BARS:
+        for s in ladder_I[bar]:
+            ladder_I[bar][s].sort(key=lambda r: r[0])
+    out["readings"]["H2 (I)"] = {
+        bar: {s: dt_star(ladder_I[bar][s]) for s in ladder_I[bar]} for bar in BARS
+    }
+    out["fallback_ii"] = dict(window_rungs_refused_by_x2=x2_dropped,
+                              needed=bool(x2_dropped))  # fmt: skip
+
+    # W0 (S) and (I), against its own ladder at 0.5, 0.25 and 0.125 ms.
+    w0 = w0_ladder(root)
+    ladder_W = {r: {bar: {s: [] for s in ("common", "own")} for bar in BARS} for r in ("S", "I")}
+    for q in W0_MS:
+        step = float(Fraction(q))
+        arm = Series(root / f"W0-{q}", None, 0, 1.0 / step)
+        name = f"W0-{q}"
+        for reading, limit in (("S", W0_DOSE_MS), ("I", W0_END_MS + 1)):
+            if arm.c is not None:
+                keep = arm.ms < limit
+                ms_sets = dict(own=arm.ms[keep], common=arm.ms[keep & (arm.ms % 1000 == 0)])
+            else:
+                ms_sets = dict(own=None, common=None)
+            verdicts, tables = arm_reading(
+                arm, lambda ms: [(w0, np.ones(len(ms), bool), None)], ms_sets
+            )
+            if tables and reading == "I":
+                save_retention(retention, name, tables)
+                out["histories"][name] = histories(
+                    arm, [(w0, np.ones(len(arm.ms), bool), None)], arm.ms
+                )
+                out["events"][name] = w0_events(arm, w0.finest)
+            out["arms"].setdefault(name, dict(x2=x2_of(arm), readings={}))["readings"][reading] = (
+                verdicts
+            )
+            for bar in BARS:
+                for s in ("common", "own"):
+                    v = verdicts[bar][s]
+                    ladder_W[reading][bar][s].append((step, v["verdict"], v.get("cause")))
+    for reading in ("S", "I"):
+        out["readings"][f"W0 ({reading})"] = {
+            bar: {s: dt_star(ladder_W[reading][bar][s]) for s in ("common", "own")} for bar in BARS
+        }
+
+    out["orders"] = orders(root)
+    Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(
+        json.dumps(
+            {k: {bar: v[bar]["common"] for bar in BARS} for k, v in out["readings"].items()},
+            default=float,
+        )[:3000]
+    )
+    return 0
+
+
+def full_reading(arm, full_parts, out, retention, wa_events, name):
+    """A full run through the cue (H2's (I)): rows against WA's ladder in its span and R3's
+    elsewhere, with stage 0's events required (§10.1)."""
+    if arm.c is None or not arm.complete:
+        r = (
+            refusal_of(arm.record)
+            if not arm.complete
+            else dict(verdict="fail", cause=dict(kind="no rows"))
+        )
+        v = {bar: {s: r for s in ("common", "own")} for bar in BARS}
+        out["arms"][name] = dict(x2=x2_of(arm), readings=v)
+        return None, v, v
+    ev = judge_events(series_events(arm), wa_events)
+    out["events"][name] = ev
+    ms_sets = dict(own=arm.ms, common=arm.ms[arm.ms % 100 == 0])
+    verdicts, tables = arm_reading(arm, full_parts, ms_sets, [("events", ev["verdict"])])
+    traj, _ = arm_reading(arm, full_parts, dict(common=ms_sets["common"]))
+    save_retention(retention, name, tables)
+    out["histories"][name] = histories(arm, full_parts(arm.ms), arm.ms)
+    out["arms"][name] = dict(x2=x2_of(arm), readings=verdicts, trajectory_only=traj)
+    return ev["verdict"], verdicts, traj
+
+
+def orders(root):
+    """Also reported (§4): the order from sup-norm ratios, on each window's control arms (k = 0-9)
+    and on the halving triples of the full, slow-phase and W0 arms, above rung 0's floor."""
+    out = {}
+
+    def triple(arms, ms):
+        d = {}
+        for key in CLASS_KEYS:
+            (a, b, c) = arms
+            dab = float(np.max(difference(a.c[key][a.at(ms)], b.c[key][b.at(ms)], key), initial=0))
+            dbc = float(np.max(difference(b.c[key][b.at(ms)], c.c[key][c.at(ms)], key), initial=0))
+            fb = float(floor_of(key, [b.steps([ms[-1]])[0]])[0])
+            fc = float(floor_of(key, [c.steps([ms[-1]])[0]])[0])
+            p = math.log2(dab / dbc) if dab > fb and dbc > fc else None
+            d[key] = dict(D_coarse=dab, D_fine=dbc, p=p)
+        return d
+
+    for window in WINDOWS:
+        arms = {k: window_arm(root, window, k) for k in range(10)}
+        if all(a.complete and a.c is not None for a in arms.values()):
+            ms = arms[9].ms
+            out[window] = {f"k{k}-{k + 2}": triple((arms[k], arms[k + 1], arms[k + 2]), ms)
+                           for k in range(8)}  # fmt: skip
+    for label, names, per in (
+        ("W0", ("0.5", "0.25", "0.125"), (2, 4, 8)),
+        ("W0", ("1", "0.5", "0.25"), (1, 2, 4)),
+        ("W0", ("2", "1", "0.5"), (0.5, 1, 2)),
+        ("H2-slow", ("20", "10", "5"), (0.05, 0.1, 0.2)),
+        ("H2-slow", ("200", "100", "50"), (0.005, 0.01, 0.02)),
+        ("H2-slow", ("2000", "1000", "500"), (0.0005, 0.001, 0.002)),
+        ("H2-full", ("20", "10", "5"), (0.05, 0.1, 0.2)),
+    ):
+        arms = [
+            Series(Path(root) / f"{label}-{n}", None, 0, s) for n, s in zip(names, per, strict=True)
+        ]
+        if all(a.complete and a.c is not None for a in arms):
+            common = sorted(set(arms[0].ms) & set(arms[1].ms) & set(arms[2].ms))
+            out[f"{label} {'/'.join(names)} ms"] = triple(arms, np.asarray(common, np.int64))
+    return out
+
+
+# ------------------------------------------------------------------ the cost and the plant
+
+
+def timed(arm, out_dir, reference_dir):
+    """§10.1's cost reading: the dt* arm re-run (on the timed lane, by its runner script) and its
+    rows against the arm's own, bitwise; seconds per simulated second from its record."""
+    code = run(arm, out_dir)
+    record = json.loads((Path(out_dir) / "run.json").read_text())
+    _, mine = load_rows(out_dir)
+    _, theirs = load_rows(reference_dir)
+    same = mine is not None and theirs is not None and set(mine) == set(theirs) and all(
+        np.array_equal(mine[f], theirs[f]) for f in mine)  # fmt: skip
+    simulated = float(record.get("last_row_s") or 0.0) - (0.0)
+    t = record.get("timings", {})
+    fixed = t.get("preflight_seconds", 0.0) + t.get("window_compile_or_cache_seconds", 0.0)
+    cost = dict(arm=arm, rows_bitwise_equal=bool(same), simulated_s=simulated,
+                total_seconds=t.get("total_run_seconds"), preflight_and_compile_seconds=fixed,
+                seconds_per_simulated_second=(t.get("total_run_seconds", 0.0) - fixed) / simulated
+                if simulated else None,
+                total_seconds_per_simulated_second=t.get("total_run_seconds", 0.0) / simulated
+                if simulated else None, cpu_affinity=record.get("cpu_affinity"),
+                void=not same)  # fmt: skip
+    (Path(out_dir) / "cost.json").write_text(json.dumps(cost, indent=1) + "\n")
+    print(json.dumps(cost))
+    return code
+
+
+def plant(step_text, output):
+    """§10.1 at the largest step claimed: FR-3's registered plant (X2's qualify_x2.run_plant),
+    its world's step set to step_text ms. Its world refusing the step is a result, kept."""
+    import functools
+
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from validation.energy_step_doubling import qualify_x2
+    from validation.tissue import site_occupancy_acceptance_fixtures as af
+
+    _, dt = step_of(step_text)
+    af.registered_world = functools.partial(af.registered_world, dt=dt)
+    try:
+        qualify_x2.run_plant(output)
+        row = json.loads(Path(output).read_text())
+        refusal = row["planted"]["refusal"] or ""
+        row["caught"] = bool(
+            row["control"]["admitted"]
+            and not row["planted"]["admitted"]
+            and "does not hold its state's residual" in refusal
+        )
+    except Exception as error:  # The plant's world refused at this step: a result, kept.
+        row = dict(id="fr3plant-q1_eps_1e-1", caught=False, cannot_run=True,
+                   error_type=type(error).__name__, error=str(error))  # fmt: skip
+    row["step_ms"], row["dt_s"] = step_text, dt
+    Path(output).write_text(json.dumps(row, indent=1, default=float) + "\n")
+    print(json.dumps({k: row.get(k) for k in ("step_ms", "caught", "cannot_run", "error")}))
+    return 0
+
+
 SMOKES = (  # Development only: no registered window, horizon or row.
     ("H2-WA-k0", dict(span=(600_000, 600_050))),
     ("H2-WA-k3", dict(span=(600_000, 600_050))),
@@ -404,6 +1246,14 @@ def main(argv):
         return run(argv[1], argv[2], x2="--x2-off" not in argv[3:])
     if len(argv) == 2 and argv[0] == "smoke":
         return smoke(argv[1])
+    if len(argv) == 3 and argv[0] == "instrument":
+        return instrument(argv[1], argv[2])
+    if len(argv) == 4 and argv[0] == "analyse":
+        return analyse(argv[1], argv[2], argv[3])
+    if len(argv) == 4 and argv[0] == "timed":
+        return timed(argv[1], argv[2], argv[3])
+    if len(argv) == 3 and argv[0] == "plant":
+        return plant(argv[1], argv[2])
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
