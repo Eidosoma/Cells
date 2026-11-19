@@ -315,5 +315,114 @@
   "references' bounds can leave readings undetermined",
   "I3 tests X2's binding and cap, not a misbooking planted inside the new step",
   "X2's evidence ended at 5 ms before rung 1"
+ ],
+ "section_10": [
+  {
+   "entry": "10.1",
+   "entry_utc": "2026-11-19T20:55Z",
+   "title": "the three choices (D231), before any new-ID run",
+   "decision": "D231",
+   "main": "15efb14b",
+   "closes": [
+    "section 1's three choices",
+    "section 9's list for the user"
+   ],
+   "still_open": [
+    "the new ID's name",
+    "the N2-alone head's revision (the @3 owner's later entry)"
+   ],
+   "bar": {
+    "method": "B_P: dt*, the gain and the outcomes are read under it; gates have no cap there and are reported",
+    "reference": "B_A: the reference's error bound at each row and class must lie within B_A; otherwise, or with no bound, the row is undetermined in that class",
+    "why": "stage 0's registration (section 5.3) defined its trajectory budgets as a tenth of the caps",
+    "reported": "every arm's readings under B_A, with their dt* and gains, as information"
+   },
+   "events_check": "the registered (I) reading did not carry stage 0's peak-response and crossing-time criteria; added here",
+   "events_H2": {
+    "read_on": "WA's window arms and the full runs through the cue, each on its own rows",
+    "peak_response": {
+     "quantity": "cell_0 peak |Vm - Vm(1800 s)| after 1800 s",
+     "relative": 0.001,
+     "r3": {
+      "value_V": 0.07384501075624066,
+      "at_s": 1800.3
+     }
+    },
+    "crossings": {
+     "level_V": -0.05,
+     "after_s": 1800.0,
+     "count": 2,
+     "budget_s": 0.0005,
+     "same_direction": true,
+     "located_between_rows_at_most_s": 0.001,
+     "one_run_only": "fails",
+     "r3": [
+      {
+       "time_s": 1800.0939767730576,
+       "direction": "up"
+      }
+     ]
+    },
+    "recovery": {
+     "deltas_V": [
+      0.001,
+      0.0001
+     ],
+     "through_s": 1830.0,
+     "reported_to_the_row": true,
+     "r3": "none (cell_0 stays switched)"
+    },
+    "decision": "as rows (section 4): pass if difference + reference bound <= criterion; fail if difference - bound > criterion; otherwise undetermined; the bound is the difference from the next-coarser arm (k = 8 for WA's k = 9; R2 for R3)",
+    "required_for_I": true,
+    "consequence": "rows bracketing the crossing more than 1 ms apart take no timing pass, so H2's (I) dt* is at most 1 ms for either ID",
+    "reported_beside": [
+     "H2's (I) dt* from the trajectory and the peak alone",
+     "each coarse arm's crossing located between its own rows, with their spacing"
+    ]
+   },
+   "events_W0": "information only: per intervention, the peak over cells of |Vm - Vm(t)| to the next intervention or the end, against the reference's, and any crossing of -50 mV by the same rule",
+   "histories": "not carried: stage 0's history budget is an adequacy budget with no counterpart among the caps; conservation is judged in every arm by the engine's checks",
+   "clarification_WN": "an instrument control as at rung 0; its orders are reported, and its rows enter no reading of H2",
+   "threshold": {
+    "step_gain": 10,
+    "bar": "B_P",
+    "status": "as registered"
+   },
+   "cost": {
+    "reading": "cost per simulated second of both IDs at dt* (reported; judges nothing)",
+    "method": "each ID's dt* arm under B_P re-run once on the timed lane (CPU 4 under its lock, one thread; D190; stage 0's section 5.4), same snapshot, X2 on; rows bitwise equal to the arm's, or the timing is void",
+    "reported": [
+     "run seconds per simulated second, preflight and compilation apart",
+     "the cost gain, today's over the new ID's",
+     "each arm's own recorded seconds from the light CPUs, labelled as such"
+    ],
+    "none": "no cost for a side whose dt* is none or undetermined"
+   },
+   "energy_check": {
+    "check": "step_doubled_energy@1",
+    "integration_error_cap": 0.002,
+    "raised": "never",
+    "exact_booking": "not built by rung 1",
+    "why_deferred": "on the intervention reading the predicted limit is NaV resolution, which an exact booking would not lift (D231)"
+   },
+   "trigger": {
+    "builds": "seam D's branch X (the exact booking; the @3 owner's, 2-3 agent-days) before rung 2",
+    "cap_refusal": "X2's row refusal on its cap: sum|a| > cap x F + floor ('exceeds the registration's cap')",
+    "when": [
+     "Stage A: its 100 ms arm is refused by X2's cap",
+     "either reading, (S) or (I), on H2 or W0, under B_P: the first failing rung above the new ID's dt* is refused by X2's cap"
+    ],
+    "other_x2_refusals": "reported as what binds, by message, to the lead; they do not fire the trigger",
+    "today": "X2's cap binding today's ID is reported"
+   },
+   "I3_largest_step": {
+    "plant": "FR-3's registered plant (qualify_x2.run_plant), its world's step set to each ID's largest dt* claimed under B_P",
+    "when": "after the readings, before any claim is reported",
+    "caught": "control resume admitted, planted resume refused with 'does not hold its state's residual'",
+    "otherwise": "the plant is run one rung down the ladder until caught; claims of that ID above that step are reported as measured and marked 'X2's sensitivity not shown at this step'",
+    "cannot_run": "a definition refusal at that step, or the plant time (1 s) off the step's grid",
+    "risk": "FR-3's site-occupancy world (declared 1 ms; plant at 1 s; work x (1 + 1e-6)) may not run at coarse slow-phase steps; a plant in rung 1's own worlds is a question for X2's owner and the lead"
+   }
+  }
  ]
 }
