@@ -1147,9 +1147,19 @@ artifact. `docs/HOSTING_AND_API.md` (19 November 2026) reviews how, and how an A
 page's data could come in stages; its section 9 records what the owner then decided: the site
 is served from a container on a machine of the project's own, set up by the owner; releases
 are marked by these tags; the site serves three.js and the fonts itself; and the API's only
-user, for now, is the viewer. Nothing of the site is built yet, and a tag marks the code and
-the record, not a folder that can be rebuilt from the repository alone (the run files are
-made from the frozen evidence, below).
+user, for now, is the viewer. A tag marks the code and the record, not a folder that can be
+rebuilt from the repository alone (the run files are made from the frozen evidence, below).
+A site release is made from the same staged folder, which it only reads (section 10 of that
+document):
+
+- `node tools/stage_site.mjs --staged out/publish-vNN --site SITE --id vNN --compress --files out/cells-architecture.files.json`
+  writes `SITE/r/vNN/` once: the page wrapped, its `root.html`, the files, three.js and the
+  fonts (`vendor/fonts/`), `release.json` and compressed copies;
+- `node tools/check_site.mjs --site SITE --id vNN` holds that a visit asks no other host;
+- `node tools/stage_site.mjs --site SITE --id vNN --release` moves the pointer;
+- the release is recorded in `artifacts.json` and the commit tagged, then `--retain 3 --remove`.
+
+`deploy/` holds an example of the server's container; the owner sets the machine up.
 
 A page published without the proteins' files draws the atlas as before and says that the
 species' own proteins could not be loaded.

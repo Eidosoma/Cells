@@ -37,6 +37,7 @@ import { LandingLens, LANDING_CSS } from "./landing.js";
 import { CARD } from "../replay/landing.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
 import { busyReasons } from "../core/busy.js";
+import { readHost } from "../core/host.js";
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
 // stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
@@ -74,6 +75,8 @@ class CellsViewer extends HTMLElement {
     // "stage" is the life stage the Scope view shows the species at, where its file gives stages (schema/SPECIES_STAGES.md).
     this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null, landing: false, stage: null };
     this.lenses = new Map();
+    // What the page's host allows (src/core/host.js): the site's releases say so in a block of their own; without one, as on the artifact.
+    this.host = readHost(this.ownerDocument);
   }
 
   connectedCallback() {
@@ -442,7 +445,12 @@ class CellsViewer extends HTMLElement {
     if (fromUser && id !== "experiments" && new URLSearchParams(location.search).get("select")?.startsWith(CARD)) this.writeAddress({ select: null });
     if (fromUser && location.hash.slice(1) !== id) {
       try {
-        history.replaceState(null, "", `#${id}`);
+        // The page's own address with only its #name changed, as writeAddress and writeEntry write it: a bare "#name" would
+        // resolve against the page's base address, and under the site's root page (<base href="/r/<release>/">) it would
+        // move the visitor's address into the release's folder.
+        const url = new URL(location.href);
+        url.hash = id;
+        history.replaceState(null, "", url);
       } catch {
         location.hash = id;
       }

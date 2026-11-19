@@ -1,0 +1,14 @@
+/* The two families the viewer's page uses, served by its own site in place of Google Fonts (docs/HOSTING_AND_API.md,
+   section 9; tools/stage_site.mjs rewrites the page's one Google Fonts link to this sheet, in each release). Each file is
+   its family's own released web font, unmodified, under the SIL Open Font License 1.1, whose text stands beside it.
+   inter/: Inter 4.1, the members web/Inter-Regular.woff2, web/Inter-Medium.woff2 and web/Inter-SemiBold.woff2 of its
+   release archive Inter-4.1.zip (github.com/rsms/inter), and the archive's LICENSE.txt.
+   space-grotesk/: Space Grotesk 2.0.0, the member woff2/SpaceGrotesk[wght].woff2 of its release archive
+   SpaceGrotesk-2.0.0.zip (github.com/floriankarsten/space-grotesk), named here SpaceGrotesk-Variable.woff2, and the
+   archive's OFL.txt.
+   The page asks for Inter at 400, 500 and 600 and Space Grotesk at 500, 600 and 700; the staging stops where a family or
+   weight it asks for has no face here. Addresses are relative to this sheet. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("inter/Inter-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("inter/Inter-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("inter/Inter-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("space-grotesk/SpaceGrotesk-Variable.woff2") format("woff2"); }

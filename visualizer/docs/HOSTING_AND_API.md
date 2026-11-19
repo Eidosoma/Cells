@@ -871,3 +871,76 @@ address and absorb a spike; whether to use one is the owner's choice, and nothin
 | 5 | The release steps on that machine (write, read back, move the pointer), the record in `artifacts.json`, the tag | the viewer's side, once step 4 stands |
 | 6 | The fetch check's site mode: bytes as sent | the viewer's side |
 | Later | A login and private data; Stage 1; a visit counter; runs on request | decided then |
+
+---
+
+## 10. What is built (19 November 2026)
+
+Steps 1 to 3 of the plan above, and the local half of step 6. Nothing is deployed, and nothing touches DNS,
+certificates or accounts.
+
+- **`tools/stage_site.mjs`** makes a release folder from the folder staged for the artifact, which it only reads. It
+  writes `<site>/r/<id>/` once: a folder that exists is refused, and a new one is written under a hidden name and
+  moved into place whole. The release holds:
+  - `index.html`: the staged page in the artifact host's wrapper (`wrap`), with `lang`, a title, a description, the
+    root as canonical and the host profile;
+  - `root.html`: the same with `<base href="/r/<id>/">`;
+  - the staged files at the same paths, the same bytes (the `upload-N.json` lists are left out; a file the export
+    does not publish is refused, and `--files` holds the folder to the export's own list);
+  - `vendor/three/<version>/` (from `node_modules`, at the version the page names) and `vendor/fonts/`;
+  - `release.json`;
+  - with `--compress`, `.br` and `.gz` copies.
+
+  Two rewrites are counted. Every occurrence of three.js's cdnjs address becomes the release's own copy, and the tool
+  stops unless the count equals the imports in the page's module script (8 on Version 49). The one Google Fonts link
+  becomes the release's sheet, and the tool stops unless every family and weight it asks for has a face there. The test
+  holds that undoing both gives back the staged page byte for byte. `--release` moves the pointer: the release's
+  `root.html` over `index.html`, with its compressed copies beside it where the release has them, so that the page
+  every visitor opens first is sent as small as the rest. `--retain 3` (`--remove`) lists, or removes, the releases
+  beyond the newest three, never the pointer's.
+- **The viewer.** `setLens` writes the tab's name onto the page's own address (`new URL(location.href)`), so that under
+  the root page's base address a press keeps the visitor at `/`. The host profile is read by `src/core/host.js` into
+  `viewer.host`, with the artifact's defaults where a page has none; nothing new is shown by it yet. A search of the
+  viewer found no other address that a base address moves.
+- **The fonts**, under `vendor/fonts/`: Inter 4.1 (its three static web files for 400, 500 and 600, 340,428 bytes) and
+  Space Grotesk 2.0.0 (its variable file for 300 to 700, 49,256 bytes). Each is taken unmodified from its family's
+  release archive, under the SIL Open Font License 1.1, whose text stands beside it. The archives are kept, with a
+  manifest each, in the project's data folder outside the repository; `vendor/fonts/fonts.css` names each file's source.
+- **`tools/check_site.mjs`** is the acceptance check. It serves a site folder on 127.0.0.1 as the example server does,
+  opens the root page and `/r/<id>/` at three addresses each in headless Chrome, and holds five things: no request to
+  another host, no missing file, no console error, the host profile read, and a tab press that keeps the address. It
+  records bytes as sent beside raw.
+- **`deploy/`** is an example container (Caddy with a rate-limit module, in two forms: behind a proxy, or with its own
+  certificate). It has not been validated or started.
+- **`tests/stage_site.test.mjs`** runs in `npm test`, in about a second.
+
+**Measured on Version 49** (the staged folder of the artifact's Version 49, staged with `--compress`, 121 s):
+
+- The release holds 478 files and 174.9 MB; the copies add 45.6 MB (brotli) and 58.8 MB (gzip).
+- A first visit to the root page's opening view makes 11 requests, all to the site: 6.18 MB raw, and 1.33 MB as sent
+  while the pointer had no compressed copy and went out gzipped as it was sent. The pointer step now moves the
+  release's copies with the pointer. Measured again so, on a trial release staged from the head the same day (the
+  page 5.15 MB with the frog's life stages): 11 requests, all to the site, 6.24 MB raw and 1.05 MB as sent, the
+  pointer 613 kB of it as its brotli copy.
+- The fonts are 275 kB of that, sent as they are: woff2 does not compress further.
+- The page of Version 49 predates the change to `setLens`, so on its root page a tab press still moves the address
+  into `/r/v49/`, and its viewer reads no profile (9 of the check's 42 checks). A release staged from a page exported
+  with this round's viewer passes all 42.
+
+**A release, step by step:**
+
+1. **Stage.** Run the gate and `npm run stage -- --new out/publish-vNN` as for the artifact. Then run
+   `node tools/stage_site.mjs --staged out/publish-vNN --site SITE --id vNN --compress --files out/cells-architecture.files.json`.
+2. **Check.** Run `node tools/check_site.mjs --site SITE --id vNN` (45 s). On the server, read
+   `/r/vNN/` back and check the headers of one file of each kind.
+3. **Pointer.** Run `node tools/stage_site.mjs --site SITE --id vNN --release`, which checks the release against its
+   `release.json` first and says which release it left. A rollback is the same command with an older id.
+4. **Record** a `site` entry in `artifacts.json`: the id, the date, the commit, the engine revision, the staged folder,
+   the check's result and the release the pointer left.
+5. **Tag** the recording commit `viewer-vNN` and push the tag. Then `--retain 3 --remove`.
+
+**Still the owner's:** the machine, the container (from `deploy/` or another server), the form (behind a proxy or
+with its own certificate), pinning the images, DNS, opening the ports, and making the site public. **Still open:** the
+content policy allows inline scripts, and the hashes that would replace that are in each `release.json` but not sent.
+The fonts are whole files, every script each family covers. Google Fonts sends subsets cut by script, but the checks'
+logs hold no sizes for them, so the two are not compared. No font tool is installed to cut the files.
