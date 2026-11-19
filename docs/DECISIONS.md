@@ -7374,3 +7374,36 @@ result, the user wrote "fine with \"not a replication\" we do our best".
 3. **The Xenopus lane's first result** is reported as "qualified physics plus conditional
    projections", not as a replication. The ledger found three scorable transport-level numbers, none
    with uncertainties, and incidence ratios without counts (D226).
+
+## D228: Gaps found by real use cases are prioritised as general engine features
+
+2026-11-19, about 13:45 UTC. The user: "that is the good thing looking at real upcoming use cases
+find gaps, so lets prioritze those gaps". The Xenopus lane's XC0 design, the kinds owner's probe and
+the @3 owner's answers (all of 19 November) found these gaps. Each is a general, reusable feature
+(D136, D144), qualified with its own references and tier gate. They are scheduled into the core
+pass as its current heads land, in this order:
+1. **An electrogenic Na⁺-coupled anion symporter cycle law,** SLC5-type (the kinds owner). Version 1
+   is the fuel-free factored form with an integer coupling count. Version 2 is an eight-state diagram
+   with voltage-dependent edges. The kinds owner's probe showed it parses, binds and closes every
+   ledger on main today.
+2. **An instantaneous inward-rectifier route law** on the passive-routes kind (the kinds owner): a
+   driving force of V − E_K, conductance scaling with √K_o, and data coefficients in the route's
+   declaration. It serves Kir4.1 and other inward rectifiers. Today's channel-law seam sees only the
+   voltage.
+3. **Cl⁻ as a permeant ion in channel populations** (the H1 seam). The @3 owner's part is small: the
+   valence table and its tests. A registered Cl⁻ channel law is the F owner's. Until it lands, a
+   Cl⁻-only membrane patch carries a constitutive Cl⁻ conductance.
+4. **Charged species in the species operators** (FR-15 F2, the operators owner). It starts with the
+   `check_impermeant` diagnosis. Butyrate and serotonin chemistry need it, as does the gap-junction
+   replication's microRNA.
+5. **Availability schedules** for the cycle kind's general layout (the kinds owner). Today a
+   population's availability there is fixed at 1.
+6. **A check in the kind contract that each state field's array matches its declared axes** (the F
+   owner), with planted kinds corrected. The review's trace-estimate work exposed this.
+7. **Later, as design notes until the lane's first decision point (D226):**
+   - field-input providers beyond 64 field nodes;
+   - a regulatory state that drives cell behaviour (FR-7's family);
+   - light as an energy input;
+   - cell migration and topology changes.
+
+Each lands through its owner's gate. The lane uses each one only after its qualification.
