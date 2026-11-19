@@ -37,10 +37,11 @@ Declarations (class attributes):
   and no in-step process, and its scheduled rate is the maximum. ``RATE_ROUTES`` ((target law,
   target control field), ...) names the routable controls a source may route to. Its
   ``rate_factors`` gives each its factor and validity from the state the target's half-step
-  receives, or None where the definition declares no route there (static, by layout shape).
-  The composite multiplies the target's field by its sources' factors in declared order, at the
-  start of each of the target's two half-steps, with every source before its target; a
-  composition without a route source is unchanged.
+  receives, or None where the definition declares no route there (static, by layout shape);
+  ``declared_rate_routes(declaration)`` names the routes a definition declares. The composite
+  multiplies the target's field by its sources' factors in declared order, at the start of each
+  of the target's two half-steps. A declared route's source precedes its target (refused at the
+  definition otherwise), and a composition without a route source is unchanged.
 * Parts (kinds of §3.4), each optional: an event map at the start of the step
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
@@ -550,6 +551,11 @@ class Operator:
         target's control field, from the state the target's half-step receives, and its validity
         (None: nothing to check); None where the definition declares no route on it (static)."""
         return None
+
+    def declared_rate_routes(self, declaration):
+        """((target law, field), ...) the declaration routes to: each one of RATE_ROUTES, checked
+        at the definition with its target's place in the operator list (B1′)."""
+        return ()
 
     def closures(self, state, p, q, *, xp):
         """{mask field: open (bool array)} for CLOSES, from state (q: the running view)."""

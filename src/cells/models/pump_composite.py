@@ -884,22 +884,39 @@ def _kinds_lifecycle(inner, kinds):
 
 
 def rate_route_errors(operators):
-    """B1′'s refusals of an ordered operator list (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a
-    rate route goes to a routable control of its target (ROUTABLE_CONTROLS), and its source
-    precedes the target, so that the split order (first halves in declared order, second halves
-    reversed) is symmetric about the target. A route to a law the composition does not hold is
-    idle (the source's own definition check refuses a declared one)."""
+    """B1′'s refusal of an ordered operator list (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a
+    source's static routes (RATE_ROUTES) go to routable controls of their targets
+    (ROUTABLE_CONTROLS). A route to a law the composition does not hold is idle. The order of a
+    declared route is the definition's (rate_route_definition_errors), so a composition whose
+    source declares no route keeps any order."""
     position = {op.LAW_ID: k for k, op in enumerate(operators)}
     errors = []
-    for k, op in enumerate(operators):
+    for op in operators:
         for law, name in op.RATE_ROUTES:
-            if law not in position:
-                continue
-            target = operators[position[law]]
-            if target.ROUTABLE_CONTROLS.get(name) != "rate":
+            if law in position and operators[position[law]].ROUTABLE_CONTROLS.get(name) != "rate":
                 errors.append(
                     f"{op.LAW_ID} routes a rate factor to {law}'s {name}, which is not one of its "
                     "routable controls (ROUTABLE_CONTROLS)"
+                )
+    return errors
+
+
+def rate_route_definition_errors(pairs):
+    """B1′'s refusals of a definition's declared rate routes ((operator, declaration) in
+    declared order; each source's declared_rate_routes): a route that is not one of its source's
+    RATE_ROUTES, to a law the composition does not hold, or to a target declared before its
+    source. The last keeps the split order (first halves in declared order, second halves
+    reversed) symmetric about the target."""
+    position = {op.LAW_ID: k for k, (op, _) in enumerate(pairs)}
+    errors = []
+    for k, (op, declaration) in enumerate(pairs):
+        for law, name in op.declared_rate_routes(declaration):
+            if (law, name) not in op.RATE_ROUTES:
+                errors.append(f"{op.LAW_ID} declares a route to {law}'s {name}, not one it routes")
+            elif law not in position:
+                errors.append(
+                    f"{op.LAW_ID} routes a rate factor to {law}, which the composition does not "
+                    "hold"
                 )
             elif position[law] < k:
                 errors.append(
@@ -1600,7 +1617,7 @@ class Composition:
             )
         species_registry.check_definition(spec)
         pairs = [(op, d) for op, d, _ in entries(spec)]
-        scoped = scope_errors(self.inner, pairs, spec)
+        scoped = scope_errors(self.inner, pairs, spec) + rate_route_definition_errors(pairs)
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
         # The operators' in-step writers beside declared kinds (held_row_errors,

@@ -10,7 +10,7 @@
   view field, two in-step processes, an undeclared experiment key; operator
   classes that break the declarations (heat or work suffixes, RK4 modes, entity
   writes without accumulators, B1′'s rate-route declarations); rate routes when a
-  composition is built (a route to an undeclared control, a source after its target).
+  composition is built and at the definition (an undeclared control, a source after its target).
 """
 
 import copy
@@ -283,7 +283,8 @@ class Routed(Operator):
 
 
 class RateSource(Operator):
-    """A planted rate-route source (B1′) on the turnover's rates, declaring none in a definition."""
+    """A planted rate-route source (B1′) on the turnover's rates: a definition's declaration is
+    the tuple of routes it declares."""
 
     LAW_ID = "rate_source@1"
     SPLIT = True
@@ -296,12 +297,17 @@ class RateSource(Operator):
     def rate_factors(self, state, p, target, field, *, xp):
         return None
 
+    def declared_rate_routes(self, declaration):
+        return declaration
+
 
 def test_rate_routes_are_checked_when_a_composition_is_built():
-    """B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a route goes to a routable control of its
-    target, from a source declared before it; the composite wires each target's routes in
-    declared order. Planted: a route to a control the target does not declare routable, and a
-    source after its target, each refused; a route to a law the composition lacks is idle."""
+    """B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a source's routes go to routable controls of
+    their targets, and the composite wires each target's routes in declared order. A route the
+    definition declares has its source before its target, in the composition. Planted, each
+    refused: a route to a control the target does not declare routable (at the structure); and a
+    declared route to a target before its source, to a law the composition lacks, and outside the
+    source's routes (at the definition). A source that declares no route keeps any order."""
     turnover, source = OPERATORS[TURNOVER], RateSource()
     assert pump_composite.structure_errors(pump3, (source, turnover)) == []
     assert pump_composite.rate_routes((source, turnover)) == {
@@ -309,17 +315,27 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     }
     assert pump_composite.rate_routes((turnover,)) == {}
     assert pump_composite.structure_errors(pump3, (source,)) == []  # No target: idle.
-    (error,) = pump_composite.structure_errors(pump3, (turnover, source))
-    assert error == (
-        f"rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
-        "runs before its target, so the split's halves are symmetric about it"
-    )
+    assert pump_composite.structure_errors(pump3, (turnover, source)) == []  # Nothing declared.
     stray = type("Stray", (RateSource,), dict(LAW_ID="stray@1", RATE_ROUTES=((TURNOVER, "x"),)))
     (error,) = pump_composite.structure_errors(pump3, (stray(), turnover))
     assert error == (
         f"stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its routable "
         "controls (ROUTABLE_CONTROLS)"
     )
+    route = ((TURNOVER, "turnover_rate"),)
+    check = pump_composite.rate_route_definition_errors
+    assert check([(source, route), (turnover, None)]) == []
+    assert check([(turnover, None), (source, ())]) == []
+    assert check([(turnover, None), (source, route)]) == [
+        f"rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
+        "runs before its target, so the split's halves are symmetric about it"
+    ]
+    assert check([(source, route)]) == [
+        f"rate_source@1 routes a rate factor to {TURNOVER}, which the composition does not hold"
+    ]
+    assert check([(source, ((TURNOVER, "x"),)), (turnover, None)]) == [
+        f"rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
+    ]
 
 
 def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():
