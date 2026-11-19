@@ -192,6 +192,50 @@
       "driver": "lean/checks/membrane_insertion.py",
       "record": "lean/PROGRESS.md#19-november-2026--membrane-insertion-heat"
     },
+    "inward-rectifier": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+      "sources": {
+        "Law and Nernst potential": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L49",
+        "Conductance scaling": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L71",
+        "Voltage-free slope bound": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L107",
+        "Passive tissue rates": "src/cells/kinds/passive_routes.py#L512",
+        "Tissue admission": "src/cells/models/surface_pump_v3.py#L1558",
+        "Independent derivatives": "validation/core_seams/references/exact.py#L88",
+        "Closed tissue pair": "tests/unit/test_inward_rectifier_route.py#L53"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
+      "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
+    "sodium-anion-symport": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.na_anion_symport_factored@1"
+      ],
+      "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+      "sources": {
+        "Carrier rows and source saturations": "src/cells/laws/cycles/na_anion_symport_factored.py#L42",
+        "Host state and free energy": "src/cells/kinds/transporter.py#L1407",
+        "Numerically stable factored rate": "src/cells/laws/cycles/forms.py#L923",
+        "Charge and heat readout": "src/cells/kinds/transporter.py#L1877",
+        "Decimal constants": "validation/core_seams/references/exact.py#L44",
+        "Roundoff floors": "validation/core_seams/references/design.py#L39",
+        "Tissue carrier fixture": "tests/unit/test_na_anion_symport_factored.py#L44"
+      },
+      "driver": "lean/checks/sodium_anion_symport.py",
+      "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
+      "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
     "regional-chain": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
@@ -914,6 +958,162 @@
         "unit": "s⁻¹ for each direction, dimensionless equilibrium partition",
         "finding": "At 37 °C, cholesterol exchange between vesicles sped up about 57-fold with 1 mM β-cyclodextrin. Half-times were 195 ± 13 and about 3.4 minutes. A separate 0.5 mM equilibrium series gave a partition coefficient of 0.91 ± 0.06. Equal scaling of the two directional rates remains unmeasured. This transfer catalyst is in solution. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0)",
         "evidence": []
+      }
+    },
+    {
+      "id": "inward-rectifier",
+      "title": "Potassium rectification sets reversal, dissipation and a bound on slope conductance",
+      "statement": "On an open route the outward current changes sign at the Nernst potential and dissipates nonnegative heat. At fixed drive it scales with the square root of external concentration. The voltage derivative obeys the host’s upper bound even when the differential conductance is negative.",
+      "assumptions": [
+        "The route carries a monovalent cation. Concentrations, absolute temperature, reference concentration and slope parameter are positive. The gain includes nonnegative area, availability and reference conductance. Reversal and sign require positive gain.",
+        "The derivative holds concentrations and route parameters fixed. The biological matched-drive comparison uses constant availability, rectification parameters and number of contributing channels across the potassium series."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.inward_rectifier_linear_driving_force@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.InwardRectifier.reversal_shift": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.sqrt_scaling": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.matched_drive": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.reference_invariance": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.gate_bounds": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.gate_branches": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.reversal_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.outward_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.dissipation": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.current_derivative": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.negative_slope_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.slope_bound": "lean/CellsProofs/Transport/InwardRectifier.lean"
+        },
+        "sources": {
+          "Mathlib’s lower bound on the hyperbolic sine": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Trigonometric/Deriv.lean#L636"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "inward-rectifier"
+        ],
+        "result": "A 360-state compiled panel passed against 60-digit currents and derivatives. Two equivalent reference settings produced identical one-step transfer and heat. A third, also finite, had the same 0.5520533 pA reference current but overflowed in c_out/K_ref and was refused during definition validation."
+      },
+      "biology": {
+        "status": "mixed",
+        "observable": "Kir4.1 unitary current 60 mV below each measured reversal potential as external potassium changes.",
+        "unit": "pA",
+        "evidence": [
+          {
+            "dataset_id": "tada1998_kir41@1",
+            "manifest": "lean/checks/data/tada1998_kir41.json",
+            "citation": "Tada et al. (1998), Fig. 4B–D",
+            "doi": "10.2170/jjphysiol.48.71",
+            "locator": "Panel C gives reversal, B(b) gives the unitary currents and D gives an independently reported fit to inward slope conductances.",
+            "context": "Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patches per concentration.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "153 mM current amplitude"
+            ],
+            "evaluation": [
+              "15, 21, 35 and 63 mM at a common −60 mV drive"
+            ],
+            "excluded": [
+              "Rabbit Müller cell series"
+            ],
+            "uncertainty": "Currents are approximate graph readings interpolated after reading the reversal for each series. Some reversal markers overlap. Per-point numerical uncertainties are unavailable.",
+            "assessment": "At 15 mM external K the current magnitude fell less than the model predicted, as it did at the other three held-out concentrations. The model’s −59.67 mV shift in reversal agreed with the approximately −60 mV measured.",
+            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport",
+            "observed": -0.59,
+            "predicted": -0.385
+          }
+        ]
+      }
+    },
+    {
+      "id": "sodium-anion-symport",
+      "title": "Sodium coupling sets net charge and the stall voltage of an anion carrier",
+      "statement": "A forward cycle imports n sodium ions and one monovalent anion. The two source-side saturations and capacity scale the net rate. With n > 1 the carrier imports below its unique stall voltage. With n = 1 its rate is independent of voltage.",
+      "assumptions": [
+        "Positive concentrations at N and P and a forward cycle from P to N. Both roles use the same standard state at their two ends. The engine admits n = 1, 2, 3 or 4. Capacity, availability and both saturations are positive in the active-stall theorem.",
+        "Equal-fraction external sodium and substrate changes assume fixed internal activities. Measured whole-cell voltage shifts yield the isolated shift ratio if both changes carry the same nonzero conductance weighting."
+      ],
+      "uses": [
+        "atp-cycle"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.na_anion_symport_factored@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.SodiumAnionSymport.source_rate": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.transported_rows": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.electrical_work": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.energy_relative_to_stall": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.symport_stall_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.import_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.export_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.neutral_rate": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.capacity_scaling": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.external_shift_ratio": "lean/CellsProofs/Transport/SodiumAnionSymport.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "sodium-anion-symport"
+        ],
+        "result": "All 120 stages agreed with independent 60-digit free energies, saturation, rates and heat. The panel covered both orientations, all four sodium counts and twelve active stalls. The two-step tissue run gained exactly the lactate amount recorded as transported cycles and reported zero global charge error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Charge per lactate, particles per charge and the ratio of voltage shifts with external sodium and substrate halving in human SMCT1.",
+        "unit": "net positive charges per lactate",
+        "evidence": [
+          {
+            "dataset_id": "coady2007_smct1@1",
+            "manifest": "lean/checks/data/coady2007_smct1.json",
+            "citation": "Coady et al. (2007), Figs. 1, 2 and 4",
+            "doi": "10.1529/biophysj.107.108555",
+            "locator": "Lactate uptake/current in Fig. 1, volume/current in Fig. 2, and matched zero-current shifts in Fig. 4.",
+            "context": "Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the two-sodium coupling.",
+            "role": "descriptive",
+            "evaluation": [
+              "Lactate charge and particle ratios",
+              "Lactate and propionate zero-current shift ratios"
+            ],
+            "excluded": [
+              "Mixed inhibitor-sensitive clamp reversal",
+              "Propionate tracer uptake"
+            ],
+            "observed": 1.04,
+            "predicted": 1,
+            "uncertainty": "The reported charge uncertainty was ±0.07 across five batch slopes. The volume/current and shift ratios are reported as mean ± SE.",
+            "assessment": "The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 versus 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open.",
+            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+          },
+          {
+            "dataset_id": "gopal2004_lactate@1",
+            "manifest": "lean/checks/data/gopal2004_lactate.json",
+            "citation": "Gopal et al. (2004), Fig. 9A",
+            "doi": "10.1074/jbc.M405365200",
+            "locator": "Human series, square symbols. The x axis is integrated charge and the y axis is radiolactate uptake.",
+            "context": "An independent laboratory measured human SMCT in Xenopus oocytes. The coupling was fixed from the Coady study.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Coupling n = 2 from Coady et al."
+            ],
+            "evaluation": [
+              "Four distinguishable human lactate uptake/current pairs"
+            ],
+            "excluded": [
+              "Mouse series and propionate"
+            ],
+            "uncertainty": "Approximate figure readings rounded to 5 pmol. Individual experimental uncertainties are unavailable.",
+            "assessment": "At the high-uptake human point, about 370 pmol lactate predicted 370 pmol net charge. The figure gives about 450 pmol.",
+            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+          }
+        ]
       }
     },
     {
