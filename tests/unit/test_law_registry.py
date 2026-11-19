@@ -44,6 +44,7 @@ from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.kinds import passive_routes, proton_buffer, transporter
 from cells.laws.channels import kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
+from cells.laws.cycles import na_anion_symport_factored as symport
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
@@ -241,16 +242,18 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     assert transporter.hosted_laws() == {
         transporter.NEUTRAL_LAW: transporter.NEUTRAL,
         transporter.PROTON_LAW: transporter.PROTON,
+        symport.DECLARED_ID: symport.LAW,
     }
     assert passive_routes.hosted_laws() == {
         passive_routes.LAW_ID: passive_routes.NEUTRAL,
         passive_routes.LEAK_LAW_ID: passive_routes.LEAK,
     }
+    builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()
     elsewhere = dataclasses.replace(planted[1], law_id="tests.elsewhere@1", host=HOST)
     with laws.scope(laws.BUILTIN.extended(*planted, elsewhere)):
         hosted = transporter.hosted_laws()  # Found with no edit to the kind: interface and host.
-        assert list(hosted) == [*transporter.VERSION_1_LAWS, "tests.planted_cycle@1"]
+        assert list(hosted) == sorted([*builtin, "tests.planted_cycle@1"])  # Canonical: sorted IDs.
         assert "tests.planted_route@1" in passive_routes.hosted_laws()
         # Version 1 dispatches its two laws by name: another law of its own is refused, never run
         # as the proton law.
