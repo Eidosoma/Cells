@@ -1556,3 +1556,37 @@ confirmed with the advisor.
 - **The lead's landing check is version 2** (`merged_check2.sh`). It runs version 1's replication
   and crossrev checks, then every tier-1 or tier-2 test file changed on either side since the merge
   base. Its self-test refused the unfixed F trial, where seven tests broke.
+
+**§18 amended on 19 November (the lead, 02:18 UTC), on the operators owner's and the @3 owner's
+questions.**
+- **B1's Q6 (b), recorded here,** since only the briefs carried it. The composite owns one record
+  per kind history field.
+  - The single lifecycle implementation writes it at any closer's retirement, and the composite
+    adds it back before the checks. Closers keep their own records for @3's fields.
+  - A planted retirement that loses a kind's history is refused by the ledger.
+- **B1's Q7 (a), recorded here.** Until Q2's gating lands, every kind with a per-entity field is
+  refused beside any closer, checked at the structure level. No closer declares which slots it
+  closes, so every entity axis counts as closable.
+- **Q2's gate is a presence gate,** the @3 owner's option (a), in the form of B1's pump gate.
+  - **The declaration (F's contract):** each kind declares one presence field per entity axis: a
+    bool layout field, structural, with fill False. declaration_errors checks it.
+  - **The gate (@3's core):** where a closer is declared, the core ANDs each presence field with
+    its host's activity, found through axis_hosts and the host table. It does so before every
+    rates, readouts and stage-check call.
+  - **Kind code is unchanged,** since kinds already zero their rates where an entity is absent. A
+    kind that declares no presence field stays refused beside a closer.
+  - **Tests:**
+    - the planted transporter on a closed patch (composition §13.1's 1.41e-5 fmol/s) moves exactly
+      nothing;
+    - every kind that declares a presence field gives exactly zero rates, readouts and stage terms
+      with every entity absent;
+    - a planted kind whose rates ignore its presence field fails that check.
+  - Moves reported per entity (option (c)) wait for a kind whose rates cannot be gated through
+    presence.
+- **R1's parse row may differ only by a new field's default.**
+  - **Seam D's case:** 124 of 274 parsed specs' reprs gain `, heat_bookings=()`. They are equal
+    once that text is removed (checked by the lead), and fingerprints, to_dict, the models and the
+    controls are equal in all 274 worlds.
+  - **The rule:** a head's parse-row difference is accepted only when it is shown to be exactly a
+    defaulted field's text. Holding the field on a subclass to keep the row equal would let the
+    water and replacement families drop a pick silently.
