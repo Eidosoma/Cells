@@ -30,7 +30,7 @@ Direct proof subject `cells.local_species_reactions@1`
 
 ## Biological evidence
 
-**Open.** Amount of a specified conserved chemical group across all its species at a closed site. Five PGI time courses measured soluble G6P and F6P. Resolving the inventory needs shared calibration uncertainty, sample volume and coverage of unobserved pools. [Eicher et al., Fig. 5 and supplement](https://www.mdpi.com/2218-1989/2/4/818)
+**Open.** Amount of a specified conserved chemical group across all its species at a closed site. Five PGI time courses measured soluble G6P and F6P. The one archived raw acquisition lists 0.950 mL and a different sampling interval from the workbook. The per-course volumes, shared calibration uncertainty and unobserved pools remain unresolved. [Eicher et al., Fig. 5 and supplement](https://www.mdpi.com/2218-1989/2/4/818)
 
 **Unit** fmol
 

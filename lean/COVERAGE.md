@@ -6,11 +6,11 @@ Each row links to a Cells registry declaration. The proof column lists named cla
 
 ## Registered laws
 
-Direct Lean claims cover 5 of 27 registered laws. Recorded numerical comparisons exercise 5.
+Direct Lean claims cover 7 of 27 registered laws. Recorded numerical comparisons exercise 7.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
-| [`cells.atp_driven_transporter_mass_action_positive@1`](../src/cells/laws/pumps/atp_transporter.py#L165) | Open | Open |
+| [`cells.atp_driven_transporter_mass_action_positive@1`](../src/cells/laws/pumps/atp_transporter.py#L165) | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | [atp-cycle](https://github.com/Eidosoma/Cells/blob/5f39e089a5f84fa4c2414d72536de844d0bd2503/lean/PROGRESS.md#19-november-2026--atp-driven-transport) |
 | [`cells.ca_atp_mass_action_positive@1`](../src/cells/laws/pumps/ca_atp_mass_action_positive.py#L150) | Open | Open |
 | [`cells.constant_field@1`](../src/cells/laws/routes/constant_field.py#L13) | [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) · [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) · [A blocked junction carries zero flux](claims/junction-blocking.md) | [junction](https://github.com/Eidosoma/Cells/blob/627c376c463ae66c0f9e53db6dbb1374ec8ac1fd/lean/README.md#cpu-comparison) |
 | [`cells.gard_catalysis_pair_consistent@1`](../src/cells/models/assembly_lineages/gard.py#L208) | Open | Open |
@@ -30,7 +30,7 @@ Direct Lean claims cover 5 of 27 registered laws. Recorded numerical comparisons
 | [`cells.naleak_always_open@1`](../src/cells/laws/channels/naleak_always_open.py#L13) | Open | Open |
 | [`cells.nav1p2_m3h_regularized@1`](../src/cells/laws/channels/nav1p2_m3h_regularized.py#L47) | Open | Open |
 | [`cells.passive_neutral_permeation@1`](../src/cells/laws/routes/passive_permeation.py#L97) | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | [neutral-permeation](https://github.com/Eidosoma/Cells/blob/b6c7108c22c4c3ea3366672932f3d49ca8b8a3c8/lean/PROGRESS.md#19-november-2026--passive-neutral-permeation) |
-| [`cells.proton_atp_mass_action_positive@1`](../src/cells/laws/pumps/proton_pump.py#L257) | Open | Open |
+| [`cells.proton_atp_mass_action_positive@1`](../src/cells/laws/pumps/proton_pump.py#L257) | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | [atp-cycle](https://github.com/Eidosoma/Cells/blob/5f39e089a5f84fa4c2414d72536de844d0bd2503/lean/PROGRESS.md#19-november-2026--atp-driven-transport) |
 | [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L52) | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | [proton-leak](https://github.com/Eidosoma/Cells/blob/252cb83542e368e5572328d7eb0266ca8bd7417f/lean/PROGRESS.md#19-november-2026--passive-proton-leak) |
 | [`cells.rapid_binding@1`](../src/cells/laws/reactions/rapid_binding.py#L581) | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | [single-site-binding](https://github.com/Eidosoma/Cells/blob/c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c/lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units) |
 | [`cells.regular_mixing@1`](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L153) | Open | Open |
