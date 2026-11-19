@@ -55,6 +55,10 @@ The paragraphs are counted in the saved full text. It was decided on 19 November
 viewer's coordinator, within the user's choice of a strip with just two stages to go between, that
 the egg and the adult are drawn and these four are named; that the frog opens on its adult; and
 that no stage gives a word of its own for what Cells models of it, so the species' own word stands.
+The same evening the owner decided that **the frog opens on its fertilised egg** (`opens_on` in the
+stages block): choosing the frog shows the egg, and its adult, the form the species file
+describes, is a press away on the strip; an address that names no stage shows the egg, and the
+adult's address names it (`stage=adult`). The tool refuses any other opening stage.
 One stage has since been given a word: the fertilised egg, **planned**, the same day, after the
 engine's lead confirmed that the record supports it. Its record is D141 (Xenopus cleavage is the
 division work's first subject), D144, the cell-division plan, that work's design note and

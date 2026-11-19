@@ -794,6 +794,7 @@ later the same day. Each answer is given here in plain words, with what it chang
 | 8 | Other sites may show the viewer in a frame | The site's content policy does not limit who may frame it |
 | 9 | Nothing is to be spent on services for other users; the marginal cost of visits is not a concern | No paid service stands in front of the site. What the machine's own provider bills for outgoing traffic grows with visits (a first visit sends about 1 MB compressed, section 2), and is accepted |
 | 10 | No runs on request yet; later, behind a login | Stage 2 waits for a login, which the private data needs as well |
+| 11 | Nothing on the machine terminates HTTPS (said the same evening) | The server obtains and renews its own certificate: the example's `https` form (`deploy/`). The domain's DNS must point at the machine, and the machine's own firewall and its provider's must admit ports 80 and 443, before the certificate can be issued |
 
 ### The layout on the machine
 
@@ -939,8 +940,8 @@ certificates or accounts.
    the check's result and the release the pointer left.
 5. **Tag** the recording commit `viewer-vNN` and push the tag. Then `--retain 3 --remove`.
 
-**Still the owner's:** the machine, the container (from `deploy/` or another server), the form (behind a proxy or
-with its own certificate), pinning the images, DNS, opening the ports, and making the site public. **Still open:** the
+**Still the owner's:** the machine, the container (from `deploy/` or another server, in the form with its own
+certificate: decision 11), pinning the images, DNS, opening the ports, and making the site public. **Still open:** the
 content policy allows inline scripts, and the hashes that would replace that are in each `release.json` but not sent.
 The fonts are whole files, every script each family covers. Google Fonts sends subsets cut by script, but the checks'
 logs hold no sizes for them, so the two are not compared. No font tool is installed to cut the files.

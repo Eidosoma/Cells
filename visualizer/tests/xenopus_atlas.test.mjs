@@ -124,10 +124,11 @@ test("its life stages: the block kept by hand, as the tool writes it; the egg an
   assert.deepEqual(species.stages, kept.stages);
   const { stageProblems, openingStage, stripOf, speciesAt } = await import("../src/scene/life_stages.js");
   assert.deepEqual(stageProblems(species), []);
-  // Decided on 19 November 2026 by the viewer's coordinator: the egg and the adult drawn, four named; the frog opens on its adult.
+  // Decided on 19 November 2026: the egg and the adult drawn, four named; and, the same evening, that the frog opens on
+  // its fertilised egg (the file still describes the adult, which is a press away on the strip).
   assert.deepEqual(stripOf(species).map((mark) => [mark.id, mark.index, mark.drawn, mark.own]), [["egg", "1", true, false], ["two-cell", "2", false, false], ["four-cell", "3", false, false], ["tadpole", "35-36", false, false], ["froglet", "66", false, false], ["adult", null, true, true]]);
-  assert.equal(openingStage(species), "adult");
-  assert.ok(!("opens_on" in species.stages));
+  assert.equal(openingStage(species), "egg");
+  assert.equal(species.stages.opens_on, "egg");
   assert.equal(speciesAt(species), species, "at its own stage the frog is the file, exactly as before");
   // The egg: one cell 1.2 mm across, ending at its cell; its picture's words say that its parts are a generic cell's, not an egg's own.
   const egg = speciesAt(species, "egg");

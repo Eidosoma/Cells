@@ -332,9 +332,10 @@ must bve configurable as well based on our different species as we add them".
   (NF 1, a sphere 1.2 mm across, drawn with a generic cell's parts, which its picture
   says) and its adult are drawn; NF 2, 3, 35-36 and 66 are named and not drawn, since no
   size of them is in hand under usable terms (`docs/XENOPUS.md`, "Its life stages"). The
-  frog opens on its adult, as before. Its egg alone gives a word of its own for what
-  Cells models of it, "Planned, not modelled", with its record; every other stage takes
-  the species' own word.
+  frog opens on its fertilised egg (decided on 19 November 2026); its adult is a press
+  away on the strip, and its address names it (`stage=adult`). Its egg alone gives a word
+  of its own for what Cells models of it, "Planned, not modelled", with its record; every
+  other stage takes the species' own word.
 - **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
   each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
   envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a
