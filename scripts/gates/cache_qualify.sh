@@ -18,20 +18,23 @@
 #   cold      an empty cache A, every compile written (minimum compile time 0), cache errors raised:
 #             tiers 1+2 at eight concurrent files (writes racing reads), G1 in one-CPU shards, FR's
 #             four queues on the lane's cores beside the tier-3 files on their siblings, crossrev's
-#             sets against the record, and the lead's replication check (55 files);
+#             sets against the record (crossrev compiles a little: 2% of its CPU), and the lead's
+#             replication check (55 files);
 #   warm      the same with cache A as cold left it; warm2 again (stable reads);
-#   verify    cache A with jax_compilation_cache_check_contents: each process recompiles each
-#             program once and compares the executable byte for byte with the cached one (the
-#             mechanism of the L4 failure of 8 November), over the heavy and bitwise tier files
-#             (VERIFY_FILES), G1, FR and the tier-3 files;
 #   xrev      cache B written by the base (tiers 1+2, G1), then read by the head (xrev-head): bits
 #             across revisions, and the hit rate a landing would see;
 #   negative  cache A on G3's three controls; each must equal, bit for bit, its own run of
 #             18 November without the cache, so no planted change is masked by a stale executable.
+# Then caches A and B, two independent compiles of most programs, are compared program by program
+# offline (cache_compare.py), as information. JAX's byte check (jax_compilation_cache_check_contents)
+# is not used: on XLA:CPU it fails by construction (the rehearsal of 19 November 2026; the testing
+# plan's section 10.6). Executables hold their kernels in a varying order and embed paths, and three
+# threefry kernels compiled to different machine code depending on the compiling process's history
+# or tree, with bitwise-identical results. The pass criterion is the results, in every arm.
 # The L4 failure's own test (tests/integration/test_integrated_ensemble_gpu.py: a pause in one
 # process, a resume in another) runs only on a GPU, so that exact pairing is not reproduced here.
-# What stands in: every warm and verify executable crossed processes through the cache (cold's
-# processes compiled it); FR's windowed arms continue from a saved start; and the tier-3 stage has
+# What stands in: every warm executable crossed processes through the cache (cold's processes
+# compiled it); FR's windowed arms continue from a saved start; and the tier-3 stage has
 # window-replay, checkpoint and subprocess bitwise tests.
 # The engine's CLIs (cells.execution.output_paths.configure_caches) give their child processes a
 # cache folder under CELLS_OUTPUT_ROOT, which the tier runner sets per test file. Under the tier
@@ -78,10 +81,6 @@ F4=${F4:-$FR/pipeline/dt-3c10b833-dry/quick} F5=${F5:-$FR/pipeline/dt5-7c8bfa47-
 FR_START=${FR_START:-$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json}
 FR_BEFORE=${FR_BEFORE:-$FR/rehearsal-20261117/windowed-F}
 FR_SET=${FR_SET:-full}
-VERIFY_FILES=${VERIFY_FILES:-"tests/unit/test_site_occupancy_restart.py tests/unit/test_transporter_kind.py
-tests/unit/test_kind_routing_paths.py tests/unit/test_membrane_trafficking_batch.py
-tests/unit/test_cell_owned_compartments_silence_rk4.py tests/unit/test_inner_executable_reuse.py
-tests/unit/test_species_regulated_availability_bitwise.py tests/unit/test_ensemble.py"}
 TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py
 tests/betse_physiology/integration/test_physiology_loop_checkpoint.py
 tests/betse_physiology/integration/test_physiology_protein_checkpoint.py"}
@@ -129,7 +128,7 @@ print(d["provenance"]["root"], d.get("cap_seconds"))' "$GATE_RUN/run.json" 2>/de
   fi
   tiers_json=$TIERS_JSON; [[ $tiers_json = /* ]] || tiers_json=$HEAD_S/$tiers_json
   # shellcheck disable=SC2086
-  steps qualify-subsets "$tiers_json" "$OUT" --verify $VERIFY_FILES --tier3 $TIER3_FILES \
+  steps qualify-subsets "$tiers_json" "$OUT" --tier3 $TIER3_FILES \
     >> "$OUT/qualify.log" 2>&1 || refuse "the tier subsets (qualify-subsets)"
   steps g1-plan "$BASELINE" "${#CPU[@]}" "$OUT/g1-plan.json" >> "$OUT/qualify.log" 2>&1 || refuse "G1's plan"
   log "cache qualification: head $HEAD_S, base $BASE_S; lane ${LANE:-B} ($CPUS); tool $G; OFF's tiers \
@@ -162,10 +161,9 @@ EOF
 chmod +x "$OUT/bin/python-rss"
 default_cache "$OUT/default-cache-before.json"
 E=()  # The current arm's environment.
-with_cache() {  # CACHE CHECK
+with_cache() {  # CACHE
   E=(JAX_COMPILATION_CACHE_DIR="$1" JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
-     JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES=0 JAX_RAISE_PERSISTENT_CACHE_ERRORS=true
-     JAX_COMPILATION_CACHE_CHECK_CONTENTS="$2")
+     JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES=0 JAX_RAISE_PERSISTENT_CACHE_ERRORS=true)
 }
 entries() { if [ -d "$1" ]; then find "$1" -maxdepth 1 -name '*-cache' | wc -l; else echo 0; fi; }
 anon() { awk '$1 == "anon" {print $2}' "$CG/memory.stat" 2>/dev/null || echo 0; }
@@ -307,7 +305,7 @@ freeze "$OUT/off/tier3" "$OUT/off/tier3-record.json" "$OUT/off/tier3-collected.j
 L12=$OUT/off/collected.json L3=$OUT/off/tier3-collected.json
 
 # cold, warm and warm2: cache A.
-with_cache "$A" false
+with_cache "$A"
 for arm in cold warm warm2; do
   stage "$arm" tiers "$A" tiers_run "$HEAD_S" "$OUT/$arm/tiers" "$TIERS_JSON" "1 2" "$CPUS" 300
   per_id "$OUT/$arm/tiers" "$OUT/off/record.json" "$L12"
@@ -317,16 +315,8 @@ for arm in cold warm warm2; do
   stage "$arm" crossrev "$A" crossrev "$HEAD_S" "$OUT/$arm/crossrev"
 done
 
-# verify: cache A, every program recompiled once per process and compared with its entry.
-with_cache "$A" true
-stage verify tiers "$A" tiers_run "$HEAD_S" "$OUT/verify/tiers" "$OUT/verify-tiers.json" "1 2" "$CPUS" 300
-per_id "$OUT/verify/tiers" "$OUT/off/record.json" "$L12"
-stage verify g1 "$A" g1 "$HEAD_S" "$OUT/verify/g1" "$C1"
-stage verify fr+tier3 "$A" light "$HEAD_S" "$OUT/verify"
-per_id "$OUT/verify/tier3" "$OUT/off/tier3-record.json" "$L3"
-
 # xrev: cache B, written by the base, read by the head.
-with_cache "$B" false
+with_cache "$B"
 stage xrev-base tiers "$B" tiers_run "$BASE_S" "$OUT/xrev-base/tiers" "$TIERS_JSON" "1 2" "$CPUS" 300
 stage xrev-base g1 "$B" g1 "$BASE_S" "$OUT/xrev-base/g1" "$C1"
 stage xrev-head tiers "$B" tiers_run "$HEAD_S" "$OUT/xrev-head/tiers" "$TIERS_JSON" "1 2" "$CPUS" 300
@@ -334,11 +324,15 @@ per_id "$OUT/xrev-head/tiers" "$OUT/off/record.json" "$L12"
 stage xrev-head g1 "$B" g1 "$HEAD_S" "$OUT/xrev-head/g1" "$C1"
 
 # negative: G3's controls with cache A, each against its own run without the cache.
-with_cache "$A" false
+with_cache "$A"
 stage negative unplanted "$A" g1 "$UNPLANTED_S" "$OUT/negative/unplanted" "$UNPLANTED_REF"
 stage negative planted "$A" g1 "$PLANTED_S" "$OUT/negative/planted" "$PLANTED_REF"
 stage negative c2prime "$A" c2prime
 
+# Caches A and B, program by program (information; the base's tree path written as the head's).
+taskset -c "$I0" "$PY" -B "$G/cache_compare.py" "$A" "$B" "$OUT/cache-compare.json" \
+  --same "$HEAD_S=$BASE_S" > "$OUT/cache-compare.log" 2>&1
+log "caches A and B: exit $?: $(tail -n 1 "$OUT/cache-compare.log" | cut -c1-300)"
 default_cache "$OUT/default-cache-after.json"
 steps cache-verdict "$OUT" > "$OUT/verdict.log" 2>&1
 rc=$?

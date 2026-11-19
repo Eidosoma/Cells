@@ -56,9 +56,9 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
       The shards' parts as one baseline-shaped folder (g1_plan.py's merge, unchanged in behaviour).
   g1-seconds MERGED FILE
       The world seconds of a passing G1, written whole for the next plan.
-  qualify-subsets RECORD OUT --verify FILE ... --tier3 FILE ...
-      The cache qualification's two tier subsets of RECORD, rows only (cache_qualify.sh):
-      OUT/verify-tiers.json and OUT/tier3-tiers.json.
+  qualify-subsets RECORD OUT --tier3 FILE ...
+      The cache qualification's tier-3 stage subset of RECORD, rows only (cache_qualify.sh):
+      OUT/tier3-tiers.json.
   cache-verdict OUT
       The cache qualification's verdict on its arms (cache_qualify.sh), into OUT/verdict.json:
       every criterion, each listed with what failed, and notes (the cross-revision hit rate, the
@@ -536,22 +536,19 @@ CACHE_ERRORS = ("CacheVerificationError", "Persistent compilation cache inconsis
                 "Error writing persistent compilation cache")
 
 
-def qualify_subsets(record_path, out, verify, tier3):
-    """cache_qualify.sh's two tier subsets of a tier record, rows only (the record's measured
-    provenance is left out): OUT/verify-tiers.json keeps the VERIFY files in their own tiers, and
-    OUT/tier3-tiers.json puts the tier-3 stage's files under tier 3. A named file the record does
-    not hold is refused."""
+def qualify_subsets(record_path, out, tier3):
+    """cache_qualify.sh's tier-3 stage subset of a tier record, rows only (the record's measured
+    provenance is left out): OUT/tier3-tiers.json puts the named files under tier 3. A named file
+    the record does not hold is refused."""
     record = json.loads(Path(record_path).read_text())
-    rows = {r["file"]: (t, r) for t, rs in record["tiers"].items() for r in rs}
-    missing = sorted(f for f in set(verify) | set(tier3) if f not in rows)
+    rows = {r["file"]: r for rs in record["tiers"].values() for r in rs}
+    missing = sorted(f for f in set(tier3) if f not in rows)
     if missing:
         raise SystemExit(f"Refused: not in {record_path}: {missing}")
     keep = {k: v for k, v in record.items() if k not in ("measured", "measured_provenance")}
     keep["subset_of"] = str(record_path)
-    tiers = {t: [r for r in rs if r["file"] in set(verify)] for t, rs in record["tiers"].items()}
-    write_json(Path(out) / "verify-tiers.json", dict(keep, tiers=tiers))
     write_json(Path(out) / "tier3-tiers.json",
-               dict(keep, tiers={"1": [], "2": [], "3": [rows[f][1] for f in sorted(set(tier3))]}))
+               dict(keep, tiers={"1": [], "2": [], "3": [rows[f] for f in sorted(set(tier3))]}))
 
 
 def _read(path):
@@ -596,21 +593,22 @@ def _identical(compare, worlds):
         and not compare.get("problems") and compare.get("worlds") == compare.get("equal") == worlds
 
 
-def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1024,
-                  warm_g1=0.6, verify_g1=0.75):
-    """Every criterion of the qualification (cache_qualify.sh; the testing plan's section 5.3),
-    each True or False with what failed, and notes: the qualification passes only when all hold.
+def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1024, warm_g1=0.6):
+    """Every criterion of the qualification (cache_qualify.sh; the testing plan's sections 5.3 and
+    10.6), each True or False with what failed, and notes: the qualification passes only when all
+    hold.
 
-    Outcomes, per test ID against OFF: tiers 1+2 (cold, warm, warm2, xrev-head), the VERIFY
-    subset and the tier-3 stage's files, each complete at OFF's cap; an outcome change and a loss of
-    coverage to time are separate criteria. Bits: G1 against c1 on the head and the base, every
-    shard on one CPU; the planted controls against their own runs without the cache; FR's set;
-    crossrev against the record and the replication set's 55 files. The cache: no cache or
-    verification error in any log; written in COLD, read in WARM (no entry added, G1 faster),
-    recompiled in VERIFY; the shared default folder untouched; OFF's reused tier run free of it.
-    Memory: no out-of-memory kill; each G1 group's and FR process's peak RSS within rss_factor of
-    OFF's, FR's under its 3 GiB unit cap; each stage's largest anonymous memory within
-    stage_factor of COLD's same stage."""
+    Outcomes, per test ID against OFF: tiers 1+2 (cold, warm, warm2, xrev-head) and the tier-3
+    stage's files, each complete at OFF's cap; an outcome change and a loss of coverage to time are
+    separate criteria. Bits: G1 against c1 on the head and the base, every shard on one CPU; the
+    planted controls against their own runs without the cache; FR's set; crossrev against the
+    record and the replication set's 55 files. The cache: no cache read or write error in any log;
+    written in COLD, read in WARM (no entry added, G1 faster); the shared default folder untouched;
+    OFF's reused tier run free of it; the offline comparison of caches A and B run (its classes and
+    the programs whose machine code differs are notes, not criteria: JAX's byte check cannot pass
+    on CPU). Memory: no out-of-memory kill; each G1 group's and FR process's peak RSS within
+    rss_factor of OFF's, FR's under its 3 GiB unit cap; each stage's largest anonymous memory
+    within stage_factor of COLD's same stage."""
     out, checks, notes = Path(out), {}, {}
 
     def check(name, ok, detail=None):
@@ -630,10 +628,8 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
     check("off: every tier-3 stage file ran to its end", len(t3) == want3 > 0
           and all(r.get("status") in COMPLETED for r in t3.values()),
           {f: r.get("status") for f, r in t3.items() if r.get("status") not in COMPLETED})
-    wantv = sum(len(v) for v in (_read(out / "verify-tiers.json") or {}).get("tiers", {}).values())
     runs = [(a, "tiers", None) for a in ("cold", "warm", "warm2", "xrev-head")]
-    runs += [("verify", "tiers", wantv)] + [(a, "tier3", want3) for a in ("cold", "warm", "warm2",
-                                                                            "verify")]
+    runs += [(a, "tier3", want3) for a in ("cold", "warm", "warm2")]
     for arm, stage, want in runs:
         d = _read(out / arm / stage / "diff.json")
         blocking = (d or {}).get("blocking", [])
@@ -647,7 +643,7 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
         check(f"{arm} {stage}: outcomes per test ID as OFF's", bool(d) and not outcome,
               outcome[:20])
         check(f"{arm} {stage}: no coverage lost to time", bool(d) and not timing, timing[:20])
-    for arm in ("off", "cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
+    for arm in ("off", "cold", "warm", "warm2", "xrev-base", "xrev-head"):
         c = _read(out / arm / "g1" / "compare.json")
         cpus = sorted({p.read_text().strip() for p in (out / arm / "g1").glob("shard-*.cpus")})
         check(f"{arm} G1: {worlds} of {worlds} worlds bitwise as c1's", _identical(c, worlds),
@@ -657,7 +653,7 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
         c = _read(out / "negative" / name / "compare.json")
         check(f"negative {name}: bitwise as its own run without the cache", _identical(c, n),
               {k: (c or {}).get(k) for k in ("verdict", "worlds", "equal")})
-    for arm in ("off", "cold", "warm", "warm2", "verify"):
+    for arm in ("off", "cold", "warm", "warm2"):
         v = _read(out / arm / "fr" / "verdict.json")
         check(f"{arm} FR: the set passes", bool(v) and v.get("passed") is True)
         peaks = _peaks(out / arm / "fr")
@@ -673,12 +669,12 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
               and done.read_text().strip() == "0")
     bad = sorted(str(p.relative_to(out)) for p in out.rglob("*.log") if p.is_file()
                  and any(m in p.read_text(errors="replace") for m in CACHE_ERRORS))
-    check("no cache error and no verification error in any log", not bad, bad[:20])
+    check("no cache read or write error in any log", not bad, bad[:20])
     check("no out-of-memory kill in any stage", bool(stages) and all(
         int(r.get("oom_kills") or 0) == 0 for r in stages.values()),
         {f"{a} {s}": r.get("oom_kills") for (a, s), r in stages.items() if r.get("oom_kills")})
-    for arm, stage in [(a, "g1") for a in ("cold", "warm", "warm2", "verify", "xrev-head")] + [
-            (a, "fr") for a in ("cold", "warm", "warm2", "verify")]:
+    for arm, stage in [(a, "g1") for a in ("cold", "warm", "warm2", "xrev-head")] + [
+            (a, "fr") for a in ("cold", "warm", "warm2")]:
         ref, now = _peaks(out / "off" / stage), _peaks(out / arm / stage)
         ratios = {k: round(now[k] / ref[k], 3) for k in sorted(set(ref) & set(now)) if ref[k]}
         worst = max(ratios.values(), default=None)
@@ -686,7 +682,7 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
               worst is not None and worst <= rss_factor,
               {"worst": worst, "over": {k: r for k, r in ratios.items() if r > rss_factor}})
     for arm, stage in [(a, s) for a in ("warm", "warm2") for s in ("tiers", "g1", "fr+tier3")] + [
-            ("verify", "g1"), ("verify", "fr+tier3"), ("xrev-head", "tiers"), ("xrev-head", "g1")]:
+            ("xrev-head", "tiers"), ("xrev-head", "g1")]:
         a, c = stages.get((arm, stage)) or {}, stages.get(("cold", stage)) or {}
         ok = bool(a.get("anon_peak")) and bool(c.get("anon_peak")) \
             and a["anon_peak"] <= stage_factor * c["anon_peak"]
@@ -713,9 +709,13 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
         w, c = seconds(arm, "g1"), seconds("cold", "g1")
         check(f"{arm} G1: under {warm_g1} of cold's seconds (read, not compiled)",
               bool(w is not None and c) and w < warm_g1 * c, [w, c])
-    v, c = seconds("verify", "g1"), seconds("cold", "g1")
-    check(f"verify G1: at least {verify_g1} of cold's seconds (every program recompiled)",
-          bool(v is not None and c) and v >= verify_g1 * c, [v, c])
+    pair = _read(out / "cache-compare.json") or {}
+    check("the offline comparison of caches A and B ran", pair.get("common_programs", 0) > 0,
+          None if pair else "no cache-compare.json")
+    notes["caches A and B, program by program (information)"] = {
+        k: pair.get(k) for k in ("common_programs", "kinds")}
+    notes["programs whose machine code differs between the two caches"] = pair.get(
+        "different machine code", [])
     before = _read(out / "default-cache-before.json")
     after = _read(out / "default-cache-after.json")
     check("the shared default cache folder is unchanged", before is not None and before == after,
@@ -734,7 +734,7 @@ def cache_verdict(out, rss_factor=1.25, stage_factor=1.5, fr_cap_kb=3 * 1024 * 1
     notes["seconds per stage"] = {f"{a} {st}": r.get("seconds") for (a, st), r in stages.items()}
     notes["entries added per stage"] = {f"{a} {st}": added(a, st) for (a, st) in stages}
     clis = {}
-    for arm in ("cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
+    for arm in ("cold", "warm", "warm2", "xrev-base", "xrev-head"):
         for stage in ("tiers", "tier3"):
             found = list((out / arm / stage / "outputs").glob("*/Cells/cache/jax/*-cache"))
             if found:
@@ -815,7 +815,6 @@ def main(argv=None):
     s = sub.add_parser("qualify-subsets")
     s.add_argument("record")
     s.add_argument("out")
-    s.add_argument("--verify", nargs="+", required=True)
     s.add_argument("--tier3", nargs="+", required=True)
     s = sub.add_parser("cache-verdict")
     s.add_argument("out")
@@ -889,7 +888,7 @@ def main(argv=None):
         print(f"{g1_seconds(a.merged, a.file)} world seconds written to {a.file}")
         return 0
     if step == "qualify-subsets":
-        qualify_subsets(a.record, a.out, a.verify, a.tier3)
+        qualify_subsets(a.record, a.out, a.tier3)
         return 0
     if step == "cache-verdict":
         doc = cache_verdict(a.out)

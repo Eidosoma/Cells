@@ -32,7 +32,8 @@ Host only: no world runs here.
   - crossrev and the replication check;
   - no cache or verification error, and no out-of-memory kill;
   - peak RSS per process and anonymous memory per stage within their factors;
-  - the cache engaged: written in COLD, read in WARM, recompiled in VERIFY;
+  - the cache engaged: written in COLD, read in WARM;
+  - the offline comparison of caches A and B run, its classes and machine-code differences noted;
   - the shared default cache folder untouched.
 
   It reports the cross-revision hit rate by programs and by seconds.
@@ -364,26 +365,22 @@ def qualification(tmp_path, plant=None):
         (out / path).write_text(doc if isinstance(doc, str) else json.dumps(doc))
 
     put("g1-plan.json", [{"seconds": 1, "groups": [{"set": "s", "worlds": ["a", "b"]}]}])
-    put("verify-tiers.json", {"tiers": {"1": [{"file": "v"}], "2": [], "3": []}})
     put("tier3-tiers.json", {"tiers": {"1": [], "2": [], "3": [{"file": "t"}]}})
     put("off/reuse.json", {"cache_entries": int(plant == "reused")})
     status = "timeout" if plant == "off3" else "pass"
     put("off/tier3-record.json", {"files": {"t": {"status": status}}})
     runs = [(a, "tiers", 3) for a in ("cold", "warm", "warm2", "xrev-head")]
-    runs += [("verify", "tiers", 1)]
-    for arm, stage, n in runs + [(a, "tier3", 1) for a in ("cold", "warm", "warm2", "verify")]:
+    for arm, stage, n in runs + [(a, "tier3", 1) for a in ("cold", "warm", "warm2")]:
         blocking = []
         if plant == "outcome" and (arm, stage) == ("warm", "tiers"):
             blocking = [{"file": "f", "kind": "new failure", "test": "t1"}]
         if plant == "time" and (arm, stage) == ("warm2", "tier3"):
             blocking = [{"file": "t", "kind": "new timeout"}]
         missing = ["g"] if plant == "missing" and (arm, stage) == ("cold", "tiers") else []
-        if (arm, stage) == ("verify", "tiers"):
-            missing = ["x", "y"]  # A subset run: the record's other files are not run.
         put(f"{arm}/{stage}/diff.json", {"blocking": blocking, "caps_differ": [], "files_read": n,
                                          "record_files_not_in_runs": missing})
-    for arm in ("off", "cold", "warm", "warm2", "verify", "xrev-base", "xrev-head"):
-        equal = 1 if plant == "g1" and arm == "verify" else 2
+    for arm in ("off", "cold", "warm", "warm2", "xrev-base", "xrev-head"):
+        equal = 1 if plant == "g1" and arm == "warm2" else 2
         put(f"{arm}/g1/compare.json", {"verdict": "identical" if equal == 2 else "differs",
                                        "worlds": 2, "equal": equal, "problems": []})
         put(f"{arm}/g1/shard-0.cpus", "2\n" if plant == "cpus" and arm == "cold" else "1\n")
@@ -393,7 +390,7 @@ def qualification(tmp_path, plant=None):
         masked = plant == "masked" and name == "planted"
         put(f"negative/{name}/compare.json", {"verdict": "differs" if masked else "identical",
                                               "worlds": n, "equal": n - masked, "problems": []})
-    for arm in ("off", "cold", "warm", "warm2", "verify"):
+    for arm in ("off", "cold", "warm", "warm2"):
         put(f"{arm}/fr/verdict.json", {"passed": not (plant == "fr" and arm == "cold")})
         kb = 3200000 if plant == "frcap" and arm == "warm2" else 2000000
         put(f"{arm}/fr/rss-q0.log", "Command exited with non-zero status 1\n"
@@ -403,9 +400,13 @@ def qualification(tmp_path, plant=None):
         put(f"{arm}/crossrev/verdict.json", {"ok": same == 2, "sets": 2, "identical": same})
         failed = plant == "replication" and arm == "warm2"
         put(f"{arm}/replication/done", "1\n" if failed else "0\n")
-    if plant == "verification":
-        put("verify/g1/shard-0.log", "CacheVerificationError: Persistent compilation cache "
-            "inconsistency for key k\n")
+    if plant == "read error":
+        put("warm/g1/shard-0.log", "UserWarning: Error reading persistent compilation cache entry "
+            "for 'k'\n")
+    if plant != "compare":
+        put("cache-compare.json", {"common_programs": 5, "kinds": {"equal bytes": 4,
+                                                                  "different machine code": 1},
+                                   "different machine code": ["jit_k-1-cache"]})
     engaged = plant != "engaged"
 
     def stage(arm, name, before, after, seconds, anon=1000, oom=0):
@@ -424,10 +425,7 @@ def qualification(tmp_path, plant=None):
                        anon=2000 if plant == "anon" and arm == "warm" else 1000),
                  stage(arm, "g1", 17 + grow, 17 + grow, 100 if plant == "engaged" else warm_g1),
                  stage(arm, "fr+tier3", 17, 17, 40), stage(arm, "crossrev", 17, 17, 30)]
-    rows += [stage("verify", "tiers", 17, 17, 20),
-             stage("verify", "g1", 17, 17, 40 if plant == "recompiled" else 90),
-             stage("verify", "fr+tier3", 17, 17, 50),
-             stage("xrev-base", "tiers", 0, 8, 200), stage("xrev-base", "g1", 8, 12, 100),
+    rows += [stage("xrev-base", "tiers", 0, 8, 200), stage("xrev-base", "g1", 8, 12, 100),
              stage("xrev-head", "tiers", 12, 13, 130), stage("xrev-head", "g1", 13, 13, 35),
              stage("negative", "unplanted", 17, 20, 90), stage("negative", "planted", 20, 23, 90),
              stage("negative", "c2prime", 23, 23, 5)]
@@ -453,21 +451,21 @@ def test_a_clean_qualification_passes_with_its_cross_revision_figures(tmp_path):
     ("missing", "cold tiers: every file read against OFF's record at OFF's cap"),
     ("off3", "off: every tier-3 stage file ran to its end"),
     ("reused", "off: its tier run wrote no persistent cache entry"),
-    ("g1", "verify G1: 2 of 2 worlds bitwise as c1's"),
+    ("g1", "warm2 G1: 2 of 2 worlds bitwise as c1's"),
     ("cpus", "cold G1: every shard on one CPU, as c1's"),
     ("masked", "negative planted: bitwise as its own run without the cache"),
     ("fr", "cold FR: the set passes"),
     ("frcap", "warm2 FR: every process under its unit's 3 GiB"),
     ("crossrev", "warm crossrev: every set identical to the record"),
     ("replication", "warm2 replication: 55 of 55, by the lead's check"),
-    ("verification", "no cache error and no verification error in any log"),
+    ("read error", "no cache read or write error in any log"),
+    ("compare", "the offline comparison of caches A and B ran"),
     ("oom", "no out-of-memory kill in any stage"),
     ("rss", "warm g1: each process's peak RSS within 1.25 times OFF's"),
     ("anon", "warm tiers: the stage's largest anonymous memory within 1.5 times cold's"),
     ("engaged", "cold tiers: wrote cache entries (the cache engaged)"),
     ("added", "warm2: added no cache entry (every program read)"),
     ("slowwarm", "warm G1: under 0.6 of cold's seconds (read, not compiled)"),
-    ("recompiled", "verify G1: at least 0.75 of cold's seconds (every program recompiled)"),
     ("default", "the shared default cache folder is unchanged"),
 ])
 def test_each_failed_criterion_fails_the_qualification(tmp_path, plant, check):
@@ -480,14 +478,51 @@ def test_qualify_subsets_keeps_rows_only_and_refuses_an_unknown_file(tmp_path):
               "tiers": {"1": [{"file": "a"}, {"file": "b"}], "2": [{"file": "c"}],
                         "3": [{"file": "e"}]}}
     (tmp_path / "record.json").write_text(json.dumps(record))
-    steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["a", "c"], ["e", "b"])
-    verify = json.loads((tmp_path / "verify-tiers.json").read_text())
+    steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["e", "b"])
     tier3 = json.loads((tmp_path / "tier3-tiers.json").read_text())
-    assert "measured_provenance" not in verify and "measured" not in tier3
-    assert [r["file"] for t in ("1", "2", "3") for r in verify["tiers"][t]] == ["a", "c"]
+    assert "measured_provenance" not in tier3 and "measured" not in tier3
     assert [r["file"] for r in tier3["tiers"]["3"]] == ["b", "e"] and not tier3["tiers"]["1"]
     with pytest.raises(SystemExit, match="not in"):
-        steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["a", "zz"], ["e"])
+        steps.qualify_subsets(tmp_path / "record.json", tmp_path, ["e", "zz"])
+
+
+def _load_compare():
+    spec = importlib.util.spec_from_file_location("cache_compare", GATES / "cache_compare.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_cache_compare_tells_reordered_kernels_from_different_machine_code(tmp_path):
+    """Executables as XLA:CPU serializes them: kernels as length-delimited ELF objects, in an
+    order that varies, and paths embedded (the cache's own, and the compiling tree's)."""
+    compare = _load_compare()
+
+    def kernel(name, code):
+        elf = b"\x7fELF" + code
+        return b"\x12" + bytes([len(name)]) + name + b"\n" + bytes([len(elf)]) + elf
+
+    one, two = tmp_path / "cache-A", tmp_path / "cache-B"
+    k1, k2 = kernel(b"add", b"\x01" * 20), kernel(b"mul", b"\x02" * 30)
+    entries = {
+        "jit_same-1-cache": (k1 + k2, k1 + k2),
+        "jit_order-2-cache": (k1 + k2, k2 + k1),
+        "jit_paths-3-cache": (b"opt " + str(one).encode() + b" /tree/head " + k1,
+                              b"opt " + str(two).encode() + b" /tree/base " + k1),
+        "jit_meta-4-cache": (b"m1" + k1, b"m2" + k1),
+        "jit_code-5-cache": (k1 + k2, k1 + kernel(b"mul", b"\x03" * 30)),
+    }
+    for folder, side in ((one, 0), (two, 1)):
+        folder.mkdir()
+        for name, pair in entries.items():
+            (folder / name).write_bytes(pair[side])
+    (one / "jit_only-6-cache").write_bytes(k1)
+    doc = compare.compare(one, two, [("/tree/head", "/tree/base")], read=lambda p: p.read_bytes())
+    assert doc["common_programs"] == 5 and doc["only_in_one"] == 1
+    assert doc["kinds"] == {"equal bytes": 2, "same objects, another order": 1,
+                            "same objects, other bytes": 1, "different machine code": 1}
+    assert doc["different machine code"] == ["jit_code-5-cache"]
+    assert doc["same objects, other bytes"] == ["jit_meta-4-cache"]
 
 
 # ---------------------------------------------------------------------- gate.sh, end to end
