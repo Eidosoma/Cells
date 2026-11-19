@@ -1,0 +1,231 @@
+{
+  "execution": {
+    "backend": "cpu",
+    "capacity": 1,
+    "channel_capacity": 2,
+    "dt": 0.001,
+    "edge_capacity": 0,
+    "extracellular_capacity": 1,
+    "face_capacity": 0,
+    "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "jit": true,
+    "material_balance_atol_fmol": {
+      "K": 1e-10,
+      "M": 1e-10,
+      "Na": 1e-10,
+      "P": 1e-10
+    },
+    "max_steps": 12,
+    "max_trace_bytes": 2147483648,
+    "membrane_capacity": 1,
+    "precision": "float64",
+    "solver": "imex_ars222_face_electromigration@1"
+  },
+  "experiment": {
+    "calcium_pump_controls": [],
+    "channel_controls": [
+      {
+        "channel_id": "kir_0",
+        "schedule": [
+          {
+            "availability": 0.9,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "channel_id": "nav_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ],
+    "end_time": 0.004,
+    "junction_controls": [],
+    "membrane_controls": [
+      {
+        "membrane_id": "membrane_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ],
+    "observation_times": [
+      0.0,
+      0.001,
+      0.002,
+      0.003,
+      0.004
+    ],
+    "pump_controls": [
+      {
+        "pump_id": "pump_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ]
+  },
+  "model": {
+    "cells": [
+      {
+        "fixed_charge_equivalent_fmol": -0.00015798898674423273,
+        "id": "cell_0",
+        "initial_amount_fmol": {
+          "K": 140.66881734645872,
+          "M": 46.95380207217221,
+          "Na": 7.602010148806759,
+          "P": 101.32050400205313
+        },
+        "initial_charge_C": -3.508754661164857e-13,
+        "volume_pL": 0.7505222518670602
+      }
+    ],
+    "channels": [
+      {
+        "abundance": 1.0,
+        "factors": [
+          "f_b",
+          "f_c"
+        ],
+        "id": "kir_0",
+        "initial_gate": [
+          0.03831672888202246,
+          0.9652993828874176
+        ],
+        "kinetic_law": "kir2p1_mh2@1",
+        "max_permeability_m_per_s": 1e-08,
+        "membrane_id": "membrane_0",
+        "permeant_ions": [
+          {
+            "relative_permeability": 1.0,
+            "species_id": "K"
+          }
+        ]
+      },
+      {
+        "abundance": 1.0,
+        "id": "nav_0",
+        "initial_gate": [
+          0.6836607842078941,
+          0.004494616787506011
+        ],
+        "kinetic_law": "nav1p2_m3h_regularized@1",
+        "max_permeability_m_per_s": 2.5e-07,
+        "membrane_id": "membrane_0",
+        "permeant_ions": [
+          {
+            "relative_permeability": 1.0,
+            "species_id": "Na"
+          }
+        ]
+      }
+    ],
+    "closure": {
+      "gauge_reference": null,
+      "law": "resolved_capacitor_components_current_continuity@1"
+    },
+    "extracellular": [
+      {
+        "boundary_potential_V": 0.0,
+        "fixed_charge_equivalent_fmol": 0.0,
+        "id": "bath_0",
+        "initial_amount_fmol": {
+          "K": 5.0,
+          "M": 140.0,
+          "Na": 145.0,
+          "P": 10.0
+        },
+        "initial_charge_C": 0.0,
+        "reservoir": true,
+        "volume_pL": 1.0
+      }
+    ],
+    "faces": [],
+    "id": "resolved_pump_tissue@3",
+    "junctions": [],
+    "membranes": [
+      {
+        "area_m2": 3.261272165616906e-10,
+        "calcium_pump": null,
+        "capacitance_F": 1.6306360828084532e-11,
+        "id": "membrane_0",
+        "inside": "cell_0",
+        "law": "constant_field@1",
+        "outside": "bath_0",
+        "permeability_m_per_s": {
+          "K": 1.333333333333334e-10,
+          "M": 1.333333333333334e-10,
+          "Na": 5.3333333333333356e-11,
+          "P": 0.0
+        },
+        "pump": {
+          "capacity_fmol_per_s": 0.03261272165616906,
+          "id": "pump_0",
+          "km_atp_mM": 0.5,
+          "km_k_mM": 0.2,
+          "km_na_mM": 12.0,
+          "law": "nak_atp_mass_action_positive@1",
+          "metabolism": {
+            "adp_mM": 0.1,
+            "atp_mM": 1.5,
+            "delta_g0_J_per_mol": -37000.0,
+            "kind": "maintained_chemical_reservoirs@1",
+            "pi_mM": 0.1
+          },
+          "roles": {
+            "potassium": "K",
+            "sodium": "Na"
+          },
+          "stoichiometry": {
+            "K": 2,
+            "Na": -3
+          }
+        }
+      }
+    ],
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "M",
+        "valence": -1
+      },
+      {
+        "id": "P",
+        "valence": -1
+      }
+    ],
+    "temperature_K": 310.0,
+    "test_factors": [
+      {
+        "id": "f_a",
+        "value": 0.5
+      },
+      {
+        "id": "f_b",
+        "value": 0.7
+      },
+      {
+        "id": "f_c",
+        "value": 0.65
+      }
+    ]
+  },
+  "schema_version": 1
+}

@@ -902,6 +902,7 @@
     },
     "heredity-turnover-literature": {
       "parts_together": true,
+      "development": true,
       "label": "Turnover pre-screen: the literature newcomer rule",
       "plain": "A development run before E07-v1: can a voltage pattern written into a tissue renew itself when its cells are replaced the way the literature describes? A disc of cells sits at a depolarised voltage (D) in a sheet of 127 cells at their resting voltage (H). Only the disc's cells are replaced, the oldest first. A newcomer arrives with no junctions and forms them over tens of minutes; it is either a fresh cell at the resting voltage or a copy of a neighbour. Each run starts two minutes after a brief cue wrote the disc.",
       "sources": [
