@@ -12,8 +12,9 @@ Each claim with a planted error it must catch (D187):
   closure cost kept, which leaves the ledger open by exactly that cost);
 - L5: c_ext's refusal and the drift report; every refusal of §0.2c rules 6–8 this milestone owns.
 
-World-compiling cost: one run (the lysis world, test_lysis_...), about 10 s on one core; the rest
-is host arithmetic. Reason: the lysis booking is the only claim that needs the device's run.
+World-compiling cost: one program (the lysis world, run twice, with a finite and a held pool),
+30.42 s for the whole file on the timed lane before the held row; the rest is host arithmetic.
+Reason: the lysis booking is the only claim that needs the device's run.
 """
 
 import copy
@@ -33,6 +34,8 @@ from cells.models.assembly_lineages_v2 import (
     ledger,
     lumen,
     model,
+    records,
+    reference,
     runner,
 )
 from tests.assembly_lineage_v2_fixtures import definition
@@ -224,30 +227,45 @@ def test_the_osmotic_verdict_holds_and_a_closed_world_relaxes_to_exp_minus_f():
     assert 0.5 * np.abs(pi - planted).sum() > 1e-3
 
 
-def test_lysis_ends_the_life_returns_its_molecules_and_books_one_row():
+@pytest.mark.parametrize("held", [False, True], ids=["finite_pool", "held_pool"])
+def test_lysis_ends_the_life_returns_its_molecules_and_books_one_row(held, tmp_path):
     base = osmotic_world(L_pool=2, L_mem=5, S_pool=0, S_lumen=0, I_lumen=4, mu_bilayer=3.0,
                          floor=K_L)  # fmt: skip
+    if held:  # L's pool place is held: the release returns L to its reservoir.
+        base["phases"]["pool"]["species"][0] = {"id": "L", "kind": "held", "held_mM": 10.0}
+        base["founder"].pop("L@pool")
     founder_sigma = lumen.host_tension(spec_of(base).model.world, spec_of(base).model.world.founder)
     assert founder_sigma > 0  # tense: N_L = 4 above the kink at 5 molecules
     w = copy.deepcopy(base)
     w["geometry"]["sigma_max_N_per_m"]["value"] = founder_sigma * 1.0001
-    s = spec_of(w, horizon=50.0, event_limit=2000, row_every=50)
+    s = spec_of(w, horizon=50.0, event_limit=2000, row_every=50, uniforms=True)
     run = runner.run(s).check()
     assert run.status == "lysed" and run.closure["holds"]
     names = [p.name for p in s.model.world.places]
     end = dict(zip(names, run.rows["place_count"][-1], strict=True))
     assert end["L@membrane"] == end["S@lumen"] == end["I@lumen"] == 0
-    assert end["L@pool"] == 7  # every L, wherever it was, is a pool monomer after the lysis
     assert end["I@pool"] == 4  # every lumen molecule returned as a monomer
     lysis = run.osmotic["lysis"]
     assert lysis["sigma_N_per_m"] > lysis["sigma_max_N_per_m"]
     assert lysis["returned"]["I@pool"] == 4
-    # The closure cost is released: F at the end row holds no vesicle and no C_close.
-    tables, layout = model.tables(s), model.layout(s)
-    padded = np.zeros(model.structure(s).places, dtype=np.int64)
-    padded[: len(names)] = run.rows["place_count"][-1]
-    released = ledger.free_energy(padded, tables, s.model.world.terms, layout.terms)
-    assert run.rows["free_energy_kT"][-1] == pytest.approx(released, abs=1e-12)
+    # F(n_after) in closed form, apart from the engine's ledger: everything is in the pool, so
+    # F = Σ_finite pool [n (μ° − ln X_pool) + ln n!], no membrane, lumen or closure term.
+    x_pool = NA * 1e-22 * 1.0  # N_A V c0, c0 = 1 mol/L
+    closed = sum(n * (0.0 - math.log(x_pool)) + math.lgamma(n + 1)
+                 for name, n in end.items() if name.endswith("@pool") and n)  # fmt: skip
+    assert run.rows["free_energy_kT"][-1] == pytest.approx(closed, abs=1e-9)
+    supplied = dict(zip(names, run.rows["reservoir_supplied"][-1], strict=True))
+    if held:
+        # The founder's five membrane L end in the reservoir: net supply −5. Their return books
+        # reservoir work −Σ μ_held per molecule, with μ_held = μ° + ln(c/c0) = ln(10/1000).
+        assert supplied["L@pool"] == -5
+        returned = lysis["returned"]["L@pool"]
+        assert lysis["release_reservoir_work_kT"] == pytest.approx(
+            -returned * math.log(10.0 / 1000.0), rel=1e-12
+        )
+    else:
+        assert end["L@pool"] == 7  # every L, wherever it was, is a pool monomer after the lysis
+        assert lysis["release_reservoir_work_kT"] == 0.0
     # Planted: the closure cost kept after lysis leaves the books open by exactly that cost.
     f = run.rows["free_energy_kT"].copy()
     f[-1] += 25.0
@@ -255,10 +273,21 @@ def test_lysis_ends_the_life_returns_its_molecules_and_books_one_row():
     assert abs(planted[-1]) == pytest.approx(25.0, abs=1e-9)
     # L5: the drift report is the pool's solute osmolarity's change, relative to c_ext.
     counts = run.rows["place_count"]
-    pool = [i for i, p in enumerate(s.model.world.places) if p.phase == "pool"]
-    osm = counts[:, pool].sum(axis=1) / (NA * 1e-22) * 1e3
+    pool = [i for i, p in enumerate(s.model.world.places) if p.phase == "pool" and not p.held]
+    held_mM = sum(p.held_mM for p in s.model.world.places if p.phase == "pool" and p.held)
+    osm = counts[:, pool].sum(axis=1) / (NA * 1e-22) * 1e3 + held_mM
     drift = np.max(np.abs(osm - osm[0])) / C_EXT_MM
     assert run.osmotic["largest_relative_drift"] == pytest.approx(drift, rel=1e-12)
+    # The bundle is written and read back, and the host oracle replays its trace.
+    records.write_run(tmp_path / "bundle", run)
+    world_record, run_record, arrays = records.read(tmp_path / "bundle")
+    assert run_record["end"]["status"] == "lysed" and "lysed" in run_record["lifecycle"]["statuses"]
+    assert run_record["osmotic"]["lysis"]["returned"] == lysis["returned"]
+    assert set(arrays) >= {"lumen_volume_L", "tension_N_per_m", "membrane_footprint_quanta"}
+    assert world_record["world"]["conventions"]["lumen_volume"] == "osmotic"
+    channels, times = reference.replay(s, arrays["event_uniforms"])
+    assert np.array_equal(channels, arrays["event_channel"])
+    np.testing.assert_allclose(times, arrays["event_time"], rtol=1e-12, atol=0)
 
 
 def _dimerising(w):
