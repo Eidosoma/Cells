@@ -358,8 +358,16 @@ try {
       cards = await evaluate(`${VIEWER}.state.landing ? ${VIEWER}.shadowRoot.querySelectorAll(".landing-card").length : 0`).catch(() => 0);
     }
     check("experiments: the tab opens on its landing of cards", cards > 0, String(cards));
+    // A card the pick finds among all the landing's cards; where its band stands folded (every band but the first does as
+    // the landing opens, 19 November 2026), a real press on the band's control shows it first.
     const pressCard = async (pick) => {
-      const at = await evaluate(`(() => { const v = ${VIEWER}; const id = [...v.shadowRoot.querySelectorAll(".landing-card.is-replay")].map((el) => el.dataset.card).find((id) => (${pick})(v.landingView.opened(id))); if (!id) return null; const el = v.shadowRoot.querySelector('[data-card="' + id + '"] .landing-open'); el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { id, x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+      const where = await evaluate(`(() => { const v = ${VIEWER}, lens = v.landingView; const id = lens.landing.bands.flatMap((band) => band.cards.map((card) => card.id)).find((id) => (${pick})(lens.opened(id))); if (!id) return null; if (v.shadowRoot.querySelector('[data-card="' + id + '"]')?.checkVisibility()) return { id }; const band = lens.landing.bands.find((item) => item.cards.some((card) => card.id === id)); const fold = v.shadowRoot.querySelector('[data-band="' + band.id + '"] .landing-fold'); if (!fold) return { id }; fold.scrollIntoView({ block: "center" }); const r = fold.getBoundingClientRect(); return { id, fold: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; })()`);
+      if (!where) return null;
+      if (where.fold) {
+        await click(where.fold.x, where.fold.y);
+        for (let tries = 0; tries < 40 && !(await evaluate(`Boolean(${VIEWER}.shadowRoot.querySelector('[data-card="${where.id}"]')?.checkVisibility())`)); tries++) await sleep(250);
+      }
+      const at = await evaluate(`(() => { const el = ${VIEWER}.shadowRoot.querySelector('[data-card="${where.id}"] .landing-open'); if (!el || !el.checkVisibility()) return null; el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { id: ${JSON.stringify(where.id)}, folded: Boolean(${JSON.stringify(Boolean(where.fold))}), x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
       if (at) await click(at.x, at.y);
       return at;
     };
@@ -500,6 +508,7 @@ try {
       if (back) await click(back.x, back.y);
       await sleep(600);
       const another = await pressCard(`(opened) => Boolean(opened?.run) && !opened.run.startsWith(${JSON.stringify(`${left.experiment}--`)})`);
+      check("experiments: another card that opens a run stands on the landing, a real press on its band's control away where its band is folded", Boolean(another), JSON.stringify(another));
       if (another) {
         await loaded(left.run);
         const after = await evaluate(`(() => { const lens = ${VIEWER}.current, entry = lens.catalogue.byId.get(lens.runId), outcome = lens.catalogue.outcomeOf(lens.catalogue.experimentOf(entry)); return { experiment: entry.experiment, loaded: lens.run?.view.run.experiment, facts: [...${VIEWER}.shadowRoot.querySelectorAll(".found-facts .fact")].map((item) => item.textContent).join(" | "), expected: [outcome?.judgedLabel, outcome?.answer ? outcome.label : null].filter(Boolean).join(" | ") }; })()`);

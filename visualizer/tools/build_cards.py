@@ -938,13 +938,20 @@ def build(source, readings, tracked: Tracked):
     for band in source["bands"]:
         if band.get("from_status"):
             status = tracked.statuses[band["from_status"]]
-            bands.append({"id": band["id"], "label": status["label"], "says": status["description"], "status": band["from_status"], "cards": []})
+            built = {"id": band["id"], "label": status["label"], "says": status["description"], "status": band["from_status"], "cards": []}
         elif band.get("levels"):
             # A band of several of the map's levels: its words are typed, and each card in it shows its own level.
             levels = [{"id": level, "label": tracked.statuses[level]["label"], "says": tracked.statuses[level]["description"]} for level in band["levels"]]
-            bands.append({"id": band["id"], "label": band["label"], "says": band["says"], "status": None, "levels": levels, "cards": []})
+            built = {"id": band["id"], "label": band["label"], "says": band["says"], "status": None, "levels": levels, "cards": []}
         else:
-            bands.append({"id": band["id"], "label": band["label"], "says": band["says"], "cards": []})
+            built = {"id": band["id"], "label": band["label"], "says": band["says"], "cards": []}
+        # The words of the control a band folds behind on the landing (optional, typed): what the band holds, true of every
+        # card in it, after the control's "Show" or "Hide"; a band without them gets a plain control from its own label.
+        if "control" in band:
+            if not isinstance(band["control"], str) or not band["control"].strip() or band["control"] != band["control"].strip():
+                raise Breach(f"the band {band['id']}: its control's words are a plain string, or left out")
+            built = {**{key: value for key, value in built.items() if key != "cards"}, "control": band["control"], "cards": []}
+        bands.append(built)
     if [band["id"] for band in bands] != list(BANDS):
         raise Breach(f"the bands are {[band['id'] for band in bands]}, the format's are {list(BANDS)}")
     by_band = {band["id"]: band for band in bands}

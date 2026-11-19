@@ -117,7 +117,11 @@ A change of the map's words alone (same revision) needs only `python3 tools/buil
 Top level: `format`, `note`, `built_from` (`map.revision` and `as_of`; `record.revision`), `bands`,
 `not_run`, `listing`, `cards`.
 
-- **`bands`**, in this order, each `{id, label, says, cards}` (the card ids, in their order):
+- **`bands`**, in this order, each `{id, label, says, control?, cards}` (the card ids, in their order). `control`
+  (optional, typed in the source file) is the words of the control a band folds behind on the landing: what the band
+  holds, true of every card in it, read after the control's "Show" or "Hide" and beside the band's count of cards. A
+  band without it gets a plain control from its own label. The rule on typed words holds for it: outside the judged
+  band's own words it says neither judged nor qualified.
   1. `examples`, "Examples to start with": the tumour tissue and the assembly. "Example" names these two
      and nothing else.
   2. `judged`, "Judged under a registered protocol": everything the record has judged or put to a
@@ -130,11 +134,14 @@ Top level: `format`, `note`, `built_from` (`map.revision` and `as_of`; `record.r
      card stands here only where its map part's level is one of them, and, at a level that is neither
      qualified nor failed, where it reads a judged run's verdict file. A failure is not set apart:
      projective stepping (Failed qualification), MG1's and parity rung 1's failed judged runs, the L4's
-     run C and the first origin-of-life harness run's kept failure stand among the passes.
-  3. `development`, "Development runs".
+     run C and the first origin-of-life harness run's kept failure stand among the passes. Its `control`:
+     "qualifications and judged runs" (each card is a registered qualification, a judged run, or both;
+     "qualifications" alone is not true of all of them: E07-v1 is a judged experiment, and the composite
+     on the L4 stands at "Implemented and guarded", not yet qualified, on its judged run C).
+  3. `development`, "Development runs". Its `control`: "development runs".
   4. `invented`, "Invented numbers": the test sheet, alone. It is no run of the engine. (In the
      catalogue's code `example: true` means invented numbers; no string a visitor reads puts "example"
-     and "invented numbers" on one card.)
+     and "invented numbers" on one card.) Its `control`: "the test sheet of invented numbers".
 - **`not_run`**: `{says, lens}`: the one line that says what was designed or planned and never ran is
   on the Engine map, and the lens to link to. Nothing designed or planned and never run has a card.
 - **`listing`**: `experiments`, every catalogue experiment a card opens, in the cards' order;
@@ -175,7 +182,7 @@ own files under `visualizer/`), a place in its words, and a revision of main in 
 - Every count names its run, file and field; every verdict its day; a count left off says why.
 - A map part's standing is the part's, field by field, its level as the map gives it; a card in the
   `judged` band has a map part at one of the band's levels, and one that is neither qualified nor failed
-  reads a judged run's verdict; nothing typed (titles, questions, reasons, and the band words outside the judged band's own) says judged or qualified; an
+  reads a judged run's verdict; nothing typed (titles, questions, reasons, and the band words, a band's control among them, outside the judged band's own) says judged or qualified; an
   answer and a catalogue or entry standing are their source's words.
 - The gap-junction work: `first` is "Development work, not judged (D138).", no level of its own, its
   citation is the catalogue's, the note's paragraph on the switch is carried from `a4b2db3d`, and no
@@ -305,6 +312,13 @@ Rows:
 
 ## For the landing
 
+- The first band of the file stands open, drawn large; every later band stands folded as the landing first opens:
+  its head (its label, its `says` and how many cards it holds) with one control, a button whose words are the band's
+  `control` (decided on 19 November 2026, when the user asked that the judged band stand behind a control so that a
+  visitor first sees the two examples). The rule is the band's place in the file, never its id, so a band the landing
+  has not seen folds the same way. A folded band's cards are not drawn, reached or fetched. A card asked for (by its
+  detail's address, from the List, or by the way back from its view) opens its band first. Which bands a visitor
+  opened is kept in the browser's own storage, where it may be kept.
 - Show a card's `standing.first` before anything else where it has one; a null `level` shows no
   level.
 - `none` is the card's reason for having no level, in its own words or the catalogue's.

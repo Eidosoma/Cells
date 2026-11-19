@@ -1223,11 +1223,14 @@ def ordered_sides(counts):
     return {side: counts[side] for side in SIDES if counts.get(side)}
 
 
-def make_lines(entries, placed, filing, units, cell, lone_up_to=None):
+def make_lines(entries, placed, filing, units, cell, lone_up_to=None, per_file=None):
     """The lines of the file, in the order the members follow: a family's line for each
     shelf of the cell that holds members of it, then the proteins that are the only member of
-    their family, by shelf, district and side, then the parts of "no family" for each shelf."""
+    their family, by shelf, district and side, then the parts of "no family" for each shelf.
+    per_file: how many members a file of members holds, where a species states its own
+    (MEMBERS_PER_FILE for the others)."""
     lone_up_to = LONE_UP_TO if lone_up_to is None else lone_up_to
+    per_file = MEMBERS_PER_FILE if per_file is None else per_file
     order = lambda protein: (entries[protein]["gene"] == "", natural(entries[protein]["gene"].upper()), protein)
     total = Counter(filing.family.values())
     grouped, lone, parts = defaultdict(list), defaultdict(list), defaultdict(list)
@@ -1262,7 +1265,7 @@ def make_lines(entries, placed, filing, units, cell, lone_up_to=None):
     file_index, used = 0, 0
     for line in [*lines, *alone, *rest]:
         count = len(line["proteins"])
-        if used and used + count > MEMBERS_PER_FILE:
+        if used and used + count > per_file:
             file_index, used = file_index + 1, 0
         line["file"], line["at"] = f"members-{file_index:02d}.json", [used, used + count]
         used += count
@@ -1545,14 +1548,17 @@ def table_text(columns, sequence, entries, placed, filing, alone, units, more=No
     return "\n".join("\t".join(row) for row in [columns, *table_rows]) + "\n"
 
 
-def within_limits(files_out, paths, folder=False):
+def within_limits(files_out, paths, folder=False, limits=None):
     """The files' sizes; the build stops if a file would hold a machine path (paths), or if
-    the files outgrow their limits (and, with folder, the folder its limit)."""
+    the files outgrow their limits (and, with folder, the folder its limit). limits: the
+    three limits (shelves, any file, the folder) where a species states its own, with its
+    reason in its tool; the shared ones otherwise."""
+    shelves_limit, file_limit, folder_limit = limits or (LIMIT_SHELVES, LIMIT_FILE, LIMIT_FOLDER)
     for name, text in files_out.items():
         if paths.search(text):
             raise SystemExit(f"the {name} would hold a machine path")
     size = {name: len(text.encode("utf-8")) for name, text in files_out.items()}
-    if size["shelves"] >= LIMIT_SHELVES or max(size.values()) >= LIMIT_FILE or (folder and sum(size.values()) >= LIMIT_FOLDER):
+    if size["shelves"] >= shelves_limit or max(size.values()) >= file_limit or (folder and sum(size.values()) >= folder_limit):
         raise SystemExit(f"the files have outgrown their limits: {size}")
     return size
 

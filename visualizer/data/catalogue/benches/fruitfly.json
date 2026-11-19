@@ -2350,6 +2350,24 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-2602",
+       "DNA-directed RNA polymerase I complex",
+       12,
+       10,
+       10,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:fruitfly:complex_portal"
+    },
     "elsewhere": {
      "entry": "7OBA",
      "organism": "Homo sapiens",
@@ -3413,6 +3431,29 @@
      "iron-sulfur (IP) fragment": [
       "Q9VF27"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-8628",
+       "Mitochondrial respiratory chain complex I",
+       43,
+       36,
+       36,
+       {
+        "most": 1,
+        "n_most": 43,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:fruitfly:complex_portal"
     },
     "pick": {
      "entry": "8B9Z",
@@ -6133,6 +6174,55 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-2671",
+       "CMG helicase complex",
+       11,
+       11,
+       11,
+       {
+        "most": 1,
+        "n_most": 7,
+        "except": [],
+        "not_given": 4
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-2942",
+       "MCM complex",
+       6,
+       6,
+       11,
+       {
+        "most": 1,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-2670",
+       "GINS complex",
+       4,
+       4,
+       11,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:fruitfly:complex_portal"
+    },
     "pick": {
      "entry": "6RAY",
      "title": "D. melanogaster CMG-DNA, State 2A",
@@ -6273,6 +6363,29 @@
       "Q24169",
       "Q9Y1B2"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2369",
+       "Nuclear origin recognition complex",
+       6,
+       5,
+       5,
+       {
+        "most": 1,
+        "n_most": 6,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:fruitfly:complex_portal"
     },
     "pick": {
      "entry": "7JK6",

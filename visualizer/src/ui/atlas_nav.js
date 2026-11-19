@@ -180,7 +180,8 @@ function makeSearch(viewer, lens, nav) {
     if (ticket !== asked || !found) return;
     const several = shelves.several;
     const block = (title, rows, more) => (rows.length ? h("section", {}, h("h4", {}, title), rows, more ? h("p", { class: "atlas-note" }, `and ${number(more)} more: type more of the name`) : null) : null);
-    const proteins = found.proteins.map((item) => row(item, item.gene && item.gene !== item.label ? `${item.gene} · ${item.label}` : item.label, [several ? shelfName(shelves, item.shelf) : "", item.under].filter(Boolean).join(" · ")));
+    // A protein found by a mark the search reads (an unreviewed entry of its gene that is not shown) says so, in the mark's label.
+    const proteins = found.proteins.map((item) => row(item, item.gene && item.gene !== item.label ? `${item.gene} · ${item.label}` : item.label, [item.via ? `${item.via.label}: ${item.via.value}` : "", several ? shelfName(shelves, item.shelf) : "", item.under].filter(Boolean).join(" · ")));
     const families = found.families.map((line) => row({ key: line.within && !line.members ? line.within.key : line.key, side: line.side }, `${line.label} · ${number(line.count)}`, several ? shelfName(shelves, line.shelf ?? null) : shelves.districtLabel(line)));
     const shelfRows = found.shelves.map((item) => row({ key: item.key }, item.label, `${number(item.count)} proteins`));
     const blocks = [block(`Proteins · ${number(found.total)}`, proteins, found.more), block("Families", families, found.familiesMore), block("Shelves", shelfRows, 0)].filter(Boolean);

@@ -15,17 +15,20 @@
       "id": "judged",
       "label": "Judged under a registered protocol",
       "says": "Each card here was judged under a registered protocol, experiment or qualification. Passes and failures stand side by side, and each card shows its own level from the Engine map.",
-      "levels": ["qualified", "failed", "landed"]
+      "levels": ["qualified", "failed", "landed"],
+      "control": "qualifications and judged runs"
     },
     {
       "id": "development",
       "label": "Development runs",
-      "says": "Runs of the engine made while it is built, each with its standing in the record's words."
+      "says": "Runs of the engine made while it is built, each with its standing in the record's words.",
+      "control": "development runs"
     },
     {
       "id": "invented",
       "label": "Invented numbers",
-      "says": "A test sheet written by the viewer's own tool. No engine ran."
+      "says": "A test sheet written by the viewer's own tool. No engine ran.",
+      "control": "the test sheet of invented numbers"
     }
   ],
   "not_run": {
