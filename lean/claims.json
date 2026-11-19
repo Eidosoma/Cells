@@ -65,6 +65,23 @@
       "driver": "lean/checks/neutral_permeation.py",
       "record": "lean/PROGRESS.md#19-november-2026--passive-neutral-permeation"
     },
+    "proton-leak": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["proton_constant_field_leak@1"],
+      "engine_revision": "1dee280f681af373071079c5f9b5921725dc7ed3",
+      "record_revision": "252cb83542e368e5572328d7eb0266ca8bd7417f",
+      "sources": {
+        "Inward flux and instantaneous heat": "src/cells/laws/transport/proton_leak.py#L28",
+        "Bernoulli evaluator": "src/cells/laws/electrochemistry.py#L17",
+        "Tissue patch rates and endpoints": "src/cells/kinds/passive_routes.py#L348",
+        "Independent Decimal flux": "validation/betse/junction_transport/check.py#L10",
+        "Independent free-proton closure": "validation/compartment_ph/ph_reference.py#L167",
+        "Buffered tissue fixture": "tests/unit/test_proton_buffer_kind.py#L258"
+      },
+      "driver": "lean/checks/proton_leak.py",
+      "record": "lean/PROGRESS.md#19-november-2026--passive-proton-leak"
+    },
     "extracellular-face": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -160,6 +177,26 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["neutral-permeation"], "result": "Five compiled cases agreed with the independent flux within 7.11 × 10⁻¹⁵ fmol/s. In the closed tissue pair at 20 ms, the largest relative error in final compartment amount was 1.70 × 10⁻⁴ against a 5 × 10⁻⁴ tolerance."},
       "biology": {"status": "open", "observable": "Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "proton-leak",
+      "title": "Voltage and free proton concentrations set the leak reversal",
+      "statement": "For an open route, inward flux is positive exactly when hOut exceeds hIn × B(−x)/B(x), using the engine’s selected Bernoulli factor at x = FV/(RT). The analytic law reverses at V = (RT/F) × (ln hOut − ln hIn) and releases nonnegative instantaneous heat. The engine’s real-arithmetic evaluator gives the analytic flux at x = 0 and for |x| ≥ 10⁻⁴. At other x the polynomial has its own reversal ratio.",
+      "assumptions": ["Positive free H⁺ concentrations on both sides in mM, positive absolute temperature and proton valence +1. Voltage is inside minus outside, with positive flux inward.", "Area × permeability × opening is positive for directional claims and may be zero for the heat inequality. The proof interprets both evaluator branches in real arithmetic."],
+      "formal": {"status": "proved", "about": ["cells.proton_constant_field_leak@1"], "theorems": {
+        "CellsProofs.Transport.ProtonLeak.series_flux": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.series_inward_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.series_eq_analytic": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_inward_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_equilibrium_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.reversal_voltage_iff": "lean/CellsProofs/Transport/ProtonLeak.lean",
+        "CellsProofs.Transport.ProtonLeak.analytic_heat_nonneg": "lean/CellsProofs/Transport/ProtonLeak.lean"
+      }, "sources": {
+        "Cells constant-field definitions": "lean/CellsProofs/Transport/ConstantField.lean",
+        "Goldman’s constant-field model (1943)": "https://doi.org/10.1085/jgp.27.1.37"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
+      "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening. In Jurkat T cells, the reported reversal slope was −47 mV/pH against an ideal −58 mV/pH. The slope uncertainty and intracellular pH remain to be assessed. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
     },
     {
       "id": "extracellular-face-direction",

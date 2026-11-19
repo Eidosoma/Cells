@@ -6,7 +6,7 @@ Each row links to a Cells registry declaration. The proof column lists named cla
 
 ## Registered laws
 
-Direct Lean claims cover 4 of 27 registered laws. Recorded numerical comparisons exercise 4.
+Direct Lean claims cover 5 of 27 registered laws. Recorded numerical comparisons exercise 5.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Direct Lean claims cover 4 of 27 registered laws. Recorded numerical comparisons
 | [`cells.nav1p2_m3h_regularized@1`](../src/cells/laws/channels/nav1p2_m3h_regularized.py#L47) | Open | Open |
 | [`cells.passive_neutral_permeation@1`](../src/cells/laws/routes/passive_permeation.py#L97) | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | [neutral-permeation](https://github.com/Eidosoma/Cells/blob/b6c7108c22c4c3ea3366672932f3d49ca8b8a3c8/lean/PROGRESS.md#19-november-2026--passive-neutral-permeation) |
 | [`cells.proton_atp_mass_action_positive@1`](../src/cells/laws/pumps/proton_pump.py#L257) | Open | Open |
-| [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L52) | Open | Open |
+| [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L52) | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | [proton-leak](https://github.com/Eidosoma/Cells/blob/252cb83542e368e5572328d7eb0266ca8bd7417f/lean/PROGRESS.md#19-november-2026--passive-proton-leak) |
 | [`cells.rapid_binding@1`](../src/cells/laws/reactions/rapid_binding.py#L581) | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | [single-site-binding](https://github.com/Eidosoma/Cells/blob/c4b3f5ce8fefbd403fa9fa0344bea14c9be8f55c/lean/PROGRESS.md#19-november-2026--single-site-binding-and-face-power-units) |
 | [`cells.regular_mixing@1`](../src/cells/models/assembly_lineages_v2/regular_mixing.py#L153) | Open | Open |
 | [`cells.reservoir_exchange@1`](../src/cells/models/assembly_lineages/exchange.py#L64) | Open | Open |

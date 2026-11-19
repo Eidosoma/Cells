@@ -12,6 +12,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | Open |
 | [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | Open |
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | Open |
+| [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | Open |
 | [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | Open |
 | [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | Open |
 | [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | Open |
@@ -127,6 +128,12 @@ For neutral permeation, compare the compiled inward flux and the final amounts i
 
 ```bash
 "$cells_python" -B checks/neutral_permeation.py
+```
+
+For proton leak, check the reversal voltage, instantaneous heat, the small-voltage branch and the free H⁺ read in a buffered tissue cell. The driver also resolves the polynomial’s reversal ratio at 80-digit precision. [Proton driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10)
+
+```bash
+"$cells_python" -B checks/proton_leak.py
 ```
 
 For extracellular faces, run the direction and power cases and the closed tissue model. The driver checks the engine's two mean thresholds, opposing drives, an adjacent-float pair and an intentionally reversed flux. The reference test checks the scalar mean against Decimal. [Face driver](checks/logmean_face.py) · [Scalar reference](../validation/tissue/surface_reference.py#L13)
