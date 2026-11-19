@@ -856,10 +856,8 @@ def retirement_masks(due, p, *, xp):
     )
 
 
-def event_map(state, due, p, *, xp, view, lifecycle=None):
-    """(state after the due divisions, validity) (module docstring). With `lifecycle` (the
-    composite's, beside a kind with fields on the slot axes), the kinds' fields follow the same
-    division by role, from division_maps and retirement_masks; without it nothing here changes."""
+def event_map(state, due, p, *, xp, view):
+    """(state after the due divisions, validity) (module docstring)."""
     n = p.active.size
     z = xp.reshape(p.valence, (-1,))
     before = view(state)
@@ -968,11 +966,6 @@ def event_map(state, due, p, *, xp, view, lifecycle=None):
         updates[field] = xp.where(mask, 0.0, value)
     updates["division_applied"] = xp.where(due, 1, state.division_applied)
     new = state._replace(**updates)
-    kinds_valid = None
-    if lifecycle is not None:  # Static: only beside a kind with fields on the slot axes.
-        new, kinds_valid = lifecycle(
-            new, division_maps(due, p), retirement_masks(due, p, xp=xp), xp=xp
-        )
     # After the event, at the view: isopotential, plate charges, free energy.
     after = view(new)
     # Contacts (a view reads no gate): one that opens takes the parent contact's gate when it
@@ -1019,25 +1012,37 @@ def event_map(state, due, p, *, xp, view, lifecycle=None):
     )
     for value in new:
         valid &= xp.all(xp.isfinite(value))
-    if kinds_valid is not None:
-        valid &= kinds_valid
     return new, valid
+
+
+def divide(state, due, p, *, xp, view, lifecycle=None):
+    """(state after the due divisions, validity): event_map, then, with `lifecycle` (the
+    composite's, beside a kind with fields on the slot axes; static), the kinds' fields by role
+    through the same division's maps and retirement masks (division_maps, retirement_masks), its
+    validity and-ed in. event_map's own checks stay as the S5 protocol copies them
+    (tests/unit/test_s5_protocol_binding.py's staleness guard); the lifecycle moves only the kinds'
+    fields and the composite's records, which no check of event_map reads."""
+    new, valid = event_map(state, due, p, xp=xp, view=view)
+    if lifecycle is None:
+        return new, valid
+    new, kinds_valid = lifecycle(new, division_maps(due, p), retirement_masks(due, p, xp=xp), xp=xp)
+    return new, valid & kinds_valid
 
 
 def apply_divisions(state, control, p, *, xp, view, lifecycle=None):
     """(state after the divisions due at the step start, validity and schedule consistency);
-    `lifecycle`: the composite's callable for the kinds' fields, or None (event_map)."""
+    `lifecycle`: the composite's callable for the kinds' fields, or None (divide)."""
     due = (control.partition_due > 0) & (state.division_applied == 0)
     stale = (control.partition_due == 0) & (state.division_applied != 0)
     ok = ~xp.any(stale)
     if xp is np:
         if np.any(due):
-            new, valid = event_map(state, due, p, xp=np, view=view, lifecycle=lifecycle)
+            new, valid = divide(state, due, p, xp=np, view=view, lifecycle=lifecycle)
             return new, ok & valid
         return state, ok
     new, valid = jax.lax.cond(
         jnp.any(due),
-        lambda s: event_map(s, due, p, xp=jnp, view=view, lifecycle=lifecycle),
+        lambda s: divide(s, due, p, xp=jnp, view=view, lifecycle=lifecycle),
         lambda s: (s, jnp.asarray(True)),
         state,
     )
@@ -1087,7 +1092,7 @@ class IsopotentialPartition(Operator):
     EVENT = True
     BOOKS_AT_VIEW = True  # Its event books at the composite's view.
     RETIRES = True
-    TAKES_LIFECYCLE = True  # The kinds' lifecycle at each division (event_map).
+    TAKES_LIFECYCLE = True  # The kinds' lifecycle at each division (divide).
     CLOSES = ("active",)  # Cells only: patches, populations and contacts follow (§2).
     STATE_AXES = STATE_AXES
     STATE_DTYPES = {"division_applied": np.int64}
