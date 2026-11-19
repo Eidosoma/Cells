@@ -1152,9 +1152,9 @@ def test_replacement_composes_away_from_owners_and_never_on_or_from_one():
         parse_spec(replaced([(0.005, "cell_1", None, "c1_new", "cell_0")]))
 
 
-# Admitted before its module lands: FR-2's law, so that the admission is on main for its builder (the
-# lead's ruling of 19 November 2026). The test below fails once it registers while still listed
-# here, so the entry goes with that landing.
+# Admitted before its module lands: FR-2's law, so that the admission is on main for its builder
+# (the lead's ruling of 19 November 2026). The test below fails once it registers while still
+# listed here, so the entry goes with that landing.
 PENDING_ADMITTED = frozenset({"scheduled_membrane_trafficking@1"})
 ADMITTED_AT_IMPORT = comp.ADMITTED  # The module's list, before any fixture patches it.
 
@@ -1244,7 +1244,8 @@ def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
     on the list, beside membrane state's."""
     spec = parse_spec(stateful(routes=["lys_0"]))
     assert [d.law for d in spec.model.operators] == [comp.STATE_LAW, LAW, trafficking]
-    with pytest.raises(ConfigError, match=rf"admits {comp.STATE_LAW} only together with {STAND_IN}"):
+    refusal = rf"admits {comp.STATE_LAW} only together with {STAND_IN}"
+    with pytest.raises(ConfigError, match=refusal):
         parse_spec(stateful())
     assert {comp.STATE_LAW, "scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
 

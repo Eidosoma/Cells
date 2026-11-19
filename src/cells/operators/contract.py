@@ -679,8 +679,7 @@ def _declaration_read_errors(operator):
         for read in declared:
             if not (isinstance(read, Read) and read.mode == "reference" and not read.scoped):
                 errors.append(
-                    f"declares a read of {field} that is not an unscoped reference read "
-                    f"({read!r})"
+                    f"declares a read of {field} that is not an unscoped reference read ({read!r})"
                 )
     return errors
 
