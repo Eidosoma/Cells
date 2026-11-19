@@ -24,6 +24,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
+from cells.operators import species_common as common
 from cells.registry.inventory_species import add_inventory_species
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
@@ -56,7 +57,14 @@ def uncatalysed(raw, rate):
 
 CASES = {
     # The species.
-    "charged": (lambda raw: species_entry(raw, "S").update(id="Na"), "neutral species only"),
+    # A charged row is admitted (FR-15 S1), but not one on @3's own routes that is no counter-ion.
+    "charged and permeant": (
+        lambda raw: (
+            species_entry(raw, "S").update(id="Na"),
+            raw["model"]["membranes"][1]["permeability_m_per_s"].update(Na=1e-9),
+        ),
+        "zero membrane, junction and channel permeability only",
+    ),
     "permeant": (
         lambda raw: raw["model"]["membranes"][1]["permeability_m_per_s"].update(S=1e-9),
         "zero membrane, junction and channel permeability only",
@@ -293,6 +301,58 @@ def test_definition_refusals(name):
     change, message = CASES[name]
     raw = rfx.enzyme_network()
     change(raw)
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        parse_spec(raw)
+
+
+def _counter(raw, **changes):
+    species_entry(raw, "K").update(changes)
+
+
+def _no_counter(raw):
+    del species_entry(raw, "K")["counter_ion"]
+
+
+def _permeant_trace(raw):
+    """X permeant on cell_0's patch and flagged as a counter-ion (a charged trace row)."""
+    raw["model"]["membranes"][0]["permeability_m_per_s"]["X"] = 1e-9
+    species_entry(raw, "X")["counter_ion"] = True
+
+
+CHARGED = {  # FR-15 S1 on the charge-neutral source 0 -> X + K (X: z = -1, a 1 uM trace).
+    "admitted": (lambda raw: None, None),
+    "charge not conserved": (
+        lambda raw: reaction(raw, "make").update(products={"X": 1}),
+        "changes the net charge by sum(nu z) = -1",
+    ),
+    "permeant counter-ion without the flag": (_no_counter, "zero membrane, junction and channel"),
+    "trace counter-ion": (_permeant_trace, "counter-ion 'X' is not covered by @3's explicit-rate"),
+    "neutral counter-ion": (
+        lambda raw: block(raw)["species"].append(dict(rfx.species("S"), counter_ion=True)),
+        "a counter-ion is charged; 'S' has valence 0",
+    ),
+    "counter_ion not a boolean": (lambda raw: _counter(raw, counter_ion=1), "is true or false"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(CHARGED))
+def test_charged_rows_need_charge_conserving_reactions_and_covered_counter_ions(name):
+    """FR-15 S1 (the lead's rulings of 19 November 2026): charged rows are admitted where every
+    reaction conserves charge, in integers, and a charged row on @3's own routes is a declared
+    counter-ion that @3's explicit-rate bound covers (K here, permeant on cell_0's patch, its
+    margin checked); a charged trace row flagged as one is refused, its permeation the
+    passive-routes kind's. Host side."""
+    change, message = CHARGED[name]
+    raw = rfx.charge_neutral_source()
+    change(raw)
+    if message is None:
+        spec = parse_spec(raw)
+        listed = spec.model.operators[0].species
+        assert [s.counter_ion for s in listed] == [False, True]
+        margin, route = common.counter_ion_margin(cs.projection(spec), "K")
+        assert margin >= common.COUNTER_ION_COVERAGE and route.startswith("membrane")
+        assert parse_spec(cs.to_dict(spec)).model.operators == spec.model.operators
+        return
     with pytest.raises(ConfigError, match=re.escape(message)):
         parse_spec(raw)
 

@@ -767,7 +767,22 @@ explored.
   is F2.
 - **Status:** requested; awaits the user's go. The lead recommends it first of the gap-junction
   features. (18 November 2026, D219: scheduled with the kinds and @3 owners after their current
-  work. Not started.)
+  work.)
+- **F2's direction (the lead's rulings of 19 November 2026): S1 + P2.**
+  - **S1, built on `local_species_reactions@1` in place (D148, a widening).**
+    - Every reaction conserves charge, Σνz = 0, checked in integers.
+    - A charged row keeps @3's own routes only as a declared `counter_ion` that @3's
+      explicit-rate bound covers (species_common.check_counter_ion). A charged trace row stays
+      refused there.
+    - A charged source with its counter-ion is a source reaction, for example ∅ → X⁻ + K⁺.
+    - Exchange stays neutral.
+    - **Limit:** charged turnover routes wait for a `scheduled_species_turnover@2`, when a
+      consumer needs exact first-order clearance of a charged row.
+  - **P2, next:** a charged constant-field route law on the passive-routes kind
+    (`passive_constant_field_permeation@1`), on patches first.
+    - Junction hosting waits for the @3 owner's answer on two points: whether the field solve's
+      floating-component residual must include a kind's cell-to-cell current, and whether
+      KindRates gains a junction_flux.
 
 ## FR-16 — Junction gating and availability
 

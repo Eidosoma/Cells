@@ -86,6 +86,13 @@ from cells.operators.contract import Operator
 from cells.operators.species_turnover import scatter_add, set_rows
 
 LAW_ID = "scheduled_species_exchange@1"
+# FR-15 S1: exchange stays neutral. A charged scheduled flux is electrogenic transport, which needs
+# its electrical work and a place in the membrane current; no consumer asks for it.
+CHARGED_LIMIT = (
+    ": a charged scheduled flux is electrogenic transport, which version 1 does not book (its "
+    "electrical work and its place in the membrane current); charged permeation goes through the "
+    "passive-routes kind's constant-field law (FR-15)"
+)
 STEP_ID = "palindromic_exact_exchange_stages@1"
 DIRECTIONS = ("export", "import")
 LAWS = ("flux", "first_order", "saturable")
@@ -162,7 +169,7 @@ def parse_exchange(raw, base):
     _fields(raw, {"law", "species", "routes", "templates"}, "species exchange")
     if raw["law"] != LAW_ID:
         raise ConfigError("Species exchange requires law " + LAW_ID)
-    species = common.parse_species(raw["species"], base, LAW_ID)
+    species = common.parse_species(raw["species"], base, LAW_ID, limit=CHARGED_LIMIT)
     listed = {s.id for s in species}
     m = base.model
     patches = {p.id: p for p in m.membranes}
