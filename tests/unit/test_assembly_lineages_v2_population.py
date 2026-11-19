@@ -27,8 +27,9 @@ Each claim with a planted error it must catch (D187):
   the books close (planted: keeping the largest picks other slots); the fresh pool above c_ext is
   refused.
 
-World-compiling cost: one program (the division test's world, three runs of one structure); its
-seconds on the timed lane are stated with its tier row. Reason: the record is the run's own.
+World-compiling cost: the division test's program (three runs) and the population program (one
+structure at K = 1, 3 and 4), 66.33 s for the whole file on the timed lane. Reason: the records,
+the selection map and the stops are the runs' own.
 """
 
 import json
