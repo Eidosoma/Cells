@@ -7,7 +7,10 @@ a constant rate that takes L's stored total through zero at 60% of the run, insi
 - The envelope refuses first. As the free L runs out, the network's lag behind the drain passes
   its 1e-3 pX budget while the read is still valid: here between 40% and 30% of L's total left,
   shown at the host level at the drain's transport. In a run it refuses the first stage it sees
-  past that point, a step before the crossing at the world's step.
+  past that point, and a step's end state is next seen as the next step's start. At the world's
+  1 ms step, that is the crossing step's start (17% of the total left), so the full kind is
+  refused on the crossing step before its end crosses zero. At finer steps it is refused earlier,
+  near t = 0.0016 s.
 - With the envelope lifted (a planted copy of the kind without its stage_check), the run reaches
   the crossing, and the engine refuses that step: at its end state the read is invalid and
   domain_valid fails, so no invalid step is accepted. The message names the crossing step, so the
