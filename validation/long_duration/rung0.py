@@ -60,6 +60,10 @@ def window_raw(window, k):
     raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
     for group in raw["experiment"]["channel_controls"]:
         group["schedule"] = [c for c in group["schedule"] if c["time"] <= end]
+    if w.get("no_channels"):  # Amendment 1's WN: pump and passive leaks only, no gates, no cue.
+        raw["model"]["channels"] = []
+        raw["experiment"]["channel_controls"] = []
+        raw["execution"]["channel_capacity"] = 0
     return raw
 
 
@@ -120,7 +124,8 @@ def run(window, k, out_dir):
         start = at_ms(w["start_ms"])
         keeper = harness.Keeper([t for t in spec.experiment.observation_times if t >= start])
         policy = WindowPolicy(window_steps=reg["window_steps"], row_checks="device")
-        result = run_windowed(spec, policy, checkpoint(spec, model, start), sink=keeper)
+        start_point = None if w.get("from_initial") else checkpoint(spec, model, start)
+        result = run_windowed(spec, policy, start_point, sink=keeper)
         times, rows = keeper.stacked()
         np.savez_compressed(out / "rows.npz", times=times, **rows)
         record.update(
@@ -143,15 +148,15 @@ def run(window, k, out_dir):
 # ------------------------------------------------------------------ the readings
 
 
-def classes(rows):
+def classes(rows, window="WA"):
     """Per row: membrane voltages [patch], concentrations [species, cell] and the gates by law
-    {nav_m, nav_h, kir_m, kir_h} [cell], from the engine's own readouts (H2 at any dt: the layout
-    does not depend on dt)."""
+    {nav_m, nav_h, kir_m, kir_h} [cell], from the engine's own readouts, on the window's own
+    layout (which does not depend on dt; WN's has no channels, so its gate classes are empty)."""
     from cells.definitions.specs import parse_spec
     from cells.models import surface_pump_projective as projective
     from cells.registry.models import get_model
 
-    spec = parse_spec(window_raw("WA", 0))
+    spec = parse_spec(window_raw(window, 0))
     model = get_model(spec.model)
     _, p = model.initial_values(spec)
     cells = np.asarray(p.active, dtype=bool)
@@ -170,6 +175,9 @@ def classes(rows):
         out["kir_m"].append(g[0, kir])
         out["kir_h"].append(g[1, kir])
     out = {key: np.asarray(v) for key, v in out.items()}
+    rows_count = len(out["voltage"])
+    for g in ("nav_m", "nav_h", "kir_m", "kir_h"):
+        out[g] = out[g].reshape(rows_count, -1)
     out["gate"] = np.concatenate([out[g] for g in ("nav_m", "nav_h", "kir_m", "kir_h")], axis=1)
     return out
 
@@ -490,6 +498,239 @@ def analyse(output, root):
     return 0
 
 
+# ------------------------------------------------------------------ amendment 1
+
+
+def window_arms(root, window, ks):
+    """Every arm of one window: (times, classes, rows) per k, the steps, and the run records."""
+    arms, steps, records = {}, {}, {}
+    for k in ks:
+        record, times, rows = load_arm(root, window, k)
+        records[k] = {
+            x: record.get(x) for x in ("status", "error", "steps", "off_nominal_boundaries")
+        }
+        if rows is not None:
+            arms[k] = (times, classes(rows, window), rows)
+            steps[k] = record["steps"]
+    return arms, steps, records
+
+
+def with_readable(entry, need, keys=CLASS_KEYS):
+    """The classes with at least `need` readable orders."""
+    return [c for c in keys if len(readable(entry[c])) >= need]
+
+
+def analyse_wn(output, root):
+    """Amendment 1's control, read alone: WN's power and its two finest readable orders."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    reg = registration()
+    ks = list(range(reg["k_range"][0], reg["k_range"][1] + 1))
+    second = reg["bands"]["second"]
+    arms, steps, records = window_arms(root, "WN", ks)
+    out = dict(study="FR-8 rung 0", amendment=1, window="WN", judged=False, arms=records)
+    if len(arms) != len(ks):
+        out.update(outcome="incomplete", missing=sorted(set(ks) - set(arms)))
+    else:
+        span = span_orders(
+            reg, "WN", {k: arms[k][:2] for k in ks}, steps, reg["windows"]["WN"]["spans"]["control"]
+        )
+        powered = with_readable(span, reg["amendment_1"]["power_min_orders"])
+        passes = bool(powered) and all(
+            all(in_band(v, second) for v in finest(span[c], 2)) for c in powered
+        )
+        out.update(
+            span=span,
+            powered_classes=powered,
+            outcome="no power" if not powered else ("passes" if passes else "fails"),
+        )
+    with open(output, "x") as stream:
+        json.dump(out, stream, indent=1)
+        stream.write("\n")
+    print(json.dumps({x: out.get(x) for x in ("outcome", "powered_classes")}))
+    return 0
+
+
+def analyse_amended(output, root, wn_output):
+    """The main windows under amendment 1, opened only after WN passed: every rule decided on the
+    classes that have its readable pairs, and "untested" where none has."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    wn = json.loads(Path(wn_output).read_text())
+    if wn.get("outcome") != "passes":
+        raise SystemExit("Amendment 1: the main windows are opened only after WN passes")
+    reg = registration()
+    ks = list(range(reg["k_range"][0], reg["k_range"][1] + 1))
+    second, first = reg["bands"]["second"], reg["bands"]["first"]
+    coarse = [k for k in ks if dt_of(k) >= 2.5e-4]
+    out = dict(study="FR-8 rung 0", amendment=1, judged=False, I1=synthetic(),
+               I2=dict(control="WN", outcome=wn["outcome"]), windows={})  # fmt: skip
+    data = {}
+    for window in ("WA", "WC", "WB"):
+        arms, steps, records = window_arms(root, window, ks)
+        entry = dict(arms=records)
+        if len(arms) == len(ks):
+            entry["spans"] = {
+                name: span_orders(reg, window, {k: arms[k][:2] for k in ks}, steps, span)
+                for name, span in reg["windows"][window]["spans"].items()
+            }
+            data[window] = (arms, steps)
+        out["windows"][window] = entry
+    w = out["windows"]
+    if not all("spans" in w[x] for x in ("WA", "WC", "WB")):
+        out["outcome"] = "incomplete"
+    else:
+        tie = tie_back(reg, data["WA"][0])
+        wa_t = w["WA"]["spans"]["transient"]
+        tie["faithful"] = (
+            tie["bitwise"]
+            or tie["largest_voltage_difference_V"] <= 1e-3 * wa_t["voltage"]["D"]["2"]
+        )
+        times = data["WA"][0][0][0]
+        lo, hi = (at_ms(v) for v in reg["windows"]["WA"]["spans"]["transient"])
+        mask = (times > lo) & (times <= hi)
+        a0, a2 = data["WA"][0][0][1], data["WA"][0][2][1]
+        i4 = {c: float(np.max(difference(a0[c], a2[c], c)[mask], initial=0.0))
+              for c in ("voltage", "gate")}  # fmt: skip
+        instruments = out["I1"]["passed"] and wn["outcome"] == "passes" and tie["faithful"]
+        verdict = dict(I3=tie, I4=i4, instruments_pass=bool(instruments), untested={})
+        # (C): every class with two readable orders recovers; some class drops at a coarse pair.
+        evaluable = with_readable(wa_t, 2)
+        verdict["untested"]["C"] = sorted(set(CLASS_KEYS) - set(evaluable))
+        if not evaluable:
+            verdict["C"] = "untested"
+        else:
+            recovers = all(all(in_band(v, second) for v in finest(wa_t[c], 2)) for c in evaluable)
+            drops = any(v < 1.6 for c in CLASS_KEYS for k, v in readable(wa_t[c]) if k in coarse)
+            verdict["C"] = bool(recovers and drops)
+        # (B): a gate class with two readable orders, both in the first-order band.
+        gates = ("gate", "nav_m", "nav_h", "kir_m", "kir_h")
+        b_spans = {"WA transient": wa_t, "WC upswing": w["WC"]["spans"]["upswing"],
+                   "WB downswing": w["WB"]["spans"]["downswing"]}  # fmt: skip
+        b_eval = {n: with_readable(s, 2, gates) for n, s in b_spans.items()}
+        verdict["untested"]["B"] = {n: sorted(set(gates) - set(v)) for n, v in b_eval.items()}
+        if not any(b_eval.values()):
+            verdict["B"] = "untested"
+        else:
+            verdict["B"] = any(
+                all(in_band(v, first) for v in finest(b_spans[n][c], 2))
+                for n, cs in b_eval.items()
+                for c in cs
+            )
+        # (A): A1 from the records; A2 and A3 decided only where readable.
+        arms_all = [w[x]["arms"][k] for x in ("WA", "WC", "WB") for k in ks]
+        a1 = any((r.get("off_nominal_boundaries") or 0) > 0 for r in arms_all)
+        pre, post = w["WA"]["spans"]["pre_edge"], w["WA"]["spans"]["post_edge"]
+        pairs = [
+            (c, k)
+            for c in CLASS_KEYS
+            for k in ks[:-2]
+            if pre[c]["p"][str(k)] is not None and post[c]["p"][str(k)] is not None
+        ]
+        if not pairs:
+            a2 = "untested"
+        else:
+            a2 = any(post[c]["p"][str(k)] <= 1.6 and pre[c]["p"][str(k)] >= 1.8 for c, k in pairs)
+        wc = w["WC"]["spans"]["upswing"]
+        wc_eval = with_readable(wc, 1)
+        if not wc_eval:
+            a3 = "untested"
+        else:
+            wc_clean = all(all(v >= 1.8 for _, v in readable(wc[c])) for c in wc_eval)
+            wa_drops = any(v < 1.6 for c in CLASS_KEYS for _, v in readable(wa_t[c]))
+            a3 = bool(wc_clean and wa_drops)
+        verdict["A"] = dict(A1=bool(a1), A2=a2, A3=a3,
+                            implicated=bool(a1 or a2 is True or a3 is True))  # fmt: skip
+        no_edge = [wc, w["WB"]["spans"]["downswing"]]
+        coarse_readable = [v for s in no_edge for c in CLASS_KEYS for k, v in readable(s[c])
+                           if k in coarse]  # fmt: skip
+        verdict["A_excluded_as_necessary"] = (
+            "untested" if not coarse_readable else any(v < 1.6 for v in coarse_readable)
+        )
+        # (D): a class with three readable orders that does not settle.
+        d_eval = [(n, c) for n, s in b_spans.items() for c in with_readable(s, 3)]
+        if not d_eval:
+            verdict["D"] = "untested"
+        else:
+            verdict["D"] = any(
+                max(finest(b_spans[n][c], 3)) - min(finest(b_spans[n][c], 3)) > 0.5
+                and not in_band(finest(b_spans[n][c], 3)[-1], second)
+                and not in_band(finest(b_spans[n][c], 3)[-1], first)
+                for n, c in d_eval
+            )
+        flags = dict(A=verdict["A"]["implicated"], B=verdict["B"] is True,
+                     C=verdict["C"] is True, D=verdict["D"] is True)  # fmt: skip
+        identified = [x for x in ("A", "B", "C", "D") if flags[x]]
+        verdict["identified"] = identified if instruments else []
+        verdict["outcome"] = (
+            "instrument not validated"
+            if not instruments
+            else ", ".join(identified)
+            if identified
+            else "not identified"
+        )
+        # (C)'s extras and the deliverable, as registered (§5, §6).
+        finest_k = ks[-1]
+        times_f, _, rows_f = data["WA"][0][finest_k]
+        rates = transient_rates(reg, "WA", finest_k, times_f, rows_f,
+                                reg["windows"]["WA"]["spans"]["transient"])  # fmt: skip
+        rates["dt_times_rate"] = {
+            str(k): dict(gate=dt_of(k) * rates["fastest_gate_rate_per_s"],
+                         membrane=dt_of(k) * rates["membrane_rate_per_s"]) for k in ks
+        }  # fmt: skip
+        crossover = {}
+        for c in CLASS_KEYS:
+            best = None
+            for k, v in reversed(readable(wa_t[c])):
+                if in_band(v, second):
+                    best = k
+                else:
+                    break
+            crossover[c] = None if best is None else dict(k=best, dt_s=dt_of(best))
+        rates["crossover"] = crossover
+        verdict["C_extras"] = rates
+        deliverable = {}
+        for window, span in (("WA", "transient"), ("WC", "upswing"), ("WB", "downswing")):
+            s = w[window]["spans"][span]
+            deliverable[window] = {}
+            for c in CLASS_KEYS:
+                pick = [(k, v) for k, v in readable(s[c]) if 1.5 <= v <= 2.5]
+                deliverable[window][c] = (
+                    dict(pair=pick[-1][0], p=pick[-1][1],
+                         finer_arm_error=s[c]["D"][str(pick[-1][0])] / (2 ** pick[-1][1] - 1))
+                    if pick else None
+                )  # fmt: skip
+        arms_wa, budgets, meets = data["WA"][0], reg["budgets"], {}
+        for k in ks:
+            e = {
+                c: float(
+                    np.max(difference(arms_wa[k][1][c], arms_wa[finest_k][1][c], c), initial=0.0)
+                )
+                for c in ("voltage", "concentration", "gate")
+            }
+            ok = (
+                e["voltage"] <= budgets["voltage_V"]
+                and e["concentration"] <= budgets["relative_concentration"]
+                and e["gate"] <= budgets["gate"]
+            )
+            meets[str(k)] = dict(errors_against_finest=e, within=bool(ok))
+        within = [k for k in ks if meets[str(k)]["within"] and k != finest_k]
+        deliverable["largest_dt_within_stage0_budgets"] = (
+            dict(k=min(within), dt_s=dt_of(min(within))) if within else None
+        )
+        deliverable["arms_against_finest"] = meets
+        verdict["deliverable"] = deliverable
+        out["verdict"] = verdict
+        out["outcome"] = verdict["outcome"]
+    with open(output, "x") as stream:
+        json.dump(out, stream, indent=1, default=str)
+        stream.write("\n")
+    print(json.dumps({"outcome": out.get("outcome")}))
+    return 0
+
+
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "run":
@@ -499,6 +740,10 @@ if __name__ == "__main__":
         sys.exit(0)
     if command == "analyse":
         sys.exit(analyse(sys.argv[2], sys.argv[3]))
+    if command == "analyse_wn":
+        sys.exit(analyse_wn(sys.argv[2], sys.argv[3]))
+    if command == "analyse_amended":
+        sys.exit(analyse_amended(sys.argv[2], sys.argv[3], sys.argv[4]))
     raise SystemExit(
         "usage: rung0.py run WINDOW K OUT_DIR | synthetic OUTPUT | analyse OUTPUT ROOT"
     )

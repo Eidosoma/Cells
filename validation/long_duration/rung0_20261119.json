@@ -10,17 +10,108 @@
     "snapshot": "24e516c7"
   },
   "window_steps": 2048,
-  "k_range": [0, 9],
+  "k_range": [
+    0,
+    9
+  ],
   "readable_factor": 10,
-  "bands": {"second": [1.8, 2.2], "first": [0.7, 1.3]},
-  "budgets": {"voltage_V": 2e-06, "relative_concentration": 2e-05, "gate": 1e-05},
+  "bands": {
+    "second": [
+      1.8,
+      2.2
+    ],
+    "first": [
+      0.7,
+      1.3
+    ]
+  },
+  "budgets": {
+    "voltage_V": 2e-06,
+    "relative_concentration": 2e-05,
+    "gate": 1e-05
+  },
   "windows": {
-    "DEV600": {"start_ms": 600000, "end_ms": 600050, "purpose": "feasibility smoke only, not a measurement", "spans": {}},
-    "WS": {"start_ms": 1790000, "end_ms": 1791000, "spans": {"slow": [1790000, 1791000]}},
-    "WA": {"start_ms": 1799990, "end_ms": 1801000, "spans": {
-      "pre_edge": [1799990, 1800000], "post_edge": [1800000, 1800010],
-      "transient": [1800050, 1800400], "whole": [1799990, 1801000]}},
-    "WC": {"start_ms": 1800010, "end_ms": 1800299, "spans": {"upswing": [1800010, 1800299]}},
-    "WB": {"start_ms": 1800300, "end_ms": 1801000, "spans": {"downswing": [1800300, 1801000]}}
+    "DEV600": {
+      "start_ms": 600000,
+      "end_ms": 600050,
+      "purpose": "feasibility smoke only, not a measurement",
+      "spans": {}
+    },
+    "WS": {
+      "start_ms": 1790000,
+      "end_ms": 1791000,
+      "spans": {
+        "slow": [
+          1790000,
+          1791000
+        ]
+      }
+    },
+    "WA": {
+      "start_ms": 1799990,
+      "end_ms": 1801000,
+      "spans": {
+        "pre_edge": [
+          1799990,
+          1800000
+        ],
+        "post_edge": [
+          1800000,
+          1800010
+        ],
+        "transient": [
+          1800050,
+          1800400
+        ],
+        "whole": [
+          1799990,
+          1801000
+        ]
+      }
+    },
+    "WC": {
+      "start_ms": 1800010,
+      "end_ms": 1800299,
+      "spans": {
+        "upswing": [
+          1800010,
+          1800299
+        ]
+      }
+    },
+    "WB": {
+      "start_ms": 1800300,
+      "end_ms": 1801000,
+      "spans": {
+        "downswing": [
+          1800300,
+          1801000
+        ]
+      }
+    },
+    "WN": {
+      "start_ms": 0,
+      "end_ms": 2000,
+      "from_initial": true,
+      "no_channels": true,
+      "spans": {
+        "control": [
+          100,
+          2000
+        ]
+      },
+      "purpose": "amendment 1: the powered control replacing I2 (no gates, no edge)"
+    }
+  },
+  "amendment_1": {
+    "written_utc": "2026-11-19T13:18Z",
+    "control": "WN",
+    "power_min_orders": 2,
+    "band_pairs": 2,
+    "untested_rule": "a rule without its readable pairs is untested",
+    "order_of_reading": [
+      "WN alone",
+      "WA, WC and WB only if WN passes"
+    ]
   }
 }
