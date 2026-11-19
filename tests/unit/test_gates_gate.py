@@ -53,7 +53,8 @@ Host only: no world runs here.
     measured rows folded, and the stack gate's line before the message's trailers;
   - a planted failure in the middle head (a tier file, a crossrev set, a G1 world) is rerun alone
     on the intermediate trees, nearest first, blames that head, and the stack is re-gated without it;
-  - a conflict refuses the stack with its paths, and each declaration fault is refused;
+  - a conflict refuses the stack with its paths (and a declared resolution is used), a head's own
+    pre-lock record must have passed for its revision, and each declaration fault is refused;
   - the blame of each trail, and the failing stage read from the gate's log.
 - **The scope map** (scope.py, the recorder, `test_tiers.py run --scope-map`) is built for real on
   a tiny snapshot of four test files:
@@ -62,6 +63,8 @@ Host only: no world runs here.
     new name in a listed folder, the file itself, a file that would replace a namespace package),
     and nothing else under `--always none`; the readers and scanners are D229's always-run set;
   - a planted read of a repository file pulls its test in, once the map is rebuilt;
+  - a library's own discovery counts only the names it can use, a folder opened by descriptor is a
+    listing, and the recorder leaves os.supports_* (so shutil's rmtree) as it found them;
   - the selection is refused for each planted fault (stopped, failed, old or missing map, src/);
   - the nightly run takes the free lane, and publishes its map or stops selection;
   - gate.sh runs only the selection's files, and CHECKS drops crossrev and G1.
@@ -924,6 +927,33 @@ def test_a_conflicting_merge_refuses_the_stack_with_its_paths(stack):
     assert git(stack["repo"], "show", f"{trials['top']}:docs/same.md") == "one and two"
 
 
+def test_a_heads_own_prelock_record_is_checked_and_recorded(stack):
+    """A head may name its own PRELOCK_ONLY=1 gate: it must have passed, for that very revision."""
+    h1 = add_head(stack, "h1", H1)
+
+    def record(name, rev, done="0", passed=True):
+        out, snap = stack["tmp"] / name, stack["tmp"] / name / "snap"
+        snap.mkdir(parents=True)
+        (snap / "SNAPSHOT.json").write_text(json.dumps(
+            {"status": "complete", "git_revision": rev, "patch_sha256": EMPTY}))
+        (out / "gate.log").write_text(f"t gate of head {snap} base /b; lane A\n"
+                                      + ("t prelock passed, seconds 1\n" if passed else "t stopped at ids\n"))
+        (out / "done").write_text(done + "\n")
+        return str(out)
+
+    def build(name, prelock):
+        return steps.stack_build({"main": "main", "n": 1, "heads": [
+            {"name": "h1", "rev": h1, "prelock": prelock}]}, stack["repo"], stack["tmp"] / f"t-{name}",
+            "OUT", "python3")
+
+    good = build("good", record("p1", h1))
+    assert good["ok"] and good["trials"][0]["prelock"] == str(stack["tmp"] / "p1")
+    for name, rev, done, passed, words in (("p2", "f" * 40, "0", True, "not the head"),
+                                           ("p3", h1, "1", False, "did not pass")):
+        bad = build(name, record(name, rev, done, passed))
+        assert not bad["ok"] and words in bad["refused"], bad
+
+
 @pytest.mark.parametrize("heads, words", [
     ([{"name": f"h{k}", "rev": "r"} for k in range(4)], "a stack holds 1 to 3"),
     ([{"name": "a", "rev": "r", "crossrev_expected": ["kinds/x"]}, {"name": "b", "rev": "r"}],
@@ -1127,6 +1157,39 @@ def test_a_librarys_own_discovery_is_compared_on_the_names_it_can_use(tmp_path, 
     head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
     files = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
     assert (P in files) is chosen, files.get(P)
+
+
+def test_a_folder_opened_by_descriptor_is_a_listing(tmp_path):
+    """os.fwalk and scandir on a descriptor list nothing by path: the folder's open stands for it."""
+    snap = scope_snapshot(tmp_path / "nightly")
+    run, record = tmp_path / "run", json.loads((snap / "tests/test_tiers.json").read_text())
+    logs = run / "scope" / "tests__unit__test_plain.py"
+    logs.mkdir(parents=True)
+    (logs / "10-a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in [
+        {"process": 10, "parent": 1, "forked": False, "argv": ["python", "-m", "pytest"]},
+        {"open": "docs", "by": "repo:tests/unit/test_plain.py"},
+        {"exit": True, "modules": ["tests/unit/test_plain.py"], "absent": []}]))
+    (run / "run.json").write_text(json.dumps({"scope_map": str(run / "scope"), "files": [
+        dict(r, timed_out=False) for r in record["tiers"]["1"]]}))
+    (run / "summary.json").write_text(json.dumps({"changed_vs_record": []}))
+    doc = scope.build(run, snap, sys.executable)
+    head = scope_snapshot(tmp_path / "head", {"docs/c.md": "new\n"}, rev="h" * 40)
+    assert scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"][P] == [
+        "listed folders changed since the map: ['docs']"]
+
+
+def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
+    """shutil picks its descriptor-based rmtree by os.stat's place in os.supports_*, at import."""
+    code = ("import os, shutil; print(os.stat in os.supports_follow_symlinks, os.stat in os.supports_fd,"
+            " os.lstat in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
+    seen = []
+    for on in (False, True):
+        env = dict(os.environ, PYTHONPATH=str(GATES / "scope_inject"))
+        if on:
+            env.update(CELLS_SCOPE_LOG=str(tmp_path / "log"), CELLS_SCOPE_ROOT=str(tmp_path))
+        seen.append(subprocess.run([sys.executable, "-B", "-c", code], env=env, capture_output=True,
+                                   text=True, check=True, cwd=tmp_path).stdout)
+    assert seen[0] == seen[1] == "True True True True\n" and list((tmp_path / "log").glob("*.jsonl"))
 
 
 @pytest.mark.parametrize("plant, words", [

@@ -164,7 +164,8 @@ def _start(root, log_dir):
 
     def asked(function):
         def wrapper(path, *args, **kwargs):
-            if not getattr(local, "busy", False) and state["handle"] is not None and not isinstance(path, int):
+            if (not getattr(local, "busy", False) and state["handle"] is not None
+                    and not isinstance(path, int) and kwargs.get("dir_fd") is None):
                 local.busy = True
                 try:
                     where = rel(path)
@@ -233,7 +234,16 @@ def _start(root, log_dir):
 
     open_log(False)
     os.register_at_fork(after_in_child=lambda: open_log(True))
-    os.stat, os.lstat, os.access = asked(os.stat), asked(os.lstat), asked(os.access)
+    for name in ("stat", "lstat", "access"):
+        original = getattr(os, name)
+        wrapper = asked(original)
+        setattr(os, name, wrapper)
+        # os.supports_* hold the functions themselves; code that tests membership (shutil picks its
+        # descriptor-based rmtree so, at import) must see the wrapper as it saw the original.
+        for group in (os.supports_fd, os.supports_dir_fd, os.supports_follow_symlinks,
+                      os.supports_effective_ids):
+            if original in group:
+                group.add(wrapper)
     sys.addaudithook(hook)
     atexit.register(at_exit)
 

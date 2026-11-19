@@ -149,6 +149,10 @@ def entry(logs, tree):
                     modules.add(path)
                 elif by != "pytest":
                     reads.append((path, by))
+                if tree.kind(path) == "d" and by not in ("import", "pytest"):
+                    # A folder opened (os.fwalk, scandir on a descriptor): its names were read.
+                    (finds if by == "library" else lists).add(path)
+                    scans |= by != "library"
             if "arg" in r and useful(r["arg"]):
                 content.add(r["arg"])
                 reads.append((r["arg"], "arg"))

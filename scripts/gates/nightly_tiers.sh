@@ -7,7 +7,8 @@
 #      changes under it.
 #   2. Takes whichever lane's lock is free first, like a gate: flock's command form without waiting,
 #      tried every POLL seconds, so a gate already queued for a lane goes first; after WAIT_FREE
-#      seconds it queues for lane A's lock. Until it holds one it stays on the pre-lock CPU.
+#      seconds it queues for lane A's lock. Until it holds one, the freeze included, it stays on the
+#      pre-lock CPU (PRE_CPU).
 #   3. Under the lock: tiers 1+2 of the snapshot in full on the lane's eight CPUs, cap 300 s, with the
 #      scope map's recorder on (scripts/test_tiers.py run --scope-map).
 #   4. Builds the scope map (scope.py build) and writes NIGHTLY/DATE/verdict.json.
@@ -42,6 +43,12 @@ stop_selection() {  # WHY: selection off until the lead explains the failure.
 }
 finish() { log "done status $1"; echo "$1" > "$OUT/done"; exit "$1"; }
 
+# Until it holds a lane's lock, everything here (the freeze too) stays on the pre-lock CPU: the
+# unit may run on both lanes' CPUs, and nothing computes there without the lane's lock.
+if [ "${1:-}" != --locked ]; then
+  taskset -cp "$PRE_CPU" $$ > /dev/null || { echo "could not pin to CPU $PRE_CPU" >&2; exit 2; }
+fi
+
 case "${1:-}" in
   "")  # 1. Freeze main, then run the frozen copy.
     OUT=$NIGHTLY/$(date -u +%Y%m%d)
@@ -58,8 +65,7 @@ case "${1:-}" in
     exec bash "$OUT/snapshot/scripts/gates/nightly_tiers.sh" --run "$OUT" ;;
   --run)
     OUT=${2:?out}
-    taskset -cp "$PRE_CPU" $$ > /dev/null || { log "could not pin to CPU $PRE_CPU"; finish 2; }
-    log "the frozen copy $G; waiting for a free lane (lane A after $WAIT_FREE s)"
+    log "the frozen copy $G on CPU $(taskset -pc $$ | sed 's/.*: //'); waiting for a free lane (lane A after $WAIT_FREE s)"
     rm -f "$OUT/locked.done"
     start=$(date +%s)
     while :; do

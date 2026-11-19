@@ -606,6 +606,8 @@ def stack_plan(doc, out):
                 problems.append(f"{h.get('name')}: {key} must be a list")
         if not isinstance(h.get("resolve", {}), dict):
             problems.append(f"{h.get('name')}: resolve must map a path to a revision or a file")
+        if h.get("prelock") and not Path(h["prelock"], "gate.log").is_file():
+            problems.append(f"{h.get('name')}: its pre-lock record {h['prelock']} holds no gate.log")
         measured = h.get("measured", []) if isinstance(h.get("measured", []), list) else []
         for f in measured + ([h["removed_ok_file"]] if h.get("removed_ok_file") else []):
             if not Path(f).is_file():
@@ -623,6 +625,21 @@ def stack_plan(doc, out):
         (folder / "additions.txt").write_text(" ".join(adds) + "\n")
         (folder / "removed-ok.txt").write_text("".join(f"{i}\n" for i in removed))
     return {"ok": True, "problems": [], "main": doc["main"], "heads": heads, "n": len(heads)}
+
+
+def prelock_evidence(out, revision):
+    """(passed, why) of a head's own pre-lock record: a gate.sh OUT (PRELOCK_ONLY=1, or a gate)
+    that ended 0 after "prelock passed", of a head snapshot at REVISION."""
+    out = Path(out)
+    text = (out / "gate.log").read_text(errors="replace") if (out / "gate.log").is_file() else ""
+    done = (out / "done").read_text().strip() if (out / "done").is_file() else None
+    head = re.search(r"gate of head (\S+) base ", text)
+    found = snapshot(head.group(1))[0] if head else None
+    if done != "0" or "prelock passed" not in text:
+        return False, f"did not pass its pre-lock steps (done {done})"
+    if found != revision:
+        return False, f"is of {str(found)[:12]}, not the head {revision[:12]}"
+    return True, "passed"
 
 
 def merge_message(message, line):
@@ -648,7 +665,13 @@ def stack_build(plan, repo, tree, out, python):
     trials, prev = [], main
     for k, head in enumerate(plan["heads"], 1):
         rev = _git(repo, "rev-parse", "--verify", head["rev"] + "^{commit}").stdout.strip()
-        row = {"k": k, "name": head["name"], "head": rev, "first_parent": prev}
+        row = {"k": k, "name": head["name"], "head": rev, "first_parent": prev, "prelock": None}
+        if head.get("prelock"):  # The head's own pre-lock pass (§10.4), checked when declared.
+            passed, why = prelock_evidence(head["prelock"], rev)
+            if not passed:
+                return dict(ok=False, trials=trials, refused=f"{head['name']}: its pre-lock record "
+                            f"{head['prelock']} {why}")
+            row["prelock"] = head["prelock"]
         if head.get("merge"):
             commit = _git(repo, "rev-parse", "--verify", head["merge"] + "^{commit}").stdout.strip()
             parents = _git(repo, "rev-list", "--parents", "-n", "1", commit).stdout.split()[1:]
@@ -865,7 +888,8 @@ def stack_record(out):
     gate_done = done(out / "gate")
     doc = {"kind": "cells.gate_stack@1", "written": utc(), "main": trials.get("main"),
            "heads": [{k: h.get(k) for k in ("name", "rev", "additions_from", "removed_ok",
-                                            "removed_ok_file", "measured", "merge")}
+                                            "removed_ok_file", "measured", "merge", "resolve",
+                                            "prelock")}
                      for h in plan.get("heads", [])],
            "trials": trials.get("trials", []), "top": trials.get("top"),
            "ref": (out / "ref").read_text().strip() if (out / "ref").is_file() else None,

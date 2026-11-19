@@ -3,7 +3,9 @@
 # queued heads merged in order onto main and gated once, as the tree that lands.
 #
 #   1. The declaration (JSON, below) is checked: 1 to 3 heads, and a head that declares crossrev
-#      differences rides alone (gate_steps.py stack-plan).
+#      differences rides alone (gate_steps.py stack-plan). A head's own pre-lock pass (gate.sh with
+#      PRELOCK_ONLY=1) is checked when the head names it ("prelock"; its revision must be the
+#      head's) and recorded per head; without it, the top's own pre-lock steps stand for the heads'.
 #   2. The trial merges, main + H1, then + H2, then + H3, are made in a detached worktree as the
 #      lead lands them: the previous trial's tier record, the head's measured rows folded with the
 #      trial's own scripts/test_tiers.py, and the head's message with the line "Stack gate: OUT".
@@ -24,7 +26,8 @@
 #
 # The declaration: {"main": REV, "heads": [{"name": ..., "rev": ..., "additions_from": [FILE...],
 #   "removed_ok": [ID...], "removed_ok_file": FILE, "measured": [MEASURED_JSON...],
-#   "message": "the merge message", "merge": REV (a merge made by hand, optional)}, ...]}
+#   "message": "the merge message", "resolve": {PATH: REV or FILE}, "merge": REV (a merge made by
+#   hand), "prelock": OUT (the head's own PRELOCK_ONLY=1 gate)}, ...]}, all but name and rev optional.
 # Environment: gate.sh's (LANE, GATE_LOCK, GATE_CPUS, PRELOCK_CPU, PRELOCK_NICE, TIERS, GATE_CACHE,
 #   C1, BASELINE, REC, CROSSREV_SETS, PY, HOSTPY ...), and REPO (the checkout; default $HOME/Cells),
 #   BASE_S (main's snapshot, else frozen here), FREEZE (a command freezing CHECKOUT into DEST; tests
