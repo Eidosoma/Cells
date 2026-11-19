@@ -13,6 +13,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | Open |
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | Open |
 | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | Open |
+| [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | Proved | Checked | Open |
 | [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | Open |
 | [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | Open |
 | [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | Open |
@@ -143,6 +144,12 @@ For proton leak, check the reversal voltage, instantaneous heat, the small-volta
 
 ```bash
 "$cells_python" -B checks/proton_leak.py
+```
+
+For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. [ATP driver](checks/atp_cycle.py) · [Numerical and biological results](PROGRESS.md#19-november-2026--atp-driven-transport)
+
+```bash
+"$cells_python" -B checks/atp_cycle.py
 ```
 
 For extracellular faces, run the direction and power cases and the closed tissue model. The driver checks the engine's two mean thresholds, opposing drives, an adjacent-float pair and an intentionally reversed flux. The reference test checks the scalar mean against Decimal. [Face driver](checks/logmean_face.py) · [Scalar reference](../validation/tissue/surface_reference.py#L13)
