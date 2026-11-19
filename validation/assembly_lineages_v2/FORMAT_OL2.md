@@ -124,7 +124,8 @@ Development only: not yet compared against OL5's references, which need the prob
   with an optional `critical_stress_Pa = {value, provenance}`. It needs a geometry and an osmotic
   lumen.
 - **The experiment** declares `schedules = [{index, kind: shear, k, times_s, stress_Pa?}]`. A
-  stress is given exactly when the world declares a critical stress. Declared times only:
+  stress is given exactly when the world declares a critical stress. Two shear schedules may not
+  share a time, so each attempt has one payer. Declared times only:
   `poisson_rate_per_s` is refused until the shared pool (OL2 milestone 3).
 - **The run is refused** when JAX's threefry is not partitionable (§0.2d item 9). The environment
   record comes with milestone 3.

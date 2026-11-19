@@ -332,6 +332,8 @@ REFUSALS = {
                                 "continuation is one of"),
     "times_not_increasing": (None, _schedule(times_s=[2.0, 1.0]), "strictly increasing"),
     "a_stress_without_a_critical_stress": (None, _schedule(stress_Pa=1.0), "schedule keys are"),
+    "two_schedules_share_a_time": (None, [*_schedule(), {"index": 1, "kind": "shear", "k": 2,
+                                                         "times_s": [1.0, 2.0]}], "share the time"),
 }  # fmt: skip
 
 

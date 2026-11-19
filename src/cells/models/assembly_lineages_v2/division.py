@@ -123,6 +123,15 @@ def parse_schedules(raw, world):
         if critical:
             stress = finite_number(entry["stress_Pa"], "experiment: schedule stress_Pa")
         out.append((index, k, times, stress))
+    first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
+    for index, _, times, _ in sorted(out):
+        for t in times:
+            if t in first:
+                raise ConfigError(
+                    f"experiment: shear schedules {first[t]} and {index} share the time {t} s; "
+                    "each attempt has one payer"
+                )
+            first[t] = index
     return tuple(sorted(out))
 
 
