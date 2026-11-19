@@ -1,0 +1,16 @@
+{
+  "registration": "fr8-rung0-20261119",
+  "text": "RUNG0_20261119.md",
+  "engine_model": "resolved_pump_tissue@3",
+  "judged": false,
+  "source": {
+    "rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
+    "arm": "R3",
+    "dt_s": 0.00025,
+    "snapshot": "24e516c7"
+  },
+  "window_steps": 2048,
+  "windows": {
+    "DEV600": {"start_ms": 600000, "end_ms": 600050, "purpose": "feasibility smoke only, not a measurement"}
+  }
+}
