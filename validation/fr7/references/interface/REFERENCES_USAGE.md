@@ -41,8 +41,8 @@ Everything here is synthetic and labelled so (D217).
 
 **Tests:**
 - `tests/unit/test_fr7_references.py`, about 5 s. It checks that the files parse and that the
-  inputs equal their generator. It recomputes the bands, the margins, the zero-power list and V's
-  rule from the stored values. It checks the power, and regenerates a deterministic subset: the
+  inputs equal their generator. It recomputes from the stored values the bands, the margins, the
+  zero-power list, V's rule, the other non-core rows' rule and the core's coverage. It checks the power, and regenerates a deterministic subset: the
   template's closed forms in every world, W1's chain, R-clear on every case, and the cell against
   R-cell at a held N. It also checks independence.
 - `tests/unit/test_fr7_references_regeneration.py` runs the whole regeneration, about 3 minutes
@@ -109,24 +109,31 @@ Shared by every world:
 ## Reading `rows.json`
 
 The path is `worlds → name → quantities → q`. Each `q` holds:
-- `cls`, either `compared` or `information`;
+- `cls`, either `compared` (it has a band) or `information`;
 - `unit`;
 - `status`, per row;
 - `value`, the reference;
 - `bound`, the reference's own error bound at that row;
 - `band`, for compared classes.
 
-**A compared row passes when |engine − value| ≤ band.**
+**A compared row passes when |engine − value| ≤ band.** Only rows whose status is `compared` are
+judged.
 
 **Row 0 is information everywhere.** It is the declared start.
 
-**Compared quantities:**
-- `n_T_fmol`, `D` (the drive) and `F_T`;
-- `n_P_fmol`, `M1_units`…`M3_units`, `N_units`, `PA_m3_s` (the conductance), `W_fmol`,
-  `R_units` and `total_fmol`;
-- `C_P_fmol`, where k_P > 0 (W5 only);
-- `V_V`, on the rows its status marks (below);
-- `Na_fmol` and `K_fmol`.
+**Every compared row has at least one plant with power on it.**
+- **The core:** `n_P_fmol`, `M1_units`…`M3_units`, `N_units`, `PA_m3_s` (the conductance),
+  `W_fmol`, `R_units`, `total_fmol`, and `C_P_fmol` where k_P > 0 (W5 only). These are compared
+  on every row after the start. That every such row has a plant with power is checked
+  (`zero_power.json → core_rows_without_any_plant` is empty in every world).
+- **`V_V`:** compared under its own rule (below).
+- **`n_T_fmol`, `D`, `F_T`, `Na_fmol` and `K_fmol`:** compared only on rows where at least one
+  plant has power, which is the lead's rule for V applied to them. Their other rows are
+  information, though their bands stay registered.
+  - No plant moves the template, so `n_T_fmol` and `D` are information on every row. The template
+    is judged through the clearance row, which R-clear's plants move.
+  - `F_T` is compared where `factor_from_amount` moves it.
+  - Na and K are compared where any plant moves them.
 
 **Information:**
 - `c_mM`, `U_s` (the exposure ∫ cⁿ/(Kⁿ + cⁿ) dt) and `Cl_fmol` (constant: impermeant);
@@ -178,8 +185,9 @@ factor is evaluated in the producer's half-steps.
 - **The plant `factor_held_from_step_start`, a first-order lag, exceeds the bands.** Its margins
   reach 39 on N, 32 on n_P, and about 500 on W at a pulse's onset.
 - **The maturation class is wider.** M₂ and M₃ rise as t^(j−1) from an onset, where a split
-  scheme's relative error goes as (dt/t)². With the chain's rule, the split chain reached 0.44 of
-  the band at t = 1 s.
+  scheme's relative error goes as (dt/t)². Under the chain's rule (floor 10⁻²), the split chain
+  reached 0.11 of the band at an onset row: W3's M₃, 5 s after the pulse began. Under the
+  maturation rule it stays under 10⁻².
 
 **The template, factor and drive bands** allow the rounding that an exact turnover accumulates over
 up to 9 × 10⁵ steps.
@@ -212,44 +220,44 @@ that quantity):
 
 | World (compared rows) | Plant | n_P | N | M₃ | W | R | total | V | K | Largest margin on N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W1 (48) | ν + 1 | unaffected | 48 | · | unaffected | 48 | 48 | 48/48 | 44 | 5.9e+05 |
+| W1 (48) | ν + 1 | unaffected | 48 | · | unaffected | 48 | 48 | 48/48 | 44/45 | 5.9e+05 |
 | W1 (48) | c_u per mol | unaffected | 48 | · | unaffected | 48 | 48 | not run | not run | 3.0e+21 |
-| W1 (48) | removal on increment | unaffected | 48 | · | unaffected | 48 | unaffected | 48/48 | 45 | 3.2e+08 |
-| W1 (48) | route on clearance | 48 | 48 | · | 48 | 48 | unaffected | 48/48 | 42 | 4.2e+06 |
-| W1 (48) | factor from amount | 48 | 48 | · | 48 | 48 | unaffected | 48/48 | 41 | 6.2e+05 |
+| W1 (48) | removal on increment | unaffected | 48 | · | unaffected | 48 | unaffected | 48/48 | 45/45 | 3.2e+08 |
+| W1 (48) | route on clearance | 48 | 48 | · | 48 | 48 | unaffected | 48/48 | 42/45 | 4.2e+06 |
+| W1 (48) | factor from amount | 48 | 48 | · | 48 | 48 | unaffected | 48/48 | 41/45 | 6.2e+05 |
 | W1 (48) | factor held | 42 | 39 | · | 42 | 37 | unaffected | 0/48 | unaffected | 1.9e+01 |
-| W2 (63) | ν + 1 | unaffected | 62 | 63 | unaffected | 61 | 63 | 59/59 | 58 | 6.2e+05 |
+| W2 (63) | ν + 1 | unaffected | 62 | 63 | unaffected | 61 | 63 | 59/59 | 58/60 | 6.2e+05 |
 | W2 (63) | c_u per mol | unaffected | 63 | 63 | unaffected | 63 | 63 | not run | not run | 3.1e+21 |
-| W2 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 63 | unaffected | 59/59 | 59 | 4.6e+05 |
-| W2 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 59/59 | 60 | 2.2e+08 |
-| W2 (63) | route on clearance | 63 | 61 | 63 | 63 | 61 | unaffected | 59/59 | 55 | 2.0e+06 |
-| W2 (63) | factor from amount | 63 | 61 | 63 | 63 | 61 | unaffected | 59/59 | 54 | 7.5e+05 |
+| W2 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 63 | unaffected | 59/59 | 59/60 | 4.6e+05 |
+| W2 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 59/59 | 60/60 | 2.2e+08 |
+| W2 (63) | route on clearance | 63 | 61 | 63 | 63 | 61 | unaffected | 59/59 | 55/60 | 2.0e+06 |
+| W2 (63) | factor from amount | 63 | 61 | 63 | 63 | 61 | unaffected | 59/59 | 54/60 | 7.5e+05 |
 | W2 (63) | factor held | 57 | 47 | 9 | 57 | 48 | unaffected | 0/59 | unaffected | 2.3e+01 |
-| W3 (93) | ν + 1 | unaffected | 91 | 93 | unaffected | 90 | 93 | 89/89 | 87 | 5.6e+05 |
+| W3 (93) | ν + 1 | unaffected | 91 | 93 | unaffected | 90 | 93 | 89/89 | 87/90 | 5.6e+05 |
 | W3 (93) | c_u per mol | unaffected | 93 | 93 | unaffected | 93 | 93 | not run | not run | 2.8e+21 |
-| W3 (93) | stage skipped | unaffected | 93 | 93 | unaffected | 92 | unaffected | 89/89 | 86 | 4.5e+05 |
-| W3 (93) | removal on increment | unaffected | 93 | unaffected | unaffected | 93 | unaffected | 89/89 | 90 | 9.9e+07 |
-| W3 (93) | route on clearance | 93 | 93 | 93 | 93 | 92 | unaffected | 89/89 | 88 | 1.4e+06 |
-| W3 (93) | factor from amount | 90 | 90 | 90 | 90 | 90 | unaffected | 89/89 | 86 | 5.0e+05 |
+| W3 (93) | stage skipped | unaffected | 93 | 93 | unaffected | 92 | unaffected | 89/89 | 86/90 | 4.5e+05 |
+| W3 (93) | removal on increment | unaffected | 93 | unaffected | unaffected | 93 | unaffected | 89/89 | 90/90 | 9.9e+07 |
+| W3 (93) | route on clearance | 93 | 93 | 93 | 93 | 92 | unaffected | 89/89 | 88/90 | 1.4e+06 |
+| W3 (93) | factor from amount | 90 | 90 | 90 | 90 | 90 | unaffected | 89/89 | 86/90 | 5.0e+05 |
 | W3 (93) | factor held | 11 | 82 | 16 | 9 | 21 | unaffected | 0/89 | unaffected | 2.2e+01 |
-| W4 (63) | ν + 1 | unaffected | 63 | · | unaffected | 63 | 63 | 60/60 | 59 | 6.2e+05 |
+| W4 (63) | ν + 1 | unaffected | 63 | · | unaffected | 63 | 63 | 60/60 | 59/61 | 6.2e+05 |
 | W4 (63) | c_u per mol | unaffected | 63 | · | unaffected | 63 | 63 | not run | not run | 3.1e+21 |
-| W4 (63) | removal on increment | unaffected | 63 | · | unaffected | 63 | unaffected | 60/60 | 60 | 2.6e+08 |
-| W4 (63) | route on clearance | 63 | 63 | · | 63 | 63 | unaffected | 60/60 | 61 | 2.2e+06 |
-| W4 (63) | factor from amount | 60 | 60 | · | 60 | 60 | unaffected | 60/60 | 59 | 8.1e+05 |
+| W4 (63) | removal on increment | unaffected | 63 | · | unaffected | 63 | unaffected | 60/60 | 60/61 | 2.6e+08 |
+| W4 (63) | route on clearance | 63 | 63 | · | 63 | 63 | unaffected | 60/60 | 61/61 | 2.2e+06 |
+| W4 (63) | factor from amount | 60 | 60 | · | 60 | 60 | unaffected | 60/60 | 59/61 | 8.1e+05 |
 | W4 (63) | factor held | 11 | 56 | · | 9 | 16 | unaffected | 0/60 | unaffected | 3.9e+01 |
-| W5 (63) | ν + 1 | unaffected | 63 | 63 | unaffected | 62 | 63 | 60/60 | 59 | 6.7e+05 |
+| W5 (63) | ν + 1 | unaffected | 63 | 63 | unaffected | 62 | 63 | 60/60 | 59/61 | 6.7e+05 |
 | W5 (63) | c_u per mol | unaffected | 63 | 63 | unaffected | 63 | 63 | not run | not run | 3.3e+21 |
-| W5 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 63 | unaffected | 60/60 | 60 | 2.5e+06 |
-| W5 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 60/60 | 60 | 4.1e+06 |
-| W5 (63) | route on clearance | 63 | 62 | 63 | 63 | 61 | unaffected | 60/60 | 57 | 2.5e+07 |
-| W5 (63) | factor from amount | 63 | 62 | 63 | 63 | 61 | unaffected | 60/60 | 56 | 6.8e+05 |
+| W5 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 63 | unaffected | 60/60 | 60/61 | 2.5e+06 |
+| W5 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 60/60 | 60/61 | 4.1e+06 |
+| W5 (63) | route on clearance | 63 | 62 | 63 | 63 | 61 | unaffected | 60/60 | 57/61 | 2.5e+07 |
+| W5 (63) | factor from amount | 63 | 62 | 63 | 63 | 61 | unaffected | 60/60 | 56/61 | 6.8e+05 |
 | W5 (63) | factor held | 56 | 38 | 10 | 57 | 53 | unaffected | 0/60 | unaffected | 1.7e+01 |
-| W6 (63) | ν + 1 | unaffected | 61 | 63 | unaffected | 60 | 63 | 58/58 | 53 | 6.5e+05 |
+| W6 (63) | ν + 1 | unaffected | 61 | 63 | unaffected | 60 | 63 | 58/58 | 53/60 | 6.5e+05 |
 | W6 (63) | c_u per mol | unaffected | 63 | 63 | unaffected | 63 | 63 | not run | not run | 3.3e+21 |
-| W6 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 62 | unaffected | 58/58 | 54 | 2.6e+04 |
-| W6 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 58/58 | 60 | 7.6e+07 |
-| W6 (63) | route on clearance | 63 | 63 | 63 | 63 | 62 | unaffected | 58/58 | 59 | 8.3e+06 |
+| W6 (63) | stage skipped | unaffected | 63 | 63 | unaffected | 62 | unaffected | 58/58 | 54/60 | 2.6e+04 |
+| W6 (63) | removal on increment | unaffected | 63 | unaffected | unaffected | 63 | unaffected | 58/58 | 60/60 | 7.6e+07 |
+| W6 (63) | route on clearance | 63 | 63 | 63 | 63 | 62 | unaffected | 58/58 | 59/60 | 8.3e+06 |
 
 ### The zero-power list (`zero_power.json`)
 
@@ -260,8 +268,11 @@ Per world it gives:
   - the compartment plant everywhere.
 - **`not_evaluated`:** the c_u plant's V and amount rows.
 - **`upstream`:** n_T and D, which no chain plant moves, and F_T, which only `factor_from_amount`
-  moves. These rows check D150's turnover and the factor law, both qualified elsewhere, and
-  R-clear's input.
+  moves. Their rows without power are information (above). Their bands stay registered, so the
+  rows can still serve as a regression check of D150's turnover and the factor law, both
+  qualified elsewhere, but they carry no plant's power.
+- **`core_rows_without_any_plant`:** compared core rows that no plant moves by 3 bands. It is
+  empty in every world.
 - **`unaffected`:** quantities a plant moves by under 0.05 band at every compared row, so it does
   not act on them. Examples:
   - ν and c_u on the precursor's rows;

@@ -83,9 +83,23 @@ def test_margins_zero_power_and_the_voltage_rule(reg):
             if pname in design.MATERIAL_PLANTS and pname not in design.NO_CELL:
                 ok = np.array(p["margin"]["V_V"]) >= m_min
                 v_ok = ok if v_ok is None else v_ok & ok
-        status = ["compared" if (r > 0 and v_ok[r]) else "information"
-                  for r in range(len(w["rows_s"]))]
+        n = len(w["rows_s"])
+        status = ["compared" if (r > 0 and v_ok[r]) else "information" for r in range(n)]
         assert qs["V_V"]["status"] == status, name
+        # every other compared row has at least one plant with power on it: the non-core rows
+        # are compared only there, and the core (units, conductance, material) is covered
+        margins = {p: v["margin"] for p, v in plants.items() if v["applicable"]}
+        union = design.power_union(margins, [k for k in qs if "band" in qs[k]], n, m_min)
+        for k in design.NON_CORE:
+            if "band" in qs[k]:
+                expect = ["compared" if (r > 0 and union[k][r]) else "information"
+                          for r in range(n)]
+                assert qs[k]["status"] == expect, (name, k)
+        for k, q in qs.items():
+            if "band" in q and k not in design.NON_CORE:
+                assert all(union[k][r] for r in range(n) if q["status"][r] == "compared"), \
+                    (name, k)
+        assert zero["core_rows_without_any_plant"] == {}, name
 
 
 def test_every_applicable_plant_has_power(reg):

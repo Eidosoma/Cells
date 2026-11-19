@@ -35,6 +35,9 @@ MATERIAL_PLANTS = ("nu_off_by_one", "cu_without_1e-15", "maturation_stage_skippe
 CHAIN_PLANT_NAMES = (*MATERIAL_PLANTS, "factor_held_from_step_start",
                      "releasing_compartment_left_out")
 TEMPLATE_QUANTITIES = ("n_T_fmol", "D")
+# Rows outside the compared core (units, conductance, material): compared only where at least one
+# plant has power on them (the lead's rule for V, D231's brief); V has its own, stricter rule
+NON_CORE = ("n_T_fmol", "D", "F_T", "Na_fmol", "K_fmol")
 NO_CELL = {"cu_without_1e-15": (
     "Its units are about 1e15 times the reference's, so its K conductance shorts the cell to E_K "
     "(a membrane time constant near 1e-17 s); its V and amount rows are not integrated and it is "
@@ -62,6 +65,18 @@ def rule_of(inputs, quantity):
         if name != "note" and quantity in rule["quantities"]:
             return rule
     return None
+
+
+def power_union(plant_margins, compared, n_rows, margin_min):
+    """Per compared quantity and row: does at least one plant move it by margin_min bands?"""
+    out = {}
+    for k in compared:
+        hit = np.zeros(n_rows, dtype=bool)
+        for pm in plant_margins.values():
+            if k in pm:
+                hit |= np.asarray(pm[k]) >= margin_min
+        out[k] = hit
+    return out
 
 
 def zero_power_kinds(pname, pm, status, compared, margin_min):
@@ -258,6 +273,16 @@ def world_design(inputs, name, log=print):
         v_ok &= plant_margins[p]["V_V"] >= margin_min
     status["V_V"] = ["compared" if (r > 0 and v_ok[r]) else "information"
                      for r in range(rows.size)]
+    # every other non-core row: compared only where at least one plant has power on it
+    union = power_union(plant_margins, compared, rows.size, margin_min)
+    for k in NON_CORE:
+        if k in status and k in bands:
+            status[k] = ["compared" if (r > 0 and union[k][r]) else "information"
+                         for r in range(rows.size)]
+    core_gaps = {k: [float(rows[r]) for r in range(rows.size)
+                     if status[k][r] == "compared" and not union[k][r]]
+                 for k in compared if k not in NON_CORE and k != "V_V"}
+    core_gaps = {k: v for k, v in core_gaps.items() if v}
 
     # zero power: compared rows where an applicable plant moves the row by under `margin` bands
     zero_rows, unaffected = {}, {}
@@ -352,6 +377,7 @@ def world_design(inputs, name, log=print):
                                            reason=NO_CELL[p])
                                    for p in plant_margins if p in NO_CELL},
                     upstream=upstream, unaffected=unaffected, rows_without_power=zero_rows,
+                    core_rows_without_any_plant=core_gaps,
                     compared_rows_with_power=power_summary)
     return row_doc, plant_doc, zero_doc
 
