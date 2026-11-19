@@ -9,6 +9,15 @@ population format of resolved_tissue@5 and later). The experiment adds
 execution ``channel_capacity``. With no channels the identity reproduces
 resolved_pump_tissue@2.
 
+A channel population's entry may declare ``factors``, a list of factor-source IDs
+in declared order (docs/CORE_SEAMS_DESIGN.md §4.3, B1's routing door into @3): at
+each stage its availability is the held value times its sources' factors, a left
+fold, as a passive route's multiplier is (docs/INNER_MODEL_V4_DESIGN.md §7.4 (n)).
+The sources are declared kinds'. Such a population parses as a
+FactoredChannelPopulation, the shared ChannelPopulation with its factors; every
+other population, the definition and its fingerprint are today's, and the model
+gains no field (other families build their models from its fields by name).
+
 An optional model key ``junction_heat_booking`` selects how IMEX steps book
 junction heat. The default, ``explicit_tableau`` (omitted from definitions, so
 default fingerprints are unchanged), books it with the tableau's explicit
@@ -50,8 +59,12 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
-# Codes 0-2 are those of processes/sodium_channels.LAW_CODES, whose dispatch the
-# model reuses; 3 and 4 are gate-free leaks. Padding slots are inactive, not a code.
+# Today's five channel laws, the full catalogue's (structure None): codes 0-2 are those of
+# laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
+# leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
+# replacement operator's tables are sized and checked by these five, so a law the registry adds
+# (a code from 5) never reaches them. What a definition may name is the law registry's: law_codes,
+# law_permeabilities and gate_counts below.
 LAW_CODES = {KV1P5_LAW_ID: 0, KIR2P1_LAW_ID: 1, NAV1P2_LAW_ID: 2, KLEAK_LAW_ID: 3, NALEAK_LAW_ID: 4}
 GATED_CODES = 3  # Codes below this have two relaxation gates (m, h).
 LAW_PERMEABILITIES = {
@@ -62,8 +75,45 @@ LAW_PERMEABILITIES = {
     NALEAK_LAW_ID: (("Na", 1.0),),
 }
 GATE_COUNTS = {law: 2 if code < GATED_CODES else 0 for law, code in LAW_CODES.items()}
+
+
+def channel_laws():
+    """{law ID: declaration} of the channel laws @3 runs, in code order: the active law
+    registry's laws of cells.channel_law@1 hosted by @3 (docs/CORE_SEAMS_DESIGN.md §8.3). Read at
+    parse time, never at import (models/inner_laws, which registers today's five, imports this
+    module)."""
+    from cells.registry import laws as law_registry
+
+    hosted = law_registry.active().laws(law_registry.CHANNEL_LAW, kind_registry.qualified(MODEL_ID))
+    return {law.law_id: law for law in sorted(hosted, key=lambda law: law.code)}
+
+
+def law_codes():
+    """{law ID: registry code} of the channel laws @3 runs (channel_laws)."""
+    return {law_id: law.code for law_id, law in channel_laws().items()}
+
+
+def law_permeabilities():
+    """{law ID: ((species, relative permeability), ...)} from each law's permeant ions."""
+    return {
+        law_id: tuple((species, weight) for species, _, weight in law.permeant)
+        for law_id, law in channel_laws().items()
+    }
+
+
+def gate_counts():
+    """{law ID: its gate count} (0 for a gate-free law)."""
+    return {law_id: len(law.gates) for law_id, law in channel_laws().items()}
+
+
 SPECIES_VALENCE = {"Na": 1, "K": 1}
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
+# B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
+# the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
+CHANNEL_FACTORS = "factors"
+_NONE = object()  # A channel entry without factors.
+# The model fields @3's parse sets itself; the others are the @2 base's.
+OWN_FIELDS = ("channels", "junction_heat_booking", "species_registry", "kinds")
 Control = second.Control  # The channel field is filled; absent slots stay zero.
 
 
@@ -153,7 +203,8 @@ def projection(spec):
 def parse_channel(raw, ids, z, membranes):
     _fields(raw, CHANNEL_FIELDS, "channel")
     law = raw["kinetic_law"]
-    if type(law) is not str or law not in LAW_CODES or type(raw["permeant_ions"]) is not list:
+    permeabilities, gates = law_permeabilities(), gate_counts()  # The registry's (§8.3).
+    if type(law) is not str or law not in gates or type(raw["permeant_ions"]) is not list:
         raise ConfigError("Channel requires a resolved_pump_tissue@3 law and permeant ions")
     ions = []
     for ion in raw["permeant_ions"]:
@@ -163,13 +214,13 @@ def parse_channel(raw, ids, z, membranes):
         if species not in ids or z[ids.index(species)] != SPECIES_VALENCE.get(species):
             raise ConfigError("Channel ion requires its law's species and valence")
         ions.append(kinetic.PermeantIon(species, weight))
-    if tuple((i.species_id, i.relative_permeability) for i in ions) != LAW_PERMEABILITIES[law]:
+    if tuple((i.species_id, i.relative_permeability) for i in ions) != permeabilities[law]:
         raise ConfigError("Channel ions must exactly match the named law's permeability ratios")
     patch = identifier(raw["membrane_id"])
     if (
         patch not in membranes
         or type(raw["initial_gate"]) is not list
-        or len(raw["initial_gate"]) != GATE_COUNTS[law]
+        or len(raw["initial_gate"]) != gates[law]
     ):
         raise ConfigError("Channel requires its patch and exactly its law's gate state")
     return kinetic.ChannelPopulation(
@@ -183,15 +234,58 @@ def parse_channel(raw, ids, z, membranes):
     )
 
 
+@dataclass(frozen=True)
+class FactoredChannelPopulation(kinetic.ChannelPopulation):
+    """A channel population whose entry declares factors (B1's door, docs/CORE_SEAMS_DESIGN.md
+    §4.3): the shared ChannelPopulation with its factor-source IDs, in declared order. A population
+    without factors stays a ChannelPopulation, so its form and fingerprint are today's."""
+
+    factors: tuple[str, ...] = ()
+
+
+def factored(channel, factors):
+    """The population as a FactoredChannelPopulation with these factors."""
+    values = {f.name: getattr(channel, f.name) for f in fields(kinetic.ChannelPopulation)}
+    return FactoredChannelPopulation(**values, factors=tuple(factors))
+
+
+def channel_factors(model):
+    """((slot, channel ID, (factor-source ID, ...)), ...) of the model's factored populations, in
+    channel order; () for every definition of today's (B1's door)."""
+    return tuple(
+        (slot, c.id, c.factors)
+        for slot, c in enumerate(getattr(model, "channels", ()))
+        if getattr(c, "factors", ())
+    )
+
+
+def _factor_sources(given, channel_id):
+    """A population's factors (B1's door): a non-empty list of distinct factor-source IDs."""
+    if (
+        not isinstance(given, list)
+        or not given
+        or any(not isinstance(f, str) or not f for f in given)
+        or len(set(given)) != len(given)
+    ):
+        raise ConfigError(
+            f"Channel {channel_id}: factors is a non-empty list of distinct factor-source IDs "
+            "(omit it for none)"
+        )
+    return tuple(given)
+
+
 def channel_to_dict(p):
-    if type(p) is not kinetic.ChannelPopulation or any(
+    if type(p) not in (kinetic.ChannelPopulation, FactoredChannelPopulation) or any(
         type(i) is not kinetic.PermeantIon for i in p.permeant_ions
     ):
         raise ConfigError("Require explicit immutable channel population types")
-    return asdict(p) | {
+    out = asdict(p) | {
         "initial_gate": list(p.initial_gate),
         "permeant_ions": [asdict(i) for i in p.permeant_ions],
     }
+    if type(p) is FactoredChannelPopulation:  # B1's door: its factors, in declared order.
+        out[CHANNEL_FACTORS] = list(p.factors)
+    return out
 
 
 def to_dict(spec):
@@ -273,6 +367,8 @@ def parse(data):
         raise ConfigError("A junction-heat booking option requires an IMEX solver")
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
+    # B1's door: each entry's factors leave this copy before the strict channel parse.
+    popped = [c.pop(CHANNEL_FACTORS, _NONE) if isinstance(c, dict) else _NONE for c in channels]
     # The registry hook (§7.4 (f) 7): the registry's keys leave this copy's species entries and
     # model block before @2's strict species parse; None when the model declares none.
     declared = registry.parse_entries(m)
@@ -296,6 +392,10 @@ def parse(data):
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
+    parsed = tuple(
+        c if given is _NONE else factored(c, _factor_sources(given, c.id))
+        for c, given in zip(parsed, popped, strict=True)
+    )
     model = base.model
     names = [
         p.id
@@ -319,7 +419,7 @@ def parse(data):
         **{
             k: getattr(model, k)
             for k in SurfacePumpChannelModel.__dataclass_fields__
-            if k not in ("channels", "junction_heat_booking", "species_registry", "kinds")
+            if k not in OWN_FIELDS
         },
         channels=parsed,
         junction_heat_booking=booking,
@@ -352,8 +452,15 @@ def parse(data):
 
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
-        # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)).
-        check_definition(spec, structure=structure(spec.model) if spec.model.kinds else None)
+        # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)),
+        # and so is one whose channels declare factors (binding resolves their sources, B1) or
+        # name a law beyond today's five (the full catalogue's domain refuses its code).
+        declared = (
+            spec.model.kinds
+            or channel_factors(spec.model)
+            or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
+        )
+        check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:
         raise ConfigError("Invalid resolved pump @3 definition: " + str(error)) from error
     return spec

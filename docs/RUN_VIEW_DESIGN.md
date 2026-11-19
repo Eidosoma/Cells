@@ -229,6 +229,20 @@ reading of the worked example (its eleven items):
   the step's own check) and `RECORD_REFERENCES` (stored as an increment over a fixed reference,
   stated as a named constant of the view, or the merged view's record under door S).
 
+**The core seams pass's three format items (docs/CORE_SEAMS_DESIGN.md §9; 18 November 2026):**
+- **Kinds are words.** A `kinds` value never holds a versioned ID ("@"), in any set; a law's ID goes
+  only under `laws`. The writer refuses one and so does the reader's check
+  (`cells.ph_condition@1`'s set, the planted case, now gives `factor` and its law under `laws`).
+- **What `carries` means.** Each species a route carries moves with its own flux, not as a
+  coupled set. Coupled stoichiometry is `per_cycle`, as @3's pumps give it; a cycle kind's sets
+  give `per_cycle` per mode and population, with each mode's count per species and end.
+- **References.** A reference constant is written only where a written record names it. A
+  `{"field": X}` reference (door S's merged view, not saved) requires X's `unstated` entry, and
+  the reader's check refuses it otherwise.
+- **The routing door into @3** (§4.3 there): where a channel population declares factors, the
+  channel set gives each population's `factors`, and `channel_availability`'s note says the record
+  is the held value.
+
 **The lead's rulings on these (16 November 2026):** the voltages' plus and minus are to be stated
 in the core's own @3 declarations (core-next), and until then the view's `source` citing the code
 stays; no "secreted" label (the facts are stated, the label is the reader's); `run.source` from
