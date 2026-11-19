@@ -548,6 +548,18 @@
       "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.", "finding": "Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
     },
     {
+      "id": "assembly-reservoir-exit",
+      "title": "The assembly’s lipid exit rate scales with its count of that species",
+      "statement": "In the uncatalyzed `reservoir_exchange@1` law of `cells.assembly_lineages@1`, each molecule of a given type contributes the same exit rate. The instantaneous exit propensity for that type is `leave_rate[i] × counts[i]` per nominal time unit. Applying that count to a bilayer experiment requires identifying the molecules exposed to the reservoir.",
+      "assumptions": ["The reservoir holds the activity of each species fixed. The assembly is well mixed and the base exchange law has no catalytic multiplier.", "For a washout comparison, the measured pool is the accessible tracer. Re-entry, extraction and the conversion of nominal time to seconds affect the comparison."],
+      "formal": {"status": "open", "theorems": {}, "sources": {
+        "Assembly exchange law and time convention": "src/cells/models/assembly_lineages/exchange.py#L1",
+        "Uncatalyzed entry and exit propensities": "src/cells/models/assembly_lineages/exchange.py#L108"
+      }},
+      "numerical": {"status": "open", "comparisons": [], "result": "A comparison of the assembly’s exit propensity with accessible lipid loss under the published washout conditions remains open."},
+      "biology": {"status": "open", "observable": "Decay of accessible tracer during buffer washout and its desorption rate in a separate capture assay.", "unit": "s⁻¹", "finding": "At 24 °C and 500 µL/min buffer flow, 14:0–6:0 NBD-PC fluorescence in 310 protein-free POPC/POPG vesicles decayed at 0.0108 ± 0.0045 s⁻¹ (mean ± SD). The 49.5 ± 8.5% plateau reflects label retained in the inner leaflet. The rate includes desorption and washout. Separate albumin capture gave about 0.07 s⁻¹ (11 measurements, three preparations). These measurements support first-order loss from the accessible pool. Entry and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8)", "evidence": []}
+    },
+    {
       "id": "regional-reaction-transport",
       "title": "Regional inventory changes by net boundary transfer across a split step",
       "statement": "A reaction–transport–reaction step changes a region’s weighted inventory by exactly its signed boundary inflow. The total over a closed graph is conserved.",
