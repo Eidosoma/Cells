@@ -816,9 +816,9 @@ def check_stage_read_rows(spec):
     outside = {o.id for o in m.extracellular}
     for kind_id, rows in reads:
         nodes = {}
-        for species, node in sorted(rows):
-            nodes.setdefault(species, node)
-        outside_nodes = sorted({node for _, node in rows} & outside)
+        for row in sorted(rows):  # (species, node), with the read's law as an optional third.
+            nodes.setdefault(row[0], row[1])
+        outside_nodes = sorted({row[1] for row in rows} & outside)
         for op, declaration in _entries(spec):
             if op.LAW_ID in WATER_LAWS:
                 raise ConfigError(

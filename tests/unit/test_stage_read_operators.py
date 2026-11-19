@@ -140,6 +140,10 @@ def buffered_cleft(*, buffered):
 def test_an_operator_beside_a_stored_total_is_refused_and_the_unbuffered_control_admitted(
     world, message
 ):
+    """Composite worlds with operators beside version 1's read, whose stage rows carry the read's
+    law as a third item (P1's selector): the check reads each row's (species, node), so it
+    refuses with the row's species and node. Unpacking a whole three-item row would raise a
+    ValueError here instead."""
     parse_spec(world(buffered=False))  # The control: the same world with no buffer read.
     with pytest.raises(ConfigError, match=message):
         parse_spec(world(buffered=True))
