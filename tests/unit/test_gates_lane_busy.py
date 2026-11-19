@@ -111,14 +111,18 @@ def test_a_waiter_that_computes_on_the_lane_is_busy(lb):
 def test_a_processs_affinity_and_cpu_time(lb):
     cpu = min(os.sched_getaffinity(0))
     child = subprocess.Popen(
-        [sys.executable, "-c", "import time\nt = time.time()\nwhile time.time() - t < 1.5: pass"],
+        [sys.executable, "-c", "while True: pass"],
         preexec_fn=lambda: os.sched_setaffinity(0, {cpu}))
     try:
         time.sleep(0.3)
         assert lb.proc_affinity(child.pid) == {cpu}
         first = lb.proc_cpu_seconds(child.pid)
-        time.sleep(0.8)
-        assert lb.proc_cpu_seconds(child.pid) - first >= 0.3  # It computes.
+        # It computes. Waiting for the CPU time, not a fixed wall time, keeps the claim true on a
+        # shared CPU: a merged check on a loaded CPU gave the child 0.20 s in 0.8 s (19 November).
+        deadline = time.time() + 30.0
+        while lb.proc_cpu_seconds(child.pid) - first < 0.3 and time.time() < deadline:
+            time.sleep(0.05)
+        assert lb.proc_cpu_seconds(child.pid) - first >= 0.3
     finally:
         child.kill()
         child.wait()
