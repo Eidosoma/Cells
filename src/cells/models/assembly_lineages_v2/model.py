@@ -70,8 +70,8 @@ def place_arrays(world, capacity):
         species = world.species_by_id(place.species)
         phase[i] = world_rules.PHASE_INDEX[place.phase]
         mu0[i] = species.mu(place.phase)
-        if place.phase in world_rules.DILUTE:
-            log_X[i] = log_extent(world, place.phase)
+        if place.phase in world_rules.DILUTE and world.volume(place.phase) is not None:
+            log_X[i] = log_extent(world, place.phase)  # An osmotic lumen's X is 1 (lumen.py).
         if place.held:
             held[i] = True
             log_activity[i] = math.log(place.held_mM / c0)
@@ -130,8 +130,8 @@ def layout(spec):
         real = (alpha[r] + beta[r]) > 0
         log_ratio[r] = _fold(nu[k] * mu0[place[r, k]] for k in range(ENTRIES) if real[k])
         locus_membrane[r] = step.locus == world_rules.MEMBRANE
-        if not locus_membrane[r]:
-            extent[r] = log_extent(world, step.locus)
+        if not locus_membrane[r] and world.volume(step.locus) is not None:
+            extent[r] = log_extent(world, step.locus)  # An osmotic lumen's: X(V(m))^0 = 1.
         work[r] = -_fold(
             nu[k] * held_mu[place[r, k]] for k in range(ENTRIES) if real[k] and held[place[r, k]]
         )
@@ -202,6 +202,27 @@ def geometry_layout(world, P, R, place):
         np.float64(c_area),
         np.float64(c_radius),
         np.int64(geometry_rules.floor_quanta(world)),
+        *lysis_layout(world, P),
+    )
+
+
+def lysis_layout(world, P):
+    """OL2 milestone 2's lysis arrays (kernel.GEOMETRY_FIELDS after floor_quanta): the lumen
+    mask, the tension's constants and sigma_max. A world without an osmotic lumen cannot lyse:
+    sigma_max is +inf there, so no event lyses and OL2 milestone 1's worlds run as before."""
+    from cells.models.assembly_lineages_v2 import lumen as lumen_rules
+
+    mask = np.asarray([i < len(world.places) and world.places[i].phase == world_rules.LUMEN
+                       for i in range(P)], dtype=np.int64)  # fmt: skip
+    kT, q = np.float64(world.units.kT_J), np.float64(world.geometry[1]["area_quantum_m2"])
+    if world.conventions.lumen_volume != "osmotic":
+        return mask, np.zeros(4, dtype=np.float64), np.float64(np.inf), kT, q
+    return (
+        mask,
+        np.asarray(lumen_rules.constants(world), dtype=np.float64),
+        np.float64(world.geometry[1]["sigma_max_N_per_m"][0]),
+        kT,
+        q,
     )
 
 

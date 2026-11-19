@@ -39,6 +39,7 @@ REGULAR_MIXING = "cells.regular_mixing@1"
 BILAYER_GEOMETRY = "cells.bilayer_geometry@1"
 PHASE_EXCHANGE = "cells.phase_exchange@1"
 MEMBRANE_PERMEATION = "cells.membrane_permeation@1"
+OSMOTIC_LUMEN = "cells.osmotic_lumen@1"  # OL2 milestone 2: lumen_volume osmotic.
 
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule

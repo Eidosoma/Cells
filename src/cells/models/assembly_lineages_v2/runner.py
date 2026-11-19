@@ -37,7 +37,15 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import keys
-from cells.models.assembly_lineages_v2 import MODE, balance, geometry, kernel, ledger, model
+from cells.models.assembly_lineages_v2 import (
+    MODE,
+    balance,
+    geometry,
+    kernel,
+    ledger,
+    lumen,
+    model,
+)
 from cells.models.assembly_lineages_v2.spec import world_id
 
 ROW_KINDS = ("start", "periodic", "end", "observed")
@@ -65,6 +73,7 @@ class WorldRun:
     qualifier: str
     final: dict  # The last lane state (host arrays).
     timings: dict = field(default_factory=dict)
+    osmotic: dict | None = None  # OL2 milestone 2: c_ext's drift report and any lysis (records)
 
     def check(self):
         """Raise if the run was refused (a ledger that did not close)."""
@@ -190,7 +199,13 @@ def run_lanes(specs):
     kernel.refuse_unknown(structure)
     # Refuses a kernel that fails the identity on its probe; a world with a geometry (OL2) takes
     # the geometric probe's verdict, and OL1's worlds the probe they always had.
-    verdict = balance.geometry_verdict() if structure.geometry is not None else balance.verdict()
+    osmotic = any(s.model.world.conventions.lumen_volume == "osmotic" for s in specs)
+    if osmotic:
+        verdict = balance.osmotic_verdict()
+    else:
+        verdict = (
+            balance.geometry_verdict() if structure.geometry is not None else balance.verdict()
+        )
     by_world = {}  # The world's own report, once per distinct world (lanes often share one).
     for s in specs:
         key = world_id(s.model.world)
@@ -258,6 +273,78 @@ def run_lanes(specs):
     return results
 
 
+def _release(world, layout, tables, counts, supplied, f, heat, heat_mag, work, work_mag, time):
+    """A lysis's release n′ → n_after on the end row: the membrane's and the lumen's molecules go to
+    their pool places as monomers, the closure cost is released, and the row books
+    q = −(F(n_after) − F(n′)) + w_return on top of the triggering step's own
+    q = −(F(n′) − F(n)) + w, so the event's one row holds q = −(F(n_after) − F(n)) + w (§0.2d
+    item 7). A held place that
+    receives molecules books their reservoir work, w = −Σ μ_held × the molecules received."""
+    n_prime = counts[-1].copy()
+    after = n_prime.copy()
+    took = supplied[-1].copy()
+    work_return = 0.0
+    pool_index = {p.species: i for i, p in enumerate(world.places) if p.phase == "pool"}
+    returned = {}
+    held_mu = model.place_arrays(world, layout.place_held.shape[0])[5]
+    for i, place in enumerate(world.places):
+        if place.phase not in ("membrane", "lumen") or n_prime[i] == 0:
+            continue
+        j = pool_index[place.species]  # every membrane and lumen species has one (spec.py)
+        amount = int(n_prime[i])
+        after[i] = 0
+        returned[world.places[j].name] = returned.get(world.places[j].name, 0) + amount
+        if world.places[j].held:
+            took[j] -= amount  # the reservoir takes them back
+            work_return -= amount * float(held_mu[j])
+        else:
+            after[j] += amount
+    f_after = ledger.free_energy(after, tables, world.terms, layout.terms)  # no C_close
+    q_release = -(f_after - f[-1]) + work_return
+    counts, supplied, f = counts.copy(), supplied.copy(), f.copy()
+    heat, heat_mag, work, work_mag = heat.copy(), heat_mag.copy(), work.copy(), work_mag.copy()
+    counts[-1], supplied[-1], f[-1] = after, took, f_after
+    heat[-1] += q_release
+    heat_mag[-1] += abs(q_release)
+    work[-1] += work_return
+    work_mag[-1] += abs(work_return)
+    record = {
+        "time_s": time,
+        "sigma_N_per_m": lumen.host_tension(world, n_prime[: len(world.places)]),
+        "sigma_max_N_per_m": world.geometry[1]["sigma_max_N_per_m"][0],
+        "returned": returned,
+        "release_heat_kT": q_release,
+        "release_reservoir_work_kT": work_return,
+        "reads": "the end row holds the released state; observations after the lysis are censored",
+    }
+    return counts, supplied, f, heat, heat_mag, work, work_mag, record
+
+
+def _osmotic_report(world, counts, lysis):
+    """c_ext's drift report (§0.2c rule 6) and any lysis: the pool's solute osmolarity at every
+    row, against the held c_ext. It is exact for held species; for finite ones c_ext is held while
+    the pool's count moves, a declared approximation whose largest relative drift is reported."""
+    c_ext = lumen.outside_mM(world)
+    volume = world.volume("pool")
+    osm = []
+    for row in counts:
+        total = 0.0
+        for place, count in zip(world.places, row, strict=True):
+            if place.phase != "pool":
+                continue
+            total += place.held_mM if place.held else count / (lumen.AVOGADRO * volume) * 1e3
+        osm.append(total)
+    osm = np.asarray(osm, dtype=np.float64)
+    return {
+        "outside_osmolarity_mM": c_ext,
+        "pool_solutes_mM_at_start": float(osm[0]),
+        "largest_relative_drift": float(np.max(np.abs(osm - osm[0])) / c_ext),
+        "reads": "c_ext is held (the outside's total osmolarity); the drift is the pool's solute "
+        "osmolarity's largest change over the run, relative to c_ext",
+        "lysis": lysis,
+    }
+
+
 def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     world = spec.model.world
     status = kernel.STATUS[int(final["status"])]
@@ -294,6 +381,12 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     heat_mag = np.asarray([r[5] for r in rows], dtype=np.float64)
     work = np.asarray([r[6] for r in rows], dtype=np.float64)
     work_mag = np.asarray([r[7] for r in rows], dtype=np.float64)
+    lysis = None
+    if status == "lysed":  # OL2 milestone 2: the release, booked on the end row (§0.2d item 7).
+        counts, supplied, f, heat, heat_mag, work, work_mag, lysis = _release(
+            world, layout, tables, counts, supplied, f, heat, heat_mag, work, work_mag,
+            float(final["time"]),
+        )  # fmt: skip
     residual = ledger.residual(heat, work, f, f[0])
     tolerance = ledger.closure_tolerance(heat_mag, work_mag, f, f[0])
     closes = bool(np.all(np.abs(residual) <= tolerance))
@@ -333,6 +426,13 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         row_arrays["membrane_footprint_quanta"] = counts[:, :places] @ geometry.place_quanta(
             world, places
         )
+    osmotic_report = None
+    if world.conventions.lumen_volume == "osmotic":  # OL2 milestone 2's rows and report.
+        rows_v = [lumen.host_volume_L(world, c[:places]) for c in counts]
+        rows_sigma = [lumen.host_tension(world, c[:places]) for c in counts]
+        row_arrays["lumen_volume_L"] = np.asarray(rows_v, dtype=np.float64)
+        row_arrays["tension_N_per_m"] = np.asarray(rows_sigma, dtype=np.float64)
+        osmotic_report = _osmotic_report(world, counts[:, :places], lysis)
     trace = {}
     if spec.experiment.trace:
         trace = {
@@ -360,4 +460,5 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         qualifier=qualifier,
         final=final,
         timings=timings,
+        osmotic=osmotic_report,
     )

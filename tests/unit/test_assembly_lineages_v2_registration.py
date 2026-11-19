@@ -34,6 +34,7 @@ from cells.models.assembly_lineages_v2 import (
     MASS_ACTION,
     MEMBRANE_PERMEATION,
     MODEL_ID,
+    OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
@@ -43,6 +44,7 @@ from cells.models.assembly_lineages_v2 import (
     geometry,
     ideal_mixing,
     interfaces,
+    lumen,
     mass_action,
     permeation,
     regular_mixing,
@@ -70,6 +72,8 @@ HOMES = {
     BILAYER_GEOMETRY: (geometry, interfaces.GeometryLaw, GEOMETRY_INTERFACE, None),
     PHASE_EXCHANGE: (exchange, interfaces.ReactionLaw, REACTION_INTERFACE, None),
     MEMBRANE_PERMEATION: (permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
+    # OL2 milestone 2.
+    OSMOTIC_LUMEN: (lumen, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, None),
 }  # fmt: skip
 
 

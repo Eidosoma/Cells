@@ -125,6 +125,7 @@ class Step:
     law: str
     forward_rate_per_s: float  # The step's rate constant k, in its law's unit (rate_key).
     rate_key: str = "forward_rate_per_s"  # OL2's geometric laws name theirs (§0.2d item 2).
+    rate_provenance: str | None = None  # OL2: their rate constants carry it (§0.2e rule 7).
 
 
 @dataclass(frozen=True)
@@ -257,8 +258,10 @@ def _species_list(raw, phase, known):
     return names
 
 
-def parse_phases(raw, species):
-    """(places, volumes): the places in place order, the dilute phases' volumes."""
+def parse_phases(raw, species, *, osmotic=False):
+    """(places, volumes): the places in place order, the dilute phases' volumes. Under
+    `lumen_volume: osmotic` (OL2) the lumen's volume is a function of the counts, so its block
+    declares none and it has no entry in the volumes."""
     if not isinstance(raw, dict) or MEMBRANE not in raw or set(raw) - set(PHASES):
         raise ConfigError(
             "world: phases is an object with the membrane (required) and the pool and the lumen "
@@ -272,6 +275,17 @@ def parse_phases(raw, species):
         block = raw[phase]
         if phase == MEMBRANE:
             require_fields(block, {"species"}, "world: phases: membrane")
+            names = _species_list(block["species"], phase, known)
+            places += [Place(n, phase) for n in names]
+            continue
+        if phase == LUMEN and osmotic:
+            if "volume_L" in block:
+                raise ConfigError(
+                    "world: phases: lumen: under lumen_volume osmotic the lumen's volume follows "
+                    "from its counts and the membrane's area, so it declares no volume_L "
+                    "(§0.2b rule 2)"
+                )
+            require_fields(block, {"species"}, "world: phases: lumen")
             names = _species_list(block["species"], phase, known)
             places += [Place(n, phase) for n in names]
             continue
@@ -327,6 +341,8 @@ def phases_to_dict(world):
         if not mine:
             continue
         if phase == MEMBRANE:
+            out[phase] = {"species": [p.species for p in mine]}
+        elif phase == LUMEN and world.volume(phase) is None:  # OL2's osmotic lumen
             out[phase] = {"species": [p.species for p in mine]}
         elif phase == LUMEN:
             out[phase] = {"volume_L": world.volume(phase), "species": [p.species for p in mine]}
@@ -425,8 +441,20 @@ def parse_step(raw, world_places, species, laws, encounter=None):
         )
     if raw["law"] not in laws:
         raise ConfigError(f"world: step {step}'s law is one of {', '.join(sorted(laws))}")
-    rate = finite_number(raw[rate_key], f"step {step}: {rate_key}", positive=True)
-    return Step(step, form, reactants, products, where, raw["law"], rate, rate_key)
+    if rate_key == "forward_rate_per_s":  # OL1's key: a bare number, as it always was.
+        rate = finite_number(raw[rate_key], f"step {step}: {rate_key}", positive=True)
+        return Step(step, form, reactants, products, where, raw["law"], rate, rate_key)
+    entry = raw[rate_key]
+    if not isinstance(entry, dict) or set(entry) != {"value", "provenance"}:
+        raise ConfigError(
+            f"world: step {step}'s {rate_key} is {{value, provenance}} (§0.2e rule 7)"
+        )
+    if not isinstance(entry["provenance"], str) or not entry["provenance"]:
+        raise ConfigError(f"world: step {step}'s {rate_key} states its provenance")
+    rate = finite_number(entry["value"], f"step {step}: {rate_key}", positive=True)
+    return Step(
+        step, form, reactants, products, where, raw["law"], rate, rate_key, entry["provenance"]
+    )
 
 
 def _rate_key(raw, laws, encounter):
@@ -478,7 +506,11 @@ def steps_to_dict(steps):
             products=strip(s.products),
             law=s.law,
         )
-        entry[s.rate_key] = s.forward_rate_per_s
+        entry[s.rate_key] = (
+            s.forward_rate_per_s
+            if s.rate_provenance is None
+            else {"value": s.forward_rate_per_s, "provenance": s.rate_provenance}
+        )
         out.append(entry)
     return out
 

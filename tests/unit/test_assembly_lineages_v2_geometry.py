@@ -68,10 +68,11 @@ def geometry_block(quanta, floor=60, closure=12.5):
         "law": BILAYER_GEOMETRY,
         "area_quantum_m2": Q,
         "area_per_leaflet": {
-            s: {"quanta": k, "sourced_m2": k * Q, "source": "test"} for s, k in quanta.items()
+            s: {"quanta": k, "provenance": "test", "sourced_m2": k * Q, "source": "test"}
+            for s, k in quanta.items()
         },  # fmt: skip
-        "vesicle_floor": {"quanta": floor, "provenance": "unsourced"},
-        "closure_cost_kT": {"value": closure, "provenance": "unsourced"},
+        "vesicle_floor": {"quanta": floor, "provenance": "unsourced; test"},
+        "closure_cost_kT": {"value": closure, "provenance": "unsourced; test"},
     }
 
 
@@ -94,7 +95,7 @@ def lipid_world(*, geometry=True, measure="multinomial", encounter="insertion_ar
                 "reactants": {"L@pool": 1},
                 "products": {"L@membrane": 1},
                 "law": PHASE_EXCHANGE,
-                key: k_join,
+                key: {"value": k_join, "provenance": "unsourced; test"},
             },
         )
     else:  # OL1's count_on_m join, with insertion area's constant at equal quanta (X2).
@@ -121,7 +122,8 @@ def lipid_world(*, geometry=True, measure="multinomial", encounter="insertion_ar
         founder.update({"S@pool": 4, "S@lumen": 1})
         steps.append({"id": "entry", "locus": "membrane", "reactants": {"S@pool": 1},
                       "products": {"S@lumen": 1}, "law": MEMBRANE_PERMEATION,
-                      "permeability_m_per_s": 3e-9})  # fmt: skip
+                      "permeability_m_per_s": {"value": 3e-9,
+                                               "provenance": "unsourced; test"}})  # fmt: skip
     out = {
         "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": C0_MM},
         "conventions": tokens(measure, encounter if geometry else None),
@@ -225,7 +227,7 @@ def floor_world():
                 "reactants": {"A@pool": 1},
                 "products": {"A@membrane": 1},
                 "law": PHASE_EXCHANGE,
-                "insertion_velocity_m_per_s": 1e-6,
+                "insertion_velocity_m_per_s": {"value": 1e-6, "provenance": "unsourced; test"},
             },
             {
                 "id": "dimer",
@@ -256,6 +258,15 @@ def test_below_the_floor_an_area_keeping_step_fires_and_an_area_changing_one_is_
     assert math.isclose(math.exp(log_a[dimer]), 0.5 * 2 * 2 / 6, rel_tol=1e-12)
     molecule_floor = 4
     assert min(2 + 1, 0 + 2) < molecule_floor  # Both end states below it: the plant gives zero.
+    # §0.2e rule 6: the closure cost from the bending moduli, by the engine's own law.
+    moduli = floor_world()
+    moduli["geometry"].pop("closure_cost_kT")
+    moduli["geometry"].update(
+        kappa_kT={"value": 10.0, "provenance": "unsourced; test"},
+        kappa_bar_kT={"value": -5.0, "provenance": "unsourced; test"},
+    )
+    closure = geometry_rules.closure_kT(spec_of(moduli).model.world)
+    assert closure == 8.0 * math.pi * 10.0 + 4.0 * math.pi * (-5.0)
     # The world's own identity holds, the floor's zeroed pairs skipped.
     assert balance.world_report(s)["max_abs_deviation_ln"] <= balance.ATOL
 
@@ -325,14 +336,31 @@ REFUSALS = {
     "a floor with last_molecule reversible": (
         lambda w: w["conventions"].update(last_molecule="reversible"), "requires last_molecule"),
     "a founder below the floor": (
-        lambda w: w["geometry"].update(vesicle_floor={"quanta": 10**6, "provenance": "unsourced"}),
+        lambda w: w["geometry"].update(
+            vesicle_floor={"quanta": 10**6, "provenance": "unsourced; test"}
+        ),
         "below the vesicle floor"),
     "sigma_max before the osmotic lumen": (
-        lambda w: w["geometry"].update(sigma_max_N_per_m=0.01), "belongs to lumen_volume"),
+        lambda w: w["geometry"].update(sigma_max_N_per_m={"value": 0.01, "provenance": "t"}),
+        "only under lumen_volume osmotic",
+    ),
     "a membrane species without its area": (
         lambda w: w["geometry"]["area_per_leaflet"].pop("P"), "every membrane species"),
     "quanta that are not the nearest": (
         lambda w: w["geometry"]["area_per_leaflet"]["P"].update(quanta=61), "a nearest quantum"),
+    # §0.2e rules 3, 5, 6 and 7 (19 November 2026).
+    "an area without its provenance": (
+        lambda w: w["geometry"]["area_per_leaflet"]["P"].pop("provenance"), "quanta, provenance"),
+    "a sourced area without its source": (
+        lambda w: w["geometry"]["area_per_leaflet"]["P"].pop("source"),
+        "sourced_m2 and source together",
+    ),
+    "both forms of the closure cost": (
+        lambda w: w["geometry"].update(kappa_kT={"value": 10.0, "provenance": "t"},
+                                       kappa_bar_kT={"value": -5.0, "provenance": "t"}),
+        "closure cost is declared as"),
+    "a rate key without its provenance": (
+        lambda w: w["steps"][0].update(insertion_velocity_m_per_s=2e-8), "value, provenance"),
 }  # fmt: skip
 
 

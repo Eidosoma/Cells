@@ -188,7 +188,8 @@ def parse_world(raw):
     units = world_rules.parse_units(raw["units"])
     conventions = conventions_rules.parse(raw["conventions"], geometry="geometry" in raw)
     species = world_rules.parse_species(raw["species"])
-    places, volumes = world_rules.parse_phases(raw["phases"], species)
+    osmotic = conventions.lumen_volume == conventions_rules.OSMOTIC
+    places, volumes = world_rules.parse_phases(raw["phases"], species, osmotic=osmotic)
     if type(raw["steps"]) is not list or not raw["steps"]:
         raise ConfigError("world: steps is a non-empty list")
     reaction_laws = family_laws(REACTION_INTERFACE)
@@ -227,7 +228,78 @@ def parse_world(raw):
         law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
     _geometry_refusals(world)
+    _osmotic_refusals(world)
     return world
+
+
+def _osmotic_refusals(world):
+    """OL2 milestone 2's refusals (§0.2b rules 2 and 3, §0.2c rules 6–8), after the others."""
+    from cells.models.assembly_lineages_v2 import OSMOTIC_LUMEN
+    from cells.models.assembly_lineages_v2 import lumen as lumen_rules
+
+    osmotic = world.conventions.lumen_volume == conventions_rules.OSMOTIC
+    declared = [law_id for law_id, _ in world.terms if law_id == OSMOTIC_LUMEN]
+    if not osmotic:
+        if declared:
+            raise ConfigError(
+                f"world: free_energy: {OSMOTIC_LUMEN} is declared only under lumen_volume osmotic"
+            )
+        return
+    if not declared:
+        raise ConfigError(
+            f"world: free_energy: under lumen_volume osmotic the world declares {OSMOTIC_LUMEN}, "
+            "with the outside's total osmolarity (§0.2c rule 6)"
+        )
+    by_name = {p.name: p for p in world.places}
+    lumen_places = [p for p in world.places if p.phase == world_rules.LUMEN]
+    if not lumen_places:
+        raise ConfigError("world: lumen_volume osmotic needs a lumen with its species")
+    for step in world.steps:  # §0.2c rule 7: no rate that is +inf at an empty lumen on m.
+        lumen_in = sum(c for n, c in step.reactants if by_name[n].phase == world_rules.LUMEN)
+        if step.locus == world_rules.LUMEN and lumen_in >= 2:
+            raise ConfigError(
+                f"world: step {step.id} has {lumen_in} lumen reactant molecules; under "
+                "lumen_volume osmotic its rate on m is +inf at an empty lumen, so it is refused "
+                "(§0.2c rule 7)"
+            )
+        if step.locus == world_rules.MEMBRANE and lumen_in >= 1:
+            raise ConfigError(
+                f"world: step {step.id} is a membrane-locus step with a lumen reactant; under "
+                "lumen_volume osmotic its rate on m is +inf at an empty lumen, so it is refused "
+                "(§0.2c rule 7)"
+            )
+    pool = {p.species for p in world.places if p.phase == world_rules.POOL}
+    homeless = sorted(
+        {p.species for p in world.places if p.phase in (world_rules.MEMBRANE, world_rules.LUMEN)}
+        - pool
+    )
+    if homeless:
+        raise ConfigError(
+            "world: in a world that can lyse, every membrane and lumen species has a pool place to "
+            f"return to; {', '.join(homeless)} has none (§0.2c rule 8)"
+        )
+    c_ext = lumen_rules.outside_mM(world)
+    solutes = 0.0
+    pool_volume = world.volume(world_rules.POOL)
+    for place, count in zip(world.places, world.founder, strict=True):
+        if place.phase != world_rules.POOL:
+            continue
+        if place.held:
+            solutes += place.held_mM
+        else:
+            solutes += count / (lumen_rules.AVOGADRO * pool_volume) * 1e3
+    if c_ext < solutes:
+        raise ConfigError(
+            f"world: the outside's total osmolarity, {c_ext:g} mM, is below its declared pool "
+            f"solutes' total, {solutes:.6g} mM (§0.2c rule 6)"
+        )
+    sigma = lumen_rules.host_tension(world, world.founder)
+    sigma_max = world.geometry[1]["sigma_max_N_per_m"][0]
+    if sigma > sigma_max:
+        raise ConfigError(
+            f"world: the founder's tension, {sigma:.6g} N/m, is beyond sigma_max, {sigma_max:g} "
+            "N/m (§0.2c rule 8)"
+        )
 
 
 def _geometry_refusals(world):

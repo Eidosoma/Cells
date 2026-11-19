@@ -109,6 +109,12 @@ RECORDS = {
 
 # OL2's records, written only by a world that declares a geometry (OL1's bundles are unchanged).
 GEOMETRY_RECORDS = {
+    "lumen_volume_L": _record(
+        "row", ["row"], "L", "level", "V(n) = min(V_osm, V_sph(A)), the osmotic lumen's volume"
+    ),
+    "tension_N_per_m": _record(
+        "row", ["row"], "N/m", "level", "sigma = max(0, dp R / 2), the membrane's tension"
+    ),
     "membrane_footprint_quanta": _record(
         "row",
         ["row"],
@@ -133,6 +139,12 @@ def _geometry_derived(world):
             "log_radius_constant": c_radius,
             "floor_quanta": geometry.floor_quanta(world),
             "closure_kT": geometry.closure_kT(world),
+            "closure_form": world.geometry[1]["closure"]["form"],
+            **(
+                {"closure_law": geometry.CLOSURE_LAW}
+                if world.geometry[1]["closure"]["form"] == "moduli"
+                else {}
+            ),
         }
     }
 
@@ -222,7 +234,7 @@ def run_record(run, world_id):
         "mode": spec.execution.mode,
         "stream": world_spec.stream_identity(spec),
         "ssa": kernel.SSA_CONVENTION,
-        "lifecycle": kernel.LIFECYCLE,
+        "lifecycle": kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE,
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
         "end": {
@@ -244,6 +256,7 @@ def run_record(run, world_id):
             for name in arrays
         },
         "diagnostics": {"uniforms": spec.experiment.uniforms},
+        **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
     }
 
 

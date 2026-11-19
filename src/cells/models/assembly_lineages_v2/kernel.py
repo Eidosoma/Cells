@@ -50,8 +50,9 @@ from cells.models.assembly_lineages_v2 import mass_action, streams
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.registry import laws as law_registry
 
-RUNNING, COMPLETE, EXTINCT, EVENT_LIMIT, STALLED, INERT, CAPACITY = range(7)
-STATUS = ("running", "complete", "extinct", "event_limit", "stalled", "inert", "capacity")
+RUNNING, COMPLETE, EXTINCT, EVENT_LIMIT, STALLED, INERT, CAPACITY, LYSED = range(8)
+STATUS = ("running", "complete", "extinct", "event_limit", "stalled", "inert", "capacity",
+          "lysed")  # fmt: skip
 ENTRIES = 6  # K: distinct places per step (at most 3 reactant and 3 product molecules).
 MEMBRANE = world_rules.PHASE_INDEX[world_rules.MEMBRANE]
 
@@ -98,6 +99,17 @@ LIFECYCLE = {
     "if the event would pass the horizon, capacity if it would pass the molecule capacity; after a "
     "committed event: extinct if it emptied the membrane under last_molecule extinct, else "
     "event_limit at the guard, else running",
+}
+
+# OL2 milestone 2's lifecycle, for a world with an osmotic lumen (OL1's text above is unchanged).
+LIFECYCLE_OSMOTIC = {
+    "statuses": {
+        **LIFECYCLE["statuses"],
+        "lysed": "an event's end state took the vesicle beyond sigma_max: the life ends lysed, "
+        "its molecules return to their pool places and its closure cost is released",
+    },
+    "order": LIFECYCLE["order"] + "; after a committed event: lysed if its end state's tension "
+    "is beyond sigma_max",
 }
 
 
@@ -299,6 +311,11 @@ GEOMETRY_FIELDS = (
     "log_area",  # float64: c_area, ln(A ρ0) = c_area + ln W
     "log_radius",  # float64: c_radius, ln(4πR ρ0) = c_radius + ½ ln W
     "floor_quanta",  # int64: W_floor
+    "lumen_mask",  # [P] int64: 1 at a finite lumen place (OL2 milestone 2)
+    "lumen_constants",  # [4] float64: lumen.constants (zeros without an osmotic lumen)
+    "sigma_max",  # float64: the lysis tension (N/m); +inf without an osmotic lumen
+    "kT_J",  # float64: k_BT in joules
+    "area_quantum_m2",  # float64: q
 )
 
 
@@ -318,6 +335,17 @@ def encounter_extent(footprint, layout, view, xp=jnp):
     area = layout.geometry[4] + log_w
     radius = layout.geometry[5] + 0.5 * log_w
     return xp.where(code == 1, area, xp.where(code == 2, radius, 0.0))
+
+
+def lysis_at(counts, layout, xp=jnp):
+    """Whether a state's tension is beyond sigma_max (§0.2b rule 3): never without an osmotic
+    lumen, whose sigma_max is +inf."""
+    from cells.models.assembly_lineages_v2 import lumen as lumen_rules
+
+    g = layout.geometry
+    n_lumen = xp.sum(counts * g[7])
+    sigma = lumen_rules.tension(n_lumen, footprint_of(counts, layout, xp), g[10], g[11], g[8], xp)
+    return sigma > g[9]
 
 
 def floor_zero(footprint, moved, floor):
@@ -485,6 +513,8 @@ def event(lane, layout, structure):
     status = jnp.where(
         extinction, EXTINCT, jnp.where(events >= layout.event_limit, EVENT_LIMIT, RUNNING)
     ).astype(jnp.int32)
+    if structure.geometry is not None:  # OL2 milestone 2: lysis at the end state (§0.2b rule 3)
+        status = jnp.where(lysis_at(counts, layout), LYSED, status).astype(jnp.int32)
     after = lane._replace(
         counts=counts,
         totals=totals,

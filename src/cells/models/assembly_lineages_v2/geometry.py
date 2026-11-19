@@ -50,7 +50,9 @@ TEST = (
     "tests/unit/test_assembly_lineages_v2_geometry.py::"
     "test_insertion_area_at_equal_quanta_is_count_on_m_at_c_1"
 )
-KEYS = {"law", "area_quantum_m2", "area_per_leaflet", "vesicle_floor", "closure_cost_kT"}
+KEYS = {"law", "area_quantum_m2", "area_per_leaflet", "vesicle_floor"}
+CLOSURE_FORMS = ({"closure_cost_kT"}, {"kappa_kT", "kappa_bar_kT"})  # §0.2e rule 6: one of them.
+CLOSURE_LAW = "8 pi kappa + 4 pi kappa_bar (k_BT): Helfrich's closed sphere"
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 MAX_QUANTA = 2**20
 
@@ -69,15 +71,43 @@ def _provenanced(raw, name, *, integer, key="value"):
     return value, raw["provenance"]
 
 
+def _signed_provenanced(raw, name):
+    """{value, provenance} with a finite value of any sign (κ̄, the Gaussian modulus)."""
+    if not isinstance(raw, dict) or set(raw) != {"value", "provenance"}:
+        raise ConfigError(f"world: geometry: {name} is {{value, provenance}}")
+    if not isinstance(raw["provenance"], str) or not raw["provenance"]:
+        raise ConfigError(f"world: geometry: {name}'s provenance is stated ('unsourced' if so)")
+    value = raw["value"]
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ConfigError(f"world: geometry: {name}'s value is a finite number")
+    return float(value), raw["provenance"]
+
+
 def parse_data(raw, world):
     if not isinstance(raw, dict):
         raise ConfigError("world: geometry is an object")
-    if "sigma_max_N_per_m" in raw:
+    osmotic = world.conventions.lumen_volume == "osmotic"
+    if osmotic and "sigma_max_N_per_m" not in raw:
         raise ConfigError(
-            "world: geometry: sigma_max_N_per_m belongs to lumen_volume: osmotic (§0.2c rule 8), "
-            "which this version of the engine does not run yet"
+            "world: geometry: under lumen_volume osmotic the geometry declares sigma_max_N_per_m, "
+            "{value, provenance}, the membrane's lysis tension (§0.2c rule 8)"
         )
-    require_fields(raw, KEYS, "world: geometry")
+    if not osmotic and "sigma_max_N_per_m" in raw:
+        raise ConfigError(
+            "world: geometry: sigma_max_N_per_m is declared only under lumen_volume osmotic "
+            "(§0.2c rule 8)"
+        )
+    closure_keys = {k for form in CLOSURE_FORMS for k in form} & set(raw)
+    if closure_keys not in CLOSURE_FORMS:
+        raise ConfigError(
+            "world: geometry: the closure cost is declared as closure_cost_kT {value, provenance} "
+            "or as the bending moduli kappa_kT and kappa_bar_kT, each {value, provenance}, from "
+            "which the engine computes 8 pi kappa + 4 pi kappa_bar (§0.2e rule 6); not "
+            f"{sorted(closure_keys) or 'neither'}"
+        )
+    require_fields(
+        raw, KEYS | closure_keys | ({"sigma_max_N_per_m"} if osmotic else set()), "world: geometry"
+    )
     q = finite_number(raw["area_quantum_m2"], "world: geometry: area_quantum_m2", positive=True)
     membrane = [p.species for p in world.places if p.phase == "membrane"]
     per = raw["area_per_leaflet"]
@@ -90,40 +120,89 @@ def parse_data(raw, world):
     areas = []
     for name in membrane:
         entry = per[name]
-        require_fields(entry, {"quanta", "sourced_m2", "source"}, f"geometry: {name}'s area")
+        if not isinstance(entry, dict) or not {"quanta", "provenance"} <= set(entry):
+            raise ConfigError(
+                f"world: geometry: {name}'s area is {{quanta, provenance}}, with sourced_m2 and "
+                "source optional and given together (§0.2e rule 5)"
+            )
+        extra = set(entry) - {"quanta", "provenance"}
+        if extra not in (set(), {"sourced_m2", "source"}):
+            raise ConfigError(
+                f"world: geometry: {name}'s area gives sourced_m2 and source together, or neither "
+                f"(§0.2e rule 5); not {sorted(extra)}"
+            )
         k = bounded_integer(entry["quanta"], f"geometry: {name}'s quanta", minimum=1,
                             maximum=MAX_QUANTA)  # fmt: skip
-        sourced = finite_number(entry["sourced_m2"], f"geometry: {name}'s sourced_m2",
-                                positive=True)  # fmt: skip
-        if not isinstance(entry["source"], str) or not entry["source"]:
-            raise ConfigError(f"world: geometry: {name}'s area states its source")
-        ratio = sourced / q
-        if abs(k - ratio) > 0.5 * (1.0 + 1e-12):
-            raise ConfigError(
-                f"world: geometry: {name}'s area rounds to a nearest quantum: {sourced:g} m² is "
-                f"{ratio:.6g} quanta of {q:g} m², so not {k} (§0.2c rule 4)"
-            )
-        areas.append((name, k, sourced, entry["source"]))
+        if not isinstance(entry["provenance"], str) or not entry["provenance"]:
+            raise ConfigError(f"world: geometry: {name}'s area states its provenance")
+        sourced = source = None
+        if extra:
+            sourced = finite_number(entry["sourced_m2"], f"geometry: {name}'s sourced_m2",
+                                    positive=True)  # fmt: skip
+            source = entry["source"]
+            if not isinstance(source, str) or not source:
+                raise ConfigError(f"world: geometry: {name}'s sourced area states its source")
+            ratio = sourced / q
+            if abs(k - ratio) > 0.5 * (1.0 + 1e-12):
+                raise ConfigError(
+                    f"world: geometry: {name}'s area rounds to a nearest quantum: {sourced:g} m² "
+                    f"is {ratio:.6g} quanta of {q:g} m², so not {k} (§0.2c rule 4)"
+                )
+        areas.append((name, k, entry["provenance"], sourced, source))
     floor = _provenanced(raw["vesicle_floor"], "vesicle_floor", integer=True, key="quanta")
-    closure = _provenanced(raw["closure_cost_kT"], "closure_cost_kT", integer=False)
-    return {
+    if "closure_cost_kT" in raw:
+        value, provenance = _provenanced(raw["closure_cost_kT"], "closure_cost_kT", integer=False)
+        closure = {"value": value, "form": "declared", "closure_cost_kT": (value, provenance)}
+    else:
+        kappa = _provenanced(raw["kappa_kT"], "kappa_kT", integer=False)
+        kappa_bar = _signed_provenanced(raw["kappa_bar_kT"], "kappa_bar_kT")
+        value = 8.0 * math.pi * kappa[0] + 4.0 * math.pi * kappa_bar[0]
+        if not value >= 0:
+            raise ConfigError(
+                f"world: geometry: the closure cost 8 pi kappa + 4 pi kappa_bar is {value:g} "
+                "k_BT; a closed vesicle's is not negative"
+            )
+        closure = {"value": value, "form": "moduli", "kappa_kT": kappa, "kappa_bar_kT": kappa_bar}
+    out = {
         "area_quantum_m2": q,
         "area_per_leaflet": tuple(areas),
         "vesicle_floor": floor,
-        "closure_cost_kT": closure,
+        "closure": closure,
     }
+    if osmotic:
+        sigma = _provenanced(raw["sigma_max_N_per_m"], "sigma_max_N_per_m", integer=False)
+        if not sigma[0] > 0:
+            raise ConfigError("world: geometry: sigma_max_N_per_m's value is positive")
+        out["sigma_max_N_per_m"] = sigma
+    return out
 
 
 def data_to_dict(data):
-    return {
+    areas = {}
+    for name, k, provenance, sourced, source in data["area_per_leaflet"]:
+        areas[name] = {"quanta": k, "provenance": provenance}
+        if sourced is not None:
+            areas[name].update(sourced_m2=sourced, source=source)
+    closure = data["closure"]
+    if closure["form"] == "declared":
+        written = {"closure_cost_kT": dict(zip(("value", "provenance"), closure["closure_cost_kT"],
+                                               strict=True))}  # fmt: skip
+    else:
+        written = {
+            key: dict(zip(("value", "provenance"), closure[key], strict=True))
+            for key in ("kappa_kT", "kappa_bar_kT")
+        }
+    out = {
         "area_quantum_m2": data["area_quantum_m2"],
-        "area_per_leaflet": {
-            name: {"quanta": k, "sourced_m2": sourced, "source": source}
-            for name, k, sourced, source in data["area_per_leaflet"]
-        },
+        "area_per_leaflet": areas,
         "vesicle_floor": dict(zip(("quanta", "provenance"), data["vesicle_floor"], strict=True)),
-        "closure_cost_kT": dict(zip(("value", "provenance"), data["closure_cost_kT"], strict=True)),
+        **written,
     }
+    if "sigma_max_N_per_m" in data:
+        out["sigma_max_N_per_m"] = dict(
+            zip(("value", "provenance"), data["sigma_max_N_per_m"], strict=True)
+        )
+    return out
 
 
 # ------------------------------------------------------------------ derived, on the host
@@ -134,7 +213,7 @@ def place_quanta(world, capacity):
     out = np.zeros(capacity, dtype=np.int64)
     if world.geometry is None:
         return out
-    k = {name: q for name, q, _, _ in world.geometry[1]["area_per_leaflet"]}
+    k = {name: q for name, q, *_ in world.geometry[1]["area_per_leaflet"]}
     for i, place in enumerate(world.places):
         if place.phase == "membrane":
             out[i] = k[place.species]
@@ -160,7 +239,7 @@ def floor_quanta(world):
 
 def closure_kT(world):
     """C_close, once for the one living vesicle of a single-assembly world (0 with no geometry)."""
-    return 0.0 if world.geometry is None else world.geometry[1]["closure_cost_kT"][0]
+    return 0.0 if world.geometry is None else world.geometry[1]["closure"]["value"]
 
 
 def area_m2(world, footprint):

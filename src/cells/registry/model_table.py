@@ -132,6 +132,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.geometry",
                 "cells.models.assembly_lineages_v2.exchange",
                 "cells.models.assembly_lineages_v2.permeation",
+                "cells.models.assembly_lineages_v2.lumen",
             ),
             interfaces=(
                 "cells.reaction_law@1",
