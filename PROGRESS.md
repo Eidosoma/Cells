@@ -108,6 +108,12 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **Cl⁻ in @3's channel populations: the always-open chloride leak `cells.clleak_always_open@1`
+  (19 November 2026; D228 item 3).** Merge 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`. @3's
+  valence table admits Cl⁻ at −1, and the planted test laws move to code 99. The Xenopus lane's
+  Cl⁻-only patch needs it. Gates: tiers 590 files with 0 changed, G1, crossrev 11 of 11, IDs +3,
+  FR's set; the lead's merged check on trial 7e125758.
+
 - **The third external review's five findings, fixed (19 November 2026).** Merge 560da6a0, tag
   `review3-fixes-landed-2026-11-19`. Engine models touched: the transporter, passive routes, pH
   condition and proton buffer kinds; `surface_pump_v3`; `scheduled_membrane_trafficking@1`.
