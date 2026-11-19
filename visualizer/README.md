@@ -796,8 +796,8 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
   part 2, on main"), and the engine's declarations list the stochastic assembly family
   `cells.assembly_lineages@1` with GARD's three laws and two lineage operators
-  (`data/engine/declarations.json`, written at main `4dda2285`, the map's revision; they
-  did so at `a16b2571`, `79d23cd5` and `b5d3faf0` too). Declared is not qualified: its runs are
+  (`data/engine/declarations.json`, written at main `1ca5eada`, the map's revision; they
+  did so at `a16b2571`, `79d23cd5`, `b5d3faf0` and `4dda2285` too). Declared is not qualified: its runs are
   development runs, not judged, and the page says so on every picture of them. The Engine
   map's part for GARD reads "Implemented and guarded" since the map's review at `4dda2285`,
   on its tests on main, with its standing first: development runs, not judged (D192,
@@ -1071,7 +1071,7 @@ Every engine file belongs to exactly one part; the extractor warns if one does n
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("250 of 250 engine files placed, 321 left out as legacy code").
+build counts them apart ("255 of 255 engine files placed, 321 left out as legacy code").
 The map's patterns are carried through the engine's source moves from the engine's own path
 tables (`scripts/moves/*-table.json`), with a check that every file stands in the part it
 stood in before (`tools/move_paths.py check`, which names a package file the move dissolved
@@ -1201,8 +1201,9 @@ all 112 runs, in 341 files).
    engine's declarations manifest, with GARD's second part at a16b2571, and on 18 November at
    79d23cd5, after D198's retire batch and the feature-request lane's judged acceptances, and
    at b5d3faf0, after D188's second move and the landing of the origin-of-life engine's first
-   laws, and at 4dda2285, after the core-seams pass's first landings (seam F's laws as
-   modules among them): 261 parts and 962 relations, which it states.
+   laws, at 4dda2285, after the core-seams pass's first landings (seam F's laws as
+   modules among them), and on 19 November at 1ca5eada, after seams A, C and D, FR-2's first
+   version and FR-8's stage 0: 265 parts and 1007 relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -1385,13 +1386,14 @@ Ideas kept for after the basics (the user, 14 November 2026):
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library is read from the engine's declarations manifest written at main 4dda2285:
-  47 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
+- The Laws library is read from the engine's declarations manifest written at main 1ca5eada:
+  55 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared
-  law (38 of 48) stay in the atlas; their laws say what the law-port inventory of 17 November
-  2026 marks them (D211), and the table is made again only when that inventory changes. The
-  15 laws on the other ten units that the inventory has no row for say that the declarations
+  law (33 of 48) stay in the atlas; their laws, and U07's undeclared one, say what the law-port
+  inventory of 17 November 2026 marks them (D211), and the table is made again only when that inventory changes. Five
+  of its rows' laws are declared since 1ca5eada, and their units open them through a door. The
+  14 laws on the other 15 units that the inventory has no row for say that the declarations
   do not list them. At rest on a wide
   screen the model families' names are small; they read once a case is chosen.
 - The Laws library's card scrolls beside its legend on a wide window under about 1000 px

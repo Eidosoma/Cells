@@ -19,8 +19,10 @@
 //            A piece links where it is declared at the manifest's revision. A unit of the
 //            Protein atlas opens a declared law through its door, and says of an undeclared one
 //            that no active model declares it, with no door; a unit of each mark of the law-port
-//            inventory (U05, U42, U47, U37) says its law and that mark's words, in one line with
-//            no door.
+//            inventory (U42, U47, U37, and for "port as is" the first unit whose every law has a
+//            row of that mark and is undeclared, found from the data) says its law and that mark's
+//            words, in one line with no door; and a law the table marks that the manifest now
+//            declares opens its door, with no mark's words.
 //   phone    on a 360 px phone the six views' switch fits the bar (its row scrolls, the library's tab in sight); the library opens on its wall,
 //            a piece chosen opens the panel as a sheet, and no room is kept on the left.
 //   gone     on a check-only scene without the Engine view's box that holds the declared laws'
@@ -45,6 +47,7 @@ import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE, ROOT } from "./lib/build_page.mjs";
 import { phraseOf } from "../src/lenses/law_port.js";
+import { unitLaws } from "../src/lenses/laws_card.js";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
@@ -75,6 +78,20 @@ const PORT = JSON.parse(await readFile(path.join(ROOT, "data", "laws", "law_port
 const lineOf = (id) => MANIFEST.pieces.find((piece) => piece.declared_id === id)?.line;
 const fileOf = (id) => MANIFEST.pieces.find((piece) => piece.declared_id === id)?.module_path;
 const literally = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// The units the law-port cases open are found from the data too: a law the table marks may be declared at a later
+// merge (the five Kv1 laws of U05–U08 and U10 were, at 1ca5eada), and then its unit opens a door instead.
+const DECLARED = new Set(MANIFEST.pieces.flatMap((piece) => [piece.id, piece.declared_id]));
+const declaredLaw = (law) => DECLARED.has(law) || DECLARED.has(`cells.${law}`);
+const UNITS = JSON.parse(await readFile(DEFAULT_SCENE, "utf8")).entities.filter((entity) => entity.kind === "unit");
+const PORT_AS_IS = (() => {
+  for (const unit of UNITS) {
+    const code = unit.id.replace(/^unit\./, ""), laws = unitLaws(unit);
+    const rows = laws.map((law) => PORT.rows.find((row) => row.has_id && row.law === law && row.units.includes(code)));
+    if (laws.length && rows.every((row) => row?.mark === "port as is") && !laws.some(declaredLaw)) return [code, laws[0]];
+  }
+  return null;
+})();
+const PORT_DECLARED = PORT.rows.find((row) => row.has_id && declaredLaw(row.law)) || null;
 const CASES = MANIFEST.models.filter((model) => !model.rows.length).length, RACKS = MANIFEST.models.length - CASES;
 if (CASE === "gone" && !process.env.CHECK_SCENE) {
   const whole = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
@@ -387,7 +404,8 @@ try {
     unit = await state();
     check("the unit's door opens the library on that law, chosen", unit.lens === "laws" && (await evaluate(`${L}.selected`)) === "laws:kv1p5_mh@1" && /kv1p5_mh@1/.test(unit.panel), JSON.stringify([unit.lens, unit.selected]));
     // A unit of each mark of the law-port inventory: its law, a colon, and that mark's words, in one line that opens nothing.
-    for (const [id, law] of [["U05", "kv1p1_mh2@1"], ["U42", "ncx_3na_1ca_symmetric_barrier@1"], ["U47", "mitochondrial_passive_continuous_si@1"], ["U37", "junction_flux() in the nominal profile"]]) {
+    check(`a unit whose every law the law-port table marks "port as is", none of them declared, is found (${PORT_AS_IS?.join(" ")})`, Boolean(PORT_AS_IS));
+    for (const [id, law] of [...(PORT_AS_IS ? [PORT_AS_IS] : []), ["U42", "ncx_3na_1ca_symmetric_barrier@1"], ["U47", "mitochondrial_passive_continuous_si@1"], ["U37", "junction_flux() in the nominal profile"]]) {
       const row = PORT.rows.find((item) => item.units.includes(id) && (item.has_id ? item.law === law : true));
       await open(`select=unit.${id}`);
       const doors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
@@ -396,6 +414,14 @@ try {
       await evaluate(`${V}.shadowRoot.querySelector("cells-panel .panel-door.quiet")?.scrollIntoView({ block: "center" })`);
       await sleep(300);
       await shot(`${NAME}-unit-${id}`);
+    }
+    // A law the table marks that the manifest now declares is a door, whatever the table says (schema/LAWS_LIBRARY.md).
+    if (PORT_DECLARED) {
+      const id = PORT_DECLARED.units[0];
+      await open(`select=unit.${id}`);
+      const doors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
+      check(`unit.${id}: ${PORT_DECLARED.law}, which the table marks "${PORT_DECLARED.mark}" and the manifest declares, opens its door, and the mark's words are not said`, doors.some((door) => door.button && new RegExp(`^Open ${literally(PORT_DECLARED.law)} on the Laws library's wall`).test(door.text.trim())) && !doors.some((door) => !door.button && door.text.includes(PORT_DECLARED.law)), JSON.stringify(doors));
+      await shot(`${NAME}-unit-${id}-declared`);
     }
     // What the view leaves behind: the Cell view opened after it is as the Cell view opened alone.
     const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3) }; })()`);
