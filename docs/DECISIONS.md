@@ -7443,3 +7443,20 @@ any tests that you need 2.yes 3. yes".
   - B: base-side runs reused per main revision, and G1's shards re-planned.
 
   Crossrev keeps comparing head against base, never against the record. G1 keeps its 113 worlds.
+
+## D230: OL2 and OL3 resume, behind core and FR-1 to FR-10
+
+2026-11-19, about 15:45 UTC. Asked how close the GARD experiment is with real chemistry, the user
+answered "lets on OL3", then "and continue OL2" and "but still fr1-10 and core highest priority".
+This lifts D222's hold on OL2 and OL3, at low priority.
+- **The order is unchanged at the top.** Core and FR-1 to FR-10 keep the first claim on seats and
+  lanes, with the Xenopus lane beside them (D225). OL work comes after.
+- **Lanes.** An OL gate starts only when the lead sees the core and FR queues on its lane empty. A
+  test of free locks alone is not enough, because some core units wait on files before they take a
+  lock.
+- **Seats.** At the agent cap, the OL builder stops at a clean commit rather than an FR or core
+  agent waiting.
+- **What lands, in order** ([ORIGIN_OF_LIFE_ENGINE_DESIGN §0.2e](ORIGIN_OF_LIFE_ENGINE_DESIGN.md#02e-the-leads-rulings-for-ol2s-remaining-milestones-and-ol3-19-november-2026)):
+  OL2 milestone 1 as built (ol2-engine 9190ae78); then, on one branch, OL2 milestone 2 (the osmotic
+  lumen and lysis), OL3 milestone 1 (single-lineage division), OL2 milestone 3 (the shared pool and
+  serial transfer, labels and the diagnostic record), and OL5's probe roles.
