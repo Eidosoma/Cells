@@ -43,6 +43,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "Citation",
         "CitedWork",
         "hosted_laws",
+        "cycle_changes",
         "CHANNEL_LAW",
         "CYCLE_LAW",
         "ROUTE_LAW",
