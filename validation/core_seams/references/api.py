@@ -659,7 +659,10 @@ def engine_guard(law: dict, population: dict, registry: dict, host_state: dict) 
         Y_m = max_t (X_mt + |ε_t ψ|) over a net-flow mode's terms (0 otherwise),
         Φ_m = J⁺ + J⁻ (factored, diagram) or Σ_t a k |w_t| (1 + e^{y_t}) (net flow),
 
-    K_m the mode's rows, T_m its terms (1 otherwise), M the population's modes. G is this
+    K_m the law's rows (the distinct rows its modes touch), T_m its terms (1 otherwise), M the
+    population's modes; g°_m in @3's 1 mM frame, Σ_s Δ_s (μ°_s/RT − ln c0), c0 in mM, so that
+    x = g° + Σ ν ln c (mM) + q ψ (the erratum of 19 November 2026). A net-flow term's weight
+    enters Φ as |w_t|, since a declared term weight may be negative (fb_basis). G is this
     package's exact Σ J_m x_m; the verdict is G > A. Also: A in ε of this package's own scale
     Σ_m (J⁺ + J⁻) × (ΔG/RT's terms), the window of §A3."""
     ls = C.law_state(population, host_state)
@@ -671,19 +674,25 @@ def engine_guard(law: dict, population: dict, registry: dict, host_state: dict) 
     mods = C.modes(law)
     M = len(mods)
     A, mine = 0.0, 0.0
+    # erratum to A2 (19 November 2026): K_m is the law's rows (the distinct rows its modes touch,
+    # the same for every mode), and g°_m is in @3's 1 mM frame, Σ_s Δ_s (μ°_s/RT − ln c0), c0 in
+    # mM, as X_m's "c in mM" requires; A2 read K_m as the mode's own rows and g° in the c° frame
+    K_law = len({(s_, e_) for mm in mods for s_, e_, _n in mm["nu"]})
+    ln_c0 = math.log(float(registry["standard_concentration_mM"]))
 
     def X_of(nu):
         conv = {}
         for s_, _e, n in nu:
             conv[s_] = conv.get(s_, 0) + int(n)
-        g0 = sum(n * float(registry["species"][s_]["mu0_RT"]) for s_, n in conv.items())
+        g0 = sum(n * (float(registry["species"][s_]["mu0_RT"]) - ln_c0)
+                 for s_, n in conv.items())
         q = sum(int(registry["species"][s_]["valence"]) * int(n) for s_, e, n in nu if e == "P")
         return abs(g0) + _ln_mM_terms(nu, ls) + abs(q * ps)
 
     for m in mods:
         q = fl_[m["id"]]
         x = fl(q["dG_RT"])
-        K = len(m["nu"])
+        K = K_law
         if law["kind"] == "net_flow":
             terms = m["flux_terms"]
             Tm = len(terms)

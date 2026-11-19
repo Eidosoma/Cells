@@ -2666,57 +2666,57 @@
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [4.626380958905718, 46.27615371232773],
-      "max_G_over_A": -1.0460281647474172e-17
+      "A_in_eps_of_this_scale": [5.191589283232346, 50.35553675109671],
+      "max_G_over_A": -9.555243626549674e-18
      },
      "d2_slip_exchanger": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [3.7099327794193164, 19.68152424781101],
+      "A_in_eps_of_this_scale": [3.710620098233571, 19.681524248460143],
       "max_G_over_A": 0.0
      },
      "d3_figure_eight": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [4.341275766027099, 21.446075285324362],
+      "A_in_eps_of_this_scale": [5.025766648923017, 25.020421166211754],
       "max_G_over_A": 0.0
      },
      "d4_parallel_branches": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [3.546727090770393, 1311104.79456777],
+      "A_in_eps_of_this_scale": [3.896307309448955, 1529618.160013568],
       "max_G_over_A": 0.0
      },
      "v1_proton_n2": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [4.818097984153804, 5.8671141238455515],
-      "max_G_over_A": -2.9122951579125745e-16
+      "A_in_eps_of_this_scale": [5.35379861957925, 6.447184150497648],
+      "max_G_over_A": -2.6208911516179137e-16
      },
      "v1_neutral_n1": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [5.443375567569329, 7.522666283429524],
-      "max_G_over_A": -1.775195092600676e-18
+      "A_in_eps_of_this_scale": [6.484337544625396, 8.597853701215833],
+      "max_G_over_A": -1.539600731876538e-18
      },
      "v1_neutral_n2": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [4.5437505883870255, 6.678138637674729],
-      "max_G_over_A": -5.032258592971936e-17
+      "A_in_eps_of_this_scale": [5.263163738824592, 7.478076189496194],
+      "max_G_over_A": -4.361508860422518e-17
      },
      "planted_negative_S_n1": {
       "engine_fires_at": ["random_0", "random_1"],
       "expected": ["random_0", "random_1"],
       "agree": true,
-      "A_in_eps_of_this_scale": [5.134169907990117, 7.2039533974918974],
-      "max_G_over_A": 161255822664242.88
+      "A_in_eps_of_this_scale": [6.118520738409237, 8.360338569154319],
+      "max_G_over_A": 137912207873025.27
      },
      "fb_shift": {
       "engine_fires_at": ["band0_eq_inside", "band0_mid", "band0_z_inside", "band1_eq_inside", "band1_mid", "band1_z_inside", "band2_eq_inside", "band2_mid", "band2_z_inside", "band3_eq_inside", "band3_mid", "band3_z_inside"],
@@ -2729,28 +2729,28 @@
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [5.848732959718685, 38.67949255590356],
-      "max_G_over_A": -1156072741744.2107
+      "A_in_eps_of_this_scale": [6.690080978571077, 44.022611541542844],
+      "max_G_over_A": -1010684440162.9204
      },
      "fb_basis": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [5.1362370775590795, 107.0230146807696],
-      "max_G_over_A": -1703703382473.0203
+      "A_in_eps_of_this_scale": [5.4998223149828105, 123.00952488697263],
+      "max_G_over_A": -1591074034952.3628
      },
      "ff_neutral_n1": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [5.479635977808464, 7.8274259518647336],
-      "max_G_over_A": -2.6276001139956287e-18
+      "A_in_eps_of_this_scale": [6.430771001118916, 9.019393343644573],
+      "max_G_over_A": -2.2990649830152097e-18
      },
      "d2_slip_exchanger_Nb": {
       "engine_fires_at": [],
       "expected": [],
       "agree": true,
-      "A_in_eps_of_this_scale": [3.5167578706786085, 19.68152424781101],
+      "A_in_eps_of_this_scale": [3.5167722663164955, 19.681524248460143],
       "max_G_over_A": 0.0
      }
     },
