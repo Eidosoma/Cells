@@ -543,7 +543,10 @@ def _law_band(entry, terms, c0_mM, where):
 
     form = law_registry.active().lookup(entry.law_id).cycle
     method = getattr(form, "free_energy_band", None)
-    band = method(entry.mode, terms, c0_mM) if callable(method) else None
+    try:
+        band = method(entry.mode, terms, c0_mM) if callable(method) else None
+    except ValueError as error:
+        raise ConfigError(f"{where}: {entry.law_id}'s form gives no band: {error}") from error
     if band is None:
         return None
     band = Decimal(band)
