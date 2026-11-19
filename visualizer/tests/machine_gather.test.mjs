@@ -318,7 +318,10 @@ test("an entry of another machine is never a pick, and every pick carries its en
   }
 });
 
-test("the tool writes the dossiers as they are, from the saved downloads", { skip: !SAVED && "the saved downloads are not on this machine" }, () => {
+test("the tool writes the dossiers as they are, from the saved downloads", { skip: !SAVED && "the saved downloads are not on this machine" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*", "*")], env: ["GATHER_DATASETS"] })) return;
   const run = spawnSync("python3", ["-I", path.join(ROOT, "tools", "gather_machines.py"), "check", "--datasets", DATASETS], { encoding: "utf8" });
   assert.equal(run.status, 0, run.stderr || run.stdout);
 });

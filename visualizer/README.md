@@ -315,10 +315,26 @@ must bve configurable as well based on our different species as we add them".
   embed Xenbase's number for a gene (304 gene names, 49 protein names) are not written:
   such a protein is shown and found by its accession (decided on 19 November 2026, the
   choice left to the viewer's coordinator). The adult is drawn, from one open paper's means
-  for laboratory females; its life stages are not drawn yet, and it has no bench of
-  machines yet. It is the largest catalogue: its members are cut 6,000 to a file (6 files),
-  and its shelves and members have bounds of their own (`data/proteins/overlay.json`,
-  `shelves.limits`).
+  for laboratory females; it has no bench of machines yet. It is the largest catalogue:
+  its members are cut 6,000 to a file (6 files), and its shelves and members have bounds
+  of their own (`data/proteins/overlay.json`, `shelves.limits`).
+- **A species may carry life stages** (`schema/SPECIES_STAGES.md`, 19 November 2026): its
+  stages in order, each stating only what differs from its file, with its sources, or
+  named and not drawn; and the spans between them. In Scope they stand as a strip at the
+  foot of the picture, the page's one timeline: a press on a drawn stage shows the species
+  at it, by the viewer's own plain change (one picture held, an empty picture, the other
+  held), which says that it is an illustration and not a run. Play shows only where a
+  saved run fills a span; playing the plain change is built and switched off
+  (`PLAIN_CHANGE_PLAYS` in `src/lenses/cell.js`). The strip's axis is the stages' order,
+  never a clock. The reader is `src/scene/life_stages.js`; the build reads a block through
+  it (`tools/lib/species.py`, through node); `tools/check_stages.mjs` checks it on a
+  made-up species. **The frog is the first species with stages:** its fertilised egg
+  (NF 1, a sphere 1.2 mm across, drawn with a generic cell's parts, which its picture
+  says) and its adult are drawn; NF 2, 3, 35-36 and 66 are named and not drawn, since no
+  size of them is in hand under usable terms (`docs/XENOPUS.md`, "Its life stages"). The
+  frog opens on its adult, as before. Its egg alone gives a word of its own for what
+  Cells models of it, "Planned, not modelled", with its record; every other stage takes
+  the species' own word.
 - **A plant cell is drawn from the same files.** Thale cress has 27,368 proteins, one for
   each gene, on nine shelves (`docs/THALECRESS.md`): a plant cell adds the plastid
   envelope, the thylakoid membrane and the vacuole's membrane. Its cell is a box with a
@@ -782,8 +798,8 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
   part 2, on main"), and the engine's declarations list the stochastic assembly family
   `cells.assembly_lineages@1` with GARD's three laws and two lineage operators
-  (`data/engine/declarations.json`, written at main `4dda2285`, the map's revision; they
-  did so at `a16b2571`, `79d23cd5` and `b5d3faf0` too). Declared is not qualified: its runs are
+  (`data/engine/declarations.json`, written at main `1ca5eada`, the map's revision; they
+  did so at `a16b2571`, `79d23cd5`, `b5d3faf0` and `4dda2285` too). Declared is not qualified: its runs are
   development runs, not judged, and the page says so on every picture of them. The Engine
   map's part for GARD reads "Implemented and guarded" since the map's review at `4dda2285`,
   on its tests on main, with its standing first: development runs, not judged (D192,
@@ -901,7 +917,10 @@ npm run extract             # read the main checkout (or --repo PATH, or the one
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 python3 -I tools/extract_law_port.py --inventory PATH/inventory.json  # only when the law-port inventory (D211) changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
-npm test                    # scene, sources, page and allowed hosts; no browser needed
+npm test                    # the whole sweep: every test, every time (what a hand-over and a gate mean by "npm test, exit 0"); no browser needed
+npm run test:quick          # the same files, with the rebuilds from saved downloads skipped where they passed before on the
+                            # same inputs (tests/lib/test_cache.mjs; records in out/test-cache or CELLS_TEST_CACHE;
+                            # CELLS_TEST_FORCE=1 runs them all); each skip says so, and the sweep's last lines count them
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view; CASE=model: a model system in the switch, through every tab and back
 npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default; twins: a reviewed entry found by the twin of its gene that is not shown, SPECIES=xenopus)
@@ -914,6 +933,7 @@ npm run check:origin        # the origin-of-life view on the page: playing, the 
 npm run check:laws          # the Laws library: real presses and keys, the doors from the Engine view and the atlas, the notices, a lost context (CASE=main|address|phone|gone|text)
 npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
 npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
+node tools/check_names.mjs --dirs BEFORE AFTER NAME...   # whether two runs of a scenario held the same checks (numbers set aside)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
@@ -941,6 +961,16 @@ worker threads to the first processors by number, whatever the run is allowed, s
 lock looks at every thread of what a run started once a second and puts a process with a
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
 the cpuset controller, which a user's session is not given on this machine.)
+
+**Times and waits in the click checks** (19 November 2026). A check that holds a time (a
+frame's or an update's milliseconds) is a measure (`tools/lib/measures.mjs`): its value and
+bound go into the scenario's log and `summary.json`. Beside other browsers a measure over its
+bound sends its scenario to the alone phase, run again after the others, where the bound is
+held as a check; `summary.json`'s `sent_alone` gives both values. A count of work (draw
+calls, triangles, files, bytes) is never a measure. The tissue, junctions and layers checks
+wait on the page's own word (`viewer.busy()`, `src/core/busy.js`, through
+`tools/lib/page_waits.mjs`), not on a fixed time; a pause left there is a window a check
+watches over, and says so. The other check tools still pause by the clock.
 
 **On the graphics card, where it is free.** The tools ask Chrome for the software
 renderer. A run may draw on the machine's graphics card instead by starting Chrome
@@ -1043,7 +1073,7 @@ Every engine file belongs to exactly one part; the extractor warns if one does n
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("250 of 250 engine files placed, 321 left out as legacy code").
+build counts them apart ("255 of 255 engine files placed, 321 left out as legacy code").
 The map's patterns are carried through the engine's source moves from the engine's own path
 tables (`scripts/moves/*-table.json`), with a check that every file stands in the part it
 stood in before (`tools/move_paths.py check`, which names a package file the move dissolved
@@ -1081,9 +1111,9 @@ page can be published to any link, or to a new one (the user, 18 November 2026).
    (`proteins/<species>/`), the catalogue, the machines' shapes, the assembly's files, and
    the landing's cards and stills (`cards.json`, `stills/`). The files that hold a run's
    parts together are written by the export into `out/cells-architecture.runs/`. On 19
-   November 2026 that is 458 files (155 MB with the page): 341 of 112 runs, 70 of
-   proteins, 21 shapes, 8 of the catalogue, 2 of the assembly, 1 machine, the cards and 14
-   stills.
+   November 2026 (Version 50) that is 467 files (169 MB with the page): 341 of 112 runs,
+   78 of proteins, 22 shapes, 8 of the catalogue, 2 of the assembly, 1 machine, the cards
+   and 14 stills.
 2. `npm run stage -- --new out/publish-NAME` lays the export out as the artifact is, in a
    folder that is kept as the record of what was published, and writes the list of each
    upload (`tools/stage_publish.py`). A publish takes at most 255 files and 64 MB, and one
@@ -1119,9 +1149,19 @@ artifact. `docs/HOSTING_AND_API.md` (19 November 2026) reviews how, and how an A
 page's data could come in stages; its section 9 records what the owner then decided: the site
 is served from a container on a machine of the project's own, set up by the owner; releases
 are marked by these tags; the site serves three.js and the fonts itself; and the API's only
-user, for now, is the viewer. Nothing of the site is built yet, and a tag marks the code and
-the record, not a folder that can be rebuilt from the repository alone (the run files are
-made from the frozen evidence, below).
+user, for now, is the viewer. A tag marks the code and the record, not a folder that can be
+rebuilt from the repository alone (the run files are made from the frozen evidence, below).
+A site release is made from the same staged folder, which it only reads (section 10 of that
+document):
+
+- `node tools/stage_site.mjs --staged out/publish-vNN --site SITE --id vNN --compress --files out/cells-architecture.files.json`
+  writes `SITE/r/vNN/` once: the page wrapped, its `root.html`, the files, three.js and the
+  fonts (`vendor/fonts/`), `release.json` and compressed copies;
+- `node tools/check_site.mjs --site SITE --id vNN` holds that a visit asks no other host;
+- `node tools/stage_site.mjs --site SITE --id vNN --release` moves the pointer;
+- the release is recorded in `artifacts.json` and the commit tagged, then `--retain 3 --remove`.
+
+`deploy/` holds an example of the server's container; the owner sets the machine up.
 
 A page published without the proteins' files draws the atlas as before and says that the
 species' own proteins could not be loaded.
@@ -1163,8 +1203,9 @@ all 112 runs, in 341 files).
    engine's declarations manifest, with GARD's second part at a16b2571, and on 18 November at
    79d23cd5, after D198's retire batch and the feature-request lane's judged acceptances, and
    at b5d3faf0, after D188's second move and the landing of the origin-of-life engine's first
-   laws, and at 4dda2285, after the core-seams pass's first landings (seam F's laws as
-   modules among them): 261 parts and 962 relations, which it states.
+   laws, at 4dda2285, after the core-seams pass's first landings (seam F's laws as
+   modules among them), and on 19 November at 1ca5eada, after seams A, C and D, FR-2's first
+   version and FR-8's stage 0: 265 parts and 1007 relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -1347,13 +1388,14 @@ Ideas kept for after the basics (the user, 14 November 2026):
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library is read from the engine's declarations manifest written at main 4dda2285:
-  47 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
+- The Laws library is read from the engine's declarations manifest written at main 1ca5eada:
+  55 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared
-  law (38 of 48) stay in the atlas; their laws say what the law-port inventory of 17 November
-  2026 marks them (D211), and the table is made again only when that inventory changes. The
-  15 laws on the other ten units that the inventory has no row for say that the declarations
+  law (33 of 48) stay in the atlas; their laws, and U07's undeclared one, say what the law-port
+  inventory of 17 November 2026 marks them (D211), and the table is made again only when that inventory changes. Five
+  of its rows' laws are declared since 1ca5eada, and their units open them through a door. The
+  14 laws on the other 15 units that the inventory has no row for say that the declarations
   do not list them. At rest on a wide
   screen the model families' names are small; they read once a case is chosen.
 - The Laws library's card scrolls beside its legend on a wide window under about 1000 px

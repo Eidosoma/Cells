@@ -4,6 +4,7 @@
 // along a chosen piece's routes. Kept apart from the view so the tests can read them.
 
 import * as THREE from "../three.js";
+import { SLOT_H } from "./laws_layout.js";
 
 /** The step between two columns of a band (laws_layout.js WIDE.bar: col + gap). */
 const WIDE_STEP = 1.5 + 0.32;
@@ -50,7 +51,12 @@ export function plaquesOf(library, layout) {
     for (const row of frame.rows) {
       if (frame.kind === "inner model") out.push({ text: row.label, x: row.x, y: row.y, z: frame.z + 0.1, h: 0.2, align: "left", tone: "soft", kind: "row" });
       // A slot's place in its model, where the model has slots: a channel law's code, a kind's key, a composition's position.
-      for (const slot of row.slots) if (slot.tag !== null && slot.tag !== undefined) out.push({ text: String(slot.tag), x: slot.x, y: slot.y - slot.h / 2 - 0.1, z: frame.z + 0.11, h: frame.kind === "inner model" && typeof slot.tag === "string" ? 0.11 : 0.14, align: "center", tone: "soft", kind: "tag" });
+      // Under a slot of the inner model it shrinks with the slot, where a long row's lines leave the slots less than their full height.
+      for (const slot of row.slots) {
+        if (slot.tag === null || slot.tag === undefined) continue;
+        const k = frame.kind === "inner model" ? Math.min(1, slot.h / SLOT_H) : 1;
+        out.push({ text: String(slot.tag), x: slot.x, y: slot.y - slot.h / 2 - 0.1 * k, z: frame.z + 0.11, h: (frame.kind === "inner model" && typeof slot.tag === "string" ? 0.11 : 0.14) * k, align: "center", tone: "soft", kind: "tag" });
+      }
       // The inner model's next free channel code, written in its empty socket: a number free, not a piece.
       if (row.next) out.push({ text: `${row.next.code} free`, x: row.next.x, y: row.next.y, z: frame.z + 0.012, h: 0.19, align: "center", tone: "soft", kind: "next" });
       // A row with no entry of its own, written in its empty socket: its ID and that it has no piece.

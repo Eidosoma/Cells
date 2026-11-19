@@ -153,6 +153,7 @@ says the engine models an organism unless the project's record says so.
   file `data/cells/<species>.<id>.json` (`CELL_TYPES.md`), and `default_cell_type` the one the
   page opens on (left out: the species' own). Both stand at the top level of the file. A
   species with one cell type shows no control for choosing one.
+- **Life stages** (optional): a top-level `stages` block names the species' stages, each stating only what differs from this file, and the spans between them (`SPECIES_STAGES.md`). A species without it is read as before.
 - **A looping run belongs to a cell type**, not to the `cell` block: `cell.loop` gives way to
   the top-level `cell_type.loop` (`ENTRIES.md`, `CELL_TYPES.md`), and the reader refuses `loop`
   inside `cell`. `cell_type` is `{id, label, loop}`, each a text that is not empty; `loop` is

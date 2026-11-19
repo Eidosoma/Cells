@@ -19,6 +19,7 @@
     "shot": "node tools/screenshot.mjs",
     "check:input": "node tools/check_input.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:quick": "CELLS_TEST_QUICK=1 node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tests/lib/quick_summary.mjs --test-reporter-destination=stdout tests/*.test.mjs",
     "check:species": "node tools/check_species.mjs",
     "check:shelves": "node tools/check_shelves.mjs",
     "check:layers": "node tools/check_layers.mjs",

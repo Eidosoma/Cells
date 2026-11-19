@@ -602,7 +602,10 @@ test("the shelves name their sources with their terms, copy from none that forbi
   assert.equal(shelvesText.split("\n").filter((line) => line.startsWith('  ["JCVISYN3A_')).length, rows.length);
 });
 
-test("the build tool reproduces the species file, the atlas, the catalogue, the shelves and the README from the downloads", { skip: absent }, async () => {
+test("the build tool reproduces the species file, the atlas, the catalogue, the shelves and the README from the downloads", { skip: absent }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*"), path.join(DATASETS, "..", "*", "*")], evidence: [EVIDENCE], env: ["SYN3A_DATASETS", "SYN3A_EVIDENCE"] })) return;
   const out = await mkdtemp(path.join(os.tmpdir(), "syn3a-atlas-"));
   try {
     const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--datasets", DATASETS, "--out-species", path.join(out, "syn3a.species.json"), "--out-atlas", path.join(out, "syn3a.json"), "--out-catalogue", path.join(out, "syn3a")], { encoding: "utf8", timeout: 600000 });
