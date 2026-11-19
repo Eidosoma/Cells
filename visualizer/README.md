@@ -460,11 +460,18 @@ system, played in the tab's place).
   the landing as a card with no replay.
 - **Runs written by the engine's own run-view writer** (`cells.run_view@1`, on main since
   050aa741, 16 November 2026) are kept small under `tests/engine-views/`, as fixtures for
-  the adapter: five small worlds written by main's writer (`run-view-050aa741/`, made by
-  `tools/make_engine_view_fixture.sh` through the engine's `scripts/run_detached.sh`),
-  three as the development branch's fd008813 wrote them (`run-view-fd008813/`), and the
-  interim planarian loop as the writers at d7a11d5b and b08af640 wrote it from execution
-  snapshots (copied from the engine's lead).
+  the adapter: eight small worlds written by main's writer at 89bd2ffb (`run-view-89bd2ffb/`,
+  after the core seams pass's format items of d64fb664: kinds as words with the law under
+  `laws`, each carried species with its own flux, a field reference only with its `unstated`
+  entry, and a channel set's `factors`), the five before them at 050aa741 and b5d3faf0
+  (`run-view-050aa741/`, `run-view-b5d3faf0/`), all made by `tools/make_engine_view_fixture.sh`
+  through the engine's `scripts/run_detached.sh`; three as the development branch's fd008813
+  wrote them (`run-view-fd008813/`); and the interim planarian loop as the writers at d7a11d5b
+  and b08af640 wrote it from execution snapshots (copied from the engine's lead). The format
+  keeps its name, so the adapter reads the older and the newer shape side by side, and every
+  older view packages exactly as before (on 19 November 2026 all 585 run files were remade
+  with the changed adapter, each the same bytes). What no small world shows is planted on
+  copies of them from `tests/fixtures/run-view-made-up/`, which is made up and says so.
 - **The planarian loop** (`planarian-loop`) is a development run of the engine with no
   verdict: FR-11's first looping run, one 2 s period of a subthreshold current train into
   the centre of seven planarian heredity cells, packaged to loop. It is listed under
@@ -1032,9 +1039,15 @@ page can be published to any link, or to a new one (the user, 18 November 2026).
      only what changed is sent.
    - To a link whose staged folder is not at hand, or to a link first published long ago:
      save the Artifact tool's listing of the link's files, give it with `--remote`, and add
-     `--remove`: every file is sent, and the last upload removes by name what the link
+     `--remove`: every file is sent, and the first upload removes by name what the link
      still holds and the page no longer lists. Files published before and no longer
      listed stay on the artifact until they are removed by name, and count toward its 511.
+   - `--remove` with `--old` does the same for a link this folder published to last. The
+     removals always go up first, and no upload adds more new files than the link has room
+     for before its own removals count, so the link never passes 511 files while the
+     uploads land (Version 43 added 200 files to a link that held 360 and dropped 101).
+   - A staged folder holds the page, its files and the staging's own `upload-N.json`, and
+     nothing else: anything more would be read as published and no longer listed.
    - To a new link: nothing more; record the link in `artifacts.json`.
 3. Publish the staged page to the link, one upload after another, with the staged folder as
    the uploads' root.

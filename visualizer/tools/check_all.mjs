@@ -28,6 +28,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildPage, DEFAULT_RUNS, ROOT } from "./lib/build_page.mjs";
 import { BROWSER_CPUS, places } from "./lib/browser_lock.mjs";
+import { changedLines } from "./lib/git_state.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback = null) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -196,7 +197,8 @@ const git = (...words) => {
     return null;
   }
 };
-const revision = git("rev-parse", "--short=8", "HEAD"), dirty = git("status", "--porcelain", "--", ".");
+// What is uncommitted, less an untracked node_modules link (tools/lib/git_state.mjs): "" for a clean tree, null where git gave nothing.
+const revision = git("rev-parse", "--short=8", "HEAD"), dirty = changedLines(git("status", "--porcelain", "--", "."))?.join("\n") ?? null;
 await mkdir(pictures, { recursive: true });
 // The replays the layer checks read.
 let runs = [];

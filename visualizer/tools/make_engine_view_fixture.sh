@@ -33,6 +33,29 @@
 #              (tests/run_view_fixtures.py, declare_division): those operators do not declare them
 #              in their files yet, so the layer "division" and its label are the test's words.
 #
+# Three more worlds show the core seams pass's format items (docs/CORE_SEAMS_DESIGN.md §9 and §4.3;
+# on main from d64fb664, 18 November 2026). Each is written only where the revision's engine has what
+# it needs; otherwise skipped, with the reason in written.json.
+#   factors    heredity cell D, as the engine's own test of the routing door into @3 builds it
+#              (tests/unit/test_surface_pump_v3_populations.py, heredity(("f_b", "f_c")): its first
+#              channel population declares two factors of the test's planted factor source,
+#              tests.factor@1 from tests/kind_fixtures.py, registered for the run only), observed at
+#              each of its 4 steps, through io.write_run with a recording subset of five fields: the
+#              membrane's Na/K pump (its per_cycle), the channel set's factors and the note on
+#              channel_availability.
+#   condition  FR-5's development world, arm R, as the engine's own test of the pH condition's set
+#              builds it (tests/unit/test_run_view_formats.py: development_world(fr5_world(ARM_R))),
+#              run for 10 steps as the kind world is (its damage schedule's points after the shortened
+#              end left out, as fr5_world does for a shortened horizon), with a recording subset of
+#              five fields: the pH condition's kind as a word and its law under laws.
+#   dose       the bath schedule's dose world (scheduled_bath_composition@1), as the engine's own test
+#              of a field reference builds it (tests/unit/test_run_view_door_s.py: a dose of cargo S at
+#              4 ms, 8 steps of 1 ms, observed at every step), written through io.write_run without a
+#              view and given its view afterwards by run_view.write_view, as a run already on disk: a
+#              record stored over a field the run did not save ({"field": X}) and X's unstated entry.
+#              The bath schedule's layer is planted for the run only, as that test does: the operator
+#              does not declare it in its file yet, so the layer "bath" and its label are the test's.
+#
 # The engine's source. An export made with `git archive` has no .git and no execution snapshot's
 # record (SNAPSHOT.json), and the writer learns its source only from such a record: each view
 # therefore lists the engine source as unstated, with the writer's own reason, and has no run.source.
@@ -45,16 +68,17 @@
 # (scripts/run_detached.sh, cells.slice), never in this shell: the script waits for the unit, and the
 # run writes its own log beside the export (write.log).
 #
-# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: main at 050aa741, 16 November 2026,
-# whose writer reads the engine's own view declarations; the development branch's fd008813 made the
-# folder run-view-fd008813, with its first three worlds). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
+# Usage: tools/make_engine_view_fixture.sh [REVISION]   (default: main at 89bd2ffb, 19 November 2026,
+# whose writer holds the core seams pass's format items; main's 050aa741 and b5d3faf0 made the folders
+# run-view-050aa741 and run-view-b5d3faf0 with the first five worlds, and the development branch's
+# fd008813 made run-view-fd008813 with its first three). Environment: CELLS_VIEW_EXPORT (where the export goes), CELLS_PYTHON (the
 # engine's Python), CELLS_CPUS (the processors the unit is pinned to), CELLS_WRAPPER (run_detached.sh).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VISUALIZER="$(dirname "$HERE")"
 TOP="$(git -C "$VISUALIZER" rev-parse --show-toplevel)"
-REVISION="$(git -C "$TOP" rev-parse --verify "${1:-050aa741ddff540971169225d7ccd275c2e89462}^{commit}")"
+REVISION="$(git -C "$TOP" rev-parse --verify "${1:-89bd2ffba7a0732a1dc20a6c2e61f86786c9b535}^{commit}")"
 SHORT="${REVISION:0:8}"
 # Where the revision stands: on main's own line, or a development branch's revision that main holds through a merge.
 # (grep reads all its input: with pipefail, grep -q stopping early would fail rev-list on a closed pipe.)
@@ -64,6 +88,12 @@ elif git -C "$TOP" merge-base --is-ancestor "$REVISION" main; then
   WHERE="the development branch \`run-view-d154\` at \`$SHORT\`, which main holds through its merge; the writer is on main since 050aa741 (16 November 2026)"
 else
   WHERE="the development branch \`run-view-d154\` at \`$SHORT\`, not on main"
+fi
+# Whether the revision's writer holds the core seams pass's three format items (main's merge d64fb664, 18 November 2026).
+if git -C "$TOP" merge-base --is-ancestor d64fb66447290d0c263602248229ef488bc9a3eb "$REVISION"; then
+  ITEMS="Its writer holds the core seams pass's three format items (docs/CORE_SEAMS_DESIGN.md §9, on main from \`d64fb664\`, 18 November 2026): kinds are words with a law's ID under \`laws\`; each species a route carries moves with its own flux, coupled stoichiometry being \`per_cycle\`; a reference constant only where a record names it, and a \`{\"field\": X}\` reference only with X's \`unstated\` entry. And where a channel population declares factors, the channel set gives each population's \`factors\`."
+else
+  ITEMS="Its writer is from before the core seams pass's three format items (on main from \`d64fb664\`, 18 November 2026)."
 fi
 EXPORT="${CELLS_VIEW_EXPORT:-/mnt/workspaces/Cells/visualizer-scratch-20261116-02/run-view-$SHORT}"
 PYTHON="${CELLS_PYTHON:-/mnt/workspaces/Cells/venv-cpu/bin/python}"
@@ -146,6 +176,55 @@ with pytest.MonkeyPatch.context() as patch:
         WindowPolicy(2, "full"),
         view=run_view.Request({"id": "division-short", "label": f"{label}: S5's partition world"}),
     )
+# The core seams pass's format items (docs/CORE_SEAMS_DESIGN.md §9, §4.3; on main from d64fb664): each world only where the
+# revision's engine has what it needs, otherwise skipped with the reason.
+from cells.definitions.specs import ConfigError
+
+MISSING = (ConfigError, ImportError, AttributeError, KeyError, TypeError, ValueError)
+try:  # The routing door into @3: a channel population that declares factors of the test's planted factor source.
+    from cells.registry import kind_registry
+    from tests import kind_fixtures as kf
+    from tests.unit.test_surface_pump_v3_populations import heredity
+
+    with kind_registry.scope(kf.registry(kf.factor_source())):
+        raw = heredity(("f_b", "f_c"))
+        dt = raw["execution"]["dt"]
+        raw["experiment"]["observation_times"] = [k * dt for k in range(0, 5)]
+        door = run_view.Recording(fields=("membrane_voltage_V", "cell_potential_V", "channel_availability", "channel_transferred", "pump_cycles"))
+        write_run(out / "factors", run(parse_spec(raw)), view=run_view.Request({"id": "factors-short", "label": f"{label}: heredity cell D, its first channel population factored"}, recording=door))
+except MISSING as exc:
+    skipped["factors"] = f"{type(exc).__name__}: {exc}"
+try:  # FR-5's development world: the pH condition's set, its kind a word and its law under laws.
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine.parameters import ARM_R
+
+    raw = defs.development_world(defs.fr5_world(ARM_R))
+    dt = raw["execution"]["dt"]
+    end = 10 * dt
+    raw["experiment"]["end_time"] = end
+    raw["experiment"]["observation_times"] = [k * dt for k in range(0, 11, 2)]
+    raw["execution"]["max_steps"] = 18
+    for control in raw["experiment"].get("damage_controls") or []:  # As fr5_world keeps a shortened horizon's points.
+        for key in ("injury", "resealing"):
+            control[key] = [point for point in control[key] if point["time"] <= end]
+    fr5 = run_view.Recording(fields=("membrane_voltage_V", "cell_potential_V", "amount", "passive_transferred", "ph_condition_factor"))
+    write_run(out / "condition", run(parse_spec(raw)), view=run_view.Request({"id": "condition-short", "label": f"{label}: FR-5's development world, arm R"}, recording=fr5))
+except MISSING as exc:
+    skipped["condition"] = f"{type(exc).__name__}: {exc}"
+try:  # A run on disk given its view afterwards: a record stored over a field the run did not save, and its unstated entry.
+    from tests.run_view_fixtures import layers, plant
+    from validation.tissue import bath_schedule_fixtures as bfx
+    from validation.tissue import secreted_species_fixtures as fx
+
+    with pytest.MonkeyPatch.context() as patch:
+        plant(patch, bfx.LAW, VIEW_LAYERS=layers("bath", "Bath composition"))
+        dt, end, dose = 1e-3, 0.008, 0.004
+        raw = bfx.dosed_world(dt=dt, end=end, observation_times=fx.grid_times(end, dt, dt))
+        raw = bfx.with_bath_schedule(raw, ["bath"], bfx.CARGO, [(dose, ["bath"], {"cargo": 5e-4})])
+        write_run(out / "dose", run(parse_spec(raw)))
+        run_view.write_view(out / "dose", run={"id": "dose-on-disk", "label": f"{label}: the bath schedule's dose, a run on disk"})
+except MISSING as exc:
+    skipped["dose"] = f"{type(exc).__name__}: {exc}"
 (out / "written.json").write_text(json.dumps({"worlds": sorted(p.name for p in out.iterdir() if p.is_dir()), "skipped": skipped}) + "\n")
 print("written:", ", ".join(sorted(p.name for p in out.iterdir() if p.is_dir())))
 PYTHON
@@ -162,7 +241,7 @@ if [ ! -f "$WORK/written.json" ]; then
 fi
 
 rm -rf "$DEST"
-for world in secretion subset increments kinds division; do
+for world in secretion subset increments kinds division factors condition dose; do
   [ -f "$WORK/$world/view.json" ] || continue
   mkdir -p "$DEST/$world"
   cp "$WORK/$world/view.json" "$WORK/$world/resolved_config.json" "$WORK/$world/summary.json" "$DEST/$world/"
@@ -201,6 +280,22 @@ are left out). Do not edit by hand; run the script again.
   run-view declarations are planted for the run only, as the engine's own test does
   (\`declare_division\`): the layer "division" and its label are the test's words, not the
   operators' files'.
+- \`factors\` (where written): heredity cell D, as the engine's own test of the routing door into @3
+  builds it: its first channel population declares two factors of the test's **planted** factor
+  source (\`tests.factor@1\`, registered for the run only). Observed at each of its 4 steps, with a
+  recording subset of five fields. It shows the membrane's Na/K pump (\`per_cycle\`), the channel
+  set's \`factors\` and the note on \`channel_availability\`.
+- \`condition\` (where written): FR-5's development world, arm R, as the engine's own test of the pH
+  condition's set builds it, run for 10 steps (its damage schedule's points after that end left out,
+  as \`fr5_world\` does for a shortened horizon), with a recording subset of five fields. It shows
+  the pH condition's kind as a word and its law under \`laws\`. Nothing is planted.
+- \`dose\` (where written): the bath schedule's dose world (8 steps, a dose of cargo S at 4 ms),
+  written through \`io.write_run\` without a view and given its view afterwards by
+  \`run_view.write_view\`, as a run already on disk: a record stored over a field the run did not
+  save (\`{"field": X}\`) with X's \`unstated\` entry. The bath schedule's layer is **planted** for the
+  run only, as the engine's own test does: the layer "bath" and its label are the test's words.
+
+$ITEMS
 
 **The engine's source is not stated.** An export has no execution snapshot's record
 (\`SNAPSHOT.json\`), from which alone the writer learns its source, so no view here has

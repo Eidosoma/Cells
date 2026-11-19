@@ -1685,14 +1685,25 @@ test("main's writer (from b08af640): a level saved only as an increment is the n
   assert.ok(sums.view.derivation.includes("Saved only as an increment over a fixed reference (the view's reference), and so worked out by the viewer as the reference plus the increment, row by row: amount is amount_reference plus amount_increment; extracellular_amount is extracellular_amount_reference plus extracellular_amount_increment. Each such record says so in its note."));
   // Not said to be unrecorded: the run kept it, as an increment.
   assert.equal(sums.run.unstated.has("amount"), false);
-  // A reference the run did not save (a field only) cannot be added: the level is not packaged, and that is said.
+  // A reference the run did not save (a field only) cannot be added: the level is not packaged, and that is said with the
+  // view's reason. Such a reference stands only with the field's entry under unstated (the format items of d64fb664; no
+  // saved view before them has one): without the entry it is refused.
+  const why = "planted by this test: the run did not save it";
   const [unsaved, unsavedOut, id] = changedB("unsaved-reference", (view) => {
     for (const item of view.records) if (item.field === "amount_increment") item.reference = { field: "amount_reference" };
+    view.unstated.push({ id: "amount_reference", what: "view field", why });
+    view.constants = view.constants.filter((item) => item.id !== "amount_reference");
   }, "increments");
   assert.equal(unsaved.status, 0, unsaved.stderr);
   const left = open(unsavedOut, id);
   assert.equal(left.view.records.some((item) => item.id === "amount.S"), false);
-  assert.ok(left.view.derivation.some((line) => line.startsWith("Not packaged: amount (its increment amount_increment is stored over {\"field\": \"amount_reference\"}")));
+  assert.ok(left.view.derivation.includes(`Not packaged: amount (its increment amount_increment is stored over the field amount_reference, which the run did not save (${why}), so the adapter cannot add it).`));
+  const [bare, bareOut] = changedB("unsaved-reference-bare", (view) => {
+    for (const item of view.records) if (item.field === "amount_increment") item.reference = { field: "amount_reference" };
+  }, "increments");
+  assert.notEqual(bare.status, 0);
+  assert.match(bare.stderr, /its view's record (observed_)?amount_increment is stored over the field amount_reference \(its reference\), which the run did not save, and its view gives no entry for amount_reference under unstated saying why/);
+  assert.ok(!existsSync(path.join(bareOut, "index.json")));
 });
 
 test("main's writer (from b08af640): a kind's set carries a list of species for each entity, read as written, and is no operator's for the secreted species", () => {

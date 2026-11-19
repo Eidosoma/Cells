@@ -75,8 +75,10 @@ export function validateReplay(file) {
     if (set.species !== undefined && set.id !== "species" && !(each(set.species) && set.species.every((value) => (Array.isArray(value) ? value.every(known) : known(value))))) {
       problems.push(`set ${set.id}: species must name, for each entity, a species of the run or a list of them`);
     }
-    if (set.pumps !== undefined && !(each(set.pumps) && set.pumps.every((pump) => pump === null || (typeof pump === "object" && Array.isArray(pump.per_cycle) && pump.per_cycle.every((move) => move && known(move.species) && Number.isFinite(move.count)))))) {
-      problems.push(`set ${set.id}: pumps must give, for each entity, null or what one cycle of its pump moves of each species`);
+    // A pump's per_cycle is the one coupled movement the page draws (marks/beads.js, streamsOf): each species' count per
+    // cycle, a positive count carried into the cell (per_cycle_sign "inward-positive", the engine's one word for it).
+    if (set.pumps !== undefined && !(each(set.pumps) && set.pumps.every((pump) => pump === null || (typeof pump === "object" && Array.isArray(pump.per_cycle) && pump.per_cycle.every((move) => move && known(move.species) && Number.isFinite(move.count)) && (pump.per_cycle_sign === undefined || pump.per_cycle_sign === "inward-positive"))))) {
+      problems.push(`set ${set.id}: pumps must give, for each entity, null or what one cycle of its pump moves of each species, a positive count carried into the cell`);
     }
     // Entities that lie on entities of another set (a membrane on its cell), and the outside each one faces.
     for (const [what, place] of [["on", geometry.kind === "on" ? geometry : null], ["outside", set.outside || null]]) {
