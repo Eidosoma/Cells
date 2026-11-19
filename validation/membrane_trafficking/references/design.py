@@ -31,6 +31,7 @@ HERE = Path(__file__).resolve().parent
 DESIGNS = HERE / "designs"
 VALUES_FILE = DESIGNS / "membrane_trafficking_reference_values.json"
 DESIGN_FILE = DESIGNS / "membrane_trafficking_reference_design.json"
+INTERFACE_FILE = HERE / "interface" / "comparison_bands.json"
 FLOOR_FACTOR = 10          # the comparison band: max(the test's tolerance, 10 × the floor)
 MIN_MARGIN = 10.0          # a plant below this many bands is weak
 
@@ -684,8 +685,8 @@ ZERO_POWER = [
      "why": "rules and bitwise equalities, with no number to reference (T7's batch worlds get "
             "T5's closed forms only)"},
     {"what": "a dropped valence or swapped transference numbers, in the declared worlds",
-     "why": "both declared carriers are +1 at t = 0.5; the stress worlds (K 0.7, M at z = -1 "
-            "0.3) carry those plants"},
+     "why": "both declared carriers are +1 at t = 0.5; the stress worlds (K 0.75, M at z = -1 "
+            "0.25) carry those plants"},
     {"what": "the per-species against the per-total sharing of a free node's free energy",
      "why": "both routes on the declared shared cleft move K and Na in one ratio (1:2), so the "
             "two rules agree; the stress worlds keep one route per node"},
@@ -802,20 +803,30 @@ def dumps(o) -> str:
     return json.dumps(o, indent=1, sort_keys=True, allow_nan=True) + "\n"
 
 
+def interface_text(text_v: str, text_d: str) -> str:
+    """The comparison bands (``bands.py``), built from the values and design exactly as written."""
+    from . import bands
+    return dumps(bands.build(json.loads(text_v), json.loads(text_d)))
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args(argv)
     vals, design = compute()
     text_v, text_d = dumps(vals), dumps(design)
+    text_i = interface_text(text_v, text_d)
     if a.check:
-        ok = VALUES_FILE.read_text() == text_v and DESIGN_FILE.read_text() == text_d
+        ok = (VALUES_FILE.read_text() == text_v and DESIGN_FILE.read_text() == text_d
+              and INTERFACE_FILE.read_text() == text_i)
         print("design --check:", "identical" if ok else "DIFFERS")
         return 0 if ok else 1
     DESIGNS.mkdir(exist_ok=True)
     VALUES_FILE.write_text(text_v)
     DESIGN_FILE.write_text(text_d)
-    print(f"wrote {VALUES_FILE.name} and {DESIGN_FILE.name}")
+    INTERFACE_FILE.parent.mkdir(exist_ok=True)
+    INTERFACE_FILE.write_text(text_i)
+    print(f"wrote {VALUES_FILE.name}, {DESIGN_FILE.name} and {INTERFACE_FILE.name}")
     return 0
 
 

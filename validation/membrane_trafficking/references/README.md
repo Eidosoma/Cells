@@ -220,6 +220,23 @@ with the conservative models' bands, so they are lower bounds.
 - The builder confirms that its operator adds |electrode transfer| to `trafficking_image_charge_C`
   stage by stage. So that field's half-step change is `electrode_abs_C`.
 
+**Dated note, 2026-11-19 11:31 UTC: the comparison bands.** This changes no registered value.
+- **The interface.** The user chose (b) at about 11:20 UTC: export the floors and plant rows the
+  engine-side comparison needs into a named interface file. That file is
+  `interface/comparison_bands.json`, which `bands.py` writes from the values and the design. It
+  holds:
+  - 782 compared rows, each with its quantity, unit, reference, tolerance, floor (under the
+    selected models above), floor model and band;
+  - 3 T5 criteria;
+  - 322 plant rows, each with its row, size, band and margin. 273 of them must be refused, and 49
+    are zero power, as registered.
+- **No drift.** `design --check` and the existing test `test_registered_files_regenerate_identically`
+  keep the file equal to what `bands.py` writes. REFERENCES_USAGE describes it, and the
+  engine-side comparison reads it in place of the design file.
+- **One text correction in the design's zero-power list.** It named the stress carriers as 0.7
+  and 0.3, written before the binary-exact 0.75 and 0.25 were chosen. It now says 0.75 and 0.25.
+  No value depends on it.
+
 ## Zero power (what these references cannot see)
 
 - **The potentials and the heat in the compiled worlds** (cycle, t8_sheet). They depend on the
