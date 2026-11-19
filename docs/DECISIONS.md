@@ -7303,3 +7303,24 @@ records):**
   - The replay runs peaked at 2.2–6.5 GB, including the harness's per-row arrays.
   - The check's work is two extra half steps per checked step. Its overhead inside the engine is to
     be measured.
+
+## D225: The Xenopus bioelectric cancer replication is one of the top three priorities
+
+2026-11-19, about 12:40 UTC. The user checked in an external review,
+[docs/lanes/LEVIN_CANCER_XENOPUS.md](lanes/LEVIN_CANCER_XENOPUS.md). It proposes a lane for Levin
+and colleagues' Xenopus tumour experiments, starting with Chernet and Levin (2013): local
+hyperpolarisation suppressing oncogene-induced tumour-like structures, through a proposed
+SLC5A8–butyrate–HDAC route. The user's words: "get an agent to look into this at first to see if we
+are missing something in the engine or architecture to make this work, but then we want to have
+this as one of our top 3 priorities to replicate with our physics laws and to visualize on multiple
+scales in the main engine visualization tool".
+- **Priority:** the lane joins the core pass and the FRs (D222) as the third of the top three.
+- **First step:** one agent checks the review's claims about Cells and analyses, per experiment,
+  what the engine and its architecture already provide and what is missing. Missing pieces are
+  named as general, reusable engine models (D136, D144), not built for one experiment.
+- **Discussion before building:** the gap analysis and the build options go to the user before any
+  code.
+- **Replication:** it uses Cells' own physics laws, under a protocol registered before each judged
+  run.
+- **Visualization:** on multiple scales (embryo, tissue and cell) in the main viewer. The
+  visualizer session gets the layers the analysis names.
