@@ -13,6 +13,21 @@ back in the form it was declared in. This pass's limits on the axis: hosts are m
 mode that converts a species at P is refused (complexes III and IV will need it); held rows are
 neutral (charged held rows, seam C's ATP4- with forms included, are out of scope).
 
+**Availability schedules on the population axis** (D228 item 5; the core's gap-6 schedules, §7.4
+(l)): the experiment key `transporter_controls`, optional, each population at most once, an
+omitted one at 1 throughout:
+
+    [{"transporter_id": "pump_0", "schedule": [{"time": 0.0, "availability": 1.0},
+                                               {"time": 60.0, "availability": 0.25}]}]
+
+parsed into one kind_registry.Schedule, the series "ID.availability" per population in declared
+order, each right-continuous and piecewise constant from time 0 with values in [0, 1]. Its
+breakpoints join the change times, so each is a step boundary and every step holds the value at its
+start; the held value multiplies each population's J+ (k a S) and its carriers. Without the key the
+kind declares no schedule (parse_schedule returns None, the lead's ruling (A) of 19 November 2026),
+so a definition keeps its change records, by value and type, and its availability is 1 as before.
+Version 1's layout holds each patch's availability at 1 and refuses the key.
+
 Version 1's layout:
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2 and (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §5–6
@@ -110,12 +125,16 @@ from cells.modules import (
     KindFields,
     KindView,
     PartitionRole,
+    Schedule,
     bounded_integer,
+    declared_schedule,
     entity_sum,
     finite_number,
+    parse_series,
     qualified,
     require_fields,
     scatter,
+    series_to_dict,
 )
 from cells.registry import species_registry
 from cells.registry.kind_registry import BUILTIN
@@ -445,11 +464,71 @@ def initial(spec, declaration, layout):
     return state, v
 
 
+SCHEDULE_KEY = "transporter_controls"  # The population axis's availability schedules (gap 6).
+SCHEDULE_FIELDS = ("transporter_id", "schedule")
+DEFAULT_SERIES = ((0.0, 1.0),)  # A population without an entry: available throughout.
+
+
+def series_name(population_id):
+    return f"{population_id}.availability"
+
+
+def parse_schedule(raw, base, declaration):
+    """The population axis's availability schedules from `transporter_controls` (module
+    docstring), or None without the key: the kind declares no schedule, so the definition keeps
+    today's change records and every availability is 1 (the lead's ruling (A))."""
+    if SCHEDULE_KEY not in raw:
+        return None
+    if not isinstance(declaration, PopulationAxis):
+        raise ConfigError(
+            f"{SCHEDULE_KEY} schedules the population axis's availabilities; version 1's layout "
+            "holds each patch's availability at 1"
+        )
+    entries = raw[SCHEDULE_KEY]
+    if not isinstance(entries, list) or not entries:
+        raise ConfigError(
+            f"{SCHEDULE_KEY} is a non-empty list of availability schedules (omit it for none)"
+        )
+    ids = [t.id for t in declaration]
+    given = {}
+    for entry in entries:
+        require_fields(entry, set(SCHEDULE_FIELDS), f"an entry of {SCHEDULE_KEY}")
+        name = entry["transporter_id"]
+        if name not in ids:
+            raise ConfigError(f"{SCHEDULE_KEY}: unknown transporter population {name!r}")
+        if name in given:
+            raise ConfigError(f"{SCHEDULE_KEY}: transporter population {name!r} is scheduled twice")
+        given[name] = parse_series(
+            entry["schedule"], f"{SCHEDULE_KEY} {name}", value="availability"
+        )
+    return Schedule(tuple((series_name(i), given.get(i, DEFAULT_SERIES)) for i in ids))
+
+
+def schedule_to_dict(schedule, declaration):
+    """parse_schedule's inverse: every population's series under the key (a schedule exists only
+    where the definition gave the key)."""
+    series = dict(schedule.series)
+    return {
+        SCHEDULE_KEY: [
+            dict(
+                transporter_id=t.id,
+                schedule=series_to_dict(series[series_name(t.id)], value="availability"),
+            )
+            for t in declaration
+        ]
+    }
+
+
 def control_values(spec, declaration, times):
-    """Availability 1 on every declared population's patch, constant over the run (version 1;
-    time-varying schedules are gap 6, after the landing)."""
+    """Each population's availability at `times` (the change times) from its schedule, or 1
+    where the definition declares none; version 1's availability is 1 on every declared
+    population's patch, constant over the run."""
     if isinstance(declaration, PopulationAxis):
-        return dict(cycle_availability=np.ones((len(times), len(declaration))))
+        schedule = declared_schedule(spec, KIND_ID)
+        if schedule is None:
+            return dict(cycle_availability=np.ones((len(times), len(declaration))))
+        columns = [schedule.values(series_name(t.id), times) for t in declaration]
+        return dict(cycle_availability=np.stack(columns, axis=-1))
     patches = [p.id for p in spec.model.membranes]
     present = np.zeros(spec.execution.membrane_capacity)
     for t in declaration:
@@ -2239,6 +2318,9 @@ TRANSPORTER = BUILTIN.register(
         structure_entry=structure_entry,
         initial=initial,
         control_values=control_values,
+        experiment_keys=(SCHEDULE_KEY,),
+        parse_schedule=parse_schedule,
+        schedule_to_dict=schedule_to_dict,
         rates=rates,
         stage_term=stage_term,
         bound_rate=bound_rate,
