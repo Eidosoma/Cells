@@ -15,15 +15,21 @@
 #      additions (ADDITIONS_FROM) and the removals (REMOVED_OK_FILE) declared before the gate;
 #   2. the guard set and the test files the head changed against the base, within
 #      PRELOCK_TEST_SECONDS of their rows (default 600; the rest are left to the tiers), through the
-#      tier runner, each against its row (scripts/gates/gate_steps.py select).
+#      tier runner, each against its row (scripts/gates/gate_steps.py select);
+#   2a. with SELECT (a landing with no src/ change; D229 rule 3): the tier-1/2 files the change can
+#      reach, from the nightly's scope map (scripts/gates/scope.py select; SELECT=auto reads
+#      GATE_CACHE/scope-map.json, else SELECT names a map). A refused selection (a src/ change, a
+#      stale or missing map, or GATE_CACHE/selection-stopped present) runs the full tiers instead.
 # Under the lane's lock (flock's command form: a flock killed while it waits runs nothing), the
 # cheapest stage first, stopping at the first failure:
-#   3. crossrev: the head's sets against the base's, set by set on the lane's CPUs (one CPU per set).
+#   3. crossrev (unless CHECKS drops it): the head's sets against the base's, set by set on the
+#      lane's CPUs (one CPU per set).
 #      The base side is cached per main revision; on a miss it runs on half the lane, beside the
 #      head. A difference passes only where CROSSREV_EXPECTED declares it (SET/FILE lines, an
 #      exact list), for a by-design program change whose record is not renewed yet;
-#   4. tiers 1+2 of the head against TIERS (default its tests/test_tiers.json), cap 300 s;
-#   5. G1: the 113 worlds as eight one-CPU shards, planned from the last passing G1's world seconds
+#   4. tiers 1+2 of the head against TIERS (default its tests/test_tiers.json), or the selection
+#      of step 2a, cap 300 s;
+#   5. G1 (unless CHECKS drops it): the 113 worlds as eight one-CPU shards, planned from the last passing G1's world seconds
 #      (GATE_CACHE/g1-seconds.json, else the baseline's), merged and compared bitwise with c1's
 #      merged save.
 # FR's bitwise set and R1 stay their own units (fr_landing_set.sh; fingerprints_landing.sh, which
@@ -35,7 +41,10 @@
 # TIERS, ADDITIONS_FROM, REMOVED_OK_FILE, CROSSREV_EXPECTED, CROSSREV_SETS (default every set),
 # PRELOCK, PRELOCK_CPU, PRELOCK_NICE, PRELOCK_TEST_SECONDS, PRELOCK_ONLY (1: stop after the pre-lock steps, for an owner's
 # check before queueing), GATE_CACHE (default /mnt/workspaces/Cells/gate-cache; empty turns the
-# cache off), PY and HOSTPY.
+# cache off), SELECT, SELECTION_STOPPED (default GATE_CACHE/selection-stopped), CHECKS (default
+# "crossrev tiers g1": D223 lets a landing with no src/ change drop crossrev or G1 when no changed
+# file is in its harness's import closure; preflight refuses a dropped check when src/ changed),
+# PY and HOSTPY. OUT/config.env records the resolved lane and paths (stack.sh reads it).
 # Usage (a run_detached unit's command): gate.sh HEAD_S BASE_S OUT
 #   OUT/done holds 0 (pass), 1 (refused) or 2 (not run: bad arguments, or the lock never held).
 set -u
@@ -49,6 +58,7 @@ C1=${C1:-/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/
 BASELINE=${BASELINE:-/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/baseline-44227075}
 REC=${REC:-/mnt/workspaces/Cells/core-fixes-20261116/record-cda5dc82}
 TIERS=${TIERS:-tests/test_tiers.json}
+CHECKS=${CHECKS:-crossrev tiers g1}
 GATE_CACHE=${GATE_CACHE-/mnt/workspaces/Cells/gate-cache}
 PRELOCK=${PRELOCK:-light}; PRELOCK_CPU=${PRELOCK_CPU:-23}; PRELOCK_NICE=${PRELOCK_NICE:-10}
 case "${LANE:-A}" in
@@ -60,7 +70,7 @@ esac
 read -r -a CPU <<< "${CPUS//,/ }"
 I0=${CPU[0]}
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
-export REC C1 BASELINE TIERS
+export REC C1 BASELINE TIERS CHECKS
 mkdir -p "$OUT"
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/gate.log"; }
 finish() { log "done status $1"; echo "$1" > "$OUT/done"; exit "$1"; }
@@ -122,18 +132,35 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
   steps prelock-verdict "$P/subset.json" "$P/tests" "$P/tests-verdict.json" > "$P/tests-verdict.log" 2>&1
   rc=$?; log "prelock tests exit $rc ($(short "$P/select.log")): $(short "$P/tests-verdict.log")"
   [ $rc -eq 0 ] || { log "stopped at the pre-lock tests"; return 1; }
+  if [ -n "${SELECT:-}" ]; then  # 2a. A selection error or refusal runs the full tiers, never fewer.
+    local map=$SELECT
+    [ "$map" != auto ] || map=$GATE_CACHE/scope-map.json
+    mkdir -p "$P/selection"
+    light "$HOSTPY" -I "$G/scope.py" select "$S" "$B" "$map" "$P/selection" --tiers "$TIERS" \
+      --stopped "${SELECTION_STOPPED:-$GATE_CACHE/selection-stopped}" --python "$PY" > "$P/selection/select.log" 2>&1
+    rc=$?
+    if [ $rc -eq 0 ]; then
+      echo "$P/selection/subset.json" > "$OUT/tiers-run"; log "selection: $(short "$P/selection/select.log")"
+    else
+      log "selection not used (exit $rc), the full tiers run: $(short "$P/selection/select.log")"
+    fi
+  fi
   log "prelock passed, seconds $(( $(date +%s) - start ))"
 }
 
 if [ $LOCKED -eq 0 ]; then
   [ ! -e "$OUT/done" ] || { echo "Refused: $OUT was used before (it holds done)" >&2; exit 2; }
+  for v in LANE LOCK CPUS PRELOCK PRELOCK_CPU PRELOCK_NICE TIERS CHECKS C1 BASELINE REC GATE_CACHE PY HOSTPY; do
+    printf '%s=%q\n' "$v" "${!v-}"
+  done > "$OUT/config.env"
   # Until the lock, this script and all it starts stay on the pre-lock CPU: nothing computes on the
   # lane's CPUs without the lane's lock (lane_busy.py charges each process by its own affinity).
   taskset -cp "$PRELOCK_CPU" $$ > /dev/null || { log "could not pin to CPU $PRELOCK_CPU"; finish 2; }
   for s in "$S" "$B"; do [ -f "$s/SNAPSHOT.json" ] || { log "no snapshot $s"; finish 2; }; done
   log "gate of head $S base $B; lane ${LANE:-A}, CPUs $CPUS; pre-lock $PRELOCK on $PRE_CPUS; \
 tiers $TIERS; additions from ${ADDITIONS_FROM:-none}; removals listed in ${REMOVED_OK_FILE:-none}; \
-crossrev differences declared in ${CROSSREV_EXPECTED:-none}; cache ${GATE_CACHE:-off}; tool $G"
+crossrev differences declared in ${CROSSREV_EXPECTED:-none}; cache ${GATE_CACHE:-off}; checks $CHECKS; \
+selection ${SELECT:-off}; tool $G"
   if [ "$PRELOCK" != lane ]; then prelock || finish 1; fi
   if [ "${PRELOCK_ONLY:-0}" = 1 ]; then
     [ "$PRELOCK" != lane ] || { log "PRELOCK_ONLY needs PRELOCK=light"; finish 2; }
@@ -154,6 +181,7 @@ log "lane ${LANE:-A}, lock held; affinity $(taskset -pc $$ | sed 's/.*: //')"
 if [ "$PRELOCK" = lane ]; then prelock || done_locked 1; fi
 
 # 3. crossrev
+crossrev_stage() {
 start=$(date +%s)
 SETS=${CROSSREV_SETS:-$(steps crossrev-sets)}
 read -r -a SET <<< "$SETS"
@@ -198,16 +226,21 @@ n=$("$HOSTPY" -I -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['i
 'sets identical,', d['as_declared'], 'as declared')" "$X/verdict.json" 2>/dev/null || echo "no verdict")
 log "crossrev head vs base: $n, seconds $(( $(date +%s) - start )), exit $rc"
 [ $rc -eq 0 ] || { log "stopped at crossrev"; done_locked 1; }
+}
+if [[ " $CHECKS " == *" crossrev "* ]]; then crossrev_stage; else log "crossrev not run (checks: $CHECKS)"; fi
 
-# 4. tiers 1+2
+# 4. tiers 1+2, or the selection (step 2a)
 start=$(date +%s)
-(cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers "$TIERS" \
+TR=$(cat "$OUT/tiers-run" 2>/dev/null); TR=${TR:-$TIERS}
+[ "$TR" = "$TIERS" ] || log "tiers: the selection $TR"
+(cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B scripts/test_tiers.py run --tiers "$TR" \
   --tier 1 2 --out "$OUT/tiers-1+2" --cpus "$CPUS" --cap 300 > "$OUT/tiers-1+2.log" 2>&1)
 rc=$?
 log "tiers 1+2 exit $rc seconds $(( $(date +%s) - start )): $(tail -n 1 "$OUT/tiers-1+2.log")"
 [ $rc -eq 0 ] || { log "stopped at tiers"; done_locked 1; }
 
 # 5. G1
+if [[ " $CHECKS " != *" g1 "* ]]; then log "G1 not run (checks: $CHECKS)"; done_locked 0; fi
 start=$(date +%s)
 G1=$OUT/g1; mkdir -p "$G1/parts"
 steps g1-plan "$BASELINE" "${#CPU[@]}" "$G1/plan.json" ${GATE_CACHE:+--seconds "$GATE_CACHE/g1-seconds.json"} \

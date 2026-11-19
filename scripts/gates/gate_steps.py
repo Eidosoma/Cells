@@ -56,6 +56,17 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
       The shards' parts as one baseline-shaped folder (g1_plan.py's merge, unchanged in behaviour).
   g1-seconds MERGED FILE
       The world seconds of a passing G1, written whole for the next plan.
+  stack-plan DECL OUT / stack-build OUT --repo REPO
+      A stack's declaration (stack.sh) checked and written per depth (OUT/decl-k), then its trial
+      merges built in order in OUT/tree, as the lead lands them (OUT/trials.json).
+  stack-failure GATE_OUT OUT_JSON / stack-subset TREE TIERS OUT_JSON FILE ... /
+  stack-results STAGE CHECK_DIR ITEM ... / stack-remaining BISECT N ITEM ... /
+  stack-blame BISECT N OUT_JSON / stack-restack OUT / stack-record OUT
+      A refused stack's stage and failing items, the subset that reruns failing test files on one
+      intermediate tree, each item's status there, the items left for the next tree down, the
+      head each item blames, the stack without the blamed heads, and OUT/stack.json.
+  g1-view C1 OUT WORLD ...
+      c1's merged save restricted to WORLDS, for a bisect's G1 rerun.
   qualify-subsets RECORD OUT --tier3 FILE ...
       The cache qualification's tier-3 stage subset of RECORD, rows only (cache_qualify.sh):
       OUT/tier3-tiers.json.
@@ -138,6 +149,19 @@ def listed(path):
     return [line.strip() for line in Path(path).read_text().splitlines() if line.strip()]
 
 
+def snapshot_files(tree):
+    """{path: sha256} of a snapshot's files, from its SNAPSHOT.json (the bytes it froze)."""
+    doc = json.loads((Path(tree) / "SNAPSHOT.json").read_text())
+    return {name: row.get("sha256") for name, row in doc.get("files", {}).items()}
+
+
+def src_changed(head, base):
+    """The paths under src/ that differ between two snapshots, or that one side lacks."""
+    one, two = snapshot_files(head), snapshot_files(base)
+    return sorted(n for n in set(one) | set(two)
+                  if n.startswith("src/") and one.get(n) != two.get(n))
+
+
 # ------------------------------------------------------------------------------------ preflight
 
 
@@ -188,6 +212,18 @@ def preflight(head, base, env):
                     problems.append(f"CROSSREV_EXPECTED line {line!r} is not SET/FILE")
         except OSError:
             problems.append(f"CROSSREV_EXPECTED {env['CROSSREV_EXPECTED']} is unreadable")
+    checks = env.get("CHECKS", "crossrev tiers g1").split()
+    unknown = sorted(set(checks) - {"crossrev", "tiers", "g1"})
+    if unknown:
+        problems.append(f"CHECKS names checks the gate does not know: {unknown}")
+    if "tiers" not in checks:
+        problems.append("CHECKS must hold tiers: tiers and IDs always run (D223)")
+    dropped = sorted({"crossrev", "g1"} - set(checks))
+    if dropped and head_rev and base_rev:
+        changed = src_changed(head, base)
+        if changed:
+            problems.append(f"CHECKS drops {dropped}, but src/ changed ({changed[:3]}): a src/ "
+                            "change keeps the full gate (D223)")
     # A guard the head lacks is skipped by select (an older tree), not refused here: removing a
     # guard's file from a tree that had it shows as its missing IDs in the IDs check.
     return {"ok": not problems, "head": head_rev, "base": base_rev, "problems": problems,
@@ -527,6 +563,316 @@ def g1_seconds(merged, path):
     return len(seconds)
 
 
+# ------------------------------------------------------------------------- stacks (C, stack.sh)
+
+STACK_MAX = 3
+ZERO = "0" * 40
+# gate.log's stop lines: the stage that failed, and whether it ran under the lane's lock.
+STOPS = (("stopped at preflight", "preflight", False), ("stopped at ids", "ids", False),
+         ("stopped at the pre-lock tests", "prelock-tests", False),
+         ("stopped at crossrev", "crossrev", True), ("stopped at tiers", "tiers", True),
+         ("stopped at G1", "g1", True))
+TRAILER = re.compile(r"^[A-Za-z][A-Za-z-]*: \S")
+
+
+def _git(repo, *args, check=True):
+    import subprocess
+
+    done = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
+    if check and done.returncode != 0:
+        raise SystemExit(f"Refused: git {' '.join(args)}: {done.stderr.strip()[:400]}")
+    return done
+
+
+def stack_plan(doc, out):
+    """The stack's declarations checked, and written per depth k (heads 1..k) under OUT/decl-k:
+    additions.txt (ADDITIONS_FROM, space-separated) and removed-ok.txt (REMOVED_OK_FILE). A head
+    that declares crossrev differences rides alone (§10.4), so a stack of two or more refuses it."""
+    heads, problems = doc.get("heads") or [], []
+    if not doc.get("main"):
+        problems.append("no main revision")
+    if not 1 <= len(heads) <= STACK_MAX:
+        problems.append(f"{len(heads)} heads: a stack holds 1 to {STACK_MAX}")
+    names = [h.get("name") for h in heads]
+    if any(not n or not re.fullmatch(r"[\w.+-]+", n) for n in names) or len(set(names)) != len(names):
+        problems.append(f"each head needs a unique name of letters, digits and ._+- ({names})")
+    for h in heads:
+        if not h.get("rev"):
+            problems.append(f"{h.get('name')}: no rev")
+        if h.get("crossrev_expected") and len(heads) > 1:
+            problems.append(f"{h.get('name')} declares crossrev differences: it rides alone")
+        for key in ("additions_from", "measured", "removed_ok"):
+            if not isinstance(h.get(key, []), list):
+                problems.append(f"{h.get('name')}: {key} must be a list")
+        measured = h.get("measured", []) if isinstance(h.get("measured", []), list) else []
+        for f in measured + ([h["removed_ok_file"]] if h.get("removed_ok_file") else []):
+            if not Path(f).is_file():
+                problems.append(f"{h.get('name')}: {f} is not a file")
+    if problems:
+        return {"ok": False, "problems": problems}
+    adds, removed = [], []
+    for k, h in enumerate(heads, 1):
+        adds += [a for a in h.get("additions_from", []) if a not in adds]
+        removed += h.get("removed_ok", [])
+        if h.get("removed_ok_file"):
+            removed += listed(h["removed_ok_file"])
+        folder = Path(out) / f"decl-{k}"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "additions.txt").write_text(" ".join(adds) + "\n")
+        (folder / "removed-ok.txt").write_text("".join(f"{i}\n" for i in removed))
+    return {"ok": True, "problems": [], "main": doc["main"], "heads": heads, "n": len(heads)}
+
+
+def merge_message(message, line):
+    """message with line as its own paragraph, before a closing paragraph of trailers."""
+    paragraphs = message.strip().split("\n\n")
+    if len(paragraphs) > 1 and all(TRAILER.match(x) for x in paragraphs[-1].splitlines()):
+        return "\n\n".join(paragraphs[:-1] + [line, paragraphs[-1]]) + "\n"
+    return "\n\n".join(paragraphs + [line]) + "\n"
+
+
+def stack_build(plan, repo, tree, out, python):
+    """The trial merges main + H1, then + H2, then + H3, in a detached worktree at TREE, as the
+    lead lands them: merge without committing, take the previous trial's tier record, fold the
+    head's measured rows with the trial's own scripts/test_tiers.py, and commit with the head's
+    message and the stack gate's line. A head may name its own merge commit ("merge"), a
+    resolution made by hand, whose parents must be the previous trial and the head. A conflict
+    refuses the stack and lists its paths. Returns the trials document."""
+    import subprocess
+
+    main = _git(repo, "rev-parse", "--verify", plan["main"] + "^{commit}").stdout.strip()
+    _git(repo, "worktree", "add", "--detach", str(tree), main)
+    trials, prev = [], main
+    for k, head in enumerate(plan["heads"], 1):
+        rev = _git(repo, "rev-parse", "--verify", head["rev"] + "^{commit}").stdout.strip()
+        row = {"k": k, "name": head["name"], "head": rev, "first_parent": prev}
+        if head.get("merge"):
+            commit = _git(repo, "rev-parse", "--verify", head["merge"] + "^{commit}").stdout.strip()
+            parents = _git(repo, "rev-list", "--parents", "-n", "1", commit).stdout.split()[1:]
+            if parents != [prev, rev]:
+                return dict(ok=False, trials=trials, refused=f"{head['name']}: its merge {commit[:12]} "
+                            f"has parents {[x[:12] for x in parents]}, not the previous trial and the head")
+            _git(tree, "checkout", "--quiet", "--detach", commit)
+            row.update(commit=commit, made="by hand", folded=[])
+        else:
+            done = _git(tree, "merge", "--no-ff", "--no-commit", rev, check=False)
+            if done.returncode != 0:
+                conflicts = _git(tree, "diff", "--name-only", "--diff-filter=U", check=False)
+                _git(tree, "merge", "--abort", check=False)
+                return dict(ok=False, trials=trials, refused=f"{head['name']}: the merge onto the "
+                            f"previous trial conflicts", conflicts=conflicts.stdout.split())
+            _git(tree, "checkout", prev, "--", "tests/test_tiers.json")
+            if head.get("measured"):
+                fold = subprocess.run([python, "-B", "scripts/test_tiers.py", "fold", "--record",
+                                       "tests/test_tiers.json", "--measured", *head["measured"],
+                                       "--out", "tests/test_tiers.json"], cwd=tree,
+                                      capture_output=True, text=True)
+                if fold.returncode != 0:
+                    _git(tree, "merge", "--abort", check=False)
+                    return dict(ok=False, trials=trials, refused=f"{head['name']}: the fold refused: "
+                                f"{(fold.stdout + fold.stderr).strip()[-400:]}")
+                _git(tree, "add", "tests/test_tiers.json")
+            message = head.get("message") or f"Merge {head['name']} at {rev[:8]}"
+            line = f"Stack gate: {out} (head {k} of {plan['n']}, on main {main[:8]})"
+            _git(tree, "commit", "--quiet", "-m", merge_message(message, line))
+            commit = _git(tree, "rev-parse", "HEAD").stdout.strip()
+            row.update(made="by the stack tool", folded=head.get("measured", []))
+        row["tree"] = _git(repo, "rev-parse", commit + "^{tree}").stdout.strip()
+        row["commit"] = commit
+        trials.append(row)
+        prev = commit
+    return dict(ok=True, main=main, top=prev, trials=trials)
+
+
+def stack_failure(gate_out):
+    """The stage a refused gate stopped at, and its failing items: test files, crossrev sets or
+    G1 worlds; preflight and IDs are one item each. An unknown stop (G1's plan or merge, a shard's
+    CPU count) is the gate's own fault, not a head's, and is not bisected."""
+    gate_out = Path(gate_out)
+    text = (gate_out / "gate.log").read_text(errors="replace") if (gate_out / "gate.log").is_file() else ""
+    found = [(stage, locked) for line in text.splitlines() for words, stage, locked in STOPS
+             if line.endswith(words)]
+    if not found:
+        return {"stage": None, "items": [], "why": text.strip().splitlines()[-2:]}
+    stage, locked = found[-1]
+    items = [stage]
+    if stage == "prelock-tests":
+        items = [r["file"] for r in _read(gate_out / "prelock" / "tests-verdict.json")["refused"]]
+    elif stage == "crossrev":
+        verdict = _read(gate_out / "crossrev" / "verdict.json") or {"per_set": {}}
+        items = [k for k, v in verdict["per_set"].items() if not v["passed"]]
+        log = gate_out / "crossrev" / "head" / "crossrev.log"  # A head action that failed.
+        for line in (log.read_text().splitlines() if log.is_file() else []):
+            words = line.split()
+            if len(words) >= 5 and words[3] == "exit" and words[4] != "0":
+                items.append(words[1])
+    elif stage == "tiers":
+        items = [e["file"] for e in _read(gate_out / "tiers-1+2" / "summary.json")["changed_vs_record"]]
+    elif stage == "g1":
+        doc = _read(gate_out / "g1" / "compare-vs-c1.json") or {"rows": [], "problems": []}
+        items = [r["world"] for r in doc["rows"] if not r["equal"]] + [
+            p["world"] for p in doc["problems"]]
+    return {"stage": stage, "under_lock": locked, "items": sorted(set(items))}
+
+
+def stack_subset(tree, tiers, files):
+    """A tier subset of TREE's record (TIERS relative to it, or a path) holding FILES' rows: a
+    file with no row, or a tier-3 row, goes under NEW_TIER (judged by its exit code). A file the
+    tree lacks is listed as absent: the failure cannot be in that tree."""
+    record = Path(tiers) if Path(tiers).is_absolute() else Path(tree) / tiers
+    doc = json.loads(record.read_text())
+    tier_of = {r["file"]: (t, r) for t in doc["tiers"] for r in doc["tiers"][t]}
+    subset, absent = {"1": [], "2": [], NEW_TIER: []}, []
+    for name in sorted(set(files)):
+        if not (Path(tree) / name).is_file():
+            absent.append(name)
+        elif name in tier_of and tier_of[name][0] in ("1", "2"):
+            subset[tier_of[name][0]].append(tier_of[name][1])
+        else:
+            subset[NEW_TIER].append({"file": name, "seconds": 0.0, "exit_code": 0, "counts": {}})
+    return {"kind": "cells.test_tiers@1", "tiers": subset, "absent": absent,
+            "note": "a stack bisect's rerun of the failing test files"}
+
+
+def stack_results(stage, check_dir, items):
+    """Each item's status in one tree's rerun: pass, fail or inconclusive (a timeout)."""
+    check_dir = Path(check_dir)
+    status = {}
+    if stage in ("preflight", "ids"):
+        rc = (check_dir / "rc").read_text().strip() if (check_dir / "rc").is_file() else "none"
+        status = {i: "pass" if rc == "0" else "fail" for i in items}
+    elif stage in ("prelock-tests", "tiers"):
+        subset = json.loads((check_dir / "subset.json").read_text())
+        run = _read(check_dir / "run" / "run.json") or {"files": []}
+        summary = _read(check_dir / "run" / "summary.json") or {"changed_vs_record": []}
+        ran = {r["file"]: r for r in run["files"]}
+        new = {r["file"] for r in subset["tiers"].get(NEW_TIER, [])}
+        changed = {e["file"] for e in summary["changed_vs_record"]}
+        for name in items:
+            row = ran.get(name)
+            if name in subset["absent"]:
+                status[name] = "pass"
+            elif row is None:
+                status[name] = "inconclusive"
+            elif row.get("timed_out"):
+                status[name] = "fail" if row["counts"].get("failed") or row["counts"].get(
+                    "error") else "inconclusive"
+            elif name in new:
+                bad = row["exit_code"] != 0 or row["counts"].get("failed") or row["counts"].get("error")
+                status[name] = "fail" if bad else "pass"
+            else:
+                status[name] = "fail" if name in changed else "pass"
+    elif stage == "crossrev":
+        verdict = _read(check_dir / "verdict.json") or {"per_set": {}}
+        for name in items:
+            row = verdict["per_set"].get(name)
+            status[name] = "inconclusive" if row is None else ("pass" if row["passed"] else "fail")
+    elif stage == "g1":
+        doc = _read(check_dir / "compare.json")
+        rows = {r["world"]: r["equal"] for r in (doc or {}).get("rows", [])}
+        for name in items:
+            status[name] = "inconclusive" if doc is None else (
+                "pass" if rows.get(name) is True else "fail")
+    write_json(check_dir / "result.json", {"stage": stage, "items": status})
+    return status
+
+
+def stack_blame(bisect_dir, n):
+    """Per failing item, the head that broke it: the intermediate trees ran nearest first
+    (M_{n-1}, ..., M_1, then main as M_0), and the first tree where the item passes clears every
+    head up to it, so H_{k+1} is blamed. An item failing on main too is main's, not a head's; an
+    inconclusive rerun blames nobody."""
+    blame, trail = {}, {}
+    for k in range(n - 1, -1, -1):
+        result = _read(Path(bisect_dir) / f"m{k}" / "result.json")
+        if result is None:
+            continue
+        for item, state in result["items"].items():
+            if item in blame:
+                continue
+            trail.setdefault(item, []).append([k, state])
+            if state == "pass":
+                blame[item] = k + 1
+            elif state == "inconclusive":
+                blame[item] = None
+            elif k == 0:
+                blame[item] = 0
+    heads = sorted({b for b in blame.values() if b})
+    return {"blame": blame, "trail": trail, "blamed_heads": heads,
+            "fails_on_main": sorted(i for i, b in blame.items() if b == 0),
+            "inconclusive": sorted(i for i, b in blame.items() if b is None)}
+
+
+def stack_remaining(bisect_dir, n, items):
+    """The items still to rerun on the next tree down: failing at every tree run so far."""
+    blamed = stack_blame(bisect_dir, n)["blame"]
+    return [i for i in items if i not in blamed]
+
+
+def stack_restack(out):
+    """OUT/restack.json: the stack without its blamed heads, when the bisect blamed one or more
+    and nothing failed on main or was inconclusive. Returns (run it, why)."""
+    out = Path(out)
+    decl, blame = _read(out / "decl.json"), _read(out / "blame.json")
+    if not decl or not blame:
+        return False, "no declaration or no bisect"
+    if blame["fails_on_main"] or blame["inconclusive"]:
+        return False, (f"not re-gated: failing on main {blame['fails_on_main']}, inconclusive "
+                       f"{blame['inconclusive']}")
+    if not blame["blamed_heads"]:
+        return False, "not re-gated: no head blamed"
+    without = [h["name"] for k, h in enumerate(decl["heads"], 1) if k in blame["blamed_heads"]]
+    keep = [h for h in decl["heads"] if h["name"] not in without]
+    if not keep:
+        return False, f"not re-gated: every head blamed ({without})"
+    write_json(out / "restack.json", dict(decl, heads=keep, without=without))
+    return True, f"re-gated without {without}: {[h['name'] for h in keep]}"
+
+
+def g1_view(c1, out, worlds):
+    """A view of c1's merged save holding WORLDS only (a manifest and links to their sets), so a
+    bisect's rerun of those worlds compares with them alone."""
+    manifest = json.loads((Path(c1) / "manifest.json").read_text())
+    missing = sorted(set(worlds) - set(manifest["worlds"]))
+    if missing:
+        raise SystemExit(f"Refused: c1 holds no {missing}")
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    for name in sorted({w.split("/", 1)[0] for w in worlds}):
+        (out / name).symlink_to((Path(c1) / name).resolve())
+    write_json(out / "manifest.json",
+               dict(manifest, worlds={w: manifest["worlds"][w] for w in sorted(set(worlds))}))
+
+
+def stack_record(out):
+    """OUT/stack.json from the stack's parts, and the line each head's merge message carries."""
+    out = Path(out)
+    plan, trials = _read(out / "plan.json") or {}, _read(out / "trials.json") or {}
+    done = lambda p: (p / "done").read_text().strip() if (p / "done").is_file() else None  # noqa: E731
+    gate_done = done(out / "gate")
+    doc = {"kind": "cells.gate_stack@1", "written": utc(), "main": trials.get("main"),
+           "heads": [{k: h.get(k) for k in ("name", "rev", "additions_from", "removed_ok",
+                                            "removed_ok_file", "measured", "merge")}
+                     for h in plan.get("heads", [])],
+           "trials": trials.get("trials", []), "top": trials.get("top"),
+           "ref": (out / "ref").read_text().strip() if (out / "ref").is_file() else None,
+           "build_refused": trials.get("refused"), "conflicts": trials.get("conflicts"),
+           "gate": str(out / "gate"), "gate_done": gate_done,
+           "failure": _read(out / "failure.json"), "bisect": _read(out / "blame.json"),
+           "restack": None}
+    if (out / "restack").is_dir():
+        doc["restack"] = {"out": str(out / "restack"), "done": done(out / "restack"),
+                          "without": (_read(out / "restack.json") or {}).get("without")}
+    doc["verdict"] = {"0": "passed", "1": "refused"}.get(gate_done, "not run")
+    top = (trials.get("top") or "")[:12]
+    doc["merge_line"] = (f"Stack gate: {out} ({len(doc['heads'])} heads on main "
+                         f"{(trials.get('main') or '')[:8]}: "
+                         f"{' '.join((h['rev'] or '')[:8] for h in doc['heads'])}; top {top}), "
+                         f"{doc['verdict']}")
+    write_json(out / "stack.json", doc)
+    return doc
+
+
 # ------------------------------------------------------------------- the cache qualification
 
 TIMING = ("new timeout", "no verdict")  # Blocking kinds that lose coverage to time, not outcomes.
@@ -812,6 +1158,41 @@ def main(argv=None):
     s = sub.add_parser("g1-seconds")
     s.add_argument("merged")
     s.add_argument("file")
+    s = sub.add_parser("stack-plan")
+    s.add_argument("decl")
+    s.add_argument("out")
+    s = sub.add_parser("stack-build")
+    s.add_argument("out")
+    s.add_argument("--repo", required=True)
+    s.add_argument("--python", default=PYTHON)
+    s = sub.add_parser("stack-failure")
+    s.add_argument("gate_out")
+    s.add_argument("out")
+    s = sub.add_parser("stack-subset")
+    s.add_argument("tree")
+    s.add_argument("tiers")
+    s.add_argument("out")
+    s.add_argument("files", nargs="+")
+    s = sub.add_parser("stack-results")
+    s.add_argument("stage")
+    s.add_argument("check_dir")
+    s.add_argument("items", nargs="+")
+    s = sub.add_parser("stack-remaining")
+    s.add_argument("bisect_dir")
+    s.add_argument("n", type=int)
+    s.add_argument("items", nargs="+")
+    s = sub.add_parser("stack-blame")
+    s.add_argument("bisect_dir")
+    s.add_argument("n", type=int)
+    s.add_argument("out")
+    s = sub.add_parser("stack-restack")
+    s.add_argument("out")
+    s = sub.add_parser("stack-record")
+    s.add_argument("out")
+    s = sub.add_parser("g1-view")
+    s.add_argument("c1")
+    s.add_argument("out")
+    s.add_argument("worlds", nargs="+")
     s = sub.add_parser("qualify-subsets")
     s.add_argument("record")
     s.add_argument("out")
@@ -886,6 +1267,53 @@ def main(argv=None):
         return 0
     if step == "g1-seconds":
         print(f"{g1_seconds(a.merged, a.file)} world seconds written to {a.file}")
+        return 0
+    if step == "stack-plan":
+        doc = json.loads(Path(a.decl).read_text())
+        plan = stack_plan(doc, a.out)
+        write_json(Path(a.out) / "plan.json", plan)
+        if plan["ok"]:
+            write_json(Path(a.out) / "decl.json", doc)
+        print(json.dumps({"ok": plan["ok"], "problems": plan["problems"], "heads": [
+            h.get("name") for h in doc.get("heads") or []]}))
+        return 0 if plan["ok"] else 1
+    if step == "stack-build":
+        out = Path(a.out)
+        trials = stack_build(_read(out / "plan.json"), a.repo, out / "tree", out, a.python)
+        write_json(out / "trials.json", trials)
+        print(json.dumps({k: trials.get(k) for k in ("ok", "top", "refused", "conflicts")}))
+        return 0 if trials["ok"] else 1
+    if step == "stack-failure":
+        doc = stack_failure(a.gate_out)
+        write_json(a.out, doc)
+        print(json.dumps(doc)[:600])
+        return 0 if doc["stage"] else 1
+    if step == "stack-subset":
+        doc = stack_subset(a.tree, a.tiers, a.files)
+        write_json(a.out, doc)
+        print(json.dumps({"rows": sum(len(v) for v in doc["tiers"].values()), "absent": doc["absent"]}))
+        return 0
+    if step == "stack-results":
+        print(json.dumps(stack_results(a.stage, a.check_dir, a.items))[:600])
+        return 0
+    if step == "stack-remaining":
+        for item in stack_remaining(a.bisect_dir, a.n, a.items):
+            print(item)
+        return 0
+    if step == "stack-blame":
+        doc = stack_blame(a.bisect_dir, a.n)
+        write_json(a.out, doc)
+        print(json.dumps({k: doc[k] for k in ("blamed_heads", "fails_on_main", "inconclusive")}))
+        return 0
+    if step == "stack-restack":
+        run, why = stack_restack(a.out)
+        print(why)
+        return 0 if run else 1
+    if step == "stack-record":
+        print(stack_record(a.out)["merge_line"])
+        return 0
+    if step == "g1-view":
+        g1_view(a.c1, a.out, a.worlds)
         return 0
     if step == "qualify-subsets":
         qualify_subsets(a.record, a.out, a.tier3)

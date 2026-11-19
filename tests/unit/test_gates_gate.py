@@ -47,6 +47,14 @@ Host only: no world runs here.
   - PRELOCK_ONLY stops after the pre-lock steps, without queueing;
   - a used OUT is refused, so a stale verdict is never reported again;
   - a flock killed while it waits runs nothing.
+- **Stacks** (stack.sh) run in a scratch Git checkout with the same stub, and a freezer that copies
+  the tracked files:
+  - a passing stack's trial merges have main and then each trial as first parents, the head's
+    measured rows folded, and the stack gate's line before the message's trailers;
+  - a planted failure in the middle head (a tier file, a crossrev set, a G1 world) is rerun alone
+    on the intermediate trees, nearest first, blames that head, and the stack is re-gated without it;
+  - a conflict refuses the stack with its paths, and each declaration fault is refused;
+  - the blame of each trail, and the failing stage read from the gate's log.
 """
 
 import fcntl
@@ -134,6 +142,8 @@ def test_preflight_passes_clean_snapshots_and_a_complete_record(world):
     ("unknown record folder", "does not know"),
     ("dirty head", "not clean"),
     ("declared file missing", "ADDITIONS_FROM names"),
+    ("a check dropped with src/ changed", "a src/ change keeps the full gate"),
+    ("tiers dropped", "CHECKS must hold tiers"),
 ])
 def test_preflight_refuses_each_planted_fault(world, plant, words):
     env = dict(world["env"])
@@ -147,6 +157,14 @@ def test_preflight_refuses_each_planted_fault(world, plant, words):
         (world["head"] / "SNAPSHOT.json").write_text(json.dumps(dict(doc, patch_sha256="x")))
     elif plant == "declared file missing":
         env["ADDITIONS_FROM"] = "tests/unit/test_absent.py"
+    elif plant == "a check dropped with src/ changed":
+        env["CHECKS"] = "crossrev tiers"
+        for tree, digest in ((world["head"], "1"), (world["base"], "2")):
+            doc = json.loads((tree / "SNAPSHOT.json").read_text())
+            doc["files"] = {"src/cells/x.py": {"sha256": digest}}
+            (tree / "SNAPSHOT.json").write_text(json.dumps(doc))
+    elif plant == "tiers dropped":
+        env["CHECKS"] = "crossrev g1"
     doc = steps.preflight(world["head"], world["base"], env)
     assert not doc["ok"] and any(words in p for p in doc["problems"]), doc["problems"]
 
@@ -542,6 +560,10 @@ if a[:2] == ["-m", "pytest"]:
     ids = [l for l in (cwd / "ids.txt").read_text().splitlines() if "::" in l]
     n = int((cwd / "collected.txt").read_text()) if (cwd / "collected.txt").exists() else len(ids)
     print("\n".join(ids)); print(f"{n} tests collected in 0.01s"); sys.exit(0)
+if a[:2] == ["scripts/test_tiers.py", "fold"]:  # The tree's own fold, for real.
+    import runpy
+    sys.argv = a
+    runpy.run_path(str(cwd / a[0]), run_name="__main__"); sys.exit(0)
 if a[:2] == ["scripts/test_tiers.py", "run"]:
     tiers, i = [], a.index("--tier") + 1
     while i < len(a) and not a[i].startswith("--"):
@@ -576,18 +598,23 @@ if a[:1] == ["-m"]:  # A crossrev action: MODULE ACTION TARGET [SET].
 if a[:2] == ["validation/results_baseline.py", "save"]:
     part, set_name = Path(a[2]), a[a.index("--sets") + 1]
     worlds = a[a.index("--worlds") + 1:a.index("--from")]
-    note("save " + set_name)
+    note("save " + set_name + " " + cwd.name)
     (part / set_name).mkdir(parents=True, exist_ok=True)
     manifest = {"worlds": {}}
+    planted = (cwd / "g1.txt").read_text().split() if (cwd / "g1.txt").exists() else []
     for w in worlds:
         (part / set_name / (w + ".json")).write_text("{}")
-        manifest["worlds"][set_name + "/" + w] = {"seconds": 2.5, "digests": {"x": "1"}}
+        digest = "2" if set_name + "/" + w in planted else "1"
+        manifest["worlds"][set_name + "/" + w] = {"seconds": 2.5, "digests": {"x": digest}}
     (part / "manifest.json").write_text(json.dumps(manifest)); sys.exit(0)
 if a[:2] == ["validation/results_baseline.py", "compare"]:
     note("g1 compare")
     x = json.loads((Path(a[2]) / "manifest.json").read_text())["worlds"]
     y = json.loads((Path(a[3]) / "manifest.json").read_text())["worlds"]
-    ok = x.keys() == y.keys() and all(x[k]["digests"] == y[k]["digests"] for k in x)
+    rows = [{"world": k, "equal": k in y and x[k]["digests"] == y[k]["digests"]} for k in sorted(x)]
+    ok = x.keys() == y.keys() and all(r["equal"] for r in rows)
+    if "--output" in a:
+        Path(a[a.index("--output") + 1]).write_text(json.dumps({"rows": rows, "problems": []}))
     print(("identical" if ok else "differs") + f": {len(y)} of {len(x)} worlds")
     sys.exit(int(not ok))
 print("stub: unknown call", args, file=sys.stderr); sys.exit(3)
@@ -728,3 +755,203 @@ def test_a_killed_flock_runs_nothing_under_the_lock(gate):
     assert "the lock was never held" in log and "lock held" not in log
     calls = (gate["tmp"] / "calls").read_text().splitlines()
     assert calls == []  # Not even the pre-lock steps, which this mode runs under the lock.
+
+
+# --------------------------------------------------------------------------------- stacks (C)
+
+STACK = GATES / "stack.sh"
+FREEZER = r'''
+import hashlib, json, shutil, subprocess, sys
+from pathlib import Path
+src, dest = Path(sys.argv[1]), Path(sys.argv[2])
+git = lambda *a: subprocess.run(["git", "-C", str(src), *a], capture_output=True, text=True,
+                                check=True).stdout
+files = {}
+for name in git("ls-files").split():
+    (dest / name).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src / name, dest / name)
+    files[name] = {"sha256": hashlib.sha256((src / name).read_bytes()).hexdigest()}
+(dest / "SNAPSHOT.json").write_text(json.dumps({"status": "complete", "files": files,
+    "git_revision": git("rev-parse", "HEAD").strip(), "patch_sha256": hashlib.sha256(b"").hexdigest()}))
+'''
+
+
+def git(cwd, *args):
+    return subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True,
+                          text=True).stdout.strip()
+
+
+@pytest.fixture
+def stack(gate):
+    """A checkout whose main holds a snapshot tree's files and the real tier fold, with heads
+    made by add_head; stack.sh's environment with a freezer that copies the tracked files."""
+    tmp = gate["tmp"]
+    repo = snapshot_tree(tmp / "repo", "-")
+    (repo / "SNAPSHOT.json").unlink()
+    record = json.loads((repo / "tests/test_tiers.json").read_text())
+    (repo / "tests/test_tiers.json").write_text(json.dumps(
+        dict(record, measured=[], measured_provenance=[])))
+    (repo / "scripts").mkdir()
+    (repo / "scripts/test_tiers.py").write_text((ROOT / "scripts/test_tiers.py").read_text())
+    git(tmp, "init", "-q", str(repo))
+    git(repo, "config", "user.name", "stack-test")
+    git(repo, "config", "user.email", "stack-test@example.invalid")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "main")
+    git(repo, "branch", "-M", "main")
+    (tmp / "freeze.py").write_text(FREEZER)
+    gate.update(repo=repo, envs=dict(gate["envs"], REPO=str(repo),
+                                     FREEZE=f"{sys.executable} -I {tmp / 'freeze.py'}"))
+    return gate
+
+
+def add_head(stack, name, files):
+    repo = stack["repo"]
+    git(repo, "checkout", "-q", "-b", name, "main")
+    for path, text in files.items():
+        (repo / path).parent.mkdir(parents=True, exist_ok=True)
+        (repo / path).write_text(text)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", name)
+    git(repo, "checkout", "-q", "main")
+    return git(repo, "rev-parse", name)
+
+
+def run_stack(stack, heads, name="out", **extra):
+    out, decl = stack["tmp"] / name, stack["tmp"] / f"{name}.json"
+    decl.write_text(json.dumps({"main": "main", "heads": heads}))
+    (stack["tmp"] / "calls").write_text("")
+    done = subprocess.run(["bash", str(STACK), str(decl), str(out)], capture_output=True,
+                          text=True, timeout=300, env=dict(stack["envs"], **extra))
+    calls = (stack["tmp"] / "calls").read_text().splitlines()
+    return done.returncode, calls, out, json.loads((out / "stack.json").read_text())
+
+
+H1 = {"tests/unit/test_h1.py": "def test_h1():\n    pass\n",
+      "ids.txt": "tests/unit/test_h1.py::test_h1\ntests/unit/test_other.py::test_other\n"}
+
+
+def test_a_passing_stack_gates_its_trial_merges_once_as_they_land(stack):
+    h1, h3 = add_head(stack, "h1", H1), add_head(stack, "h3", {"docs/h3.md": "three\n"})
+    measured = stack["tmp"] / "h1-measured.json"
+    measured.write_text(json.dumps({"provenance": {"by": "test"}, "files": [
+        {"file": "tests/unit/test_h1.py", "seconds": 0.4, "exit_code": 0, "counts": {"passed": 1}}]}))
+    message = "Merge h1 at its head\n\nCo-Authored-By: Someone <someone@example.invalid>"
+    code, calls, out, doc = run_stack(stack, [
+        {"name": "h1", "rev": h1, "additions_from": ["tests/unit/test_h1.py"],
+         "measured": [str(measured)], "message": message},
+        {"name": "h3", "rev": h3}])
+    assert code == 0 and doc["verdict"] == "passed", (out / "stack.log").read_text()
+    repo, (m1, m2) = stack["repo"], [t["commit"] for t in doc["trials"]]
+    assert git(repo, "rev-list", "--parents", "-n", "1", m1).split()[1:] == [
+        git(repo, "rev-parse", "main"), h1]
+    assert git(repo, "rev-list", "--parents", "-n", "1", m2).split()[1:] == [m1, h3]
+    record = json.loads(git(repo, "show", f"{m1}:tests/test_tiers.json"))
+    assert "tests/unit/test_h1.py" in [r["file"] for r in record["tiers"]["1"]]  # Folded.
+    body = git(repo, "log", "-1", "--format=%B", m1)
+    assert body.index(f"Stack gate: {out} (head 1 of 2") < body.index("Co-Authored-By")
+    assert git(repo, "rev-parse", doc["ref"]) == m2 == doc["top"]
+    gate_log = (out / "gate" / "gate.log").read_text()
+    assert "additions from tests/unit/test_h1.py" in gate_log and "done status 0" in gate_log
+    assert not (out / "tree").exists() and doc["merge_line"].endswith("passed")
+
+
+ONLY = {  # What a bisect's rerun leaves in a tree's folder: the failing check's outputs alone.
+    "tiers": ["result.json", "run", "run.log", "subset.json", "subset.log"],
+    "crossrev": ["compare", "head", "head.log", "result.json", "verdict.json", "verdict.log"],
+    "g1": ["c1", "compare.json", "compare.log", "merged", "parts", "result.json", "save.log"]}
+
+
+@pytest.mark.parametrize("stage, plant", [
+    ("tiers", {"fail.txt": "tests/unit/test_other.py\n"}),
+    ("crossrev", {"program.txt": "p2\n"}),
+    ("g1", {"g1.txt": "protocol-w1/w2\n"}),
+])
+def test_a_planted_failure_bisects_to_its_head_rerunning_only_the_failing_check(
+        stack, stage, plant):
+    heads = [add_head(stack, "h1", H1), add_head(stack, "h2", plant),
+             add_head(stack, "h3", {"docs/h3.md": "three\n"})]
+    declared = [{"name": f"h{k}", "rev": rev} for k, rev in enumerate(heads, 1)]
+    declared[0]["additions_from"] = ["tests/unit/test_h1.py"]
+    code, calls, out, doc = run_stack(stack, declared, RESTACK="1" if stage == "tiers" else "0")
+    log = (out / "stack.log").read_text()
+    assert code == 1 and doc["failure"]["stage"] == stage, log
+    assert doc["bisect"]["blamed_heads"] == [2] and doc["bisect"]["fails_on_main"] == [], log
+    items = doc["failure"]["items"]
+    assert items and all([t[0] for t in doc["bisect"]["trail"][i]] == [2, 1] for i in items)
+    for k in (2, 1):  # Nearest first; main is never reached, since M1 passes.
+        assert sorted(p.name for p in (out / "bisect" / f"m{k}").iterdir()) == ONLY[stage]
+        assert list(json.loads((out / "bisect" / f"m{k}" / "result.json").read_text())[
+            "items"]) == items
+    assert not (out / "bisect" / "m0").exists()
+    if stage == "tiers":  # Only the failing file ran, and the stack is re-gated without h2.
+        ran = json.loads((out / "bisect" / "m2" / "run" / "run.json").read_text())["files"]
+        assert [r["file"] for r in ran] == items == ["tests/unit/test_other.py"]
+        assert doc["restack"]["without"] == ["h2"] and doc["restack"]["done"] == "0", log
+        assert [h["name"] for h in json.loads((out / "restack" / "stack.json").read_text())[
+            "heads"]] == ["h1", "h3"]
+    if stage == "crossrev":
+        assert sorted(p.name for p in (out / "bisect" / "m2" / "head").iterdir()
+                      if p.is_dir()) == items == ["kinds"]
+    if stage == "g1":
+        rows = json.loads((out / "bisect" / "m2" / "compare.json").read_text())["rows"]
+        assert [r["world"] for r in rows] == items == ["protocol-w1/w2"]
+
+
+def test_a_conflicting_merge_refuses_the_stack_with_its_paths(stack):
+    one = add_head(stack, "x1", {"docs/same.md": "one\n"})
+    two = add_head(stack, "x2", {"docs/same.md": "two\n"})
+    code, calls, out, doc = run_stack(stack, [{"name": "x1", "rev": one}, {"name": "x2", "rev": two}])
+    assert code == 2 and doc["verdict"] == "not run" and doc["conflicts"] == ["docs/same.md"]
+    assert calls == [] and not (out / "tree").exists()
+
+
+@pytest.mark.parametrize("heads, words", [
+    ([{"name": f"h{k}", "rev": "r"} for k in range(4)], "a stack holds 1 to 3"),
+    ([{"name": "a", "rev": "r", "crossrev_expected": ["kinds/x"]}, {"name": "b", "rev": "r"}],
+     "rides alone"),
+    ([{"name": "a", "rev": "r"}, {"name": "a", "rev": "s"}], "unique name"),
+    ([{"name": "a", "rev": "r", "measured": "one.json"}], "must be a list"),
+])
+def test_a_stack_declaration_is_refused_for_each_planted_fault(tmp_path, heads, words):
+    plan = steps.stack_plan({"main": "m", "heads": heads}, tmp_path)
+    assert not plan["ok"] and any(words in p for p in plan["problems"]), plan
+
+
+def test_the_merge_line_goes_before_the_trailers():
+    assert steps.merge_message("Subject\n\nBody.", "Stack gate: X") == \
+        "Subject\n\nBody.\n\nStack gate: X\n"
+    assert steps.merge_message("Subject\n\nCo-Authored-By: A <a@b>", "Stack gate: X") == \
+        "Subject\n\nStack gate: X\n\nCo-Authored-By: A <a@b>\n"
+
+
+@pytest.mark.parametrize("trail, blamed, main, unsure", [
+    ({2: {"t": "pass"}}, [3], [], []),
+    ({2: {"t": "fail"}, 1: {"t": "pass"}}, [2], [], []),
+    ({2: {"t": "fail"}, 1: {"t": "fail"}, 0: {"t": "pass"}}, [1], [], []),
+    ({2: {"t": "fail"}, 1: {"t": "fail"}, 0: {"t": "fail"}}, [], ["t"], []),
+    ({2: {"t": "inconclusive"}}, [], [], ["t"]),
+    ({2: {"t": "pass", "u": "fail"}, 1: {"u": "pass"}}, [2, 3], [], []),  # One blame per item.
+])
+def test_the_bisect_blames_the_head_above_the_first_passing_tree(tmp_path, trail, blamed, main,
+                                                                  unsure):
+    for k, items in trail.items():
+        (tmp_path / f"m{k}").mkdir()
+        steps.write_json(tmp_path / f"m{k}" / "result.json", {"items": items})
+    doc = steps.stack_blame(tmp_path, 3)
+    assert (doc["blamed_heads"], doc["fails_on_main"], doc["inconclusive"]) == (blamed, main, unsure)
+
+
+@pytest.mark.parametrize("stop, stage, locked", [
+    ("stopped at ids", "ids", False), ("stopped at preflight", "preflight", False),
+    ("stopped at crossrev", "crossrev", True), ("G1 merge failed", None, None),
+])
+def test_the_failing_stage_is_read_from_the_gate_log(tmp_path, stop, stage, locked):
+    (tmp_path / "crossrev").mkdir()
+    steps.write_json(tmp_path / "crossrev" / "verdict.json", {"per_set": {
+        "kinds": {"passed": False}, "base": {"passed": True}}})
+    (tmp_path / "gate.log").write_text(f"2026-11-19T00:00:00Z {stop}\n2026-11-19T00:00:00Z done status 1\n")
+    doc = steps.stack_failure(tmp_path)
+    assert doc["stage"] == stage and doc.get("under_lock") == locked
+    if stage == "crossrev":
+        assert doc["items"] == ["kinds"]
