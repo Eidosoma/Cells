@@ -1,0 +1,3265 @@
+{
+ "format": "cells.visualizer.machine-measure@1",
+ "tool": "tools/measure_particle.py",
+ "definition": "the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it",
+ "frame": "origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y",
+ "measured": {
+  "9MXV-assembly1": {
+   "entry": "9MXV",
+   "assembly": "1",
+   "title": "Human Vault Cage in complex with ADP",
+   "method": "ELECTRON MICROSCOPY",
+   "resolution_A": null,
+   "left_out": [],
+   "whole": {
+    "atoms": 483834,
+    "axes": [
+     [
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "across_nm": [
+     74.5,
+     50.4,
+     50.4
+    ],
+    "farthest_nm": [
+     68.1,
+     41.5,
+     41.5
+    ],
+    "middle_98_percent_nm": [
+     65.4,
+     37.9,
+     37.9
+    ],
+    "radius_of_gyration_nm": 23.06
+   },
+   "parts": {
+    "half-a": {
+     "by": "chains",
+     "ids": [
+      "B",
+      "B-2",
+      "B-3",
+      "B-4",
+      "B-5",
+      "B-6",
+      "B-7",
+      "B-8",
+      "B-9",
+      "B-10",
+      "B-11",
+      "B-12",
+      "B-13",
+      "B-14",
+      "B-15",
+      "B-16",
+      "B-17",
+      "B-18",
+      "B-19",
+      "B-20",
+      "B-21",
+      "B-22",
+      "B-23",
+      "B-24",
+      "B-25",
+      "B-26",
+      "B-27",
+      "B-28",
+      "B-29",
+      "B-30",
+      "B-31",
+      "B-32",
+      "B-33",
+      "B-34",
+      "B-35",
+      "B-36",
+      "B-37",
+      "B-38",
+      "B-39"
+     ],
+     "atoms": 241917,
+     "centre_nm": [
+      14.38,
+      0.0,
+      0.0
+     ],
+     "axes": [
+      [
+       0.0,
+       1.0,
+       -0.001
+      ],
+      [
+       0.0,
+       0.001,
+       1.0
+      ],
+      [
+       1.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "across_nm": [
+      50.4,
+      50.4,
+      37.6
+     ],
+     "farthest_nm": [
+      41.4,
+      41.4,
+      34.3
+     ],
+     "radius_of_gyration_nm": 18.02
+    },
+    "half-b": {
+     "by": "chains",
+     "ids": [
+      "A",
+      "A-2",
+      "A-3",
+      "A-4",
+      "A-5",
+      "A-6",
+      "A-7",
+      "A-8",
+      "A-9",
+      "A-10",
+      "A-11",
+      "A-12",
+      "A-13",
+      "A-14",
+      "A-15",
+      "A-16",
+      "A-17",
+      "A-18",
+      "A-19",
+      "A-20",
+      "A-21",
+      "A-22",
+      "A-23",
+      "A-24",
+      "A-25",
+      "A-26",
+      "A-27",
+      "A-28",
+      "A-29",
+      "A-30",
+      "A-31",
+      "A-32",
+      "A-33",
+      "A-34",
+      "A-35",
+      "A-36",
+      "A-37",
+      "A-38",
+      "A-39"
+     ],
+     "atoms": 241917,
+     "centre_nm": [
+      -14.38,
+      0.0,
+      0.0
+     ],
+     "axes": [
+      [
+       0.0,
+       1.0,
+       0.0003
+      ],
+      [
+       0.0,
+       -0.0003,
+       1.0
+      ],
+      [
+       1.0,
+       0.0,
+       0.0
+      ]
+     ],
+     "across_nm": [
+      50.4,
+      50.4,
+      37.6
+     ],
+     "farthest_nm": [
+      41.5,
+      41.4,
+      34.3
+     ],
+     "radius_of_gyration_nm": 18.02
+    }
+   },
+   "chains": [
+    {
+     "chain": "A",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -5.7,
+      13.47
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.448,
+       0.3625
+      ],
+      [
+       0.5391,
+       0.8166,
+       -0.2061
+      ],
+      [
+       -0.2037,
+       0.3638,
+       0.9089
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -6.38,
+      13.16
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.0226,
+       -0.5758
+      ],
+      [
+       0.5391,
+       0.383,
+       0.7501
+      ],
+      [
+       0.2036,
+       -0.9235,
+       0.3252
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-2",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -7.78,
+      12.38
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5004,
+       0.2859
+      ],
+      [
+       0.5391,
+       0.8391,
+       -0.0724
+      ],
+      [
+       -0.2037,
+       0.2133,
+       0.9555
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-2",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -8.41,
+      11.97
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.07,
+       -0.572
+      ],
+      [
+       0.5391,
+       0.2577,
+       0.8018
+      ],
+      [
+       0.2036,
+       -0.9637,
+       0.1729
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-3",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -9.67,
+      10.97
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5398,
+       0.2019
+      ],
+      [
+       0.5391,
+       0.8399,
+       0.0631
+      ],
+      [
+       -0.2037,
+       0.0573,
+       0.9774
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-3",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -10.22,
+      10.46
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.1609,
+       -0.5534
+      ],
+      [
+       0.5391,
+       0.1258,
+       0.8328
+      ],
+      [
+       0.2036,
+       -0.9789,
+       0.0161
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-4",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -11.3,
+      9.28
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5652,
+       0.1127
+      ],
+      [
+       0.5391,
+       0.8189,
+       0.197
+      ],
+      [
+       -0.2037,
+       -0.1002,
+       0.9739
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-4",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -11.76,
+      8.69
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.2476,
+       -0.5204
+      ],
+      [
+       0.5391,
+       -0.0094,
+       0.8422
+      ],
+      [
+       0.2036,
+       -0.9688,
+       -0.1412
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-5",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -12.64,
+      7.35
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5759,
+       0.0206
+      ],
+      [
+       0.5391,
+       0.7766,
+       0.3258
+      ],
+      [
+       -0.2037,
+       -0.2552,
+       0.9452
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-5",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -13.01,
+      6.69
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.3278,
+       -0.4739
+      ],
+      [
+       0.5391,
+       -0.1444,
+       0.8298
+      ],
+      [
+       0.2036,
+       -0.9336,
+       -0.2948
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-6",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -13.66,
+      5.22
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5718,
+       -0.072
+      ],
+      [
+       0.5391,
+       0.7143,
+       0.4462
+      ],
+      [
+       -0.2037,
+       -0.4035,
+       0.892
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-6",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -13.91,
+      4.52
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.3996,
+       -0.4152
+      ],
+      [
+       0.5391,
+       -0.2756,
+       0.7959
+      ],
+      [
+       0.2036,
+       -0.8743,
+       -0.4407
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-7",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -14.32,
+      2.96
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5528,
+       -0.1628
+      ],
+      [
+       0.5391,
+       0.6335,
+       0.555
+      ],
+      [
+       -0.2037,
+       -0.5414,
+       0.8157
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-7",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -14.45,
+      2.23
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.461,
+       -0.3457
+      ],
+      [
+       0.5391,
+       -0.3997,
+       0.7413
+      ],
+      [
+       0.2036,
+       -0.7922,
+       -0.5752
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-8",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -14.61,
+      0.63
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.5196,
+       -0.2494
+      ],
+      [
+       0.5391,
+       0.5363,
+       0.6494
+      ],
+      [
+       -0.2037,
+       -0.6652,
+       0.7183
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-8",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -14.62,
+      -0.12
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5105,
+       -0.2673
+      ],
+      [
+       0.5391,
+       -0.5135,
+       0.6676
+      ],
+      [
+       0.2036,
+       -0.6897,
+       -0.6949
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-9",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -14.52,
+      -1.72
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.4728,
+       -0.3295
+      ],
+      [
+       0.5391,
+       0.4251,
+       0.7271
+      ],
+      [
+       -0.2037,
+       -0.7718,
+       0.6023
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-9",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -14.42,
+      -2.47
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5468,
+       -0.1819
+      ],
+      [
+       -0.5391,
+       0.6139,
+       -0.5766
+      ],
+      [
+       -0.2036,
+       0.5693,
+       0.7965
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-10",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -14.06,
+      -4.03
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.4139,
+       -0.4011
+      ],
+      [
+       0.5391,
+       0.303,
+       0.7858
+      ],
+      [
+       -0.2037,
+       -0.8584,
+       0.4707
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-10",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -13.83,
+      -4.75
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5689,
+       -0.0919
+      ],
+      [
+       -0.5391,
+       0.6985,
+       -0.4706
+      ],
+      [
+       -0.2036,
+       0.4342,
+       0.8775
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-11",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -13.23,
+      -6.23
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.3442,
+       -0.4623
+      ],
+      [
+       0.5391,
+       0.173,
+       0.8243
+      ],
+      [
+       -0.2037,
+       -0.9228,
+       0.3269
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-11",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -12.89,
+      -6.9
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5763,
+       0.0006
+      ],
+      [
+       -0.5391,
+       0.7649,
+       -0.3525
+      ],
+      [
+       -0.2036,
+       0.2878,
+       0.9358
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-12",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -12.06,
+      -8.27
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.2655,
+       -0.5115
+      ],
+      [
+       0.5391,
+       0.0386,
+       0.8413
+      ],
+      [
+       -0.2037,
+       -0.9633,
+       0.1747
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-12",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -11.62,
+      -8.88
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5687,
+       0.093
+      ],
+      [
+       -0.5391,
+       0.8116,
+       -0.2252
+      ],
+      [
+       -0.2036,
+       0.1339,
+       0.9699
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-13",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -10.57,
+      -10.1
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.1801,
+       -0.5475
+      ],
+      [
+       0.5391,
+       -0.0969,
+       0.8366
+      ],
+      [
+       -0.2037,
+       -0.9789,
+       0.0179
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-13",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -10.04,
+      -10.63
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.5464,
+       0.183
+      ],
+      [
+       -0.5391,
+       0.8372,
+       -0.0921
+      ],
+      [
+       -0.2036,
+       -0.0234,
+       0.9788
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-14",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -8.82,
+      -11.67
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.0899,
+       -0.5693
+      ],
+      [
+       0.5391,
+       -0.2299,
+       0.8103
+      ],
+      [
+       -0.2037,
+       -0.9691,
+       -0.1394
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-14",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -8.21,
+      -12.1
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.51,
+       0.2683
+      ],
+      [
+       -0.5391,
+       0.8411,
+       0.0433
+      ],
+      [
+       -0.2036,
+       -0.1801,
+       0.9624
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-15",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -6.83,
+      -12.93
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.0026,
+       -0.5763
+      ],
+      [
+       0.5391,
+       -0.3569,
+       0.7629
+      ],
+      [
+       -0.2037,
+       -0.9342,
+       -0.293
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-15",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -6.16,
+      -13.26
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.4603,
+       0.3467
+      ],
+      [
+       -0.5391,
+       0.8233,
+       0.1777
+      ],
+      [
+       -0.2036,
+       -0.3321,
+       0.921
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-16",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -4.67,
+      -13.86
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.095,
+       -0.5684
+      ],
+      [
+       0.5391,
+       -0.4746,
+       0.6958
+      ],
+      [
+       -0.2037,
+       -0.8751,
+       -0.4391
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-16",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -3.95,
+      -14.08
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.3988,
+       0.416
+      ],
+      [
+       -0.5391,
+       0.7841,
+       0.3075
+      ],
+      [
+       -0.2036,
+       -0.4756,
+       0.8558
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-17",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -2.39,
+      -14.43
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.1849,
+       -0.5458
+      ],
+      [
+       0.5391,
+       -0.5801,
+       0.6106
+      ],
+      [
+       -0.2037,
+       -0.7933,
+       -0.5738
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-17",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -1.64,
+      -14.53
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.3269,
+       0.4746
+      ],
+      [
+       -0.5391,
+       0.7246,
+       0.4293
+      ],
+      [
+       -0.2036,
+       -0.6067,
+       0.7684
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-18",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -0.04,
+      -14.62
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.2701,
+       -0.5091
+      ],
+      [
+       -0.5391,
+       0.6705,
+       -0.5097
+      ],
+      [
+       0.2037,
+       0.691,
+       0.6936
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-18",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      0.71,
+      -14.61
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.2465,
+       0.5209
+      ],
+      [
+       -0.5391,
+       0.6464,
+       0.5399
+      ],
+      [
+       -0.2036,
+       -0.7221,
+       0.6612
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-19",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      2.31,
+      -14.44
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.3483,
+       -0.4592
+      ],
+      [
+       -0.5391,
+       0.7436,
+       -0.3955
+      ],
+      [
+       0.2037,
+       0.5708,
+       0.7954
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-19",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      3.04,
+      -14.3
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.1598,
+       0.5537
+      ],
+      [
+       -0.5391,
+       0.5514,
+       0.6366
+      ],
+      [
+       -0.2036,
+       -0.8188,
+       0.5368
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-20",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      4.59,
+      -13.88
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.4174,
+       -0.3974
+      ],
+      [
+       -0.5391,
+       0.7974,
+       -0.2711
+      ],
+      [
+       0.2037,
+       0.4358,
+       0.8767
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-20",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      5.3,
+      -13.63
+     ],
+     "axes": [
+      [
+       0.8173,
+       0.0689,
+       0.5721
+      ],
+      [
+       -0.5391,
+       0.4421,
+       0.7169
+      ],
+      [
+       -0.2036,
+       -0.8943,
+       0.3985
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-21",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      6.76,
+      -12.97
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.4758,
+       -0.3253
+      ],
+      [
+       -0.5391,
+       0.8306,
+       -0.1397
+      ],
+      [
+       0.2037,
+       0.2895,
+       0.9353
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-21",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      7.42,
+      -12.6
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.0238,
+       0.5758
+      ],
+      [
+       -0.5391,
+       0.3214,
+       0.7785
+      ],
+      [
+       -0.2036,
+       -0.9466,
+       0.2499
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-22",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      8.75,
+      -11.72
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5218,
+       -0.2447
+      ],
+      [
+       -0.5391,
+       0.8422,
+       -0.0046
+      ],
+      [
+       0.2037,
+       0.1357,
+       0.9696
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-22",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      9.34,
+      -11.25
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.1158,
+       0.5645
+      ],
+      [
+       -0.5391,
+       0.1924,
+       0.82
+      ],
+      [
+       -0.2036,
+       -0.9745,
+       0.0948
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-23",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      10.52,
+      -10.16
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5543,
+       -0.1579
+      ],
+      [
+       -0.5391,
+       0.8321,
+       0.1305
+      ],
+      [
+       0.2037,
+       -0.0216,
+       0.9788
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-23",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      11.03,
+      -9.61
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.2049,
+       0.5386
+      ],
+      [
+       -0.5391,
+       0.0584,
+       0.8402
+      ],
+      [
+       -0.2036,
+       -0.977,
+       -0.0628
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-24",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      12.01,
+      -8.34
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5724,
+       -0.0669
+      ],
+      [
+       -0.5391,
+       0.8003,
+       0.2623
+      ],
+      [
+       0.2037,
+       -0.1783,
+       0.9627
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-24",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      12.43,
+      -7.71
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.2886,
+       0.4988
+      ],
+      [
+       -0.5391,
+       -0.0772,
+       0.8387
+      ],
+      [
+       -0.2036,
+       -0.9543,
+       -0.2187
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-25",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      13.19,
+      -6.31
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5757,
+       0.0258
+      ],
+      [
+       -0.5391,
+       0.7479,
+       0.3873
+      ],
+      [
+       0.2037,
+       -0.3304,
+       0.9216
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-25",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      13.5,
+      -5.62
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.3649,
+       0.446
+      ],
+      [
+       -0.5391,
+       -0.2107,
+       0.8155
+      ],
+      [
+       -0.2036,
+       -0.9069,
+       -0.3689
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-26",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      14.04,
+      -4.11
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5642,
+       0.1178
+      ],
+      [
+       -0.5391,
+       0.6761,
+       0.5022
+      ],
+      [
+       0.2037,
+       -0.474,
+       0.8567
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-26",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      14.23,
+      -3.38
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.4317,
+       0.3817
+      ],
+      [
+       -0.5391,
+       -0.3388,
+       0.7711
+      ],
+      [
+       -0.2036,
+       -0.836,
+       -0.5096
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-27",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      14.51,
+      -1.8
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.5379,
+       0.2068
+      ],
+      [
+       -0.5391,
+       0.5868,
+       0.6042
+      ],
+      [
+       0.2037,
+       -0.6052,
+       0.7695
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-27",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      14.59,
+      -1.06
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.4874,
+       0.3075
+      ],
+      [
+       -0.5391,
+       -0.4581,
+       0.7068
+      ],
+      [
+       -0.2036,
+       -0.7434,
+       -0.6371
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-28",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      14.61,
+      0.55
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.4978,
+       0.2904
+      ],
+      [
+       -0.5391,
+       0.4823,
+       0.6905
+      ],
+      [
+       0.2037,
+       -0.7208,
+       0.6625
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-28",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      14.57,
+      1.3
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5304,
+       0.2253
+      ],
+      [
+       -0.5391,
+       -0.5655,
+       0.6241
+      ],
+      [
+       -0.2036,
+       -0.6316,
+       -0.7481
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-29",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      14.34,
+      2.89
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.4448,
+       0.3665
+      ],
+      [
+       -0.5391,
+       0.3652,
+       0.7589
+      ],
+      [
+       0.2037,
+       -0.8178,
+       0.5383
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-29",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      14.17,
+      3.62
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5597,
+       0.1373
+      ],
+      [
+       0.5391,
+       0.6583,
+       -0.5253
+      ],
+      [
+       0.2036,
+       0.5034,
+       0.8397
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-30",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      13.69,
+      5.15
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.3802,
+       0.4331
+      ],
+      [
+       -0.5391,
+       0.2388,
+       0.8077
+      ],
+      [
+       0.2037,
+       -0.8935,
+       0.4001
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-30",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      13.41,
+      5.84
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5744,
+       0.0458
+      ],
+      [
+       0.5391,
+       0.7341,
+       -0.4129
+      ],
+      [
+       0.2036,
+       0.3621,
+       0.9096
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-31",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      12.69,
+      7.28
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.3058,
+       0.4885
+      ],
+      [
+       -0.5391,
+       0.1061,
+       0.8355
+      ],
+      [
+       0.2037,
+       -0.9462,
+       0.2516
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-31",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      12.29,
+      7.92
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5744,
+       -0.0469
+      ],
+      [
+       0.5391,
+       0.7908,
+       -0.2898
+      ],
+      [
+       0.2036,
+       0.2115,
+       0.9559
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-32",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      11.35,
+      9.22
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.2235,
+       0.5312
+      ],
+      [
+       -0.5391,
+       -0.0293,
+       0.8417
+      ],
+      [
+       0.2037,
+       -0.9743,
+       0.0966
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-32",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      10.87,
+      9.79
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5594,
+       -0.1385
+      ],
+      [
+       0.5391,
+       0.8271,
+       -0.1592
+      ],
+      [
+       0.2036,
+       0.0555,
+       0.9775
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-33",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      9.73,
+      10.92
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.1354,
+       0.5602
+      ],
+      [
+       -0.5391,
+       -0.1639,
+       0.8261
+      ],
+      [
+       0.2037,
+       -0.9771,
+       -0.061
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-33",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      9.15,
+      11.41
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.5299,
+       -0.2264
+      ],
+      [
+       0.5391,
+       0.8419,
+       -0.0245
+      ],
+      [
+       0.2036,
+       -0.1021,
+       0.9737
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-34",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      7.85,
+      12.34
+     ],
+     "axes": [
+      [
+       0.8172,
+       0.0438,
+       0.5747
+      ],
+      [
+       -0.5391,
+       -0.2943,
+       0.7891
+      ],
+      [
+       0.2037,
+       -0.9547,
+       -0.2169
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-34",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      7.21,
+      12.73
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.4867,
+       -0.3085
+      ],
+      [
+       0.5391,
+       0.8349,
+       0.1109
+      ],
+      [
+       0.2036,
+       -0.2569,
+       0.9447
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-35",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      5.77,
+      13.44
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.0489,
+       0.5742
+      ],
+      [
+       -0.5391,
+       -0.4171,
+       0.7317
+      ],
+      [
+       0.2037,
+       -0.9075,
+       -0.3672
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-35",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      5.07,
+      13.72
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.431,
+       -0.3826
+      ],
+      [
+       0.5391,
+       0.8063,
+       0.2434
+      ],
+      [
+       0.2036,
+       -0.4051,
+       0.8913
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-36",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      3.54,
+      14.19
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.1404,
+       0.5589
+      ],
+      [
+       -0.5391,
+       -0.5291,
+       0.6553
+      ],
+      [
+       0.2037,
+       -0.8369,
+       -0.5081
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-36",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      2.81,
+      14.35
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.364,
+       -0.4467
+      ],
+      [
+       0.5391,
+       0.7568,
+       0.3696
+      ],
+      [
+       0.2036,
+       -0.5429,
+       0.8148
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-37",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      1.22,
+      14.57
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.2283,
+       0.5292
+      ],
+      [
+       0.5391,
+       0.6273,
+       -0.562
+      ],
+      [
+       -0.2037,
+       0.7445,
+       0.6357
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-37",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      0.47,
+      14.62
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.2876,
+       -0.4994
+      ],
+      [
+       0.5391,
+       0.6877,
+       0.4862
+      ],
+      [
+       0.2036,
+       -0.6665,
+       0.7171
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-38",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -1.14,
+      14.58
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.3102,
+       0.4857
+      ],
+      [
+       0.5391,
+       0.7094,
+       -0.4541
+      ],
+      [
+       -0.2037,
+       0.6329,
+       0.7469
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-38",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -1.88,
+      14.5
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.2038,
+       -0.539
+      ],
+      [
+       0.5391,
+       0.6008,
+       0.5902
+      ],
+      [
+       0.2036,
+       -0.7729,
+       0.6009
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "A-39",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      -14.38,
+      -3.46,
+      14.21
+     ],
+     "axes": [
+      [
+       0.8172,
+       -0.3841,
+       0.4297
+      ],
+      [
+       0.5391,
+       0.773,
+       -0.3344
+      ],
+      [
+       -0.2037,
+       0.5049,
+       0.8388
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    },
+    {
+     "chain": "B-39",
+     "entity": "1",
+     "description": "Major vault protein",
+     "atoms": 6203,
+     "centre_nm": [
+      14.38,
+      -4.19,
+      14.01
+     ],
+     "axes": [
+      [
+       0.8173,
+       -0.1147,
+       -0.5647
+      ],
+      [
+       0.5391,
+       0.4984,
+       0.6789
+      ],
+      [
+       0.2036,
+       -0.8593,
+       0.4691
+      ]
+     ],
+     "across_nm": [
+      45.4,
+      11.8,
+      4.5
+     ],
+     "farthest_nm": [
+      39.8,
+      10.8,
+      5.9
+     ],
+     "radius_of_gyration_nm": 10.53
+    }
+   ],
+   "entities": [
+    {
+     "entity": "1",
+     "description": "Major vault protein",
+     "copies": 78,
+     "sequence_length": 893,
+     "residues_modelled_per_copy": 782.0,
+     "modelled_share": 0.876,
+     "atoms_per_modelled_residue": 7.93
+    }
+   ]
+  }
+ }
+}

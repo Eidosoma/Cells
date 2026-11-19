@@ -241,6 +241,171 @@ export function lookedFor(gathered, where, reference) {
   ].join(" ");
 }
 
+/** The head of the list of a kind's forms (the Complex Portal's entries that stand beneath it), and how many stand before the rest open by a press. */
+export const FORMS_TITLE = "Forms the Complex Portal curates";
+const FORMS_SHOWN = 4;
+const PORTAL_PAGE = "https://www.ebi.ac.uk/complexportal/complex/";
+
+/** An entry's stoichiometry as the Complex Portal gives it (the dossier's compact form), in words; null where it gives none. */
+export function stoichiometryWords(stoichiometry, geneOf = new Map()) {
+  if (!stoichiometry) return null;
+  const copies = (n) => `${number(n)} ${n === 1 ? "copy" : "copies"}`;
+  const parts = [`${number(stoichiometry.n_most)} ${stoichiometry.n_most === 1 ? "protein" : "proteins"} at ${copies(stoichiometry.most)} each`];
+  if (stoichiometry.except?.length) parts.push(stoichiometry.except.map(([id, n]) => `${geneOf.get(id) || id} at ${copies(n)}`).join(", "));
+  if (stoichiometry.not_given) parts.push(`no count given for ${number(stoichiometry.not_given)}`);
+  return `Stoichiometry, as the Complex Portal gives it: ${parts.join("; ")}.`;
+}
+
+/** The evidence line of a form: the Complex Portal's own term, then one plain line; an inferred entry names the species it is taken from. */
+export function evidenceWords(code, template, inferred) {
+  const from = (inferred || []).map(([id, of]) => of || `another species (its entry ${id})`);
+  const names = [...new Set(from)];
+  const where = names.length ? names.join(" and ").replace(/, (?=[^,]*$)/, " and ") : "another species, which its record does not name";
+  return `Evidence ${code}. ${String(template).replace("{from}", where)}`;
+}
+
+/** The forms beneath a kind, as a panel list: a line for each entry, with its page at the Complex Portal. */
+function formsSection(forms, where, geneOf) {
+  return {
+    title: FORMS_TITLE,
+    note: `Entries of the Complex Portal whose proteins are, at least 80 per cent of them and at least two, parts of this machine in ${where}'s dossier. A form is not a machine of its own: it is no mark on the bench and in no count of machines. An entry may hold only some of the machine's parts, and says how many. Where an entry's stoichiometry differs from a count this panel shows, both stand, each with its source; the page reconciles nothing. The first ${FORMS_SHOWN} stand; the rest open by a press.`,
+    shown: FORMS_SHOWN,
+    items: forms.items.map(([id, name, proteins, held, of, stoichiometry, evidence, inferred]) => ({
+      label: name,
+      detail: `${id} · ${number(proteins)} ${proteins === 1 ? "protein" : "proteins"} · holds ${number(held)} of this machine's ${number(of)} parts`,
+      lines: [stoichiometryWords(stoichiometry, geneOf), evidenceWords(evidence, forms.evidence[evidence], inferred)].filter(Boolean),
+      links: [{ text: `Complex Portal ${id}`, url: `${PORTAL_PAGE}${id}` }],
+    })),
+  };
+}
+
+/** One vault sentence's evidence, as UniProt marks it. */
+/** Whose protein a sentence "by similarity" names, where a saved file says: "the human protein Q14764", else "the protein of <organism> <accession>". */
+const whose = (id, of, scene) => {
+  const label = (scene?.species || []).find((item) => item.organism === of)?.label;
+  return label ? `the ${label.toLowerCase()} protein ${id}` : of ? `the protein of ${of} ${id}` : id;
+};
+const similarTo = (lines, scene) => asList([...new Set(lines.flatMap((line) => (line.similar_to || []).map((id) => whose(id, line.similar_of?.[id], scene))))]);
+const lineEvidence = (line, scene) => (line.evidence === "by similarity" ? `by similarity${line.similar_to?.length ? ` to ${asList(line.similar_to.map((id) => whose(id, line.similar_of?.[id], scene)))}` : ""}` : line.evidence === "cited" ? `cites ${line.publications.map((id) => `PubMed:${id}`).join(", ")}` : "carries no note of its own");
+const quoted = (statement) => `“${statement.quote}” (${statement.place})`;
+const asList = (items) => items.join(", ").replace(/, (?=[^,]*$)/, " and ");
+
+/**
+ * How one protein of the vault stands, in words, on the footing it stands on: by the record (a member of the Complex
+ * Portal's entry), named by a reviewed UniProt entry (every sentence by similarity, or some citing publications), or a candidate by
+ * its family. The footings are never mixed, and only the record says part.
+ */
+export function vaultFooting(id, row, vault, where, scene = null) {
+  const lines = row.entry?.lines || [];
+  const out = [];
+  const portal = vault.reference_portal;
+  if (row.tier === "part by record") {
+    const copies = row.copies;
+    out.push(`By the record: a member of the Complex Portal's entry ${portal.id}, “${portal.name}” (${copies ? `${number(copies)} copies stated` : "no number of copies stated"}; its evidence ${portal.evidence}, put together by the Complex Portal's curators from the literature).`);
+  }
+  if (lines.length) {
+    const similar = lines.filter((line) => line.evidence === "by similarity"), cited = lines.filter((line) => line.evidence === "cited");
+    const to = similarTo(similar, scene);
+    if (row.tier === "named by a reviewed entry, by similarity") {
+      out.push(`Named by a reviewed entry, by similarity: UniProt's reviewed entry ${id} names the vault particle in ${number(lines.length)} sentences of its own, every one marked “by similarity” to ${to}. This is a footing of its own, firmer than a family alone and weaker than a record; it does not make the protein a part of the vault.`);
+    } else if (row.tier === "named by a reviewed entry, citing publications") {
+      out.push(`Named by a reviewed entry: UniProt's reviewed entry ${id} names the vault particle in ${number(lines.length)} sentences of its own; ${number(cited.length)} ${cited.length === 1 ? "cites" : "cite"} publications${similar.length ? ` and ${number(similar.length)} are marked “by similarity” to ${to}` : ""}. Those are the entry's lines, with the evidence each carries; the page reads none of the papers and does not call the protein a part.`);
+    } else {
+      out.push(`UniProt's reviewed entry ${id} also names the vault particle in ${number(lines.length)} sentences of its own, each with the evidence it carries.`);
+    }
+    for (const line of lines) out.push(`${line.comment.toUpperCase()}: “${line.says}” (${lineEvidence(line, scene)})`);
+  }
+  // Its entry may also make it a component of another complex (TEP1, of telomerase): said as the entry says it, with its evidence.
+  for (const line of row.entry?.also || []) out.push(`Its entry also names it a component of another complex, ${line.comment.toUpperCase()}: “${line.says}” (${lineEvidence(line, scene)})`);
+  if (row.tier === "candidate by family") {
+    out.push(`A candidate by its family: it carries ${asList(row.marks || [])}${row.marks?.includes(vault.signatures.family) ? ", the signature of the major vault protein family" : ", the marker domain of PARP4"}. A candidate is a candidate: it is not called a part of the vault, and nothing in ${where}'s data says it is in one.`);
+  }
+  return out;
+}
+
+/** The three sizes of the vault side by side, each with its source, none hidden. */
+function vaultSizes(vault, sizeLine, scene) {
+  const portal = vault.reference_portal;
+  const ofSpecies = speciesLabel(scene, portal?.species).toLowerCase();
+  const by = (list) => list.map((n) => Number(n).toFixed(1).replace(/\.0$/, "")).join(" by ");
+  const statement = (id) => vault.preprint.statements.find((value) => value.id === id);
+  return [
+    portal?.size_nm ? `The Complex Portal's entry ${portal.id} (the ${ofSpecies} vault): ${by(portal.size_nm)} nm${portal.mass_MDa ? `, about ${portal.mass_MDa} MDa` : ""}.` : null,
+    statement("mammal-size") ? `The preprint, for mammalian vaults: ${quoted(statement("mammal-size"))}.` : null,
+    sizeLine ? `The viewer's measure of a structure: ${sizeLine}` : null,
+  ].filter(Boolean).join(" ");
+}
+
+/** The vault's passage on the preprint, in one piece: what it is, what it reports, each number with its place, and what is not known. */
+export function preprintWords(vault) {
+  const preprint = vault.preprint, find = (id) => preprint.statements.find((value) => value.id === id);
+  return `${preprint.text} (${preprint.licence.split(",")[0]}), reports that relatives of the major vault protein from phages and some bacteria form vault-like particles when they are made in a host bacterium: it says ${quoted(find("host"))}, ${quoted(find("survey"))}, and reports ${quoted(find("eight"))}. Of one phage relative, L05, it reports ${quoted(find("shell"))} at a ${quoted(find("resolution"))}. It calls the family rare, ${quoted(find("rare"))}. Whether such particles form in the organisms themselves, and what they do, is not known: ${quoted(find("not-established"))}. No prokaryotic vault stands on any bench as a species' machine: the particles were made in that host from other organisms' genes. Nothing of the preprint's figures is drawn.`;
+}
+
+/** The panel of the vault (a kind with an identity of its own: the Gene Ontology has no term for it): each footing in its own words. */
+function describeVault(catalogue, species, item, scene, level) {
+  const entry = item.entry, kind = item.kind, vault = entry.gathered.vault, gathered = entry.gathered;
+  const group = catalogue.groupById.get(item.group), where = speciesLabel(scene, species);
+  const rows = Object.entries(vault.proteins);
+  const records = recordLines(catalogue, item, scene);
+  const levels = levelsOf(item);
+  const portal = vault.reference_portal;
+  const named = [];
+  if (vault.footings.record) named.push(`By the record: the Complex Portal's entry ${portal.id}, “${portal.name}”, lists ${asList(rows.filter(([, row]) => row.tier === "part by record").map(([id, row]) => `${row.entry?.gene || id}${row.copies ? ` (${number(row.copies)} copies)` : " (no number of copies given)"}`))} and ${number(portal.others.length)} vault RNAs, named by their RNAcentral identifiers (${portal.others.join(", ")}); RNAcentral itself is not read. UniProt's reviewed entries for the same proteins state the particle in lines of their own, each with the experiment or the similarity it cites.`);
+  if (vault.footings.entry) {
+    const accessions = rows.filter(([, row]) => row.tier.startsWith("named by a reviewed entry")).map(([id]) => id);
+    if (accessions.length) named.push(`Named by a reviewed entry, by similarity or with citations: UniProt's reviewed ${accessions.length === 1 ? "entry" : "entries"} ${asList(accessions)} name the vault particle in their own lines, each line with the evidence it carries (below). That is firmer than a family alone and weaker than a record; the proteins are not called parts.`);
+  }
+  if (vault.footings.family) {
+    const candidates = rows.filter(([, row]) => row.tier === "candidate by family").map(([id, row]) => `${row.entry?.gene || id} (${asList(row.marks || [])})`);
+    named.push(`By family alone: ${asList(candidates)} ${candidates.length === 1 ? "carries" : "carry"} the signature of the major vault protein family (${vault.signatures.family}) or PARP4's marker domain (${vault.signatures.parp4}), as marked. A candidate is a candidate. A signature not found is not an absence: ${where}'s table was looked in, and that says what it holds.`);
+  }
+  const facts = [["Named by", named.join(" ")]];
+  const hedge = rows.flatMap(([, row]) => row.entry?.lines || []).find((line) => /may play a role/.test(line.says));
+  facts.push(["What it does", `Not known. ${hedge ? `UniProt's own lines are hedged: “${(/(which is [^()]*may play a role[^()]*)/.exec(hedge.says) || [, hedge.says])[1].trim()}”. ` : ""}The preprint says ${quoted(vault.preprint.statements.find((value) => value.id === "function"))}.`]);
+  const perCell = vault.preprint.statements.find((value) => value.id === "per-cell");
+  facts.push(["How many", species === vault.reference_portal?.species && perCell ? `${quoted(perCell)}: a prediction the preprint cites from another work, not a measured count.` : "No count in hand for this species"]);
+  const own = vault.structure.own;
+  const sizeLine = sizeWords(catalogue, item.size, { organism: null });
+  facts.push(["How big", [vaultSizes(vault, sizeLine, scene), "None of the three is hidden; they differ in what they measure."].join(" ")]);
+  if (shapeFact(item, scene, species)) facts.push(shapeFact(item, scene, species));
+  if (!own && item.size) {
+    const kept = vault.structure.left_out;
+    facts.push(["A structure of its own", `Of the ${vault.structure.entries_read} vault-related entries of the Protein Data Bank read on ${vault.structure.asked}, ${kept.length ? `the ones of ${where}'s own organism are ${asList(kept.map((value) => value.entry))}, ${kept.length === 1 ? "which is a fragment or a part" : "which are fragments or parts"} of the particle, none taken for it` : `none is of ${where}'s own organism`}. The size and shape are those of a vault of the ${speciesLabel(scene, vault.reference_portal?.species).toLowerCase()}, measured from Protein Data Bank entry ${item.size.entry.split("-assembly")[0]}${gathered.proteins?.length ? `; ${where}'s protein rests on the footing said above` : ""}.`]);
+  }
+  facts.push(["A preprint on prokaryotic vaults", preprintWords(vault)]);
+  facts.push(["Its proteins", `${number(rows.length)} in ${where}'s table, each on its own footing (below)${gathered.in_atlas ? "; every one is in the Protein atlas" : ""}`]);
+  const geneOf = (id, row) => row.entry?.gene || gathered.proteins.find((value) => value[0] === id)?.[1] || id;
+  const items = rows.map(([id, row]) => {
+    const info = gathered.proteins.find((value) => value[0] === id) || [id, null, ""];
+    return { label: geneOf(id, row), detail: [info[2], id, row.tier].filter(Boolean).join(" · "), lines: vaultFooting(id, row, vault, where, scene), links: ACCESSION.test(id) ? [{ text: `UniProt ${id}`, url: `https://www.uniprot.org/uniprotkb/${id}/entry` }] : [] };
+  });
+  // Where the record gives a number of copies of one of its proteins and that protein's own reviewed entry gives another, both stand
+  // on that protein's line, each in its source's words (the dossier finds the protein by the record's own name for it).
+  const said = portal?.copies_said;
+  if (said?.protein && vault.footings.record) {
+    items.find((value) => value.links[0]?.text === `UniProt ${said.protein}`)?.lines.push(`Copies of ${said.of} in a vault, two curated sources: the Complex Portal's entry says “${said.says}”${said.entry ? `; UniProt's entry says “${said.entry.says}”` : ""}. Both stand, each in its source's words; the page reconciles nothing.`);
+  }
+  const sections = [
+    { title: "What Cells models of it", note: "Only what a record says.", items: records.map(({ label, detail, lines }) => ({ label, detail, lines })) },
+    { title: "Its proteins, each on its own footing", note: "Three footings, never mixed: by the record, named by a reviewed UniProt entry, and by family alone. Only the record says part.", items },
+    vault.structure.left_out.length && !own ? { title: `Entries of ${where}'s own that are not the particle`, items: vault.structure.left_out.map((value) => ({ label: `PDB ${value.entry}`, detail: `“${value.title}”`, lines: [value.why] })) } : null,
+    levels ? { title: "How it is drawn", items: levels.map((value) => ({ label: `${value.id}. ${value.label}${value.id === level ? " (shown)" : ""}`, lines: [value.says] })) } : null,
+  ].filter((section) => section?.items?.length);
+  const keys = [...(item.size?.sources || []), ...(gathered.vault.sources || []), vault.preprint.source].filter((key, index, all) => key && all.indexOf(key) === index);
+  sections.push({ title: "Sources and licences", items: keys.map((key) => catalogue.source(key)).filter(Boolean).map(sourceItem) });
+  const doors = [...doorsOf(item, scene, species), ...rows.filter(([id]) => (gathered.proteins.find((value) => value[0] === id))).slice(0, 4).map(([id, row]) => ({ label: `Show ${geneOf(id, row)} in the Protein atlas`, lens: "proteins", show: "own", find: id }))];
+  return {
+    id: item.id, label: item.label, kind: "machine", eyebrow: `${group?.label || "Machines"} · ${where}`, swatch: item.sized ? SWATCH.sized : SWATCH.card,
+    chips: [{ label: "Illustration", title: "Drawn as a simple shape from a published size, or as a card where no size is in hand: not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }, { label: "Function not known", title: "UniProt's lines are hedged and the preprint says the function remains unknown" }],
+    plain: kind.plain,
+    note: records.length ? `What Cells models of it: ${records.map((line) => `${line.label.split(",")[0]}: ${line.detail}`).join("; ")}.` : null,
+    facts, sections, doors,
+    sources: [...records.map((line) => line.source).filter(Boolean), { path: "visualizer/data/catalogue/catalogue.json", where: "generated by visualizer/tools/build_catalogue.py" }],
+    keywords: [kind.plain, ...(gathered.proteins || []).map(([pid, gene]) => `${pid} ${gene || ""}`)].join(" "),
+  };
+}
+
 /** The panel of a machine of the species shown, by its page id; null for an id the catalogue does not hold. */
 export function describe(catalogue, species, id, { scene = catalogue?.scene, level = null } = {}) {
   if (!catalogue || !id) return null;
@@ -273,6 +438,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
     };
   }
   const entry = item.entry, kind = item.kind;
+  if (entry.gathered?.vault) return describeVault(catalogue, species, item, scene, level);
   const facts = [];
   const gathered = entry.gathered || {}, pick = gathered.pick, family = gathered.route?.by === "family";
   const reference = family ? speciesLabel(scene, gathered.route.reference) : null;
@@ -308,7 +474,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
   else if (entry.gathered) facts.push(["Its proteins", `${number(tiers[0].items.length + tiers[1].items.length)} parts and ${number(tiers[2].items.length)} named with it alone, by the Gene Ontology and UniProt (its dossier)${entry.gathered.in_atlas && entry.gathered.proteins.length ? "; every one is in the Protein atlas" : ""}`]);
   else facts.push(["Its proteins", `${where}'s own data marks no set of proteins for it`]);
   const records = recordLines(catalogue, item, scene);
-  const sources = (entry.size?.sources || []).concat(entry.count?.sources || [], entry.named?.sources || [], entry.also_named?.sources || [], (entry.per_cell || []).map((value) => value.source), pick?.source ? [pick.source] : [], gathered.elsewhere?.source ? [gathered.elsewhere.source] : [], gathered.paxdb?.source ? [gathered.paxdb.source] : []).filter((key, index, all) => key && all.indexOf(key) === index);
+  const sources = (entry.size?.sources || []).concat(entry.count?.sources || [], entry.named?.sources || [], entry.also_named?.sources || [], (entry.per_cell || []).map((value) => value.source), pick?.source ? [pick.source] : [], gathered.elsewhere?.source ? [gathered.elsewhere.source] : [], gathered.paxdb?.source ? [gathered.paxdb.source] : [], gathered.forms?.source ? [gathered.forms.source] : []).filter((key, index, all) => key && all.indexOf(key) === index);
   const geneOf = new Map((gathered.proteins || []).map((row) => [row[0], row[1] || row[0]]));
   const sections = [
     { title: "What Cells models of it", note: "Only what a record says.", items: [...records.map(({ label, detail, lines }) => ({ label, detail, lines })), ...(entry.closer ? [{ label: "Its closer view", lines: [entry.closer.modelled] }] : [])] },
@@ -322,6 +488,7 @@ export function describe(catalogue, species, id, { scene = catalogue?.scene, lev
     ] : []),
     gathered.own_mark ? { title: `Its proteins by ${where}'s own mark`, items: [{ label: `${gathered.own_mark.mark}: ${gathered.own_mark.value}`, lines: [`${number(gathered.own_mark.marked)} of ${where}'s proteins carry the mark; ${number(gathered.own_mark.both)} of them are candidates too; ${number(gathered.own_mark.marked_only)} carry the mark only, and ${number(gathered.own_mark.candidates_only)} are candidates only.`] }] } : null,
     gathered.sub_assemblies ? { title: "Sub-assemblies its records name (the Gene Ontology's narrower terms)", items: Object.entries(gathered.sub_assemblies).map(([name, parts]) => ({ label: name, detail: parts.map((id) => geneOf.get(id) || id).join(", ") })) } : null,
+    gathered.forms ? formsSection(gathered.forms, where, geneOf) : null,
     gathered.fractions ? { title: "Fractions, in UniProt's words", items: Object.entries(gathered.fractions).map(([name, parts]) => ({ label: name, detail: parts.map((id) => geneOf.get(id) || id).join(", ") })) } : null,
     gathered.subunit?.length ? { title: "Copies, in UniProt's words (its SUBUNIT comments)", note: "UniProt's sentences on how many copies of a protein go together: not a count of copies in a cell.", items: gathered.subunit.map(([gene, id, says]) => ({ label: gene || id, lines: says.map((line) => `“${line}”`) })) } : null,
     gathered.paxdb ? { title: `PaxDb's abundance, in parts per million`, note: `In its dataset “${gathered.paxdb.dataset}”: parts per million of the dataset's protein molecules, as that database gives them; no count of copies in a cell.`, items: gathered.paxdb.items.map(([id, gene, ppm]) => ({ label: gene || id, detail: `${ppm} ${gathered.paxdb.unit}` })) } : null,
@@ -389,16 +556,22 @@ function elsewhere(catalogue, species, id, scene) {
     };
   }
   const others = catalogue.speciesWith(id).map((other) => speciesLabel(scene, other));
+  // A kind with an identity of its own (the vault) says what was looked for in the species and that a signature not found is not an
+  // absence: only where its dossier looked. A species nothing was looked in (one with no bench gathered) is said nothing of the kind.
+  const lookedIn = kind?.looked?.[species];
+  // A species the catalogue holds no bench for (one shown for the units its atlas finds): nothing was gathered, so the panel says
+  // that, and not that the machine is "not in" the species.
+  const where = speciesLabel(scene, species), gathered = catalogue.species.includes(species);
   return {
     id,
     label: kind?.label || unit.label,
     kind: "machine",
-    eyebrow: `Machines · not in ${speciesLabel(scene, species)}`,
-    chips: [{ label: `Not listed for ${speciesLabel(scene, species)}` }],
+    eyebrow: lookedIn ? `Machines · not shown for ${where}` : gathered ? `Machines · not in ${where}` : `Machines · no bench for ${where} yet`,
+    chips: [{ label: lookedIn ? `Not on ${where}'s bench` : gathered ? `Not listed for ${where}` : `No bench gathered for ${where}` }],
     plain: kind?.plain || unit.plain,
-    note: others.length ? `The catalogue lists it for ${others.join(", ").replace(/, (?=[^,]*$)/, " and ")}: choose one of them in the species switch.` : "No species of the catalogue lists it.",
-    facts: [],
-    sections: [],
+    note: `${gathered ? "" : `No bench of machines has been gathered for ${where} yet: nothing here says whether it has this one. `}${others.length ? `The catalogue lists it for ${others.join(", ").replace(/, (?=[^,]*$)/, " and ")}: choose one of them in the species switch.${lookedIn && kind?.absence ? ` ${kind.absence}` : ""}` : "No species of the catalogue lists it."}`,
+    facts: lookedIn ? [["What was looked for", lookedIn.words]] : [],
+    sections: lookedIn ? [{ title: "Sources and licences", items: lookedIn.sources.map((key) => catalogue.source(key)).filter(Boolean).map(sourceItem) }] : [],
   };
 }
 
@@ -426,6 +599,13 @@ export function sections(catalogue, species) {
  */
 export function doorWords(tier, item, scene) {
   const name = /^[A-Z][a-z]/.test(item.label) ? `${item.label.charAt(0).toLowerCase()}${item.label.slice(1)}` : item.label;
+  if (item.kind?.identified_by === "vault") {
+    if (tier === "part by record") return `It is a part, by the Complex Portal's record, of the ${name}`;
+    if (tier === "named by a reviewed entry, by similarity") return `It is named with the ${name} in UniProt's reviewed entry, by similarity to another species' protein`;
+    if (tier === "named by a reviewed entry, citing publications") return `It is named with the ${name} in UniProt's reviewed entry, which cites publications for some of its lines`;
+    if (tier === "candidate by family") return `It is a candidate, by its family, for a part of the ${name}`;
+    return null;
+  }
   if (tier === "part") return `It is a part of the ${name}`;
   if (tier === "part by keyword") return `It is a part, by UniProt's keyword, of the ${name}`;
   if (tier === "named") return `It is named with the ${name}`;

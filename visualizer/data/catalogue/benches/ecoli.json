@@ -768,6 +768,49 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-3807",
+       "50S large ribosomal subunit",
+       34,
+       34,
+       55,
+       {
+        "most": 1,
+        "n_most": 33,
+        "except": [
+         [
+          "P0A7K2",
+          4
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ],
+      [
+       "CPX-3802",
+       "30S small ribosomal subunit",
+       21,
+       21,
+       55,
+       {
+        "most": 1,
+        "n_most": 21,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "6BU8",
      "title": "70S ribosome with S1 domains 1 and 2 (Class 1)",
@@ -1652,6 +1695,180 @@
       "P0A8T7",
       "P0A800"
      ]
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-4881",
+       "DNA-directed RNA polymerase holoenzyme complex, Sigma70 variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-4883",
+       "DNA-directed RNA polymerase holoenzyme complex, SigmaS variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-4881",
+         "E. coli"
+        ]
+       ]
+      ],
+      [
+       "CPX-4884",
+       "DNA-directed RNA polymerase holoenzyme complex, Sigma54 variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-4881",
+         "E. coli"
+        ]
+       ]
+      ],
+      [
+       "CPX-4885",
+       "DNA-directed RNA polymerase holoenzyme complex, SigmaE variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ],
+      [
+       "CPX-4886",
+       "DNA-directed RNA polymerase holoenzyme complex, SigmaF variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-4881",
+         "E. coli"
+        ]
+       ]
+      ],
+      [
+       "CPX-4887",
+       "DNA-directed RNA polymerase holoenzyme complex, SigmaH variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-4881",
+         "E. coli"
+        ]
+       ]
+      ],
+      [
+       "CPX-4888",
+       "DNA-directed RNA polymerase holoenzyme complex, Sigma fecI variant",
+       5,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A7Z4",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-4881",
+         "E. coli"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
     },
     "pick": {
      "entry": "7MKP",
@@ -2901,7 +3118,47 @@
        "F(0) has three main subunits: a(1), b(2) and c(10-14)."
       ]
      ]
-    ]
+    ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-4022",
+       "ATP synthase complex",
+       8,
+       8,
+       8,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0ABA0",
+          2
+         ],
+         [
+          "P0ABB0",
+          3
+         ],
+         [
+          "P0ABB4",
+          3
+         ],
+         [
+          "P68699",
+          10
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    }
    },
    "proteins": {
     "mark": "complex",
@@ -3273,6 +3530,29 @@
       ]
      ],
      "source": "gathered:ecoli:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-1096",
+       "Protein-conducting channel SecYEG complex",
+       3,
+       3,
+       4,
+       {
+        "most": 2,
+        "n_most": 3,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
     }
    }
   },
@@ -4089,6 +4369,34 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2104",
+       "HslUV protease complex",
+       2,
+       2,
+       2,
+       {
+        "most": 6,
+        "n_most": 1,
+        "except": [
+         [
+          "P0A7B8",
+          12
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "1HT1",
      "title": "Nucleotide-Dependent Conformational Changes in a Protease-Associated ATPase HslU",
@@ -4486,6 +4794,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-5046",
+       "FtsH-HflKC complex",
+       3,
+       3,
+       3,
+       {
+        "most": 6,
+        "n_most": 3,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "7VHP",
      "title": "Structural insights into the membrane microdomain organization by SPFH family proteins",
@@ -5251,6 +5582,34 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-1923",
+       "BAM complex",
+       5,
+       5,
+       5,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P0A937",
+          2
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "9H89",
      "title": "BAM-hinge (LVPR) suppressor (T434A)",
@@ -5368,6 +5727,34 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2113",
+       "GroEL-GroES complex",
+       2,
+       2,
+       2,
+       {
+        "most": 7,
+        "n_most": 1,
+        "except": [
+         [
+          "P0A6F5",
+          14
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "8BKZ",
      "title": "GroEL:GroES-ATP complex under continuous turnover conditions",
@@ -5446,6 +5833,39 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005546": "Taken from a paralogous complex of this species."
+     },
+     "items": [
+      [
+       "CPX-3176",
+       "Endopeptidase ClpXP complex",
+       2,
+       2,
+       2,
+       {
+        "most": 12,
+        "n_most": 1,
+        "except": [
+         [
+          "P0A6G7",
+          14
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0005546",
+       [
+        [
+         "CPX-3175",
+         "E. coli"
+        ]
+       ]
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "8E91",
      "title": "Cryo-EM structure of substrate-free ClpX.ClpP",
@@ -5716,6 +6136,24 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0005547": "Put together by the Complex Portal's curators from the literature."
+     },
+     "items": [
+      [
+       "CPX-243",
+       "Respiratory chain complex I",
+       13,
+       13,
+       13,
+       null,
+       "ECO:0005547",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "7Z7S",
      "title": "Complex I from E. coli, LMNG-purified, under Turnover at pH 6, Closed state",
@@ -5826,6 +6264,29 @@
       ]
      ]
     ],
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-1931",
+       "Respiratory chain complex II",
+       4,
+       4,
+       4,
+       {
+        "most": 3,
+        "n_most": 4,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "2WDQ",
      "title": "E. coli succinate:quinone oxidoreductase (SQR) with carboxin bound",
@@ -5903,6 +6364,29 @@
       ]
      ],
      "source": "gathered:ecoli:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2102",
+       "Cytochrome bo3 ubiquinol oxidase complex",
+       4,
+       4,
+       4,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
     },
     "pick": {
      "entry": "7N9Z",
@@ -6078,6 +6562,34 @@
       "P28632"
      ]
     },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-1926",
+       "DNA polymerase III clamp loader complex",
+       5,
+       5,
+       6,
+       {
+        "most": 1,
+        "n_most": 4,
+        "except": [
+         [
+          "P06710",
+          3
+         ]
+        ],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
+    },
     "pick": {
      "entry": "9OYH",
      "title": "Structure of the E. coli clamp loader DnaX-complex loading beta-clamp onto 10-nt gapped DNA in state 1 the DNA recognition state",
@@ -6193,6 +6705,29 @@
       ]
      ],
      "source": "gathered:ecoli:paxdb"
+    },
+    "forms": {
+     "evidence": {
+      "ECO:0000353": "Seen in this species' own proteins (a physical interaction)."
+     },
+     "items": [
+      [
+       "CPX-2197",
+       "Exodeoxyribonuclease V complex",
+       3,
+       3,
+       3,
+       {
+        "most": 1,
+        "n_most": 3,
+        "except": [],
+        "not_given": 0
+       },
+       "ECO:0000353",
+       []
+      ]
+     ],
+     "source": "gathered:ecoli:complex_portal"
     },
     "pick": {
      "entry": "7MR0",

@@ -30,6 +30,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from cells.definitions.specs import ConfigError
+from cells.execution import energy_check as energy
 from cells.execution import phases
 from cells.registry.models import get_model
 
@@ -200,7 +201,14 @@ class DeviceRowChecks:
                 "diagnostics; they differ in "
                 + ", ".join(sorted(set(host) ^ set(model.DEVICE_DIAGNOSTICS)))
             )
-        constants = jax.device_put(model.device_check_constants(spec), device)
+        constants = model.device_check_constants(spec)
+        if energy.selected(spec):  # Today's two leaves, the registration's cap, and the switch.
+            constants = energy.StepDoubledConstants(
+                constants.material_atol,
+                constants.energy_rtol,
+                np.asarray(spec.energy_check.integration_error_cap, dtype=np.float64),
+            )
+        constants = jax.device_put(constants, device)
         return cls(spec, model, device, constants, tuple(host), tuple(model.DEVICE_CHECKS[1:-1]))
 
     def compile(self, start, history, parameters):

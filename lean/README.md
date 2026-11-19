@@ -31,6 +31,8 @@ The last column below gives the experimental result and what it can test. **Part
 | [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | **Partial evidence.** NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/) |
 | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | Proved | Checked | **Partial evidence.** For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html) |
 | [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | Proved | Failed | **Partial evidence.** Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712) |
+| [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) | Proved | Checked | **Partial evidence.** Accessible fluorescent lipid washed out of 310 protein-free vesicles at 0.0108 ± 0.0045 s⁻¹ (24 °C, mean ± SD). The retained fraction was 49.5 ± 8.5%. In a separate sterol assay, adding more equal-sized vesicles increased transfer at 25 °C. The insertion constant fitted at 35 °C was (6.4 ± 0.6) × 10⁷ M⁻¹ s⁻¹ per molar vesicles. Individual vesicle size, free monomer activity and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8) · [Estronca et al., Fig. 2 and Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC2098731/) |
+| [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | Proved | Checked | **Measurement sought.** Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions. |
 | [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | **Partial evidence.** A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811) |
 | [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | **Not assessable.** Observed -18 mV. Predicted -14.59 mV. The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized. [Bonzanni et al. (2020)](https://doi.org/10.1242/bio.048553) |
 
@@ -96,6 +98,8 @@ On the first build, fetch the compiled dependencies for the imported modules. Su
 ```bash
 lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
+  Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
+  Mathlib.Data.Nat.Factorial.Basic Mathlib.Tactic.Positivity \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -210,6 +214,12 @@ For closed reactions, the driver reads the declaration, checks its correspondenc
 "$cells_python" -B -m pytest -q -p no:cacheprovider \
   ../tests/unit/test_species_reactions_halfstep.py::test_the_bookings_are_exact_on_random_states \
   '../tests/unit/test_species_reactions_refusals.py::test_definition_refusals[unbalanced]'
+```
+
+For assembly exchange, compare entry and exit rates at every three-species composition through eight molecules. Two seeded lineages check the heat and material booked through growth, division and loss of the last molecule. The driver also compares the first species’ share during growth with equal and unequal leave constants. [Assembly driver](checks/reservoir_exchange.py) · [Results and lipid measurements](PROGRESS.md#19-november-2026--assembly-reservoir-exchange)
+
+```bash
+"$cells_python" -B checks/reservoir_exchange.py
 ```
 
 For the tissue balance, the driver follows A and B through one 50 ms composite step on twelve finite extracellular compartments. It compares the change in their stored amounts at nodes 2 through 5 with the signed transfers on the two boundary faces. Each species also has to account for its share of the local conversion. The same comparison runs on the full chain and with the largest boundary face reversed in the recorded transfers. The existing passive-chain test checks the trajectory against the independent split-step reference. [Regional driver](checks/regional_balance.py) · [Reference comparison](../tests/unit/test_species_reactions_composition.py#L84)

@@ -487,9 +487,16 @@ cells-trace { display: grid; gap: 4px; }
 .with-species .switch, .with-species .species, .with-species .pill-button { flex: none; }
 .with-species .brand { flex: none; white-space: nowrap; }
 @media (max-width: 1180px) { .with-species .stamp { display: none; } }
-/* Where the words are wider than that (more species, or a fallback font), the viewer asks for the same, by measure. */
+/* Where the words are wider than that (more species, or a fallback font), the viewer asks for a tighter bar, by measure:
+   no date, the switch's own word ("Species") out of sight and still read out, and the first tab by its short name
+   where a model system stands in it. The Experiments tab keeps its name on a wide window: it is "Runs" on a phone only.
+   (Until 19 November 2026 the tight bar also drew it by its short name, so at some widths the tab read "Runs" in the
+   views that have a species switch and "Experiments" in the others, and changed when it was pressed.) */
 .with-species[data-tight="2"] .switch .long { display: none; }
 .with-species[data-tight="2"] .switch .short { display: inline; }
+.with-species[data-tight="2"] .switch [data-lens="experiments"] .long { display: inline; }
+.with-species[data-tight="2"] .switch [data-lens="experiments"] .short { display: none; }
+.with-species[data-tight="2"] .species-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .with-species[data-tight="2"] .stamp { display: none; }
 /* A model system shown in the Experiments tab's place: its stamp is shortened clear of the card at the left. On a phone no
    stamp is shown, and the bar's end holds only the List, which stays whole. */

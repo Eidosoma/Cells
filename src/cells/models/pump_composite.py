@@ -95,6 +95,28 @@ def _and(a, b):
     return a & b
 
 
+def _merged(old, new, *, xp):
+    """Two (values, mask) records of one FACTOR_RECORD field, the later taking its own routes
+    (B1′); None is no record."""
+    if old is None:
+        return new
+    values, mask = new
+    return xp.where(mask, values, old[0]), mask | old[1]
+
+
+def _recorded(state, records, *, xp):
+    """state with each FACTOR_RECORD field set to its routes' applied factors, elsewhere kept
+    (B1′'s exact record); unchanged without a record (static)."""
+    if not records:
+        return state
+    return state._replace(
+        **{
+            field: xp.where(mask, values, getattr(state, field))
+            for field, (values, mask) in records.items()
+        }
+    )
+
+
 def _checked_above(row, p, active, *, xp):
     """The domain of a row whose actual state was checked beforehand (retirement, S5 §3.5)."""
     return xp.asarray(True)
@@ -607,6 +629,7 @@ def structure_errors(inner, operators):
         for name in op.STATE_RESETS:
             if name not in inner.STATE_FIELDS:
                 errors.append(f"{op.LAW_ID} resets {name}, which is not inner state")
+    errors.extend(rate_route_errors(operators))
     # Closers of activity masks (S5 design §2): masks combine by conjunction, a mask has
     # closers or a provider, never both, and a closer counts as the mask's provider for
     # CONFLICTS_VIEW (an operator reading the mask on the declared layout is refused).
@@ -882,6 +905,67 @@ def _kinds_lifecycle(inner, kinds):
     return {k: check(kind) for k, kind in zip(kinds, bound, strict=True)}
 
 
+def rate_route_errors(operators):
+    """B1′'s refusal of an ordered operator list (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a
+    source's static routes (RATE_ROUTES) go to routable controls of their targets
+    (ROUTABLE_CONTROLS). A route to a law the composition does not hold is idle. The order of a
+    declared route is the definition's (rate_route_definition_errors), so a composition whose
+    source declares no route keeps any order."""
+    position = {op.LAW_ID: k for k, op in enumerate(operators)}
+    errors = []
+    for op in operators:
+        for law, name in op.RATE_ROUTES:
+            if law in position and operators[position[law]].ROUTABLE_CONTROLS.get(name) != "rate":
+                errors.append(
+                    f"{op.LAW_ID} routes a rate factor to {law}'s {name}, which is not one of its "
+                    "routable controls (ROUTABLE_CONTROLS)"
+                )
+    return errors
+
+
+def rate_route_definition_errors(pairs):
+    """B1′'s refusals of a definition's declared rate routes ((operator, declaration) in
+    declared order; each source's declared_rate_routes): a route that is not one of its source's
+    RATE_ROUTES, to a law the composition does not hold, or to a target declared before its
+    source. The last keeps the split order (first halves in declared order, second halves
+    reversed) symmetric about the target."""
+    position = {op.LAW_ID: k for k, (op, _) in enumerate(pairs)}
+    errors = []
+    for k, (op, declaration) in enumerate(pairs):
+        for law, name in op.declared_rate_routes(declaration):
+            if (law, name) not in op.RATE_ROUTES:
+                errors.append(f"{op.LAW_ID} declares a route to {law}'s {name}, not one it routes")
+            elif law not in position:
+                errors.append(
+                    f"{op.LAW_ID} routes a rate factor to {law}, which the composition does not "
+                    "hold"
+                )
+            elif position[law] < k:
+                errors.append(
+                    f"{op.LAW_ID} routes a rate factor to {law}, which precedes it: a route's "
+                    "source runs before its target, so the split's halves are symmetric about it"
+                )
+    return errors
+
+
+def rate_routes(operators):
+    """{target: ((source, field), ...)} of an ordered operator list's split targets with a route
+    source, the sources in declared order (static; empty without a route source)."""
+    out = {}
+    for target in operators:
+        if not (target.SPLIT and target.ROUTABLE_CONTROLS):
+            continue
+        routes = tuple(
+            (source, name)
+            for source in operators
+            for law, name in source.RATE_ROUTES
+            if law == target.LAW_ID and name in target.ROUTABLE_CONTROLS
+        )
+        if routes:
+            out[target] = routes
+    return out
+
+
 def _kinds_beside_closer(op, kinds, blocked, *, bound=None, gated=True):
     """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on, and,
     where no closer is declared (`gated` false: the core's presence gate is off), beside each
@@ -909,9 +993,9 @@ def _kinds_beside_closer(op, kinds, blocked, *, bound=None, gated=True):
         elif reason == "hosts":
             out.append(
                 f"{op.LAW_ID} opens, closes or retires slots, and the kind {k}'s entity axes "
-                f"({', '.join(fields)}) have no host the core's presence gate reads (cell, outside "
-                "node, patch or junction slots, or an own axis's declared host), so it cannot "
-                "close their entities"
+                f"({', '.join(fields)}) have no host the core's presence gate reads (@3's slots "
+                "of cells, outside nodes, patches, junctions, channel populations or faces, or an "
+                "own axis's declared host), so it cannot close their entities"
             )
         elif reason is None and not gated:
             entities = kind_registry.entity_axes(bound[k]) if k in (bound or {}) else ("?",)
@@ -1032,6 +1116,8 @@ class Composition:
         self.providers = tuple(op for op in operators if op.VIEW_FIELDS)
         self.factors = tuple(op for op in operators if op.CONTROL_FACTORS)
         self.factored = tuple(dict.fromkeys(k for op in self.factors for k in op.CONTROL_FACTORS))
+        # B1′: each routed split target's (source, field) routes (static: none without a source).
+        self.rate_routes = rate_routes(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
         self.process_operator = next((op for op in operators if op.PROCESS), None)
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
@@ -1342,6 +1428,9 @@ class Composition:
             self.control_view(control, current, p, xp=xp),
             self.view(p, current, xp=xp),
         )
+        if self.factors:  # Static (B1′): the factors' ranges and records at the control view.
+            checked, current = self._control_factor_checks(current, p, xp=xp)
+            valid = _and(valid, checked)
         inputs = self.inner.barrier(inputs, xp=xp)
         if process is None:
             moved, ok = self.inner.checked_step(inputs[0], dt, inputs[1], inputs[2], p.active)
@@ -1394,7 +1483,44 @@ class Composition:
         keywords = self._inner_keyword(op)
         if self._passes_view(op):
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
+        routes = self.rate_routes.get(op)
+        if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
+            control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
+            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            return _recorded(new, records, xp=xp), _and(ok, routed)
         return op.half_step(state, h, control, p, xp=xp, **keywords)
+
+    def _routed_control(self, op, routes, state, control, p, *, xp):
+        """(control with each of op's routed fields times its sources' factors, in declared
+        order, from `state`; their validity; the sources' exact records of the factors applied,
+        {FACTOR_RECORD field: (values, mask)}) for B1′'s rate routes. A source that declares no
+        route on a field in this definition gives None and leaves it as scheduled (static)."""
+        fields, valid, records = {}, None, {}
+        for source, name in routes:
+            out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp)
+            if out is None:
+                continue
+            factor, ok = out
+            fields[name] = fields.get(name, getattr(control, name)) * factor
+            valid = _and(valid, ok)
+            if source.FACTOR_RECORD:
+                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp)
+                records[source.FACTOR_RECORD] = _merged(
+                    records.get(source.FACTOR_RECORD), record, xp=xp
+                )
+        return (control._replace(**fields) if fields else control), valid, records
+
+    def _control_factor_checks(self, current, p, *, xp):
+        """(validity, current with its records) of the factor sources at the control view (B1′):
+        each one's factor_valid, and each FACTOR_RECORD filled with the factors applied there
+        (static: a source without either changes nothing)."""
+        valid, records = None, {}
+        for op in self.factors:
+            valid = _and(valid, op.factor_valid(current, p, xp=xp))
+            if op.FACTOR_RECORD:
+                record = op.factor_record(current, p, None, None, xp=xp)
+                records[op.FACTOR_RECORD] = _merged(records.get(op.FACTOR_RECORD), record, xp=xp)
+        return valid, _recorded(current, records, xp=xp)
 
     def _end_domain(self, state, p, operators, *, xp):
         """Domain of the step's end state: the inner one at the view if a split moved it."""
@@ -1534,7 +1660,7 @@ class Composition:
             )
         species_registry.check_definition(spec)
         pairs = [(op, d) for op, d, _ in entries(spec)]
-        scoped = scope_errors(self.inner, pairs, spec)
+        scoped = scope_errors(self.inner, pairs, spec) + rate_route_definition_errors(pairs)
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
         # The operators' in-step writers beside declared kinds (held_row_errors,

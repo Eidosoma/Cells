@@ -47,7 +47,8 @@ const SECTION = "## What rests on non-commercial or unlicensed sources";
 // A program given out under an academic licence, or for academic users only, is of the same
 // class: its terms do not allow a commercial project to run it. A tool whose terms could not
 // be read is held as one that states none.
-const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b/;
+// Data given out for research and education only are of the same class: Xenbase's terms, read on 19 November 2026.
+const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b|^For research and education only\b/;
 const NO_TERMS = /^(No open licence stated|no licence stated|no open licence|Terms not read\b)/;
 const PERMISSIVE = /^CC BY\b(?!-NC)|^CC0\b|[Nn]o restrictions?\b|places no restriction|[Ii]mposes no restrictions|no use restrictions|^Public domain|BSD 3-Clause|^Bibliographic facts only/;
 function classOf(licence) {
@@ -57,7 +58,7 @@ function classOf(licence) {
 }
 
 // Which note speaks for which record: by the species or the subject the record is of.
-const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md", mouse: "docs/MOUSE.md" };
+const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md", mouse: "docs/MOUSE.md", xenopus: "docs/XENOPUS.md" };
 // The register of the dependences that the user's ruling covers, by species: a tool or a
 // rule system that is not permissive, whose results a permissive database gives out and a
 // record rests on. The user ruled on 15 November 2026 that such a value stands on the
@@ -85,7 +86,33 @@ const NAMED = {
   thalecress: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
   // The mouse's line, added with its data on 16 November 2026: the same eight tools, none new.
   mouse: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
+  // The frog's line, added with its data on 19 November 2026: seven of the mouse's tools (no frog place rests on big-PI), and
+  // Xenbase, whose nomenclature UniProt's entries name as the source of the frog's gene names. It was decided on 19 November
+  // 2026 that the names are used as read from UniProt, with Xenbase named behind them, and that nothing else of Xenbase is used.
+  xenopus: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", Xenbase: "UniProt" },
 };
+// The register of the sources of no stated terms that a record may still rest on, each by a decision of its own: by
+// species, and by the source's key in the species' scan record (data/proteins/<species>/interproscan.json). It was decided
+// on 18 November 2026 that a database whose provider states no terms may be used for the planarian's InterProScan scan
+// where it is publicly available; CDD is the one such database the scan ran. A second source of that class behind a value
+// fails this file, so that it is put to the user before it is listed here; one listed and no longer in its record fails
+// it too. The dossiers and the catalogue copy the record's sources as `scan_<key>` and `gathered:<species>:scan_<key>`;
+// a species' shelves copy one as a source of their own that names the record's key in `scan` (since 19 November 2026,
+// when it was decided that the planarian's shelves take the scan's added entries).
+const DECIDED = {
+  planarian: { cdd: { name: "CDD", decided: "18 November 2026" } },
+};
+/**
+ * A source that is not permissive and stands where DECIDED lets it, with the record's terms: a scan record's own, or a
+ * copy of one, by its key there (`cdd`, as a species' shelves name it in `scan`), a dossier's (`scan_cdd`) or the
+ * catalogue's (`gathered:<species>:scan_cdd`).
+ */
+function decidedSource(species, key, source, records = scanRecords) {
+  const own = /^(?:gathered:[^:]+:)?scan_(\w+)$|^(\w+)$/.exec(String(key))?.slice(1).find(Boolean);
+  const entry = DECIDED[species]?.[own], held = records.get(species)?.sources?.[own];
+  return Boolean(entry && held && held.name === entry.name && held.class === "no stated terms" && source?.class === "no stated terms" && source.licence === held.licence);
+}
+
 // Papers that only a note cites, and that are not permissive: its section names them too.
 const NOTE_ONLY = {
   "docs/SYN3A.md": [["Hutchison", "2016"]],
@@ -107,6 +134,9 @@ const machineFiles = await listed(path.join(DATA, "machines"), isJson);
 // The switch's other entries (schema/ENTRIES.md): cell types of their own files, and model systems.
 const entryFiles = [...(await listed(path.join(DATA, "cells"), isJson)), ...(await listed(path.join(DATA, "models"), isJson))];
 const rel = (file) => path.relative(ROOT, file);
+// The species' scan records (data/proteins/<species>/interproscan.json), by their folders: the register DECIDED is held against them.
+const scanFiles = (await listed(path.join(DATA, "proteins"), (entry) => entry.isDirectory())).map((folder) => path.join(folder, "interproscan.json")).filter((file) => existsSync(file));
+const scanRecords = new Map(await Promise.all(scanFiles.map(async (file) => [path.basename(path.dirname(file)), JSON.parse(await readFile(file, "utf8"))])));
 
 /** A source's class and licence, checked: both there, the class one of three, and the two in agreement. */
 function held(source, where) {
@@ -265,7 +295,7 @@ test("the Machines catalogue: every source has its class, and what names a machi
     const entries = catalogue.entries || (await Promise.all(Object.values(catalogue.benches || {}).map((bench) => json(path.join(DATA, "catalogue", "benches", path.basename(bench.file)))))).flatMap((bench) => bench.entries);
     for (const entry of entries) {
       for (const [name, block] of Object.entries({ named: entry.named, count: entry.count, size: entry.size })) {
-        for (const key of block?.sources || []) assert.equal(catalogue.sources[key]?.class, "permissive", `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
+        for (const key of block?.sources || []) assert.ok(catalogue.sources[key]?.class === "permissive" || decidedSource(entry.species, key, catalogue.sources[key]), `${where}: ${entry.species} ${entry.id}'s ${name} rests on ${key}, which is ${catalogue.sources[key]?.class ?? "not a source"}`);
       }
     }
   }
@@ -329,54 +359,160 @@ test("a species atlas: everything it takes is from a permissive source; a paper 
   }
 });
 
-test("a species' shelves: every mark rests on a permissive source; any other source is a pointer, or a named dependence that says through which permissive source it was read", async () => {
+/**
+ * A species' shelves held to the rules; throws at the first breach, and gives back the sources its note must name. A
+ * source copied from the species' scan record (`scan`, the record's key) is that source with the record's terms and
+ * class, and stands for itself; one that is not permissive stands only by the register DECIDED, as the dossiers' and
+ * the catalogue's copies do (decidedSource). One of share-alike terms is named in the note.
+ */
+function holdShelves(shelves, where, folder, records = scanRecords) {
+  const known = NAMED[shelves.species] || {};
+  const byName = new Map(shelves.sources.map((source) => [source.name, source]));
+  assert.equal(byName.size, shelves.sources.length, `${where}: two sources share a name`);
+  for (const source of shelves.sources) held(source, `${where}: source ${source.name}`);
+  // What was taken is taken from a permissive source that stands for itself.
+  const taken = (source) => source.class === "permissive" && !source.through;
+  const decided = (source) => "scan" in source && decidedSource(shelves.species, source.scan, source, records);
+  for (const source of shelves.sources.filter((item) => "scan" in item)) {
+    const own = records.get(shelves.species)?.sources?.[source.scan];
+    assert.ok(own && own.name === source.name && own.licence === source.licence && own.class === source.class && !source.through, `${where}: ${source.name} is given as the scan record's source ${source.scan}, and is not that source with its terms`);
+    assert.ok(source.class === "permissive" || decided(source), `${where}: ${source.name} is ${source.class} and stands behind the shelves. It is not in the register DECIDED for ${shelves.species}: a source of that class is put to the user before it is listed there`);
+  }
+  for (const [name, mark] of Object.entries(shelves.marks || {})) {
+    // A mark names what it rests on: one or more of the file's sources, or a table of
+    // the same folder, which is built from them. It names at least one source that the
+    // value was taken from, and that one is permissive. Where it also names the tool
+    // behind the value, that tool is a source read through another (below).
+    const rests = shelves.sources.filter((source) => String(mark.source).includes(source.name));
+    const ownTable = /^[\w.-]+\.tsv$/.test(String(mark.source)) && existsSync(path.join(folder, mark.source));
+    assert.ok(rests.length || ownTable, `${where}: the mark ${name} rests on "${mark.source}", which names no source of the file`);
+    assert.ok(ownTable || rests.some(taken), `${where}: the mark ${name} names no permissive source that its values were taken from`);
+    for (const source of rests) assert.ok(taken(source) || source.through || decided(source), `${where}: the mark ${name} rests on ${source.name}, which is ${source.class}`);
+  }
+  const toName = [];
+  for (const source of shelves.sources) {
+    if (source.through) {
+      // A tool or rule system whose results were read in a permissive database: the
+      // database is named, it is a source of the file that stands for itself, and
+      // nothing of the tool's own was taken. The value stands on that database's terms
+      // (the user's ruling of 15 November 2026); the tool is named and counted, and one
+      // that is not permissive is in the register.
+      assert.equal(typeof source.through, "string", `${where}: ${source.name}: through is the name of a source, or names joined by " and "`);
+      for (const database of byName.has(source.through) ? [source.through] : source.through.split(" and ")) assert.ok(byName.has(database) && taken(byName.get(database)), `${where}: ${source.name} is read through ${database}, which is not a permissive source of the file that stands for itself`);
+      assert.match(source.holds, /^Nothing was downloaded from it/, `${where}: ${source.name}`);
+      if (source.class !== "permissive") assert.equal(known[source.name], source.through, `${where}: ${source.name} is ${source.class} and is read through ${source.through}. It is not in the register NAMED for ${shelves.species}: a new dependence is put to the user before it is listed there`);
+    } else if (source.class !== "permissive" && !decided(source)) {
+      assert.match(source.holds, /^Nothing is taken from it: a pointer to /, `${where}: ${source.name} is ${source.class} and is not said to be a pointer`);
+      assert.ok(!/\d/.test(source.holds), `${where}: the pointer ${source.name} gives a number: ${source.holds}`);
+    }
+    if (source.class === "permissive" && !("scan" in source && /share-alike/.test(source.licence))) continue;
+    toName.push(source);
+  }
+  // The list does not outlive the dependences: each one named is in the record.
+  for (const [name, through] of Object.entries(known)) assert.equal(byName.get(name)?.through, through, `${where}: NAMED lists ${name} through ${through}, and the record does not`);
+  return toName;
+}
+
+test("a species' shelves: every mark rests on a permissive source; any other source is a pointer, a named dependence that says through which permissive source it was read, or a copy of the species' scan record's source that the register DECIDED holds", async () => {
   const seen = new Set();
   for (const file of shelfFiles) {
     const shelves = await json(file);
     const where = rel(file);
     seen.add(shelves.species);
-    const known = NAMED[shelves.species] || {};
-    const byName = new Map(shelves.sources.map((source) => [source.name, source]));
-    assert.equal(byName.size, shelves.sources.length, `${where}: two sources share a name`);
-    for (const source of shelves.sources) held(source, `${where}: source ${source.name}`);
-    // What was taken is taken from a permissive source that stands for itself.
-    const taken = (source) => source.class === "permissive" && !source.through;
-    for (const [name, mark] of Object.entries(shelves.marks || {})) {
-      // A mark names what it rests on: one or more of the file's sources, or a table of
-      // the same folder, which is built from them. It names at least one source that the
-      // value was taken from, and that one is permissive. Where it also names the tool
-      // behind the value, that tool is a source read through another (below).
-      const rests = shelves.sources.filter((source) => String(mark.source).includes(source.name));
-      const ownTable = /^[\w.-]+\.tsv$/.test(String(mark.source)) && existsSync(path.join(path.dirname(file), mark.source));
-      assert.ok(rests.length || ownTable, `${where}: the mark ${name} rests on "${mark.source}", which names no source of the file`);
-      assert.ok(ownTable || rests.some(taken), `${where}: the mark ${name} names no permissive source that its values were taken from`);
-      for (const source of rests) assert.ok(taken(source) || source.through, `${where}: the mark ${name} rests on ${source.name}, which is ${source.class}`);
-    }
-    for (const source of shelves.sources) {
-      if (source.through) {
-        // A tool or rule system whose results were read in a permissive database: the
-        // database is named, it is a source of the file that stands for itself, and
-        // nothing of the tool's own was taken. The value stands on that database's terms
-        // (the user's ruling of 15 November 2026); the tool is named and counted, and one
-        // that is not permissive is in the register.
-        assert.equal(typeof source.through, "string", `${where}: ${source.name}: through is the name of a source, or names joined by " and "`);
-        for (const database of byName.has(source.through) ? [source.through] : source.through.split(" and ")) assert.ok(byName.has(database) && taken(byName.get(database)), `${where}: ${source.name} is read through ${database}, which is not a permissive source of the file that stands for itself`);
-        assert.match(source.holds, /^Nothing was downloaded from it/, `${where}: ${source.name}`);
-        if (source.class !== "permissive") assert.equal(known[source.name], source.through, `${where}: ${source.name} is ${source.class} and is read through ${source.through}. It is not in the register NAMED for ${shelves.species}: a new dependence is put to the user before it is listed there`);
-      } else if (source.class !== "permissive") {
-        assert.match(source.holds, /^Nothing is taken from it: a pointer to /, `${where}: ${source.name} is ${source.class} and is not said to be a pointer`);
-        assert.ok(!/\d/.test(source.holds), `${where}: the pointer ${source.name} gives a number: ${source.holds}`);
-      }
-      if (source.class === "permissive") continue;
+    for (const source of holdShelves(shelves, where, path.dirname(file))) {
       const note = NOTES[shelves.species];
       assert.ok(note, `${where}: ${source.name} is ${source.class}, and no note is known for this species`);
       const paper = /\d{4}$/.test(source.name) ? paperOf(source.name) : null;
       mustName(note, `${source.name} (${where})`, paper ? named(...paper) : new RegExp(source.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
     }
-    // The list does not outlive the dependences: each one named is in the record.
-    for (const [name, through] of Object.entries(known)) assert.equal(byName.get(name)?.through, through, `${where}: NAMED lists ${name} through ${through}, and the record does not`);
   }
   for (const species of Object.keys(NAMED)) assert.ok(seen.has(species), `NAMED lists dependences for ${species}, and no shelves of it were found`);
+});
+
+/**
+ * A species' scan record held to the rules: every source has its class and licence, in agreement; each stands behind the
+ * entries the scan added, so each is permissive, or of no stated terms and in the register DECIDED; the register does not
+ * outlive the record; every database counted names its source, or is a program kept as counts only; the tool is named
+ * with its release and licence, and not classed. Gives back the sources the note must name (not plainly permissive).
+ */
+function holdScan(record, where, records = scanRecords) {
+  assert.equal(record.format, "cells.visualizer.interpro_scan@1", `${where}: a record this test does not know how to hold`);
+  assert.ok(record.tool?.name && record.tool.release && record.tool.licence && !("class" in record.tool), `${where}: the tool is named, with its release and its licence, and not classed`);
+  const sources = record.sources || {};
+  const toName = [];
+  for (const [key, source] of Object.entries(sources)) {
+    held(source, `${where}: source ${key}`);
+    assert.ok(source.class === "permissive" || decidedSource(record.species, key, source, records), `${where}: ${key} (${source.name}) is ${source.class} and stands behind the scan's entries. It is not in the register DECIDED for ${record.species}: a source of that class is put to the user before it is listed there`);
+    if (source.class !== "permissive" || /share-alike/.test(source.licence)) toName.push(source);
+  }
+  for (const [name, item] of Object.entries(record.databases || {})) assert.ok(item.source ? sources[item.source] : item.counts_only && item.terms, `${where}: ${name} names no source of the record`);
+  for (const [key, entry] of Object.entries(DECIDED[record.species] || {})) assert.equal(sources[key]?.name, entry.name, `${where}: DECIDED lists ${entry.name} for ${record.species}, and the record does not hold it`);
+  return toName;
+}
+
+test("a species' scan record: every source has its class; one of no stated terms stands behind its entries only by the register DECIDED; the tool is named and not classed", () => {
+  for (const file of scanFiles) {
+    const record = scanRecords.get(path.basename(path.dirname(file)));
+    assert.equal(record.species, path.basename(path.dirname(file)), rel(file));
+    const note = NOTES[record.species];
+    for (const source of holdScan(record, rel(file))) {
+      assert.ok(note, `${rel(file)}: ${source.name} is not plainly permissive, and no note is known for this species`);
+      mustName(note, `${source.name} (${rel(file)})`, new RegExp(`\\b${source.name}\\b`));
+    }
+  }
+  for (const species of Object.keys(DECIDED)) assert.ok(scanRecords.has(species), `DECIDED lists ${species}, and no scan record of it was found`);
+});
+
+test("the register DECIDED holds: a second source of no stated terms fails, in a scan record or in a copy of one, and so does a source it lists that the record lacks", () => {
+  const species = Object.keys(DECIDED)[0], record = scanRecords.get(species);
+  assert.ok(record, `no scan record of ${species}`);
+  const second = structuredClone(record);
+  second.sources.smart = { name: "SMART", text: "Made up for this test", url: null, licence: "No open licence stated (made up for this test)", class: "no stated terms" };
+  const records = new Map([[species, second]]);
+  assert.throws(() => holdScan(second, "made up", records), /not in the register DECIDED/);
+  assert.equal(decidedSource(species, `gathered:${species}:scan_smart`, second.sources.smart, records), false, "the catalogue's copy of a second such source");
+  assert.equal(decidedSource(species, "scan_smart", second.sources.smart, records), false, "a dossier's copy of a second such source");
+  for (const [key, entry] of Object.entries(DECIDED[species])) {
+    assert.equal(decidedSource(species, `gathered:${species}:scan_${key}`, record.sources[key]), true, `the catalogue's copy of ${entry.name}`);
+    assert.equal(decidedSource(species, `scan_${key}`, { ...record.sources[key], licence: "No open licence stated, in other words" }), false, `a copy of ${entry.name} with other terms`);
+    const without = structuredClone(record);
+    delete without.sources[key];
+    for (const item of Object.values(without.databases)) if (item.source === key) delete item.source, (item.counts_only = true), (item.terms = "made up");
+    assert.throws(() => holdScan(without, "made up", new Map([[species, without]])), /DECIDED lists/);
+  }
+});
+
+test("the register DECIDED holds for a species' shelves: a copy of a source it lists stands, and a second source of no stated terms, a copy with other terms or one with no tie to its record fails", async () => {
+  const species = Object.keys(DECIDED)[0], record = scanRecords.get(species);
+  const file = shelfFiles.find((item) => path.basename(path.dirname(item)) === species);
+  assert.ok(record && file, `no scan record or no shelves of ${species}`);
+  const shelves = await json(file), folder = path.dirname(file);
+  // A copy of each listed source, as the shelves give one, on a clean copy of the species' own file; and a mark resting on it.
+  const copyOf = (key) => ({ name: record.sources[key].name, url: record.sources[key].url, licence: record.sources[key].licence, class: record.sources[key].class, scan: key, holds: "made up for this test" });
+  const planted = (change) => {
+    const out = structuredClone(shelves);
+    out.sources = out.sources.filter((source) => !("scan" in source && DECIDED[species][source.scan]));
+    out.sources.push(...Object.keys(DECIDED[species]).map(copyOf));
+    out.marks = { ...out.marks, made_up: { label: "Made up", measured: false, source: `InterPro, and ${Object.values(DECIDED[species]).map((entry) => entry.name).join(" and ")}` } };
+    change(out);
+    return out;
+  };
+  assert.doesNotThrow(() => holdShelves(planted(() => {}), "made up", folder), "a copy of a source the register lists, and a mark resting on it, stand");
+  // A second source of no stated terms, given as the record's, fails whether the record holds it or not.
+  const second = structuredClone(record);
+  second.sources.smart = { name: "SMART", text: "Made up for this test", url: null, licence: "No open licence stated (made up for this test)", class: "no stated terms" };
+  const records = new Map([[species, second]]);
+  assert.throws(() => holdShelves(planted((out) => out.sources.push({ ...second.sources.smart, scan: "smart", holds: "made up" })), "made up", folder, records), /not in the register DECIDED/);
+  assert.throws(() => holdShelves(planted((out) => out.sources.push({ ...second.sources.smart, scan: "smart", holds: "made up" })), "made up", folder), /is not that source with its terms/);
+  for (const [key, entry] of Object.entries(DECIDED[species])) {
+    const copy = (out) => out.sources.find((source) => source.scan === key);
+    assert.throws(() => holdShelves(planted((out) => (copy(out).licence = "No open licence stated, in other words")), "made up", folder), /is not that source with its terms/, `a copy of ${entry.name} with other terms`);
+    assert.throws(() => holdShelves(planted((out) => delete copy(out).scan), "made up", folder), /rests on \S+, which is no stated terms|is not said to be a pointer/, `a copy of ${entry.name} with no tie to its record`);
+    assert.throws(() => holdShelves(planted((out) => (delete copy(out).scan, (out.marks = Object.fromEntries(Object.entries(out.marks).filter(([, mark]) => !String(mark.source).includes(entry.name)))))), "made up", folder), /is not said to be a pointer/, `a copy of ${entry.name} with no tie to its record, and no mark on it`);
+    const without = structuredClone(record);
+    delete without.sources[key];
+    assert.throws(() => holdShelves(planted(() => {}), "made up", folder, new Map([[species, without]])), /is not that source with its terms/, `a copy of ${entry.name} whose record no longer holds it`);
+  }
 });
 
 // A quantity: a number with a unit, a span of residues, or a number in words before a unit of time.

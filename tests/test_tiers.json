@@ -223,7 +223,13 @@
   "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-65d8c1e4/measured.three.json",
   "/mnt/workspaces/Cells/fr2-references-interface-20261119/tiers-309cfb50/measure/measured.json",
   "/mnt/workspaces/Cells/review3-20261119/tiers-4fa89614/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-eaf57137/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-eaf57137/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-5b960873/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-9cf397a5/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-dcfeeb27/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-75505e27/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-284002b2/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-97c0516e/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1873,6 +1879,54 @@
    "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-eaf57137",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T15:04:15+00:00"
+  },
+  {
+   "git_revision": "5b960873d707131e817f9726cbb33e3e69b8f789",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-5b960873",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T16:10:39+00:00"
+  },
+  {
+   "git_revision": "9cf397a51bcca1f5cfbd66bf38412683e2f9bed9",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-9cf397a5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T16:29:16+00:00"
+  },
+  {
+   "git_revision": "dcfeeb2798179b645b0fd6e9967de84e222d58fe",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-dcfeeb27",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T16:27:01+00:00"
+  },
+  {
+   "git_revision": "75505e2756936d010f863aaf9414a7b055c65164",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-75505e27",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T15:32:52+00:00"
+  },
+  {
+   "git_revision": "284002b2a9cca55bd8ca56b1c7338a329e137b62",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-284002b2",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T18:12:21+00:00"
+  },
+  {
+   "git_revision": "97c0516e0a74aa9968321359f423123055d78700",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-97c0516e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T15:42:33+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2561,7 +2615,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 9.84,
+    "seconds": 10.75,
     "exit_code": 0,
     "counts": {
      "passed": 191
@@ -3636,10 +3690,10 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.52,
+    "seconds": 2.82,
     "exit_code": 0,
     "counts": {
-     "passed": 12
+     "passed": 13
     }
    },
    {
@@ -3652,7 +3706,7 @@
    },
    {
     "file": "tests/unit/test_kind_lifecycle_roles.py",
-    "seconds": 6.63,
+    "seconds": 8.46,
     "exit_code": 0,
     "counts": {
      "passed": 55
@@ -3708,7 +3762,7 @@
    },
    {
     "file": "tests/unit/test_kinds_lifecycle_declarations.py",
-    "seconds": 4.22,
+    "seconds": 5.13,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -3960,6 +4014,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 113
+    }
+   },
+   {
+    "file": "tests/unit/test_na_anion_symport_factored.py",
+    "seconds": 3.97,
+    "exit_code": 0,
+    "counts": {
+     "passed": 4
     }
    },
    {
@@ -4334,10 +4396,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 4.53,
+    "seconds": 4.63,
     "exit_code": 0,
     "counts": {
-     "passed": 16
+     "passed": 17
     }
    },
    {
@@ -4847,10 +4909,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 16.59,
+    "seconds": 8.44,
     "exit_code": 0,
     "counts": {
-     "passed": 83
+     "passed": 93
     }
    },
    {
@@ -4887,10 +4949,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 3.58,
+    "seconds": 3.57,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 19
     }
    },
    {
@@ -5962,7 +6024,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 28.15,
+    "seconds": 24.49,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -5970,10 +6032,10 @@
    },
    {
     "file": "tests/unit/test_ledger_lists.py",
-    "seconds": 38.92,
+    "seconds": 57.92,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 4
     }
    },
    {
@@ -6457,6 +6519,14 @@
     }
    },
    {
+    "file": "tests/unit/test_step_doubled_energy_windows.py",
+    "seconds": 47.9,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_surface_active_profile_interventions_dispatch.py",
     "seconds": 63.62,
     "exit_code": 0,
@@ -6546,10 +6616,10 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_definitions.py",
-    "seconds": 41.39,
+    "seconds": 33.16,
     "exit_code": 0,
     "counts": {
-     "passed": 14
+     "passed": 19
     }
    },
    {

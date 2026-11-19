@@ -12,12 +12,15 @@
     "record": "cell-structures"
    },
    "also_named": {
-    "text": "81 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 95 parts of the human's ribosome: candidates for 65 of those parts (56 of the 80 that the reference's entry holds). For 27 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "105 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 95 parts of the human's ribosome: candidates for 68 of those parts (59 of the 80 that the reference's entry holds). For 27 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_ncbifam",
+     "gathered:planarian:scan_panther"
     ]
    },
    "size": {
@@ -237,6 +240,15 @@
       ]
      ],
      [
+      "h1SMcG0002185",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPL24"
+      ]
+     ],
+     [
       "h1SMcG0002486",
       null,
       "Large ribosomal subunit protein eL27",
@@ -255,6 +267,16 @@
       ]
      ],
      [
+      "h1SMcG0002740",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0002795",
       null,
       "Large ribosomal subunit protein eL20, eukaryota; Large ribosomal subunit protein eL20",
@@ -270,6 +292,15 @@
       "candidate by family",
       [
        "RPL32"
+      ]
+     ],
+     [
+      "h1SMcG0003059",
+      null,
+      "H/ACA ribonucleoprotein complex, subunit Nhp2-like; Ribosomal protein eL8/Nhp2 family",
+      "candidate by family",
+      [
+       "RPL10A"
       ]
      ],
      [
@@ -306,6 +337,16 @@
       "candidate by family",
       [
        "RPS19"
+      ]
+     ],
+     [
+      "h1SMcG0004777",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
       ]
      ],
      [
@@ -383,6 +424,16 @@
       ]
      ],
      [
+      "h1SMcG0007346",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0007885",
       null,
       "Ribosomal protein uL11",
@@ -392,12 +443,42 @@
       ]
      ],
      [
+      "h1SMcG0008020",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
+      "h1SMcG0008435",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0008461",
       null,
       "Small ribosomal subunit protein uS13",
       "candidate by family",
       [
        "RPS18"
+      ]
+     ],
+     [
+      "h1SMcG0008529",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
       ]
      ],
      [
@@ -467,6 +548,16 @@
       ]
      ],
      [
+      "h1SMcG0009789",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0010658",
       null,
       "Large ribosomal subunit protein eL21",
@@ -503,6 +594,16 @@
       ]
      ],
      [
+      "h1SMcG0011073",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0011210",
       null,
       "Small ribosomal subunit protein RACK1-like",
@@ -536,6 +637,15 @@
       "candidate by family",
       [
        "RPS8"
+      ]
+     ],
+     [
+      "h1SMcG0012146",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPL24"
       ]
      ],
      [
@@ -613,6 +723,16 @@
       ]
      ],
      [
+      "h1SMcG0015065",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0015332",
       null,
       "Small ribosomal subunit protein eS12",
@@ -676,6 +796,16 @@
       ]
      ],
      [
+      "h1SMcG0016320",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0017075",
       null,
       "Small ribosomal subunit protein eS1; Small ribosomal subunit protein eS1, eukaryota",
@@ -694,12 +824,71 @@
       ]
      ],
      [
+      "h1SMcG0017252",
+      null,
+      "H/ACA ribonucleoprotein complex, subunit Nhp2-like; Ribosomal protein eL8/Nhp2 family",
+      "candidate by family",
+      [
+       "RPL10A"
+      ]
+     ],
+     [
       "h1SMcG0017549",
       null,
       "Large ribosomal subunit protein eL19",
       "candidate by family",
       [
        "RPL19"
+      ]
+     ],
+     [
+      "h1SMcG0017615",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
+      "h1SMcG0017692",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
+      "h1SMcG0017748",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
+      "h1SMcG0017816",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
+      "h1SMcG0017865",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
       ]
      ],
      [
@@ -714,12 +903,32 @@
       ]
      ],
      [
+      "h1SMcG0017891",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0018808",
       null,
       "Large ribosomal subunit protein uL1; Ribosomal protein uL1/ribosomal biogenesis protein",
       "candidate by family",
       [
        "RPL10A"
+      ]
+     ],
+     [
+      "h1SMcG0018827",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
       ]
      ],
      [
@@ -821,7 +1030,8 @@
       "Large ribosomal subunit protein eL8, eukaryota; Ribosomal protein eL8/Nhp2 family",
       "candidate by family",
       [
-       "RPL7A"
+       "RPL7A",
+       "RPL10A"
       ]
      ],
      [
@@ -831,6 +1041,16 @@
       "candidate by family",
       [
        "RPS15"
+      ]
+     ],
+     [
+      "h1SMcG0021599",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
       ]
      ],
      [
@@ -872,6 +1092,16 @@
       ]
      ],
      [
+      "h1SMcG0022826",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
+     ],
+     [
       "h1SMcG0022946",
       null,
       "Large ribosomal subunit protein eL18",
@@ -879,13 +1109,23 @@
       [
        "RPL18"
       ]
+     ],
+     [
+      "h1SMcG0022948",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RPS27A",
+       "UBA52"
+      ]
      ]
     ],
     "in_atlas": true,
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "81 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 95 parts of the human's ribosome: candidates for 65 of those parts (56 of the 80 that the reference's entry holds). For 27 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "105 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 95 parts of the human's ribosome: candidates for 68 of those parts (59 of the 80 that the reference's entry holds). For 27 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -970,7 +1210,7 @@
       "RPL10A",
       "part",
       "candidates",
-      2
+      5
      ],
      [
       "RPL10L",
@@ -1065,8 +1305,8 @@
      [
       "RPL24",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "RPL26",
@@ -1419,8 +1659,8 @@
      [
       "RPS27A",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "RPS27L",
@@ -1455,8 +1695,8 @@
      [
       "UBA52",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ]
     ],
     "elsewhere": {
@@ -1470,16 +1710,2890 @@
    }
   },
   {
+   "id": "vault",
+   "species": "planarian",
+   "label": "Vault",
+   "named": {
+    "text": "1 protein of Planarian's table carry the signature of the major vault protein family (IPR039059) or of PARP4's marker domain (IPR058904) and stand on no better footing: candidates by family, not parts.",
+    "by": "family signature",
+    "sources": [
+     "gathered:planarian:atlas_table"
+    ]
+   },
+   "size": {
+    "shape": "measured",
+    "entry": "9MXV-assembly1",
+    "of": "Homo sapiens",
+    "from": "data/catalogue/measures/human.vault.json",
+    "whole": {
+     "across_nm": [
+      74.5,
+      50.4,
+      50.4
+     ],
+     "farthest_nm": [
+      68.1,
+      41.5,
+      41.5
+     ],
+     "axes": [
+      [
+       1.0,
+       0.0,
+       0.0
+      ],
+      [
+       0.0,
+       1.0,
+       0.0
+      ],
+      [
+       0.0,
+       0.0,
+       1.0
+      ]
+     ]
+    },
+    "outline": "parts",
+    "parts": [
+     {
+      "id": "half-a",
+      "label": "A half-vault: 39 chains, on the positive side of the long axis",
+      "across_nm": [
+       50.4,
+       50.4,
+       37.6
+      ],
+      "centre_nm": [
+       14.38,
+       0.0,
+       0.0
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        -0.001
+       ],
+       [
+        0.0,
+        0.001,
+        1.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       41.4,
+       41.4,
+       34.3
+      ],
+      "chains": [
+       "chain-B",
+       "chain-B-2",
+       "chain-B-3",
+       "chain-B-4",
+       "chain-B-5",
+       "chain-B-6",
+       "chain-B-7",
+       "chain-B-8",
+       "chain-B-9",
+       "chain-B-10",
+       "chain-B-11",
+       "chain-B-12",
+       "chain-B-13",
+       "chain-B-14",
+       "chain-B-15",
+       "chain-B-16",
+       "chain-B-17",
+       "chain-B-18",
+       "chain-B-19",
+       "chain-B-20",
+       "chain-B-21",
+       "chain-B-22",
+       "chain-B-23",
+       "chain-B-24",
+       "chain-B-25",
+       "chain-B-26",
+       "chain-B-27",
+       "chain-B-28",
+       "chain-B-29",
+       "chain-B-30",
+       "chain-B-31",
+       "chain-B-32",
+       "chain-B-33",
+       "chain-B-34",
+       "chain-B-35",
+       "chain-B-36",
+       "chain-B-37",
+       "chain-B-38",
+       "chain-B-39"
+      ],
+      "hue": "bioRibosome"
+     },
+     {
+      "id": "half-b",
+      "label": "The other half-vault: 39 chains, on the negative side",
+      "across_nm": [
+       50.4,
+       50.4,
+       37.6
+      ],
+      "centre_nm": [
+       -14.38,
+       0.0,
+       0.0
+      ],
+      "axes": [
+       [
+        0.0,
+        1.0,
+        0.0003
+       ],
+       [
+        0.0,
+        -0.0003,
+        1.0
+       ],
+       [
+        1.0,
+        0.0,
+        0.0
+       ]
+      ],
+      "farthest_nm": [
+       41.5,
+       41.4,
+       34.3
+      ],
+      "chains": [
+       "chain-A",
+       "chain-A-2",
+       "chain-A-3",
+       "chain-A-4",
+       "chain-A-5",
+       "chain-A-6",
+       "chain-A-7",
+       "chain-A-8",
+       "chain-A-9",
+       "chain-A-10",
+       "chain-A-11",
+       "chain-A-12",
+       "chain-A-13",
+       "chain-A-14",
+       "chain-A-15",
+       "chain-A-16",
+       "chain-A-17",
+       "chain-A-18",
+       "chain-A-19",
+       "chain-A-20",
+       "chain-A-21",
+       "chain-A-22",
+       "chain-A-23",
+       "chain-A-24",
+       "chain-A-25",
+       "chain-A-26",
+       "chain-A-27",
+       "chain-A-28",
+       "chain-A-29",
+       "chain-A-30",
+       "chain-A-31",
+       "chain-A-32",
+       "chain-A-33",
+       "chain-A-34",
+       "chain-A-35",
+       "chain-A-36",
+       "chain-A-37",
+       "chain-A-38",
+       "chain-A-39"
+      ],
+      "hue": "bioFuel"
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain-A",
+      "label": "Major vault protein, chain A",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -5.7,
+       13.47
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.448,
+        0.3625
+       ],
+       [
+        0.5391,
+        0.8166,
+        -0.2061
+       ],
+       [
+        -0.2037,
+        0.3638,
+        0.9089
+       ]
+      ]
+     },
+     {
+      "id": "chain-B",
+      "label": "Major vault protein, chain B",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -6.38,
+       13.16
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.0226,
+        -0.5758
+       ],
+       [
+        0.5391,
+        0.383,
+        0.7501
+       ],
+       [
+        0.2036,
+        -0.9235,
+        0.3252
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-2",
+      "label": "Major vault protein, chain A-2",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -7.78,
+       12.38
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5004,
+        0.2859
+       ],
+       [
+        0.5391,
+        0.8391,
+        -0.0724
+       ],
+       [
+        -0.2037,
+        0.2133,
+        0.9555
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-2",
+      "label": "Major vault protein, chain B-2",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -8.41,
+       11.97
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.07,
+        -0.572
+       ],
+       [
+        0.5391,
+        0.2577,
+        0.8018
+       ],
+       [
+        0.2036,
+        -0.9637,
+        0.1729
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-3",
+      "label": "Major vault protein, chain A-3",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -9.67,
+       10.97
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5398,
+        0.2019
+       ],
+       [
+        0.5391,
+        0.8399,
+        0.0631
+       ],
+       [
+        -0.2037,
+        0.0573,
+        0.9774
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-3",
+      "label": "Major vault protein, chain B-3",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -10.22,
+       10.46
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.1609,
+        -0.5534
+       ],
+       [
+        0.5391,
+        0.1258,
+        0.8328
+       ],
+       [
+        0.2036,
+        -0.9789,
+        0.0161
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-4",
+      "label": "Major vault protein, chain A-4",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -11.3,
+       9.28
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5652,
+        0.1127
+       ],
+       [
+        0.5391,
+        0.8189,
+        0.197
+       ],
+       [
+        -0.2037,
+        -0.1002,
+        0.9739
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-4",
+      "label": "Major vault protein, chain B-4",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -11.76,
+       8.69
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.2476,
+        -0.5204
+       ],
+       [
+        0.5391,
+        -0.0094,
+        0.8422
+       ],
+       [
+        0.2036,
+        -0.9688,
+        -0.1412
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-5",
+      "label": "Major vault protein, chain A-5",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -12.64,
+       7.35
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5759,
+        0.0206
+       ],
+       [
+        0.5391,
+        0.7766,
+        0.3258
+       ],
+       [
+        -0.2037,
+        -0.2552,
+        0.9452
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-5",
+      "label": "Major vault protein, chain B-5",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.01,
+       6.69
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3278,
+        -0.4739
+       ],
+       [
+        0.5391,
+        -0.1444,
+        0.8298
+       ],
+       [
+        0.2036,
+        -0.9336,
+        -0.2948
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-6",
+      "label": "Major vault protein, chain A-6",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -13.66,
+       5.22
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5718,
+        -0.072
+       ],
+       [
+        0.5391,
+        0.7143,
+        0.4462
+       ],
+       [
+        -0.2037,
+        -0.4035,
+        0.892
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-6",
+      "label": "Major vault protein, chain B-6",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.91,
+       4.52
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3996,
+        -0.4152
+       ],
+       [
+        0.5391,
+        -0.2756,
+        0.7959
+       ],
+       [
+        0.2036,
+        -0.8743,
+        -0.4407
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-7",
+      "label": "Major vault protein, chain A-7",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.32,
+       2.96
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5528,
+        -0.1628
+       ],
+       [
+        0.5391,
+        0.6335,
+        0.555
+       ],
+       [
+        -0.2037,
+        -0.5414,
+        0.8157
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-7",
+      "label": "Major vault protein, chain B-7",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.45,
+       2.23
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.461,
+        -0.3457
+       ],
+       [
+        0.5391,
+        -0.3997,
+        0.7413
+       ],
+       [
+        0.2036,
+        -0.7922,
+        -0.5752
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-8",
+      "label": "Major vault protein, chain A-8",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.61,
+       0.63
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.5196,
+        -0.2494
+       ],
+       [
+        0.5391,
+        0.5363,
+        0.6494
+       ],
+       [
+        -0.2037,
+        -0.6652,
+        0.7183
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-8",
+      "label": "Major vault protein, chain B-8",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.62,
+       -0.12
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5105,
+        -0.2673
+       ],
+       [
+        0.5391,
+        -0.5135,
+        0.6676
+       ],
+       [
+        0.2036,
+        -0.6897,
+        -0.6949
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-9",
+      "label": "Major vault protein, chain A-9",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.52,
+       -1.72
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.4728,
+        -0.3295
+       ],
+       [
+        0.5391,
+        0.4251,
+        0.7271
+       ],
+       [
+        -0.2037,
+        -0.7718,
+        0.6023
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-9",
+      "label": "Major vault protein, chain B-9",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -14.42,
+       -2.47
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5468,
+        -0.1819
+       ],
+       [
+        -0.5391,
+        0.6139,
+        -0.5766
+       ],
+       [
+        -0.2036,
+        0.5693,
+        0.7965
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-10",
+      "label": "Major vault protein, chain A-10",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -14.06,
+       -4.03
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.4139,
+        -0.4011
+       ],
+       [
+        0.5391,
+        0.303,
+        0.7858
+       ],
+       [
+        -0.2037,
+        -0.8584,
+        0.4707
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-10",
+      "label": "Major vault protein, chain B-10",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -13.83,
+       -4.75
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5689,
+        -0.0919
+       ],
+       [
+        -0.5391,
+        0.6985,
+        -0.4706
+       ],
+       [
+        -0.2036,
+        0.4342,
+        0.8775
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-11",
+      "label": "Major vault protein, chain A-11",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -13.23,
+       -6.23
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3442,
+        -0.4623
+       ],
+       [
+        0.5391,
+        0.173,
+        0.8243
+       ],
+       [
+        -0.2037,
+        -0.9228,
+        0.3269
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-11",
+      "label": "Major vault protein, chain B-11",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -12.89,
+       -6.9
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5763,
+        0.0006
+       ],
+       [
+        -0.5391,
+        0.7649,
+        -0.3525
+       ],
+       [
+        -0.2036,
+        0.2878,
+        0.9358
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-12",
+      "label": "Major vault protein, chain A-12",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -12.06,
+       -8.27
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.2655,
+        -0.5115
+       ],
+       [
+        0.5391,
+        0.0386,
+        0.8413
+       ],
+       [
+        -0.2037,
+        -0.9633,
+        0.1747
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-12",
+      "label": "Major vault protein, chain B-12",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -11.62,
+       -8.88
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5687,
+        0.093
+       ],
+       [
+        -0.5391,
+        0.8116,
+        -0.2252
+       ],
+       [
+        -0.2036,
+        0.1339,
+        0.9699
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-13",
+      "label": "Major vault protein, chain A-13",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -10.57,
+       -10.1
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.1801,
+        -0.5475
+       ],
+       [
+        0.5391,
+        -0.0969,
+        0.8366
+       ],
+       [
+        -0.2037,
+        -0.9789,
+        0.0179
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-13",
+      "label": "Major vault protein, chain B-13",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -10.04,
+       -10.63
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.5464,
+        0.183
+       ],
+       [
+        -0.5391,
+        0.8372,
+        -0.0921
+       ],
+       [
+        -0.2036,
+        -0.0234,
+        0.9788
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-14",
+      "label": "Major vault protein, chain A-14",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -8.82,
+       -11.67
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.0899,
+        -0.5693
+       ],
+       [
+        0.5391,
+        -0.2299,
+        0.8103
+       ],
+       [
+        -0.2037,
+        -0.9691,
+        -0.1394
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-14",
+      "label": "Major vault protein, chain B-14",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -8.21,
+       -12.1
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.51,
+        0.2683
+       ],
+       [
+        -0.5391,
+        0.8411,
+        0.0433
+       ],
+       [
+        -0.2036,
+        -0.1801,
+        0.9624
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-15",
+      "label": "Major vault protein, chain A-15",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -6.83,
+       -12.93
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.0026,
+        -0.5763
+       ],
+       [
+        0.5391,
+        -0.3569,
+        0.7629
+       ],
+       [
+        -0.2037,
+        -0.9342,
+        -0.293
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-15",
+      "label": "Major vault protein, chain B-15",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -6.16,
+       -13.26
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.4603,
+        0.3467
+       ],
+       [
+        -0.5391,
+        0.8233,
+        0.1777
+       ],
+       [
+        -0.2036,
+        -0.3321,
+        0.921
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-16",
+      "label": "Major vault protein, chain A-16",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -4.67,
+       -13.86
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.095,
+        -0.5684
+       ],
+       [
+        0.5391,
+        -0.4746,
+        0.6958
+       ],
+       [
+        -0.2037,
+        -0.8751,
+        -0.4391
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-16",
+      "label": "Major vault protein, chain B-16",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -3.95,
+       -14.08
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3988,
+        0.416
+       ],
+       [
+        -0.5391,
+        0.7841,
+        0.3075
+       ],
+       [
+        -0.2036,
+        -0.4756,
+        0.8558
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-17",
+      "label": "Major vault protein, chain A-17",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -2.39,
+       -14.43
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.1849,
+        -0.5458
+       ],
+       [
+        0.5391,
+        -0.5801,
+        0.6106
+       ],
+       [
+        -0.2037,
+        -0.7933,
+        -0.5738
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-17",
+      "label": "Major vault protein, chain B-17",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -1.64,
+       -14.53
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.3269,
+        0.4746
+       ],
+       [
+        -0.5391,
+        0.7246,
+        0.4293
+       ],
+       [
+        -0.2036,
+        -0.6067,
+        0.7684
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-18",
+      "label": "Major vault protein, chain A-18",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -0.04,
+       -14.62
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.2701,
+        -0.5091
+       ],
+       [
+        -0.5391,
+        0.6705,
+        -0.5097
+       ],
+       [
+        0.2037,
+        0.691,
+        0.6936
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-18",
+      "label": "Major vault protein, chain B-18",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       0.71,
+       -14.61
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.2465,
+        0.5209
+       ],
+       [
+        -0.5391,
+        0.6464,
+        0.5399
+       ],
+       [
+        -0.2036,
+        -0.7221,
+        0.6612
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-19",
+      "label": "Major vault protein, chain A-19",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       2.31,
+       -14.44
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3483,
+        -0.4592
+       ],
+       [
+        -0.5391,
+        0.7436,
+        -0.3955
+       ],
+       [
+        0.2037,
+        0.5708,
+        0.7954
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-19",
+      "label": "Major vault protein, chain B-19",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       3.04,
+       -14.3
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.1598,
+        0.5537
+       ],
+       [
+        -0.5391,
+        0.5514,
+        0.6366
+       ],
+       [
+        -0.2036,
+        -0.8188,
+        0.5368
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-20",
+      "label": "Major vault protein, chain A-20",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       4.59,
+       -13.88
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4174,
+        -0.3974
+       ],
+       [
+        -0.5391,
+        0.7974,
+        -0.2711
+       ],
+       [
+        0.2037,
+        0.4358,
+        0.8767
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-20",
+      "label": "Major vault protein, chain B-20",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       5.3,
+       -13.63
+      ],
+      "axes": [
+       [
+        0.8173,
+        0.0689,
+        0.5721
+       ],
+       [
+        -0.5391,
+        0.4421,
+        0.7169
+       ],
+       [
+        -0.2036,
+        -0.8943,
+        0.3985
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-21",
+      "label": "Major vault protein, chain A-21",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       6.76,
+       -12.97
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4758,
+        -0.3253
+       ],
+       [
+        -0.5391,
+        0.8306,
+        -0.1397
+       ],
+       [
+        0.2037,
+        0.2895,
+        0.9353
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-21",
+      "label": "Major vault protein, chain B-21",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       7.42,
+       -12.6
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.0238,
+        0.5758
+       ],
+       [
+        -0.5391,
+        0.3214,
+        0.7785
+       ],
+       [
+        -0.2036,
+        -0.9466,
+        0.2499
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-22",
+      "label": "Major vault protein, chain A-22",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       8.75,
+       -11.72
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5218,
+        -0.2447
+       ],
+       [
+        -0.5391,
+        0.8422,
+        -0.0046
+       ],
+       [
+        0.2037,
+        0.1357,
+        0.9696
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-22",
+      "label": "Major vault protein, chain B-22",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       9.34,
+       -11.25
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.1158,
+        0.5645
+       ],
+       [
+        -0.5391,
+        0.1924,
+        0.82
+       ],
+       [
+        -0.2036,
+        -0.9745,
+        0.0948
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-23",
+      "label": "Major vault protein, chain A-23",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       10.52,
+       -10.16
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5543,
+        -0.1579
+       ],
+       [
+        -0.5391,
+        0.8321,
+        0.1305
+       ],
+       [
+        0.2037,
+        -0.0216,
+        0.9788
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-23",
+      "label": "Major vault protein, chain B-23",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       11.03,
+       -9.61
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2049,
+        0.5386
+       ],
+       [
+        -0.5391,
+        0.0584,
+        0.8402
+       ],
+       [
+        -0.2036,
+        -0.977,
+        -0.0628
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-24",
+      "label": "Major vault protein, chain A-24",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       12.01,
+       -8.34
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5724,
+        -0.0669
+       ],
+       [
+        -0.5391,
+        0.8003,
+        0.2623
+       ],
+       [
+        0.2037,
+        -0.1783,
+        0.9627
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-24",
+      "label": "Major vault protein, chain B-24",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       12.43,
+       -7.71
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2886,
+        0.4988
+       ],
+       [
+        -0.5391,
+        -0.0772,
+        0.8387
+       ],
+       [
+        -0.2036,
+        -0.9543,
+        -0.2187
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-25",
+      "label": "Major vault protein, chain A-25",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       13.19,
+       -6.31
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5757,
+        0.0258
+       ],
+       [
+        -0.5391,
+        0.7479,
+        0.3873
+       ],
+       [
+        0.2037,
+        -0.3304,
+        0.9216
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-25",
+      "label": "Major vault protein, chain B-25",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       13.5,
+       -5.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.3649,
+        0.446
+       ],
+       [
+        -0.5391,
+        -0.2107,
+        0.8155
+       ],
+       [
+        -0.2036,
+        -0.9069,
+        -0.3689
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-26",
+      "label": "Major vault protein, chain A-26",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.04,
+       -4.11
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5642,
+        0.1178
+       ],
+       [
+        -0.5391,
+        0.6761,
+        0.5022
+       ],
+       [
+        0.2037,
+        -0.474,
+        0.8567
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-26",
+      "label": "Major vault protein, chain B-26",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.23,
+       -3.38
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4317,
+        0.3817
+       ],
+       [
+        -0.5391,
+        -0.3388,
+        0.7711
+       ],
+       [
+        -0.2036,
+        -0.836,
+        -0.5096
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-27",
+      "label": "Major vault protein, chain A-27",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.51,
+       -1.8
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.5379,
+        0.2068
+       ],
+       [
+        -0.5391,
+        0.5868,
+        0.6042
+       ],
+       [
+        0.2037,
+        -0.6052,
+        0.7695
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-27",
+      "label": "Major vault protein, chain B-27",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.59,
+       -1.06
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4874,
+        0.3075
+       ],
+       [
+        -0.5391,
+        -0.4581,
+        0.7068
+       ],
+       [
+        -0.2036,
+        -0.7434,
+        -0.6371
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-28",
+      "label": "Major vault protein, chain A-28",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.61,
+       0.55
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4978,
+        0.2904
+       ],
+       [
+        -0.5391,
+        0.4823,
+        0.6905
+       ],
+       [
+        0.2037,
+        -0.7208,
+        0.6625
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-28",
+      "label": "Major vault protein, chain B-28",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.57,
+       1.3
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5304,
+        0.2253
+       ],
+       [
+        -0.5391,
+        -0.5655,
+        0.6241
+       ],
+       [
+        -0.2036,
+        -0.6316,
+        -0.7481
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-29",
+      "label": "Major vault protein, chain A-29",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       14.34,
+       2.89
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.4448,
+        0.3665
+       ],
+       [
+        -0.5391,
+        0.3652,
+        0.7589
+       ],
+       [
+        0.2037,
+        -0.8178,
+        0.5383
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-29",
+      "label": "Major vault protein, chain B-29",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       14.17,
+       3.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5597,
+        0.1373
+       ],
+       [
+        0.5391,
+        0.6583,
+        -0.5253
+       ],
+       [
+        0.2036,
+        0.5034,
+        0.8397
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-30",
+      "label": "Major vault protein, chain A-30",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       13.69,
+       5.15
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3802,
+        0.4331
+       ],
+       [
+        -0.5391,
+        0.2388,
+        0.8077
+       ],
+       [
+        0.2037,
+        -0.8935,
+        0.4001
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-30",
+      "label": "Major vault protein, chain B-30",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       13.41,
+       5.84
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5744,
+        0.0458
+       ],
+       [
+        0.5391,
+        0.7341,
+        -0.4129
+       ],
+       [
+        0.2036,
+        0.3621,
+        0.9096
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-31",
+      "label": "Major vault protein, chain A-31",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       12.69,
+       7.28
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.3058,
+        0.4885
+       ],
+       [
+        -0.5391,
+        0.1061,
+        0.8355
+       ],
+       [
+        0.2037,
+        -0.9462,
+        0.2516
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-31",
+      "label": "Major vault protein, chain B-31",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       12.29,
+       7.92
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5744,
+        -0.0469
+       ],
+       [
+        0.5391,
+        0.7908,
+        -0.2898
+       ],
+       [
+        0.2036,
+        0.2115,
+        0.9559
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-32",
+      "label": "Major vault protein, chain A-32",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       11.35,
+       9.22
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.2235,
+        0.5312
+       ],
+       [
+        -0.5391,
+        -0.0293,
+        0.8417
+       ],
+       [
+        0.2037,
+        -0.9743,
+        0.0966
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-32",
+      "label": "Major vault protein, chain B-32",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       10.87,
+       9.79
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5594,
+        -0.1385
+       ],
+       [
+        0.5391,
+        0.8271,
+        -0.1592
+       ],
+       [
+        0.2036,
+        0.0555,
+        0.9775
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-33",
+      "label": "Major vault protein, chain A-33",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       9.73,
+       10.92
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.1354,
+        0.5602
+       ],
+       [
+        -0.5391,
+        -0.1639,
+        0.8261
+       ],
+       [
+        0.2037,
+        -0.9771,
+        -0.061
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-33",
+      "label": "Major vault protein, chain B-33",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       9.15,
+       11.41
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.5299,
+        -0.2264
+       ],
+       [
+        0.5391,
+        0.8419,
+        -0.0245
+       ],
+       [
+        0.2036,
+        -0.1021,
+        0.9737
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-34",
+      "label": "Major vault protein, chain A-34",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       7.85,
+       12.34
+      ],
+      "axes": [
+       [
+        0.8172,
+        0.0438,
+        0.5747
+       ],
+       [
+        -0.5391,
+        -0.2943,
+        0.7891
+       ],
+       [
+        0.2037,
+        -0.9547,
+        -0.2169
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-34",
+      "label": "Major vault protein, chain B-34",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       7.21,
+       12.73
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.4867,
+        -0.3085
+       ],
+       [
+        0.5391,
+        0.8349,
+        0.1109
+       ],
+       [
+        0.2036,
+        -0.2569,
+        0.9447
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-35",
+      "label": "Major vault protein, chain A-35",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       5.77,
+       13.44
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.0489,
+        0.5742
+       ],
+       [
+        -0.5391,
+        -0.4171,
+        0.7317
+       ],
+       [
+        0.2037,
+        -0.9075,
+        -0.3672
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-35",
+      "label": "Major vault protein, chain B-35",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       5.07,
+       13.72
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.431,
+        -0.3826
+       ],
+       [
+        0.5391,
+        0.8063,
+        0.2434
+       ],
+       [
+        0.2036,
+        -0.4051,
+        0.8913
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-36",
+      "label": "Major vault protein, chain A-36",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       3.54,
+       14.19
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.1404,
+        0.5589
+       ],
+       [
+        -0.5391,
+        -0.5291,
+        0.6553
+       ],
+       [
+        0.2037,
+        -0.8369,
+        -0.5081
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-36",
+      "label": "Major vault protein, chain B-36",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       2.81,
+       14.35
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.364,
+        -0.4467
+       ],
+       [
+        0.5391,
+        0.7568,
+        0.3696
+       ],
+       [
+        0.2036,
+        -0.5429,
+        0.8148
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-37",
+      "label": "Major vault protein, chain A-37",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       1.22,
+       14.57
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.2283,
+        0.5292
+       ],
+       [
+        0.5391,
+        0.6273,
+        -0.562
+       ],
+       [
+        -0.2037,
+        0.7445,
+        0.6357
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-37",
+      "label": "Major vault protein, chain B-37",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       0.47,
+       14.62
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2876,
+        -0.4994
+       ],
+       [
+        0.5391,
+        0.6877,
+        0.4862
+       ],
+       [
+        0.2036,
+        -0.6665,
+        0.7171
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-38",
+      "label": "Major vault protein, chain A-38",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -1.14,
+       14.58
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3102,
+        0.4857
+       ],
+       [
+        0.5391,
+        0.7094,
+        -0.4541
+       ],
+       [
+        -0.2037,
+        0.6329,
+        0.7469
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-38",
+      "label": "Major vault protein, chain B-38",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -1.88,
+       14.5
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.2038,
+        -0.539
+       ],
+       [
+        0.5391,
+        0.6008,
+        0.5902
+       ],
+       [
+        0.2036,
+        -0.7729,
+        0.6009
+       ]
+      ]
+     },
+     {
+      "id": "chain-A-39",
+      "label": "Major vault protein, chain A-39",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       -14.38,
+       -3.46,
+       14.21
+      ],
+      "axes": [
+       [
+        0.8172,
+        -0.3841,
+        0.4297
+       ],
+       [
+        0.5391,
+        0.773,
+        -0.3344
+       ],
+       [
+        -0.2037,
+        0.5049,
+        0.8388
+       ]
+      ]
+     },
+     {
+      "id": "chain-B-39",
+      "label": "Major vault protein, chain B-39",
+      "entity": "1",
+      "across_nm": [
+       45.4,
+       11.8,
+       4.5
+      ],
+      "centre_nm": [
+       14.38,
+       -4.19,
+       14.01
+      ],
+      "axes": [
+       [
+        0.8173,
+        -0.1147,
+        -0.5647
+       ],
+       [
+        0.5391,
+        0.4984,
+        0.6789
+       ],
+       [
+        0.2036,
+        -0.8593,
+        0.4691
+       ]
+      ]
+     }
+    ],
+    "between_nm": null,
+    "kinds": 1,
+    "modelled": [
+     0.876,
+     0.876
+    ],
+    "beside": null,
+    "note": "the vault cage with ADP, the first biological assembly of 78 copies of the major vault protein; the entry holds no PARP4, TEP1 or vault RNA",
+    "says": "The viewer's own measure from the entry's coordinates, by tools/measure_particle.py: the whole, each named part and each chain as the ellipsoid of the same spread as its polymer atoms (model 1, one place for an atom given in alternatives): along each of its own three axes a half-width of the square root of five times the atoms' variance; the farthest atoms beside it. The frame: origin at the centre of the whole's atoms; its own axes, longest first, each sign set so that its largest part is positive; z = x × y. The Protein Data Bank states no size.",
+    "sources": [
+     "catalogue:pdb9mxv"
+    ],
+    "surface": {
+     "file": "shapes/human.vault.json",
+     "of": "human",
+     "entry": "9MXV",
+     "assembly": "1",
+     "definition": "each part as one solid: the closed surface that holds its residues' own volume (0.135 nm³ for each amino acid, 0.32 nm³ for each nucleotide), protein and nucleic acid together, in a cloud where each residue is spread as a Gaussian 2.7 nm wide weighted by its volume, on a grid 2.7 nm apart (coarser than the setting's 1.6 nm, to hold the budget); of a surface in pieces, its largest and every piece of at least 5% of its volume are kept, smaller ones dropped, each listed in the shape's file; for two tones, that solid divided where the nucleic acid's share of the cloud is the greater and where the protein's is (under tones, each inside the solid or on it)",
+     "width_nm": 2.7,
+     "by": "parts",
+     "setting_width_nm": 1.6,
+     "triangles": 9268
+    }
+   },
+   "gathered": {
+    "proteins": [
+     [
+      "h1SMcG0002250",
+      null,
+      "Major vault protein",
+      "candidate by family"
+     ]
+    ],
+    "in_atlas": true,
+    "vault": {
+     "footings": {
+      "record": false,
+      "entry": false,
+      "family": true
+     },
+     "proteins": {
+      "h1SMcG0002250": {
+       "tier": "candidate by family",
+       "marks": [
+        "IPR039059"
+       ]
+      }
+     },
+     "signatures": {
+      "family": "IPR039059",
+      "domains": [
+       "IPR021870",
+       "IPR041139",
+       "IPR041134",
+       "IPR040989",
+       "IPR041136"
+      ],
+      "parp4": "IPR058904"
+     },
+     "family_not_in_atlas": [],
+     "structure": {
+      "own": false,
+      "left_out": [],
+      "asked": "2026-11-19",
+      "entries_read": 43
+     },
+     "reference_portal": {
+      "species": "human",
+      "id": "CPX-10181",
+      "name": "Vault ribonucleoprotein complex",
+      "evidence": "ECO:0005547",
+      "members": {
+       "Q14764": 78,
+       "Q99973": 0,
+       "Q9UKK3": 0
+      },
+      "others": [
+       "URS0000000A8C_9606",
+       "URS000058CD99_9606",
+       "URS00005CCF67_9606",
+       "URS0000A76E3A_9606"
+      ],
+      "size_nm": [
+       72.5,
+       41.0,
+       41.0
+      ],
+      "mass_MDa": 13.0,
+      "copies_said": {
+       "of": "PARP4",
+       "copies": 9,
+       "says": "There are about 9 copies of PARP4 per vault which may act to ADP-ribosylate itself and MVP",
+       "protein": "Q9UKK3",
+       "entry": {
+        "comment": "subunit",
+        "says": "Interacts with MVP (via MVP repeats 3 and 4); each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules (PubMed:40691181)",
+        "evidence": "cited",
+        "publications": [
+         "40691181"
+        ]
+       }
+      }
+     },
+     "preprint": {
+      "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+      "doi": "10.64898/2026.11.04.764334",
+      "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+      "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+      "statements": [
+       {
+        "id": "survey",
+        "quote": "found MVP homologs in 29 bacterial and 4 archaeal phyla",
+        "place": "Abstract"
+       },
+       {
+        "id": "eight",
+        "quote": "vault particles of eight homologs expressed in Escherichia coli",
+        "place": "Abstract"
+       },
+       {
+        "id": "shell",
+        "quote": "a shell of 96 MVP chains",
+        "place": "Abstract"
+       },
+       {
+        "id": "resolution",
+        "quote": "nominal resolution of 3.2 Å",
+        "place": "Results, the first paragraph of the subsection on the structure of the phage relative L05"
+       },
+       {
+        "id": "host",
+        "quote": "homologs assemble into vaults when expressed in Escherichia coli",
+        "place": "Introduction, the paragraph that begins “Here, we survey”"
+       },
+       {
+        "id": "rare",
+        "quote": "less than 1% of species-representative assemblies",
+        "place": "Introduction, the paragraph that begins “Here, we survey”"
+       },
+       {
+        "id": "mammal-size",
+        "quote": "about 67 nm long and 40 nm wide",
+        "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+       },
+       {
+        "id": "per-cell",
+        "quote": "a typical human cell is predicted to hold about 10,000 vaults",
+        "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+       },
+       {
+        "id": "function",
+        "quote": "Yet the function of vaults remains unknown",
+        "place": "Introduction, the paragraph that begins “In mammals, the shell encloses”"
+       },
+       {
+        "id": "not-established",
+        "quote": "we have likewise not yet established the function of prokaryotic vaults",
+        "place": "Discussion"
+       }
+      ],
+      "source": "gathered:planarian:vault_preprint"
+     },
+     "sources": [
+      "gathered:planarian:atlas_table"
+     ]
+    },
+    "no_structure": "None in hand of the species' own that holds the particle. The search of the Protein Data Bank for vault-related entries (2026-11-19, 43 entries) found 0 of this species, none of which stands for the particle."
+   }
+  },
+  {
    "id": "mitochondrial-ribosome",
    "species": "planarian",
    "label": "Mitochondrial ribosome",
    "named": {
-    "text": "63 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 82 parts of the human's mitochondrial ribosome: candidates for 54 of those parts (54 of the 82 that the reference's entry holds). For 19 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 7 the table can tell nothing, its scan being older than the family; 2 have no family signature to look for.",
+    "text": "68 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 82 parts of the human's mitochondrial ribosome: candidates for 58 of those parts (58 of the 82 that the reference's entry holds). For 22 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 2 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther",
+     "gathered:planarian:scan_pfam"
     ]
    },
    "gathered": {
@@ -1509,6 +4623,15 @@
       "candidate by family",
       [
        "MRPS12"
+      ]
+     ],
+     [
+      "h1SMcG0000692",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MRPL18"
       ]
      ],
      [
@@ -1666,6 +4789,15 @@
       ]
      ],
      [
+      "h1SMcG0007995",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MRPL37"
+      ]
+     ],
+     [
       "h1SMcG0008516",
       null,
       "Small ribosomal subunit protein uS14",
@@ -1752,7 +4884,9 @@
       "Small ribosomal subunit protein mS40",
       "candidate by family",
       [
-       "MRPS18B"
+       "MRPS18A",
+       "MRPS18B",
+       "MRPS18C"
       ]
      ],
      [
@@ -1856,6 +4990,15 @@
       ]
      ],
      [
+      "h1SMcG0015222",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MRPL58"
+      ]
+     ],
+     [
       "h1SMcG0015258",
       null,
       "Tektins; Small ribosomal subunit protein mS27; mS27/PTCD2; Tektin-like",
@@ -1929,6 +5072,15 @@
       ]
      ],
      [
+      "h1SMcG0018072",
+      null,
+      "Proline-tRNA ligase, class IIa",
+      "candidate by family",
+      [
+       "MRPL39"
+      ]
+     ],
+     [
       "h1SMcG0018348",
       null,
       "Small ribosomal subunit protein uS2; Small ribosomal subunit protein uS2, bacteria/mitochondria/plastid",
@@ -1962,6 +5114,15 @@
       "candidate by family",
       [
        "MRPL48"
+      ]
+     ],
+     [
+      "h1SMcG0019065",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MRPL45"
       ]
      ],
      [
@@ -2059,7 +5220,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "63 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 82 parts of the human's mitochondrial ribosome: candidates for 54 of those parts (54 of the 82 that the reference's entry holds). For 19 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 7 the table can tell nothing, its scan being older than the family; 2 have no family signature to look for."
+     "text": "68 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 82 parts of the human's mitochondrial ribosome: candidates for 58 of those parts (58 of the 82 that the reference's entry holds). For 22 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 2 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -2167,8 +5328,8 @@
      [
       "MRPL18",
       "part",
-      "not in the table",
-      0
+      "candidates",
+      1
      ],
      [
       "MRPL19",
@@ -2227,13 +5388,13 @@
      [
       "MRPL32",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
       "MRPL33",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -2251,14 +5412,14 @@
      [
       "MRPL36",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
       "MRPL37",
       "part",
       "candidates",
-      1
+      2
      ],
      [
       "MRPL38",
@@ -2269,8 +5430,8 @@
      [
       "MRPL39",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "MRPL40",
@@ -2305,8 +5466,8 @@
      [
       "MRPL45",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "MRPL46",
@@ -2377,8 +5538,8 @@
      [
       "MRPL58",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "MRPS2",
@@ -2437,7 +5598,7 @@
      [
       "MRPS15",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -2456,7 +5617,7 @@
       "MRPS18A",
       "part",
       "candidates",
-      2
+      3
      ],
      [
       "MRPS18B",
@@ -2468,7 +5629,7 @@
       "MRPS18C",
       "part",
       "candidates",
-      2
+      3
      ],
      [
       "MRPS21",
@@ -2570,12 +5731,14 @@
    "species": "planarian",
    "label": "RNA polymerase",
    "named": {
-    "text": "26 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 15 parts of the human's RNA polymerase: candidates for 9 of those parts (9 of the 13 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "29 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 15 parts of the human's RNA polymerase: candidates for 9 of those parts (9 of the 13 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -2698,6 +5861,24 @@
       ]
      ],
      [
+      "h1SMcG0009743",
+      null,
+      null,
+      "candidate by family",
+      [
+       "POLR2C"
+      ]
+     ],
+     [
+      "h1SMcG0009744",
+      null,
+      null,
+      "candidate by family",
+      [
+       "POLR2C"
+      ]
+     ],
+     [
       "h1SMcG0010290",
       null,
       "DNA-directed RNA polymerase, subunit beta-prime",
@@ -2749,6 +5930,15 @@
       "candidate by family",
       [
        "POLR2A"
+      ]
+     ],
+     [
+      "h1SMcG0017054",
+      null,
+      null,
+      "candidate by family",
+      [
+       "POLR2C"
       ]
      ],
      [
@@ -2819,7 +6009,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "26 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 15 parts of the human's RNA polymerase: candidates for 9 of those parts (9 of the 13 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "29 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 15 parts of the human's RNA polymerase: candidates for 9 of those parts (9 of the 13 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -2838,7 +6028,7 @@
       "POLR2C",
       "part",
       "candidates",
-      2
+      5
      ],
      [
       "POLR2D",
@@ -2909,7 +6099,7 @@
      [
       "POLR2M",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ]
     ],
@@ -3256,12 +6446,14 @@
    "species": "planarian",
    "label": "RNA polymerase III",
    "named": {
-    "text": "18 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 17 parts of the human's RNA polymerase III: candidates for 8 of those parts (8 of the 17 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "20 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 17 parts of the human's RNA polymerase III: candidates for 9 of those parts (9 of the 17 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -3291,6 +6483,15 @@
       "candidate by family",
       [
        "POLR3K"
+      ]
+     ],
+     [
+      "h1SMcG0002678",
+      null,
+      "DNA-directed RNA polymerase, subunit beta-prime",
+      "candidate by family",
+      [
+       "POLR3A"
       ]
      ],
      [
@@ -3384,6 +6585,15 @@
       ]
      ],
      [
+      "h1SMcG0015958",
+      null,
+      "DNA-directed RNA polymerase, subunit beta-prime",
+      "candidate by family",
+      [
+       "POLR3A"
+      ]
+     ],
+     [
       "h1SMcG0019312",
       null,
       "DNA-directed RNA polymerase, subunit 2",
@@ -3433,7 +6643,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "18 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 17 parts of the human's RNA polymerase III: candidates for 8 of those parts (8 of the 17 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "20 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 17 parts of the human's RNA polymerase III: candidates for 9 of those parts (9 of the 17 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -3487,8 +6697,8 @@
      [
       "POLR3A",
       "part",
-      "not in the table",
-      0
+      "candidates",
+      2
      ],
      [
       "POLR3B",
@@ -3559,7 +6769,9 @@
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -3756,12 +6968,14 @@
    "species": "planarian",
    "label": "Complex I (NADH dehydrogenase)",
    "named": {
-    "text": "25 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 44 parts of the human's Complex I (NADH dehydrogenase): candidates for 21 of those parts (21 of the 44 that the reference's entry holds). For 19 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 4 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "28 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 44 parts of the human's Complex I (NADH dehydrogenase): candidates for 23 of those parts (23 of the 44 that the reference's entry holds). For 21 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -3857,6 +7071,15 @@
       ]
      ],
      [
+      "h1SMcG0008119",
+      null,
+      null,
+      "candidate by family",
+      [
+       "NDUFA9"
+      ]
+     ],
+     [
       "h1SMcG0008652",
       null,
       "NADH-quinone oxidoreductase, chain I",
@@ -3872,6 +7095,15 @@
       "candidate by family",
       [
        "NDUFAB1"
+      ]
+     ],
+     [
+      "h1SMcG0009060",
+      null,
+      null,
+      "candidate by family",
+      [
+       "NDUFA9"
       ]
      ],
      [
@@ -3926,6 +7158,15 @@
       "candidate by family",
       [
        "NDUFS3"
+      ]
+     ],
+     [
+      "h1SMcG0015266",
+      null,
+      null,
+      "candidate by family",
+      [
+       "NDUFA10"
       ]
      ],
      [
@@ -3996,7 +7237,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "25 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 44 parts of the human's Complex I (NADH dehydrogenase): candidates for 21 of those parts (21 of the 44 that the reference's entry holds). For 19 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 4 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "28 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 44 parts of the human's Complex I (NADH dehydrogenase): candidates for 23 of those parts (23 of the 44 that the reference's entry holds). For 21 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -4008,7 +7249,7 @@
      [
       "MT-ND2",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -4038,7 +7279,7 @@
      [
       "MT-ND6",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -4086,14 +7327,14 @@
      [
       "NDUFA9",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "NDUFA10",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "NDUFA11",
@@ -4284,7 +7525,9 @@
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -4373,12 +7616,14 @@
    "species": "planarian",
    "label": "Complex III (cytochrome bc1)",
    "named": {
-    "text": "3 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 10 parts of the human's Complex III (cytochrome bc1): candidates for 3 of those parts (3 of the 10 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 2 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 10 parts of the human's Complex III (cytochrome bc1): candidates for 5 of those parts (5 of the 10 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -4390,6 +7635,46 @@
       "candidate by family",
       [
        "CYC1"
+      ]
+     ],
+     [
+      "h1SMcG0008382",
+      null,
+      null,
+      "candidate by family",
+      [
+       "UQCRC1",
+       "UQCRC2"
+      ]
+     ],
+     [
+      "h1SMcG0009877",
+      null,
+      null,
+      "candidate by family",
+      [
+       "UQCRC1",
+       "UQCRC2"
+      ]
+     ],
+     [
+      "h1SMcG0010339",
+      null,
+      null,
+      "candidate by family",
+      [
+       "UQCRC1",
+       "UQCRC2"
+      ]
+     ],
+     [
+      "h1SMcG0012673",
+      null,
+      null,
+      "candidate by family",
+      [
+       "UQCRC1",
+       "UQCRC2"
       ]
      ],
      [
@@ -4415,7 +7700,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "3 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 10 parts of the human's Complex III (cytochrome bc1): candidates for 3 of those parts (3 of the 10 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 2 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 10 parts of the human's Complex III (cytochrome bc1): candidates for 5 of those parts (5 of the 10 that the reference's entry holds). For 5 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -4451,14 +7736,14 @@
      [
       "UQCRC1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      4
      ],
      [
       "UQCRC2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      4
      ],
      [
       "UQCRFS1",
@@ -4494,12 +7779,14 @@
    "species": "planarian",
    "label": "Complex IV (cytochrome c oxidase)",
    "named": {
-    "text": "13 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's Complex IV (cytochrome c oxidase): candidates for 7 of those parts (7 of the 14 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "13 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's Complex IV (cytochrome c oxidase): candidates for 7 of those parts (7 of the 14 that the reference's entry holds). For 7 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -4626,7 +7913,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "13 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's Complex IV (cytochrome c oxidase): candidates for 7 of those parts (7 of the 14 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "13 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's Complex IV (cytochrome c oxidase): candidates for 7 of those parts (7 of the 14 that the reference's entry holds). For 7 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -4662,7 +7949,7 @@
      [
       "COX6C",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -4790,12 +8077,14 @@
    "species": "planarian",
    "label": "Oligosaccharyltransferase",
    "named": {
-    "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 8 parts of the human's oligosaccharyltransferase: candidates for 5 of those parts (5 of the 8 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 8 parts of the human's oligosaccharyltransferase: candidates for 5 of those parts (5 of the 8 that the reference's entry holds). For 3 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -4868,7 +8157,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 8 parts of the human's oligosaccharyltransferase: candidates for 5 of those parts (5 of the 8 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "7 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 8 parts of the human's oligosaccharyltransferase: candidates for 5 of those parts (5 of the 8 that the reference's entry holds). For 3 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -4886,7 +8175,7 @@
      [
       "OST4",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -5280,16 +8569,27 @@
    "species": "planarian",
    "label": "TIM22 complex",
    "named": {
-    "text": "2 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's TIM22 complex: candidates for 2 of those parts (2 of the 6 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
+    "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's TIM22 complex: candidates for 3 of those parts (3 of the 6 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
     "proteins": [
+     [
+      "h1SMcG0001236",
+      null,
+      null,
+      "candidate by family",
+      [
+       "AGK"
+      ]
+     ],
      [
       "h1SMcG0005578",
       null,
@@ -5307,25 +8607,52 @@
       [
        "TIMM22"
       ]
+     ],
+     [
+      "h1SMcG0012763",
+      null,
+      null,
+      "candidate by family",
+      [
+       "AGK"
+      ]
+     ],
+     [
+      "h1SMcG0016928",
+      null,
+      null,
+      "candidate by family",
+      [
+       "AGK"
+      ]
+     ],
+     [
+      "h1SMcG0021172",
+      null,
+      null,
+      "candidate by family",
+      [
+       "AGK"
+      ]
      ]
     ],
     "in_atlas": true,
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "2 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's TIM22 complex: candidates for 2 of those parts (2 of the 6 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
+     "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's TIM22 complex: candidates for 3 of those parts (3 of the 6 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
     },
     "looked_for": [
      [
       "AGK",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      4
      ],
      [
       "TIMM9",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -5337,7 +8664,7 @@
      [
       "TIMM10B",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -5368,12 +8695,14 @@
    "species": "planarian",
    "label": "Nuclear pore",
    "named": {
-    "text": "33 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 35 parts of the human's nuclear pore: candidates for 23 of those parts (23 of the 35 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 3 have no family signature to look for.",
+    "text": "40 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 35 parts of the human's nuclear pore: candidates for 24 of those parts (24 of the 35 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 3 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -5465,6 +8794,15 @@
       ]
      ],
      [
+      "h1SMcG0002146",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
+      ]
+     ],
+     [
       "h1SMcG0003203",
       null,
       "Nucleoporin, Nup155-like",
@@ -5530,6 +8868,15 @@
       ]
      ],
      [
+      "h1SMcG0007564",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
+      ]
+     ],
+     [
       "h1SMcG0008358",
       null,
       "SAC3/GANP/THP3",
@@ -5539,12 +8886,30 @@
       ]
      ],
      [
+      "h1SMcG0008492",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
+      ]
+     ],
+     [
       "h1SMcG0010646",
       null,
       "Nucleoporin Nup188",
       "candidate by family",
       [
        "NUP188"
+      ]
+     ],
+     [
+      "h1SMcG0011410",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
       ]
      ],
      [
@@ -5600,6 +8965,24 @@
       "candidate by family",
       [
        "NUP107"
+      ]
+     ],
+     [
+      "h1SMcG0014561",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
+      ]
+     ],
+     [
+      "h1SMcG0015115",
+      null,
+      "Recoverin family",
+      "candidate by family",
+      [
+       "CETN2"
       ]
      ],
      [
@@ -5683,13 +9066,22 @@
       [
        "NUP85"
       ]
+     ],
+     [
+      "h1SMcG0022041",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CETN2"
+      ]
      ]
     ],
     "in_atlas": true,
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "33 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 35 parts of the human's nuclear pore: candidates for 23 of those parts (23 of the 35 that the reference's entry holds). For 6 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 3 the table can tell nothing, its scan being older than the family; 3 have no family signature to look for."
+     "text": "40 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 35 parts of the human's nuclear pore: candidates for 24 of those parts (24 of the 35 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 3 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -5701,14 +9093,14 @@
      [
       "AHCTF1",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
       "CETN2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      7
      ],
      [
       "DDX19B",
@@ -5755,7 +9147,7 @@
      [
       "NUP42",
       "part",
-      "cannot tell",
+      "not in the table",
       0
      ],
      [
@@ -5918,12 +9310,14 @@
    "species": "planarian",
    "label": "Proteasome",
    "named": {
-    "text": "31 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 32 parts of the human's proteasome: candidates for 22 of those parts (22 of the 32 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 8 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "64 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 32 parts of the human's proteasome: candidates for 31 of those parts (31 of the 32 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -5938,6 +9332,75 @@
       ]
      ],
      [
+      "h1SMcG0000461",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0000665",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD4"
+      ]
+     ],
+     [
+      "h1SMcG0000681",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD4"
+      ]
+     ],
+     [
+      "h1SMcG0000683",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD4"
+      ]
+     ],
+     [
+      "h1SMcG0000878",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0000881",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
       "h1SMcG0000958",
       null,
       "Proteasome, subunit alpha/beta; Proteasome alpha-type subunit; Proteasome subunit alpha 1",
@@ -5948,6 +9411,62 @@
        "PSMA3",
        "PSMA4",
        "PSMA7"
+      ]
+     ],
+     [
+      "h1SMcG0001345",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0001398",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0001438",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0001885",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
       ]
      ],
      [
@@ -5976,6 +9495,57 @@
       ]
      ],
      [
+      "h1SMcG0003191",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0003192",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0003323",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0003423",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD11"
+      ]
+     ],
+     [
       "h1SMcG0003962",
       null,
       "Peptidase T1A, proteasome beta-subunit; Proteasome, subunit alpha/beta; Proteasome B-type subunit",
@@ -5988,12 +9558,40 @@
       ]
      ],
      [
+      "h1SMcG0004176",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
       "h1SMcG0004398",
       null,
       "26S Proteasome non-ATPase regulatory subunit 13",
       "candidate by family",
       [
        "PSMD13"
+      ]
+     ],
+     [
+      "h1SMcG0004572",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
       ]
      ],
      [
@@ -6006,12 +9604,77 @@
       ]
      ],
      [
+      "h1SMcG0004799",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0004800",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0004870",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0006058",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
       "h1SMcG0006291",
       null,
       "26S proteasome regulatory complex, non-ATPase subcomplex, Rpn1 subunit",
       "candidate by family",
       [
        "PSMD2"
+      ]
+     ],
+     [
+      "h1SMcG0006342",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD14"
       ]
      ],
      [
@@ -6060,6 +9723,29 @@
       "candidate by family",
       [
        "PSMD7"
+      ]
+     ],
+     [
+      "h1SMcG0008493",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0008581",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD14"
       ]
      ],
      [
@@ -6148,6 +9834,38 @@
       ]
      ],
      [
+      "h1SMcG0015125",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
+      "h1SMcG0017044",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD3"
+      ]
+     ],
+     [
+      "h1SMcG0017046",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD3"
+      ]
+     ],
+     [
       "h1SMcG0017241",
       null,
       "Proteasome, subunit alpha/beta; Proteasome B-type subunit; Proteasome subunit beta type-3",
@@ -6167,12 +9885,44 @@
       ]
      ],
      [
+      "h1SMcG0017614",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD11"
+      ]
+     ],
+     [
+      "h1SMcG0018086",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
+      ]
+     ],
+     [
       "h1SMcG0018964",
       null,
       "26S proteasome regulatory subunit Rpn7/COP9 signalosome complex subunit 1",
       "candidate by family",
       [
        "PSMD6"
+      ]
+     ],
+     [
+      "h1SMcG0018970",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD3"
       ]
      ],
      [
@@ -6200,12 +9950,53 @@
       ]
      ],
      [
+      "h1SMcG0019505",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMD4"
+      ]
+     ],
+     [
       "h1SMcG0020005",
       null,
       "26S proteasome non-ATPase regulatory subunit Rpn12",
       "candidate by family",
       [
        "PSMD8"
+      ]
+     ],
+     [
+      "h1SMcG0020402",
+      null,
+      "Eukaryotic translation initiation factor 3 subunit H",
+      "candidate by family",
+      [
+       "PSMD14"
+      ]
+     ],
+     [
+      "h1SMcG0020403",
+      null,
+      "Eukaryotic translation initiation factor 3 subunit H",
+      "candidate by family",
+      [
+       "PSMD14"
+      ]
+     ],
+     [
+      "h1SMcG0021316",
+      null,
+      null,
+      "candidate by family",
+      [
+       "PSMC1",
+       "PSMC2",
+       "PSMC3",
+       "PSMC4",
+       "PSMC5",
+       "PSMC6"
       ]
      ],
      [
@@ -6255,7 +10046,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "31 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 32 parts of the human's proteasome: candidates for 22 of those parts (22 of the 32 that the reference's entry holds). For 2 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 8 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "64 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 32 parts of the human's proteasome: candidates for 31 of those parts (31 of the 32 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -6345,38 +10136,38 @@
      [
       "PSMC1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMC2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMC3",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMC4",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMC5",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMC6",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      20
      ],
      [
       "PSMD1",
@@ -6393,14 +10184,14 @@
      [
       "PSMD3",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "PSMD4",
       "part",
-      "not in the table",
-      0
+      "candidates",
+      4
      ],
      [
       "PSMD6",
@@ -6423,8 +10214,8 @@
      [
       "PSMD11",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "PSMD12",
@@ -6442,7 +10233,7 @@
       "PSMD14",
       "part",
       "candidates",
-      1
+      5
      ],
      [
       "SEM1",
@@ -6471,7 +10262,9 @@
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_ncbifam"
     ]
    },
    "gathered": {
@@ -6491,7 +10284,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, epsilon subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT5"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6500,6 +10299,12 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, alpha subunit; T-complex protein 1",
       "candidate by family",
       [
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
        "TCP1"
       ]
      ],
@@ -6509,7 +10314,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, delta subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT4"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6518,7 +10329,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, eta subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT7"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6527,6 +10344,12 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, alpha subunit; T-complex protein 1",
       "candidate by family",
       [
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
        "TCP1"
       ]
      ],
@@ -6536,7 +10359,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, delta subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT4"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6554,7 +10383,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, gamma subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT3"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6572,7 +10407,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, gamma subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT3"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6581,7 +10422,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, beta subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT2"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ],
      [
@@ -6590,7 +10437,13 @@
       "Chaperonin Cpn60/GroEL/TCP-1 family; T-complex protein 1, beta subunit; T-complex protein 1",
       "candidate by family",
       [
-       "CCT2"
+       "CCT2",
+       "CCT3",
+       "CCT4",
+       "CCT5",
+       "CCT6A",
+       "CCT7",
+       "TCP1"
       ]
      ]
     ],
@@ -6605,37 +10458,37 @@
       "CCT2",
       "part",
       "candidates",
-      2
+      10
      ],
      [
       "CCT3",
       "part",
       "candidates",
-      2
+      10
      ],
      [
       "CCT4",
       "part",
       "candidates",
-      2
+      10
      ],
      [
       "CCT5",
       "part",
       "candidates",
-      1
+      10
      ],
      [
       "CCT6A",
       "part",
       "candidates",
-      1
+      11
      ],
      [
       "CCT7",
       "part",
       "candidates",
-      1
+      10
      ],
      [
       "CCT8",
@@ -6647,7 +10500,7 @@
       "TCP1",
       "part",
       "candidates",
-      2
+      10
      ]
     ],
     "elsewhere": {
@@ -6967,12 +10820,15 @@
    "species": "planarian",
    "label": "Cytoplasmic dynein",
    "named": {
-    "text": "64 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's cytoplasmic dynein: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "74 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's cytoplasmic dynein: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther",
+     "gathered:planarian:scan_pfam"
     ]
    },
    "gathered": {
@@ -7032,6 +10888,24 @@
       ]
      ],
      [
+      "h1SMcG0001891",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
+      "h1SMcG0002197",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
       "h1SMcG0002497",
       null,
       "Dynein light chain, type 1/2",
@@ -7065,6 +10939,15 @@
       "candidate by family",
       [
        "DYNC1H1"
+      ]
+     ],
+     [
+      "h1SMcG0003143",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
       ]
      ],
      [
@@ -7107,6 +10990,15 @@
       "h1SMcG0003933",
       null,
       "Dynein light chain Tctex-1-like",
+      "candidate by family",
+      [
+       "DYNLT1"
+      ]
+     ],
+     [
+      "h1SMcG0004561",
+      null,
+      null,
       "candidate by family",
       [
        "DYNLT1"
@@ -7185,6 +11077,15 @@
       ]
      ],
      [
+      "h1SMcG0006179",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
       "h1SMcG0006995",
       null,
       "Dynein light chain Tctex-1-like",
@@ -7239,6 +11140,15 @@
       ]
      ],
      [
+      "h1SMcG0009857",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
       "h1SMcG0009891",
       null,
       "Dynein heavy chain",
@@ -7272,6 +11182,15 @@
       "candidate by family",
       [
        "DYNLT1"
+      ]
+     ],
+     [
+      "h1SMcG0011122",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
       ]
      ],
      [
@@ -7347,6 +11266,15 @@
       ]
      ],
      [
+      "h1SMcG0015851",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
       "h1SMcG0015984",
       null,
       "Dynein heavy chain",
@@ -7371,6 +11299,15 @@
       "candidate by family",
       [
        "DYNLL1"
+      ]
+     ],
+     [
+      "h1SMcG0017057",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
       ]
      ],
      [
@@ -7509,6 +11446,15 @@
       ]
      ],
      [
+      "h1SMcG0022306",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DYNC1I2"
+      ]
+     ],
+     [
       "h1SMcG0022531",
       null,
       "Dynein light chain, type 1/2",
@@ -7558,7 +11504,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "64 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's cytoplasmic dynein: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "74 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's cytoplasmic dynein: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -7571,7 +11517,7 @@
       "DYNC1I2",
       "part",
       "candidates",
-      1
+      10
      ],
      [
       "DYNC1LI2",
@@ -7595,7 +11541,7 @@
       "DYNLT1",
       "part",
       "candidates",
-      13
+      14
      ]
     ],
     "elsewhere": {
@@ -8003,12 +11949,14 @@
    "species": "planarian",
    "label": "Axonemal dynein",
    "named": {
-    "text": "34 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's axonemal dynein: candidates for 8 of those parts (8 of the 14 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 5 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
+    "text": "46 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's axonemal dynein: candidates for 13 of those parts (13 of the 14 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -8053,6 +12001,30 @@
       ]
      ],
      [
+      "h1SMcG0001891",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
+      ]
+     ],
+     [
+      "h1SMcG0002197",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
+      ]
+     ],
+     [
       "h1SMcG0002654",
       null,
       "Dynein heavy chain",
@@ -8089,6 +12061,18 @@
        "DNAH3",
        "DNAH5",
        "DNAH7"
+      ]
+     ],
+     [
+      "h1SMcG0003143",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
       ]
      ],
      [
@@ -8202,6 +12186,27 @@
       ]
      ],
      [
+      "h1SMcG0006179",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
+      ]
+     ],
+     [
+      "h1SMcG0006369",
+      null,
+      null,
+      "candidate by family",
+      [
+       "ODAD1"
+      ]
+     ],
+     [
       "h1SMcG0008338",
       null,
       "Dynein heavy chain",
@@ -8241,6 +12246,18 @@
       ]
      ],
      [
+      "h1SMcG0009857",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
+      ]
+     ],
+     [
       "h1SMcG0009891",
       null,
       "Dynein heavy chain",
@@ -8251,6 +12268,18 @@
        "DNAH3",
        "DNAH5",
        "DNAH7"
+      ]
+     ],
+     [
+      "h1SMcG0011122",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
       ]
      ],
      [
@@ -8319,6 +12348,15 @@
       ]
      ],
      [
+      "h1SMcG0014916",
+      null,
+      null,
+      "candidate by family",
+      [
+       "ODAD1"
+      ]
+     ],
+     [
       "h1SMcG0015257",
       null,
       "Dynein regulatory complex protein",
@@ -8326,6 +12364,18 @@
       [
        "DRC1",
        "DRC2"
+      ]
+     ],
+     [
+      "h1SMcG0015851",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
       ]
      ],
      [
@@ -8352,6 +12402,18 @@
        "DNAH3",
        "DNAH5",
        "DNAH7"
+      ]
+     ],
+     [
+      "h1SMcG0017057",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
       ]
      ],
      [
@@ -8407,6 +12469,18 @@
       ]
      ],
      [
+      "h1SMcG0021136",
+      null,
+      "Cytoplasmic dynein 1 intermediate chain 1/2",
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
+      ]
+     ],
+     [
       "h1SMcG0021376",
       null,
       "Dynein heavy chain",
@@ -8417,6 +12491,18 @@
        "DNAH3",
        "DNAH5",
        "DNAH7"
+      ]
+     ],
+     [
+      "h1SMcG0022306",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DNAI1",
+       "DNAI2",
+       "DNAI3",
+       "DNAI4"
       ]
      ],
      [
@@ -8450,7 +12536,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "34 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's axonemal dynein: candidates for 8 of those parts (8 of the 14 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 5 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
+     "text": "46 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 14 parts of the human's axonemal dynein: candidates for 13 of those parts (13 of the 14 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -8486,26 +12572,26 @@
      [
       "DNAI1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      10
      ],
      [
       "DNAI2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      10
      ],
      [
       "DNAI3",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      10
      ],
      [
       "DNAI4",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      10
      ],
      [
       "DNAI7",
@@ -8534,14 +12620,356 @@
      [
       "ODAD1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ]
     ],
     "elsewhere": {
      "entry": "8J07",
      "organism": "Homo sapiens",
      "title": "96nm repeat of human respiratory doublet microtubule and associated axonemal complexes",
+     "resolution_A": 4.1,
+     "source": null
+    },
+    "no_structure": "None in hand of the species' own. A search of the Protein Data Bank by the species' taxon (79327, Schmidtea mediterranea) on 2026-11-17 found 0 entries of the species."
+   }
+  },
+  {
+   "id": "myosin-ii",
+   "species": "planarian",
+   "label": "Myosin II",
+   "named": {
+    "text": "32 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 3 parts of the human's Myosin II: candidates for 2 of those parts (2 of the 3 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
+    "by": "family signature",
+    "sources": [
+     "gathered:planarian:interpro",
+     "gathered:planarian:atlas_table",
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
+    ]
+   },
+   "gathered": {
+    "proteins": [
+     [
+      "h1SMcG0000167",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0000361",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0001099",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0003800",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0004427",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0004594",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL12B"
+      ]
+     ],
+     [
+      "h1SMcG0004755",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0005090",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0007027",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0007695",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0008719",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0009295",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0009305",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0009837",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0009942",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0012075",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0012975",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0013220",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL12B"
+      ]
+     ],
+     [
+      "h1SMcG0014744",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0014789",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0015080",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0015584",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0015725",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0015803",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0016297",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0017751",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0019069",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL12B"
+      ]
+     ],
+     [
+      "h1SMcG0020486",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0021128",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0021508",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0021650",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ],
+     [
+      "h1SMcG0021950",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MYL6"
+      ]
+     ]
+    ],
+    "in_atlas": true,
+    "route": {
+     "by": "family",
+     "reference": "human",
+     "text": "32 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 3 parts of the human's Myosin II: candidates for 2 of those parts (2 of the 3 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
+    },
+    "looked_for": [
+     [
+      "MYH10",
+      "part",
+      "no family signature",
+      0
+     ],
+     [
+      "MYL6",
+      "part",
+      "candidates",
+      29
+     ],
+     [
+      "MYL12B",
+      "part",
+      "candidates",
+      3
+     ]
+    ],
+    "elsewhere": {
+     "entry": "9Z4Q",
+     "organism": "Homo sapiens",
+     "title": "Cryo-EM structure of human nonmuscle myosin-2B, Class 3",
      "resolution_A": 4.1,
      "source": null
     },
@@ -8779,12 +13207,14 @@
    "species": "planarian",
    "label": "Origin recognition complex",
    "named": {
-    "text": "4 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's origin recognition complex: candidates for 4 of those parts (4 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's origin recognition complex: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -8799,12 +13229,30 @@
       ]
      ],
      [
+      "h1SMcG0005726",
+      null,
+      null,
+      "candidate by family",
+      [
+       "ORC1"
+      ]
+     ],
+     [
       "h1SMcG0006624",
       null,
       "Origin recognition complex, subunit 3",
       "candidate by family",
       [
        "ORC3"
+      ]
+     ],
+     [
+      "h1SMcG0019421",
+      null,
+      "Cell division protein Cdc6/18",
+      "candidate by family",
+      [
+       "ORC1"
       ]
      ],
      [
@@ -8830,14 +13278,14 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "4 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's origin recognition complex: candidates for 4 of those parts (4 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 1 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 6 parts of the human's origin recognition complex: candidates for 5 of those parts (5 of the 6 that the reference's entry holds). For 1 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
       "ORC1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "ORC2",
@@ -9114,12 +13562,14 @@
    "species": "planarian",
    "label": "RNA exosome",
    "named": {
-    "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 12 parts of the human's RNA exosome: candidates for 6 of those parts (6 of the 12 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 6 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
+    "text": "15 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 12 parts of the human's RNA exosome: candidates for 12 of those parts (12 of the 12 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -9152,6 +13602,17 @@
       ]
      ],
      [
+      "h1SMcG0004482",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC7",
+       "EXOSC8",
+       "EXOSC9"
+      ]
+     ],
+     [
       "h1SMcG0004871",
       null,
       "Exosome complex RNA-binding protein 1/RRP40/RRP4",
@@ -9159,6 +13620,15 @@
       [
        "EXOSC2",
        "EXOSC3"
+      ]
+     ],
+     [
+      "h1SMcG0004915",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DIS3"
       ]
      ],
      [
@@ -9179,20 +13649,93 @@
        "EXOSC2",
        "EXOSC3"
       ]
+     ],
+     [
+      "h1SMcG0011032",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DIS3"
+      ]
+     ],
+     [
+      "h1SMcG0011394",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC4",
+       "EXOSC5",
+       "EXOSC6"
+      ]
+     ],
+     [
+      "h1SMcG0015198",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC4",
+       "EXOSC5",
+       "EXOSC6"
+      ]
+     ],
+     [
+      "h1SMcG0015832",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC7",
+       "EXOSC8",
+       "EXOSC9"
+      ]
+     ],
+     [
+      "h1SMcG0016694",
+      null,
+      null,
+      "candidate by family",
+      [
+       "DIS3"
+      ]
+     ],
+     [
+      "h1SMcG0019030",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC4",
+       "EXOSC5",
+       "EXOSC6"
+      ]
+     ],
+     [
+      "h1SMcG0023133",
+      null,
+      null,
+      "candidate by family",
+      [
+       "EXOSC7",
+       "EXOSC8",
+       "EXOSC9"
+      ]
      ]
     ],
     "in_atlas": true,
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "6 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 12 parts of the human's RNA exosome: candidates for 6 of those parts (6 of the 12 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 6 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
+     "text": "15 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 12 parts of the human's RNA exosome: candidates for 12 of those parts (12 of the 12 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 0 have no family signature to look for."
     },
     "looked_for": [
      [
       "DIS3",
       "part",
       "candidates",
-      1
+      4
      ],
      [
       "EXOSC1",
@@ -9215,38 +13758,38 @@
      [
       "EXOSC4",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC5",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC6",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC7",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC8",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC9",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "EXOSC10",
@@ -9276,12 +13819,14 @@
    "species": "planarian",
    "label": "Mediator",
    "named": {
-    "text": "33 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 27 parts of the human's mediator: candidates for 15 of those parts (15 of the 27 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 2 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
+    "text": "62 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 27 parts of the human's mediator: candidates for 17 of those parts (17 of the 27 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -9413,6 +13958,33 @@
       ]
      ],
      [
+      "h1SMcG0001802",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0002194",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0002618",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0003379",
       null,
       "Mediator complex, subunit Med19, metazoa",
@@ -9449,6 +14021,15 @@
       ]
      ],
      [
+      "h1SMcG0004063",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0006243",
       null,
       "Mediator complex, subunit Med20",
@@ -9467,12 +14048,48 @@
       ]
      ],
      [
+      "h1SMcG0006534",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0006847",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0007819",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0008107",
       null,
       "Mediator complex, subunit Med7",
       "candidate by family",
       [
        "MED7"
+      ]
+     ],
+     [
+      "h1SMcG0008190",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
       ]
      ],
      [
@@ -9494,12 +14111,84 @@
       ]
      ],
      [
+      "h1SMcG0009084",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0009776",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0010023",
       null,
       "Cyclin/Cyclin-like subunit Ssn8",
       "candidate by family",
       [
        "CCNC"
+      ]
+     ],
+     [
+      "h1SMcG0010727",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0010728",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0011014",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0011030",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0011274",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0013335",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MED13"
       ]
      ],
      [
@@ -9521,12 +14210,57 @@
       ]
      ],
      [
+      "h1SMcG0014645",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0014745",
       null,
       "Cyclin/Cyclin-like subunit Ssn8",
       "candidate by family",
       [
        "CCNC"
+      ]
+     ],
+     [
+      "h1SMcG0015408",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0015412",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0015485",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0016612",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
       ]
      ],
      [
@@ -9557,6 +14291,51 @@
       ]
      ],
      [
+      "h1SMcG0017639",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0017958",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0018084",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0018203",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0018340",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0018374",
       null,
       "Cyclin/Cyclin-like subunit Ssn8",
@@ -9575,6 +14354,15 @@
       ]
      ],
      [
+      "h1SMcG0020209",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
       "h1SMcG0020554",
       null,
       "Mediator complex, subunit Med4",
@@ -9582,13 +14370,31 @@
       [
        "MED4"
       ]
+     ],
+     [
+      "h1SMcG0022320",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CDK8"
+      ]
+     ],
+     [
+      "h1SMcG0022409",
+      null,
+      null,
+      "candidate by family",
+      [
+       "MED1"
+      ]
      ]
     ],
     "in_atlas": true,
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "33 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 27 parts of the human's mediator: candidates for 15 of those parts (15 of the 27 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 2 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
+     "text": "62 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 27 parts of the human's mediator: candidates for 17 of those parts (17 of the 27 that the reference's entry holds). For 9 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -9601,13 +14407,13 @@
       "CDK8",
       "part",
       "candidates",
-      7
+      34
      ],
      [
       "MED1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "MED4",
@@ -9660,8 +14466,8 @@
      [
       "MED13",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "MED14",
@@ -9769,12 +14575,14 @@
    "species": "planarian",
    "label": "Spliceosome",
    "named": {
-    "text": "49 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 46 parts of the human's spliceosome: candidates for 23 of those parts (23 of the 46 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 11 the table can tell nothing, its scan being older than the family; 4 have no family signature to look for.",
+    "text": "76 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 46 parts of the human's spliceosome: candidates for 35 of those parts (35 of the 46 that the reference's entry holds). For 7 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 4 have no family signature to look for.",
     "by": "family signature",
     "sources": [
      "gathered:planarian:interpro",
      "gathered:planarian:atlas_table",
-     "gathered:planarian:reference_human"
+     "gathered:planarian:reference_human",
+     "gathered:planarian:scan_interpro",
+     "gathered:planarian:scan_panther"
     ]
    },
    "gathered": {
@@ -9834,6 +14642,15 @@
       ]
      ],
      [
+      "h1SMcG0001813",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SRRM1"
+      ]
+     ],
+     [
       "h1SMcG0002017",
       null,
       "Pre-mRNA-splicing factor Cwc2/Slt11",
@@ -9858,6 +14675,15 @@
       "candidate by family",
       [
        "PRPF19"
+      ]
+     ],
+     [
+      "h1SMcG0002196",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP40"
       ]
      ],
      [
@@ -9895,6 +14721,15 @@
       [
        "CWC27",
        "PPIL1"
+      ]
+     ],
+     [
+      "h1SMcG0003625",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3A3"
       ]
      ],
      [
@@ -9945,6 +14780,15 @@
       ]
      ],
      [
+      "h1SMcG0004702",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SRRM1"
+      ]
+     ],
+     [
       "h1SMcG0005083",
       null,
       "Like-Sm (LSM) domain containing protein, LSm4/SmD1/SmD3",
@@ -9990,6 +14834,24 @@
       ]
      ],
      [
+      "h1SMcG0006040",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3A3"
+      ]
+     ],
+     [
+      "h1SMcG0006432",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SRRM2"
+      ]
+     ],
+     [
       "h1SMcG0006599",
       null,
       "Pre-mRNA-processing-splicing factor 8",
@@ -10017,12 +14879,39 @@
       ]
      ],
      [
+      "h1SMcG0006802",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CWC22"
+      ]
+     ],
+     [
       "h1SMcG0007626",
       null,
       "Prp19",
       "candidate by family",
       [
        "PRPF19"
+      ]
+     ],
+     [
+      "h1SMcG0008186",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3B3"
+      ]
+     ],
+     [
+      "h1SMcG0008934",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP200"
       ]
      ],
      [
@@ -10045,12 +14934,48 @@
       ]
      ],
      [
+      "h1SMcG0009283",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CWC22"
+      ]
+     ],
+     [
+      "h1SMcG0009702",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3B3"
+      ]
+     ],
+     [
       "h1SMcG0009727",
       null,
       "Peptidyl-prolyl cis-trans isomerase E",
       "candidate by family",
       [
        "PPIE"
+      ]
+     ],
+     [
+      "h1SMcG0009819",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RBMX2"
+      ]
+     ],
+     [
+      "h1SMcG0011356",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3B2"
       ]
      ],
      [
@@ -10072,6 +14997,15 @@
       ]
      ],
      [
+      "h1SMcG0012622",
+      null,
+      "Protein of unknown function DUF2192",
+      "candidate by family",
+      [
+       "SNIP1"
+      ]
+     ],
+     [
       "h1SMcG0012950",
       null,
       "Pre-mRNA-splicing factor Cwf15/Cwc15",
@@ -10090,12 +15024,30 @@
       ]
      ],
      [
+      "h1SMcG0013532",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3B2"
+      ]
+     ],
+     [
       "h1SMcG0013693",
       null,
       "Pre-mRNA-splicing factor Cwc2/Slt11",
       "candidate by family",
       [
        "RBM22"
+      ]
+     ],
+     [
+      "h1SMcG0013942",
+      null,
+      null,
+      "candidate by family",
+      [
+       "CWC22"
       ]
      ],
      [
@@ -10126,6 +15078,24 @@
       [
        "CRNKL1",
        "XAB2"
+      ]
+     ],
+     [
+      "h1SMcG0015230",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNIP1"
+      ]
+     ],
+     [
+      "h1SMcG0015902",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRPA1"
       ]
      ],
      [
@@ -10165,12 +15135,75 @@
       ]
      ],
      [
+      "h1SMcG0019017",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3B3"
+      ]
+     ],
+     [
+      "h1SMcG0019128",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RBMX2"
+      ]
+     ],
+     [
+      "h1SMcG0019129",
+      null,
+      null,
+      "candidate by family",
+      [
+       "RBMX2"
+      ]
+     ],
+     [
       "h1SMcG0019622",
       null,
       "Prp19",
       "candidate by family",
       [
        "PRPF19"
+      ]
+     ],
+     [
+      "h1SMcG0019712",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRPA1"
+      ]
+     ],
+     [
+      "h1SMcG0019837",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP200"
+      ]
+     ],
+     [
+      "h1SMcG0019841",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP200"
+      ]
+     ],
+     [
+      "h1SMcG0019842",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP200"
       ]
      ],
      [
@@ -10211,6 +15244,24 @@
       ]
      ],
      [
+      "h1SMcG0021800",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SF3A2"
+      ]
+     ],
+     [
+      "h1SMcG0021969",
+      null,
+      null,
+      "candidate by family",
+      [
+       "SNRNP200"
+      ]
+     ],
+     [
       "h1SMcG0022407",
       null,
       "Pre-mRNA-splicing factor SPF27",
@@ -10234,7 +15285,7 @@
     "route": {
      "by": "family",
      "reference": "human",
-     "text": "49 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 46 parts of the human's spliceosome: candidates for 23 of those parts (23 of the 46 that the reference's entry holds). For 8 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 11 the table can tell nothing, its scan being older than the family; 4 have no family signature to look for."
+     "text": "76 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 46 parts of the human's spliceosome: candidates for 35 of those parts (35 of the 46 that the reference's entry holds). For 7 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 0 the table can tell nothing, its scan being older than the family; 4 have no family signature to look for."
     },
     "looked_for": [
      [
@@ -10288,8 +15339,8 @@
      [
       "CWC22",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "CWC27",
@@ -10360,8 +15411,8 @@
      [
       "RBMX2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "RNF113A",
@@ -10378,14 +15429,14 @@
      [
       "SF3A2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "SF3A3",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "SF3B1",
@@ -10396,14 +15447,14 @@
      [
       "SF3B2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "SF3B3",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      3
      ],
      [
       "SF3B5",
@@ -10420,26 +15471,26 @@
      [
       "SNIP1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "SNRNP40",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "SNRNP200",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      5
      ],
      [
       "SNRPA1",
       "part",
-      "not in the table",
-      0
+      "candidates",
+      2
      ],
      [
       "SNRPB",
@@ -10498,14 +15549,14 @@
      [
       "SRRM1",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      2
      ],
      [
       "SRRM2",
       "part",
-      "cannot tell",
-      0
+      "candidates",
+      1
      ],
      [
       "XAB2",
@@ -10738,6 +15789,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0000167": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0000191": [
    [
     "mitochondrial-ribosome",
@@ -10784,6 +15841,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0000361": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0000386": [
    [
     "spliceosome",
@@ -10802,6 +15865,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0000461": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0000501": [
    [
     "cmg-helicase",
@@ -10814,9 +15883,33 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0000665": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0000681": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0000683": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0000690": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0000692": [
+   [
+    "mitochondrial-ribosome",
     "candidate by family"
    ]
   ],
@@ -10829,6 +15922,18 @@
   "h1SMcG0000850": [
    [
     "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0000878": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0000881": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -10878,6 +15983,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0001099": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0001101": [
    [
     "mitochondrial-ribosome",
@@ -10902,6 +16013,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0001236": [
+   [
+    "tim22",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0001255": [
    [
     "ribosome",
@@ -10914,15 +16031,33 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0001345": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0001373": [
    [
     "cytoplasmic-dynein",
     "candidate by family"
    ]
   ],
+  "h1SMcG0001398": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0001408": [
    [
     "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0001438": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -10978,9 +16113,37 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0001802": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0001813": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0001816": [
    [
     "cct",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0001885": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0001891": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
     "candidate by family"
    ]
   ],
@@ -11040,6 +16203,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0002146": [
+   [
+    "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002185": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0002188": [
    [
     "spliceosome",
@@ -11049,6 +16224,28 @@
   "h1SMcG0002190": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002194": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002196": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002197": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
     "candidate by family"
    ]
   ],
@@ -11063,6 +16260,12 @@
    ],
    [
     "rna-polymerase-iii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002250": [
+   [
+    "vault",
     "candidate by family"
    ]
   ],
@@ -11122,6 +16325,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0002618": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0002623": [
    [
     "proteasome",
@@ -11176,6 +16385,16 @@
    [
     "rna-polymerase-i",
     "candidate by family"
+   ],
+   [
+    "rna-polymerase-iii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0002740": [
+   [
+    "ribosome",
+    "candidate by family"
    ]
   ],
   "h1SMcG0002750": [
@@ -11220,15 +16439,43 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0003059": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0003099": [
    [
     "spliceosome",
     "candidate by family"
    ]
   ],
+  "h1SMcG0003143": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0003147": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0003191": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0003192": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -11262,6 +16509,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0003323": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0003329": [
    [
     "complex-i",
@@ -11277,6 +16530,12 @@
   "h1SMcG0003410": [
    [
     "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0003423": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -11310,6 +16569,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0003625": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0003632": [
    [
     "mitochondrial-ribosome",
@@ -11339,6 +16604,12 @@
   "h1SMcG0003773": [
    [
     "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0003800": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -11388,6 +16659,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0004063": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004176": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0004208": [
    [
     "mitochondrial-ribosome",
@@ -11409,6 +16692,18 @@
   "h1SMcG0004422": [
    [
     "origin-recognition-complex",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004427": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004482": [
+   [
+    "rna-exosome",
     "candidate by family"
    ]
   ],
@@ -11442,6 +16737,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0004561": [
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004572": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0004574": [
    [
     "axonemal-dynein",
@@ -11461,6 +16768,12 @@
   "h1SMcG0004593": [
    [
     "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004594": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -11500,15 +16813,45 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0004702": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004755": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0004773": [
    [
     "complex-i",
     "candidate by family"
    ]
   ],
+  "h1SMcG0004777": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0004786": [
    [
     "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004799": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004800": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -11521,6 +16864,12 @@
   "h1SMcG0004846": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0004870": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -11540,6 +16889,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0004915": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0004926": [
    [
     "cct",
@@ -11549,6 +16904,12 @@
   "h1SMcG0005083": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0005090": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -11656,6 +17017,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0005726": [
+   [
+    "origin-recognition-complex",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0005737": [
    [
     "axonemal-dynein",
@@ -11684,6 +17051,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0006040": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006058": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0006096": [
    [
     "emc",
@@ -11707,6 +17086,16 @@
    ]
   ],
   "h1SMcG0006122": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006179": [
    [
     "axonemal-dynein",
     "candidate by family"
@@ -11746,9 +17135,27 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0006342": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006369": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0006413": [
    [
     "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006432": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -11785,6 +17192,12 @@
   "h1SMcG0006515": [
    [
     "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006534": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -11838,6 +17251,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0006802": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0006847": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0006852": [
    [
     "rna-polymerase",
@@ -11867,6 +17292,12 @@
   "h1SMcG0007009": [
    [
     "emc",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0007027": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -11900,6 +17331,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0007346": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0007413": [
    [
     "mitochondrial-ribosome",
@@ -11930,6 +17367,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0007564": [
+   [
+    "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0007580": [
    [
     "proteasome",
@@ -11945,6 +17388,18 @@
   "h1SMcG0007626": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0007695": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0007819": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -11978,9 +17433,21 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0007995": [
+   [
+    "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0008001": [
    [
     "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008020": [
+   [
+    "ribosome",
     "candidate by family"
    ]
   ],
@@ -11990,9 +17457,27 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0008119": [
+   [
+    "complex-i",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0008150": [
    [
     "cct",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008186": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008190": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -12012,6 +17497,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0008382": [
+   [
+    "complex-iii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0008405": [
    [
     "v-atpase",
@@ -12021,6 +17512,12 @@
   "h1SMcG0008425": [
    [
     "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008435": [
+   [
+    "ribosome",
     "candidate by family"
    ]
   ],
@@ -12036,15 +17533,39 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0008492": [
+   [
+    "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008493": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0008516": [
    [
     "mitochondrial-ribosome",
     "candidate by family"
    ]
   ],
+  "h1SMcG0008529": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0008539": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008581": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -12071,6 +17592,12 @@
    ],
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008719": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -12105,6 +17632,12 @@
   "h1SMcG0008863": [
    [
     "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0008934": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -12154,6 +17687,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0009060": [
+   [
+    "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009084": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0009176": [
    [
     "mitochondrial-ribosome",
@@ -12169,6 +17714,24 @@
   "h1SMcG0009225": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009283": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009295": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009305": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -12228,9 +17791,27 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0009702": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0009727": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009743": [
+   [
+    "rna-polymerase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009744": [
+   [
+    "rna-polymerase",
     "candidate by family"
    ]
   ],
@@ -12240,9 +17821,49 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0009776": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009789": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0009812": [
    [
     "complex-iv",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009819": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009837": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009857": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009877": [
+   [
+    "complex-iii",
     "candidate by family"
    ]
   ],
@@ -12259,6 +17880,12 @@
   "h1SMcG0009933": [
    [
     "v-atpase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0009942": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -12299,6 +17926,12 @@
    ],
    [
     "rna-polymerase-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0010339": [
+   [
+    "complex-iii",
     "candidate by family"
    ]
   ],
@@ -12384,6 +18017,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0010727": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0010728": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0010779": [
    [
     "cytoplasmic-dynein",
@@ -12458,9 +18103,49 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0011014": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011030": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011032": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011073": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011122": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0011210": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011274": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -12476,9 +18161,27 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0011356": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0011369": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011394": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0011410": [
+   [
+    "nuclear-pore",
     "candidate by family"
    ]
   ],
@@ -12580,9 +18283,21 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0012075": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0012124": [
    [
     "atp-synthase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0012146": [
+   [
+    "ribosome",
     "candidate by family"
    ]
   ],
@@ -12658,6 +18373,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0012622": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0012625": [
    [
     "complex-i",
@@ -12670,6 +18391,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0012673": [
+   [
+    "complex-iii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0012710": [
    [
     "dynactin",
@@ -12679,6 +18406,12 @@
   "h1SMcG0012727": [
    [
     "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0012763": [
+   [
+    "tim22",
     "candidate by family"
    ]
   ],
@@ -12715,6 +18448,12 @@
   "h1SMcG0012972": [
    [
     "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0012975": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -12760,9 +18499,21 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0013220": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0013254": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0013335": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -12775,6 +18526,12 @@
   "h1SMcG0013366": [
    [
     "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0013532": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -12845,6 +18602,12 @@
    ],
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0013942": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -12960,6 +18723,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0014561": [
+   [
+    "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0014645": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0014685": [
    [
     "complex-iii",
@@ -12981,6 +18756,12 @@
   "h1SMcG0014725": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0014744": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -13014,6 +18795,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0014789": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0014804": [
    [
     "complex-ii",
@@ -13029,6 +18816,12 @@
   "h1SMcG0014849": [
    [
     "dynactin",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0014916": [
+   [
+    "axonemal-dynein",
     "candidate by family"
    ]
   ],
@@ -13050,6 +18843,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0015065": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0015075": [
    [
     "cytoplasmic-dynein",
@@ -13062,9 +18861,45 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0015080": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0015099": [
    [
     "complex-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015115": [
+   [
+    "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015125": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015198": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015222": [
+   [
+    "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015230": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13077,6 +18912,12 @@
   "h1SMcG0015258": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015266": [
+   [
+    "complex-i",
     "candidate by family"
    ]
   ],
@@ -13098,6 +18939,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0015408": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015412": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0015452": [
    [
     "ribosome",
@@ -13107,6 +18960,18 @@
   "h1SMcG0015479": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015485": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015584": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -13134,6 +18999,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0015725": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0015736": [
    [
     "mitochondrial-ribosome",
@@ -13146,9 +19017,37 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0015803": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0015828": [
    [
     "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015832": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015851": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0015902": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13159,6 +19058,10 @@
    ],
    [
     "rna-polymerase-i",
+    "candidate by family"
+   ],
+   [
+    "rna-polymerase-iii",
     "candidate by family"
    ]
   ],
@@ -13194,6 +19097,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0016297": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0016320": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0016420": [
    [
     "cct",
@@ -13222,6 +19137,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0016612": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0016694": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0016737": [
    [
     "atp-synthase",
@@ -13246,9 +19173,43 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0016928": [
+   [
+    "tim22",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0017011": [
    [
     "complex-iv",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017044": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017046": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017054": [
+   [
+    "rna-polymerase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017057": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
     "candidate by family"
    ]
   ],
@@ -13294,6 +19255,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0017252": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0017397": [
    [
     "cmg-helicase",
@@ -13330,9 +19297,33 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0017614": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017615": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017639": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0017649": [
    [
     "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017692": [
+   [
+    "ribosome",
     "candidate by family"
    ]
   ],
@@ -13342,9 +19333,33 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0017748": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017751": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017816": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0017860": [
    [
     "v-atpase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017865": [
+   [
+    "ribosome",
     "candidate by family"
    ]
   ],
@@ -13355,6 +19370,12 @@
    ]
   ],
   "h1SMcG0017884": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0017891": [
    [
     "ribosome",
     "candidate by family"
@@ -13372,6 +19393,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0017958": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0017988": [
    [
     "dynactin",
@@ -13385,6 +19412,24 @@
    ],
    [
     "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0018072": [
+   [
+    "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0018084": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0018086": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -13410,6 +19455,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0018203": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0018204": [
    [
     "cytoplasmic-dynein",
@@ -13431,6 +19482,12 @@
   "h1SMcG0018227": [
    [
     "oligosaccharyltransferase",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0018340": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -13498,6 +19555,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0018827": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0018859": [
    [
     "spliceosome",
@@ -13516,15 +19579,57 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0018970": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0018997": [
    [
     "ribosome",
     "candidate by family"
    ]
   ],
+  "h1SMcG0019017": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019030": [
+   [
+    "rna-exosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019065": [
+   [
+    "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019069": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0019103": [
    [
     "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019128": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019129": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13578,13 +19683,31 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0019421": [
+   [
+    "origin-recognition-complex",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0019438": [
    [
     "proteasome",
     "candidate by family"
    ]
   ],
+  "h1SMcG0019505": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0019622": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019712": [
    [
     "spliceosome",
     "candidate by family"
@@ -13605,6 +19728,24 @@
   "h1SMcG0019762": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019837": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019841": [
+   [
+    "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0019842": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13633,6 +19774,12 @@
   "h1SMcG0020205": [
    [
     "nuclear-pore",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0020209": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -13682,6 +19829,18 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0020402": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0020403": [
+   [
+    "proteasome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0020451": [
    [
     "nuclear-pore",
@@ -13697,6 +19856,12 @@
   "h1SMcG0020479": [
    [
     "signal-recognition-particle",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0020486": [
+   [
+    "myosin-ii",
     "candidate by family"
    ]
   ],
@@ -13836,7 +20001,17 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0021128": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0021136": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
    [
     "cytoplasmic-dynein",
     "candidate by family"
@@ -13848,9 +20023,21 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0021172": [
+   [
+    "tim22",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0021258": [
    [
     "mitochondrial-ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0021316": [
+   [
+    "proteasome",
     "candidate by family"
    ]
   ],
@@ -13900,7 +20087,19 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0021508": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0021578": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0021599": [
    [
     "ribosome",
     "candidate by family"
@@ -13918,9 +20117,21 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0021650": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0021727": [
    [
     "complex-i",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0021800": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13954,6 +20165,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0021950": [
+   [
+    "myosin-ii",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0021959": [
    [
     "proteasome",
@@ -13963,6 +20180,12 @@
   "h1SMcG0021960": [
    [
     "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0021969": [
+   [
+    "spliceosome",
     "candidate by family"
    ]
   ],
@@ -13981,6 +20204,12 @@
   "h1SMcG0022036": [
    [
     "proteasome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0022041": [
+   [
+    "nuclear-pore",
     "candidate by family"
    ]
   ],
@@ -14018,6 +20247,22 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0022306": [
+   [
+    "axonemal-dynein",
+    "candidate by family"
+   ],
+   [
+    "cytoplasmic-dynein",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0022320": [
+   [
+    "mediator",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0022379": [
    [
     "mitochondrial-ribosome",
@@ -14027,6 +20272,12 @@
   "h1SMcG0022407": [
    [
     "spliceosome",
+    "candidate by family"
+   ]
+  ],
+  "h1SMcG0022409": [
+   [
+    "mediator",
     "candidate by family"
    ]
   ],
@@ -14116,6 +20367,12 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0022826": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0022882": [
    [
     "cct",
@@ -14138,45 +20395,23 @@
     "candidate by family"
    ]
   ],
+  "h1SMcG0022948": [
+   [
+    "ribosome",
+    "candidate by family"
+   ]
+  ],
   "h1SMcG0022961": [
    [
     "cytoplasmic-dynein",
     "candidate by family"
    ]
-  ]
- },
- "none_found": [
-  {
-   "id": "myosin-ii",
-   "label": "Myosin II",
-   "group": "moving",
-   "reference": "human",
-   "looked_for": [
-    [
-     "MYH10",
-     "part",
-     "no family signature",
-     0
-    ],
-    [
-     "MYL6",
-     "part",
-     "cannot tell",
-     0
-    ],
-    [
-     "MYL12B",
-     "part",
-     "cannot tell",
-     0
-    ]
-   ],
-   "text": "0 of the species' proteins carry the narrowest InterPro family (or, where no line of the species' table carries that family, the nearest broader one that some line carries) of at least one of the 3 parts of the human's Myosin II: candidates for 0 of those parts (0 of the 3 that the reference's entry holds). For 0 no line of the species' table carries the family, which says what the table holds, not that the species lacks the protein; for 2 the table can tell nothing, its scan being older than the family; 1 have no family signature to look for.",
-   "sources": [
-    "gathered:planarian:interpro",
-    "gathered:planarian:atlas_table",
-    "gathered:planarian:reference_human"
+  ],
+  "h1SMcG0023133": [
+   [
+    "rna-exosome",
+    "candidate by family"
    ]
-  }
- ]
+  ]
+ }
 }

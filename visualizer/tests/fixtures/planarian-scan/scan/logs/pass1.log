@@ -1,0 +1,7 @@
+2026-11-18 pass1 chunk-01: start (4 sequences; Pfam,PRINTS,SFLD,Hamap,Gene3D,NCBIfam,AntiFam,CDD,Coils; cpu 8)
+2026-11-18 pass1 chunk-01: stopped by hand after a while; no output was written
+2026-11-18 pass1 chunk-01: start (4 sequences; Pfam,SFLD,Hamap,Gene3D,NCBIfam,AntiFam,CDD,Coils; cpu 8; heap 3g)
+2026-11-18 pass1 chunk-01: exit 0 after 1 s; the unit's memory peak 1 bytes; 9 lines of matches
+2026-11-18 pass1 chunk-02: start (4 sequences; Pfam,SFLD,Hamap,Gene3D,NCBIfam,AntiFam,CDD,Coils; cpu 8; heap 3g)
+2026-11-18 pass1 chunk-02: exit 0 after 1 s; the unit's memory peak 1 bytes; 9 lines of matches
+2026-11-18 pass1: all inputs done
