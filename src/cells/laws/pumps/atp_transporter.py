@@ -24,7 +24,9 @@ from typing import Any, NamedTuple
 
 import jax.numpy as jnp
 
+from cells.laws.cycles.forms import CycleForm, Parameter, Saturation
 from cells.laws.electrochemistry import R
+from cells.modules import Citation, CycleLaw
 
 LAW_ID = "atp_driven_transporter_mass_action_positive@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0
@@ -123,3 +125,56 @@ def domain_valid(i, p, availability, *, xp=jnp):
     a = cycle_free_energy(safe, p._replace(stoichiometry=xp.where(ok, n, 1.0)), xp=xp) / (
         R * i.temperature_K)
     return ok & (xp.abs(a) <= MAX_ABS_AFFINITY_OVER_RT)
+
+
+# The same law in seam A's general form (docs/CORE_SEAMS_DESIGN.md §3; laws/cycles/forms.py), for the
+# cycle kind's population axis: data only, its free energy the kind's from the registry. Its rows,
+# in the form's order: the role at N and at P, then the fuel at N, where it is hydrolysed (held or
+# moved: finite fuel runs here). S and the domain are version 1's: S = [1 + (K/c_N)^n]^-1
+# [1 + K_ATP/c_ATP]^-1, n an integer in 1..4, the role neutral.
+CYCLE = CycleForm(
+    kinetics="factored",
+    roles=(("role", 0), ("ATP", 0), ("ADP", 0), ("Pi", 0)),
+    rows=(("role", "N"), ("role", "P"), ("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+    modes=(("cycle", ("-stoichiometry", "stoichiometry", -1, 1, 1)),),
+    parameters=(
+        Parameter(
+            "stoichiometry",
+            "1",
+            low=STOICHIOMETRY_RANGE[0],
+            high=STOICHIOMETRY_RANGE[1],
+            integer=True,
+            positive=True,
+        ),
+        Parameter("km_role_mM", "mM", positive=True),
+        Parameter("km_atp_mM", "mM", positive=True),
+    ),
+    fuel_roles=("ATP", "ADP", "Pi"),
+    saturation=(
+        (
+            Saturation(("role", "N"), "km_role_mM", "stoichiometry"),
+            Saturation(("ATP", "N"), "km_atp_mM", 1),
+        ),
+    ),
+)
+
+
+# Its declaration on the law template (registry/laws.py): inert, registered by the law registry's
+# loader as one of the model table's law homes, hosted by the transporter kind.
+DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
+LAW = CycleLaw(
+    DECLARED_ID,
+    (("role", "-stoichiometry"),),  # The role leaves the inside: -n per cycle, inward-positive.
+    ("maintained_held_rows@1", "finite_fuel_rows@1"),
+    kinetics,
+    domain_valid,
+    cycle=CYCLE,
+    host="cells.transporter@1",
+    provenance="cited",
+    source=Citation(
+        "an ATP-driven transporter of a neutral role, in the Na/K law's mass-action form "
+        "(laws/pumps/kinetic_pump.py; docs/KINETIC_PUMP_PROCESS.md)",
+        "docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2",
+        "no numbers taken: the law is a form, its parameters a definition's values",
+    ),
+)

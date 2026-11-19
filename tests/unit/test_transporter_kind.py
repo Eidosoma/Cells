@@ -149,20 +149,27 @@ def test_the_parse_refuses_with_its_reason(over, reason):
         parse_spec(held_world(population(**over)))
 
 
-def test_one_population_per_patch_and_unique_ids():
+def test_a_second_population_on_a_patch_takes_the_population_axis_and_ids_stay_unique():
+    """Version 1's layout holds one population per patch; a declaration with two on one patch
+    takes the population axis (the kinds owner's design statement 1, §1), where any number sit on
+    a host. IDs stay unique among the model's either way."""
     with scoped():
-        with pytest.raises(ConfigError, match="already carries a transporter"):
-            parse_spec(held_world(population(), population(id="transporter_1")))
+        spec = parse_spec(held_world(population(), population(id="transporter_1")))
+        ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
+        assert isinstance(entry, transporter.CycleAxis)
         with pytest.raises(ConfigError, match="must be unique"):
             parse_spec(held_world(population(id="cell_0")))
 
 
 def test_the_definition_check_names_its_reasons():
+    """The registry's potentials are required, as before; finite fuel under the neutral law, which
+    version 1 refused (gap 2), now takes the population axis, where it runs (statement 1, §1)."""
     with scoped():
         with pytest.raises(ConfigError, match="fuel row ATP declares no standard potential"):
             parse_spec(held_world(potentials=False))
-        with pytest.raises(ConfigError, match=r"finite fuel .*gap 2"):
-            parse_spec(held_world(population(fuel=fuel(kind=transporter.FINITE))))
+        spec = parse_spec(held_world(population(fuel=fuel(kind=transporter.FINITE))))
+        ((_, entry),) = surface_pump_v3.structure(spec.model).kinds
+        assert isinstance(entry, transporter.CycleAxis)
 
 
 def test_a_value_change_reuses_the_implementation():

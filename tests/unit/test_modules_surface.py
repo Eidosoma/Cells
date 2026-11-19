@@ -249,20 +249,9 @@ PENDING = frozenset(
         ("cells/kinds/proton_buffer.py", "cells.registry.kind_registry", "ConfigError"),
         ("cells/kinds/proton_buffer.py", "cells.registry.kind_registry", "Kind"),
         ("cells/kinds/proton_buffer.py", "cells.registry.kind_registry", "KindView"),
-        ("cells/kinds/transporter.py", "cells.models.surface_pump_v3", "KindRates"),
         ("cells/kinds/transporter.py", "cells.models.surface_pump_v3", "patch_node_conductance"),
-        ("cells/kinds/transporter.py", "cells.models.surface_pump_v3", "physical_amounts"),
-        ("cells/kinds/transporter.py", "cells.numerics.extracellular_field", "scatter"),
-        ("cells/kinds/transporter.py", "cells.registry", "laws"),
         ("cells/kinds/transporter.py", "cells.registry", "species_registry"),
         ("cells/kinds/transporter.py", "cells.registry.kind_registry", "BUILTIN"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "ConfigError"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "Kind"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "KindView"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "bounded_integer"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "finite_number"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "qualified"),
-        ("cells/kinds/transporter.py", "cells.registry.kind_registry", "require_fields"),
     }
 )
 
