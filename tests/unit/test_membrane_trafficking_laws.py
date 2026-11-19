@@ -139,15 +139,19 @@ def amounts(state, p):
     return out
 
 
-def chemical_change(before, after, p):
+def chemical_change(before, after, p, *, outside=None):
     """The tissue's chemical free-energy change (pJ) from `before` to `after`, in 50-digit
-    arithmetic: RT sum n (ln(n/V) - 1) over the cells and the free outside nodes. A held bath's
-    content lies outside the tissue."""
+    arithmetic: RT sum n (ln(n/V) - 1) over the cells and the free outside nodes, or over the
+    outside nodes `outside` (slots) alone. A held bath's content lies outside the tissue."""
+    species, cells = np.asarray(p.amount_reference).shape
     with localcontext() as context:
         context.prec = 50
         total = Decimal(0)
         pairs = zip(amounts(before, p), amounts(after, p), strict=True)
-        for (r0, i0, v, free), (_, i1, _, _) in pairs:
+        for k, ((r0, i0, v, free), (_, i1, _, _)) in enumerate(pairs):
+            node = k // species - cells  # Its outside slot (negative for a cell).
+            if outside is not None and node not in outside:
+                continue
             if not free or i0 == i1:
                 continue
             volume = Decimal(float(v))
@@ -434,6 +438,53 @@ def test_a_held_bath_books_its_electrode_and_reservoir_work_at_its_potential():
         - np.where(np.arange(p.outside_active.size) == bath, electrical, 0.0)
     )
     assert np.max(np.abs(model.balances(planted, p)["reservoir_work"])) > 1e3 * 3e-12
+
+
+def shared_cleft():
+    """Two cells whose furrows face one cleft, cleft_0: both routes draw their carriers from one
+    free node, so its exact free-energy change is shared between them by the amounts moved."""
+    raw = fx.pooled_cells(2, cleft=True)
+    m, x = raw["model"], raw["execution"]
+    next(q for q in m["membranes"] if q["id"] == "furrow_1")["outside"] = "cleft_0"
+    m["extracellular"] = [o for o in m["extracellular"] if o["id"] != "cleft_1"]
+    m["faces"] = [f for f in m["faces"] if f["id"] != "access_1"]
+    x.update(
+        extracellular_capacity=x["extracellular_capacity"] - 1,
+        face_capacity=x["face_capacity"] - 1,
+    )
+    routes = [fx.route(raw, i, plasma=f"furrow_{i}") for i in range(2)]
+    raw = fx.with_trafficking(raw, routes, [fx.schedule(r["id"], [(0.0, 0.0)]) for r in routes])
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    return model, state, p
+
+
+def test_two_routes_on_one_free_node_close_and_share_its_free_energy_by_amount():
+    model, state, p = shared_cleft()
+    plasma = [int(s) for s in p.trafficking_route_plasma]
+    pools = [int(p.membrane_outside[int(s)]) for s in p.trafficking_route_pool]
+    (cleft,) = {int(p.membrane_outside[s]) for s in plasma}  # One node faces both furrows.
+    rates = [r * float(p.membrane_area[s]) / H for r, s in zip((0.03, 0.06), plasma, strict=True)]
+    new, ok = operator(model).half_step(state, H, control(rates, [0.0, 0.0]), p, xp=np)
+    assert ok
+    residual, scale, terms = closure(state, new, p)
+    assert abs(residual) <= 1e-9 * scale + 1e-18, terms
+    works = np.asarray(new.trafficking_work_pJ) - np.asarray(state.trafficking_work_pJ)
+    assert float(np.sum(works)) == pytest.approx(independent_carrier_work(state, new, p), rel=1e-6)
+    # Each route: its own pool's change, and its share of the cleft's by the amounts it moved.
+    k = list(p.valence[:, 0]).index(1.0)  # A carrier row (K or Na, t = 1/2 each).
+    moved = np.array(
+        [new.trafficking_carrier_fmol[k, j] - state.trafficking_carrier_fmol[k, j] for j in pools]
+    )
+    share = np.abs(moved) / np.sum(np.abs(moved))
+    shared = chemical_change(state, new, p, outside={cleft})
+    own = np.array([chemical_change(state, new, p, outside={j}) for j in pools])
+    np.testing.assert_allclose(works, own + share * shared, rtol=1e-6)
+    assert share[1] == pytest.approx(2 * share[0], rel=1e-3)  # Twice the rate, twice the share.
+    # Planted: the cleft's whole change booked on the first route is told apart.
+    planted = own + np.array([shared, 0.0])
+    assert not np.allclose(works, planted, rtol=1e-6, atol=0.0)
 
 
 def test_a_merge_heat_with_the_wrong_sign_fails_the_dissipation_check(monkeypatch):

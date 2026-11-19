@@ -174,6 +174,9 @@ INJECTION = dict(
     electrodes=[dict(cell_id="cell_0", carriers={"K": 0.4912, "M": 0.5088})],
 )
 INJECTION_CONTROLS = [dict(cell_id="cell_0", schedule=[dict(time=0.0, current_A=0.0)])]
+BATH = dict(
+    law="scheduled_bath_composition@1", baths=["bath_0"], formula_units={"KM": {"K": 1, "M": 1}}
+)
 
 
 def refusal_cases():
@@ -311,6 +314,12 @@ def refusal_cases():
         edited(with_operator(INJECTION, "injection_controls", INJECTION_CONTROLS)),
         "electrode_current_injection@1 is refused: it is not qualified beside membrane trafficking",
     )
+    yield (
+        "the bath schedule beside it",
+        edited(with_operator(BATH, "bath_composition_events", [])),
+        f"{LAW} reads extracellular_amount_reference as declared, but "
+        "scheduled_bath_composition@1 provides it",
+    )
 
 
 CASES = list(refusal_cases())
@@ -339,6 +348,8 @@ def test_the_admitted_world_parses_and_round_trips():
         (0.0, "retrieval rate", {"membrane": "membrane_0"}),
     ]
     assert op.view_sets(spec, declaration)["trafficking_route"]["ids"] == ("uptake_0",)
+    # Refusal 5 version 1.2's hook: the compartments the routes charge, by their own IDs.
+    assert op.charged_compartments(spec, declaration) == ("endosome_0",)
     route = op.summary(spec, declaration, schedule, None)["trafficking_routes"]["uptake_0"]
     assert (route["pool_node"], route["pool_patch"], route["owner"]) == (
         "pool_0",
@@ -410,6 +421,39 @@ def test_the_step_checks_read_the_schedules_extremes():
     get_model(zero.model).bind_step_checks(zero)(steps)
     with pytest.raises(ConfigError, match="explicit-rate stability bound"):
         get_model(deep.model).bind_step_checks(deep)(steps)
+
+
+def test_run_time_refusals_return_an_invalid_step(monkeypatch):
+    """At run time a step is refused, never repaired: a negative merge heat from the kernel (the
+    strict rule that stands in for the kernel item), a piece as large as its source's whole area,
+    and a carrier amount driven non-positive at a free node. Each is planted against the same
+    step admitted."""
+    _, model, state, p = bind(one_route())
+    op = operator(model)
+    area = float(p.membrane_area[int(p.trafficking_route_plasma[0])])
+    _, ok = op.half_step(state, H, control([0.02 * area / H], [0.0]), p, xp=np)
+    assert ok
+    real = trafficking.adapter.charge_following_transfer
+
+    def negative(*args, **kwargs):  # Planted: the kernel's heat rounds below zero.
+        return real(*args, **kwargs)._replace(heat_pJ=-1e-30)
+
+    monkeypatch.setattr(trafficking.adapter, "charge_following_transfer", negative)
+    _, ok = op.half_step(state, H, control([0.02 * area / H], [0.0]), p, xp=np)
+    assert not ok
+    monkeypatch.setattr(trafficking.adapter, "charge_following_transfer", real)
+    _, ok = op.half_step(state, H, control([area / (H / 2)], [0.0]), p, xp=np)  # The whole patch.
+    assert not ok
+    raw = fx.pooled_cells(1, cleft=True, cleft_pL=1e-5)  # A cleft of 5e-5 fmol of K.
+    entry = fx.route(raw, 0, plasma="furrow_0")
+    _, model, state, p = bind(
+        fx.with_trafficking(raw, [entry], [fx.schedule(entry["id"], [(0.0, 0.0)])])
+    )
+    furrow = float(p.membrane_area[int(p.trafficking_route_plasma[0])])
+    _, ok = operator(model).half_step(state, H, control([0.02 * furrow / H], [0.0]), p, xp=np)
+    assert ok
+    _, ok = operator(model).half_step(state, H, control([0.5 * furrow / H], [0.0]), p, xp=np)
+    assert not ok  # Half the furrow carries about 3.4e-4 fmol of K out: more than it holds.
 
 
 # ------------------------------------------------------------------ T2: idleness

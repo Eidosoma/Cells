@@ -173,9 +173,11 @@ def pooled_cells(
     pool_pL=POOL_pL,
     bath_V=0.0,
     cleft=False,
+    cleft_pL=0.01,
 ):
     """n heredity cells, each with its pool, membrane state and the compartments' declaration;
-    bath_V: every held bath's potential; cleft: each cell also has its furrow on a cleft."""
+    bath_V: every held bath's potential; cleft: each cell also has its furrow on a cleft of
+    cleft_pL."""
     state = v3fx.HEREDITY_STATES["H"][:4]
     options = {} if solver is None else dict(solver=solver)
     base = v3fx.heredity_cells(
@@ -190,7 +192,7 @@ def pooled_cells(
     for i in range(n):
         add_pool(base, i, seed=seed, pool_pL=pool_pL)
         if cleft:
-            add_cleft(base, i)
+            add_cleft(base, i, cleft_pL=cleft_pL)
     raw = cs.frozen_definition(base)
     raw["model"]["operators"] = [
         membrane_state(raw),

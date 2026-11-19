@@ -80,8 +80,10 @@ Refused at the definition, each with its reason:
   exact, in rational arithmetic;
 * a rate that is negative, a change off the dt grid or outside [0, end), or a schedule that does
   not start at 0 or increase strictly;
-* a composition outside its admitted list, which fails closed, and any declared kind
-  (FIXED_INNER_FIELDS: it builds @3's fixed layout).
+* a composition outside its admitted list, which fails closed; any declared kind
+  (FIXED_INNER_FIELDS: it builds @3's fixed layout); and, through the composite's structure check,
+  any provider or closer of what it reads as declared (CONFLICTS_VIEW: the outside nodes' volumes
+  and reference amounts, and the activity masks).
 At run time the step is refused, returning its start state, on a non-finite value, a negative
 rate, an area or capacitance that would not stay positive, a carrier amount that would not stay
 positive at a free node, or a negative heat.
@@ -601,6 +603,19 @@ def _indicator(condition, *, xp):
     return xp.where(condition, 1.0, 0.0)
 
 
+def _fold(values, *, xp):
+    """The serial left fold over the leading axis (species_sum's, with its barrier). Every sum
+    that writes state is folded so: XLA fixes no order for a reduction, and a restarted run is a
+    different program, so a plain sum could round differently there."""
+    return species_sum(values, xp=xp)
+
+
+def _per_route(values, *, xp):
+    """[route] sums of [route, species, outside] values: species first, then nodes, each folded."""
+    by_node = _fold(xp.moveaxis(values, 1, 0), xp=xp)  # [route, outside]
+    return _fold(xp.moveaxis(by_node, 1, 0), xp=xp)
+
+
 def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     """(state after one stage of length tau at the routes' rates [route], valid): retrieval
     (plasma -> pool) when `retrieval`, else recycling (pool -> plasma); module docstring."""
@@ -620,7 +635,7 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
         units = state.trafficking_internalised_units  # The record [route, channel].
     moved = -units * xp.expm1(enrichment * shrink[:, None])  # [route, channel], >= 0.
     sign = -1.0 if retrieval else 1.0  # Plasma units: lost to the record, or returned.
-    unit_change = sign * xp.sum(moved, axis=0)
+    unit_change = sign * _fold(moved, xp=xp)
     record = state.trafficking_internalised_units - sign * moved
     nm = area.size
     area_change = scatter(da, xp.zeros(nm), (target,), xp=xp) - scatter(
@@ -629,16 +644,20 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     capacitance_change = scatter(dc, xp.zeros(nm), (target,), xp=xp) - scatter(
         dc, xp.zeros(nm), (source,), xp=xp
     )
-    # The charges follow the pieces: one kernel call for every route.
+    # The charges follow the pieces: one kernel call for every route. A piece as large as its
+    # source refuses the step (below); the kernel sees only admissible pieces, so the host path
+    # refuses it as the device does, never factorising a patch left with no capacitance.
+    admissible = da < source_area
     view, bound = capacitor_view(state, p, xp=xp)
-    out = adapter.charge_following_transfer(state, view, source, target, dc, bound, xp=xp)
+    pieces = xp.where(admissible, dc, 0.0)
+    out = adapter.charge_following_transfer(state, view, source, target, pieces, bound, xp=xp)
     nodes = xp.arange(p.outside_active.size)
     direction = _indicator(p.membrane_outside[target][:, None] == nodes[None, :], xp=xp)
     direction = direction - _indicator(p.membrane_outside[source][:, None] == nodes[None, :], xp=xp)
     # Each route's carriers of its pieces' outside plates, -plate_C, moved source -> target node.
     carried = p.trafficking_carrier_scale * (-out.plate_C)[:, None]  # [route, species]
     contribution = carried[:, :, None] * direction[:, None, :]  # [route, species, outside]
-    moved_nodes = xp.sum(contribution, axis=0)  # [species, outside]
+    moved_nodes = _fold(contribution, xp=xp)  # [species, outside]
     held = p.reservoir & p.outside_active
     free = p.outside_active & ~p.reservoir
     amounts = p.extracellular_amount_reference + state.extracellular_amount_increment
@@ -652,7 +671,7 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     mu = chemical + p.valence * F * p.boundary_V
     reservoir_work = 1e-3 * species_sum(mu * supplied, xp=xp)  # [outside], pJ
     supplied_routes = xp.where(held, -contribution, 0.0)  # [route, species, outside]
-    reservoir_chemical = 1e-3 * xp.sum(chemical[None] * supplied_routes, axis=(1, 2))
+    reservoir_chemical = 1e-3 * _per_route(chemical[None] * supplied_routes, xp=xp)
     # The exact chemical free-energy change at the free nodes, shared by the amounts moved there.
     anchor = xp.where(free, amounts, 1.0)
     change = xp.where(free, moved_nodes, 0.0)
@@ -660,24 +679,22 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     dg = adapter.species_chemical_free_energy_pJ(anchor, change, volume, temperature, xp=xp)
     dg_magnitude = adapter.species_chemical_magnitude_pJ(anchor, change, volume, temperature, xp=xp)
     weight = xp.where(free, xp.abs(contribution), 0.0)
-    total = xp.sum(weight, axis=0)
+    total = _fold(weight, xp=xp)
     share = xp.where(total > 0, weight / xp.where(total > 0, total, 1.0), 0.0)
-    work = xp.sum(share * dg[None], axis=(1, 2)) - reservoir_chemical  # [route], pJ
+    work = _per_route(share * dg[None], xp=xp) - reservoir_chemical  # [route], pJ
     # The merge heat, shared by the first-order terms.
     jump = out.before_V[source] - out.before_V[target]
     first_order = 0.5e12 * dc * jump**2
-    whole = xp.sum(first_order)
+    whole = _fold(first_order, xp=xp)
     positive = whole > 0
     heat_share = xp.where(positive, first_order / xp.where(positive, whole, 1.0), 0.0)
     heat = out.heat_pJ * heat_share
     electrode = out.electrode_C
     electrode_work = 1e12 * p.boundary_V * electrode
-    flows = entity_sum(xp.abs(electrode_work), axis=None, xp=xp) + entity_sum(
-        xp.abs(reservoir_work), axis=None, xp=xp
-    )
+    flows = _fold(xp.abs(electrode_work), xp=xp) + _fold(xp.abs(reservoir_work), xp=xp)
     magnitude = (
         first_order
-        + xp.sum(share * dg_magnitude[None], axis=(1, 2))
+        + _per_route(share * dg_magnitude[None], xp=xp)
         + xp.abs(reservoir_chemical)
         + heat_share * flows
     )
@@ -704,7 +721,7 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
         **{gross: getattr(state, gross) + da},
     )
     rates_ok = xp.all(xp.isfinite(rate)) & xp.all(rate >= 0)
-    valid = rates_ok & xp.all(da < source_area)
+    valid = rates_ok & xp.all(admissible)
     valid &= xp.isfinite(out.heat_pJ) & (out.heat_pJ >= 0)  # Strict: no tolerance (kernel item).
     for value in (out.plate_C, electrode, carried, work, magnitude, record, unit_change):
         valid &= xp.all(xp.isfinite(value))
@@ -712,7 +729,10 @@ def stage(state, tau, rate, p, retrieval, *, xp=jnp):
     after = p.extracellular_amount_reference + extracellular
     valid &= xp.all(xp.where(free, after > 0, True))
     flowing = xp.any(rate > 0)  # No rate: select the start state (bitwise idle).
-    selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
+    # A refused stage keeps its start state too, so the palindrome's later stages never run from
+    # an inadmissible one; the step's validity carries the refusal (never a repair).
+    keep = flowing & valid
+    selected = type(state)(*(xp.where(keep, a, b) for a, b in zip(new, state, strict=True)))
     return selected, xp.where(flowing, valid, rates_ok)
 
 
@@ -804,6 +824,15 @@ class ScheduledMembraneTrafficking(Operator):
     CONTROL_FIELDS = CONTROL_FIELDS
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
     VIEW_READS = ("membrane_area", "membrane_capacitance", "channel_abundance")
+    # Read as declared: the outside nodes' volumes and reference amounts (the free nodes' exact
+    # free-energy change, a held bath's mu) and the activity masks of its capacitor view.
+    CONFLICTS_VIEW = (
+        "extracellular_volume",
+        "extracellular_amount_reference",
+        "active",
+        "outside_active",
+        "membrane_active",
+    )
     ENTITY_WRITES = {
         "membrane_area_increment_m2": ("trafficking_area_m2",),
         "membrane_capacitance_increment_F": ("trafficking_capacitance_F",),
@@ -928,6 +957,13 @@ class ScheduledMembraneTrafficking(Operator):
 
     def inner_check_spec(self, check_spec, spec, declaration, schedule):
         return check_spec_for(check_spec, spec, declaration, schedule)
+
+    def charged_compartments(self, spec, declaration):
+        """The compartments its routes charge, by their FR-1 IDs, in declared order: retrieval
+        brings each pool its membrane's charge (R2). Refusal 5 version 1.2 reads this hook to admit
+        a charged anchor where these routes are declared (a checkpoint imported as a new
+        definition)."""
+        return tuple(route.compartment for route in declaration.routes)
 
     def batch_signature(self, declaration):
         return (LAW_ID, tuple((r.plasma_patch, r.compartment) for r in declaration.routes))
