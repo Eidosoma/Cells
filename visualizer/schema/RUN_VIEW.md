@@ -139,7 +139,8 @@ are, and main holds them. The writer and both notes at main's `050aa741` are the
 `b08af640`, so everything said here of `b08af640` holds for main's writer; the runs written
 with it stay what they are, development runs with no verdict. The adapter reads the writer at
 `fd008813`, at `d7a11d5b` (the loop block and a record's `diagnostic` and `reference`) and at
-`b08af640` and `050aa741`. At `b08af640` the writer drops its
+`b08af640` and `050aa741`, and at main's `89bd2ffb` (the core seams pass's format items, from
+`d64fb664`). At `b08af640` the writer drops its
 interim table of @3's fields and takes the engine's own view declarations and record roles
 (@3's `UNITS`, `OBSERVATION_AXES`, `RECORD_KINDS`, `ORIENTATION`, `RECORD_LAYERS`,
 `VIEW_LAYERS`, `RECORD_NOTES`, `RECORD_DIAGNOSTICS` and `RECORD_REFERENCES`, folded with its
@@ -150,15 +151,16 @@ view gives its key, so a view of an earlier shape is packaged exactly as before.
 fixtures (`tests/engine-views/`): small runs that the writer wrote at `fd008813` (three
 worlds), at main's `050aa741` (five) and at main's `b5d3faf0` (the same five after the engine's
 second source move: the same files but for the label the script plants, and packaged alike,
-as `tests/adapt_run_layouts.test.mjs` holds), made by `tools/make_engine_view_fixture.sh`; and the
+as `tests/adapt_run_layouts.test.mjs` holds), and at main's `89bd2ffb` (the same five and three
+more, after the core seams pass's format items: below), made by
+`tools/make_engine_view_fixture.sh`; and the
 interim planarian loop, a development run with no verdict, as the writers at `d7a11d5b` and
 `b08af640` wrote it from execution snapshots (copied from the engine's lead's folder). The
 `b08af640` one is packaged for the page as a development run (`data/replays`, experiment
 `planarian-loop`). The interim shape (`fd008813`, `d7a11d5b`) is kept beside the new one:
-reading it costs no code of its own. The engine has three format follow-ups queued (its
-lead, 16 November 2026): `kinds` to hold words with a law's ID under a key of its own; a
-statement of what `carries` means; a reference constant written only where a record names
-one. Until they land the adapter reads past them as below. The writer
+reading it costs no code of its own. The three format follow-ups its lead queued on 16
+November 2026 landed on main at `d64fb664` (18 November 2026), with one addition: see "The
+core seams pass's format items" below. The writer
 conforms to most of this note. Where it differs, by design, the viewer reads what the writer
 gives:
 
@@ -246,16 +248,70 @@ gives:
   routes, `turnover_route`). From `b08af640` an entry
   of `carries` is one species id or a list of them, and the inner model's kinds declare sets
   of their own, owned by the inner model (the passive routes' `passive_route`, which carries a
-  list for each route, names its law under `kinds` and its patch or junction under `at`). A
-  list in `carries` means, in the engine's lead's words (16 November 2026), that each species
-  moves through the route with its own flux, not as a coupled set: a coupled stoichiometry is
-  a cycle, declared by the transporter kind. A law's ID under `kinds` is a mismatch with the
-  format (`kinds` are words), queued to be fixed with the law's ID under a key of its own; the
-  adapter carries `kinds` as written meanwhile, and reads no meaning into it. The
+  list for each route and names its patch or junction under `at`; until `d64fb664` it named
+  its law under `kinds`). A
+  list in `carries` means that each species moves through the route with its own flux, not as
+  a coupled set (below). The
   adapter carries every such set: `carries` as the set's `species` (what the page reads for a
   route; a list stays a list) and the others as written. A list that is not one value for
   each id, a species that is not the run's, an empty list, or an entity that is not the
   view's, is refused.
+- **The core seams pass's format items** (the engine's `docs/CORE_SEAMS_DESIGN.md` §9 and
+  §4.3 and `docs/RUN_VIEW_DESIGN.md` §9; on main from `d64fb664`, 18 November 2026; kept as
+  written by main's `89bd2ffb`). The format keeps its name, `cells.run_view@1`, and the saved
+  views behind published replays are frozen evidence, not written again (the engine's lead, 19
+  November 2026). So the adapter cannot tell an older view from a newer one by its name, and it
+  reads both side by side: each item is read only where a view gives it, an older view packages
+  exactly as before, and the writer and the engine's own check hold the rules for new views.
+  Shown by the worlds kept at `89bd2ffb` (`tests/engine-views/run-view-89bd2ffb`): the kind
+  world and FR-5's development world (`condition`: the pH condition) for kinds and laws; heredity
+  cell D with a factored channel population (`factors`, the test's planted factor source) for a
+  pump's `per_cycle` and the channel set's `factors`; the bath schedule's dose given its view as
+  a run on disk (`dose`) for a field reference; the subset world for a reference constant left
+  out. What no small world shows (a route that lists several species, a cycle kind's set) is
+  held by made-up plants on copies of those views (`tests/fixtures/run-view-made-up`, marked
+  made up).
+  - **Kinds are words.** A `kinds` value never holds a versioned ID ("@"), in any set; a law's
+    ID goes only under `laws`, one `{"law_id"}` for each entity (the passive routes'
+    `permeation` and `leak`; the pH condition's `factor`). The adapter carries both as written
+    (`kinds` and `laws` on the packaged set), and its sentence of each entity's facts names the
+    law beside the kind ("proton_leak_0 (leak; law proton_constant_field_leak@1)"), so the page's
+    words keep what an older view's kind gave. An older view's law ID under `kinds`
+    (`passive_neutral_permeation@1` in the gap-junction tissue's views, which are published
+    replays) is carried and said as written, with no refusal and no word about it. The page reads
+    a set's `kinds` and `laws` nowhere but in that sentence.
+  - **What `carries` means.** Each species a route carries moves with its own flux, not as a
+    coupled set. Coupled stoichiometry is `per_cycle`: what one cycle of a membrane's pump moves
+    of each species (the membrane set's `pumps`, as before: packaged, held by `validateReplay`,
+    and read by the beads layer's pump streams, `src/layers/marks/beads.js`), and, for a cycle
+    kind, its sets' `per_cycle` per mode and population, with each mode's count per species and
+    end. An entity that carries one species reads as before; one that lists several is said to
+    move each with its own flux ("carries X, H (each with its own flux)"), and where an
+    operator's entity lists several, each is taken as secreted on its own. The page's streams
+    take a route's species only where it carries one (`src/layers/marks/stream.js`,
+    `src/layers/loop.js`), so nothing draws a list as one movement. A cycle kind's `per_cycle`
+    is not one value for each entity, so it joins no per-entity check: it is named in the
+    derivation, with the reason (no layer of the page draws a cycle kind's modes), and not
+    packaged; no cycle kind gives such a set at `89bd2ffb`. A membrane's calcium pump
+    (`calcium_pumps`, the same shape as `pumps`) is named and not packaged where the view gives
+    one: no layer reads a calcium pump's cycles.
+  - **References.** A reference constant is written only where a written record names it (a
+    recording subset that keeps no increment states no `amount_reference`). A `{"field": X}`
+    reference (door S's merged view, not saved: a run already on disk, given its view later)
+    requires X's entry under `unstated`, and the adapter refuses it otherwise, naming the record
+    and the field. Every sentence of the derivation about such a reference names the field and
+    the view's reason, and no level is worked out over it.
+  - **Factors** (the routing door into @3). Where a channel population declares factors, the
+    channel set gives each population's `factors`, its factor-source IDs in declared order (an
+    empty list for one that declares none), and `channel_availability`'s note says the record
+    is the held value, before the door. The page reads no population's availability, so the
+    derivation names each population's factors and quotes that note, and neither is packaged.
+    A list that is not one list of names for each population is refused.
+  - **A key the adapter does not know** (`KNOWN_VIEW_KEYS` in `tools/adapt_run.py`: every key of
+    the view's top, run, time and time bases, space, recording, sets, records, layers, constants,
+    unstated items and events that a saved view gives, whether read or passed over on purpose)
+    is found and named in the derivation, never refused and never passed over unsaid: the pH
+    condition's `ph50` and `slope`, so far. No saved view gives one.
 - **The secreted species is the viewer's word.** The view calls no species secreted (the
   lead's ruling of 16 November). Where the operators' sets state `carries`, the package's
   `species.secreted` is the species they carry, make or clear (only an operator's sets: a
@@ -318,16 +374,17 @@ gives:
   `b08af640` `amount_increment` over `amount_reference` and `extracellular_amount_increment`
   over `extracellular_amount_reference`. A reference that no view field states is a named
   constant of the view (`amount_reference`, `fmol` over `["species", "cell"]`, from
-  `b08af640`); one the composition changes is its merged view's record; one the run did not
-  save is named as a field only. The derivation counts the records so stored. Where the run
+  `b08af640`; from `d64fb664` only where a record names it); one the composition changes is its
+  merged view's record; one the run did not save is named as a field only, with the field's
+  entry under `unstated` (from `d64fb664`). The derivation counts the records so stored. Where the run
   saved no record of a level the page reads (`amount`, `extracellular_amount`) but saved its
   increment, the adapter works the level out as the reference plus the increment, row by
   row: the record names its `reference`, its note says that the viewer worked it out from
   which constant and which record, and the derivation says so. A reference the run did not
   save cannot be added, and the level is then not packaged, with that said. A page field
   stored over a reference that the adapter does not add is not packaged. A `diagnostic` with
-  no words, or a `reference` that is not one constant, record or field of the view, is
-  refused.
+  no words, a `reference` that is not one constant, record or field of the view, or a field
+  reference with no entry for its field under `unstated`, is refused.
 - **The loop block** (FR-11, `docs/LOOPING_REPLAY_DESIGN.md`, on main since `050aa741`; ruled by the lead
   on 16 November 2026), written from `d7a11d5b` on: `loop: {"species", "cell_type"?, "cell",
   "period", "closes": {"within", "tolerance", "says", "zero"}, "not_measured": [{"why",
@@ -493,13 +550,18 @@ Rules that tighten the run view above:
   - `membrane.pumps`: for each membrane null, or its pump as the engine's view gives it:
     `{"id", "law_id", "per_cycle": [{"role": "sodium", "species": "Na", "count": -3},
     ...], "per_cycle_sign": "inward-positive"}`, what one cycle moves of each species; a
-    positive count is carried into the cell;
+    positive count is carried into the cell (`validateReplay` refuses another
+    `per_cycle_sign`). It is the one coupled movement the page draws: the beads layer's pump
+    streams, one for each species at its count per cycle (`src/layers/marks/beads.js`,
+    `streamsOf`);
   - `channel.species`: for each channel population, the ids of the ions it lets through;
   - `route` (`"holds": "route"`; in the engine's own view `exchange_route`, which `holds`
     "exchange route"): the routes of an operator that carries a species across a
     membrane, each on its membrane (`"geometry": {"kind": "on", "set": "membrane",
     "index": [...]}`), with `species`, the id of the species it carries, where the run's
-    files say it.
+    files say it. In a package from the engine's own view an entry of a route set's `species`
+    may be a list (the view's `carries`): each species of it moves with its own flux, never as
+    a coupled set, and the page's streams read a route's species only where it is one.
 - **`view.example`** (optional): `{"says": "Example: invented numbers", "made_by":
   "tools/make_run_fixture.py"}`. The run's numbers are invented (`schema/QUANTITY_LAYERS.md`,
   rule 6): no record then names a model as its owner, `run.engine_models` is empty, and
@@ -610,7 +672,45 @@ limits its colour scale uses in every run of the experiment, so one value has on
 A run that reaches beyond them widens the scale.
 
 A run's `parts` (optional) list its files of records of their own, so that whoever
-publishes the runs knows every file without opening one.
+publishes the runs knows every file without opening one. A published page may name, for a
+part, a file that holds several of the run's parts (below).
+
+**Parts published together: `cells.visualizer.replay_parts@1`.** The runs folder keeps a
+run's own file and one file a part, as the adapter writes them; the export only reads it
+(`--runs`). A published page may hold 511 files, so an experiment may say, in its entry of
+`data/replays/overlay.json`, `"parts_together": true` (true or false; absent is false). The
+export (`tools/export_page.mjs`, `packageParts` in `tools/lib/build_page.mjs`) then
+publishes the parts of each of its runs as one file for the run, written into a folder of
+the export's own beside the page (`<page's name>.runs/`) and listed beside the page at:
+
+```
+runs/<run-id>.parts.json     the run's parts, in the run's own order of parts
+runs/<run-id>.parts-2.json   and on, only where one file would reach the size limit
+```
+
+```json
+{"format": "cells.visualizer.replay_parts@1", "run": "<run-id>", "parts": [
+  {"format": "cells.visualizer.replay_part@1", "run": "<run-id>", "part": "<part id>", "payload": {"…": "…"}}
+]}
+```
+
+- Each item of `parts` is the run's part file as the adapter wrote it, word for word; no
+  part is in two files, and no part's id is `parts` or `parts-<n>`.
+- Each file stays under the size limit of a run's file (1 MB: `RUN_FILE_LIMIT`, the
+  adapter's `LIMIT_BYTES`). Where one file would reach it, the parts go into as few files
+  as hold them, kept in the run's order and cut where the largest file is the smallest
+  (`cutInOrder`): an E07-v1 run's gate and three concentrations (1.30 MB) are two files of
+  0.59 and 0.71 MB. A run's own file is unchanged.
+- The published catalogue's line for the run names, for each such part, the file that
+  holds it (`parts[].file`) and that file's size (`bytes`). The adapter leaves
+  `parts_together` out of the catalogue it writes: the export reads it from the overlay.
+- The page asks for one part at a time, as before (`loadPart` in `src/replay/source.js`):
+  the file the catalogue names for the part is fetched once for the run, however many of
+  its parts are asked for, and only the part asked for is taken in; the others' arrays wait
+  in the page until they are asked for. A file that could not be fetched, or whose part
+  could not be taken in, is fetched again when asked for again. An error names the file
+  and the part. `validatePart` and `validateParts` (`src/replay/run.js`) check the shapes.
+- A page with its runs inside it (`--inline-runs`, `--standalone`) keeps one script a part.
 
 **Several experiments.** One catalogue holds every experiment adapted into the folder,
 each with its runs; adapting one experiment leaves the others' entries and files in place.
@@ -889,8 +989,14 @@ those words.
   `source` or `confirmed`. Where a role has no word of the page's, the record gets no
   sign.
 - **Sets carry their `roles`.** An operator's set carries `species` (the view's `carries`),
-  `direction`, `kinds` and `at` as written, and is packaged even where no record lies on
-  it.
+  `direction`, `kinds`, `at` and `laws` as written, and is packaged even where no record lies
+  on it. Where it gives `laws`, the derivation names each entity's law beside its kind.
+- **The core seams pass's format items** (from `d64fb664`; "The engine's view" above): a route
+  that lists several species is said to move each with its own flux; a field reference stands
+  only with its field's `unstated` entry; a channel set's `factors`, a cycle kind's set's
+  `per_cycle` and a calcium pump are named in the derivation and not packaged, since no layer
+  draws them; a key the adapter does not know is named, never refused. An older view gives none
+  of these, and packages exactly as before.
 - **The run** carries `source` and `end` where the view states them. `run.revision` is
   `run.source.revision`; where the view states no source it is the caller's label, and the
   derivation says that it is that and not the engine's own record of its source.
@@ -910,7 +1016,9 @@ those words.
   derivation with their times, and not shown.
 - **Refused:** a view whose files, arrays, rows or shapes are not as it says; a recorded
   subset that contradicts itself, or that keeps only some entities of a set other than
-  the species; an example (`example.json`) with a view beside it.
+  the species; an example (`example.json`) with a view beside it; a field reference with no
+  entry for its field under `unstated`; a channel set's `factors` that are not one list of
+  names for each population.
 
 **What an experiment found** is two separate facts, both curated from the record, each
 with the record's own line and a source. The viewer shows them and derives neither.

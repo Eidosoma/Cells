@@ -339,6 +339,65 @@ must bve configurable as well based on our different species as we add them".
 
 ## Experiment replays
 
+The Experiments tab opens on a landing of cards that shows everything Cells has run, in
+four bands, each card with its standing in the record's words (the user chose the layout
+on 18 November 2026; the site's first entry is Scope, as before):
+
+| Band | Cards | What stands in it |
+| --- | --- | --- |
+| Examples to start with | 2 | The tumour tissue (the gap-junction work: the line, the ladder, the sheet and the networks, 50 runs; "Development work, not judged (D138)" first on it) and the assembly (the engine's two development runs of the model system, in its own view) |
+| Judged under a registered protocol | 18 | Everything the record has judged under a registered protocol, experiment or qualification, passed or failed, side by side, each card with its own level from the Engine map: E07-v1 (38 judged runs; its answer: the disc did not renew), the judged acceptances of FR-1, FR-3, FR-4, FR-5, FR-6 (two) and FR-10, the morphogenesis gates MG0, MG0c and MG1 (its failed first run beside the pass), the secreted-species qualification D150, cell division, the BETSE parity ladder (rung 1's failed first run beside the passes), osmotic water and volume, cell replacement, the composite on the L4 (Implemented and guarded: its judged run's Q7 failed and stands), fixed points, and projective stepping (Failed qualification) |
+| Development runs | 6 | The turnover pre-screen (21 runs), the secreted-species run and the planarian loop (1 each), the origin-of-life laws (six rows against references, landed for development and not judged), and the heredity pilot W1 and the conduction probe (the map states no level for either, and each card says so first) |
+| Invented numbers | 1 | A test sheet of the viewer's own: no engine ran |
+
+What is designed or planned and has not run is on the Engine map, and the landing says so
+in one line, a press away from it.
+
+- **Three kinds of card.** A replay's card opens the view that exists for it, by rule (a
+  model system's entry opens its own view; an experiment whose entry names a part opens
+  that part; any other its opening run), and in that view "All experiments", under the bar
+  at the left, leads back to the landing where it was left. A standing with no replay
+  gives what it asked, its standing, each judged run's count of its own checks, its day
+  and its scope line, and its sources. The origin-of-life laws are rows: each with its
+  claim, its reference and its result. A standing's card, the rows' card and any card's
+  "more" open its detail in the panel: the record's sentences, the scope lines whole,
+  every count with its day, the sources as links at their revisions, and a door to its
+  part on the Engine map.
+- **Every word of a standing is read, never typed.** `tools/build_cards.py` makes
+  `data/replays/cards.json` from the Engine map's overlay (a part's status, date, words
+  and sources, so the map and the landing cannot say two things), the catalogue's overlay
+  and selection, the model-system entries, and the record: the judged runs' own verdict
+  files (counts, days, revisions) and `PROGRESS.md` and the notes at a named revision of
+  main. What it reads from the record is kept with its file and field in
+  `data/replays/cards.readings.json`; what is typed (titles, questions, bands, locators)
+  is `data/replays/cards.source.json`. `schema/EXPERIMENT_CARDS.md` is the contract.
+  ```bash
+  python3 tools/build_cards.py --check     # in npm test: tracked files only
+  python3 tools/build_cards.py --gather --evidence /mnt/workspaces/Cells --repo <engine checkout> --revision HEAD
+  ```
+  The gathering runs again when the record moves, when a locator changes, or when the map
+  is merged forward.
+- **Every judged entry of the record is placed.** The gathering lists every entry of
+  `PROGRESS.md`'s runs that reports a judged run or a registered qualification; each is on
+  a card or in the source file's `entries_left_out` with its reason, and a test holds it.
+- **Passed and failed both show**, each verdict as it is, never summed. Where the record
+  gives no count, or words a count otherwise than the run's file, the card shows none.
+  Where the map states no level for a card's part (the tumour tissue, the heredity pilot,
+  the conduction probe), the card carries none and says first what the work is.
+- **Stills.** `tools/make_stills.mjs` pictures each replay card's opening view in both
+  themes into `data/replays/stills/`, with `stills.json` (card, address, size, checksum,
+  the page's revision, the renderer); each card's `replay.still` names them.
+- **Addresses.** `lens=experiments` (or `#experiments`) opens the landing.
+  `lens=experiments&select=card:<id>` opens a card's detail where the page is opened
+  directly; a published artifact's frame passes only `#name`, so a detail has no shareable
+  link there. Every address that worked before (`run=`, `select=run:`, `part=`,
+  `example=`) opens its view without the landing.
+- **What each address fetches.** The landing fetches `cards.json` and the stills near the
+  screen: no run and no model. The site's first entry fetches nothing of the landing's. A
+  card's view fetches its own run and the parts its opening view shows, and no other run.
+  `fetches` (`tools/check_fetches.mjs`) holds each address to
+  `tools/references/fetches.json`, with a bound in bytes.
+
 A replay draws what a run saved, and nothing else.
 
 - **The class and the readouts are the run's own.** Each replay shows the class the
@@ -354,49 +413,65 @@ A replay draws what a run saved, and nothing else.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
   one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
   Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed
-  (the user, 14 November 2026). The published page carries the chosen runs as files beside
-  it and loads one when it is first shown.
+  (the user, 14 November 2026). The published page carries the runs the landing lists as
+  files beside it, with `cards.json` and the cards' stills (`stills/`), which it fetches
+  only when the landing first opens and, for a still, only when it comes near the screen.
+  A run is loaded when it is first shown.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-**The page's list is two worked examples** (since Version 27, 17 November 2026; the user
-chose them for the page):
+**The two examples to start with** were the page's whole list from Version 27 (17
+November 2026; the user chose them for the page) until the landing: the gap-junction work
+(its networks of a linear model, after Grodstein, Mathews and Levin (2026): 30 runs of the
+engine, 16 in the Norton form and 14 as the preprint writes the model; and its tumour
+tissue, below), and the GARD assembly (the engine's two development runs of the model
+system, played in the tab's place).
 
-| Example | Runs | What the record says |
-| --- | --- | --- |
-| Gap-junction networks of a linear model, after Grodstein, Mathews and Levin (2026) | 30 runs of the engine: 16 in the Norton form, 14 as the preprint writes the model | Development work, not judged (D138) |
-| The GARD assembly | the engine's two development runs of the model system, played in the tab's place | Development runs of the engine, not judged |
-
-- **An entry says whether the page lists it** (`listed` in `data/replays/overlay.json`), and
-  the overlay's `doors` name the page's other examples (a model system's entry, shown in
-  the Experiments tab's place with its own levels, clock and panels). Experiments that are
-  not listed are still packaged, for the checks, and are not published: E07-v1 (its 38
-  judged runs), the turnover pre-screen (21 arms), the secreted-species run and the example
-  sheet. A run the scene itself names is published unlisted: the planarian's loop, which
-  the Cell view's flux reads. 92 runs are packaged in all; a run's records for the quantity
-  layers are in files of their own beside it, each under 1 MB, fetched when a layer is
-  switched on, and a run is loaded only when it is shown.
-- **The list of examples** heads the card. Beside each stand two separate facts from the
-  record: whether it was judged, and what the answer was. A judged experiment whose answer
-  is no is shown as exactly that. Each run says how it ended.
+- **What the page lists and publishes** is the cards' `listing`
+  (`data/replays/cards.json`): the export publishes those experiments' runs, their parts
+  and the runs the scene names (the planarian's loop, which the Cell view's flux reads),
+  and the catalogue's overlay says nothing of listing. Its `doors` name the model systems'
+  entries (the assembly, shown in the Experiments tab's place with its own levels, clock
+  and panels). 112 runs are packaged in all, and all are published.
+- **A run's parts.** A run's records for the quantity layers are in files of their own
+  beside it, each under 1 MB, fetched when a layer is switched on. In the published page
+  the parts of each run of an experiment whose overlay entry says `parts_together`
+  (E07-v1, the turnover pre-screen, the linear networks, the secreted-species run and the
+  test sheet, since 18 November 2026) are one file for the run, two where one would reach
+  1 MB, fetched when the first of them is asked for. The export writes those files; the
+  runs folder keeps one file a part. An address fetches only the run it shows, and the
+  view keeps the four runs shown last.
+- **A run's card** heads with what its experiment is ("Experiment", "Development run" or
+  "Invented numbers") and its name, with its parts' doors, its runs, its chart and its
+  words under it. On the landing a card keeps two facts of the record apart: its standing
+  and its answer. A judged experiment whose answer is no is shown as exactly that. Each
+  run says how it ended.
 - **The run shown first** is the one the entry names (`opens.run`, an arm's name: Figure
   5a's seven-cell network), or the experiment's first run where it names none or that arm
-  is not packaged. The runs stand at the card's head, under the list of examples: a few are
-  rows to press, many are a list to choose from, grouped by the sweep that holds them.
+  is not packaged. The runs stand at the card's head, under the experiment's name: a few
+  are rows to press, many are a list to choose from, grouped by the sweep that holds them.
 - **A quantity the experiment states** (a file beside the run, `schema/RUN_VIEW.md`)
   colours the cells where the entry opens its runs on it (`opens.record`), in its own unit,
   never converted, and is said to be the experiment's own and not a field of the engine.
 - **Where an arm's files name no disc,** it is taken as the cells above the experiment's D
   threshold at the first record, and the replay says so.
 - **Held back:** the W1 heredity pilot adapts (two runs), but the view draws every event
-  as a replacement and the pilot's events are a cue in many cells at once.
+  as a replacement and the pilot's events are a cue in many cells at once. W1 stands on
+  the landing as a card with no replay.
 - **Runs written by the engine's own run-view writer** (`cells.run_view@1`, on main since
   050aa741, 16 November 2026) are kept small under `tests/engine-views/`, as fixtures for
-  the adapter: five small worlds written by main's writer (`run-view-050aa741/`, made by
-  `tools/make_engine_view_fixture.sh` through the engine's `scripts/run_detached.sh`),
-  three as the development branch's fd008813 wrote them (`run-view-fd008813/`), and the
-  interim planarian loop as the writers at d7a11d5b and b08af640 wrote it from execution
-  snapshots (copied from the engine's lead).
+  the adapter: eight small worlds written by main's writer at 89bd2ffb (`run-view-89bd2ffb/`,
+  after the core seams pass's format items of d64fb664: kinds as words with the law under
+  `laws`, each carried species with its own flux, a field reference only with its `unstated`
+  entry, and a channel set's `factors`), the five before them at 050aa741 and b5d3faf0
+  (`run-view-050aa741/`, `run-view-b5d3faf0/`), all made by `tools/make_engine_view_fixture.sh`
+  through the engine's `scripts/run_detached.sh`; three as the development branch's fd008813
+  wrote them (`run-view-fd008813/`); and the interim planarian loop as the writers at d7a11d5b
+  and b08af640 wrote it from execution snapshots (copied from the engine's lead). The format
+  keeps its name, so the adapter reads the older and the newer shape side by side, and every
+  older view packages exactly as before (on 19 November 2026 all 585 run files were remade
+  with the changed adapter, each the same bytes). What no small world shows is planted on
+  copies of them from `tests/fixtures/run-view-made-up/`, which is made up and says so.
 - **The planarian loop** (`planarian-loop`) is a development run of the engine with no
   verdict: FR-11's first looping run, one 2 s period of a subthreshold current train into
   the centre of seven planarian heredity cells, packaged to loop. It is listed under
@@ -425,9 +500,9 @@ chose them for the page):
   with a run. Checks also hold the chart on a made-up summary
   (`tests/engine-views/sweep-made-up/`).
 - **The gap-junction example's tumour tissue** (added on 17 November 2026, redrawn on 18
-  November; development work, not judged). The Experiments tab opens on it: the example's
-  entry names the part it opens on (`opens.part`, one field: the line), and an address
-  that names a run, a record, layers, `part=` or `example=` still wins.
+  November; development work, not judged). Its card on the landing opens on it: the
+  example's entry names the part (`opens.part`, one field: the line), and an address that
+  names a run, a record, layers, `part=` or `example=` opens its view without the landing.
   `src/lenses/tissue_line.js` draws each run's cells from straight above as the
   Experiments view draws a run's (`src/layers/sheet.js`), standing where its view places
   them, coloured by the miR200 minus Zeb mRNA its driver states beside the run
@@ -468,14 +543,15 @@ chose them for the page):
   and amounts are in files of their own). Checks: `node tools/check_tissue.mjs`
   (`CASE=wide|phone|reduced|play|sheet|layout`) and `tests/tissue_packages.test.mjs` (each
   packaged value's band is the driver's state; the transfers run down the gradient).
-- **A development run and an example stand apart** from the experiments, each under a
-  heading of its own in the list when one of its runs is shown (neither is listed, so each opens by its address and neither is published): the
-  engine's first run made for the viewer (one cell that secretes a species; no verdict),
-  and an example sheet with invented numbers for the layers that no saved run feeds yet.
-  See "Quantity layers".
+- **A development run and the test sheet of invented numbers stand apart** from the
+  experiments, each in its own band of the landing: the engine's first run made for the
+  viewer (one cell that secretes a species; no verdict), and a test sheet with invented
+  numbers for the layers that no saved run feeds yet. The word "example" belongs to the
+  landing's first band alone; the test sheet is "Invented numbers" wherever a visitor
+  reads. See "Quantity layers".
 
-To make them all (the second call adds the example, from the fixture the run-fixture tool
-writes):
+To make them all (the second call adds the test sheet, from the fixture the run-fixture
+tool writes):
 
 ```bash
 npm run adapt:runs -- --evidence /mnt/workspaces/Cells
@@ -522,9 +598,10 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
   the viewer's table for the tissue family, whose convention the engine's side confirmed
   on 15 November 2026. The legend says which of the two stands behind a direction.
 - **Two runs feed the newer layers today.** The engine's first development run for the
-  viewer feeds the secreted species, the transfers and the glow. An example with
-  invented numbers, marked as such on the picture and in the legend, feeds ion traffic
-  and a sheet's transfers until a saved run of a sheet carries those totals.
+  viewer feeds the secreted species, the transfers and the glow. A test sheet of
+  invented numbers, marked as such on the picture and in the legend ("Invented numbers ·
+  no run of Cells' engine"), feeds ion traffic and a sheet's transfers until a saved run
+  of a sheet carries those totals.
 - **Flux in the Cell view** (published 16 November 2026). A Flux switch in the Cell
   view's legend, off as the page opens; a part shows its flux alone when the visitor
   chooses it; beads with bloom. A species with no run of its own shows illustration,
@@ -600,10 +677,10 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   Molecules (the table of catalysis), One assembly, Population (not drawn yet) and
   Lineages.
 - **It plays what GARD's entry names.** Since 17 November 2026, evening, that is the
-  engine's own pair of runs (below). Before, and still in the checks, it played an example
+  engine's own pair of runs (below). Before, and still in the checks, it played a scene
   of invented numbers once the first assembly has gathered,
-  marked so at every level, on the picture, in the legend and in the bar: "Example:
-  invented numbers · not a run of Cells' engine". It stands still for a visitor who asks
+  marked so at every level, on the picture, in the legend and in the bar: "Invented
+  numbers · no run of Cells' engine". It stands still for a visitor who asks
   for less motion. The view opens on the protocell everywhere, on a phone and with less
   motion too (the user first had the cluster there, then left the choice to the
   coordinator on 17 November 2026); any of the three packings can be chosen on the card.
@@ -651,9 +728,12 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
   part 2, on main"), and the engine's declarations list the stochastic assembly family
   `cells.assembly_lineages@1` with GARD's three laws and two lineage operators
-  (`data/engine/declarations.json`, written at main `b5d3faf0`, the map's revision; they
-  did so at `a16b2571` and `79d23cd5` too). Declared is not qualified: its runs are
-  development runs, not judged, and the page says so on every picture of them. Until
+  (`data/engine/declarations.json`, written at main `4dda2285`, the map's revision; they
+  did so at `a16b2571`, `79d23cd5` and `b5d3faf0` too). Declared is not qualified: its runs are
+  development runs, not judged, and the page says so on every picture of them. The Engine
+  map's part for GARD reads "Implemented and guarded" since the map's review at `4dda2285`,
+  on its tests on main, with its standing first: development runs, not judged (D192,
+  D197). Until
   that evening the entry read "Designed, not modelled" (`docs/GARD_DESIGN.md`, D192) and
   the page played a marked example. Cells' own origin-of-life engine, with
   laws from physical chemistry, is designed, its first choices settled by D199
@@ -909,7 +989,7 @@ Every engine file belongs to exactly one part; the extractor warns if one does n
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("235 of 235 engine files placed, 321 left out as legacy code").
+build counts them apart ("250 of 250 engine files placed, 321 left out as legacy code").
 The map's patterns are carried through the engine's source moves from the engine's own path
 tables (`scripts/moves/*-table.json`), with a check that every file stands in the part it
 stood in before (`tools/move_paths.py check`, which names a package file the move dissolved
@@ -933,22 +1013,51 @@ It also takes `src="scene.json"` or a `scene` property. It emits `cells-ready` a
 
 ## Publishing
 
-The visualizer session publishes its own artifacts (the user, 14 November 2026).
-`artifacts.json` records each one's URL so that updates go to the same link.
+The visualizer session publishes its own artifacts (the user, 14 November 2026). An artifact
+can be updated only from the account that published it, so the page may stand at more than
+one link over time: `artifacts.json` records every link it has had and what each holds.
+Nothing a publish needs is kept with a link or an account. The page and every file beside
+it are made again from this folder (the run files from the frozen evidence, below), so the
+page can be published to any link, or to a new one (the user, 18 November 2026).
 
-1. `npm run extract && npm test && npm run export`
-2. Publish `out/cells-architecture.html` to the URL in `artifacts.json`, with the files
-   listed in `out/cells-architecture.files.json` beside it: the runs (`runs/<run id>.json`)
-   and the species' own proteins (`proteins/<species>/shelves.json` and the planarian's
-   `members-NN.json`). On 15 November 2026 that is 378 files (115 MB): 327 files of the 61
-   runs (59 of the experiments, the development run and the example) and 51 files of
-   proteins. A publish takes at most 255 files and 64 MB, so a full
-   set goes up in several publishes to the same URL; a later publish keeps the files it
-   does not send, so only what changed needs sending. `npm run stage` lays the export out
-   as the artifact is, in a folder that is kept as the record of what was published, and
-   writes the list of each upload (`tools/stage_publish.py`). A page published without the
-   proteins' files draws the atlas as before and says that the species' own proteins could
-   not be loaded.
+1. In a clean copy of the branch's head, with the run files in place (`out/runs/`; "From a
+   fresh checkout" below says how they are remade): `npm test`, then `npm run export`. It writes
+   `out/cells-architecture.html` and `out/cells-architecture.files.json`, the list of the
+   files to publish beside it: the runs (`runs/`), the species' own proteins
+   (`proteins/<species>/`), the catalogue, the machines' shapes, the assembly's files, and
+   the landing's cards and stills (`cards.json`, `stills/`). The files that hold a run's
+   parts together are written by the export into `out/cells-architecture.runs/`. On 19
+   November 2026 that is 458 files (155 MB with the page): 341 of 112 runs, 70 of
+   proteins, 21 shapes, 8 of the catalogue, 2 of the assembly, 1 machine, the cards and 14
+   stills.
+2. `npm run stage -- --new out/publish-NAME` lays the export out as the artifact is, in a
+   folder that is kept as the record of what was published, and writes the list of each
+   upload (`tools/stage_publish.py`). A publish takes at most 255 files and 64 MB, and one
+   version holds at most 511 files and 256 MB, so a full set goes up in several publishes
+   to the same link; a later publish keeps the files it does not send.
+   - To a link this folder published to last: add `--old` with the folder staged then, and
+     only what changed is sent.
+   - To a link whose staged folder is not at hand, or to a link first published long ago:
+     save the Artifact tool's listing of the link's files, give it with `--remote`, and add
+     `--remove`: every file is sent, and the first upload removes by name what the link
+     still holds and the page no longer lists. Files published before and no longer
+     listed stay on the artifact until they are removed by name, and count toward its 511.
+   - `--remove` with `--old` does the same for a link this folder published to last. The
+     removals always go up first, and no upload adds more new files than the link has room
+     for before its own removals count, so the link never passes 511 files while the
+     uploads land (Version 43 added 200 files to a link that held 360 and dropped 101).
+   - A staged folder holds the page, its files and the staging's own `upload-N.json`, and
+     nothing else: anything more would be read as published and no longer listed.
+   - To a new link: nothing more; record the link in `artifacts.json`.
+3. Publish the staged page to the link, one upload after another, with the staged folder as
+   the uploads' root.
+4. Read the page back from the link and compare it with the staged page (the service wraps
+   it in a short head and tail of its own), list the link's files against the staged
+   folder, and record the version in `artifacts.json`: its date, the engine revision the
+   map reads, the gate it rests on, and what was looked at.
+
+A page published without the proteins' files draws the atlas as before and says that the
+species' own proteins could not be loaded.
 
 Published pages load three.js from cdnjs, the preferred host of the artifact frame's
 allowlist; everything else is inside the page.
@@ -957,12 +1066,19 @@ allowlist; everything else is inside the page.
 
 Everything that makes the page is in this folder on the branch `visualizer`, except two
 things that are remade: `node_modules/`, and the replay files under `out/runs/`, which
-stay out of git (61 runs in 327 files, 96 MB).
+stay out of git (112 runs in 585 files, 111 MB, on 19 November 2026; the export publishes
+all 112 runs, in 341 files).
 
 1. `npm install`
 2. `npm run adapt:runs -- --evidence /mnt/workspaces/Cells` remakes `out/runs/` from the
-   frozen evidence folders that `data/replays/selection.json` names. Skip it when
-   `out/runs/` is still on disk.
+   frozen evidence folders that `data/replays/selection.json` names, and
+   `npm run adapt:runs -- --experiment example-sheet --root tests/fixtures/run-example --run invented-numbers`
+   adds the sheet of invented numbers. Skip both when `out/runs/` is still on disk. On 18
+   November 2026 the two calls remade all 585 files in under a minute, each one byte for
+   byte the file the page was published from; on 19 November, for the landing, they did so
+   again, and two files differ from those by design (`index.json` and the test sheet's
+   run, whose words changed). What they need outside this folder is the
+   engine's frozen evidence, which the repository does not hold.
 3. `npm run extract -- --strict && npm test`. The extractor reads the main checkout, so
    the map states the revision main is at. A strict build fails where that revision is
    on no remote branch as last fetched (a commit not yet pushed, or amended before it
@@ -980,13 +1096,20 @@ stay out of git (61 runs in 327 files, 96 MB).
    engine's declarations manifest, with GARD's second part at a16b2571, and on 18 November at
    79d23cd5, after D198's retire batch and the feature-request lane's judged acceptances, and
    at b5d3faf0, after D188's second move and the landing of the origin-of-life engine's first
-   laws: 258 parts and 959 relations, which it states.
+   laws, and at 4dda2285, after the core-seams pass's first landings (seam F's laws as
+   modules among them): 261 parts and 962 relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
-   for each and `summary.json`. Each
+   for each and `summary.json`. A scenario that holds a time bound (what a frame costs:
+   `shelves-frame`) runs alone, after the others: beside three other browsers its measure
+   says more of them than of the page. Each
    check says at its end whether the page's own font had arrived: with the stand-in, words
-   run longer and cards stand taller, and a miss is read against that.
+   run longer and cards stand taller, and a miss is read against that. `fetches` exports
+   the page as the landing's cards list it and holds what each address fetches beside the
+   page to `tools/references/fetches.json`; `landing-wide`, `landing-720`,
+   `landing-phone`, `landing-narrow` and `landing-retry` hold the landing
+   (`tools/check_landing.mjs`).
 5. `npm run export`
 6. Publish `out/cells-architecture.html` with every file listed in
    `out/cells-architecture.files.json` beside it, under the same relative paths
@@ -1157,7 +1280,7 @@ Ideas kept for after the basics (the user, 14 November 2026):
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library is read from the engine's declarations manifest written at main b5d3faf0:
+- The Laws library is read from the engine's declarations manifest written at main 4dda2285:
   47 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared

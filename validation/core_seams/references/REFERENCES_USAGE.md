@@ -181,6 +181,16 @@ the exact amount by which that booking misses ΔE_c.
 
 `values.seam_c.envelope.reachability` {binder: verdict}.
 
+**`values.seam_c.validity`** (amendment C4):
+- **`systems.<S>`:** per registered state, `t_star_fmol`, `t_star_exact` (a rational),
+  `lambda_star`, `per_ligand_fmol` (t at λ = e_L), `valid`, `per_ligand_valid` and
+  `lp_t_star_fmol`.
+- **`planted.<tag>`:** the same, with the `dual` and `primal` outcomes (solved, with `x_mM`, or
+  refused, with a reason).
+
+A state is valid iff t* > 0. The closure's validity report must agree, and the per-ligand floors
+alone must not decide it.
+
 **`values.seam_c.movers.<id>`** gives `verdict` and `reasons`. **`values.seam_c.parse`** gives
 `form_valences` and the planted declared valence.
 
@@ -203,3 +213,22 @@ the exact amount by which that booking misses ΔE_c.
 
 A tolerance has power where it lies below a plant's largest margin over ten floors, and above ten
 floors. For seam A's rounding bands that is §19 item 2's.
+
+**The engine's stated bands** (amendment A2; the kinds owner's batch). `api.engine_wegscheider_band`
+evaluates B, B_ψ and R0 against B_W = 32 ε (T + N) for a declared cycle. `api.engine_guard`
+evaluates the guard's G against A. The design file places both (`power.A2_amendment_engine_band`,
+`power.A3_population_guard.engine_allowance`). Q7 requires the declared cycles to be exactly the
+simple cycles, each once, each a closed walk.
+
+**Zero cases: an absolute floor** (amendment F4). Compare every pair absolutely, |x − y| ≤ 10 τ,
+with τ built from the computation's term sums, never relatively with the zero pairs skipped:
+- **A slope** (`api.slope_pairs`) has τ = (terms + 8) u M/h, with u = ½ 10^(1 − PREC) and M the
+  differenced function's magnitude. A neutral law's conductance has τ = 0 and must be exactly 0.
+- **The diagram's two routes** (`api.method_agreement`) have floors from the trees' positive
+  sums and from the elimination's running error bound (`exact.det_running`,
+  `exact.solve_running`).
+- **The basis against the Hill total** (`api.basis_signs`) has a floor from both totals' terms.
+
+An engine comparison where the reference value is exactly 0 takes the same form with its own
+rounding floor. A floor of exactly 0 demands exact equality. A plant whose deviation is
+undefined at a state (a zero reference) is weak there and is listed.

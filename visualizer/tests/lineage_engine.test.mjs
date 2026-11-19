@@ -64,7 +64,7 @@ function lensFor({ moving = true, width = 1600, height = 1000 } = {}) {
   return { lens, stage, shown };
 }
 
-const EXAMPLE_WORDS = /invented numbers|Example:/;
+const EXAMPLE_WORDS = /invented numbers|Example:/i;
 
 test("on a wide screen it opens on the pair: the engine's passive law first, the comparison model beside it, each named by its run, its form and the engine's name for its law", { skip }, () => {
   const { lens, shown } = lensFor();

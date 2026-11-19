@@ -1,0 +1,353 @@
+{
+  "execution": {
+    "backend": "cpu",
+    "capacity": 1,
+    "channel_capacity": 0,
+    "dt": 0.0005,
+    "edge_capacity": 0,
+    "extracellular_capacity": 2,
+    "face_capacity": 0,
+    "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+    "jit": true,
+    "material_balance_atol_fmol": {
+      "ADP": 1e-18,
+      "ATP": 1e-18,
+      "B_L": 1e-18,
+      "B_c": 1e-18,
+      "Cl": 1e-10,
+      "H": 1e-16,
+      "K": 1e-10,
+      "Na": 1e-10,
+      "Pi": 1e-18,
+      "X": 1e-12
+    },
+    "max_steps": 18,
+    "max_trace_bytes": 2147483648,
+    "membrane_capacity": 2,
+    "precision": "float64",
+    "solver": "imex_ars222_face_electromigration@1"
+  },
+  "experiment": {
+    "calcium_pump_controls": [],
+    "channel_controls": [],
+    "end_time": 0.005,
+    "junction_controls": [],
+    "membrane_controls": [
+      {
+        "membrane_id": "plasma_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      },
+      {
+        "membrane_id": "bounding_0",
+        "schedule": [
+          {
+            "availability": 1.0,
+            "time": 0.0
+          }
+        ]
+      }
+    ],
+    "observation_times": [
+      0.0,
+      0.001,
+      0.002,
+      0.003,
+      0.004,
+      0.005
+    ],
+    "pump_controls": []
+  },
+  "model": {
+    "cells": [
+      {
+        "fixed_charge_equivalent_fmol": -481.7111378410408,
+        "id": "cell_0",
+        "initial_amount_fmol": {
+          "ADP": 1.2566370614359175,
+          "ATP": 12.566370614359174,
+          "B_L": 4.188790204786392e-09,
+          "B_c": 209.43951023931956,
+          "Cl": 41.88790204786392,
+          "H": 104.72001941445428,
+          "K": 586.4306286700948,
+          "Na": 41.88790204786392,
+          "Pi": 12.566370614359174,
+          "X": 0.00041887902047863917
+        },
+        "initial_charge_C": 0.0,
+        "volume_pL": 4.188790204786391
+      }
+    ],
+    "channels": [],
+    "closure": {
+      "gauge_reference": null,
+      "law": "resolved_capacitor_components_current_continuity@1"
+    },
+    "extracellular": [
+      {
+        "boundary_potential_V": 0.0,
+        "fixed_charge_equivalent_fmol": -40.000039808717055,
+        "id": "bath_0",
+        "initial_amount_fmol": {
+          "ADP": 1e-09,
+          "ATP": 1e-09,
+          "B_L": 1e-09,
+          "B_c": 1e-09,
+          "Cl": 110.0,
+          "H": 3.981071705534969e-05,
+          "K": 5.0,
+          "Na": 145.0,
+          "Pi": 1e-09,
+          "X": 0.0001
+        },
+        "initial_charge_C": 0.0,
+        "reservoir": true,
+        "volume_pL": 1.0
+      },
+      {
+        "boundary_potential_V": 0.0,
+        "fixed_charge_equivalent_fmol": -6.7003692302155144,
+        "id": "lumen_0",
+        "initial_amount_fmol": {
+          "ADP": 6.544984694978736e-11,
+          "ATP": 6.544984694978736e-11,
+          "B_L": 2.617993877991494,
+          "B_c": 6.544984694978736e-11,
+          "Cl": 0.6544984694978735,
+          "H": 0.15538453530222995,
+          "K": 9.162978572970228,
+          "Na": 0.6544984694978735,
+          "Pi": 6.544984694978736e-11,
+          "X": 0.06544984694978735
+        },
+        "initial_charge_C": 0.0,
+        "reservoir": false,
+        "volume_pL": 0.06544984694978735
+      }
+    ],
+    "faces": [],
+    "id": "resolved_pump_tissue@3",
+    "junctions": [],
+    "membranes": [
+      {
+        "area_m2": 1.2566370614359174e-09,
+        "calcium_pump": null,
+        "capacitance_F": 1.2566370614359174e-11,
+        "id": "plasma_0",
+        "inside": "cell_0",
+        "law": "constant_field@1",
+        "outside": "bath_0",
+        "permeability_m_per_s": {
+          "ADP": 0.0,
+          "ATP": 0.0,
+          "B_L": 0.0,
+          "B_c": 0.0,
+          "Cl": 0.0,
+          "H": 0.0,
+          "K": 0.0,
+          "Na": 0.0,
+          "Pi": 0.0,
+          "X": 0.0
+        },
+        "pump": null
+      },
+      {
+        "area_m2": 7.853981633974483e-10,
+        "calcium_pump": null,
+        "capacitance_F": 7.853981633974482e-12,
+        "id": "bounding_0",
+        "inside": "cell_0",
+        "law": "constant_field@1",
+        "outside": "lumen_0",
+        "permeability_m_per_s": {
+          "ADP": 0.0,
+          "ATP": 0.0,
+          "B_L": 0.0,
+          "B_c": 0.0,
+          "Cl": 0.0,
+          "H": 0.0,
+          "K": 5e-10,
+          "Na": 0.0,
+          "Pi": 0.0,
+          "X": 0.0
+        },
+        "pump": null
+      }
+    ],
+    "passive_routes": [
+      {
+        "factors": [
+          "damage_0"
+        ],
+        "id": "cargo_pore_0",
+        "law": "passive_neutral_permeation@1",
+        "patch": "bounding_0",
+        "permeability_m_per_s": 1e-06,
+        "species": "X"
+      },
+      {
+        "factors": [
+          "acid_0"
+        ],
+        "id": "cargo_transfer_0",
+        "law": "passive_neutral_permeation@1",
+        "patch": "bounding_0",
+        "permeability_m_per_s": 1e-10,
+        "species": "X"
+      },
+      {
+        "id": "proton_leak_0",
+        "law": "proton_constant_field_leak@1",
+        "patch": "bounding_0",
+        "permeability_m_per_s": 6e-07
+      },
+      {
+        "factors": [
+          "damage_0"
+        ],
+        "id": "proton_pore_0",
+        "law": "proton_constant_field_leak@1",
+        "patch": "bounding_0",
+        "permeability_m_per_s": 1e-05
+      }
+    ],
+    "patch_damage": [
+      {
+        "id": "damage_0",
+        "initial_damage": 0.0,
+        "injury_rate_per_s": 1.0,
+        "law": "cells.bounding_patch_damage@1",
+        "patch": "bounding_0",
+        "resealing_rate_per_s": 0.05
+      }
+    ],
+    "ph_conditions": [
+      {
+        "id": "acid_0",
+        "law": "cells.ph_conditioned_factor@1",
+        "node": "lumen_0",
+        "ph50": 5.5,
+        "slope": 4.0
+      }
+    ],
+    "species": [
+      {
+        "id": "Na",
+        "valence": 1
+      },
+      {
+        "id": "K",
+        "valence": 1
+      },
+      {
+        "id": "Cl",
+        "valence": -1
+      },
+      {
+        "id": "H",
+        "standard_mu_RT": 0.0,
+        "valence": 1
+      },
+      {
+        "background": {
+          "floor_fmol": 1e-18,
+          "trace_mM": 1e-09
+        },
+        "id": "B_c",
+        "protonated_standard_mu_RT": -16.57861266955713,
+        "standard_mu_RT": 0.0,
+        "valence": -1
+      },
+      {
+        "background": {
+          "floor_fmol": 1e-18,
+          "trace_mM": 1e-09
+        },
+        "id": "B_L",
+        "protonated_standard_mu_RT": -13.815510557964275,
+        "standard_mu_RT": 0.0,
+        "valence": -1
+      },
+      {
+        "background": {
+          "floor_fmol": 1e-18,
+          "trace_mM": 1e-09
+        },
+        "id": "ATP",
+        "standard_mu_RT": 0.0,
+        "valence": 0
+      },
+      {
+        "background": {
+          "floor_fmol": 1e-18,
+          "trace_mM": 1e-09
+        },
+        "id": "ADP",
+        "standard_mu_RT": -11.833247834848853,
+        "valence": 0
+      },
+      {
+        "background": {
+          "floor_fmol": 1e-18,
+          "trace_mM": 1e-09
+        },
+        "id": "Pi",
+        "standard_mu_RT": 0.0,
+        "valence": 0
+      },
+      {
+        "id": "X",
+        "valence": 0
+      }
+    ],
+    "stage_reads": [
+      {
+        "buffers": {
+          "cell_0": [
+            "B_c"
+          ],
+          "lumen_0": [
+            "B_L"
+          ]
+        },
+        "k_on_per_mM_s": {
+          "B_L": 10000000.0,
+          "B_c": 10000000.0
+        },
+        "proton_row": "H",
+        "read_id": "rapid_proton_buffer@1"
+      }
+    ],
+    "standard_concentration_mM": 1000.0,
+    "temperature_K": 310.0,
+    "transporters": [
+      {
+        "capacity_fmol_s": 0.008302695335869232,
+        "fuel": {
+          "kind": "maintained_held_rows@1",
+          "node": "cell_0",
+          "ph_band": 0.05,
+          "ph_ref": 7.2,
+          "rows": [
+            "ATP",
+            "ADP",
+            "Pi"
+          ]
+        },
+        "id": "pump_0",
+        "km_atp_mM": 0.1,
+        "km_role_mM": 0.0001,
+        "law": "cells.proton_atp_mass_action_positive@1",
+        "patch": "bounding_0",
+        "role": "H",
+        "stoichiometry": 2
+      }
+    ]
+  },
+  "schema_version": 1
+}

@@ -1689,10 +1689,69 @@ FIELD_OPERATORS = {
 }
 FIELD_SETS = {"route": "exchange_route"}
 CLOSES_KEYS = {"within", "tolerance", "says", "zero"}
+# The core seams pass's three format items and its addition (docs/CORE_SEAMS_DESIGN.md §9 and §4.3 at the engine's
+# revision 89bd2ffb; the writer on main from d64fb664, 18 November 2026). The format keeps its name, cells.run_view@1, and
+# the saved views behind published replays are not written again (the engine's lead, 19 November 2026), so a view of
+# either shape is read, and each item is read only where a view gives it:
+# - kinds are words, and a law's ID goes under `laws`: an older view's kind that holds a law's ID is carried as written;
+#   where a set that states facts of its entities gives `laws`, the derivation names each entity's law beside its kind;
+# - each species a route carries moves with its own flux, not as a coupled set: an entity that lists several species is
+#   said so; coupled stoichiometry is only a stated `per_cycle` (a membrane's pump, carried in `pumps`; a cycle kind's
+#   set, named and not packaged);
+# - a reference over a field the run did not save ({"field": X}) stands only with X's entry under `unstated`;
+# - a channel set's `factors` (the routing door into @3) are named, with the note on channel_availability, and not packaged.
+# Every key the adapter knows of the view's objects: read where the page uses it, or passed over on purpose (a set's
+# members, the parts of the field nodes, the pumps' layout word, the species' identities, a run's fingerprint). A key
+# beyond them is found and named in the derivation, never refused and never passed over unsaid.
+VIEW_TOP_KEYS = VIEW_KEYS | {"loop"}
+KNOWN_VIEW_KEYS = {
+    "run": {"id", "label", "experiment", "arm", "seed", "revision", "engine_models", "composition", "definition_sha256", "end", "source", "model", "scale"},
+    "time": {"unit", "bases", "event_rows"},
+    "base": {"id", "array", "says", "files"},
+    "space": {"unit", "dimensions", "representation", "source"},
+    "layer": {"id", "label", "owner", "representation"},
+    "constant": {"id", "unit", "axes", "values", "from", "says"},
+    "unstated": {"id", "what", "why"},
+    "recording": {"mode", "subset"},
+    "event": {"time", "kind", "layer", "at", "from", "label"},
+    "record": {"id", "field", "array", "base", "axes", "set", "unit", "layer", "owner", "kind", "sign", "difference", "monotone", "resets", "note", "writers", "diagnostic", "reference"},
+    "set": {"id", "ids", "scale", "holds", "owner", "says", "geometry", "roles", "lifetimes", "laws", "reservoir", "outside", "pumps", "calcium_pumps", "pumps_are", "members", "composed_of", "species", "valence", "recorded", *PER_ENTITY},
+}
+# Said in sentences of their own: the channel set's factors, and a cycle kind's coupled stoichiometry on a set of its own.
+OWN_WORDS_KEYS = {"factors", "per_cycle"}
 
 
 def finite(value):
     return is_number(value) and math.isfinite(value)
+
+
+def unread_keys(view):
+    """What a view gives that the adapter does not know (KNOWN_VIEW_KEYS), as phrases "where: key, key": the view's top,
+    its run, time, time bases, space, recording, each set by its id, and its layers, records, constants, unstated items
+    and events. The channel set's factors and a set's per_cycle are said in sentences of their own (OWN_WORDS_KEYS)."""
+    said = []
+
+    def note(where, found, known):
+        extra = sorted(set(found) - known) if isinstance(found, dict) else []
+        if extra:
+            said.append(f"{where}: {', '.join(extra)}")
+
+    note("the view", view, VIEW_TOP_KEYS)
+    note("its run", view.get("run"), KNOWN_VIEW_KEYS["run"])
+    time = view.get("time")
+    note("its time", time, KNOWN_VIEW_KEYS["time"])
+    for base in (time.get("bases") or []) if isinstance(time, dict) else []:
+        note(f"its time base {base.get('id') if isinstance(base, dict) else base}", base, KNOWN_VIEW_KEYS["base"])
+    note("its space", view.get("space"), KNOWN_VIEW_KEYS["space"])
+    note("its recording", view.get("recording"), KNOWN_VIEW_KEYS["recording"])
+    for item in view.get("sets") or []:
+        if isinstance(item, dict):
+            note(f"the set {item.get('id')}", item, KNOWN_VIEW_KEYS["set"] | ({"factors"} if item.get("id") == "channel" else set()) | {"per_cycle"})
+    for group, key in (("layers", "layer"), ("records", "record"), ("constants", "constant"), ("unstated", "unstated"), ("events", "event")):
+        extra = sorted({found for item in view.get(group) or [] if isinstance(item, dict) for found in item} - KNOWN_VIEW_KEYS[key])
+        if extra:
+            said.append(f"its {group}: {', '.join(extra)}")
+    return said
 
 
 def view_rows(name, folder, base, array_name):
@@ -1993,6 +2052,15 @@ def adapt_engine_view(root, name, experiment, entry):
                 raise Refused(f"{name}: its view says an entity of {identifier} acts at an entity that is not one of the view's")
             if key in ("direction", "kinds") and not all(isinstance(value, str) and value for value in values):
                 raise Refused(f"{name}: its view gives the set {identifier} '{key}' that is not a word for each of its entities")
+    # The channel set's factors (the routing door into @3, from d64fb664): for each population the factor sources that scale
+    # its availability, in declared order (none for one that declares none; null for a padding slot). Not one such list for
+    # each population is refused, as the engine's own check refuses it.
+    channel = sets.get("channel") or {}
+    if "factors" in channel and not (
+        isinstance(channel["factors"], list) and len(channel["factors"]) == len(channel.get("ids") or [])
+        and all((value is None and entity is None) or (isinstance(value, list) and all(isinstance(source, str) and source for source in value)) for value, entity in zip(channel["factors"], channel.get("ids") or []))
+    ):  # fmt: skip
+        raise Refused(f"{name}: its view gives the channel set factors that are not, for each population, the list of the factor sources it declares")
     # The entities a recording subset kept: each set's `recorded` (indices into its ids) names exactly the elements the
     # subset lists for it, in their order. Only the species are read so far: a field saved once for each species is
     # packaged for the recorded ones. The page draws every entity of a set it shows, so a subset of cells, membranes or
@@ -2146,6 +2214,15 @@ def adapt_engine_view(root, name, experiment, entry):
     # is not so given is refused, as the writer's own check refuses it.
     constant_ids = {item["id"] for item in constants_in}
     record_ids = {record.get("id") for record in view["records"] if isinstance(record, dict)}
+    # A reference over a field the run did not save ({"field": X}: door S's merged view, not saved) stands only where the
+    # view says why under `unstated`, by an entry for X (from d64fb664; no saved view before it has such a reference).
+    unstated_why = {item.get("id"): item.get("why") for item in view["unstated"] if isinstance(item, dict) and isinstance(item.get("id"), str)}
+
+    def over(reference):
+        """A reference over a field the run did not save, in words, with the view's own reason."""
+        why = unstated_why.get(reference["field"])
+        return f"the field {reference['field']}, which the run did not save{f' ({why})' if isinstance(why, str) and why else ''}"
+
     for record in listed:
         where = f"{name}: its view's record {record.get('id')}"
         if "diagnostic" in record and not (isinstance(record["diagnostic"], str) and record["diagnostic"].strip()):
@@ -2153,6 +2230,8 @@ def adapt_engine_view(root, name, experiment, entry):
         reference = record.get("reference")
         if "reference" in record and not (isinstance(reference, dict) and len(reference) == 1 and (reference.get("constant") in constant_ids or reference.get("record") in record_ids or isinstance(reference.get("field"), str))):
             raise Refused(f"{where} names a reference that is not one constant, record or field of the view")
+        if "reference" in record and "field" in reference and reference["field"] not in unstated_why:
+            raise Refused(f"{where} is stored over the field {reference['field']} (its reference), which the run did not save, and its view gives no entry for {reference['field']} under unstated saying why")
     # A level the page reads that the run saved only as an increment over a fixed reference: the record of the increment
     # on the replay's own base where it has one; the level is worked out below as the reference plus the increment.
     summed = {}
@@ -2242,13 +2321,17 @@ def adapt_engine_view(root, name, experiment, entry):
                         _, held_values, _ = view_rows(name, folder, bases[held["base"]], held.get("array"))
                         fixed = lambda row, species_j, k: held_values[row * per + species_j * width + k] if len(axes) == 2 else held_values[row * per + k]  # noqa: E731
                 if fixed is None:
-                    unsummed.append(f"{field} (its increment {record['field']} is stored over {json.dumps(reference, sort_keys=True)}, which the run did not save in a form the adapter can add)")
+                    unsummed.append(
+                        f"{field} (its increment {record['field']} is stored over {over(reference)}, so the adapter cannot add it)"
+                        if "field" in reference
+                        else f"{field} (its increment {record['field']} is stored over {json.dumps(reference, sort_keys=True)}, which the run did not save in a form the adapter can add)"
+                    )
                     continue
                 sums[field] = (record["field"], reference)
             elif record.get("reference") is not None:
                 # Stored as an increment over a fixed reference (its owner's RECORD_REFERENCES): its quantity is the
                 # reference plus the record, which the page does not add. Not packaged, and said.
-                referenced.append(f"{field} (over {json.dumps(record['reference'], sort_keys=True)})")
+                referenced.append(f"{field} (over {over(record['reference']) if 'field' in record['reference'] else json.dumps(record['reference'], sort_keys=True)})")
                 continue
             stated = {key: record[key] for key in ("kind", "sign", "monotone", "resets", "note", "writers", "diagnostic") if record.get(key) is not None}
             difference = record.get("difference")
@@ -2380,9 +2463,11 @@ def adapt_engine_view(root, name, experiment, entry):
     if diagnostics:
         said_of = next(record["diagnostic"] for record in listed if "diagnostic" in record)
         derivation.append(f"The view marks {len(diagnostics)} field(s) as diagnostics, in its words '{said_of}': {', '.join(diagnostics)}. The page shows none of them.")
-    stored_over = sorted({f"{record['field']} over {next(iter(record['reference'].values()))}" for record in listed if isinstance(record.get("reference"), dict)})
+    # A reference over a field the run did not save is named as such, with the view's reason (its unstated entry).
+    stored_over = sorted({f"{record['field']} over {over(record['reference']) if 'field' in record['reference'] else next(iter(record['reference'].values()))}" for record in listed if isinstance(record.get("reference"), dict)})
     if stored_over:
-        derivation.append(f"The view stores {len(stored_over)} field(s) as an increment over a fixed reference (its reference): {', '.join(stored_over)}.")
+        unsaved = any("field" in record["reference"] for record in listed if isinstance(record.get("reference"), dict))
+        derivation.append(f"The view stores {len(stored_over)} field(s) as an increment over a fixed reference (its reference): {('; ' if unsaved else ', ').join(stored_over)}.")
     if subset is not None:
         kept = "every field" if subset["fields"] is None else f"{len(subset['fields'])} field(s) ({', '.join(subset['fields'])})"
         species_kept = f", and of the species only {', '.join(elements['species'])}" if "species" in elements else ""
@@ -2531,18 +2616,29 @@ def adapt_engine_view(root, name, experiment, entry):
             target = next(iter(targets))
             ids = sets[target].get("ids") or []
             item["geometry"] = {"kind": "on", "set": target, "index": [place[target][ids.index(next(iter(value.values())))] for value in places]}
+        # Kinds are words, and a law's ID goes under `laws` (from d64fb664): where the set gives each entity's law, it is
+        # named beside its kind, so the words keep what an older view's kind gave. An older view's kind is said as written.
+        laws = each(identifier, "laws")
         said = []
         for k, entity in enumerate(item["ids"]):
             words = ", ".join(values[k] for values in (directions, kinds) if values)
+            law = laws[k].get("law_id") if laws and isinstance(laws[k], dict) and isinstance(laws[k].get("law_id"), str) else None
+            words = "; ".join(part for part in (words, f"law {law}" if law else "") if part)
             line = entity + (f" ({words})" if words else "")
             if carried:
-                line += f" carries {carried[k] if isinstance(carried[k], str) else ' and '.join(carried[k])}"
+                # Each species a route carries moves with its own flux, not as a coupled set: several are listed as such.
+                value = carried[k]
+                line += f" carries {value}" if isinstance(value, str) else f" carries {' and '.join(value)}" if len(value) == 1 else f" carries {', '.join(value)} (each with its own flux)"
             if places:
                 line += f" at {next(iter(places[k].values()))}"
             said.append(line)
         facts.append(f"{identifier}: " + "; ".join(said))
     if facts:
-        derivation.append(f"What the run's operators state of each of their entities is carried as the view gives it ({' | '.join(facts)}); a route's species is the one the view says it carries.")
+        several = any(isinstance(value, list) and len(value) > 1 for identifier in stating for value in each(identifier, "carries") or [])
+        derivation.append(
+            f"What the run's operators state of each of their entities is carried as the view gives it ({' | '.join(facts)}); a route's species is the one the view says it carries."
+            + (" Where an entity carries more than one species, each moves with its own flux, not as a coupled set: only a stated per_cycle couples species." if several else "")
+        )
     operators = set((stated_run.get("composition") or {}).get("operators") or []) if isinstance(stated_run.get("composition"), dict) else set()
     # The inner model's kinds' sets (passive routes, say) carry species too, but no operator of the run moves those species
     # in or out of a cell by them: only an operator's sets are read for the secreted species.
@@ -2553,9 +2649,11 @@ def adapt_engine_view(root, name, experiment, entry):
         secreted = [identifier for identifier in species if identifier in carried]
         if secreted:
             packaged["species"]["secreted"] = secreted
+            several = any(isinstance(value, list) and len(value) > 1 for identifier in carriers for value in each(identifier, "carries"))
             derivation.append(
                 f"The species that the run's operators carry, make or clear ({', '.join(secreted)}, by what the view states of each of their entities: {', '.join(carriers)}) is taken as the species the run secretes: "
                 "the view states which species each entity carries, and does not itself call any species secreted."
+                + (" Where an entity carries more than one, each moves with its own flux, and each is taken on its own." if several else "")
             )
     else:
         # The species the run's operators declare: the view names the operator that declares each, and does not call it secreted.
@@ -2568,6 +2666,31 @@ def adapt_engine_view(root, name, experiment, entry):
                 f"The species an operator of the run declares ({', '.join(f'{identifier}, by {source}' for identifier, source in declared_by if source in operators)}) is taken as the species the run secretes: "
                 "the view names the operator that declares it, and does not itself call it secreted."
             )
+    # What the view states that the page does not draw, each named in the view's own words and not packaged: the channel set's
+    # factors (with the note on channel_availability, which the page does not show either), a cycle kind's coupled
+    # stoichiometry on a set of its own (per_cycle; the one the page draws is a membrane pump's, in the membrane set's
+    # pumps), a membrane's calcium pump, and any key the adapter does not know.
+    if "factors" in channel:
+        named_factors = each("channel", "factors") or []
+        held_note = next((record["note"] for record in view["records"] if isinstance(record, dict) and record.get("field") == "channel_availability" and isinstance(record.get("note"), str) and record["note"]), None)
+        derivation.append(
+            "The view states, for each channel population, the factor sources by which the routing door scales its availability at every stage (factors, in declared order): "
+            + "; ".join(f"{entity}: {', '.join(sources) if sources else 'none'}" for entity, sources in zip(named("channel"), named_factors))
+            + ". They are not packaged: no layer of the page reads a population's availability."
+            + (f" Of its record channel_availability, which is not packaged either, the view says: {held_note}{'' if held_note.endswith(('.', '!', '?')) else '.'}" if held_note else "")
+        )
+    cycled = [identifier for identifier, item in sets.items() if "per_cycle" in item]
+    if cycled:
+        derivation.append(
+            f"The view gives per_cycle on {', '.join(f'the set {identifier}' for identifier in cycled)}: a coupled stoichiometry, by mode and population, as the view states it. "
+            "It is not packaged: no layer of the page draws a cycle kind's modes. The one coupled movement the page draws is a membrane pump's, from what one cycle of it moves (the membrane set's pumps, per_cycle)."
+        )
+    calcium = [entity for entity, pump in zip(named("membrane"), each("membrane", "calcium_pumps") or []) if pump is not None] if "membrane" in sets else []
+    if calcium:
+        derivation.append(f"The view gives {len(calcium)} membrane(s) a calcium pump (calcium_pumps: its law and what one cycle moves, per_cycle): {', '.join(calcium)}. They are not packaged: no layer of the page reads a calcium pump's cycles.")
+    unread = unread_keys(view)
+    if unread:
+        derivation.append(f"The view gives what the adapter does not read, and none of it is packaged: {'; '.join(unread)}. Each is named here, never refused.")
     # The spaces outside the cells, where the viewer can stand them beside the cells: not beside the run's own geometry,
     # which places the cells and gives the outside nodes no tiles of the adapter's.
     if (built is not None or getattr(sheet, "prescribed", False)) and "outside" in packaged:
@@ -3250,7 +3373,8 @@ def main(argv=None):
                 disc = "" if "first_equals_disc" not in notes else f" ({'exactly the disc' if notes['first_equals_disc'] else 'NOT the disc'})"
                 checked = f"; D counts equal the run's own at {notes['counts_checked']} records" if notes.get("counts_checked") else ""
                 print(f"  cells above the D mark: {notes['above_mark_first']} at the first record{disc}, {notes['above_mark_last']} at the last{checked}")
-        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary", "sidecar")}
+        # How the runs' parts are published (parts_together) is the export's to read from the overlay, not the catalogue's.
+        written_entry = {key: value for key, value in entry.items() if key not in ("adapter", "summary", "sidecar", "parts_together")}
         # An experiment whose summary lists arms with a parameter and readouts: its sweeps, for the chart (a file's name in its evidence folder, never a path).
         if isinstance(entry.get("summary"), str):
             if "/" in entry["summary"] or entry["summary"].startswith("."):

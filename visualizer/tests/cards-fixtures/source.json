@@ -1,0 +1,131 @@
+{
+  "format": "cells.visualizer.experiment_cards_source@1",
+  "note": "A fixture: four cards, one in each band, reading the fixture record beside this file.",
+  "record": {
+    "revision": "1111111111111111111111111111111111111111",
+    "says": "The fixture's record."
+  },
+  "bands": [
+    { "id": "examples", "label": "Examples to start with", "says": "A fixture band." },
+    { "id": "judged", "from_status": "qualified" },
+    { "id": "development", "label": "Development runs", "says": "A fixture band." },
+    { "id": "invented", "label": "Invented numbers", "says": "A fixture band." }
+  ],
+  "not_run": { "says": "A fixture line.", "lens": "engine" },
+  "cards": [
+    {
+      "id": "assembly",
+      "band": "examples",
+      "kind": "replay",
+      "title": "The assembly",
+      "asks": "How could heredity begin before genes?",
+      "standing": { "from": "entry", "entry": "gard" },
+      "replay": { "opens": { "entry": "gard" }, "experiments": [], "still": null }
+    },
+    {
+      "id": "fr1",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-1: a closed compartment",
+      "asks": "Can a cell hold a closed compartment of its own?",
+      "map": "fr.internal_compartment",
+      "switch": {
+        "path": "docs/NOTE.md",
+        "revision": "2222222",
+        "heading": "The switch, in plain words.",
+        "items": 2,
+        "where": "Regulation: The switch, in plain words"
+      },
+      "record": [
+        {
+          "progress": { "entry": "FR-1 judged: passed", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "fixture-fr1",
+            "within": ["judged", "run-a"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" },
+            "confirm": { "file": ["reading.json"], "passed": "judged_passed", "of": "judged_criteria" }
+          }
+        },
+        {
+          "progress": { "entry": "MG0a morphogen gradient passes" },
+          "verdict": {
+            "evidence": "fixture-mg0a",
+            "within": ["judged-01"],
+            "file": ["results", "results.json"],
+            "read": "criteria",
+            "at": "verdict",
+            "unit": "criteria",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["source", "SNAPSHOT.json"], "field": "git_revision" }
+          }
+        },
+        {
+          "progress": { "entry": "A fixture qualification: FAIL" },
+          "verdict": {
+            "evidence": "fixture-tally", "within": [], "file": ["judgement.json"], "read": "tally",
+            "tally": { "passed": "passed", "failed": "failed", "not_evaluable": "not_evaluable_or_incomplete" },
+            "unit": "cases", "day": { "file": ["README.md"], "line": "Run once" }
+          }
+        },
+        {
+          "progress": { "entry": "Fixture parity rungs pass" },
+          "verdict": {
+            "evidence": "fixture-named", "within": [], "file": ["margins.json"], "read": "named",
+            "unit": "protocols", "day": { "file": ["README.md"], "line": "Run once" },
+            "snapshot": { "file": ["margins.json"], "field": "source" }
+          }
+        },
+        {
+          "progress": { "entry": "A fixture run judged in parts" },
+          "verdict": {
+            "evidence": "fixture-parts", "within": [], "files": [["part-a", "Q1.json"], ["part-b", "Q2.json"]], "at": "verdict",
+            "unit": "items", "day": { "file": ["README.md"], "line": "Run once" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "origin-laws",
+      "band": "development",
+      "kind": "rows",
+      "title": "Origin-of-life laws (OL1)",
+      "asks": "Do the first laws hold against references written without the engine's code?",
+      "map": "laws.origin_laws",
+      "record": [
+        {
+          "progress": { "entry": "OL1 landed: the origin-of-life laws", "item": "Verified against code-blind references.", "count_in": "item", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "fixture-harness",
+            "within": [],
+            "file": ["result-1", "verdict.json"],
+            "read": "rows",
+            "unit": "rows",
+            "day": { "file": ["run-1.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["result-1", "verdict.json"], "field": "engine.engine_revision" }
+          }
+        }
+      ],
+      "rows": {
+        "record": 0,
+        "reference": { "path": "validation/refs/README.md", "revision_field": "references.revision", "table": "The rows (OL1)" }
+      },
+      "rerun": null
+    },
+    {
+      "id": "test-sheet",
+      "band": "invented",
+      "kind": "replay",
+      "title": "A test sheet",
+      "asks": null,
+      "shows": "The quantity layers that no saved run feeds yet.",
+      "standing": { "from": "catalogue_stop", "experiment": "example-sheet", "stop": "example" },
+      "replay": { "opens": { "experiment": "example-sheet" }, "experiments": ["example-sheet"], "runs_from": "tests/fixtures/run-example", "still": null }
+    }
+  ],
+  "left_out": []
+}
