@@ -7564,3 +7564,28 @@ and the references' measurement: "lets do option 2".
 - **The lead's earlier rule is withdrawn.** "1% of the tightest band" was the wrong yardstick: the
   bands measure numerical agreement between two codes running the same equations. The judged effect
   is the yardstick.
+
+## D234: Option 2 of the core-laws roadmap, and gene regulation's design begins
+
+2026-11-19, about 23:29 UTC. The user, choosing among the lead's options after the advisor's review
+of the core-laws roadmap (branch core-laws-roadmap): "option 2 as you suggest, lets start gene
+regulation as well".
+
+1. **Option 2.** The energy groundwork and mitochondria go to the kinds and binding owners and a new
+   mitochondria lane. The operators, F and @3 owners keep D222's order for FR-1 to FR-10 and the
+   Xenopus lane (D225).
+   - **Kinds owner:** land symporter version 2 and the schedules, and the net-flow step-bound
+     follow-up. Then: moved fuel at closure nodes, the cycle kind's trapezoid booking, the Δp readout
+     and, for host P's per-complex respiration, chemistry at P.
+   - **Binding owner:** registry entries for the nucleotides and the respiratory carriers, then the
+     registry moieties.
+   - **A new mitochondria lane** writes the mitochondrial laws (new files under `laws/cycles/`, D209)
+     and `validation/mitochondria/`. Its first milestone, MT-1, is one isolated cardiac mitochondrion,
+     lumped, on @3.
+   - **References:** the code-blind Beard 2005 reference, already running, serves MT-2. Fresh
+     code-blind agents write the component references, from the laws' appendix of declared
+     equations.
+   - **Agents stay within the cap of seven.** New origin-of-life work waits for a free seat (D230).
+2. **Gene regulation begins with a design note.** D145's hold is lifted for the design: transcription
+   and translation as physics, regulatory networks as declared laws, and how they are verified. Its
+   options come to the user before any engine code is written. D218's door is unchanged until then.
