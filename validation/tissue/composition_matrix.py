@@ -61,6 +61,7 @@ BATH = "scheduled_bath_composition@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
 TRAFFICKING = trafficking_operator.LAW_ID
+PRODUCER = "population_unit_turnover@1"
 
 OPS = "src/cells/operators/"
 TESTS = "tests/unit/"
@@ -690,6 +691,89 @@ def _tags():
         tags[("reads-closed", TRAFFICKING, PARTITION, "active")][1] + propagates,
         (),
     )
+    # population_unit_turnover@1 (FR-7's unit producer) writes its precursor rows and membrane
+    # state's population units only, and reads as declared (CONFLICTS_VIEW, D150's static-tissue
+    # list) the volumes and the activity masks. C2 counts a writer of membrane state's accepted
+    # state as changing every field membrane state provides; the producer changes the populations'
+    # units, never an area or a capacitance. Its definition refuses every other writer of
+    # population units, and a precursor row that another writer than turnover's supply touches
+    # (RULES).
+    producer_code = (OPS + "population_unit_turnover.py::unit_half_step",)
+    producer_cells = (
+        "The producer's runtime reads are its cells' precursor amounts and volumes, its "
+        "populations' units and its own fields (unit_half_step)"
+    )
+    unit_writer = (
+        "the producer writes membrane state's population units only, never an area or a "
+        "capacitance (unit_half_step), and C2 counts a writer of membrane state's accepted state "
+        "as changing every field membrane state provides"
+    )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("order", lumen, PRODUCER, "membrane_area")] = (
+            NOMINAL,
+            "The lumen's split part reads its patch's area, which no producer changes: "
+            + unit_writer,
+            producer_code,
+        )
+    for insertion in (INSERTION_1, INSERTION_2):
+        tags[("order", insertion, PRODUCER, "membrane_capacitance")] = (
+            NOMINAL,
+            "Insertion's split part reads the capacitances, which no producer changes: "
+            + unit_writer,
+            producer_code,
+        )
+    tags[("order", TRAFFICKING, PRODUCER, "channel_abundance")] = (
+        REAL,
+        "Trafficking's split part reads its plasma populations' units before the producer's "
+        f"split part writes units through membrane state, {lagged}; both would write one "
+        "population's units, which the producer refuses (its writer rule)",
+        (),
+    )
+    for name in ("membrane_area", "membrane_capacitance"):
+        tags[("order", TRAFFICKING, PRODUCER, name)] = (
+            NOMINAL,
+            f"Trafficking's split part reads its patches' {name.split('_')[1]}, which no producer "
+            "changes: " + unit_writer,
+            producer_code,
+        )
+    tags[("reads", PRODUCER, WATER, "volume")] = (
+        REAL,
+        "The precursor's exact free-energy change reads the cells' volumes as declared "
+        "(unit_half_step); water changes them",
+        producer_code,
+    )
+    for provider in (WATER, LUMEN_1, LUMEN_2):
+        tags[("reads", PRODUCER, provider, "extracellular_volume")] = (
+            NOMINAL,
+            producer_cells + "; it reads no outside node",
+            producer_code,
+        )
+    for name in ("membrane_active", "outside_active"):
+        tags[("reads", PRODUCER, INSERTION_1, name)] = (
+            NOMINAL,
+            producer_cells + "; it reads no patch or outside mask, and insertion@1 refuses a "
+            "channel population on an onset patch (check_onsets), so no routed population sits "
+            "on one",
+            (*producer_code, ONSET_CHANNELS[INSERTION_1]),
+        )
+        tags[("reads-closed", PRODUCER, INSERTION_2, name)] = (
+            NOMINAL,
+            producer_cells + "; it reads no patch or outside mask, and insertion@2 closes only "
+            "onset patches and nodes, which hold no channel population (check_onsets)",
+            (*producer_code, ONSET_CHANNELS[INSERTION_2]),
+        )
+    tags[("reads-closed", PRODUCER, PARTITION, "active")] = (
+        REAL,
+        "The partition retires cells: the producer would read a retired cell's precursor and "
+        "units as declared, and its units in transit have no split rule (a static tissue in "
+        "version 1)",
+        (),
+    )
+    tags[("reads-closed", PRODUCER, PARTITION, "membrane_active")] = (
+        REAL,
+        tags[("reads-closed", PRODUCER, PARTITION, "active")][1] + propagates,
+        (),
+    )
     # The coupling's @2 (B1′) is @1 plus operator targets: it reads what @1 reads, so each of
     # @1's refusals is @2's with the same tag and reason.
     for key, value in list(tags.items()):
@@ -726,7 +810,20 @@ _TRAFFICKING_OFF = _off_list(True, TRAFFICKING, trafficking_operator.ADMITTED)
 _TRAFFICKING_FIRST = tuple(
     pair for pair in _TRAFFICKING_OFF if set(pair) <= set(compartments_operator.ADMITTED)
 )
-_COMPARTMENTS_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if pair not in _TRAFFICKING_FIRST)
+# The producer's own writer rule refuses it beside trafficking before the compartments' list is
+# read (its check runs first in sequence(PRODUCER, TRAFFICKING)), so that rule alone marks it.
+_COMPARTMENTS_FIRST = tuple(
+    pair for pair in _TRAFFICKING_OFF if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair
+)
+
+# population_unit_turnover@1 refuses every other writer of population units, in either order
+# (population_unit_turnover.check_writers).
+_UNIT_WRITERS = tuple(
+    law
+    for law in LAWS
+    if law != PRODUCER and "population_abundance_increment" in OPERATORS[law].ENTITY_WRITES
+)
+_UNIT_PAIRS = tuple(pair for law in _UNIT_WRITERS for pair in ((PRODUCER, law), (law, PRODUCER)))
 
 RULES = (
     dict(
@@ -1025,6 +1122,36 @@ RULES = (
         tag=REAL,
         why="Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 "
         "worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6)",
+    ),
+    dict(
+        rule="population_unit_turnover@1 refuses every other writer of population units",
+        laws=(PRODUCER, *_UNIT_WRITERS),
+        level="law",
+        check=OPS + "population_unit_turnover.py::check_writers",
+        test=TESTS + "test_population_unit_turnover.py::test_the_writers_of_units_and_precursor",
+        tag=REAL,
+        why="It removes every unit of its populations at k_r, the declared ones included (FR-7's "
+        "unit producer, F1), so a second writer's moves (FR-2's trafficking, insertion, the "
+        "partition) would mix with that removal; version 1 is their one writer. It marks the "
+        "pairs the declarations admit and stands behind their refusals of the rest",
+        marks=tuple(pair for pair in _UNIT_PAIRS if not errors(sequence(*pair))),
+        behind=tuple(pair for pair in _UNIT_PAIRS if errors(sequence(*pair))),
+    ),
+    dict(
+        rule="a unit producer's precursor row has no writer but turnover's supply",
+        laws=(PRODUCER, REACTIONS, TURNOVER, EXCHANGE),
+        level="data",
+        check=OPS + "population_unit_turnover.py::check_writers",
+        test=TESTS + "test_population_unit_turnover.py::"
+        "test_a_d152_reaction_on_the_precursor_and_an_in_step_mover_are_refused",
+        tag=REAL,
+        why="Two writers of one row are admitted only as split parts with exact half-steps in "
+        "declared order (the lead's ruling of 19 November 2026): turnover's supply beside the "
+        "producer's consumption, Strang-split. A row that a D152 reaction writes is refused, "
+        "mirroring D152's one local-kinetics writer per row, and so are another operator that "
+        "declares the precursor (species_exchange@1 among them) and an in-step mover of it: the "
+        "inner model's movers and any operator's in-step process (species_registry."
+        "moved_in_step)",
     ),
 )
 
