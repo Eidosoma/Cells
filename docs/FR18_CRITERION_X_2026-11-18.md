@@ -198,3 +198,10 @@ and memory-capped.
 replay, which never keeps that trace: it keeps per-row values only. FR-8 ran H2 through the
 windowed runner instead. So the wrapper raises H2's `max_trace_bytes` to 14 GB. Only that
 admission estimate reads it. Nothing else in the rule, the worlds or the tools changes.
+
+**The note, corrected before any world ran (01:12 UTC).** A first launch at 01:04 UTC found W0's
+1 ms arms refused by the same admission estimate (2.9 GB against W0's 2 GB). It was stopped before
+any other world ran, and its two refusals are kept in `fr8/out-stopped-1/`. The wrapper now applies
+one rule to every FR-8 world: a definition whose whole-horizon estimate exceeds its own
+`max_trace_bytes` gets twice the estimate. That means 13.8 GB for H2 at 1 ms and 5.9 GB for W0's two
+1 ms arms. The 2, 5 and 10 ms arms are unchanged.
