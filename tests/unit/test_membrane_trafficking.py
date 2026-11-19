@@ -330,6 +330,21 @@ def test_the_admitted_world_parses_and_round_trips():
     again = parse_spec(cs.to_dict(spec))
     assert again.model.operators == spec.model.operators
     assert again.experiment.operators == spec.experiment.operators
+    # The run view's records and the summary's identity block name the route's entities.
+    op = OPERATORS[LAW]
+    ((_, declaration, schedule),) = [e for e in cs.entries(spec) if e[0].LAW_ID == LAW]
+    events = op.view_events(spec, declaration, schedule)
+    assert [(e["time"], e["kind"], e["at"]) for e in events] == [
+        (0.0, "recycling rate", {"membrane": "membrane_0"}),
+        (0.0, "retrieval rate", {"membrane": "membrane_0"}),
+    ]
+    assert op.view_sets(spec, declaration)["trafficking_route"]["ids"] == ("uptake_0",)
+    route = op.summary(spec, declaration, schedule, None)["trafficking_routes"]["uptake_0"]
+    assert (route["pool_node"], route["pool_patch"], route["owner"]) == (
+        "pool_0",
+        "pool_membrane_0",
+        "cell_0",
+    )
 
 
 def test_insertion_and_declared_kinds_are_refused_beside_it():
@@ -354,14 +369,47 @@ def test_insertion_and_declared_kinds_are_refused_beside_it():
     with pytest.raises(ConfigError, match="scheduled_membrane_insertion@1"):
         parse_spec(edited(with_operator(insertion, "insertion_controls", controls)))
     assert trafficking.REFUSED["scheduled_membrane_insertion@1"] == trafficking.INSERTION_REASON
+    # The declared inner structure, from the world with membrane state alone (the compartments
+    # admit membrane state only with trafficking, and trafficking is refused beside the kind).
+    plain = fx.pooled_cells(1)
+    plain["model"]["operators"] = plain["model"]["operators"][:1]
     with kind_registry.scope(kf.registry(kf.carrier())):
-        declared = get_model(parse_spec(kf.declare_carrier(fx.pooled_cells(1))).model).inner
+        declared = get_model(parse_spec(kf.declare_carrier(plain)).model).inner
         laws = ("membrane_entity_state@1", "cell_owned_compartments@1", LAW)
         errors = pump_composite.structure_errors(declared, tuple(OPERATORS[k] for k in laws))
     assert errors == [
         f"{LAW} builds the inner model's state, layout or control with today's fixed fields, so "
         f"it does not run beside declared kinds ({kf.CARRIER_ID})"
     ]
+
+
+def test_the_step_checks_read_the_schedules_extremes():
+    """R5: @3's bounds run on the definition with the plasma patch at its largest area and its
+    smallest capacitance over the schedule, and its populations at their largest units N0 + R0.
+    Planted: retrieval of 95% of the patch, whose smallest capacitance raises @3's explicit rate
+    past its bound at a step the zero-rate world admits."""
+    raw = scheduled([(0.0, 0.3)], internalised={"kir_0": 50.0, "nav_0": 0.0}, plasma_floor=0.6)
+    spec = parse_spec(raw)
+    ((_, declaration, schedule),) = [e for e in cs.entries(spec) if e[0].LAW_ID == LAW]
+    check = trafficking.check_spec_for(spec, spec, declaration, schedule)
+    declared = {p.id: p for p in spec.model.membranes}
+    checked = {p.id: p for p in check.model.membranes}
+    plasma, pool = declared["membrane_0"], declared["pool_membrane_0"]
+    assert checked["membrane_0"].area_m2 == plasma.area_m2  # Retrieval only: the start's.
+    assert checked["membrane_0"].capacitance_F == pytest.approx(0.7 * plasma.capacitance_F)
+    assert checked["pool_membrane_0"].capacitance_F == pytest.approx(pool.capacitance_F)
+    kir = {c.id: c for c in check.model.channels}["kir_0"]
+    units = 1.0 * plasma.area_m2 * fx.DENSITY + 50.0  # a0 A0 rho + R0 at the largest area.
+    assert kir.abundance == pytest.approx(units / (plasma.area_m2 * fx.DENSITY), rel=1e-12)
+    # The declared world at half its explicit-rate bound is admitted; 95% retrieved, its cell's
+    # patch capacitance falls about tenfold in the check spec, and the same step is refused.
+    zero = parse_spec(scheduled([(0.0, 0.0)], plasma_floor=0.04))
+    deep = parse_spec(scheduled([(0.0, 0.95)], plasma_floor=0.04))
+    rate = get_model(zero.model).inner.bind_step_checks(zero).explicit_rate
+    steps = np.array([0.5 / rate])
+    get_model(zero.model).bind_step_checks(zero)(steps)
+    with pytest.raises(ConfigError, match="explicit-rate stability bound"):
+        get_model(deep.model).bind_step_checks(deep)(steps)
 
 
 # ------------------------------------------------------------------ T2: idleness
