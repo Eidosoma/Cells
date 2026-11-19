@@ -978,6 +978,30 @@ def test_refusal_4_reads_the_kind_bound_to_its_entry(monkeypatch):
     }
 
 
+def test_a_hook_its_entry_does_not_have_holds_no_move():
+    """F's per-entry hooks (KindFields.without, 487710c6): a kind's declared_fields may leave a hook
+    out of an entry, which binding sets to None, so the entry's programs never run it. Refusal 4
+    reads the bound kind, so a move whose law declares that hook's term is refused for such an
+    entry, though the static kind has the hook. Planted: the carrier of the first planted case
+    (admitted there), its entry without its stage_term."""
+    carrier = carrier_under(PLANTED_LAW, stage_term=no_slope)
+    entry = kind_registry.KindFields(
+        carrier.state_axes,
+        carrier.layout_fields,
+        carrier.control_fields,
+        carrier.readout_columns,
+        without=("stage_term",),
+    )
+    kind = dataclasses.replace(carrier, declared_fields=lambda structure: entry)
+    assert kind.stage_term is not None  # The static kind holds the slope.
+    law = PlantedLaw(PLANTED_LAW, host=kind_fixtures.CARRIER_ID, stage_term="slope")
+    with pytest.raises(
+        ConfigError, match=rf"under {PLANTED_LAW}, which declares stage_term, of which its kind "
+        "holds none"
+    ):
+        carried(kind, law)
+
+
 def planted_kind(kind_id, **hooks):
     return kind_registry.Kind(kind_id=kind_id, model_key=kind_id.split(".")[1], **hooks)
 
