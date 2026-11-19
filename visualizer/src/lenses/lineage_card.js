@@ -21,7 +21,7 @@ function markWords(run, k) {
 }
 
 function exampleFacts(lens) {
-  if (lens.set.example) return [["Example", `${lens.set.example.says}. Nothing it shows is a finding.`]];
+  if (lens.set.example) return [["Invented numbers", `${lens.set.example.says}. Nothing it shows is a finding.`]];
   // A run of the engine: its standing as its file states it, and where that standing is recorded.
   const standing = lens.mainRun.file.development;
   return standing ? [["Standing", `${standing.says}${standing.from ? ` (${standing.from}; ${standing.run_states || "as given to the adapter"})` : ""}`]] : [];

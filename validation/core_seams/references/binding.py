@@ -197,6 +197,13 @@ def solve(system: System, totals_L: dict, totals_B: dict, V, max_iter: int = 400
         for L in Ls:
             if dec(totals_L[L]) <= floor[L]:
                 raise ValueError(f"ligand {L}: total {totals_L[L]} is not above {floor[L]}")
+        # amendment C4: with a form below its base the per-ligand floors are not sufficient;
+        # the joint margin decides (it is the product of the floors where no count is negative)
+        if any(n < 0 for B in system.binders for f in system.forms[B]
+               for n in f["counts"].values()):
+            jm = joint_margin(system, totals_L, totals_B)
+            if not jm["valid"]:
+                raise ValueError(f"jointly infeasible totals: t* = {float(jm['t_star'])} fmol")
         u = _start(system, totals_L, totals_B, V)
         phi = system.potential(u, totals_L, totals_B, V)
         it, converged = 0, False
@@ -695,3 +702,103 @@ def booked_gradient_by_differences(system: System, totals_L: dict, totals_B: dic
                 vals.append(booked(system, sp, tl, tb, V)["E_c_pJ"])
             out[row] = (vals[0] - vals[1]) / (2 * h) * 1000
         return out
+
+
+# --------------------------------------------------------------------------------------------
+# Amendment C4: the closure's joint validity (§19 amended at 19:52 UTC: the per-ligand floor
+# Σ T_B min n is necessary but not sufficient for mixed-sign counts)
+# --------------------------------------------------------------------------------------------
+
+def joint_margin(system: System, totals_L: dict, totals_B: dict) -> dict:
+    """The joint validity margin t* (fmol), exactly, in rationals from the doubles.
+
+    t* = max over binder distributions p of min_L (T_L − Σ_B T_B ⟨n_L⟩_p), the largest amount
+    every free ligand can keep. By LP duality (minimax on the simplices) it equals
+
+        t* = min over λ in the ligand simplex of [λ·T − Σ_B T_B min_f λ·n_f],
+
+    a convex piecewise-linear function. Its minimum is at a vertex of the arrangement cut by
+    λ_i = 0 and by λ·(n_f − n_g) = 0 for forms f, g of one binder. The vertices are enumerated
+    exactly. The state is valid (an interior speciation exists) iff t* > 0. The per-ligand floors
+    are t at the simplex's vertices λ = e_L, hence necessary and not sufficient."""
+    import itertools
+    from fractions import Fraction as Q
+    Ls = system.ligands
+    nL = len(Ls)
+    T = [Q(float(dec(totals_L[L]))) if not isinstance(totals_L[L], Decimal) else
+         Q(str(totals_L[L])) for L in Ls]
+    TB = {B: (Q(float(totals_B[B])) if not isinstance(totals_B[B], Decimal)
+              else Q(str(totals_B[B]))) for B in system.binders}
+    counts = {B: [tuple(f["counts"].get(L, 0) for L in Ls) for f in system.forms[B]]
+              for B in system.binders}
+
+    def phi(lam):
+        v = sum((lam[i] * T[i] for i in range(nL)), Q(0))
+        for B in system.binders:
+            v -= TB[B] * min(sum((lam[i] * n[i] for i in range(nL)), Q(0)) for n in counts[B])
+        return v
+
+    planes = [tuple(Q(1 if j == i else 0) for j in range(nL)) for i in range(nL)]
+    for B in system.binders:
+        for a, b in itertools.combinations(counts[B], 2):
+            d = tuple(Q(x - y) for x, y in zip(a, b, strict=True))
+            if any(d) and d not in planes and tuple(-x for x in d) not in planes:
+                planes.append(d)
+    best, best_lam = None, None
+    for combo in itertools.combinations(planes, nL - 1):
+        rows = [list(c) for c in combo] + [[Q(1)] * nL]
+        rhs = [Q(0)] * (nL - 1) + [Q(1)]
+        lam = _solve_fraction(rows, rhs)
+        if lam is None or any(x < 0 for x in lam):
+            continue
+        v = phi(lam)
+        if best is None or v < best:
+            best, best_lam = v, lam
+    per_ligand = {L: phi([Q(1 if j == i else 0) for j in range(nL)]) for i, L in enumerate(Ls)}
+    return {"t_star": best, "lambda_star": best_lam, "per_ligand": per_ligand,
+            "valid": best > 0, "per_ligand_valid": all(v > 0 for v in per_ligand.values())}
+
+
+def _solve_fraction(A, b):
+    """Gaussian elimination in rationals; None when singular."""
+    n = len(A)
+    M = [row[:] + [b[i]] for i, row in enumerate(A)]
+    for col in range(n):
+        piv = next((r for r in range(col, n) if M[r][col] != 0), None)
+        if piv is None:
+            return None
+        M[col], M[piv] = M[piv], M[col]
+        for r in range(n):
+            if r != col and M[r][col] != 0:
+                f = M[r][col] / M[col][col]
+                M[r] = [x - f * y for x, y in zip(M[r], M[col], strict=True)]
+    return [M[i][n] / M[i][i] for i in range(n)]
+
+
+def joint_margin_lp(system: System, totals_L: dict, totals_B: dict) -> float:
+    """The same margin by an independent route: the primal LP, max t subject to
+    Σ_B T_B Σ_f n_{L,f} p_{B,f} + t ≤ T_L and Σ_f p_{B,f} = 1, p ≥ 0, by HiGHS in doubles."""
+    import numpy as np
+    from scipy.optimize import linprog
+    cols = [(B, f) for B in system.binders for f in system.forms[B]]
+    nv = len(cols) + 1
+    c = np.zeros(nv)
+    c[-1] = -1.0
+    A_ub = np.zeros((len(system.ligands), nv))
+    b_ub = np.zeros(len(system.ligands))
+    for i, L in enumerate(system.ligands):
+        for j, (B, f) in enumerate(cols):
+            A_ub[i, j] = float(totals_B[B]) * f["counts"].get(L, 0)
+        A_ub[i, -1] = 1.0
+        b_ub[i] = float(totals_L[L])
+    A_eq = np.zeros((len(system.binders), nv))
+    for k, B in enumerate(system.binders):
+        for j, (BB, _f) in enumerate(cols):
+            if BB == B:
+                A_eq[k, j] = 1.0
+    bounds = [(0, None)] * len(cols) + [(None, None)]
+    r = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=np.ones(len(system.binders)),
+                bounds=bounds, method="highs")
+    if not r.success:
+        raise RuntimeError(r.message)
+    return float(-r.fun)

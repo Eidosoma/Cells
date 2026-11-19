@@ -26,6 +26,18 @@ dt (q_start + q_end) / 2 from the junction powers at the step's start and end
 states, which cannot be negative; trajectories and every other booking are the
 default's (models/surface_pump_v3.imex_step).
 
+Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): an optional model key ``heat_bookings``,
+{mover class: booking ID}, picks the heat booking of @3's other mover classes (``channels``,
+``membranes``, ``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's
+namespaced ID), beyond the tableau, which books every class by default and is never listed.
+Each class admits what models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings)
+lists: today ``trapezoid_nonnegative@1``, booked once in the core for every class
+(models/surface_pump_v3.trapezoid_fields). Junctions keep ``junction_heat_booking`` and are
+refused here. The key is omitted at its default, so every definition of today's keeps its
+fingerprint and its structure. The water and replacement families run @3 through compositions
+whose inner carries the structure, so they book what is picked as well (the lead, 19 November
+2026); a caller that checks @3 without its structure refuses a booking rather than ignore it.
+
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),
 Kir2.1 m*h^2 (laws/channels/potassium_channels.py) and NaV1.2 m^3*h
@@ -38,6 +50,7 @@ enters the constant-field flux, the affinities and the pumps only.
 
 import copy
 from bisect import bisect_right
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
 
 import numpy as np
@@ -59,22 +72,55 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
-# Today's five channel laws, the full catalogue's (structure None): codes 0-2 are those of
+# Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
 # replacement operator's tables are sized and checked by these five, so a law the registry adds
 # (a code from 5) never reaches them. What a definition may name is the law registry's: law_codes,
-# law_permeabilities and gate_counts below.
-LAW_CODES = {KV1P5_LAW_ID: 0, KIR2P1_LAW_ID: 1, NAV1P2_LAW_ID: 2, KLEAK_LAW_ID: 3, NALEAK_LAW_ID: 4}
+# law_permeabilities and gate_counts below. LAW_CODES, LAW_PERMEABILITIES and GATE_COUNTS are
+# these five's rows of those tables, read from the registry on use (the Kv1 trigger, the lead's
+# ruling of 19 November 2026), so the law modules' declarations are their one source.
+TODAYS_CHANNEL_LAWS = (KV1P5_LAW_ID, KIR2P1_LAW_ID, NAV1P2_LAW_ID, KLEAK_LAW_ID, NALEAK_LAW_ID)
 GATED_CODES = 3  # Codes below this have two relaxation gates (m, h).
-LAW_PERMEABILITIES = {
-    KV1P5_LAW_ID: (("K", 1.0),),
-    KIR2P1_LAW_ID: (("K", 1.0),),
-    NAV1P2_LAW_ID: (("Na", 1.0),),
-    KLEAK_LAW_ID: (("K", 1.0),),
-    NALEAK_LAW_ID: (("Na", 1.0),),
-}
-GATE_COUNTS = {law: 2 if code < GATED_CODES else 0 for law, code in LAW_CODES.items()}
+
+
+class _TodaysLaws(Mapping):
+    """{one of today's five channel laws: its row of a law-registry table}, in TODAYS_CHANNEL_LAWS'
+    order (code order), read from the active law registry on each use and never at import:
+    models/inner_laws, which registers the five, imports this module. Membership and size are
+    the five names' alone, so a law the registry adds is never one of them."""
+
+    def __init__(self, name, table):
+        self._name, self._table = name, table
+
+    def _rows(self):
+        rows = self._table()
+        missing = [law for law in TODAYS_CHANNEL_LAWS if law not in rows]
+        if missing:
+            raise KeyError(f"{self._name}: the active law registry lacks {', '.join(missing)}")
+        return {law: rows[law] for law in TODAYS_CHANNEL_LAWS}
+
+    def __getitem__(self, law):
+        if law not in TODAYS_CHANNEL_LAWS:
+            raise KeyError(law)
+        return self._rows()[law]
+
+    def __iter__(self):
+        return iter(TODAYS_CHANNEL_LAWS)
+
+    def __len__(self):
+        return len(TODAYS_CHANNEL_LAWS)
+
+    def __contains__(self, law):
+        return law in TODAYS_CHANNEL_LAWS
+
+    def __repr__(self):
+        return f"{self._name}({self._rows()!r})"
+
+
+LAW_CODES = _TodaysLaws("LAW_CODES", lambda: law_codes())
+LAW_PERMEABILITIES = _TodaysLaws("LAW_PERMEABILITIES", lambda: law_permeabilities())
+GATE_COUNTS = _TodaysLaws("GATE_COUNTS", lambda: gate_counts())
 
 
 def channel_laws():
@@ -113,7 +159,8 @@ CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 CHANNEL_FACTORS = "factors"
 _NONE = object()  # A channel entry without factors.
 # The model fields @3's parse sets itself; the others are the @2 base's.
-OWN_FIELDS = ("channels", "junction_heat_booking", "species_registry", "kinds")
+OWN_FIELDS = ("channels", "junction_heat_booking", "species_registry", "kinds", "heat_bookings")
+HEAT_BOOKINGS_KEY = "heat_bookings"  # Seam D's model key (module docstring).
 Control = second.Control  # The channel field is filled; absent slots stay zero.
 
 
@@ -138,6 +185,10 @@ class SurfacePumpChannelModel:
     # parsed declaration), ...) in canonical order; () for every definition of today's, and then
     # to_dict writes nothing, so fingerprints are unchanged.
     kinds: tuple = ()
+    # Seam D's picks (docs/CORE_SEAMS_DESIGN.md §6.1): ((mover class, booking ID), ...), sorted by
+    # class, the tableau never listed; () for every definition of today's, and then to_dict
+    # writes nothing. Held by the structure (InnerStructure.heat_bookings), never by the layout.
+    heat_bookings: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -301,6 +352,8 @@ def to_dict(spec):
     raw["model"]["channels"] = [channel_to_dict(p) for p in m.channels]
     if m.junction_heat_booking != DEFAULT_JUNCTION_HEAT:
         raw["model"]["junction_heat_booking"] = m.junction_heat_booking
+    if m.heat_bookings:  # Seam D: omitted at its default, so fingerprints are unchanged.
+        raw["model"][HEAT_BOOKINGS_KEY] = dict(m.heat_bookings)
     if m.species_registry is not None:  # The registry's keys, back on their entries.
         species, keys = registry.to_entries(m.species_registry)
         for entry in raw["model"]["species"]:
@@ -322,6 +375,32 @@ def to_dict(spec):
         raw["experiment"].update(written)
     raw["execution"]["channel_capacity"] = x.channel_capacity
     return raw
+
+
+def _heat_bookings(given, solver):
+    """The model's heat_bookings key (module docstring) as ((mover class, booking ID), ...),
+    sorted: a mapping of class names to booking IDs. Junctions book through junction_heat_booking;
+    the tableau is the default and is never listed; any other booking needs an IMEX solver. Which
+    class admits which booking is the structure's check (models/inner_laws.heat_booking_errors),
+    run with the declared kinds at check_definition."""
+    if not isinstance(given, dict) or not all(
+        isinstance(k, str) and k and isinstance(v, str) and v for k, v in given.items()
+    ):
+        raise ConfigError("heat_bookings maps mover classes to booking IDs (names)")
+    if "junctions" in given:
+        raise ConfigError(
+            "Junctions book their heat through junction_heat_booking, not heat_bookings"
+        )
+    listed = sorted(k for k, v in given.items() if v == DEFAULT_JUNCTION_HEAT)
+    if listed:
+        raise ConfigError(
+            f"heat_bookings: the tableau ({DEFAULT_JUNCTION_HEAT}) is the default; leave "
+            + ", ".join(listed)
+            + " out"
+        )
+    if given and solver == "rk4":
+        raise ConfigError("A heat booking option requires an IMEX solver")
+    return tuple(sorted(given.items()))
 
 
 def _kind_schedules(registry, declared, given, base):
@@ -365,6 +444,7 @@ def parse(data):
         raise ConfigError("junction_heat_booking must be " + " or ".join(JUNCTION_HEAT_BOOKINGS))
     if booking != DEFAULT_JUNCTION_HEAT and x.get("solver") == "rk4":
         raise ConfigError("A junction-heat booking option requires an IMEX solver")
+    heat_bookings = _heat_bookings(m.pop(HEAT_BOOKINGS_KEY, {}), x.get("solver"))
     if type(channels) is not list:
         raise ConfigError("channels requires an explicit list")
     # B1's door: each entry's factors leave this copy before the strict channel parse.
@@ -423,6 +503,7 @@ def parse(data):
         },
         channels=parsed,
         junction_heat_booking=booking,
+        heat_bookings=heat_bookings,
         species_registry=declared,
         kinds=tuple(
             sorted(
@@ -459,6 +540,7 @@ def parse(data):
             spec.model.kinds
             or channel_factors(spec.model)
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
+            or spec.model.heat_bookings  # Seam D: the structure holds the picks.
         )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:

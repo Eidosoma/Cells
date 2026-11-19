@@ -24,7 +24,7 @@
 //   phone    on a 360 px phone the six views' switch fits the bar (its row scrolls, the library's tab in sight); the library opens on its wall,
 //            a piece chosen opens the panel as a sheet, and no room is kept on the left.
 //   gone     on a check-only scene without the Engine view's box that holds the declared laws'
-//            file: no panel links it, and no level of a box is said.
+//            files: no panel links it, and no level of a box is said.
 //   text     with no 3D (WebGL switched off), the page says so, and the List gives the library's
 //            families, models and cases, and a piece's panel.
 //
@@ -64,13 +64,17 @@ const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 
 // "gone": a check-only scene without the Engine view's box of the declared laws, as when the Engine view no longer draws a box a
 // piece of the list was read under (CHECK_SCENE names another file to draw instead).
 let scene = process.env.CHECK_SCENE || DEFAULT_SCENE;
-// The Engine view's box that holds the file the inner model's own laws are declared in (inner_laws.py), and its door's piece.
+// The Engine view's box that holds the files the inner model's own laws are declared in (each law's own module since
+// seam F's laws as modules), and its door's piece.
 const GONE_BOX = "laws.declarations";
 const MANIFEST = JSON.parse(await readFile(path.join(ROOT, "data", "engine", "declarations.json"), "utf8"));
 // The law-port inventory's table: the mark of each law a unit names that no active model declares.
 const PORT = JSON.parse(await readFile(path.join(ROOT, "data", "laws", "law_port.json"), "utf8"));
-// What the checks expect is counted from the manifest, never fixed here: it gains pieces at later merges.
+// What the checks expect is counted from the manifest, never fixed here: it gains pieces at later merges, and a
+// piece's file and line are the manifest's own, which the engine's moves change.
 const lineOf = (id) => MANIFEST.pieces.find((piece) => piece.declared_id === id)?.line;
+const fileOf = (id) => MANIFEST.pieces.find((piece) => piece.declared_id === id)?.module_path;
+const literally = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const CASES = MANIFEST.models.filter((model) => !model.rows.length).length, RACKS = MANIFEST.models.length - CASES;
 if (CASE === "gone" && !process.env.CHECK_SCENE) {
   const whole = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
@@ -202,7 +206,7 @@ try {
     await click(at.x, at.y, 1500);
     s = await state();
     check("a real press on a piece's bar chooses it", s.selected === `laws:${id}`, String(s.selected));
-    check("its panel says where the engine declares it", new RegExp(`Declared in\\s*src/cells/models/inner_laws\\.py, line ${lineOf(id)}(?!\\d)`).test(s.panel), (s.panel.match(/Declared in.{0,80}/) || [""])[0]);
+    check("its panel says where the engine declares it", new RegExp(`Declared in\\s*${literally(fileOf(id))}, line ${lineOf(id)}(?!\\d)`).test(s.panel), (s.panel.match(/Declared in.{0,80}/) || [""])[0]);
     check("and that no level is stated, and says none", /not stated: the engine's declarations give no level for it/.test(s.panel) && !/\b(established|qualified|landed)\b/i.test(s.panel), (s.panel.match(/.{0,60}(Status|established|qualified|landed).{0,80}/i) || [""])[0]);
     check("the panel links its Engine view box", /On the Engine view/.test(s.panel));
     await shot(`${NAME}-piece`);
@@ -369,9 +373,9 @@ try {
     await open("select=laws:kv1p5_mh@1");
     const links = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .sources li")].map((item) => ({ href: item.querySelector("a")?.href || null, text: item.textContent }))`);
     const meta = await evaluate(`${V}.model.meta`);
-    const declared = links.find((link) => link.text.startsWith("src/cells/models/inner_laws.py") && new RegExp(`line ${lineOf("kv1p5_mh@1")}(?!\\d)`).test(link.text));
+    const declared = links.find((link) => link.text.startsWith(fileOf("kv1p5_mh@1")) && new RegExp(`line ${lineOf("kv1p5_mh@1")}(?!\\d)`).test(link.text));
     const other = !meta.source_base_url.includes(MANIFEST.revision);
-    check("a piece links the file it is declared in at the manifest's revision, with its line, and says so where the map's is another", Boolean(declared?.href?.includes(`/blob/${MANIFEST.revision}/src/cells/models/inner_laws.py`)) && (!other || new RegExp(`as declared at main ${MANIFEST.revision.slice(0, 8)}`).test(declared.text)) && links.every((link) => link.href?.includes(`/blob/${MANIFEST.revision}/`)), JSON.stringify([links, meta.revision]));
+    check("a piece links the file it is declared in at the manifest's revision, with its line, and says so where the map's is another", Boolean(declared?.href?.includes(`/blob/${MANIFEST.revision}/${fileOf("kv1p5_mh@1")}`)) && (!other || new RegExp(`as declared at main ${MANIFEST.revision.slice(0, 8)}`).test(declared.text)) && links.every((link) => link.href?.includes(`/blob/${MANIFEST.revision}/`)), JSON.stringify([links, meta.revision]));
     // A unit of the Protein atlas: a door onto its declared law, and words with no door for a law the manifest does not list.
     await open("select=unit.U09");
     let unit = await state();

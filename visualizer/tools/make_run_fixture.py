@@ -62,7 +62,7 @@ EXPERIMENT, ARM, SEED = "synthetic-sheet", "synthetic-s1.0", 1
 ARMS_EXPERIMENT, CUE_EXPERIMENT, HISTORY_EXPERIMENT = "synthetic-arms", "synthetic-cue", "synthetic-history"
 EXAMPLE_EXPERIMENT = "example-sheet"
 WORLD_EXPERIMENT = "synthetic-world"
-EXAMPLE_SAYS = "Example: invented numbers"  # the words the page keeps on the picture and in the legend (rule 6)
+EXAMPLE_SAYS = "Invented numbers · no run of Cells' engine"  # the words the page keeps on the picture and in the legend (rule 6); never "example" (18 November 2026)
 SYNTHETIC = "synthetic fixture"
 DIRECTIONS = ((1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1))
 RADIUS, DISC_RING = 2, 1
@@ -797,16 +797,16 @@ def write_example(sheet):
     folder.mkdir(parents=True, exist_ok=True)
     write_npz(folder / "trajectory.npz", arrays)
     write_json(folder / "resolved_config.json", definition, indent=None)
-    write_json(folder / "summary.json", {"status": "example", "start_time": 0.0, "end_time": times[-1], "active_cells": n, "note": f"{EXAMPLE_SAYS}: no engine ran"})
+    write_json(folder / "summary.json", {"status": "example", "start_time": 0.0, "end_time": times[-1], "active_cells": n, "note": EXAMPLE_SAYS})
     write_json(folder / "example.json", {"example": True, "says": EXAMPLE_SAYS, "made_by": "tools/make_run_fixture.py"})
     (EXAMPLE / "README.md").write_text(
-        "# An example run with invented numbers\n\n"
+        "# A run with invented numbers\n\n"
         "Written by `tools/make_run_fixture.py`. Every number is invented by the formulas in that tool: no engine\n"
         "ran, and nothing here is evidence. Do not edit by hand; change the tool and run it again.\n\n"
         "`invented-numbers/` is laid out as the engine's shared output path lays out a run, and names its readouts as the\n"
-        "engine does. Its `example.json` says that it is an example; the adapter carries that into the run's view,\n"
-        "and the page then shows it under \"Examples\" with \"Example: invented numbers\" on the picture and in the\n"
-        "legend (`schema/QUANTITY_LAYERS.md`, rule 6).\n\n"
+        "engine does. Its `example.json` says that its numbers are invented; the adapter carries that into the run's\n"
+        "view, and the page then shows it as a test sheet of invented numbers, never among the experiments, with\n"
+        f"\"{EXAMPLE_SAYS}\" on the picture and in the legend (`schema/QUANTITY_LAYERS.md`, rule 6).\n\n"
         f"- {n} cells with one membrane, one pump, two channel populations and one held bath each; {j} junctions; {len(species)} species.\n"
         f"- {len(times)} observation times, half a second apart.\n"
         "- Totals carried (channel populations, pump cycles, the membranes' own passive routes, junctions) and energy\n"
@@ -816,8 +816,8 @@ def write_example(sheet):
     entry = {
         "adapter": "standard-history",
         "example": True,
-        "label": "Example sheet (invented numbers)",
-        "plain": "Example: invented numbers. A small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
+        "label": "Test sheet (invented numbers)",
+        "plain": "Invented numbers: a small sheet written by the viewer's own run-fixture tool, in the layout of the engine's shared output path, to show the layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated. No engine ran, and nothing here is a result.",
         "sources": [],
         "engine_entities": [],
         "stops": {"example": {"label": "No engine ran: the numbers are invented"}},

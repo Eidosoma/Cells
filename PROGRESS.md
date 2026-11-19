@@ -119,6 +119,22 @@ machine-readable inputs, results, checks and failures.
     - Gate on lane B: tiers 555 files, 0 changed; G1 113 of 113; crossrev 11 of 11; IDs
       additions only.
     - main was the gate's base, so the merge's tree is the gated head's.
+    - It carries the second external review's finding 5: an ensemble adapter family's model ID
+      works in either form through the launch path.
+  - 51cd419f: the gate tools move into the repository (D220) as `scripts/gates/`.
+    - FR's landing set's lane check charges by process, so a waiting unit no longer refuses it.
+    - crossrev's set runner fails closed.
+    - `test_tiers.py fold` folds a landing's rows onto main's record.
+  - f5025e6f: FR-8's stage 0, the long-duration methods measured (development, not judged).
+    - Results: `validation/long_duration/RESULTS_20261118.md`.
+    - The method choice goes to the user as options.
+  - 6bc32a01: the core-seams references' amendments F4 (finding 4's zero-slope fix), C4 (the
+    closure's joint validity) and A2 (seam A's needs).
+    - Its merged check refused on one load-sensitive tooling test, which passed idle. Since then
+      the test waits for CPU time (39d51865).
+  - **Each of these lands through a stacked trial.** The trial merges are checked side by side,
+    and a landing's staged tree must equal its checked trial plus main's later paths
+    (`tools/assert_landing_tree.py`).
   - **The landing check, version 2,** adds the test files changed on either side since the
     merge base to the replication and crossrev checks. Its self-test refused the unfixed F trial,
     where seven tests broke.

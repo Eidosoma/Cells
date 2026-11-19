@@ -12,7 +12,11 @@ Kv1.5 kernels, an RK4 bound of 2.5 us), as the five Kv1 laws will be:
 - an RK4 step above the law's own bound is refused, naming the law; today's two messages stay;
 - a replacement template that gates it is refused: the operator's tables hold today's five;
 - the frozen families that run @3 without a structure (water@1, replacement@1) refuse a population
-  of it at parse, with a ConfigError, while the same world without it parses.
+  of it at parse, with a ConfigError, while the same world without it parses;
+- the Kv1 trigger (the lead's ruling of 19 November 2026): LAW_CODES, GATE_COUNTS and
+  LAW_PERMEABILITIES are today's five rows of the registry's tables, read on use, with today's
+  values (so programs are unchanged, crossrev's 11 sets the proof); a registry without the five
+  cannot give a row.
 """
 
 import copy
@@ -163,3 +167,39 @@ def test_the_frozen_families_refuse_a_population_of_a_registered_law():
             parse_spec(with_planted(water))  # Its composite's domain refuses the code (None).
         with pytest.raises(ConfigError, match="Invalid cell replacement definition"):
             parse_spec(rfx.with_replacement(planted_cells, [template], events))
+
+
+# Today's literal tables before the Kv1 trigger: the registry's rows must equal them bit for bit.
+TODAYS_CODES = {
+    spec_v3.KV1P5_LAW_ID: 0,
+    spec_v3.KIR2P1_LAW_ID: 1,
+    spec_v3.NAV1P2_LAW_ID: 2,
+    spec_v3.KLEAK_LAW_ID: 3,
+    spec_v3.NALEAK_LAW_ID: 4,
+}
+TODAYS_PERMEABILITIES = {
+    spec_v3.KV1P5_LAW_ID: (("K", 1.0),),
+    spec_v3.KIR2P1_LAW_ID: (("K", 1.0),),
+    spec_v3.NAV1P2_LAW_ID: (("Na", 1.0),),
+    spec_v3.KLEAK_LAW_ID: (("K", 1.0),),
+    spec_v3.NALEAK_LAW_ID: (("Na", 1.0),),
+}
+TODAYS_GATES = {law: 2 if code < spec_v3.GATED_CODES else 0 for law, code in TODAYS_CODES.items()}
+
+
+def test_todays_five_tables_are_the_registrys_rows_with_todays_values():
+    assert dict(spec_v3.LAW_CODES) == TODAYS_CODES and list(spec_v3.LAW_CODES) == list(TODAYS_CODES)
+    assert dict(spec_v3.LAW_PERMEABILITIES) == TODAYS_PERMEABILITIES
+    assert dict(spec_v3.GATE_COUNTS) == TODAYS_GATES
+    assert v3.PADDING_FILL_LAW == spec_v3.KV1P5_LAW_ID
+    with scoped():  # A registered law joins the registry's tables, never today's five.
+        assert spec_v3.law_codes()[PLANTED] == 5
+        assert PLANTED not in spec_v3.LAW_CODES and len(spec_v3.LAW_CODES) == 5
+        assert dict(spec_v3.LAW_CODES) == TODAYS_CODES
+        assert dict(spec_v3.GATE_COUNTS) == TODAYS_GATES
+    with law_registry.scope(law_registry.LawRegistry()):  # Rows are the registry's, read on use.
+        assert spec_v3.KV1P5_LAW_ID in spec_v3.LAW_CODES and len(spec_v3.LAW_CODES) == 5
+        with pytest.raises(KeyError, match="the active law registry lacks"):
+            spec_v3.LAW_CODES[spec_v3.KV1P5_LAW_ID]
+        with pytest.raises(KeyError, match="the active law registry lacks"):
+            dict(spec_v3.GATE_COUNTS)

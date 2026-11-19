@@ -5,14 +5,20 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 * the contract (§1.6, option (b), the lead's rulings): a DECLARATION_ONLY operator may define only
   contract.DECLARATION_MAY_DEFINE, fail closed: every other public attribute of Operator, data or
   method (parts, fields, step methods, schedule and definition-check hooks), is refused with its
-  name, even restated at its default. The part-less operator with nothing at all (the contract
-  test's `Nothing`) stays refused. A part-less owner whose every owned field is an accepted write is
-  admitted, and one with an owned field nothing writes is refused. Every registered operator is
-  admitted, as before;
+  name, even restated at its default. Its SCOPED_READS may be unscoped reference reads only (D217):
+  a current, fixed or scoped read is refused. The part-less operator with nothing at all (the
+  contract test's `Nothing`) stays refused. A part-less owner whose every owned field is an accepted
+  write is admitted, and one with an owned field nothing writes is refused. Every registered
+  operator is admitted, as before;
 * the declaration parses and round-trips, its refusals 1 to 7 fire with their reasons, and the
-  summary carries the identity block. A label or reference changes no binding;
+  summary carries the identity block. A label or reference changes no binding. Refusal 5 version
+  1.2 admits an anchor where an admitted operator's routes charge the compartment (planted per
+  compartment), at the definition, and FR-1's judged class still holds its prefixed message;
 * the composite's structure check refuses the providers and closers of what the declaration reads
-  as declared, in either order, and admits the operators of its list; the list fails closed.
+  as declared, in either order, and admits the operators of its list; the list fails closed. The
+  areas and capacitances are reference reads, so membrane state passes the structure check, and the
+  definition admits it only together with trafficking (FR-2's door; a stand-in until its module
+  lands).
 """
 
 import copy
@@ -33,8 +39,10 @@ from cells.operators import compartments as comp
 from cells.operators.contract import (
     DECLARATION_MAY_DEFINE,
     Operator,
+    Read,
     check_declarations,
     declaration_errors,
+    reads_of,
 )
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
@@ -140,6 +148,68 @@ def test_a_declaration_may_define_what_a_declaration_needs():
     }
     declared = type("Declared", (Minimal,), allowed)
     assert check_declarations(declared) is declared
+
+
+REFERENCE = Read("reference", "end")
+# name: (SCOPED_READS, refusal or None). Each refused entry is its admitted twin's planted error.
+DECLARATION_READS = {
+    "a reference read": ({"membrane_area": REFERENCE}, None),
+    "a reference read at two stages": (
+        {"membrane_area": (REFERENCE, Read("reference", "observe"))},
+        None,
+    ),
+    "a current read": ({"volume": Read("current", "end")}, "not an unscoped reference read"),
+    "a fixed read": ({"volume": Read("fixed", "end")}, "not an unscoped reference read"),
+    "a scoped reference read": (
+        {"membrane_area": Read("reference", "end", scoped=True)},
+        "not an unscoped reference read",
+    ),
+    "a reference read beside a current one": (
+        {"volume": (REFERENCE, Read("current", "observe"))},
+        "not an unscoped reference read",
+    ),
+    "a read that is no Read": ({"membrane_area": ("reference", "end")}, "not an unscoped"),
+    "a reference read at a part's stage": (
+        {"membrane_area": Read("reference", "split")},
+        "at stage split, which none of its parts runs at",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(DECLARATION_READS))
+def test_a_declarations_reads_are_unscoped_reference_reads(name):
+    """The contract gap FR-2 found (its design statement §7.2; the lead's ruling (a) on its question
+    10, 19 November 2026): a declaration may declare SCOPED_READS, each an unscoped reference read,
+    the bound value as data (D217). It has no part to consume a view (current) and holds a field as
+    physical only through CONFLICTS_VIEW (fixed), and it defines no read_slots (scoped): each is
+    refused, naming the field. A reference read at a stage none of its parts runs at is refused by
+    the door S check, as for any operator."""
+    reads, refusal = DECLARATION_READS[name]
+    declared = type("Reads", (Minimal,), {"SCOPED_READS": reads})
+    if refusal is None:
+        assert check_declarations(declared) is declared
+    else:
+        field = next(iter(reads))
+        with pytest.raises(ValueError, match=rf"{field}.*{refusal}|{refusal}.*{field}"):
+            check_declarations(declared)
+
+
+def test_a_declarations_scoped_reads_are_a_mapping():
+    unmapped = type("Unmapped", (Minimal,), {"SCOPED_READS": (REFERENCE,)})
+    with pytest.raises(ValueError, match="declares SCOPED_READS that is not a mapping"):
+        check_declarations(unmapped)
+
+
+def test_the_compartments_read_their_areas_and_capacitances_as_references():
+    """D217 (docs/MEMBRANE_RETRIEVAL_DESIGN.md §6): the declaration reads the declared bounding
+    patch's area and capacitance as data, its identity, so they are no longer held as declared
+    (CONFLICTS_VIEW) and a provider of them is no conflict; the volumes and masks stay fixed."""
+    op = OPERATORS[LAW]
+    for name in ("membrane_area", "membrane_capacitance"):
+        assert name not in op.CONFLICTS_VIEW
+        assert reads_of(op, name) == (REFERENCE,)
+    for name in ("volume", "extracellular_volume", "active", "membrane_active", "face_active"):
+        assert reads_of(op, name) == (Read("fixed", "event"),), name  # The default fixed read.
 
 
 def test_a_part_less_owner_of_accepted_writes_only_is_admitted():
@@ -454,10 +524,11 @@ def test_definition_refusals(name):
 
 
 def moves_at(spec, node):
-    """{(kind, species, law, held terms)} of every kind move at `node` (refusal 4's reading)."""
+    """{(kind, species, law, held terms)} of every kind move at `node` (refusal 4's reading: each
+    kind bound to its declaration's structure entry, as the inner model binds it)."""
     out = set()
     for kind_id, declaration in spec.model.kinds:
-        kind = kind_registry.active().lookup(kind_id)
+        kind = adapter.bound_kind(kind_registry.active().lookup(kind_id), declaration)
         for entry in kind.moved_rows(declaration) if kind.moved_rows is not None else ():
             species, at, law = (*entry, None) if len(entry) == 2 else entry
             if at == node:
@@ -554,7 +625,8 @@ def test_refusal_5_version_1_1_admits_a_charged_start_where_charged_routes_are_a
     lumen = next(o for o in spec.model.extracellular if o.id == defs.LUMEN)
     assert lumen.initial_charge_C == 5.757025696278586e-14
     assert {k for k, _ in spec.model.kinds} >= set(SOURCE_KINDS)
-    # Refusal 5's own rule: admitted only with kinds declared and an IMEX tableau.
+    # Refusal 5's own rule: version 1.1's branch admits it only with kinds declared and an IMEX
+    # tableau (version 1.2's, a route into the compartment, is tested below).
     compartment = type("Node", (), dict(initial_charge_C=1e-17))()
     comp.refuse_charge_anchor("lumen_0", compartment, kinds=True, imex=True)
     for kinds, imex in ((False, True), (True, False), (False, False)):
@@ -668,10 +740,15 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         NEUTRAL_ROUTE: ("material_bound",),
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(fr5_sources(defs.declared_world(defs.fr4_world())))
+    declared = dict(spec.model.kinds)
     for kind_id in ("cells.rapid_proton_buffer@1", *SOURCE_KINDS):
         kind = kinds.lookup(kind_id)
         assert kind.moved_rows is None, kind_id
-        comp.refuse_kind_moves(None, "lumen_0", kind_id, ())  # Admitted, by its hooks alone.
+        # Admitted by its hooks alone, read on the kind bound to its declared entry.
+        comp.refuse_kind_moves(spec.model, defs.LUMEN, kind_id, declared[kind_id])
     assert kinds.lookup("cells.rapid_proton_buffer@1").stage_read is not None
     assert all(kinds.lookup(k).stage_read is None for k in SOURCE_KINDS)
 
@@ -810,8 +887,10 @@ def test_a_move_at_the_compartments_node_needs_a_term_its_law_declares(name):
 
 
 def moves_at_planted(spec, kind, node):
-    """{(species, law, held terms)} of the planted kind's moves at `node`."""
+    """{(species, law, held terms)} of the planted kind's moves at `node`, the kind bound to its
+    declaration's entry as refusal 4 reads it."""
     declaration = dict(spec.model.kinds)[kind_fixtures.CARRIER_ID]
+    kind = adapter.bound_kind(kind, declaration)
     return {
         (species, law, comp.held_terms(kind, law)[0])
         for species, at, law in kind.moved_rows(declaration)
@@ -862,6 +941,65 @@ def test_a_kind_that_reuses_a_laws_id_is_held_by_its_own_hooks():
         with pytest.raises(ConfigError, match=rf"under {PROTON_PUMP}, which declares stage_term, "
                            "of which its kind holds none"):
             parse_spec(raw)
+
+
+def test_refusal_4_reads_the_kind_bound_to_its_entry(monkeypatch):
+    """The bound-kind sweep (CORE_SEAMS §18; the operators brief's item 2, 19 November 2026):
+    refusal 4 reads each kind bound to its declaration's structure entry
+    (pump_composite_adapter.bound_kind), whose hooks the step runs, never the static kind's, which
+    may differ per entry: a static read could admit what the bound kind refuses (fail-open).
+    Planted: in FR-4's declared world the transporter's bound kind loses its stage_term while its
+    static kind keeps it. The static read would still admit the proton move at the lumen; the bound
+    read refuses it, naming the law."""
+    from validation.compartment_ph_engine import definitions as defs
+
+    spec = parse_spec(defs.declared_world(defs.fr4_world()))
+    pump = "cells.transporter@1"
+    declaration = dict(spec.model.kinds)[pump]
+    comp.refuse_kind_moves(spec.model, defs.LUMEN, pump, declaration)  # Admitted, unplanted.
+    real = kind_registry.bound
+
+    def stripped(kind, entry):
+        out = real(kind, entry)
+        if kind_registry.qualified(out.kind_id) != pump:
+            return out
+        return dataclasses.replace(out, stage_term=None)
+
+    monkeypatch.setattr(kind_registry, "bound", stripped)
+    assert kind_registry.active().lookup(pump).stage_term is not None  # The static kind keeps it.
+    with pytest.raises(
+        ConfigError,
+        match=rf"under {PROTON_PUMP}, which declares stage_term, of which its kind holds none",
+    ):
+        comp.refuse_kind_moves(spec.model, defs.LUMEN, pump, declaration)
+    assert moves_at(spec, defs.LUMEN) == {
+        ("cells.passive_routes@1", "H", LEAK, ("stage_term",)),
+        (pump, "H", PROTON_PUMP, ()),
+    }
+
+
+def test_a_hook_its_entry_does_not_have_holds_no_move():
+    """F's per-entry hooks (KindFields.without, 487710c6): a kind's declared_fields may leave a hook
+    out of an entry, which binding sets to None, so the entry's programs never run it. Refusal 4
+    reads the bound kind, so a move whose law declares that hook's term is refused for such an
+    entry, though the static kind has the hook. Planted: the carrier of the first planted case
+    (admitted there), its entry without its stage_term."""
+    carrier = carrier_under(PLANTED_LAW, stage_term=no_slope)
+    entry = kind_registry.KindFields(
+        carrier.state_axes,
+        carrier.layout_fields,
+        carrier.control_fields,
+        carrier.readout_columns,
+        without=("stage_term",),
+    )
+    kind = dataclasses.replace(carrier, declared_fields=lambda structure: entry)
+    assert kind.stage_term is not None  # The static kind holds the slope.
+    law = PlantedLaw(PLANTED_LAW, host=kind_fixtures.CARRIER_ID, stage_term="slope")
+    with pytest.raises(
+        ConfigError, match=rf"under {PLANTED_LAW}, which declares stage_term, of which its kind "
+        "holds none"
+    ):
+        carried(kind, law)
 
 
 def planted_kind(kind_id, **hooks):
@@ -1014,6 +1152,13 @@ def test_replacement_composes_away_from_owners_and_never_on_or_from_one():
         parse_spec(replaced([(0.005, "cell_1", None, "c1_new", "cell_0")]))
 
 
+# Admitted laws whose modules have not landed: none. FR-2's law was admitted before its module
+# (the lead's ruling of 19 November 2026), and its entry went with that landing; a law listed here
+# fails the test below once it registers.
+PENDING_ADMITTED = frozenset()
+ADMITTED_AT_IMPORT = comp.ADMITTED  # The module's list, before any fixture patches it.
+
+
 def test_the_admitted_list_fails_closed(monkeypatch):
     class Newcomer(Operator):
         LAW_ID = "a_future_operator@1"
@@ -1026,7 +1171,175 @@ def test_the_admitted_list_fails_closed(monkeypatch):
     fake = SimpleNamespace(model=model, experiment=experiment)
     with pytest.raises(ConfigError, match="a_future_operator@1 is not on its admitted list"):
         comp.check_definition(fake, spec.model.operators[-1])
-    assert set(comp.ADMITTED) <= set(OPERATORS)
+    assert comp.TRAFFICKING_LAW in OPERATORS  # FR-2's law, registered with its module.
+    assert set(comp.ADMITTED) - set(OPERATORS) == PENDING_ADMITTED, "a pending law registered"
+
+
+# ------------------------------------------------------------------ the membrane-state wall's door
+
+STAND_IN = "trafficking_stand_in@1"
+
+
+@dataclass(frozen=True)
+class StandInRoutes:
+    law: str
+    compartments: tuple  # The compartment IDs its routes enter.
+
+
+class TraffickingStandIn(Operator):
+    """A stand-in for FR-2's scheduled_membrane_trafficking@1 until its module lands (FR-2's own
+    tests are its builder's): an idle event part, membrane state and the compartments before it,
+    and routes that name the compartments they enter. It has a law ID of its own, which the
+    `trafficking` fixture puts in the compartments' place for trafficking, so no composition cached
+    for FR-2's law is ever built from it."""
+
+    LAW_ID = STAND_IN
+    EVENT = True
+    REQUIRES = (comp.STATE_LAW, LAW)
+
+    def parse(self, raw, base, inner_model):
+        return StandInRoutes(raw["law"], tuple(raw["compartments"]))
+
+    def to_dict(self, declaration, base):
+        return dict(law=declaration.law, compartments=list(declaration.compartments))
+
+    def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        return {}, {}
+
+    def event(self, state, control, p, *, xp):
+        return state, xp.asarray(True)
+
+    def charged_compartments(self, spec, declaration):
+        return declaration.compartments  # Its routes charge the pools they enter (R2).
+
+
+@pytest.fixture
+def trafficking(monkeypatch):
+    """The stand-in registered, admitted, and in the compartments' place for trafficking."""
+    assert check_declarations(TraffickingStandIn) is TraffickingStandIn
+    monkeypatch.setitem(OPERATORS, STAND_IN, TraffickingStandIn())
+    monkeypatch.setattr(comp, "TRAFFICKING_LAW", STAND_IN)
+    monkeypatch.setattr(comp, "ADMITTED", (*comp.ADMITTED, STAND_IN))
+    return STAND_IN
+
+
+def stateful(*, routes=None, compartments=None):
+    """A face-free compartment world without exchange (whose own fixed read of the areas refuses
+    membrane state first): membrane state, the compartments declaration (W's compartment, or
+    `compartments`) and, given `routes`, the stand-in with routes into those compartment IDs."""
+    raw = fx.face_free(end=END)
+    raw["model"]["operators"].append(dict(law=comp.STATE_LAW, populations=[]))
+    raw = cfx.with_compartments(raw, compartments or [cfx.compartment()])
+    if routes is not None:
+        raw["model"]["operators"].append(dict(law=STAND_IN, compartments=list(routes)))
+    return raw
+
+
+def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
+    """The membrane-state wall's door (docs/CLOSED_COMPARTMENT_DESIGN.md §4; FR-2's question 11,
+    the lead's ruling of 19 November 2026): the areas and capacitances are reference reads, so the
+    structure check admits membrane state beside a compartment (STRUCTURE_ADMITTED), and the
+    definition admits it only together with trafficking, the one writer of them on the admitted
+    list. Planted: the same world without trafficking is refused, with the reason. FR-2's law ID is
+    on the list, beside membrane state's."""
+    spec = parse_spec(stateful(routes=["lys_0"]))
+    assert [d.law for d in spec.model.operators] == [comp.STATE_LAW, LAW, trafficking]
+    refusal = rf"admits {comp.STATE_LAW} only together with {STAND_IN}"
+    with pytest.raises(ConfigError, match=refusal):
+        parse_spec(stateful())
+    assert {comp.STATE_LAW, "scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
+
+
+# ------------------------------------------------------------------ refusal 5, version 1.2
+
+# Version 1.1's message, as FR-1's judged refusal record (run-05a8d193, C1_refusals) holds it.
+V1_1_ANCHOR = (
+    "cell_owned_compartments@1: compartment 'ecs_0' declares a nonzero charge anchor (1e-17 C); "
+    "version 1.1 admits one only where charged routes are admitted on its bounding patch (a world "
+    "that declares kinds and steps with an IMEX tableau); elsewhere the content is "
+    "electroneutral, so V_b = 0"
+)
+
+
+def two_pools(routes, anchored):
+    """Two compartments of one owner (lys_0 on ecs_0, gran_0 on ecs_1), with membrane state, the
+    stand-in's routes into the compartment IDs `routes`, and FR-1's planted anchor (1e-17 C) on the
+    node `anchored` (its fixed charge matched, the anchor rule)."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0),),
+        nodes=(("ecs_0", 1.0), ("ecs_1", 0.5)),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_0", "ecs_1")),
+        faces=(),
+        end=END,
+        concentrations_mM=dict(cell_0=1e-3, ecs_0=1e-6, ecs_1=1e-6),
+    )
+    raw["model"]["operators"].append(dict(law=comp.STATE_LAW, populations=[]))
+    raw = cfx.with_compartments(
+        raw,
+        [cfx.compartment(), cfx.compartment(cid="gran_0", node="ecs_1", patch="contact_1")],
+    )
+    raw["model"]["operators"].append(dict(law=STAND_IN, compartments=list(routes)))
+    cfx._anchor(node(raw, anchored), cfx.PLANTED_ANCHOR_C)
+    return raw
+
+
+def test_refusal_5_version_1_2_admits_an_anchor_where_a_route_charges_its_compartment(
+    trafficking,
+):
+    """Refusal 5, version 1.2 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.5; D217, FR-2's design
+    statement §7.3): retrieval gives the pool the charge of its membrane (R2), so a checkpoint of a
+    trafficking world imported as a new definition carries a nonzero anchor on the pool. It is
+    admitted where an admitted operator declares a route into that compartment (the contract's
+    charged_compartments), in a world without kinds. Planted, per compartment: the same anchor on
+    the other compartment, which no route enters, is refused, naming the operator; and a route into
+    an ID the declaration does not declare is refused."""
+    spec = parse_spec(two_pools(["lys_0"], "ecs_0"))
+    lumen = next(o for o in spec.model.extracellular if o.id == "ecs_0")
+    assert lumen.initial_charge_C == cfx.PLANTED_ANCHOR_C and not spec.model.kinds
+    with pytest.raises(
+        ConfigError,
+        match=rf"compartment 'ecs_1' declares a nonzero charge anchor \(1e-17 C\), and no route of "
+        rf"{STAND_IN} moves charge into it; version 1.2 admits one only where",
+    ):
+        parse_spec(two_pools(["lys_0"], "ecs_1"))
+    with pytest.raises(ConfigError, match=r"routes charge 'nowhere', which is not a compartment"):
+        parse_spec(two_pools(["lys_0", "nowhere"], "ecs_0"))
+    # The rule itself: a route into it admits it whatever the solver; version 1.1's branch stays.
+    node_1e17 = type("Node", (), dict(initial_charge_C=1e-17))()
+    for kinds, imex in ((False, False), (False, True), (True, False)):
+        comp.refuse_charge_anchor("ecs_0", node_1e17, kinds, imex, (STAND_IN,), (STAND_IN,))
+        with pytest.raises(ConfigError, match="version 1.2 admits one only where"):
+            comp.refuse_charge_anchor("ecs_0", node_1e17, kinds, imex, (), (STAND_IN,))
+    comp.refuse_charge_anchor("ecs_0", node_1e17, True, True, (), (STAND_IN,))
+    with pytest.raises(ConfigError) as caught:
+        comp.refuse_charge_anchor("ecs_0", node_1e17, False, True, (), ())
+    assert str(caught.value) == V1_1_ANCHOR  # No route charges a compartment: 1.1's words.
+
+
+def test_fr1s_judged_refusal_class_holds_refusal_5_from_the_definition_check():
+    """The lead's ruling of 19 November 2026 on version 1.2's move: refusal 5 reads the
+    composition, so it is checked at the definition, whose refusals the composite prefixes. A
+    re-run of FR-1's R5 world (its protocol's own refusal_pairs, through its own capture, admit)
+    now reports that prefix before version 1.1's message, kept byte for byte, and FR-1's
+    classify() still puts it in its judged class, so a later re-judge keeps it; the admitted
+    neighbour is admitted."""
+    from validation.tissue import compartment_acceptance_qualification as fr1
+
+    refused, admitted = fr1.refusal_pairs()["R5_a_charge_anchor"]
+    spec, message = fr1.admit(refused)
+    assert spec is None and message == "Invalid composite definition: " + V1_1_ANCHOR
+    assert fr1.classify(message) == "refusal 5 (the charge anchor)"
+    spec, message = fr1.admit(admitted)
+    assert spec is not None and message is None
+
+
+def test_the_scope_names_refusal_5_version_1_2_and_no_operator_charges_by_default():
+    """The summary's scope string names the code's versions (the lead's ruling (a)): every
+    compartment world's summary says version 1.2. The contract's hook charges nothing by default."""
+    spec = parse_spec(w())
+    scope = OPERATORS[LAW].summary(spec, spec.model.operators[-1], (), None)["compartments_scope"]
+    assert scope.startswith("refusal 4 version 1.3, refusal 5 version 1.2: ")
+    assert Operator().charged_compartments(spec, None) == ()
 
 
 # ------------------------------------------------------------------ the structure check
@@ -1034,7 +1347,6 @@ def test_the_admitted_list_fails_closed(monkeypatch):
 STATE, WATER = "membrane_entity_state@1", "ideal_osmosis_linear_compliance_water@1"
 STRUCTURE_REFUSED = {
     "water": ((WATER,), WATER),
-    "membrane state": ((STATE,), STATE),
     "insertion@1": ((STATE, "scheduled_membrane_insertion@1"), "scheduled_membrane_insertion@1"),
     "insertion@2": ((STATE, "scheduled_membrane_insertion@2"), "scheduled_membrane_insertion@2"),
     "the partition": ((STATE, "isopotential_partition@1"), "isopotential_partition@1"),
@@ -1058,6 +1370,7 @@ STRUCTURE_ADMITTED = (
     ("electrode_current_injection@1",),
     ("scheduled_cell_replacement@1",),
     ("scheduled_bath_composition@1",),
+    (STATE,),  # Its areas and capacitances are reference reads; the definition wants trafficking.
 )
 
 

@@ -1,0 +1,660 @@
+{
+  "format": "cells.visualizer.experiment_cards_source@1",
+  "note": "What the Experiments landing's cards type by hand: each card's title, what it asks, its band and kind, and which map part, catalogue entry, verdict file and PROGRESS.md entry it reads. Nothing here is a standing, a count or a date: tools/build_cards.py reads those from the Engine map's overlay, the catalogue's overlay, the model-system entries and the record (schema/EXPERIMENT_CARDS.md). The landing was decided on 18 November 2026. An evidence folder is a folder's name and `within` its folders one by one, never a path.",
+  "record": {
+    "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+    "says": "PROGRESS.md, the docs and the verdict files are read at this revision of main and in the saved run folders; the readings are kept in data/replays/cards.readings.json."
+  },
+  "bands": [
+    {
+      "id": "examples",
+      "label": "Examples to start with",
+      "says": "Two experiments to start with, each opening a view of its own."
+    },
+    {
+      "id": "judged",
+      "label": "Judged under a registered protocol",
+      "says": "Each card here was judged under a registered protocol, experiment or qualification. Passes and failures stand side by side, and each card shows its own level from the Engine map.",
+      "levels": ["qualified", "failed", "landed"]
+    },
+    {
+      "id": "development",
+      "label": "Development runs",
+      "says": "Runs of the engine made while it is built, each with its standing in the record's words."
+    },
+    {
+      "id": "invented",
+      "label": "Invented numbers",
+      "says": "A test sheet written by the viewer's own tool. No engine ran."
+    }
+  ],
+  "not_run": {
+    "says": "What is designed or planned and has not run stands on the Engine map.",
+    "lens": "engine"
+  },
+  "cards": [
+    {
+      "id": "tumour-tissue",
+      "band": "examples",
+      "kind": "replay",
+      "title": "The tumour tissue",
+      "asks": {
+        "catalogue": "gap-junction-tissue-line",
+        "path": ["tissue", "intro", "items", 0, "says"]
+      },
+      "map": "exp.gap_junction",
+      "none": "The Engine map states no level for this work.",
+      "cite": {
+        "catalogue": "gap-junction-linear-network",
+        "starts": "J. Grodstein",
+        "ends": "CC BY 4.0)"
+      },
+      "switch": {
+        "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
+        "revision": "a4b2db3d",
+        "heading": "The switch, in plain words.",
+        "items": 4,
+        "where": "Section 1, Regulation: The switch, in plain words"
+      },
+      "replay": {
+        "opens": { "experiment": "gap-junction-linear-network" },
+        "experiments": ["gap-junction-tissue-line", "gap-junction-tissue-ladder", "gap-junction-tissue-sheet", "gap-junction-linear-network"],
+        "still": {"light": "stills/tumour-tissue.light.jpg", "dark": "stills/tumour-tissue.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "assembly",
+      "band": "examples",
+      "kind": "replay",
+      "title": "The assembly",
+      "asks": "How could heredity begin before genes?",
+      "standing": { "from": "entry", "entry": "gard" },
+      "replay": {
+        "opens": { "entry": "gard" },
+        "experiments": [],
+        "still": {"light": "stills/assembly.light.jpg", "dark": "stills/assembly.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "e07-v1",
+      "band": "judged",
+      "kind": "replay",
+      "title": "E07-v1: renewal",
+      "asks": { "catalogue": "e07-v1", "path": ["plain"], "sentence": 1 },
+      "map": "exp.e07v1",
+      "answer": { "from": "catalogue", "experiment": "e07-v1" },
+      "record": [
+        { "progress": { "entry": "E07-v1 judged (13–14 November)" } }
+      ],
+      "replay": {
+        "opens": { "experiment": "e07-v1" },
+        "experiments": ["e07-v1"],
+        "still": {"light": "stills/e07-v1.light.jpg", "dark": "stills/e07-v1.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "fr1",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-1: a closed compartment",
+      "asks": "Can a cell hold a closed compartment of its own, with its own volume and amounts, that exchanges species with the cell?",
+      "map": "fr.internal_compartment",
+      "record": [
+        {
+          "progress": { "entry": "FR-1 judged: passed", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "closed-compartment-fr1-20261117",
+            "within": ["judged", "run-05a8d193"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" },
+            "confirm": { "file": ["reading.json"], "passed": "judged_passed", "of": "judged_criteria" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr3",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-3: site occupancy",
+      "asks": "Can binding sites on a membrane hold molecules as state, with bound and free molecules in one ledger?",
+      "map": "fr.site_occupancy",
+      "record": [
+        {
+          "progress": { "entry": "FR-3 judged: passed", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "site-occupancy-fr3-20261118",
+            "within": ["judged", "run-1b838d75"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" },
+            "confirm": { "file": ["reading.json"], "passed": "judged_passed", "of": "judged_criteria" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr4",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-4: compartment pH",
+      "asks": "Can a pump acidify a compartment against its gradient, with its protons buffered?",
+      "map": "fr.compartment_ph",
+      "record": [
+        {
+          "progress": { "entry": "FR-4 and FR-5 judged: both passed", "item": "FR-4:", "count_in": "item", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "d172-restructure-20261115-01",
+            "within": ["fr45", "judged-20261117", "run-32a1d439"],
+            "file": ["fr4", "verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["fr4", "verdict", "verdict.json"], "field": "source.git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr5",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-5: transfer across an internal membrane",
+      "asks": "Can a compartment's membrane leak and reseal, with transfer across it at a rate set by the compartment's own state, such as its pH?",
+      "map": "fr.internal_transfer",
+      "record": [
+        {
+          "progress": { "entry": "FR-4 and FR-5 judged: both passed", "item": "FR-5:", "count_in": "item", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "d172-restructure-20261115-01",
+            "within": ["fr45", "judged-20261117", "run-32a1d439"],
+            "file": ["fr5", "verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["fr5", "verdict", "verdict.json"], "field": "source.git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr6",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-6: a species sets a channel's availability",
+      "asks": "Can the amount of a species set how available a channel population is, so that chemistry changes electrical behaviour?",
+      "map": "laws.inventory_coupling",
+      "record": [
+        {
+          "progress": { "entry": "FR-6's A5″ judged: passed", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "fr6-a5pp-20261118",
+            "within": ["judged", "run-555d8771"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" },
+            "confirm": { "file": ["reading.json"], "passed": "judged_passed", "of": "judged_criteria" }
+          }
+        },
+        {
+          "progress": { "entry": "The coupling operator species_regulated_availability@1 is numerically qualified", "scope": "The scope:" },
+          "verdict": {
+            "evidence": "inventory-coupling-m4-20261114-01",
+            "within": ["judged"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.log"], "line": "\\bend:" },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr10",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-10: a dose schedule",
+      "asks": "Can a held bath's composition change on a schedule, for a wash-in, a wash-out or a dose?",
+      "map": "op.scheduled_bath_composition@1",
+      "record": [
+        {
+          "progress": { "entry": "FR-10 judged: passed", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "bath-schedule-20261114-01",
+            "within": ["fr10-protocol", "judged", "run-407ba164"],
+            "file": ["verdict", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["judged.done"] },
+            "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" },
+            "confirm": { "file": ["reading.json"], "passed": "judged_passed", "of": "judged_criteria" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "mg0",
+      "band": "judged",
+      "kind": "standing",
+      "title": "MG0: a gradient and a domain wall",
+      "asks": "Does a morphogen gradient form as theory says, and does a bistable voltage domain wall hold?",
+      "map": "exp.mg0",
+      "record": [
+        {
+          "progress": { "entry": "MG0a morphogen gradient passes" },
+          "verdict": {
+            "evidence": "morphogenesis-mg0-20261109-01",
+            "within": ["judged-01"],
+            "file": ["results", "results.json"],
+            "read": "criteria",
+            "at": "verdict",
+            "unit": "criteria",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["source", "SNAPSHOT.json"], "field": "git_revision" },
+            "confirm": { "file": ["source", "validation", "morphogenesis", "protocols", "mg0a_gradient_v1.json"], "entries": "criteria" }
+          }
+        },
+        {
+          "progress": { "entry": "MG0b bistable domain wall passes" },
+          "verdict": {
+            "evidence": "morphogenesis-mg0-20261109-01",
+            "within": ["judged-02-mg0b"],
+            "file": ["results", "judgement.json"],
+            "read": "criteria",
+            "at": "verdict",
+            "unit": "criteria",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["source", "SNAPSHOT.json"], "field": "git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "mg0c",
+      "band": "judged",
+      "kind": "standing",
+      "title": "MG0c: Turing patterns",
+      "asks": "Do reactions and diffusion on the tissue's shared inventory form the patterns theory predicts?",
+      "map": "exp.mg0c",
+      "record": [
+        {
+          "progress": { "entry": "MG0c judged: the reactions operator", "scope": "The scope" },
+          "verdict": {
+            "evidence": "shared-inventory-reactions-v1-20261114-01",
+            "within": ["judged-5ab4326a"],
+            "file": ["combine", "verdict.json"],
+            "read": "criteria",
+            "unit": "judged criteria",
+            "day": { "file": ["combine.run.txt"], "line": "^end " },
+            "snapshot": { "file": ["combine", "verdict.json"], "field": "source.git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "mg1",
+      "band": "judged",
+      "kind": "standing",
+      "title": "MG1: vertex mechanics",
+      "asks": { "map": "exp.mg1", "sentence": 1 },
+      "map": "exp.mg1",
+      "record": [
+        {
+          "progress": { "entry": "MG1 qualified and landed" },
+          "verdict": {
+            "evidence": "morphogenesis-mg1-20261111-01",
+            "within": ["judged-02"],
+            "file": ["results", "judgement.json"],
+            "read": "criteria",
+            "at": "verdict",
+            "unit": "criteria",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["source", "SNAPSHOT.json"], "field": "git_revision" }
+          }
+        },
+        {
+          "progress": { "entry": "MG1 (2-D vertex mechanics) judged run: FAIL" },
+          "verdict": {
+            "evidence": "morphogenesis-mg1-20261111-01",
+            "within": ["judged-01"],
+            "file": ["results", "results.json"],
+            "read": "criteria",
+            "at": "verdict",
+            "unit": "criteria",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["source", "SNAPSHOT.json"], "field": "git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "d150",
+      "band": "judged",
+      "kind": "standing",
+      "title": "D150: secreted species",
+      "asks": "Does a species secreted into the space around cells spread and clear as an exact finite-volume solution and a continuum closed form say?",
+      "map": "exp.d150",
+      "record": [
+        {
+          "progress": { "entry": "Secreted-species transport (D150 v1) is numerically qualified", "scope": "Scope, as the qualified statement carries it:" },
+          "verdict": {
+            "evidence": "secreted-species-v1-20261114-01",
+            "within": ["judged-f7f0592"],
+            "file": ["combined", "verdict.json"],
+            "read": "items",
+            "unit": "judged items",
+            "day": { "file": ["results.txt"], "line": "combine exit" },
+            "snapshot": { "file": ["combined", "verdict.json"], "field": "snapshot_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "division",
+      "band": "judged",
+      "kind": "standing",
+      "title": "Cell division",
+      "asks": "Can the engine carry the early frog egg through prescribed division, stage by stage, against references written apart from it?",
+      "map": "exp.division",
+      "record": [
+        { "progress": {"entry": "S5a is qualified: every judged item passed", "scope": "What this qualifies:"},
+          "verdict": {"evidence": "cell-division-s5-20261113-01", "within": ["judged-s5j1"], "files": [["q2", "q2_judged.json"], ["q3", "q3_judged.json"], ["q5", "q5_judged.json"], ["egg", "egg_judged.json"]], "at": "verdict.verdict", "unit": "judged parts", "day": {"file": ["results.txt"], "line": "egg exit"}, "snapshot": {"file": ["SETUP.txt"], "text": true}} },
+        { "progress": {"entry": "Stage S3 judged"},
+          "verdict": {"evidence": "cell-division-s3-20261113-01", "within": ["judged"], "file": ["judged.json"], "read": "items", "unit": "judged quantities", "day": {"file": ["results.txt"], "line": "judge exit"}, "snapshot": {"file": ["judged.json"], "field": "source_revision"}} },
+        { "progress": {"entry": "Current injection: first acceptance passed"},
+          "verdict": {"evidence": "composite-v2-20261112-01", "within": ["rm1-judged"], "file": ["judged.json"], "read": "one", "unit": "judged quantity", "day": {"file": ["exit.txt"], "line": "judge exit"}, "snapshot": {"file": ["judged.json"], "field": "source_revision"}} },
+        { "progress": {"entry": "Cell division S0b: J1 prediction of record and verdict"} },
+        { "progress": {"entry": "Cell division S0b: the registered J1 combination round is parked"} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "parity",
+      "band": "judged",
+      "kind": "standing",
+      "title": "The BETSE parity ladder",
+      "asks": "Does Cells' own physics give what the BETSE simulator gives, one mechanism family at a time?",
+      "map": "exp.parity",
+      "record": [
+        { "progress": {"entry": "First BETSE parity of Cells' own physics: default world passes"},
+          "verdict": {"evidence": "default-world-parity-20261108-01", "within": ["judged-01"], "file": ["summary.json"], "read": "named", "at": "runs", "unit": "judged runs", "day": {"file": ["D-cpu", "comparison", "result.json"], "line": "created_utc"}, "snapshot": {"file": ["summary.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "Parity rung 1 (mammal ion profile): pre-registered FAIL"},
+          "verdict": {"evidence": "parity-rung1-20261108-01", "within": ["judged-01"], "files": [["D-cpu", "comparison", "result.json"], ["D-l4", "comparison", "result.json"], ["F-l4", "comparison", "result.json"]], "at": "verdict", "unit": "judged runs", "day": {"file": ["D-cpu", "comparison", "result.json"], "line": "created_utc"}, "snapshot": {"file": ["git-revision.txt"], "text": true}} },
+        { "progress": {"entry": "Parity rung 1 v2 passes"},
+          "verdict": {"evidence": "parity-rung1-20261108-01", "within": ["judged-02"], "files": [["D-cpu", "comparison", "result.json"], ["D-l4", "comparison", "result.json"], ["F-l4", "comparison", "result.json"]], "at": "verdict", "unit": "judged runs", "day": {"file": ["D-cpu", "comparison", "result.json"], "line": "created_utc"}, "snapshot": {"file": ["git-revision.txt"], "text": true}} },
+        { "progress": {"entry": "Parity rungs P2 and P4 pass"},
+          "verdict": {"evidence": "parity-rung2-4-20261109-03", "within": [], "file": ["margins.json"], "read": "named", "unit": "protocols", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source.git-revision.txt"], "text": true}} },
+        { "progress": {"entry": "Parity P3 (scheduled interventions, first subset) passes"},
+          "verdict": {"evidence": "parity-p3-interventions-20261110-01", "within": ["judged-01"], "file": ["margins.json"], "read": "named", "unit": "protocols", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source.git-revision.txt"], "text": true}} },
+        { "progress": {"entry": "Parity P4b, the heredity carrier channels, passes"},
+          "verdict": {"evidence": "parity-p4b-channels-20261110-01", "within": ["judged-01"], "file": ["margins.json"], "read": "named", "unit": "protocols", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source.git-revision.txt"], "text": true}} },
+        { "progress": {"entry": "Parity on the L4: variants registered"},
+          "verdict": {"evidence": "parity-l4-20261111-01", "within": ["judged"], "file": ["margins.json"], "read": "named", "unit": "protocols", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source.git-revision.txt"], "text": true}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "water",
+      "band": "judged",
+      "kind": "standing",
+      "title": "Osmotic water and volume",
+      "asks": "Can the tissue model carry osmotic water, changing cell volumes and their regulation, as an independent reference computes them?",
+      "map": "models.water",
+      "record": [
+        { "progress": {"entry": "Osmotic water and volume qualified and landed", "item": "W1 judge:", "count_in": "item"},
+          "verdict": {"evidence": "water-volume-pump-20261110-01", "within": ["w1-judge-01"], "file": ["out", "judge.json"], "read": "list", "unit": "items", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "Osmotic water and volume qualified and landed", "item": "resolved_pump_water@2:", "count_in": "item"},
+          "verdict": {"evidence": "water-volume-pump-20261110-01", "within": ["w2-judge-01"], "file": ["out", "w2-judge.json"], "read": "list", "unit": "items", "day": {"file": ["launch.log"], "line": "done_utc"}, "snapshot": {"file": ["source", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "W1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "file": ["w1", "judge.json"], "read": "list", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"w1-judge\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "W1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "file": ["w2", "w2-judge.json"], "read": "list", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"w2-judge\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "replacement",
+      "band": "judged",
+      "kind": "standing",
+      "title": "Cell replacement",
+      "asks": "Can the tissue model replace cells on a schedule, with waste, supply and lineage recorded, as independent references compute it?",
+      "map": "models.replacement",
+      "record": [
+        { "progress": {"entry": "Cell replacement qualified and landed", "item": "Judged run G2-Q1:", "count_in": "item", "scope": "Limits:"},
+          "verdict": {"evidence": "cell-replacement-g2-20261111-01", "within": ["qualification", "judged-01"], "file": ["margins.json"], "read": "named", "at": "verdicts", "unit": "items", "day": {"file": ["README.md"], "line": "Run once"}, "snapshot": {"file": ["snapshot", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "G2-Q1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "files": [["g2-a", "Q1.json"], ["g2-a", "Q2.json"], ["g2-a", "Q3.json"], ["g2-a", "Q4.json"], ["g2-b", "Q5.json"], ["g2-b", "Q6.json"], ["g2-b", "Q7.json"]], "at": "verdict", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"g2-judge-b\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "G2-Q1's Q7 passes on the L4 under the deterministic flag", "item": "The judged run.", "scope": "Its scope."},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["q7-judged", "judged-q7"], "file": ["Q7.json"], "read": "one", "unit": "judged item", "day": {"within": ["q7-judged"], "file": ["chain.jsonl"], "line": "lock-acquired"}, "snapshot": {"within": ["q7-judged"], "file": ["source-main-cfbe7122", "SNAPSHOT.json"], "field": "git_revision"}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "l4-agreement",
+      "band": "judged",
+      "kind": "standing",
+      "title": "The composite on the L4",
+      "asks": {"map": "exp.l4_agreement", "sentence": 1},
+      "map": "exp.l4_agreement",
+      "record": [
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "W1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "file": ["w1", "judge.json"], "read": "list", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"w1-judge\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "W1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "file": ["w2", "w2-judge.json"], "read": "list", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"w2-judge\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "The composite's L4 judged run C", "item": "G2-Q1:", "count_in": "item"},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["c"], "files": [["g2-a", "Q1.json"], ["g2-a", "Q2.json"], ["g2-a", "Q3.json"], ["g2-a", "Q4.json"], ["g2-b", "Q5.json"], ["g2-b", "Q6.json"], ["g2-b", "Q7.json"]], "at": "verdict", "unit": "items", "day": {"file": ["runs.jsonl"], "line": "\"label\": \"g2-judge-b\""}, "snapshot": {"within": [], "file": ["source-c-265ed66", "SNAPSHOT.json"], "field": "git_revision"}} },
+        { "progress": {"entry": "G2-Q1's Q7 passes on the L4 under the deterministic flag", "item": "The judged run.", "scope": "Its scope."},
+          "verdict": {"evidence": "composite-l4-agreement-20261114-01", "within": ["q7-judged", "judged-q7"], "file": ["Q7.json"], "read": "one", "unit": "judged item", "day": {"within": ["q7-judged"], "file": ["chain.jsonl"], "line": "lock-acquired"}, "snapshot": {"within": ["q7-judged"], "file": ["source-main-cfbe7122", "SNAPSHOT.json"], "field": "git_revision"}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fixed-points",
+      "band": "judged",
+      "kind": "standing",
+      "title": "Fixed points",
+      "asks": "Does the engine find a tissue's resting states and follow them as parameters change, as independent references compute them?",
+      "map": "num.stationary",
+      "record": [
+        { "progress": {"entry": "Stationary-state analysis (E) qualified"},
+          "verdict": {"evidence": "fixed-points-e-20261109-01", "within": ["judged-01"], "file": ["judgement.json"], "read": "tally", "tally": {"passed": "passed", "failed": "failed", "not_evaluable": "not_evaluable"}, "unit": "criteria", "day": {"file": ["run.log"], "line": "\\bexit \\d"}, "snapshot": {"file": ["source", "SNAPSHOT.json"], "field": "git_revision"}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "projective",
+      "band": "judged",
+      "kind": "standing",
+      "title": "Projective stepping",
+      "asks": "Can a long-time mode that takes bursts of fine steps and then jumps ahead stay within the error caps of the fine engine?",
+      "map": "num.projective",
+      "record": [
+        { "progress": {"entry": "Projective (C) qualification qual-01: FAIL"},
+          "verdict": {"evidence": "projective-c-20261109-01", "within": ["qual-01"], "file": ["judgement.json"], "read": "tally", "tally": {"passed": "passed", "failed": "failed", "not_evaluable": "not_evaluable_or_incomplete"}, "unit": "cases", "day": {"file": ["judge.log"], "line": "exit judge"}, "snapshot": {"file": ["source", "SNAPSHOT.json"], "field": "git_revision"}} }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "turnover",
+      "band": "development",
+      "kind": "replay",
+      "title": "Turnover pre-screen",
+      "asks": "Can a voltage pattern written into a tissue renew itself when its cells are replaced the way the literature describes?",
+      "standing": { "from": "catalogue", "experiment": "heredity-turnover-literature" },
+      "record": [
+        { "progress": { "entry": "Heredity turnover under the literature newcomer rule" } }
+      ],
+      "replay": {
+        "opens": { "experiment": "heredity-turnover-literature" },
+        "experiments": ["heredity-turnover-literature"],
+        "still": {"light": "stills/turnover.light.jpg", "dark": "stills/turnover.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "secreted-species",
+      "band": "development",
+      "kind": "replay",
+      "title": "Secreted species: the first run for the viewer",
+      "asks": null,
+      "shows": "One cell makes a species and releases it into a small space outside, which leaks through a face to a held bath: the first run the engine wrote for the viewer.",
+      "standing": { "from": "catalogue", "experiment": "secreted-species-dev-run" },
+      "replay": {
+        "opens": { "experiment": "secreted-species-dev-run" },
+        "experiments": ["secreted-species-dev-run"],
+        "still": {"light": "stills/secreted-species.light.jpg", "dark": "stills/secreted-species.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "planarian-loop",
+      "band": "development",
+      "kind": "replay",
+      "title": "Planarian loop",
+      "asks": null,
+      "shows": "Seven planarian heredity cells on a hexagonal patch, a small current into the centre cell, packaged to loop: an illustration, not a measurement of a planarian.",
+      "map": "fr.loop_planarian",
+      "record": [
+        { "progress": { "entry": "The run-view writer merged into main", "item": "FR-11's first looping run" } }
+      ],
+      "replay": {
+        "opens": { "experiment": "planarian-loop" },
+        "experiments": ["planarian-loop"],
+        "still": {"light": "stills/planarian-loop.light.jpg", "dark": "stills/planarian-loop.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "origin-laws",
+      "band": "development",
+      "kind": "rows",
+      "title": "Origin-of-life laws (OL1)",
+      "asks": "Do the origin-of-life engine's first laws hold against references written without the engine's code?",
+      "map": "laws.origin_laws",
+      "record": [
+        {
+          "progress": { "entry": "OL1 landed: the origin-of-life laws", "item": "Verified against code-blind references.", "count_in": "item", "scope": "Scope:" },
+          "verdict": {
+            "evidence": "ool-references-harness-20261118",
+            "within": [],
+            "file": ["result-3e39bcc5", "verdict.json"],
+            "read": "rows",
+            "unit": "rows",
+            "day": { "file": ["run-3e39bcc5.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["result-3e39bcc5", "verdict.json"], "field": "engine.engine_revision" }
+          }
+        },
+        {
+          "progress": { "entry": "OL1 landed: the origin-of-life laws", "item": "The first harness run failed one row on a record rule.", "count_in": "item" },
+          "verdict": {
+            "evidence": "ool-references-harness-20261118",
+            "within": [],
+            "file": ["result", "verdict.json"],
+            "read": "rows",
+            "unit": "rows",
+            "day": { "file": ["run.log"], "line": "\\bexit \\d" },
+            "snapshot": { "file": ["result", "verdict.json"], "field": "engine.engine_revision" }
+          }
+        }
+      ],
+      "rows": {
+        "record": 0,
+        "reference": {
+          "path": "validation/ool/references/README.md",
+          "revision_field": "references.revision",
+          "table": "The rows (OL1)"
+        }
+      },
+      "rerun": null
+    },
+    {
+      "id": "w1",
+      "band": "development",
+      "kind": "standing",
+      "title": "W1: heredity pilot",
+      "asks": "Can a brief cue write a voltage pattern into a tissue, and does it hold?",
+      "map": "exp.w1",
+      "none": "The Engine map states no level for these runs.",
+      "record": [
+        { "progress": { "entry": "Heredity pilot W1: the cue writes discs" } },
+        { "progress": { "entry": "Heredity pilot W1, water arms: held discs also hold under water" } }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "conduction",
+      "band": "development",
+      "kind": "standing",
+      "title": "Conduction probe",
+      "asks": "Can the tissue model's channel laws carry an action potential along a chain of cells?",
+      "map": "exp.conduction",
+      "none": "The Engine map states no level for this probe.",
+      "record": [
+        { "progress": { "entry": "Track E (excitable tissue, D155): the design note accepted narrowly" } }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "test-sheet",
+      "band": "invented",
+      "kind": "replay",
+      "title": "A test sheet",
+      "asks": null,
+      "shows": "The quantity layers that no saved run feeds yet: ion traffic through a membrane, what crosses the junctions, and the energy dissipated.",
+      "standing": { "from": "catalogue_stop", "experiment": "example-sheet", "stop": "example" },
+      "replay": {
+        "opens": { "experiment": "example-sheet" },
+        "experiments": ["example-sheet"],
+        "runs_from": "tests/fixtures/run-example",
+        "still": {"light": "stills/test-sheet.light.jpg", "dark": "stills/test-sheet.dark.jpg", "width": 640, "height": 384}
+      }
+    }
+  ],
+  "entries_left_out": [
+    { "entry": "The core-seams pass's first landings", "why": "Landings of code and their gates; its lead's \"pass\" names the core-seams pass. No judged run or registered qualification is reported." },
+    { "entry": "FR-4's and FR-5's protocols registered", "why": "The protocols' registration, before any judged run; their judged runs are on the FR-4 and FR-5 cards." },
+    { "entry": "FR-4's and FR-5's rehearsals pass", "why": "Rehearsals on registered dry-run copies, not judged runs; the judged runs are on the FR-4 and FR-5 cards." },
+    { "entry": "Seam F of the core-seams pass merged into main", "why": "A landing of code; its lead's \"pass\" names the core-seams pass." },
+    { "entry": "FR-5's dt study: the development reading passes", "why": "A development reading, not judged; FR-5's judged run is on its card." },
+    { "entry": "The G2 judge records the numerical environment", "why": "A change to what a judge records, with no run judged; the verdicts it names are on the cell replacement and L4 cards." },
+    { "entry": "The coupling operator's qualification protocol, after its rehearsal", "why": "The protocol after its rehearsal, still proposed: no judged run. Its judged run is FR-6's first acceptance, on FR-6's card." },
+    { "entry": "The coupling operator's qualification protocol (milestone 4, PROPOSED)", "why": "A proposed protocol: no judged run." },
+    { "entry": "Secreted-species v1 (D150), milestone 3 landed", "why": "A proposed protocol: no judged run. D150's judged run is on its card." },
+    { "entry": "Cell division S5a, qualification pending", "why": "Development comparisons before S5a's registration; S5a's judged runs are on the cell division card." },
+    { "entry": "Crossrev now compares constants", "why": "A change to a comparison tool, which found the earlier verdicts stand: no run judged." },
+    { "entry": "G2-Q1's judge runs again as registered", "why": "A judge's import mended: run as registered, its Q2 part equals the recorded judged run, which is on the cell replacement card." },
+    { "entry": "Field-solve acceptance", "why": "A field solver's acceptance test of each step (version 3), not a judged run or a registered qualification." },
+    { "entry": "Cell division S0b: J1 diagnostic arms on R-full", "why": "Development, not judged: diagnostic arms on the reference, with no engine run." },
+    { "entry": "MG1 v2 registered; judged run under way", "why": "The registration and start of MG1's second judged run, whose verdict is on the MG1 card." },
+    { "entry": "Heredity pre-screen 9", "why": "A development pre-screen before E07-v1, not judged. No map part, catalogue entry or replay gives it a standing a card could read: asked of the coordinator." },
+    { "entry": "Heredity pre-screen 8", "why": "As pre-screen 9." },
+    { "entry": "Heredity pre-screen 7", "why": "As pre-screen 9." },
+    { "entry": "Projective mode (C) landed", "why": "The landing of the code, not yet qualified; its one qualification, which failed, is on the projective stepping card." }
+  ],
+  "left_out": [
+    { "part": "exp.excitable_sheet", "why": "The lead's inventory of 18 November 2026 gives it no run records: it stays on the Engine map. Asked of the lead." },
+    { "part": "exp.syn3a", "why": "The map calls it Designed; its capability probes ran the engine on a vesicle. Asked of the lead." },
+    { "part": "exp.reuse_cases", "why": "Designed: its one case that holds today is FR-6's first acceptance, on FR-6's card." },
+    { "part": "exp.papers", "why": "Designed; the one reproduction it names ran outside the engine." },
+    { "part": "exp.two_task", "why": "Established, and further work on it is deferred; no run of it is in the inventory. Asked of the lead." },
+    { "part": "exp.e07v2", "why": "Designed, not run." },
+    { "part": "exp.e15", "why": "Planned, not run." },
+    { "part": "exp.fep", "why": "Planned, not run." },
+    { "part": "exp.self_replicator", "why": "Designed: a replication note whose criteria were registered before any run; what ran is the authors' own model, as a reference outside the engine." }
+  ]
+}

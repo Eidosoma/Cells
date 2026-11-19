@@ -1,5 +1,5 @@
 // Where the picture's own statement of a layer stands (schema/QUANTITY_LAYERS.md, rules 3,
-// 6 and 11: what one bead stands for and what time it keeps, "Example: invented numbers",
+// 6 and 11: what one bead stands for and what time it keeps, "Invented numbers · no run of Cells' engine",
 // "Illustration: not a run"). It is on the picture for as long as the layer shows, so no
 // card that lies over the picture (the legend, a panel, a view's card) may cut it.
 //

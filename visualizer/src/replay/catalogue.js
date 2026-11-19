@@ -29,7 +29,11 @@ export class Catalogue {
     return entries.some((item) => "listed" in item) ? this.experiments.get(id)?.listed === true : true;
   }
 
-  /** The run the view opens on where none is asked for: the opening run of the first listed experiment. */
+  /**
+   * The run the view opens on where none is asked for (an address that names a record or layers and no run): the opening run
+   * of the first listed experiment. Since 18 November 2026 the tab opens on its landing, which lists from the cards
+   * (data/replays/cards.json, `listing`), and the catalogue says nothing of listing: this is the first experiment's.
+   */
   firstListed() {
     const first = this.runs.find((run) => this.isListed(run.experiment)) || this.runs[0];
     return first ? this.openingRun(first.experiment) : null;
@@ -43,17 +47,6 @@ export class Catalogue {
     const arm = this.experiments.get(experiment)?.opens?.run;
     const runs = this.runs.filter((run) => run.experiment === experiment);
     return ((typeof arm === "string" && runs.find((run) => run.arm === arm)) || runs[0])?.id || null;
-  }
-
-  /**
-   * The page's list of experiments, one row each: those listed that have runs, and the experiment of the run shown
-   * (`shown`, a run's id) though it is not listed. A row opens the experiment's opening run (`first`).
-   */
-  listRows(shown = null) {
-    const active = this.byId.get(shown)?.experiment;
-    return [...this.experiments.values()]
-      .filter((item) => this.runs.some((one) => one.experiment === item.id) && (this.isListed(item.id) || item.id === active))
-      .map((item) => ({ id: item.id, label: item.label, listed: this.isListed(item.id), active: item.id === active, first: this.openingRun(item.id), outcome: this.outcomeOf(item), development: Boolean(item.development), example: Boolean(item.example) }));
   }
 
   experimentOf(run) {
@@ -113,10 +106,10 @@ export class Catalogue {
       if (!groups.has(run.experiment)) groups.set(run.experiment, []);
       groups.get(run.experiment).push(this.describe(run.id));
     }
-    // The experiments first, then the development runs, then the examples, each named as what it is:
-    // a development run is no experiment, and an example's numbers are invented.
+    // The experiments first, then the development runs, then the sheets of invented numbers, each named as what it is:
+    // a development run is no experiment, and invented numbers are no run of the engine (`example` in the catalogue's code).
     const rank = (id) => (this.experiments.get(id)?.example ? 2 : this.experiments.get(id)?.development ? 1 : 0);
-    const named = (id) => `${["", "Development run: ", "Example: "][rank(id)]}${this.experiments.get(id)?.label || id}`;
+    const named = (id) => `${["", "Development run: ", "Invented numbers: "][rank(id)]}${this.experiments.get(id)?.label || id}`;
     return [...groups].sort(([a], [b]) => rank(a) - rank(b)).map(([id, entities]) => ({ label: named(id), entities }));
   }
 
@@ -137,7 +130,9 @@ export class Catalogue {
     const chips = [];
     if (klass) chips.push({ label: `Recorded class: ${klass.label}`, title: klass.description });
     if (group) chips.push({ label: group.label, title: group.plain });
-    if (run.stop) chips.push({ label: `Stopped at: ${run.stop}`, title: "How the run ended, in the run's own words." });
+    // How the run ended: the experiment's own words for its stop, where it names them, else the run's own word.
+    const stopped = experiment.stops?.[run.stop]?.label;
+    if (run.stop) chips.push(stopped ? { label: stopped, title: "How the run ended, in the experiment's words." } : { label: `Stopped at: ${run.stop}`, title: "How the run ended, in the run's own words." });
     const notes = [];
     if (klass?.description) notes.push(`${klass.label}: ${klass.description}`);
     if (experiment.class_note) notes.push(experiment.class_note);
