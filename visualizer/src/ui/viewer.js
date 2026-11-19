@@ -35,6 +35,7 @@ import { isPart, partDoors, openingPart } from "./tissue_part.js";
 import { LandingLens, LANDING_CSS } from "./landing.js";
 import { CARD } from "../replay/landing.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
+import { busyReasons } from "../core/busy.js";
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
 // stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
@@ -352,6 +353,11 @@ class CellsViewer extends HTMLElement {
     this.fallback.hidden = false;
     this.fallback.textContent = message;
     this.hint.hidden = true;
+  }
+
+  /** What the page is busy with, in words (src/core/busy.js): none at rest. Read-only, for the check tools' waits. */
+  busy() {
+    return busyReasons(this);
   }
 
   // ------------------------------------------------------------ lenses

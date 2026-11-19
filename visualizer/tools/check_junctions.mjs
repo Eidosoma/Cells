@@ -27,6 +27,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { createServer } from "./serve.mjs";
+import { pageWaits } from "./lib/page_waits.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CASE = process.env.CASE || "network";
@@ -149,17 +150,20 @@ try {
     return reply.result.value;
   };
   const V = "document.querySelector('cells-viewer')", L = `${V}.current`;
+  // Before a reading or a press, the page at rest by its own word (its busy(), src/core/busy.js), never a fixed time; a pause
+  // kept is a window a check watches over, said where it stands (tools/lib/page_waits.mjs).
+  const { settled } = pageWaits({ evaluate });
   const mouse = (type, x, y, extra = {}) => page("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons: 1, clickCount: 1, ...extra });
-  const click = async (x, y, wait = 900) => {
+  const click = async (x, y, wait = 900) => { // `wait`: the pause it once took, kept for its callers
     await mouse("mouseMoved", x, y, { button: "none", buttons: 0 });
     await mouse("mousePressed", x, y);
     await mouse("mouseReleased", x, y, { buttons: 0 });
-    await sleep(wait);
+    await settled({ moving: "auto" }); // (a) the page's answer to the press, at rest
   };
   const key = async (name, code = 0) => {
     await page("Input.dispatchKeyEvent", { type: name === "Enter" ? "keyDown" : "rawKeyDown", key: name, code: name, windowsVirtualKeyCode: code, ...(name === "Enter" ? { text: "\r" } : {}) });
     await page("Input.dispatchKeyEvent", { type: "keyUp", key: name, code: name, windowsVirtualKeyCode: code });
-    await sleep(700);
+    await settled({ moving: "auto" }); // (a) the page's answer to the key, at rest; was 700 ms
   };
   /** The middle of what an expression finds, scrolled into view, if nothing lies over it. */
   const placeOf = (expression) => evaluate(`(() => { const root = ${V}.shadowRoot, el = ${expression}; if (!el) return null; el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); if (!r.width || !r.height) return null; const x = r.left + r.width / 2, y = r.top + r.height / 2; const top = root.elementFromPoint(x, y); return top && (top === el || el.contains(top)) ? { x, y } : null; })()`);
@@ -176,7 +180,7 @@ try {
   };
   const shot = async (name) => {
     await evaluate(`${V}.stage.invalidate()`);
-    await sleep(1200);
+    await settled({ moving: "auto" }); // (a) the picture drawn and at rest; was 1200 ms
     const { data } = await page("Page.captureScreenshot", { format: "png" });
     const file = path.join(OUT, "pictures", `${NAME}-${name}.png`);
     mkdirSync(path.dirname(file), { recursive: true });
@@ -185,7 +189,7 @@ try {
   };
   // A fresh browser's first page on the card loses its context about five seconds in: it is a throwaway.
   await page("Page.navigate", { url: `${base}?lens=engine` });
-  await sleep(7000);
+  await sleep(7000); // (c) a fresh browser's first page: its first graphics context is lost and made again about five seconds in
   note(`case ${CASE}, ${WIDTH} by ${HEIGHT}, ${THEME}${process.env.REDUCED === "1" ? ", less motion" : ""}`);
 
   if (CASE === "network") {
@@ -214,11 +218,12 @@ try {
       const transfers = await placeOf(`[...root.querySelectorAll('cells-legend .layer-row[data-channel="motion"] button')].find((button) => button.textContent === "Transfers")`);
       if (transfers) await click(transfers.x, transfers.y, 1500);
       await until(`Boolean(${L}.drawn.get("transfers"))`);
+      await sleep(1500); // (b) a window: "the page logged no error" below reads the errors in this state; the press's pause was it
       s = await state();
       check(`${label}: Transfers runs along the junctions' lines, the network still drawn`, s.on.includes("transfers") && s.on.includes("junction-coupling") && s.lanes?.streams >= 1, JSON.stringify([s.on, s.lanes]));
       // A chosen cell's panel gives each of its junctions' number.
       await evaluate(`${V}.select("cell:0")`);
-      await sleep(1200);
+      await settled({ moving: "auto" }); // (a) at rest; was a pause of 1200 ms
       const panel = await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`);
       check(`${label}: the chosen cell's panel gives each of its junctions' number`, /On its junctions at/.test(panel) && /junction gate: 1(\.0+)?/.test(panel), panel.slice(0, 200));
       await shot(label.includes("fixture") ? "fixture" : "sheet");
@@ -235,7 +240,7 @@ try {
       check("both thresholds are ticked on the scale with the three words as given", JSON.stringify(c.marks) === JSON.stringify(["−2.0: mesenchymal below, neither (X) between", "2.0: epithelial above"]), JSON.stringify(c.marks));
       check("under the scale: the experiment's own quantity, and its criterion in its own words with its source", /experiment's own quantity, stated by its driver beside the run \(criterion\.json\)/.test(c.said) && /“A made-up criterion, for the viewer's checks\.” \(tools\/check_junctions\.mjs\)/.test(c.said), c.said);
       await evaluate(`${V}.select("cell:0")`);
-      await sleep(1200);
+      await settled({ moving: "auto" }); // (a) at rest; was a pause of 1200 ms
       const panel = await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`);
       check("a chosen cell's panel gives its state as the driver states it", /state X/.test(panel), panel.slice(0, 240));
       await shot("criterion");
@@ -350,25 +355,26 @@ try {
     check("GARD's legend says at its head, in one short line, what the three coloured types are", words.lead === "The three most common types", words.lead);
     check(WIDTH >= 760 ? "its stamp stands clear of the card, not cut under it" : "on a phone its stamp is not shown, as before", WIDTH >= 760 ? words.stamp !== null && words.stamp >= words.card : words.stamp === null, JSON.stringify(words));
     if (words.type) await evaluate(`${V}.select(${JSON.stringify(words.type)})`);
-    await sleep(1000);
+    await settled({ moving: "auto" }); // (a) at rest; was a pause of 1000 ms
     const typePanel = await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`);
     check("a coloured type's panel says the same", /coloured types are the most common of the run's 100/.test(typePanel) && /the names are the run's own/.test(typePanel), `${words.type}: ${typePanel.slice(0, 200)}`);
     await evaluate(`${V}.select(null)`);
-    await sleep(500);
+    await settled({ moving: "auto" }); // (a) at rest; was a pause of 500 ms
     // Its panels: a part the view describes opens its panel here.
     const part = await evaluate(`${L}.sections().flatMap((section) => section.entities || []).find((entity) => entity?.id && !String(entity.id).startsWith("model:"))?.id || null`);
     if (part) await evaluate(`${V}.select(${JSON.stringify(part)})`);
-    await sleep(1200);
+    await settled({ moving: "auto" }); // (a) at rest; was a pause of 1200 ms
     const panel = await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`);
     check("a part of the origin view opens its panel in the Experiments tab", Boolean(part) && panel.length > 40, `${part}: ${panel.slice(0, 120)}`);
     await evaluate(`${V}.select(null)`);
-    await sleep(600);
+    await settled({ moving: "auto" }); // (a) at rest; was a pause of 600 ms
     await shot("gard-door");
     // The replication again, by the way back and its card: its run again, as it was left, with its sweeps' card.
     const back = await choose("replication");
     await until(`Boolean(${L}?.sheet && ${L}.run)`, 120);
     d = await door();
     check("the way back, its card and the networks' button show its runs again, the run left before, with its sweeps' card", Boolean(back) && d.tab === "experiments" && !d.door && d.run === before.run && d.sheet && d.sweepCard, JSON.stringify([d.door, d.run, before.run, d.sheet, d.sweepCard]));
+    await sleep(1500); // (b) a window: "the page logged no error" watches the case through it (the last press's or picture's pause was it)
     const errors = await evaluate(`window.__pageErrors`);
     check("the page logged no error", !errors.length, JSON.stringify(errors));
   } else if (CASE === "sweep") {
@@ -400,6 +406,7 @@ try {
     const retiring = runOf("synthetic-world", "retiring");
     check("Enter on an arm shows its run", await until(`${L}.runId === ${JSON.stringify(retiring)}`), "");
     await shot("chart-pressed");
+    await sleep(1200); // (b) a window: "the page logged no error" watches the case through it (the last picture's pause was it)
     const errors = await evaluate(`window.__pageErrors`);
     check("the page logged no error", !errors.length, JSON.stringify(errors));
   }

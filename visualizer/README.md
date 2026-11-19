@@ -901,7 +901,10 @@ npm run extract             # read the main checkout (or --repo PATH, or the one
 npm run import:proteins -- --inventory PATH/law_inventory_v2.json   # only when the inventory changes
 python3 -I tools/extract_law_port.py --inventory PATH/inventory.json  # only when the law-port inventory (D211) changes
 npm run serve               # http://127.0.0.1:4173/  (add -- --offline to load three.js locally)
-npm test                    # scene, sources, page and allowed hosts; no browser needed
+npm test                    # the whole sweep: every test, every time (what a hand-over and a gate mean by "npm test, exit 0"); no browser needed
+npm run test:quick          # the same files, with the rebuilds from saved downloads skipped where they passed before on the
+                            # same inputs (tests/lib/test_cache.mjs; records in out/test-cache or CELLS_TEST_CACHE;
+                            # CELLS_TEST_FORCE=1 runs them all); each skip says so, and the sweep's last lines count them
 npm run check:input         # real clicks, drags and wheel in headless Chrome (picking, the cut-away, zoom, the atlas, its species sides and its links)
 npm run check:species       # real clicks on the species switch: each species' levels, cell and wording, in every view; CASE=model: a model system in the switch, through every tab and back
 npm run check:shelves       # real clicks on a species' own proteins: a marker, a family opening, closing, the legend and the list; the trail, the search, the map, the colours as drawn, a gathering, the cost of a frame, the doors (syn3a by default; planarian, nofiles, human, ecoli; stack holds any species with several shelves to its own file, SPECIES=thalecress by default; twins: a reviewed entry found by the twin of its gene that is not shown, SPECIES=xenopus)
@@ -914,6 +917,7 @@ npm run check:origin        # the origin-of-life view on the page: playing, the 
 npm run check:laws          # the Laws library: real presses and keys, the doors from the Engine view and the atlas, the notices, a lost context (CASE=main|address|phone|gone|text)
 npm run check:machine       # a machine's closer view: Look closer, the turn and its speed, a part's panel and door, the way back (CASE=main|address|reduced; WIDTH, HEIGHT, THEME, FRAMES=1)
 npm run check:all           # every real-click check once, four at a time, with a table of what passed and summary.json (--only PATTERN, --jobs N, --out DIR, --list)
+node tools/check_names.mjs --dirs BEFORE AFTER NAME...   # whether two runs of a scenario held the same checks (numbers set aside)
 npm run serve -- --no-proteins   # the page as it is when the species' own proteins are not published beside it
 npm run shot -- --out /tmp/shot.png --query "lens=engine&select=num.imex" --theme dark
 npm run adapt:runs -- --evidence PATH   # make the replays under out/runs/ (not committed); PATH holds the evidence folders
@@ -941,6 +945,16 @@ worker threads to the first processors by number, whatever the run is allowed, s
 lock looks at every thread of what a run started once a second and puts a process with a
 thread elsewhere back. (A scope bound to a processor would hold them at once; it needs
 the cpuset controller, which a user's session is not given on this machine.)
+
+**Times and waits in the click checks** (19 November 2026). A check that holds a time (a
+frame's or an update's milliseconds) is a measure (`tools/lib/measures.mjs`): its value and
+bound go into the scenario's log and `summary.json`. Beside other browsers a measure over its
+bound sends its scenario to the alone phase, run again after the others, where the bound is
+held as a check; `summary.json`'s `sent_alone` gives both values. A count of work (draw
+calls, triangles, files, bytes) is never a measure. The tissue, junctions and layers checks
+wait on the page's own word (`viewer.busy()`, `src/core/busy.js`, through
+`tools/lib/page_waits.mjs`), not on a fixed time; a pause left there is a window a check
+watches over, and says so. The other check tools still pause by the clock.
 
 **On the graphics card, where it is free.** The tools ask Chrome for the software
 renderer. A run may draw on the machine's graphics card instead by starting Chrome

@@ -384,7 +384,10 @@ test("every shape file holds to the contract and sits where its measure's bodies
 });
 
 const DATASETS = process.env.CELLS_DATASETS || "/mnt/datasets/Cells";
-test("each shape file is the tool's shape of its entry, made again byte for byte by the contract's call", async () => {
+test("each shape file is the tool's shape of its entry, made again byte for byte by the contract's call", async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs, every entry here; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: Object.values(CALLS).map(([saved]) => path.join(DATASETS, path.dirname(saved))), files: Object.values(CALLS).map(([saved]) => path.join(DATASETS, saved)), env: ["CELLS_DATASETS"] })) return;
   const folder = mkdtempSync(path.join(tmpdir(), "shape-"));
   // Two at a time: the largest takes about 13 s and 650 MB.
   const remake = ([name, [saved, measure, width, ...more]]) =>
