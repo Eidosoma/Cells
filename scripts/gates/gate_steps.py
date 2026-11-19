@@ -17,12 +17,16 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
       with a row that only asks for an exit code of 0.
   prelock-verdict SUBSET RUN_DIR OUT_JSON
       That run, judged against its rows: a recorded file as the tier runner judges it (its
-      summary.json), and a new file by its exit code and failed and error counts only.
+      summary.json), and a new file by its exit code and failed and error counts only. A file that
+      reached the cap without failing a test is deferred to the tiers under the lock, never refused.
+  listing-complete PREFIX
+      Whether one side's collection is complete: pytest ended it (exit 0, or 1 with the collection
+      errors it reports), and the listing holds exactly the count pytest's summary line names.
   ids BASE_PREFIX HEAD_PREFIX OUT_JSON
-      The IDs check: the head's collected IDs are the base's plus additions from the files in
-      ADDITIONS_FROM only, minus exactly the IDs in REMOVED_OK_FILE (one per line; each must be
-      missing), with no collection error the base did not have. Both lists are declared before the
-      gate (the lead's rule of 19 November).
+      The IDs check: both listings complete (listing-complete), and the head's collected IDs are
+      the base's plus additions from the files in ADDITIONS_FROM only, minus exactly the IDs in
+      REMOVED_OK_FILE (one per line; each must be missing), with no collection error the base did
+      not have. Both lists are declared before the gate (the lead's rule of 19 November).
   cache-find ROOT KIND BASE [ITEM ...] / cache-publish ROOT KIND BASE SRC [ITEM ...]
       The base side's results, cached per main revision. An entry is ROOT/KIND-REV-KEY, where KEY
       digests the base's revision, KIND, the ITEMs (for example the record's folder or the move
@@ -57,6 +61,7 @@ subprocesses, and crossrev's set actions run through crossrev_sets.py's commands
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -236,18 +241,26 @@ def prelock_verdict(subset_path, run_dir):
     ran = {r["file"]: r for r in run["files"]}
     wanted = {r["file"] for t in subset["tiers"].values() for r in t}
     refused = []
+    # A file that reached the pre-lock cap is deferred to the tiers under the lock, never refused:
+    # on a loaded light CPU wall time ran up to four times CPU time (19 November), so a healthy
+    # heavy file can time out here. A test it failed before the cap still refuses.
+    deferred = sorted(f for f, r in ran.items() if r.get("timed_out")
+                      and not r["counts"].get("failed") and not r["counts"].get("error"))
     for name in sorted(wanted - set(ran)):
         refused.append({"file": name, "why": "not run"})
     for entry in summary["changed_vs_record"]:
-        if entry["file"] not in new:
+        if entry["file"] not in new and entry["file"] not in deferred:
             refused.append({"file": entry["file"], "why": entry["why"], "now": entry["now"]})
     for name in sorted(new & set(ran)):
         row = ran[name]
         counts = row["counts"]
+        if name in deferred:
+            continue
         if row["exit_code"] != 0 or counts.get("failed") or counts.get("error"):
             refused.append({"file": name, "why": ["a new file did not pass"],
                             "now": [row["exit_code"], counts]})
-    return {"ok": not refused, "files": len(ran), "refused": refused}
+    return {"ok": not refused, "files": len(ran), "refused": refused,
+            "deferred_to_the_tiers": deferred}
 
 
 # ------------------------------------------------------------------------------------------ IDs
@@ -264,7 +277,33 @@ def collection_errors(prefix):
                    if line.startswith("ERROR ") and len(line.split()) > 1})
 
 
+def listing_complete(prefix):
+    """(complete, why) of one side's collection.
+
+    Complete means three things: pytest ended its collection (exit 0, or 1 with collection errors
+    it reported), its summary line names a count, and the listing holds exactly that many IDs. A
+    truncated or interrupted listing would hide removed tests, and must never be compared or
+    cached."""
+    text = Path(prefix + ".log").read_text(errors="replace")
+    counts = [int(m[1]) for m in re.finditer(r"^(\d+) tests? collected", text, flags=re.M)]
+    if Path(prefix + ".json").is_file():
+        try:
+            code = json.loads(Path(prefix + ".json").read_text()).get("exit")
+        except ValueError:
+            code = None
+        if code not in (0, 1):
+            return False, f"pytest's collection exit {code}"
+    if not counts:
+        return False, "no 'N tests collected' line"
+    n = len(collected(prefix))
+    if n != counts[-1]:
+        return False, f"{n} IDs listed against {counts[-1]} collected"
+    return True, f"{n} IDs, as collected"
+
+
 def ids_check(base_prefix, head_prefix, additions_from, removed_ok):
+    complete = {side: listing_complete(prefix)
+                for side, prefix in (("base", base_prefix), ("head", head_prefix))}
     base, head = collected(base_prefix), collected(head_prefix)
     allowed = set(additions_from)
     new, missing = sorted(head - base), sorted(base - head)
@@ -274,7 +313,8 @@ def ids_check(base_prefix, head_prefix, additions_from, removed_ok):
     outside = [i for i in new if i.split("::")[0] not in allowed]
     new_errors = sorted(set(collection_errors(head_prefix)) - set(collection_errors(base_prefix)))
     empty = [side for side, found in (("base", base), ("head", head)) if not found]
-    ok = not (missing or present or outside or new_errors or empty)
+    incomplete = {side: why for side, (done, why) in complete.items() if not done}
+    ok = not (missing or present or outside or new_errors or empty or incomplete)
     # The keys and verdict words of ids_additions.py, which the lead's tools read.
     return {"ok": ok, "base": len(base), "head": len(head), "additions": len(new),
             "additions_by_file": {f: sum(1 for i in new if i.startswith(f + "::"))
@@ -282,6 +322,7 @@ def ids_check(base_prefix, head_prefix, additions_from, removed_ok):
             "outside_the_branch_files": outside[:10], "missing": missing[:10],
             "removed_as_listed": removed, "listed_but_present": present,
             "new_errors": new_errors[:5], "empty_listing": empty,
+            "incomplete_listing": incomplete,
             "verdict": "additions only" if ok else "DIFFERS"}
 
 
@@ -501,6 +542,8 @@ def main(argv=None):
     s.add_argument("subset")
     s.add_argument("run")
     s.add_argument("out")
+    s = sub.add_parser("listing-complete")
+    s.add_argument("prefix")
     s = sub.add_parser("ids")
     s.add_argument("base_prefix")
     s.add_argument("head_prefix")
@@ -562,6 +605,10 @@ def main(argv=None):
         print(json.dumps({"ok": doc["ok"], "files": doc["files"],
                           "refused": [r["file"] for r in doc["refused"]][:5]}))
         return 0 if doc["ok"] else 1
+    if step == "listing-complete":
+        done, why = listing_complete(a.prefix)
+        print(why)
+        return 0 if done else 1
     if step == "ids":
         removed = set(listed(os.environ["REMOVED_OK_FILE"])) if os.environ.get(
             "REMOVED_OK_FILE") else set()

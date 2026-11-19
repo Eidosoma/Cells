@@ -100,10 +100,16 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
     base_ids=$found/collect-base; log "prelock ids: base listing from the cache, $found"
   else
     collect "$B" "$P/ids/collect-base"; base_ids=$P/ids/collect-base
-    if [ -n "$GATE_CACHE" ] && [ "$(wc -l < "$base_ids.ids")" -gt 0 ]; then
-      mkdir -p "$P/ids/publish" && cp "$base_ids".{ids,log,json} "$P/ids/publish/"
-      log "prelock ids: base listing published, $(steps cache-publish "$GATE_CACHE" ids "$B" \
-        "$P/ids/publish" --python "$PY" 2>&1 | tail -n 1)"
+    # Published only when complete: pytest ended its collection and the listing holds exactly the
+    # count it reports. A truncated base listing would hide removed tests on every later gate.
+    if [ -n "$GATE_CACHE" ]; then
+      if why=$(steps listing-complete "$base_ids" 2>&1); then
+        mkdir -p "$P/ids/publish" && cp "$base_ids".{ids,log,json} "$P/ids/publish/"
+        log "prelock ids: base listing published ($why), $(steps cache-publish "$GATE_CACHE" ids \
+          "$B" "$P/ids/publish" --python "$PY" 2>&1 | tail -n 1)"
+      else
+        log "prelock ids: base listing not published: $why"
+      fi
     fi
   fi
   steps ids "$base_ids" "$P/ids/collect-head" "$P/ids/verdict.json" > "$P/ids/verdict.log" 2>&1

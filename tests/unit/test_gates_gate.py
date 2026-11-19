@@ -14,7 +14,10 @@ Host only: no world runs here.
   - a new file is judged by its exit code alone, and a recorded file as the tier runner judges it.
 - **ids** passes additions from the declared files only and exactly the declared removals. It
   refuses an undeclared removal, a declared removal still present, an addition outside the declared
-  files and a new collection error.
+  files, a new collection error, and a listing that is truncated or whose collection was
+  interrupted.
+- **The pre-lock verdict** defers a file that reached the cap to the tiers under the lock, never
+  refusing it, unless it failed a test before the cap.
 - **The base cache** finds only complete entries of the same key, keeps the first of two publishes,
   and never keys a dirty base.
 - **crossrev-verdict** passes identical sets, and a difference only where it is declared, exactly.
@@ -23,6 +26,7 @@ Host only: no world runs here.
 - **gate.sh** runs end to end with a stub interpreter, a private lock and this process's own CPU,
   so no case can reach a real lane, start a unit or run the engine. It shows that:
   - a pre-lock refusal never takes the lock;
+  - an incomplete base listing is refused, and never published to the cache;
   - a crossrev refusal stops before tiers and G1;
   - a declared program change goes on;
   - a passing gate takes crossrev, then tiers, then G1, and its second run reuses the cached base;
@@ -162,7 +166,9 @@ def test_select_chooses_the_guards_and_the_changed_files_only(world):
 
 @pytest.mark.parametrize("plant, ok", [
     (None, True), ("recorded file changed", False), ("new file fails", False),
-    ("new file skips", True), ("file not run", False)])
+    ("new file skips", True), ("file not run", False),
+    ("recorded file timed out", True), ("new file timed out", True),
+    ("timed out after a failure", False)])
 def test_the_prelock_verdict(tmp_path, plant, ok):
     subset = {"tiers": {"1": [{"file": "a", "exit_code": 0, "counts": {"passed": 1}}], "2": [],
                         steps.NEW_TIER: [{"file": "n", "exit_code": 0, "counts": {}}]}}
@@ -178,19 +184,38 @@ def test_the_prelock_verdict(tmp_path, plant, ok):
         changed = [{"file": "n", "why": ["skipped above the record"], "now": [0, {}]}]
     elif plant == "file not run":
         files = files[:1]
+    elif plant == "recorded file timed out":  # Deferred to the tiers under the lock, not refused.
+        files[0] = {"file": "a", "exit_code": None, "timed_out": True, "counts": {}}
+        changed = [{"file": "a", "why": ["exit code, failed or error count differs"],
+                    "now": [None, {}]}]
+    elif plant == "new file timed out":
+        files[1] = {"file": "n", "exit_code": None, "timed_out": True, "counts": {}}
+    elif plant == "timed out after a failure":
+        files[0] = {"file": "a", "exit_code": None, "timed_out": True, "counts": {"failed": 1}}
+        changed = [{"file": "a", "why": ["exit code, failed or error count differs"],
+                    "now": [None, {"failed": 1}]}]
     (tmp_path / "subset.json").write_text(json.dumps(subset))
     (tmp_path / "run").mkdir()
     (tmp_path / "run" / "run.json").write_text(json.dumps({"files": files}))
     (tmp_path / "run" / "summary.json").write_text(json.dumps({"changed_vs_record": changed}))
-    assert steps.prelock_verdict(tmp_path / "subset.json", tmp_path / "run")["ok"] is ok
+    doc = steps.prelock_verdict(tmp_path / "subset.json", tmp_path / "run")
+    assert doc["ok"] is ok, doc
+    if plant in ("recorded file timed out", "new file timed out"):
+        assert doc["deferred_to_the_tiers"] == ["a" if plant.startswith("recorded") else "n"]
 
 
 # ------------------------------------------------------------------------------------------- IDs
 
 
-def listing(prefix, ids, errors=()):
+def listing(prefix, ids, errors=(), collected=None, exit_code=None):
+    """One side's collection as gate.sh writes it: the listing, the log with pytest's summary line
+    (collected defaults to the listing's size) and, when given, the exit code."""
+    n = len(ids) if collected is None else collected
     Path(prefix + ".ids").write_text("\n".join(sorted(ids)) + "\n")
-    Path(prefix + ".log").write_text("".join(f"ERROR {e} - boom\n" for e in errors))
+    Path(prefix + ".log").write_text("".join(f"ERROR {e} - boom\n" for e in errors)
+                                     + f"{n} tests collected in 0.01s\n")
+    if exit_code is not None:
+        Path(prefix + ".json").write_text(json.dumps({"exit": exit_code, "ids": len(ids)}))
 
 
 @pytest.mark.parametrize("plant, ok, key", [
@@ -199,6 +224,8 @@ def listing(prefix, ids, errors=()):
     ("declared removal still present", False, "listed_but_present"),
     ("addition outside the declared files", False, "outside_the_branch_files"),
     ("new collection error", False, "new_errors"),
+    ("truncated base listing", False, "incomplete_listing"),
+    ("interrupted base collection", False, "incomplete_listing"),
 ])
 def test_ids_pass_only_as_declared(tmp_path, plant, ok, key):
     base = {"tests/a.py::t1", "tests/a.py::t2[x]", "tests/b.py::t3"}
@@ -212,7 +239,12 @@ def test_ids_pass_only_as_declared(tmp_path, plant, ok, key):
         head |= {"tests/b.py::t5"}
     elif plant == "new collection error":
         errors = ["tests/c.py"]
-    listing(str(tmp_path / "base"), base)
+    collected, exit_code = None, None
+    if plant == "truncated base listing":  # pytest counted one more than the listing holds.
+        collected = len(base) + 1
+    elif plant == "interrupted base collection":
+        exit_code = 2
+    listing(str(tmp_path / "base"), base, collected=collected, exit_code=exit_code)
     listing(str(tmp_path / "head"), head, errors)
     doc = steps.ids_check(str(tmp_path / "base"), str(tmp_path / "head"), ["tests/c.py"], removed)
     assert doc["ok"] is ok, doc
@@ -321,7 +353,9 @@ if args[:2] == ["-I", "-c"]:  # The interpreter's identity.
 a = [x for x in args if x not in ("-B", "-u")]
 if a[:2] == ["-m", "pytest"]:
     note("collect " + cwd.name)
-    print((cwd / "ids.txt").read_text()); sys.exit(0)
+    ids = [l for l in (cwd / "ids.txt").read_text().splitlines() if "::" in l]
+    n = int((cwd / "collected.txt").read_text()) if (cwd / "collected.txt").exists() else len(ids)
+    print("\n".join(ids)); print(f"{n} tests collected in 0.01s"); sys.exit(0)
 if a[:2] == ["scripts/test_tiers.py", "run"]:
     tiers, i = [], a.index("--tier") + 1
     while i < len(a) and not a[i].startswith("--"):
@@ -431,6 +465,14 @@ def test_a_prelock_refusal_never_takes_the_lock(gate):
     assert code == 1 and (out / "done").read_text().strip() == "1"
     assert "stopped at ids" in log and "waiting for" not in log and "lock held" not in log
     assert not any(c.startswith(("crossrev", "save")) for c in calls)
+
+
+def test_an_incomplete_base_listing_is_refused_and_never_published(gate):
+    (gate["base"] / "collected.txt").write_text("2\n")  # pytest counted more than it listed.
+    out = gate["tmp"] / "out"
+    code, calls, log = run_gate(gate, out)
+    assert code == 1 and "base listing not published" in log and "stopped at ids" in log
+    assert not list((gate["tmp"] / "cache").glob("ids-*")) and "waiting for" not in log
 
 
 def test_a_crossrev_refusal_stops_before_tiers_and_g1(gate):
