@@ -18,6 +18,10 @@ for a real mover waits for one.
   negative, while the stage read at the predicted stored totals is valid with a positive free
   amount, until the draw passes the stored floor; past it the read, the model's domain check and
   the closure's term (NaN, so the ledger refuses) each refuse the state.
+- §5.2's admission at a closure row, its charge half beside the kept read: the reading carrier
+  (its role_species bound, its law in base forms) is admitted. A kind with no role_species, a
+  law with no base forms, a role bound to a form, and a role bound to another species are each
+  refused.
 - The current injection carried by H+ into a general closure's cell is refused at the definition.
 - The run view of a general world, from its definition: the ligand set and the reader's check.
 Each test carries its planted error.
@@ -38,7 +42,7 @@ from cells.execution.state import initialise
 from cells.kinds import proton_buffer
 from cells.laws.electrochemistry import R
 from cells.records import run_view
-from cells.registry import kind_registry
+from cells.registry import kind_registry, laws
 from cells.registry.laws import CycleLaw
 from tests import kind_fixtures
 from tests.unit.test_proton_buffer_kind import buffered_world, host
@@ -99,20 +103,32 @@ def test_the_general_read_gives_version_1s_free_h_within_the_criterion():
     assert abs(amounts(read3, p3)[h, 0] / free1[0] - 1) > 1e-6
 
 
-def reads_law():
+def reads_law(*, forms="base"):
     """A test-namespace cycle law whose reads name rapid_binding@1, held by a scoped law registry,
-    for the planted carrier's moves (never shipped)."""
+    for the planted carrier's moves (never shipped). It declares its moves in base forms (§5.2's
+    admission), unless `forms` says otherwise."""
     return CycleLaw(
         READS_LAW, (("carried", 1),), (), lambda *a, **k: None, lambda *a, **k: True,
-        reads=("rapid_binding@1",), host=kind_fixtures.CARRIER_ID,
+        reads=("rapid_binding@1",), host=kind_fixtures.CARRIER_ID, forms=forms,
     )  # fmt: skip
 
 
-def reading_carrier():
-    """kind_fixtures' planted charged carrier, its moves naming READS_LAW."""
+def reading_carrier(*, role=None, hook=True):
+    """kind_fixtures' planted charged carrier, its moves naming READS_LAW. Its role_species binds
+    the law's role "carried" to the carried species, or to `role` (a plant), at its patch's inside
+    and outside (§5.2's admission; the lead's ruling (iii)). With hook False it declares none."""
+    from cells.modules import EntityBinding
+
     base = kind_fixtures.carrier()
     moved = base.moved_rows
-    return replace(base, moved_rows=lambda d: tuple((*row, READS_LAW) for row in moved(d)))
+
+    def role_species(declaration):
+        species, _, inside, outside, _ = declaration
+        ends = {"inside": inside, "outside": outside}
+        return (EntityBinding(READS_LAW, {"carried": role or species}, ends, {}),)
+
+    return replace(base, moved_rows=lambda d: tuple((*row, READS_LAW) for row in moved(d)),
+                   role_species=role_species if hook else None)  # fmt: skip
 
 
 def carried(*, ledger=True, rate=1e-3, carrier=reading_carrier):
@@ -122,6 +138,36 @@ def carried(*, ledger=True, rate=1e-3, carrier=reading_carrier):
     kinds = kind_fixtures.registry(carrier(), kind)
     raw = general(buffered_world(quiet=True))
     return kinds, kind_fixtures.declare_carrier(raw, species="H", rate=rate)
+
+
+@pytest.mark.parametrize(
+    "variant, message",
+    [
+        ("no hook", r"declares no role_species"),
+        ("no base forms", r"declares no base forms"),
+        ("a form as a row", r"moves the forms \['HB'\] as rows"),
+        ("another species", r"which its entities' resolved rows do not hold"),
+    ],
+)
+def test_section_5_2s_admission_refuses_each_planted_mover(variant, message):
+    """§5.2's admission at a closure row, its charge half, with the read kept beside it (the lead,
+    19 November 2026). The reading carrier moving H out of the general closure's cell is admitted
+    (the control). Planted, each refused at the definition: a kind that declares no role_species,
+    a law that declares no base forms, the role bound to a form (HB), and the role bound to another
+    species than the one its moved_rows names."""
+    law = reads_law(forms=None if variant == "no base forms" else "base")
+    carrier = {"no hook": lambda: reading_carrier(hook=False),
+               "a form as a row": lambda: reading_carrier(role="HB"),
+               "another species": lambda: reading_carrier(role="K")}.get(variant, reading_carrier)
+    raw = kind_fixtures.declare_carrier(general(buffered_world(quiet=True)), species="H", rate=1e-3)
+    registry = laws.active().extended(reads_law())
+    with kind_registry.scope(kind_fixtures.registry(reading_carrier(), proton_buffer.PROTON_BUFFER)):
+        with laws.scope(registry):
+            parse_spec(raw)  # The control.
+    planted = laws.active().extended(law)
+    with kind_registry.scope(kind_fixtures.registry(carrier(), proton_buffer.PROTON_BUFFER)):
+        with laws.scope(planted), pytest.raises(ConfigError, match=message):
+            parse_spec(raw)
 
 
 def reference_cell(system, k):

@@ -750,6 +750,71 @@ def mode_errors(valence, form_ids, rows, declares_base_forms):
     return tuple(out)
 
 
+def entity_modes(kind, declaration):
+    """§5.2's resolution of a kind's moves for one declaration, or None for a kind that declares
+    no role_species. One entry per entity, (law ID, law, {mode: ((species, node, count), ...)}):
+    its law's change rows (registry/laws.cycle_changes, the one source the manifest reads) bound
+    through the kind's EntityBinding (kind_registry.kind_role_species). Each role is bound to its
+    species, each end to its node, and each parameter-named count to that entity's value. A
+    moves-only law's rows land at MOVES_ENDS: inward-positive at the inside, with the opposite sign
+    at the outside."""
+    from cells.registry import kind_registry
+    from cells.registry import laws as law_registry
+
+    bindings = kind_registry.kind_role_species(kind, declaration)
+    if bindings is None:
+        return None
+    inside, outside = kind_registry.MOVES_ENDS
+    out = []
+    for binding in bindings:
+        law = law_registry.active().lookup(binding.law_id)
+        modes = {}
+        for row in law_registry.cycle_changes(law):
+            role, _, end = row["role"].partition("@")
+            count = row["per_cycle"]
+            if isinstance(count, str):
+                count = (-1 if count.startswith("-") else 1) * binding.parameters[count.lstrip("-")]
+            species, rows = binding.roles[role], modes.setdefault(row.get("mode", 0), [])
+            if end:
+                rows.append((species, binding.ends[end], count))
+            else:
+                rows += [(species, binding.ends[inside], count),
+                         (species, binding.ends[outside], -count)]  # fmt: skip
+        out.append((binding.law_id, law, {mode: tuple(rows) for mode, rows in modes.items()}))
+    return tuple(out)
+
+
+def _closure_mover_errors(spec, m, kind_id, law_id, rows):
+    """§5.2's admission of a kind's moves under one law at a general closure's rows (the charge
+    half; the moieties wait for item 6): the reasons it is refused, or (). The kind must declare
+    role_species; every entity of that law must declare its stoichiometry in base forms (its law's
+    forms is "base"), with each mode passing mode_errors; and every closure row the kind's
+    moved_rows names under that law must be among its entities' resolved rows (the cross-check)."""
+    from cells.registry import kind_registry
+
+    kind = kind_registry.active().lookup(kind_id)
+    declaration = dict(m.kinds)[kind_registry.qualified(kind_id)]
+    resolved = entity_modes(kind, declaration)
+    if resolved is None:
+        return (f"its kind {kind_id} declares no role_species, so its rows cannot be resolved",)
+    valence = dict(zip(m.species_ids, m.valence, strict=True))
+    registry = getattr(m, "species_registry", None)
+    form_ids = {f.id for entry in getattr(registry, "entries", ()) for f in entry.forms}
+    out, placed = [], set()
+    for binding_law, law, modes in resolved:
+        if kind_registry.qualified(binding_law) != kind_registry.qualified(law_id):
+            continue
+        for mode, mode_rows in sorted(modes.items(), key=lambda item: str(item[0])):
+            errors = mode_errors(valence, form_ids, mode_rows, getattr(law, "forms", None) == "base")
+            out += [f"under {law_id}, mode {mode}: {error}" for error in errors]
+            placed |= {(species, node) for species, node, _ in mode_rows}
+    unplaced = sorted(set(rows) - placed)
+    if unplaced and not out:
+        out.append(f"its moved_rows name {unplaced} under {law_id}, which its entities' resolved "
+                   "rows do not hold")  # fmt: skip
+    return tuple(out)
+
+
 def check_closure_rows(spec):
     """The movers at a node where a general binding closure holds rows (seam C, version 2;
     docs/CORE_SEAMS_DESIGN.md §19 as amended at 20:09 UTC, 18 November 2026). A declared kind
@@ -758,10 +823,12 @@ def check_closure_rows(spec):
     - @3's own routes and pumps (membrane, junction, channel, face, pump) are refused: they read
       stored totals as concentrations;
     - a kind's in-step move is admitted only when its law's reads name the closure's read ID, so
-      no mover reads a stored total (a route law declares no reads, so it is refused). This is
-      §5.2's proxy, and it admits no shipped law, since no built-in law reads rapid_binding@1.
-      §5.2's own admission, a mover's mode written in base rows that matches a declared form of
-      each binder it moves, replaces it (the lead's ruling, 19 November 2026);
+      no mover reads a stored total (a route law declares no reads, so it is refused). That read
+      is kept beside §5.2's admission (the lead, 19 November 2026), which follows it: the kind
+      declares role_species, its law declares base forms, each resolved mode passes mode_errors
+      (the charge half; the moieties wait for item 6), and its moved_rows at the closure are its
+      entities' resolved rows (_closure_mover_errors). No shipped kind declares role_species yet,
+      so none is admitted: the transporter's comes with the kinds owner after seam A;
     - an operator that names a held species, or moves one in the step, is refused by
       check_stage_read_rows, which holds every stage read's rows, version 1's included. Operators
       that name no row (replacement, division, insertion) are admitted: the closure re-solves from
@@ -803,6 +870,16 @@ def check_closure_rows(spec):
                                 f"{held}: {kind} moves it under {law}, whose reads "
                                 f"{list(reads)} lack {read}; a mover at a closure node reads the "
                                 "closure"
+                            )
+                        at_rows = sorted(
+                            (s, n) for s, kinds in movers.items() for k, w, ns in kinds
+                            if k == kind and w == law for n in ns if (s, n) in rows
+                        )  # fmt: skip
+                        errors = _closure_mover_errors(spec, m, kind, law, at_rows)
+                        if errors:
+                            raise ConfigError(
+                                f"{held}: §5.2's admission refuses {kind}'s move under {law}: "
+                                f"{'; '.join(errors)}"
                             )
 
 

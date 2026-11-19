@@ -51,12 +51,15 @@ declaration:
 - Its admission: the registry's forms checks here, and the movers' rules in the species
   registry's check_closure_rows (@3's own routes and pumps refused on a closure row, a kind's move
   admitted only when its law reads rapid_binding@1, operators naming a held species refused).
-- That movers' rule is §5.2's proxy, and it admits no shipped law (the lead's ruling, 19 November
-  2026). No built-in law reads rapid_binding@1, so in an admitted world nothing moves a closure
-  row and its held totals never change: world-level power waits for a real mover. §5.2's own
-  admission replaces the proxy: a mover's mode written in base rows that matches a declared form
-  of each binder it moves, every ligand count written out. Its single-mode part comes with seam
-  F's binding-law fields, its multi-mode part with seam A's stoichiometric modes.
+- Beside that read, §5.2's admission (its charge half, species_registry._closure_mover_errors):
+  - the kind declares role_species (F's EntityBinding);
+  - its law declares base forms;
+  - each mode, resolved through the binding, writes every row as a species row, never a form,
+    with zero charge;
+  - its moved rows at the closure are its entities' resolved rows.
+  No shipped kind declares role_species yet (the transporter's comes after seam A), so in an
+  admitted world nothing moves a closure row and its held totals never change: world-level power
+  waits for a real mover. The moiety half waits for item 6, and multi-mode laws for seam A.
 - Its solve (laws/reactions/rapid_binding.py): each stage, the read writes each held ligand's
   free amount and each binder's free base form into the rows. The envelope bounds the network's
   first-order lag at the stage's transport (1e-3 in log10 units). The ledger books phase 1's S_c,

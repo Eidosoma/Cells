@@ -7,7 +7,8 @@ reference_inputs.json seam_c.movers). Each mode is given resolved, as (species, 
 - Refused: the hydrolysis with its proton omitted (charge -1), MgATP moved as a form (a form
   moved as if it were a row), and a mover whose law declares no base forms.
 The moiety half waits for item 6's registry moieties. The resolution of a law's change rows
-(registry/laws.cycle_changes) to these rows is the next layer.
+(registry/laws.cycle_changes, through the kind's role_species) to these rows is entity_modes;
+its planted movers are test_rapid_binding_world.py's.
 """
 
 import json
