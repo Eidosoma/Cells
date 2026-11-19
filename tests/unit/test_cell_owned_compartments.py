@@ -11,7 +11,9 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
   write is admitted, and one with an owned field nothing writes is refused. Every registered
   operator is admitted, as before;
 * the declaration parses and round-trips, its refusals 1 to 7 fire with their reasons, and the
-  summary carries the identity block. A label or reference changes no binding;
+  summary carries the identity block. A label or reference changes no binding. Refusal 5 version
+  1.2 admits an anchor where an admitted operator's routes charge the compartment (planted per
+  compartment), at the definition, and FR-1's judged class still holds its prefixed message;
 * the composite's structure check refuses the providers and closers of what the declaration reads
   as declared, in either order, and admits the operators of its list; the list fails closed. The
   areas and capacitances are reference reads, so membrane state passes the structure check, and the
@@ -622,7 +624,8 @@ def test_refusal_5_version_1_1_admits_a_charged_start_where_charged_routes_are_a
     lumen = next(o for o in spec.model.extracellular if o.id == defs.LUMEN)
     assert lumen.initial_charge_C == 5.757025696278586e-14
     assert {k for k, _ in spec.model.kinds} >= set(SOURCE_KINDS)
-    # Refusal 5's own rule: admitted only with kinds declared and an IMEX tableau.
+    # Refusal 5's own rule: version 1.1's branch admits it only with kinds declared and an IMEX
+    # tableau (version 1.2's, a route into the compartment, is tested below).
     compartment = type("Node", (), dict(initial_charge_C=1e-17))()
     comp.refuse_charge_anchor("lumen_0", compartment, kinds=True, imex=True)
     for kinds, imex in ((False, True), (True, False), (False, False)):
@@ -1139,6 +1142,9 @@ class TraffickingStandIn(Operator):
     def event(self, state, control, p, *, xp):
         return state, xp.asarray(True)
 
+    def charged_compartments(self, spec, declaration):
+        return declaration.compartments  # Its routes charge the pools they enter (R2).
+
 
 @pytest.fixture
 def trafficking(monkeypatch):
@@ -1174,6 +1180,97 @@ def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
     with pytest.raises(ConfigError, match=rf"admits {comp.STATE_LAW} only together with {STAND_IN}"):
         parse_spec(stateful())
     assert {comp.STATE_LAW, "scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
+
+
+# ------------------------------------------------------------------ refusal 5, version 1.2
+
+# Version 1.1's message, as FR-1's judged refusal record (run-05a8d193, C1_refusals) holds it.
+V1_1_ANCHOR = (
+    "cell_owned_compartments@1: compartment 'ecs_0' declares a nonzero charge anchor (1e-17 C); "
+    "version 1.1 admits one only where charged routes are admitted on its bounding patch (a world "
+    "that declares kinds and steps with an IMEX tableau); elsewhere the content is "
+    "electroneutral, so V_b = 0"
+)
+
+
+def two_pools(routes, anchored):
+    """Two compartments of one owner (lys_0 on ecs_0, gran_0 on ecs_1), with membrane state, the
+    stand-in's routes into the compartment IDs `routes`, and FR-1's planted anchor (1e-17 C) on the
+    node `anchored` (its fixed charge matched, the anchor rule)."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0),),
+        nodes=(("ecs_0", 1.0), ("ecs_1", 0.5)),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_0", "ecs_1")),
+        faces=(),
+        end=END,
+        concentrations_mM=dict(cell_0=1e-3, ecs_0=1e-6, ecs_1=1e-6),
+    )
+    raw["model"]["operators"].append(dict(law=comp.STATE_LAW, populations=[]))
+    raw = cfx.with_compartments(
+        raw,
+        [cfx.compartment(), cfx.compartment(cid="gran_0", node="ecs_1", patch="contact_1")],
+    )
+    raw["model"]["operators"].append(dict(law=STAND_IN, compartments=list(routes)))
+    cfx._anchor(node(raw, anchored), cfx.PLANTED_ANCHOR_C)
+    return raw
+
+
+def test_refusal_5_version_1_2_admits_an_anchor_where_a_route_charges_its_compartment(
+    trafficking,
+):
+    """Refusal 5, version 1.2 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.5; D217, FR-2's design
+    statement §7.3): retrieval gives the pool the charge of its membrane (R2), so a checkpoint of a
+    trafficking world imported as a new definition carries a nonzero anchor on the pool. It is
+    admitted where an admitted operator declares a route into that compartment (the contract's
+    charged_compartments), in a world without kinds. Planted, per compartment: the same anchor on
+    the other compartment, which no route enters, is refused, naming the operator; and a route into
+    an ID the declaration does not declare is refused."""
+    spec = parse_spec(two_pools(["lys_0"], "ecs_0"))
+    lumen = next(o for o in spec.model.extracellular if o.id == "ecs_0")
+    assert lumen.initial_charge_C == cfx.PLANTED_ANCHOR_C and not spec.model.kinds
+    with pytest.raises(
+        ConfigError,
+        match=rf"compartment 'ecs_1' declares a nonzero charge anchor \(1e-17 C\), and no route of "
+        rf"{STAND_IN} moves charge into it; version 1.2 admits one only where",
+    ):
+        parse_spec(two_pools(["lys_0"], "ecs_1"))
+    with pytest.raises(ConfigError, match=r"routes charge 'nowhere', which is not a compartment"):
+        parse_spec(two_pools(["lys_0", "nowhere"], "ecs_0"))
+    # The rule itself: a route into it admits it whatever the solver; version 1.1's branch stays.
+    node_1e17 = type("Node", (), dict(initial_charge_C=1e-17))()
+    for kinds, imex in ((False, False), (False, True), (True, False)):
+        comp.refuse_charge_anchor("ecs_0", node_1e17, kinds, imex, (STAND_IN,), (STAND_IN,))
+        with pytest.raises(ConfigError, match="version 1.2 admits one only where"):
+            comp.refuse_charge_anchor("ecs_0", node_1e17, kinds, imex, (), (STAND_IN,))
+    comp.refuse_charge_anchor("ecs_0", node_1e17, True, True, (), (STAND_IN,))
+    with pytest.raises(ConfigError) as caught:
+        comp.refuse_charge_anchor("ecs_0", node_1e17, False, True, (), ())
+    assert str(caught.value) == V1_1_ANCHOR  # No route charges a compartment: 1.1's words.
+
+
+def test_fr1s_judged_refusal_class_holds_refusal_5_from_the_definition_check():
+    """The lead's ruling of 19 November 2026 on version 1.2's move: refusal 5 reads the
+    composition, so it is checked at the definition, whose refusals the composite prefixes. A
+    re-run of FR-1's R5 world (its protocol's own refusal_pairs) now reports that prefix before
+    version 1.1's message, kept byte for byte, and FR-1's classify() still puts it in its judged
+    class, so a later re-judge keeps it; the admitted neighbour parses."""
+    from validation.tissue import compartment_acceptance_qualification as fr1
+
+    refused, admitted = fr1.refusal_pairs()["R5_a_charge_anchor"]
+    with pytest.raises(ConfigError) as caught:
+        parse_spec(refused)
+    assert str(caught.value) == "Invalid composite definition: " + V1_1_ANCHOR
+    assert fr1.classify(str(caught.value)) == "refusal 5 (the charge anchor)"
+    parse_spec(admitted)
+
+
+def test_the_scope_names_refusal_5_version_1_2_and_no_operator_charges_by_default():
+    """The summary's scope string names the code's versions (the lead's ruling (a)): every
+    compartment world's summary says version 1.2. The contract's hook charges nothing by default."""
+    spec = parse_spec(w())
+    scope = OPERATORS[LAW].summary(spec, spec.model.operators[-1], (), None)["compartments_scope"]
+    assert scope.startswith("refusal 4 version 1.3, refusal 5 version 1.2: ")
+    assert Operator().charged_compartments(spec, None) == ()
 
 
 # ------------------------------------------------------------------ the structure check

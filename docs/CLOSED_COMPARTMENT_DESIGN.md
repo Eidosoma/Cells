@@ -21,6 +21,8 @@ a zero anchor on the compartment, ARS at 1 ms and RK4 at 0.1 ms; V_b's orientati
 - **The membrane-state wall's door (§4, 19 November; D217, FR-2):** membrane state composes
   beside a compartment only together with `scheduled_membrane_trafficking@1`, and the declaration
   reads the areas and capacitances as `reference` reads.
+- **Refusal 5 version 1.2 (§3.4.5, 19 November; D217, FR-2):** an anchor is also admitted where an
+  admitted operator's routes charge the compartment; checked at the definition.
 
 **As drafted (14 November 2026),** for the lead's review with the advisor and revised the same day
 after that review: no engine code was added or changed. One read-only probe ran on the engine as
@@ -850,6 +852,45 @@ kind is checked per move:
 - non-movers judged by their hooks;
 - the transporter's neutral law, refused on the bounding patch and admitted on the plasma patch;
 - the built-in laws' declared terms against their kinds' hooks: the premise.
+
+### 3.4.5 Refusal 5 version 1.2: the anchor where an admitted operator's routes charge the compartment (FR-2; the lead's rulings, 19 November 2026)
+
+**Why.** FR-2's retrieval follows the membrane's charge (R2,
+[retrieval design](MEMBRANE_RETRIEVAL_DESIGN.md) §6), so the pool takes the charge of the membrane
+it receives. Within one run that charge sits in @3's increments over a zero anchor. A checkpoint
+imported as a new definition (D153's rule (b)) carries it as the pool's anchor, which version 1.1
+refuses in a world without kinds.
+
+**The rule.** A nonzero anchor is admitted where the world's admitted routes charge the
+compartment:
+- version 1.1's branch, unchanged: the world declares kinds and steps with an IMEX tableau;
+- version 1.2's branch: an operator on the admitted list declares that its routes move charge into
+  that compartment, through the contract's host-side hook `charged_compartments(spec,
+  declaration)` (compartment IDs; default none), so the declaration never imports the operator.
+  `scheduled_membrane_trafficking@1` declares its routes' pools. The branch holds whatever the
+  solver: the pool keeps no conductance of its own, so V_b = -q/C_b exactly (§3.1).
+- **Fails closed:** an anchor on a compartment that no route enters stays refused, per compartment,
+  and so does a hook that names an ID the declaration does not declare.
+
+**Where it is checked: at the definition** (`check_definition`, after refusal 7's admitted list),
+since parse sees only the declaration's own block.
+- The composite prefixes a definition-check refusal with "Invalid composite definition: ". So a
+  re-run of FR-1's R5 world reports that prefix before version 1.1's message. The message is kept
+  byte for byte wherever no operator charges a compartment, and FR-1's `classify()` still puts it
+  in its judged class (tested). FR-1's frozen judged run (run-05a8d193) and its rehearsals are
+  unchanged.
+- Refusal 5 now follows refusal 6 in a world with both faults. FR-1's judged worlds each carry one.
+- Where an operator charges some compartment but not this one, the message names it.
+
+**Text.** The summary's scope string names version 1.2 in every compartment world, as version 1.3's
+did (the lead's ruling (a)). No saved result holds it.
+
+**Tests** (`tests/unit/test_cell_owned_compartments.py`):
+- two compartments of one owner, with a route into one, through a stand-in for FR-2's operator
+  until its module lands: the anchor admitted on the routed one and refused on the other
+  (planted), and a route into an undeclared ID refused;
+- the rule at each solver and with kinds, and version 1.1's words where nothing charges;
+- FR-1's R5 world through its protocol's own `refusal_pairs()` and `classify()`.
 
 ### 3.5 Floating components and the gauge
 

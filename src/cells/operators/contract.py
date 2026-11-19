@@ -421,6 +421,14 @@ class Operator:
         as above)."""
         return {}
 
+    def charged_compartments(self, spec, declaration):
+        """The compartments, by their declared IDs (operators/compartments.py), into which its
+        routes move charge (host side, as above). Refusal 5 version 1.2 admits a nonzero charge
+        anchor on each, for the operators on the compartments declaration's admitted list: a world
+        whose admitted routes charge a compartment must be able to resume from its own checkpoint
+        (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.5). (): none."""
+        return ()
+
     def changed_slots(self, spec, declaration):
         """Door S, host: {field: entity indices} for each field its scoped Change covers (the union
         over the run: later doses, onsets and closures included)."""
