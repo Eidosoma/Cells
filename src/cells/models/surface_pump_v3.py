@@ -421,12 +421,37 @@ def _host_activity(host_kind, p, *, xp):
     return hosts[:m] if host_kind == "patch" else hosts[m:]
 
 
+def _channel_activity(p, *, xp):
+    """[channel slot] each population's activity: its own slot's and its patch's, as a
+    composite's close() closes a population on a closed patch."""
+    return p.channel_active & _host_activity("patch", p, xp=xp)[p.channel_membranes]
+
+
+def _face_activity(p, *, xp):
+    """[face slot] each face's activity: its own slot's and both its outside nodes', as close()
+    closes a face at a closed node."""
+    nodes = _host_activity("outside_node", p, xp=xp)
+    return p.face_active & nodes[p.face_sender] & nodes[p.face_receiver]
+
+
+# Q2's hosts for @3's slot axes that index no host kind (the lead's ruling of 19 November 2026,
+# the operators owner's finding: a planted kind's channel_slot presence met the gate as a
+# KeyError): channel populations and faces, each active where its slot and its hosts are.
+SLOT_ACTIVITY = MappingProxyType({"channel_slot": _channel_activity, "face_slot": _face_activity})
+# Every @3 slot axis whose entities the presence gate closes: one list for the gate and for the
+# composite's lifecycle check of the axes it can host.
+PRESENCE_SLOT_AXES = (*SLOT_AXIS_HOSTS, *SLOT_ACTIVITY)
+
+
 def entity_activity(kind, axis, p, *, xp=jnp):
     """[entity] each of a kind's entities' host activity on one of its entity axes: an @3 slot
-    axis is its own host (SLOT_AXIS_HOSTS); an own axis names its host kind and the layout field
-    of each entity's host index (kind.axis_hosts, AxisHost(kind, index))."""
+    axis that indexes a host kind is its own host (SLOT_AXIS_HOSTS); a channel population or a face
+    is active where its slot and its hosts are (SLOT_ACTIVITY); an own axis names its host kind and
+    the layout field of each entity's host index (kind.axis_hosts, AxisHost(kind, index))."""
     if axis in SLOT_AXIS_HOSTS:
         return _host_activity(SLOT_AXIS_HOSTS[axis], p, xp=xp)
+    if axis in SLOT_ACTIVITY:
+        return SLOT_ACTIVITY[axis](p, xp=xp)
     host = kind.axis_hosts[axis]
     return _host_activity(host.kind, p, xp=xp)[getattr(p, host.index)]
 
