@@ -26,6 +26,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     development work, and independent references for the passive law.
     On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
     against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
+    On 19 November: FR-2 version 1, `scheduled_membrane_trafficking@1` (merge 1bd35184). Its
+    engine-side comparison against its code-blind references waits for the user's answer on the
+    floors.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -34,7 +37,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     test audit. The full verification of main a83d8f15 then passed (tiers 1+2, G1 113 of 113,
     crossrev's new record). The next steps are D194's order, starting with D188's moves.
     D188's move 2 landed on 18 November (merge d5d56d1b, tag `d188-move2-landed-2026-11-18`).
-    The core-seams pass's code follows it.
+    The core-seams pass's code follows it. By 10:46 UTC on 19 November, seams A, C (stage 2) and
+    D had landed, with Q2's presence gate, the lift, P1 and B1's last slice (run entry "The
+    core-seams pass's morning landings" below).
   - **Proposed designs:** the FR-4/FR-5 physics note, the run view (D154), the module system, with
     its five decisions made (D185), and the human cardiac law set, with its choices made (D184).
     Decided on 16 November and built in D194's order: operator composition (option A, D191), GARD
@@ -100,6 +105,41 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **The core-seams pass's morning landings (19 November 2026, 03:56–10:46 UTC).** Twenty merges.
+  Each merge's message records its gates. The merged checks and the tier folds are in
+  `/mnt/workspaces/Cells/core-pass-kickoff-20261118/` (`replication-checks/`, `landings/`).
+  - **Seams:**
+    - seam A, the general cycle kind (ee30e5d9), with its comparison against the code-blind
+      references;
+    - seam C stage 2, the general rapid binding closure in whole worlds (aecbaed1), and its C4
+      follow-up, mixed-sign binder forms admitted against the exact joint margin (4736d974);
+    - seam D, heat bookings (6ca4a56f).
+  - **Kinds beside closers:** Q2's presence gate (e4f84d4a); the kind contract's internal_axes and
+    presence (266624d8); and the lift (b1ca8b68), which admits a kind beside a closer when every
+    entity axis declares presence.
+  - **The operators' lifecycle:**
+    - items 1–3 (4a9a696a);
+    - the composite's channel_targets, closing FR-8's settling gap (7d3f24ef);
+    - B1's last slice, the role-driven lifecycle at division and retirement (3fd9c17c).
+  - **P1** (9e181b08): the predictor for stage reads under a free-amount closure.
+  - **The registry:**
+    - the public cycle_changes reader (e1dc12d5);
+    - the five Kv1 channel laws as @3's law homes (c7d570a0), with @3's Kv1 trigger (c1e5d3d0);
+    - role_species (c08e6ea9).
+  - **References registered before the outputs they judge:** amendment A2's erratum (9e005bb9);
+    amendment C5, release steps in the binding envelope (8a9d7ae7); and FR-2's code-blind
+    references (8c92f6ac).
+  - **FR-2 version 1** (1bd35184; development, not judged).
+  - **The viewer:** Version 44 (8e6d6c18).
+  - **Tools:** `test_tiers.py fold` places a row that reached the cap in tier 3 (37855d1c).
+  - **Refusals kept, with their fixes:**
+    - seam A's merged checks refused twice. Trial 81a9fd5c failed 6 of Q2's tests, fixed by
+      declaring the internal axes and presence. Trial 5a986c1f failed 2 of seam A's own tests,
+      written before the lift landed, fixed by a test-only commit (90a4dd7e);
+    - the binding owner's cb01a837 failed its tiers (A7's sum guard, and a too-wide water
+      refusal), fixed at bae02d29;
+    - item 4's bed34e3d failed the S5 staleness guard, fixed at 317f6e95.
 
 - **The core-seams pass's next landings (18 November late evening to 19 November 2026).** Each
   merge's message records its gates. The merged checks and the tier folds are in
