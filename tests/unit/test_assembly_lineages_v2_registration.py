@@ -37,9 +37,11 @@ from cells.models.assembly_lineages_v2 import (
     OPERATOR_INTERFACE,
     OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
+    POPULATION_INTERFACE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     REGULAR_MIXING,
+    SHARED_POOL,
     SHEAR_FISSION,
     TRANSITION_STATE,
     division,
@@ -50,6 +52,7 @@ from cells.models.assembly_lineages_v2 import (
     lumen,
     mass_action,
     permeation,
+    population,
     regular_mixing,
     transition_state,
 )
@@ -77,6 +80,8 @@ HOMES = {
     MEMBRANE_PERMEATION: (permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
     # OL2 milestone 2.
     OSMOTIC_LUMEN: (lumen, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, None),
+    # OL2 milestone 3.
+    SHARED_POOL: (population, interfaces.PopulationStructure, POPULATION_INTERFACE, None),
 }  # fmt: skip
 OPERATORS = {SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE)}  # OL3
 

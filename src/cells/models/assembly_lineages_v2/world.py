@@ -67,8 +67,9 @@ WORLD_KEYS = {
     "world_role",
     "geometry",
     "division",
+    "population",
 }
-WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role", "geometry", "division"}
+WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role", "geometry", "division", "population"}
 ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 
@@ -143,6 +144,7 @@ class World:
     role: str | None = None  # "probe" (§0.2b rule 8), or None: a world to run.
     geometry: tuple | None = None  # OL2: (law ID, parsed data), or None (geometry.py).
     division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
+    population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
 
     @property
     def place_names(self):

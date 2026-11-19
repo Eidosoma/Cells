@@ -41,6 +41,7 @@ PHASE_EXCHANGE = "cells.phase_exchange@1"
 MEMBRANE_PERMEATION = "cells.membrane_permeation@1"
 OSMOTIC_LUMEN = "cells.osmotic_lumen@1"  # OL2 milestone 2: lumen_volume osmotic.
 SHEAR_FISSION = "cells.shear_fission@1"  # OL3 milestone 1: division at shear events.
+SHARED_POOL = "cells.shared_pool@1"  # OL2 milestone 3: K slots on one pool (population.py).
 
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule
@@ -51,6 +52,8 @@ RATE_FACTOR_INTERFACE = "cells.rate_factor_law@2"
 FREE_ENERGY_INTERFACE = "cells.free_energy_term@1"
 GEOMETRY_INTERFACE = "cells.assembly_geometry@1"  # OL2: a geometry kind (§0.2c rule 15).
 OPERATOR_INTERFACE = "cells.assembly_operator@1"  # OL3: an operator of the family's lineages.
+POPULATION_INTERFACE = "cells.population_structure@1"  # OL2 milestone 3 (§0.2c rule 15).
 
 MODE = "single_lineage"  # OL1: one assembly per world, no fission (OL3 adds division).
-MODES = (MODE,)
+POPULATION = "population"  # OL2 milestone 3: K slots sharing one pool (population.py).
+MODES = (MODE, POPULATION)

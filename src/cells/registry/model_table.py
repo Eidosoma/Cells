@@ -151,6 +151,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.exchange",
                 "cells.models.assembly_lineages_v2.permeation",
                 "cells.models.assembly_lineages_v2.lumen",
+                "cells.models.assembly_lineages_v2.population",
             ),
             operator_homes=("cells.models.assembly_lineages_v2.division",),
             interfaces=(
@@ -159,6 +160,7 @@ MODELS = MappingProxyType(
                 "cells.free_energy_term@1",
                 "cells.assembly_geometry@1",
                 "cells.assembly_operator@1",
+                "cells.population_structure@1",
             ),
             runner="cells.models.assembly_lineages_v2.runner:run",
         ),

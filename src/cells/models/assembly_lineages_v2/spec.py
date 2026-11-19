@@ -58,6 +58,7 @@ from cells.models.assembly_lineages_v2 import (
     MODEL_ID,
     MODES,
     PHASE_EXCHANGE,
+    POPULATION,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     streams,
@@ -224,15 +225,26 @@ def parse_world(raw):
     world = world_rules.World(
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
-    _convention_refusals(world)
+    _convention_refusals(world, founder="population" not in raw)  # a population's: per founder
     if "geometry" in raw:
         block = raw["geometry"]
         if not isinstance(block, dict) or "law" not in block:
             raise ConfigError("world: geometry names its law")
         law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
-    _geometry_refusals(world)
-    _osmotic_refusals(world)
+    founders = (world.founder,)
+    if "population" in raw:  # OL2 milestone 3: K slots on one pool (population.py).
+        from cells.models.assembly_lineages_v2 import population as population_rules
+
+        world = dataclasses.replace(
+            world, population=population_rules.parse_data(raw["population"], world)
+        )
+        founders = population_rules.founder_vectors(world)
+    for vector in founders:  # each founder vesicle with the pool: rules 2-8's founder checks
+        probe = dataclasses.replace(world, founder=vector)
+        _convention_refusals(probe)
+        _geometry_refusals(probe)
+        _osmotic_refusals(probe)
     if "division" in raw:  # OL3 milestone 1: shear fission (division.py).
         from cells.models.assembly_lineages_v2 import division as division_rules
 
@@ -375,7 +387,7 @@ def _geometric_shape(step, law, by_name):
         )
 
 
-def _convention_refusals(world):
+def _convention_refusals(world, founder=True):
     if world.conventions.offset == 1 and world.role != "probe":
         by_name = {p.name: p for p in world.places}
         for step in world.steps:
@@ -387,7 +399,7 @@ def _convention_refusals(world):
                     "membrane holds exactly its reactants, so it is admitted only in a world "
                     "declared world_role: probe (§0.2b rule 8)"
                 )
-    if world.conventions.last_molecule in ("kept", "extinct"):
+    if founder and world.conventions.last_molecule in ("kept", "extinct"):
         membrane = sum(
             c for p, c in zip(world.places, world.founder, strict=True) if p.phase == "membrane"
         )
@@ -433,6 +445,10 @@ def world_to_dict(world):
         from cells.models.assembly_lineages_v2 import division as division_rules
 
         out["division"] = division_rules.data_to_dict(world.division)
+    if world.population is not None:
+        from cells.models.assembly_lineages_v2 import population as population_rules
+
+        out["population"] = population_rules.data_to_dict(world.population)
     return out
 
 
@@ -544,6 +560,7 @@ def parse(data):
         raise ConfigError("Only schema_version 1 is supported")
     model = parse_model(raw["model"])
     execution = parse_execution(raw["execution"], model)
+    _mode_refusals(model.world, execution.mode)
     return SimulationSpec(model, parse_experiment(raw["experiment"], model.world), execution)
 
 
@@ -585,6 +602,23 @@ def _schedules_to_dict(schedules):
     from cells.models.assembly_lineages_v2 import division as division_rules
 
     return division_rules.schedule_to_dict(schedules)
+
+
+def _mode_refusals(world, mode):
+    """The world and the mode agree: a population block exactly in population mode; a single
+    lineage's division declares its continuation, a population's none (every daughter lives)."""
+    if (world.population is not None) != (mode == POPULATION):
+        raise ConfigError(
+            "execution: mode population exactly when the world declares a population block"
+        )
+    if world.division is not None:
+        continuation = world.division["continuation"]
+        if mode == POPULATION and continuation is not None:
+            raise ConfigError(
+                "world: division: a population declares no continuation (every daughter lives)"
+            )
+        if mode != POPULATION and continuation is None:
+            raise ConfigError("world: division: a single lineage declares its continuation")
 
 
 def stream_identity(spec):

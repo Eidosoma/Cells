@@ -83,6 +83,7 @@ class WorldRun:
     osmotic: dict | None = None  # OL2 milestone 2: c_ext's drift report and any lysis (records)
     division: dict | None = None  # OL3: the fission table, the lives and the schedule's report
     diagnostic: dict | None = None  # OL2 milestone 3: §0.2d item 10.5's record (diagnostic.py)
+    population: dict | None = None  # OL2 milestone 3: the shared pool's report (population.py)
 
     def check(self):
         """Raise if the run was refused (a ledger that did not close)."""
@@ -340,6 +341,14 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
 
 
 def run(spec):
+    if spec.execution.mode == "population":  # OL2 milestone 3 (population.py)
+        from cells.models.assembly_lineages_v2 import population
+
+        return population.run(spec)
+    return _run_single(spec)
+
+
+def _run_single(spec):
     """One world, from its founder to the end of its lifecycle."""
     return run_lanes([spec])[0]
 

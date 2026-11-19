@@ -325,7 +325,9 @@ def run_record(run, world_id):
         "ssa": kernel.SSA_CONVENTION
         if run.division is None
         else {**kernel.SSA_CONVENTION, "draw": SCHEDULED_DRAW},
-        "lifecycle": kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE,
+        "lifecycle": kernel.LIFECYCLE_OSMOTIC
+        if run.osmotic is not None or run.population is not None
+        else kernel.LIFECYCLE,
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
         "end": {
@@ -351,11 +353,39 @@ def run_record(run, world_id):
         },
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
+        **({"population": run.population} if run.population is not None else {}),
     }
+
+
+_S = "row"
+POPULATION_RECORDS = {
+    "pool_count": _record(_S, ["row", "place"], "molecules", "level", "the pool's places' counts "
+                          "(every vesicle place 0)"),
+    "slot_count": _record(_S, ["row", "slot", "place"], "molecules", "level",
+                          "each slot's vesicle places' counts (every pool place 0; 0 when empty)"),
+    "slot_key": _record(_S, ["row", "slot"], "carrier key", "level",
+                        "the slot's assembly; -1 empty"),
+    "membrane_footprint_quanta": _record(_S, ["row", "slot"], "quanta", "level",
+                                         "each slot's W(n); 0 when empty"),
+    "lumen_volume_L": _record(_S, ["row", "slot"], "L", "level", "each slot's V(n); 0 when empty"),
+    "tension_N_per_m": _record(_S, ["row", "slot"], "N/m", "level", "each slot's sigma"),
+    "event_group": _record("event", ["event"], "1", "level",
+                           "the event's group: 0 the pool, 1 + k slot k"),
+    "event_uniforms": _record("event", ["event", "draw"], "1", "level",
+                              "diagnostic: the event's three uniforms (u1 tau, u2 the group, u3 "
+                              "the channel), from the world's stream (domain 5)"),
+}  # fmt: skip
 
 
 def _declared(run, name):
     table = {**RECORDS, **GEOMETRY_RECORDS}
+    if run.population is not None:
+        from cells.models.assembly_lineages_v2 import population
+
+        if name == "row_kind":
+            legend = {str(i): kind for i, kind in enumerate(population.ROW_KINDS)}
+            return {**table[name], "legend": legend}
+        return {**table, **POPULATION_RECORDS}[name]
     if run.division is None:
         return table[name]
     if name == "row_kind":  # A division world's rows include its shear rows.
@@ -371,6 +401,24 @@ def _arrays(run):
     if run.division is not None:
         out.update(run.division["fissions"])
     return out
+
+
+def population_tables(run):
+    """cells.relations@2's tables of a population run: its lives (population.lives), its lysis
+    events (kind lysis, by the osmotic lumen) and its slots."""
+    from cells.models.assembly_lineages_v2 import OSMOTIC_LUMEN, SHARED_POOL, population
+    from cells.records import relations as rel
+
+    lives = [rel.Life(**row) for row in population.lives(run)]
+    events = [
+        rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
+                  at=life.id, source="")
+        for life in lives
+        if life.end_reason == "lysed"
+    ]  # fmt: skip
+    slots = run.population["slots"]
+    nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
+    return {"lives": lives, "events": events, "nodes": nodes}
 
 
 SINK = "sink:discard"
@@ -457,11 +505,12 @@ def write_run(directory, run, *, provenance=None):
     if run.diagnostic is not None:  # §0.2d item 10.5, declared (diagnostic.py)
         np.savez(directory / "diagnostic.npz", **run.diagnostic["arrays"])
         _write_json(directory / "diagnostic.json", run.diagnostic["body"])
-    if run.division is not None:  # OL3: the relationship tables, beside records.npz.
+    if run.division is not None or run.population is not None:  # the relationship tables
         from cells.records import relations as rel
 
-        rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2,
-                  **relation_tables(directory, run))  # fmt: skip
+        tables = population_tables(run) if run.population is not None else (
+            relation_tables(directory, run))  # fmt: skip
+        rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2, **tables)
     summary = {
         "status": run.status,
         "qualifier": run.qualifier,

@@ -32,6 +32,7 @@ from cells.models.assembly_lineages_v2 import (
     GEOMETRY_INTERFACE,
     MODEL_ID,
     OPERATOR_INTERFACE,
+    POPULATION_INTERFACE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
 )
@@ -109,6 +110,27 @@ class GeometryLaw(Law):
     formulas: dict
 
     interface: ClassVar[str] = GEOMETRY_INTERFACE
+
+    def errors(self):
+        out = super().errors() + _callables(self, ("parse_data", "data_to_dict"))
+        if law_registry.qualified(self.host) != law_registry.qualified(MODEL_ID):
+            out.append(f"a law of {type(self).interface} is hosted by {MODEL_ID}")
+        if not isinstance(self.formulas, dict) or not self.formulas:
+            out.append("its formulas state its quantities in words and symbols")
+        return out
+
+
+@dataclass(frozen=True)
+class PopulationStructure(Law):
+    """cells.population_structure@1: how a world holds several assemblies (OL2 milestone 3; §0.2c
+    rules 13–15): its slots, its founders and the selection map of its one world-level SSA."""
+
+    data: tuple  # The keys of its world block beside `structure`.
+    parse_data: Callable  # (raw block, world) -> parsed data; ConfigError on refusal.
+    data_to_dict: Callable
+    formulas: dict
+
+    interface: ClassVar[str] = POPULATION_INTERFACE
 
     def errors(self):
         out = super().errors() + _callables(self, ("parse_data", "data_to_dict"))

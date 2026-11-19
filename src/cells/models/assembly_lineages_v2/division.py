@@ -52,7 +52,7 @@ def parse_data(raw, world):
     """The world's division block (spec.py calls it after the geometry is attached)."""
     if not isinstance(raw, dict) or raw.get("law") != SHEAR_FISSION:
         raise ConfigError(f"world: division names its law, {SHEAR_FISSION}")
-    allowed, required = {"law", "continuation", "critical_stress_Pa"}, {"law", "continuation"}
+    allowed, required = {"law", "continuation", "critical_stress_Pa"}, {"law"}
     if not required <= set(raw) <= allowed:
         raise ConfigError(
             f"world: division: missing={sorted(required - set(raw))}, "
@@ -63,7 +63,7 @@ def parse_data(raw, world):
             "world: division needs a geometry and an osmotic lumen: a daughter's own volume, the "
             "v test and lysis at birth follow from them (OL3; §0.2e rule 2)"
         )
-    if raw["continuation"] not in CONTINUATIONS:
+    if raw.get("continuation", CONTINUATIONS[0]) not in CONTINUATIONS:
         raise ConfigError(f"world: division: continuation is one of {', '.join(CONTINUATIONS)}")
     critical = None
     if "critical_stress_Pa" in raw:
@@ -74,11 +74,15 @@ def parse_data(raw, world):
         if not isinstance(entry["provenance"], str) or not entry["provenance"]:
             raise ConfigError("world: division: critical_stress_Pa states its provenance")
         critical = (value, entry["provenance"])
-    return {"continuation": raw["continuation"], "critical_stress_Pa": critical}
+    # A single lineage declares its continuation; a population, where every daughter lives,
+    # declares none (checked against the mode with the definition: spec.py).
+    return {"continuation": raw.get("continuation"), "critical_stress_Pa": critical}
 
 
 def data_to_dict(data):
-    out = {"law": SHEAR_FISSION, "continuation": data["continuation"]}
+    out = {"law": SHEAR_FISSION}
+    if data["continuation"] is not None:
+        out["continuation"] = data["continuation"]
     if data["critical_stress_Pa"] is not None:
         value, provenance = data["critical_stress_Pa"]
         out["critical_stress_Pa"] = {"value": value, "provenance": provenance}
