@@ -270,20 +270,12 @@ def test_removal_of_the_written_units_only_fails_the_exact_chain_row(monkeypatch
     assert honest < 1e-13 and planted > 1e-3, (honest, planted)
 
 
-@pytest.mark.parametrize("plant", [None, "initial_pool_missing_from_the_account"])
-def test_the_account_and_the_untouched_rows(plant):
-    """The account from the bound start, its declared initial pools included (D232's W5 ruling);
-    the plant leaves those initial units out of the account, which the chain ledger catches."""
+def test_the_account_and_the_untouched_rows():
+    """The account from the bound start, its declared initial pools included (D232's W5
+    ruling)."""
     spec, model, op, state, p = case_world("shared")
     _, assembly, removal, _, _ = CASES["shared"]
     assert float(np.asarray(p.unit_route_initial_units)[0]) == 25.0  # Route r0's one pool.
-    if plant:
-        p = p._replace(unit_route_initial_units=np.zeros_like(p.unit_route_initial_units))
-        new, _ = step(op, state, p, assembly, removal)
-        ledgers = model.balances(new, p)
-        bound_ = op.own_bounds(op.own_magnitudes(new, p, xp=np), 1)[0]
-        assert np.max(np.abs(ledgers["unit_chain"])) > 1e6 * np.max(bound_)
-        return
     new, ok = step(op, state, p, assembly, removal)
     assert bool(ok)
     species = list(spec.model.species_ids)
@@ -307,6 +299,18 @@ def test_the_account_and_the_untouched_rows(plant):
         assert np.all(np.abs(ledgers[name]) <= bound_), name
     assert np.all(np.abs(ledgers["population_abundance_entity"]) <= 1e-9)
     assert np.all(np.abs(ledgers["local"][row]) <= 1e-20)
+
+
+def test_an_initial_pool_missing_from_the_account_fails_the_chain_ledger():
+    """The plant leaves the declared initial units in transit out of the account (D232's W5
+    ruling): the chain ledger is off by them."""
+    spec, model, op, state, p = case_world("shared")
+    _, assembly, removal, _, _ = CASES["shared"]
+    p = p._replace(unit_route_initial_units=np.zeros_like(p.unit_route_initial_units))
+    new, _ = step(op, state, p, assembly, removal)
+    ledgers = model.balances(new, p)
+    bound_ = op.own_bounds(op.own_magnitudes(new, p, xp=np), 1)[0]
+    assert np.max(np.abs(ledgers["unit_chain"])) > 1e6 * np.max(bound_)
 
 
 def test_a_moved_amount_booked_twice_fails_the_conversion_ledger():
