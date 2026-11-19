@@ -1,6 +1,6 @@
 # Lean verification options for Cells engine laws
 
-The [proof index and build instructions](README.md) track the implementation of the junction pilot described below.
+The junction and closed-reaction proofs, their engine comparisons and the build commands are in the [proof index](README.md).
 
 At Cells revision `3f84e002`, the best first experiment is the gap junction in `resolved_pump_tissue@3`. Its direction convention has a physical interpretation, its accounting generalizes to a tissue of any size, and an existing test already reverses the endpoints in the JAX kernel. For a chemistry-first experiment, the closed enzyme reaction fixture offers an equally concrete starting point. [Preprint review](RANDOM_INITIAL_INSPIRATION.md) · [Transport test](../tests/unit/test_surface_transport.py#L141) · [Enzyme fixture](../validation/tissue/species_reactions_fixtures.py#L248)
 
