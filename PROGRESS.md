@@ -108,6 +108,34 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's
+  part (a), D218; development, not judged).** Merge ee43b082, tag `b1prime-landed-2026-11-19`.
+  Turnover's and reactions' rates may be scaled by a coupling factor F ∈ [b, 1], evaluated at the
+  start of each target half-step, with a declared operating range refused when breached and the
+  applied factor recorded exactly. @1 is untouched, so FR-6's judged result stands. Gates: tiers 593
+  files with 0 changed, G1 113 of 113, crossrev 11 of 11 identical (coupling and acceptances), FR's
+  set; IDs with the contract-enumerating file declared; the lead's merged check on trial 8a482a26.
+
+- **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
+  kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
+  cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
+  FreeEnergyEntry. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on
+  trials 4361bf5a and 8d4e5f92 (stacked on the symporter's).
+
+- **The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`
+  (19 November 2026; D228 item 1).** Merge 845ee670, tag `symporter-v1-landed-2026-11-19`. A
+  fuel-free factored cycle law on the transporter (n_Na from 1 to 4), cited to Coady et al. 2007
+  (abstract) for 2:1; the Xenopus lane's XC0 world needs it. Refused at a compartment's node, as
+  stated. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on trials
+  6875e1bb and 3c923f22.
+
+- **The presence gate hosts channel and face slots (19 November 2026; the operators owner's
+  GATED_SLOT_AXES follow-up).** Merge 79d0fc7c, tag `ops3-gated-slot-axes-landed-2026-11-19`. A kind
+  with presence on channel populations or faces is admitted beside a closer, which closes those
+  populations by their hosts; an own axis without `axis_hosts` stays refused. Gates: tiers 592
+  files with 0 changed, G1, crossrev 11 of 11, IDs +0, FR's set; the lead's merged check on trial
+  2daf2363.
+
 - **The kind contract's array-axes check and `Kind.dispatch_masks` (19 November 2026; D228 item
   6).** Merge c545be8e, tag `f-axes-check-landed-2026-11-19`. Each kind field's array must match
   its declared axes where @3 binds it; fields empty by static dispatch are named. With the
