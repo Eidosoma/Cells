@@ -42,9 +42,10 @@ Declarations read
   operator's own record at its retirement (the composite's checks add it back), so the inner
   ledgers it writes (the field map's writers) restart at zero there on the saved arrays. Their
   records say so (``resets``, with ``mask``: the slots are those where that set's merged mask,
-  the record view_<mask>, closes at the event) and claim no monotonicity; every other
-  ``*_dissipated_energy_pJ`` record is ``monotone`` (on S5's division the fallen heat ledgers were
-  exactly those).
+  the record view_<mask>, closes at the event) and claim no monotonicity; every other heat record
+  whose declared energy role is monotone is ``monotone`` (on S5's division the fallen heat ledgers
+  were exactly those). The role is the field's declaration (a kind's energy_roles, an operator's
+  ENERGY_ROLES), else today's rule, a ``*_dissipated_energy_pJ`` name (seam D, §6.1).
 * Owners: the composition's field map (state owners, observation owner chains: the last).
 * Laws (requirement 4): each channel population's, junction's and pump's law from the structure
   record's law declarations (models/inner_laws.py), with its provenance; membranes and faces carry
@@ -586,6 +587,7 @@ class Plan:
                 }
             )
         self.retiring = tuple(op.LAW_ID for op, _, _ in self.entries if op.RETIRES)
+        self.energy_roles = self._declared_energy_roles()
         inner = _inner(self.model)
         inner_layers = getattr(inner, "VIEW_LAYERS", None)
         if not inner_layers:
@@ -1028,6 +1030,34 @@ class Plan:
                 reference=references.get(name),
             )
         return out
+
+    def _declared_energy_roles(self):
+        """{field: kind_registry.EnergyRole} of the inner model's declared kinds' fields and of
+        each operator's (seam D, docs/CORE_SEAMS_DESIGN.md §6.1): a declaration, else today's
+        suffix rule (kind_registry.energy_role, contract.energy_roles). @3's own fields take the
+        suffix rule (_monotone), as the dissipation check does."""
+        from cells.models import surface_pump_v3
+        from cells.operators import contract
+        from cells.registry import kind_registry
+
+        roles = {}
+        for kind in surface_pump_v3._kinds(getattr(_inner(self.model), "structure", None)):
+            for name in kind.state_fields:
+                role = kind_registry.energy_role(kind, name)
+                if role is not None:
+                    roles[name] = role
+        for op, _, _ in self.entries:
+            roles.update(contract.energy_roles(op))
+        return roles
+
+    def _monotone(self, name):
+        """Whether a field's record claims a non-decreasing total per element: its declared
+        energy role is heat and monotone, or, undeclared, it ends in _dissipated_energy_pJ (today's
+        rule). A heat declared non-monotone, such as GARD's event heat, claims nothing."""
+        role = self.energy_roles.get(name)
+        if role is not None:
+            return role.role == "heat" and role.monotone
+        return name.endswith(HEAT_SUFFIX)
 
     def _inner_checks(self, inner, names):
         """The inner model's RECORD_DIAGNOSTICS and RECORD_REFERENCES (the contract's forms; none
@@ -1705,7 +1735,7 @@ class Plan:
                     record["resets"] = {"by": by, "says": RESETS_NOTE}
                     if record["set"] in SET_MASKS:
                         record["resets"]["mask"] = SET_MASKS[record["set"]]
-                elif name.endswith(HEAT_SUFFIX):
+                elif self._monotone(name):  # Seam D: its declared energy role (§6.1).
                     record["monotone"] = "non-decreasing"
                     record["note"] = HEAT_NOTE
                 if not resets and info.owner == self.inner_id and name in self.notes:
