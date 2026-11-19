@@ -723,6 +723,43 @@
     "FR3_cross_check": "reported; at 1 ms the wrapper reproduces X2's qualification row: caught (|R(state) - R| 1.6e-11 pJ against a floor of 1.3e-16 pJ)"
    },
    "changed": "no registered number, budget or outcome; nothing has run"
+  },
+  {
+   "entry": "10.7",
+   "entry_utc": "2026-11-19T22:31Z",
+   "title": "the plants, revised after the @3 owner's review, before any plant runs",
+   "replaces": "section 10.6 item 5",
+   "control": "unaffected: it runs from the frozen d03ca463 snapshot",
+   "field": {
+    "name": "pump_dissipated_energy_pJ",
+    "slot": 0,
+    "slot_is": "membrane_0 in cell_0, carrying pump_0",
+    "edit": "x (1 + 1e-6)",
+    "why_not_metabolic_work": "also held by @1's exact metabolic-work ledger; validate_checkpoint runs check_values first, so the plant was refused with 'Resolved pump accounting failed: metabolic_work' and read as not caught at every step (the @3 owner on W0 at 1-5 ms and H2 at 5-20 ms; my development checks on H2 at 5 ms, T = 10 s, and W0 at 1 ms, T = 1 s)",
+    "heat_term": "belongs to X2's residual alone: X2's binding refuses its edit, and the unplanted control validates",
+    "evidence": "/mnt/workspaces/Cells/core-pass-at3-20261118/fr8-plant-review/ (summary.txt, w0.json, h2.json)"
+   },
+   "procedure": [
+    "the arm's registered definition at its full horizon through the scalar windows, with its registered policy",
+    "the checkpoint at T with RunResult.checkpoint_at(T) on the window holding T",
+    "the planted and unplanted checkpoints resumed in the same definition with a 10-step window, then stopped"
+   ],
+   "T_ms": {
+    "H2": 1000000,
+    "W0": 10000
+   },
+   "arm": "the one at the largest step claimed in its world (section 10.1)",
+   "sensitivity_shown": {
+    "binding": "the planted checkpoint refused with X2's binding message, the control resumed",
+    "in_step": "eps* = (floor_T + sum|a|_T / 16) / heat(T) <= 1e-6 (FR-18's plant model in evaluate_x; FR-3's plant size)",
+    "both": "'X2's sensitivity shown at this step'; otherwise 'binding shown; in-step eps* = ...'",
+    "at3_measurements": "eps* grows about as the step squared: W0 at 5 ms 8.8e-7; extrapolated W0 at 10 ms about 3.5e-6, H2 at 200 ms about 3e-6"
+   },
+   "limit": "a one-off misbooking that pushes a counted step out of band is held and checked only against today's bound; neither test covers it",
+   "cannot_run": "results, not misses: H2 at 50 ms refused by the step's domain check at 0.35 s; W0 at 10 ms by the junction step bound at definition (the @3 owner's development runs)",
+   "FR3_plant": "a cross-check, run at the largest step claimed and reported",
+   "code": "rung1.py inworld-plant ARM OUTPUT",
+   "changed": "no registered number, budget or outcome of the control"
   }
  ]
 }

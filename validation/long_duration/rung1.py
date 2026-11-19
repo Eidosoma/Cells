@@ -29,9 +29,12 @@ smoke OUT_DIR                development smokes of each path (no registered wind
 instrument OUTPUT ROOT       I1a and I4 (§5, §10.5), read before any reading.
 analyse OUTPUT ROOT INSTR    the readings (§4, §5, §10); refuses unless INSTR validated.
 timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR's, bitwise.
-plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1 at the largest step claimed).
+plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check under §10.6).
+inworld-plant ARM OUTPUT [AT_MS]
+                             §10.7's plant in the arm's world at its step (AT_MS: development).
 """
 
+import dataclasses
 import hashlib
 import json
 import math
@@ -1273,6 +1276,102 @@ def timed(arm, out_dir, reference_dir):
     return code
 
 
+PLANT_AT_MS = dict(H2=1_000_000, W0=10_000)  # §10.6: on every rung's grid, before any event.
+PLANT_RELATIVE = 1e-6  # FR-3's registered size (site_occupancy_acceptance_plants.WORK_RELATIVE).
+PLANT_FIELD, PLANT_SLOT, PLANT_RESUME_STEPS = "pump_dissipated_energy_pJ", 0, 10  # §10.7.
+BINDING_MESSAGE = "does not hold its state's residual"
+
+
+def inworld_plant(arm, output, at_ms=None):
+    """§10.7's plant in the arm's own world at the arm's step (the largest step claimed).
+
+    The arm's registered definition runs at its full horizon through the scalar windows with its
+    registered policy; the checkpoint at T is taken with checkpoint_at on the window holding T.
+    The planted checkpoint (cell_0's pump heat, pump_dissipated_energy_pJ at membrane slot 0, x
+    (1 + 1e-6)) and the unplanted one are resumed in the same definition with a 10-step window,
+    then stopped. Sensitivity is shown when both tests hold: the binding at load (the planted
+    resume refused with X2's binding message, the control resumed) and the in-step test, eps* =
+    (floor_T + sum|a|_T / 16) / heat(T) <= 1e-6 (FR-18's plant model in evaluate_x). A world that
+    cannot run the step is a result, not a miss. at_ms replaces T for development only."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution import energy_check as energy
+    from cells.execution.errors import NumericalError
+    from cells.execution.windows import WindowPolicy, iter_windows
+    from cells.registry.models import get_model
+    from validation.long_duration import harness
+
+    world, _, step_ms, dt, _, _ = parse_arm(arm)
+    plant_ms = PLANT_AT_MS[world] if at_ms is None else int(at_ms)
+    row = dict(arm=arm, world=world, step_ms=str(step_ms), dt_s=dt, plant_ms=plant_ms,
+               development=at_ms is not None, field=PLANT_FIELD, slot=PLANT_SLOT,
+               relative=PLANT_RELATIVE, energy_check=x2_block(),
+               snapshot_revision=harness.snapshot_revision(),
+               started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
+    started = time.perf_counter()
+    registered = WindowPolicy(window_steps=registration()["window_steps"], row_checks="device")
+    short = WindowPolicy(window_steps=PLANT_RESUME_STEPS, row_checks="device")
+    try:
+        raw, _ = definition(arm)
+        spec = parse_spec(raw)
+        t = grid_time(plant_ms, step_ms, dt)
+        cp = None
+        for window in iter_windows(spec, registered):
+            if window.final.time >= t:
+                cp = window.checkpoint_at(t)
+                break
+        if cp is None:
+            raise ConfigError(f"the run ended before the plant time {plant_ms} ms")
+    except (NumericalError, ConfigError) as error:  # The world cannot run the step: a result.
+        row.update(cannot_run=True, sensitivity="cannot run (a result, not a miss)",
+                   error_type=type(error).__name__, error=str(error))  # fmt: skip
+        return _plant_done(row, output, started)
+    model = get_model(spec.model)
+    row_terms, _ = energy.terms(model, spec, cp.layout)
+    p = model.parameters(spec, cp.layout)
+    r, f, m = (float(v) for v in jax.jit(row_terms)(cp.state, p))
+    k = int(cp.step_index)
+    floor = float(energy.floor(max(k, 1), m))
+    s = float(cp.energy_check.sum_abs_a)
+    values = np.asarray(getattr(cp.state, PLANT_FIELD)).copy()
+    heat = float(values[PLANT_SLOT])
+    values[PLANT_SLOT] = heat * (1.0 + PLANT_RELATIVE)
+    planted = dataclasses.replace(cp, state=cp.state._replace(**{PLANT_FIELD: values}))
+
+    def resumed(checkpoint):
+        try:
+            windows = iter_windows(spec, short, checkpoint)
+            first = next(windows)
+            windows.close()  # A 10-step window, then stop: no whole-run condition is decided.
+            return dict(admitted=True, refusal=None, steps=int(first.final.step_index) - k)
+        except (NumericalError, ConfigError) as error:
+            return dict(admitted=False, refusal=f"{type(error).__name__}: {error}")
+
+    control, plant_resume = resumed(cp), resumed(planted)
+    eps_star = (floor + energy.KAPPA * s) / abs(heat) if heat else math.inf
+    binding = bool(control["admitted"] and not plant_resume["admitted"]
+                   and BINDING_MESSAGE in (plant_resume["refusal"] or ""))  # fmt: skip
+    in_step = bool(eps_star <= PLANT_RELATIVE)
+    row.update(
+        steps_k=k, R_pJ=r, F_pJ=f, M_pJ=m, floor_pJ=floor, sum_abs_a_pJ=s, heat_pJ=heat,
+        plant_pJ=abs(heat) * PLANT_RELATIVE, eps_star=eps_star, control=control,
+        planted=plant_resume, binding_shown=binding, in_step_shown=in_step,
+        sensitivity=("X2's sensitivity shown at this step" if binding and in_step
+                     else f"binding shown; in-step eps* = {eps_star:.3g}" if binding
+                     else "not shown"),
+    )  # fmt: skip
+    return _plant_done(row, output, started)
+
+
+def _plant_done(row, output, started):
+    row["seconds"] = time.perf_counter() - started
+    Path(output).write_text(json.dumps(row, indent=1, default=float) + "\n")
+    print(json.dumps({k: row.get(k) for k in ("arm", "sensitivity", "eps_star", "error")}))
+    return 0
+
+
 def plant(step_text, output):
     """§10.1 at the largest step claimed: FR-3's registered plant (X2's qualify_x2.run_plant),
     its world's step set to step_text ms. Its world refusing the step is a result, kept."""
@@ -1334,6 +1433,8 @@ def main(argv):
         return timed(argv[1], argv[2], argv[3])
     if len(argv) == 3 and argv[0] == "plant":
         return plant(argv[1], argv[2])
+    if len(argv) in (3, 4) and argv[0] == "inworld-plant":
+        return inworld_plant(argv[1], argv[2], *argv[3:])
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
