@@ -17,15 +17,19 @@ left to the closers' records until composition's M5 Q2.
 import dataclasses
 from types import MappingProxyType
 
+import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as pump3
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, partition
 from cells.registry import kind_registry
-from cells.registry.kind_registry import PartitionRole
+from cells.registry.kind_registry import Kind, PartitionRole
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
+from tests import partition_fixtures as pfx
 from tests.unit.test_pump_composite_kinds import SLOT_CHANGERS, composite, world
 
 RETIRES = "opens, closes or retires slots"
@@ -674,6 +678,30 @@ def test_a_per_cell_extensive_kind_field_is_refused_beside_a_dividing_closer(lif
     ]
 
 
+def test_an_extensive_kind_field_on_edge_slots_is_refused_at_the_definition(lifecycle_world):
+    """CORE_SEAMS §18 (02:25 UTC, 19 November 2026): the partition binds no contact fraction, so an
+    extensive kind field on edge slots is refused at the structure, not first when the event is
+    traced (lifecycle_split's own refusal stays, behind it). Planted: the table with one such
+    field; an intensive one there is admitted."""
+    import unittest.mock
+
+    spec, model, state, p, k = lifecycle_world
+
+    def errors_with(role):
+        planted = (PartitionRole(role), ("edge_slot",))
+        table = dict(model.kind_lifecycle, planted_contact_fmol=planted)
+        with unittest.mock.patch.object(
+            pump_composite, "kind_lifecycle_table", lambda inner, ops: table
+        ):
+            return pump_composite.lifecycle_errors(model.inner, model.operators)
+
+    assert errors_with("extensive") == [
+        "The kinds' extensive fields on edge slots ['planted_contact_fmol'] are refused beside a "
+        "dividing closer: the partition binds no contact fraction to split them by"
+    ]
+    assert errors_with("intensive") == []
+
+
 def test_no_composition_admitted_today_gains_a_lifecycle_field():
     """Q7 (a) refuses a kind with entity fields beside a closer, so every registered composition
     keeps its types: the table is empty beside the partition with a shared-axis kind, and without
@@ -708,3 +736,280 @@ def test_an_extensive_kind_field_is_split_and_its_move_booked(lifecycle_world):
     assert (np.asarray(adjusted.carrier_transferred) == np.asarray(state.carrier_transferred)).all()
     before_l, after_l = model.balances(state, p), model.balances(after, p)
     np.testing.assert_allclose(after_l["local"], before_l["local"], rtol=1e-9, atol=1e-15)
+
+
+# ------------------------------------------------------------------ the declared fields by role (C)
+# Step C (the lead's ruling 2 of 19 November 2026): a kind's layout and control fields on the
+# divided slot axes are checked by role at the definition, in the partition's check_definition
+# (partition.check_kind_roles), since a kind's layout values exist only at binding. The planted
+# kind declares its values slot by slot on the asymmetric division world (f 0.75, the patch's
+# fraction 0.6, so a population's split shows that it takes its patch's fraction), beside the
+# partition under the accepted bypass. One plant per role, each refused with its field named.
+
+PLANTED_ID = "tests.planted_population@1"
+PLANTED_KEY = "test_planted_population"
+PLANTED_FIELDS = {  # field: (layout or control, entity axis, role)
+    "planted_capacity_fmol_s": ("layout", "membrane_slot", PartitionRole("extensive")),
+    "planted_km_mM": ("layout", "membrane_slot", PartitionRole("intensive")),
+    "planted_law": ("layout", "membrane_slot", PartitionRole("structural", 0)),
+    "planted_units": ("layout", "channel_slot", PartitionRole("extensive")),
+    "planted_availability": ("control", "membrane_slot", PartitionRole("intensive")),
+}
+SLOT_LISTS = dict(  # Each slot axis: its capacity in the execution block, its entity list.
+    cell_slot=("capacity", "cells"),
+    membrane_slot=("membrane_capacity", "membranes"),
+    channel_slot=("channel_capacity", "channels"),
+    edge_slot=("edge_capacity", "junctions"),
+)
+
+
+def _freeze(value):
+    return tuple(_freeze(v) for v in value) if isinstance(value, (list, tuple)) else float(value)
+
+
+def _thaw(value):
+    return [_thaw(v) for v in value] if isinstance(value, tuple) else value
+
+
+def _planted_slots(spec, axis):
+    capacity, entities = SLOT_LISTS[axis]
+    return getattr(spec.execution, capacity), [e.id for e in getattr(spec.model, entities)]
+
+
+def planted_population(fields=PLANTED_FIELDS, *, bound_on=None):
+    """The planted per-slot kind: `fields` {field: (layout or control, entity axis, role)}, with
+    their roles and axes declared, every value given slot by slot in its model block ({field: {slot:
+    value}}, a control's value a schedule [[time, value], ...]). `bound_on` {field: axis} binds a
+    field along another axis than it declares (a planted shape). No state, rates or moves."""
+    bound_on = bound_on or {}
+    layout = tuple(k for k, (what, _, _) in fields.items() if what == "layout")
+    control = tuple(k for k, (what, _, _) in fields.items() if what == "control")
+
+    def initial(spec, declaration, entries):
+        values, out = dict(declaration), {}
+        for name in layout:
+            _, ids = _planted_slots(spec, fields[name][1])  # The declared axis's slots ...
+            size, _ = _planted_slots(spec, bound_on.get(name, fields[name][1]))  # ... bound here.
+            structural = fields[name][2].role == "structural"
+            out[name] = np.zeros(size, dtype=np.int64 if structural else float)
+            for slot, value in values.get(name, ()):
+                out[name][ids.index(slot)] = value
+        return {}, out
+
+    def control_values(spec, declaration, times):
+        values, out = dict(declaration), {}
+        for name in control:
+            size, ids = _planted_slots(spec, fields[name][1])
+            out[name] = np.zeros((len(times), size))
+            for slot, schedule in values.get(name, ()):
+                for start, value in schedule:  # Piecewise constant, each point from its time on.
+                    out[name][np.asarray(times) >= start, ids.index(slot)] = value
+        return out
+
+    return Kind(
+        kind_id=PLANTED_ID,
+        model_key=PLANTED_KEY,
+        layout_fields=layout,
+        control_fields=control,
+        parse=lambda entries, base: tuple(
+            (name, tuple((slot, _freeze(v)) for slot, v in sorted(values.items())))
+            for name, values in sorted(entries.items())
+        ),
+        to_dict=lambda declaration: {
+            name: {slot: _thaw(v) for slot, v in values} for name, values in declaration
+        },
+        structure_entry=lambda declaration: (),
+        initial=initial,
+        control_values=control_values,
+        partition_roles=MappingProxyType({k: role for k, (_, _, role) in fields.items()}),
+        field_axes=MappingProxyType({k: (axis,) for k, (_, axis, _) in fields.items()}),
+    )
+
+
+CAPACITY, KM, UNITS = 0.3, 0.2, 6.0  # The parent's planted values.
+
+
+def planted_world(**changes):
+    """(raw, its division block): the asymmetric division world with the planted kind's values
+    following every role: the capacity and each population's units split by the patch's fraction
+    (the anchor rule), the Michaelis constant and the availability (a control, held 1 from t = 0)
+    equal, and the law as declared, different at each daughter. changes: {field: {slot: value}}."""
+    raw = pfx.divided(f=0.75, area_fraction=0.6, carriers={"Na": 0.5, "K": 0.5})
+    block = next(o for o in raw["model"]["operators"] if o["law"] == partition.LAW_ID)
+    (division,) = block["divisions"]
+    (patch,) = division["patches"]
+    a, (one, two) = patch["fraction"], patch["daughters"]
+    slots = (patch["parent"], one, two)
+    values = dict(
+        planted_capacity_fmol_s=dict(
+            zip(slots, (CAPACITY, *partition.split(CAPACITY, a)), strict=True)
+        ),
+        planted_km_mM=dict.fromkeys(slots, KM),
+        planted_law=dict(zip(slots, (2, 3, 4), strict=True)),
+        planted_availability={slot: [[0.0, 1.0]] for slot in slots},
+        planted_units={},
+    )
+    for population in division["populations"]:
+        rows = (population["parent"], *population["daughters"])
+        values["planted_units"].update(zip(rows, (UNITS, *partition.split(UNITS, a)), strict=True))
+    for name, update in changes.items():
+        values[name] = {**values.get(name, {}), **update}
+    raw["model"][PLANTED_KEY] = values
+    return raw, division
+
+
+@pytest.fixture
+def planted(monkeypatch):
+    """parse(raw, fields=PLANTED_FIELDS, bound_on=None) -> spec, under the accepted bypass (Q7 (a)
+    refuses a per-entity kind beside a closer at the structure) and a registry with the planted
+    kind; and the registry's scope, for binding the parsed spec."""
+    monkeypatch.setattr(
+        pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
+    )
+
+    def parse(raw, fields=PLANTED_FIELDS, bound_on=None):
+        with kind_registry.scope(kf.registry(planted_population(fields, bound_on=bound_on))):
+            return parse_spec(raw)
+
+    return parse
+
+
+def roles_of(**changes):
+    """PLANTED_FIELDS with the named fields' roles changed ({field: PartitionRole})."""
+    return {
+        k: (what, axis, changes.get(k, role)) for k, (what, axis, role) in PLANTED_FIELDS.items()
+    }
+
+
+def test_declared_fields_that_follow_their_roles_are_admitted(planted):
+    """The admitted world, not vacuously: the check compares the four non-structural fields, which
+    the bound layout and controls hold at the daughters as planted (the anchor rule's shares by the
+    patch's fraction 0.6, not by f 0.75), and the structural law differs at each daughter."""
+    raw, division = planted_world()
+    spec = planted(raw)
+    with kind_registry.scope(kf.registry(planted_population())):
+        model = get_model(spec.model)
+        checked = partition.kind_role_fields(model)
+        _, p = model.initial_values(spec)
+    fields = {(name, role.role, axis, what) for _, name, role, axis, what in checked}
+    assert fields == {
+        (name, role.role, axis, what) for name, (what, axis, role) in PLANTED_FIELDS.items()
+    }
+    ids = [m.id for m in spec.model.membranes]
+    (patch,) = division["patches"]
+    held = [p.planted_capacity_fmol_s[ids.index(s)] for s in (patch["parent"], *patch["daughters"])]
+    assert held[1:] == list(partition.split(CAPACITY, 0.6)) and held[1] + held[2] == CAPACITY
+    assert held[1] != 0.75 * CAPACITY
+    assert sorted(p.planted_law[: len(ids)]) == [2, 3, 4]
+
+
+def test_an_extensive_field_off_the_anchor_rule_by_one_ulp_is_refused(planted):
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    one = raw["model"][PLANTED_KEY]["planted_capacity_fmol_s"][patch["daughters"][0]]
+    raw["model"][PLANTED_KEY]["planted_capacity_fmol_s"][patch["daughters"][0]] = np.nextafter(
+        one, np.inf
+    )
+    with pytest.raises(ConfigError, match="planted_capacity_fmol_s is extensive, so its values at"):
+        planted(raw)
+
+
+def test_a_population_takes_its_patchs_fraction(planted):
+    """Planted: a population's units split by the volume fraction f 0.75, not by its patch's 0.6."""
+    raw, division = planted_world()
+    population = division["populations"][0]
+    shares = dict(zip(population["daughters"], partition.split(UNITS, 0.75), strict=True))
+    raw["model"][PLANTED_KEY]["planted_units"].update(shares)
+    with pytest.raises(ConfigError, match="planted_units is extensive"):
+        planted(raw)
+
+
+def test_an_intensive_field_that_differs_at_a_daughter_is_refused(planted):
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    raw["model"][PLANTED_KEY]["planted_km_mM"][patch["daughters"][1]] = 0.25
+    with pytest.raises(ConfigError, match="planted_km_mM is intensive, so its values at"):
+        planted(raw)
+
+
+def test_a_structural_field_is_as_declared_until_it_is_declared_intensive(planted):
+    """Structural: as declared (law, host, orientation), as the run-time split keeps it, so the
+    admitted world's laws differ at each daughter. Planted: the same definition with the law
+    declared intensive is refused."""
+    raw, _ = planted_world()
+    planted(raw)  # Admitted: 2 at the parent, 3 and 4 at the daughters.
+    with pytest.raises(ConfigError, match="planted_law is intensive"):
+        planted(raw, roles_of(planted_law=PartitionRole("intensive")))
+
+
+def test_a_layout_field_declared_history_is_refused(planted):
+    """Planted: a layout field declared history; it accumulates nothing for a record to keep."""
+    raw, _ = planted_world()
+    with pytest.raises(ConfigError, match="planted_km_mM on membrane_slot, declared history"):
+        planted(raw, roles_of(planted_km_mM=PartitionRole("history")))
+
+
+def test_a_control_is_checked_at_every_change_record(planted):
+    """Planted: a daughter's availability, equal at t = 0, drops at a later change record. A kind's
+    controls are evaluated at the inner model's change records and held between them, so the test
+    adds one at t = 1 ms, a neutral point of a patch's own schedule (the same availability)."""
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    later = pfx.DT
+    control = next(
+        c for c in raw["experiment"]["membrane_controls"] if c["membrane_id"] == "membrane_0"
+    )
+    control["schedule"].append(
+        dict(time=later, availability=control["schedule"][-1]["availability"])
+    )
+    planted(raw)  # Admitted: the record changes nothing.
+    raw["model"][PLANTED_KEY]["planted_availability"][patch["daughters"][0]] = [
+        [0.0, 1.0],
+        [later, 0.5],
+    ]
+    with pytest.raises(ConfigError, match=f"planted_availability is intensive.*at t = {later!r}"):
+        planted(raw)
+
+
+def test_extensive_fields_per_cell_or_per_contact_are_refused(planted):
+    """Planted: an extensive layout field per cell (ruling 7 (c): until a charge rule exists) and
+    one per contact (the partition binds no contact fraction), each refused before any binding."""
+    raw, division = planted_world()
+    for axis, words in (
+        ("cell_slot", "a per-cell extensive kind field is refused"),
+        ("edge_slot", "binds no contact fraction"),
+    ):
+        fields = dict(PLANTED_FIELDS, planted_extent=("layout", axis, PartitionRole("extensive")))
+        refused = f"planted_extent on {axis}, declared extensive.*{words}"
+        with pytest.raises(ConfigError, match=refused):
+            planted(raw, fields)
+
+
+def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
+    """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
+    the patches' 3); read along the patches' maps it would be compared at the wrong slots."""
+    raw, _ = planted_world()
+    with pytest.raises(ConfigError, match=r"planted_km_mM binds shape \(6,\)"):
+        planted(raw, bound_on={"planted_km_mM": "channel_slot"})
+
+
+def test_nothing_is_bound_without_a_field_to_compare(planted, monkeypatch):
+    """A kind on shared axes only (admitted beside closers today) gives no field, and a structural
+    field alone is compared with nothing, so neither binds the definition again."""
+    with kind_registry.scope(kf.registry(shared_carrier())):
+        inner = get_model(composite(kf.declare_carrier(world(), species="K")).model).inner
+        assert partition.kind_role_fields(type("Model", (), {"inner": inner})) == ()
+    raw, _ = planted_world()
+    for name in list(raw["model"][PLANTED_KEY]):
+        if name != "planted_law":
+            del raw["model"][PLANTED_KEY][name]
+    law = {"planted_law": PLANTED_FIELDS["planted_law"]}
+    spec = planted(raw, law)
+    with kind_registry.scope(kf.registry(planted_population(law))):
+        model = get_model(spec.model)
+        assert [f[1] for f in partition.kind_role_fields(model)] == ["planted_law"]
+        monkeypatch.setattr(type(model), "initial_values", lambda *a, **k: pytest.fail("bound"))
+        op, declaration, schedule = next(
+            e for e in composite_spec.entries(spec) if e[0].LAW_ID == partition.LAW_ID
+        )
+        partition.check_kind_roles(spec, declaration, model)

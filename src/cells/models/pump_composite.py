@@ -785,9 +785,12 @@ def lifecycle_fields(table):
 
 def lifecycle_errors(inner, operators):
     """The refusals of a retiring operator beside the kinds' lifecycle fields (the lead's rulings
-    1 and 7 of 19 November 2026 on design statement 1): one whose event map takes no lifecycle=
-    (TAKES_LIFECYCLE) would lose the kinds' history; and a per-cell extensive kind field, which a
-    division would split by the volume fraction alone, waits for a charge rule (fails closed)."""
+    1 and 7 of 19 November 2026 on design statement 1, CORE_SEAMS §18 at 02:25 UTC): one whose
+    event map takes no lifecycle= (TAKES_LIFECYCLE) would lose the kinds' history; a per-cell
+    extensive kind field, which a division would split by the volume fraction alone, waits for a
+    charge rule; and an extensive kind field on edge slots has no contact fraction to split by
+    (the partition binds none), so it is refused here rather than when the event is traced (fails
+    closed)."""
     table = kind_lifecycle_table(inner, operators)
     if not table:
         return []
@@ -807,6 +810,16 @@ def lifecycle_errors(inner, operators):
         errors.append(
             f"The kinds' per-cell extensive fields {cells} are refused beside a dividing closer "
             "until a charge rule exists: a division splits them by the volume fraction alone"
+        )
+    edges = sorted(
+        k
+        for k, (role, axes) in table.items()
+        if role.role == "extensive" and axes[-1] == "edge_slot"
+    )
+    if edges:
+        errors.append(
+            f"The kinds' extensive fields on edge slots {edges} are refused beside a dividing "
+            "closer: the partition binds no contact fraction to split them by"
         )
     return errors
 

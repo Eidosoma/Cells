@@ -47,7 +47,10 @@ contacts (a bridge between two daughters is not a contact to map); a daughter's 
 or contact that no map makes (a contact may be another division's target or a bridge); inexact
 anchors; a slot that is
 the parent or the daughter of two divisions; a division of an unborn parent; injection current
-into a slot outside its living interval.
+into a slot outside its living interval; a kind's layout or control field on a divided slot axis
+whose daughters' declared values do not follow its role (check_kind_roles: extensive by the anchor
+rule, intensive equal, structural as declared; history, and extensive per cell or per contact,
+refused).
 
 Lineage (§6): carriers are declared per event and slots are storage. The summary rebuilds the
 records from the declaration, the schedule and the final division_applied.
@@ -517,13 +520,129 @@ def living_interval(declaration, schedule, cell):
     return birth, retirement
 
 
+# ------------------------------------------------------------------ the kinds' fields by role
+# B1's last slice, step C (CORE_SEAMS §18, the lead's ruling 2 of 19 November 2026 on design
+# statement 1). A kind's layout and control fields are never moved at run time, so on the slot axes
+# a division maps, the daughters' declared values must already be what the division makes of the
+# parent's, by role, as check_structure holds @3's anchors. The run-time lifecycle moves the kinds'
+# state fields (pump_composite_adapter.lifecycle_split and lifecycle_retire).
+
+KIND_SLOTS = dict(  # Each divided slot axis: its entity list, its capacity, its rows' divisions.
+    cell_slot=("cells", "capacity", None),
+    membrane_slot=("membranes", "membrane_capacity", "partition_patch_division"),
+    channel_slot=("channels", "channel_capacity", "partition_channel_division"),
+    edge_slot=("junctions", "edge_capacity", "partition_contact_division"),
+)
+
+
+def kind_role_fields(model):
+    """((bound kind, field, PartitionRole, entity axis, "layout" | "control"), ...): the bound
+    kinds' layout and control fields whose entity axis (their last: adapter.lifecycle_axis, which
+    refuses any other) is one a division maps (adapter.LIFECYCLE_AXES), of every kind whose fields
+    all declare roles and axes. The structure check refuses the others beside a closer
+    (pump_composite_adapter.kind_lifecycle_errors)."""
+    out = []
+    for kind in getattr(model.inner, "BOUND_KINDS", ()):
+        reason = adapter.kind_lifecycle_errors(kind)
+        if reason and reason[0] in ("roles", "axes"):
+            continue
+        table = adapter.kind_role_table(kind)
+        for what, names in (("layout", kind.layout_fields), ("control", kind.control_fields)):
+            for name in names:
+                role, axes = table[name]
+                axis = adapter.lifecycle_axis(name, axes)
+                if axis in adapter.LIFECYCLE_AXES:
+                    out.append((kind, name, role, axis, what))
+    return tuple(out)
+
+
+def check_kind_roles(spec, declaration, model):
+    """The kinds' layout and control fields on the divided slot axes, by role, at every declared
+    division (the section comment above):
+    - extensive: the anchor rule's split by the map's fraction, the run-time lifecycle's
+      (division_maps: a patch's own, a population its patch's), so daughter 1 holds fl(a x) and
+      daughter 2 fl(x - fl(a x)), summing to x exactly. Refused on cell slots until a charge rule
+      exists (ruling 7 (c)) and on edge slots, whose fraction the partition does not bind
+      (CORE_SEAMS §18 at 02:25 UTC, 19 November 2026);
+    - intensive: the parent's value at both daughters;
+    - structural: as declared (a law, host or orientation): the run-time split keeps the
+      daughters' declared values, and @3's own hosts differ from their parent's, so none is
+      compared;
+    - history: refused, since a layout or control field accumulates nothing for a retirement's
+      record to keep.
+    A control is checked at every change record. A value whose last axis is not its slot axis's
+    capacity is refused (fail-closed: it would be read along another axis). Without a field to
+    compare nothing is bound, so no world admitted today makes a new call."""
+    fields = kind_role_fields(model)
+    for kind, name, role, axis, what in fields:
+        where = f"the kind {kind.kind_id}'s {what} field {name} on {axis}, declared {role.role}"
+        if role.role == "history":
+            raise ConfigError(
+                f"A partition cannot run beside {where}: a {what} field accumulates nothing for a "
+                "retirement's record to keep (fails closed)"
+            )
+        if role.role == "extensive" and axis == "cell_slot":
+            raise ConfigError(
+                f"A partition cannot run beside {where}: a per-cell extensive kind field is "
+                "refused beside a dividing closer until a charge rule exists"
+            )
+        if role.role == "extensive" and axis == "edge_slot":
+            raise ConfigError(
+                f"A partition cannot run beside {where}: the partition binds no contact fraction "
+                "to split it by"
+            )
+    compared = [f for f in fields if f[2].role in ("extensive", "intensive")]
+    if not compared:
+        return
+    m, execution = spec.model, spec.execution
+    _, p = model.initial_values(spec)
+    maps = division_maps(np.ones(len(declaration.divisions), dtype=bool), p)
+    clock = [c.time for c in spec.experiment.changes]
+    controls = None
+    if any(what == "control" for *_, what in compared):
+        controls = composite_spec.control_values(spec, clock)
+    for kind, name, role, axis, what in compared:
+        value = np.asarray(getattr(p if what == "layout" else controls, name))
+        entities, capacity, divisions = KIND_SLOTS[axis]
+        size = getattr(execution, capacity)
+        if value.ndim == 0 or value.shape[-1] != size:
+            raise ConfigError(
+                f"The kind {kind.kind_id}'s {what} field {name} binds shape {value.shape}, whose "
+                f"last axis is not {axis}'s {size} slots"
+            )
+        parent, kids, fraction, _ = maps[axis]
+        x = value[..., parent]
+        one, two = value[..., kids[:, 0]], value[..., kids[:, 1]]
+        if role.role == "extensive":
+            first = fraction * x
+            ok = (one == first) & (two == x - first) & (one + two == x)
+            rule = "the anchor rule's split of its value (fl(a x), fl(x - fl(a x)), summing to x)"
+        else:
+            ok = (one == x) & (two == x)
+            rule = "its value"
+        if ok.all():
+            continue
+        index = tuple(int(i) for i in np.argwhere(~ok)[0])
+        row = index[-1]
+        d = declaration.divisions[row if divisions is None else int(getattr(p, divisions)[row])]
+        ids = [e.id for e in getattr(m, entities)]
+        when = f" at the change record at t = {clock[index[0]]!r}" if what == "control" else ""
+        raise ConfigError(
+            f"Division {d.id}: the kind {kind.kind_id}'s {what} field {name} is {role.role}, so "
+            f"its values at {ids[kids[row, 0]]} and {ids[kids[row, 1]]} must be {rule} at "
+            f"{ids[parent[row]]}{when}"
+        )
+
+
 def check_definition(spec, declaration, schedule, model):
-    """Composition refusals, a daughter's unmapped patches, and activity outside a slot's living
-    interval (module docstring)."""
+    """Composition refusals, the kinds' layout and control fields by role (check_kind_roles), a
+    daughter's unmapped patches, and activity outside a slot's living interval (module
+    docstring)."""
     for op in model.operators:
         for law, reason in REFUSED_LAWS.items():
             if op.LAW_ID.startswith(law):
                 raise ConfigError(f"A partition cannot run with {op.LAW_ID}: {reason}")
+    check_kind_roles(spec, declaration, model)
     onsets = {}
     for op, op_declaration, op_schedule in composite_spec.entries(spec):
         onsets |= op.onset_patches(spec, op_declaration, op_schedule)
