@@ -904,6 +904,13 @@ def test_a_conflicting_merge_refuses_the_stack_with_its_paths(stack):
     code, calls, out, doc = run_stack(stack, [{"name": "x1", "rev": one}, {"name": "x2", "rev": two}])
     assert code == 2 and doc["verdict"] == "not run" and doc["conflicts"] == ["docs/same.md"]
     assert calls == [] and not (out / "tree").exists()
+    resolution = stack["tmp"] / "same.md"  # The lead's resolution, given for the conflicting path.
+    resolution.write_text("one and two\n")
+    trials = steps.stack_build({"main": "main", "n": 2, "heads": [
+        {"name": "x1", "rev": one}, {"name": "x2", "rev": two, "resolve": {
+            "docs/same.md": str(resolution)}}]}, stack["repo"], stack["tmp"] / "tree", "OUT", "python3")
+    assert trials["ok"] and trials["trials"][1]["resolved"] == {"docs/same.md": str(resolution)}
+    assert git(stack["repo"], "show", f"{trials['top']}:docs/same.md") == "one and two"
 
 
 @pytest.mark.parametrize("heads, words", [

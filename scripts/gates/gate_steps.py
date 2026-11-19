@@ -604,6 +604,8 @@ def stack_plan(doc, out):
         for key in ("additions_from", "measured", "removed_ok"):
             if not isinstance(h.get(key, []), list):
                 problems.append(f"{h.get('name')}: {key} must be a list")
+        if not isinstance(h.get("resolve", {}), dict):
+            problems.append(f"{h.get('name')}: resolve must map a path to a revision or a file")
         measured = h.get("measured", []) if isinstance(h.get("measured", []), list) else []
         for f in measured + ([h["removed_ok_file"]] if h.get("removed_ok_file") else []):
             if not Path(f).is_file():
@@ -635,9 +637,10 @@ def stack_build(plan, repo, tree, out, python):
     """The trial merges main + H1, then + H2, then + H3, in a detached worktree at TREE, as the
     lead lands them: merge without committing, take the previous trial's tier record, fold the
     head's measured rows with the trial's own scripts/test_tiers.py, and commit with the head's
-    message and the stack gate's line. A head may name its own merge commit ("merge"), a
-    resolution made by hand, whose parents must be the previous trial and the head. A conflict
-    refuses the stack and lists its paths. Returns the trials document."""
+    message and the stack gate's line. A conflict refuses the stack and lists its paths, unless
+    the head's "resolve" maps every conflicting path to a revision or an absolute file holding the
+    lead's resolution. A head may instead name its own merge commit ("merge"), whose parents must
+    be the previous trial and the head. Returns the trials document."""
     import subprocess
 
     main = _git(repo, "rev-parse", "--verify", plan["main"] + "^{commit}").stdout.strip()
@@ -657,10 +660,20 @@ def stack_build(plan, repo, tree, out, python):
         else:
             done = _git(tree, "merge", "--no-ff", "--no-commit", rev, check=False)
             if done.returncode != 0:
-                conflicts = _git(tree, "diff", "--name-only", "--diff-filter=U", check=False)
-                _git(tree, "merge", "--abort", check=False)
-                return dict(ok=False, trials=trials, refused=f"{head['name']}: the merge onto the "
-                            f"previous trial conflicts", conflicts=conflicts.stdout.split())
+                conflicts = _git(tree, "diff", "--name-only", "--diff-filter=U", check=False).stdout.split()
+                resolve = head.get("resolve", {})
+                if not conflicts or any(c not in resolve for c in conflicts):
+                    _git(tree, "merge", "--abort", check=False)
+                    return dict(ok=False, trials=trials, refused=f"{head['name']}: the merge onto the "
+                                f"previous trial conflicts", conflicts=[
+                                    c for c in conflicts if c not in resolve] or [done.stderr[-300:]])
+                for path in conflicts:  # The lead's resolution: a file, or the path at a revision.
+                    if Path(resolve[path]).is_absolute():
+                        Path(tree, path).write_bytes(Path(resolve[path]).read_bytes())
+                    else:
+                        _git(tree, "checkout", resolve[path], "--", path)
+                    _git(tree, "add", "--", path)
+                row["resolved"] = {c: resolve[c] for c in conflicts}
             _git(tree, "checkout", prev, "--", "tests/test_tiers.json")
             if head.get("measured"):
                 fold = subprocess.run([python, "-B", "scripts/test_tiers.py", "fold", "--record",
