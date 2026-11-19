@@ -1,5 +1,18 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Hill activation and inhibition
+
+The optional `grn-lean` check recompiled the original scalar monotonicity proofs and both Cells specializations on Lean 4.19.0. The axiom reports contain only `propext`, `Classical.choice` and `Quot.sound`. On the engine's 6 × 5 × 9 grid of half-saturations, exponents and concentrations, the compiled CPU factors were compared with the upstream formula evaluated at 65-digit precision using the exact binary inputs. All three engine Hill tests also passed, including the reaction-rate comparison in `resolved_pump_composite@1`. [Proof and upstream pin](checks/hill/check.sh) · [Numerical driver](checks/hill/compare.py) · [Reaction operator comparison](../tests/unit/test_hill_factors.py) · [Chemistry library assessment](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
+
+```json
+{
+  "engine_revision": "6d74998581eab13d45327bc4801b463d0fb7a6f7",
+  "grn_revision": "070ba8da6a09bdc4b0550396c61611668768bc0b",
+  "backend": "cpu", "dtype": "float64", "cases": 540, "atol": 8.881784197001252e-16,
+  "max_abs_error": {"hill_activation": 4.440892098500626e-16, "hill_inhibition": 4.718447854656915e-16}
+}
+```
+
 ## 19 November 2026 · Voltage-gated junction conductance
 
 At a fixed junction voltage the law has one equilibrium conductance and one relaxation time. Lean proves that increasing voltage magnitude lowers the equilibrium when the residual fraction is below one. Starting anywhere in the allowed interval preserves its bounds. Reversing voltage polarity preserves the clamped trajectory, and splitting a constant-voltage interval preserves its final conductance. For three equally spaced samples of the deviation from equilibrium, the middle sample squared equals the product of its neighbors. Two exponential decays with positive amplitudes and distinct rates give a strict inequality instead. [Proof](CellsProofs/Transport/JunctionGate.lean) · [Rate equation and clamp update](../src/cells/laws/junctions/junction_voltage_relaxation.py#L41)

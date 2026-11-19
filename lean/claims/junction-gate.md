@@ -1,0 +1,46 @@
+<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->
+
+# Junction conductance relaxes toward a voltage-dependent target
+
+At fixed voltage the intrinsic gate approaches its target with one exponential time constant and stays between its residual conductance fraction and one. Increasing voltage magnitude lowers the target if the residual fraction is below one. Reversing polarity preserves the trajectory from the same initial state.
+
+## Assumptions
+
+- The junction has one intrinsic conductance state, the declared opening and closing rates, and a fixed threshold. Elapsed time is nonnegative and the initial conductance lies between the residual fraction and one.
+- The tissue applies an external availability multiplier to transport. The intrinsic gate keeps evolving during a block. The time-course identity assumes constant junction voltage throughout the interval.
+
+## Lean proof
+
+**Proved**
+
+- [CellsProofs.Transport.JunctionGate.target_bounds](../CellsProofs/Transport/JunctionGate.lean#L30)
+- [CellsProofs.Transport.JunctionGate.target_decreases](../CellsProofs/Transport/JunctionGate.lean#L40)
+- [CellsProofs.Transport.JunctionGate.rhs_eq_relaxation](../CellsProofs/Transport/JunctionGate.lean#L55)
+- [CellsProofs.Transport.JunctionGate.clamp_residual](../CellsProofs/Transport/JunctionGate.lean#L62)
+- [CellsProofs.Transport.JunctionGate.clamp_bounds](../CellsProofs/Transport/JunctionGate.lean#L81)
+- [CellsProofs.Transport.JunctionGate.clamp_add](../CellsProofs/Transport/JunctionGate.lean#L93)
+- [CellsProofs.Transport.JunctionGate.clamp_polarity](../CellsProofs/Transport/JunctionGate.lean#L98)
+- [CellsProofs.Transport.JunctionGate.single_decay_samples](../CellsProofs/Transport/JunctionGate.lean#L68)
+- [CellsProofs.Transport.JunctionGate.two_decay_samples](../CellsProofs/Transport/JunctionGate.lean#L76)
+
+Direct proof subject `cells.junction_voltage_relaxation@1`
+
+## Numerical comparison
+
+**Checked.** Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol.
+
+**Engine** `resolved_pump_tissue@3`, `junction_voltage_relaxation@1`
+
+[Voltage dependence and constant-voltage update](https://github.com/Eidosoma/Cells/blob/6d74998581eab13d45327bc4801b463d0fb7a6f7/src/cells/laws/junctions/junction_voltage_relaxation.py#L41) · [Tissue transport opening](https://github.com/Eidosoma/Cells/blob/6d74998581eab13d45327bc4801b463d0fb7a6f7/src/cells/models/surface_pump_v3.py#L733) · [Intrinsic gate rate in the tissue](https://github.com/Eidosoma/Cells/blob/6d74998581eab13d45327bc4801b463d0fb7a6f7/src/cells/models/surface_pump_v3.py#L779) · [Independent voltage-clamp protocol](https://github.com/Eidosoma/Cells/blob/6d74998581eab13d45327bc4801b463d0fb7a6f7/validation/betse/junction_gate/protocol.json) · [Independent rate calculation in mV and ms](https://github.com/Eidosoma/Cells/blob/6d74998581eab13d45327bc4801b463d0fb7a6f7/validation/betse/junction_gate/reference.py#L9) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/394a9294379f7636b7f75993fee850363c04bd26/lean/checks/junction_gate.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/394a9294379f7636b7f75993fee850363c04bd26/lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance)
+
+[Tested engine 6d74998581ea](https://github.com/Eidosoma/Cells/commit/6d74998581eab13d45327bc4801b463d0fb7a6f7) · [Evidence checkpoint 394a9294379f](https://github.com/Eidosoma/Cells/commit/394a9294379f7636b7f75993fee850363c04bd26)
+
+## Biological evidence
+
+**Open.** Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.
+
+Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/)
+
+**Unit** dimensionless normalized conductance and ms
+
+[Claim index](../README.md#proof-index) · [Editable register](../claims.json)
