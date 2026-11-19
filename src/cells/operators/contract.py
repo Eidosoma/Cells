@@ -107,6 +107,11 @@ Declarations (class attributes):
     record back, and the composite runs its ledger and dissipation checks on that adjusted
     row, so every inner ledger and every heat element read as if nothing moved (the domain is
     read on the actual row, at the view);
+  - ``TAKES_LIFECYCLE``: a retiring event map that takes ``lifecycle=``, the composite's
+    callable for the kinds' state fields by role (pump_composite_adapter.lifecycle_split and
+    lifecycle_retire), and calls it with its maps and retirement masks at every division.
+    Beside a kind with fields on its slot axes, a retiring operator without it is refused
+    (fails closed: the kinds' history would be lost);
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
 * Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
@@ -300,6 +305,7 @@ class Operator:
     # Topology (module docstring).
     CLOSES = ()
     RETIRES = False
+    TAKES_LIFECYCLE = False  # Its event map takes lifecycle= (module docstring).
     # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
     # field solve): the composite passes the inner implementation object as `inner=` to its
     # event, half_step and rates calls and to initial_values (static), and host methods reach
@@ -754,6 +760,10 @@ def check_declarations(operator):
         raise ValueError(f"{name}: a mask is closed or provided, not both")
     if operator.RETIRES and not operator.EVENT:
         raise ValueError(f"{name}: retirement happens at events")
+    if not isinstance(operator.TAKES_LIFECYCLE, bool) or (
+        operator.TAKES_LIFECYCLE and not operator.RETIRES
+    ):
+        raise ValueError(f"{name}: TAKES_LIFECYCLE is a bool, true only for a retiring operator")
     if operator.EVENT_REPLACES and not operator.EVENT:
         raise ValueError(f"{name}: replaced fields need an event map")
     for field, accumulators in operator.EVENT_REPLACES.items():
