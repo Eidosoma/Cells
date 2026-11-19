@@ -7,8 +7,6 @@ through the runner and its host checks.
   abundance-weighted availability is F N(t) / (A rho), with N(t) = N0 A(t)/A0 (e = 1).
 - Planted: the same world without the coupling, and without the retrieval, each moves it off.
 
-The compartments admission is the operators owner's; the development shim admits these worlds until
-it is on main (the lead's ruling 12).
 """
 
 import jax
@@ -20,7 +18,6 @@ from cells.definitions.specs import parse_spec
 from cells.execution.runner import run
 from cells.operators import membrane_state
 from cells.registry.models import get_model
-from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from validation.tissue import membrane_trafficking_fixtures as fx
 from validation.tissue import regulated_availability_fixtures as rafx
 
@@ -31,15 +28,6 @@ TIMES = [0.0, 0.001, 0.002, 0.003, END]
 @pytest.fixture(scope="module", autouse=True)
 def x64():
     jax.config.update("jax_enable_x64", True)
-
-
-@pytest.fixture(scope="module", autouse=True)
-def admitted():
-    """FR-2 DEVELOPMENT SHIM (the lead's ruling 12): removed before the first gate. Once for the
-    module, so a run and its restart share one composition (the shim clears the composite's cache,
-    and a checkpoint's state type is its composition's)."""
-    with shim.admission():
-        yield
 
 
 # ------------------------------------------------------------------ T8: a composed world

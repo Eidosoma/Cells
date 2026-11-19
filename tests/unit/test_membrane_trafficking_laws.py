@@ -25,8 +25,6 @@ error it catches. These are development checks; the judged references are the re
     electrical part fails @3's reservoir-work ledger.
   - Planted: a merge heat booked with the wrong sign fails the dissipation check.
 
-The compartments admission is the operators owner's; the development shim admits these worlds until
-it is on main (the lead's ruling 12).
 """
 
 from decimal import Decimal, localcontext
@@ -43,7 +41,6 @@ from cells.models import surface_pump
 from cells.operators import membrane_state
 from cells.operators import membrane_trafficking as trafficking
 from cells.registry.models import get_model
-from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from tests.unit.test_membrane_trafficking import control, history, operator
 from validation.tissue import membrane_trafficking_fixtures as fx
 
@@ -53,13 +50,6 @@ H = fx.DT / 2
 @pytest.fixture(scope="module", autouse=True)
 def x64():
     jax.config.update("jax_enable_x64", True)
-
-
-@pytest.fixture(autouse=True)
-def admitted():
-    """FR-2 DEVELOPMENT SHIM (the lead's ruling 12): removed before the first gate."""
-    with shim.admission():
-        yield
 
 
 def world(*, plasma="membrane_0", bath_V=0.02, cleft=False, **changes):

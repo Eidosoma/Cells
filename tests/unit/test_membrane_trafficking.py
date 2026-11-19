@@ -18,9 +18,6 @@ planted error it catches.
   Planted: a unit dropped from the record breaks the conserved total and the host checks refuse
   the history.
 
-The compartments admission is the operators owner's (FR-2's design statement 1, §7.1). Until it
-is on main, the development shim admits these worlds (the lead's ruling 12), and
-test_the_development_shim_is_gone fails.
 """
 
 from pathlib import Path
@@ -40,7 +37,6 @@ from cells.registry import kind_registry
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
-from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from validation.tissue import membrane_trafficking_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
 
@@ -51,16 +47,6 @@ H = fx.DT / 2
 @pytest.fixture(scope="module", autouse=True)
 def x64():
     jax.config.update("jax_enable_x64", True)
-
-
-@pytest.fixture(autouse=True)
-def admitted(request):
-    """FR-2 DEVELOPMENT SHIM (the lead's ruling 12): removed before the first gate."""
-    if request.node.name == "test_the_development_shim_is_gone":
-        yield
-        return
-    with shim.admission():
-        yield
 
 
 def bind(raw):
@@ -85,16 +71,19 @@ def route_block(raw):
     return next(op for op in raw["model"]["operators"] if op["law"] == LAW)
 
 
-# ------------------------------------------------------------------ the shim's guard
+# ------------------------------------------------------------------ the admission
 
 
-def test_the_development_shim_is_gone():
-    """The lead's ruling 12: the shim never reaches a gate. This fails while its file exists or
-    while the compartments' declaration lacks the admission it stands in for."""
+def test_the_compartments_admit_trafficking_and_read_the_areas_as_references():
+    """The compartments admission (D217): membrane state and this operator on its admitted list,
+    the areas and capacitances read as references, never as declared; and no development shim."""
+    assert {compartments.STATE_LAW, trafficking.LAW_ID} <= set(compartments.ADMITTED)
+    assert compartments.TRAFFICKING_LAW == trafficking.LAW_ID
+    for name in ("membrane_area", "membrane_capacitance"):
+        assert name not in compartments.CellOwnedCompartments.CONFLICTS_VIEW, name
+        assert compartments.CellOwnedCompartments.SCOPED_READS[name].mode == "reference", name
     root = Path(__file__).resolve().parents[2]
-    assert not (root / "tests" / "membrane_trafficking_development_shim.py").exists(), (
-        "the FR-2 development shim is still here: remove it before gating"
-    )
+    assert not (root / "tests" / "membrane_trafficking_development_shim.py").exists()
     assert {"membrane_entity_state@1", LAW} <= set(compartments.ADMITTED)
     assert not {"membrane_area", "membrane_capacitance"} & set(
         compartments.CellOwnedCompartments.CONFLICTS_VIEW

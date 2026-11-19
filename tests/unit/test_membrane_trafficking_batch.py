@@ -3,8 +3,6 @@ cycle worlds (retrieval at 0.05, 0.1 and 0.15 of the plasma area per ms) is bitw
 same worlds in reversed order, and reproduces each world's own run to 1e-12 of each field's scale;
 the carriers' work, whose terms cancel, to 1e-14 of its terms' accumulated magnitude.
 
-The compartments admission is the operators owner's; the development shim admits these worlds until
-it is on main (the lead's ruling 12).
 """
 
 import jax
@@ -16,7 +14,6 @@ from cells.execution.batch import BatchSpec, WorldSpec
 from cells.execution.runner import run
 from cells.execution.vector_windows import run_vector_windowed
 from cells.execution.windows import WindowPolicy
-from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from validation.tissue import composite_guard as guard
 from validation.tissue import membrane_trafficking_fixtures as fx
 
@@ -24,15 +21,6 @@ from validation.tissue import membrane_trafficking_fixtures as fx
 @pytest.fixture(scope="module", autouse=True)
 def x64():
     jax.config.update("jax_enable_x64", True)
-
-
-@pytest.fixture(scope="module", autouse=True)
-def admitted():
-    """FR-2 DEVELOPMENT SHIM (the lead's ruling 12): removed before the first gate. Once for the
-    module, so a run and its restart share one composition (the shim clears the composite's cache,
-    and a checkpoint's state type is its composition's)."""
-    with shim.admission():
-        yield
 
 
 def vector_batch(specs):

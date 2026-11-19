@@ -182,6 +182,81 @@
    "entity_sum(row.insertion_energy_magnitude_pJ, axis=None, xp=xp)"
   ],
   [
+   "operators/membrane_trafficking.py",
+   "_per_route",
+   "entity_sum(by_node, axis=1, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "ledger_terms",
+   "entity_sum(row.trafficking_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "ledger_terms",
+   "entity_sum(row.trafficking_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(carriers, axis=1, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(row.trafficking_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(row.trafficking_image_charge_C, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "magnitude_terms",
+   "entity_sum(species_sum(supplied, xp=xp), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "own_ledgers",
+   "entity_sum(record, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(record), axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(contribution, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(first_order, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(moved, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(weight, axis=0, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(xp.abs(electrode_work), axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_trafficking.py",
+   "stage",
+   "entity_sum(xp.abs(reservoir_work), axis=None, xp=xp)"
+  ],
+  [
    "operators/osmotic_water.py",
    "water_energy_rate",
    "entity_sum((e.hydrostatic_pressure_Pa - e.osmotic_pressure_Pa) * rate, axis=None, xp=xp)"

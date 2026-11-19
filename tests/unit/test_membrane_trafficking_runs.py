@@ -11,8 +11,6 @@ T7's batch and T8 have files of their own (_restart, _batch and _sheet), split b
   recycling, at every observation. The heat never falls, and every host check holds. Planted: an
   exponent one part in 10^6 off is refused.
 
-The compartments admission is the operators owner's; the development shim admits these worlds until
-it is on main (the lead's ruling 12).
 """
 
 import jax
@@ -23,7 +21,6 @@ from cells.definitions.specs import parse_spec
 from cells.execution.runner import run
 from cells.operators import membrane_state
 from cells.registry.models import get_model
-from tests import membrane_trafficking_development_shim as shim  # FR-2 DEVELOPMENT SHIM
 from validation.tissue import composite_guard as guard
 from validation.tissue import membrane_trafficking_fixtures as fx
 
@@ -36,17 +33,8 @@ def x64():
     jax.config.update("jax_enable_x64", True)
 
 
-@pytest.fixture(scope="module", autouse=True)
-def admitted():
-    """FR-2 DEVELOPMENT SHIM (the lead's ruling 12): removed before the first gate. Once for the
-    module, so a run and its restart share one composition (the shim clears the composite's cache,
-    and a checkpoint's state type is its composition's)."""
-    with shim.admission():
-        yield
-
-
 @pytest.fixture(scope="module")
-def cycle_run(admitted):
+def cycle_run():
     spec = parse_spec(fx.cycle())
     return spec, run(spec)
 
