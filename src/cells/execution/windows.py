@@ -8,6 +8,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, SimulationSpec, _integer, _number, parse_spec
 from cells.execution import blas_threads, row_checks
+from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
 from cells.execution.grid import EventGrid, checked_grid
 from cells.execution.resources import trace_bytes
@@ -17,6 +18,7 @@ from cells.execution.runner import (
     _WindowExecution,
     takes_steps,
     validate_checkpoint,
+    with_energy_record,
 )
 from cells.execution.state import Checkpoint, initialise
 from cells.registry.models import get_model
@@ -69,8 +71,16 @@ class WindowPlan:
     estimated_working_bytes: int
 
 
-def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
+def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, energy_check=False):
+    """energy_check: the caller is the scalar window path, which runs the step-doubled energy
+    check; a definition selecting it is refused on every other path (the batch and vector
+    windows share this planner), fail-closed."""
     spec = parse_spec(spec.to_dict())
+    if energy.selected(spec) and not energy_check:
+        raise ConfigError(
+            "execution.energy_check runs only through cells.execution.runner.run and the "
+            "scalar windows (refused on this path)"
+        )
     if type(policy) is not WindowPolicy:
         raise ConfigError("Expected a WindowPolicy")
     policy = WindowPolicy(**policy.to_dict())
@@ -98,6 +108,7 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
     # Two adjacent results may overlap in a consuming for-loop. Reserve an
     # additional observation row for continuity and complete restart storage.
     estimate = 2 * trace_bytes(spec, width, peak + 1) + 2 * trace_bytes(spec, 0, 0)
+    estimate += 2 * energy.trace_bytes(spec, width)  # The energy check's own values (0 without it).
     if estimate > spec.execution.max_trace_bytes:
         raise ConfigError("Estimated window working storage exceeds max_trace_bytes")
     return WindowPlan(
@@ -111,19 +122,21 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None):
     )
 
 
-def _validate_window_plan(plan, checkpoint):
+def _validate_window_plan(plan, checkpoint, *, energy_check=False):
     # Validate the complete declared clock, including before a restart. A short
     # or completed suffix must not turn that full-history check into one call
     # per historical step. checked_grid still caps its chunks to the storage
     # budget; this width changes neither the clock nor the execution window.
     checked_grid(plan.spec)
     if checkpoint is not None:
-        validate_checkpoint(plan.spec, checkpoint, plan.grid)
+        validate_checkpoint(plan.spec, checkpoint, plan.grid, energy_check=energy_check)
 
 
 def plan_windows(spec, policy=DEFAULT_POLICY, checkpoint=None):
-    plan = _plan_windows_metadata(spec, policy, checkpoint)
-    _validate_window_plan(plan, checkpoint)
+    plan = _plan_windows_metadata(spec, policy, checkpoint, energy_check=True)
+    if checkpoint is not None:  # A step-doubled run's first row takes its energy record here.
+        checkpoint = with_energy_record(plan.spec, checkpoint)
+    _validate_window_plan(plan, checkpoint, energy_check=True)
     return plan
 
 
@@ -153,7 +166,8 @@ def _observation_tail(model, spec, observations, previous, grid):
 def _iter_windows(plan, checkpoint):
     spec = plan.spec
     checkpoint = initialise(spec) if checkpoint is None else checkpoint
-    validate_checkpoint(spec, checkpoint, plan.grid)
+    checkpoint = with_energy_record(spec, checkpoint)  # Unchanged without the energy check.
+    validate_checkpoint(spec, checkpoint, plan.grid, energy_check=True)
     requested = spec.experiment.observation_times
     observation_index = bisect_left(requested, checkpoint.time)
     previous_observed = None
@@ -263,6 +277,8 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
         "total_run_seconds": perf_counter() - started,
     }
     checked = {} if report is None else {"row_checks": report}
+    if final.energy_check is not None:  # The step-doubled energy check's run-level summary.
+        checked = checked | {"energy_check": energy.summary(final.energy_check)}
     return WindowedResult(
         plan.spec,
         plan.policy,

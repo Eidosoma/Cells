@@ -12,6 +12,7 @@ record. Their digests are in `tools.sha256`, and the runs' own digests are in ea
 | `evaluate_x.py` | Applies the registration: X1 and X2, then decisions (a), (b) and (c) |
 | `recorder_fr8.py` | Amendment 1's wrapper for FR-8's worlds, built by FR-8's stage-0 builders |
 | `evaluate_x_running.py` | Amendment 2's test: the run-level conditions re-evaluated at every row |
+| `qualify_x2.py` | The engine's check (`execution.energy_check`) on the boundary worlds against these saved verdicts: D224's qualification run (added with the engine code, so not in `tools.sha256`) |
 
 ## Results
 

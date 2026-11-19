@@ -368,3 +368,61 @@ The qualification run, once against the saved verdicts, is the boundary set:
 - `division_quartered_values`;
 - FR-3's plant;
 - cleft_egg.
+
+### As built (19 November 2026)
+
+The code follows the design above, with these differences, each for a reason found while building
+it:
+- **The record binds its state within the row's floor, not exactly.** The residual inside the
+  rollout and the residual evaluated alone are different compiled programs. On FR-18's first
+  refused arm they differ by 0.08 and 0.32 eps·M at rows 20 and 40, so an exact comparison refused
+  every real restart. A checkpoint is refused when |R(state) − R| exceeds 2.5 eps·max(k, 1)·M_k,
+  the registration's own floor, and NaN refuses. The record's R stays the next step's start, so a
+  restart continues the record bit for bit.
+- **The binding is the only energy guard on a loaded checkpoint.** In an X2 run today's energy
+  bound is no verdict, and an edited row's jump would enter the next step's d and d'' alike. Its q
+  would be near 1, so the step would be held and pass inside the held steps' sum. FR-3's
+  registered plant (1.6e-11 pJ at its 1 s row, below today's bound of 5.2e-8 pJ there) exceeds that
+  row's floor (1.35e-16 pJ) by about 1.2e5 in the saved records, so the binding should refuse the
+  planted checkpoint; the qualification run checks it. On FR-18's first refused arm a planted heat
+  x (1 + 1e-6) (2.9e-6 pJ at step 20, floor 2.8e-13 pJ) was refused by the binding.
+- **The check runs on the host in both row-check modes.** The device emits five values per step: R
+  and F, M at the full step's end, R'' at the half steps' end, and the halves' validity. The host
+  forms d, d'', q and the sums from them, in one vectorized pass per segment
+  (`energy_check.check_segment`). The same code decides host and device modes on the same values,
+  so their verdicts and diagnostics are equal, not merely within criteria. The device row checks
+  only switch today's energy verdict off, by the constants' type (`StepDoubledConstants`, today's
+  two leaves and the cap). κ, the band and the floor are module constants.
+- **The run-end hook is in the runner's segment.** After the segment that reaches the horizon it
+  serves `run` and both window paths.
+- **The first failing row is reported.** When several conditions fail in one segment, the message
+  names the earliest row, so it does not depend on the window width.
+- **Two scalar-path callers outside the granted files refuse X2 definitions, fail-closed:** `cells
+  validate` (`__main__.py`, through `timeline`) and `records/window_io.write_windowed_run`
+  (through `validate_checkpoint`). Each needs one keyword, `energy_check=True`, to admit them.
+- **The eager path** (`execution.jit = false`) runs the check too. On FR-18's first refused arm
+  its record is not the compiled run's bit for bit; it was compared no further.
+- **One doubled step per definition** (`energy_check.doubled_step`): the step's closures are kept
+  by model, definition and the layout's retiring flag, so a run restarted or run again in the
+  same process reuses its compiled rollout, as today's rollouts do. On FR-18's first refused arm
+  a second windowed run compiled nothing, and a second `run` took 1.6 s against 31.1 s.
+- **Reporting:** `run` reports the three maxima among its diagnostics and the record in its final
+  checkpoint. The windows report the run-level summary in `resources["energy_check"]`: the median,
+  the counted and out-of-band held steps, the held cap, the largest check ratio, and Σ|a|/F at its
+  largest and at the end.
+- **Storage:** the check's per-step values (2 × 8 × 5 bytes per step, with the estimate's margin)
+  are their own term in the runner's and the windows' trace estimates.
+
+**Tests, as built:**
+- five parse refusals, as rows of `test_surface_pump_v3_definitions.py`'s definition errors;
+- the static switches at a row whose flows are 0, host and device, in `test_ledger_lists.py`
+  (12–20 s on the shared light CPUs, no new world);
+- one row of `test_window_row_checks_families.py`, which covers host and device parity, the
+  restart through a written snapshot (two segments against one, exactly equal), and the record's
+  IO (about 85 s on the shared light CPUs with two compiles, before the doubled step was kept per
+  definition; the tier measure gives the record's figure);
+- beside it, the binding test (about 2 s), which refuses a planted heat × (1 + 1e-6), FR-3's
+  plant's form, and confirms that without X2 a checkpoint writes today's files.
+
+FR-3's registered plant itself is in the qualification run, since its route runs a composite for
+1000 steps. The run is `validation/energy_step_doubling/qualify_x2.py`.

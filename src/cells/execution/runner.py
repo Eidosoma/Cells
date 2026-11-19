@@ -14,6 +14,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, SimulationSpec, parse_spec
 from cells.execution import blas_threads, phases
+from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError as NumericalError
 from cells.execution.grid import EventGrid, checked_grid, require_refinement_model
@@ -26,8 +27,10 @@ from cells.registry.models import get_model
 
 
 def _trace_budget(spec: SimulationSpec, steps: int) -> None:
-    # Conservative allowance for device/host traces, temporaries, and observations.
-    if trace_bytes(spec, steps) > spec.execution.max_trace_bytes:
+    # Conservative allowance for device/host traces, temporaries, and observations; the
+    # step-doubled energy check's own per-step values are a term beside them (0 without it).
+    estimate = trace_bytes(spec, steps) + energy.trace_bytes(spec, steps)
+    if estimate > spec.execution.max_trace_bytes:
         raise ConfigError("Estimated trace working storage exceeds max_trace_bytes")
 
 
@@ -37,9 +40,16 @@ def _refuse_projective(spec: SimulationSpec) -> None:
         raise ConfigError("execution.projective runs only through cells.execution.runner.run")
 
 
-def timeline(spec: SimulationSpec) -> np.ndarray:
-    """The shared exact grid, with storage admission before allocating a trace."""
+def timeline(spec: SimulationSpec, *, energy_check=False) -> np.ndarray:
+    """The shared exact grid, with storage admission before allocating a trace. energy_check: the
+    caller runs the step-doubled energy check (run); a definition selecting it is refused on
+    every other path (the batch paths among them), fail-closed."""
     _refuse_projective(spec)
+    if energy.selected(spec) and not energy_check:
+        raise ConfigError(
+            "execution.energy_check runs only through cells.execution.runner.run and the "
+            "scalar windows (refused on this path)"
+        )
     require_refinement_model(spec)
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
@@ -49,13 +59,18 @@ def timeline(spec: SimulationSpec) -> np.ndarray:
 
 
 def validate_checkpoint(
-    spec: SimulationSpec, checkpoint: Checkpoint, times=None, *, initial=None
+    spec: SimulationSpec, checkpoint: Checkpoint, times=None, *, initial=None, energy_check=False
 ) -> None:
     """Refuse a checkpoint that is not an accepted, valid state of this definition.
 
     ``initial`` may pass initialise(spec) when several checkpoints of one
-    definition are validated, so the initial state is built once.
+    definition are validated, so the initial state is built once. ``energy_check``: the caller
+    runs the step-doubled energy check (execution/energy_check.py; the scalar runner, its windows
+    and the snapshot IO). A definition that selects it is refused on any other path, and its
+    checkpoint must carry the run-level record, whose residual is the checkpoint state's; a
+    definition without it takes a checkpoint without a record.
     """
+    _validate_energy_record(spec, checkpoint, energy_check)
     model = get_model(spec.model)
     if times is None:
         times = checked_grid(spec)
@@ -106,18 +121,50 @@ def validate_checkpoint(
         not np.array_equal(a, b) for a, b in zip(checkpoint.state, initial.state, strict=True)
     ):
         raise ConfigError("Initial checkpoint does not match the declared initial state")
+    if checkpoint.energy_check is not None:  # The record binds its state, within the floor.
+        energy.check_binding(model, spec, checkpoint)
+
+
+def _validate_energy_record(spec, checkpoint, admitted):
+    """validate_checkpoint's part for the step-doubled energy check (its docstring)."""
+    record = getattr(checkpoint, "energy_check", None)
+    if not energy.selected(spec):
+        if record is not None:
+            raise ConfigError("A step-doubled energy record needs a definition that selects it")
+        return
+    if not admitted:
+        raise ConfigError(
+            "execution.energy_check runs only through cells.execution.runner.run and the "
+            "scalar windows (refused on this path)"
+        )
+    if not isinstance(record, energy.EnergyCheckRecord):
+        raise ConfigError("A checkpoint of a step-doubled run carries its energy record")
+
+
+def with_energy_record(spec, checkpoint):
+    """The checkpoint with the step-doubled check's first record, at the run's initial row: its
+    state's residual and empty sums. Unchanged without the check, or with a record."""
+    if not energy.selected(spec) or checkpoint.energy_check is not None:
+        return checkpoint
+    model = get_model(spec.model)
+    energy.require_support(model)
+    if checkpoint.step_index != initialise(spec).step_index:
+        raise ConfigError("A step-doubled run resumed after its first row needs its energy record")
+    record = energy.initial_record(energy.residual_at(model, spec, checkpoint))
+    return replace(checkpoint, energy_check=record)
 
 
 def branch_checkpoint(
     original: SimulationSpec, checkpoint: Checkpoint, changed: SimulationSpec
 ) -> Checkpoint:
     """Only supported future inputs, the horizon, and observations may change."""
-    validate_checkpoint(original, checkpoint)
+    validate_checkpoint(original, checkpoint, energy_check=True)
     changed = parse_spec(changed.to_dict())
     if (
         original.model != changed.model
         or original.execution != changed.execution
         or getattr(original, "projective", None) != getattr(changed, "projective", None)
+        or getattr(original, "energy_check", None) != getattr(changed, "energy_check", None)
     ):
         raise ConfigError("A branch may not change model or execution settings")
     past_original = tuple(p for p in original.experiment.changes if p.time < checkpoint.time)
@@ -126,7 +173,7 @@ def branch_checkpoint(
         raise ConfigError("A branch cannot rewrite the input schedule before its checkpoint")
     result = replace(checkpoint, event_index=event_index(changed, checkpoint.time))
     try:
-        validate_checkpoint(changed, result)
+        validate_checkpoint(changed, result, energy_check=True)
     except ConfigError as exc:
         raise ConfigError(
             "Branch must retain the checkpoint as an integration boundary and a valid horizon; "
@@ -330,9 +377,10 @@ def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult
         from cells.execution.projective import run_projective
 
         return run_projective(spec, checkpoint, started=started)
-    grid = timeline(spec)
+    grid = timeline(spec, energy_check=True)
     checkpoint = initialise(spec) if checkpoint is None else checkpoint
-    validate_checkpoint(spec, checkpoint, grid)
+    checkpoint = with_energy_record(spec, checkpoint)  # Unchanged without the check.
+    validate_checkpoint(spec, checkpoint, grid, energy_check=True)
     times = grid[checkpoint.step_index :]
     requested = [t for t in spec.experiment.observation_times if t >= checkpoint.time]
     return _run_segment(spec, checkpoint, times, requested, started=started)
@@ -397,24 +445,37 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
     record.end("preparation", debug=later, steps=len(times) - 1, seconds=prepared - started)
     compile_seconds = 0.0
     window_history = None  # The window rollout's full-width device history (row checks).
+    # The step-doubled energy check (execution/energy_check.py): the model's checked step taken
+    # whole and as two half steps, its per-step values beside the history. Without it every
+    # rollout below is today's.
+    doubled = energy.selected(spec)
+    energy_values = None
     if len(times) > 1:
         if window_execution is not None:
             args = (state, steps, controls, parameters, layout.active, enabled)
             if window_execution.compiled is None:
                 record.start("compile")
-                window_execution.compiled = _compiled_window_rollout.lower(
-                    *args,
-                    getattr(model, "rhs", None),
-                    getattr(model, "domain_valid", None),
-                    getattr(model, "checked_step", None),
-                ).compile()
+                if doubled:
+                    window_execution.compiled = energy.compiled_window_rollout.lower(
+                        *args, energy.doubled_step(model, spec, layout)
+                    ).compile()
+                else:
+                    window_execution.compiled = _compiled_window_rollout.lower(
+                        *args,
+                        getattr(model, "rhs", None),
+                        getattr(model, "domain_valid", None),
+                        getattr(model, "checked_step", None),
+                    ).compile()
                 compile_seconds = _compiled(record, perf_counter() - prepared)
             record.start("execute", debug=later, steps=len(times) - 1)
             execute_started = perf_counter()
-            final_state, history, valid = window_execution.compiled(*args)
+            outputs = window_execution.compiled(*args)
+            final_state, history, valid = outputs[:3]
             window_history = history
             real_steps = len(times) - 1
             history = jax.tree.map(lambda values: values[:real_steps], history)
+            if doubled:
+                energy_values = tuple(np.asarray(v)[:real_steps] for v in outputs[3])
             failed = np.flatnonzero(~np.asarray(valid[:real_steps]))
             if len(failed):
                 index = int(failed[0])
@@ -425,18 +486,28 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
                 )
         elif hasattr(model, "checked_step"):
             args = (state, steps, controls, parameters, layout.active)
+            step = energy.doubled_step(model, spec, layout) if doubled else None
             if spec.execution.jit:
                 record.start("compile")
-                compiled = _compiled_discrete_rollout.lower(*args, model.checked_step).compile()
+                if doubled:
+                    compiled = energy.compiled_discrete_rollout.lower(*args, step).compile()
+                else:
+                    compiled = _compiled_discrete_rollout.lower(*args, model.checked_step).compile()
                 compile_seconds = _compiled(record, perf_counter() - prepared)
                 record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
-                final_state, history, valid = compiled(*args)
+                outputs = compiled(*args)
             else:
                 record.start("execute", debug=later, steps=len(times) - 1)
                 execute_started = perf_counter()
                 with jax.disable_jit():
-                    final_state, history, valid = _discrete_rollout(*args, model.checked_step)
+                    if doubled:
+                        outputs = energy.eager_discrete_rollout(*args, step)
+                    else:
+                        outputs = _discrete_rollout(*args, model.checked_step)
+            final_state, history, valid = outputs[:3]
+            if doubled:
+                energy_values = tuple(np.asarray(v) for v in outputs[3])
             failed = np.flatnonzero(~np.asarray(valid))
             if len(failed):
                 index = int(failed[0])
@@ -519,6 +590,10 @@ def _segment(spec, checkpoint, times, requested, record, *, started=None, window
         (accepted_history, observations, final, diagnostics), checked = _analyse_checked_segment(
             spec, checkpoint, times, arrays, final_state, layout, requested, launched
         )
+    if energy.selected(spec):  # After the model's checks; the analysis calls stay today's.
+        final, diagnostics = _energy_segment(
+            spec, model, checkpoint, times, energy_values, final, diagnostics
+        )
     timings = {
         "preparation_seconds": prepared - started,
         "compile_or_cache_seconds": compile_seconds,
@@ -561,6 +636,27 @@ def takes_steps(model):
 def check_steps(model, first, rows):
     """check_values keywords for rows at consecutive global step indices from first."""
     return {"steps": first + np.arange(rows)} if takes_steps(model) else {}
+
+
+def _energy_segment(spec, model, checkpoint, times, energy_values, final, diagnostics):
+    """The step-doubled energy check of a segment's accepted steps, after the model's checks:
+    (the final checkpoint with its record after them, the diagnostics with the check's), and at
+    the run's end its whole-run conditions. A segment without steps carries its record over."""
+    record, extra = checkpoint.energy_check, {}
+    if energy_values is not None:
+        rtol = energy._ledger_model(model).ENERGY_RTOL[spec.execution.solver]
+        record, extra = energy.check_segment(
+            spec,
+            record,
+            checkpoint.step_index,
+            energy_values,
+            energy.event_mask(spec, times, model),
+            rtol=rtol,
+        )
+    final = replace(final, energy_check=record)
+    if float(times[-1]) >= float(spec.experiment.end_time):
+        energy.decide(record)  # The whole-run conditions, at the run's end.
+    return final, {**diagnostics, **extra}
 
 
 def _analyse_segment(spec, checkpoint, times, arrays, final_state, layout, requested):
