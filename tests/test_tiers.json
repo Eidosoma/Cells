@@ -181,7 +181,8 @@
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-43155110/measured.json",
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-78729acf/measured.json",
   "/mnt/workspaces/Cells/ol2-engine-20261118/measure-a098e4af/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e2c5b3fa/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e2c5b3fa/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-28a3e0b3/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1494,6 +1495,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e2c5b3fa",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T16:26:13+00:00"
+  },
+  {
+   "git_revision": "28a3e0b303891c66818fc4e5e5423977633cccf7",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-28a3e0b3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T16:47:03+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4920,10 +4928,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_lumen.py",
-    "seconds": 30.42,
+    "seconds": 29.57,
     "exit_code": 0,
     "counts": {
-     "passed": 12
+     "passed": 13
     }
    },
    {
