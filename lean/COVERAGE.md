@@ -43,7 +43,7 @@ Direct Lean claims cover 30 of 30 registered laws. Recorded numerical comparison
 
 ## Registered operators
 
-Direct Lean claims cover 3 of 24 registered operators. Recorded numerical comparisons exercise 6.
+Direct Lean claims cover 4 of 24 registered operators. Recorded numerical comparisons exercise 7.
 
 | Operator | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ Direct Lean claims cover 3 of 24 registered operators. Recorded numerical compar
 | [`cells.electrode_current_injection@1`](../src/cells/operators/current_injection.py#L244) | Open | Open |
 | [`cells.ideal_osmosis_linear_compliance_water@1`](../src/cells/operators/osmotic_water.py#L489) | Open | Open |
 | [`cells.isopotential_partition@1`](../src/cells/operators/partition.py#L1110) | Open | Open |
-| [`cells.k_anion_symport_mass_action@1`](../src/cells/operators/k_anion_symport.py#L167) | Open | Open |
+| [`cells.k_anion_symport_mass_action@1`](../src/cells/operators/k_anion_symport.py#L167) | [Potassium–anion cotransport follows the concentration products in a closed pair](claims/potassium-anion-symport.md) | [potassium-anion-symport](https://github.com/Eidosoma/Cells/blob/7cc89e34c5f761a9ca801a34ab423e1cc6629746/lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) |
 | [`cells.local_species_reactions@1`](../src/cells/operators/species_reactions.py#L1279) | [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) · [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | [closed-enzyme](https://github.com/Eidosoma/Cells/blob/9c0b99d30676863d67dd8d30efea6ae490f2bd40/lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions) · [regional-chain](https://github.com/Eidosoma/Cells/blob/9252236d3f6339d4dfdd18fd79fc1d73246faf7e/lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance) |
 | [`cells.membrane_entity_state@1`](../src/cells/operators/membrane_state.py#L182) | Open | [membrane-insertion](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/PROGRESS.md#19-november-2026--membrane-insertion-heat) |
 | [`cells.population_unit_turnover@1`](../src/cells/operators/population_unit_turnover.py#L709) | Open | Open |
