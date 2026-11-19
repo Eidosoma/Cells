@@ -1,4 +1,4 @@
-"""Generate the claim notes and the marked index in the Lean README from claims.json."""
+"""Generate claim notes, the README index and coverage of registered engine laws and operators."""
 
 import argparse
 import json
@@ -14,6 +14,7 @@ REPOSITORY = "https://github.com/Eidosoma/Cells"
 BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
+COVERAGE_NOTE = "<!-- Generated from lean/registry.json and lean/claims.json. -->"
 
 
 def unique_keys(pairs):
@@ -33,8 +34,8 @@ def source_path(target):
     return path, f"#{quote(anchor)}" if anchor else ""
 
 
-def local_link(label, target, repo):
-    """Register paths start at the checkout root. Claim notes live under lean/claims/."""
+def local_link(label, target, repo, from_dir="lean/claims"):
+    """Register paths start at the checkout root."""
     path, fragment = source_path(target)
     file = (repo / path).resolve()
     if not file.is_relative_to(repo) or not file.is_file():
@@ -42,7 +43,7 @@ def local_link(label, target, repo):
     if re.fullmatch(r"#L[0-9]+", fragment):
         if not 1 <= int(fragment[2:]) <= len(file.read_bytes().splitlines()):
             raise ValueError(f"line outside source {target!r}")
-    relative = os.path.relpath(repo / path, repo / "lean" / "claims")
+    relative = os.path.relpath(repo / path, repo / from_dir)
     return f"[{label}]({quote(Path(relative).as_posix())}{fragment})"
 
 
@@ -90,13 +91,20 @@ def comparison_text(check):
     revisions = [f"[Evidence checkpoint {record[:12]}]({REPOSITORY}/commit/{record})"]
     if check["kind"] == "engine":
         revisions.insert(0, f"[Tested engine {source[:12]}]({REPOSITORY}/commit/{source})")
-    return f"**{kind}** {ids}\n\n" + " · ".join(links) + "\n\n" + " · ".join(revisions)
+    lines = [f"**{kind}** {ids}"]
+    if check.get("operators"):
+        lines.append("**Operators** " + ", ".join(f"`{op}`" for op in check["operators"]))
+    return "\n\n".join([*lines, " · ".join(links), " · ".join(revisions)])
 
 
-def experiment_text(e, unit, repo):
+def publication_link(e):
     source = f"https://doi.org/{e['doi']}" if e.get("doi") else e["url"]
     if not source.startswith("https://"):
         raise ValueError(f"expected an HTTPS primary source for {e['dataset_id']}")
+    return f"[{e['citation']}]({source})"
+
+
+def experiment_text(e, unit, repo):
     groups = [e.get(key, []) for key in ("fit", "evaluation", "excluded")]
     if e["role"] == "held_out_from_fitting":
         if not groups[1] or set(groups[0]) & set(groups[1]):
@@ -106,7 +114,7 @@ def experiment_text(e, unit, repo):
     lines = [
         f"### {e['dataset_id']}",
         "",
-        f"{e['context']} {e['locator']} [{e['citation']}]({source})",
+        f"{e['context']} {e['locator']} {publication_link(e)}",
         "",
         f"- **Evidence role** {e['role'].replace('_', ' ')}",
     ]
@@ -122,6 +130,21 @@ def experiment_text(e, unit, repo):
     links.append(local_link("Comparison verdict", e["report"], repo))
     lines.extend(["", e["uncertainty"], "", e["assessment"] + " " + " · ".join(links)])
     return "\n".join(lines)
+
+
+def biological_summary(biology, verdict):
+    findings = [biology["finding"]] if biology.get("finding") else []
+    for e in biology["evidence"]:
+        values = [
+            f"{name.title()} {e[name]} {biology['unit']}."
+            for name in ("observed", "predicted")
+            if name in e
+        ]
+        findings.append(" ".join([*values, e["assessment"], publication_link(e)]))
+    if not findings:
+        return f"**Measurement sought.** {biology['observable']}"
+    label = "Partial evidence" if verdict == "Open" else verdict
+    return f"**{label}.** " + " ".join(findings)
 
 
 def render_claim(claim, claims, comparisons, repo):
@@ -149,23 +172,104 @@ def render_claim(claim, claims, comparisons, repo):
                 for name, source in formal["theorems"].items()
             )
         )
+    if formal.get("about"):
+        parts.append("Direct proof subject " + ", ".join(f"`{piece}`" for piece in formal["about"]))
+    if sources := formal.get("sources"):
+        links = [
+            f"[{label}]({path})" if path.startswith("https://") else local_link(label, path, repo)
+            for label, path in sources.items()
+        ]
+        parts.append("Proof sources " + " · ".join(links))
     if claim.get("uses"):
         parts.append("Uses " + " · ".join(f"[{claims[i]['title']}]({i}.md)" for i in claim["uses"]))
     parts += ["## Numerical comparison", f"**{tested}.** {numerical['result']}"]
     parts.extend(comparisons[i] for i in numerical["comparisons"])
-    parts += [
-        "## Biological evidence",
-        f"**{empirical}.** {biology['observable']}",
-        f"**Unit** {biology['unit']}",
-    ]
+    parts += ["## Biological evidence", f"**{empirical}.** {biology['observable']}"]
+    if finding := biology.get("finding"):
+        parts.append(finding)
+    parts.append(f"**Unit** {biology['unit']}")
     parts.extend(experiment_text(e, biology["unit"], repo) for e in biology["evidence"])
     parts.append("[Claim index](../README.md#proof-index) · [Editable register](../claims.json)")
     title = claim["title"].replace("|", r"\|")
-    row = f"| [{title}](claims/{claim['id']}.md) | {proof} | {tested} | {empirical} |"
+    summary = " ".join(biological_summary(biology, empirical).splitlines()).replace("|", r"\|")
+    row = f"| [{title}](claims/{claim['id']}.md) | {proof} | {tested} | {summary} |"
     return "\n\n".join(parts) + "\n", row
 
 
-def render(lane):
+def live_inventory(lane):
+    """Keep only the data needed to reproduce coverage in a Lean-only checkout."""
+    sys.path.insert(0, str(lane.parent / "src"))
+    try:
+        from cells.registry import declarations
+
+        manifest = declarations.manifest()
+    finally:
+        sys.path.pop(0)
+    if manifest["kind"] != "cells.declarations@2":
+        raise ValueError(f"unsupported engine declarations format {manifest['kind']!r}")
+    return {
+        kind: {
+            p["id"]: f"{p['module_path']}#L{p['line']}"
+            for p in manifest["pieces"]
+            if p["piece"] == kind
+        }
+        for kind in ("law", "operator")
+    }
+
+
+def coverage(inventory, claims, comparisons, repo):
+    direct, exercised = {}, {}
+    for claim in claims.values():
+        for piece in claim["formal"].get("about", []):
+            if claim["formal"]["status"] != "proved":
+                raise ValueError(f"{claim['id']}: direct coverage requires a proved claim")
+            label = claim["title"].replace("|", r"\|")
+            direct.setdefault(piece, []).append(f"[{label}](claims/{claim['id']}.md)")
+    for key, record in comparisons.items():
+        if record["kind"] != "engine":
+            continue
+        for kind in ("law", "operator"):
+            for spelling in record.get(kind + "s", []):
+                piece = spelling if "." in spelling else "cells." + spelling
+                if any(piece in rows for other, rows in inventory.items() if other != kind):
+                    raise ValueError(f"{key}: {piece} is classified under the wrong registry type")
+                link = pinned_link(key, record["record"], record["record_revision"])
+                exercised.setdefault(piece, []).append(link)
+    active = set(inventory["law"]) | set(inventory["operator"])
+    if unknown := direct.keys() - active - exercised.keys():
+        raise ValueError(f"unrecognized direct proof subjects: {', '.join(sorted(unknown))}")
+    parts = [
+        COVERAGE_NOTE,
+        "# Engine law coverage",
+        "Each row links to a Cells registry declaration. The proof column lists named claims "
+        "about that piece. The comparison column links to runs that exercised it, including "
+        "runs checking another property. Open means the Cells claim register has no entry "
+        "in that column. [Proof index](README.md#proof-index) · "
+        "[Registry inventory](registry.json)",
+    ]
+    for kind in ("law", "operator"):
+        rows = inventory[kind]
+        n_direct = sum(key in direct for key in rows)
+        n_checked = sum(key in exercised for key in rows)
+        parts += [
+            f"## Registered {kind}s",
+            f"Direct Lean claims cover {n_direct} of {len(rows)} registered {kind}s. "
+            f"Recorded numerical comparisons exercise {n_checked}.",
+        ]
+        table = [
+            f"| {kind.title()} | Direct Lean claims | Recorded comparisons |",
+            "| --- | --- | --- |",
+        ]
+        for piece, target in sorted(rows.items()):
+            label = local_link(f"`{piece}`", target, repo, from_dir="lean")
+            proofs = " · ".join(direct.get(piece, [])) or "Open"
+            runs = " · ".join(exercised.get(piece, [])) or "Open"
+            table.append(f"| {label} | {proofs} | {runs} |")
+        parts.append("\n".join(table))
+    return "\n\n".join(parts) + "\n"
+
+
+def render(lane, live_registry=False):
     register = json.loads(
         (lane / "claims.json").read_text(encoding="utf-8"), object_pairs_hook=unique_keys
     )
@@ -178,9 +282,19 @@ def render(lane):
             raise ValueError(f"invalid or duplicate claim ID {key!r}")
         claims[key] = claim
     comparisons = {key: comparison_text(check) for key, check in register["comparisons"].items()}
-    outputs = {}
+    inventory_path = lane / "registry.json"
+    inventory = (
+        live_inventory(lane)
+        if live_registry
+        else json.loads(inventory_path.read_text(encoding="utf-8"), object_pairs_hook=unique_keys)
+    )
+    outputs = {
+        lane / "COVERAGE.md": coverage(inventory, claims, register["comparisons"], lane.parent)
+    }
+    if live_registry:
+        outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
     rows = [
-        "| Claim | Lean proof | Numerical check | Biological evidence |",
+        "| Claim | Lean proof | Numerical check | Biological measurements and limits |",
         "| --- | --- | --- | --- |",
     ]
     for key, claim in claims.items():
@@ -199,8 +313,8 @@ def render(lane):
     return outputs
 
 
-def generate(lane, check=False):
-    outputs = render(lane)
+def generate(lane, check=False, live_registry=False):
+    outputs = render(lane, live_registry)
     directory = lane / "claims"
     if directory.is_symlink():
         raise ValueError("the claim notes directory is a symbolic link")
@@ -209,8 +323,12 @@ def generate(lane, check=False):
         if path.is_symlink():
             raise ValueError(f"refusing to replace a symbolic link at {path.name}")
         old = path.read_text(encoding="utf-8") if path.exists() else None
-        if path.parent == directory and old is not None and not old.startswith(NOTE + "\n"):
-            raise ValueError(f"handwritten file occupies generated path {path.name}")
+        if old is not None:
+            marker = COVERAGE_NOTE if path == lane / "COVERAGE.md" else NOTE
+            if (path.parent == directory or path == lane / "COVERAGE.md") and not old.startswith(
+                marker + "\n"
+            ):
+                raise ValueError(f"handwritten file occupies generated path {path.name}")
         if old != content:
             changed.append(path)
     obsolete = [
@@ -238,7 +356,13 @@ def generate(lane, check=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="report stale pages without writing")
+    parser.add_argument(
+        "--live-registry",
+        action="store_true",
+        help="read the active law and operator inventory from the Cells checkout",
+    )
     try:
-        sys.exit(0 if generate(LANE, parser.parse_args().check) else 1)
-    except (OSError, ValueError, TypeError, KeyError) as error:
+        args = parser.parse_args()
+        sys.exit(0 if generate(LANE, args.check, args.live_registry) else 1)
+    except (ImportError, OSError, ValueError, TypeError, KeyError) as error:
         sys.exit(f"claims: {error}")

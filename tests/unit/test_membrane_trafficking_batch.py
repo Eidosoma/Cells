@@ -3,6 +3,12 @@ cycle worlds (retrieval at 0.05, 0.1 and 0.15 of the plasma area per ms) is bitw
 same worlds in reversed order, and reproduces each world's own run to 1e-12 of each field's scale;
 the carriers' work, whose terms cancel, to 1e-14 of its terms' accumulated magnitude.
 
+Against the code-blind references (D224): the 144 compiled rows of the three batch worlds, at each
+observation of each world's own run, the run the batch is checked against above; the vmapped
+batch keeps each world's final state only (validation/tissue/membrane_trafficking_comparison.py;
+a row passes when |engine - reference| <= its registered band). The batches and the single runs
+are made once, in a module fixture.
+
 """
 
 import jax
@@ -14,7 +20,9 @@ from cells.execution.batch import BatchSpec, WorldSpec
 from cells.execution.runner import run
 from cells.execution.vector_windows import run_vector_windowed
 from cells.execution.windows import WindowPolicy
+from cells.registry.models import get_model
 from validation.tissue import composite_guard as guard
+from validation.tissue import membrane_trafficking_comparison as mc
 from validation.tissue import membrane_trafficking_fixtures as fx
 
 
@@ -30,17 +38,24 @@ def vector_batch(specs):
     )
 
 
-def test_the_vmapped_batch_reproduces_each_world():
-    specs = [parse_spec(fx.cycle(retrieval=r)) for r in (0.05, 0.1, 0.15)]
-    batch = vector_batch(specs)
-    reversed_batch = vector_batch(specs[::-1])
+RATES = (0.05, 0.1, 0.15)
+
+
+@pytest.fixture(scope="module")
+def batches():
+    """The three cycle worlds: their vmapped batch, the reversed batch and each world's own run."""
+    specs = [parse_spec(fx.cycle(retrieval=r)) for r in RATES]
+    return specs, vector_batch(specs), vector_batch(specs[::-1]), [run(s) for s in specs]
+
+
+def test_the_vmapped_batch_reproduces_each_world(batches):
+    specs, batch, reversed_batch, singles = batches
     for i in range(len(specs)):  # World IDs are 1, 2, ... in each batch's order.
         x = batch.worlds[i + 1].final.state
         y = reversed_batch.worlds[len(specs) - i].final.state
         for name in type(x)._fields:
             assert guard.compare_arrays(name, getattr(x, name), getattr(y, name)) is None, name
-    for world, spec in zip(batch.worlds, specs, strict=True):
-        single = run(spec)
+    for world, single in zip(batch.worlds, singles, strict=True):
         final = batch.worlds[world].final.state
         for name in type(final)._fields:
             a, b = np.asarray(getattr(final, name)), np.asarray(getattr(single.history, name))[-1]
@@ -56,3 +71,28 @@ def test_the_vmapped_batch_reproduces_each_world():
                 bound = 1e-14 * float(np.max(terms)) + 1e-30
             assert np.max(np.abs(a - b), initial=0.0) <= bound, (world, name)
         assert np.isfinite(batch.worlds[world].diagnostics["max_energy_balance_error_pJ"])
+
+
+# ------------------------------------------------------------------ T5 against the references
+
+BATCH_ROWS = [r["id"] for r in mc.rows("batch")]
+
+
+@pytest.fixture(scope="module")
+def batch_layouts(batches):
+    specs, _, _, singles = batches
+    for single in singles:
+        assert len(single.times) == 6  # One history row per observation, 0 to 5 ms.
+    return [
+        (fx.cycle(retrieval=r), get_model(s.model).initial_values(s)[1])
+        for r, s in zip(RATES, specs, strict=True)
+    ]
+
+
+@pytest.mark.parametrize("row", BATCH_ROWS)
+def test_batch_world_row(batches, batch_layouts, row):
+    r = mc.row_by_id()[row]
+    i = RATES.index(float(r["block"].split("_", 1)[1]))
+    raw, p = batch_layouts[i]
+    v = mc.verdict(r, mc.compiled_value(r, raw, p, batches[3][i].history))
+    assert v["passed"], (row, v["engine"], v["deviation"], v["band"], v["margin"])

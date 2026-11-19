@@ -15,6 +15,8 @@ Exchanging the concentrations at the two ends of a constant-field junction and r
 
 - [CellsProofs.Transport.flux_reverse](../CellsProofs/Transport/ConstantField.lean#L40)
 
+Direct proof subject `cells.constant_field@1`
+
 ## Numerical comparison
 
 **Checked.** The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference.
@@ -28,6 +30,8 @@ Exchanging the concentrations at the two ends of a constant-field junction and r
 ## Biological evidence
 
 **Open.** Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.
+
+A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/)
 
 **Unit** fmol/s
 

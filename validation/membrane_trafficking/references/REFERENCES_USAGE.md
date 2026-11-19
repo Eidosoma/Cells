@@ -6,7 +6,13 @@ This note says how a comparison reads the registered values, without reading the
 - Inputs: `reference_inputs.json`, the declared worlds frozen with their provenance, plus the two
   stress worlds.
 - Values: `designs/membrane_trafficking_reference_values.json`.
+- **The comparison bands: `interface/comparison_bands.json`.** Every compared row's band and every
+  plant's row and band, exported from the design (see the last section).
 - Plants, floors and primary comparisons: `designs/membrane_trafficking_reference_design.json`.
+  This is the references' own record, and the comparison does not read it.
+
+**What the engine-side comparison may read:** this note, `reference_inputs.json`, the values file
+and `interface/comparison_bands.json`. Nothing else here.
 
 The registration is in `README.md`.
 
@@ -162,3 +168,68 @@ tolerance, relative 1e-14. The factor 10 on the floor is the band rule's own.
 **Plants.** `design["plants"][name]["rows"]` gives each case's deviation, its band and the margin,
 which is their ratio. `weak_at` lists the cases below 10 bands. Each weak case is in the README's
 zero-power list.
+
+## The comparison bands: `interface/comparison_bands.json`
+
+This is the interface for the engine-side comparison (the user's choice (b), 19 November 2026).
+`bands.py` writes it from the registered values and design whenever the design is written.
+`design --check`, and the existing test `test_registered_files_regenerate_identically`, keep it
+equal to what they would write, so it cannot drift from them. It adds no number of its own:
+- every band is max(the test's tolerance, 10 × the floor);
+- each floor is taken under the selected models of the dated note of 2026-11-19 06:08 UTC:
+  `increment_storage` for the potentials and `stable_change` for ΔG_chem;
+- every plant's size is its registered deviation, and `bands.py` asserts it against the design;
+- the held-node rows (`electrode_transfer`, `W_elec`, `image_charge`) carry the plate-charge rule
+  of the README's erratum of 2026-11-19 (`models.increment_storage.parameters.held_node_transfer`).
+
+**Top level:**
+
+| Key | What it holds |
+| --- | --- |
+| `band_rule` and `plant_rule` | The two rules below, in words |
+| `selected_models` | The two selected models above |
+| `models` | Each floor model with its formula and parameters (u = 2⁻⁵³, K_OPS = 4) |
+| `checks` | Per check: its test, the engine reading it compares, the tolerance's rule and source (§12, §13, or the references where neither states one), and its floor model |
+| `drives` | The drive aliases (`d01`, …) the row ids use, each with its full key |
+| `rows` | The compared rows (below) |
+| `criteria` | T5's ratio criteria (below) |
+| `plant_kinds` | Per plant: what is planted, and for a zero-power plant its reason |
+| `plants` | The plant rows (below) |
+| `counts` | The number of rows, criteria and plants, and how many plants must be refused |
+
+**A row** holds:
+- `id`, `check`, and its subject: `drive` and `half_step`, or `block` and `observation`, with
+  `node`, `patch`, `route`, `population` or `cell` as it applies;
+- `quantity` and `unit`;
+- `reference`, a 50-digit string, and `reference_path`. For a drive's rows the path is within
+  `values.drives[drive]`; otherwise it starts at the values file's root;
+- `tolerance`, absolute in the row's unit. It is null where no tolerance is stated, and then the
+  band is the floor's;
+- `floor` (absolute) and `floor_model`;
+- `band`.
+
+**The rule for a row:** it passes when |engine − reference| ≤ `band`.
+
+**The checks:**
+- **T4**, on one-direction, single-route half-steps: `potential_unchanged`, `V_b_after`,
+  `V_b_kept`, `V_k_after` and `heat`.
+- **T6**, on every half-step: `residual`, the per-term `dG_chem`, `dU_view` and `heat_total`,
+  `W_carriers`, `W_carriers_route`, `cleft_share`, `W_res`, `W_elec`, `electrode_transfer` and
+  `image_charge`.
+- **T3**, on every half-step: `N_plus_R`, `dA_sum` and `dC_sum`.
+- **T5:** `cycle_N` and `cycle_R` on the operator-level cycle, `both_N` (Kir's N at n = 8 and 16)
+  and `compiled` (the cycle world and T7's batch worlds, at each observation).
+- **T8:** `start` and `factor`.
+
+**A criterion** holds T5's ratio checks on Kir's N: `ratio_8_16` (3.5 < r < 4.5), `err16`
+(< 1e-4), and the Lie plant's `lie_ratio_8_16` (< 2.5). Each has its reference value and path.
+
+**A plant row** holds `plant` (its kind), `row` (the compared row that must refuse it), `size` (in
+the row's unit), `band`, `margin` (size over band), `must_refuse` and `registered_deviation` (the
+design's own figure). The Lie split's row is its criterion, and its band is null.
+
+**The rule for a plant:** with the plant in place, the comparison must fail its row wherever
+`must_refuse` is true, which is wherever the size is at least 10 bands. A row with `must_refuse`
+false is zero power, and its kind gives the reason: a dropped valence or swapped transference
+numbers in the declared worlds, and T8 at t = 0. Such a row must not be asserted refused.
+

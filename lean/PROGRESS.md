@@ -1,5 +1,167 @@
 # Cells proof comparisons
 
+## 19 November 2026 · ATP-driven transport
+
+An enabled ATP cycle runs forward when its total free-energy change is negative, reverses when it is positive, and stalls at zero. Positive flux moves cargo from N to P and consumes ATP on side N. Lean proves these statements for the two branches of the engine’s rate formula and proves nonnegative heat in either direction. For a proton pump moving `n` protons per ATP, the stall voltage is `V_N − V_P = (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF)`. For a neutral cargo, voltage drops out of the rate at fixed activities and capacity. All eight theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ATPCycle.lean) · [Proton cycle](../src/cells/laws/pumps/proton_pump.py#L223) · [Neutral cycle](../src/cells/laws/pumps/atp_transporter.py#L135) · [Shared rate formula](../src/cells/laws/cycles/forms.py#L893)
+
+The compiled `resolved_pump_tissue@3` transporter matched the independent reference values at 92 states. Each of the four panels had 18 forward cases, four reverse cases and one nominal stall within the reference roundoff band. Heat was nonnegative at all 92 states. Disabling availability or setting capacity to zero gave exactly zero cycles, heat and work in all eight controls. At fixed chemistry, shifting the proton pump’s voltage by −10 or +10 mV about stall gave **−0.023228** and **+0.010986 fmol/s** respectively. The same offsets left all three flowing neutral controls unchanged. The driver took 4.52 s on four CPU cores. Six existing tests passed in 49.20 s, including two 4 ms tissue trajectories checking the material, charge and energy accounts. [Compiled comparison](checks/atp_cycle.py) · [Reference inputs](../validation/core_seams/references/reference_inputs.json) · [Frozen values](../validation/core_seams/references/designs/core_seams_reference_values.json) · [Reference tolerances](../tests/unit/test_cycle_kind_references.py#L296) · [Neutral run](../tests/unit/test_transporter_kind.py#L197) · [Proton run](../tests/unit/test_transporter_kind.py#L329)
+
+```json
+{
+  "engine_revision": "a6f4c7d9b8e84cbd7c23264215510ba93fb8e3d3",
+  "model": "resolved_pump_tissue@3", "kind": "cells.transporter@1",
+  "laws": ["proton_atp_mass_action_positive@1", "atp_driven_transporter_mass_action_positive@1"],
+  "backend": "cpu", "dtype": "float64", "jax": "0.11.1",
+  "states_by_panel": {"v1_proton_n2": 23, "v1_neutral_n1": 23, "v1_neutral_n2": 23, "ff_neutral_n1": 23},
+  "forward": 72, "reverse": 16, "within_stall_band": 4, "off_controls": 8,
+  "max_abs_error": {"dG_RT": 6.466044960882567e-15, "cycles_fmol_s": 7.494005416219807e-16,
+                    "heat_pJ_s": 3.9968028886505635e-15, "work_pJ_s": 3.907985046680551e-14},
+  "max_error_in_reference_floors": 0.441238400426874, "allowed_floors": 16
+}
+```
+
+**Biological comparison.** Kettner et al. measured ATP-dependent current in isolated yeast vacuoles. At cytosolic pH 8.5 and vacuolar pH 5.0, Table 2 gives a mean reversal of **−17.5 ± 5 mV** (standard error, six trials). Using the paper’s estimated hydrolysis voltage and proton gradient, the proved stall relation gives `−587.5/2 + 207.2 = −86.55 mV` for two tightly coupled protons per ATP. The paper tabulates −86.5 mV, **69.0 mV below the observed mean**. Both use cytosol-minus-vacuole voltage. This comparison uses the authors’ fuel estimate and assumed coupling. They attribute the shifted current reversal to a parallel proton shunt. The neutral case has a separate experimental lead. Van Herwaarden et al. measured ATP-dependent riboflavin uptake into inside-out vesicles in Fig. 3E. A test of voltage independence needs matched gradients and multiple imposed voltages. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
+
+## 19 November 2026 · Membrane insertion heat
+
+Both versions of `scheduled_membrane_insertion` add uncharged membrane at fixed free-node charges and held bath potentials. They call `fixed_charge_change` and require every booked patch heat to be finite and at least zero. Lean shows that the exact field equations give the network heat in pJ as `(10¹²/2) Σ [C(ΔV)² + ΔC(V + ΔV)²]`. Here `V` is the old patch voltage and `ΔV` its change. Each term is nonnegative for nonnegative capacitances and additions. In one patch against a held bath, the heat is `(10¹²/2) C V² ΔC/(C + ΔC)` and the bath’s image charge change is exactly zero. All seven public theorems use the standard Lean axioms. [Proof](CellsProofs/Tissue/MembraneInsertion.lean) · [Shared field calculation](../src/cells/models/pump_composite_adapter.py#L959) · [Version 1 guard](../src/cells/operators/membrane_insertion.py#L424) · [Version 2 guard](../src/cells/operators/membrane_insertion_v2.py#L244)
+
+**Engine finding, confirmed by the Cells lead.** Both operators refuse a 1 ms step on an admitted one-patch input with `ΔC/C = 1.7 × 10¹⁶` per initial half-step. The compiled CPU half-step computes **−0.043037 pJ**. An 80-digit calculation at the same initial charge gives **+0.051603 pJ**. The first energy term alone is about 8.77 × 10¹⁴ pJ, with float64 spacing of 0.125 pJ. The implementation adds a nearly equal correction of opposite sign. This stress input doubles the area on the first half-step using an extreme inserted specific capacitance of 8.5 × 10¹⁴ F/m². All 12 ordinary control half-steps passed at the existing relative tolerance of 10⁻⁹, and both 1 ms control runs completed. Four existing tests also passed, including two clamps and a finite cleft. [Reproducer](checks/membrane_insertion.py) · [One-patch fixture and tolerance](../tests/unit/test_membrane_insertion.py#L145) · [Two-version comparison](../tests/unit/test_membrane_insertion_v2.py#L203)
+
+The same field solve gives **+0.051603 pJ** with the sum of squares. Substituting that heat alone in a separate diagnostic run exposed an electrode accounting failure. The unmodified field calculation gives **−3.638 × 10⁻¹² C** of bath image charge for this single patch. With the sum-of-squares heat and the known single-patch image charge of zero substituted, both runs completed. Multi-patch worlds can have real image charge at individual baths. The single-patch control isolates the two calculations involved in this refusal. [Image charge and heat](../src/cells/models/pump_composite_adapter.py#L985) · [Diagnostic controls](checks/membrane_insertion.py)
+
+The lead assigned the robustness fix to the operators owner. The proposed change uses sum-of-squares heat and a cancellation-free image charge exact for one patch. A bitwise comparison of recorded worlds determines whether it lands with the declared numerical freeze batch. The failed comparison above records the original engine behavior. [Existing heat calculation for charge-following transfer](../src/cells/models/pump_composite_adapter.py#L1095)
+
+```json
+{
+  "engine_revision": "06e25525a39f3a2995bd5aa26a7e38bd67b211c3",
+  "model": "resolved_pump_composite@1", "inner": "resolved_pump_tissue@3",
+  "operators": ["scheduled_membrane_insertion@1", "scheduled_membrane_insertion@2"],
+  "backend": "cpu", "dtype": "float64", "jax": "0.11.1", "jaxlib": "0.11.1",
+  "half_step_s": 0.0005, "end_s": 0.001,
+  "control_ratios": [0, 0.000001, 0.5, 1, 5, 1000], "control_cases_passed": 12,
+  "max_control_relative_heat_error": 1.857494947841975e-14, "heat_rtol": 1e-9,
+  "stress_ratio": 1.7e16, "stress_specific_capacitance_F_per_m2": 8.5e14,
+  "initial_capacitance_F": 1.6306360828084532e-11, "initial_charge_C": -1.2972730823853619e-12,
+  "computed_heat_pJ": -0.04303697682917118, "reference_heat_pJ": 0.05160309734417014,
+  "sum_of_squares_pJ": 0.05160309734417019,
+  "computed_image_C": -3.637978807091713e-12, "reference_image_C": 0,
+  "stress_runs": {"original": "both refused the first step", "heat_only": "both failed electrode accounting",
+                  "heat_and_single_patch_image": "both completed"}
+}
+```
+
+## 19 November 2026 · Passive proton leak
+
+For `proton_constant_field_leak@1`, an open route carries free H⁺ inward when the outside concentration exceeds the reversal concentration. With `x = F V/(RT)`, inside-minus-outside voltage and evaluator `B`, Lean gives that concentration as `hIn × B(−x)/B(x)` on both engine branches. The analytic constant-field law reverses at `V = (RT/F) × (ln hOut − ln hIn)` and releases nonnegative instantaneous heat. Those results also apply to the engine’s real-arithmetic formula at zero and for `|x| ≥ 10⁻⁴`. All seven public theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ProtonLeak.lean) · [Engine flux and heat](../src/cells/laws/transport/proton_leak.py#L28) · [Bernoulli evaluator](../src/cells/laws/electrochemistry.py#L17) · [Goldman’s constant-field model](https://doi.org/10.1085/jgp.27.1.37)
+
+Inside the small-voltage branch the polynomial shifts the reversal ratio. At `x = 0.00009`, an 80-digit calculation found `B(−x)/B(x) − exp(x) ≈ 1.582 × 10⁻³³`, below float64 spacing near 1. Halfway between the thresholds the polynomial gives outward flux with a positive inward electrochemical drive. This limits the engine docstring’s unconditional instantaneous-heat sign claim. [Reversal calculation](checks/proton_leak.py) · [Engine heat contract](../src/cells/laws/transport/proton_leak.py#L35)
+
+**Lead decision.** A numerical tolerance is sufficient. The instantaneous proton heat feeds the step booking. The charged leak uses the solver’s tableau, and the 16 ε negative-share floor applies to routes eligible for exact booking. The lead will clarify the heat docstring. Exact nonnegativity applies to the analytic law, with the polynomial and float64 covered to numerical tolerance. [Route selection](../src/cells/kinds/passive_routes.py#L246) · [Step booking](../src/cells/kinds/passive_routes.py#L500) · [Exact-share floor](../src/cells/kinds/passive_routes.py#L458)
+
+Twelve compiled CPU float64 cases covered opposing drives, the Nernst crossing, blocking, partial opening and both sides of the two branch boundaries. The flux reference uses 70-digit Decimal arithmetic. In a 4 ms `resolved_pump_tissue@3` run, the buffered cell initially took up **3.310 × 10⁻⁶ fmol/s**. Using total intracellular proton equivalents in the reference gave **−3.183 fmol/s**. Two four-core runs took 13–16 s, and three existing law and tissue tests passed. [Driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10) · [Independent buffer closure](../validation/compartment_ph/ph_reference.py#L167) · [Tissue fixture](../tests/unit/test_proton_buffer_kind.py#L258)
+
+```json
+{
+  "engine_revision": "1dee280f681af373071079c5f9b5921725dc7ed3",
+  "model": "resolved_pump_tissue@3", "law": "proton_constant_field_leak@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 12,
+  "max_flux_error_fmol_s": 1.543812817544248e-20, "flux_atol_fmol_s": 4.7124e-17,
+  "max_heat_error_pJ_s": 2.0328790734103208e-19, "heat_atol_pJ_s": 1.214613282895345e-16,
+  "opposed_flux_fmol_s": -1.9698929665489864e-5, "nernst_residual_fmol_s": 4.3159515760814405e-21,
+  "small_voltage_x": 0.00009, "outside_inside_ratio_shift": 1.581812000278e-33,
+  "end_s": 0.004, "initial_voltage_V": -0.02151770525721294,
+  "free_inside_mM": 6.309573444801929e-5, "total_inside_mM": 25.000063095734447,
+  "free_outside_mM": 3.981071705534969e-5,
+  "initial_inward_fmol_s": 3.3097843238305726e-6, "reference_inward_fmol_s": 3.309784324017176e-6,
+  "using_total_inward_fmol_s": -3.183387556995154, "booked_heat_pJ": 1.1771717405987001e-8
+}
+```
+
+**Biological evidence.** Schilling et al. measured reversal of an activated proton current in Jurkat T cells at 20–23 °C. Figure 2E gives a fitted slope of **−47 mV per unit of outside-minus-inside pH** across six gradients, alongside an ideal Nernst slope of **−58 mV per pH unit**. The observed shift has the predicted direction and is 11 mV per pH unit shallower. The figure reports group means and standard errors. Uncertainty in the fitted slope and the relation between pipette pH and intracellular pH matter for a quantitative comparison. The current amplitude also depends on channel opening. Biological validation of the Cells leak remains open. [Schilling et al., Fig. 2E and Methods](https://doi.org/10.1113/jphysiol.2002.028878)
+
+## 19 November 2026 · Passive neutral permeation
+
+For `passive_neutral_permeation@1`, the zero-valence specialization of the existing constant-field theorem gives inward flux `J = scale × (cOut − cIn)` at any voltage. In a closed pair of fixed positive volumes, the outside-minus-inside concentration difference changes at rate `−k × (cOut − cIn)`, with `k = scale × (1/vIn + 1/vOut)`. The three Lean theorems use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. [Neutral proof](CellsProofs/Transport/NeutralPermeation.lean) · [Engine law](../src/cells/laws/routes/passive_permeation.py#L43) · [Tissue rate bound at full opening](../src/cells/kinds/passive_routes.py#L553)
+
+Five compiled CPU float64 cases exercised both directions, equilibrium, a blocked route and partial opening. With 1 fmol inside 0.5 pL and 2 fmol outside in 2 pL, the solute flowed outward at 50 fmol/s. Following the amount difference would reverse that result. In a separate 20 ms `resolved_pump_tissue@3` run, both final compartment amounts agreed with the independent closed-form solution within the existing relative tolerance. The driver took 9.94 s on four cores and three existing tests passed in 12.21 s. Figure 3 of Lande et al. supplies urea-flux time courses for three liposome compositions. A quantitative comparison needs the gradients, area and permeability of a matched preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) [Driver](checks/neutral_permeation.py) · [Analytic reference](../validation/passive/passive_reference.py#L66) · [Tissue fixture and tolerance](../tests/unit/test_passive_routes_kind.py#L64)
+
+```json
+{
+  "engine_revision": "f130a109ad8861ce114f0f6fea3ece524465e80f",
+  "model": "resolved_pump_tissue@3", "law": "passive_neutral_permeation@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 5,
+  "max_flux_error_fmol_s": 7.105427357601002e-15,
+  "unequal_volume_inward_flux_fmol_s": -49.999999999999986,
+  "end_s": 0.02, "reference_rate_per_s": 99.99999999999999,
+  "inward_transfer_fmol": -0.0002160443856244789, "reference_transfer_fmol": -0.00021616617919084682,
+  "max_final_amount_error_fmol": 1.2179356636795365e-7,
+  "max_final_amount_relative_error": 0.0001700632756849268, "final_amount_rtol": 5e-4
+}
+```
+
+## 19 November 2026 · Biological evidence review
+
+The first literature handoff covered 11 of the 12 claims registered at review time. The reaction time courses below give a direct comparison of two measured pools. At this checkpoint, 11 biological claims were open and the retrospective RPTEC comparison was not assessable. [Claim index](README.md#proof-index) · [RPTEC closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+**Reaction inventory.** Eicher et al. measured glucose-6-phosphate and fructose-6-phosphate separately by ³¹P NMR. In their supplementary workbook `supp_data.ods`, the upper block of sheet `PGI` contains five time courses of peak integrals expressed in mM. For dataset 1, summing cells B4 and C4 gives 8.395747 mM at 1.33 min. B30 and C30 give 7.782390 mM at 35.91 min. The measured soluble pool changed by **−0.613357 mM (−7.31%)**. Three of the five courses decreased between their own first and last readings and two increased. Figure 4A reports a nominal starting condition and rounded endpoints with 60° pulses. Figure 5 uses 90° pulses. To interpret the drift, quantify the shared calibration uncertainty and any unobserved pools. Only the first listed acquisition has raw data in the supplement. Its metadata give 0.950 mL and 1.40 min per acquisition. The standard assay gives 1.00 mL and the workbook uses 1.33 min. Per-course volumes and timing remain unresolved. [Reaction claim](claims/reaction-inventory.md) · [Eicher et al., Figs. 4–5 and §3.3](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+
+| Claims | What the published evidence can test |
+| --- | --- |
+| Junction gradient, reversal, blocking and transfer orientation | Figure 2B of Palacios-Prado and Bukauskas tracks a charged tracer moving between two cells near zero junction voltage. The flux trace is normalized. Zonta et al. estimated **226 ± 75 calcein molecules/s per open Cx26 channel** at a 125 μM gradient. Only the donor was voltage-clamped during that transfer interval. Figure 1 of Wang and Veenstra shows paired electrical currents. The bovine block and washout traces are **Wang et al. (2010), Fig. 2E–F**. A species-specific rate needs ion or tracer calibration, and a quantitative blocking test needs a residual detection limit. [Tracer](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Calibrated calcein flux, Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15) · [Paired currents](https://pubmed.ncbi.nlm.nih.gov/9101407/) · [Block study and byline](https://pubmed.ncbi.nlm.nih.gov/20089928/) |
+| Extracellular face direction and dissipation | Weber et al. (Fig. 6) measured net current reversal across a claudin pore. Galvez et al. (Fig. 3 and Tables 1–2) measured sodium tracer fluxes in epithelia with active uptake. Passive-face power needs signed net flux, activities and voltage across the same passive path. [Claudin recordings](https://elifesciences.org/articles/09906) · [Sodium flux measurements](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf) |
+| Regional transfer and reaction–transport inventories | Kuki et al. (Figs. 3–4) compared myocardial K⁺ depletion and coronary effluent loss in separate preparations. Fausto (Fig. 1) tracked carbon-6 label across tissue, perfusate, bile and CO₂. A closure residual needs amounts on a common boundary and time interval, with sampling and omitted pools accounted for. [Heart potassium](https://doi.org/10.1161/01.RES.67.2.401) · [Liver tracer](https://doi.org/10.1042/bj1290811) |
+| Enzyme and substrate inventories | The isomerase NMR study resolves bound ligand states. The chymotrypsin mass spectra resolve an enzyme intermediate. Testing both inventories needs calibrated amounts of free enzyme, substrate, complex and product in the same preparation. [Bound states, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/) · [Enzyme intermediate, Figs. 1–3](https://www.derekwilsonlab.ca/userfiles/files/TRMS_Applied_to_Enzymes.pdf) |
+| RPTEC C3 voltage | Bonzanni et al. (Fig. 3C) reported 20 cells across three experiments. The ±2 mV in the Cells record is figure-reading uncertainty. Experiment-level uncertainty for the +3.41 mV prediction residual is unresolved. [Primary study](https://doi.org/10.1242/bio.048553) · [Existing comparison](claims/rptec-voltage-c3.md) |
+
+**Single-site binding** was the missing claim. A primary lead is the human myoglobin oxygen-equilibrium study by Rossi-Fanelli and Antonini. Look for observed site occupancy across known free ligand values, record temperature and solution conditions, and identify which observations set the affinity and which test it. For oxygen pressure, report the solubility used to convert to dissolved concentration or compare the dimensionless pressure ratio at the same temperature. A myoglobin comparison would test the one-site curve in that preparation. [Cells binding claim](claims/single-site-binding.md) · [Human myoglobin study](https://pubmed.ncbi.nlm.nih.gov/13584010/)
+
+**Research follow-up.** I reproduced the proposed within-figure comparison for human myoglobin at 10 °C. Of the first five published digitized points, fitting the first and fourth gave a half-saturation pressure of 0.3311 Torr. The other three had a root-mean-square occupancy residual of 0.0422. This retrospective split shares a preparation and a figure, with unknown pointwise uncertainty. The PGI workbook gave first-to-last changes in measured G6P + F6P of −0.613357, −1.534898, +0.099302, +0.391083 and −0.207509 mM for datasets 1–5 respectively. Both biological assessments remain open. [Myoglobin experiment](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Caltech’s Fig. 2 digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html) · [PGI workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+
+## 19 November 2026 · Single-site binding and face-power units
+
+For `rapid_binding@1`, Lean derives the bound fraction from equal forward and reverse rates and recovers the same fraction from the two form weights used by Cells. The local proof specializes the Langmuir argument to a free ligand concentration and a dissociation constant, both in mM. The comparison ran the compiled law on all thirteen manufactured S1 states and the stage read on the first state in `resolved_pump_tissue@3`. Reference tolerances are twice the recorded floor on the log of each concentration. A common binder total cancels when taking the ratio of two bound fractions. The driver took 5.79 s on four CPU cores. Three existing kernel and tissue checks passed in 6.59 s. Experimental binding data remain open. [Binding proof](CellsProofs/Chemistry/SingleSiteBinding.lean) · [Upstream theorem](https://github.com/ATOMSLab/LeanChemicalTheories/blob/00841fedb86c0af282f515eda7e83a525a42e048/src/adsorption/langmuir_kinetics.lean) · [Driver](checks/single_site_binding.py) · [Independent reference design](../validation/core_seams/references/README.md#L101) · [Tolerance calculation](../tests/unit/test_rapid_binding_kernel.py#L127)
+
+```json
+{
+  "engine_revision": "9a5bc6b8211847888cbb83c41ad88941bac19213",
+  "model": "resolved_pump_tissue@3", "law": "rapid_binding@1",
+  "backend": "cpu", "dtype": "float64", "reference": "S1", "states": 13,
+  "kd_mM": 9.999999999999994e-5, "fraction_range": [0.038286503882254776, 0.999000999000999],
+  "max_fraction_error_vs_reference": 3.3306690738754696e-16,
+  "max_fraction_error_vs_formula": 1.1102230246251565e-16,
+  "total_ligand_control_failures": 13, "tissue_state_0_fraction": 0.5812579461704979
+}
+```
+
+For `logmean_electrodiffusion@1`, the default proof checks the exact scale from fmol/s × J/mol to pJ/s. An optional import checks the physical dimensions using ATOMS Lab's amount, time and energy. A first build of upstream revision `de263eed` on Lean 4.19 failed on the newer Mathlib matrix-rank module name. Changing that one import in the build copy let both upstream modules compile. Omitting the molar denominator in a negative control left an uncancelled amount dimension and Lean rejected the equation. The dimension proof uses `propext` and `Quot.sound`. The two binding theorems and scalar conversion also use `Classical.choice`. With compiled Mathlib available, the optional check took 10.09 s including the first source download. Warm default builds measured 4.01 s before the additions and 3.75 s afterward on this checkout. [Units check](checks/units/FacePower.lean) · [Reproduction script](checks/units/check.sh) · [Engine multiplier](../src/cells/numerics/surface_transport.py#L312) · [Pinned package](https://github.com/ATOMSLab/LeanDimensionalAnalysis/tree/de263eed945693058ef2b8a1fa56c2ec5642ea7a) · [SI prefixes](https://www.bipm.org/en/measurement-units/si-prefixes)
+
+## 19 November 2026 · Extracellular face electrodiffusion
+
+Eight Lean theorems check the two log-ratio branches, positivity and symmetry of the implemented mean (including its small-gradient polynomial), flux reversal, equilibrium, direction and instantaneous dissipation per species and per face. They use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. The force is sender minus receiver electrochemical potential. The direction equivalence requires a positive face coefficient. [Face proofs](CellsProofs/Transport/LogMeanFace.lean) · [Mean](../src/cells/numerics/extracellular_field.py#L48) · [Flux and power](../src/cells/numerics/surface_transport.py#L292)
+
+The development comparison ran eleven CPU float64 cases and one closed `resolved_pump_tissue@3` world with `logmean_electrodiffusion@1`. For each active species and face at each observation time, the independent scalar mean and the declared geometry gave a reference flux. The driver took 17.46 s on four cores. Sixteen existing surface and scalar-reference tests passed in 8.91 s. [Inputs and JSON results driver](checks/logmean_face.py) · [Independent reference](../validation/tissue/surface_reference.py#L13) · [Tolerances](../validation/tissue/surface_protocol.json#L27)
+
+At zero voltage, concentrations of 100.00000000000001 and 100 mM gave a positive reference flux and zero computed flux. The engine subtracts the two rounded logs in its driving force. The difference falls within the protocol's absolute flux tolerance. At a resolved gradient, deliberately reversing the flux and both endpoint bookings conserved total material but produced negative power and failed the direction check. These are development checks under supplied or simulated endpoint conditions. Biological face-flux measurements remain open.
+
+```json
+{
+  "engine_revision": "c9549dfc553ce2e9cce5d05160c24b1879e3077b",
+  "backend": "cpu", "dtype": "float64", "component_cases": 11,
+  "flux_atol_fmol_s": 3e-12, "physical_rtol": 3e-10,
+  "opposed_flux_fmol_s": -0.0004999999999999968,
+  "reversed_flux_fmol_s": 0.0004999999999999968,
+  "balanced_flux_fmol_s": 3.361730104660899e-18,
+  "adjacent_float64": {"flux_fmol_s": 0, "reference_fmol_s": 1.4210854715202002e-18},
+  "reversed_flux_control": {"total_rate_fmol_s": 0, "power_pJ_s": -4.522364735283246e-5},
+  "tissue": {
+    "model": "resolved_pump_tissue@3", "law": "logmean_electrodiffusion@1",
+    "solver": "imex_ars222_face_electromigration@1", "samples_species_faces": [3, 4, 5],
+    "max_flux_error_fmol_s": 1.496198998029996e-17, "max_abs_transferred_fmol": 9.758954574665261e-6
+  }
+}
+```
+
 ## 19 November 2026 · Regional reaction and transport balance
 
 Lean checked the regional balance for a reaction–transport–reaction step and its whole-graph corollary. The proof uses the earlier chemistry theorem separately on each reaction half-step. The transfer theorem cancels every internal edge. Only the reactions inside the chosen region need to balance its inventory. Both results use the standard Lean axioms `propext`, `Classical.choice` and `Quot.sound`. [Regional proof](CellsProofs/Tissue/ReactionTransport.lean) · [Engine split order](../src/cells/models/pump_composite.py#L1308)

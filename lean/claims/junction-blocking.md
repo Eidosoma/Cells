@@ -14,6 +14,8 @@ Setting the effective transport scale to zero gives zero junction flux at every 
 
 - [CellsProofs.Transport.flux_blocked](../CellsProofs/Transport/ConstantField.lean#L58)
 
+Direct proof subject `cells.constant_field@1`
+
 ## Numerical comparison
 
 **Checked.** The surface blocking and equilibrium tests passed on CPU.
@@ -27,6 +29,8 @@ Setting the effective transport scale to zero gives zero junction flux at every 
 ## Biological evidence
 
 **Open.** Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.
+
+Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)
 
 **Unit** fmol/s
 
