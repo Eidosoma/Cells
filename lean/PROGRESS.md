@@ -1,5 +1,23 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Single-site binding and face-power units
+
+For `rapid_binding@1`, Lean derives the bound fraction from equal forward and reverse rates and recovers the same fraction from the two form weights used by Cells. The local proof specializes the Langmuir argument to a free ligand concentration and a dissociation constant, both in mM. The comparison ran the compiled law on all thirteen manufactured S1 states and the stage read on the first state in `resolved_pump_tissue@3`. Reference tolerances are twice the recorded floor on the log of each concentration. A common binder total cancels when taking the ratio of two bound fractions. The driver took 5.79 s on four CPU cores. Three existing kernel and tissue checks passed in 6.59 s. Experimental binding data remain open. [Binding proof](CellsProofs/Chemistry/SingleSiteBinding.lean) · [Upstream theorem](https://github.com/ATOMSLab/LeanChemicalTheories/blob/00841fedb86c0af282f515eda7e83a525a42e048/src/adsorption/langmuir_kinetics.lean) · [Driver](checks/single_site_binding.py) · [Independent reference design](../validation/core_seams/references/README.md#L101) · [Tolerance calculation](../tests/unit/test_rapid_binding_kernel.py#L127)
+
+```json
+{
+  "engine_revision": "9a5bc6b8211847888cbb83c41ad88941bac19213",
+  "model": "resolved_pump_tissue@3", "law": "rapid_binding@1",
+  "backend": "cpu", "dtype": "float64", "reference": "S1", "states": 13,
+  "kd_mM": 9.999999999999994e-5, "fraction_range": [0.038286503882254776, 0.999000999000999],
+  "max_fraction_error_vs_reference": 3.3306690738754696e-16,
+  "max_fraction_error_vs_formula": 1.1102230246251565e-16,
+  "total_ligand_control_failures": 13, "tissue_state_0_fraction": 0.5812579461704979
+}
+```
+
+For `logmean_electrodiffusion@1`, the default proof checks the exact scale from fmol/s × J/mol to pJ/s. An optional import checks the physical dimensions using ATOMS Lab's amount, time and energy. A first build of upstream revision `de263eed` on Lean 4.19 failed on the newer Mathlib matrix-rank module name. Changing that one import in the build copy let both upstream modules compile. Omitting the molar denominator in a negative control left an uncancelled amount dimension and Lean rejected the equation. The dimension proof uses `propext` and `Quot.sound`. The two binding theorems and scalar conversion also use `Classical.choice`. With compiled Mathlib available, the optional check took 10.09 s including the first source download. Warm default builds measured 4.01 s before the additions and 3.75 s afterward on this checkout. [Units check](checks/units/FacePower.lean) · [Reproduction script](checks/units/check.sh) · [Engine multiplier](../src/cells/numerics/surface_transport.py#L312) · [Pinned package](https://github.com/ATOMSLab/LeanDimensionalAnalysis/tree/de263eed945693058ef2b8a1fa56c2ec5642ea7a) · [SI prefixes](https://www.bipm.org/en/measurement-units/si-prefixes)
+
 ## 19 November 2026 · Extracellular face electrodiffusion
 
 Eight Lean theorems check the two log-ratio branches, positivity and symmetry of the implemented mean (including its small-gradient polynomial), flux reversal, equilibrium, direction and instantaneous dissipation per species and per face. They use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. The force is sender minus receiver electrochemical potential. The direction equivalence requires a positive face coefficient. [Face proofs](CellsProofs/Transport/LogMeanFace.lean) · [Mean](../src/cells/numerics/extracellular_field.py#L48) · [Flux and power](../src/cells/numerics/surface_transport.py#L292)

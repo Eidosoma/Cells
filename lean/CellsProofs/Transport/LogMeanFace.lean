@@ -107,6 +107,11 @@ theorem dissipation_nonneg {factor rt charge a b voltage : ℝ}
   exact mul_nonneg (div_nonneg (mul_nonneg hf (mean_pos ha hb).le)
     (mul_pos ht (by norm_num)).le) (sq_nonneg _)
 
+/-- Convert flux from fmol/s to mol/s and power from J/s to pJ/s. -/
+theorem power_in_pJ_per_s (fluxFmolPerS dropJPerMol : ℝ) :
+    (fluxFmolPerS / 10 ^ 15 * dropJPerMol) * 10 ^ 12 =
+      (1 / 1000 : ℝ) * (fluxFmolPerS * dropJPerMol) := by ring
+
 /-- The reported face power in pJ/s sums the species contributions and converts units. -/
 theorem face_power_nonneg {Ion : Type*} (ions : Finset Ion) (factor charge a b : Ion → ℝ)
     {rt voltage : ℝ} (ht : 0 < rt) (hf : ∀ i ∈ ions, 0 ≤ factor i)
