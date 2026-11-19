@@ -140,6 +140,15 @@ def test_the_registered_power(registered):
     assert 8 < ec["scalings"]["second_order_ratio"] < 12
     assert ec["reachability"]["unreach2"]["verdict"] == "refused"
     assert all(v["verdict"] == "admitted" for b, v in ec["reachability"].items() if b != "unreach2")
+    # amendment C5: release steps; the flipped sign is caught on every case, B4 on the buffer
+    c5 = p["C5_amendment_release_envelope"]
+    assert c5["all_caught"] and len(c5["cases"]) == 7
+    assert c5["cases"]["E3_rel1_b4"]["b4_formula_vs_general_rel"] < 1e-12
+    assert all(r["release_steps"] for r in c5["cases"].values())
+    assert all(x < 1 for r in c5["cases"].values() for x in r["float64_rerun_over_floor"].values())
+    assert sum(z["control"].startswith("amendment C5") for z in des["zero_power"]) == 4
+    mg = ec["E4_mgx_mixed_mg_drive"]
+    assert mg["per_step_pH"] < mg["first_order_pH"]
     # amendment C2: the scales part only in S4, and by 1e9 at its cancelling state
     for name, c in p["C2_amendment_convergence_scale"].items():
         if name == "S4":

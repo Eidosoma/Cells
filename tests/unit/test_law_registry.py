@@ -24,7 +24,14 @@ Each claim is checked once, with a planted error it must catch (D187):
 - a cycle law whose form carries it may leave its moves empty and its kernels None, the form's
   own errors() then holding, while a law without a form keeps version 1's checks (planted, each
   refused: such a law whose form reports, a formed law with a non-callable kernel, and a law
-  without a form missing its moves or a kernel).
+  without a form missing its moves or a kernel);
+- cycle_changes reads a cycle law's change rows as declared, the manifest's one source: version
+  1's moves, or its form's changes() rows in the row form's key order, counts and parameter names
+  unresolved (planted, each refused at registration, by the reader and by the manifest's: a list
+  of rows, a row that is not a mapping, one without its mode, one with an extra key, an unnamed
+  role, a fractional and a bool count, an unnamed mode, and a form without changes(); a form whose
+  own errors() report is never asked for rows, a route law is not read, and version 1's moves
+  refuse a fractional count).
 """
 
 import dataclasses
@@ -38,7 +45,7 @@ from cells.kinds import passive_routes, proton_buffer, transporter
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
-from cells.registry import laws
+from cells.registry import declarations, laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
 from tests.unit.test_transporter_kind import held_world, population
 from validation.tissue import composite_crossrev as crossrev
@@ -303,14 +310,22 @@ def test_a_registered_but_undeclared_law_changes_no_program(monkeypatch):
     assert registered["checked_step"][0] != today["checked_step"][0]
 
 
-class PlantedForm:
-    """A planted general form: its own errors() reports `problems`."""
+PLANTED_ROWS = ({"role": "role@in", "per_cycle": 1, "mode": "planted"},)
 
-    def __init__(self, *problems):
+
+class PlantedForm:
+    """A planted general form: its own errors() reports `problems`, and its changes() gives
+    `rows`."""
+
+    def __init__(self, *problems, rows=PLANTED_ROWS):
         self.problems = list(problems)
+        self.rows = rows
 
     def errors(self):
         return self.problems
+
+    def changes(self):
+        return self.rows
 
 
 def test_forms_a_cycle_form_and_a_general_closure_are_declared_and_checked():
@@ -364,3 +379,64 @@ def test_a_cycle_form_carries_its_law_and_version_1_keeps_its_checks():
     ):
         with pytest.raises(ValueError, match=re.escape(words)):
             laws.LawRegistry().register(law)
+
+
+class ReportingForm(PlantedForm):
+    """A planted form whose own errors() report: asking it for rows fails the test."""
+
+    def changes(self):
+        raise AssertionError("a form that breaks its own contract is never asked for rows")
+
+
+def test_cycle_changes_reads_a_cycle_law_s_declared_rows_from_one_source():
+    _, cycle, route_law, _ = planted_laws()
+    # Version 1's law: its moves, each count as declared (a parameter's name stays a name).
+    assert laws.cycle_changes(cycle) == ({"role": "role", "per_cycle": -1},)
+    named = dataclasses.replace(cycle, moves=(("substrate", "-n_coupled"), ("product", 2)))
+    assert laws.cycle_changes(named) == (
+        {"role": "substrate", "per_cycle": "-n_coupled"},
+        {"role": "product", "per_cycle": 2},
+    )
+    # A form-carried law: its form's rows as declared, in the row form's key order.
+    rows = (
+        {"mode": "coupled", "role": "substrate@in", "per_cycle": "-n_coupled"},
+        {"role": "product@out", "per_cycle": 2, "mode": "coupled"},
+    )
+    host = transporter.KIND_ID
+    carried = laws.CycleLaw(
+        "tests.planted_carried_cycle@1", cycle=PlantedForm(rows=rows), host=host
+    )
+    assert laws.LawRegistry().register(carried) is carried
+    read = laws.cycle_changes(carried)
+    assert read == rows and [list(row) for row in read] == [["role", "per_cycle", "mode"]] * 2
+    assert declarations._cycle_changes(carried) == list(read)  # The manifest's, from one source.
+    with pytest.raises(TypeError, match="reads a CycleLaw"):
+        laws.cycle_changes(route_law)
+    with pytest.raises(ValueError, match=re.escape("its moves are (role, count) pairs")):
+        laws.LawRegistry().register(dataclasses.replace(cycle, moves=(("role", 1.5),)))
+    # A form whose own errors() report is refused for them and never asked for its rows.
+    with pytest.raises(ValueError, match="its cycle: a mode without a cycle"):
+        laws.LawRegistry().register(
+            dataclasses.replace(carried, cycle=ReportingForm("a mode without a cycle"))
+        )
+    # Planted, each refused at registration, by the reader and by the manifest's reader.
+    good, malformed = rows[1], "returns a tuple of {role, per_cycle, mode} rows"
+    for form, words in (
+        (PlantedForm(rows=list(rows)), malformed),  # A list, not a tuple.
+        (PlantedForm(rows=(("role", "per_cycle", "mode"),)), malformed),  # Names, not a mapping.
+        (PlantedForm(rows=({"role": "product@out", "per_cycle": 2},)), malformed),  # No mode.
+        (PlantedForm(rows=(dict(good, sign="+"),)), malformed),  # An extra key.
+        (PlantedForm(rows=(dict(good, role=""),)), malformed),
+        (PlantedForm(rows=(dict(good, per_cycle=1.5),)), malformed),
+        (PlantedForm(rows=(dict(good, per_cycle=True),)), malformed),
+        (PlantedForm(rows=(dict(good, mode=None),)), malformed),
+        (type("ErrorsOnly", (), {"errors": lambda self: []})(), "a form with its own changes()"),
+    ):
+        planted = dataclasses.replace(carried, cycle=form)
+        for read_it in (
+            laws.LawRegistry().register,
+            laws.cycle_changes,
+            declarations._cycle_changes,
+        ):
+            with pytest.raises(ValueError, match=re.escape(words)):
+                read_it(planted)

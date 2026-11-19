@@ -14580,6 +14580,22 @@
        }
       }
      ]
+    },
+    "rel1": {
+     "base_valence": -1,
+     "forms": [
+      {
+       "id": "rel1_base",
+       "mu0_RT": 0.5
+      },
+      {
+       "id": "rel1_mH",
+       "mu0_RT": 21.223265836946414,
+       "counts": {
+        "H": -1
+       }
+      }
+     ]
     }
    },
    "moieties": {
@@ -16927,6 +16943,388 @@
       16.0
      ],
      "note": "E2 with its binder's base form moved in (a moved binder row)"
+    },
+    "E3_rel1_b4": {
+     "ligands": [
+      "H"
+     ],
+     "binders": [
+      "rel1"
+     ],
+     "volume_pL": 0.05,
+     "free_mM": {
+      "H": 6.309573444801942e-07
+     },
+     "binders_mM": {
+      "rel1": 40.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.2262736087584167
+      },
+      "binders_fmol": {
+       "rel1": 2.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "rel1",
+       "H",
+       100000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "one ligand and a two-form buffer whose other form sits below its base: its one step, rel1_mH + H \u21cc rel1_base, is a release step; the general lag must equal B4's formula with the release form as the free one",
+     "amendment": "C5"
+    },
+    "E3_pi2_release": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "pi2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 1e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "pi2": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.283862168949658,
+       "Mg": 0.6638062230794811
+      },
+      "binders_fmol": {
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "single-sign release: pi2 at pH 12, where pi2_PO4 + H \u21cc pi2_base carries the buffering; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E3_pi2_release_mg_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "pi2"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 1e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "pi2": 10.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.283862168949658,
+       "Mg": 0.6638062230794811
+      },
+      "binders_fmol": {
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "Mg",
+       0.001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E3_pi2_release under an Mg\u00b2\u207a drive, coupled to the release step through the base",
+     "amendment": "C5"
+    },
+    "E3_s4_release": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "nuc4",
+      "nuc3",
+      "pi2"
+     ],
+     "volume_pL": 2.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-09,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "nuc4": 2.0,
+      "nuc3": 1.0,
+      "pi2": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -1.3389658749790587,
+       "Mg": 5.944562499974286
+      },
+      "binders_fmol": {
+       "nuc4": 4.0,
+       "nuc3": 2.0,
+       "pi2": 10.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "nuc4",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc4",
+       "Mg",
+       10000.0
+      ],
+      [
+       "nuc3",
+       "H",
+       10000000.0
+      ],
+      [
+       "nuc3",
+       "Mg",
+       10000.0
+      ],
+      [
+       "pi2",
+       "H",
+       10000000.0
+      ],
+      [
+       "pi2",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.0001
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "single-sign release among S4's three binders at pH 11.5; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "H",
+       0.03
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "mixed-sign: mgx at pH 7.5, two thirds of it as mgx_MgmH (H \u22121, Mg +1), reached through mgx_Mg by the release step mgx_MgmH + H \u21cc mgx_Mg; an H\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed_mg_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "Mg",
+       0.1
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E4_mgx_mixed under an Mg\u00b2\u207a drive: binding Mg\u00b2\u207a releases H\u207a through the release step, so the H\u207a lag comes from the Mg\u00b2\u207a drive",
+     "amendment": "C5"
+    },
+    "E4_mgx_mixed_binder_drive": {
+     "ligands": [
+      "H",
+      "Mg"
+     ],
+     "binders": [
+      "mgx"
+     ],
+     "volume_pL": 1.0,
+     "free_mM": {
+      "H": 3.1622776601683795e-05,
+      "Mg": 0.5
+     },
+     "binders_mM": {
+      "mgx": 5.0
+     },
+     "totals": {
+      "ligands_fmol": {
+       "H": -3.009428700976931,
+       "Mg": 4.108198947253062
+      },
+      "binders_fmol": {
+       "mgx": 5.0
+      }
+     },
+     "kon_per_mM_per_s": [
+      [
+       "mgx",
+       "H",
+       10000000.0
+      ],
+      [
+       "mgx",
+       "Mg",
+       10000.0
+      ]
+     ],
+     "drive_fmol_per_s": [
+      [
+       "mgx",
+       0.01
+      ]
+     ],
+     "record_slow_times": [
+      0.5,
+      2.0,
+      8.0,
+      16.0
+     ],
+     "note": "E4_mgx_mixed with its binder's base form moved in (a moved binder row)",
+     "amendment": "C5"
     }
    },
    "planted_unreachable_binders": {
@@ -16947,7 +17345,20 @@
      ]
     }
    },
-   "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time"
+   "note": "amendment C3: k_on per (binder, ligand); drives on free ligands or a binder's base form; record times in units of the network's slowest relaxation time",
+   "amendment_c5": {
+    "cases": [
+     "E3_rel1_b4",
+     "E3_pi2_release",
+     "E3_pi2_release_mg_drive",
+     "E3_s4_release",
+     "E4_mgx_mixed",
+     "E4_mgx_mixed_mg_drive",
+     "E4_mgx_mixed_binder_drive"
+    ],
+    "release_step": "a unit step f\u2032 + L \u21cc f whose bound form f holds count_f(L) \u2264 0: binding L only restores a ligand released below the base",
+    "planted": "the release steps' ligand written with the wrong sign in N (the step taken to release L where it binds it), the forward flux unchanged"
+   }
   },
   "validity": {
    "note": "amendment C4: t* = min over the ligand simplex of \u03bb\u00b7T \u2212 \u03a3_B T_B min_f \u03bb\u00b7n_f; a state is valid iff t* > 0; the per-ligand floors are t at \u03bb = e_L",
