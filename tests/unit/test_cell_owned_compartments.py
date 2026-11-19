@@ -738,6 +738,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         NEUTRAL_PUMP: (),
         LEAK: ("stage_term",),
         NEUTRAL_ROUTE: ("material_bound",),
+        "inward_rectifier_linear_driving_force@1": ("stage_term",),  # The rectifier (RECTIFIER).
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     from validation.compartment_ph_engine import definitions as defs
