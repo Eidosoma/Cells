@@ -5,7 +5,8 @@
   declared: its keys, its counts in their order, its valence only where given. A definition
   without forms keeps today's entries, key for key (FR-4's world).
 * Each refusal names its row and form: the structure, the ligands, isomers, version 1's spelling
-  beside the forms, and a declared valence that its counts contradict.
+  beside the forms, a declared valence that its counts contradict, and a form with counts of both
+  signs (C4, fail-closed); a form below its base in every ligand it counts stays admitted.
 * One authority: ln beta_f = mu°_base/RT + sum n mu°_L/RT - mu°_f/RT. A two-form row written as
   forms gives version 1's dissociation constant, and the stability's speciation makes each form's
   potential its base's plus its ligands', unchanged when every potential moves to another c0.
@@ -190,6 +191,8 @@ REFUSALS = {
     ),
     "ligand with forms": (_set(("N", "forms", 0, "counts"), {"P": 1}), "has forms of its own"),
     "isomers": (_set(("N", "forms", 0, "counts"), {"H": 1, "Mg": 1}), "two forms have the counts"),
+    # C4 fail-closed (the lead's ruling, 19 November 2026); the control's P3 ({H: -1}) is admitted.
+    "counts of both signs": (_set(("P", "forms", 1, "counts"), {"H": -1, "Mg": 1}), "both signs"),
 }
 
 

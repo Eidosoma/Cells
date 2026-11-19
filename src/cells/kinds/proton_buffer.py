@@ -48,12 +48,22 @@ declaration:
 - At each named node it holds each binder row's total and the total equivalents of every ligand
   those binders bind there (its closure rows); k_on is declared per binding (binder, ligand), one
   for each ligand the binder's forms bind, and every form is reachable from its base by unit steps.
-- Its admission (a parse; no solve): the registry's forms checks here, and the movers' rules in the
-  species registry's check_closure_rows (@3's own routes and pumps refused on a closure row, a
-  kind's move admitted only when its law reads rapid_binding@1, operators naming a held species
-  refused).
-- Its solve is seam C's item 3, gated on the references' amendments: until it is built, an
-  admitted general declaration is refused at the end of its check, fail-closed.
+- Its admission: the registry's forms checks here, and the movers' rules in the species
+  registry's check_closure_rows (@3's own routes and pumps refused on a closure row, a kind's move
+  admitted only when its law reads rapid_binding@1, operators naming a held species refused).
+- That movers' rule is §5.2's proxy, and it admits no shipped law (the lead's ruling, 19 November
+  2026). No built-in law reads rapid_binding@1, so in an admitted world nothing moves a closure
+  row and its held totals never change: world-level power waits for a real mover. §5.2's own
+  admission replaces the proxy: a mover's mode written in base rows that matches a declared form
+  of each binder it moves, every ligand count written out. Its single-mode part comes with seam
+  F's binding-law fields, its multi-mode part with seam A's stoichiometric modes.
+- Its solve (laws/reactions/rapid_binding.py): each stage, the read writes each held ligand's
+  free amount and each binder's free base form into the rows. The envelope bounds the network's
+  first-order lag at the stage's transport (1e-3 in log10 units). The ledger books phase 1's S_c,
+  NaN where a held total is <= 0 so that the ledger refuses, beside @3's ideal terms on the rows
+  (CORE_SEAMS §19 as amended). One ligand takes the Newton too: a structure entry sees only the
+  declaration, not the registry's forms, so B4's path cannot be chosen statically here (the
+  kernel's tests show the two agree).
 """
 
 import math
