@@ -44,12 +44,13 @@ with a planted error it must catch (D187):
 - a kind's role_species is None by default, not refused by its reader, and where set gives one
   EntityBinding per entity: a cycle law the kind hosts, exactly that law's roles bound to species
   IDs (a version-1 law's moves and a general form's "role@end" rows read as their roles), a node
-  at every end its rows name (MOVES_END for moves-only rows) and a finite value for every
+  at every end its rows name (both MOVES_ENDS for a moves-only law) and a finite value for every
   parameter-named count; entities of one law may differ (planted, each refused, naming the
   entity: a list, a plain tuple, a law another kind hosts, an unregistered law, a missing and an
-  extra role, a non-string species, an empty role, a missing end of each kind, a non-string
-  node, a missing count, a string, a bool and an infinite value, and a hook that is not a
-  callable, refused at registration).
+  extra role, a non-string species, an empty role, a form's missing end, a moves-only law's
+  missing inside and its missing outside (MOVES_ENDS: its counts land there with the opposite
+  sign), a non-string node, a missing count, a string, a bool and an infinite value, and a hook
+  that is not a callable, refused at registration).
 """
 
 import math
@@ -552,7 +553,7 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         bind(
             "tests.booked_cycle@1",
             roles={"substrate": "glucose", "product": "lactate"},
-            ends={inside: "cell_a"},
+            ends={inside: "cell_a", "outside": "bath"},
             parameters={"n_coupled": 2},
         ),
         bind(
@@ -564,7 +565,7 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
         bind(
             "tests.booked_cycle@1",
             roles={"substrate": "fructose", "product": "lactate"},
-            ends={inside: "cell_b", "P": "bath"},
+            ends={inside: "cell_b", "outside": "bath", "P": "bath"},
             parameters={"n_coupled": 1, "spare": 0.5},
         ),
     )
@@ -574,7 +575,10 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
     with law_registry.scope(law_registry.BUILTIN.extended(version_1, formed, elsewhere)):
         assert kind_registry.law_roles(version_1) == {"substrate", "product"}
         assert kind_registry.law_roles(formed) == {"cofactor", "substrate"}  # "@end" read off.
-        assert kind_registry.law_ends(version_1) == {inside}
+        # A moves-only law's rows cross its patch: inward-positive at the inside, the opposite
+        # sign at the outside, so both ends are its.
+        assert kind_registry.law_ends(version_1) == set(kind_registry.MOVES_ENDS)
+        assert kind_registry.MOVES_ENDS == (inside, "outside")
         assert kind_registry.law_ends(formed) == {"N", "P"}
         assert kind_registry.law_count_names(version_1) == {"n_coupled"}
         assert kind_registry.law_count_names(formed) == {"n_coupled"}  # Its "-" read off.
@@ -600,8 +604,12 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
                 "entity 1 ('tests.booked_formed_cycle@1'): it places no node at the ends ['P']",
             ),
             (
-                (first._replace(ends={"N": "cell_a"}), second, third),
-                "no node at the ends ['inside']",
+                (first._replace(ends={"outside": "bath"}), second, third),
+                "entity 0 ('tests.booked_cycle@1'): it places no node at the ends ['inside']",
+            ),
+            (  # A moves-only law's outside, where its counts land with the opposite sign.
+                (first._replace(ends={inside: "cell_a"}), second, third),
+                "entity 0 ('tests.booked_cycle@1'): it places no node at the ends ['outside']",
             ),
             ((first._replace(ends={inside: 7}), second, third), "its ends map names to a name"),
             (

@@ -62,6 +62,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "AxisHost",
         "EntityBinding",
         "MOVES_END",
+        "MOVES_ENDS",
         "parse_series",
         "series_to_dict",
         "qualified",

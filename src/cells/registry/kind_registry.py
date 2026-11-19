@@ -39,6 +39,7 @@ __all__ = (
     "ENERGY_ROLES",
     "HEAT_SUFFIX",
     "MOVES_END",
+    "MOVES_ENDS",
     "LEDGER_TERM_ROLES",
     "PARTITION_ROLES",
     "WORK_SUFFIX",
@@ -545,17 +546,21 @@ class AxisHost(NamedTuple):
     index: str
 
 
-# The end a moves-only (version 1) cycle law's change rows name, which carry no "@end": its host
-# patch's inside, where its inward-positive moves are counted. A general form's rows name theirs.
+# The ends of a moves-only (version 1) cycle law, whose change rows carry no "@end": its host
+# patch's inside and outside. Its moves are inward-positive at the inside (MOVES_END), and the
+# same counts land with the opposite sign at the outside, so each role crosses the patch. A
+# general form's rows name their own ends.
 MOVES_END = "inside"
+MOVES_ENDS = (MOVES_END, "outside")
 
 
 class EntityBinding(NamedTuple):
     """One entity of a declaration as §5.2's admission resolves its rows (Kind.role_species, D142):
     `law_id`, the cycle law it runs, one its kind hosts; `roles`, {role: species ID}, the species
     each of that law's roles binds; `ends`, {end: node ID}, the node at each end its change rows
-    name (a general form's "@end" names, as its patch's inside and outside; MOVES_END alone for a
-    moves-only law); and `parameters`, {name: value}, its values for the law's parameter-named
+    name (a general form's "@end" names, as its patch's inside and outside; MOVES_ENDS for a
+    moves-only law, whose inward-positive moves at the inside land with the opposite sign at the
+    outside); and `parameters`, {name: value}, its values for the law's parameter-named
     counts, since entities of one law may differ. kind_role_species checks it."""
 
     law_id: str
@@ -605,29 +610,32 @@ def kind_standard_free_energies(kind, declaration):
     return declared
 
 
-def _row_role_end(law, row):
-    """(role, end) of one of a cycle law's change rows: a general form's "role@end" split, or a
-    moves-only law's role at MOVES_END."""
+def _form_role_end(row):
+    """(role, end) of a general form's change row, from its "role@end" (end None without one)."""
     role, at, end = row["role"].rpartition("@")
-    if law.cycle is not None and at:
-        return role, end
-    return row["role"], MOVES_END
+    return (role, end) if at else (row["role"], None)
 
 
 def law_roles(law):
-    """A cycle law's roles: each change row's role (registry/laws.cycle_changes), read without the
-    "@end" a general form adds to it."""
+    """A cycle law's roles: each change row's role (registry/laws.cycle_changes), a general form's
+    read without the "@end" it adds."""
     from cells.registry import laws as law_registry  # registry/laws imports this module.
 
-    return {_row_role_end(law, row)[0] for row in law_registry.cycle_changes(law)}
+    rows = law_registry.cycle_changes(law)
+    if law.cycle is None:
+        return {row["role"] for row in rows}
+    return {_form_role_end(row)[0] for row in rows}
 
 
 def law_ends(law):
-    """The ends a cycle law's change rows name: a general form's "@end" names, or MOVES_END for a
-    moves-only law."""
+    """The ends a cycle law's change rows name: a general form's "@end" names, or MOVES_ENDS for a
+    moves-only law, whose moves are inward-positive at the inside and land with the opposite sign
+    at the outside, so a closure at either node places its rows."""
     from cells.registry import laws as law_registry
 
-    return {_row_role_end(law, row)[1] for row in law_registry.cycle_changes(law)}
+    if law.cycle is None:
+        return set(MOVES_ENDS)
+    return {_form_role_end(row)[1] for row in law_registry.cycle_changes(law)}
 
 
 def law_count_names(law):
