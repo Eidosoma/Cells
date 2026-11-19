@@ -178,6 +178,49 @@ def test_a_form_that_keeps_its_contract_is_admitted_and_planted_breaches_are_ref
     for w in (0.0, 0, math.inf, -math.inf, math.nan):  # A weight of 0, or not finite.
         found = "; ".join(weighted(w).errors())
         assert re.search("a finite nonzero weight", found), (w, found)
+    # Named rates (D228 item 1, version 2): a cycle that converts nothing may leave a k0 and a
+    # zeta to each population; resolved() gives one population's form, and the form itself where
+    # it names none; the numeric consumers refuse a named rate.
+    slip = slip_form()
+    load, swap = slip.diagram.edges[:2]
+    params = (Parameter("k_load", "1/s", positive=True), Parameter("z_swap", "1"))
+    named = slip._replace(
+        parameters=params,
+        diagram=slip.diagram._replace(
+            edges=(
+                load._replace(forward=load.forward._replace(k0_per_s="k_load")),
+                swap._replace(backward=swap.backward._replace(zeta="-z_swap")),  # -(0.5).
+                *slip.diagram.edges[2:],
+            )
+        ),
+    )
+    assert named.errors() == []
+    values = {"k_load": load.forward.k0_per_s, "z_swap": -swap.backward.zeta}
+    assert forms.resolved(named, values).diagram == slip.diagram
+    assert forms.resolved(slip, values) is slip and forms.resolved(factored, {}) is factored
+    for consumer in (forms.diagram_tables, lambda f: forms.wegscheider(f, 0, {}, {}, 1000.0)):
+        with pytest.raises(ValueError, match="resolve the form for one population first"):
+            consumer(named)
+    pump = pump_form()
+    bind = pump.diagram.edges[0]
+    fuelled = pump._replace(
+        parameters=(Parameter("k_bind", "1/s", positive=True),),
+        diagram=pump.diagram._replace(
+            edges=(bind._replace(forward=bind.forward._replace(k0_per_s="k_bind")),
+                   *pump.diagram.edges[1:]),
+        ),
+    )  # fmt: skip
+    named_plants = (
+        ("each rate has a positive k0", named._replace(
+            parameters=(params[0]._replace(positive=False), params[1]))),  # k0 not positive.
+        ("each rate has a positive k0", named._replace(parameters=params[:1])),  # -z_swap: none.
+        ("a cycle that converts a species gives every k0 on its edges as a number", fuelled),  # E3.
+    )  # fmt: skip
+    for reason, form in named_plants:
+        found = "; ".join(form.errors())
+        assert re.search(reason, found), (reason, found)
+    with pytest.raises(ValueError, match="resolve the form for one population first"):
+        forms.implied_free_energy(fuelled, 0)  # A named k0: seam E's constants refuse it too.
 
 
 # ------------------------------------------------------------------ the topology

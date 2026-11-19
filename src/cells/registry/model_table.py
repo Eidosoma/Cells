@@ -90,7 +90,8 @@ MODELS = MappingProxyType(
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
                 "cells.laws.pumps.atp_transporter",
                 "cells.laws.pumps.proton_pump",
-                "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 3).
+                "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 1).
+                "cells.laws.cycles.na2_anion_symport_diagram",  # Its version 2, the same item.
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",

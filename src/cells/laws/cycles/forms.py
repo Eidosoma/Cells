@@ -18,7 +18,9 @@ population axis), so the kind can run any declared cycle with one generic progra
     factor naming its row and its K and h (a constant or a parameter);
   - `diagram`: a mass-action kinetic diagram whose every edge rate is
     alpha = k0 prod a^order exp(zeta psi), a = c/c°, psi = F (phi_N - phi_P)/RT; its modes are
-    every one of its Hill cycles, each with its edges' directions;
+    every one of its Hill cycles, each with its edges' directions. A rate's k0 and zeta are each a
+    number or a parameter's name (a positive parameter in 1/s; a parameter in 1, which a leading
+    "-" negates), so a law may leave its rates to each population's declaration;
   - `net_flow`: per mode, terms J = k a sum_t w_t (1 - exp(x_t + eps_t psi)), x_t the free energy of
     the term's own stoichiometry (the fallback of §3.2; it exposes no one-way flux, D202). A weight
     is signed and nonzero, so a mode may be booked as a signed combination of cycle fluxes, as a
@@ -47,7 +49,20 @@ cites them, unread):
 each once and with a consistent direction (§16: a declared basis is admitted only where it is the
 full set; edge-disjoint cycles span the cycle space only in a cactus diagram, where they are all of
 its simple cycles). Each cycle's counts equal minus the signed sum of its edges' orders, row by
-row: Wegscheider's structural part, decided exactly in integers.
+row: Wegscheider's structural part, decided exactly in integers. A named rate names a parameter
+of the right kind, and a cycle that converts a species (a role's net change over both ends
+nonzero) has a number for every k0 on its edges, since seam E's check reads its free-energy band
+from the law's own constants (the lead's ruling E3, 19 November 2026); a named zeta is admitted
+on any cycle.
+
+**Named rates (D228 item 1, version 2; the lead's ruling (a)+(a1)).** `resolved(form, values)` is
+the form with each named rate replaced by one population's declared value, and the form itself
+where it names none, so a numeric form and every world that runs one are unchanged. Every numeric
+consumer (diagram_tables, wegscheider, implied_free_energy, free_energy_band) refuses a rate it
+reads that names a parameter, so an unresolved form never runs; the kind resolves each
+population's form at parse, where Wegscheider's condition is decided for its declared values
+exactly as for a law's constants. A diagram's topology is cached on its structure, not its rates,
+so the populations of one law share it.
 """
 
 import itertools
@@ -102,11 +117,13 @@ class PhBand(NamedTuple):
 
 class Rate(NamedTuple):
     """One direction of a diagram edge: alpha = k0 prod a^order exp(zeta psi), with the orders
-    ((role, end, order), ...), each order a positive integer, and a = c/c° at the row's end."""
+    ((role, end, order), ...), each order a positive integer, and a = c/c° at the row's end. k0
+    is a positive number or a positive parameter's name (1/s); zeta a finite number or a
+    parameter's name (1), a leading "-" negating it (resolved)."""
 
-    k0_per_s: float
+    k0_per_s: float | str
     orders: tuple = ()
-    zeta: float = 0.0
+    zeta: float | str = 0.0
 
 
 class Edge(NamedTuple):
@@ -152,6 +169,58 @@ def _int(value):
 
 def _finite(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _rate_name(value):
+    """(parameter name, sign) of a named rate field, the sign -1 for a leading "-"; or None for a
+    number."""
+    if not _named(value):
+        return None
+    return (value[1:], -1) if value.startswith("-") else (value, 1)
+
+
+def _k0_admitted(value, by_name):
+    """A k0: a positive number, or the name of a positive parameter in 1/s (never negated)."""
+    if _finite(value):
+        return value > 0
+    p = by_name.get(value) if _named(value) else None
+    return p is not None and p.positive and p.unit == "1/s"
+
+
+def _zeta_admitted(value, by_name):
+    """A zeta: a finite number, or a parameter's name in 1, a leading "-" negating it."""
+    if _finite(value):
+        return True
+    named = _rate_name(value)
+    p = by_name.get(named[0]) if named is not None else None
+    return p is not None and p.unit == "1"
+
+
+def _named_rates(diagram, signed=None, *, zeta=True):
+    """The named rate fields, (edge ID, field, value), on a cycle's signed edges (every edge where
+    signed is None); zeta's too unless zeta=False."""
+    keep = None if signed is None else {e for e, _ in signed}
+    out = []
+    for edge in diagram.edges:
+        if keep is not None and edge.id not in keep:
+            continue
+        for direction, rate in (("forward", edge.forward), ("backward", edge.backward)):
+            if _named(rate.k0_per_s):
+                out.append((edge.id, f"{direction} k0", rate.k0_per_s))
+            if zeta and _named(rate.zeta):
+                out.append((edge.id, f"{direction} zeta", rate.zeta))
+    return out
+
+
+def _numeric(diagram, signed=None, *, zeta=True):
+    """Refuses a named rate a numeric consumer would read (resolved gives one population's)."""
+    named = _named_rates(diagram, signed, zeta=zeta)
+    if named:
+        edge, field, value = named[0]
+        raise ValueError(
+            f"edge {edge}'s {field} names the parameter {value!r}: resolve the form for one "
+            "population first (forms.resolved)"
+        )
 
 
 class CycleForm(NamedTuple):
@@ -393,6 +462,29 @@ def resolve(form, values):
     return counts, saturation, bands
 
 
+def resolved(form, values):
+    """The form for one population's parameter values ({name: value}): each named diagram rate
+    replaced by its value (a k0 by its parameter's, a zeta by its parameter's, negated where it
+    names "-name"). The form itself where it names none, so a numeric form, and every world that
+    runs one, is unchanged; a form of another kinetics is returned as it is."""
+    d = form.diagram
+    if form.kinetics != "diagram" or not _named_rates(d):
+        return form
+
+    def number(value):
+        named = _rate_name(value)
+        if named is None:
+            return value
+        name, sign = named
+        return sign * float(values[name])
+
+    def rate(r):
+        return r._replace(k0_per_s=number(r.k0_per_s), zeta=number(r.zeta))
+
+    edges = tuple(e._replace(forward=rate(e.forward), backward=rate(e.backward)) for e in d.edges)
+    return form._replace(diagram=d._replace(edges=edges))
+
+
 def parameter_errors(form, values):
     """Why a population's parameter values ({name: value}) break the form's declared ranges."""
     out = []
@@ -491,18 +583,24 @@ class Topology(NamedTuple):
     simple: tuple  # every simple cycle, as frozensets of edge indices
 
 
-@lru_cache(maxsize=None)
 def topology(diagram):
-    """The diagram's Topology (module docstring); cached, since a diagram is a value."""
-    ids = {edge.id: k for k, edge in enumerate(diagram.edges)}
-    pairs = tuple((edge.source, edge.target) for edge in diagram.edges)
-    n = len(diagram.states)
+    """The diagram's Topology (module docstring), cached on its structure (its states' count, its
+    edges' IDs and ends, and its cycles), not its rates, so the populations of one law, each
+    resolved with its own values, share one."""
+    edges = tuple((edge.id, edge.source, edge.target) for edge in diagram.edges)
+    return _topology(len(diagram.states), edges, diagram.cycles)
+
+
+@lru_cache(maxsize=None)
+def _topology(n, edges, cycles):
+    ids = {edge_id: k for k, (edge_id, _, _) in enumerate(edges)}
+    pairs = tuple((source, target) for _, source, target in edges)
     trees = tuple(spanning_trees(n, pairs))
     terms = tuple(
         (root, _directed(tree, pairs, root, lambda s: s)) for tree in trees for root in range(n)
     )
     plus, minus, cut = [], [], []
-    for _, signed in diagram.cycles:
+    for _, signed in cycles:
         steps = [(ids[e], sign > 0) for e, sign in signed]
         plus.append(tuple(steps))
         minus.append(tuple((e, not forward) for e, forward in steps))
@@ -553,6 +651,7 @@ def diagram_errors(form):
     if not (isinstance(edges, tuple) and 1 <= len(edges) <= MAX_EDGES):
         return [f"its diagram has 1 to {MAX_EDGES} edges"]
     rows = set(form.rows)
+    by_name = {p.name: p for p in form.parameters}
     for edge in edges:
         if not (
             isinstance(edge, Edge)
@@ -567,9 +666,8 @@ def diagram_errors(form):
         for rate in (edge.forward, edge.backward):
             if not (
                 isinstance(rate, Rate)
-                and _finite(rate.k0_per_s)
-                and rate.k0_per_s > 0
-                and _finite(rate.zeta)
+                and _k0_admitted(rate.k0_per_s, by_name)
+                and _zeta_admitted(rate.zeta, by_name)
                 and isinstance(rate.orders, tuple)
                 and all(
                     isinstance(o, tuple)
@@ -583,7 +681,8 @@ def diagram_errors(form):
             ):
                 out.append(
                     f"edge {edge.id}: each rate has a positive k0, a finite zeta and distinct "
-                    "positive integer orders on the form's rows"
+                    "positive integer orders on the form's rows (a k0 may name a positive "
+                    'parameter in 1/s, and a zeta a parameter in 1, negated by a leading "-")'
                 )
     if len({edge.id for edge in edges}) != len(edges):
         out.append("its diagram's edge IDs are distinct")
@@ -631,6 +730,17 @@ def diagram_errors(form):
                     f"mode {mode_id}: Wegscheider's coefficient of ln a at {row[0]}@{row[1]} is "
                     f"{b}, not 0 (its count disagrees with its edges' orders)"
                 )
+        net = {}
+        for (role, _), count in zip(form.rows, counts, strict=True):
+            net[role] = net.get(role, 0) + count
+        named = _named_rates(d, cycle[1], zeta=False)
+        if any(net.values()) and named:  # E3: seam E reads a converting cycle's constants.
+            edge_id, field, value = named[0]
+            out.append(
+                f"mode {mode_id}: a cycle that converts a species gives every k0 on its edges as "
+                f"a number (edge {edge_id}'s {field} names {value!r}): seam E's check reads its "
+                "free-energy band from the law's own constants"
+            )
     if out:
         return out
     simple = set(simple_cycles(n, pairs))
@@ -690,10 +800,12 @@ class Wegscheider(NamedTuple):
 def wegscheider(form, mode_index, valence, potential, c0_mM):
     """Wegscheider's residual of a diagram form's cycle (design statement 1, §5.1), for the species
     a population binds: valence {role: z} and potential {role: mu°/RT at c0_mM}; potentials are
-    needed only for roles whose net change is nonzero. Decided algebraically; never at a state."""
+    needed only for roles whose net change is nonzero. Decided algebraically; never at a state.
+    The form is one population's (resolved): a named rate on the cycle is refused."""
     d = form.diagram
     mode_id, counts = form.modes[mode_index]
     _, signed = d.cycles[mode_index]
+    _numeric(d, signed)
     by_id = {edge.id: edge for edge in d.edges}
     coefficients = tuple(
         (role, end, structural_coefficient(d, signed, (role, end)) + counts[k])
@@ -723,7 +835,9 @@ def _cycle_band(diagram, signed, pairs, c0_mM):
     R0 = sum_e s_e (ln k0+ - ln k0-) + sum Delta (mu - ln c0 + ln c°) and T = sum_e (|ln k0+| +
     |ln k0-|) + sum |Delta| (|mu| + |ln c0| + |ln c°|), over the cycle's signed edges and the pairs
     ((Delta, mu°/RT at c0_mM), ...) of the species it converts, c° the diagram's standard state.
-    The one code for wegscheider's band and CycleForm.free_energy_band, so they cannot drift."""
+    The one code for wegscheider's band and CycleForm.free_energy_band, so they cannot drift. It
+    reads the cycle's k0 only, each a number (a named one is refused)."""
+    _numeric(diagram, signed, zeta=False)
     by_id = {edge.id: edge for edge in diagram.edges}
     with localcontext() as ctx:
         ctx.prec = DIGITS
@@ -752,10 +866,12 @@ def implied_free_energy(form, mode_index):
     digits from the declared doubles and rounded once. Wegscheider's condition (wegscheider) holds
     when it equals the registry's sum of nu mu°/RT at that standard state, within its band; the
     species registry's check of a kind's free energies confirms it. An empty change: the cycle
-    converts nothing (it only transports)."""
+    converts nothing (it only transports). It reads the cycle's k0 only, each a number (a named one
+    is refused: E3 keeps a converting cycle's k0 the law's own)."""
     d = form.diagram
     _, counts = form.modes[mode_index]
     _, signed = d.cycles[mode_index]
+    _numeric(d, signed, zeta=False)
     by_id = {edge.id: edge for edge in d.edges}
     net = {}
     for k, (role, _) in enumerate(form.rows):
@@ -790,7 +906,9 @@ class DiagramTables(NamedTuple):
 
 
 def diagram_tables(form):
-    """The tables of a diagram form (DiagramTables)."""
+    """The tables of a diagram form (DiagramTables), for one population (resolved): a named rate
+    is refused."""
+    _numeric(form.diagram)
     d, top = form.diagram, topology(form.diagram)
     n_edges, rows = len(d.edges), {row: k for k, row in enumerate(form.rows)}
     zero = 2 * n_edges

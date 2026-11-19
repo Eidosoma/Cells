@@ -740,6 +740,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         NEUTRAL_ROUTE: ("material_bound",),
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
+        "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     from validation.compartment_ph_engine import definitions as defs
