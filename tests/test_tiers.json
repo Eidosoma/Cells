@@ -207,7 +207,8 @@
   "/mnt/workspaces/Cells/core-pass-f-20261118/gate-79c58762/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/stack-20261119/t18-rows/measured.json",
   "/mnt/workspaces/Cells/core-pass-f-20261118/gate-77dc1a8b/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-45430d33/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-45430d33/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-f8db9cd3/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1730,6 +1731,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-45430d33",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T06:55:24+00:00"
+  },
+  {
+   "git_revision": "f8db9cd37bfab4cc27a36ff94df50196d8d634d4",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-f8db9cd3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T08:02:20+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3461,10 +3470,10 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.77,
+    "seconds": 2.47,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 12
     }
    },
    {
@@ -3709,7 +3718,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 3.02,
+    "seconds": 2.77,
     "exit_code": 0,
     "counts": {
      "passed": 5
