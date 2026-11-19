@@ -12,6 +12,13 @@ Each claim with its plant (D187):
   diagram pump): every field's role and axes, every declared axis count equal to the field's own
   dimensions in the world's layout, state and controls, the population axis's host on its patch
   (planted: a diagram table's axes removed, and version 1's scalar's role removed);
+- Q2's presence and the laws' internal axes (F's contract): version 1's fuel-role axis and the
+  population axis's law-internal axes are internal, so each layout's one entity axis is gated by its
+  presence masks (version 1's three slot masks; each population's cycle_present, anded into its
+  host's activity), and with every entity absent its rates, readouts and stage and material terms
+  are exactly zero, as @3's binding check holds every parse to (planted: the fuel-role axis taken
+  out of the internal ones, which leaves its presence short of an entity axis; and readouts that
+  ignore cycle_present, which that check refuses);
 - the roles as declared: d, the rate constants and the schedules are levels of their patch
   (intensive, so a split copies them), the patch's presence and each entity's patch slot
   structural; a transporter's capacity extensive, its cycles, heat, work and supply history;
@@ -31,8 +38,9 @@ from decimal import Decimal, localcontext
 from types import MappingProxyType
 
 import numpy as np
+import pytest
 
-from cells.definitions.specs import parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.kinds import patch_damage, transporter
 from cells.laws.cycles import forms
@@ -171,8 +179,21 @@ def test_the_transporters_two_layouts_declare_every_fields_role_and_axes():
             )
             for field in ("cycle_count", "cycle_dissipated_energy_pJ", "cycle_supplied_fmol"):
                 assert table[field][0] == PartitionRole("history"), field
-    # Planted: a diagram table's axes removed, and version 1's scalar's role removed.
+    # Q2's presence and the internal axes: one entity axis per layout, gated by its masks.
     built = bound_worlds()
+    for name, (_, bound, _, p, _, _) in built.items():
+        presence = kind_registry.presence_fields(bound)
+        if name == "version_1":
+            assert kind_registry.entity_axes(bound) == ("membrane_slot",)
+            assert presence == {"membrane_slot": transporter.PRESENCE["membrane_slot"]}
+        else:
+            assert kind_registry.entity_axes(bound) == (transporter.POPULATION_AXIS,)
+            assert presence == {transporter.POPULATION_AXIS: ("cycle_present",)}, name
+            assert p.cycle_present.dtype == np.bool_ and bool(np.all(p.cycle_present)), name
+    short = tuple(a for a in kind.internal_axes if a != "transporter_fuel_role")
+    with pytest.raises(ValueError, match=r"lacks its entity axes \['transporter_fuel_role'\]"):
+        kind_registry.presence_fields(dataclasses.replace(built["version_1"][1], internal_axes=short))
+    # Planted: a diagram table's axes removed, and version 1's scalar's role removed.
     axes = {k: v for k, v in kind.field_axes.items() if k != "cycle_dg_term_slots"}
     composed = dataclasses.replace(built["composed"][1], field_axes=MappingProxyType(axes))
     assert adapter.kind_lifecycle_errors(composed) == ("axes", ("cycle_dg_term_slots",))
@@ -218,3 +239,20 @@ def test_a_diagram_pumps_cycle_declares_the_free_energy_its_constants_imply():
     planted = PUMP.cycle._replace(diagram=PUMP.cycle.diagram._replace(edges=edges))
     _, shifted, _ = forms.implied_free_energy(planted, 0)
     assert abs(Decimal(shifted) - registry_sum(stoichiometry)) > Decimal(allowed)
+
+
+def test_an_absent_population_reads_zero_and_ungated_readouts_are_refused_at_binding():
+    """@3's binding check (Q2's contract) holds every parse of a presence-declaring kind to exact
+    zeros with every entity absent: the transporter's general layout passes it in every world
+    above (bound_worlds parses each); planted, readouts that ignore cycle_present are refused."""
+
+    def ungated(state, read, potentials, control, p, *, xp):
+        return transporter.readouts(
+            state, read, potentials, control, p._replace(cycle_present=xp.ones_like(p.cycle_present)), xp=xp
+        )
+
+    planted = dataclasses.replace(transporter.TRANSPORTER, readouts=ungated)
+    raw = worlds()["general"]
+    with tk.scoped(planted), law_registry.scope(law_registry.BUILTIN.extended(*ck.TEST_LAWS, PUMP)):
+        with pytest.raises(ConfigError, match="readout column"):
+            parse_spec(copy.deepcopy(raw))

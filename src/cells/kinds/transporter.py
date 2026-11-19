@@ -798,6 +798,7 @@ DIAGRAM_FIELDS = (
 NET_FLOW_FIELDS = ("weight", "counts", "standard_RT", "charge", "shift", "present")
 GENERAL_LAYOUT_FIELDS = (
     MARK,  # [P]: the host-table row of each population's host
+    "cycle_present",  # [P]: each population present (Q2's presence: a closer's gate ands it)
     "cycle_n_at_b",  # [P]: N is the host's end b
     "cycle_capacity_fmol_s",  # [P]
     "cycle_form",  # [P]: FORM_CODES
@@ -1141,6 +1142,7 @@ def _population_initial(spec, declaration):
     M = max(len(f.modes) for f in all_forms)
     v = dict(
         cycle_host=np.zeros(P, dtype=np.int64),
+        cycle_present=np.ones(P, dtype=bool),
         cycle_n_at_b=np.zeros(P, dtype=bool),
         cycle_capacity_fmol_s=np.zeros(P),
         cycle_form=np.zeros(P, dtype=np.int64),
@@ -1373,7 +1375,7 @@ def _evaluate(read, potentials, control, p, *, xp):
 
     table = host_table(p, xp=xp)
     host = p.cycle_host
-    active = table.active[host]
+    active = table.active[host] & p.cycle_present  # Its host active, and itself present (Q2).
     a_node, b_node = table.end_a[host], table.end_b[host]
     n_node = xp.where(p.cycle_n_at_b, b_node, a_node)
     p_node = xp.where(p.cycle_n_at_b, a_node, b_node)
@@ -1550,7 +1552,7 @@ def _population_rates(state, potentials, control, p, *, xp):
 def _population_readouts(read, potentials, control, p, *, xp):
     e = _evaluate(read, potentials, control, p, xp=xp)
     rt = R * p.temperature
-    modes = p.cycle_mode_present
+    modes = p.cycle_mode_present & e.active[None, :]  # An absent population reads zero (Q2).
     return (
         xp.where(modes, e.j, 0.0),
         xp.where(modes, rt * e.x, 0.0),
@@ -2060,6 +2062,7 @@ _STRUCTURAL = {
     "transporter_km_role_mM": 1.0,
     "transporter_km_atp_mM": 1.0,
     MARK: 0,
+    "cycle_present": False,
     "cycle_n_at_b": False,
     "cycle_form": 0,
     "cycle_row_species": 0,
@@ -2115,7 +2118,7 @@ _AXIS = MappingProxyType(  # The population axis's shapes' letters (GENERAL_LAYO
     }
 )
 _SHAPES = {
-    MARK: "P", "cycle_n_at_b": "P", "cycle_capacity_fmol_s": "P", "cycle_form": "P",
+    MARK: "P", "cycle_present": "P", "cycle_n_at_b": "P", "cycle_capacity_fmol_s": "P", "cycle_form": "P",
     "cycle_row_species": "KP", "cycle_row_at_n": "KP", "cycle_row_present": "KP",
     "cycle_row_held": "KP", "cycle_row_charged": "KP", "cycle_nu": "MKP",
     "cycle_mode_present": "MP", "cycle_standard_RT": "MP", "cycle_charge_moved": "MP",
@@ -2142,6 +2145,19 @@ FIELD_AXES = MappingProxyType(
     }
 )
 AXIS_HOSTS = MappingProxyType({POPULATION_AXIS: AxisHost("patch", MARK)})
+# The laws' internal axes (F's internal_axes; the lead's Q5 answer): version 1's fuel roles and the
+# population axis's own (every _AXIS letter but P), copied whole at a split and never hosted.
+INTERNAL_AXES = ("transporter_fuel_role", *(axis for letter, axis in _AXIS.items() if letter != "P"))
+# Q2's presence (F's presence; CORE_SEAMS §18): each entity axis's masks, every one its rates,
+# readouts and stage terms read. Version 1's slots: its population's mask and its two law masks
+# (each of size 0 where its law is undeclared). The population axis: each population's presence,
+# anded into its host's activity in the one evaluation.
+PRESENCE = MappingProxyType(
+    {
+        "membrane_slot": ("transporter_present", "transporter_neutral", "transporter_proton"),
+        POPULATION_AXIS: ("cycle_present",),
+    }
+)
 
 
 def standard_free_energies(declaration):
@@ -2195,6 +2211,8 @@ TRANSPORTER = BUILTIN.register(
         partition_roles=PARTITION_ROLES,
         field_axes=FIELD_AXES,
         axis_hosts=AXIS_HOSTS,
+        internal_axes=INTERNAL_AXES,
+        presence=PRESENCE,
         standard_free_energies=standard_free_energies,
     )
 )

@@ -156,7 +156,7 @@ def test_a_presence_field_that_binds_no_bool_mask_is_refused():
 
 
 def test_beside_a_closer_a_kind_with_entities_and_no_presence_is_refused():
-    with scoped(transporter.TRANSPORTER):  # The built-in as it stands: no presence.
+    with scoped(dataclasses.replace(transporter.TRANSPORTER, presence={})):  # Without presence.
         spec = parse_spec(held_world())
         closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
         with pytest.raises(ConfigError, match="has entities on membrane_slot but declares no"):
