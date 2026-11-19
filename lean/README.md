@@ -1,18 +1,50 @@
 # Cells proofs
 
-This Lean library organizes results by biological mechanism. The index connects each mathematical claim to the Cells law or model that uses it and the numerical check that exercises that use. Add a model-specific theorem when a model composes mechanisms or introduces another assumption.
+This Lean library organizes results by biological mechanism. Each claim links to its assumptions, named theorems, implementation and comparison record. Experimental evidence attaches to a measured quantity in a specified preparation.
 
 ## Proof index
 
-| Lean theorems | Claim and assumptions | Cells use and numerical comparison |
-| --- | --- | --- |
-| `Transport.flux_reverse`, `flux_zero_voltage`, `flux_down_gradient`, `flux_blocked` | Reversing endpoints and voltage reverses the signed flux. At equal potentials the flux is the effective scale times the concentration difference. A positive scale moves ions down that gradient. A zero scale blocks the route. The four theorems apply to the analytic Bernoulli factor and the engine’s piecewise formula over the reals. [Transport proofs](CellsProofs/Transport/ConstantField.lean) | `constant_field@1` on the junctions of `resolved_pump_tissue@3`. The scale is area × permeability × opening divided by mol/fmol, and the voltage factor is zF/(RT). The checks use admitted concentrations, temperature, gates and voltages. [Flux kernel](../src/cells/laws/junctions/selective.py#L19) · [Surface comparisons](../tests/unit/test_surface_transport.py#L102) |
-| `Accounting.nodeChange_reorient`, `region_balance`, `total_balance`, `charge_balance` | On a finite graph, reversing any subset of edges and their signed fluxes preserves every node’s credit or debit. Within any region, internal edges cancel and crossing edges contribute their signed flux. The whole graph conserves each species and any charge-weighted sum. Multiple edges can share an owner. [Accounting proofs](CellsProofs/Accounting/Transfer.lean) | The inner model assigns each junction flux to its two cells. The integrated potassium ledger also includes membrane, pump and channel contributions. A held bath exchanges material through a separate supply term. [Owner updates](../src/cells/numerics/surface_transport.py#L316) · [Tissue ledger](../tests/unit/test_surface_pump_v3_imex.py#L80) |
-| `Chemistry.inventory_after_reactions` | For a finite network at one site, an integer-weighted inventory is preserved if it balances in every reaction. Reaction extents can be any signed real amounts. [General theorem](CellsProofs/Chemistry/Stoichiometry.lean) | `local_species_reactions@1` on `resolved_pump_composite@1` forms each species change from signed stoichiometric coefficients and extents. [Admission](../src/cells/operators/species_reactions.py#L431) · [Half-step](../src/cells/operators/species_reactions.py#L1024) |
-| `Chemistry.Enzyme.enzyme_conserved`, `substrate_conserved`, `missing_enzyme_balance` | Binding and catalysis preserve E + C and S + C + P. Removing E from the catalytic products loses one enzyme unit per event while preserving the substrate count. [Enzyme proofs](CellsProofs/Chemistry/Enzyme.lean) | The comparison checks the fixture’s two columns and two weight rows in Lean. It checks the stored amounts after one compiled CPU half-step and the engine’s refusal of the altered reaction. [Fixture](../validation/tissue/species_reactions_fixtures.py#L248) · [Comparison](checks/closed_enzyme.py) |
-| `Tissue.region_inventory_balance`, `whole_inventory_conserved` | For a fixed set of nodes, if each local reaction balances the chosen inventory, its change over a reaction–transport–reaction step equals the signed amount crossing its boundary. On the whole closed graph the change is zero. [Regional proof](CellsProofs/Tissue/ReactionTransport.lean) | `resolved_pump_composite@1` runs two `local_species_reactions@1` half-steps around the `resolved_pump_tissue@3` face update. The closed A ⇌ B chain exercises regional exchange through `logmean_electrodiffusion@1` faces. [Split order](../src/cells/models/pump_composite.py#L1308) · [Closed pair](../validation/morphogenesis/mg0c_turing.py#L180) · [Comparison](checks/regional_balance.py) |
+<!-- generated: claims-index -->
 
-The Lean namespaces above begin with `CellsProofs.`. The proofs use exact real arithmetic. A floating-point error bound for the near-zero series and the biological calibration of a given tissue remain separate questions. [Engine evaluator](../src/cells/laws/electrochemistry.py#L17) · [Research and design options](ENGINE_LAW_VERIFICATION.md)
+| Claim | Lean proof | Numerical check | Biological evidence |
+| --- | --- | --- | --- |
+| [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) | Proved | Checked | Open |
+| [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | Open |
+| [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | Open |
+| [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | Open |
+| [Only boundary transfers change a region’s inventory during transport](claims/transfer-inventory.md) | Proved | Checked | Open |
+| [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) | Proved | Checked | Open |
+| [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | Open |
+| [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | Open |
+| [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | Not assessable |
+
+<!-- /generated -->
+
+The proof, numerical and biological columns record independent results. A numerical check applies to the cases in its linked record. An open biological entry names a potential measurement. The voltage pilot has a measured endpoint and a descriptive comparison with unresolved biological acceptance. [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+## Maintaining the claims
+
+Edit the claims register. A stable `id` gives each claim its note under `claims/`. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
+
+In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the model and laws it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
+
+For biological evidence, record the observable and unit, the primary paper or dataset and its exact panel or table, preparation, fit and evaluation conditions, uncertainty and the recorded verdict. Reference calculations have their own implementation kind. Detailed run records and datasets stay with their owners.
+
+A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the index and notes. Commit the generated Markdown alongside changes to the register. For documentation alone, use Python 3 from `lean/`. The check command reports missing, edited or obsolete generated pages and exits unsuccessfully if any differ.
+
+```bash
+python3 scripts/generate_claims.py
+python3 scripts/generate_claims.py --check
+```
+
+These queries list claims with held-out measurements and claims whose comparison exercised a given law.
+
+```bash
+jq -r '.claims[] | select(any(.biology.evidence[]; .role == "held_out_from_fitting")) | .id' claims.json
+jq -r --arg law 'local_species_reactions@1' '
+  .comparisons as $checks | .claims[]
+  | select(any(.numerical.comparisons[]; $checks[.].laws | index($law))) | .id' claims.json
+```
 
 ## Build
 

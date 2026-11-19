@@ -1,0 +1,185 @@
+{
+  "$schema": "./claims.schema.json",
+  "version": 1,
+  "comparisons": {
+    "junction": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["constant_field@1"],
+      "engine_revision": "109a7355ed85ff2e1e5a9c884c32801c07a2fd72",
+      "record_revision": "627c376c463ae66c0f9e53db6dbb1374ec8ac1fd",
+      "sources": {
+        "Junction flux": "src/cells/laws/junctions/selective.py#L19",
+        "Bernoulli evaluator": "src/cells/laws/electrochemistry.py#L17",
+        "Flux booking": "src/cells/numerics/surface_transport.py#L318",
+        "Surface comparisons": "tests/unit/test_surface_transport.py#L103",
+        "Per-cell tissue ledger": "tests/unit/test_surface_pump_v3_imex.py#L80"
+      },
+      "driver": "lean/checks/constant_field.py",
+      "record": "lean/README.md#cpu-comparison"
+    },
+    "closed-enzyme": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1"],
+      "laws": ["local_species_reactions@1"],
+      "engine_revision": "a124c937041353d395732a936a3d2b1001c2b63a",
+      "record_revision": "9c0b99d30676863d67dd8d30efea6ae490f2bd40",
+      "sources": {
+        "Reaction admission": "src/cells/operators/species_reactions.py#L431",
+        "Reaction half-step": "src/cells/operators/species_reactions.py#L1024",
+        "Enzyme fixture": "validation/tissue/species_reactions_fixtures.py#L248"
+      },
+      "driver": "lean/checks/closed_enzyme.py",
+      "record": "lean/PROGRESS.md#19-november-2026--closed-enzyme-reactions"
+    },
+    "regional-chain": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": ["local_species_reactions@1", "logmean_electrodiffusion@1"],
+      "engine_revision": "030bd02a5f4bb74d15ef8bde4fdf1db03f69b801",
+      "record_revision": "9252236d3f6339d4dfdd18fd79fc1d73246faf7e",
+      "sources": {
+        "Split-step order": "src/cells/models/pump_composite.py#L1308",
+        "Closed pair": "validation/morphogenesis/mg0c_turing.py#L180",
+        "Independent trajectory comparison": "tests/unit/test_species_reactions_composition.py#L84"
+      },
+      "driver": "lean/checks/regional_balance.py",
+      "record": "lean/PROGRESS.md#19-november-2026--regional-reaction-and-transport-balance"
+    },
+    "bio002-endpoint": {
+      "kind": "reference",
+      "models": ["conditioned_ghk_affine_exp@1"],
+      "laws": [],
+      "record_revision": "a71c3f35b795114b520cca9b56fb95031aac18ba",
+      "sources": {
+        "Two-condition fit": "tests/reference_conditioned_voltage.py#L76",
+        "Held-out prediction": "tests/reference_conditioned_voltage.py#L103",
+        "Fixed BIO-002 protocol": "configs/reference/bio002_conditioned_voltage_v1.json"
+      },
+      "driver": "scripts/evaluate_conditioned_voltage.py",
+      "record": "reports/BIO002_CONDITIONED_VOLTAGE.md"
+    }
+  },
+  "claims": [
+    {
+      "id": "junction-flux-reversal",
+      "title": "Reversing a junction reverses its flux",
+      "statement": "Exchanging the concentrations at the two ends of a constant-field junction and reversing the voltage difference negates the signed flux.",
+      "assumptions": ["The ion, temperature, area, permeability and opening are the same in both orientations. Voltage is sender potential minus receiver potential, scaled by zF/(RT).", "The proof treats both the analytic Bernoulli factor and the engine’s near-zero series in real arithmetic. A floating-point error bound for the series remains open."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Transport.flux_reverse": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The CPU surface tests exercised reversed routes, multiple patches and padding against the independent flux reference."},
+      "biology": {"status": "open", "observable": "Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "junction-concentration-gradient",
+      "title": "At equal voltage, junction flux follows the concentration gradient",
+      "statement": "At equal potentials the signed flux is scale × (sender concentration − receiver concentration). A positive scale gives flow from higher to lower concentration.",
+      "assumptions": ["The transport factor has value one at zero voltage. The scale is area × permeability × opening divided by mol/fmol. The direction claim requires a positive scale."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Transport.flux_zero_voltage": "lean/CellsProofs/Transport/ConstantField.lean",
+        "CellsProofs.Transport.flux_down_gradient": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The equal-voltage CPU fixture exercised concentration differences of both signs and compared the signed flux with an independent scalar calculation."},
+      "biology": {"status": "open", "observable": "Ion transfer rate across a junction at equal potentials with a measured concentration difference.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "junction-blocking",
+      "title": "A blocked junction carries zero flux",
+      "statement": "Setting the effective transport scale to zero gives zero junction flux at every voltage and concentration difference.",
+      "assumptions": ["The constant-field route multiplies the concentration-dependent term by its effective area, permeability and opening scale."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Transport.flux_blocked": "lean/CellsProofs/Transport/ConstantField.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The surface blocking and equilibrium tests passed on CPU."},
+      "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "unit": "fmol/s", "evidence": []}
+    },
+    {
+      "id": "transfer-orientation",
+      "title": "Edge orientation preserves each compartment’s transfer balance",
+      "statement": "Reversing any subset of edge orientations and their signed fluxes preserves each compartment’s credit or debit.",
+      "assumptions": ["Every transfer is booked once at its sender and once at its receiver. The edge set is finite and multiple edges may share a compartment."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Accounting.nodeChange_reorient": "lean/CellsProofs/Accounting/Transfer.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction"], "result": "The per-cell comparison passed for the declared owners. Swapping owners alone preserved the global total and produced a per-cell discrepancy of 2.40 × 10⁻⁴ fmol/s."},
+      "biology": {"status": "open", "observable": "Net ion gain or loss in each of two identified compartments over the same transfer interval.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "transfer-inventory",
+      "title": "Only boundary transfers change a region’s inventory during transport",
+      "statement": "Internal edges cancel when transfers are summed over a region. On the entire closed graph each species and any charge-weighted sum are conserved.",
+      "assumptions": ["Each edge transfers equal amounts between its two endpoints. A held bath needs an external supply term when included in an inventory."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Accounting.region_balance": "lean/CellsProofs/Accounting/Transfer.lean",
+        "CellsProofs.Accounting.total_balance": "lean/CellsProofs/Accounting/Transfer.lean",
+        "CellsProofs.Accounting.charge_balance": "lean/CellsProofs/Accounting/Transfer.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["junction", "regional-chain"], "result": "The closed tissue run checked the potassium ledger, including membrane, pump and channel contributions. The chain comparison exercised both entering and leaving transfers on a four-compartment region."},
+      "biology": {"status": "open", "observable": "Change in regional ion amount and net ion transfer across its boundary over the same interval.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "reaction-inventory",
+      "title": "Balanced reactions preserve a weighted inventory",
+      "statement": "If each reaction balances an integer-weighted inventory, the combined update preserves that inventory for any signed real reaction extents.",
+      "assumptions": ["The species and reaction sets at the site are finite. Each species change equals its signed stoichiometric coefficients times the extents, summed over reactions."],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all measured species at a closed site.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "enzyme-inventories",
+      "title": "Binding and catalysis conserve enzyme and substrate",
+      "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
+      "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
+      "uses": ["reaction-inventory"],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Chemistry.Enzyme.enzyme_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
+        "CellsProofs.Chemistry.Enzyme.substrate_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
+        "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "Lean checked both fixture columns and both weight rows. The largest absolute inventory residual in the CPU half-step was about 1.12 × 10⁻²⁰ fmol, below the 6.94 × 10⁻¹⁸ fmol tolerance. The engine refused the missing-enzyme reaction."},
+      "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "regional-reaction-transport",
+      "title": "Regional inventory changes by net boundary transfer across a split step",
+      "statement": "A reaction–transport–reaction step changes a region’s weighted inventory by exactly its signed boundary inflow. The total over a closed graph is conserved.",
+      "assumptions": ["Node identities and the region stay fixed. Every local reaction inside the region balances the inventory. Each transport edge debits and credits its endpoints."],
+      "uses": ["transfer-inventory", "reaction-inventory"],
+      "formal": {"status": "proved", "theorems": {
+        "CellsProofs.Tissue.region_inventory_balance": "lean/CellsProofs/Tissue/ReactionTransport.lean",
+        "CellsProofs.Tissue.whole_inventory_conserved": "lean/CellsProofs/Tissue/ReactionTransport.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["regional-chain"], "result": "In a 50 ms CPU step, the change in A + B across four compartments agreed with boundary inflow within 1.07 × 10⁻¹⁹ fmol. Reversing a crossing face failed the regional check while the whole chain still balanced."},
+      "biology": {"status": "open", "observable": "Change in the amount of a named chemical group inside a defined tissue region and its net passage across that boundary over the same interval.", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "rptec-voltage-c3",
+      "title": "Membrane voltage in kidney epithelial cells under condition C3",
+      "statement": "Fit a conditioned voltage equation on C1 and C2 and predict the membrane voltage under the higher-potassium C3 solution.",
+      "assumptions": ["The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents."],
+      "formal": {"status": "open", "theorems": {}},
+      "numerical": {"status": "checked", "comparisons": ["bio002-endpoint"], "result": "The conditioned reference calculation agreed with an independent 60-digit calculation within 7.11 × 10⁻¹⁵ mV across twelve scalar checks."},
+      "biology": {
+        "status": "not_assessable", "observable": "Whole-cell resting membrane voltage after application of extracellular solution C3.", "unit": "mV",
+        "evidence": [{
+          "dataset_id": "bonzanni2020_rptec_endpoints@1",
+          "manifest": "data/biology/bonzanni2020_rptec_v1/manifest.json",
+          "measurements": "data/biology/bonzanni2020_rptec_v1/voltage_endpoints.csv",
+          "citation": "Bonzanni et al. (2020)", "doi": "10.1242/bio.048553",
+          "locator": "Figure 2A–B gives the solution series. The C3 measurement is an approximate mean read from the patch-clamp results in Figure 3C.",
+          "context": "RPTEC/TERT1 renal proximal tubule epithelial cells, whole-cell patch recording at zero applied current and 25 °C. C3 reports 20 cells across three experiments.",
+          "role": "held_out_from_fitting", "fit": ["C1", "C2"], "evaluation": ["C3"], "excluded": ["C4", "C5"],
+          "observed": -18, "predicted": -14.59,
+          "uncertainty": "The ±2 mV bound describes the curator’s figure reading. The numerical standard error of the mean and the dependence between condition summaries are unknown.",
+          "assessment": "The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized.",
+          "report": "reports/bio-003-closeout.json"
+        }]
+      }
+    }
+  ]
+}
