@@ -2339,5 +2339,33 @@
     }
    ]
   }
+ },
+ "source_after_the_fact": {
+  "entry_utc": "2026-11-19T14:51Z",
+  "note": "after the fact, not a record the runs made (RUNG0_20261119.md section 9.5)",
+  "rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
+  "rows_sha256": "d76d4ce78529f84d22efcc088c6f73c4a035420ddf1c5dbdcbb6281a714fcfec",
+  "rows_mtime_utc": "2026-11-18T22:37:39Z",
+  "r3_finished_utc": "2026-11-18T22:37:39Z",
+  "first_arm_started_utc": {
+   "DEV600_smoke": "2026-11-19T11:48:13Z",
+   "registered_arms": "2026-11-19T11:59:49Z"
+  },
+  "source_revision": "24e516c7012139d86c771e105a6135c73b4244cb",
+  "start_check": {
+   "script": "/mnt/workspaces/Cells/fr8-rung0-20261119/tools/start_rows.py",
+   "output": "/mnt/workspaces/Cells/fr8-rung0-20261119/source-check-20261119.json",
+   "ran_utc": "2026-11-19T14:49:14Z",
+   "arms_checked": 43,
+   "state_fields": [
+    22
+   ],
+   "all_equal": true,
+   "arms_by_snapshot": {
+    "cf1ca34b": 40,
+    "a5e1fb3c": 3
+   }
+  },
+  "rule_for_reuse": "any later importer of a saved state (rung 2's, for instance) records the source's digest and identity at run time in each run's inputs, as rule (b) asks"
  }
 }
