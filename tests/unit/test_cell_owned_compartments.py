@@ -1152,10 +1152,10 @@ def test_replacement_composes_away_from_owners_and_never_on_or_from_one():
         parse_spec(replaced([(0.005, "cell_1", None, "c1_new", "cell_0")]))
 
 
-# Admitted before its module lands: FR-2's law, so that the admission is on main for its builder
-# (the lead's ruling of 19 November 2026). The test below fails once it registers while still
-# listed here, so the entry goes with that landing.
-PENDING_ADMITTED = frozenset({"scheduled_membrane_trafficking@1"})
+# Admitted laws whose modules have not landed: none. FR-2's law was admitted before its module
+# (the lead's ruling of 19 November 2026), and its entry went with that landing; a law listed here
+# fails the test below once it registers.
+PENDING_ADMITTED = frozenset()
 ADMITTED_AT_IMPORT = comp.ADMITTED  # The module's list, before any fixture patches it.
 
 
@@ -1171,7 +1171,7 @@ def test_the_admitted_list_fails_closed(monkeypatch):
     fake = SimpleNamespace(model=model, experiment=experiment)
     with pytest.raises(ConfigError, match="a_future_operator@1 is not on its admitted list"):
         comp.check_definition(fake, spec.model.operators[-1])
-    assert comp.TRAFFICKING_LAW in PENDING_ADMITTED
+    assert comp.TRAFFICKING_LAW in OPERATORS  # FR-2's law, registered with its module.
     assert set(comp.ADMITTED) - set(OPERATORS) == PENDING_ADMITTED, "a pending law registered"
 
 

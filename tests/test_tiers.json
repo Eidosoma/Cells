@@ -196,7 +196,8 @@
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-eb91851e/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-seams-references-f4-20261118/gate-21653b59/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-f-20261118/gate-a5512058/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/tier-fold-fix-20261119/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/tier-fold-fix-20261119/measure/measured.json",
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-d33aa217/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1631,6 +1632,14 @@
    "root": ".",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T05:00:59+00:00"
+  },
+  {
+   "git_revision": "d33aa217f8992e509e0bb8034dc56f7a8c3d275f",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/head-d33aa217",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T04:34:12+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2319,7 +2328,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.19,
+    "seconds": 9.49,
     "exit_code": 0,
     "counts": {
      "passed": 190
@@ -2448,7 +2457,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 3.39,
+    "seconds": 2.82,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -3555,6 +3564,22 @@
    {
     "file": "tests/unit/test_membrane_state.py",
     "seconds": 2.72,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking.py",
+    "seconds": 4.38,
+    "exit_code": 0,
+    "counts": {
+     "passed": 37
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_laws.py",
+    "seconds": 3.88,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -5607,6 +5632,30 @@
     }
    },
    {
+    "file": "tests/unit/test_membrane_trafficking_batch.py",
+    "seconds": 76.05,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_runs.py",
+    "seconds": 70.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_sheet.py",
+    "seconds": 68.7,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_morris_lecar_repair.py",
     "seconds": 23.85,
     "exit_code": 0,
@@ -6791,6 +6840,12 @@
    {
     "file": "tests/unit/test_membrane_profile_phase_handoff.py",
     "seconds": 90.03,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_membrane_trafficking_restart.py",
+    "seconds": 90.12,
     "exit_code": null,
     "counts": {}
    },
