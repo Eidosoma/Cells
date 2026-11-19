@@ -1934,7 +1934,11 @@ class Composition:
                     for (name, value), key, bound in zip(
                         values.items(), op.LEDGER_DIAGNOSTICS, bounds, strict=True
                     ):
-                        if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
+                        if (
+                            not np.isfinite(value).all()
+                            or not np.isfinite(bound).all()  # The fourth review's finding 2.
+                            or np.any(np.abs(value) > bound)
+                        ):
                             raise NumericalError(op.LEDGER_MESSAGE + name)
                         key = "max_" + key
                         extra[key] = max(extra[key], float(np.max(np.abs(value), initial=0)))
