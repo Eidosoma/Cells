@@ -2,3 +2,4 @@ import CellsProofs.Accounting.Transfer
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Transport.ConstantField
+import CellsProofs.Transport.LogMeanFace

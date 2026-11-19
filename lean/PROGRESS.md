@@ -1,5 +1,31 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Extracellular face electrodiffusion
+
+Eight Lean theorems check the two log-ratio branches, positivity and symmetry of the implemented mean (including its small-gradient polynomial), flux reversal, equilibrium, direction and instantaneous dissipation per species and per face. They use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. The force is sender minus receiver electrochemical potential. The direction equivalence requires a positive face coefficient. [Face proofs](CellsProofs/Transport/LogMeanFace.lean) · [Mean](../src/cells/numerics/extracellular_field.py#L48) · [Flux and power](../src/cells/numerics/surface_transport.py#L292)
+
+The development comparison ran eleven CPU float64 cases and one closed `resolved_pump_tissue@3` world with `logmean_electrodiffusion@1`. For each active species and face at each observation time, the independent scalar mean and the declared geometry gave a reference flux. The driver took 17.46 s on four cores. Sixteen existing surface and scalar-reference tests passed in 8.91 s. [Inputs and JSON results driver](checks/logmean_face.py) · [Independent reference](../validation/tissue/surface_reference.py#L13) · [Tolerances](../validation/tissue/surface_protocol.json#L27)
+
+At zero voltage, concentrations of 100.00000000000001 and 100 mM gave a positive reference flux and zero computed flux. The engine subtracts the two rounded logs in its driving force. The difference falls within the protocol's absolute flux tolerance. At a resolved gradient, deliberately reversing the flux and both endpoint bookings conserved total material but produced negative power and failed the direction check. These are development checks under supplied or simulated endpoint conditions. Biological face-flux measurements remain open.
+
+```json
+{
+  "engine_revision": "c9549dfc553ce2e9cce5d05160c24b1879e3077b",
+  "backend": "cpu", "dtype": "float64", "component_cases": 11,
+  "flux_atol_fmol_s": 3e-12, "physical_rtol": 3e-10,
+  "opposed_flux_fmol_s": -0.0004999999999999968,
+  "reversed_flux_fmol_s": 0.0004999999999999968,
+  "balanced_flux_fmol_s": 3.361730104660899e-18,
+  "adjacent_float64": {"flux_fmol_s": 0, "reference_fmol_s": 1.4210854715202002e-18},
+  "reversed_flux_control": {"total_rate_fmol_s": 0, "power_pJ_s": -4.522364735283246e-5},
+  "tissue": {
+    "model": "resolved_pump_tissue@3", "law": "logmean_electrodiffusion@1",
+    "solver": "imex_ars222_face_electromigration@1", "samples_species_faces": [3, 4, 5],
+    "max_flux_error_fmol_s": 1.496198998029996e-17, "max_abs_transferred_fmol": 9.758954574665261e-6
+  }
+}
+```
+
 ## 19 November 2026 · Regional reaction and transport balance
 
 Lean checked the regional balance for a reaction–transport–reaction step and its whole-graph corollary. The proof uses the earlier chemistry theorem separately on each reaction half-step. The transfer theorem cancels every internal edge. Only the reactions inside the chosen region need to balance its inventory. Both results use the standard Lean axioms `propext`, `Classical.choice` and `Quot.sound`. [Regional proof](CellsProofs/Tissue/ReactionTransport.lean) · [Engine split order](../src/cells/models/pump_composite.py#L1308)
