@@ -1,5 +1,52 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Inward rectification and sodium-anion symport
+
+Both comparisons run `resolved_pump_tissue@3`. The inward rectifier reverses at the monovalent Nernst potential. With driving voltage u = V − E and positive conductance, the current has the sign of u and releases heat Iu ≥ 0. The host bounds the **magnitude** of the current’s voltage derivative when choosing a step. Lean derives that derivative and proves the host’s voltage-free bound for every voltage. Writing w = (u − V½)/s, the logistic fraction q satisfies |w| q(1 − q) ≤ ¼. This yields the bound G(5/4 + |V½|/(4s)), where G includes area and opening. [Rectifier proofs](CellsProofs/Transport/InwardRectifier.lean) · [Engine current and stage bound](../src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L75)
+
+**Engine finding for the lead.** A change of reference concentration can make a valid potassium route fail the initial domain check. Multiplying its reference conductance by b and its reference concentration by b² preserves the entire current–voltage curve. The same tissue patch had 140 mM potassium inside and 5 mM outside in all three cases below. At 0 mV, the 60-digit calculation gave the same outward current, **0.5520533 pA**, each time. The last declaration uses extreme, finite reference coefficients. The engine forms 5/Kref before taking its square root, so that intermediate overflows. With these inputs, taking the two square roots before division gives the finite effective conductance. [Proof of reference invariance](CellsProofs/Transport/InwardRectifier.lean) · [Reproducer](checks/inward_rectifier.py#L79) · [Engine evaluation](../src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L71) · [Initial domain check](../src/cells/models/surface_pump_v3.py#L1558)
+
+| Reference conductance (S/m²) | Reference K (mM) | Compiled 1 ms tissue run |
+| ---: | ---: | --- |
+| 1 | 4 | Outward transfer 5.682053 × 10⁻⁶ fmol, heat 4.728381 × 10⁻⁵ pJ |
+| 2⁻⁸ | 4 × 2⁻¹⁶ | Same transfer and heat, bit for bit |
+| 2⁻⁵¹² | 2⁻¹⁰²² | Refused during definition validation |
+
+The compiled CPU law agreed with a 60-digit reference for current, inward flux, heat and the slope magnitude over 360 ordinary states. The reference obtained the derivative with dual numbers. The largest error divided by the respective unrectified physical scale was 6.47 × 10⁻¹⁶ or less. The voltage-free bound covered all 360 states, including 64 with negative differential conductance. [Comparison and scales](checks/inward_rectifier.py#L20) · [Independent derivative arithmetic](../validation/core_seams/references/exact.py#L88)
+
+**Kir4.1 measurements.** For cloned rat Kir4.1 channels in HEK293T cells at about 25 °C, lowering external potassium from 153 to 15 mM shifted reversal by approximately −60 mV. Cells predicted −59.67 mV. The authors fitted a 0.51 concentration exponent to the *inward slope conductance*. To test current at the *same driving voltage*, we read each reversal from Fig. 4C, moved 60 mV below it, and interpolated the current in Fig. 4B(b). Only the 153 mM current set the scale. At fixed drive, every choice of the same logistic parameters and availability predicts the square-root ratio. Cells underestimated the inward current magnitude at all four lower concentrations. The figure gives means of three patches with no numerical uncertainties for these points. [Tada et al., Fig. 4B–D](https://www.jstage.jst.go.jp/article/jjphysiol/48/1/48_1_71/_pdf/-char/ja#page=6) · [Figure readings and assumptions](checks/data/tada1998_kir41.json)
+
+| External K (mM) | Current read from figure (pA) | Cells at V − E = −60 mV (pA) |
+| ---: | ---: | ---: |
+| 15 | −0.59 | −0.385 |
+| 21 | −0.80 | −0.456 |
+| 35 | −1.04 | −0.588 |
+| 63 | −1.16 | −0.789 |
+| 153 | −1.23 | −1.230 (calibration) |
+
+**Sodium–anion symport.** Each forward cycle carries n sodium ions and one monovalent anion from P to N. This moves n − 1 positive charges and n + 1 particles. With n = 1 the rate is independent of voltage. With n > 1 an enabled carrier imports below its unique stall voltage and exports above it. Capacity and the two source-side Hill factors set the rate scale. The proof reuses the factored transporter rate and gives a direct experimental observable. Halving external sodium shifts the carrier’s stall voltage n times as far as halving the substrate at fixed internal concentrations. A common nonzero conductance weighting cancels from the ratio. [Symport proofs](CellsProofs/Transport/SodiumAnionSymport.lean) · [Cycle declaration](../src/cells/laws/cycles/na_anion_symport_factored.py#L42) · [Host rate evaluation](../src/cells/kinds/transporter.py#L1407)
+
+The host comparison covered all four admitted sodium counts, both orientations, three availabilities and five voltages. Against independent 60-digit calculations, all 120 stages agreed on free energy, saturation, one-way and net rates, and heat. Twelve active cases were at their predicted stall. The maximum error was 0.220 of one estimated roundoff floor, with an acceptance limit of 64 floors. A compiled two-step run transported 8.621772 × 10⁻⁵ fmol lactate, equal to its cycle total, with zero reported global charge error. [Host comparison](checks/sodium_anion_symport.py) · [Rate tolerance](../validation/core_seams/references/design.py#L39)
+
+**SMCT1 measurements.** The Cells declaration cites Coady et al. for n = 2 in human SMCT1. In that study the measured net charge per lactate was 1.04 ± 0.07, compared with 1 from the host’s transported rows. Independent volume/current measurements gave 3.1 ± 0.1 osmolytes per charge, compared with 3. The ratios of zero-current shifts after sodium and substrate halving were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate (means ± SE, 11 and 7 oocytes). The model predicted 2. Its **isolated** voltage shifts at 24 °C were −35.50 and −17.75 mV. The measured whole-oocyte shifts also depend on other conductances, including an anion leak. The absolute stall, Hill constants and turnover rates remain open experimentally. [Coady et al., Figs. 1, 2 and 4–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/) · [Observables and protocol](checks/data/coady2007_smct1.json) · [Computed shifts](checks/sodium_anion_symport.py#L104)
+
+Gopal et al. provide a separate laboratory’s charge and lactate measurements. For the four human SMCT1 points in Fig. 9A, uptake was approximately 225, 285, 300 and 370 pmol. With n = 2 those numbers also give the predicted pmol of net positive charge. The measured charges were about 290, 360, 385 and 450 pmol. These retrospective figure readings are rounded to 5 pmol. Individual errors are unavailable. [Gopal et al., Fig. 9A](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819709016-gr9.jpg) · [Paired readings](checks/data/gopal2004_lactate.json)
+
+```json
+{
+  "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+  "model": "resolved_pump_tissue@3", "backend": "cpu", "dtype": "float64",
+  "rectifier": {"states": 360, "negative_slopes": 64, "max_scaled_error": 6.462348535570529e-16,
+    "scale_exponents": [0, -8, -512], "admitted": [true, true, false],
+    "reference_current_A": 5.52053308618338e-13},
+  "symport": {"states": 120, "active_stalls": 12, "max_error_in_roundoff_floors": 0.21907374518353304,
+    "isolated_shift_mV": [-35.49801595309584, -17.749007976547958],
+    "cycles_fmol": 8.621772032950217e-05, "global_charge_error_C": 0}
+}
+```
+
+All 22 public theorems compiled with only `propext`, `Classical.choice` and `Quot.sound`. The full rectifier comparison reproduced the refusal in 21.97 s and returned status 1. Its controls passed in 33.58 s. The symport comparison passed in 18.66 s. Each used two CPU cores. The nine existing tests for these two laws and the 82 repository guards passed. [Rectifier host tests](../tests/unit/test_inward_rectifier_route.py) · [Symport host tests](../tests/unit/test_na_anion_symport_factored.py)
+
 ## 19 November 2026 · Stochastic encounters and transition-state catalysis
 
 In `cells.assembly_lineages@2`, drawing two copies of one molecule with count n gives n(n − 1) ordered choices. For a general reaction the finite-place draws are falling factorials. Lean proves that their log, including the membrane normalization and dilute concentration scales, equals the change of ideal energy less the reactants’ standard potentials. On regular, finite two-way edges, log(forward rate / reverse rate) is the initial free energy minus the final free energy plus held-reservoir work. The proof also covers the cancelled membrane denominator for full consumption under the offset-one measure. If a membrane participant survives on both sides at the singular boundary, the numerator is positive and the denominator is zero. [Lean proofs](CellsProofs/Chemistry/AssemblyKinetics.lean) · [Encounter law](../src/cells/models/assembly_lineages_v2/mass_action.py#L74) · [Mathlib factorial identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368)

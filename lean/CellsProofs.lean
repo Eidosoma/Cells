@@ -10,8 +10,10 @@ import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.ElectrogenicPumps
+import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.NeutralPermeation
 import CellsProofs.Transport.ProtonLeak
+import CellsProofs.Transport.SodiumAnionSymport

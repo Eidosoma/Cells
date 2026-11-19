@@ -1,0 +1,18 @@
+{
+  "dataset_id": "tada1998_kir41@1",
+  "citation": "Tada, Horio and Kurachi, Japanese Journal of Physiology 48 (1998), 71–80",
+  "doi": "10.2170/jjphysiol.48.71",
+  "source": "https://www.jstage.jst.go.jp/article/jjphysiol/48/1/48_1_71/_pdf/-char/ja#page=6",
+  "preparation": "Rat Kir4.1 expressed in HEK293T cells. Cell-attached single-channel currents. Fig. 4B(b), C and D show measurements from three patches at each pipette potassium concentration.",
+  "temperature_K": 298.15,
+  "temperature_note": "Methods report approximately 25 °C.",
+  "outside_K_mM": [15, 21, 35, 63, 153],
+  "reversal_read_from_panel_C_mV": [-60, -48, -36, -20, 0],
+  "common_drive_mV": -60,
+  "current_at_common_drive_pA": [-0.59, -0.80, -1.04, -1.16, -1.23],
+  "reading": "Read the filled Kir4.1 symbols in C, add the common drive to each reversal, then linearly interpolate between adjacent points of that concentration in B(b). Values are approximate. Some reversal markers overlap. The figure gives no numerical error bars for these currents.",
+  "calibration": "Use the 153 mM current as the sole anchor. Lower concentrations are held out. The voltage-dependent open fraction at a fixed drive, channel scale and area cancel in the predicted ratios.",
+  "inward_slope_exponent_fit_panel_D": 0.51,
+  "reversal_fit_mV_per_natural_log": 25.4,
+  "fits_note": "The authors fitted the inward unitary slope conductances separately in D. The test in B(b) compares unitary current at a common driving voltage. Application of this normalized route to unitary current assumes constant availability across solutions."
+}

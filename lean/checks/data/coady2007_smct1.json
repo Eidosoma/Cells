@@ -1,0 +1,19 @@
+{
+  "dataset_id": "coady2007_smct1@1",
+  "citation": "Coady et al., Biophysical Journal 93 (2007), 2325–2331",
+  "doi": "10.1529/biophysj.107.108555",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/",
+  "preparation": "Human SMCT1 in Xenopus oocytes. Coupling n=2 is the published value cited by the Cells law. These are same-study consistency checks.",
+  "temperature_K": 297.15,
+  "temperature_note": "The steady-state methods report approximately 24 °C. A separate zero-current clamp temperature was unspecified. The ratio of shifts is independent of temperature.",
+  "charge_per_lactate": {"mean": 1.04, "uncertainty": 0.07, "unit": "equivalents/mol", "locator": "Fig. 1B, current at −50 mV and radiolactate uptake, mean of five weekly regression slopes."},
+  "osmolytes_per_charge": {"mean": 3.1, "sem": 0.1, "n": 11, "locator": "Fig. 2, independent lactate current and volume method."},
+  "ratio_of_zero_current_shifts": {
+    "lactate": {"mean": 2.2, "sem": 0.2, "n": 11},
+    "propionate": {"mean": 2.3, "sem": 0.3, "n": 7},
+    "locator": "Fig. 4A–B and accompanying results. Halve external sodium at fixed substrate or halve substrate at fixed sodium. Comparing the voltage changes assumes fixed internal activities and the same conductance weighting."
+  },
+  "external_sodium_mM": [96, 48],
+  "external_substrate_mM": [1, 0.5],
+  "exclusion": "The inhibitor-sensitive voltage-clamp reversal includes a separate anion leak. Propionic acid also crosses the oocyte membrane independently. Neither the mixed reversal nor raw propionate tracer uptake is an isolated coupled current."
+}
