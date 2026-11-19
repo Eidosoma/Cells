@@ -1,5 +1,6 @@
 import CellsProofs.Accounting.Transfer
 import CellsProofs.Chemistry.Enzyme
+import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport
