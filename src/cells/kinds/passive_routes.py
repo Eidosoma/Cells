@@ -14,7 +14,17 @@ owner's, called here and never edited:
   patch, I = m A g_ref (c_o/K_ref)^(1/2) q(V - E) (V - E); tableau-booked as the leak is, with
   its slope conductance's magnitude in the stage rule (it turns negative) and its flux in the
   membrane current. Its fields exist only in a definition that declares it (declared_fields), so
-  a definition without it keeps today's fields and programs.
+  a definition without it keeps today's fields and programs;
+- `passive_constant_field_permeation@1` (laws/routes/constant_field_permeation.py; FR-15 F2's
+  P2, the lead's rulings of 19 November 2026): a charged species' constant-field route at its own
+  valence on a membrane patch, reading the row's amounts at both ends (the leak's flux at any
+  z != 0); tableau-booked as the leak is, with its max-side slope conductance in the stage rule,
+  its material slope |dJ/dn| at each end in the material rule (material_term: a charged trace
+  row's bound, which @3's static bound cannot hold) and its flux in the membrane current. A row
+  whose free/total split a closure owns is refused on it (it reads amounts, not free forms), and
+  so is a junction host until the @3 owner rules on a kind's cell-to-cell current. Its field, and
+  its material_term, exist only in a definition that declares it (declared_fields), so a
+  definition without it keeps today's fields and programs.
 
 The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph_engine/
 definitions.py), each route on one host (`patch`, or `junction` for the neutral law):
@@ -39,7 +49,7 @@ permeability for the carried row is zero.
 
 The kind finds its laws in the active law registry: the route laws it hosts, named as declared
 (registry/laws.py; docs/CORE_SEAMS_DESIGN.md §8.3), never a module tuple. Each of its laws is
-declared in its own module (§8.2). Version 1 runs each of its three by name (VERSION_1_LAWS), so it
+declared in its own module (§8.2). Version 1 runs each of its four by name (VERSION_1_LAWS), so it
 refuses any other route law it hosts.
 
 - **The routing door's sink (§7.4 (n) 6):** where any route declares factors, the kind's entry
@@ -55,9 +65,9 @@ refuses any other route law it hosts.
   host's: a patch's availability, or a junction's gate times its availability.
 - **One law per species and route:** the host route's own constant-field permeability for a
   carried species must be zero. The neutral law carries valence-0 species only; the leak and the
-  rectifier a valence +1 row. The rectifier's E reads both ends: the host's parse admits only
-  positive initial amounts, and its domain hook keeps both positive and finite at every checked
-  state.
+  rectifier a valence +1 row; the charged law a charged row (z != 0) that no closure holds. The
+  rectifier's E reads both ends: the host's parse admits only positive initial amounts, and its
+  domain hook keeps both positive and finite at every checked state.
 - **Its own fields:** `passive_transferred` [species, route] (cumulative, inward) and
   `passive_dissipated_energy_pJ` [route]; both join @3's material and energy ledgers by role.
 - **The booking (§7.5, version 1):** a neutral route whose every carried row (species, end node)
@@ -79,7 +89,9 @@ refuses any other route law it hosts.
   kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term), and so
   does the rectifier's |dI/dV| at the stage's potentials (slope_conductance_S), or, where
   membrane_rate has no potentials, its voltage-free bound at the stage's concentrations
-  (slope_bound_S).
+  (slope_bound_S), and the charged law's max-side slope (its conductance_S). The charged law's
+  material slope at each end (its material_slope_per_s, at the stage's amounts and potentials)
+  is the kind's material_term, which membrane_rate's material counterpart holds to the same bound.
 """
 
 from types import MappingProxyType
@@ -88,26 +100,29 @@ from typing import NamedTuple
 import numpy as np
 
 from cells.laws.electrochemistry import R
+from cells.laws.routes import constant_field_permeation as charged_law
 from cells.laws.routes import inward_rectifier_linear_driving_force as rectifier
 from cells.laws.routes import passive_permeation as passive
 from cells.laws.transport import proton_leak as leak
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.registry import laws as law_registry
-from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView
+from cells.registry.kind_registry import BUILTIN, ConfigError, Kind, KindFields, KindView, active
 
 KIND_ID = "cells.passive_routes@1"
 MODEL_KEY = "passive_routes"
 LAW_ID = passive.LAW_ID  # The neutral law.
 LEAK_LAW_ID = leak.LAW_ID  # The charged proton leak.
 RECTIFIER_LAW_ID = rectifier.LAW_ID  # The inward rectifier (D228 item 2).
+CHARGED_LAW_ID = charged_law.LAW_ID  # A charged species' constant-field route (FR-15 P2).
 # Version 1 runs each by name (Route.law's dispatch).
-VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID, RECTIFIER_LAW_ID)
+VERSION_1_LAWS = (LAW_ID, LEAK_LAW_ID, RECTIFIER_LAW_ID, CHARGED_LAW_ID)
 # The kind's laws, each declared in its own module (CORE_SEAMS §8.2), where the law registry's
 # loader registers them for the kind to find by interface and host.
 NEUTRAL = passive.LAW
 LEAK = leak.LAW
 RECTIFIER = rectifier.LAW
+CHARGED = charged_law.LAW
 DEFAULT_PROTON = "H"
 RAW_SUM_FACTOR = 16.0  # §7.5: |sum of shares - exact decrease| <= 16 eps (own + inputs), per row.
 NEGATIVE_SHARE = "negative exact share: step-bound breach"
@@ -137,6 +152,9 @@ RECTIFIER_FIELDS = (
     "passive_rectifier_slope",  # [route]: s (V).
 )
 RECTIFIER_KEYS = ("id", "law", "patch", "species", *rectifier.COEFFICIENTS)
+# The charged law's own field, only where a definition declares it (declared_fields), and its
+# material_term, which a definition without it does not have (KindFields.without).
+CHARGED_FIELDS = ("passive_charged",)  # [route]: the charged law's routes.
 
 
 def hosted_laws():
@@ -276,6 +294,11 @@ def parse(entries, base):
         else:
             if law == LEAK_LAW_ID:
                 raise ConfigError(f"{MODEL_KEY} {rid}: the proton leak sits on a membrane patch")
+            if law == CHARGED_LAW_ID:
+                raise ConfigError(
+                    f"{MODEL_KEY} {rid}: {CHARGED_LAW_ID} sits on a membrane patch (a junction"
+                    " host waits for the @3 owner's ruling on a kind's cell-to-cell current, FR-15)"
+                )
             if host not in junctions:
                 raise ConfigError(f"{MODEL_KEY} {rid}: unknown junction {host!r}")
             inside, outside = junctions[host].sender, junctions[host].receiver
@@ -335,17 +358,29 @@ def structure_entry(declaration):
 
 def declared_fields(entry):
     """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored,
-    and the rectifier's fields only where a route runs it."""
+    the rectifier's fields only where a route runs it, and the charged law's field and its
+    material_term only where a route runs that law (so no other entry's program changes)."""
     laws = entry.laws if isinstance(entry, Factored) else entry
     layout = LAYOUT_FIELDS + (RECTIFIER_FIELDS if RECTIFIER_LAW_ID in laws else ())
+    charged = CHARGED_LAW_ID in laws
+    layout += CHARGED_FIELDS if charged else ()
     return KindFields(
-        STATE_AXES, layout, (MULTIPLIER,) if isinstance(entry, Factored) else (), ()
+        STATE_AXES,
+        layout,
+        (MULTIPLIER,) if isinstance(entry, Factored) else (),
+        (),
+        () if charged else ("material_term",),
     )
 
 
 def _rectified(p):
     """Static: whether the layout holds the rectifier's fields (a definition that declares it)."""
     return "passive_rectifier" in type(p)._fields
+
+
+def _charged(p):
+    """Static: whether the layout holds the charged law's field (a definition that declares it)."""
+    return "passive_charged" in type(p)._fields
 
 
 def control_values(spec, declaration, times):
@@ -434,6 +469,8 @@ def initial(spec, declaration, layout):
     )
     if any(isinstance(route, RectifierRoute) for route in declaration):  # declared_fields' test.
         own |= _rectifier_layout(ids, declaration)
+    if any(route.law == CHARGED_LAW_ID for route in declaration):  # declared_fields' test.
+        own["passive_charged"] = np.asarray([route.law == CHARGED_LAW_ID for route in declaration])
     state = dict(passive_transferred=np.zeros((s, r)), passive_dissipated_energy_pJ=np.zeros(r))
     return state, own
 
@@ -525,6 +562,12 @@ def rates(state, potentials, control, p, *, xp):
     if _rectified(p):  # Static: only a definition that declares the rectifier traces it.
         terms = _rectifier_terms(c_in, c_out, voltage, opening, p)
         flux = xp.where(p.passive_rectifier, rectifier.flux_fmol_s(*terms, xp=xp), flux)
+    if _charged(p):  # Static: only a definition that declares the charged law traces it.
+        moved = charged_law.flux_fmol_s(
+            c_in, c_out, voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability,
+            opening, xp=xp,
+        )  # fmt: skip
+        flux = xp.where(p.passive_charged, moved, flux)
     volume, _ = _volumes(p, xp)
     n = p.active.size
     net = _net(flux, p, volume.shape[0], xp)
@@ -535,6 +578,9 @@ def rates(state, potentials, control, p, *, xp):
     if _rectified(p):  # Its I u, >= 0, per route.
         dissipated = species_sum(rectifier.heat_pJ_s(*terms, xp=xp), xp=xp)
         heat = xp.where(p.passive_rectifier, dissipated, heat)
+    if _charged(p):  # J (mu-tilde_out - mu-tilde_in), >= 0, per route (FR-15 P2).
+        ohmic = charged_law.heat_pJ_s(flux, c_in, c_out, voltage, p.valence, p.temperature, xp=xp)
+        heat = xp.where(p.passive_charged, species_sum(ohmic, xp=xp), heat)
     outward = xp.where(p.passive_on_junction, 0.0, -flux)
     patch_flux = scatter(outward, p.membrane_permeability, (p.passive_membrane,), xp=xp)
     return KindRates(
@@ -730,9 +776,37 @@ def stage_term(read, potentials, control, p, *, xp):
             terms = _rectifier_terms(c_in, c_out, voltage, opening, p)
             magnitude = rectifier.slope_conductance_S(*terms, xp=xp)
         per_route = xp.where(p.passive_rectifier, species_sum(magnitude, xp=xp), per_route)
+    if _charged(p):  # Static: the charged law's max-side slope (FR-15 P2).
+        slope = charged_law.conductance_S(
+            c_in, c_out, voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability,
+            opening, xp=xp,
+        )  # fmt: skip
+        per_route = xp.where(p.passive_charged, species_sum(slope, xp=xp), per_route)
     nodes = xp.zeros(p.active.size + p.outside_active.size)  # Cells, then outside nodes.
     inside = scatter(per_route, nodes, (p.passive_inside,), xp=xp)
     return inside + scatter(per_route, nodes, (p.passive_outside,), xp=xp)
+
+
+def material_term(read, potentials, control, p, *, xp):
+    """D4 for the charged law (FR-15 P2): [cells, then outside nodes] the kind's material slope
+    (1/s), per node the largest over the rows its charged routes move there of the sum over those
+    routes of |dJ/dn| at that end (the law's material_slope_per_s), at the stage's read amounts and
+    patch voltage (V = 0 where no potentials are given; the step passes the stage's). It follows
+    the voltage with no assumed range: a charged trace row's bound, which @3's static bound cannot
+    hold. Only a definition that declares the charged law has this hook (declared_fields)."""
+    opening = _opening(read, control, p, xp)
+    voltage = 0.0
+    if potentials is not None:
+        voltage = potentials[p.passive_inside] - potentials[p.passive_outside]
+    volume, _ = _volumes(p, xp)
+    to_in, to_out = charged_law.material_slope_per_s(
+        voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability, opening,
+        volume[p.passive_inside], volume[p.passive_outside], xp=xp,
+    )  # fmt: skip
+    zero = xp.zeros((to_in.shape[0], volume.shape[0]))
+    inside = scatter(xp.where(p.passive_charged, to_in, 0.0), zero, (p.passive_inside,), xp=xp)
+    outside = scatter(xp.where(p.passive_charged, to_out, 0.0), zero, (p.passive_outside,), xp=xp)
+    return xp.max(inside + outside, axis=0)
 
 
 def bound_rate(spec, declaration):
@@ -752,11 +826,31 @@ def bound_rate(spec, declaration):
     return max(totals.values(), default=0.0)
 
 
+def _held_rows(m):
+    """{(species, node): kind ID} of every row a declared kind's closure owns: the rows a stage read
+    that stores totals rewrites (its stage_rows; B4's proton and buffer rows at buffered nodes) and
+    a general closure's closure_rows (FR-15 P2's fail-closed rule: the charged law reads
+    amounts)."""
+    registry = active()
+    out = {}
+    for kind_id, declaration in m.kinds:
+        kind = registry.lookup(kind_id)
+        rows = ()
+        if kind.stage_read is not None and kind.stage_rows is not None:
+            rows = tuple(kind.stage_rows(declaration))
+        rows += tuple(getattr(declaration, "closure_rows", ()))
+        for row in rows:
+            out.setdefault((row[0], row[1]), kind_id)
+    return out
+
+
 def check_definition(spec):
     """Admission: the neutral law carries a valence-0 row, the leak a valence +1 row (B4's proton
     row where B4 is declared), the rectifier a valence +1 row (its E reads both ends, whose
-    initial amounts the host's parse admits only positive); the host route's own permeability for
-    the carried row is zero; route IDs are unique among the definition's entity IDs."""
+    initial amounts the host's parse admits only positive), the charged law a charged row that no
+    declared closure holds at either end (_held_rows; FR-15 P2, fail-closed); the host route's own
+    permeability for the carried row is zero; route IDs are unique among the definition's entity
+    IDs."""
     m = spec.model
     kinds = dict(m.kinds)
     declaration = kinds[KIND_ID]
@@ -764,6 +858,7 @@ def check_definition(spec):
     junctions = {j.id: j for j in m.junctions}
     taken = {x.id for x in (*m.cells, *m.extracellular, *m.membranes, *m.junctions, *m.faces)}
     closure = kinds.get("cells.rapid_proton_buffer@1")
+    held = _held_rows(m) if any(route.law == CHARGED_LAW_ID for route in declaration) else {}
     for route in declaration:
         if route.id in taken:
             raise ConfigError(f"{MODEL_KEY} {route.id}: the ID is already an entity's")
@@ -789,6 +884,19 @@ def check_definition(spec):
                 f"{MODEL_KEY} {route.id}: {RECTIFIER_LAW_ID} carries a valence +1 row, not "
                 f"{route.species}"
             )
+        if route.law == CHARGED_LAW_ID:
+            if m.valence[row] == 0:
+                raise ConfigError(
+                    f"{MODEL_KEY} {route.id}: {CHARGED_LAW_ID} carries a charged row, not the "
+                    f"neutral {route.species} ({LAW_ID} carries neutral rows)"
+                )
+            for node in (route.inside, route.outside):
+                if (route.species, node) in held:
+                    raise ConfigError(
+                        f"{MODEL_KEY} {route.id}: {route.species} at {node} is held by "
+                        f"{held[(route.species, node)]}, which owns its free/total split; "
+                        f"{CHARGED_LAW_ID} reads amounts, so it is refused there (FR-15)"
+                    )
         if _moves(route) and host.permeability_m_per_s[row]:
             raise ConfigError(
                 f"{MODEL_KEY} {route.id}: its {route.host_kind} {route.host} has its own "
@@ -826,7 +934,12 @@ VIEW = KindView(
 # The run view's word for each law's routes (per-entity kinds are words, docs/RUN_VIEW_DESIGN.md;
 # each route's law ID is under "laws", in the form of the view's own sets).
 KIND_WORDS = MappingProxyType(
-    {LAW_ID: "permeation", LEAK_LAW_ID: "leak", RECTIFIER_LAW_ID: "rectifier"}
+    {
+        LAW_ID: "permeation",
+        LEAK_LAW_ID: "leak",
+        RECTIFIER_LAW_ID: "rectifier",
+        CHARGED_LAW_ID: "charged permeation",
+    }
 )
 
 
@@ -864,6 +977,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         initial=initial,
         rates=rates,
         stage_term=stage_term,
+        material_term=material_term,
         book=book,
         ledger_terms=ledger_terms,
         domain=domain,

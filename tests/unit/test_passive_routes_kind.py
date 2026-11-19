@@ -16,6 +16,7 @@ them. One passive route on the contact patch carries S at k = 1e15 P A (1/V_a + 
 
 import copy
 import dataclasses
+import re
 
 import numpy as np
 import pytest
@@ -25,10 +26,12 @@ from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
 from cells.kinds import passive_routes
-from cells.laws.electrochemistry import R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R, bernoulli
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
+from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
+from validation.compartment_ph_engine import definitions as fr
 from validation.passive import passive_reference as reference
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -275,3 +278,118 @@ def test_binding_refuses_charged_species_a_carrying_host_and_a_fast_route():
     spec = parse_spec(closed_pair())
     surface_pump_v3.check_steps(spec, np.asarray([spec.execution.dt]), None)  # dt L = 0.1.
     assert copy.deepcopy(spec.to_dict())["model"][passive_routes.MODEL_KEY][0]["id"] == "leak_S"
+
+
+# ------------------------------------------------------------------ FR-15 P2: the charged law
+
+
+def charged(rid, permeability, *, species="X", host=("patch", "contact_0")):
+    """A route of passive_constant_field_permeation@1 (FR-15 P2) in FR-4's form."""
+    return dict(route(rid, permeability, host=host, species=species), law=CHARGED)
+
+
+CHARGED = passive_routes.CHARGED_LAW_ID
+
+
+def charged_pair(*, voltage_fmol=0.0, pool_mM=1e-9, node_mM=5e-10, end=0.02, dt=1e-3):
+    """The closed pair with a trace anion X (z = -1) on the contact patch under the charged law,
+    and S as before; the pair's anchors carry +-voltage_fmol of charge, so the contact patch holds
+    a voltage that no ion moves (every ion is impermeant here) and the trace barely changes."""
+    raw = closed_pair(end=end, dt=dt, routes=[charged("charged_X", P)])
+    raw = add_inventory_species(
+        raw,
+        "X",
+        trace_mM=fx.TRACE_mM,
+        diffusivity_m2_per_s=fx.D_S,
+        floor_fmol=fx.FLOOR_FMOL,
+        concentrations_mM=dict(cell_0=pool_mM, ecs_0=node_mM),
+    )
+    m = raw["model"]
+    next(s for s in m["species"] if s["id"] == "X")["valence"] = -1
+    for node in (*m["cells"], *m["extracellular"]):
+        node["fixed_charge_equivalent_fmol"] += node["initial_amount_fmol"]["X"]  # Neutral nodes.
+    cell = next(c for c in m["cells"] if c["id"] == "cell_0")
+    node = next(o for o in m["extracellular"] if o["id"] == "ecs_0")
+    cell["fixed_charge_equivalent_fmol"] += voltage_fmol
+    cell["initial_charge_C"] += voltage_fmol * CHARGE_PER_FMOL  # The explicit anchor agrees.
+    node["fixed_charge_equivalent_fmol"] -= voltage_fmol
+    node["initial_charge_C"] -= voltage_fmol * CHARGE_PER_FMOL
+    return raw
+
+
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (lambda raw: raw["model"][passive_routes.MODEL_KEY][0].update(species=fx.SPECIES),
+         "carries a charged row, not the neutral S"),
+        (lambda raw: raw["model"][passive_routes.MODEL_KEY][0].update(
+            {"junction": "contact_0"}) or raw["model"][passive_routes.MODEL_KEY][0].pop("patch"),
+         "sits on a membrane patch (a junction host waits"),
+        (lambda raw: raw["model"]["membranes"][1]["permeability_m_per_s"].update(X=1e-9),
+         "has its own permeability for X"),
+    ],
+    ids=["neutral row", "junction host", "host's own permeability"],
+)  # fmt: skip
+def test_the_charged_law_refuses_a_neutral_row_a_junction_and_a_second_law(change, message):
+    """FR-15 P2's admission (host side): a charged row only; patches only, a junction host waiting
+    for the @3 owner's ruling on a kind's cell-to-cell current; and one law per species and
+    route."""
+    raw = charged_pair()
+    change(raw)
+    with pytest.raises(ConfigError, match=re.escape(message)):
+        parse_spec(raw)
+
+
+def test_the_charged_law_refuses_a_row_a_closure_holds():
+    """FR-15 P2, fail-closed (the lead's ruling of 19 November 2026): the law reads amounts, so a
+    row whose free/total split B4's closure owns (the FR-4 world's buffered proton row) is refused
+    on it; the leak beside it reads free h through the closure as before."""
+    raw = fr.declared_world(fr.fr4_world())
+    routes = raw["model"][passive_routes.MODEL_KEY]
+    routes.append(dict(id="charged_h", patch=fr.BOUNDING, law=CHARGED, species="H",
+                       permeability_m_per_s=1e-9))  # fmt: skip
+    with pytest.raises(ConfigError, match=r"H at .* is held by .*rapid_proton_buffer"):
+        parse_spec(raw)
+
+
+@pytest.mark.parametrize("voltage_fmol, dt", [(0.0, 1e-3), (-5.18e-5, 2.5e-4)])
+def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_fmol, dt):
+    """FR-15 P2: a trace anion X (z = -1) on the contact patch under the charged law, with every
+    check passing. Its charge moves the patch voltage by about 1 uV, so at the patch's held voltage
+    V (0, and about -50 mV from the anchors) the flux is linear in the two amounts: dn_a/dt =
+    k_b n_b - k_a n_a with k_a = A P B(-x)/V_a, k_b = A P B(x)/V_b (1e15 m^3 -> pL), x = z F V/RT,
+    an exponential to its equilibrium n_a/n_b = k_b/k_a = e^-x, the independent closed form here.
+    Material is conserved, the heat is >= 0, and the definition-only kind fields appear (the
+    charged mask and the material term). At -50 mV the relaxation is 2.6 times faster, so its row
+    takes dt/4 to keep the step's second-order error inside 5e-4. One compile per row, about
+    10 s each."""
+    spec = parse_spec(charged_pair(voltage_fmol=voltage_fmol, dt=dt))
+    model = get_model(spec.model)
+    bound = dict(model.structure.kinds)[passive_routes.KIND_ID]
+    kind = kind_registry.bound(kind_registry.active().lookup(passive_routes.KIND_ID), bound)
+    assert kind.material_term is not None and "passive_charged" in kind.layout_fields
+    result = run(spec)
+    state, p = model.initial_values(spec)
+    x_row = list(spec.model.species_ids).index("X")
+    patch = [q.id for q in spec.model.membranes].index("contact_0")
+    voltage = np.asarray(result.observations.membrane_voltage_V)[:, patch]
+    assert np.ptp(voltage) < 1e-5  # The trace's own charge moves it by about 1 uV.
+    v = float(voltage[0])
+    if voltage_fmol:
+        assert -0.06 < v < -0.04
+    final = result.final.state
+    start = (p.amount_reference[x_row, 0], p.extracellular_amount_reference[x_row, 1])
+    end = (
+        start[0] + final.amount_increment[x_row, 0],
+        start[1] + final.extracellular_amount_increment[x_row, 1],
+    )
+    assert end[0] + end[1] == pytest.approx(start[0] + start[1], rel=1e-12, abs=0)
+    x = -1 * F * v / (R * spec.model.temperature_K)
+    rate = AREA * P * 1e15  # pL/s per pL of volume, before the Bernoulli factors (V = 1 pL).
+    k_a, k_b = rate * float(bernoulli(-x, xp=np)), rate * float(bernoulli(x, xp=np))
+    total, lam = start[0] + start[1], k_a + k_b
+    expected = start[0] * np.exp(-lam * spec.experiment.end_time) + k_b * total / lam * (
+        -np.expm1(-lam * spec.experiment.end_time)
+    )
+    assert end[0] == pytest.approx(expected, rel=5e-4, abs=0)
+    assert float(final.passive_dissipated_energy_pJ[0]) > 0

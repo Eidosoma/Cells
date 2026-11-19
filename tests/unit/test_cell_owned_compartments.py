@@ -739,6 +739,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         LEAK: ("stage_term",),
         NEUTRAL_ROUTE: ("material_bound",),
         "inward_rectifier_linear_driving_force@1": ("stage_term",),  # The rectifier (RECTIFIER).
+        "passive_constant_field_permeation@1": ("stage_term", "material_term"),  # FR-15 P2.
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
     }
