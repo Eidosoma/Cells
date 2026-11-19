@@ -104,8 +104,12 @@ def test_the_general_declaration_parses_writes_back_and_is_admitted():
 
 def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     """FR-4's proton pump moves H at both closure nodes, and its law's reads name version 1's read
-    only: refused, naming the law. The planted control gives its reads rapid_binding@1: admitted
-    (only the not-built refusal remains). The proton leak, a route law, declares no reads."""
+    only: refused, naming the law. Given rapid_binding@1 in its reads (planted), the move gets past
+    the read and meets §5.2's admission next, which refuses it for the first of its conditions the
+    transporter does not meet. Which one follows the transporter's own state (since 3a882746 it
+    declares role_species, and its law declares no base forms), so only the admission is asserted;
+    each condition is pinned by test_rapid_binding_world.py's planted movers. The proton leak, a
+    route law, declares no reads."""
     refused(
         general_world(pump=True),
         r"species H at cell_0 is held by the closure rapid_binding@1: cells.transporter@1 moves "
@@ -116,7 +120,11 @@ def test_a_kind_move_at_a_closure_row_needs_the_closures_read(monkeypatch):
     monkeypatch.setattr(
         registry, "_law_reads", lambda law: (*reads(law), "rapid_binding@1")
     )
-    parse_spec(general_world(pump=True))
+    refused(
+        general_world(pump=True),
+        r"§5.2's admission refuses cells.transporter@1's move under "
+        r".*proton_atp_mass_action_positive@1: ",
+    )
     monkeypatch.undo()
     refused(general_world(leak=True), r"cells.passive_routes@1 moves it under .*, whose reads \[\]")
 
