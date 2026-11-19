@@ -108,6 +108,13 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`
+  (19 November 2026; D228 item 1).** Merge 845ee670, tag `symporter-v1-landed-2026-11-19`. A
+  fuel-free factored cycle law on the transporter (n_Na from 1 to 4), cited to Coady et al. 2007
+  (abstract) for 2:1; the Xenopus lane's XC0 world needs it. Refused at a compartment's node, as
+  stated. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on trials
+  6875e1bb and 3c923f22.
+
 - **The presence gate hosts channel and face slots (19 November 2026; the operators owner's
   GATED_SLOT_AXES follow-up).** Merge 79d0fc7c, tag `ops3-gated-slot-axes-landed-2026-11-19`. A kind
   with presence on channel populations or faces is admitted beside a closer, which closes those
