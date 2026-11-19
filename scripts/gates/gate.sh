@@ -113,6 +113,10 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
 }
 
 if [ $LOCKED -eq 0 ]; then
+  [ ! -e "$OUT/done" ] || { echo "Refused: $OUT was used before (it holds done)" >&2; exit 2; }
+  # Until the lock, this script and all it starts stay on the pre-lock CPU: nothing computes on the
+  # lane's CPUs without the lane's lock (lane_busy.py charges each process by its own affinity).
+  taskset -cp "$PRELOCK_CPU" $$ > /dev/null || { log "could not pin to CPU $PRELOCK_CPU"; finish 2; }
   for s in "$S" "$B"; do [ -f "$s/SNAPSHOT.json" ] || { log "no snapshot $s"; finish 2; }; done
   log "gate of head $S base $B; lane ${LANE:-A}, CPUs $CPUS; pre-lock $PRELOCK on $PRE_CPUS; \
 tiers $TIERS; additions from ${ADDITIONS_FROM:-none}; removals listed in ${REMOVED_OK_FILE:-none}; \
@@ -120,6 +124,7 @@ crossrev differences declared in ${CROSSREV_EXPECTED:-none}; cache ${GATE_CACHE:
   if [ "$PRELOCK" != lane ]; then prelock || finish 1; fi
   if [ "${PRELOCK_ONLY:-0}" = 1 ]; then log "pre-lock only (PRELOCK_ONLY=1): not queued"; finish 0; fi
   log "waiting for $LOCK"
+  rm -f "$OUT/locked.done"
   /usr/bin/flock "$LOCK" bash "$0" --locked "$S" "$B" "$OUT"
   rc=$?
   [ -f "$OUT/locked.done" ] || { log "the lock was never held (flock exit $rc): nothing ran under it"; finish 2; }
@@ -128,6 +133,7 @@ fi
 
 # ----------------------------------------------------------------------------- under the lock
 done_locked() { echo "$1" > "$OUT/locked.done"; exit "$1"; }
+taskset -cp "$CPUS" $$ > /dev/null || { log "could not pin to the lane's CPUs $CPUS"; done_locked 2; }
 log "lane ${LANE:-A}, lock held; affinity $(taskset -pc $$ | sed 's/.*: //')"
 if [ "$PRELOCK" = lane ]; then prelock || done_locked 1; fi
 
@@ -198,7 +204,7 @@ shard() {  # K CPU: the shard's groups in turn, one process each, on one CPU.
   while IFS=$'\t' read -r set worlds; do
     # shellcheck disable=SC2086
     (cd "$S" && PYTHONPATH="$S/src:$S" "$PY" -B validation/results_baseline.py save "$G1/parts/part-$k-$j" \
-      --sets "$set" --worlds $worlds --from "$BASELINE") >> "$G1/shard-$k.log" 2>&1 || code=1
+      --sets "$set" --worlds $worlds --from "$BASELINE") < /dev/null >> "$G1/shard-$k.log" 2>&1 || code=1
     echo "$(date -u +%FT%TZ) shard $k group $j $set exit $code" >> "$G1/g1.log"
     j=$((j + 1))
   done < <(steps g1-groups "$G1/plan.json" "$k")

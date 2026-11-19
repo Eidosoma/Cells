@@ -261,13 +261,14 @@ def ids_check(base_prefix, head_prefix, additions_from, removed_ok):
     new_errors = sorted(set(collection_errors(head_prefix)) - set(collection_errors(base_prefix)))
     empty = [side for side, found in (("base", base), ("head", head)) if not found]
     ok = not (missing or present or outside or new_errors or empty)
+    # The keys and verdict words of ids_additions.py, which the lead's tools read.
     return {"ok": ok, "base": len(base), "head": len(head), "additions": len(new),
             "additions_by_file": {f: sum(1 for i in new if i.startswith(f + "::"))
                                   for f in sorted(allowed)},
-            "outside_the_declared_files": outside[:10], "missing": missing[:10],
-            "removed_as_declared": removed, "declared_but_present": present,
-            "new_collection_errors": new_errors[:5], "empty_listing": empty,
-            "verdict": "as declared" if ok else "DIFFERS"}
+            "outside_the_branch_files": outside[:10], "missing": missing[:10],
+            "removed_as_listed": removed, "listed_but_present": present,
+            "new_errors": new_errors[:5], "empty_listing": empty,
+            "verdict": "additions only" if ok else "DIFFERS"}
 
 
 # ------------------------------------------------------------------------------- the base cache
@@ -553,8 +554,8 @@ def main(argv=None):
                         os.environ.get("ADDITIONS_FROM", "").replace(",", " ").split(), removed)
         write_json(a.out, doc)
         print(json.dumps({k: doc[k] for k in ("verdict", "base", "head", "additions", "missing",
-                                               "outside_the_declared_files",
-                                               "declared_but_present", "new_collection_errors")}))
+                                               "outside_the_branch_files", "listed_but_present",
+                                               "new_errors")}))
         return 0 if doc["ok"] else 1
     if step == "cache-find":
         found = cache_find(a.root, a.kind, a.base, a.items, a.python)

@@ -10,8 +10,9 @@
 # - the map defaults to the head's scripts/moves/move2.json (MAP overrides it);
 # - the base's identity and record are cached per main revision (the testing plan's item B, 19
 #   November 2026), in GATE_CACHE (default /mnt/workspaces/Cells/gate-cache; empty turns it off)
-#   through gate_steps.py. The key holds the base's revision, the map's digest, the G1 save and the
-#   interpreter's identity. A base whose identity or record failed is never published.
+#   through gate_steps.py. The key holds the base's revision, the map's and this fingerprints.py's
+#   digests (computed here at run time), the G1 save and the interpreter's identity. A base whose
+#   identity or record failed is never published.
 # Usage: fingerprints_landing.sh OUT HEAD_SNAPSHOT BASE_SNAPSHOT [PREMOVE_BASE_RECORD_DIR]
 set -uo pipefail
 O=${1:?out}; H=${2:?head snapshot}; B=${3:?base snapshot}; P=${4:-}
@@ -32,7 +33,7 @@ status=0
 items=()
 cached=
 if [ -n "$GATE_CACHE" ] && [ -f "$MAP" ]; then
-  items=("map=$(sha256sum "$MAP" | cut -c1-64)" "g1=$G1" "layout=moved")
+  items=("map=$(sha256sum "$MAP" | cut -c1-64)" "tool=$(sha256sum "$T" | cut -c1-64)" "g1=$G1" "layout=moved")
   cached=$(python3 -I "$G/gate_steps.py" cache-find "$GATE_CACHE" r1 "$B" "${items[@]}" --python "$PY" 2> /dev/null)
 fi
 for side in base head; do

@@ -26,6 +26,7 @@ Host only: no world runs here.
   - a declared program change goes on;
   - a passing gate takes crossrev, then tiers, then G1, and its second run reuses the cached base;
   - PRELOCK_ONLY stops after the pre-lock steps, without queueing;
+  - a used OUT is refused, so a stale verdict is never reported again;
   - a flock killed while it waits runs nothing.
 """
 
@@ -191,9 +192,9 @@ def listing(prefix, ids, errors=()):
 @pytest.mark.parametrize("plant, ok, key", [
     (None, True, None),
     ("undeclared removal", False, "missing"),
-    ("declared removal still present", False, "declared_but_present"),
-    ("addition outside the declared files", False, "outside_the_declared_files"),
-    ("new collection error", False, "new_collection_errors"),
+    ("declared removal still present", False, "listed_but_present"),
+    ("addition outside the declared files", False, "outside_the_branch_files"),
+    ("new collection error", False, "new_errors"),
 ])
 def test_ids_pass_only_as_declared(tmp_path, plant, ok, key):
     base = {"tests/a.py::t1", "tests/a.py::t2[x]", "tests/b.py::t3"}
@@ -460,6 +461,17 @@ def flock_child(parent, lock, timeout=30.0):
                 return int(entry.name)
         time.sleep(0.05)
     raise AssertionError("the gate's flock did not start")
+
+
+def test_a_used_out_is_refused_and_left_as_it_was(gate):
+    out = gate["tmp"] / "out"
+    out.mkdir()
+    (out / "done").write_text("0\n")
+    (out / "locked.done").write_text("0\n")  # A stale verdict must never be reported again.
+    done = subprocess.run(["bash", str(GATE), str(gate["head"]), str(gate["base"]), str(out)],
+                          env=gate["envs"], capture_output=True, text=True, timeout=60)
+    assert done.returncode == 2 and "was used before" in done.stderr
+    assert sorted(p.name for p in out.iterdir()) == ["done", "locked.done"]
 
 
 def test_a_killed_flock_runs_nothing_under_the_lock(gate):
