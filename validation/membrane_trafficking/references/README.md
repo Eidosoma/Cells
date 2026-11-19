@@ -201,9 +201,24 @@ The builder's tests pass at the stated tolerances, which suggests the second mod
 first is registered as a possibility, not as a finding about the tests. The plants' margins use
 the conservative model's band, so they hold under either.
 
-**Recorded later.** Which model is the engine's (is a free node's charge row built from absolute
-amounts or from base plus increment, and is ΔG_chem a difference of totals?) only selects a band.
-Its answer will be recorded as a dated note.
+**Dated note, 2026-11-19 06:08 UTC.** This comes after registration and before any engine
+comparison result. It selects bands and changes no registered value.
+
+**The models.** FR-2's builder states the engine's models, relayed by the lead:
+- storage is increments over the declared references (amounts, areas, capacitances), so
+  `increment_storage`;
+- ΔG_chem is the move's exact change written with log1p, with no difference of bulk terms, so
+  `stable_change`.
+
+From now on the bands use these two models' floors. The plants' registered margins were computed
+with the conservative models' bands, so they are lower bounds.
+
+**Two more facts from the same exchange:**
+- "The test's tolerance" in each band is FR-2's own, as §12 and §13 state it (REFERENCES_USAGE
+  lists them). The one exception is the dropped-unit plant's margins, which are taken at T5's
+  conservation tolerance, relative 1e-14.
+- The builder confirms that its operator adds |electrode transfer| to `trafficking_image_charge_C`
+  stage by stage. So that field's half-step change is `electrode_abs_C`.
 
 ## Zero power (what these references cannot see)
 

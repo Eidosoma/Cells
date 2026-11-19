@@ -35,10 +35,9 @@ float64 comparison.
 - −dC V_b on recycling into it;
 
 with V taken before the stage. This is the engine's `electrode_charge_transferred_C`, and §13
-confirms the sign. `electrode_abs_C` is Σ over stages of |transfer|. It is meant for
-`trafficking_image_charge_C` ("the absolute clamp transfer booked", §3), but that mapping is
-unconfirmed: §13 did not say whether the absolute value is taken per stage or of the half-step's
-sum. The two agree on one-direction half-steps.
+confirms the sign. `electrode_abs_C` is Σ over stages of |transfer|, which compares with the
+half-step's change of `trafficking_image_charge_C`. FR-2's builder confirmed that mapping
+(dated note, 2026-11-19 06:08 UTC): the operator adds |transfer| to that field stage by stage.
 
 **Supply and work:**
 - `supplied_fmol` is the reservoir supply per held node and species (positive into the system).
@@ -98,7 +97,8 @@ by it. At a free node, the outside node moves by its negative (`R1_potential_cha
 - On a recycling half-step, compare V_k′ with `closed_forms.V_k_after_V`, and V_b with its start.
 - Compare the single route's booked heat with `closed_forms.heat_pJ`.
 - The band is max(the test's tolerance, 10 × the floor), with the floor under the engine's
-  storage model. Until that model is known, use `absolute_storage`, the conservative one.
+  storage model. The model is `increment_storage` (dated note, 2026-11-19 06:08 UTC): the builder
+  states that the engine stores increments over the declared references.
 - The floors are in `design["floors_by_half_step"]["key #n"][model]` (n counts from 1).
   `design["floor_flags"][model]` lists where a floor exceeds its tolerance.
 - The R1 variant: compare the owner's or the cleft's shift with `R1_potential_change_V`.
@@ -120,8 +120,9 @@ by it. At a free node, the outside node moves by its negative (`R1_potential_cha
 - The per-half-step terms are the `sums`. Each engine booking is compared with its reference.
 - The residual against `residual_band_pJ`.
 - The carriers' work within the larger of 1e-6 relative and 1e-15 max|term|.
-- Each of those bands is widened to 10 × its floor, under the engine's ΔG model. Until that model
-  is known, use `naive_difference`, the conservative one.
+- Each of those bands is widened to 10 × its floor, under the engine's ΔG model. The model is
+  `stable_change` (dated note, 2026-11-19 06:08 UTC): the builder states that ΔG is the move's
+  exact change written with log1p, with no difference of bulk terms.
 - The floors are in `floors_by_half_step[...]["T6"]` and `hs["floors"]["T6"]`.
   `design["floor_flags"]["T6 naive_difference"]` and `design["floor_flags_carriers"]` list where
   they exceed the test's bands.
@@ -134,6 +135,29 @@ by it. At a free node, the outside node moves by its negative (`R1_potential_cha
 - `start_superseded_units`, §12's superseded ½ × availability × N0, for the record only;
 - `observations[j]`, with `factor_m2`, `start_times_A_over_A0_m2`, `A_over_A0`, `N`, `abundance`,
   `plant_no_coupling_m2` and `plant_no_retrieval_m2`.
+
+**The tests' tolerances.** "The test's tolerance" in every band is FR-2's own declared tolerance,
+as §12 and §13 state it. None is mine:
+
+| Check | Tolerance |
+| --- | --- |
+| T4: potentials unchanged | 1e-12 of max\|φ\| |
+| T4: V_b′, V_k′, V_b kept | relative 1e-12 |
+| T4: heat, and R1's shift | relative 1e-9 |
+| T5: closed forms per half-step | relative 1e-13 |
+| T5: N + R conserved | relative 1e-14 |
+| T5: compiled | relative 1e-12 |
+| T5: ratio | err(8)/err(16) within (3.5, 4.5), err(16) < 1e-4, the Lie plant below 2.5 |
+| T6: residual | 1e-9 max\|term\| + 1e-18 pJ |
+| T6: carriers' work | the larger of relative 1e-6 and 1e-15 max\|term\| |
+| T6: electrode work | relative 1e-14 |
+| T6: reservoir work | relative 1e-12 |
+| T6: the shares | relative 1e-3 |
+| T8 | relative 1e-12, and the start relative 1e-14 |
+
+One value is borrowed, and it is used only for my plant margins. §12 states T3's ledger bound only
+as "within its bound", so the dropped-unit plant's margins are taken at T5's conservation
+tolerance, relative 1e-14. The factor 10 on the floor is the band rule's own.
 
 **Plants.** `design["plants"][name]["rows"]` gives each case's deviation, its band and the margin,
 which is their ratio. `weak_at` lists the cases below 10 bands. Each weak case is in the README's
