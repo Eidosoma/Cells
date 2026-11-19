@@ -108,6 +108,15 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's
+  criterion, D224).** Merge fd894b91, tag `x2-energy-check-landed-2026-11-19`. Selected by
+  `spec.energy_check`, and required of registered and judged runs. Each window compares one step
+  against two half steps, within the registered band. Qualification: 13 rows, each with its saved
+  verdict; FR-3's planted energy error is refused at its step. Overhead about 1.22× per run
+  without compile. Gates: pre-gate, tiers 593 files with 0 changed, G1, crossrev 11 of 11, IDs +9,
+  FR's set; R1 differs only by the declared field default; the lead's merged check on trial
+  050c8f17.
+
 - **B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's
   part (a), D218; development, not judged).** Merge ee43b082, tag `b1prime-landed-2026-11-19`.
   Turnover's and reactions' rates may be scaled by a coupling factor F ∈ [b, 1], evaluated at the
