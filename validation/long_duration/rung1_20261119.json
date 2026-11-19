@@ -579,6 +579,58 @@
     "why": "so 6.25 uV per arm and 25 uV across four arms can be checked separately from FR-8's 20 uV per-trace criterion",
     "judges": "nothing in rung 1"
    }
+  },
+  {
+   "entry": "10.4",
+   "entry_utc": "2026-11-19T21:33Z",
+   "title": "three gaps found while building the control's driver, before any run",
+   "slow_phase_arms": {
+    "added_dts_ms": [
+     1,
+     2,
+     5,
+     10,
+     20,
+     50,
+     100
+    ],
+    "all_dts_ms": [
+     1,
+     2,
+     5,
+     10,
+     20,
+     50,
+     100,
+     200,
+     500,
+     1000,
+     2000,
+     5000,
+     10000
+    ],
+    "end_s": 1790.0,
+    "ids": [
+     "today",
+     "new"
+    ],
+    "reading": "(S) on H2 is read on the slow-phase arms alone; the through-cue arms serve (I)",
+    "stage_A_control": "today's ID at 100 ms on the slow phase is one of these arms",
+    "why": "a through-cue arm refused at the cue does not complete, and X2's whole-run conditions are decided only at a run's end, so it gives no verdict on the calm stretch",
+    "cost": "about 1 CPU-hour more for today's ID"
+   },
+   "reference_bound_at_rounding": {
+    "rule": "where a reference's finest ladder difference is at or below its readable floor (in a class at a row), the reference's bound there is that floor",
+    "floor": "rung 0's: readable_factor (10) x N x eps x scale; rung 0's scales (voltage 0.1 V, concentration 1, gate 1); N the finer arm's steps from its own start to the row",
+    "elsewhere": "section 3's rule: the finest difference where the observed order is at least 1, otherwise undetermined",
+    "B_A": "still judges every bound",
+    "why": "in slow phases and over all of WS (rung 0: no readable pair) no order exists, so section 3 would leave those rows undetermined although the reference's error there is at rounding; H2's (I) ladder holds WS at every window rung"
+   },
+   "times": {
+    "rule": "every time an arm declares (rows, cue edges, interventions, horizon) is the arm's own grid product i x dt at the registered integer millisecond; rows are matched across arms by their integer millisecond; each run records the times it declared",
+    "why": "the engine's grid is the float products i x dt, and an observation or an edge must equal one exactly"
+   },
+   "changed": "no registered number, criterion or outcome"
   }
  ]
 }
