@@ -1,5 +1,39 @@
 # Cells proof comparisons
 
+## 19 November 2026 · GARD catalysis on reversible transfers
+
+The two GARD comparison laws in `cells.assembly_lineages@1` multiply the base reservoir-exchange rates. For a transfer of species i from composition n to n + eᵢ, the pair-consistent form evaluates both multipliers on n. Lean proves that the multiplier cancels and the heat equals the change in the base log weight Φ on every nonempty reversible edge. The single-event form instead adds ln bᵢ(n) − ln bᵢ(n + eᵢ) to that heat. When the last molecule leaves, the pair-consistent exit factor is 1 and the single-event factor is 1 + βᵢᵢ. [Lean proofs](CellsProofs/Chemistry/GardCatalysis.lean) · [Registered factors](../src/cells/models/assembly_lineages/gard.py#L137) · [Base exchange heat](claims/assembly-exchange-heat.md)
+
+**Float64 refusal for the engine lead.** Start with one molecule of type B. When A enters, B is the only catalyst on both sides of the reversible edge. If β_AA = 2⁵⁴ and β_AB = 1, the exact multiplier is 2 in both directions and the exact heat is zero. On CPU, forming the row sum at (1, 1) rounds 2⁵⁴ + 1 to 2⁵⁴. Subtracting β_AA then gives a reverse multiplier of 1. The engine books **ln 2 kBT** and refuses the first event at its passive ledger check. A smaller case also crosses the rounding bound. Keeping the same random draw and reducing the diagonal, or setting β_AB to zero, gives the expected zero heat. Computing the reverse sum on the counts with the departing molecule removed gives a reference that avoids the subtraction. [One-event reproducer](checks/gard_catalysis.py#L107) · [Reverse multiplier](../src/cells/models/assembly_lineages/gard.py#L143) · [Ledger refusal](../src/cells/models/assembly_lineages/runner.py#L894)
+
+| β_AA | β_AB | Exact multiplier | CPU reverse multiplier | CPU heat (kBT) | Outcome after one event |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 2 | 1 | 2 | 2 | 0 | Reached stop |
+| 2⁵⁴ | 0 | 1 | 1 | 0 | Reached stop |
+| 2²¹ | 2⁻³² | 1 + 2⁻³² | 1 | 2.3283064363 × 10⁻¹⁰ | Refused, bound 10⁻¹⁰ |
+| 2⁵⁴ | 1 | 2 | 1 | 0.6931471806 | Refused, bound 10⁻¹⁰ |
+
+**Rank-one condition for the engine lead.** The single-event exception in the design and law description uses rank one of β. The sufficient condition proved here is rank one of the matrix formed by adding one to **every entry** of β. If 1 + βᵢⱼ = uᵢvⱼ with positive factors, the extra heat is a difference of state values and cancels around any closed path of nonempty compositions. The corrected log weight is Φ(n) − ln(Σⱼ vⱼ nⱼ / N). For a direct counterexample to the wording, set β_AA = 1 and all other entries to zero. This β has rank one. At counts (1, 1), the product of the four rates around +A, +B, −A, −B divided by the reverse product is **81/80**, which excludes detailed balance on that square. The exact finite-reservoir reference already uses the entrywise shift. The CPU comparison below uses the registered held reservoir. [Exact square](CellsProofs/Chemistry/GardCatalysis.lean#L117) · [Design §2.5](../docs/GARD_DESIGN.md#25-the-independent-check-and-its-scope-16-november-2026) · [Finite-reservoir reference](../validation/gard/references/closed_world.py#L202)
+
+For each of three matrices and both laws, the CPU driver checked 45 compositions through size eight, 70 reversible edges and 27 four-step cycles against an independent exact-rational reference. The largest edge error on that grid was 5.00 × 10⁻¹⁶ kBT. On the shifted rank-one example the single-event log weight correction agreed within 4.45 × 10⁻¹⁶ kBT, even though the difference from the base heat reached 0.4055 kBT. Each law also ran a two-fission lineage and agreed with scalar replay on all 14 event choices and times. The full driver took 13.15 s on two CPU cores and exited with status 1 on the two refusals. Its controls-only run passed. All 17 existing assembly kernel, balance and ledger tests and the 82 repository guards passed. [CPU comparison and inputs](checks/gard_catalysis.py) · [Exact reference propensities](../validation/gard/references/kernels.py#L279) · [Exact cycle reference](../validation/gard/references/detailed_balance.py#L132)
+
+```json
+{
+  "engine_revision": "f7767ad79edf2f972b78999e64b40f0c294bcf88",
+  "model": "cells.assembly_lineages@1", "backend": "cpu", "dtype": "float64", "seed": 1,
+  "laws": ["cells.gard_catalysis_pair_consistent@1", "cells.gard_catalysis_single_event@1"],
+  "matrices": [[[1,0],[0,0]], [[0,1],[1,3]], [[2,5],[0.5,1]]],
+  "edge_comparisons": 420, "square_comparisons": 162,
+  "single_event_square_at_1_1": ["81/80", "1", "99/98"],
+  "max_ordinary_edge_error_kT": 4.996003610813204e-16, "edge_atol_kT": 1e-9,
+  "pair_lineage_max_residual_kT": 4.440892098500626e-15,
+  "driven_lineage_reported_max_residual_kT": 0.25071844353711015,
+  "one_event_exact_heat_kT": 0, "refused_heat_kT": [2.3283064362676457e-10, 0.6931471805599453]
+}
+```
+
+**Biological measurements.** Sampaio, Moreno and Vaz compared the same fluorescent lysophospholipid (NBD-lysoMPE) in protein-free vesicles at 308 K. From pure POPC to 1:1 POPC/cholesterol, the insertion constant fell from (3.4 ± 0.3) × 10¹⁰ to (1.7 ± 0.1) × 10¹⁰ M⁻¹ s⁻¹ per molar vesicles. The corresponding exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent equilibrium titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. The kinetic fit used the measured equilibrium constant and assumed slow lipid exchange between leaflets. Changing a shared rate multiplier at fixed affinity cannot account for that composition change. Testing GARD’s specific multiplier or a four-transfer cycle would require event rates at known neighboring molecular counts. [Sampaio et al., Figs. 1–3 and Table 1](https://doi.org/10.1529/biophysj.104.054007)
+
 ## 19 November 2026 · Assembly reservoir exchange
 
 In `cells.assembly_lineages@1`, the uncatalyzed `cells.reservoir_exchange@1` law admits one molecule at a time. For species *i*, write θᵢ = Kᵢρᵢ, where Kᵢ is its transfer constant and ρᵢ is its held activity. In an assembly of size N, the entry rate is kᵢθᵢN and the exit rate is kᵢnᵢ. Lean proves entry is linear in activity and size, each additional molecule raises that species’ exit rate by kᵢ, and a nonempty state with all net rates zero requires Σθᵢ = 1. Time is nominal. [Engine rates](../src/cells/models/assembly_lineages/exchange.py#L108) · [Parameter binding](../src/cells/models/assembly_lineages/model.py#L47) · [Lean proofs](CellsProofs/Chemistry/ReservoirExchange.lean)

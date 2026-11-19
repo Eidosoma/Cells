@@ -88,7 +88,7 @@ variable [DecidableEq Species]
 
 def addOne (n : Species → ℕ) (i j : Species) : ℕ := n j + if j = i then 1 else 0
 
-private theorem size_addOne (n : Species → ℕ) (i : Species) :
+theorem size_addOne (n : Species → ℕ) (i : Species) :
     size (addOne n i) = size n + 1 := by
   simp [size, addOne, Finset.sum_add_distrib]
 
