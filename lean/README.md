@@ -15,6 +15,7 @@ The last column below gives the experimental result and what it can test. **Part
 | [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) | Proved | Checked | **Partial evidence.** A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
 | [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | **Partial evidence.** Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15) |
 | [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | **Partial evidence.** Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/) |
+| [Junction conductance relaxes toward a voltage-dependent target](claims/junction-gate.md) | Proved | Checked | **Partial evidence.** Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) |
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | **Partial evidence.** Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) |
 | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | **Partial evidence.** In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) |
 | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | Proved | Checked | **Partial evidence.** In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/) |
@@ -70,6 +71,8 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
 
 Keep the Cells theorem beside the mechanism it explains. Import a narrow upstream module when it fits our pinned Lean version. For a short result from another Lean version, a local derivation can be simpler. When copying licensed source, keep the original attribution, license and required notices with the copy. Give the claim a `formal.sources` entry for the upstream theorem at a fixed revision and label how we used it. The binding claim shows a local Lean 4 derivation. The face-power claim links an optional external import. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
 
+Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, then verifies the equivalence with our log-space evaluation. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
+
 ## Build
 
 Run these commands from `lean/`. Lean and Mathlib are pinned to 4.19.0. Lake reads the dependency revisions from the lockfile. The Linux x86-64 setup below reuses the lane’s installed compiler, or fetches it on a fresh checkout. [Lean release](https://github.com/leanprover/lean4/releases/tag/v4.19.0) · [Mathlib release](https://github.com/leanprover-community/mathlib4/releases/tag/v4.19.0)
@@ -103,6 +106,12 @@ To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the follo
 bash checks/units/check.sh
 ```
 
+For the Hill proofs, the first run fetches two pinned source files, their MIT license and any missing compiled real-power dependencies. The command works from the cache on subsequent runs. [Hill proof runner](checks/hill/check.sh)
+
+```bash
+bash checks/hill/check.sh
+```
+
 ## CPU comparisons
 
 Run these from `lean/` with the pinned Lake executable on your path. Use the Cells CPU Python environment, or set `CELLS_PYTHON` to its interpreter. Each driver prints its numerical results as JSON. See the [development results](PROGRESS.md).
@@ -129,6 +138,12 @@ For single-site binding, compare the compiled law against the independent S1 sta
 "$cells_python" -B checks/single_site_binding.py
 ```
 
+For Hill activation and inhibition, compare the compiled Cells factors with a 65-digit evaluation of the upstream formula on the engine's reaction test grid. [Hill comparison](checks/hill/compare.py)
+
+```bash
+"$cells_python" -B checks/hill/compare.py
+```
+
 For junction transport, the driver compares fluxes with an independent scalar reference and runs the per-cell potassium ledger on one closed tissue world. Reversing the endpoint bookings tests the sensitivity of the per-cell comparison. [Junction driver](checks/constant_field.py) · [Independent reference](../validation/tissue/surface_reference.py#L71)
 
 ```bash
@@ -137,6 +152,12 @@ For junction transport, the driver compares fluxes with an independent scalar re
   ../tests/unit/test_surface_transport.py::test_independent_surface_laws_and_accounting \
   ../tests/unit/test_surface_transport.py::test_patch_subdivision_route_reversal_and_padding \
   ../tests/unit/test_surface_transport.py::test_equilibrium_and_transport_blocking
+```
+
+For voltage-dependent junction gating, compare the clamped trajectory at both polarities, then follow tracer transfer in three tissue cell pairs through a block and release. [Gate comparison](checks/junction_gate.py) · [Cx43 clamp measurements](claims/incoming/junction-gate-evidence.md)
+
+```bash
+"$cells_python" -B checks/junction_gate.py
 ```
 
 For neutral permeation, compare the compiled inward flux and the final amounts in a closed tissue pair with the analytic solution. The unequal-volume case distinguishes amount from concentration. [Neutral driver](checks/neutral_permeation.py) · [Closed-pair reference](../validation/passive/passive_reference.py#L66)

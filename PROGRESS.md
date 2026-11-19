@@ -108,6 +108,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-8 rung 0: the fine engine's order through a switch (19 November 2026). Registered verdict:
+  "instrument not validated". Under a blind amendment, the weaker evidence: the cause is the
+  pre-asymptotic transient.**
+  - **Engine model it runs:** `resolved_pump_tissue@3` alone. Development, not judged.
+  - **Evidence:** [the registration and results](validation/long_duration/RUNG0_20261119.md), the
+    windows' inputs (`rung0_20261119.json`) and condensed results (`rung0_results_20261119.json`).
+    Landed at 6cec0fc4, tag `fr8-rung0-landed-2026-11-19`.
+  - **The registered verdict stands:** the slow-phase control had no power, so no cause is
+    identified (§9.1).
+  - **Under amendment 1** (§9.2), a powered control registered blind before the main windows were
+    read: the instruments pass, and the order drop in stage 0's switch transient is (C), the
+    pre-asymptotic transient. The observed orders climb toward 2 as the step halves; NaV activation
+    goes from 1.26 at 1 ms to 1.98. The cue's discontinuity is not implicated.
+  - **Provenance after the fact** (§9.5): the windows start from R3's saved state under the
+    continuity design's rule (b). R3's digest was recorded afterwards, and all 43 importing arms
+    start bitwise equal to R3's rows.
+  - **Next:** rung 1 (N2 with the exponential junction-gate update, opt-in) after X2 lands.
+
 - **FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows;
   run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1.**
   - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`

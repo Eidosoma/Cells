@@ -6,7 +6,7 @@ Each row links to a Cells registry declaration. The proof column lists named cla
 
 ## Registered laws
 
-Direct Lean claims cover 9 of 27 registered laws. Recorded numerical comparisons exercise 9.
+Direct Lean claims cover 10 of 27 registered laws. Recorded numerical comparisons exercise 10.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Direct Lean claims cover 9 of 27 registered laws. Recorded numerical comparisons
 | [`cells.gard_catalysis_pair_consistent@1`](../src/cells/models/assembly_lineages/gard.py#L208) | Open | Open |
 | [`cells.gard_catalysis_single_event@1`](../src/cells/models/assembly_lineages/gard.py#L174) | Open | Open |
 | [`cells.ideal_mixing@1`](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L109) | Open | Open |
-| [`cells.junction_voltage_relaxation@1`](../src/cells/laws/junctions/junction_voltage_relaxation.py#L100) | Open | Open |
+| [`cells.junction_voltage_relaxation@1`](../src/cells/laws/junctions/junction_voltage_relaxation.py#L100) | [Junction conductance relaxes toward a voltage-dependent target](claims/junction-gate.md) | [junction-gate](https://github.com/Eidosoma/Cells/blob/394a9294379f7636b7f75993fee850363c04bd26/lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance) |
 | [`cells.kir2p1_mh2@1`](../src/cells/laws/channels/kir2p1_mh2.py#L47) | Open | Open |
 | [`cells.kleak_always_open@1`](../src/cells/laws/channels/kleak_always_open.py#L13) | Open | Open |
 | [`cells.kv1p1_mh2@1`](../src/cells/laws/channels/kv1p1_mh2.py#L62) | Open | Open |
