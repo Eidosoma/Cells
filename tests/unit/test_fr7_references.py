@@ -9,7 +9,8 @@
   quadrature, R-clear on every case, and the cell model against R-cell at a held N;
 - nothing here imports the engine.
 
-About 5 s. The full regeneration is test_fr7_references_regeneration.py (minutes; tier 3).
+About 5 s. The full regeneration is test_fr7_references_regeneration.py (minutes).
+R-loop's checks (the dated addition) follow the same pattern.
 """
 
 from __future__ import annotations
@@ -224,6 +225,8 @@ def test_nothing_imports_the_engine():
     code = ("import sys\n"
             "import validation.fr7.references.design, validation.fr7.references.chain\n"
             "import validation.fr7.references.clearance, validation.fr7.references.worlds\n"
+            "import validation.fr7.references.loop, validation.fr7.references.loop_design\n"
+            "import validation.fr7.references.loop_worlds\n"
             "bad = [m for m in sys.modules if m == 'cells' or m.startswith('cells.')]\n"
             "lane = [m for m in sys.modules if m.startswith('validation.fr7')\n"
             "        and m != 'validation.fr7' and not m.startswith('validation.fr7.references')]\n"
@@ -231,3 +234,106 @@ def test_nothing_imports_the_engine():
             "sys.exit(1 if bad or lane else 0)\n")
     out = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True)
     assert out.returncode == 0, out.stdout + out.stderr
+
+
+# ---------------------------------------------------------------- R-loop (the dated addition)
+
+
+@pytest.fixture(scope="module")
+def loop_reg():
+    from validation.fr7.references import loop_design, loop_worlds
+
+    return dict(inputs=json.loads(loop_worlds.INPUTS.read_text()),
+                export=json.loads(loop_worlds.EXPORT_COPY.read_text()),
+                rows=json.loads(loop_design.ROWS_FILE.read_text()),
+                plants=json.loads(loop_design.PLANTS_FILE.read_text()),
+                zero=json.loads(loop_design.ZERO_FILE.read_text()),
+                cal=json.loads(loop_design.CALIBRATION_FILE.read_text()))
+
+
+def test_the_loop_inputs_are_the_export_and_the_start_is_stationary(loop_reg):
+    from validation.fr7.references import loop, loop_worlds
+
+    inputs, lp = loop_reg["inputs"], loop_reg["inputs"]["loop"]
+    declared = loop_worlds.from_export(loop_reg["export"])
+    for key, value in declared.items():
+        if key == "arms":
+            assert {k: lp["arms"][k] for k in value} == value
+        else:
+            assert lp[key] == value, key
+    # the start: the closed loop's own steady state with no template, N = N0
+    still = json.loads(json.dumps(inputs))
+    still["loop"]["template"]["n0_fmol"] = 0.0
+    world = loop.LoopWorld(still)
+    model = loop.LoopModel(world)
+    y = model.initial()
+    rate = model.rhs(0.0, y)
+    # stationary to rounding: the gross fluxes are about 3e-3 fmol/s (the pump's Na), and the
+    # charge recomputed from the stored amounts carries about 1e-16 fmol of rounding
+    assert np.all(np.abs(rate[1:model.i_s]) < 1e-13) and abs(rate[0]) < 1e-13
+    assert abs(rate[model.i_s]) < 1e-14 and abs(rate[model.i_P]) < 1e-17
+    assert abs(rate[model.i_N]) < 1e-9 * world.N0
+    report = lp["start_report"]
+    assert report["production_units_per_s"] == pytest.approx(
+        loop_reg["export"]["units"]["start_balance"]["flux_units_per_s"], rel=1e-12)
+    assert lp["arms"]["F_star"] == pytest.approx(loop_reg["rows"]["arms"]["closed"]["quantities"][
+        "F_loop"]["value"][loop_reg["rows"]["rows_s"].index(lp["arms"]["t_d_s"])], abs=1e-12)
+
+
+def test_the_loop_bands_margins_power_and_persistence(loop_reg):
+    from validation.fr7.references import loop_design
+
+    inputs, rows, plants, zero = (loop_reg[k] for k in ("inputs", "rows", "plants", "zero"))
+    m_min = inputs["power"]["margin"]
+    n = len(rows["rows_s"])
+    for arm, a in rows["arms"].items():
+        for k, q in a["quantities"].items():
+            if "band" not in q:
+                continue
+            fresh = design.band(loop_design.rule_of(inputs, k), q["value"], q["bound"])
+            if arm == "clamped":
+                fresh = fresh + np.array(q["F_star_allowance"])
+            assert np.array_equal(fresh, np.array(q["band"])), (arm, k)
+            assert np.all(np.array(q["bound"]) < 0.01 * np.array(q["band"])), (arm, k)
+        margins = {p: d["margin"] for p, d in plants["plants"].items()
+                   if d.get("applicable") and d["arm"] == arm}
+        for p, pm in margins.items():
+            for k, m in pm.items():
+                fresh = np.abs(np.array(plants["plants"][p]["values"][k])
+                               - np.array(a["quantities"][k]["value"])) / np.array(
+                    a["quantities"][k]["band"])
+                assert np.allclose(fresh, m, rtol=1e-12, atol=0), (arm, p, k)
+        compared = [k for k, q in a["quantities"].items() if "band" in q]
+        union = design.power_union(margins, compared, n, m_min)
+        for k in compared:
+            st = a["quantities"][k]["status"]
+            assert all(union[k][r] for r in range(n) if st[r] == "compared"), (arm, k)
+        assert zero["core_rows_without_any_plant"][arm] == {}, arm
+    # the cut has power on every compared unit row after t_d; persistence is resolved
+    cut = plants["cut_power"]
+    for k in ("N_units", "PA_units_m3_s", "R_units"):
+        assert cut[k]["rows_with_power"] == cut[k]["rows_compared"] > 0, k
+    per = rows["persistence"]
+    assert per["t_clear_s"] == per["t_d_s"] == 260.0 and len(per["rows_s"]) == 30
+    assert min(per["margin"]) > 10 and per["dN_units"][-1] > 0
+    # the confound: the cut at F = 1 moves the clamped arm's units on every compared row
+    c1 = np.array(plants["plants"]["cut_at_one"]["margin"]["N_units"])
+    st = rows["arms"]["clamped"]["quantities"]["N_units"]["status"]
+    assert all(c1[r] >= m_min for r in range(n) if st[r] == "compared")
+    # the regulator's range lies in [0, 1], and the bands admit a correct split engine
+    lo, hi = rows["s_range"]["closed"]["dense"]
+    assert 0.0 < lo < hi < 1.0
+    for k, c in loop_reg["cal"]["quantities"].items():
+        assert c["max_band_fraction_at_dt"] < 0.1, k
+        if c["order"] is not None:
+            assert 1.7 < c["order"] < 2.3, k
+    # D233: the template's tail crosses the mean-field floor after the cut, and replacing it moves
+    # the judged effect by a bounded term; F* does not depend on it
+    from validation.fr7.references import loop_floor
+
+    fl = json.loads(loop_floor.FLOOR_FILE.read_text())
+    lp = inputs["loop"]
+    assert fl["t_floor_s"] > lp["arms"]["t_d_s"] and lp["template"]["factor"]["K_mM"] == 0.05
+    assert fl["summary"]["max_spread_over_cut_any_row"] < 6e-5
+    assert fl["summary"]["max_spread_over_cut_at_horizon"] < 3e-5
+    assert fl["summary"]["F_star_spread"] == 0.0
