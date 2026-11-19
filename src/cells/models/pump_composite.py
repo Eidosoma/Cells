@@ -66,6 +66,7 @@ from cells.operators.contract import (
     HEAT_SUFFIX,
     READ_STAGES,
     WORK_SUFFIX,
+    factor_reads,
     monotone_heat,
     part_stages,
     reads_of,
@@ -1116,6 +1117,9 @@ class Composition:
         self.providers = tuple(op for op in operators if op.VIEW_FIELDS)
         self.factors = tuple(op for op in operators if op.CONTROL_FACTORS)
         self.factored = tuple(dict.fromkeys(k for op in self.factors for k in op.CONTROL_FACTORS))
+        # R2: each factor operator's current reads at the control view (static: none declared,
+        # no view is passed and every control-view call is as before).
+        self.factor_fields = {op: factor_reads(op) for op in self.factors if factor_reads(op)}
         # B1′: each routed split target's (source, field) routes (static: none without a source).
         self.rate_routes = rate_routes(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
@@ -1356,10 +1360,21 @@ class Composition:
         the full view's merge of every provider and closer at `state`, bitwise its fields, but
         without the field refresh, which no read field holds; it carries op's read fields only,
         so a part reads nothing else from it."""
+        return self._reader_view_of(self.reader_fields[op], p, state, xp=xp)
+
+    def _reader_view_of(self, fields, p, state, *, xp):
+        """C4's reader view of `fields` at `state` (reader_view; R2's control-view reads)."""
         closers = self._live_closers(p) if self.closers else ()
         q = self.inner.view(p, state, self.providers, closers, xp=xp, refresh=False)
-        fields = self.reader_fields[op]
         return reader_view_type(fields)(*(getattr(q, k) for k in fields))
+
+    def _factor_views(self, p, *, xp):
+        """R2: {factor operator: the function of state giving its reader view of factor_reads}
+        for each one that declares such a read (static)."""
+        return {
+            op: (lambda s, fields=fields: self._reader_view_of(fields, p, s, xp=xp))
+            for op, fields in self.factor_fields.items()
+        }
 
     def _view_for(self, op, p, *, xp):
         """The view function op's part receives (static): the full view for one that books at
@@ -1369,7 +1384,12 @@ class Composition:
         return lambda s: self.reader_view(op, p, s, xp=xp)
 
     def control_view(self, control, state, p, *, xp=jnp):
-        return self.inner.control_view(control, state, p, self.factors, xp=xp)
+        """The inner control with every factor applied at `state`; a factor operator that reads
+        at the control view gets view= (R2; static: otherwise the call is unchanged)."""
+        if not self.factor_fields:
+            return self.inner.control_view(control, state, p, self.factors, xp=xp)
+        views = self._factor_views(p, xp=xp)
+        return self.inner.control_view(control, state, p, self.factors, xp=xp, views=views)
 
     def inner_state(self, state):
         return self.inner.inner_state(state)
@@ -1513,12 +1533,15 @@ class Composition:
     def _control_factor_checks(self, current, p, *, xp):
         """(validity, current with its records) of the factor sources at the control view (B1′):
         each one's factor_valid, and each FACTOR_RECORD filled with the factors applied there
-        (static: a source without either changes nothing)."""
+        (static: a source without either changes nothing). A factor operator that reads at the
+        control view gets view= in both (R2)."""
         valid, records = None, {}
+        views = self._factor_views(p, xp=xp) if self.factor_fields else {}
         for op in self.factors:
-            valid = _and(valid, op.factor_valid(current, p, xp=xp))
+            keywords = {"view": views[op]} if op in views else {}
+            valid = _and(valid, op.factor_valid(current, p, xp=xp, **keywords))
             if op.FACTOR_RECORD:
-                record = op.factor_record(current, p, None, None, xp=xp)
+                record = op.factor_record(current, p, None, None, xp=xp, **keywords)
                 records[op.FACTOR_RECORD] = _merged(records.get(op.FACTOR_RECORD), record, xp=xp)
         return valid, _recorded(current, records, xp=xp)
 
