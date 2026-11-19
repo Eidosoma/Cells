@@ -34,6 +34,34 @@ Each part, its rows, and the test (under tests/unit/) that evaluates it:
 - the plants T8 without the coupling and without the retrieval, 70 rows:
   test_membrane_trafficking_sheet.py, test_t8_plant.
 
+The engine side's mapping, reconciled with REFERENCES_USAGE.md ("How each test compares") and the
+bands file's `checks` table before the first run:
+1. Potentials and voltages come from the engine's own field solve (adapter.node_potentials and
+   patch_voltages) on the operator's capacitor view: potential_unchanged is phi after less before
+   at the node, V_b_after and V_k_after the patch voltage after, and V_b_kept the pool patch's
+   voltage after less before (its references are 0).
+2. dU_view, and the residual's ΔU, is the change of 1/2 sum C V^2 over the active patches (the
+   view's capacitances, those voltages). view_capacitor_terms' energy alone is measured against
+   @3's own term, and its change differs.
+3. dG_chem is @3's chemical term per element (adapter.species_chemical_free_energy_pJ, anchor the
+   amount before, change the move: the stable change), over the cells and the free outside nodes.
+4. heat and heat_total, W_res, W_elec, electrode_transfer, image_charge and W_carriers(_route) are
+   the changes of the engine's bookings over the half-step.
+5. N_plus_R is the operator's own P0 ledger; dA_sum and dC_sum the change of its per-cell ledgers.
+6. cleft_share is |the amount moved into the route's pool| over the sum, on the route's first
+   declared carrier row.
+7. A stress world is its declared world with the record's nodes and routes laid over it; its cells,
+   patches and held potentials are asserted equal to the declared ones.
+8. The batch worlds' rows are read on each world's own run, which the batch test checks the
+   vmapped batch against (the batch keeps final states only).
+9. The criteria take the engine's err(n) against the values file's exact N at 4 ms.
+10. The plants: R1 zeroes the kernel's plate charge; the wrong-sign heat, carriers' work and
+    electrode work negate each stage's booking; the reservoir work without z F phi_b loses
+    1e-3 sum z F phi_b x supplied per stage; the dropped unit leaves the record at every half-step;
+    e and e_r scale by 1 + 1e-6; carriers without their valence scale by z; the swapped t exchange
+    each route's two numbers; the cleft's whole change is booked on one route (all, or none) by
+    its share. A zero-power row passes once its kind's reason is asserted present.
+
 The rows per check are 68 N_plus_R, 21 V_b_after, 9 V_b_kept, 9 V_k_after, 33 W_carriers, 2
 W_carriers_route, 29 W_elec, 29 W_res, 2 both_N, 2 cleft_share, 192 compiled, 16 cycle_N, 16
 cycle_R, 34 dA_sum, 34 dC_sum, 33 dG_chem, 33 dU_view, 29 electrode_transfer, 35 factor, 30 heat,
