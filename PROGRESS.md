@@ -108,6 +108,14 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's
+  part (a), D218; development, not judged).** Merge ee43b082, tag `b1prime-landed-2026-11-19`.
+  Turnover's and reactions' rates may be scaled by a coupling factor F ∈ [b, 1], evaluated at the
+  start of each target half-step, with a declared operating range refused when breached and the
+  applied factor recorded exactly. @1 is untouched, so FR-6's judged result stands. Gates: tiers 593
+  files with 0 changed, G1 113 of 113, crossrev 11 of 11 identical (coupling and acceptances), FR's
+  set; IDs with the contract-enumerating file declared; the lead's merged check on trial 8a482a26.
+
 - **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
   kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
   cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
