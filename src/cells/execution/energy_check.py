@@ -49,7 +49,7 @@ evaluations per step.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import NamedTuple
 
 import jax
@@ -103,6 +103,10 @@ class EnergyCheckRecord:
     max_integration_error: float = 0.0
     max_held_ratio: float = 0.0
     last_integration_error: float = 0.0
+    # The segment that ended at this row (EnergyRows), so RunResult.checkpoint_at gives the record
+    # at any of its rows; None at a run's first row, after a load, or after a segment without
+    # steps. Never stored or compared.
+    rows: object = field(default=None, repr=False, compare=False)
 
     def __post_init__(self):
         q = np.array(self.counted_q, dtype=np.float64).reshape(-1)
@@ -163,13 +167,52 @@ class EnergyCheckRecord:
     @classmethod
     def from_dict(cls, data, counted_q):
         names = (*cls.__dataclass_fields__,)
-        expected = set(names) - {"counted_q"}
+        expected = set(names) - {"counted_q", "rows"}
         if not isinstance(data, dict) or set(data) != expected:
             raise ConfigError("Invalid step-doubled energy record fields")
         floats = {k: data[k] for k in expected if k != "held_out_of_band"}
         if not all(type(v) is float for v in floats.values()):
             raise ConfigError("A step-doubled energy record holds finite floats only")
         return cls(counted_q=counted_q, **data)
+
+
+@dataclass(frozen=True, eq=False)
+class EnergyRows:
+    """A segment's record after each of its accepted steps: the record it started from (without its
+    own rows, so no chain of segments is kept) and the per-step arrays check_segment formed. The
+    record after j steps is the one a run split at that row carries, bit for bit."""
+
+    start: EnergyCheckRecord
+    residual: np.ndarray
+    sum_a: np.ndarray
+    sum_abs_a: np.ndarray
+    sum_held_d: np.ndarray
+    counted: np.ndarray
+    q: np.ndarray
+    out_band: np.ndarray
+    ratio: np.ndarray
+    relative: np.ndarray
+    held_ratio: np.ndarray
+
+    def record_at(self, j):
+        """The record after the segment's first j accepted steps (0: the one it started from)."""
+        if j == 0:
+            return self.start
+        s = self.start
+        head = slice(0, j)
+        return EnergyCheckRecord(
+            residual=float(self.residual[j - 1]),
+            sum_a=float(self.sum_a[j - 1]),
+            sum_abs_a=float(self.sum_abs_a[j - 1]),
+            sum_held_d=float(self.sum_held_d[j - 1]),
+            counted_q=np.concatenate((s.counted_q, self.q[head][self.counted[head]])),
+            held_out_of_band=s.held_out_of_band + int(np.count_nonzero(self.out_band[head])),
+            max_ratio=max(s.max_ratio, float(np.max(self.ratio[head]))),
+            max_integration_error=max(s.max_integration_error, float(np.max(self.relative[head]))),
+            max_held_ratio=max(s.max_held_ratio, float(np.max(self.held_ratio[head]))),
+            last_integration_error=float(self.relative[j - 1]),
+            rows=self,
+        )
 
 
 def selected(spec):
@@ -502,21 +545,10 @@ def check_segment(spec, record, first_step, values, events, *, rtol):
         "max_integration_error_relative": float(np.max(relative)),
         "max_held_step_energy_ratio": float(np.max(held_ratio)),
     }
-    updated = EnergyCheckRecord(
-        residual=float(energy[-1]),
-        sum_a=float(sum_a[-1]),
-        sum_abs_a=float(sum_abs[-1]),
-        sum_held_d=float(held[-1]),
-        counted_q=np.concatenate((record.counted_q, q[counted])),
-        held_out_of_band=record.held_out_of_band + int(np.count_nonzero(out_band)),
-        max_ratio=max(record.max_ratio, diagnostics["max_step_doubled_energy_ratio"]),
-        max_integration_error=max(
-            record.max_integration_error, diagnostics["max_integration_error_relative"]
-        ),
-        max_held_ratio=max(record.max_held_ratio, diagnostics["max_held_step_energy_ratio"]),
-        last_integration_error=float(relative[-1]),
-    )
-    return updated, diagnostics
+    start = record if record.rows is None else replace(record, rows=None)
+    rows = EnergyRows(start, energy, sum_a, sum_abs, held, counted, q, out_band, ratio, relative,
+                      held_ratio)  # fmt: skip
+    return rows.record_at(n), diagnostics
 
 
 def summary(record):

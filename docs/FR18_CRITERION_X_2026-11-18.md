@@ -397,9 +397,13 @@ it:
   serves `run` and both window paths.
 - **The first failing row is reported.** When several conditions fail in one segment, the message
   names the earliest row, so it does not depend on the window width.
-- **Two scalar-path callers outside the granted files refuse X2 definitions, fail-closed:** `cells
-  validate` (`__main__.py`, through `timeline`) and `records/window_io.write_windowed_run`
-  (through `validate_checkpoint`). Each needs one keyword, `energy_check=True`, to admit them.
+- **The windowed writer and `cells validate` admit X2** (the lead's grants, recorded exceptions in
+  `records/window_io.py` and `__main__.py`): registered and judged runs go through them. Without X2
+  both are byte for byte today's.
+- **A record at any row.** Each segment keeps its records row by row (`energy_check.EnergyRows`),
+  so `RunResult.checkpoint_at` gives the record that a run split at that row carries, and the
+  windowed writer's snapshots at requested times carry theirs. A restart from a mid-window
+  checkpoint continues the record bit for bit.
 - **The eager path** (`execution.jit = false`) runs the check too. On FR-18's first refused arm
   its record is not the compiled run's bit for bit; it was compared no further.
 - **One doubled step per definition** (`energy_check.doubled_step`): the step's closures are kept
@@ -417,12 +421,14 @@ it:
 - five parse refusals, as rows of `test_surface_pump_v3_definitions.py`'s definition errors;
 - the static switches at a row whose flows are 0, host and device, in `test_ledger_lists.py`
   (12–20 s on the shared light CPUs, no new world);
-- one row of `test_window_row_checks_families.py`, which covers host and device parity, the
-  restart through a written snapshot (two segments against one, exactly equal), and the record's
-  IO (about 85 s on the shared light CPUs with two compiles, before the doubled step was kept per
-  definition; the tier measure gives the record's figure);
-- beside it, the binding test (about 2 s), which refuses a planted heat × (1 + 1e-6), FR-3's
-  plant's form, and confirms that without X2 a checkpoint writes today's files.
+- a new file, `test_step_doubled_energy_windows.py` (about 52 s on the shared light CPUs; the tier
+  measure gives the record's figure). It is a new file at the lead's ruling, because the row would
+  take `test_window_row_checks_families.py` past the 90 s measuring cap. It covers:
+  - host and device parity, and the restart through a written snapshot (two segments against
+    one, exactly equal) with the record's IO;
+  - a mid-window checkpoint's record, its restart and the windowed writer's snapshot;
+  - the binding test, which refuses a planted heat × (1 + 1e-6), FR-3's plant's form, and
+    confirms that without X2 a checkpoint writes today's files.
 
 FR-3's registered plant itself is in the qualification run, since its route runs a composite for
 1000 steps. The run is `validation/energy_step_doubling/qualify_x2.py`.

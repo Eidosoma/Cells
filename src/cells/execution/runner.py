@@ -348,12 +348,16 @@ class RunResult:
             raise ConfigError("Checkpoints require an exact accepted time; see accepted_times")
         index = int(matches[0])
         state = type(self.history)(*(np.array(values[index], copy=True) for values in self.history))
+        record = self.final.energy_check  # The step-doubled check's record at that row, if any.
+        if record is not None and record.rows is not None:
+            record = record.rows.record_at(index)
         return Checkpoint(
             jax.device_put(state, execution_device(self.spec.execution.backend)),
             self.final.layout,
             float(time),
             self.start_step + index,
             event_index(self.spec, time),
+            record,
         )
 
 
@@ -643,6 +647,8 @@ def _energy_segment(spec, model, checkpoint, times, energy_values, final, diagno
     (the final checkpoint with its record after them, the diagnostics with the check's), and at
     the run's end its whole-run conditions. A segment without steps carries its record over."""
     record, extra = checkpoint.energy_check, {}
+    if record.rows is not None:  # Its rows are the previous segment's.
+        record = replace(record, rows=None)
     if energy_values is not None:
         rtol = energy._ledger_model(model).ENERGY_RTOL[spec.execution.solver]
         record, extra = energy.check_segment(
