@@ -19,7 +19,10 @@ ten (their rule for a tolerance with power):
   engine's wherever G is not within its floor of A;
 - Wegscheider at the definition: every registered law is admitted, and every planted diagram law
   is refused (Q7's basis plants at registration, the others at the definition) with a reason
-  about its cycles, as the references' verdicts say;
+  about its cycles, as the references' verdicts say. The two constant plants on the converting
+  pump d1 are refused first by seam E's check of the kind's standard free energies, which the
+  species registry runs ahead of the kind's own checks, beyond the band the law's form gives
+  (the binding owner's item 5), so each names that check; no other plant is refused by it;
 - the parse: each registered mode's charge sum and charge moved N to P (n_q) are the references'
   (values.seam_a.parse), and the charge plant (mode_species_unbalanced) is refused.
 Not here: the planted negative S (the lead's substitution, test_cycle_kind.py's planted factored
@@ -465,11 +468,23 @@ def test_the_engines_wegscheider_band_is_the_one_the_references_evaluate():
     assert not out, "\n".join(out[:20])
 
 
+# The plants refused first by seam E's check of the kind's standard free energies (the binding
+# owner's item 5, a recorded exception in this file at the lead's ruling of 19 November 2026): the
+# constant plants on d1, the one converting pump, whose dG°/RT entry the species registry checks
+# ahead of the kind's own Wegscheider check. Every other plant is refused by the kind, or at
+# registration.
+BY_E = {"d1_pump__k_1pct", "d1_pump__k_1e-6"}
+E_REFUSAL = r"standard_free_energies, entry .* beyond its law's form's band"
+
+
 def test_registered_laws_are_admitted_and_planted_ones_refused_as_the_references_say():
     """Wegscheider at the definition (statement 1, §5.1; Q7): every registered law parses, and
     every planted diagram law is refused, at registration (its form's errors: a basis plant or a
     structural one) or at the definition (the constant or the charge's), with a reason about its
-    cycles; the references' verdicts agree."""
+    cycles; the references' verdicts agree. The constant plants on the converting pump d1 are
+    refused first by seam E's check, beyond the band their law's form gives (BY_E), and no other
+    plant is."""
+    assert BY_E <= {planted["id"] for planted in A["planted_laws"]}  # No stale name passes unseen.
     verdicts = VALUES["seam_a"]["wegscheider"]
     for law in LAWS:
         if engine_id(law) in REFUSED:  # Refused at registration: its own test reports it.
@@ -484,7 +499,11 @@ def test_registered_laws_are_admitted_and_planted_ones_refused_as_the_references
             built = engine_law(plant)  # A form the registry refuses raises at registration.
             prepared(dict(plant, id=base["id"]), built, law_id=built.law_id)
         message = str(refused.value)
-        assert re.search(r"Wegscheider|cycle|charge", message), (planted["id"], message[:200])
+        if planted["id"] in BY_E:
+            assert re.search(E_REFUSAL, message), (planted["id"], message[:200])
+        else:
+            assert re.search(r"Wegscheider|cycle|charge", message), (planted["id"], message[:200])
+            assert "standard_free_energies" not in message, (planted["id"], message[:200])
         if planted["id"] in verdicts:
             assert verdicts[planted["id"]]["verdict"] != "admitted", planted["id"]
 
