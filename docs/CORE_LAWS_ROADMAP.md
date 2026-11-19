@@ -5,6 +5,27 @@ no engine code and no runs. Written on branch `core-laws-roadmap` from main 7f35
 code was read. Main's later commits, up to 2098b52c at hand-off, touch only `lean/` and
 `visualizer/`.*
 
+**Decided, 19 November 2026 (D234).** The user chose Option 2, and lifted D145's hold for a
+gene-regulation design note. The lead's rulings for MT-1:
+- **The host waits for P1′.** The @3 owner runs it first: host P's arm, then host C's two-cycle arm.
+- **Owners.**
+  - New law modules under `laws/cycles/`: the mitochondria lane (D209).
+  - `kinds/transporter.py` and `laws/cycles/forms.py`: the kinds owner.
+  - The registry: the binding owner.
+  - `validation/mitochondria/`: the mitochondria lane, except `references/`, which belongs to the
+    references agents.
+  - `operators/species_common.py` and `operators/bath_schedule.py`, if touched: the operators owner.
+- **The whole-organelle references are labelled MR1 and MR2 here,** to avoid the fingerprint gate's
+  R1. MR1, the code-blind Beard reference, started on 19 November and serves MT-2. Its brief allowed
+  MITOCHONDRIA_DESIGN.md, which already names Eq. 11's missing proton, so its finding on Eq. 11 is
+  not independent. Its findings on Eq. 16 and Eq. 24 are.
+- **State 4, with no external ADP:** its own held-buffer world with a declared ADP trace. The trace's
+  effect is bounded against the judged effect, as D233 did for FR-7.
+- **On host P, the outer membrane's face** uses `logmean_electrodiffusion@1` for porin permeation.
+  This holds if the lane shows that it reduces to the source's p·Δc at zero potential difference.
+  Its runs report the potential across the outer membrane.
+
+
 **What it answers.** The user asked for two things:
 - **(A)** a roadmap of the core physical laws, from which to choose an order (Part 1);
 - **(B)** readiness to start mitochondria right after (Part 2).
@@ -726,11 +747,11 @@ Xenopus lane on the others.** *(Recommended.)*
   - Binding owner: item 6 (moieties), then the nucleotide forms (Part 2, B1–B2).
   - @3 owner: P1′, half a day, then Option 1's order.
   - Two new agents start MT-1: the mitochondria lane agent (the laws and `validation/mitochondria/`)
-    and the R1 agent (the code-blind reference, from day one). A component-references agent joins
+    and the MR1 agent (the code-blind reference, from day one). A component-references agent joins
     once the laws' appendix exists.
   - Operators and F owners: Option 1's order.
   - After MT-1a: `finite-fuel-v1`, and the Na/K pump on the kind with finite fuel.
-- **It unlocks first:** mitochondria MT-1 within days; R1 at once. Then finite fuel, which serves
+- **It unlocks first:** mitochondria MT-1 within days; MR1 at once. Then finite fuel, which serves
   FR-7's pump, cardiac H2's exchanger pieces, machines M1's synthesis law and Syn3A's synthesis
   cycle.
 - **It delays** nothing in D222's order, if the new seats exist. The Na/K pump's move slips by
@@ -784,7 +805,7 @@ the rest follow in order).
   D209 says (Part 2, §2.4); the kind file stays with the kinds owner.
 - **Its cost is two new seats at the start and three at peak** (section 2.4 lists the roles). Whether
   they fit the cap of seven beside today's seats is the lead's count. If they do not fit, Option 2
-  becomes Option 1, with mitochondria's readiness steps (R1, P1′) running first.
+  becomes Option 1, with mitochondria's readiness steps (MR1, P1′) running first.
 
 **In every option:**
 - gene expression stays at a design note until the user decides on D145;
@@ -826,7 +847,7 @@ the rest follow in order).
   rules. The zero-rate run is the mitochondria lane's (L5).
 - **Licences, re-read on 19 November 2026** from the PLOS article pages, through a page-reading tool
   that quoted the licence lines: Beard 2005 is CC BY ("© 2005 Beard"); the 2006 correction is CC BY
-  ("© 2006 Public Library of Science"). The correction changes Table 1's parameter values. The R1
+  ("© 2006 Public Library of Science"). The correction changes Table 1's parameter values. The MR1
   agent re-reads both in the PDFs (section 2.6).
 
 ## 2.2 The prerequisites, and their state on main
@@ -928,8 +949,8 @@ the respiratory-control protocol against an independent integration of the same 
   every gate.
 - **MT-1b.** Cells' own organelle in a medium, on host P (or host C by the lead's ruling), with
   §7's protocol, registered and judged (mitochondria M4).
-- **From day one, in parallel:** R1, the code-blind whole-organelle reference of Beard 2005 (approved,
-  D193 (A)). R2, the published model run out of process (D193 (B)), follows once R1 is registered.
+- **From day one, in parallel:** MR1, the code-blind whole-organelle reference of Beard 2005 (approved,
+  D193 (A)). MR2, the published model run out of process (D193 (B)), follows once MR1 is registered.
   Both belong to MT-2. Section 2.6 is their brief.
 
 **The engine models it runs** (AGENTS.md):
@@ -969,7 +990,7 @@ Later, not in MT-1: `electrophoretic_calcium_uniport@1`, and the cardiac lane's
   clamped ΔΨ and concentrations, in high-precision arithmetic, with planted controls.
 - **The organelle's independent integration** (§5.2): the same declared equations, integrated with
   tight tolerances.
-- **R1 and R2,** for MT-2 (section 2.6).
+- **MR1 and MR2,** for MT-2 (section 2.6).
 - **Licences:** Beard 2005 and its correction are CC BY (read on 19 November 2026 through a
   page-reading tool; section 2.1). The Physiome
   Model Repository's CellML encoding is CC BY 3.0 on its metadata page, and libOpenCOR is Apache 2.0
@@ -986,7 +1007,7 @@ Later, not in MT-1: `electrophoretic_calcium_uniport@1`, and the cardiac lane's
 | New law modules in `laws/cycles/` | The mitochondria lane agent (new; the lead's ruling) | L1 |
 | `validation/mitochondria/`, except `references/` | The mitochondria lane agent | V1–V3, the protocol |
 | `validation/mitochondria/references/components/` (new) | A fresh component-references agent. It reads L1's appendix and the paper; no code and no model file | The component references, and the organelle's independent integration |
-| `validation/mitochondria/references/organelle/` (new) | A fresh R1 agent. It reads the paper only; section 2.6 is its whole brief | R1; then R2, only after R1 is registered |
+| `validation/mitochondria/references/organelle/` (new) | A fresh MR1 agent. It reads the paper only; section 2.6 is its whole brief | MR1; then MR2, only after MR1 is registered |
 | `operators/compartments.py` | Operators owner | Nothing expected |
 | `registry/laws.py`, `registry/kind_registry.py` | F owner | Nothing expected |
 
@@ -995,11 +1016,11 @@ D209 gives the synthesis law to the mitochondria lane. Recommended: amend the ta
 mitochondrial law modules (new files only) go to the mitochondria lane agent. The kind file stays
 with the kinds owner.
 
-**The new seats.** Two at the start: the mitochondria lane agent and the R1 agent. A third, the
+**The new seats.** Two at the start: the mitochondria lane agent and the MR1 agent. A third, the
 component-references agent, joins when L1's appendix exists. The kinds, binding and @3 owners work
 part-time from their current seats. The two reference agents stay separate: the component agent
-reads the engine's declared equations, and R1's agent must not (D193 (A)). R2 follows R1 in the same
-agent, so that R1 is registered before any model file is opened.
+reads the engine's declared equations, and MR1's agent must not (D193 (A)). MR2 follows MR1 in the same
+agent, so that MR1 is registered before any model file is opened.
 
 **Test cost, under D224.**
 - **The laws' kernels:** rows in a parametrized test of pure functions, with no world compiled. For
@@ -1020,8 +1041,8 @@ agent, so that R1 is registered before any model file is opened.
 | MT-1a: P1′, K1, K2, K4, B1, B2, L1 and the component references | About 8.5–14 (plus 1–1.5 for K3, and 0–1.5 for K6) |
 | MT-1b: worlds, protocol, registration and the judged run | 3–5, plus CPU |
 | MT-1 in all | About 11.5–19, or 12.5–22 with K3 and K6; plus 6–9 on branch I |
-| R1, in parallel (part of MT-2) | About 3–4 |
-| MT-2 after MT-1: R2, its registration and the judged comparison | About 3–5 |
+| MR1, in parallel (part of MT-2) | About 3–4 |
+| MT-2 after MT-1: MR2, its registration and the judged comparison | About 3–5 |
 
 - **Elapsed:** about 8–12 working days for MT-1, with the kinds and binding owners part-time, the
   lane agent and the two reference agents (estimate).
@@ -1048,7 +1069,7 @@ agent, so that R1 is registered before any model file is opened.
      1:1 cotransport.
    - Eq. 24 drops a term of Eq. 7.
    - The engine refuses laws that fail this check. Do you approve the consistent forms as declared
-     departures, keeping Beard's forward term in each, with R1 run both as printed and as declared?
+     departures, keeping Beard's forward term in each, with MR1 run both as printed and as declared?
 2. **U7** (machines, D209). Change the synthase's approved zero-flux check, so that the coupling
    ratio is an input, the intercept is judged and the structural ratio is reported as a finding?
    Until you rule, the approved check stands. The zero-rate run is the mitochondria lane's (D209, L5).
@@ -1059,7 +1080,7 @@ agent, so that R1 is registered before any model file is opened.
    - **U2:** option O1, with individuals (mitochondria M8) ahead of calcium (mitochondria M7)?
    - **U3:** split and merge, or fixed segments with gated links (option O4)?
 4. **Seats and order.** MT-1 needs two new seats at the start (the mitochondria lane agent and the
-   R1 agent) and a third at peak (the component-references agent), beside part-time work by the
+   MR1 agent) and a third at peak (the component-references agent), beside part-time work by the
    kinds, binding and @3 owners. Which of Part 1's options do you choose?
 
 **For the lead** (not the user's).
@@ -1069,7 +1090,7 @@ agent, so that R1 is registered before any model file is opened.
 3. Owners for `validation/mitochondria/`, and for `operators/species_common.py` and
    `operators/bath_schedule.py` if they are touched.
 4. The outer membrane's face law under ARCHITECTURE.md's reuse rule (MITOCHONDRIA_DESIGN §3.4).
-5. Fresh agents for the component references, R1 and R2. The design note's author and this note's
+5. Fresh agents for the component references, MR1 and MR2. The design note's author and this note's
    author have read the engine.
 6. State 4's zero external ADP: a declared trace concentration, or another world design.
 7. The design's question 13 is answered: numbers from free-to-read papers may be used with a
@@ -1084,7 +1105,7 @@ agent, so that R1 is registered before any model file is opened.
 - anything under `validation/` outside your own folder, `validation/mitochondria/references/organelle/`;
 - the engine's design notes, decisions and progress files, and any other part of this document;
 - engine run outputs, under `/mnt/workspaces/Cells` or anywhere else;
-- any model file of this paper (a CellML encoding, a BioModels entry, the authors' code), until R1 is
+- any model file of this paper (a CellML encoding, a BioModels entry, the authors' code), until MR1 is
   registered.
 
 **Read:** D. A. Beard, "A Biophysical Model of the Mitochondrial Respiratory System and Oxidative
@@ -1092,13 +1113,13 @@ Phosphorylation", PLoS Comput Biol 1(4):e36 (2005), doi:10.1371/journal.pcbi.001
 correction, PLoS Comput Biol 2(1):e8 (2006), doi:10.1371/journal.pcbi.0020008. Both are CC BY. The
 PDF is the version of record.
 
-**Task R1: an independent implementation of the whole-organelle model, from the paper and its
+**Task MR1: an independent implementation of the whole-organelle model, from the paper and its
 correction only.**
 1. **First,** confirm that the printed equations and the corrected Table 1 are legible in the PDF. If
    not, stop and report. Record both licences as you read them.
 2. **Two arms:**
-   - **R1-published:** as printed, with the corrected Table 1;
-   - **R1-declared:** with the declared departures below, each behind its own switch.
+   - **MR1-published:** as printed, with the corrected Table 1;
+   - **MR1-declared:** with the declared departures below, each behind its own switch.
 3. **The declared departures known now,** in physical terms:
    - Mg²⁺ binding in rapid equilibrium;
    - matrix H⁺ buffering by a declared buffer species, at the source's capacity;
@@ -1127,7 +1148,7 @@ correction only.**
 7. **Where:** `validation/mitochondria/references/organelle/`, a new folder. Write the design files
    before any engine output exists. Deliver the values as a registered interface file.
 
-**R2, separately approved (D193 (B)), after R1 is registered.** Run the Physiome Model Repository's
+**MR2, separately approved (D193 (B)), after MR1 is registered.** Run the Physiome Model Repository's
 curated CellML encoding of Beard 2005 unmodified, in libOpenCOR, in its own environment under
 `/mnt/workspaces/Cells`. Use the file by reference and never commit it. First check whether it
 carries the 2006 correction. If any wall appears (an account, a guard, a missing tool), stop and
