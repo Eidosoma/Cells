@@ -1,5 +1,32 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Passive proton leak
+
+For `proton_constant_field_leak@1`, an open route carries free H⁺ inward when the outside concentration exceeds the reversal concentration. With `x = F V/(RT)`, inside-minus-outside voltage and evaluator `B`, Lean gives that concentration as `hIn × B(−x)/B(x)` on both engine branches. The analytic constant-field law reverses at `V = (RT/F) × (ln hOut − ln hIn)` and releases nonnegative instantaneous heat. Those results also apply to the engine’s real-arithmetic formula at zero and for `|x| ≥ 10⁻⁴`. All seven public theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ProtonLeak.lean) · [Engine flux and heat](../src/cells/laws/transport/proton_leak.py#L28) · [Bernoulli evaluator](../src/cells/laws/electrochemistry.py#L17) · [Goldman’s constant-field model](https://doi.org/10.1085/jgp.27.1.37)
+
+Inside the small-voltage branch the polynomial shifts the reversal ratio. At `x = 0.00009`, an 80-digit calculation found `B(−x)/B(x) − exp(x) ≈ 1.582 × 10⁻³³`, below float64 spacing near 1. Halfway between the thresholds the polynomial gives outward flux with a positive inward electrochemical drive. This limits the engine docstring’s unconditional instantaneous-heat sign claim. [Reversal calculation](checks/proton_leak.py) · [Engine heat contract](../src/cells/laws/transport/proton_leak.py#L35)
+
+Twelve compiled CPU float64 cases covered opposing drives, the Nernst crossing, blocking, partial opening and both sides of the two branch boundaries. The flux reference uses 70-digit Decimal arithmetic. In a 4 ms `resolved_pump_tissue@3` run, the buffered cell initially took up **3.310 × 10⁻⁶ fmol/s**. Using total intracellular proton equivalents in the reference gave **−3.183 fmol/s**. Two four-core runs took 13–16 s, and three existing law and tissue tests passed. [Driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10) · [Independent buffer closure](../validation/compartment_ph/ph_reference.py#L167) · [Tissue fixture](../tests/unit/test_proton_buffer_kind.py#L258)
+
+```json
+{
+  "engine_revision": "1dee280f681af373071079c5f9b5921725dc7ed3",
+  "model": "resolved_pump_tissue@3", "law": "proton_constant_field_leak@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 12,
+  "max_flux_error_fmol_s": 1.543812817544248e-20, "flux_atol_fmol_s": 4.7124e-17,
+  "max_heat_error_pJ_s": 2.0328790734103208e-19, "heat_atol_pJ_s": 1.214613282895345e-16,
+  "opposed_flux_fmol_s": -1.9698929665489864e-5, "nernst_residual_fmol_s": 4.3159515760814405e-21,
+  "small_voltage_x": 0.00009, "outside_inside_ratio_shift": 1.581812000278e-33,
+  "end_s": 0.004, "initial_voltage_V": -0.02151770525721294,
+  "free_inside_mM": 6.309573444801929e-5, "total_inside_mM": 25.000063095734447,
+  "free_outside_mM": 3.981071705534969e-5,
+  "initial_inward_fmol_s": 3.3097843238305726e-6, "reference_inward_fmol_s": 3.309784324017176e-6,
+  "using_total_inward_fmol_s": -3.183387556995154, "booked_heat_pJ": 1.1771717405987001e-8
+}
+```
+
+**Biological evidence.** Schilling et al. measured reversal of an activated proton current in Jurkat T cells at 20–23 °C. Figure 2E gives a fitted slope of **−47 mV per unit of outside-minus-inside pH** across six gradients, alongside an ideal Nernst slope of **−58 mV per pH unit**. The observed shift has the predicted direction and is 11 mV per pH unit shallower. The figure reports group means and standard errors. Uncertainty in the fitted slope and the relation between pipette pH and intracellular pH matter for a quantitative comparison. The current amplitude also depends on channel opening. Biological validation of the Cells leak remains open. [Schilling et al., Fig. 2E and Methods](https://doi.org/10.1113/jphysiol.2002.028878)
+
 ## 19 November 2026 · Passive neutral permeation
 
 For `passive_neutral_permeation@1`, the zero-valence specialization of the existing constant-field theorem gives inward flux `J = scale × (cOut − cIn)` at any voltage. In a closed pair of fixed positive volumes, the outside-minus-inside concentration difference changes at rate `−k × (cOut − cIn)`, with `k = scale × (1/vIn + 1/vOut)`. The three Lean theorems use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. [Neutral proof](CellsProofs/Transport/NeutralPermeation.lean) · [Engine law](../src/cells/laws/routes/passive_permeation.py#L43) · [Tissue rate bound at full opening](../src/cells/kinds/passive_routes.py#L553)
