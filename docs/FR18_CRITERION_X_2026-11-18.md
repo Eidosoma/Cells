@@ -247,3 +247,22 @@ step's own q, so the per-row check is the same in both forms.
 
 **Tool.** `evaluate_x_running.py`, beside `evaluate_x.py`, which it imports unchanged. Its digest is
 recorded before it runs.
+
+### Amendment 2's result: the verdicts differ, so the conditions stay whole-run
+
+*Run on 19 November 2026 from the saved records, with no simulation: `fr18-x/amendment2/`
+(`results.json`, `results.txt`, and `tools.sha256` digesting `evaluate_x_running.py` and the
+registered `evaluate_x.py` before the run).*
+
+- **The registered verdicts are reproduced.** The test re-derives them from the records with the
+  registered evaluator: on the full set, X2's (a), (b) and (c) all hold; on FR-8's seven worlds,
+  every world is admitted. The whole-run medians match the registered ones.
+- **The running form refuses 47 admitted worlds.**
+  - 40 of the full set's 122 worlds and all 7 of FR-8's fail the running order condition at row 1.
+    There a single counted step, the run's first, is out of band, at q between 1.79 and 7.47.
+  - One of FR-8's worlds, `w0-explicit_tableau-1ms`, also fails the running cap. It holds its ninth
+    out-of-band step at row 224, where 224 steps are counted and the cap is 8. Its whole run ends
+    with 9 held of 745 counted, against a cap of 15.
+- **So (b) on the full set, and FR-8's decision, would change.** By the amendment's own terms the
+  running form is not adopted. The order condition and X2's cap stay as registered, decided over
+  the whole run, and the engine decides them at the run's end.
