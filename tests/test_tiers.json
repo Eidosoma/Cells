@@ -213,7 +213,8 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-33772564/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-f49557fd/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/seam-a-decl-remeasure-20261119/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-b442f464/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-b442f464/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-325a55b3/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1783,6 +1784,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-b442f464",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T08:11:39+00:00"
+  },
+  {
+   "git_revision": "325a55b394d860784cabd4e6e9c9fad1774d6f7c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-325a55b3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T08:47:24+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3538,7 +3547,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.47,
+    "seconds": 2.62,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -3794,7 +3803,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 3.17,
+    "seconds": 2.97,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4292,7 +4301,7 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_parse.py",
-    "seconds": 12.8,
+    "seconds": 13.11,
     "exit_code": 0,
     "counts": {
      "passed": 21
@@ -4300,10 +4309,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 16.21,
+    "seconds": 18.36,
     "exit_code": 0,
     "counts": {
-     "passed": 15
+     "passed": 12
     }
    },
    {
@@ -4729,6 +4738,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_species_registry_movers.py",
+    "seconds": 0.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
