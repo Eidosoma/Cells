@@ -1111,9 +1111,9 @@ page can be published to any link, or to a new one (the user, 18 November 2026).
    (`proteins/<species>/`), the catalogue, the machines' shapes, the assembly's files, and
    the landing's cards and stills (`cards.json`, `stills/`). The files that hold a run's
    parts together are written by the export into `out/cells-architecture.runs/`. On 19
-   November 2026 that is 458 files (155 MB with the page): 341 of 112 runs, 70 of
-   proteins, 21 shapes, 8 of the catalogue, 2 of the assembly, 1 machine, the cards and 14
-   stills.
+   November 2026 (Version 50) that is 467 files (169 MB with the page): 341 of 112 runs,
+   78 of proteins, 22 shapes, 8 of the catalogue, 2 of the assembly, 1 machine, the cards
+   and 14 stills.
 2. `npm run stage -- --new out/publish-NAME` lays the export out as the artifact is, in a
    folder that is kept as the record of what was published, and writes the list of each
    upload (`tools/stage_publish.py`). A publish takes at most 255 files and 64 MB, and one
