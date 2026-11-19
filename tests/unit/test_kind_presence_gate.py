@@ -153,15 +153,3 @@ def test_a_presence_field_that_binds_no_bool_mask_is_refused():
     with scoped(with_presence(transporter.TRANSPORTER, loose)):
         with pytest.raises(ConfigError, match="transporter_capacity_fmol_s bind float64 arrays"):
             parse_spec(held_world())
-
-
-def test_beside_a_closer_a_kind_with_entities_and_no_presence_is_refused():
-    with scoped(transporter.TRANSPORTER):  # The built-in as it stands: no presence.
-        spec = parse_spec(held_world())
-        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
-        with pytest.raises(ConfigError, match="has entities on membrane_slot but declares no"):
-            surface_pump_v3.check_definition(spec, structure=closed)
-    with scoped(DECLARED):  # Declaring its three masks, it is admitted beside the closer.
-        spec = parse_spec(held_world())
-        closed = dataclasses.replace(surface_pump_v3.structure(spec.model), padding_fill=True)
-        surface_pump_v3.check_definition(spec, structure=closed)

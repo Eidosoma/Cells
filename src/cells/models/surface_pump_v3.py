@@ -1457,8 +1457,9 @@ def check_definition(spec, *, structure=None):
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
         _check_moved_rows(compact, structure, kinds, state, p, each)
         _check_presence(structure, kinds, state, p, each)  # Q2's contract (no program change).
-        if structure.padding_fill:  # Q2: beside a closer, an entity the gate cannot close.
-            _check_closable(kinds)
+        # Beside a closer, a kind with entities and no presence is the composite's refusal
+        # (pump_composite_adapter.kind_lifecycle_errors): a composite's parse checks the inner
+        # projection, whose structure declares no closer, so a check here would never fire.
 
 
 # The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
@@ -1523,19 +1524,6 @@ def _check_moved_rows(spec, structure, kinds, state, p, controls):
                             f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
                             "admits a kind by its moved_rows)"
                         )
-
-
-def _check_closable(kinds):
-    """Q2 beside a closer: a kind whose own fields carry entities (kind_registry.entity_axes) but
-    that declares no presence cannot be closed by the presence gate, so the definition is refused
-    (F's contract: {} from presence_fields with entity axes is a refusal)."""
-    for kind in kinds:
-        axes = kind_registry.entity_axes(kind)
-        if axes and not kind_registry.presence_fields(kind):
-            raise ConfigError(
-                f"Kind {kind.kind_id} has entities on {', '.join(axes)} but declares no "
-                "presence, so a closer cannot close them (Q2's presence gate)"
-            )
 
 
 def _check_presence(structure, kinds, state, p, controls):
