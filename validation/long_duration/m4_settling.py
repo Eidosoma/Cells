@@ -137,14 +137,17 @@ def run_arm(arm, out_dir, development=None):
 
 def settling_time(times, rate, gate, theta_v, theta_g, start, hold, last):
     """The first row t >= start from which rate <= theta_v and gate <= theta_g at every row
-    through t + hold, with t <= last; None if no such row."""
+    through t + hold, with t <= last and the hold observed: the trace's last row lies at or after
+    t + hold, to its time labels' rounding (two ulps), so a trace that ends inside a row's hold
+    does not credit it. None if no such row."""
     t = np.asarray(times, dtype=float)
     inside = (np.asarray(rate) <= theta_v) & (np.asarray(gate) <= theta_g)
     # The next outside row's time at or after each row (inf if none): a row qualifies when that
-    # lies beyond its hold.
+    # lies beyond its hold, and rows reach the hold's end.
     outside = np.where(inside, np.inf, t)
     next_outside = np.minimum.accumulate(outside[::-1])[::-1]
-    qualifies = (t >= start) & (t <= last) & (next_outside > t + hold)
+    observed = t + hold <= t[-1] + 2 * np.spacing(np.abs(t[-1])) if len(t) else np.zeros(0, bool)
+    qualifies = (t >= start) & (t <= last) & (next_outside > t + hold) & observed
     first = np.flatnonzero(qualifies)
     return float(t[first[0]]) if len(first) else None
 
