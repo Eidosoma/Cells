@@ -1,10 +1,11 @@
 {
  "format": "cells.visualizer.species_stages@1",
  "species": "xenopus",
- "note": "The frog's life stages (schema/SPECIES_STAGES.md), kept by hand. tools/build_xenopus_atlas.py reads this block, checks each number against the saved running text of the open paper it cites, and writes it into data/species/xenopus.json with those papers among the species' sources: edit it here, then build. Two stages are drawn, the fertilised egg and the adult (the file's own); four are named and not drawn. The species opens on its adult. One stage gives a word of its own for what Cells models of it: the fertilised egg, planned, with its record (decided on 19 November 2026, the engine's lead agreeing that the record supports the word); every other stage takes the species' own word.",
+ "note": "The frog's life stages (schema/SPECIES_STAGES.md), kept by hand. tools/build_xenopus_atlas.py reads this block, checks each number against the saved running text of the open paper it cites, and writes it into data/species/xenopus.json with those papers among the species' sources: edit it here, then build. Two stages are drawn, the fertilised egg and the adult (the file's own); four are named and not drawn. The species opens on its fertilised egg (decided on 19 November 2026); its adult, the form the species file describes, is a press away on the strip. One stage gives a word of its own for what Cells models of it: the fertilised egg, planned, with its record (decided on 19 November 2026, the engine's lead agreeing that the record supports the word); every other stage takes the species' own word.",
  "stages": {
   "system": {"id": "nf", "label": "NF stage", "short": "NF", "sources": ["zahn2022"]},
   "times_after": "fertilisation",
+  "opens_on": "egg",
   "list": [
    {
     "id": "egg",
