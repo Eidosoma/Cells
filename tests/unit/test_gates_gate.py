@@ -55,9 +55,20 @@ Host only: no world runs here.
     on the intermediate trees, nearest first, blames that head, and the stack is re-gated without it;
   - a conflict refuses the stack with its paths, and each declaration fault is refused;
   - the blame of each trail, and the failing stage read from the gate's log.
+- **The scope map** (scope.py, the recorder, `test_tiers.py run --scope-map`) is built for real on
+  a tiny snapshot of four test files:
+  - it records imports, reads, listings and a child the map cannot see;
+  - the selection holds every file whose recorded paths changed (a read file, an imported module, a
+    new name in a listed folder, the file itself, a file that would replace a namespace package),
+    and nothing else under `--always none`; the readers and scanners are D229's always-run set;
+  - a planted read of a repository file pulls its test in, once the map is rebuilt;
+  - the selection is refused for each planted fault (stopped, failed, old or missing map, src/);
+  - the nightly run takes the free lane, and publishes its map or stops selection;
+  - gate.sh runs only the selection's files, and CHECKS drops crossrev and G1.
 """
 
 import fcntl
+import hashlib
 import importlib.util
 import json
 import os
@@ -962,3 +973,198 @@ def test_the_failing_stage_is_read_from_the_gate_log(tmp_path, stop, stage, lock
     assert doc["stage"] == stage and doc.get("under_lock") == locked
     if stage == "crossrev":
         assert doc["items"] == ["kinds"]
+
+
+# ------------------------------------------------------------------- the scope map and selection (E)
+
+SCOPE_TESTS = {
+    "tests/unit/test_reader.py": "from pathlib import Path\nfrom validation import helper\n\n\n"
+                                 "def test_reads():\n    assert helper.VALUE == 1\n"
+                                 "    assert Path('docs/a.md').read_text() == 'a\\n'\n",
+    "tests/unit/test_plain.py": "def test_plain():\n    assert 1 + 1 == 2\n",
+    "tests/unit/test_lister.py": "import os\n\n\ndef test_lists():\n"
+                                 "    assert 'a.md' in os.listdir('docs')\n",
+    "tests/unit/test_spawner.py": "import subprocess\n\n\ndef test_spawns():\n"
+                                  "    subprocess.run(['true'], check=True)\n",
+}
+
+
+def scope_snapshot(root, changes=None, rev="r" * 40):
+    """A tiny execution snapshot with the real tier runner, recorder, map tool and nightly script,
+    four test files and their rows; CHANGES (path: text or None) applied over the defaults."""
+    files = {"validation/helper.py": "VALUE = 1\n", "docs/a.md": "a\n", "docs/b.md": "b\n",
+             "src/cells/__init__.py": "", **SCOPE_TESTS}
+    for name in ("scripts/test_tiers.py", "scripts/gates/scope.py", "scripts/gates/gate_steps.py",
+                 "scripts/gates/nightly_tiers.sh", "scripts/gates/scope_inject/sitecustomize.py"):
+        files[name] = (ROOT / name).read_text()
+    for name, text in (changes or {}).items():
+        if text is None:
+            files.pop(name, None)
+        else:
+            files[name] = text
+    rows = [{"file": f, "seconds": 1.0, "exit_code": 0, "counts": {"passed": 1}}
+            for f in sorted(files) if f.startswith("tests/unit/test_")]
+    files["tests/test_tiers.json"] = json.dumps({"kind": "cells.test_tiers@1", "fast_seconds": 20.0,
+                                                 "cap_seconds": 90.0, "tiers": {"1": rows, "2": [], "3": []}})
+    for name, text in files.items():
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(text)
+    (root / "SNAPSHOT.json").write_text(json.dumps({
+        "status": "complete", "git_revision": rev, "patch_sha256": EMPTY, "dirty": False,
+        "files": {n: {"sha256": hashlib.sha256((root / n).read_bytes()).hexdigest()} for n in files}}))
+    return root
+
+
+def scope_module():
+    sys.path.insert(0, str(GATES))
+    spec = importlib.util.spec_from_file_location("scope", GATES / "scope.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+scope = scope_module()
+
+
+@pytest.fixture(scope="module")
+def scope_map(tmp_path_factory):
+    """The map of the tiny snapshot, from the real tier runner with the recorder on."""
+    tmp = tmp_path_factory.mktemp("scope")
+    snap = scope_snapshot(tmp / "nightly")
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+    run = subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", "run", "--tiers",
+                          "tests/test_tiers.json", "--tier", "1", "2", "--out", str(tmp / "run"),
+                          "--cpus", cpu, "--cap", "120", "--scope-map", str(tmp / "run" / "scope")],
+                         cwd=snap, capture_output=True, text=True, timeout=300,
+                         env=dict(os.environ, PYTHONPATH=str(snap / "src")))
+    assert run.returncode == 0, run.stdout + run.stderr
+    return {"tmp": tmp, "snap": snap, "doc": scope.build(tmp / "run", snap, sys.executable)}
+
+
+def test_the_map_records_imports_reads_listings_and_unmapped_children(scope_map):
+    doc = scope_map["doc"]
+    files = doc["files"]
+    assert doc["verdict"] == "passed" and all(e["complete"] for e in files.values()), files
+    paths = lambda f: {doc["paths"][i] for i in files[f]["deps"]}  # noqa: E731
+    assert {"validation/helper.py", "docs/a.md", "tests/unit/test_reader.py"} <= paths(
+        "tests/unit/test_reader.py")
+    assert "docs/a.md" not in paths("tests/unit/test_plain.py")
+    assert files["tests/unit/test_reader.py"]["reads"] == ["docs/a.md"]
+    assert {doc["dirs"][i] for i in files["tests/unit/test_lister.py"]["lists"]} == {"docs"}
+    assert files["tests/unit/test_spawner.py"]["children_unmapped"] == ["true"]
+    assert not any(files[f]["reads_repository"] or files[f]["children_unmapped"]
+                   for f in ("tests/unit/test_plain.py",))
+
+
+L, P, R, S = (f"tests/unit/test_{n}.py" for n in ("lister", "plain", "reader", "spawner"))
+
+
+@pytest.mark.parametrize("changes, always, chosen", [
+    ({}, "none", [S]),  # A child the map cannot see is always run.
+    ({}, "scanners", [L, S]),
+    ({}, "readers", [L, R, S]),  # D229's always-run set, as the default.
+    ({"docs/a.md": "a, changed\n"}, "none", [R, S]),
+    ({"validation/helper.py": "VALUE = 1  # changed\n"}, "none", [R, S]),
+    ({"docs/c.md": "new\n"}, "none", [L, S]),  # A new name in a listed folder.
+    ({"tests/unit/test_plain.py": "def test_plain():\n    assert 2 == 2\n"}, "none", [P, S]),
+    ({"tests/unit/helper.py": "X = 1\n"}, "none", [S]),  # Nothing touched it.
+    ({"validation.py": "VALUE = 2\n"}, "none", [R, S]),  # It would replace a namespace package.
+    ({"validation/__init__.py": ""}, "none", [L, P, R, S]),  # pytest asks each top folder for one.
+])
+def test_the_selection_holds_every_file_whose_recorded_paths_changed(scope_map, tmp_path, changes,
+                                                                     always, chosen):
+    """Base is the map's own tree, and the head carries CHANGES."""
+    base = scope_snapshot(tmp_path / "base")
+    head = scope_snapshot(tmp_path / "head", changes, rev="h" * 40)
+    subset, report = scope.select(head, base, scope_map["doc"], "tests/test_tiers.json", always)
+    assert sorted(r["file"] for r in subset["tiers"]["1"]) == chosen, report["files"]
+
+
+def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_path):
+    """Before the plant, a change to docs/b.md selects nothing it reads; once test_plain.py reads
+    docs/b.md and the map is rebuilt, the same change selects it, for that path alone."""
+    changed = {"docs/b.md": "b, changed\n"}
+    base = scope_snapshot(tmp_path / "base")
+    before = scope.select(scope_snapshot(tmp_path / "head", changed, rev="h" * 40), base,
+                          scope_map["doc"], "tests/test_tiers.json", "none")[1]["files"]
+    assert P not in before
+    planted = {P: "from pathlib import Path\n\n\ndef test_plain():\n"
+                  "    assert Path('docs/b.md').read_text()\n"}
+    snap = scope_snapshot(tmp_path / "nightly", planted)
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+    subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", "run", "--tiers",
+                    "tests/test_tiers.json", "--tier", "1", "--out", str(tmp_path / "run"), "--cpus", cpu,
+                    "--scope-map", str(tmp_path / "run" / "scope")], cwd=snap, check=True,
+                   capture_output=True, timeout=300, env=dict(os.environ, PYTHONPATH=str(snap / "src")))
+    doc = scope.build(tmp_path / "run", snap, sys.executable)
+    head = scope_snapshot(tmp_path / "head2", dict(planted, **changed), rev="h" * 40)
+    after = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
+    assert after[P] == ["touched paths changed since the map: ['docs/b.md']"]
+
+
+@pytest.mark.parametrize("plant, words", [
+    ("stopped", "selection stopped"), ("failed", "nightly run failed"), ("old", "hours old"),
+    ("src", "a src/ change keeps the full gate"), ("missing", "no readable scope map"),
+])
+def test_the_selection_is_refused_for_each_planted_fault(scope_map, tmp_path, plant, words):
+    base = scope_snapshot(tmp_path / "base")
+    head = scope_snapshot(tmp_path / "head", {"src/cells/__init__.py": "X = 1\n"} if plant == "src"
+                          else {}, rev="h" * 40)
+    doc = json.loads(json.dumps(scope_map["doc"]))
+    stopped = tmp_path / "selection-stopped"
+    if plant == "stopped":
+        stopped.write_text("a nightly failed\n")
+    if plant == "failed":
+        doc["verdict"] = "failed"
+    if plant == "old":
+        doc["built"] = "2026-01-01T00:00:00Z"
+    why = scope.refusal(head, base, None if plant == "missing" else doc, stopped, None, 36.0)
+    assert why and words in why, why
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path, fail):
+    """Lane A's lock is held, so the run takes lane B's. A passing run publishes its map; a file
+    that no longer matches its row writes the stop marker and keeps the last passing map."""
+    out = tmp_path / "nightly"
+    scope_snapshot(out / "snapshot", {"tests/unit/test_plain.py": "def test_plain():\n    assert 0\n"}
+                   if fail else {})
+    cache, cpu = tmp_path / "cache", str(sorted(os.sched_getaffinity(0))[0])
+    cache.mkdir()
+    (cache / "scope-map.json").write_text("{\"kind\": \"the last passing map\"}\n")
+    env = dict(os.environ, GATE_CACHE=str(cache), PY=sys.executable, HOSTPY=sys.executable,
+               PRE_CPU=cpu, CPUS_A=cpu, CPUS_B=cpu, LOCK_A=str(tmp_path / "a.lock"),
+               LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60")
+    with open(tmp_path / "a.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        done = subprocess.run(["bash", str(out / "snapshot/scripts/gates/nightly_tiers.sh"), "--run",
+                               str(out)], env=env, capture_output=True, text=True, timeout=300)
+    log = (out / "nightly.log").read_text()
+    assert "lane B, lock held" in log and done.returncode == int(fail), log
+    published = json.loads((cache / "scope-map.json").read_text())
+    if fail:
+        assert (cache / "selection-stopped").is_file() and published["kind"] == "the last passing map"
+    else:
+        assert not (cache / "selection-stopped").exists() and published["kind"] == scope.KIND
+
+
+def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g1(gate):
+    """gate.sh's SELECT: the map leaves test_other.py out (none of its paths changed), so the tiers
+    run the guard set alone; CHECKS drops crossrev and G1 (no src/ change). A missing map runs the
+    full tiers."""
+    m = gate["tmp"] / "map.json"
+    m.write_text(json.dumps({
+        "kind": scope.KIND, "built": steps.utc(), "revision": "b" * 40, "verdict": "passed",
+        "interpreter": steps.interpreter(gate["envs"]["PY"]), "paths": ["tests/unit/test_other.py"],
+        "states": ["-"], "dirs": [], "listings": [], "files": {"tests/unit/test_other.py": {
+            "complete": True, "why": [], "deps": [0], "lists": [], "reads_repository": False,
+            "scans": False, "reads": [], "children_unmapped": [],
+            "row": {"exit_code": 0, "counts": {"passed": 1}}}}}))
+    code, calls, log = run_gate(gate, gate["tmp"] / "out", SELECT=str(m), CHECKS="tiers")
+    assert code == 0 and "selection: " in log and "tiers: the selection" in log, log
+    assert "crossrev not run" in log and "G1 not run" in log
+    assert not any(c.startswith(("crossrev", "save")) for c in calls)
+    subset = json.loads((gate["tmp"] / "out" / "prelock" / "selection" / "subset.json").read_text())
+    assert sorted(r["file"] for r in subset["tiers"]["1"]) == sorted(steps.GUARDS)
+    code, calls, log = run_gate(gate, gate["tmp"] / "out2", SELECT=str(gate["tmp"] / "absent.json"))
+    assert code == 0 and "selection not used (exit 3)" in log and "tiers: the selection" not in log

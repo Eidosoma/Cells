@@ -1,0 +1,12 @@
+# Starts cells-nightly-tiers.service at 02:30 UTC, so its result is in before the morning's
+# landings (testing plan §10.5). Persistent: a night missed while the machine was off runs at boot.
+[Unit]
+Description=Cells nightly tiers 1+2 at 02:30 UTC
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+Unit=cells-nightly-tiers.service
+
+[Install]
+WantedBy=timers.target
