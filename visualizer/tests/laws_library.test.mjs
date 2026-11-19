@@ -82,14 +82,22 @@ test("every engine file and module the wall's own files name is one the manifest
       modules.add(kernel.function.split(".").slice(0, -1).join("."));
     }
   }
-  const named = [];
-  for (const file of WALL_FILES) {
-    const text = readFileSync(path.join(ROOT, file), "utf8");
-    for (const match of text.matchAll(/\bsrc\/cells\/[\w/]+\.py\b/g)) named.push([file, match[0], files.has(match[0])]);
+  const namesIn = (file, text) => {
+    const found = [];
+    for (const match of text.matchAll(/\bsrc\/cells\/[\w/]+\.py\b/g)) found.push([file, match[0], files.has(match[0])]);
     // A dotted module of the engine: cells and two names or more, not an ID (a format's or a piece's, which ends in @<major>).
-    for (const match of text.matchAll(/(?<![\w.])cells(?:\.[a-z_][a-z0-9_]*){2,}(?![\w@])/g)) named.push([file, match[0], modules.has(match[0])]);
-  }
-  assert.ok(named.some(([file]) => file === "tools/check_laws.mjs"), "the click check names the file a piece's panel says it is declared in");
+    for (const match of text.matchAll(/(?<![\w.])cells(?:\.[a-z_][a-z0-9_]*){2,}(?![\w@])/g)) found.push([file, match[0], modules.has(match[0])]);
+    return found;
+  };
+  // Planted: a module of the folder move 2 dissolved, as a file and as a dotted name (put together here, so that this
+  // file's own text does not name it). Both are found, and neither is the manifest's.
+  const gone = { file: ["src", "cells", "processes", "kinetic_pump.py"].join("/"), module: ["cells", "processes", "kinetic_pump"].join(".") };
+  const planted = namesIn("planted", `${gone.file}, ${gone.module}`);
+  assert.deepEqual(planted.map(([, name, known]) => [name, known]), [[gone.file, false], [gone.module, false]]);
+  // Since seam F's laws as modules moved twelve pieces' files (main 4dda2285), the click check takes a piece's file and
+  // line from the manifest, so no move leaves a name of it behind; a name it writes itself is held below as any other.
+  assert.match(readFileSync(path.join(ROOT, "tools", "check_laws.mjs"), "utf8"), /\.module_path\b/, "the click check reads the file a piece's panel names from the manifest");
+  const named = WALL_FILES.flatMap((file) => namesIn(file, readFileSync(path.join(ROOT, file), "utf8")));
   for (const [file, name, known] of named) assert.ok(known, `${file} names ${name}, which the manifest at ${manifest.revision.slice(0, 8)} does not name`);
 });
 
@@ -295,7 +303,9 @@ test("what the manifest has not exercised yet is said as the format page says it
   assert.equal(facts.get("Provenance"), "calibrated");
   assert.equal(facts.get("Rests on"), "a fit to recorded currents");
   assert.equal(facts.get("Departs from it"), "one gate fewer");
-  assert.equal(facts.get("Declared in"), "cells.models.inner_laws, outside the cells package");
+  // With no file, the panel names the module the manifest gives (moved by seam F's laws as modules at main 4dda2285).
+  assert.equal(facts.get("Declared in"), `${kv.module}, outside the cells package`);
+  assert.equal(kv.module, manifest.pieces.find((piece) => piece.declared_id === "kv1p5_mh@1").module);
   const works = said.sections.find((section) => section.title === "Works").items;
   assert.deepEqual(works.map((work) => work.links.map((link) => link.url)), [["https://doi.org/10.1000/xyz"], ["https://example.org/b"]]);
   assert.equal(said.sections.find((section) => section.title === "Reads").items[0].detail, "reference, at the inner stage, only the slots it names");

@@ -185,6 +185,15 @@ try {
   };
   const shownPart = (part) => `Boolean(${L}?.partId === ${JSON.stringify(part)} && ${L}.runs?.length && ${L}.pieces && !${L}.loading)`;
   const networks = `Boolean(!${V}.state.part && ${L}?.run && ${L}.sheet && ${L}.run.id === ${L}.runId)`;
+  // The Experiments tab opens on its landing (18 November 2026): the tumour tissue is a real press away, on the card that opens
+  // a part (by the page's own rule: its experiment's opens.part). Returns the card pressed, or null.
+  const openByCard = async (query = "lens=experiments&still=1") => {
+    await page("Page.navigate", { url: `${base}?${query}` });
+    await until(`Boolean(${V}?.state.landing && ${V}.shadowRoot.querySelectorAll(".landing-card").length)`, 240);
+    const at = await evaluate(`(() => { const v = ${V}; const id = [...v.shadowRoot.querySelectorAll(".landing-card.is-replay")].map((el) => el.dataset.card).find((id) => v.landingView.opened(id)?.part); if (!id) return null; const el = v.shadowRoot.querySelector('[data-card="' + id + '"] .landing-open'); el.scrollIntoView({ block: "center" }); const r = el.getBoundingClientRect(); return { id, x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+    if (at) await click(at.x, at.y, 600);
+    return at;
+  };
   const shot = async (name) => {
     await evaluate(`${V}.stage.invalidate()`);
     await sleep(1200);
@@ -307,8 +316,8 @@ try {
 
   if (CASE === "wide") {
     fetched.clear();
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    check("the Experiments tab opens on the tumour tissue's line, the part the example's entry names (opens.part)", OPENS === PART && (await until(shownPart(PART), 240)), OPENS);
+    const pressed = await openByCard();
+    check("the Experiments tab opens on its landing, and a real press on the tumour tissue's card shows its line, the part the example's entry names (opens.part)", Boolean(pressed) && OPENS === PART && (await until(shownPart(PART), 240)), JSON.stringify([pressed?.id, OPENS]));
     await sleep(1500);
     let s = await state();
     const got = bytes();
@@ -425,9 +434,10 @@ try {
     check("a real press on an arm's \"Run details\" opens that run's panel, with how its replay was made", Boolean(details) && s.selected === `run:${LINE.runs[0].id}` && s.panel.includes(ARMS[0]) && /How this replay was (derived|made)/.test(s.panel), JSON.stringify([s.selected, s.panel.slice(0, 160)]));
     await evaluate(`${V}.select(null)`);
     await sleep(600);
-    // The list's pressed row is the example's: with the line shown it says so, in the line's own short name.
-    const lineRow = await evaluate(`${V}.shadowRoot.querySelector('.exp-row[aria-pressed="true"]')?.textContent || null`);
-    check("with the line shown, the list's pressed row (the example's) carries the line's own short name under the example's", Boolean(lineRow) && lineRow.includes(ENTRY.short), JSON.stringify(lineRow));
+    // The card names the part shown, under the way back to all experiments; no list of experiments stands in it (until 18
+    // November 2026 the list's pressed row carried the line's short name: the landing is the list now).
+    const lineHead = await evaluate(`({ title: ${V}.shadowRoot.querySelector(".view .card-title")?.textContent || null, rows: ${V}.shadowRoot.querySelectorAll(".view .exp-row, #cells-experiment").length, back: !${V}.backButton.hidden })`);
+    check("with the line shown, its card names it, the way back to all experiments stands over it, and no list of experiments is in it", lineHead.title === ENTRY.label && lineHead.rows === 0 && lineHead.back, JSON.stringify(lineHead));
     // The way to the networks: the card's own button; the seven-cell network is shown.
     const back = await placeOf(`root.querySelector(".view .tissue-back:not(.tissue-sibling)")`);
     if (back) await click(back.x, back.y, 1500);
@@ -435,7 +445,7 @@ try {
     const net = await evaluate(`({ run: ${L}.runId || null, cells: ${L}.sheet?.cells.length ?? 0 })`).catch(() => ({}));
     check("a real press on the card's button shows the example's networks: the seven-cell network", Boolean(back) && atNetworks && net.run === `${WHOLE}--figure5-network-g1` && net.cells === 7, JSON.stringify(net));
     const netRow = await evaluate(`[...${V}.shadowRoot.querySelectorAll(".exp-within")].length`);
-    check("with the networks shown, the list's rows are as they were: no part named under the example's", netRow === 0, String(netRow));
+    check("with the networks shown, no part is named in their card", netRow === 0, String(netRow));
     // And back to the tissue by the example's card, then to the sheet by a real press on its door over the line.
     await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${PART}` });
     await until(shownPart(PART), 240);
@@ -450,7 +460,7 @@ try {
     note(`the sheet fetched ${bytes().total.toLocaleString("en-US")} bytes more (the line's arms in view were in already)`);
     await shot("sheet");
     // The page's theme turns dark while the line is shown: the cells take the dark tokens.
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    await page("Page.navigate", { url: `${base}?lens=experiments&still=1&part=${PART}` });
     await until(shownPart(PART), 240);
     await sleep(1200);
     colours = await drawn(lineSamples);
@@ -494,8 +504,8 @@ try {
     s = await state();
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "phone") {
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    check("on a phone the tab opens on the tissue's line", await until(shownPart(PART), 240), "");
+    const pressed = await openByCard();
+    check("on a phone a real press on the tumour tissue's card of the landing shows the tissue's line", Boolean(pressed) && (await until(shownPart(PART), 240)), JSON.stringify(pressed));
     await sleep(1500);
     let s = await state();
     check("on a phone the lines stand one above the other, inside the window, their cells large enough to see", s.tissues.length === LINE.runs.length && s.tissues.every((t, k) => t.left >= 0 && t.right <= WIDTH && (k === 0 || t.top > s.tissues[k - 1].bottom) && t.cell >= 10), JSON.stringify(s.tissues));
@@ -529,8 +539,8 @@ try {
     await shot("sheet");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "reduced") {
-    await page("Page.navigate", { url: `${base}?lens=experiments` });
-    check("the tab opens on the tissue with less motion asked for", await until(shownPart(PART), 240), "");
+    const pressed = await openByCard("lens=experiments");
+    check("a real press on the tumour tissue's card shows the tissue, with less motion asked for", Boolean(pressed) && (await until(shownPart(PART), 240)), "");
     await sleep(3000);
     const s = await state();
     check("with less motion nothing plays: the clock stands at the first record, and the camera did not fly", s.playing === false && s.time === 0 && !s.flight, JSON.stringify([s.playing, s.time, s.flight]));
@@ -539,8 +549,8 @@ try {
     await shot("line");
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "play") {
-    await page("Page.navigate", { url: `${base}?lens=experiments` });
-    check("the tab opens on the tissue, and a page that may move plays it, following the stated changes", (await until(shownPart(PART), 240)) && (await until(`${L}.player.playing`, 80)), "");
+    const pressed = await openByCard("lens=experiments");
+    check("a real press on the tumour tissue's card shows the tissue, and a page that may move plays it, following the stated changes", Boolean(pressed) && (await until(shownPart(PART), 240)) && (await until(`${L}.player.playing`, 80)), "");
     const { seen, total } = await watchPlay("line");
     const spans = spansOf(seen);
     const named = changeWords(ARMS);
@@ -599,13 +609,13 @@ try {
     const firstChange = changesOf(ARMS).sort((a, b) => a.time - b.time)[0];
     const sheetChange = changesOf(SHEETS.runs.map((slot) => slot.arm).filter((arm) => (SHEET_ENTRY.tissue.front || []).includes(arm))).sort((a, b) => a.time - b.time)[0];
     const states = [
-      ["the line", `lens=experiments&still=1`, null],
+      ["the line", `lens=experiments&still=1&part=${PART}`, null],
       ["the line at a change", `lens=experiments&still=1&time=${firstChange.time}`, null],
       ["a pressed cell", `lens=experiments&still=1&time=${PRESS.time}&select=tissue:${PRESS.arm}:${PRESS.cell}`, null],
       ["the sheet", `lens=experiments&still=1&part=${SHEET}`, null],
       ["the sheet at a change", `lens=experiments&still=1&part=${SHEET}&time=${sheetChange.time}`, null],
       ["the sheet with every arm", `lens=experiments&still=1&part=${SHEET}`, "all"],
-      ["playing at a change", `lens=experiments`, "play"],
+      ["playing at a change", `lens=experiments&part=${PART}`, "play"],
     ];
     for (const [width, height] of [[1280, 720], [1024, 768], [1440, 900], [400, 860], [360, 780]]) {
       await page("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: width < 760 });
@@ -641,8 +651,8 @@ try {
     check("the page logged no error", !(s.errors || []).length, JSON.stringify(s.errors));
   } else if (CASE === "sheet") {
     fetched.clear();
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
-    check("with the switch turned to the sheet (the example's opens.part, in this check's catalogue), the tab opens on the sheet", await until(shownPart(SHEET), 240), "");
+    const pressed = await openByCard();
+    check("with the switch turned to the sheet (the example's opens.part, in this check's catalogue), the tumour tissue's card on the landing opens the sheet", Boolean(pressed) && (await until(shownPart(SHEET), 240)), JSON.stringify(pressed));
     await sleep(1800);
     let s = await state();
     const got = bytes();
@@ -660,10 +670,10 @@ try {
     check("3. the line stays in sight beside the sheet, labelled as the record the threshold comes from (section 7.5)", lineTissues.length >= 1 && lineTissues.every((t) => t.top >= 56 && t.bottom <= HEIGHT - 90) && s.group.length === 1 && s.group[0].text === SHEET_ENTRY.tissue.beside.says && s.group[0].inside, JSON.stringify([lineTissues, s.group]));
     // 4. No heading or caption reads the sheet as the preprint's experiment.
     const words = [s.heading, s.stamp, ...[...s.heads, ...s.caption, ...s.group, ...s.over, ...s.ends].map((tag) => tag.text)].join(" ");
-    // 4. The list's pressed row is the example's (its name, with the preprint's authors): it carries the sheet's own short
-    // name under it, so that it reads as the example and, within it, the sheet, not as the sheet's attribution.
-    const sheetRow = await evaluate(`${V}.shadowRoot.querySelector('.exp-row[aria-pressed="true"]')?.textContent || null`);
-    check("4. with the sheet shown, the list's pressed row (the example's, with its authors) carries the sheet's own short name under it", Boolean(sheetRow) && sheetRow.includes(SHEET_ENTRY.short), JSON.stringify(sheetRow));
+    // 4. The card names the sheet by its own name (until 18 November 2026 the list's pressed row, the example's with its
+    // authors, carried the sheet's short name; the landing is the list now, and no row of the authors stands over the sheet).
+    const sheetHead = await evaluate(`({ title: ${V}.shadowRoot.querySelector(".view .card-title")?.textContent || null, rows: ${V}.shadowRoot.querySelectorAll(".view .exp-row, #cells-experiment").length })`);
+    check("4. with the sheet shown, its card names it by its own name, and no row of the networks (with the preprint's authors) stands over it", sheetHead.title === SHEET_ENTRY.label && sheetHead.rows === 0, JSON.stringify(sheetHead));
     check("4. no heading or caption reads the sheet as the preprint's experiment: it is Cells' extension", /Cells' extension/.test(s.heading + s.stamp) && !/Grodstein|Levin|preprint|after .* \(2026\)/i.test(words), words.slice(0, 300));
     check("the sheet's arms in view stand inside the room, their cells large enough to see", s.tissues.filter((t) => t.part === SHEET).every((t) => t.left > 290 && t.right <= WIDTH - 4 && t.bottom < HEIGHT - 90 && t.cell >= 10), JSON.stringify(s.tissues));
     await shot("sheet");
@@ -706,14 +716,15 @@ try {
     await shot("sheet-all");
     // On a phone, the same first screen.
     await page("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-    await page("Page.navigate", { url: `${base}?lens=experiments&still=1` });
+    await openByCard();
     await until(shownPart(SHEET), 240);
     await sleep(2000);
     s = await state();
     check("on a phone too: the extension sentence in full inside the window, the bracket's words and the line's in sight", s.caption.length === 1 && s.caption[0].inside && s.caption[0].text === `Development work, not judged. ${EXTENSION}` && s.over.every((tag) => tag.inside) && s.group.length === 1 && s.group.every((tag) => tag.inside), JSON.stringify([s.caption, s.over, s.group]));
-    // On a phone the folded chip names the sheet; opened, the list's chosen example says the sheet is shown within it.
-    const chosen = await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector("#cells-experiment"); return select ? [select.selectedOptions[0]?.textContent || "", select.parentElement.querySelector(".exp-within")?.textContent || ""] : null; })()`);
-    check("on a phone the card's list (a list to choose from) says the sheet's own short name with the example chosen, and under it", Boolean(chosen) && chosen.every((words) => words.includes(SHEET_ENTRY.short)), JSON.stringify(chosen));
+    // On a phone the folded card's line names the sheet, beside the way back to all experiments (until 18 November 2026 the
+    // card's list said the sheet's short name under the example chosen).
+    const chosen = await evaluate(`(() => { const t = ${V}.viewToggle, b = ${V}.backButton.getBoundingClientRect(), r = t.getBoundingClientRect(); return { line: t.getAttribute("aria-label") || t.textContent, back: !${V}.backButton.hidden, clear: b.right <= r.left || b.bottom <= r.top }; })()`);
+    check("on a phone the folded card's line names the sheet, beside the way back and clear of it", chosen.line.startsWith(SHEET_ENTRY.label.split(" ").slice(0, 2).join(" ")) && chosen.back && chosen.clear, JSON.stringify(chosen));
     await shot("sheet-phone");
     // On a phone with every sheet in view the line keeps its x2 arm in sight too, and the sheets stay large enough to see.
     await evaluate(`(() => { const select = ${V}.shadowRoot.querySelector('.view select[data-choice="arms"]'); if (!select) return false; select.value = "all"; select.dispatchEvent(new Event("change")); return true; })()`);

@@ -1,0 +1,254 @@
+{
+ "format": "cells.visualizer.landing_stills@1",
+ "note": "Stills of each replay card's opening view for the Experiments landing, made by tools/make_stills.mjs: the view's picture alone, as its address opens it held still at its start, in a window of 1280 by 768, cut from the room the page leaves the picture (`cut`, in the window's pixels) and drawn at 640 by 384. Not edited by hand.",
+ "made": "2026-11-18",
+ "page": {
+  "revision": "db88d7e3ab5524888316f2a2bce6321cf4a86051",
+  "uncommitted": true
+ },
+ "renderer": "ANGLE (NVIDIA, Vulkan 1.4.341 (NVIDIA NVIDIA L4 (0x000027B8)), NVIDIA)",
+ "view": {
+  "width": 1280,
+  "height": 768
+ },
+ "stills": [
+  {
+   "card": "tumour-tissue",
+   "theme": "dark",
+   "address": "lens=experiments&part=gap-junction-tissue-line",
+   "file": "stills/tumour-tissue.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 33859,
+   "sha256": "8fdc68a7720687cbeeb0fd817446ddde6dec45752708bc81ad89feddb247a8b1"
+  },
+  {
+   "card": "tumour-tissue",
+   "theme": "light",
+   "address": "lens=experiments&part=gap-junction-tissue-line",
+   "file": "stills/tumour-tissue.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 35571,
+   "sha256": "7f98db497062bbca683565c7e38c531d73a488ed0034af68eab6449a0fff4083"
+  },
+  {
+   "card": "assembly",
+   "theme": "dark",
+   "address": "lens=experiments&example=gard",
+   "file": "stills/assembly.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 309,
+    "y": 105,
+    "width": 953,
+    "height": 572
+   },
+   "quality": 72,
+   "bytes": 21710,
+   "sha256": "43108839bad6af6a582a2e33b196ca6fbd09c2b3ec2fd157ab291515d72f3472"
+  },
+  {
+   "card": "assembly",
+   "theme": "light",
+   "address": "lens=experiments&example=gard",
+   "file": "stills/assembly.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 309,
+    "y": 105,
+    "width": 953,
+    "height": 572
+   },
+   "quality": 72,
+   "bytes": 19275,
+   "sha256": "82ddbf0bb74c9471985fd18546b0e4420037dbabf6457abd0023597c90656910"
+  },
+  {
+   "card": "e07-v1",
+   "theme": "dark",
+   "address": "lens=experiments&run=e07-v1--a-donor-fast-k1-d37-s1.0--seed5",
+   "file": "stills/e07-v1.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 21235,
+   "sha256": "d2ba2ebd40231c4e2b1b661bb606f6fd0f2d1f1e555cba2f9682528d5c1393d4"
+  },
+  {
+   "card": "e07-v1",
+   "theme": "light",
+   "address": "lens=experiments&run=e07-v1--a-donor-fast-k1-d37-s1.0--seed5",
+   "file": "stills/e07-v1.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 19699,
+   "sha256": "6b79339c46d5e99a5dc55060fdca291db064822d205b2217415315b7133bd853"
+  },
+  {
+   "card": "turnover",
+   "theme": "dark",
+   "address": "lens=experiments&run=heredity-turnover-literature--iso-central-k1-d37-s1.0",
+   "file": "stills/turnover.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 21235,
+   "sha256": "d2ba2ebd40231c4e2b1b661bb606f6fd0f2d1f1e555cba2f9682528d5c1393d4"
+  },
+  {
+   "card": "turnover",
+   "theme": "light",
+   "address": "lens=experiments&run=heredity-turnover-literature--iso-central-k1-d37-s1.0",
+   "file": "stills/turnover.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 19699,
+   "sha256": "6b79339c46d5e99a5dc55060fdca291db064822d205b2217415315b7133bd853"
+  },
+  {
+   "card": "secreted-species",
+   "theme": "dark",
+   "address": "lens=experiments&run=secreted-species-dev-run--secreted-species-dev-run",
+   "file": "stills/secreted-species.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 7228,
+   "sha256": "a9d8a9d2e8ee40f8d8db0eff06b84a2959fac688da7434c8f40d8cf860d10712"
+  },
+  {
+   "card": "secreted-species",
+   "theme": "light",
+   "address": "lens=experiments&run=secreted-species-dev-run--secreted-species-dev-run",
+   "file": "stills/secreted-species.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 7336,
+   "sha256": "cb2d7492a68d9d1b141ff42bb1b34d5fff4e87ae157afeaca52c2f4c9a6b99cd"
+  },
+  {
+   "card": "planarian-loop",
+   "theme": "dark",
+   "address": "lens=experiments&run=planarian-loop--planarian-b08af640",
+   "file": "stills/planarian-loop.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 6355,
+   "sha256": "163575e546042794eab38a06133d7028a1ecb1346a64a368860262566b4ba3fc"
+  },
+  {
+   "card": "planarian-loop",
+   "theme": "light",
+   "address": "lens=experiments&run=planarian-loop--planarian-b08af640",
+   "file": "stills/planarian-loop.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 7553,
+   "sha256": "9f9e38b480ad86a3224144ae696a254ecebe411d80d65a6139687c475b3e14ea"
+  },
+  {
+   "card": "test-sheet",
+   "theme": "dark",
+   "address": "lens=experiments&run=example-sheet--invented-numbers",
+   "file": "stills/test-sheet.dark.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 9091,
+   "sha256": "d1d0043ddcd01d0af6ffcd38ef318912fa8963b2aacb9323e717ef3cac3a170c"
+  },
+  {
+   "card": "test-sheet",
+   "theme": "light",
+   "address": "lens=experiments&run=example-sheet--invented-numbers",
+   "file": "stills/test-sheet.light.jpg",
+   "width": 640,
+   "height": 384,
+   "cut": {
+    "x": 292,
+    "y": 74,
+    "width": 988,
+    "height": 593
+   },
+   "quality": 72,
+   "bytes": 9959,
+   "sha256": "e783db325b0108ff1f2bcfc4ad073ba9cfd96f3811b4b63bb2b504447187eb09"
+  }
+ ]
+}

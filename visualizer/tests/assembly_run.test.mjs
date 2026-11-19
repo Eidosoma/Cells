@@ -18,8 +18,8 @@ const copy = () => JSON.parse(text);
 test("the example holds to its contract, and is marked as an example that names no engine model", () => {
   assert.equal(raw.format, ASSEMBLY_FORMAT);
   assert.deepEqual(problemsOf(raw), []);
-  assert.equal(raw.example.says, "Example: invented numbers · not a run of Cells' engine");
-  assert.match(raw.example.says, /^Example: invented numbers/, "the replays' example's words, where they fit");
+  assert.equal(raw.example.says, "Invented numbers · no run of Cells' engine");
+  assert.match(raw.example.says, /^Invented numbers · /, "the replays' words for invented numbers, where they fit");
   for (const run of raw.runs) {
     assert.deepEqual(run.engine_models, [], `${run.id}: an example names no engine model`);
     assert.equal(run.revision, null);

@@ -9,7 +9,7 @@ engine's manifest (`cells.declarations@2`, its format the engine's page
 `docs/library/DECLARATIONS_FORMAT.md`) is the whole truth of what the engine declares, the lead
 ruled that day; what no active registry declares came off the wall. The list is made from that
 file alone (`tools/extract_laws.py`, `data/engine/declarations.json`), and its contract is
-`schema/LAWS_LIBRARY.md`. At main b5d3faf0 the wall holds 47 pieces (21 laws, 5 kinds, 21
+`schema/LAWS_LIBRARY.md`. At main 4dda2285 the wall holds 47 pieces (21 laws, 5 kinds, 21
 operators), seven racks and four model families with no rows, with the 13 laws design notes name
 apart; the 154 pieces of the code's reading at fa19d80c, the counts below, the engine's file
 paths below (read before the engine's two source moves of D188) and the sketches' lists are this

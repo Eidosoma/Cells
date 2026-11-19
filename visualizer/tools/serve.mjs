@@ -11,7 +11,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES } from "./lib/build_page.mjs";
+import { buildPage, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, landingFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES, DEFAULT_CARDS } from "./lib/build_page.mjs";
 
 // Reports script errors and blocked loads back to this server, in previews only.
 const REPORTER = `<script>
@@ -28,7 +28,7 @@ const REPORTER = `<script>
  * large catalogue's members are written; `proteins: null` serves none of them, as a page
  * published without those files would find.
  */
-export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log, proteins = DEFAULT_PROTEINS, members = DEFAULT_MEMBERS, machines = DEFAULT_MACHINES } = {}) {
+export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log, proteins = DEFAULT_PROTEINS, members = DEFAULT_MEMBERS, machines = DEFAULT_MACHINES, cards = DEFAULT_CARDS } = {}) {
   // The files beside the page, by the address the page fetches them at. Listed again with each page, so a rebuilt scene is followed.
   let beside = new Map(), machined = new Map();
   const list = async () => {
@@ -66,6 +66,14 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
         const file = await readFile(path.join(runs, run[1])).catch(() => null);
         if (!file) response.writeHead(404).end("not found");
         else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
+        return;
+      }
+      // The landing's cards and stills, beside the page as they are published.
+      if (url.pathname === "/cards.json" || url.pathname.startsWith("/stills/")) {
+        const source = (await landingFiles({ cardsPath: cards })).files.find((file) => `/${file.path}` === url.pathname)?.source;
+        const file = source ? await readFile(source).catch(() => null) : null;
+        if (!file) response.writeHead(404).end("not found");
+        else response.writeHead(200, { "content-type": url.pathname.endsWith(".json") ? "application/json" : url.pathname.endsWith(".png") ? "image/png" : "image/jpeg", "cache-control": "no-store" }).end(file);
         return;
       }
       // A machine's file is served beside the page too, as it is published.
