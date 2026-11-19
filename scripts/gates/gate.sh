@@ -3,9 +3,12 @@
 # One script for every owner. It is lane-aware like the owners' gate-laneA.sh copies, which it
 # supersedes for new gates; those copies stay byte for byte, since recorded runs cite them.
 #
-# Before the lock: one light CPU (PRELOCK_CPU, default 23) at nice PRELOCK_NICE (default 19, below
-# the owners' pre-gates at 10). PRELOCK=lane runs the same steps as the lane's first stage instead,
-# when the light CPUs are full. About two CPU-minutes, plus the head's changed test files:
+# Before the lock: one light CPU (PRELOCK_CPU, default 23) at nice PRELOCK_NICE (default 10, the
+# owners' pre-gates' level). At nice 19 on a loaded light CPU (19 November 2026, 15:16 UTC), one ID
+# collection of about 40 CPU-seconds had not ended after six and a half minutes, which would delay
+# the gate whenever the queue is shorter than its pre-lock steps. PRELOCK=lane runs the same steps
+# as the lane's first stage instead, when the light CPUs are full. About two CPU-minutes, plus the
+# head's changed test files:
 #   0. preflight: both snapshots complete and clean; crossrev's record holds exactly the runner's
 #      sets; c1's save, the baseline, the tier record, the declared files and the guard set exist;
 #   1. IDs: the head's collected test IDs against the base's (cached per main revision), with the
@@ -47,7 +50,7 @@ BASELINE=${BASELINE:-/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptan
 REC=${REC:-/mnt/workspaces/Cells/core-fixes-20261116/record-cda5dc82}
 TIERS=${TIERS:-tests/test_tiers.json}
 GATE_CACHE=${GATE_CACHE-/mnt/workspaces/Cells/gate-cache}
-PRELOCK=${PRELOCK:-light}; PRELOCK_CPU=${PRELOCK_CPU:-23}; PRELOCK_NICE=${PRELOCK_NICE:-19}
+PRELOCK=${PRELOCK:-light}; PRELOCK_CPU=${PRELOCK_CPU:-23}; PRELOCK_NICE=${PRELOCK_NICE:-10}
 case "${LANE:-A}" in
   A) LOCK=/mnt/workspaces/Cells/locks/gate-cores-0-3.lock; CPUS=0,1,2,3,16,17,18,19 ;;
   B) LOCK=/mnt/workspaces/Cells/locks/gate-cores-8-11.lock; CPUS=8,9,10,11,24,25,26,27 ;;
