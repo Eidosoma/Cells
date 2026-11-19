@@ -151,3 +151,20 @@ def test_a_run_on_disk_and_a_run_without_observed_rows_say_why(dosed, tmp_path):
     assert not merged(view)
     (why,) = [u["why"] for u in view["unstated"] if u["what"] == "view field"]
     assert why == f"changed by {BATH}: the run saved no observed rows"
+
+
+def test_a_field_reference_needs_its_unstated_entry(dosed, tmp_path):
+    """§9's item 3 (docs/CORE_SEAMS_DESIGN.md): a record whose fixed reference door S changes,
+    in a view that saves no merged view of it, names the field, and the view says why under
+    unstated; without that entry the reader's check refuses the view (the plant)."""
+    dosed, _ = dosed
+    write_run(tmp_path / "plain", dosed)
+    run_view.write_view(tmp_path / "plain")
+    view = load(tmp_path / "plain")
+    named = [r for r in view["records"] if r["field"] == "extracellular_amount_increment"]
+    assert len(named) == 2  # Its history and its observed column.
+    assert all(r["reference"] == {"field": "extracellular_amount_reference"} for r in named)
+    run_view.validate(view, tmp_path / "plain")
+    view["unstated"] = [u for u in view["unstated"] if u["id"] != "extracellular_amount_reference"]
+    with pytest.raises(run_view.ViewInvalid, match="leaves unstated"):
+        run_view.validate(view)
