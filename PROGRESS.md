@@ -108,6 +108,12 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
+  kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
+  cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
+  FreeEnergyEntry. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on
+  trials 4361bf5a and 8d4e5f92 (stacked on the symporter's).
+
 - **The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`
   (19 November 2026; D228 item 1).** Merge 845ee670, tag `symporter-v1-landed-2026-11-19`. A
   fuel-free factored cycle law on the transporter (n_Na from 1 to 4), cited to Coady et al. 2007
