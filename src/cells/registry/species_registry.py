@@ -951,7 +951,10 @@ def check_stage_read_rows(spec):
 
 # Route laws that read their row's amounts at both ends, never a closure's free forms (FR-15 P2:
 # passive_constant_field_permeation@1; the lead's ruling of 19 November 2026, option (a)). The
-# proton leak is not one: it reads free h through B4's closure.
+# charged law is listed because its flux and its material slope |dJ/dn| are taken against the
+# stored amount, which at a closure row is the total, not the free species: the wrong derivative.
+# Any future route law with a material term must be checked against this list. The proton leak is
+# not one: it reads free h through B4's closure.
 AMOUNT_READING_ROUTE_LAWS = ("passive_constant_field_permeation@1",)
 
 
@@ -962,7 +965,10 @@ def check_amount_reading_routes(spec):
     The stored total there is not the free species the law would read. Beside check_closure_rows
     and check_stage_read_rows, which hold the same rows for the other movers; per (species, node),
     from each declared kind's moved rows (the core's join, inner_movers). A world with no closure
-    is not checked, and its movers are not built (no new path in a closure-free world)."""
+    is not checked, and its movers are not built (no new path in a closure-free world). A general
+    closure's rows refuse such a route earlier, in check_closure_rows (a route law declares no
+    reads, so its reads [] lack the closure's read), so this rule's own message fires at held rows
+    outside any closure_rows: today, B4's stage rows."""
     m = _inner_model(spec)
     kinds = getattr(m, "kinds", ())
     if not kinds:

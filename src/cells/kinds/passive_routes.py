@@ -799,6 +799,8 @@ def material_term(read, potentials, control, p, *, xp):
     |dJ/dn| = A P m B(-+x)/V grows without limit in |x|, so no voltage-free value bounds it (the
     lead's ruling, 19 November 2026). Every engine caller passes the stage's potentials today; a
     future caller without them refuses rather than reads a silent non-bound."""
+    if not _charged(p):  # Static: a layout without the charged law's field moves no charged row
+        return xp.zeros(p.active.size + p.outside_active.size)  # (a kind derived from this one).
     opening = _opening(read, control, p, xp)
     volume, _ = _volumes(p, xp)
     if potentials is None:
