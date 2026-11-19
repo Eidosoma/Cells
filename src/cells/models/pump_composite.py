@@ -705,11 +705,16 @@ def structure_errors(inner, operators):
     # (docs/CORE_SEAMS_DESIGN.md §4.2; the inner's kind_lifecycle_errors): a kind that declares no
     # roles keeps the refusal's words, since no closer resets its per-slot fields (state on
     # cell_slot, membrane_slot, ...), which would be left stale where a slot closes, retires or
-    # opens; one with roles is refused while a field lacks declared axes or is per-entity.
+    # opens; one with roles is refused while a field lacks declared axes or an entity axis lacks
+    # presence. The core's presence gate, which makes an entity on a closed host absent, acts only
+    # where the composition declares a closer (CLOSES: @3's padding_fill), so beside a slot changer
+    # with no closer declared (an activity-mask provider alone) a kind with entities stays refused.
     kinds = tuple(getattr(inner, "KINDS", ()))
     declared, owners = set(kinds), getattr(inner, "KIND_FIELDS", {})
     masks = set(getattr(inner, "MASK_FIELDS", ()))
     blocked = _kinds_lifecycle(inner, kinds)
+    gated = any(op.CLOSES for op in operators)
+    bound = dict(zip(kinds, getattr(inner, "BOUND_KINDS", ()), strict=False))
     for op in operators:
         if kinds and op.FIXED_INNER_FIELDS:
             errors.append(
@@ -717,7 +722,7 @@ def structure_errors(inner, operators):
                 f"fixed fields, so it does not run beside declared kinds ({', '.join(kinds)})"
             )
         if kinds and (op.CLOSES or op.RETIRES or masks & set(op.VIEW_FIELDS)):
-            errors.extend(_kinds_beside_closer(op, kinds, blocked))
+            errors.extend(_kinds_beside_closer(op, kinds, blocked, bound=bound, gated=gated))
         required = {kind_registry.qualified(k) for k in op.REQUIRES_KINDS}
         for kind_id in sorted(required - declared):
             errors.append(
@@ -877,8 +882,10 @@ def _kinds_lifecycle(inner, kinds):
     return {k: check(kind) for k, kind in zip(kinds, bound, strict=True)}
 
 
-def _kinds_beside_closer(op, kinds, blocked):
-    """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on."""
+def _kinds_beside_closer(op, kinds, blocked, *, bound=None, gated=True):
+    """The refusals of a closer `op` beside the declared kinds the lifecycle cannot act on, and,
+    where no closer is declared (`gated` false: the core's presence gate is off), beside each
+    admitted kind with entities (kind_registry.entity_axes of its `bound` kind)."""
     roleless = [k for k in kinds if blocked[k] and blocked[k][0] == "roles"]
     out = []
     if roleless:
@@ -899,6 +906,15 @@ def _kinds_beside_closer(op, kinds, blocked):
                 f"presence field on its entity axes ({', '.join(fields)}), so the core's presence "
                 "gate cannot make its entities there absent where their host is closed"
             )
+        elif reason is None and not gated:
+            entities = kind_registry.entity_axes(bound[k]) if k in (bound or {}) else ("?",)
+            if entities:
+                out.append(
+                    f"{op.LAW_ID} opens, closes or retires slots, but no closer is declared, so "
+                    "the core's presence gate is off and the kind "
+                    f"{k}'s entities on {', '.join(entities)} would keep running where the view "
+                    "closes their host"
+                )
     return out
 
 

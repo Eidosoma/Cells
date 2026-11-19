@@ -210,12 +210,27 @@ def transporter_beside(kind, law):
 
 
 @pytest.mark.parametrize("law", SLOT_CHANGERS)
-def test_the_transporter_declaring_its_three_masks_is_admitted_beside_every_slot_changer(law):
+def test_the_transporter_declaring_its_three_masks_is_admitted_beside_a_closer(law):
+    """Admitted beside each closer (the partition, insertion@2), where the core's presence gate
+    acts (@3's padding_fill: a declared CLOSES). Beside insertion@1 alone, which provides the masks
+    without closing them, no closer is declared and the gate is off, so its entities would keep
+    running on an onset patch before its onset: refused, fail-closed."""
     kind = planted_transporter()
     assert kind_registry.declaration_errors(kind) == []
     assert kind_registry.entity_axes(kind) == ("membrane_slot",)  # Its fuel rows' axis: internal.
     assert pump3.kind_lifecycle_errors(kind) == ()
-    assert transporter_beside(kind, law) == ([], [])
+    found, lifecycle = transporter_beside(kind, law)
+    assert lifecycle == []
+    if OPERATORS[law].CLOSES:
+        assert found == []
+    else:
+        from cells.kinds import transporter
+
+        assert found == [
+            f"{law} opens, closes or retires slots, but no closer is declared, so the core's "
+            f"presence gate is off and the kind {transporter.KIND_ID}'s entities on membrane_slot "
+            "would keep running where the view closes their host"
+        ]
 
 
 @pytest.mark.parametrize("law", SLOT_CHANGERS)
