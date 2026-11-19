@@ -16,7 +16,10 @@ docs/CLOSED_COMPARTMENT_DESIGN.md §1.4 to §1.6 and §4, in NumPy (no compile),
 """
 
 import copy
+import dataclasses
+from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import ClassVar
 
 import pytest
 
@@ -33,7 +36,10 @@ from cells.operators.contract import (
     check_declarations,
     declaration_errors,
 )
+from cells.registry import kind_registry
+from cells.registry import laws as law_registry
 from cells.registry.models import get_model
+from tests import kind_fixtures
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -395,7 +401,7 @@ REFUSALS = {
     ),
     "a pump on the bounding patch": (
         pumped,
-        "carries an ion route version 1.2 refuses there, pump_c",
+        "carries an ion route refusal 4 refuses there, pump_c",
     ),
     "an ID that is its node's": (
         lambda: declared(w(), [cfx.compartment(cid="ecs_0")]),
@@ -425,7 +431,7 @@ REFUSALS = {
     ),
     "a channel population on the bounding patch": (
         channelled,
-        "carries an ion route version 1.2 refuses there, leak_0",
+        "carries an ion route refusal 4 refuses there, leak_0",
     ),
     "a charge anchor": (charged, "nonzero charge anchor"),
     "no held bath in the owner's component": (lambda: closed_world("bath"), "with no held bath"),
@@ -447,26 +453,45 @@ def test_definition_refusals(name):
         parse_spec(build())
 
 
-def test_refusal_4_admits_the_known_kinds_and_fails_closed_on_any_other():
-    """Refusal 4, version 1.1 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.1): FR-4's declared world, in
-    the composite's form, is admitted with its proton pump (cells.transporter@1), its proton leak
-    (cells.passive_routes@1) and its K+ permeability on the bounding patch, and B4's stage read; a
-    compartment in a world declaring a kind refusal 4 does not know is refused (fails closed). A
-    permeability in a world without kinds stays refused (REFUSALS), as do pumps and channels."""
-    from cells.registry import kind_registry
-    from tests import kind_fixtures
+def moves_at(spec, node):
+    """{(kind, species, law, held terms)} of every kind move at `node` (refusal 4's reading)."""
+    out = set()
+    for kind_id, declaration in spec.model.kinds:
+        kind = kind_registry.active().lookup(kind_id)
+        for entry in kind.moved_rows(declaration) if kind.moved_rows is not None else ():
+            species, at, law = (*entry, None) if len(entry) == 2 else entry
+            if at == node:
+                out.add((kind_id, species, law, comp.held_terms(kind, law)[0]))
+    return out
+
+
+PROTON_PUMP = "cells.proton_atp_mass_action_positive@1"
+NEUTRAL_PUMP = "cells.atp_driven_transporter_mass_action_positive@1"
+LEAK, NEUTRAL_ROUTE = "proton_constant_field_leak@1", "passive_neutral_permeation@1"
+
+
+def test_refusal_4_admits_fr4s_declared_world_move_by_move():
+    """Refusal 4, version 1.3 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4): FR-4's declared world, in
+    the composite's form, is admitted as version 1.1 admitted it, now move by move. At the lumen the
+    pump (cells.transporter@1) and the leak (cells.passive_routes@1) move the charged proton row,
+    each under a law that declares a charge slope its kind holds (stage_term); the K+ permeability
+    is @3's own route, admitted because the world declares kinds; B4's buffer is a stage read that
+    moves nothing. A permeability in a world without kinds stays refused (REFUSALS), as do pumps
+    and channels."""
     from validation.compartment_ph_engine import definitions as defs
 
     spec = parse_spec(defs.declared_world(defs.fr4_world()))
     bounding = next(p for p in spec.model.membranes if p.id == defs.BOUNDING)
     assert any(v > 0 for v in bounding.permeability_m_per_s)  # The K+ counterion.
-    assert {k for k, _ in spec.model.kinds} == {*comp.ROUTE_KINDS, *comp.READ_KINDS}
-    populations = dict(spec.model.kinds)["cells.transporter@1"]
-    routes = dict(spec.model.kinds)["cells.passive_routes@1"]
-    assert {t.patch for t in populations} == {r.host for r in routes} == {defs.BOUNDING}
-    with kind_registry.scope(kind_fixtures.registry()):
-        with pytest.raises(ConfigError, match="which refusal 4 does not know"):
-            parse_spec(kind_fixtures.declare(w(), species="S"))
+    assert {k for k, _ in spec.model.kinds} == {
+        "cells.passive_routes@1",
+        "cells.rapid_proton_buffer@1",
+        "cells.transporter@1",
+    }
+    assert moves_at(spec, defs.LUMEN) == {
+        ("cells.passive_routes@1", "H", LEAK, ("stage_term",)),
+        ("cells.transporter@1", "H", PROTON_PUMP, ("stage_term",)),
+    }
 
 
 def fr5_sources(definition):
@@ -482,18 +507,24 @@ def fr5_sources(definition):
     return definition
 
 
-def test_refusal_4_version_1_2_admits_the_routing_doors_source_kinds():
-    """Refusal 4, version 1.2 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.2; the lead's ruling of 16
-    November 2026): FR-5's source kinds, cells.patch_damage@1 and cells.ph_condition@1, are
-    admitted beside a compartment (they declare no route, move no row and carry no charge), with
-    FR-4's known kinds; any other kind is still refused (the test above), and so is every declared
-    kind under RK4 (the test below)."""
+SOURCE_KINDS = ("cells.patch_damage@1", "cells.ph_condition@1")
+
+
+def test_refusal_4_admits_the_routing_doors_source_kinds_by_their_hooks():
+    """Refusal 4 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.2, version 1.2's ruling of 16 November
+    2026, kept by version 1.3's §3.4.4): FR-5's source kinds, cells.patch_damage@1 and
+    cells.ph_condition@1, are admitted beside a compartment with FR-4's kinds. Version 1.3 admits
+    them as sources by their hooks, not their IDs: they declare no moved rows and none of a mover's
+    hooks (test_the_built_in_kinds_hold_the_step_terms_their_laws_declare). Every declared kind is
+    still refused under RK4 (the test below)."""
     from validation.compartment_ph_engine import definitions as defs
 
     spec = parse_spec(fr5_sources(defs.declared_world(defs.fr4_world())))
-    assert {k for k, _ in spec.model.kinds} == set(comp.KNOWN_KINDS)
-    assert set(comp.KNOWN_KINDS) == {*comp.ROUTE_KINDS, *comp.READ_KINDS, *comp.FACTOR_KINDS}
-    assert comp.FACTOR_KINDS == ("cells.patch_damage@1", "cells.ph_condition@1")
+    assert {k for k, _ in spec.model.kinds} >= set(SOURCE_KINDS)
+    assert moves_at(spec, defs.LUMEN) == {
+        ("cells.passive_routes@1", "H", LEAK, ("stage_term",)),
+        ("cells.transporter@1", "H", PROTON_PUMP, ("stage_term",)),
+    }
 
 
 def charged_start(charge_C=5.757025696278586e-14):
@@ -522,7 +553,7 @@ def test_refusal_5_version_1_1_admits_a_charged_start_where_charged_routes_are_a
     spec = parse_spec(defs.declared_world(defs.fr5_world(ARM_R, start=charged_start())))
     lumen = next(o for o in spec.model.extracellular if o.id == defs.LUMEN)
     assert lumen.initial_charge_C == 5.757025696278586e-14
-    assert {k for k, _ in spec.model.kinds} <= set(comp.KNOWN_KINDS)
+    assert {k for k, _ in spec.model.kinds} >= set(SOURCE_KINDS)
     # Refusal 5's own rule: admitted only with kinds declared and an IMEX tableau.
     compartment = type("Node", (), dict(initial_charge_C=1e-17))()
     comp.refuse_charge_anchor("lumen_0", compartment, kinds=True, imex=True)
@@ -595,12 +626,12 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
     )
     with pytest.raises(ConfigError, match="version 1's refusal stands"):
         comp.parse_declaration(block, rk4)
-    # Version 1.2: the routing door's source kinds alone open nothing under RK4 (fails closed).
+    # The routing door's source kinds alone open nothing under RK4 (fails closed).
     sources_only = stiff_fr4(operator=False)
     for key in ("transporters", "passive_routes", "stage_reads"):
         sources_only["model"].pop(key)
     base = parse_spec(fr5_sources(sources_only))
-    assert {k for k, _ in base.model.kinds} == set(comp.FACTOR_KINDS)
+    assert {k for k, _ in base.model.kinds} == set(SOURCE_KINDS)
     assert comp.parse_declaration(block, base).compartments[0].node == defs.LUMEN
     rk4 = dataclasses.replace(
         base, execution=dataclasses.replace(base.execution, solver=comp.RK4_SOLVER)
@@ -609,29 +640,309 @@ def test_refusal_4_admits_routes_beside_a_compartment_only_with_an_imex_tableau(
         comp.parse_declaration(block, rk4)
 
 
-def test_refusal_4s_known_kinds_carry_the_terms_its_admission_names():
-    """ROUTE_KINDS' comment and §3.4.1 (wording corrected after the core's review, finding 4): each
-    known route kind puts its charged routes' slopes in the per-stage rule (stage_term) and has a
-    definition-time term (bound_rate: the proton law's, the passive neutral law's); the known read
-    kind is a stage read that moves nothing and has no rates. If a hook goes, refusal 4's
-    admission loses its premise and this fails."""
-    from cells.registry import kind_registry
+def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
+    """Version 1.3's premise (§3.4.4; §3.4.1's wording after the core's review, finding 4): each
+    built-in law a kind moves rows under declares, in the law registry, the step terms its kind
+    holds. The declarations are seam F's (CORE_SEAMS §18 as amended): the pump's proton law and
+    the leak (laws/transport/proton_leak) declare a charge slope (stage_term, the per-stage
+    rule's), the passive neutral law (laws/routes/passive_permeation) a material bound
+    (material_bound, through the kind's bound_rate: dt L <= 1). The transporter's neutral law
+    declares none, version 1.1's open item, so a move of it at a compartment's node is refused
+    (the test below). The buffer is a stage read and the routing door's two kinds are sources,
+    by their hooks. Refusal 4 reads exactly the template's step terms (registry/laws.STEP_TERMS),
+    each mapped to a hook. If a declaration or a hook goes, or the template gains a term refusal
+    4 does not map, its admission loses its premise and this fails."""
+    laws = law_registry.active()
+    kinds = kind_registry.active()
+    assert tuple(comp.TERM_HOOKS) == law_registry.STEP_TERMS
+    pump, routes = kinds.lookup("cells.transporter@1"), kinds.lookup("cells.passive_routes@1")
+    held = {
+        law.law_id: comp.held_terms(kind, law.law_id)[0]
+        for kind, interface in ((pump, law_registry.CYCLE_LAW), (routes, law_registry.ROUTE_LAW))
+        for law in laws.laws(interface, kind.kind_id)
+    }
+    assert held == {
+        PROTON_PUMP: ("stage_term",),
+        NEUTRAL_PUMP: (),
+        LEAK: ("stage_term",),
+        NEUTRAL_ROUTE: ("material_bound",),
+    }
+    assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
+    for kind_id in ("cells.rapid_proton_buffer@1", *SOURCE_KINDS):
+        kind = kinds.lookup(kind_id)
+        assert kind.moved_rows is None, kind_id
+        comp.refuse_kind_moves(None, "lumen_0", kind_id, ())  # Admitted, by its hooks alone.
+    assert kinds.lookup("cells.rapid_proton_buffer@1").stage_read is not None
+    assert all(kinds.lookup(k).stage_read is None for k in SOURCE_KINDS)
 
-    registry = kind_registry.active()
-    for kind_id in comp.ROUTE_KINDS:
-        kind = registry.lookup(kind_id)
-        assert kind.stage_term is not None and kind.bound_rate is not None, kind_id
-        assert kind.rates is not None and kind.moved_rows is not None, kind_id
-    for kind_id in comp.READ_KINDS:
-        kind = registry.lookup(kind_id)
-        assert kind.stage_read is not None, kind_id
-        assert kind.rates is None and kind.moved_rows is None and kind.stage_term is None, kind_id
-    # Version 1.2 (§3.4.2): the routing door's source kinds declare no route and move no row.
-    for kind_id in comp.FACTOR_KINDS:
-        kind = registry.lookup(kind_id)
-        for hook in ("moved_rows", "stage_term", "bound_rate", "held_rows", "stage_read",
-                     "stage_check", "ledger_terms"):
-            assert getattr(kind, hook) is None, (kind_id, hook)
+
+@dataclass(frozen=True)
+class PlantedLaw(law_registry.Law):
+    """A planted law under its own tests. interface (never registered on BUILTIN): the step-term
+    fields the cycle and route law types declare (registry/laws.STEP_TERMS;
+    docs/CORE_SEAMS_DESIGN.md §8.1), each a kernel's name or None, as refusal 4 version 1.3 reads
+    them."""
+
+    stage_term: str | None = None
+    material_term: str | None = None
+    charge_bound: str | None = None
+    material_bound: str | None = None
+
+    interface: ClassVar[str] = "tests.planted_law@1"
+
+
+PLANTED_LAW = "tests.planted_move@1"
+
+
+def no_slope(read, potentials, control, p, *, xp):
+    """A planted per-stage term (cells, then outside nodes): zero."""
+    return xp.zeros(p.active.size + p.outside_active.size)
+
+
+def no_bound(spec, declaration):
+    """A planted definition-time bound (1/s): zero."""
+    return 0.0
+
+
+def carrier_under(law, **hooks):
+    """kind_fixtures' carrier (tests.carrier@1: a declared species carried across one membrane
+    patch) with its moved rows naming `law`, or naming none when `law` is None, and `hooks`."""
+    carrier = kind_fixtures.carrier()
+    if law is None:
+        return dataclasses.replace(carrier, **hooks)
+    rows = carrier.moved_rows
+    named = lambda declaration: tuple((*row, law) for row in rows(declaration))  # noqa: E731
+    return dataclasses.replace(carrier, moved_rows=named, **hooks)
+
+
+def carried(kind, *laws, species="K", membrane=cfx.PATCH):
+    """W with `kind` carrying `species` across `membrane` (the bounding patch by default), parsed
+    with the planted `laws` registered and `kind` in the kind registry."""
+    raw = kind_fixtures.declare_carrier(w(), species=species, membrane=membrane)
+    with law_registry.scope(law_registry.BUILTIN.extended(*laws)):
+        with kind_registry.scope(kind_fixtures.registry(kind)):
+            return parse_spec(raw)
+
+
+# name: (species carried, the law's declared terms, the kind's hooks, refusal or None). Each
+# refusal is its admitted twin's planted error, which version 1.3 must catch (D187).
+PLANTED_MOVES = {
+    "a charged row held by its charge slope": ("K", dict(stage_term="slope"), {}, None),
+    "a charged row whose law declares no term": ("K", {}, {}, "declares no step term"),
+    "a charged row held only by material terms": (
+        "K",
+        dict(material_term="slope", material_bound="bound"),
+        dict(material_term=no_slope, bound_rate=no_bound),
+        "a charge slope",
+    ),
+    "a charged row held only by its charge bound": (
+        "K",
+        dict(charge_bound="bound"),
+        dict(stage_term=None, bound_rate=no_bound),
+        "a charge slope",
+    ),
+    "a charged row whose kind lacks the slope its law declares": (
+        "K",
+        dict(stage_term="slope"),
+        dict(stage_term=None),
+        "of which its kind holds none",
+    ),
+    "a neutral row held by its material slope": (
+        "S",
+        dict(material_term="slope"),
+        dict(material_term=no_slope),
+        None,
+    ),
+    "a neutral row held by its material bound": (
+        "S",
+        dict(material_bound="bound"),
+        dict(bound_rate=no_bound),
+        None,
+    ),
+    "a neutral row whose law declares no term": (
+        "S",
+        {},
+        dict(material_term=no_slope, bound_rate=no_bound),
+        "declares no step term",
+    ),
+    "a neutral row held only by a charge slope": (
+        "S",
+        dict(stage_term="slope"),
+        {},
+        "a material slope",
+    ),
+    "a neutral row held only by a charge bound": (
+        "S",
+        dict(charge_bound="bound"),
+        dict(bound_rate=no_bound),
+        "a material slope",
+    ),
+    "a neutral row whose kind lacks the bound its law declares": (
+        "S",
+        dict(material_bound="bound"),
+        {},
+        "of which its kind holds none",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(PLANTED_MOVES))
+def test_a_move_at_the_compartments_node_needs_a_term_its_law_declares(name):
+    """Refusal 4, version 1.3 (docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4; docs/CORE_SEAMS_DESIGN.md
+    §4.4): a planted kind moves a row across the bounding patch, so at the compartment's node,
+    under a planted law. A charged row is admitted only by a charge slope (stage_term), a neutral
+    row by a material slope (material_term) or a definition-time material bound (material_bound),
+    each declared by the law and held by the kind's hook that supplies it (bound_rate for the
+    bounds); a charge bound alone holds neither (§18 as amended splits the bound). Otherwise the
+    move is refused, naming the law."""
+    species, terms, hooks, refusal = PLANTED_MOVES[name]
+    hooks = dict(dict(stage_term=no_slope), **hooks)  # The carrier has no slope of its own.
+    kind = carrier_under(PLANTED_LAW, **hooks)
+    law = PlantedLaw(PLANTED_LAW, host=kind_fixtures.CARRIER_ID, **terms)
+    if refusal is None:
+        spec = carried(kind, law, species=species)
+        held = comp.held_terms(kind, PLANTED_LAW)[0]
+        assert moves_at_planted(spec, kind, cfx.NODE) == {(species, PLANTED_LAW, held)}
+    else:
+        under = rf"moves the (charged|neutral) row {species} at its node under {PLANTED_LAW}, "
+        with pytest.raises(ConfigError, match=under + rf"which .*{refusal}"):
+            carried(kind, law, species=species)
+
+
+def moves_at_planted(spec, kind, node):
+    """{(species, law, held terms)} of the planted kind's moves at `node`."""
+    declaration = dict(spec.model.kinds)[kind_fixtures.CARRIER_ID]
+    return {
+        (species, law, comp.held_terms(kind, law)[0])
+        for species, at, law in kind.moved_rows(declaration)
+        if at == node
+    }
+
+
+def test_refusal_4_judges_the_moves_at_the_compartments_node_and_names_no_kind():
+    """Version 1.3 has no list of kinds: a kind none of whose moves is at a compartment's node is
+    not refusal 4's, whatever its ID. kind_fixtures' carrier, whose rows name no law, is admitted
+    carrying K across the owner's wall (cell to bath), where version 1.2 refused it as a kind it did
+    not know; across the bounding patch the same kind is refused, its move at the node naming no
+    law (fails closed)."""
+    kind = carrier_under(None)
+    spec = carried(kind, membrane=cfx.WALL)
+    assert {k for k, _ in spec.model.kinds} == {kind_fixtures.CARRIER_ID}
+    with pytest.raises(ConfigError, match=r"row K at its node under no law, which names no law"):
+        carried(kind)
+
+
+def test_a_moves_law_is_read_by_its_id_from_the_kind_that_hosts_it():
+    """Version 1.3 reads a move's law in the law registry by its ID: an unregistered law ID has no
+    terms, and neither has a registered law that another kind hosts, since only its host's hooks
+    hold its terms (both fail closed). The admitted twin is the first planted case above."""
+    kind = carrier_under(PLANTED_LAW, stage_term=no_slope)
+    with pytest.raises(ConfigError, match=rf"under {PLANTED_LAW}, which is not a registered law"):
+        carried(kind)
+    foreign = PlantedLaw(PLANTED_LAW, host=kind_fixtures.KIND_ID, stage_term="slope")
+    with pytest.raises(ConfigError, match=rf"is hosted by {kind_fixtures.KIND_ID}"):
+        carried(kind, foreign)
+
+
+def test_a_kind_that_reuses_a_laws_id_is_held_by_its_own_hooks():
+    """CORE_SEAMS_STEP0 §3.2's note: a planted variant that reuses a law's ID, as FR-4's K2 does
+    (validation/compartment_ph_engine/planted.py: the transporter with its rates and stage term
+    replaced), is admitted on the law's declaration only where it keeps the hook the law names.
+    K2's reversed pump keeps its stage_term, so FR-4's declared world is admitted with it; the same
+    kind with its stage_term removed is refused at the lumen."""
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine import planted
+
+    raw = defs.declared_world(defs.fr4_world())
+    reversed_pump = planted.reversed_pump()
+    with kind_registry.scope(planted.registry(reversed_pump)):
+        parse_spec(raw)
+    unsloped = dataclasses.replace(reversed_pump, stage_term=None)
+    with kind_registry.scope(planted.registry(unsloped)):
+        with pytest.raises(ConfigError, match=rf"under {PROTON_PUMP}, which declares stage_term, "
+                           "of which its kind holds none"):
+            parse_spec(raw)
+
+
+def planted_kind(kind_id, **hooks):
+    return kind_registry.Kind(kind_id=kind_id, model_key=kind_id.split(".")[1], **hooks)
+
+
+def hook(*args, **kwargs):
+    return None
+
+
+NON_MOVERS = {
+    "a stage read": (dict(stage_read=hook, stage_rows=hook, ledger_terms=hook), None),
+    "a stage read with rates": (dict(stage_read=hook, stage_rows=hook, rates=hook), "has rates"),
+    "a stage read with a charge slope": (
+        dict(stage_read=hook, stage_rows=hook, stage_term=hook),
+        "has stage_term",
+    ),
+    "a stage read without its rows": (
+        dict(stage_read=hook),
+        "declares no stage_rows for its stage read",
+    ),
+    "a source": (dict(rates=hook, book=hook, domain=hook, factors=hook), None),
+    "a source with ledger terms": (dict(rates=hook, ledger_terms=hook), "has ledger_terms"),
+    "a source with held rows": (dict(rates=hook, held_rows=hook), "has held_rows"),
+    "a source with a material slope": (dict(rates=hook, material_term=hook), "has material_term"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(NON_MOVERS))
+def test_a_kind_without_moved_rows_is_a_stage_read_or_a_source(name):
+    """Version 1.3 places a kind that declares no moved rows by its hooks, never its ID: a stage
+    read declares its rows and has no rates, moves or slope (B4's buffer); a source has none of a
+    mover's hooks (FR-5's damage and pH condition, version 1.2's ruling). Anything else fails
+    closed, naming what it has. The planted kinds are checked directly (@3 itself refuses a stage
+    read without its rows, ahead of the operator)."""
+    hooks, refusal = NON_MOVERS[name]
+    planted = planted_kind("tests.non_mover@1", **hooks)
+    registry = kind_registry.KindRegistry()
+    registry.register(planted)
+    with kind_registry.scope(registry):
+        if refusal is None:
+            comp.refuse_kind_moves(None, cfx.NODE, planted.kind_id, ())
+        else:
+            with pytest.raises(ConfigError, match=rf"declares no moved rows.*it .*{refusal}"):
+                comp.refuse_kind_moves(None, cfx.NODE, planted.kind_id, ())
+
+
+def neutral_pump(raw, patch, *, alone):
+    """FR-5's world with a population of the transporter's neutral law carrying its cargo X on
+    `patch`, on the pump's held fuel: alone on the patch (in place of the proton pump) or beside
+    it."""
+    raw = copy.deepcopy(raw)
+    pumps = raw["model"]["transporters"]
+    entry = copy.deepcopy(pumps[0])
+    entry.update(id="cargo_pump_0", patch=patch, law=NEUTRAL_PUMP, role="X", stoichiometry=1)
+    entry["fuel"].update(ph_ref=None, ph_band=None)  # The neutral law names no proton row.
+    pumps[:] = [entry] if alone else [*pumps, entry]
+    return raw
+
+
+def test_the_transporters_neutral_law_has_no_term_at_a_compartments_node():
+    """Version 1.1's open item (§3.4.1), closed by version 1.3 (§3.4.4): the transporter's
+    neutral law declares no step term, so nothing bounds its material stiffness at a small node.
+    Version 1.2 admitted it on the bounding patch as one of a known kind's laws; version 1.3
+    refuses it there, naming the law, until it declares D4's material term. On the owner's plasma
+    patch (cell to bath) the same population is not refusal 4's, and FR-5's world is admitted
+    with it. CORE_SEAMS_STEP0 §3 found no saved or registered world with this law beside a
+    compartment."""
+    from validation.compartment_ph_engine import definitions as defs
+    from validation.compartment_ph_engine.parameters import ARM_T
+
+    raw = defs.declared_world(defs.fr5_world(ARM_T))
+    with pytest.raises(ConfigError, match=rf"the neutral row X at its node under {NEUTRAL_PUMP}, "
+                       "which declares no step term"):
+        parse_spec(neutral_pump(raw, defs.BOUNDING, alone=True))
+    spec = parse_spec(neutral_pump(raw, defs.PLASMA, alone=False))
+    pumps = dict(spec.model.kinds)["cells.transporter@1"]
+    assert [(t.patch, t.law) for t in pumps] == [
+        (defs.BOUNDING, PROTON_PUMP),
+        (defs.PLASMA, NEUTRAL_PUMP),
+    ]
 
 
 def test_refusal_4s_premise_the_stage_rule_holds_a_permeability_at_the_compartments_node(

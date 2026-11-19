@@ -25,7 +25,7 @@ Laws (§2.2), with c = n/V at the declared volume V and m the scheduled multipli
   appearing in the rate;
 * `ideal_detailed_balance_mass_action@1` (passive): J = m V c0 k_f [prod a^alpha -
   exp(sum nu mu°/RT) prod a^beta], a = c/c0, `forward_rate_per_s` k_f > 0; closed, no factors,
-  each side of molecularity <= 3; through processes/mass_action.reversible_flux, unchanged;
+  each side of molecularity <= 3; through laws/reactions/mass_action.reversible_flux, unchanged;
 * factors on driven laws (they multiply): `hill_activation` x^n/(K^n + x^n) and `hill_inhibition`
   K^n/(K^n + x^n), `half_saturation_mM` K > 0 and `hill_coefficient` n > 0, the species x read.
 Mass action consumes only its reactants (nu < 0 implies alpha >= 1), Michaelis-Menten only S, and
@@ -1304,8 +1304,8 @@ class LocalSpeciesReactions(Operator):
     }
     # Signs, by the roles of its route set (view_sets), as the code computes them: a passive
     # route's net rate is its forward flux less its reverse one, and its affinity the forward
-    # log-term less the reverse one (processes/mass_action.reversible_flux); a driven route runs
-    # forward only, and its affinity is reported as 0 (observe).
+    # log-term less the reverse one (laws/reactions/mass_action.reversible_flux); a driven route
+    # runs forward only, and its affinity is reported as 0 (observe).
     ORIENTATION = {
         "reaction_extent_fmol": {
             "from": "reactants",
@@ -1320,7 +1320,8 @@ class LocalSpeciesReactions(Operator):
             "says": "a positive rate runs the route forward, its reactants into its products; a "
             "passive route's is its forward flux less its reverse flux, a driven route's is zero "
             "or more",
-            "source": "processes/mass_action.reversible_flux and species_reactions.route_rates",
+            "source": "laws/reactions/mass_action.reversible_flux and "
+            "species_reactions.route_rates",
         },
         "reaction_affinity_RT": {
             "plus": "reactants",
@@ -1328,7 +1329,7 @@ class LocalSpeciesReactions(Operator):
             "says": "A/RT, the reactants' chemical potential less the products' over RT (minus "
             "the reaction's free energy over RT): positive drives a passive route forward, zero "
             "at its equilibrium; 0 on driven routes",
-            "source": "processes/mass_action.reversible_flux and species_reactions.observe",
+            "source": "laws/reactions/mass_action.reversible_flux and species_reactions.observe",
         },
     }
 
