@@ -33,6 +33,7 @@
    "data/catalogue/measures/human.rna-polymerase-i.json",
    "data/catalogue/measures/human.rna-polymerase-iii.json",
    "data/catalogue/measures/human.rna-polymerase.json",
+   "data/catalogue/measures/human.vault.json",
    "data/catalogue/overlay.json",
    "data/catalogue/shapes/animals.connexin-channel.json",
    "data/catalogue/shapes/animals.innexin-channel.json",
@@ -55,6 +56,7 @@
    "data/catalogue/shapes/human.rna-polymerase-i.json",
    "data/catalogue/shapes/human.rna-polymerase-iii.json",
    "data/catalogue/shapes/human.rna-polymerase.json",
+   "data/catalogue/shapes/human.vault.json",
    "data/machines/ecoli.flagellar-motor.json",
    "data/proteins/ecoli/proteins.tsv",
    "data/proteins/ecoli/shelves.json",
@@ -126,6 +128,13 @@
    "id": "traffic",
    "label": "Carrying cargo",
    "plain": "Motors that walk along the cell's filaments, carrying cargo from place to place."
+  },
+  {
+   "id": "unknown",
+   "label": "Particles whose job is not known",
+   "plain": "Large particles whose function has not been found.",
+   "stands": "behind",
+   "stands_why": "Decided 19 November 2026: this group's tray stands at the back of the bench, behind the tray of the law inventory's units. Its one particle, the vault, is the largest shape on a bench; in the row before that tray it stood in front of the units' small shapes at the opening view and hid them."
   }
  ],
  "records": {
@@ -939,6 +948,56 @@
     "planarian",
     "fruitfly",
     "thalecress"
+   ]
+  },
+  {
+   "id": "vault",
+   "label": "Vault",
+   "group": "unknown",
+   "plain": "A hollow, barrel-shaped particle of protein and RNA, among the largest in a cell. What it does has not been found.",
+   "records": [
+    "fr13"
+   ],
+   "from": "gather",
+   "identified_by": "vault",
+   "identity": "Decided 19 November 2026: the vault is a named exception to how a kind is identified. The Gene Ontology has no term for it and UniProt no keyword, so its proteins are not found by a term. They are found by three footings, kept apart: the Complex Portal's entry of the species whose name holds the word vault (by record); the saved reviewed UniProt entries of the species whose FUNCTION or SUBUNIT sentences name the vault particle, found by that rule, each sentence with the evidence it carries (named by a reviewed entry); and the proteins of the species' own table that carry the signature of the major vault protein family or the PARP4 marker (candidates by family). No other kind changes its identity.",
+   "absence": "A signature not found in a species is not an absence: it says what was looked for in that species' table, and nothing says the species has no vault.",
+   "looked": {
+    "ecoli": {
+     "words": "UniProt's list of the entries of the reference proteome of Escherichia coli K-12 that carry IPR039059 is empty, and no reviewed entry of the species names the vault particle.",
+     "sources": [
+      "gathered:ecoli:uniprot_signatures"
+     ]
+    },
+    "fruitfly": {
+     "words": "UniProt's list of the entries of the reference proteome of Drosophila melanogaster that carry IPR039059 is empty, and no reviewed entry of the species names the vault particle.",
+     "sources": [
+      "gathered:fruitfly:uniprot_signatures"
+     ]
+    },
+    "mpneumoniae": {
+     "words": "No protein of M. pneumoniae's table carries the major vault protein family's signature (IPR039059) or PARP4's marker (IPR058904), and no reviewed entry of the species names the vault particle.",
+     "sources": [
+      "gathered:mpneumoniae:atlas_table"
+     ]
+    },
+    "syn3a": {
+     "words": "No protein of Syn3A's table carries the major vault protein family's signature (IPR039059) or PARP4's marker (IPR058904), and no reviewed entry of the species names the vault particle.",
+     "sources": [
+      "gathered:syn3a:atlas_table"
+     ]
+    },
+    "thalecress": {
+     "words": "UniProt's list of the entries of the reference proteome of Arabidopsis thaliana that carry IPR039059 is empty, and no reviewed entry of the species names the vault particle.",
+     "sources": [
+      "gathered:thalecress:uniprot_signatures"
+     ]
+    }
+   },
+   "species": [
+    "human",
+    "mouse",
+    "planarian"
    ]
   },
   {
@@ -3226,6 +3285,14 @@
    "accessed": "2026-11-17",
    "saved": "human/wwpdb-complex-i-g/9I4I.cif.gz"
   },
+  "catalogue:pdb9mxv": {
+   "text": "Protein Data Bank entry 9MXV: Human Vault Cage in complex with ADP. Electron microscopy, 2.68 Å; its first biological assembly; Homo sapiens, by the entry's own source records.",
+   "url": "https://www.rcsb.org/structure/9MXV",
+   "licence": "CC0 1.0",
+   "class": "permissive",
+   "accessed": "2026-11-19",
+   "saved": "vault/wwpdb-vault-9mxv-e1/9MXV-assembly1.cif.gz"
+  },
   "catalogue:pdb9rbf": {
    "text": "Protein Data Bank entry 9RBF: Structure of a stalled E. coli 70S RNC-NuoK-86 in complex with the membrane protein insertase SecYEG-YidC. Electron microscopy, 2.44 Å; Escherichia coli, by the entry's own source records.",
    "url": "https://www.rcsb.org/structure/9RBF",
@@ -3299,6 +3366,12 @@
    "licence": "CC BY",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "gathered:ecoli:complex_portal": {
+   "text": "The Complex Portal (EMBL-EBI): its curated complexes of Escherichia coli K-12, the file ecoli/complex-portal-g/83333.tsv as served on 2026-11-17, and the entry lists of the files of other species, read only to say whose species an entry marked as taken from another species' is.",
+   "url": "https://www.ebi.ac.uk/complexportal/",
+   "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g",
+   "class": "permissive"
   },
   "gathered:ecoli:fan2023": {
    "text": "Fan J, El Sayyed H, Pambos OJ, Stracy M, Kyropoulos J, Kapanidis AN (2023). RNA polymerase redistribution supports growth in E. coli strains with a minimal number of rRNA operons. Nucleic acids research 51",
@@ -3459,6 +3532,18 @@
    "licence": "CC BY 4.0",
    "class": "permissive"
   },
+  "gathered:ecoli:uniprot_signatures": {
+   "text": "UniProtKB's lists of the entries of the reference proteome of Escherichia coli K-12 that carry InterPro entry IPR039059, saved in machines-expansion/uniprot-vault-family-counts-e1.",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:fruitfly:complex_portal": {
+   "text": "The Complex Portal (EMBL-EBI): its curated complexes of Drosophila melanogaster, the file fruitfly/complex-portal-e1/7227.tsv as served on 2026-11-19, and the entry lists of the files of other species, read only to say whose species an entry marked as taken from another species' is.",
+   "url": "https://www.ebi.ac.uk/complexportal/",
+   "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g",
+   "class": "permissive"
+  },
   "gathered:fruitfly:go": {
    "text": "The Gene Ontology, go-basic.obo, version releases/2026-07-26: the terms' names and their is_a and part_of links.",
    "url": "https://geneontology.org",
@@ -3523,6 +3608,18 @@
    "text": "UniProtKB, release 2026_04: the entries the species' atlas keeps, one for each gene, reviewed or not, of the reference proteome UP000000803 (Drosophila melanogaster), their keywords and the Gene Ontology terms UniProt gives them, read from the saved copies in fruitfly/uniprot-fruitfly-reference-proteome, the keywords from fruitfly/uniprot-fruitfly-keywords-g (release 2026_04), the SUBUNIT comments from fruitfly/uniprot-fruitfly-subunit-g (release 2026_04).",
    "url": "https://www.uniprot.org",
    "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:fruitfly:uniprot_signatures": {
+   "text": "UniProtKB's lists of the entries of the reference proteome of Drosophila melanogaster that carry InterPro entry IPR039059, saved in machines-expansion/uniprot-vault-family-counts-e1.",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:human:complex_portal": {
+   "text": "The Complex Portal (EMBL-EBI): its curated complexes of Homo sapiens, the file human/complex-portal-g/9606.tsv as served on 2026-11-17, and the entry lists of the files of other species, read only to say whose species an entry marked as taken from another species' is.",
+   "url": "https://www.ebi.ac.uk/complexportal/",
+   "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g",
    "class": "permissive"
   },
   "gathered:human:go": {
@@ -3690,6 +3787,25 @@
    "licence": "CC BY 4.0",
    "class": "permissive"
   },
+  "gathered:human:uniprot_vault": {
+   "text": "UniProtKB entries saved in vault/uniprot-vault-e1, vault/uniprot-vault-2a: the FUNCTION and SUBUNIT comments of the reviewed entries of the species, read by the rule that a sentence names the vault particle, each sentence with the evidence UniProt gives it.",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:human:vault_preprint": {
+   "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+   "doi": "10.64898/2026.11.04.764334",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+   "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+   "class": "permissive"
+  },
+  "gathered:mouse:complex_portal": {
+   "text": "The Complex Portal (EMBL-EBI): its curated complexes of Mus musculus, the file mouse/complex-portal-e1/10090.tsv as served on 2026-11-19, and the entry lists of the files of other species, read only to say whose species an entry marked as taken from another species' is.",
+   "url": "https://www.ebi.ac.uk/complexportal/",
+   "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g",
+   "class": "permissive"
+  },
   "gathered:mouse:go": {
    "text": "The Gene Ontology, go-basic.obo, version releases/2026-07-26: the terms' names and their is_a and part_of links.",
    "url": "https://geneontology.org",
@@ -3795,6 +3911,19 @@
    "licence": "CC BY 4.0",
    "class": "permissive"
   },
+  "gathered:mouse:uniprot_vault": {
+   "text": "UniProtKB entries saved in vault/uniprot-vault-e1, vault/uniprot-vault-2a: the FUNCTION and SUBUNIT comments of the reviewed entries of the species, read by the rule that a sentence names the vault particle, each sentence with the evidence UniProt gives it.",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:mouse:vault_preprint": {
+   "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+   "doi": "10.64898/2026.11.04.764334",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+   "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+   "class": "permissive"
+  },
   "gathered:mpneumoniae:atlas_table": {
    "text": "The M. pneumoniae atlas's own table (data/proteins/mpneumoniae/proteins.tsv): the protein products of the genome record GenBank U00089.2, each with its UniProtKB accession and the InterPro signatures UniProt (UniParc, release 2026_04) computes on its sequence.",
    "url": null,
@@ -3871,6 +4000,13 @@
    "text": "Pfam 38.2, as InterProScan 5.78-109.0 ran it on the species' proteins: its signatures' matches, and the families it could show; the scan's record (data/proteins/planarian/interproscan.json) gives its terms and counts.",
    "url": "https://www.ebi.ac.uk/interpro/entry/pfam/",
    "licence": "CC0 1.0 (InterPro's licence page; Pfam's own page: freely available under the Creative Commons Zero licence)",
+   "class": "permissive"
+  },
+  "gathered:planarian:vault_preprint": {
+   "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+   "doi": "10.64898/2026.11.04.764334",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+   "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
    "class": "permissive"
   },
   "gathered:syn3a:atlas_table": {
@@ -3956,6 +4092,12 @@
   },
   "gathered:thalecress:uniprot": {
    "text": "UniProtKB, release 2026_04: the entries the species' atlas keeps, one for each gene, reviewed or not, of the reference proteome UP000006548 (Arabidopsis thaliana), their keywords and the Gene Ontology terms UniProt gives them, read from the saved copies in thalecress/uniprot-thalecress-reference-proteome, the keywords from thalecress/uniprot-thalecress-keywords-g (release 2026_04), the SUBUNIT comments from thalecress/uniprot-thalecress-subunit-g (release 2026_04).",
+   "url": "https://www.uniprot.org",
+   "licence": "CC BY 4.0",
+   "class": "permissive"
+  },
+  "gathered:thalecress:uniprot_signatures": {
+   "text": "UniProtKB's lists of the entries of the reference proteome of Arabidopsis thaliana that carry InterPro entry IPR039059, saved in machines-expansion/uniprot-vault-family-counts-e1.",
    "url": "https://www.uniprot.org",
    "licence": "CC BY 4.0",
    "class": "permissive"
@@ -4064,15 +4206,15 @@
   },
   "human": {
    "file": "catalogue/human.json",
-   "machines": 32
+   "machines": 33
   },
   "mouse": {
    "file": "catalogue/mouse.json",
-   "machines": 32
+   "machines": 33
   },
   "planarian": {
    "file": "catalogue/planarian.json",
-   "machines": 31
+   "machines": 32
   },
   "fruitfly": {
    "file": "catalogue/fruitfly.json",

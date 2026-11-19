@@ -73,6 +73,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
+import gather_vault as V  # noqa: E402  the vault's three footings (it reads saved files only)
 from lib import proteome_shelves as P  # noqa: E402  the downloads' reader (MANIFEST and SHA-256) and the ontology's reader
 
 CONFIG = ROOT / "data" / "catalogue" / "gather.json"
@@ -737,8 +738,69 @@ def read_complex_portal(d, block, config):
                 members[found.group(1)] = members.get(found.group(1), 0) + int(found.group(2))
             else:
                 others += 1
-        out.append({"id": row[at["Complex ac"]], "name": row[at["Recommended name"]], "members": members, "other_members": others})
+        # The proteins of the entry with the entries inside it opened (its "Expanded participant list"): a complex that holds other
+        # complexes (CMG: the MCM complex, the GINS complex and CDC45) holds their proteins; a form is judged by these.
+        expanded = {}
+        if "Expanded participant list" in at and row[at["Expanded participant list"]].strip() not in ("", "-"):
+            for item in row[at["Expanded participant list"]].split("|"):
+                found = re.match(r"^([A-Z0-9]+)(?:-[A-Z0-9_]+)?\((\d+)\)$", item.strip())
+                if found and re.match(r"^[OPQ][0-9][A-Z0-9]{3}[0-9]$|^[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}$", found.group(1)):
+                    expanded[found.group(1)] = expanded.get(found.group(1), 0) + int(found.group(2))
+        eco = re.match(r"^(ECO:\d+)(?:\(([^)]*)\))?", row[at["Evidence Code"]]) if "Evidence Code" in at else None
+        inferred = re.findall(r"complex portal:(CPX-\d+)\(inferred-from\)", row[at["Cross references"]]) if "Cross references" in at else []
+        out.append({"id": row[at["Complex ac"]], "name": row[at["Recommended name"]], "members": members, "other_members": others, "proteins": expanded or members,
+                    "evidence": eco.group(1) if eco else None, "evidence_name": (eco.group(2) or "").strip() if eco else "", "inferred_from": inferred})
     return {"complexes": out, "file": f"{spec['folder']}/{spec['file']}", "day": d.day(spec["folder"], spec["file"])}
+
+
+def portal_taxa(d, config):
+    """Which species' file of the Complex Portal each entry stands in (gather.json: sources_held.complex_portal.index), so that an
+    entry the portal marks as taken from another species' can say whose. An entry no listed file holds has no species here."""
+    out = {}
+    for item in ((config.get("sources_held") or {}).get("complex_portal") or {}).get("index") or []:
+        for row in list(csv.reader(d.text(item["folder"], item["file"]).splitlines(), delimiter="\t"))[1:]:
+            out[row[0]] = item["name"]
+    return out
+
+
+def natural_id(identifier):
+    return [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", identifier)]
+
+
+def stoichiometry_of(members):
+    """The copies an entry gives, in a compact form: the commonest count and how many proteins have it, the proteins that differ,
+    and how many it gives no count for (the portal writes 0 there)."""
+    given = {a: n for a, n in members.items() if n > 0}
+    counts = Counter(given.values())
+    if not counts:
+        return None
+    most = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+    return {"most": most, "n_most": counts[most], "except": [[a, n] for a, n in sorted(given.items()) if n != most], "not_given": len(members) - len(given)}
+
+
+def forms_for(portal, parts, taxa, rule, kind_exceptions):
+    """The Complex Portal's entries that are forms of a machine (schema/MACHINE_DOSSIERS.md, "Forms"): an entry stands beneath a
+    kind where at least `share` of its protein members are parts of the kind in the species' own dossier and at least `minimum`
+    are. Forms are lines of the kind's panel; they are never machines, never counted as machines."""
+    if not portal or not parts:
+        return None
+    out = []
+    for complex_ in portal["complexes"]:
+        members = complex_["proteins"]
+        shared = [a for a in members if a in parts]
+        key = complex_["id"]
+        fits = len(shared) >= rule["minimum"] and len(shared) >= rule["share"] * len(members)
+        if key in kind_exceptions:
+            fits = kind_exceptions[key]["fits"]
+        if not fits:
+            continue
+        inferred = []
+        for other in complex_["inferred_from"]:
+            inferred.append({"id": other, "of": taxa.get(other)})
+        out.append({"id": key, "name": complex_["name"], "proteins": len(members), "parts_held": len(shared), "of_parts": len(parts),
+                    "stoichiometry": stoichiometry_of(members), "evidence": complex_["evidence"], "evidence_name": complex_["evidence_name"], **({"inferred_from": inferred} if inferred else {})})
+    out.sort(key=lambda f: (-f["parts_held"], natural_id(f["id"])))
+    return out or None
 
 
 def source_used(config, name):
@@ -1102,19 +1164,36 @@ def build_species(d, datasets, config, kinds, species, block, ontology, built=No
     machines = [dossier(d, datasets, config, kinds, species, block, machine, proteome, sources, by_protein) for machine in block["machines"]]
     portal = read_complex_portal(d, block, config)
     pax = read_paxdb(d, block, proteome)
+    held_portal = ((config.get("sources_held") or {}).get("complex_portal") or {})
+    form_rule = held_portal.get("forms") or {}
+    taxa = portal_taxa(d, config) if portal and form_rule else {}
+    stands_beneath = defaultdict(list)
+    evidence_seen = {}
     for machine, item in zip(block["machines"], machines):
         parts = {r[0] for r in item["proteins"]["rows"] if r[3] != "named"}
         found = complex_portal_for(portal, parts)
         if found:
             item["complex_portal"] = found
+        if portal and form_rule:
+            stated = {e["entry"]: e for e in form_rule.get("exceptions") or [] if e["species"] == species and e["kind"] == machine["kind"]}
+            forms = forms_for(portal, parts, taxa, form_rule, stated)
+            if forms:
+                item["forms"] = {"note": "The Complex Portal's curated entries that are forms of this machine, by the rule: " + form_rule["rule"] + " Each is a line of the machine's panel, never a machine of its own.",
+                                 "items": forms, "sources": ["complex_portal"]}
+                for form in forms:
+                    stands_beneath[form["id"]].append(machine["kind"])
+                    evidence_seen[form["evidence"]] = form.pop("evidence_name")
         named_parts = sub_assemblies(machine, item, portal, parts, ontology)
         if named_parts:
             item["sub_assemblies"] = named_parts
         values = paxdb_for(pax, item["proteins"]["rows"])
         if values:
             item["paxdb"] = values
+    for entry_id, kinds_of in stands_beneath.items():
+        if len(kinds_of) > 1:
+            raise Breach(f"{species}: the Complex Portal's {entry_id} fits {', '.join(kinds_of)}: a form stands beneath one kind; gather.json's exceptions say which")
     if portal:
-        sources["complex_portal"] = {"text": f"The Complex Portal (EMBL-EBI): its curated complexes of {block['organism']}, the file {portal['file']} as served on {portal['day']}.", "url": "https://www.ebi.ac.uk/complexportal/", "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g", "class": "permissive"}
+        sources["complex_portal"] = {"text": f"The Complex Portal (EMBL-EBI): its curated complexes of {block['organism']}, the file {portal['file']} as served on {portal['day']}" + (", and the entry lists of the files of other species, read only to say whose species an entry marked as taken from another species' is." if taxa else "."), "url": "https://www.ebi.ac.uk/complexportal/", "licence": "CC0 1.0, as the Complex Portal 2022 paper (Nucleic Acids Res, section Data access options > Data licencing) states for the resource's data; saved in human/terms-complex-portal-g", "class": "permissive"}
     if pax:
         sources["paxdb"] = {"text": f"PaxDb, release 6.1: the dataset {pax['dataset']} ({pax['name']}, PaxDb dataset id {pax['id']}); {pax['joined']} of its {pax['values']} values joined to the species' UniProt entries.", "url": "https://pax-db.org/", "licence": "CC BY 4.0, as PaxDb's home page declares for the database; saved in human/terms-paxdb-g", "class": "permissive"}
     species_file = read_json(ROOT / "data" / "species" / f"{species}.json")
@@ -1127,6 +1206,7 @@ def build_species(d, datasets, config, kinds, species, block, ontology, built=No
         "format": FORMAT,
         "species": species, "label": block["label"], "organism": block["organism"], "taxon": block["taxon"],
         "note": "Generated by visualizer/tools/gather_machines.py from data/catalogue/gather.json, the saved answers of UniProt, the Gene Ontology and the Protein Data Bank, and the species' own proteins: do not edit. The contract is schema/MACHINE_DOSSIERS.md.",
+        **({"forms_evidence": {code: (form_rule.get("evidence") or {}).get(code) or f"Recorded by the Complex Portal as {code}" + (f" ({name})" if name else "") + "." for code, name in sorted(evidence_seen.items())}} if evidence_seen else {}),
         "rules": {
             "proteins": ("A protein is named with a machine where its reviewed UniProt entry carries" if proteome.scope == "reviewed" else "A protein is named with a machine where the UniProt entry the atlas keeps for its gene (reviewed or not) carries") + " the machine's Gene Ontology term or a narrower one. 'part': named with it (and carrying one of its keywords, where gather.json gives them) and held by the chosen entry as an entity of the species, or a protein of the species in the machine's seed entry. 'part by keyword': named with it and carrying the keyword, not held by the entry. 'named': named with it by the term alone. A protein of the species that the entry holds and the ontology does not name with the machine is counted under the structure ('in_entry_only') and left out of the measure. No protein is matched by a name.",
             "structure": f"Candidates are the experimental entries of the Protein Data Bank in which a polymer entity from an organism under taxon {block['lineage'][0]} ({block['lineage'][1]}) is, by RCSB's mapping, one of the machine's proteins; every hit is read. They are ranked by the proteins present; then an entry in which those proteins' residues with coordinates add up to at least {int(MEASURABLE * 100)} per cent of them before one with less; then an entry at {FINE} Å or better before a coarser one (an entry with no resolution, of nuclear magnetic resonance, counts as coarser); then the fewest other polymer entities (partners, nucleic acids, other organisms' proteins); then the proteins nearly whole (at least {int(WHOLE * 100)} per cent of the protein's own length with coordinates in every copy); then the proteins' lengths with coordinates added up in whole proteins; then resolution; then the most copies of them in the first biological assembly; then id. gather.json may name another entry, and says why.",
@@ -1625,6 +1705,201 @@ def build_family_species(d, datasets, config, kinds, species, block, built, fami
     }
 
 
+def add_vault(d, datasets, config, kinds, out):
+    """The vault, a kind with an identity of its own (tools/gather_vault.py, schema/MACHINE_DOSSIERS.md, "The vault"): for each
+    species, the proteins its three footings give, kept apart in each protein's tier: 'part by record' (a member of the
+    Complex Portal's entry), 'named by a reviewed entry, by similarity' or 'named by a reviewed entry, citing publications'
+    (a reviewed UniProt entry whose own lines name the vault particle), and 'candidate by family'. A species that none of
+    the three reaches has no vault on its bench: that says what was looked for, not that it lacks one."""
+    spec = config.get("vault")
+    if not spec:
+        return
+    kind = kinds["vault"]
+    word = spec["portal_name"]
+    sig = spec["signatures"]
+    structure_spec = spec["structure"]
+    answer_path = Path(datasets) / structure_spec["folder"] / structure_spec["answer"]
+    answer = read_json(answer_path)
+    manifest = read_json(Path(datasets) / structure_spec["folder"] / "MANIFEST.json")
+    asked = next((f["retrieved_utc"][:10] for f in manifest["files"] if f["name"] == structure_spec["answer"]), None)
+    text = d.text(spec["preprint"]["folder"], spec["preprint"]["file"])
+    statements = V.preprint_statements(text, spec["preprint"])
+    reference_species = structure_spec["of"]
+    lengths, genes = {}, {}
+    for folder in spec["entries"]:
+        for path in sorted((Path(datasets) / folder).glob("*.json")):
+            if path.name != "MANIFEST.json":
+                item = read_json(path)
+                if isinstance(item, dict) and "primaryAccession" in item:
+                    lengths[item["primaryAccession"]] = (item.get("sequence") or {}).get("length")
+                    genes[item["primaryAccession"]] = next((g["geneName"]["value"] for g in item.get("genes") or [] if (g.get("geneName") or {}).get("value")), None)
+    found_any = {}
+    # The Complex Portal's entry of the reference species (the human): its size and mass are stated beside the viewer's own measure on every bench that shows the vault.
+    refblock = config["species"][reference_species]
+    reference_portal = None
+    if refblock.get("complex_portal") and source_used(config, "complex_portal"):
+        hits = V.portal_entries(V.read_portal_rows(d.text(refblock["complex_portal"]["folder"], refblock["complex_portal"]["file"])), word)
+        if hits:
+            reference_portal = V.portal_vault(hits[0])
+            # Where the entry gives a number of copies of one of its molecules, whose protein that is: the member whose saved UniProt
+            # entry has the name the entry uses as its gene's; and that entry's own sentence that gives a number of it, where it has one.
+            said = reference_portal.get("copies_said")
+            if said:
+                protein = next((a for a in reference_portal["members"] if genes.get(a) == said["of"]), None)
+                own_lines = (V.vault_entries(datasets, spec["entries"], refblock["taxon"]).get(protein) or {}).get("lines") or []
+                reference_portal["copies_said"] = {**said, "protein": protein, "entry": V.copies_line(own_lines, said["of"])} if protein else None
+    for species, block in config["species"].items():
+        taxon = block["taxon"]
+        family_route = block.get("route") == "family"
+        dossier_ = out[species]
+        # The species' table: the atlas's own, by id.
+        if family_route:
+            atlas = block["atlas"]
+            table_file, table = read_table(species, atlas)
+            table_rows = {row[atlas["id"]]: {"gene": row.get(atlas.get("gene") or "") or None, "label": row.get(atlas["label"]) or None, "signatures": set((row.get(atlas.get("signatures") or "") or "").replace(",", ";").split(";")) - {""}} for row in table}
+            atlas_file = table_file
+        else:
+            atlas_file = f"data/proteins/{species}/proteins.tsv"
+            rows_ = list(csv.DictReader(io.StringIO((ROOT / atlas_file).read_text(encoding="utf-8")), delimiter="\t"))
+            table_rows = {row["id"]: {"gene": row.get("gene") or None, "label": row.get("name") or None, "signatures": set()} for row in rows_}
+        proteins = {}
+        # (1) By record: the species' Complex Portal entry whose name holds the word.
+        portal = None
+        cp = block.get("complex_portal")
+        if cp and source_used(config, "complex_portal"):
+            hits = V.portal_entries(V.read_portal_rows(d.text(cp["folder"], cp["file"])), word)
+            if hits:
+                portal = V.portal_vault(hits[0])
+                if len(hits) > 1:
+                    raise Breach(f"{species}: more than one Complex Portal entry names the vault")
+                for accession, copies in portal["members"].items():
+                    proteins[accession] = {"tier": "part by record", "copies": copies}
+        # (2) Named by a reviewed UniProt entry whose own lines name the vault particle.
+        entries = V.vault_entries(datasets, spec["entries"], taxon)
+        for accession, entry in entries.items():
+            how = V.footing_of_entry(entry["lines"])
+            if accession in proteins:
+                proteins[accession]["entry"] = entry
+            elif accession in table_rows:
+                proteins[accession] = {"tier": "named by a reviewed entry, by similarity" if how == "by similarity" else "named by a reviewed entry, citing publications", "entry": entry}
+        # (3) By family: a protein of the species' own table that carries the signature.
+        carry, not_in_atlas, parp4 = [], [], []
+        lists = (spec.get("lists") or {}).get("species", {}).get(species)
+        if family_route:
+            carry = sorted(a for a, row in table_rows.items() if sig["family"] in row["signatures"])
+            parp4 = sorted(a for a, row in table_rows.items() if sig["parp4"] in row["signatures"])
+        elif lists:
+            def read_list(code):
+                return sorted(set(d.text(spec["lists"]["folder"], f"{lists}.{code}.list").split()))
+            every = read_list(sig["family"])
+            carry = sorted(a for a in every if a in table_rows)
+            not_in_atlas = sorted(a for a in every if a not in table_rows)
+        for accession in carry + parp4:
+            if accession not in proteins:
+                proteins[accession] = {"tier": "candidate by family", "marks": [m for m in (sig["family"], sig["parp4"]) if (accession in carry and m == sig["family"]) or (accession in parp4 and m == sig["parp4"])]}
+            elif proteins[accession]["tier"] == "candidate by family":
+                proteins[accession]["marks"] = sorted(set(proteins[accession]["marks"]) | {m for m in (sig["family"], sig["parp4"]) if (accession in carry and m == sig["family"]) or (accession in parp4 and m == sig["parp4"])})
+        if not proteins:
+            if family_route:
+                looked = f"No protein of {block['label']}'s table carries the major vault protein family's signature ({sig['family']}) or PARP4's marker ({sig['parp4']}), and no reviewed entry of the species names the vault particle."
+                dossier_["vault_looked"] = {"words": looked, "sources": ["atlas_table"]}
+            elif lists:
+                looked = f"UniProt's list of the entries of the reference proteome of {block['organism']} that carry {sig['family']} is empty, and no reviewed entry of the species names the vault particle."
+                dossier_["vault_looked"] = {"words": looked, "sources": ["uniprot_signatures"]}
+                dossier_["sources"]["uniprot_signatures"] = {"text": f"UniProtKB's lists of the entries of the reference proteome of {block['organism']} that carry InterPro entry {sig['family']}, saved in {spec['lists']['folder']}.", "url": "https://www.uniprot.org", "licence": "CC BY 4.0", "class": "permissive"}
+                dossier_["sources"] = dict(sorted(dossier_["sources"].items()))
+            continue
+        found_any[species] = True
+        rank = {"part by record": 0, "named by a reviewed entry, by similarity": 1, "named by a reviewed entry, citing publications": 1, "candidate by family": 2}
+        ordered = sorted(proteins, key=lambda a: (rank[proteins[a]["tier"]], -(proteins[a].get("copies") or 0), a))
+        rows = [[a, table_rows[a]["gene"] if a in table_rows else (proteins[a].get("entry") or {}).get("gene"), table_rows[a]["label"] if a in table_rows else (proteins[a].get("entry") or {}).get("label"), proteins[a]["tier"], a in table_rows] for a in ordered]
+        # The structure: the species' own entry only where it holds the particle; else the reference species' entry, said as that organism's.
+        own = V.own_structure(answer, taxon, structure_spec["held"], structure_spec["share"], structure_spec["copies"], lengths)
+        reference_own = V.own_structure(answer, refblock["taxon"], structure_spec["held"], structure_spec["share"], structure_spec["copies"], lengths)
+        picked = own["chosen"] if species == reference_species or own["chosen"] else None
+        shown = picked or reference_own["chosen"]
+        held = next(h for h in structure_spec["held"] if h["entry"] == shown["entry"])
+        call_file = f"{held['folder']}/{held['file']}"
+        sources = dossier_["sources"]
+        sources["pdb" + shown["entry"].lower()] = {"text": f"Protein Data Bank entry {shown['entry']}: {shown['title']}. Electron microscopy, {shown['resolution_A']} Å; its first biological assembly.", "url": f"https://www.rcsb.org/structure/{shown['entry']}", "licence": "CC0 1.0", "class": "permissive"}
+        used = ["pdb" + shown["entry"].lower()]
+        # The entry's protein as its own records name it: its gene by the saved UniProt entry of the accession the Protein Data Bank
+        # aligns the entity to, its description and its organism by the Protein Data Bank's answer. None is typed here.
+        entity_accession = shown["protein"]
+        gene, described, organism = genes.get(entity_accession), shown["description"], shown["organism"]
+        if not (gene and described and organism and shown["entity"]):
+            raise Breach(f"{species}: the vault's entry {shown['entry']} does not name its protein (gene {gene!r}, description {described!r}, organism {organism!r}, entity {shown['entity']!r})")
+        measure_call = f"python3 -I tools/measure_particle.py --machine DATASETS/{call_file} --part {gene}={shown['entity']} --out OUT.json"
+        machine = {"kind": kind["id"], "label": kind["label"], "group": kind["group"], "group_proposed": True, "plain": kind["plain"]}
+        present = [r[3] for r in rows]
+        footing_words = []
+        if portal:
+            footing_words.append(f"The Complex Portal's entry {portal['id']}, “{portal['name']}”, lists {len(portal['members'])} proteins of {block['label']}'s table among its members.")
+            used.append("complex_portal")
+        if entries:
+            footing_words.append(f"{len(entries)} reviewed UniProt {'entry' if len(entries) == 1 else 'entries'} of the species ({', '.join(sorted(entries))}) name the vault particle in their own FUNCTION or SUBUNIT lines, found by rule.")
+        candidates = [a for a in ordered if proteins[a]["tier"] == "candidate by family"]
+        if candidates:
+            footing_words.append(f"{len(candidates)} {'protein' if len(candidates) == 1 else 'proteins'} of {block['label']}'s table carry the signature of the major vault protein family ({sig['family']}) or of PARP4's marker domain ({sig['parp4']}) and stand on no better footing: candidates by family, not parts.")
+        strongest = "vault record" if portal else ("reviewed entry" if entries else FAMILY_WORD)
+        machine["named"] = {"by": strongest, "text": " ".join(footing_words), "sources": []}
+        sources_used = {"complex_portal"} if portal else set()
+        if entries:
+            sources["uniprot_vault"] = {"text": "UniProtKB entries saved in " + ", ".join(spec["entries"]) + ": the FUNCTION and SUBUNIT comments of the reviewed entries of the species, read by the rule that a sentence names the vault particle, each sentence with the evidence UniProt gives it.", "url": "https://www.uniprot.org", "licence": "CC BY 4.0", "class": "permissive"}
+            sources_used.add("uniprot_vault")
+        if any(proteins[a]["tier"] == "candidate by family" for a in proteins):
+            if family_route:
+                sources.setdefault("atlas_table", {"text": atlas["source"], "url": None, "licence": atlas["licence"], "class": "permissive"})
+                sources_used.add("atlas_table")
+            else:
+                sources["uniprot_signatures"] = {"text": f"UniProtKB's lists of the entries of the reference proteome of {block['organism']} that carry InterPro entry {sig['family']}, saved in {spec['lists']['folder']}.", "url": "https://www.uniprot.org", "licence": "CC BY 4.0", "class": "permissive"}
+                sources_used.add("uniprot_signatures")
+        sources["vault_preprint"] = {"text": spec["preprint"]["text"], "doi": spec["preprint"]["doi"], "url": spec["preprint"]["url"], "licence": spec["preprint"]["licence"], "class": "permissive"}
+        machine["named"]["sources"] = sorted(sources_used)
+        machine["proteins"] = {"columns": ["id", "gene", "label", "tier", "in_atlas"], "rows": rows}
+        if family_route:
+            machine["join"] = {"atlas": atlas_file, "by": "the atlas's id (" + atlas["id"] + ")", "candidates": sum(1 for r in rows if r[3] == "candidate by family"), "in_atlas": sum(1 for r in rows if r[4]), "not_in_atlas": [r[0] for r in rows if not r[4]]}
+        else:
+            machine["join"] = {"atlas": atlas_file, "by": "the atlas's id: a UniProt accession", "parts": len(rows), "parts_in_atlas": sum(1 for r in rows if r[4]), "held_by_entry": len(rows) if picked else 0, "all": len(rows), "all_in_atlas": sum(1 for r in rows if r[4]), "not_in_atlas": [r[0] for r in rows if not r[4]]}
+        entity = {"id": shown["entity"], "description": described, "type": "polypeptide(L)", "accessions": [entity_accession], "gene": gene, "organism": organism, "same_organism": species == reference_species, "copies": structure_spec["copies"], "role": "part", "part": gene}
+        measure = {"exclude": [], "parts": {gene: [shown["entity"]]}, "frame": None, "call": measure_call}
+        structure_ = {"entry": shown["entry"], "title": shown["title"], "method": shown["method"], "resolution_A": shown["resolution_A"], "organism": organism, "same_organism": species == reference_species, "measurable": True,
+                      "measurable_says": f"Its first biological assembly holds {shown['copies']} copies of the major vault protein, each covering {round(100 * shown['covers'])} per cent of the protein's length in the sequence of the entry's entity.",
+                      "file": call_file, "assembly": structure_spec["held"][0]["assembly"], "entities": [entity], "measure": measure,
+                      "chosen_by": "the best resolution among the entries that hold the whole particle and whose assembly file is held" + (f"; better by resolution and not held: {', '.join(own['better_not_held'] if species == reference_species else reference_own['better_not_held'])}" if (own["better_not_held"] if species == reference_species else reference_own["better_not_held"]) else ""),
+                      "candidates": [{"entry": r["entry"], "method": r["method"], "resolution_A": r["resolution_A"], "copies": r["copies"], "covers": r["covers"]} for r in (own if species == reference_species else reference_own)["ranked"]],
+                      "sources": ["pdb" + shown["entry"].lower()]}
+        if picked:
+            machine["structure"] = structure_
+        else:
+            machine["structure"] = None
+            elsewhere_ = {"organism": organism, "entry": shown["entry"], "title": shown["title"], "method": shown["method"], "resolution_A": shown["resolution_A"], "measurable": True, "file": call_file, "call": measure_call,
+                          "from": f"the entry of {organism} for the vault, chosen by the same rule: the entry that holds the whole particle", "sources": ["pdb" + shown["entry"].lower()]}
+            machine["structure_elsewhere"] = elsewhere_
+            left = own["left_out"]
+            machine["no_structure"] = (f"None in hand of the species' own that holds the particle. The search of the Protein Data Bank for vault-related entries ({asked}, {len(answer['data']['entries'])} entries) found {len(left)} of this species" + (": " + "; ".join(f"{r['entry']} ({r['why']})" for r in left) + ". They are fragments or parts of the particle, and none is taken for it." if left else ", none of which stands for the particle."))
+        # The vault block: what the card says, each footing apart.
+        vault = {
+            "footings": {"record": bool(portal), "entry": bool(entries), "family": bool(candidates)},
+            "proteins": {a: {"tier": proteins[a]["tier"], **({"copies": proteins[a]["copies"]} if "copies" in proteins[a] else {}), **({"marks": proteins[a]["marks"]} if "marks" in proteins[a] else {}),
+                             **({"entry": {"gene": proteins[a]["entry"]["gene"], "label": proteins[a]["entry"]["label"], "length": proteins[a]["entry"]["length"], "lines": proteins[a]["entry"]["lines"], **({"also": proteins[a]["entry"]["also"]} if proteins[a]["entry"].get("also") else {})}} if "entry" in proteins[a] else {})} for a in ordered},
+            "signatures": {"family": sig["family"], "domains": sig["domains"], "parp4": sig["parp4"]},
+            "family_not_in_atlas": not_in_atlas,
+            "structure": {"own": bool(picked), "left_out": [{"entry": r["entry"], "title": r["title"], "why": r["why"]} for r in own["left_out"]], "asked": asked, "entries_read": len(answer["data"]["entries"])},
+            "reference_portal": {"species": reference_species, "id": reference_portal["id"], "name": reference_portal["name"], "evidence": reference_portal["evidence"], "members": reference_portal["members"], "others": reference_portal["others"], "size_nm": reference_portal["size_nm"], "mass_MDa": reference_portal["mass_MDa"], "copies_said": reference_portal["copies_said"]} if reference_portal else None,
+            "preprint": {"text": spec["preprint"]["text"], "doi": spec["preprint"]["doi"], "url": spec["preprint"]["url"], "licence": spec["preprint"]["licence"], "statements": statements, "source": "vault_preprint"},
+        }
+        machine["vault"] = vault
+        dossier_["machines"].append(machine)
+        for accession in ordered:
+            dossier_["by_protein"].setdefault(accession, []).append({"machine": kind["id"], "tier": proteins[accession]["tier"]})
+        dossier_["by_protein"] = {a: sorted(v, key=lambda item: item["machine"]) for a, v in sorted(dossier_["by_protein"].items(), key=lambda kv: P.natural(kv[0]))}
+        dossier_["sources"] = dict(sorted(sources.items()))
+
+
+FAMILY_WORD = "family signature"
+
+
 def build(datasets):
     config, kinds = load_config()
     d = P.Datasets(datasets)
@@ -1645,6 +1920,7 @@ def build(datasets):
         families = families or Families(d)
         out[species] = build_family_species(d, datasets, config, kinds, species, block, built, families)
     out = {species: out[species] for species in config["species"]}
+    add_vault(d, datasets, config, kinds, out)
     for species, data in out.items():
         text = dumps(data)
         if PATHS.search(text):

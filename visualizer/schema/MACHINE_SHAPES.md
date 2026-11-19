@@ -19,7 +19,7 @@ numbers the viewer worked out itself.
   draws); E. coli's ribosome's one record is the species files', `data/measures/ecoli.ribosome.json`.
   Each file is at most 250,000 bytes (the budget below), far under the 1 MB the user set for
   checked-in data.
-- A shape file for every machine and unit the catalogue measures (21 since 18 November 2026; the
+- A shape file for every machine and unit the catalogue measures (22 since 19 November 2026, with the vault's; 21 since 18 November 2026; the
   list is under "How each file is made"). A unit of the law inventory (the sodium pump, SERCA)
   draws its measure's shape as a machine does.
 - Published beside the page at **`shapes/<species>.<machine>.json`**: the exporter lists every
@@ -128,11 +128,21 @@ reads those options from the measure's own record, so a shape cannot be made in 
     and of σ70 (0.1), and two of SecE's (about 1 residue's volume together). σ70's piece of 7%
     (about 36 residues' volume, below the claw) is kept.
   - In the others:
-    - the most dropped from one surface is 0.63 nm³ (the human mitochondrial ribosome's large
-      subunit, 2 residues inside);
-    - the most from one file is 1.06 nm³ (the IP3 receptor's four chains, a sliver each);
-    - the most residues inside a file's drops is 7, in subunit b of the human ATP synthase (chain
-      K, 0.49 nm³).
+    - the most dropped from one surface is 2.69 nm³ (the vault's half-vault b: 3 pieces, 19
+      residues inside; the earlier 0.63 nm³ was the human mitochondrial ribosome's large subunit,
+      2 residues inside);
+    - the most from one file is 3.65 nm³ (the vault's two halves, 7 pieces; the IP3 receptor's four
+      chains, a sliver each, drop 1.06 nm³);
+    - the most residues inside a file's drops is 23, in the vault's two halves (the most in one
+      chain's is 7, subunit b of the human ATP synthase, chain K, 0.49 nm³).
+    - The vault (`human.vault`, since 19 November 2026) is the one file made of two solids that
+      are half-vaults (each 39 chains, told apart by the side of the plane across the long axis on
+      which a chain's centre lies) at 2.7 nm, the finest width in steps of 0.1 nm under the
+      ceiling (9,268 triangles, 197,604 bytes; 2.6 nm gives 12,148). Its 78 chains at 3.7 nm
+      (11,452 triangles, five slivers dropped, the largest 4.63 nm³) were also made and looked at:
+      thin ends (its caps) fall below the surface's level at that width, and the chains read as a
+      drum of spiky columns; the two halves read as a barrel in two colours meeting at its waist,
+      and were kept. Its caps are open at either width.
   - A part's tones may be in pieces (a ribosome's proteins on its RNA).
   - Where a part's sliver is dropped against its neighbour, the neighbour keeps the few faces it
     had against it: a dent of a tenth of a nanometre (5 vertices, in the mitochondrial ribosome).

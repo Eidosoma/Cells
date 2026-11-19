@@ -280,7 +280,7 @@ try {
     // ---------------------------------------------------------- the planarian's bench: the machines the animals share
     check("the page opens on lens=machines with the planarian", await open("lens=machines&entry=planarian", 3500));
     const layout = await evaluate(`(() => { const lens = ${L}; return { shapes: lens.layout.items.filter((i) => i.type === "shape").map((i) => i.id).sort(), sized: lens.counts.sized, scale: Boolean(lens.scaleBar), outlines: lens.outlineItems.length }; })()`);
-    check("the planarian's bench: the eukaryotic ribosome and five units of the law inventory drawn to scale, all their outlines one instanced mesh, and the scale bar", JSON.stringify(layout.shapes) === JSON.stringify(["machine:ribosome", "unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]) && layout.sized === 6 && layout.scale && layout.outlines >= 6, JSON.stringify(layout));
+    check("the planarian's bench: the eukaryotic ribosome, the vault (since 19 November 2026) and five units of the law inventory drawn to scale, all their outlines one instanced mesh, and the scale bar", JSON.stringify(layout.shapes) === JSON.stringify(["machine:ribosome", "machine:vault", "unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]) && layout.sized === 7 && layout.scale && layout.outlines >= 6, JSON.stringify(layout));
     await shot(`${NAME}-bench`);
     // A real press on a unit's outline, at the middle of its box: the bench's instanced outlines are picked by their instance.
     const middleOf = (id) =>
@@ -507,7 +507,7 @@ try {
     // Since the species' own scan (19 November 2026) every machine looked for has a candidate, myosin II among them, so none
     // is listed apart (Syn3A's bench, below, holds that list); a candidate's card says so on its face.
     const family = await evaluate(`(() => { const lens = ${L}, stats = Object.fromEntries(lens.chrome().card.stats.map(([value, label]) => [label, value])); return { stats, bench: lens.layout.items.filter((item) => !item.item.unit).length, none: lens.catalogue.noneFound("planarian").map((row) => row.id), myosin: lens.layout.items.some((item) => item.id === "machine:myosin-ii"), face: lens.plaques.some((plaque) => plaque.text === "candidates for 31 of 32 parts,"), list: [...${V}.shadowRoot.querySelectorAll(".mach-none-found summary")].map((el) => el.textContent) }; })()`);
-    check("the planarian's card counts 1 machine its records name and 30 candidates by family; myosin II has candidates and stands on the bench, and none is listed apart; the proteasome's card says its candidates on its face", family.stats["named by its own records"] === 1 && family.stats["candidates by family"] === 30 && family.bench === 31 && family.myosin && family.none.length === 0 && family.face && family.list.length === 0, JSON.stringify(family));
+    check("the planarian's card counts 1 machine its records name and 31 candidates by family (the vault's one gene model among them, since 19 November 2026); myosin II has candidates and stands on the bench, and none is listed apart; the proteasome's card says its candidates on its face", family.stats["named by its own records"] === 1 && family.stats["candidates by family"] === 31 && family.bench === 32 && family.myosin && family.none.length === 0 && family.face && family.list.length === 0, JSON.stringify(family));
     // The search finds a machine by a candidate's name.
     await evaluate(`(() => { const v = ${V}; v.select(null); v.current.setQuery("proteasome subunit alpha"); v.renderChrome(); })()`);
     await sleep(500);
@@ -735,6 +735,45 @@ try {
         }
       }
     }
+    await errorsAtEnd();
+  } else if (CASE === "vault") {
+    // ---------------------------------------------------------- the vault (19 November 2026), on the benches that show it
+    const idOf = "machine:vault";
+    for (const species of ["human", "mouse", "planarian"]) {
+      check(`the page opens on lens=machines with ${species}`, await open(`lens=machines&entry=${species}`, 3500));
+      await shot(`${NAME}-${species}-bench`);
+      const bench = await evaluate(`(() => { const lens = ${L}, item = lens.layout.items.find((value) => value.id === ${JSON.stringify(idOf)}); return { type: item?.type, tray: lens.layout.trays.some((tray) => tray.group === "unknown"), scale: Boolean(lens.scaleBar), cost: lens.cost(), long: item?.long_nm ?? null }; })()`);
+      check(`${species}: the vault stands drawn to scale in a tray of its own group, with the 100 nm bar, within the ceiling (40 draws, 40,000 triangles)`, bench.type === "shape" && bench.tray && bench.scale && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
+      // At the opening view the vault hides no unit of the law inventory: its tray stands behind theirs (its group's `stands: "behind"`), and a
+      // press at the middle of each unit's shape reaches that unit. The vault stood in the row before the units' tray at first, and hid them.
+      await evaluate(`${V}.stage.rig.setView(${V}.current.homeView())`);
+      await sleep(800);
+      const clear = await evaluate(`(() => { const v = ${V}, lens = v.current, r = v.canvas.getBoundingClientRect(), tray = (group) => lens.layout.trays.find((value) => value.group === group);
+        const reach = lens.layout.items.filter((item) => item.type === "shape" && item.item.unit).map((item) => { const p = lens.root.position.clone().set(item.x, item.y + item.h / 2, item.z); const q = v.stage.project(p, p.clone()); return [item.id, v.stage.pick(r.left + q.x, r.top + q.y, lens.pickRoots)?.id || null]; });
+        return { behind: tray("unknown").z + tray("unknown").d / 2 < tray("ions").z - tray("ions").d / 2, reach }; })()`);
+      check(`${species}: the vault's tray stands behind the units' tray, and at the opening view a press at the middle of each unit's shape reaches that unit`, clear.behind && clear.reach.length >= 5 && clear.reach.every(([id, got]) => got === id), JSON.stringify(clear));
+      await evaluate(`${V}.select(${JSON.stringify(idOf)}, { fly: true })`);
+      await sleep(1800);
+      let s = await state();
+      check(`${species}: a real choice of the vault opens its panel with the footing in its own words, and a door to the Protein atlas`, /Function not known/.test(await evaluate(`${V}.shadowRoot.querySelector("cells-panel")?.textContent || ""`)) && /Named by/.test(s.panel) && s.doors.some((door) => /^Show .* in the Protein atlas/.test(door)), s.panel.slice(0, 200));
+      // Each level it has, chosen: its cost within the ceiling.
+      for (const level of ["1", "2", "3", "4"]) {
+        await evaluate(`${L}.setMode(${JSON.stringify(level)})`);
+        await until(`Boolean(${L}.built.get(${JSON.stringify(idOf)})) && (${JSON.stringify(level)} !== "4" || Boolean(${L}.built.get(${JSON.stringify(idOf)}).surface))`, 80);
+        await sleep(700);
+        const cost = await evaluate(`${L}.cost()`);
+        check(`${species}: the vault at level ${level}, within the ceiling`, cost.draws <= 40 && cost.triangles <= 40000, JSON.stringify(cost));
+        await shot(`${NAME}-${species}-level-${level}`);
+      }
+    }
+    // A species in which no signature was found: no vault on its bench, and the panel that names it says what was looked for.
+    check("the page opens on lens=machines with E. coli", await open("lens=machines&entry=ecoli", 3000));
+    const none = await evaluate(`(() => { const lens = ${L}; return { onBench: lens.layout.items.some((value) => value.id === "machine:vault"), panel: ${V}.describe ? "" : "" }; })()`);
+    check("E. coli's bench holds no vault", none.onBench === false, JSON.stringify(none));
+    await evaluate(`${V}.select(${JSON.stringify(idOf)})`);
+    await sleep(1200);
+    const away = await state();
+    check("E. coli's panel for the vault says what was looked for and that a signature not found is not an absence", /What was looked for/.test(away.panel) && /not an absence/.test(away.panel), away.panel.slice(0, 200));
     await errorsAtEnd();
   } else throw new Error(`no case ${CASE}`);
 } catch (error) {

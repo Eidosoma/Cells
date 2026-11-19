@@ -28662,6 +28662,190 @@
     ]
    },
    "no_structure": "None in hand of the species' own. A search of the Protein Data Bank by the species' taxon (79327, Schmidtea mediterranea) on 2026-11-17 found 0 entries of the species."
+  },
+  {
+   "kind": "vault",
+   "label": "Vault",
+   "group": "unknown",
+   "group_proposed": true,
+   "plain": "A hollow, barrel-shaped particle of protein and RNA, among the largest in a cell. What it does has not been found.",
+   "named": {
+    "by": "family signature",
+    "text": "1 protein of Planarian's table carry the signature of the major vault protein family (IPR039059) or of PARP4's marker domain (IPR058904) and stand on no better footing: candidates by family, not parts.",
+    "sources": [
+     "atlas_table"
+    ]
+   },
+   "proteins": {
+    "columns": [
+     "id",
+     "gene",
+     "label",
+     "tier",
+     "in_atlas"
+    ],
+    "rows": [
+     [
+      "h1SMcG0002250",
+      null,
+      "Major vault protein",
+      "candidate by family",
+      true
+     ]
+    ]
+   },
+   "join": {
+    "atlas": "data/proteins/planarian/predicted_proteins.tsv",
+    "by": "the atlas's id (id)",
+    "candidates": 1,
+    "in_atlas": 1,
+    "not_in_atlas": []
+   },
+   "structure": null,
+   "structure_elsewhere": {
+    "organism": "Homo sapiens",
+    "entry": "9MXV",
+    "title": "Human Vault Cage in complex with ADP",
+    "method": "ELECTRON MICROSCOPY",
+    "resolution_A": 2.68,
+    "measurable": true,
+    "file": "vault/wwpdb-vault-9mxv-e1/9MXV-assembly1.cif.gz",
+    "call": "python3 -I tools/measure_particle.py --machine DATASETS/vault/wwpdb-vault-9mxv-e1/9MXV-assembly1.cif.gz --part MVP=1 --out OUT.json",
+    "from": "the entry of Homo sapiens for the vault, chosen by the same rule: the entry that holds the whole particle",
+    "sources": [
+     "pdb9mxv"
+    ]
+   },
+   "no_structure": "None in hand of the species' own that holds the particle. The search of the Protein Data Bank for vault-related entries (2026-11-19, 43 entries) found 0 of this species, none of which stands for the particle.",
+   "vault": {
+    "footings": {
+     "record": false,
+     "entry": false,
+     "family": true
+    },
+    "proteins": {
+     "h1SMcG0002250": {
+      "tier": "candidate by family",
+      "marks": [
+       "IPR039059"
+      ]
+     }
+    },
+    "signatures": {
+     "family": "IPR039059",
+     "domains": [
+      "IPR021870",
+      "IPR041139",
+      "IPR041134",
+      "IPR040989",
+      "IPR041136"
+     ],
+     "parp4": "IPR058904"
+    },
+    "family_not_in_atlas": [],
+    "structure": {
+     "own": false,
+     "left_out": [],
+     "asked": "2026-11-19",
+     "entries_read": 43
+    },
+    "reference_portal": {
+     "species": "human",
+     "id": "CPX-10181",
+     "name": "Vault ribonucleoprotein complex",
+     "evidence": "ECO:0005547",
+     "members": {
+      "Q14764": 78,
+      "Q99973": 0,
+      "Q9UKK3": 0
+     },
+     "others": [
+      "URS0000000A8C_9606",
+      "URS000058CD99_9606",
+      "URS00005CCF67_9606",
+      "URS0000A76E3A_9606"
+     ],
+     "size_nm": [
+      72.5,
+      41.0,
+      41.0
+     ],
+     "mass_MDa": 13.0,
+     "copies_said": {
+      "of": "PARP4",
+      "copies": 9,
+      "says": "There are about 9 copies of PARP4 per vault which may act to ADP-ribosylate itself and MVP",
+      "protein": "Q9UKK3",
+      "entry": {
+       "comment": "subunit",
+       "says": "Interacts with MVP (via MVP repeats 3 and 4); each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules (PubMed:40691181)",
+       "evidence": "cited",
+       "publications": [
+        "40691181"
+       ]
+      }
+     }
+    },
+    "preprint": {
+     "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+     "doi": "10.64898/2026.11.04.764334",
+     "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+     "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+     "statements": [
+      {
+       "id": "survey",
+       "quote": "found MVP homologs in 29 bacterial and 4 archaeal phyla",
+       "place": "Abstract"
+      },
+      {
+       "id": "eight",
+       "quote": "vault particles of eight homologs expressed in Escherichia coli",
+       "place": "Abstract"
+      },
+      {
+       "id": "shell",
+       "quote": "a shell of 96 MVP chains",
+       "place": "Abstract"
+      },
+      {
+       "id": "resolution",
+       "quote": "nominal resolution of 3.2 Å",
+       "place": "Results, the first paragraph of the subsection on the structure of the phage relative L05"
+      },
+      {
+       "id": "host",
+       "quote": "homologs assemble into vaults when expressed in Escherichia coli",
+       "place": "Introduction, the paragraph that begins “Here, we survey”"
+      },
+      {
+       "id": "rare",
+       "quote": "less than 1% of species-representative assemblies",
+       "place": "Introduction, the paragraph that begins “Here, we survey”"
+      },
+      {
+       "id": "mammal-size",
+       "quote": "about 67 nm long and 40 nm wide",
+       "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+      },
+      {
+       "id": "per-cell",
+       "quote": "a typical human cell is predicted to hold about 10,000 vaults",
+       "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”"
+      },
+      {
+       "id": "function",
+       "quote": "Yet the function of vaults remains unknown",
+       "place": "Introduction, the paragraph that begins “In mammals, the shell encloses”"
+      },
+      {
+       "id": "not-established",
+       "quote": "we have likewise not yet established the function of prokaryotic vaults",
+       "place": "Discussion"
+      }
+     ],
+     "source": "vault_preprint"
+    }
+   }
   }
  ],
  "not_looked_for": [
@@ -29354,6 +29538,12 @@
    },
    {
     "machine": "rna-polymerase-iii",
+    "tier": "candidate by family"
+   }
+  ],
+  "h1SMcG0002250": [
+   {
+    "machine": "vault",
     "tier": "candidate by family"
    }
   ],
@@ -33515,6 +33705,12 @@
    "licence": "CC0 1.0",
    "class": "permissive"
   },
+  "pdb9mxv": {
+   "text": "Protein Data Bank entry 9MXV: Human Vault Cage in complex with ADP. Electron microscopy, 2.68 Å; its first biological assembly.",
+   "url": "https://www.rcsb.org/structure/9MXV",
+   "licence": "CC0 1.0",
+   "class": "permissive"
+  },
   "reference_human": {
    "text": "The Human dossier (data/catalogue/dossiers/human.json): its machines' parts, their UniProt entries' InterPro signatures (UniProtKB, release 2026_04), and its structures, each with its own sources there.",
    "url": null,
@@ -33543,6 +33739,13 @@
    "text": "Pfam 38.2, as InterProScan 5.78-109.0 ran it on the species' proteins: its signatures' matches, and the families it could show; the scan's record (data/proteins/planarian/interproscan.json) gives its terms and counts.",
    "url": "https://www.ebi.ac.uk/interpro/entry/pfam/",
    "licence": "CC0 1.0 (InterPro's licence page; Pfam's own page: freely available under the Creative Commons Zero licence)",
+   "class": "permissive"
+  },
+  "vault_preprint": {
+   "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+   "doi": "10.64898/2026.11.04.764334",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+   "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
    "class": "permissive"
   }
  }

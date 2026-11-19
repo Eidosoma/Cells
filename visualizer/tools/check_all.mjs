@@ -142,6 +142,8 @@ const SUITE = [
   { name: "catalogue-shape-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 2 },
   { name: "catalogue-shape-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 2 },
   { name: "catalogue-shape-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-vault", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault", WIDTH: "1440", HEIGHT: "900" }, minutes: 4 },
+  { name: "catalogue-vault-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 4 },
   { name: "catalogue-human-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 2 },
   // The benches read beside the page (the planarian's by family, the thale cress's with its machines of light, one that cannot be read).
   { name: "catalogue-benches", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches", WIDTH: "1440", HEIGHT: "900" }, minutes: 3 },
