@@ -5,8 +5,8 @@
   declared: its keys, its counts in their order, its valence only where given. A definition
   without forms keeps today's entries, key for key (FR-4's world).
 * Each refusal names its row and form: the structure, the ligands, isomers, version 1's spelling
-  beside the forms, a declared valence that its counts contradict, and a form with counts of both
-  signs (C4, fail-closed); a form below its base in every ligand it counts stays admitted.
+  beside the forms, and a declared valence that its counts contradict. A form with counts of both
+  signs is admitted (the C4 follow-up: the closure's read checks the exact joint margin).
 * One authority: ln beta_f = mu°_base/RT + sum n mu°_L/RT - mu°_f/RT. A two-form row written as
   forms gives version 1's dissociation constant, and the stability's speciation makes each form's
   potential its base's plus its ligands', unchanged when every potential moves to another c0.
@@ -191,8 +191,6 @@ REFUSALS = {
     ),
     "ligand with forms": (_set(("N", "forms", 0, "counts"), {"P": 1}), "has forms of its own"),
     "isomers": (_set(("N", "forms", 0, "counts"), {"H": 1, "Mg": 1}), "two forms have the counts"),
-    # C4 fail-closed (the lead's ruling, 19 November 2026); the control's P3 ({H: -1}) is admitted.
-    "counts of both signs": (_set(("P", "forms", 1, "counts"), {"H": -1, "Mg": 1}), "both signs"),
 }
 
 
@@ -202,6 +200,16 @@ def test_each_malformed_form_is_refused_naming_its_row(case):
     registry.parse_entries(raw_model())  # The control: the declared model is admitted.
     with pytest.raises(ConfigError, match=message):
         registry.parse_entries(edit(raw_model()))
+
+
+def test_a_form_with_counts_of_both_signs_is_admitted():
+    """The C4 follow-up (the lead's ruling, 19 November 2026): a form below its base in one ligand
+    and above it in another (mgx_MgmH's H -1, Mg +1 in the references) is admitted, and its
+    counts write back as declared. Its validity is the closure's joint margin, at the read."""
+    raw = _set(("P", "forms", 1, "counts"), {"H": -1, "Mg": 1})(raw_model())
+    declared = registry.parse_entries(raw)
+    form = next(f for f in declared.entry("P").forms if f.id == "P3")
+    assert dict(form.counts) == {"H": -1, "Mg": 1}
 
 
 def test_the_stabilities_come_from_the_one_authority():

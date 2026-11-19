@@ -11,8 +11,9 @@ for a real mover waits for one.
   (one ligand) and test_rapid_binding_world_two_ligands.py (H and Mg on one binder), split out for
   the tiers; their helpers stay here.
 - The world-level split check against the core-seams references: a cell holding a registered
-  state's totals (S1, and S3 with H and Mg on nuc4) books S_c plus @3's ideal terms on its rows
-  equal to the references' E_c.
+  state's totals (S1; S3 with H and Mg on nuc4; S7, C4's mgx, whose form mgx_MgmH has counts of
+  both signs, at its states with every total positive) books S_c plus @3's ideal terms on its
+  rows equal to the references' E_c.
 - P1's case (CORE_SEAMS §17), at an outside node under the general closure: after a draw of ten
   times the free amount, today's predictor form (the read's free amount less the draw) is
   negative, while the stage read at the predicted stored totals is valid with a positive free
@@ -172,7 +173,9 @@ def reference_cell(system, k):
     return raw, v_ref
 
 
-@pytest.mark.parametrize("system, k", [("S1", 0), ("S1", 11), ("S3", 0), ("S3", 5)])
+@pytest.mark.parametrize(
+    "system, k", [("S1", 0), ("S1", 11), ("S3", 0), ("S3", 5), ("S7", 1), ("S7", 2), ("S7", 3)]
+)  # S7: C4's mgx, a form with counts of both signs, at its three states with every total > 0.
 def test_phase_1s_split_books_the_references_E_c_at_world_level(system, k):
     """The kind's start term S_c (binding_initial_pJ) plus @3's ideal terms RT n (ln(n/V) - 1) on
     the closure's rows at the cell equals the references' E_c at the same concentrations (E_c

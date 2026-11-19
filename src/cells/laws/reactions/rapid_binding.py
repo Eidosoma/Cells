@@ -27,6 +27,15 @@ The solve (free_ligands), at every stage, with no loop count that depends on dat
   <|n_L|>_B the residual's own scale (CORE_SEAMS §19 as amended: identical to RESIDUAL_RTOL T_L
   wherever every count is >= 0); every input finite and every binder total nonnegative. Otherwise
   the read is invalid and the step is refused, as B4's is.
+- jointly valid (amendment C4, the core-seams references; given the network's margin vertices):
+  t* > 0 at every node that holds a ligand. t* is the largest amount every free ligand can keep,
+  t* = min over the ligand simplex of lambda.T - sum_B T_B min_f lambda.n_f. The per-ligand
+  floors are its values at the simplex's corners, necessary but not sufficient once counts have
+  both signs. The function is linear on each cell of an arrangement set by the counts alone (the
+  hyperplanes lambda.(n_f - n_g) = 0 of each binder's forms, and the simplex's facets), so its
+  minimum lies at a vertex of that arrangement: margin_vertices enumerates them exactly on the
+  host, in rationals, and joint_margin takes the minimum over them at run time. A vertex that
+  weighs a ligand the node does not hold is left out.
 
 The free energy (CORE_SEAMS §19 as amended, the booked term). In pJ, with n = c V (fmol):
 E_c = RT sum_s n_s (ln c_s - 1 - ln beta'_s) over the free ligands (beta' = 1) and every form, which
@@ -206,12 +215,13 @@ def newton_ligands(total_ligand, total_binder, log_beta, counts, present, held, 
 
 
 def free_ligands(total_ligand, total_binder, log_beta, counts, present, held, comp_l, comp_b,
-                 k_mM=None, *, path="newton", steps=NEWTON_STEPS, xp):
+                 k_mM=None, *, path="newton", steps=NEWTON_STEPS, vertices=None, xp):
     """(ln x [L, ...] in ln mM, valid [...]): the closure's free ligands from the totals (mM).
 
     path "b4" (one ligand; every binder one one-step form, k_mM [B] its K): B4's free_proton, bit
     for bit; path "newton": newton_ligands. valid where every input is finite, every binder total
-    is nonnegative, and |g_L| <= RESIDUAL_RTOL A_L at every held ligand."""
+    is nonnegative, and |g_L| <= RESIDUAL_RTOL A_L at every held ligand; with the network's margin
+    `vertices` (path "newton"), also where the joint margin t* > 0 (amendment C4)."""
     finite = (
         xp.all(xp.isfinite(total_ligand), axis=0)
         & xp.all(xp.isfinite(total_binder) & (total_binder >= 0), axis=0)
@@ -228,7 +238,90 @@ def free_ligands(total_ligand, total_binder, log_beta, counts, present, held, co
     g, scale = residual(u, safe_l, safe_b, log_beta, counts, present, held, xp=xp)
     good = xp.isfinite(u) & (xp.abs(g) <= RESIDUAL_RTOL * scale)
     converged = xp.all(xp.where(held, good, True), axis=0)
-    return u, finite & converged
+    if vertices is None:
+        return u, finite & converged
+    margin = joint_margin(safe_l, safe_b, counts, present, vertices, held, xp=xp)
+    jointly = xp.where(xp.any(held, axis=0), margin > 0, True)
+    return u, finite & converged & jointly
+
+
+def joint_margin(total_ligand, total_binder, counts, present, vertices, held, *, xp):
+    """t* [...] (mM): min over the margin vertices [V, L] of lambda.T - sum_B T_B min_f lambda.n_f
+    (module docstring, amendment C4), leaving out each vertex that weighs a ligand not held at the
+    node; +inf at a node that holds none."""
+    shape = (1,) * (total_ligand.ndim - 1)
+    linear = xp.einsum("vl,l...->v...", vertices, total_ligand)
+    projected = xp.einsum("vl,bfl->vbf", vertices, counts)
+    lowest = xp.min(xp.where(present[None], projected, xp.inf), axis=2)  # [V, B]; the base's 0.
+    bound = xp.einsum("vb,b...->v...", lowest, total_binder)
+    support = (vertices > 0).reshape(vertices.shape + shape)  # [V, L, ...]
+    allowed = xp.all(~support | held[None], axis=1)  # [V, ...]
+    return xp.min(xp.where(allowed, linear - bound, xp.inf), axis=0)
+
+
+MARGIN_VERTEX_CAP = 4096  # The most margin vertices a closure may have (the parse refuses more).
+MARGIN_COMBINATION_CAP = 200_000  # The most hyperplane combinations the host may enumerate.
+
+
+def margin_vertices(counts, present, *, vertex_cap=MARGIN_VERTEX_CAP,
+                    combination_cap=MARGIN_COMBINATION_CAP):
+    """(exact, floats [V, L]): the vertices, inside the ligand simplex, of the arrangement on which
+    the joint margin is linear (module docstring), host side and exact in rationals. The hyperplanes
+    are lambda.(n_f - n_g) = 0 for every two present forms of a binder, and the simplex's facets
+    lambda_L = 0. A vertex is where L - 1 of them meet on the simplex. ValueError past either cap,
+    since the enumeration grows fast with the ligands."""
+    from fractions import Fraction
+    from itertools import combinations
+
+    nb, nf, nl = counts.shape
+    if nl == 1:
+        exact = [(Fraction(1),)]
+        return exact, np.ones((1, 1))
+    planes = set()
+    for b in range(nb):
+        forms = [tuple(int(v) for v in counts[b, f]) for f in range(nf) if present[b, f]]
+        for f, g in combinations(forms, 2):
+            normal = tuple(a - c for a, c in zip(f, g, strict=True))
+            if any(normal):
+                scale = math.gcd(*normal)
+                lead = next(v for v in normal if v)
+                sign = 1 if lead > 0 else -1
+                planes.add(tuple(sign * v // scale for v in normal))
+    planes |= {tuple(int(i == j) for j in range(nl)) for i in range(nl)}
+    planes = sorted(planes)
+    if math.comb(len(planes), nl - 1) > combination_cap:
+        raise ValueError(
+            f"the joint margin's arrangement has {len(planes)} hyperplanes in {nl} ligands: "
+            f"{math.comb(len(planes), nl - 1)} combinations, past the cap of {combination_cap}"
+        )
+    found = set()
+    for chosen in combinations(planes, nl - 1):
+        rows = [[Fraction(v) for v in plane] + [Fraction(0)] for plane in chosen]
+        rows.append([Fraction(1)] * nl + [Fraction(1)])
+        solution = _solve_exact(rows, nl)
+        if solution is not None and all(v >= 0 for v in solution):
+            found.add(solution)
+            if len(found) > vertex_cap:
+                raise ValueError(
+                    f"the joint margin has more than {vertex_cap} vertices in {nl} ligands"
+                )
+    exact = sorted(found)
+    return exact, np.array([[float(v) for v in vertex] for vertex in exact])
+
+
+def _solve_exact(rows, n):
+    """The unique solution of the augmented system `rows` [n x (n + 1)], in rationals, or None."""
+    a = [row[:] for row in rows]
+    for col in range(n):
+        pivot = next((r for r in range(col, n) if a[r][col] != 0), None)
+        if pivot is None:
+            return None
+        a[col], a[pivot] = a[pivot], a[col]
+        for r in range(n):
+            if r != col and a[r][col] != 0:
+                factor = a[r][col] / a[col][col]
+                a[r] = [x - factor * y for x, y in zip(a[r], a[col], strict=True)]
+    return tuple(a[i][n] / a[i][i] for i in range(n))
 
 
 def speciation(u, total_binder, log_beta, counts, present, *, xp):
@@ -366,9 +459,10 @@ def network(ligands, binders):
 
     Returns {counts [B, F, L], present [B, F], log_beta [B, F] (the mM frame), step_matrix
     [n_species, n_steps], step_from, step_ligand, step_kon [n_steps], conservation [L + B,
-    n_species], path}, with the species the free ligands then every form, binder-major, and the
-    unit steps every pair of declared forms that differ by one more of a single ligand. path is
-    "b4" for one ligand on binders of one one-step form each, else "newton"."""
+    n_species], path, margin_vertices [V, L]}, with the species the free ligands then every form,
+    binder-major, and the unit steps every pair of declared forms that differ by one more of a
+    single ligand. path is "b4" for one ligand on binders of one one-step form each, else
+    "newton". margin_vertices are the joint margin's (margin_vertices; ValueError past its caps)."""
     lig = {name: k for k, name in enumerate(ligands)}
     width = max(len(forms) for _, forms, _, _ in binders)
     nb, nl = len(binders), len(ligands)
@@ -413,6 +507,7 @@ def network(ligands, binders):
         step_from=np.asarray(froms, dtype=int), step_ligand=np.asarray(step_lig, dtype=int),
         step_kon=np.asarray(kons, dtype=float), conservation=conservation,
         path="b4" if one_step else "newton",
+        margin_vertices=margin_vertices(counts, present)[1],
     )  # fmt: skip
 
 

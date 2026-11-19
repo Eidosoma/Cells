@@ -64,6 +64,13 @@ declaration:
   (CORE_SEAMS §19 as amended). One ligand takes the Newton too: a structure entry sees only the
   declaration, not the registry's forms, so B4's path cannot be chosen statically here (the
   kernel's tests show the two agree).
+- Forms with counts of both signs are admitted against the joint margin (amendment C4): the read
+  is valid only where t* > 0, the exact joint condition, as well as converged. While every held
+  total must be positive (@3's stored rows, and S_c's logarithms), t* >= min T_L > 0 always,
+  since the all-base speciation keeps every free ligand at its total. So the margin never refuses
+  an admitted world today; it is the exact condition, kept fail-closed, for when totals at or
+  below zero are admitted. Its vertices are the layout's binding_margin_vertices; a network past
+  the enumeration's caps is refused at the definition.
 """
 
 import math
@@ -580,7 +587,10 @@ def _general_network(spec, declaration):
         logs, c0 = species_registry.form_log_constants(spec, row)
         spec_forms = tuple((fid, counts, log) for (fid, counts, _), log in zip(forms, logs, strict=True))
         binders.append((row, spec_forms, c0, rates))
-    return binding.network(declaration.ligands, tuple(binders))
+    try:
+        return binding.network(declaration.ligands, tuple(binders))
+    except ValueError as error:  # The joint margin's enumeration past its caps.
+        raise ConfigError(f"{MODEL_KEY}: {error}: refused") from error
 
 
 def _general_solve(amounts, p, xp):
@@ -597,7 +607,8 @@ def _general_solve(amounts, p, xp):
     total_l = amounts[rows[:nl]] / safe_v
     total_b = xp.where(member, amounts[rows[nl:]] / safe_v, 0.0)
     u, ok = binding.free_ligands(total_l, total_b, p.binding_log_beta, p.binding_counts,
-                                 p.binding_present, held, comp_l, comp_b, xp=xp)
+                                 p.binding_present, held, comp_l, comp_b,
+                                 vertices=p.binding_margin_vertices, xp=xp)
     valid = xp.all(xp.where(xp.any(held, axis=0), ok, True))
     return u, valid, total_l, total_b, held, member, safe_v
 
@@ -699,6 +710,7 @@ def _general_initial(spec, declaration, layout):
         binding_held=held,
         binding_comp_ligand=comp_l,
         binding_comp_binder=comp_b,
+        binding_margin_vertices=net["margin_vertices"],
         binding_step_matrix=net["step_matrix"],
         binding_step_from=net["step_from"],
         binding_step_ligand=net["step_ligand"],
@@ -792,6 +804,7 @@ GENERAL_LAYOUT_FIELDS = (
     "binding_held",  # [L, node]
     "binding_comp_ligand",  # [L, L, node]: the connected ligand sets.
     "binding_comp_binder",  # [L, B, node]
+    "binding_margin_vertices",  # [V, L]: the joint margin's vertices (amendment C4).
     "binding_step_matrix",  # [species, steps]: the unit steps' stoichiometry.
     "binding_step_from",  # [steps]
     "binding_step_ligand",  # [steps]
