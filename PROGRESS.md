@@ -108,6 +108,13 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The presence gate hosts channel and face slots (19 November 2026; the operators owner's
+  GATED_SLOT_AXES follow-up).** Merge 79d0fc7c, tag `ops3-gated-slot-axes-landed-2026-11-19`. A kind
+  with presence on channel populations or faces is admitted beside a closer, which closes those
+  populations by their hosts; an own axis without `axis_hosts` stays refused. Gates: tiers 592
+  files with 0 changed, G1, crossrev 11 of 11, IDs +0, FR's set; the lead's merged check on trial
+  2daf2363.
+
 - **The kind contract's array-axes check and `Kind.dispatch_masks` (19 November 2026; D228 item
   6).** Merge c545be8e, tag `f-axes-check-landed-2026-11-19`. Each kind field's array must match
   its declared axes where @3 binds it; fields empty by static dispatch are named. With the
