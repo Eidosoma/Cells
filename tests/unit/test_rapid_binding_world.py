@@ -13,6 +13,9 @@ for a real mover waits for one.
 - The world-level split check against the core-seams references: a cell holding a registered
   state's totals (S1, and S3 with H and Mg on nuc4) books S_c plus @3's ideal terms on its rows
   equal to the references' E_c.
+- A release-step network, a binder form below its base in some ligand, is refused at the
+  definition beside the envelope: S4's pi2_PO4 (H -1) and S7's mgx_MgmH (H -1, Mg +1), each at a
+  state with every total positive. An all-positive network (S3's nuc4) is admitted.
 - P1's case (CORE_SEAMS §17), at an outside node under the general closure: after a draw of ten
   times the free amount, today's predictor form (the read's free amount less the draw) is
   negative, while the stage read at the predicted stored totals is valid with a positive free
@@ -193,6 +196,18 @@ def test_phase_1s_split_books_the_references_E_c_at_world_level(system, k):
     floor = 16 * EPS * term["terms_abs_pJ"]
     assert abs((s_c + ideal) * scale - term["E_c_pJ"]) <= floor, (s_c, ideal, term["E_c_pJ"])
     assert abs(s_c * scale - term["E_c_pJ"]) > floor
+
+
+@pytest.mark.parametrize("system, k, form", [("S4", 0, "pi2_PO4"), ("S7", 1, "mgx_MgmH")])
+def test_a_release_step_network_is_refused_beside_the_envelope(system, k, form):
+    """The lead's ruling (19 November 2026): the envelope's references register no release-step
+    case, so a binder form with a negative count (single-sign, S4's pi2_PO4; mixed, S7's
+    mgx_MgmH) is refused at the definition, at a state with every total positive so that nothing
+    else refuses it. The control: S3's nuc4, every count positive, is admitted."""
+    raw, _ = reference_cell(system, k)
+    with pytest.raises(ConfigError, match=f"form {form} has a negative count .* no release-step"):
+        parse_spec(raw)
+    parse_spec(reference_cell("S3", 0)[0])  # The control.
 
 
 def lumen_general():

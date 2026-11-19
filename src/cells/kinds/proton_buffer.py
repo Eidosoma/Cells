@@ -64,6 +64,17 @@ declaration:
   (CORE_SEAMS §19 as amended). One ligand takes the Newton too: a structure entry sees only the
   declaration, not the registry's forms, so B4's path cannot be chosen statically here (the
   kernel's tests show the two agree).
+- The read is valid only where the joint margin t* > 0, the exact joint condition (amendment C4),
+  as well as converged. While every held total must be positive (@3's stored rows, and S_c's
+  logarithms), t* >= min T_L > 0 always, since the all-base speciation keeps every free ligand at
+  its total. So the margin never refuses an admitted world today: it is the exact condition, kept
+  fail-closed, for when totals at or below zero are admitted. Its vertices are the layout's
+  binding_margin_vertices, and a network past the enumeration's caps is refused at the definition.
+- A form below its base in any ligand is refused beside the envelope, whether single-sign (S4's
+  pi2_PO4) or mixed (S7's mgx_MgmH), fail-closed (the lead's ruling, 19 November 2026). Such a
+  form makes a release step, and the envelope's references register no release-step case, so its
+  lag has no reference. The species registry and the kernel's margin admit those forms; the
+  refusal lifts once a release-step case is registered and the envelope meets it.
 """
 
 import math
@@ -509,9 +520,12 @@ def _check_general(spec, declaration):
     """The general closure's admission against the species registry (module docstring): each
     ligand row a single-form species with a standard potential; each binder row a multi-form row
     whose forms bind only declared ligands (every ligand written out), with k_on declared for
-    exactly the ligands its forms bind; every declared ligand bound somewhere; and every form
-    reachable from its base by unit steps (the envelope's network, CORE_SEAMS §19 as amended). The
-    movers' rules are the species registry's (check_closure_rows), ahead of this."""
+    exactly the ligands its forms bind; every declared ligand bound somewhere; every form
+    reachable from its base by unit steps (the envelope's network, CORE_SEAMS §19 as amended); and
+    no form below its base in any ligand. That last refusal is fail-closed (the lead's ruling, 19
+    November 2026): a negative count makes a release step, and the envelope has no reference for
+    one until the references register a release-step case. The movers' rules are the species
+    registry's (check_closure_rows), ahead of this."""
     where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
     model = species_registry.declared(spec)
     if model is None:
@@ -550,6 +564,17 @@ def _check_general(spec, declaration):
                 f"{where}: a form of binder row {row} is not reachable from its base by unit "
                 "steps (one ligand more or fewer at a time) through declared forms"
             )
+        released = [
+            (fid, dict(counts)) for fid, counts, _ in forms if any(n < 0 for _, n in counts)
+        ]
+        if released:
+            fid, counts = released[0]
+            raise ConfigError(
+                f"{where}: binder row {row}'s form {fid} has a negative count {counts}, so its "
+                "network has a release step, and the envelope's references register no "
+                "release-step case: its lag has no reference, so the closure refuses it "
+                "(fail-closed) until one is registered"
+            )
         bound |= set(binds)
     unbound = sorted(ligands - bound)
     if unbound:
@@ -580,7 +605,10 @@ def _general_network(spec, declaration):
         logs, c0 = species_registry.form_log_constants(spec, row)
         spec_forms = tuple((fid, counts, log) for (fid, counts, _), log in zip(forms, logs, strict=True))
         binders.append((row, spec_forms, c0, rates))
-    return binding.network(declaration.ligands, tuple(binders))
+    try:
+        return binding.network(declaration.ligands, tuple(binders))
+    except ValueError as error:  # The joint margin's enumeration past its caps.
+        raise ConfigError(f"{MODEL_KEY}: {error}: refused") from error
 
 
 def _general_solve(amounts, p, xp):
@@ -597,7 +625,8 @@ def _general_solve(amounts, p, xp):
     total_l = amounts[rows[:nl]] / safe_v
     total_b = xp.where(member, amounts[rows[nl:]] / safe_v, 0.0)
     u, ok = binding.free_ligands(total_l, total_b, p.binding_log_beta, p.binding_counts,
-                                 p.binding_present, held, comp_l, comp_b, xp=xp)
+                                 p.binding_present, held, comp_l, comp_b,
+                                 vertices=p.binding_margin_vertices, xp=xp)
     valid = xp.all(xp.where(xp.any(held, axis=0), ok, True))
     return u, valid, total_l, total_b, held, member, safe_v
 
@@ -699,6 +728,7 @@ def _general_initial(spec, declaration, layout):
         binding_held=held,
         binding_comp_ligand=comp_l,
         binding_comp_binder=comp_b,
+        binding_margin_vertices=net["margin_vertices"],
         binding_step_matrix=net["step_matrix"],
         binding_step_from=net["step_from"],
         binding_step_ligand=net["step_ligand"],
@@ -792,6 +822,7 @@ GENERAL_LAYOUT_FIELDS = (
     "binding_held",  # [L, node]
     "binding_comp_ligand",  # [L, L, node]: the connected ligand sets.
     "binding_comp_binder",  # [L, B, node]
+    "binding_margin_vertices",  # [V, L]: the joint margin's vertices (amendment C4).
     "binding_step_matrix",  # [species, steps]: the unit steps' stoichiometry.
     "binding_step_from",  # [steps]
     "binding_step_ligand",  # [steps]

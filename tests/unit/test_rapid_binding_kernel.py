@@ -23,9 +23,11 @@ values at the tolerances frozen before any read of the values
   estimate for one two-form buffer. The cooperative chain is outside the budget, and a per-step
   minimum puts it inside (that plant flips the verdict); k_on swapped between ligands is caught;
 - the fixed iteration count converges at a seeded random sweep, and too few iterations do not.
-Held until the C4 follow-up (the lead's ruling, 19 November 2026): nothing here tests or claims
-the refusal of jointly infeasible totals with mixed-sign counts (C4's margin t* and its four
-planted states), and the parse refuses a form with counts of both signs until then.
+- the joint margin t* (amendment C4) meets the references' exact value and their LP's at every
+  registered state, and each recorded lambda* is among the margin's vertices. Every registered
+  state is valid. At C4's four planted states the margin and the verdicts are the references',
+  with feasible_near inside the residual criterion. The lead's plant, two forms below base in
+  different ligands, is refused at -0.9 and admitted at -0.4, and the enumeration's caps refuse.
 """
 
 import json
@@ -160,6 +162,107 @@ def test_the_solve_meets_the_references_at_every_registered_state(name):
             dev = deviations(name, p_ligands, p_binders, p_net, p_tb, p_u)
         caught = ~np.asarray(p_valid) | (np.nan_to_num(dev, nan=np.inf) > 1.0)
         assert caught.any(), planted
+
+
+def margin_bound(tl, tb, net):
+    """The frozen t* tolerance (frozen_constants_c4.json, 06:20:55 UTC), per state, in the totals'
+    units: 16 eps (sum_L |T_L| + sum_B T_B max_f sum_L |n_L,f|)."""
+    spread = np.max(np.where(net["present"], np.abs(net["counts"]).sum(axis=2), 0.0), axis=1)
+    return 16 * EPS * (np.abs(tl).sum(axis=0) + (spread[:, None] * tb).sum(axis=0))
+
+
+def exact_float(text):
+    from fractions import Fraction
+
+    return float(Fraction(text))
+
+
+@pytest.mark.parametrize("name", SYSTEMS)
+def test_the_joint_margin_meets_the_references_at_every_registered_state(name):
+    """Amendment C4: t* at every state against the references' exact value and their LP's, within
+    the frozen bound; every registered state valid; each recorded lambda* among the vertices."""
+    from fractions import Fraction
+
+    ligands, binders, volume, net = system(name)
+    tl, tb = totals(name, ligands, binders)
+    held, _, _ = masks(net, tl.shape[1])
+    exact, _ = kernel.margin_vertices(net["counts"], net["present"])
+    t = kernel.joint_margin(tl, tb, net["counts"], net["present"], net["margin_vertices"], held,
+                            xp=np) * volume  # fmol
+    bound = margin_bound(tl, tb, net) * volume
+    for k, ref in enumerate(VALUES["validity"]["systems"][name]):
+        assert abs(t[k] - exact_float(ref["t_star_exact"])) <= bound[k], (k, t[k], ref)
+        assert abs(t[k] - ref["lp_t_star_fmol"]) <= bound[k], (k, t[k], ref)
+        assert ref["valid"] and t[k] > 0
+        assert tuple(Fraction(v) for v in ref["lambda_star"]) in exact
+
+
+def planted_system(state):
+    ligands, binders, volume, net = system(state["system"])
+    tl = np.array([[state["totals"]["ligands_fmol"][s] / volume] for s in ligands])
+    tb = np.array([[state["totals"]["binders_fmol"][b] / volume] for b in binders])
+    held, comp_l, comp_b = masks(net, 1)
+    return ligands, volume, net, tl, tb, held, comp_l, comp_b
+
+
+def test_the_four_planted_states_meet_their_margins_and_verdicts():
+    """C4's planted states (S7's mgx): t* -1/2, 0, +1/2 and -1 fmol within the frozen bound, each
+    lambda* among the vertices; the read valid only at feasible_near, there inside the residual
+    criterion at the frozen 48 steps. At the boundary (t* = 0 exactly) the read is refused by the
+    margin or the solve's convergence; it is not asserted from t*'s float sign."""
+    from fractions import Fraction
+
+    for name, state in INPUTS["validity"]["planted"].items():
+        ref = VALUES["validity"]["planted"][name]
+        ligands, volume, net, tl, tb, held, comp_l, comp_b = planted_system(state)
+        exact, _ = kernel.margin_vertices(net["counts"], net["present"])
+        t = float(kernel.joint_margin(tl, tb, net["counts"], net["present"],
+                                      net["margin_vertices"], held, xp=np)[0]) * volume
+        bound = float(margin_bound(tl, tb, net)[0]) * volume
+        assert abs(t - exact_float(ref["t_star_exact"])) <= bound, (name, t, ref["t_star_exact"])
+        assert tuple(Fraction(v) for v in ref["lambda_star"]) in exact
+        with np.errstate(all="ignore"):
+            u, valid = kernel.free_ligands(tl, tb, net["log_beta"], net["counts"], net["present"],
+                                           held, comp_l, comp_b, vertices=net["margin_vertices"],
+                                           xp=np)  # fmt: skip
+        assert bool(valid[0]) is ref["valid"], name
+        if ref["valid"]:
+            g, scale = kernel.residual(u, tl, tb, net["log_beta"], net["counts"], net["present"],
+                                       held, xp=np)  # fmt: skip
+            assert np.all(np.abs(g) <= kernel.RESIDUAL_RTOL * scale)
+
+
+def test_two_forms_below_base_in_different_ligands_meet_the_joint_margin():
+    """The lead's plant: one binder X with A {H: -1} and B {Mg: -1}. At T_X = 1 mM both per-ligand
+    floors are -1 mM, yet both cannot be met at once. T_H = T_Mg = -0.9 mM has t* = -0.4 mM:
+    refused, by the margin (the per-ligand floors pass). -0.4 mM has t* = +0.1 mM: admitted, the
+    read converged."""
+    spec_x = ("X", (("X_base", (), 0.0), ("X_A", (("H", -1),), 2.0), ("X_B", (("Mg", -1),), 2.0)),
+              1000.0, (("H", 1.0), ("Mg", 1.0)))  # fmt: skip
+    net = kernel.network(("H", "Mg"), (spec_x,))
+    held, comp_l, comp_b = masks(net, 2)
+    tl = np.array([[-0.9, -0.4], [-0.9, -0.4]])
+    tb = np.array([[1.0, 1.0]])
+    floor = kernel.admissible_floor(tb, net["counts"], net["present"], xp=np)
+    assert np.all(tl > floor)  # The per-ligand floors pass at both.
+    t = kernel.joint_margin(tl, tb, net["counts"], net["present"], net["margin_vertices"], held,
+                            xp=np)  # fmt: skip
+    assert np.allclose(t, [-0.4, 0.1], rtol=0, atol=float(np.max(margin_bound(tl, tb, net))))
+    with np.errstate(all="ignore"):
+        _, valid = kernel.free_ligands(tl, tb, net["log_beta"], net["counts"], net["present"],
+                                       held, comp_l, comp_b, vertices=net["margin_vertices"],
+                                       xp=np)  # fmt: skip
+    assert valid.tolist() == [False, True]
+
+
+def test_the_margins_enumeration_is_refused_past_its_caps():
+    """A network whose arrangement has more vertices than the cap is refused (planted: a cap of
+    two vertices on S3's two ligands), as is one whose combinations pass theirs."""
+    _, _, _, net = system("S3")
+    with pytest.raises(ValueError, match="more than 2 vertices"):
+        kernel.margin_vertices(net["counts"], net["present"], vertex_cap=2)
+    with pytest.raises(ValueError, match="past the cap of 1"):
+        kernel.margin_vertices(net["counts"], net["present"], combination_cap=1)
 
 
 @pytest.mark.parametrize("name", ["S1", "S2"])

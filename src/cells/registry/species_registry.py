@@ -236,15 +236,14 @@ def _check_forms(entries):
     """The forms' checks across entries (build): a row with forms has its base potential and no
     protonated form; form IDs are distinct from each other and from every species; each ligand is
     another species with a standard potential and no forms of its own; no two forms of a row
-    have equal counts (isomers, which a rapid closure cannot tell apart); and no form has counts
-    of both signs.
+    have equal counts (isomers, which a rapid closure cannot tell apart).
 
-    The last is fail-closed until C4, the closure's joint validity report for mixed-sign counts,
-    is on main and tested against it (the lead's ruling, 19 November 2026). For such counts the
-    per-ligand floor (the sum over binders of T_B min_f n) is necessary but not sufficient, and the
-    joint condition is the closure's own validity (the core-seams references' correction to
-    17:33). A form below its base in every ligand it counts (PO4 from HPO4, {H: -1}) stays
-    admitted."""
+    Counts of both signs are admitted (the C4 follow-up, the lead's ruling of 19 November 2026):
+    for them the per-ligand floor (the sum over binders of T_B min_f n) is necessary but not
+    sufficient, and the general closure's read checks the exact joint condition, its margin
+    t* > 0 (laws/reactions/rapid_binding.py, amendment C4). The general closure's own admission
+    still refuses any negative count beside its envelope, until a release-step envelope case is
+    registered (kinds/proton_buffer.py)."""
     by_id = {e.id: e for e in entries}
     taken = set(by_id)
     for e in entries:
@@ -284,13 +283,6 @@ def _check_forms(entries):
                         f"species {e.id}'s form {form.id}: its ligand {ligand} has forms of its "
                         "own; a ligand is a single-form species"
                     )
-            if len({n > 0 for _, n in form.counts}) == 2:
-                raise ConfigError(
-                    f"species {e.id}'s form {form.id} has counts of both signs "
-                    f"{dict(form.counts)}: the closure's joint validity for mixed-sign counts (C4) "
-                    "is not yet checked, so such a form is refused (fail-closed); a form below its "
-                    "base in every ligand it counts is admitted"
-                )
             composition = tuple(sorted(form.counts))
             if composition in seen:
                 raise ConfigError(
