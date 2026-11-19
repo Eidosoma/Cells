@@ -373,3 +373,149 @@ def test_roles_reproduce_closures_padded_fields_but_for_what_the_masks_hold(inne
         assert inner_roles[name][0].role in ("extensive", "intensive", "structural"), name
         assert name not in pump3.PADDED_FIELDS, name
     assert padded(flipped(inner_roles, "channel_laws", "history")) != set(pump3.PADDED_FIELDS)
+
+
+# ------------------------------------------------------------------ the lifecycle by roles (step A)
+# The single lifecycle implementation for kinds' state fields
+# (pump_composite_adapter.lifecycle_split and lifecycle_retire): the split by the
+# partition's maps, retirement by its masks. Nothing calls it in a program yet (B wires it
+# to the partition's event, beside a kind with entity fields, which Q7 (a) still refuses),
+# so it is tested on planted states over a parsed division world.
+
+
+@pytest.fixture(scope="module")
+def division():
+    """FR-1's division world with a neighbour (tests/partition_fixtures.divided), bound: its spec,
+    model, initial state and layout, and its one division due."""
+    import numpy as np
+
+    from tests import partition_fixtures as pfx
+    from tests.unit.test_partition import bind
+
+    spec, model, state, p = bind(pfx.divided(neighbour=True))
+    return spec, model, state, p, np.ones(1, dtype=bool)
+
+
+def test_the_retirement_masks_are_what_the_partitions_event_retires(division):
+    """partition.retirement_masks, the one source the lifecycle reads, equals what event_map moves
+    into the partition's record for @3's history: with history 1 on every active slot, the record
+    holds 1 exactly where the mask is set."""
+    import numpy as np
+
+    from cells.operators import partition
+    from tests.unit.test_partition import divide
+
+    spec, model, state, p, due = division
+    axes = dict(pump3.STATE_AXES)
+    ones = {
+        k: np.where(np.ones_like(np.asarray(getattr(state, k))) > 0, 1.0, 0.0)
+        for k in partition.RECORD
+    }
+    after, ok = divide(model, state._replace(**ones), p)
+    assert bool(ok)
+    masks = partition.retirement_masks(due, p, xp=np)
+    for field, record in partition.RECORD.items():
+        mask = masks[axes[field][-1]]
+        kept = np.asarray(getattr(after, record)) != 0
+        assert (kept == np.broadcast_to(mask, kept.shape)).all(), field
+    assert masks["membrane_slot"].any() and not masks["membrane_slot"].all()
+
+
+PLANTED_ROLES = {
+    "planted_amount_fmol": (PartitionRole("extensive"), ("species", "membrane_slot")),
+    "planted_cell_amount_fmol": (PartitionRole("extensive"), ("cell_slot",)),
+    "planted_saturation": (PartitionRole("intensive"), ("membrane_slot",)),
+    "planted_cycles": (PartitionRole("history"), ("membrane_slot",)),
+    "planted_law": (PartitionRole("structural", 7), ("membrane_slot",)),
+    "planted_node_amount_fmol": (PartitionRole("extensive"), ("extracellular_slot",)),
+}
+
+
+def planted_values(p, *, value=0.3):
+    """Planted kind state: every slot of each planted field at `value`, but the history's daughters
+    (pending slots) at 0."""
+    import numpy as np
+
+    from cells.operators import partition
+
+    sizes = dict(
+        membrane_slot=p.membrane_active.size,
+        cell_slot=p.active.size,
+        extracellular_slot=p.outside_active.size,
+    )
+    out = {}
+    for name, (_, axes) in PLANTED_ROLES.items():
+        shape = tuple(2 if a == "species" else sizes[a] for a in axes)
+        out[name] = np.full(shape, value)
+    maps = partition.division_maps(np.ones(1, dtype=bool), p)
+    out["planted_cycles"][..., maps["membrane_slot"][1].ravel()] = 0.0
+    return out
+
+
+def test_the_split_follows_each_role_through_the_partitions_maps(division):
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, due = division
+    values = planted_values(p)
+    maps = partition.division_maps(due, p)
+    out, valid = pump3.lifecycle_split(values, PLANTED_ROLES, maps, xp=np)
+    assert bool(valid)
+    for axis, name in (
+        ("membrane_slot", "planted_amount_fmol"),
+        ("cell_slot", "planted_cell_amount_fmol"),
+    ):
+        parent, kids, fraction, _ = maps[axis]
+        x = values[name][..., parent]
+        one, two = out[name][..., kids[:, 0]], out[name][..., kids[:, 1]]
+        assert (one == fraction * x).all() and (two == x - fraction * x).all()
+        assert (one + two == x).all() and (out[name][..., parent] == 0).all()  # Exactly.
+    parent, kids, _, _ = maps["membrane_slot"]
+    assert (out["planted_saturation"][kids] == values["planted_saturation"][parent][:, None]).all()
+    for name in ("planted_cycles", "planted_law", "planted_node_amount_fmol"):
+        assert (out[name] == values[name]).all(), name  # Untouched: history, structure, no map.
+    # An extensive field on edge slots, whose map binds no fraction, is refused.
+    contact = {"planted_contact_fmol": (PartitionRole("extensive"), ("edge_slot",))}
+    edges = {"planted_contact_fmol": np.ones(p.junction_active.size)}
+    with pytest.raises(ValueError, match="needs its map's fraction"):
+        pump3.lifecycle_split(edges, contact, maps, xp=np)
+    # Planted: a pending daughter that already holds history makes the split invalid.
+    stale = dict(values, planted_cycles=np.full_like(values["planted_cycles"], 0.3))
+    assert not bool(pump3.lifecycle_split(stale, PLANTED_ROLES, maps, xp=np)[1])
+
+
+def test_retirement_records_history_and_pads_the_rest(division):
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, due = division
+    values = planted_values(p, value=1.0)
+    masks = partition.retirement_masks(due, p, xp=np)
+    records = {
+        "planted_cycles": ("planted_cycles_retired", np.zeros_like(values["planted_cycles"]))
+    }
+    out, kept = pump3.lifecycle_retire(values, PLANTED_ROLES, masks, records, xp=np)
+    gone = masks["membrane_slot"]
+    assert (kept["planted_cycles_retired"] == np.where(gone, 1.0, 0.0)).all()
+    assert (
+        out["planted_cycles"] + kept["planted_cycles_retired"] == values["planted_cycles"]
+    ).all()
+    assert (out["planted_amount_fmol"][..., gone] == 0).all() and (
+        out["planted_saturation"][gone] == 0
+    ).all()
+    assert (out["planted_law"][gone] == 7).all() and (out["planted_law"][~gone] == 1.0).all()
+    assert (out["planted_cell_amount_fmol"][masks["cell_slot"]] == 0).all()
+    assert (out["planted_node_amount_fmol"] == 1.0).all()  # Outside nodes are never retired.
+    # Planted: a history field with no record would lose its history, so it is refused.
+    with pytest.raises(ValueError, match="retires only into its record"):
+        pump3.lifecycle_retire(values, PLANTED_ROLES, masks, {}, xp=np)
+
+
+def test_the_lifecycle_acts_along_one_entity_axis_its_last():
+    assert pump3.lifecycle_axis("gates", ("gate", "channel_slot")) == "channel_slot"
+    assert pump3.lifecycle_axis("shared", ("species",)) is None
+    for axes in (("membrane_slot", "species"), ("membrane_slot", "channel_slot")):
+        with pytest.raises(ValueError, match="one entity axis, its last"):
+            pump3.lifecycle_axis("planted", axes)

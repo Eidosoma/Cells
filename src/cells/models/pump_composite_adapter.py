@@ -346,6 +346,94 @@ def inner_role_table(roles, axes, *, excluded=()):
     return out
 
 
+# The single lifecycle implementation for kinds' state fields (B1's last slice; design statement 1,
+# the lead's rulings of 19 November 2026). A closer that divides passes its maps, one per slot axis
+# that has them: {axis: (parent rows, daughter rows [rows, 2], daughter 1's fraction, due rows)};
+# a closer that retires passes its masks, {axis: bool [slots]}, by the entity hierarchy (the
+# partition is their one source). A field is acted on along its entity axis, the last of its axes;
+# shared axes ride along. Axes without maps (outside nodes, faces) are never divided or retired.
+LIFECYCLE_AXES = ("cell_slot", "membrane_slot", "channel_slot", "edge_slot")
+
+
+def _put_last(array, index, values, *, xp):
+    """array with array[..., index] = values (distinct slots)."""
+    if xp is np:
+        out = np.array(array, copy=True)
+        out[..., index] = values
+        return out
+    return array.at[..., index].set(values)
+
+
+def lifecycle_axis(name, axes):
+    """A field's entity axis for the lifecycle, or None for a field on shared axes only. Fails
+    closed: a field with two entity axes, or whose entity axis is not its last, is refused."""
+    entities = [axis for axis in axes if axis not in SHARED_AXES]
+    if not entities:
+        return None
+    if len(entities) > 1 or axes[-1] != entities[0]:
+        raise ValueError(
+            f"{name}: the lifecycle acts along one entity axis, its last ({tuple(axes)})"
+        )
+    return entities[0]
+
+
+def lifecycle_split(values, table, maps, *, xp):
+    """({field: array} after a division's split, valid): each state field of `table` ({field:
+    (PartitionRole, axes)}) on an axis with maps, by role: extensive by the anchor rule (daughter 1
+    fl(a x), daughter 2 x - fl(a x), the parent 0, so the daughters sum to the parent exactly);
+    intensive copied to the daughters; history left at the daughters' 0, which validity requires;
+    structural kept as declared. Fields not in `values`, on shared axes or on an unmapped axis are
+    returned unchanged."""
+    out, valid = dict(values), xp.asarray(True)
+    for name, (role, axes) in table.items():
+        axis = lifecycle_axis(name, axes)
+        if name not in values or axis not in maps:
+            continue
+        parent, daughters, fraction, due = maps[axis]
+        value = values[name]
+        x = value[..., parent]
+        k1, k2 = daughters[:, 0], daughters[:, 1]
+        if role.role == "extensive":
+            if fraction is None:  # Fails closed: no fraction to split by.
+                raise ValueError(f"{name}: an extensive field on {axis} needs its map's fraction")
+            first = fraction * x
+            second = x - first
+            value = _put_last(value, k1, xp.where(due, first, value[..., k1]), xp=xp)
+            value = _put_last(value, k2, xp.where(due, second, value[..., k2]), xp=xp)
+            value = _put_last(value, parent, xp.where(due, 0.0, value[..., parent]), xp=xp)
+        elif role.role == "intensive":
+            value = _put_last(value, k1, xp.where(due, x, value[..., k1]), xp=xp)
+            value = _put_last(value, k2, xp.where(due, x, value[..., k2]), xp=xp)
+        elif role.role == "history":
+            fresh = (value[..., k1] == 0) & (value[..., k2] == 0)
+            valid &= xp.all(xp.where(due, fresh, True))
+        out[name] = value
+    return out, valid
+
+
+def lifecycle_retire(values, table, masks, records, *, xp):
+    """({field: array}, {record field: array}) after a retirement, by role: a history field's value
+    on the retired slots moves into its record (`records`: {field: (record field, array)}), then 0;
+    every other role takes its fill (a structural field's declared fill, else 0). A history field
+    with no record is refused (fails closed: its history would be lost)."""
+    out, kept = dict(values), {}
+    for name, (role, axes) in table.items():
+        axis = lifecycle_axis(name, axes)
+        if name not in values or axis not in masks:
+            continue
+        mask, value = masks[axis], values[name]
+        if role.role == "history":
+            if name not in records:
+                raise ValueError(f"{name}: a history field retires only into its record")
+            record, held = records[name]
+            kept[record] = xp.where(mask, held + value, held)
+            out[name] = xp.where(mask, 0.0, value)
+        else:
+            fill = role.fill if role.role == "structural" and role.fill is not None else 0
+            out[name] = xp.where(mask, xp.asarray(fill, dtype=value.dtype), value)
+    return out, kept
+
+
 def structure_names(implementation):
     """{name: value} of TYPE_NAMES, KINDS and KIND_FIELDS for one implementation object (schema A).
 

@@ -690,6 +690,53 @@ def capacitor_state(state, q, *, xp):
     return phi, v, c, plates, 0.5e12 * entity_sum(c * v * v, axis=None, xp=xp)
 
 
+def division_maps(due, p):
+    """{slot axis: (parent rows, daughter rows, daughter 1's fraction, due rows)}: the due
+    divisions' maps, as the kinds' lifecycle reads them
+    (pump_composite_adapter.lifecycle_split): cells by the volume fraction, patches and
+    contacts by their own fractions, populations by their patch's."""
+    return dict(
+        cell_slot=(p.partition_parent, p.partition_daughters, p.partition_volume_fraction, due),
+        membrane_slot=(
+            p.partition_patch_parent,
+            p.partition_patch_daughters,
+            p.partition_patch_fraction,
+            due[p.partition_patch_division],
+        ),
+        channel_slot=(
+            p.partition_channel_parent,
+            p.partition_channel_daughters,
+            p.partition_channel_fraction,
+            due[p.partition_channel_division],
+        ),
+        # The contacts' fraction is not bound (@3's contact state is intensive or history), so
+        # the lifecycle refuses an extensive field on edge slots.
+        edge_slot=(
+            p.partition_contact_parent,
+            p.partition_contact_daughters,
+            None,
+            due[p.partition_contact_division],
+        ),
+    )
+
+
+def retirement_masks(due, p, *, xp):
+    """{slot axis: bool [slots]}: what the due divisions retire, by the entity hierarchy (§3.5):
+    each parent cell, its active patches, their active populations, and every active contact with a
+    retired end. The kinds' lifecycle reads these (pump_composite_adapter.lifecycle_retire);
+    event_map computes the same masks inline for @3's history, kept as it is so that no program
+    changes, and a test holds the two equal."""
+    n = p.active.size
+    retired = scatter(xp.where(due, 1.0, 0.0), xp.zeros(n), (p.partition_parent,), xp=xp) > 0
+    patches = retired[p.membrane_cell] & p.membrane_active
+    return dict(
+        cell_slot=retired,
+        membrane_slot=patches,
+        channel_slot=patches[p.channel_membranes] & p.channel_active,
+        edge_slot=(retired[p.junction_sender] | retired[p.junction_receiver]) & p.junction_active,
+    )
+
+
 def event_map(state, due, p, *, xp, view):
     """(state after the due divisions, validity) (module docstring)."""
     n = p.active.size
