@@ -7354,3 +7354,23 @@ transport reconstruction with conditional tumour-incidence projections counts as
   chose Sonnet. Lane-specific agents run on Sonnet. General laws and operators go to their file
   owners, briefed as general features (D136). The lane's code-blind references agent is fresh and
   briefed from the physics alone. Any further safeguard stop is held and put to the user.
+
+## D227: Bare published numbers may be committed with their citation; one rule for commits in the shared checkout
+
+2026-11-19, about 13:30 UTC. The user answered two questions: "1. a as you recommend 2. yes please add
+this to agents and give me copy paste for Codex to make this smooth". On the Xenopus lane's first
+result, the user wrote "fine with \"not a replication\" we do our best".
+1. **Licences:** a paper under a non-commercial licence, such as Chernet and Levin 2013 (CC BY-NC-SA
+   3.0), may be cited in the repository with its bare published numbers. An example is "1.32-fold,
+   P = 0.01 (Chernet and Levin 2013, Table 2)". Numbers are facts, not the licensed text.
+   - Figures, tables reproduced as tables, article text, images, supplements and datasets under such
+     licences stay out of the repository. They are analysis-only, as before.
+   - Source extracts stay in the workspace.
+2. **Commits:** AGENTS.md now asks every agent to commit only its own named paths
+   (`git commit -- <paths>`), to check what is staged first, never to commit, reset or stash over a
+   merge in progress, and never to rebase, amend a pushed commit or force-push main. The rule exists
+   because another agent, the Lean proofs project in `lean/`, now commits to main from this same
+   checkout. The lead's landings already assert the staged tree against the checked trial.
+3. **The Xenopus lane's first result** is reported as "qualified physics plus conditional
+   projections", not as a replication. The ledger found three scorable transport-level numbers, none
+   with uncertainties, and incidence ratios without counts (D226).
