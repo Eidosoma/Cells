@@ -1590,3 +1590,32 @@ questions.**
   - **The rule:** a head's parse-row difference is accepted only when it is shown to be exactly a
     defaulted field's text. Holding the field on a subclass to keep the row equal would let the
     water and replacement families drop a pick silently.
+
+**§18 amended on 19 November (the lead, 02:25 UTC), on B1's last slice** (the second operators
+owner's design statement 1, core-pass-operators-2-20261119/item4_design_statement.md).
+- **One role-driven lifecycle for kinds' state fields, in the adapter.** The split goes by the
+  partition's maps on the cell, membrane, channel and edge slots. Outside nodes and faces are never
+  divided. Retirement goes by the masks event_map computes.
+- **The writer's door:** the composite passes `lifecycle=` to every RETIRES event map, and the
+  partition calls it with its masks. A RETIRES operator beside a kind with history fields whose
+  event map takes no `lifecycle=` is refused at the definition.
+- **Q6 (b)'s record:** composite state fields, present only where a RETIRES operator is composed
+  beside the kind. They are named without the energy suffix, and a test shows they enter no
+  name-based energy sum. `Composition._adjusted` adds them back.
+- **Lost history is refused twice:**
+  - by the ledger that reads the field;
+  - by the composite's check that field plus record is unchanged across every retiring event,
+    which also covers history no ledger reads, such as cycle counts.
+- **A kind's extensive split is booked** in a composite-owned moved accumulator per extensive
+  state field, added to the kind's ledger terms, as partition_*_moved does for @3's fields.
+- **Layout and control roles are checked at the definition** in check_structure, by role.
+- **Cell-slot extensive kind fields split by the volume fraction alone.** One that enters the
+  charge ledger is refused beside a dividing closer until a charge rule is designed.
+- **@3's hand-written lists stay.**
+  - The equalities with RECORD, STATE_RESETS and the anchors are tests only.
+  - PADDED_FIELDS is tested as the padded roles less the geometry list, which is written in the
+    test.
+  - So §4.2's "in place of" is deferred: replacing the lists would be a dated change, gated
+    bitwise.
+- **Nothing runs in an admitted world until Q2's presence gate lands** (Q7 (a)). The tests patch
+  pump_composite._kinds_lifecycle only.
