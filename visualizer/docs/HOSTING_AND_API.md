@@ -778,20 +778,21 @@ They were answered on 19 November 2026: section 9.
 
 ## 9. What the owner decided (19 November 2026), and what follows
 
-The owner answered the ten questions of section 8 on the day of the review. Each answer is given
-here in plain words, with what it changes.
+The owner answered the ten questions of section 8 on the day of the review, and three points that
+were left open (how many releases the site keeps, the public data's licence, the cost of visits)
+later the same day. Each answer is given here in plain words, with what it changes.
 
 | | Decided | What it changes |
 | --- | --- | --- |
 | 1 | The site will be the public face. Nothing is public yet; the artifact stays the working copy, published as before | The artifact and the site are both kept; the site is what others are sent to |
 | 2 | The site is served from a machine of the project's own, in a container, and the owner sets that up | Option C of section 2, not A: no object storage and no upload. A release is a folder on that machine's disk, and the server compresses and sets headers itself |
-| 3 | Releases are marked by tags in the repository | The site does not keep every release. It keeps the current one and a few before it (three is proposed), for pages that are open and for rolling back |
+| 3 | Releases are marked by tags in the repository, and the site keeps three releases | The site does not keep every release. It keeps the current one and the two before it, for pages that are open and for rolling back |
 | 4 | The site serves three.js and the fonts itself | A visit to the site asks no other party. The artifact keeps cdnjs and Google Fonts, the only places its frame allows |
-| 5 | The demonstration data is public. Private data will come later and will not be public | Two classes of data, never in one folder (below). The licence text for the public data is still to be chosen |
+| 5 | The demonstration data is public, under a Creative Commons licence. Private data will come later and will not be public | Two classes of data, never in one folder (below). The public data's licence is taken as CC BY 4.0, the Creative Commons Attribution licence, unless the owner names another; whatever is read from a source keeps that source's own terms and its attribution (section 5, "Licences and attribution") |
 | 6 | The API's only user, for now, is the viewer | Stage 0 without its public side: the index is still made, because the release and its check need it; the schemas, the written promise and open cross-origin reads wait for an outside user |
 | 7 | Visits are counted from the server's own logs, and perhaps with a counter that keeps no identifiers | No cookies and no identifiers, as section 6 has it |
 | 8 | Other sites may show the viewer in a frame | The site's content policy does not limit who may frame it |
-| 9 | Nothing is to be spent on other users | No paid service stands in front of the site. If the machine's own provider bills outgoing traffic, that is the one cost that grows with visits: a first visit sends about 1 MB compressed (section 2) |
+| 9 | Nothing is to be spent on services for other users; the marginal cost of visits is not a concern | No paid service stands in front of the site. What the machine's own provider bills for outgoing traffic grows with visits (a first visit sends about 1 MB compressed, section 2), and is accepted |
 | 10 | No runs on request yet; later, behind a login | Stage 2 waits for a login, which the private data needs as well |
 
 ### The layout on the machine
