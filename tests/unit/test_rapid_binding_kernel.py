@@ -2,27 +2,30 @@
 docs/CORE_SEAMS_DESIGN.md §5 and §19 as amended on 18 November 2026; the references are
 validation/core_seams/references, registered with their amendments C1-C3 before this output).
 
-The engine runs on the references' registered inputs (the seam-C registry, systems S1-S6 with their
-71 states' totals, the P1 nodes and the envelope's eight cases). It is compared with their recorded
+The engine runs on the references' registered inputs: the seam-C registry, systems S1-S7 with their
+states' totals, the P1 nodes and the envelope's eight cases. S7, C4's binder mgx with its
+H-releasing form, came with amendment C4 on 19 November 2026. It is compared with their recorded
 values at the tolerances frozen before any read of the values
 (core-pass-binding-20261118/frozen_constants.json, 23:13:29 UTC):
 - the solve meets |g_L| <= 1e-13 A_L at every state, and its free ligands and forms lie within twice
-  the references' floor_residual_1e-13. Its plants: a constant x1.01, a dropped form and a count
-  off by one;
+  the references' floor_residual_1e-13. Its plants are a constant x1.01, a dropped form and a
+  count off by one, each caught by a deviation or by the solve's failure (S7 without its
+  H-releasing form has no speciation at some states);
 - B4's path is B4's kernel bit for bit, and Newton agrees with it within the floor. A node's
   disjoint ligand sets solve exactly as if alone;
-- the booked terms E_c, G* and S_c are within 16 eps of their terms, with S4[10]'s S_c undefined;
-- the registered law declares the general form (seam F's fields), its free_energy G*.
+- the booked terms E_c, G* and S_c are within 16 eps of their terms, with S4[10]'s S_c undefined.
   The pairs' changes are within twice their floor, and each of the three planted bookings misses by
   its named sum;
+- the registered law declares the general form (seam F's fields), its free_energy G*;
 - P1's nodes: the free amount, the admissible floor and the ladder's equilibrated free amounts,
   where today's predictor turns negative past n_free;
 - the envelope's first-order lag lies within twice its floor on all eight cases, and equals B4's
   estimate for one two-form buffer. The cooperative chain is outside the budget, and a per-step
   minimum puts it inside (that plant flips the verdict); k_on swapped between ligands is caught;
 - the fixed iteration count converges at a seeded random sweep, and too few iterations do not.
-Held (CORE_SEAMS §19, C4 to come): nothing here tests or claims the refusal of jointly
-infeasible totals with mixed-sign counts.
+Held until the C4 follow-up (the lead's ruling, 19 November 2026): nothing here tests or claims
+the refusal of jointly infeasible totals with mixed-sign counts (C4's margin t* and its four
+planted states), and the parse refuses a form with counts of both signs until then.
 """
 
 import json
@@ -147,8 +150,16 @@ def test_the_solve_meets_the_references_at_every_registered_state(name):
     designated = INPUTS["systems"][name]["designated"]
     for planted in (dict(plant=(designated, "constant")), dict(drop=designated),
                     dict(plant=(designated, "count"))):
-        p_ligands, p_binders, _, p_net, _, p_tb, _, p_u, _ = solve(name, path="newton", **planted)
-        assert np.max(deviations(name, p_ligands, p_binders, p_net, p_tb, p_u)) > 1.0, planted
+        # A planted network may have no speciation at some states (S7, C4's binder: without its
+        # H-releasing form, the H totals cannot be met), where its solve fails. A failed solve
+        # is caught too: numpy's overflow there is silenced, its validity asserted.
+        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+            p_ligands, p_binders, _, p_net, _, p_tb, _, p_u, p_valid = solve(
+                name, path="newton", **planted
+            )
+            dev = deviations(name, p_ligands, p_binders, p_net, p_tb, p_u)
+        caught = ~np.asarray(p_valid) | (np.nan_to_num(dev, nan=np.inf) > 1.0)
+        assert caught.any(), planted
 
 
 @pytest.mark.parametrize("name", ["S1", "S2"])
