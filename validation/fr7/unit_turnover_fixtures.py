@@ -97,8 +97,9 @@ def cell(*, end=0.03, dt=1e-3, observation_times=None, precursor_mM=PRECURSOR_mM
     return raw
 
 
-def route(name, population, *, nu=4, pools=0, tau=None, precursor=PRECURSOR):
-    """A route entry, every key explicit."""
+def route(name, population, *, nu=4, pools=0, tau=None, precursor=PRECURSOR, initial=None):
+    """A route entry, every key explicit: initial, the units in each maturation pool at the start
+    (zeros by default, declared explicitly; D232's W5 ruling)."""
     return dict(
         id=name,
         population=population,
@@ -106,6 +107,7 @@ def route(name, population, *, nu=4, pools=0, tau=None, precursor=PRECURSOR):
         molecules_per_unit=nu,
         maturation_pools=pools,
         maturation_time_s=tau,
+        initial_pool_units=[0.0] * pools if initial is None else list(initial),
     )
 
 

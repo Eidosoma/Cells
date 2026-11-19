@@ -22,8 +22,9 @@ Declaration: `species`, the precursor species it consumes (D150's identity form:
 @3 with no membrane, junction or channel route); `routes`, each {id, population (a channel
 population of @3), precursor (a listed species), molecules_per_unit ν (an integer >= 1),
 maturation_pools m (an integer, 0 <= m <= MAX_POOLS), maturation_time_s τ (> 0 when m > 0, null
-when m = 0)}. A route acts in its population's cell, the inside of its patch; one route per
-population. Every key is explicit.
+when m = 0), initial_pool_units (a list of m units, each finite and >= 0: the units in transit in
+each maturation pool at the start, zeros explicit; [] when m = 0)}. A route acts in its
+population's cell, the inside of its patch; one route per population. Every key is explicit.
 
 Schedule `unit_turnover_controls`: per route, piecewise-constant assembly_rate_per_s k_a (the
 first-order rate at which the route consumes its precursor) and removal_rate_per_s k_r (the
@@ -52,10 +53,12 @@ Each half-step is the exact solution of this linear chain with its rates frozen 
   precursor positive) refuses the step.
 
 The one material account. Per route: assembled units = c_u x precursor consumed (fmol), and
-assembled = units in the pools + units inserted (this operator's ledgers, unit_conversion and
-unit_chain). Membrane state's population ledger closes with inserted less removed, booked
-through ENTITY_WRITES as insertion books its units, and @3's species ledger with the consumed
-precursor, booked as D152 books a consumed reactant. The removed units stay booked in the sink.
+declared initial units in transit + assembled = units in the pools + units inserted (this
+operator's ledgers, unit_conversion and unit_chain; the initial units are bound into the pools and
+counted from the declaration, so the account closes by construction). Membrane state's
+population ledger closes with inserted less removed, booked through ENTITY_WRITES as insertion
+books its units, and @3's species ledger with the consumed precursor, booked as D152 books a
+consumed reactant. The removed units stay booked in the sink.
 
 Energy. The precursor's removal from its cell is booked as signed work: the exact free-energy
 change of the node from the moved amount (adapter.species_chemical_free_energy_pJ, @3's own
@@ -64,9 +67,9 @@ model, and the metabolic cost of assembly, trafficking and degradation lies outs
 lumps internalisation and degradation into one first-order sink.
 
 Step checks. @3's definition-time bounds (R5) read each routed population at its largest
-possible units: its declared units plus all the precursor its cell can hold over the run
-assembled, the declared amount and turnover's largest production rate over the horizon (no other
-writer supplies it, so that bounds the run).
+possible units: its declared units, its initial units in transit, and all the precursor its cell
+can hold over the run assembled, the declared amount and turnover's largest production rate over
+the horizon (no other writer supplies it, so that bounds the run).
 
 Refused at the definition, each with its reason: an undeclared or charged precursor, or one
 with a membrane, junction or channel route (parse_species); an unknown population, or one named
@@ -133,6 +136,7 @@ LAYOUT_FIELDS = (
     "unit_route_direct",  # [route] bool: no pool (m = 0).
     "unit_pool_present",  # [route, pool] bool: pool j < m.
     "unit_pool_last",  # [route, pool] bool: pool j = m - 1.
+    "unit_route_initial_units",  # [route] the declared initial units in transit, summed.
 )
 LEDGERS = ("unit_chain", "unit_conversion")
 LEDGER_DIAGNOSTICS = ("unit_chain_balance_error", "unit_conversion_balance_error")
@@ -150,6 +154,7 @@ class Route:
     molecules_per_unit: int
     maturation_pools: int
     maturation_time_s: float | None
+    initial_pool_units: tuple  # Units in transit in each pool at the start (m values).
     cell: str  # The population's cell, the inside of its patch (derived, not declared).
 
 
@@ -200,6 +205,7 @@ def parse_declaration(raw, base):
                 "molecules_per_unit",
                 "maturation_pools",
                 "maturation_time_s",
+                "initial_pool_units",
             },
             f"{LAW_ID} route",
         )
@@ -227,8 +233,17 @@ def parse_declaration(raw, base):
                 )
         else:
             tau = _number(tau, f"{LAW_ID}: route {name}'s maturation_time_s", positive=True)
+        initial = entry["initial_pool_units"]
+        if type(initial) is not list or len(initial) != pools:
+            raise ConfigError(
+                f"{LAW_ID}: route {name}'s initial_pool_units is an explicit list of its {pools} "
+                "maturation pools' units at the start (zeros explicit)"
+            )
+        initial = tuple(
+            _number(v, f"{LAW_ID}: route {name}'s initial_pool_units entry") for v in initial
+        )
         routes.append(
-            Route(name, population, entry["precursor"], nu, pools, tau, cells[population])
+            Route(name, population, entry["precursor"], nu, pools, tau, initial, cells[population])
         )
     if len({r.id for r in routes}) != len(routes):
         raise ConfigError(f"{LAW_ID}: route IDs are unique")
@@ -257,6 +272,7 @@ def declaration_to_dict(declaration):
                 molecules_per_unit=r.molecules_per_unit,
                 maturation_pools=r.maturation_pools,
                 maturation_time_s=r.maturation_time_s,
+                initial_pool_units=list(r.initial_pool_units),
             )
             for r in declaration.routes
         ],
@@ -465,7 +481,8 @@ def check_spec_for(check_spec, spec, declaration):
         area = areas[c.membrane_id]
         declared = m.cells[cells.index(r.cell)].initial_amount_fmol[species.index(r.precursor)]
         precursor = declared + supply.get((r.precursor, r.cell), 0.0) * end
-        units = c.abundance * area * rho[c.id] + conversion(r) * precursor
+        in_transit = math.fsum(r.initial_pool_units)
+        units = c.abundance * area * rho[c.id] + in_transit + conversion(r) * precursor
         abundance[c.id] = units / (area * rho[c.id])
     return replace(
         check_spec,
@@ -515,10 +532,16 @@ def bind(spec, declaration):
         unit_route_direct=np.asarray([r.maturation_pools == 0 for r in routes], dtype=bool),
         unit_pool_present=present,
         unit_pool_last=last,
+        unit_route_initial_units=np.asarray(
+            [math.fsum(r.initial_pool_units) for r in routes], dtype=float
+        ),
     )
     k, n, c = len(routes), x.capacity, x.channel_capacity
+    pools = np.zeros((k, depth))
+    for i, r in enumerate(routes):
+        pools[i, : r.maturation_pools] = r.initial_pool_units
     state = dict(
-        unit_pool_units=np.zeros((k, depth)),
+        unit_pool_units=pools,
         unit_consumed_fmol=np.zeros(k),
         unit_assembled_units=np.zeros(k),
         unit_inserted_units=np.zeros(c),
@@ -849,6 +872,7 @@ class PopulationUnitTurnover(Operator):
                     units_per_fmol=conversion(r),
                     maturation_pools=r.maturation_pools,
                     maturation_time_s=r.maturation_time_s,
+                    initial_pool_units=list(r.initial_pool_units),
                 )
                 for r in declaration.routes
             },
@@ -926,7 +950,7 @@ class PopulationUnitTurnover(Operator):
         else:
             transit = 0.0 * row.unit_assembled_units
         return dict(
-            unit_chain=row.unit_assembled_units - transit - inserted,
+            unit_chain=row.unit_assembled_units + p.unit_route_initial_units - transit - inserted,
             unit_conversion=row.unit_assembled_units
             - p.unit_route_conversion * row.unit_consumed_fmol,
         )
@@ -939,7 +963,7 @@ class PopulationUnitTurnover(Operator):
             transit = 0.0 * row.unit_assembled_units
         assembled = xp.abs(row.unit_assembled_units)
         return (
-            assembled + transit + xp.abs(inserted),
+            assembled + p.unit_route_initial_units + transit + xp.abs(inserted),
             assembled + xp.abs(p.unit_route_conversion * row.unit_consumed_fmol),
         )
 
