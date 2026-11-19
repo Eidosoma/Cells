@@ -41,7 +41,8 @@ const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.
 const index = JSON.parse(readFileSync(path.join(RUNS, "index.json"), "utf8"));
 const git = (...words) => execFileSync("git", ["-C", ROOT, ...words], { encoding: "utf8" }).trim();
 const revision = git("rev-parse", "HEAD");
-const uncommitted = git("status", "--porcelain", "--", ".").split("\n").filter((line) => line && !/ node_modules$/.test(line)).length > 0;
+// A checkout whose node_modules is a link shows it as untracked (the ignore rule names a folder): that is no change of the page.
+const uncommitted = git("status", "--porcelain", "--", ".").split("\n").filter((line) => line && !/(^|[ /])node_modules\/?$/.test(line)).length > 0;
 
 const wanted = cards.cards.filter((card) => card.kind === "replay" && opensOf(card, index) && (!ONLY || card.id === ONLY));
 if (!wanted.length) throw new Error("no replay card plays with this runs folder");
