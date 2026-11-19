@@ -77,6 +77,8 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p3_mh",
                 "cells.laws.channels.kv1p4_mh",
                 "cells.laws.channels.kv1p6_mh",
+                # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
+                "cells.laws.channels.clleak_always_open",
                 "cells.laws.junctions.junction_voltage_relaxation",
                 "cells.laws.pumps.nak_atp_mass_action_positive",
                 "cells.laws.pumps.ca_atp_mass_action_positive",

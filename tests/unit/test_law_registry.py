@@ -43,7 +43,14 @@ import pytest
 from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.kinds import passive_routes, proton_buffer, transporter
-from cells.laws.channels import kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh
+from cells.laws.channels import (
+    clleak_always_open,
+    kv1p1_mh2,
+    kv1p2_mh,
+    kv1p3_mh,
+    kv1p4_mh,
+    kv1p6_mh,
+)
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
@@ -59,8 +66,8 @@ KV1P5 = inner_laws.CHANNEL_LAWS["kv1p5_mh@1"]
 
 def planted_laws():
     """One planted law of each cells interface whose host a world below can declare, all in the
-    tests namespace: a gated channel law on @3 (code 10, after the Kv1 laws' 5-9), a cycle law on
-    the transporter, a route law on the passive routes and a binding law on the proton buffer."""
+    tests namespace: a gated channel law on @3 (code 99, reserved for plants), a cycle law on the
+    transporter, a route law on the passive routes and a binding law on the proton buffer."""
 
     def kernel(*args, **kwargs):
         raise AssertionError("an undeclared law's kernel is never called")
@@ -68,7 +75,7 @@ def planted_laws():
     return (
         laws.ChannelLaw(
             "tests.planted_channel@1",
-            10,
+            99,
             ("m", "h"),
             (("K", 1, 1.0),),
             KV1P5.voltage_domain_V,
@@ -108,8 +115,10 @@ def test_todays_declarations_are_template_instances_with_their_fields_kept():
         laws.CYCLE_LAW: inner_laws.PUMP_LAWS,
         laws.ROUTE_LAW: inner_laws.ROUTE_LAWS,
     }
-    # @3 also hosts the Kv1 pilot's five, cited laws registered since the Kv1 trigger.
+    # @3 also hosts the Kv1 pilot's five, cited laws registered since the Kv1 trigger, and the
+    # always-open chloride leak (D228 item 3).
     kv1 = {m.LAW_ID: m.LAW for m in (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)}
+    kv1[clleak_always_open.LAW_ID] = clleak_always_open.LAW
     for interface, table in tables.items():
         assert table and all(type(law).interface == interface for law in table.values())
         assert all(isinstance(law, laws.Law) and law.host == HOST for law in table.values())

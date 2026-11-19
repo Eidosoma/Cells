@@ -222,7 +222,8 @@
   "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-71a044cc/measure/measured.json",
   "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-65d8c1e4/measured.three.json",
   "/mnt/workspaces/Cells/fr2-references-interface-20261119/tiers-309cfb50/measure/measured.json",
-  "/mnt/workspaces/Cells/review3-20261119/tiers-4fa89614/measure/measured.json"
+  "/mnt/workspaces/Cells/review3-20261119/tiers-4fa89614/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-eaf57137/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1864,6 +1865,14 @@
    "root": "/mnt/workspaces/Cells/review3-20261119/snapshot-4fa89614",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T14:05:23+00:00"
+  },
+  {
+   "git_revision": "eaf5713741f8439bb594f94664b9e21773149bd2",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-eaf57137",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T15:04:15+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2613,6 +2622,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_chloride_leak_law.py",
+    "seconds": 3.25,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
@@ -3515,7 +3532,7 @@
    },
    {
     "file": "tests/unit/test_inner_laws.py",
-    "seconds": 16.66,
+    "seconds": 19.16,
     "exit_code": 0,
     "counts": {
      "passed": 15
@@ -3731,7 +3748,7 @@
    },
    {
     "file": "tests/unit/test_kv1_channel_laws.py",
-    "seconds": 7.43,
+    "seconds": 9.31,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -5086,7 +5103,7 @@
    },
    {
     "file": "tests/unit/test_surface_pump_v3_registry_laws.py",
-    "seconds": 3.57,
+    "seconds": 4.23,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5945,10 +5962,10 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 23.73,
+    "seconds": 28.15,
     "exit_code": 0,
     "counts": {
-     "passed": 8
+     "passed": 9
     }
    },
    {
