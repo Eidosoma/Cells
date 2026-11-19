@@ -44,7 +44,9 @@ declarations manifest (registry/declarations.py) writes out.
   "base" where its stoichiometry is written in base forms with every ligand out, so a rapid binding
   closure's totals stay exact (§5.2's admission; None otherwise). A cycle law may carry its general
   form, `cycle` (seam A's CycleForm, the kinds owner's type, checked by its own errors(): this
-  module imports no law module);
+  module imports no law module), whose changes() gives its change rows. cycle_changes(law) reads a
+  cycle law's change rows as declared, from its form or else its moves: the manifest's and §5.2's
+  single-mode admission's one source;
 - `cells.binding_law@1`, `BindingLaw`: a rapid binding closure (seam C). Its general form
   (CORE_SEAMS §19 as amended) declares `forms="registry"` (its binders' forms are the species
   registry's) and the kernels free_energy (G*), envelope (the lag envelope) and free_amounts (the
@@ -82,7 +84,7 @@ import importlib
 import math
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import KW_ONLY, dataclass
@@ -115,6 +117,7 @@ __all__ = (
     "PumpLaw",
     "RouteLaw",
     "active",
+    "cycle_changes",
     "hosted_laws",
     "scope",
 )
@@ -279,16 +282,67 @@ def _forms_errors(law):
 
 
 def _cycle_errors(cycle):
-    """A cycle law's general form checked by its own errors() (duck-typed, module docstring)."""
+    """A cycle law's general form checked by its own errors(), then its change rows' form
+    (duck-typed, module docstring): a form that breaks its own contract is not asked for rows."""
     if cycle is None:
         return []
     check = getattr(cycle, "errors", None)
     if not callable(check):
-        return ["its cycle is a form with its own errors(), or None"]
+        return ["its cycle is a form with its own errors() and changes(), or None"]
     problems = check()
     if not isinstance(problems, list) or not all(map(_named, problems)):
         return ["its cycle's errors() returns a list of reasons"]
-    return [f"its cycle: {problem}" for problem in problems]
+    if problems:
+        return [f"its cycle: {problem}" for problem in problems]
+    return _form_changes(cycle)[1]
+
+
+CHANGE_ROW = ("role", "per_cycle", "mode")  # A general form's change row's keys (cycle_changes).
+
+
+def _count(value):
+    """A declared count per cycle: an integer, or a population parameter's name (FR-4's form)."""
+    return _named(value) or (isinstance(value, int) and not isinstance(value, bool))
+
+
+def _form_changes(cycle):
+    """(rows, reasons) of a general form's changes(): its rows, each {role, per_cycle, mode} in
+    that key order, with the reasons they break the row form (rows () where they do)."""
+    changes = getattr(cycle, "changes", None)
+    if not callable(changes):
+        return (), ["its cycle is a form with its own changes()"]
+    rows = changes()
+    if not isinstance(rows, tuple) or not all(
+        isinstance(row, Mapping)
+        and set(row) == set(CHANGE_ROW)
+        and _named(row["role"])
+        and _count(row["per_cycle"])
+        and _named(row["mode"])
+        for row in rows
+    ):
+        return (), [
+            "its cycle's changes() returns a tuple of {role, per_cycle, mode} rows: a named role "
+            "and mode, and a count that is an integer or a parameter's name"
+        ]
+    return tuple({key: row[key] for key in CHANGE_ROW} for row in rows), []
+
+
+def cycle_changes(law):
+    """A cycle law's declared change rows: its general form's changes() where the form is set,
+    ({role, per_cycle, mode}, ...), each mode's rows, the role as "role@end"; otherwise its moves,
+    ({role, per_cycle}, ...). Each is inward-positive per forward cycle, and its count is as
+    declared, an integer or a population parameter's name negated by a leading "-": nothing is
+    resolved. The one source for the manifest (registry/declarations.py) and §5.2's single-mode
+    admission, which resolves named counts itself. Raises where a form's rows break the row form,
+    as the law's registration refuses it."""
+    if not isinstance(law, CycleLaw):
+        raise TypeError(f"cycle_changes reads a CycleLaw, not {type(law).__name__}")
+    if law.cycle is None:
+        return tuple(dict(role=role, per_cycle=count) for role, count in law.moves)
+    rows, problems = _form_changes(law.cycle)
+    if problems:
+        raise ValueError(f"Law {law.law_id}: {'; '.join(problems)}")
+    return rows
 
 
 def _named_or_none(law, *names):
@@ -372,9 +426,9 @@ class CycleLaw(Law):
     its domain. moves: ((role, count), ...), inward-positive per cycle; a count is an integer, or
     the name of the population's parameter that holds it, negated by a leading "-" (FR-4's form).
     Seam A's general form (`cycle`, a CycleForm) carries the law where it is set: its own errors()
-    must hold and its changes() gives the manifest's rows, so `moves` may be empty and kinetics and
-    domain_valid None (the kinds owner's first gap). A law without a form keeps version 1's checks:
-    moves given, both kernels callable."""
+    must hold and its changes() gives its change rows (cycle_changes), so `moves` may be empty and
+    kinetics and domain_valid None (the kinds owner's first gap). A law without a form keeps
+    version 1's checks: moves given, both kernels callable."""
 
     moves: tuple[tuple[str, object], ...] = ()
     fuel_kinds: tuple[str, ...] = ()
@@ -409,10 +463,7 @@ class CycleLaw(Law):
             isinstance(moves, tuple)
             and (moves or formed)
             and all(
-                isinstance(m, tuple)
-                and len(m) == 2
-                and _named(m[0])
-                and (_named(m[1]) or (isinstance(m[1], int) and not isinstance(m[1], bool)))
+                isinstance(m, tuple) and len(m) == 2 and _named(m[0]) and _count(m[1])
                 for m in moves
             )
         ):

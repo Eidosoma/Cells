@@ -21,8 +21,10 @@ for the last publish, and splits the files that changed into uploads.
   `--remote FILE` takes what the link holds from the Artifact tool's own listing of its
   files (saved as text, or as a JSON list of paths), and every file is sent unless `--old`
   is given too. `--remove` writes the files that are published and no longer listed into
-  the last upload as removals (a map of path to path, with `null` for a file to remove),
-  so that the link holds the page and its files and nothing else.
+  the first upload as removals (a map of path to path, with `null` for a file to remove),
+  so that the link holds the page and its files and nothing else. The removals go first,
+  and no upload adds more new files than the link has room for before its own removals
+  count, so the link never passes a version's limit while the uploads land.
 
 Standard library only. It reads `out/` and writes only the new folder.
 """
@@ -68,7 +70,7 @@ def main(argv=None):
     parser.add_argument("--new", required=True, help="the folder to stage this publish in (made anew)")
     parser.add_argument("--old", help="the folder staged for the last publish; left out, every file is sent")
     parser.add_argument("--remote", help="what the link holds now: the Artifact tool's listing of its files, saved as text or as a JSON list of paths")
-    parser.add_argument("--remove", action="store_true", help="write what is published and no longer listed into the last upload, as removals")
+    parser.add_argument("--remove", action="store_true", help="write what is published and no longer listed into the first upload, as removals")
     parser.add_argument("--root", default=str(HERE.parent), help="the visualizer folder (default: this tool's)")
     arguments = parser.parse_args(argv)
 
@@ -111,37 +113,55 @@ def main(argv=None):
     gone_sizes, gone = gone, sorted(gone)
 
     size = lambda name: (new / name).stat().st_size
-    uploads, upload, total = [], [], 0
-    for name in sorted(changed):
-        if upload and (len(upload) >= MAX_FILES or total + size(name) > MAX_BYTES):
-            uploads.append(upload)
-            upload, total = [], 0
-        upload.append(name)
-        total += size(name)
-    if upload:
-        uploads.append(upload)
+    # What the link holds now, by name: what was staged last time and what its own listing names. The page is one more.
+    held_names = set(remote)
+    if old is not None:
+        held_names |= {str(path.relative_to(old)) for path in old.rglob("*") if path.is_file() and str(path.relative_to(old)) != PAGE and not str(path.relative_to(old)).startswith("upload-")}
+    is_new = lambda name: name not in held_names
     removing = gone if arguments.remove else []
-    if removing and not uploads:
-        uploads.append([])
-    for number, names in enumerate(uploads, 1):
-        if removing and number == len(uploads):
-            # The last upload also removes: a map of published path to its file, null for a file to remove.
-            content = {**{name: name for name in names}, **{name: None for name in removing}}
-        else:
-            content = [{"path": name} for name in names]
+    # The uploads, in order. Removals go first (every upload carries the new page, which names none of them), as many
+    # to an upload as it may hold; files follow in the room that is left. An upload never adds so many new files that
+    # the link would pass a version's limit before that upload's own removals count, whichever the service counts first.
+    pending = [removing[k:k + MAX_FILES] for k in range(0, len(removing), MAX_FILES)]
+    names, sent, held, most = sorted(changed), 0, len(held_names) + 1, len(held_names) + 1
+    uploads, stuck = [], False
+    while sent < len(names) or pending:
+        remove = pending.pop(0) if pending else []
+        send, total, added = [], 0, 0
+        while sent < len(names):
+            name = names[sent]
+            if len(send) + len(remove) >= MAX_FILES or (send and total + size(name) > MAX_BYTES):
+                break
+            if is_new(name) and held + added + 1 > VERSION_FILES:
+                break
+            send.append(name)
+            total += size(name)
+            added += is_new(name)
+            sent += 1
+        if not send and not remove:
+            # No room for the next new file, and nothing left to remove: the count below says by how much it is over.
+            stuck = True
+            break
+        uploads.append((send, remove))
+        most = max(most, held + added)
+        held += added - len(remove)
+    for number, (send, remove) in enumerate(uploads, 1):
+        # An upload that also removes is a map of published path to its file, null for a file to remove.
+        content = {**{name: None for name in remove}, **{name: name for name in send}} if remove else [{"path": name} for name in send]
         (new / f"upload-{number}.json").write_text(json.dumps(content, indent=1) + "\n", encoding="utf-8")
 
     megabytes = lambda names: f"{sum(size(name) for name in names) / 1e6:.1f} MB"
     print(f"{len(listed)} files beside the page ({megabytes(listed)}); the page is {size(PAGE) / 1e6:.2f} MB")
     print(f"to send: {len(changed)} ({megabytes(changed)}); the same as last time: {len(listed) - len(changed)}; published before and no longer listed: {len(gone)}")
-    for number, names in enumerate(uploads, 1):
-        print(f"  upload {number}: {len(names)} files, {megabytes(names)} -> {new.name}/upload-{number}.json")
+    for number, (send, remove) in enumerate(uploads, 1):
+        print(f"  upload {number}: {len(send)} files, {megabytes(send)}{f', and {len(remove)} removed by name' if remove else ''} -> {new.name}/upload-{number}.json")
     for name in gone[:8]:
         print(f"  no longer listed: {name}")
     if len(gone) > 8:
         print(f"  and {len(gone) - 8} more")
     if removing:
-        print(f"  the last upload removes them by name ({len(removing)})")
+        print(f"  the first upload{'s remove' if len(removing) > MAX_FILES else ' removes'} them by name ({len(removing)}), before the new files go up")
+        print(f"  while the uploads land the link holds at most {most} files")
     # What the artifact then holds in all: a publish keeps what it does not send, so what is no longer
     # listed still counts until it is removed by name.
     kept = [] if removing else gone
@@ -150,6 +170,8 @@ def main(argv=None):
     print(f"the artifact then holds {held} of at most {VERSION_FILES} files, the page among them, and {held_bytes / 1e6:.1f} of {VERSION_BYTES / 1e6:.0f} MB")
     if held > VERSION_FILES or held_bytes > VERSION_BYTES:
         sys.exit("that is over what one version of an artifact holds: remove what is no longer listed, or publish fewer files")
+    if stuck:
+        sys.exit(f"the link has no room for the next new file ({names[sent]}): remove what is no longer listed first (--remove), or publish fewer files")
     if held > 0.9 * VERSION_FILES or held_bytes > 0.9 * VERSION_BYTES:
         print("  that is nine tenths of the limit or more")
 

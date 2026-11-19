@@ -1,0 +1,127 @@
+{
+  "active_cells": 1,
+  "bath_schedule_baths": [
+    "bath"
+  ],
+  "bath_schedule_events": [
+    {
+      "baths": [
+        "bath"
+      ],
+      "formula_units_mM": {
+        "cargo": 0.0005
+      },
+      "time": 0.004
+    }
+  ],
+  "bath_schedule_formula_units": {
+    "cargo": {
+      "S": 1
+    }
+  },
+  "bath_schedule_frame": "@3 pins a held bath's increment at zero, so its content is outside the tissue's ledgers: the dose, its free-energy change at the declared volume and the compensating charge are this operator's records, and its reconciliation term closes @3's reservoir-work ledger",
+  "bath_schedule_known_limit": "a dose from nothing is D150's unresolved switch-on at the face beside the bath (D169): refused by the host energy ledger in species-only worlds, unseen in mixed ones",
+  "bath_schedule_law": "scheduled_bath_composition@1",
+  "bath_schedule_records": {
+    "bath": {
+      "compensation_charge_C": 0.0,
+      "dose_fmol": {
+        "Cl": 0.0,
+        "K": 0.0,
+        "Na": 0.0,
+        "S": 0.0005
+      },
+      "dose_free_energy_pJ": -0.008623434642179323
+    }
+  },
+  "boundary": "held chemical/electrical reservoirs",
+  "calcium_pump_law": "ca_atp_mass_action_positive@1",
+  "capacity": 1,
+  "cell_id": 1,
+  "cell_ids": [
+    1
+  ],
+  "channel_laws": {},
+  "closure_law": "resolved_capacitor_components_current_continuity@1",
+  "composition": {
+    "inner_model": "resolved_pump_tissue@3",
+    "model": "resolved_pump_composite@1",
+    "operators": [
+      "scheduled_bath_composition@1"
+    ]
+  },
+  "composition_status": "development composition: integration grants no acceptance; judged status only from a registered protocol for this composition",
+  "end_time": 0.008,
+  "executed_steps": 8,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "gate_integrator": "exponential_mean_rate_linear_target_gates@1",
+  "global_step_index": 8,
+  "inner_model": "resolved_pump_tissue@3",
+  "junction_heat_booking": "explicit_tableau",
+  "junction_law": "junction_voltage_relaxation@1",
+  "max_balance_error_fmol": 0.0,
+  "max_bath_dose_balance_error_fmol": 0.0,
+  "max_bath_dose_free_energy_error_pJ": 0.0,
+  "max_bath_neutrality_error_C": 0.0,
+  "max_capacitor_charge_error_C": 0.0,
+  "max_electrode_charge_error_C": 0.0,
+  "max_electrode_work_error_pJ": 0.0,
+  "max_energy_balance_error_pJ": 1.1665129447243835e-12,
+  "max_energy_balance_relative": 2.311195914281742e-08,
+  "max_extracellular_balance_error_fmol": 0.0,
+  "max_global_balance_error_fmol": 0.0,
+  "max_global_charge_bound_ratio": 0.0,
+  "max_global_charge_error_C": 0.0,
+  "max_metabolic_work_error_pJ": 0.0,
+  "max_reservoir_work_error_pJ": 2.964615315390051e-21,
+  "membrane_transfer_ledger": "baseline passive only; channel and pump ledgers separate",
+  "model": "resolved_pump_composite@1",
+  "observation_scope": "accepted integration boundaries only",
+  "operator_steps": {
+    "scheduled_bath_composition@1": null
+  },
+  "operators": [
+    "scheduled_bath_composition@1"
+  ],
+  "pump_law": "nak_atp_mass_action_positive@1",
+  "species_ids": [
+    "Na",
+    "K",
+    "Cl",
+    "S"
+  ],
+  "splitting": "events_then_symmetric_operator_halves@1",
+  "start_time": 0.0,
+  "state_fields": [
+    "amount_increment",
+    "extracellular_amount_increment",
+    "membrane_transferred",
+    "junction_transferred",
+    "face_transferred",
+    "reservoir_supplied",
+    "membrane_dissipated_energy_pJ",
+    "junction_dissipated_energy_pJ",
+    "face_dissipated_energy_pJ",
+    "electrode_charge_transferred_C",
+    "reservoir_work_pJ",
+    "electrode_work_pJ",
+    "channel_gate",
+    "channel_transferred",
+    "channel_dissipated_energy_pJ",
+    "junction_gate",
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+    "bath_held_amount_fmol",
+    "bath_dose_fmol",
+    "bath_dose_free_energy_pJ",
+    "bath_compensation_charge_C",
+    "bath_reservoir_work_term_pJ",
+    "bath_energy_magnitude_pJ"
+  ],
+  "status": "complete",
+  "time_integrator": "imex_ars222_face_electromigration@1"
+}

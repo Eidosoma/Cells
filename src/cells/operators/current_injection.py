@@ -48,6 +48,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator
+from cells.registry.species_registry import NamedRow
 
 LAW_ID = "electrode_current_injection@1"
 DEFAULT_CARRIERS = {"K": 0.4912, "Cl": 0.5088}  # 3 M KCl filling (dLB74 p530).
@@ -245,6 +246,10 @@ class ElectrodeCurrentInjection(Operator):
     SPLIT = True
     RK4 = "split"
     BOOKS_AT_VIEW = True
+    # Its carriers are species others declare (D176). It names them, with no identity claim, so
+    # the species registry sees the rows it moves: refused beside a stage read that holds one (the
+    # second review's finding 3; the binding owner's recorded exception, 18 November 2026).
+    IDENTITY_ROLE = "user"
     # Refused over a volume owner (water): the source's work is @3's free-energy change on the
     # declared volume, without water's dilution term -RT N_tot log(V/V0), which the injected
     # amounts change too (a probe left exactly that unbooked; v2 design §2.10, question 6).
@@ -340,6 +345,13 @@ class ElectrodeCurrentInjection(Operator):
             for c in g:
                 if c.time != round(c.time / dt) * dt:
                     raise ConfigError("A current change must be an exact multiple of dt (k * dt)")
+
+    def species_identities(self, declaration):
+        """Its electrodes' carrier species, each a NamedRow (no catalogue, no evidence, no
+        resolved source): the registry's row checks see what it moves (check_two_form_rows,
+        check_stage_read_rows), and no species' identity changes."""
+        carriers = dict.fromkeys(s for e in declaration.electrodes for s, _ in e.carriers)
+        return tuple(NamedRow(s) for s in carriers)
 
     def batch_signature(self, declaration):
         return (LAW_ID, tuple((e.cell_id, e.carriers) for e in declaration.electrodes))

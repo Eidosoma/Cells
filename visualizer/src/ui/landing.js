@@ -324,6 +324,9 @@ export const LANDING_CSS = /* css */ `
 .landing-not-run .link-button { color: var(--fg); }
 .landing-built { margin-top: -18px; }
 @media (min-width: 761px) { .has-panel .landing { right: calc(360px + 2 * max(16px, env(safe-area-inset-right, 0px))); } }
+/* Over the page of cards a panel and the List stand on words, not on a picture: their ground is whole there, so that no
+   card's words show through them (a card's detail on a phone lies over the cards). */
+.on-landing cells-panel, .on-landing cells-index { background: var(--bg-raised); }
 /* The way back to all experiments (src/ui/viewer.js, backButton): one place in every view the landing opens, under the bar at
    the left; the view's card stands under it on a wide window, and on a phone its folded line stands beside it. */
 .exp-back { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 64px; display: inline-flex; align-items: center; gap: 8px; z-index: 2; }

@@ -348,12 +348,9 @@ def _provenance(declaration):
 
 
 def _cycle_changes(law):
-    """A cycle law's change rows: its general form's (`law.cycle.changes()`: ({role, per_cycle,
-    mode}, ...), each mode's moves, inward-positive) where the form gives them, else its moves."""
-    changes = getattr(law.cycle, "changes", None)
-    if callable(changes):
-        return [dict(row) for row in changes()]
-    return [dict(role=role, per_cycle=count) for role, count in law.moves]
+    """A cycle law's change rows, from their one source (registry/laws.cycle_changes): its general
+    form's ({role, per_cycle, mode}, ...) where the form is set, else its moves."""
+    return [dict(row) for row in law_registry.cycle_changes(law)]
 
 
 def law_entry(law, context):

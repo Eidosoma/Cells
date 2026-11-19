@@ -23,6 +23,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
+import { hasChanges } from "./lib/git_state.mjs";
 import { createServer } from "./serve.mjs";
 import { DEFAULT_RUNS } from "./lib/build_page.mjs";
 import { opensOf, addressOf } from "../src/replay/landing.js";
@@ -41,8 +42,8 @@ const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.
 const index = JSON.parse(readFileSync(path.join(RUNS, "index.json"), "utf8"));
 const git = (...words) => execFileSync("git", ["-C", ROOT, ...words], { encoding: "utf8" }).trim();
 const revision = git("rev-parse", "HEAD");
-// A checkout whose node_modules is a link shows it as untracked (the ignore rule names a folder): that is no change of the page.
-const uncommitted = git("status", "--porcelain", "--", ".").split("\n").filter((line) => line && !/(^|[ /])node_modules\/?$/.test(line)).length > 0;
+// A checkout whose node_modules is a link shows it as untracked: that is no change of the page (tools/lib/git_state.mjs).
+const uncommitted = hasChanges(git("status", "--porcelain", "--", "."));
 
 const wanted = cards.cards.filter((card) => card.kind === "replay" && opensOf(card, index) && (!ONLY || card.id === ONLY));
 if (!wanted.length) throw new Error("no replay card plays with this runs folder");
