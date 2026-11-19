@@ -358,14 +358,18 @@ def stage_read(state, p, *, xp):
 
 
 def stage_rows(declaration):
-    """(proton, node) and (buffer, node) at every declared node: the rows the read uses (the
-    general declaration's: its closure rows)."""
+    """(proton, node, law) and (buffer, node, law) at every declared node: the rows the read uses
+    (the general declaration's: its closure rows), each naming its read's law as a third item (P1's
+    selector, the binding owner's ruling (a) of 19 November 2026). The general closure's rows name
+    rapid_binding@1, a registered law that declares free_amounts, so @3's predictor takes P1's
+    form there. Version 1's rows name rapid_proton_buffer@1, which is not a registered law, so they
+    keep today's form bit for bit (surface_pump_v3.reads_free_amounts)."""
     if isinstance(declaration, GeneralDeclaration):
-        return declaration.closure_rows
+        return tuple((row, node, GENERAL_READ_ID) for row, node in declaration.closure_rows)
     out = []
     for node, rows in declaration.buffers:
-        out.append((declaration.proton, node))
-        out.extend((row, node) for row in rows)
+        out.append((declaration.proton, node, closure.READ_ID))
+        out.extend((row, node, closure.READ_ID) for row in rows)
     return tuple(out)
 
 

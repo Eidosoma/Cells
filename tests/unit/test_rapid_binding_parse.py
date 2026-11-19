@@ -7,7 +7,9 @@ The world is FR-4's development world re-expressed for the general closure: its 
 written as forms (one form holding one more H each), and the read declared as rapid_binding@1 on
 the ligand H at the cell and the lumen.
 - The declaration parses, writes back canonically, keeps version 1's entries and types apart, and
-  names its closure rows; an admitted world parses (its solve is stage 1's kernel).
+  names its closure rows; an admitted world parses (its solve is stage 1's kernel). Each stage row
+  names its read's law as a third item (P1's selector): rapid_binding@1 for the general closure,
+  rapid_proton_buffer@1 (not a registered law: today's predictor) for version 1.
 - At a closure row, @3's own routes and pumps are refused, and so is a kind's move whose law's
   reads lack rapid_binding@1: FR-4's proton pump (its reads name version 1's read) and its proton
   leak (a route law declares no reads). Planted control: the pump's reads with rapid_binding@1
@@ -85,10 +87,16 @@ def test_the_general_declaration_parses_writes_back_and_is_admitted():
     assert declaration.closure_rows == (
         ("H", fr.CELL), ("B_c", fr.CELL), ("H", fr.LUMEN), ("B_L", fr.LUMEN),
     )  # fmt: skip
-    assert proton_buffer.stage_rows(declaration) == declaration.closure_rows
+    # P1's selector (the binding owner's ruling (a)): each stage row names its read's law.
+    assert proton_buffer.stage_rows(declaration) == tuple(
+        (*row, "rapid_binding@1") for row in declaration.closure_rows
+    )
     # Version 1's declaration keeps its type and entry; the general one has its own.
     v1_declaration = dict(v1.model.kinds)[KIND]
     assert type(v1_declaration) is proton_buffer.Declaration
+    # Version 1's rows name rapid_proton_buffer@1, which is not a registered law: today's form.
+    assert {row[2] for row in proton_buffer.stage_rows(v1_declaration)} == {"rapid_proton_buffer@1"}
+    assert all(len(row) == 3 for row in proton_buffer.stage_rows(v1_declaration))
     assert proton_buffer.structure_entry(v1_declaration) == (2,)
     assert proton_buffer.structure_entry(declaration) == proton_buffer.GeneralEntry(1, 2)
     parse_spec(general_world())  # The admitted world parses.
