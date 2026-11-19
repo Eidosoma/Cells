@@ -4,7 +4,7 @@ This Lean library connects engine laws to their proofs, numerical checks and exp
 
 ## Biological evidence
 
-The last column below gives the experimental result and what it can test. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+The last column below gives the experimental result and what it can test. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 ## Proof index
 
@@ -18,6 +18,7 @@ The last column below gives the experimental result and what it can test. **Part
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | **Partial evidence.** Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) |
 | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | **Partial evidence.** In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) |
 | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | Proved | Checked | **Partial evidence.** In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/) |
+| [Stall voltages and net charge of the sodium–potassium and calcium pumps](claims/electrogenic-pump-charge.md) | Proved | Checked | **Partial evidence.** Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230) |
 | [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | **Partial evidence.** Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906) |
 | [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | **Partial evidence.** Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf) |
 | [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | **Partial evidence.** Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
@@ -154,6 +155,12 @@ For ATP-driven transport, compare compiled tissue rates against the four frozen 
 
 ```bash
 "$cells_python" -B checks/atp_cycle.py
+```
+
+For the Na⁺/K⁺ and calcium pumps, compare both stall voltages and the outward current against independent scalar calculations. One of the five cells starts with cancelling pump currents. The 1 ms tissue run checks all three ion transfers and the heat booked by each pump. [Driver](checks/electrogenic_pumps.py) · [Results](PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge)
+
+```bash
+"$cells_python" -B checks/electrogenic_pumps.py
 ```
 
 For extracellular faces, run the direction and power cases and the closed tissue model. The driver checks the engine's two mean thresholds, opposing drives, an adjacent-float pair and an intentionally reversed flux. The reference test checks the scalar mean against Decimal. [Face driver](checks/logmean_face.py) · [Scalar reference](../validation/tissue/surface_reference.py#L13)

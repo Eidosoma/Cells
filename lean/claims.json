@@ -120,6 +120,28 @@
       "driver": "lean/checks/atp_cycle.py",
       "record": "lean/PROGRESS.md#19-november-2026--atp-driven-transport"
     },
+    "electrogenic-pump-charge": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["nak_atp_mass_action_positive@1", "ca_atp_mass_action_positive@1"],
+      "engine_revision": "a06ee308a8348a5392e4645ccc368ccf8a086604",
+      "record_revision": "970598abe12fa2c19fd001f4bf32ec52a21d3d35",
+      "sources": {
+        "Na⁺/K⁺ drive and rate": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L55",
+        "Calcium standard state and rate": "src/cells/laws/pumps/ca_atp_mass_action_positive.py#L66",
+        "Plasma-membrane voltage convention": "src/cells/laws/reactions/plasma_calcium.py#L29",
+        "Calcium rate formula": "src/cells/laws/reactions/er_calcium.py#L36",
+        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L343",
+        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L783",
+        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L822",
+        "Na⁺/K⁺ scalar reference": "validation/betse/pump_contact/pump_reference.py#L83",
+        "Calcium scalar reference": "validation/chemistry/finite_calcium_pump_reference.py#L19",
+        "Na⁺/K⁺ rate tests": "tests/unit/test_kinetic_pump.py#L46",
+        "Calcium standard-state and stall tests": "tests/unit/test_surface_pump_v2.py#L86"
+      },
+      "driver": "lean/checks/electrogenic_pumps.py",
+      "record": "lean/PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge"
+    },
     "extracellular-face": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -253,6 +275,27 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["atp-cycle"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work."},
       "biology": {"status": "open", "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.", "finding": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
+    },
+    {
+      "id": "electrogenic-pump-charge",
+      "title": "Stall voltages and net charge of the sodium–potassium and calcium pumps",
+      "statement": "The Na⁺/K⁺ pump stalls at ψ = g_NaK − 3r_Na + 2r_K and the calcium pump at ψ = (g_Ca − r_Ca)/2. An enabled pump runs forward above its own stall voltage. Their outward charge flux in elementary-charge equivalents is J_NaK + 2J_Ca. The same sum determines their voltage-dependent free-energy change. The two currents cancel exactly when J_NaK = −2J_Ca.",
+      "assumptions": [
+        "For each ion, r is ln(inside activity / outside activity), ψ = F(V_inside − V_outside)/(RT), and each g is its pump’s ATP hydrolysis free energy divided by RT. Temperature and all activities are positive. The direction and stall results assume positive capacity, availability and saturation.",
+        "J denotes signed cycles per unit time. Each forward cycle consumes one ATP. The Na⁺/K⁺ pump exports three Na⁺ and imports two K⁺. The Cells calcium pump transports one Ca²⁺ outward and counts only that ion. The formula sums the currents of these two pumps."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.nak_atp_mass_action_positive@1", "cells.ca_atp_mass_action_positive@1"], "theorems": {
+        "CellsProofs.Transport.ElectrogenicPumps.nak_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.calcium_stall_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.nak_forward_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.calcium_forward_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.charge_per_cycle": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.voltage_work": "lean/CellsProofs/Transport/ElectrogenicPumps.lean",
+        "CellsProofs.Transport.ElectrogenicPumps.zero_current_iff": "lean/CellsProofs/Transport/ElectrogenicPumps.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["electrogenic-pump-charge"], "result": "The compiled tissue matched two 80-digit references at five initial voltages, including both stalls (−99.365 and −104.104 mV). The largest cycle-rate error was 3.50 × 10⁻¹⁶ fmol/s. At the midpoint the pumps ran in opposite directions, each contributing 0.349 pA in magnitude. The net electrode current was 2.04 × 10⁻²⁶ A. The 1 ms trajectory accounted for all three ions and both midpoint pumps dissipated energy."},
+      "biology": {"status": "open", "observable": "Ion transfer per ATP, paired ion flux and outward current, and stall voltage under known fuel and ion activities.", "finding": "Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230)", "unit": "ions per net elementary charge, ions and net elementary charges per ATP, mV for stall", "evidence": []}
     },
     {
       "id": "extracellular-face-direction",
