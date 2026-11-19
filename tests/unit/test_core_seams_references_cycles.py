@@ -404,3 +404,39 @@ def test_the_engines_stated_allowance_reproduces_the_guards_verdicts():
     lid = "d2_slip_exchanger"
     assert not any(api.engine_guard(laws[lid], A["populations"][lid], REG, st)["fires"]
                    for st in A["states"][lid])
+
+
+def test_the_guard_allowance_reads_k_as_the_laws_rows_and_g0_in_the_1_mM_frame():
+    """The erratum to A2 (19 November 2026): the batch's X_m is stated "c in mM", so g°_m is in
+    @3's 1 mM frame, Σ_s Δ_s (μ°_s/RT − ln c0), and K_m is "the law's rows". An independent
+    evaluation of the stated A, on a two-mode diagram law (D3, whose modes touch 2 of the law's
+    4 rows) and on a hydrolysing law (Σ Δ = +1), must equal engine_guard's."""
+    import json
+    import math
+
+    from validation.core_seams.references import api
+    inp = json.loads(worlds.INPUTS.read_text())
+    A_ = inp["seam_a"]
+    laws = {law["id"]: law for law in A_["laws"]}
+    ln_c0 = math.log(1000.0)
+    for lid in ("d3_figure_eight", "v1_neutral_n1"):
+        law, pop, st = laws[lid], A_["populations"][lid], A_["states"][lid][0]
+        ls = C.law_state(pop, st)
+        fl = C.mode_fluxes(law, REG, ls, pop["capacity_fmol_per_s"], pop.get("availability", 1.0))
+        ps = float(D.psi(ls, REG["temperature_K"]))
+        mods = C.modes(law)
+        K = len({(s, e) for m in mods for s, e, _n in m["nu"]})
+        A = 0.0
+        for m in mods:
+            conv = {}
+            for s, _e, n in m["nu"]:
+                conv[s] = conv.get(s, 0) + n
+            g0 = sum(n * (REG["species"][s]["mu0_RT"] - ln_c0) for s, n in conv.items())
+            q = sum(REG["species"][s]["valence"] * n for s, e, n in m["nu"] if e == "P")
+            X = abs(g0) + sum(abs(n) * (abs(math.log(ls["c_mM"][e][s])) + 1)
+                              for s, e, n in m["nu"]) + abs(q * ps)
+            x = float(fl[m["id"]]["dG_RT"])
+            A += float(fl[m["id"]]["J_scale"]) * ((K + 10) * X + (1 + len(mods) + 12) * abs(x))
+        A *= 2.0 ** -53
+        got = api.engine_guard(law, pop, REG, st)["A_RT_fmol_per_s"]
+        assert abs(got / A - 1) < 1e-12, lid

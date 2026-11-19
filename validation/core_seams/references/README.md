@@ -485,7 +485,7 @@ positive up to the stored amount.
       cycle A declared twice, and D2 with one edge of A traversed backwards.
   - **4. The planted negative S** cannot be declared in the engine's Hill-product form (carried as
     log S). The engine's plant injects S − 0.05 into the factored flux, and its guard refuses it
-    (G/A up to 1.6e14). `planted_negative_S_n1`'s row registers that substitution.
+    (G/A up to 1.4e14 after the erratum below). `planted_negative_S_n1`'s row registers that substitution.
   - **5. Conventions; no number changes.**
     - The engine's x sums no standard part for a transported species, which cancels exactly. So
       its terms are fewer than `dG_RT_terms_abs`, and this package's floors are conservative.
@@ -495,6 +495,22 @@ positive up to the stored amount.
     differences' absolute floor, as amendment F4 does here.
   - **The files:** two planted laws added to the inputs and their verdicts to the values. Every
     earlier input and value is unchanged. Three tests added (cycles: 16).
+- **19 November 2026, 03:58 UTC, erratum to amendment A2, before the kinds owner's rerun** (the lead's
+  check; the batch file and this package were the only things read):
+  - **K_m.** `api.engine_guard` read it as the mode's own rows. The batch's text says "K_m the
+    law's rows", so it is now the distinct rows the law's modes touch, the same for every mode.
+  - **g°_m.** It was read in the c° = 1000 mM frame, Σ_s Δ_s μ°_s/RT. X_m is stated "(c in mM;
+    g° over converted species only)", so x = g° + Σ ν ln c + q ψ holds only in @3's 1 mM frame:
+    g°_m = Σ_s Δ_s (μ°_s/RT − ln c0), with c0 in mM. That is the frame item 5 states for σ_m.
+  - **The effect.** A rises by up to 19% where a law's modes touch different rows or convert
+    species. fb_shift is unchanged: one mode, converting nothing.
+    - Every engine verdict still agrees, and fb_shift's A stays at 3.4–30 ε, inside the
+      0.064–9.1e3 window.
+    - This package's own 64-ε guard check is unchanged, and so are the values file and every
+      other registered number.
+    - A test now evaluates the stated A independently on D3 and on the neutral law (cycles: 17).
+  - **One reading kept, flagged:** a net-flow term's weight enters Φ_m as |w_t|, because fb_basis
+    declares a negative term weight. The batch writes w_t.
 - The booked closure term follows the binding owner's statement, by a dated amendment (§19 item
   3).
 
