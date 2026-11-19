@@ -4,7 +4,7 @@
   "doi": "10.1016/S0006-3495(04)74221-6",
   "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1303988/",
   "locator": "Figure 3 and accompanying microscopy results, three independent DOPC/cholesterol sample series.",
-  "preparation": "Hydrated 4 mM DOPC/cholesterol samples prepared by low-temperature trapping and equilibrated at 23 °C. The microscopy stage temperature is unspecified.",
+  "preparation": "Hydrated 4 mM DOPC/cholesterol samples prepared by low-temperature trapping. The paper gives 23 °C for equilibration before fluorescence measurements. The equilibration and stage temperatures for microscopy are unspecified.",
   "crystal_reference": "The microscopy study identifies cholesterol monohydrate. Shaw used hydrated cholesterol crystals at room temperature and did not specify their polymorph.",
   "chol_mole_fraction_at_crystal_onset": 0.66,
   "reported_plus_minus_mole_fraction": 0.02,

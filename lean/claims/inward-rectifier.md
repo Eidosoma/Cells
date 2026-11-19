@@ -48,7 +48,7 @@ Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.co
 
 ### tada1998_kir41@1
 
-Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patches per concentration. Panel C gives reversal, B(b) gives the unitary currents and D gives an independently reported fit to inward slope conductances. [Tada et al. (1998), Fig. 4B–D](https://doi.org/10.2170/jjphysiol.48.71)
+Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patches per concentration. Panel C gives reversal, B(b) gives unitary currents and D fits the inward slope conductances from the same patch series. [Tada et al. (1998), Fig. 4B–D](https://doi.org/10.2170/jjphysiol.48.71)
 
 - **Evidence role** held out from fitting
 - **Fit** 153 mM current amplitude

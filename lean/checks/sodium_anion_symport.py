@@ -1,6 +1,7 @@
 """Compare the registered sodium–anion carrier with independent rates and SMCT1 measurements."""
 
 import json
+from itertools import pairwise
 from pathlib import Path
 
 import jax
@@ -106,10 +107,12 @@ def smct1_measurements():
         return float(fixture.probed(layout, state, control, volts).modes.j[0, 0])
 
     data = json.loads(Path(__file__).with_name("data").joinpath("coady2007_smct1.json").read_text())
-    hi_na, lo_na = data["external_sodium_mM"]
+    sodium_levels = data["external_sodium_mM"]
     hi_b, lo_b = data["external_substrate_mM"]
-    stall = []
-    for sodium, substrate in ((hi_na, hi_b), (lo_na, hi_b), (hi_na, lo_b)):
+    # Each sodium halving is paired with a substrate halving at its starting sodium level.
+    solutions = [(na, hi_b) for na in sodium_levels] + [(na, lo_b) for na in sodium_levels[:-1]]
+    stall = {}
+    for sodium, substrate in solutions:
         raw = fixture.world(n_Na=2)
         raw["model"]["temperature_K"] = data["temperature_K"]
         bath = raw["model"]["extracellular"][0]
@@ -120,28 +123,44 @@ def smct1_measurements():
             )
             bath["initial_amount_fmol"][species] = amount
         _, _, state, p, control = fixture.bound(raw)
-        stall.append(brentq(cycle_rate, -0.5, 0.5, args=(p, state, control), xtol=1e-15))
-        if len(stall) == 1:
+        stall[sodium, substrate] = brentq(
+            cycle_rate, -0.5, 0.5, args=(p, state, control), xtol=1e-15
+        )
+        if (sodium, substrate) == (sodium_levels[0], hi_b):
             probe = fixture.probed(p, state, control, -0.05)
             sodium_rate, lactate_rate = (float(probe.rows.rate[i, 0]) for i in (0, 2))
             charge = -float(probe.populations.charge_a_to_b_fmol_s[0])
             charge_per_lactate = charge / lactate_rate
             osmolytes_per_charge = (sodium_rate + lactate_rate) / charge
-    na_shift, b_shift = 1000 * (np.array(stall[1:]) - stall[0])
+    halving_steps = []
+    for start, end in pairwise(sodium_levels):
+        baseline = stall[start, hi_b]
+        na_shift = 1000 * (stall[end, hi_b] - baseline)
+        b_shift = 1000 * (stall[start, lo_b] - baseline)
+        assert na_shift < 0 and b_shift < 0
+        np.testing.assert_allclose(na_shift / b_shift, 2, rtol=design.BAND_EPS * exact.EPS, atol=0)
+        halving_steps.append(
+            dict(
+                sodium_mM=[start, end],
+                sodium_shift_mV=na_shift,
+                substrate_shift_mV=b_shift,
+                ratio=na_shift / b_shift,
+            )
+        )
     np.testing.assert_allclose(
-        [charge_per_lactate, osmolytes_per_charge, na_shift / b_shift],
-        [1, 3, 2],
-        rtol=design.BAND_EPS * exact.EPS,
+        [charge_per_lactate, osmolytes_per_charge], [1, 3], rtol=design.BAND_EPS * exact.EPS, atol=0
     )
     independent = json.loads(
         Path(__file__).with_name("data").joinpath("gopal2004_lactate.json").read_text()
     )
     predicted_charge = charge_per_lactate * np.array(independent["lactate_uptake_pmol"])
+    first = halving_steps[0]
     return dict(
         charge_per_lactate=charge_per_lactate,
         osmolytes_per_charge=osmolytes_per_charge,
-        isolated_stall_shifts_mV=[na_shift, b_shift],
-        ratio_of_shifts=na_shift / b_shift,
+        isolated_stall_shifts_mV=[first["sodium_shift_mV"], first["substrate_shift_mV"]],
+        ratio_of_shifts=first["ratio"],
+        sodium_halving_steps=halving_steps,
         measured_charge_per_lactate=data["charge_per_lactate"]["mean"],
         measured_osmolytes_per_charge=data["osmolytes_per_charge"]["mean"],
         measured_shift_ratios=[

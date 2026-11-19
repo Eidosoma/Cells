@@ -632,7 +632,7 @@
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
-      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol for the target inventory, mM for the measured soluble pool", "evidence": []}
     },
     {
       "id": "enzyme-inventories",
@@ -782,7 +782,7 @@
             "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
             "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
             "role": "descriptive",
-            "evaluation": ["Leave one of 23 distinct cholesterol compositions out at a time. Keep repeated readings at the same composition together."],
+            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
             "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open."
@@ -793,13 +793,13 @@
             "citation": "Parker et al. (2004), Fig. 3",
             "doi": "10.1016/S0006-3495(04)74221-6",
             "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
-            "context": "Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy detected cholesterol monohydrate.",
+            "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
             "role": "held_out_from_fitting",
             "fit": ["Shaw Table S1 DOPC activity curve"],
             "evaluation": ["Parker Fig. 3 crystal-onset composition"],
             "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
-            "assessment": "At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts activity 1.119. The expected value is 1 if the crystal references match."
+            "assessment": "Extrapolating from the highest fitted composition (45.6 mol%) to the independently measured crystal onset (66 ± 2 mol%) gives activity 1.119. The expected value is 1 if the crystal references match."
           }
         ]
       }
@@ -845,7 +845,7 @@
             "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
             "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
             "role": "descriptive",
-            "evaluation": ["Leave one of 23 distinct cholesterol compositions out at a time. Keep repeated readings at the same composition together."],
+            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
             "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
             "assessment": "The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT."
@@ -856,13 +856,13 @@
             "citation": "Parker et al. (2004), Fig. 3",
             "doi": "10.1016/S0006-3495(04)74221-6",
             "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
-            "context": "Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy detected cholesterol monohydrate.",
+            "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
             "role": "held_out_from_fitting",
             "fit": ["Shaw Table S1 DOPC activity curve"],
             "evaluation": ["Parker Fig. 3 crystal-onset composition"],
             "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
             "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
-            "assessment": "At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
+            "assessment": "Extrapolating from 45.6 mol% to the independently measured crystal onset (66 ± 2 mol%) gives activity 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
           }
         ]
       }
@@ -916,7 +916,7 @@
             "role": "held_out_from_fitting",
             "fit": ["One red molecule and one green partner"],
             "evaluation": ["One red molecule and two green partners", "One red molecule and three green partners"],
-            "uncertainty": "The probabilities are approximate figure readings. Numerical uncertainties for the bars are unavailable. The one-partner calibration removes the common chamber volume. A separate calculation using bulk Kd depends appreciably on the volume estimate.",
+            "uncertainty": "The figure shows error bars without tabulated uncertainties for individual bars. We calibrated on the one-partner class and evaluated the other classes from the same experiment. This cancels the common chamber volume. The authors fitted their confined dissociation constant using all classes. A separate calculation using bulk Kd depends appreciably on the volume estimate.",
             "assessment": "From one partner’s measured 0.48 bound probability, Cells predicted 0.649 and 0.735 with two and three partners. The figure gives about 0.64 and 0.67, respectively.",
             "report": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
           }
@@ -1008,7 +1008,7 @@
             "manifest": "lean/checks/data/tada1998_kir41.json",
             "citation": "Tada et al. (1998), Fig. 4B–D",
             "doi": "10.2170/jjphysiol.48.71",
-            "locator": "Panel C gives reversal, B(b) gives the unitary currents and D gives an independently reported fit to inward slope conductances.",
+            "locator": "Panel C gives reversal, B(b) gives unitary currents and D fits the inward slope conductances from the same patch series.",
             "context": "Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patches per concentration.",
             "role": "held_out_from_fitting",
             "fit": [
@@ -1075,7 +1075,7 @@
             "manifest": "lean/checks/data/coady2007_smct1.json",
             "citation": "Coady et al. (2007), Figs. 1, 2 and 4",
             "doi": "10.1529/biophysj.107.108555",
-            "locator": "Lactate uptake/current in Fig. 1, volume/current in Fig. 2, and matched zero-current shifts in Fig. 4.",
+            "locator": "Fig. 1 compares lactate uptake with current, and Fig. 2 compares volume with current. Fig. 4 uses both 96 to 48 mM and 48 to 24 mM sodium steps, each paired with substrate halving.",
             "context": "Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the two-sodium coupling.",
             "role": "descriptive",
             "evaluation": [
@@ -1089,8 +1089,8 @@
             "observed": 1.04,
             "predicted": 1,
             "uncertainty": "The reported charge uncertainty was ±0.07 across five batch slopes. The volume/current and shift ratios are reported as mean ± SE.",
-            "assessment": "The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 versus 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open.",
-            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+            "assessment": "The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 for both sodium halvings. The experimental means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open.",
+            "report": "lean/PROGRESS.md#19-november-2026--law-and-evidence-review"
           },
           {
             "dataset_id": "gopal2004_lactate@1",
@@ -1110,7 +1110,7 @@
               "Mouse series and propionate"
             ],
             "uncertainty": "Approximate figure readings rounded to 5 pmol. Individual experimental uncertainties are unavailable.",
-            "assessment": "At the high-uptake human point, about 370 pmol lactate predicted 370 pmol net charge. The figure gives about 450 pmol.",
+            "assessment": "Measured net charge exceeded the prediction at all four human points by approximately 65–85 pmol. At 370 pmol lactate, Cells predicted 370 pmol net charge and the figure gives about 450 pmol.",
             "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
           }
         ]

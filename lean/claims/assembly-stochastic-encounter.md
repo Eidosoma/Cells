@@ -62,7 +62,7 @@ Red- and green-labelled complementary strands confined in sealed dimples. Each c
 - **Fit** One red molecule and one green partner
 - **Evaluation** One red molecule and two green partners, One red molecule and three green partners
 
-The probabilities are approximate figure readings. Numerical uncertainties for the bars are unavailable. The one-partner calibration removes the common chamber volume. A separate calculation using bulk Kd depends appreciably on the volume estimate.
+The figure shows error bars without tabulated uncertainties for individual bars. We calibrated on the one-partner class and evaluated the other classes from the same experiment. This cancels the common chamber volume. The authors fitted their confined dissociation constant using all classes. A separate calculation using bulk Kd depends appreciably on the volume estimate.
 
 From one partner’s measured 0.48 bound probability, Cells predicted 0.649 and 0.735 with two and three partners. The figure gives about 0.64 and 0.67, respectively. [Dataset manifest](../checks/data/shon2012_confined_binding.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis)
 

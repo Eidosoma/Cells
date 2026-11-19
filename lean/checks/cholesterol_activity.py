@@ -70,7 +70,7 @@ def compare(ideal_spec, regular_spec, names):
         for weighted in (False, True):
             bulk, finite = np.empty_like(x), np.empty_like(x)
             for level in levels:
-                held = x == level  # Keep repeated nominal compositions in the same fold.
+                held = x == level  # Group rows with the same printed, extracted composition.
                 offset, chi = fit(rows[~held], regular, weighted)
                 bulk[held] = x[held] * np.exp(offset + chi * (1 - x[held]) ** 2)
                 finite[held] = finite_activity[held] * np.exp(offset + chi * finite_excess[held])

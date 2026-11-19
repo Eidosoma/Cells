@@ -46,7 +46,7 @@ Uses [Free energy sets ATP-driven transport direction and stall](atp-cycle.md)
 
 ### coady2007_smct1@1
 
-Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the two-sodium coupling. Lactate uptake/current in Fig. 1, volume/current in Fig. 2, and matched zero-current shifts in Fig. 4. [Coady et al. (2007), Figs. 1, 2 and 4](https://doi.org/10.1529/biophysj.107.108555)
+Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the two-sodium coupling. Fig. 1 compares lactate uptake with current, and Fig. 2 compares volume with current. Fig. 4 uses both 96 to 48 mM and 48 to 24 mM sodium steps, each paired with substrate halving. [Coady et al. (2007), Figs. 1, 2 and 4](https://doi.org/10.1529/biophysj.107.108555)
 
 - **Evidence role** descriptive
 - **Evaluation** Lactate charge and particle ratios, Lactate and propionate zero-current shift ratios
@@ -56,7 +56,7 @@ Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the t
 
 The reported charge uncertainty was ±0.07 across five batch slopes. The volume/current and shift ratios are reported as mean ± SE.
 
-The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 versus 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open. [Dataset manifest](../checks/data/coady2007_smct1.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 for both sodium halvings. The experimental means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open. [Dataset manifest](../checks/data/coady2007_smct1.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--law-and-evidence-review)
 
 ### gopal2004_lactate@1
 
@@ -69,6 +69,6 @@ An independent laboratory measured human SMCT in Xenopus oocytes. The coupling w
 
 Approximate figure readings rounded to 5 pmol. Individual experimental uncertainties are unavailable.
 
-At the high-uptake human point, about 370 pmol lactate predicted 370 pmol net charge. The figure gives about 450 pmol. [Dataset manifest](../checks/data/gopal2004_lactate.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+Measured net charge exceeded the prediction at all four human points by approximately 65–85 pmol. At 370 pmol lactate, Cells predicted 370 pmol net charge and the figure gives about 450 pmol. [Dataset manifest](../checks/data/gopal2004_lactate.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
