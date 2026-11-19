@@ -27,8 +27,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6
     against OL5's code-blind references (run entry below; tag `ol1-landed-2026-11-18`).
     On 19 November: FR-2 version 1, `scheduled_membrane_trafficking@1` (merge 1bd35184). Its
-    engine-side comparison against its code-blind references waits for the user's answer on the
-    floors.
+    registered comparison against its code-blind references ran once at 12:17 UTC (run entry
+    below): 770 of 782 rows, 3 of 3 criteria and 322 of 322 plants pass; 12 rows fail.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -105,6 +105,31 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **FR-2 version 1 against its code-blind references: the registered first run (19 November 2026,
+  12:17 UTC). 770 of 782 rows, 3 of 3 criteria and 322 of 322 plants pass; 12 rows fail.**
+  - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`
+    over `resolved_pump_tissue@3`.
+  - **Evidence:**
+    - branch `fr2-comparison` at 65d8c1e4, tag `fr2-comparison-run1-2026-11-19`;
+    - the bands registered beforehand on `fr2-references-interface` (77fd8a17, interface file
+      `comparison_bands.json`);
+    - the run's per-test outcomes in
+      `/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/runs/cmp-first/junit.xml`.
+
+    A timed second execution gave the same outcomes.
+  - **The failures:** electrode transfer, electrode work and image charge at the held bath node, on
+    four small recycling half-steps, at 1.2–9.2 times their bands (relative deviations 3.4e-14 to
+    1.8e-13).
+  - **The diagnosis, engine against engine:** an exact rational replay from the engine's own state
+    accounts for each deviation as double-precision rounding of the held node's plate charges, about
+    1.3e-12 C. Their difference is the transfer. The exact replay agrees with the references to about
+    2e-31 C.
+  - **Next:** the references agent audits, without seeing these numbers, whether its registered
+    floor model, carried through correctly, covers this class of rows. If it does not, this result
+    stands. Any second run keeps the engine at 65d8c1e4 and is reported beside this one.
+  - A kernel form that would avoid the cancellation is logged as an engine note for a later
+    declared-freeze batch.
 
 - **The core-seams pass's morning landings (19 November 2026, 03:56–10:46 UTC).** Twenty merges.
   Each merge's message records its gates. The merged checks and the tier folds are in
