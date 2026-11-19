@@ -1109,6 +1109,19 @@ page can be published to any link, or to a new one (the user, 18 November 2026).
    it in a short head and tail of its own), list the link's files against the staged
    folder, and record the version in `artifacts.json`: its date, the engine revision the
    map reads, the gate it rests on, and what was looked at.
+5. Tag the commit that records the version, `viewer-vNN` (an annotated tag; `viewer-v48`
+   is the first, 19 November 2026), and push the tag. Before the publish, the staged page is
+   also searched for a path of the build's machine (`/home/`, `/mnt/`, `/Users/`): the build
+   refuses to write one, and the page-build test holds it.
+
+**A site of its own.** The page will also be served at `cells.eidosoma.ai`, beside the
+artifact. `docs/HOSTING_AND_API.md` (19 November 2026) reviews how, and how an API for the
+page's data could come in stages; its section 9 records what the owner then decided: the site
+is served from a container on a machine of the project's own, set up by the owner; releases
+are marked by these tags; the site serves three.js and the fonts itself; and the API's only
+user, for now, is the viewer. Nothing of the site is built yet, and a tag marks the code and
+the record, not a folder that can be rebuilt from the repository alone (the run files are
+made from the frozen evidence, below).
 
 A page published without the proteins' files draws the atlas as before and says that the
 species' own proteins could not be loaded.
