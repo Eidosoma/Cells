@@ -1,4 +1,4 @@
-"""Beard 2005 reproduced by the independent reference (tier 3 by measurement).
+"""Beard 2005 reproduced by the independent reference (the heavier file; its tier is set by measurement).
 
 The published arm runs at the declared inputs: the 2006 Table 1, Eq. 24 with Eq. 7's
 proton term (Q02: what the published curves were computed with), T = 298.15 K, the matrix Mg2+ total at 1 mM, and the matrix charge anchored to Fig. 4D's

@@ -39,8 +39,9 @@ repository. Only bare numbers are committed, each with its citation (D227).
 | `sources.py` | Table 1, re-read from both XMLs: all 140 cells match the model file. |
 | `proposal.json` | Proposed comparison rows, bands and plants for a first engine milestone. It is a proposal, not a registration. |
 
-Tests: `tests/unit/test_mito_references_integrity.py` (fast) and
-`tests/unit/test_mito_references_reproduction.py` (tier 3).
+Tests: `tests/unit/test_mito_references_integrity.py` (fast, about 2 s) and
+`tests/unit/test_mito_references_reproduction.py` (heavier, about 75 s on a shared core;
+its tier is set by measurement).
 
 ## Running
 
