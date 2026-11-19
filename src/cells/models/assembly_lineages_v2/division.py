@@ -359,7 +359,8 @@ def block(base_key, parent, counter, size):
     return np.asarray(streams.uniforms(key, int(counter), int(size)), dtype=np.float64)
 
 
-def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key):
+def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key,
+            free_slots=None):  # fmt: skip
     """Item 10.2's attempt on the assembly with `counts` ([P]) at a shear `event`
     (time, index, k, stress). counter: the parent's fission counter; vesicle_f(counts): F_v of the
     vesicle in a [P] state (k_BT, with its closure cost); next_key: the lineage counter's next key.
@@ -378,6 +379,8 @@ def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key
     footprint = int(counts @ quanta)
     if not admitted_volume(lumen.host_volume_L(world, counts), footprint, q, k):
         return Attempt(counter=-1, outcome="refused_volume", **refused)
+    if free_slots is not None and free_slots < k - 1:  # population: before the draw (item 10.2)
+        return Attempt(counter=-1, outcome="slots_full", **refused)
     membrane, inside = vesicle_places(world)
     n, n_lumen = int(counts[membrane].sum()), int(counts[inside].sum())
     uniforms = block(base_key, parent, counter, n + k + n_lumen)
@@ -389,7 +392,7 @@ def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key
     daughters[:, inside] = by_lumen
     if np.any(daughters @ quanta < geometry.floor_quanta(world)):
         return Attempt(**{**refused, "counter": counter, "outcome": "refused_floor"})
-    followed = 0
+    followed = 0 if free_slots is None else -1  # a population follows none: every daughter lives
     if world.division["continuation"] == "uniform":
         key = streams.stream_key_data(base_key, int(parent), "continuation")
         followed = int(np.floor(float(streams.uniforms(key, 0, 1)[0]) * k))
@@ -397,7 +400,7 @@ def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key
     lysed = tuple(bool(lumen.host_tension(world, d) > sigma_max) for d in daughters)
     energies = [vesicle_f(d) for d in daughters]
     work = math.fsum(energies) - vesicle_f(counts)
-    sink = math.fsum(e for j, e in enumerate(energies) if j != followed)
+    sink = 0.0 if followed < 0 else math.fsum(e for j, e in enumerate(energies) if j != followed)
     keys = tuple(next_key + j for j in range(k))
     return Attempt(time=time, schedule=index, k=k, parent=parent, counter=counter,
                    outcome="split", parent_counts=counts, daughters=daughters, keys=keys,
@@ -407,7 +410,10 @@ def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key
 # ------------------------------------------------------------------ records (host)
 
 
-def fission_arrays(attempts, places):
+POPULATION_OUTCOMES = (*OUTCOMES, "slots_full")  # a population's attempts (population.py)
+
+
+def fission_arrays(attempts, places, outcomes=OUTCOMES):
     """The fission table: one row per attempt, in order (records.py declares the arrays).
     attempts: [(Attempt, the parent's generation)]."""
     rows = [a for a, _ in attempts]
@@ -428,7 +434,7 @@ def fission_arrays(attempts, places):
         "fission_parent": np.asarray([a.parent for a in rows], dtype=np.int64),
         "fission_parent_generation": np.asarray([g for _, g in attempts], dtype=np.int64),
         "fission_counter": np.asarray([a.counter for a in rows], dtype=np.int64),
-        "fission_outcome": np.asarray([OUTCOMES.index(a.outcome) for a in rows], dtype=np.int8),
+        "fission_outcome": np.asarray([outcomes.index(a.outcome) for a in rows], dtype=np.int8),
         "fission_followed": np.asarray([a.followed for a in rows], dtype=np.int64),
         "fission_parent_counts": np.asarray(
             [a.parent_counts[:places] for a in rows], dtype=np.int64

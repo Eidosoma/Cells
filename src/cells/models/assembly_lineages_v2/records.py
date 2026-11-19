@@ -353,7 +353,7 @@ def run_record(run, world_id):
         },
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
-        **({"population": run.population} if run.population is not None else {}),
+        **({"population": _population_record(run)} if run.population is not None else {}),
     }
 
 
@@ -369,12 +369,36 @@ POPULATION_RECORDS = {
                                          "each slot's W(n); 0 when empty"),
     "lumen_volume_L": _record(_S, ["row", "slot"], "L", "level", "each slot's V(n); 0 when empty"),
     "tension_N_per_m": _record(_S, ["row", "slot"], "N/m", "level", "each slot's sigma"),
+    "schedule_work_kT": _record(_S, ["row", "schedule"], "k_BT", "cumulative",
+                                "each declared schedule's work (run.json population."
+                                "schedule_columns names the columns' schedules)"),
+    "fission_slot": _record("fission", ["fission"], "1", "level", "the parent's slot"),
+    "fission_daughter_slots": _record("fission", ["fission", "daughter"], "1", "level",
+                                      "each daughter's slot (daughter 0 the parent's); -1 pads"),
     "event_group": _record("event", ["event"], "1", "level",
                            "the event's group: 0 the pool, 1 + k slot k"),
     "event_uniforms": _record("event", ["event", "draw"], "1", "level",
                               "diagnostic: the event's three uniforms (u1 tau, u2 the group, u3 "
                               "the channel), from the world's stream (domain 5)"),
 }  # fmt: skip
+
+
+def _population_record(run):
+    """run.json's `population` block (population runs only): the report less its tables."""
+    report = run.population
+    out = {k: report[k] for k in ("slots", "founders", "lyses", "draws", "schedule_columns",
+                                  "reads")}  # fmt: skip
+    fissions = report["fissions"]
+    if fissions is not None:
+        outcomes = fissions["fission_outcome"].tolist()
+        out["outcomes"] = {o: outcomes.count(i) for i, o in enumerate(division.POPULATION_OUTCOMES)}
+    out["schedule_draws"] = [list(d) for d in report["schedule_draws"]]
+    out["payers"] = (
+        "schedule_work_kT's column c is paid by the schedule whose declared index is "
+        "schedule_columns[c] (source:shear/<index> or source:transfer/<index>); shear_work_kT is "
+        "the shears' total, and at every row the columns sum to it plus the transfers' work"
+    )
+    return out
 
 
 def _declared(run, name):
@@ -385,7 +409,10 @@ def _declared(run, name):
         if name == "row_kind":
             legend = {str(i): kind for i, kind in enumerate(population.ROW_KINDS)}
             return {**table[name], "legend": legend}
-        return {**table, **POPULATION_RECORDS}[name]
+        if name == "fission_outcome":
+            legend = {str(i): o for i, o in enumerate(division.POPULATION_OUTCOMES)}
+            return {**DIVISION_RECORDS[name], "legend": legend}
+        return {**table, **DIVISION_RECORDS, **POPULATION_RECORDS}[name]
     if run.division is None:
         return table[name]
     if name == "row_kind":  # A division world's rows include its shear rows.
@@ -400,17 +427,36 @@ def _arrays(run):
     out.update(run.diagnostics)
     if run.division is not None:
         out.update(run.division["fissions"])
+    if run.population is not None and run.population["fissions"] is not None:
+        out.update(run.population["fissions"])
     return out
 
 
-def population_tables(run):
-    """cells.relations@2's tables of a population run: its lives (population.lives), its lysis
-    events (kind lysis, by the osmotic lumen) and its slots."""
-    from cells.models.assembly_lineages_v2 import OSMOTIC_LUMEN, SHARED_POOL, population
+def population_tables(directory, run):
+    """cells.relations@2's tables of a population run: its lives (population.lives), one event per
+    split (kind fission, by the shear fission, scheduled, paid by its schedule's source) and per
+    lysis (kind lysis, by the osmotic lumen), its slots, and its schedules' sources."""
+    from cells.models.assembly_lineages import keys
+    from cells.models.assembly_lineages_v2 import (
+        OSMOTIC_LUMEN,
+        SHARED_POOL,
+        SHEAR_FISSION,
+        population,
+    )
     from cells.records import relations as rel
 
     lives = [rel.Life(**row) for row in population.lives(run)]
-    events = [
+    fissions = run.population["fissions"]
+    events = []
+    if fissions is not None:
+        events = [
+            rel.Event(f"event:fission/{r}", float(fissions["fission_time"][r]), "fission",
+                      SHEAR_FISSION, scheduled=True, step=-1,
+                      at=keys.carrier_id(int(fissions["fission_parent"][r])),
+                      source=f"source:shear/{int(fissions['fission_schedule'][r])}")
+            for r in np.flatnonzero(fissions["fission_outcome"] == 0)
+        ]  # fmt: skip
+    events += [
         rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
                   at=life.id, source="")
         for life in lives
@@ -418,7 +464,17 @@ def population_tables(run):
     ]  # fmt: skip
     slots = run.population["slots"]
     nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
-    return {"lives": lives, "events": events, "nodes": nodes}
+    sources, records = [], {}
+    if run.population["schedule_columns"]:
+        sources = [
+            rel.Source(f"source:shear/{s.index}", "schedule", "energy", SHEAR_FISSION,
+                       payer_of="schedule_work_kT")
+            for s in run.spec.experiment.schedules
+        ]  # fmt: skip
+        records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
+                                 times="row_time")  # fmt: skip
+    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+            "records": records}  # fmt: skip
 
 
 SINK = "sink:discard"
@@ -508,7 +564,7 @@ def write_run(directory, run, *, provenance=None):
     if run.division is not None or run.population is not None:  # the relationship tables
         from cells.records import relations as rel
 
-        tables = population_tables(run) if run.population is not None else (
+        tables = population_tables(directory, run) if run.population is not None else (
             relation_tables(directory, run))  # fmt: skip
         rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2, **tables)
     summary = {

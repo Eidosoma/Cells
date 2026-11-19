@@ -17,7 +17,11 @@ Each claim with a planted error it must catch (D187):
   two founders in four slots replays on the host from the world's stream through the two-level
   map (planted: one fold over every group's channels picks other events);
 - P5: a vesicle's lysis frees its slot and the world goes on: its molecules return to the pool,
-  every species is conserved, the books close, and relations@2 carries the lysed life.
+  every species is conserved, the books close, and relations@2 carries the lysed life;
+- P6: in a population every daughter lives: daughter 0 keeps its parent's slot and the parent's
+  counter, the others take free slots in slot order and open sub-lineages in world event order;
+  too few free slots stop the run `slots_full` before the draw; each schedule pays its own column
+  (planted: a key rule that numbers the second daughter's sub-lineage by generation differs).
 
 World-compiling cost: one program (the division test's world, three runs of one structure); its
 seconds on the timed lane are stated with its tier row. Reason: the record is the run's own.
@@ -151,13 +155,16 @@ def test_every_run_refuses_a_threefry_that_is_not_partitionable():
 FOUNDER = {"L@membrane": 8, "S@lumen": 1, "I@lumen": 2}
 
 
-def pop_spec(founders, slots, *, sigma_max=1e3, horizon=5.0, mu_bilayer=-2.0):
+def pop_spec(founders, slots, *, sigma_max=1e3, horizon=5.0, mu_bilayer=-2.0, schedules=None):
     w = osmotic_world(L_pool=30, L_mem=0, S_pool=6, S_lumen=0, I_lumen=0, floor=4 * K_L,
                       sigma_max=sigma_max, mu_bilayer=mu_bilayer)  # fmt: skip
     w["population"] = {"structure": SHARED_POOL, "slots": slots, "founders": founders}
     d = definition(w, molecules=128, horizon=horizon, event_limit=20000, row_every=20,
                    uniforms=True)  # fmt: skip
     d["execution"]["mode"] = "population"
+    if schedules is not None:
+        d["model"]["world"]["division"] = {"law": division.SHEAR_FISSION}
+        d["experiment"]["schedules"] = schedules
     return parse_spec(d)
 
 
@@ -262,3 +269,33 @@ def test_a_lysis_frees_its_slot_and_the_world_goes_on(tmp_path):
     assert descriptor["format"] == rel.FORMAT_V2
     ends = {life["key"]: life["end_reason"] for life in population.lives(run)}
     assert ends[lyses[0]["key"]] == "lysed"
+
+
+def test_every_daughter_lives_and_too_few_slots_stop_the_run(tmp_path):
+    shear = [{"index": 2, "kind": "shear", "k": 2, "times_s": [1.0, 2.0]}]
+    s = pop_spec([dict(FOUNDER, **{"L@membrane": 12}), dict(FOUNDER, **{"L@membrane": 10})], 4,
+                 schedules=shear)  # fmt: skip
+    run = runner.run(s).check()
+    table = run.population["fissions"]
+    outcomes = [division.POPULATION_OUTCOMES[o] for o in table["fission_outcome"]]
+    assert outcomes == ["split", "split", "slots_full"]  # the third finds no free slot
+    assert run.status == "slots_full" and table["fission_counter"].tolist() == [0, 0, -1]
+    key = lambda s, c: (s << 32) + c  # noqa: E731
+    assert table["fission_daughters"].tolist() == [[key(0, 1), key(0, 2)], [key(1, 1), key(1, 2)],
+                                                   [-1, -1]]  # fmt: skip
+    assert table["fission_daughter_slots"].tolist() == [[0, 2], [1, 3], [-1, -1]]
+    lives = {life["key"]: life for life in population.lives(run)}
+    assert lives[key(0, 0)]["end_reason"] == lives[key(1, 0)]["end_reason"] == "divided"
+    # Daughter 0 continues its parent's sub-lineage; the second daughters open 2 and 3 in world
+    # event order (the slot-0 split first). Planted: by generation they would tie.
+    assert [lives[key(0, 1)]["lineage"], lives[key(0, 2)]["lineage"]] == [0, 2]
+    assert [lives[key(1, 1)]["lineage"], lives[key(1, 2)]["lineage"]] == [1, 3]
+    assert all(life["end_reason"] == "censored" for life in lives.values()
+               if life["birth_kind"] == "division")  # fmt: skip
+    rows = run.rows
+    assert np.allclose(rows["schedule_work_kT"][:, 0], rows["shear_work_kT"], rtol=0, atol=0)
+    assert run.closure["holds"] and rows["shear_work_kT"][-1] != 0
+    records.write_run(tmp_path / "s", run)
+    descriptor, tables = rel.read(tmp_path / "s")
+    assert descriptor["format"] == rel.FORMAT_V2
+    assert sum(1 for e in tables["events"] if e.kind == "fission") == 2

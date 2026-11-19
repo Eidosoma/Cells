@@ -34,7 +34,14 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, bounded_integer
 from cells.models.assembly_lineages import folds
-from cells.models.assembly_lineages_v2 import MODEL_ID, SHARED_POOL, kernel, streams
+from cells.models.assembly_lineages_v2 import (
+    MODEL_ID,
+    SHARED_POOL,
+    SHEAR_FISSION,
+    division,
+    kernel,
+    streams,
+)
 from cells.models.assembly_lineages_v2.interfaces import PopulationStructure
 from cells.modules import Citation
 from cells.registry import laws as law_registry
@@ -328,12 +335,56 @@ def _energy(spec, layout):
     return world_f
 
 
+E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG, E_SHEAR, E_MAG, E_TRANSFER, E_SINK = range(8)
+EXTRA = 8  # the host's bookings, then one schedule-work column per declared schedule
+
+
+class _Context:
+    """The host's own records of a population run: keys, sub-lineages, lives, attempts, stops."""
+
+    def __init__(self, spec, layout, state, founders):
+        world = spec.model.world
+        self.K = world.population["slots"]
+        self.columns = [s.index for s in spec.experiment.schedules]
+        self.extra = np.zeros(EXTRA + len(self.columns))
+        self.lineage = np.where(state.alive, np.arange(self.K), -1)  # each slot's sub-lineage
+        self.count = {i: 0 for i in range(founders)}  # each sub-lineage's last key count
+        self.next_sub = founders
+        self.generation = np.zeros(self.K, dtype=np.int64)
+        self.fission_counter = {}
+        self.attempts, self.stops, self.lyses, self.lives = [], [], [], []
+        self.life_of = {}  # slot -> index into lives
+        for k in np.flatnonzero(state.alive):
+            self._born(k, int(state.keys[k]), 0.0, "founder", "", int(k), "")
+
+    def _born(self, slot, key, time, kind, parent, lineage, event, root=None, share=float("nan")):
+        from cells.models.assembly_lineages import keys as keys_rules
+
+        life = keys_rules.carrier_id(key)
+        self.life_of[slot] = len(self.lives)
+        self.lives.append({
+            "id": life, "key": key, "lineage": lineage, "birth_time": time, "birth_kind": kind,
+            "generation": int(self.generation[slot]), "root": root or life,
+            "declared_by": MODEL_ID if kind == "founder" else SHEAR_FISSION, "slot": f"slot:{slot}",
+            "parent": parent, "share": share, "donor": "", "predecessor": "", "birth_event": event,
+            "end_time": None, "end_reason": None, "end_event": "",
+        })  # fmt: skip
+
+    def end(self, slot, time, reason, event=""):
+        life = self.lives[self.life_of.pop(slot)]
+        life.update(end_time=time, end_reason=reason, end_event=event)
+
+    def book(self, column, shear):
+        self.extra[E_SHEAR] += shear
+        self.extra[E_MAG] += abs(shear)
+        self.extra[EXTRA + self.columns.index(column)] += shear
+
+
 def run(spec):
     """One population world, from its founders to the end of its lifecycle (module docstring)."""
     from time import perf_counter
 
-    from cells.models.assembly_lineages import keys as keys_rules
-    from cells.models.assembly_lineages_v2 import balance, diagnostic, ledger, lumen, model
+    from cells.models.assembly_lineages_v2 import balance, diagnostic, model
     from cells.models.assembly_lineages_v2 import runner as single
 
     if not diagnostic.partitionable():
@@ -357,19 +408,24 @@ def run(spec):
     keys = np.where(alive, np.arange(K, dtype=np.int64) << 32, -1)  # founder i holds i:0
     state = _State(model.founder(spec), slots, alive, keys, np.zeros(P, dtype=np.int64))
     start = state.copy()
+    ctx = _Context(spec, layout, state, len(founders))
+    horizon = spec.experiment.time_horizon_s
+    plan, schedule_draws = single._plan(spec, layout.base_key)
     stream = streams.stream_key_data(layout.base_key, streams.WORLD_CARRIER, "world")
     zero = np.float64(0.0)
     lane = Lane(state.pool, state.slots, state.alive, zero, np.int64(0), np.int64(0),
                 state.supplied, zero, zero, zero, zero, np.zeros((K + 1, 2 * R)),
                 np.asarray(stream), np.int32(kernel.RUNNING), np.int32(-1))  # fmt: skip
     stack = functools.partial(jax.tree_util.tree_map, lambda x: np.asarray(x)[None])
-    layouts, ms = stack(layout), stack(m)
+    first = plan[0][0] if plan else horizon
+    layouts, ms = stack(layout._replace(horizon=np.float64(first))), stack(m)
     advance, refresh = program(structure)
     started = perf_counter()
     lanes = refresh(stack(lane), layouts, ms)
     world_f = _energy(spec, layout)
-    events, draws, stops, lyses = [], [], [], []
-    extra = np.zeros(4)  # the host's bookings: heat, |heat|, work, |work|
+    vesicle_f = single._vesicle_energy(spec, layout)
+    events, draws = [], []
+    end_status = None
     while True:
         status = int(np.asarray(lanes.status)[0])
         if status == kernel.RUNNING:
@@ -383,29 +439,115 @@ def run(spec):
                 events.append(np.stack([host.time[c], host.heat[c], host.heat_magnitude[c],
                                         host.work[c], host.work_magnitude[c]], axis=1))  # fmt: skip
             continue
-        if status != SLOT_LYSED:
-            break
         host = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
-        state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
-        before = world_f(state)
-        s = int(host.lysed_slot)
-        record = _release(world, layout, state, s)
-        q = -(world_f(state) - before) + record["release_reservoir_work_kT"]
-        record |= {"time_s": float(host.time), "slot": s, "key": int(state.keys[s]),
-                   "event": int(host.events), "release_heat_kT": q}  # fmt: skip
-        extra += [q, abs(q), record["release_reservoir_work_kT"],
-                  abs(record["release_reservoir_work_kT"])]  # fmt: skip
-        lyses.append(record)
-        stops.append((int(host.events), LYSIS, float(host.time), state.copy(), extra.copy()))
+        if status == SLOT_LYSED:
+            state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            _lyse(world, layout, state, ctx, world_f, int(host.lysed_slot), float(host.time),
+                  int(host.events))  # fmt: skip
+        elif status in (kernel.COMPLETE, kernel.INERT) and plan:
+            stop, stop_events = plan.pop(0)  # the draw that crossed it is discarded, and counted
+            state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            full = _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, stop, stop_events,
+                               int(host.events))  # fmt: skip
+            if full:
+                end_status = "slots_full"
+                host = host._replace(time=np.float64(stop))
+                break
+            nxt = plan[0][0] if plan else horizon
+            layouts = layouts._replace(horizon=np.asarray([nxt]))
+            going = kernel.RUNNING if stop < horizon else status  # a stop at t_end holds
+            host = host._replace(time=np.float64(stop), status=np.int32(going))
+        else:
+            break
         host = host._replace(pool=state.pool, slots=state.slots, alive=state.alive,
-                             supplied=state.supplied, status=np.int32(kernel.RUNNING),
-                             lysed_slot=np.int32(-1))  # fmt: skip
+                             supplied=state.supplied, lysed_slot=np.int32(-1),
+                             status=np.int32(kernel.RUNNING) if int(host.status) == SLOT_LYSED
+                             else host.status)  # fmt: skip
         lanes = refresh(stack(host), layouts, ms)
     run_seconds = perf_counter() - started
     final = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
-    return _assemble(spec, structure, layout, m, verdict, start, state.keys, events, draws,
-                     stops, lyses, final, world_f, run_seconds, keys_rules, ledger, lumen,
-                     single)  # fmt: skip
+    if end_status is not None:
+        final = host
+    return _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, draws,
+                     schedule_draws, final, end_status, world_f, run_seconds)  # fmt: skip
+
+
+def _lyse(world, layout, state, ctx, world_f, s, time, n_events, at_birth=False):
+    """A slot's lysis on the host, booked as one lysis row (module docstring)."""
+    before = world_f(state)
+    key = int(state.keys[s])
+    record = _release(world, layout, state, s)
+    w = record["release_reservoir_work_kT"]
+    q = -(world_f(state) - before) + w
+    record |= {"time_s": time, "slot": s, "key": key, "event": n_events, "release_heat_kT": q,
+               "at_birth": at_birth}  # fmt: skip
+    ctx.extra[[E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG]] += [q, abs(q), w, abs(w)]
+    ctx.lyses.append(record)
+    ctx.end(s, time, "lysed", f"event:lysis/{key}")
+    state.keys[s] = -1
+    ctx.lineage[s] = -1
+    ctx.stops.append((n_events, LYSIS, time, state.copy(), ctx.extra.copy()))
+
+
+def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events, n_events):
+    """A stop's shear events, in schedule-index order, each on the assemblies alive at its start,
+    in slot order (§0.2d item 10.1). Every daughter lives: daughter 0 takes its parent's slot, the
+    others free slots in slot order. Returns True when the run stops `slots_full`."""
+    from cells.models.assembly_lineages import keys as keys_rules
+
+    world = spec.model.world
+    places = len(world.places)
+    for event in stop_events:
+        k = event[2]
+        for s in [int(x) for x in np.flatnonzero(state.alive)]:
+            parent = int(state.keys[s])
+            sub = int(ctx.lineage[s])
+            counter = ctx.fission_counter.get(parent, 0)
+            free = [int(x) for x in np.flatnonzero(~state.alive)]
+            counts = (state.pool + state.slots[s])[:places]
+            next_key = keys_rules.key(sub, ctx.count[sub] + 1)
+            a = division.attempt(world, counts, parent, counter, event, layout.base_key,
+                                 vesicle_f, next_key, free_slots=len(free))  # fmt: skip
+            row = len(ctx.attempts)
+            homes = [s, *free[: k - 1]] if a.outcome == "split" else []
+            ctx.attempts.append((a, int(ctx.generation[s]), s, homes))
+            if a.counter >= 0:
+                ctx.fission_counter[parent] = counter + 1
+            if a.outcome == "slots_full":
+                return True
+            if a.outcome != "split":
+                continue
+            ctx.count[sub] += k
+            fission = f"event:fission/{row}"
+            parent_life = ctx.lives[ctx.life_of[s]]
+            ctx.end(s, time, "divided", fission)
+            generation = ctx.generation[s] + 1
+            sizes = (
+                a.daughters[:, :places].sum(axis=1)
+                - counts[[i for i, p in enumerate(world.places) if p.phase == "pool"]].sum()
+            )
+            for j, slot in enumerate(homes):
+                state.slots[slot] = 0
+                vesicle = a.daughters[j].copy()
+                vesicle[[i for i, p in enumerate(world.places) if p.phase == "pool"]] = 0
+                state.slots[slot, :places] = vesicle
+                state.alive[slot], state.keys[slot] = True, a.keys[j]
+                ctx.generation[slot] = generation
+                if j == 0:
+                    ctx.lineage[slot] = sub  # the first continues its parent's counter
+                else:
+                    ctx.lineage[slot] = ctx.next_sub  # a new sub-lineage, in world event order
+                    ctx.count[ctx.next_sub] = 0
+                    ctx.next_sub += 1
+                ctx._born(slot, int(a.keys[j]), time, "division", parent_life["id"],
+                          int(ctx.lineage[slot]), fission, root=parent_life["root"],
+                          share=float(sizes[j] / sizes.sum()))  # fmt: skip
+            ctx.book(event[1], a.shear_work)
+            ctx.stops.append((n_events, SHEAR, time, state.copy(), ctx.extra.copy()))
+            for j, slot in enumerate(homes):  # §0.2d item 10.3: born beyond sigma_max
+                if a.lysed[j]:
+                    _lyse(world, layout, state, ctx, world_f, slot, time, n_events, at_birth=True)
+    return False
 
 
 def _release(world, layout, state, s):
@@ -435,60 +577,70 @@ def _release(world, layout, state, s):
     return {"returned": returned, "release_reservoir_work_kT": work, "sigma_N_per_m": sigma}
 
 
-def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, stops, lyses,
-              final, world_f, run_seconds, keys_rules, ledger, lumen, single):  # fmt: skip
-    from cells.models.assembly_lineages_v2 import geometry
+def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, draws,
+              schedule_draws, final, end_status, world_f, run_seconds):  # fmt: skip
+    from cells.models.assembly_lineages import keys as keys_rules
+    from cells.models.assembly_lineages_v2 import geometry, ledger, lumen
+    from cells.models.assembly_lineages_v2 import runner as single
 
     world = spec.model.world
     places = len(world.places)
-    status = STATUS[int(final.status)]
-    pairs = events[0::2]
-    numbers = events[1::2]
-    codes = np.concatenate(pairs) if pairs else np.zeros((0, 2), dtype=np.int64)
-    values = np.concatenate(numbers) if numbers else np.zeros((0, 5))
+    status = end_status or STATUS[int(final.status)]
+    codes = np.concatenate(events[0::2]) if events else np.zeros((0, 2), dtype=np.int64)
+    values = np.concatenate(events[1::2]) if events else np.zeros((0, 5))
     count_change, supply_change = single.changes(layout, structure)
     R = structure.steps
     index = np.where(codes[:, 1] > 0, codes[:, 1] - 1, R + (-codes[:, 1] - 1)).astype(np.int64)
     horizon = spec.experiment.time_horizon_s
     end_time = horizon if status in ("complete", "inert") else float(final.time)
-    # The rows: the start, every row_every events, each observation, each stop, the end.
-    marks = [(0, START, 0.0)]
+    marks = [(0, START, 0.0, -1)]
     every = spec.experiment.row_every_events
-    marks += [(e, PERIODIC, float(values[e - 1, 0])) for e in range(every, len(codes) + 1, every)]
+    marks += [
+        (e, PERIODIC, float(values[e - 1, 0]), -1) for e in range(every, len(codes) + 1, every)
+    ]
     times = values[:, 0]
     for t in spec.experiment.observation_times_s:
         if t <= end_time:
-            marks.append((int(np.searchsorted(times, t, side="right")), OBSERVED, t))
-    marks += [(n, kind, t) for n, kind, t, *_ in stops]
-    marks.append((len(codes), END, end_time))
+            marks.append((int(np.searchsorted(times, t, side="right")), OBSERVED, t, -1))
+    marks += [(n, kind, t, i) for i, (n, kind, t, *_) in enumerate(ctx.stops)]
+    marks.append((len(codes), END, end_time, len(ctx.stops)))
     order = {START: 0, PERIODIC: 1, OBSERVED: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, END: 3}
-    marks.sort(key=lambda x: (x[0], order[x[1]], x[2]))
-    state, stop_i, e = start.copy(), 0, 0
-    extra = np.zeros(4)
+    marks.sort(key=lambda x: (x[0], order[x[1]], x[3], x[2]))
+    replay, e, applied = start.copy(), 0, 0
+    extra = np.zeros_like(ctx.extra)
     rows = []
-    for n, kind, t in marks:
+    for n, kind, t, stop in marks:
         while e < n:  # replay the events up to this row, in exact integers
             change = count_change[index[e]]
-            state.pool += np.where(m.place_vesicle, 0, change)
+            replay.pool += np.where(m.place_vesicle, 0, change)
             if codes[e, 0] > 0:
-                state.slots[codes[e, 0] - 1] += np.where(m.place_vesicle, change, 0)
-            state.supplied += supply_change[index[e]]
+                replay.slots[codes[e, 0] - 1] += np.where(m.place_vesicle, change, 0)
+            replay.supplied += supply_change[index[e]]
             e += 1
-            while stop_i < len(stops) and stops[stop_i][0] == e and stops[stop_i][1] != END:
-                state, extra = stops[stop_i][3].copy(), stops[stop_i][4]
-                stop_i += 1
+        if kind in (SHEAR, LYSIS, TRANSFER):
+            replay, extra = ctx.stops[stop][3].copy(), ctx.stops[stop][4]
+            applied += 1
         device = values[n - 1, 1:] if n > 0 else np.zeros(4)
-        rows.append((kind, n, t, state.copy(), device + extra))
-    if not (np.array_equal(state.pool, final.pool) and np.array_equal(state.slots, final.slots)
-            and np.array_equal(state.supplied, final.supplied)):  # fmt: skip
+        rows.append((kind, n, t, replay.copy(), device, extra.copy()))
+    if not (np.array_equal(replay.pool, final.pool) and np.array_equal(replay.slots, final.slots)
+            and np.array_equal(replay.supplied, final.supplied)):  # fmt: skip
         raise AssertionError(
             "The rows rebuilt from the events differ from the world's state: a fault"
         )
     f = np.asarray([world_f(r[3]) for r in rows])
-    booked = np.stack([r[4] for r in rows])
-    heat, heat_mag, work, work_mag = booked.T
-    residual = ledger.residual(heat, work, f, f[0])
-    tolerance = ledger.closure_tolerance(heat_mag, work_mag, f, f[0])
+    device = np.stack([r[4] for r in rows])
+    extra = np.stack([r[5] for r in rows])
+    columns = extra[:, EXTRA:]
+    heat = device[:, 0] + extra[:, E_HEAT]
+    heat_mag = device[:, 1] + extra[:, E_HEAT_MAG]
+    work = device[:, 2] + extra[:, E_WORK]
+    booked = work + columns.sum(axis=1) - extra[:, E_SINK]
+    booked_mag = device[:, 3] + extra[:, E_WORK_MAG] + extra[:, E_MAG]
+    if not np.allclose(columns.sum(axis=1), extra[:, E_SHEAR] + extra[:, E_TRANSFER],
+                       rtol=1e-12, atol=1e-9):  # fmt: skip
+        raise AssertionError("The schedule columns differ from the shear and transfer totals")
+    residual = ledger.residual(heat, booked, f, f[0])
+    tolerance = ledger.closure_tolerance(heat_mag, booked_mag, f, f[0])
     closes = bool(np.all(np.abs(residual) <= tolerance))
     worst = int(np.argmax(np.abs(residual) - tolerance))
     refused = None
@@ -499,7 +651,6 @@ def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, s
     quanta = geometry.place_quanta(world, structure.places)
     slot_counts = np.stack([r[3].slots[:, :places] for r in rows])
     alive = np.stack([r[3].alive for r in rows])
-    key_rows = np.where(alive, keys[None, :], -1)
     V = np.zeros(alive.shape)
     sigma = np.zeros(alive.shape)
     for r, row in enumerate(rows):
@@ -512,7 +663,7 @@ def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, s
         "row_kind": np.asarray([r[0] for r in rows], dtype=np.int8),
         "pool_count": np.stack([r[3].pool[:places] for r in rows]),
         "slot_count": slot_counts,
-        "slot_key": key_rows,
+        "slot_key": np.stack([np.where(r[3].alive, r[3].keys, -1) for r in rows]),
         "reservoir_supplied": np.stack([r[3].supplied[:places] for r in rows]),
         "event_heat_kT": heat,
         "reservoir_work_kT": work,
@@ -522,6 +673,9 @@ def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, s
         "lumen_volume_L": V,
         "tension_N_per_m": sigma,
     }
+    if ctx.columns:
+        row_arrays |= {"schedule_work_kT": columns, "shear_work_kT": extra[:, E_SHEAR],
+                       "discarded_free_energy_kT": extra[:, E_SINK]}  # fmt: skip
     closure = {"checked": True, "holds": closes,
                "max_abs_residual_kT": float(np.max(np.abs(residual))),
                "tolerance_rtol": ledger.RTOL, "refused": refused,
@@ -536,13 +690,28 @@ def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, s
     diagnostics = {}
     if structure.uniforms:
         diagnostics["event_uniforms"] = all_draws[committed]
+    for k in list(ctx.life_of):  # alive at the end: censored where observation stopped
+        ctx.end(k, end_time, "censored")
+    fissions = None
+    if ctx.attempts:
+        fissions = division.fission_arrays([(a, g) for a, g, _, _ in ctx.attempts], places,
+                                           division.POPULATION_OUTCOMES)  # fmt: skip
+        width = fissions["fission_daughters"].shape[1]
+        fissions["fission_slot"] = np.asarray([s for _, _, s, _ in ctx.attempts], dtype=np.int64)
+        fissions["fission_daughter_slots"] = np.asarray(
+            [list(h) + [-1] * (width - len(h)) for _, _, _, h in ctx.attempts], dtype=np.int64
+        ).reshape(len(ctx.attempts), width)
     report = {
         "slots": int(world.population["slots"]),
         "founders": len(world.population["founders"]),
-        "lyses": lyses,
+        "lyses": ctx.lyses,
         "draws": int(len(all_draws)),
+        "schedule_columns": ctx.columns,
+        "lives": sorted(ctx.lives, key=lambda x: (x["birth_time"], x["key"])),
+        "fissions": fissions,
+        "schedule_draws": schedule_draws,
         "reads": "one world-level SSA (cells.shared_pool@1); each lysis frees its slot, and the "
-        "world goes on",
+        "world goes on; every daughter lives",
     }
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
     return single.WorldRun(
@@ -556,26 +725,5 @@ def _assemble(spec, structure, layout, m, verdict, start, keys, events, draws, s
 
 
 def lives(run):
-    """The lives as cells.relations' Life fields: founder i holds i:0 in slot i (sub-lineage i);
-    a life ends lysed at its lysis, or is censored at the run's end."""
-    from cells.models.assembly_lineages import keys as keys_rules
-
-    rows = run.rows
-    end_time = float(rows["row_time"][-1])
-    lysed = {record["key"]: record for record in run.population["lyses"]}
-    out = []
-    for k, key in enumerate(rows["slot_key"][0].tolist()):
-        if key < 0:
-            continue
-        life = keys_rules.carrier_id(key)
-        ended = lysed.get(key)
-        out.append({
-            "id": life, "key": int(key), "lineage": int(key >> 32), "birth_time": 0.0,
-            "birth_kind": "founder", "generation": 0, "root": life, "declared_by": MODEL_ID,
-            "slot": f"slot:{k}", "parent": "", "share": float("nan"), "donor": "",
-            "predecessor": "", "birth_event": "",
-            "end_time": ended["time_s"] if ended else end_time,
-            "end_reason": "lysed" if ended else "censored",
-            "end_event": f"event:lysis/{key}" if ended else "",
-        })  # fmt: skip
-    return out
+    """The lives as cells.relations' Life fields, in birth order (the run's own records)."""
+    return run.population["lives"]
