@@ -16,13 +16,18 @@ Each claim with a planted error it must catch (D187):
   manifest (a piece's, a host's, a model's or a model row's), except the solvers and the closure
   law, which no registry declares; each piece names its file and declaration line, each read its
   mode, each field its unit as the run view resolves it (planted: a definition naming a law in its
-  namespaced spelling, and a line read from a module with two declarations of one ID).
+  namespaced spelling, and a line read from a module with two declarations of one ID);
+- an operator's reads are every Read of each field, one per stage (door S's reads_of; M2's
+  hand-off), today's one each; a cycle law's changes are its general form's rows where the form
+  gives them (planted: a field read at two stages, and a form whose rows the manifest must list).
 """
 
 import ast
 import copy
+import dataclasses
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
@@ -267,3 +272,48 @@ def test_version_2_joins_a_real_definition_and_states_lines_reads_and_units(tmp_
         declarations.declaration_line(
             "cells.planted", law_registry.RouteLaw, "tests.twice@1", "law_id"
         )
+
+
+def test_reads_are_one_per_stage_and_a_cycle_form_gives_its_change_rows(monkeypatch):
+    water = "cells.ideal_osmosis_linear_compliance_water@1"
+    before = {e["id"]: e for e in declarations.manifest()["pieces"]}[water]["reads"]
+    assert before == [dict(name="membrane_area", mode="fixed", stage="split", scoped=False)]
+    # Planted: the field read at two stages, which the manifest must list as two reads.
+    cls = type(OPERATORS[water.split(".", 1)[1]])
+    two = (contract.Read("fixed", "split"), contract.Read("current", "inner"))
+    monkeypatch.setattr(cls, "SCOPED_READS", {"membrane_area": two})
+    after = {e["id"]: e for e in declarations.manifest()["pieces"]}[water]["reads"]
+    assert after == [
+        dict(name="membrane_area", mode="fixed", stage="split", scoped=False),
+        dict(name="membrane_area", mode="current", stage="inner", scoped=False),
+    ]
+    monkeypatch.undo()
+
+    class Form(NamedTuple):  # A general form is a NamedTuple, as seam A's CycleForm is.
+        form: str = "planted"
+
+        def errors(self):
+            return []
+
+        def changes(self):
+            return ({"role": "role", "per_cycle": -2, "mode": "coupled"},)
+
+    def kernel(*args, **kwargs):
+        raise AssertionError("never called")
+
+    plain = law_registry.CycleLaw(
+        "tests.planted_formed_cycle@1",
+        (("role", -1),),
+        (),
+        kernel,
+        kernel,
+        host="cells.transporter@1",
+    )
+    formed = dataclasses.replace(plain, law_id="tests.planted_formed_cycle@2", cycle=Form())
+    with law_registry.scope(law_registry.BUILTIN.extended(plain, formed)):
+        pieces = {e["id"]: e for e in declarations.manifest()["pieces"]}
+    assert pieces["tests.planted_formed_cycle@1"]["changes"] == [dict(role="role", per_cycle=-1)]
+    assert pieces["tests.planted_formed_cycle@2"]["changes"] == [
+        dict(role="role", per_cycle=-2, mode="coupled")
+    ]
+    assert pieces["tests.planted_formed_cycle@2"]["fields"]["cycle"] == {"form": "planted"}
