@@ -31,19 +31,27 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    relaxation is held only by B7's face-free term and, with kinds declared, by the per-stage rule
    at free outside nodes, and the material relaxation of its small volume only by its movers'
    own terms. Both rules run only with an IMEX tableau;
-5. a nonzero charge anchor (version 1.1, §3.4.3), except where refusal 4 admits charged routes (a
-   world that declares kinds and steps with an IMEX tableau), since such a world must be able to
-   resume from its own checkpoint; elsewhere (the silent version, and RK4) the content is
-   electroneutral, so q = 0 and V_b = 0;
+5. a nonzero charge anchor (version 1.2, §3.4.3 and §3.4.5), except where the world's admitted
+   routes charge the compartment, since such a world must be able to resume from its own
+   checkpoint: where refusal 4 admits charged routes (a world that declares kinds and steps with
+   an IMEX tableau; version 1.1), and where an operator of the admitted list moves charge into
+   that compartment (its routes, through the contract's charged_compartments: the pool of
+   scheduled_membrane_trafficking@1's routes; version 1.2). Elsewhere (the silent version, and
+   RK4 without such routes) the content is electroneutral, so q = 0 and V_b = 0. Version 1.2
+   reads the composition, so it is checked at the definition with refusal 7, after it;
 6. an owner whose capacitor component (cells and outside nodes joined by membrane patches, as
    numerics/surface_field.bind joins them) holds no held bath (version 1). In such a component no
    representative is chosen, so the compartment is a free node of the capacitor solve (§3.5);
 7. a composition beyond the admitted list of §4, which fails closed: a new operator may treat
    outside nodes as environment. Replacement@1 schedules no event on an owner's slot and names no
    owner as a donor (§1.5): a newcomer would inherit the compartment's content, and a donor copy
-   takes the donor's cytosolic amounts only. Providers and closers of the volumes, the areas, the
-   capacitances and the masks are refused through CONFLICTS_VIEW by the composite's structure check:
-   water and what requires it, membrane state, insertion, the lumens, and S5's closers (division).
+   takes the donor's cytosolic amounts only. Providers and closers of the volumes and the masks
+   are refused through CONFLICTS_VIEW by the composite's structure check: water and what requires
+   it, insertion, the lumens, and S5's closers (division). The areas and capacitances are
+   reference reads (D217): the declaration reads the declared bounding patch as data, its
+   identity, so a provider of them is no conflict. Membrane state, which provides them, is
+   admitted only together with scheduled_membrane_trafficking@1 (FR-2; the membrane-state wall's
+   door), whose routes are the one writer of them that the list admits.
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -67,7 +75,8 @@ from dataclasses import dataclass
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
-from cells.operators.contract import Operator
+from cells.models import pump_composite_adapter as adapter
+from cells.operators.contract import Operator, Read
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 
@@ -112,7 +121,12 @@ SOURCE_ABSENT = (
 # routes beside a compartment only with an IMEX tableau (§3.4.1).
 RK4_SOLVER = "rk4"
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
-# §4's admitted list (fails closed). @3 itself is the composite's inner model.
+STATE_LAW = "membrane_entity_state@1"
+# FR-2's operator (docs/MEMBRANE_RETRIEVAL_DESIGN.md; D217): named here before its module lands,
+# so that the admission is on main for its builder (the lead's ruling of 19 November 2026).
+TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
+# §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
+# admitted only together with trafficking (check_definition).
 ADMITTED = (
     LAW_ID,
     "electrode_current_injection@1",
@@ -122,13 +136,13 @@ ADMITTED = (
     "species_regulated_availability@1",
     REPLACEMENT_LAW,
     "scheduled_bath_composition@1",
+    STATE_LAW,
+    TRAFFICKING_LAW,
 )
-# Read as declared: the volumes, the areas, the capacitances and the activity masks (§1.4, 7).
+# Read as declared: the volumes and the activity masks (§1.4, 7).
 CONFLICTS_VIEW = (
     "volume",
     "extracellular_volume",
-    "membrane_area",
-    "membrane_capacitance",
     "active",
     "outside_active",
     "membrane_active",
@@ -136,6 +150,15 @@ CONFLICTS_VIEW = (
     "junction_active",
     "face_active",
 )
+# The areas and capacitances are reference reads (D217; docs/MEMBRANE_RETRIEVAL_DESIGN.md §6): the
+# declaration's identity checks read the declared bounding patch as data, so a provider of them
+# (membrane state, written by trafficking) is no conflict. A declaration's reads are unscoped
+# reference reads (the contract's DECLARATION_ONLY), at end, a stage a part-less operator's read
+# may name; a reference read takes the bound value whatever its stage.
+SCOPED_READS = {
+    "membrane_area": Read("reference", "end"),
+    "membrane_capacitance": Read("reference", "end"),
+}
 COMPARTMENT_FIELDS = {"id", "node", "patch", "owner", "label", "reference"}
 OPTIONAL_FIELDS = {"role"}
 ROLE = "lumen"  # The default role when a declaration omits it; no physics depends on a role.
@@ -212,10 +235,11 @@ def capacitor_components(model):
 def held_terms(kind, law_id):
     """The step terms a move under `law_id` by `kind` has: those of TERM_HOOKS that the law
     declares in the active law registry and that the kind moving it holds by the hook each maps
-    to, with the reason when there are none. Read by law ID, so a planted kind that reuses a law's
-    ID (FR-4's K2) is admitted on the law's declaration only where it keeps the hooks the law
-    names. A move with no law ID, an unregistered law and a law another kind hosts have none
-    (fails closed)."""
+    to, with the reason when there are none. `kind` is the kind bound to its declaration's
+    structure entry (refuse_kind_moves), whose hooks the step runs. Read by law ID, so a planted
+    kind that reuses a law's ID (FR-4's K2) is admitted on the law's declaration only where it
+    keeps the hooks the law names. A move with no law ID, an unregistered law and a law another
+    kind hosts have none (fails closed)."""
     if law_id is None:
         return (), "names no law (a moved row without a law ID)"
     laws = law_registry.active()
@@ -237,8 +261,12 @@ def refuse_kind_moves(model, node, kind_id, declaration):
     """Refusal 4's kinds, per move (version 1.3, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.4): every
     row the kind moves at the compartment's node is held by its law's declared step term (a
     charged row by a charge slope, a neutral row by a material slope or a material bound); a kind
-    that declares no moved rows is admitted as a stage read or a source, by its hooks."""
-    kind = kind_registry.active().lookup(kind_id)
+    that declares no moved rows is admitted as a stage read or a source, by its hooks. Every
+    hook is read on the kind bound to the declaration's structure entry
+    (pump_composite_adapter.bound_kind), as the inner model binds it, never on the static kind,
+    which may differ per entry: a static read could admit what the bound kind refuses (fail-open;
+    the lead's bound-kind sweep, CORE_SEAMS §18)."""
+    kind = adapter.bound_kind(kind_registry.active().lookup(kind_id), declaration)
     if kind.moved_rows is None:
         if kind.stage_read is not None:  # A stage read, which declares its rows.
             wrong = [f"has {h}" for h in STAGE_READ_ABSENT if getattr(kind, h) is not None]
@@ -321,19 +349,58 @@ def refuse_ion_routes(model, node, bounding, imex):
         refuse_kind_moves(model, node, kind_id, declaration)
 
 
-def refuse_charge_anchor(node, compartment, kinds=False, imex=False):
-    """Refusal 5 (version 1.1, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.3): a nonzero charge anchor
-    is admitted only where refusal 4 admits charged routes on the bounding patch, a world that
-    declares kinds (`kinds`) and steps with an IMEX tableau (`imex`): a world whose admitted
-    routes charge the lumen must be able to resume from its own checkpoint. Elsewhere, the silent
-    version (§3.3) and under RK4, the content is electroneutral, so V_b = 0 (fails closed)."""
-    if compartment.initial_charge_C != 0.0 and not (kinds and imex):
+def refuse_charge_anchor(node, compartment, kinds=False, imex=False, into=(), charging=()):
+    """Refusal 5 (version 1.2, docs/CLOSED_COMPARTMENT_DESIGN.md §3.4.3 and §3.4.5): a nonzero
+    charge anchor is admitted only where the world's admitted routes charge the compartment, since
+    such a world must be able to resume from its own checkpoint:
+    - version 1.1: where refusal 4 admits charged routes on its bounding patch, a world that
+      declares kinds (`kinds`) and steps with an IMEX tableau (`imex`);
+    - version 1.2: where an operator of the admitted list moves charge into the compartment
+      (`into`: the laws whose routes charge it, through the contract's charged_compartments),
+      whatever the solver: its pool keeps no conductance of its own, and V_b = -q/C_b holds at any
+      q (§3.1).
+    Elsewhere, the silent version (§3.3) and under RK4, the content is electroneutral, so V_b = 0
+    (fails closed). `charging`: the laws of the composition whose routes charge any compartment.
+    Where there is none, version 1.1's message is kept byte for byte, since FR-1's judged refusal
+    record holds it; otherwise the message names them. Called with positional arguments only: the
+    silence tests and FR-1's plants bypass it with a positional lambda."""
+    if compartment.initial_charge_C == 0.0 or (kinds and imex) or into:
+        return
+    if not charging:
         raise ConfigError(
             f"{LAW_ID}: compartment {node!r} declares a nonzero charge anchor "
             f"({compartment.initial_charge_C} C); version 1.1 admits one only where charged "
             "routes are admitted on its bounding patch (a world that declares kinds and steps "
             "with an IMEX tableau); elsewhere the content is electroneutral, so V_b = 0"
         )
+    raise ConfigError(
+        f"{LAW_ID}: compartment {node!r} declares a nonzero charge anchor "
+        f"({compartment.initial_charge_C} C), and no route of {', '.join(charging)} moves charge "
+        "into it; version 1.2 admits one only where charged routes are admitted on its bounding "
+        "patch (a world that declares kinds and steps with an IMEX tableau) or where an admitted "
+        "operator's routes move charge into the compartment; elsewhere the content is "
+        "electroneutral, so V_b = 0"
+    )
+
+
+def charged_by(spec, declaration, entries):
+    """{compartment ID: (law, ...)}: the operators whose routes charge each compartment (the
+    contract's charged_compartments, host side), in declared order; entries are the composite's,
+    every operator already on the admitted list. An ID this declaration does not declare is
+    refused (fails closed): a route's charge then reaches no compartment refusal 5 judges."""
+    declared = {c.id for c in declaration.compartments}
+    into = {}
+    for op, d, _ in entries:
+        for cid in op.charged_compartments(spec, d):
+            if cid not in declared:
+                raise ConfigError(
+                    f"{LAW_ID}: {op.LAW_ID}'s routes charge {cid!r}, which is not a compartment "
+                    "this declaration declares (fails closed)"
+                )
+            laws = into.setdefault(cid, [])
+            if op.LAW_ID not in laws:
+                laws.append(op.LAW_ID)
+    return {cid: tuple(laws) for cid, laws in into.items()}
 
 
 def parse_declaration(raw, base):
@@ -406,9 +473,7 @@ def parse_declaration(raw, base):
                 f"{bounding.inside!r}, not on its declared owner {owner!r}"
             )
         refuse_ion_routes(m, node, bounding, imex)  # 4.
-        # 5., version 1.1: where refusal 4 admits charged routes (positional: bypasses in the
-        # silence tests replace it with a positional-only lambda).
-        refuse_charge_anchor(node, outside[node], bool(getattr(m, "kinds", ())), imex)
+        # 5. is checked at the definition (check_definition): version 1.2 reads the composition.
         # 6. A held-bath topology.
         if components[owner] not in held:
             raise ConfigError(
@@ -450,10 +515,26 @@ def declaration_to_dict(declaration):
     )
 
 
+def refuse_untrafficked_state(laws):
+    """7. Membrane state beside a compartment only together with trafficking (FR-2, D217; the lead's
+    ruling of 19 November 2026 on its question 11): membrane state provides every patch's area and
+    capacitance, a bounding patch's included, and trafficking is the one writer of them on the
+    admitted list. Alone it would provide the declared values only, a composition no world
+    needs, so it fails closed."""
+    if STATE_LAW in laws and TRAFFICKING_LAW not in laws:
+        raise ConfigError(
+            f"{LAW_ID} admits {STATE_LAW} only together with {TRAFFICKING_LAW}: membrane state "
+            "provides every patch's area and capacitance, a bounding patch's included, and "
+            "trafficking is the one writer of them on its admitted list (fails closed)"
+        )
+
+
 def check_definition(spec, declaration):
-    """7. The admitted list, which fails closed, and replacement@1's owners."""
+    """7. The admitted list, which fails closed, replacement@1's owners, and membrane state only
+    with trafficking; then 5. (version 1.2), which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
-    for op, _, schedule in composite_spec.entries(spec):
+    entries = composite_spec.entries(spec)
+    for op, _, schedule in entries:
         if op.LAW_ID not in ADMITTED:
             raise ConfigError(
                 f"{LAW_ID} composes only with {', '.join(ADMITTED[1:])}; {op.LAW_ID} is not on "
@@ -474,6 +555,16 @@ def check_definition(spec, declaration):
                     "a donor; a donor copy takes the donor's cytosolic amounts only, so the "
                     "newcomer would not be a copy (door R)"
                 )
+    refuse_untrafficked_state([op.LAW_ID for op, _, _ in entries])
+    # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
+    # tests and FR-1's plants replace it with a positional-only lambda).
+    into = charged_by(spec, declaration, entries)
+    charging = tuple(dict.fromkeys(law for laws in into.values() for law in laws))
+    m = spec.model
+    outside = {c.id: c for c in m.extracellular}
+    kinds, imex = bool(getattr(m, "kinds", ())), spec.execution.solver != RK4_SOLVER
+    for c in declaration.compartments:
+        refuse_charge_anchor(c.node, outside[c.node], kinds, imex, into.get(c.id, ()), charging)
 
 
 def identity_map(model, declaration):
@@ -513,6 +604,7 @@ class CellOwnedCompartments(Operator):
     LAW_ID = LAW_ID
     DECLARATION_ONLY = True
     CONFLICTS_VIEW = CONFLICTS_VIEW
+    SCOPED_READS = SCOPED_READS
 
     def parse(self, raw, base, inner_model):
         return parse_declaration(raw, base)
@@ -534,11 +626,13 @@ class CellOwnedCompartments(Operator):
             "compartments_role_default": ROLE,  # Entries with role_declared False carry it.
             "compartments_role_physics": "none in version 1: a role is metadata",
             "compartments_scope": (
-                "refusal 4 version 1.3, refusal 5 version 1.1: a held-bath topology at a fixed "
+                "refusal 4 version 1.3, refusal 5 version 1.2: a held-bath topology at a fixed "
                 "volume; on a bounding patch no ion route but refusal 4's admitted ones (@3's "
                 "permeabilities, and the kinds' moves at the compartment's node, each held by a "
                 "step term its law declares, when the world declares kinds, with an IMEX step), "
-                "and a zero charge anchor except in those same worlds; owners are never replaced, "
-                "used as donors or divided"
+                "and a zero charge anchor except in those same worlds and where an admitted "
+                "operator's routes move charge into the compartment (trafficking's pool); a "
+                "bounding patch's area and capacitance change only by trafficking; owners are "
+                "never replaced, used as donors or divided"
             ),
         }

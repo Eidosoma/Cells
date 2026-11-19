@@ -491,6 +491,8 @@ try {
     const opensOn = [];
     for (const query of [`run=${WHOLE}--figure5-network-g1`, `select=run:${WHOLE}--figure5-network-g1`, `example=gard`]) {
       await page("Page.navigate", { url: `${base}?lens=experiments&still=1&${query}` });
+      // Read once the page's viewer stands on a view: a fixed wait alone raced a slow load when four browsers ran at once.
+      await until(`Boolean(${V} && ${V}.state && ${V}.state.lens && ${V}.current)`);
       await sleep(2500);
       opensOn.push([query, await evaluate(`({ part: ${V}.state.part || null, example: ${V}.state.example || null, run: ${L}?.runId || null })`)]);
     }
