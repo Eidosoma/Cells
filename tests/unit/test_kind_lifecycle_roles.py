@@ -11,7 +11,10 @@ lifecycle acts on every field it holds, checked in order:
    presence gate, the lead's ruling of 19 November 2026): a planted per-patch kind without
    presence stays refused, and the transporter declaring its three masks is admitted. Entity
    axes are F's (kind_registry.entity_axes): neither the shared axes, one set with F's, nor a
-   kind's internal axes, so a kind whose only extra axis is internal needs no presence.
+   kind's internal axes, so a kind whose only extra axis is internal needs no presence;
+4. every entity axis has a host the presence gate reads: @3's slot axes it closes (one list with
+   the gate's, surface_pump_v3.PRESENCE_SLOT_AXES, channel populations and faces included), or an
+   own axis's declared axis_hosts: a planted own axis without them stays refused.
 A planted kind with roles and axes and no per-entity field is admitted beside every slot changer.
 Beside a dividing closer, a kind's own entity axes wait for B2's own-axis maps (refused).
 @3's role table is converted once (Q4): structural fields fill with 0, and the pumps' history is
@@ -26,7 +29,7 @@ import pytest
 
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.models import pump_composite
+from cells.models import pump_composite, surface_pump_v3
 from cells.models import pump_composite_adapter as pump3
 from cells.operators import OPERATORS, partition
 from cells.registry import kind_registry
@@ -991,6 +994,10 @@ def _thaw(value):
 
 
 def _planted_slots(spec, axis):
+    """(capacity, slot ids) of one of @3's slot axes; a kind's own axis has none in the world (its
+    field takes its length from `bound_on`)."""
+    if axis not in SLOT_LISTS:
+        return None, []
     capacity, entities = SLOT_LISTS[axis]
     return getattr(spec.execution, capacity), [e.id for e in getattr(spec.model, entities)]
 
@@ -1000,8 +1007,8 @@ def planted_population(fields=PLANTED_FIELDS, *, bound_on=None, presence=None):
     their roles and axes declared, every value given slot by slot in its model block ({field: {slot:
     value}}, a control's value a schedule [[time, value], ...]). `bound_on` {field: axis or a
     length} binds a field along another axis than it declares, or with that many entries (a planted
-    shape; 0, no entities). `presence`: F's declaration, {entity axis: (field, ...)}. A structural
-    field with fill False is a bool mask. No state, rates or moves."""
+    shape; 0, no entities; an own axis's length). `presence`: F's declaration, {entity axis:
+    (field, ...)}. A structural field with fill False is a bool mask. No state, rates or moves."""
     bound_on = bound_on or {}
     layout = tuple(k for k, (what, _, _) in fields.items() if what == "layout")
     control = tuple(k for k, (what, _, _) in fields.items() if what == "control")
@@ -1311,10 +1318,14 @@ def test_presence_is_equal_at_the_daughters():
 
 
 def test_an_entity_axis_the_presence_gate_cannot_host_is_refused():
-    """The core's presence gate reads the activity of cells, outside nodes, patches and junctions
-    (kind_registry.AXIS_HOST_KINDS) and of an own axis's declared host. A kind with entities on
-    @3's channel slots (or faces) declaring presence there could not be closed, so it is refused
-    beside a closer, fail-closed (Q2's gate met the planted kind's channel_slot as a KeyError)."""
+    """The core's presence gate closes the entities of @3's slot axes, channel populations and
+    faces included (surface_pump_v3.PRESENCE_SLOT_AXES, one list with the lifecycle's), and of an
+    own axis through its declared host. So the planted kind with presence on patches and channel
+    populations is admitted beside the partition with no bypass, and the gate closes its
+    populations (it met their channel_slot as a KeyError before the @3 owner's batch). Planted: an
+    own axis with presence and no axis_hosts could not be closed, so it is refused beside a closer,
+    fail-closed."""
+    assert pump3.GATED_SLOT_AXES is surface_pump_v3.PRESENCE_SLOT_AXES
     raw, division = planted_world()
     rows = [x for p in division["populations"] for x in (p["parent"], *p["daughters"])]
     (patch,) = division["patches"]
@@ -1333,9 +1344,27 @@ def test_an_entity_axis_the_presence_gate_cannot_host_is_refused():
     }
     kind = planted_population(fields, presence=presence)
     assert kind_registry.declaration_errors(kind) == []
-    assert pump3.kind_lifecycle_errors(kind) == ("hosts", ("channel_slot",))
+    assert pump3.kind_lifecycle_errors(kind) == ()
     with kind_registry.scope(kf.registry(kind)):
-        with pytest.raises(ConfigError, match=r"entity axes \(channel_slot\) have no host"):
+        spec = parse_spec(raw)  # Admitted, no bypass.
+        model = get_model(spec.model)
+        _, p = model.initial_values(spec)
+        layout = model.inner.inner_layout(p)
+        gated = surface_pump_v3.presence_gated(layout, model.inner.implementation.structure, xp=np)
+        hosts = surface_pump_v3.entity_activity(kind, "channel_slot", layout, xp=np)
+        np.testing.assert_array_equal(
+            gated.planted_population_present, layout.planted_population_present & hosts
+        )
+    own = ("layout", "planted_site", PartitionRole("structural", False))
+    unhosted = planted_population(
+        dict(fields, planted_site_present=own),
+        bound_on={"planted_site_present": 2},
+        presence=dict(presence, planted_site=("planted_site_present",)),
+    )
+    assert kind_registry.declaration_errors(unhosted) == []
+    assert pump3.kind_lifecycle_errors(unhosted) == ("hosts", ("planted_site",))
+    with kind_registry.scope(kf.registry(unhosted)):
+        with pytest.raises(ConfigError, match=r"entity axes \(planted_site\) have no host"):
             parse_spec(raw)
 
 
