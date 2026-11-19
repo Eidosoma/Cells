@@ -1227,7 +1227,10 @@ def test_presence_is_equal_at_the_daughters():
     with kind_registry.scope(kf.registry(kind)):
         assert kind_registry.declaration_errors(kind) == []
         spec = parse_spec(raw)  # Admitted, no bypass.
-        checked = {f[1] for f in partition.kind_role_fields(get_model(spec.model))}
+        model = get_model(spec.model)
+        # The core's presence gate acts here: the bound structure declares the closer.
+        assert model.inner.implementation.structure.padding_fill
+        checked = {f[1] for f in partition.kind_role_fields(model)}
         assert "planted_present" in checked
         raw["model"][PLANTED_KEY]["planted_present"][patch["daughters"][1]] = False
         with pytest.raises(ConfigError, match="planted_present is a presence field, so its values"):
