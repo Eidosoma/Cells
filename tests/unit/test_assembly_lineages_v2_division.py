@@ -3,6 +3,8 @@
 6, 7, 9 and 10, §0.2e).
 
 Each claim with a planted error it must catch (D187):
+- D0: admission refuses before any draw: the stress test, then 36πkV² ≤ A³ on both sides of
+  V_sph(A)/√k (planted: a refused attempt that computes an energy fails);
 - D1: C3x is rule 9 exactly, against a direct reading of the rule, and at equal weights its law is
   the multivariate hypergeometric on the balanced size vector in a random order, by exact
   enumeration (planted: the largest minimising cut, and ties ranked by reverse position);
@@ -128,10 +130,12 @@ def world_a(**kw):
     return w
 
 
-def spec_of(w, *, seed=1, times=TIMES, horizon=10.0):
+def spec_of(w, *, seed=1, times=TIMES, horizon=10.0, stress=None):
     d = definition(w, molecules=64, horizon=horizon, event_limit=20000, row_every=50,
                    uniforms=True, seed=seed)  # fmt: skip
     d["experiment"]["schedules"] = [{"index": 0, "kind": "shear", "k": 2, "times_s": times}]
+    if stress is not None:
+        d["experiment"]["schedules"][0]["stress_Pa"] = stress
     return parse_spec(d)
 
 
@@ -204,6 +208,29 @@ def vesicle_f(world, counts):
             + osm + CLOSE)  # fmt: skip
 
 
+def test_admission_refuses_before_any_draw():
+    """Item 10.2's first step on the host: the stress test, then v <= k^(-1/2), as 36 pi k V^2 <=
+    A^3, from the test's own closed form; a refused assembly draws nothing (counter -1)."""
+    a = Q * K_L * 12 / 2.0  # m², twelve L
+    edge_L = a**1.5 / (6 * math.sqrt(math.pi)) / math.sqrt(2) * 1e3  # V_sph(A)/sqrt(2), in L
+    assert division.admitted_volume(edge_L * (1 - 1e-9), K_L * 12, Q, 2)
+    assert not division.admitted_volume(edge_L * (1 + 1e-9), K_L * 12, Q, 2)
+    w = world_a()
+    w["division"]["critical_stress_Pa"] = {"value": 2.0, "provenance": "unsourced; test"}
+    world = spec_of(w, stress=3.0).model.world
+    names = [p.name for p in world.places]
+    tense = np.zeros(len(names), dtype=np.int64)
+    tense[names.index("L@membrane")] = 12
+    tense[names.index("I@lumen")] = math.ceil(edge_L * NA * C_EXT_MM / 1e3)  # just past the edge
+
+    def never(_):
+        raise AssertionError("a refused attempt computes no energy")
+
+    for stress, outcome in ((1.0, "refused_stress"), (3.0, "refused_volume")):
+        got = division.attempt(world, tense, 0, 0, (1.0, 0, 2, stress), (0, 1), never, 1)
+        assert (got.outcome, got.counter, got.keys) == (outcome, -1, ())
+
+
 def test_a_lineage_divides_at_its_schedule_books_its_work_and_replays(tmp_path):
     s = spec_of(world_a())
     run = runner.run(s).check()
@@ -252,6 +279,7 @@ def test_a_lineage_divides_at_its_schedule_books_its_work_and_replays(tmp_path):
         "refused_floor": 2,
     }
     assert "discarded" in run_record["ssa"]["draw"] and set(table) <= set(arrays)
+    assert {r["base"] for r in run_record["records"].values()} <= set(run_record["time"]["bases"])
     descriptor, tables = rel.read(tmp_path / "a")
     assert descriptor["format"] == rel.FORMAT_V2 and "lysed" in descriptor["vocabulary"][
         "end_reasons"]  # fmt: skip

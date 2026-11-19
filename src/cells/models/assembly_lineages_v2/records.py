@@ -173,6 +173,12 @@ DIVISION_RECORDS = {
     "fission_shear_work_kT": _record(_F, [_F], "k_BT", "level", "the split's shear work"),
     "fission_discarded_kT": _record(_F, [_F], "k_BT", "level", "the unfollowed daughters' F_v"),
 }  # fmt: skip
+DIVISION_BASES = {
+    **BASES,
+    "row": BASES["row"] + "; a division world adds a shear row (row_kind shear) after each split, "
+    "at its schedule time",
+    "fission": DIVISION_BASE,
+}
 SCHEDULED_DRAW = (
     "two uniforms per draw, (u1, u2), from the occupant's event stream (domain 1, its carrier "
     "key) at counter = the occupant's draws since its birth: each committed event's, and the draw "
@@ -324,7 +330,7 @@ def run_record(run, world_id):
             "temperature_K": world.units.temperature_K,
             "kT_J": world.units.kT_J,
             "horizon_s": spec.experiment.time_horizon_s,
-            "bases": BASES,
+            "bases": BASES if run.division is None else DIVISION_BASES,
         },
         "places": places_table(world),
         "channels": kernel.channel_table(world),

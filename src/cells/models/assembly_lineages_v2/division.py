@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cells.definitions.specs import ConfigError, bounded_integer, finite_number, require_fields
+from cells.definitions.specs import ConfigError, bounded_integer, finite_number
 from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, geometry, lumen, streams
 from cells.models.assembly_lineages_v2.interfaces import AssemblyOperator
 from cells.modules import Citation
@@ -52,10 +52,12 @@ def parse_data(raw, world):
     """The world's division block (spec.py calls it after the geometry is attached)."""
     if not isinstance(raw, dict) or raw.get("law") != SHEAR_FISSION:
         raise ConfigError(f"world: division names its law, {SHEAR_FISSION}")
-    allowed = {"law", "continuation", "critical_stress_Pa"}
-    require_fields(raw, {"law", "continuation"}, "world: division")
-    if set(raw) - allowed:
-        raise ConfigError(f"world: division: unknown keys {sorted(set(raw) - allowed)}")
+    allowed, required = {"law", "continuation", "critical_stress_Pa"}, {"law", "continuation"}
+    if not required <= set(raw) <= allowed:
+        raise ConfigError(
+            f"world: division: missing={sorted(required - set(raw))}, "
+            f"unknown={sorted(set(raw) - allowed)}"
+        )
     if world.geometry is None or world.conventions.lumen_volume != "osmotic":
         raise ConfigError(
             "world: division needs a geometry and an osmotic lumen: a daughter's own volume, the "
