@@ -182,3 +182,194 @@ def test_the_held_row_check_reads_the_kind_bound_to_its_entry(monkeypatch):
         monkeypatch.setattr(kind_registry, "bound", per_entry)
         errors = pump_composite.held_row_errors(pairs, spec)
         assert len(errors) == 1 and errors[0].startswith(f"Kind {kf.KIND_ID} holds F at cell_0")
+
+
+# ------------------------------------------------------------------ @3's roles and the partition
+# B1's last slice, its equality checks (the lead's rulings of 19 November 2026 on design statement
+# 1, CORE_SEAMS §18): tests only. partition.event_map's hand-written handling of @3's fields
+# stays, and these show that @3's role table (surface_pump_v3.FIELD_ROLES, converted once)
+# reproduces it. Each check has a flipped-role plant.
+
+RETIRED_AXES = ("membrane_slot", "edge_slot", "channel_slot")  # What a retired cell takes down.
+DIVIDED_AXES = ("cell_slot", "membrane_slot", "edge_slot")  # Where check_structure checks anchors.
+# The pumps' history, left to the closers' own records until composition's M5 Q2.
+PUMP_HISTORY = (
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+)
+PUMP_CAPACITIES = ("pump_capacity", "calcium_pump_capacity")  # Refused on a dividing cell.
+# check_structure's anchors, by the layout field each check holds: per cell the volume, the species'
+# amounts and the charge anchor (its fixed-charge check has no layout field of its own: it enters
+# the charge anchor); per patch the area and capacitance; per contact the area.
+CHECKED_ANCHORS = {
+    "volume",
+    "amount_reference",
+    "initial_cell_charge_C",
+    "membrane_area",
+    "membrane_capacitance",
+    "junction_area",
+}
+# What closure (pump_composite_adapter.close) leaves unpadded although its role pads it at
+# retirement, by kind. A new field in none of these and not padded fails the test and forces a
+# decision (the lead's ruling 6).
+UNPADDED = {
+    "geometry, kept for the capacitor solve": {
+        "volume",
+        "extracellular_volume",
+        "membrane_area",
+        "membrane_capacitance",
+        "junction_area",
+    },
+    "parameters read only on active slots (the masks)": {
+        "membrane_permeability",
+        "channel_abundance",
+        "channel_permeability",
+        "channel_relative_permeability",
+        "junction_permeability",
+        "junction_threshold_voltage",
+    },
+    "hosts and ends, the topology kept": {
+        "channel_membranes",
+        "membrane_cell",
+        "membrane_outside",
+        "junction_sender",
+        "junction_receiver",
+    },
+    "the pumps, gated by their host's activity": {
+        "pump_present",
+        "calcium_pump_present",
+        "pump_capacity",
+        "calcium_pump_capacity",
+    },
+}
+SIZES = dict(  # Distinct capacities, so each layout array's shape names its axes.
+    capacity=5,
+    extracellular_capacity=6,
+    membrane_capacity=7,
+    edge_capacity=8,
+    face_capacity=9,
+    channel_capacity=10,
+)
+AXIS_OF_SIZE = {
+    5: "cell_slot",
+    6: "extracellular_slot",
+    7: "membrane_slot",
+    8: "edge_slot",
+    9: "face_slot",
+    10: "channel_slot",
+}
+
+
+@pytest.fixture(scope="module")
+def inner_roles():
+    """@3's role table converted once ({field: (PartitionRole, axes)}): the state fields' axes from
+    the adapter's STATE_AXES, each layout field's read from a parsed world's layout, whose
+    capacities are all distinct (padding included), so an array's shape names its axes."""
+    from cells.definitions.specs import parse_spec
+    from cells.models import surface_pump_v3
+    from validation.tissue import secreted_species_fixtures as fx
+
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"),),
+        faces=(),
+        end=0.004,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-6),
+    )
+    raw["execution"].update(SIZES)
+    spec = parse_spec(raw)
+    _, p = get_model(spec.model).initial_values(spec)
+    layout = pump3.inner_layout(p)
+    species = len(spec.model.species_ids)
+    assert species not in AXIS_OF_SIZE
+    axes = {name: tuple(axis) for name, axis in pump3.STATE_AXES.items()}
+    for name in surface_pump_v3.FIELD_ROLES:
+        if name not in axes:
+            shape = getattr(layout, name).shape
+            axes[name] = tuple(
+                "species" if size == species else AXIS_OF_SIZE[size] for size in shape
+            )
+    return pump3.inner_role_table(surface_pump_v3.FIELD_ROLES, axes)
+
+
+def retired_history(table):
+    """The history state fields on the retired axes, less the pumps': what a retirement records."""
+    return {
+        name
+        for name, (role, axes) in table.items()
+        if name in pump3.STATE_AXES and role.role == "history" and set(axes) & set(RETIRED_AXES)
+    } - set(PUMP_HISTORY)
+
+
+def resets(table):
+    """The intensive state fields: what a division copies to the daughters."""
+    state = pump3.STATE_AXES
+    return {k for k, (role, _) in table.items() if k in state and role.role == "intensive"}
+
+
+def anchors(table):
+    """The extensive layout fields on the divided axes, less the pumps' capacities."""
+    return {
+        name
+        for name, (role, axes) in table.items()
+        if name not in pump3.STATE_AXES
+        and role.role == "extensive"
+        and set(axes) & set(DIVIDED_AXES)
+    } - set(PUMP_CAPACITIES)
+
+
+def padded(table):
+    """The layout fields whose role pads them at retirement, less what closure leaves unpadded."""
+    left = set().union(*UNPADDED.values())
+    return {
+        name
+        for name, (role, _) in table.items()
+        if name not in pump3.STATE_AXES and role.role in ("extensive", "intensive", "structural")
+    } - left
+
+
+def flipped(table, name, role):
+    out = dict(table)
+    out[name] = (PartitionRole(role, 0 if role == "structural" else None), table[name][1])
+    return out
+
+
+def test_roles_reproduce_the_partitions_retirement_record(inner_roles):
+    from cells.operators import partition
+
+    assert retired_history(inner_roles) == set(partition.RECORD)
+    # Planted: a retired history field taken for an intensive one leaves the record.
+    assert retired_history(flipped(inner_roles, "junction_transferred", "intensive")) != set(
+        partition.RECORD
+    )
+
+
+def test_roles_reproduce_the_partitions_kinetic_resets(inner_roles):
+    from cells.operators import partition
+
+    resets_declared = OPERATORS[partition.LAW_ID].STATE_RESETS
+    assert resets(inner_roles) == set(resets_declared) == {"channel_gate", "junction_gate"}
+    assert resets(flipped(inner_roles, "junction_gate", "history")) != set(resets_declared)
+
+
+def test_roles_reproduce_the_anchors_the_partition_checks(inner_roles):
+    assert anchors(inner_roles) == CHECKED_ANCHORS
+    assert anchors(flipped(inner_roles, "membrane_capacitance", "intensive")) != CHECKED_ANCHORS
+
+
+def test_roles_reproduce_closures_padded_fields_but_for_what_the_masks_hold(inner_roles):
+    """PADDED_FIELDS is the padded roles' layout fields less what closure leaves unpadded (UNPADDED,
+    written here by kind). Every field of UNPADDED has a padding role, the kinds are disjoint, and
+    none of them is padded."""
+    assert padded(inner_roles) == set(pump3.PADDED_FIELDS)
+    groups = list(UNPADDED.values())
+    assert sum(len(g) for g in groups) == len(set().union(*groups))  # Disjoint.
+    for name in set().union(*groups):
+        assert inner_roles[name][0].role in ("extensive", "intensive", "structural"), name
+        assert name not in pump3.PADDED_FIELDS, name
+    assert padded(flipped(inner_roles, "channel_laws", "history")) != set(pump3.PADDED_FIELDS)
