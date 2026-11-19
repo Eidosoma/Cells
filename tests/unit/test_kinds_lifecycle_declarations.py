@@ -29,6 +29,11 @@ Each claim with its plant (D187):
   (ATP's hydrolysis, at the diagram's standard state), equal to the registry's within the band
   Wegscheider's condition admitted it in; factored, net-flow and transport-only cycles, and version
   1's entries, declare none (planted: one rate constant 1e-9 off moves it outside the band).
+- §5.2's admission's reading (F's EntityBinding, role_species, checked by kind_role_species): each
+  population, in declared order and in both layouts, binds its law, exactly the roles its change
+  rows name, a node at each end they name (N at its N end) and its named counts' values; version
+  1's world and its general twin bind alike, and an N = b population's ends turn with it
+  (planted: a role dropped, and a count's value dropped, each refused by name).
 Not declared, by the lead's rulings: passive routes and pH conditions, whose entities sit on hosts
 of two kinds where AxisHost names one, stay refused beside closers this pass (Q3 and Q6 (a)).
 """
@@ -51,7 +56,7 @@ from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
-from cells.registry.kind_registry import PartitionRole
+from cells.registry.kind_registry import EntityBinding, PartitionRole
 from tests.unit import test_cycle_forms as tf
 from tests.unit import test_cycle_kind as ck
 from tests.unit import test_transporter_kind as tk
@@ -267,3 +272,44 @@ def test_an_absent_population_reads_zero_and_ungated_readouts_are_refused_at_bin
     with tk.scoped(planted), law_registry.scope(law_registry.BUILTIN.extended(*ck.TEST_LAWS, PUMP)):
         with pytest.raises(ConfigError, match="readout column"):
             parse_spec(copy.deepcopy(raw))
+
+
+def test_each_population_binds_its_laws_roles_ends_and_counts_for_the_admission():
+    kind = transporter.TRANSPORTER
+    built = bound_worlds()
+    with scoped():
+        read = {
+            name: kind_registry.kind_role_species(kind, declaration)
+            for name, (_, _, declaration, _, _, _) in built.items()
+        }
+    fuel = {"ATP": "ATP", "ADP": "ADP", "Pi": "Pi"}
+    ends = {"N": "cell_0", "P": "bath_0"}
+    pump = EntityBinding(transporter.NEUTRAL_LAW, {"role": "Y", **fuel}, ends, {"stoichiometry": 1})
+    assert read["version_1"] == (pump,) and read["general"] == (pump,)  # The one-to-one map.
+    exchanger, fuel_pump = read["composed"]
+    assert exchanger == EntityBinding("seamtest.slip_exchanger@1", {"X": "X", "Y": "W"}, ends, {})
+    assert fuel_pump == pump
+    # An N = b population's ends turn with it: N at the outside node.
+    turned = ck.general(tk.population(id="t_b"), n_end="b")
+    turned["held_rows"] = [["ATP", "N"], ["ADP", "N"], ["Pi", "N"]]
+    with scoped():
+        spec = parse_spec(tk.held_world(ck.general(tk.population(id="t_a")), turned))
+        a, b = kind_registry.kind_role_species(kind, dict(spec.model.kinds)[transporter.KIND_ID])
+    assert a.ends == ends and b.ends == {"N": "bath_0", "P": "cell_0"} and a.roles == b.roles
+    # Planted: a role dropped, then a count's value dropped, each refused by name.
+    declaration = built["version_1"][2]
+
+    def dropping(field, name):
+        def read_less(d):
+            return tuple(
+                e._replace(**{field: {k: v for k, v in getattr(e, field).items() if k != name}})
+                for e in transporter.role_species(d)
+            )
+
+        return dataclasses.replace(kind, role_species=read_less)
+
+    with scoped():
+        with pytest.raises(ValueError, match=r"lacks \['ATP'\]"):
+            kind_registry.kind_role_species(dropping("roles", "ATP"), declaration)
+        with pytest.raises(ValueError, match=r"no value for the counts \['stoichiometry'\]"):
+            kind_registry.kind_role_species(dropping("parameters", "stoichiometry"), declaration)
