@@ -421,11 +421,13 @@ def _host_activity(host_kind, p, *, xp):
 
 
 def presence_fields(kind):
-    """{entity axis: presence layout field} a kind declares: F's declaration (CORE_SEAMS §18 at
-    931b6606: one bool layout field per entity axis, structural, fill False, checked in
-    declaration_errors); {} for a kind that declares none. Until F's contract carries it, it is
-    read as the kind's optional `presence_fields` attribute (the lead's stand-in)."""
-    return dict(getattr(kind, "presence_fields", None) or {})
+    """{entity axis: (presence layout field, ...)} a kind declares: F's declaration (CORE_SEAMS
+    §18 at 931b6606, with the lead's ruling (2) of 19 November 2026: one or more bool layout
+    fields per entity axis, structural, fill False, checked in declaration_errors, such as the
+    transporter's transporter_present, transporter_neutral and transporter_proton); {} for a kind
+    that declares none. Until F's contract carries it, it is read as the kind's optional
+    `presence_fields` attribute, ((axis, (field, ...)), ...) (the lead's stand-in)."""
+    return {axis: tuple(names) for axis, names in getattr(kind, "presence_fields", None) or ()}
 
 
 def entity_activity(kind, axis, p, *, xp=jnp):
@@ -453,8 +455,12 @@ def presence_gated(p, structure, *, xp=jnp):
         return p
     gated = {}
     for kind in _kinds(structure):
-        for axis, name in presence_fields(kind).items():
-            gated[name] = getattr(p, name) & entity_activity(kind, axis, p, xp=xp)
+        for axis, names in presence_fields(kind).items():
+            activity = entity_activity(kind, axis, p, xp=xp)
+            for name in names:
+                mask = getattr(p, name)
+                if mask.shape[-1]:  # Static: an empty mask (an undeclared law's) stays empty.
+                    gated[name] = mask & activity
     return p._replace(**gated) if gated else p
 
 
@@ -1519,11 +1525,9 @@ def _check_presence(structure, kinds, state, p, controls):
     with np.errstate(all="ignore"):
         potentials = readouts(state, controls[0], p, xp=np, structure=structure).field.potential_V
         for kind, fields in declared:
+            names = [name for group in fields.values() for name in group]
             absent = p._replace(
-                **{
-                    name: np.zeros(np.shape(getattr(p, name)), dtype=bool)
-                    for name in fields.values()
-                }
+                **{name: np.zeros(np.shape(getattr(p, name)), dtype=bool) for name in names}
             )
             read, _ = _stage_read(state, absent, kinds, xp=np)
             found = set()
@@ -1558,7 +1562,7 @@ def _check_presence(structure, kinds, state, p, controls):
             if found:
                 raise ConfigError(
                     f"Kind {kind.kind_id} declares presence fields "
-                    f"({', '.join(fields.values())}), but with every entity absent its "
+                    f"({', '.join(names)}), but with every entity absent its "
                     + ", ".join(sorted(found))
                     + " do not vanish (the presence gate closes an entity by its absence)"
                 )
