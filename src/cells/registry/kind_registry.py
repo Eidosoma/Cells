@@ -38,6 +38,8 @@ __all__ = (
     "BUILTIN",
     "ENERGY_ROLES",
     "HEAT_SUFFIX",
+    "MOVES_END",
+    "MOVES_ENDS",
     "LEDGER_TERM_ROLES",
     "PARTITION_ROLES",
     "WORK_SUFFIX",
@@ -45,6 +47,7 @@ __all__ = (
     "AXIS_HOST_KINDS",
     "SHARED_AXES",
     "AxisHost",
+    "EntityBinding",
     "EnergyRole",
     "HOOKS",
     "Kind",
@@ -62,7 +65,11 @@ __all__ = (
     "energy_role",
     "finite_number",
     "kind_ledgers",
+    "kind_role_species",
     "kind_standard_free_energies",
+    "law_count_names",
+    "law_ends",
+    "law_roles",
     "entity_axes",
     "presence_fields",
     "missing_partition_roles",
@@ -337,6 +344,16 @@ class Kind:
       reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
       signed, products positive; () when it declares none. The species registry's check compares
       each with its own sum of nu mu°/RT (kind_standard_free_energies checks the form);
+    - `role_species(declaration)` -> (EntityBinding, ...), one per entity the declaration declares
+      (a transporter population, say), in its own entity order: the cycle law the entity runs,
+      one the kind hosts; the species each of that law's roles binds, the roles being those its
+      change rows name (registry/laws.cycle_changes' role column, a general form's "role@end"
+      read as its role); the node at each end its rows name; and its values for the law's
+      parameter-named counts. Entities of one law may bind different species and values, so each
+      entity's rows resolve on their own. §5.2's admission reads it beside a general closure,
+      mapping entities to the closure node's rows through moved_rows and resolving the counts
+      itself, and refuses a mover kind without it (kind_role_species checks it when read;
+      law_roles and law_ends give a law's roles and ends);
     - `ledgers(declaration)` -> ((ledger, diagnostic), ...), the kind's own conserved quantities
       (§7.3; INNER_MODEL_V4_DESIGN §7.4 (p)), each valued under its own name in `ledger_terms`,
       and `ledger_bounds(row, p, tol, steps, *, xp)` -> their bounds, in that order; declared
@@ -396,6 +413,7 @@ class Kind:
     standard_free_energies: Callable | None = (
         None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
     )
+    role_species: Callable | None = None  # (declaration) -> (EntityBinding, ...)
 
     @property
     def state_fields(self):
@@ -528,6 +546,29 @@ class AxisHost(NamedTuple):
     index: str
 
 
+# The ends of a moves-only (version 1) cycle law, whose change rows carry no "@end": its host
+# patch's inside and outside. Its moves are inward-positive at the inside (MOVES_END), and the
+# same counts land with the opposite sign at the outside, so each role crosses the patch. A
+# general form's rows name their own ends.
+MOVES_END = "inside"
+MOVES_ENDS = (MOVES_END, "outside")
+
+
+class EntityBinding(NamedTuple):
+    """One entity of a declaration as §5.2's admission resolves its rows (Kind.role_species, D142):
+    `law_id`, the cycle law it runs, one its kind hosts; `roles`, {role: species ID}, the species
+    each of that law's roles binds; `ends`, {end: node ID}, the node at each end its change rows
+    name (a general form's "@end" names, as its patch's inside and outside; MOVES_ENDS for a
+    moves-only law, whose inward-positive moves at the inside land with the opposite sign at the
+    outside); and `parameters`, {name: value}, its values for the law's parameter-named
+    counts, since entities of one law may differ. kind_role_species checks it."""
+
+    law_id: str
+    roles: object = MappingProxyType({})  # {role: species ID}
+    ends: object = MappingProxyType({})  # {end: node ID}
+    parameters: object = MappingProxyType({})  # {name: value}
+
+
 def _named(value):
     return isinstance(value, str) and bool(value)
 
@@ -567,6 +608,97 @@ def kind_standard_free_energies(kind, declaration):
         if not ok:
             raise ValueError(f"Kind {kind.kind_id}'s standard_free_energies returns {form}")
     return declared
+
+
+def _form_role_end(row):
+    """(role, end) of a general form's change row, from its "role@end" (end None without one)."""
+    role, at, end = row["role"].rpartition("@")
+    return (role, end) if at else (row["role"], None)
+
+
+def law_roles(law):
+    """A cycle law's roles: each change row's role (registry/laws.cycle_changes), a general form's
+    read without the "@end" it adds."""
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    rows = law_registry.cycle_changes(law)
+    if law.cycle is None:
+        return {row["role"] for row in rows}
+    return {_form_role_end(row)[0] for row in rows}
+
+
+def law_ends(law):
+    """The ends a cycle law's change rows name: a general form's "@end" names, or MOVES_ENDS for a
+    moves-only law, whose moves are inward-positive at the inside and land with the opposite sign
+    at the outside, so a closure at either node places its rows."""
+    from cells.registry import laws as law_registry
+
+    if law.cycle is None:
+        return set(MOVES_ENDS)
+    return {_form_role_end(row)[1] for row in law_registry.cycle_changes(law)}
+
+
+def law_count_names(law):
+    """The population parameters a cycle law's change rows name as counts, each without the
+    leading "-" that negates it."""
+    from cells.registry import laws as law_registry
+
+    counts = [row["per_cycle"] for row in law_registry.cycle_changes(law)]
+    return {c[1:] if c.startswith("-") else c for c in counts if isinstance(c, str)}
+
+
+def kind_role_species(kind, declaration):
+    """A kind's entity bindings for one declaration (Kind.role_species), checked: a tuple of
+    EntityBinding, one per entity in its own order, each naming a cycle law the kind hosts in the
+    active law registry, binding exactly that law's roles (law_roles) to species IDs, placing every
+    end its rows name (law_ends) at a node ID, and giving a finite value for every count its rows
+    name as a parameter (law_count_names); every name and ID a non-empty string. Each refusal names
+    the entity. None for a kind that declares none: §5.2's admission, not this reader, refuses
+    such a kind beside a general closure."""
+    if kind.role_species is None:
+        return None
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    registry = law_registry.active()
+    hosted = {
+        qualified(law.law_id): law for law in registry.laws(law_registry.CYCLE_LAW, kind.kind_id)
+    }
+    entities = kind.role_species(declaration)
+    if not (
+        isinstance(entities, tuple)
+        and all(isinstance(entity, EntityBinding) for entity in entities)
+    ):
+        raise ValueError(f"Kind {kind.kind_id}'s role_species returns a tuple of EntityBinding")
+    for index, entity in enumerate(entities):
+        where = f"Kind {kind.kind_id}'s role_species, entity {index} ({entity.law_id!r})"
+        if not (_named(entity.law_id) and qualified(entity.law_id) in hosted):
+            raise ValueError(f"{where}: its law is not a cycle law the kind hosts")
+        law = hosted[qualified(entity.law_id)]
+        for name, mapping, valid in (
+            ("roles", entity.roles, _named),
+            ("ends", entity.ends, _named),
+            ("parameters", entity.parameters, _finite),
+        ):
+            if not (
+                isinstance(mapping, Mapping)
+                and all(_named(k) and valid(v) for k, v in mapping.items())
+            ):
+                kind_of = "a finite value" if valid is _finite else "a name"
+                raise ValueError(f"{where}: its {name} map names to {kind_of}")
+        roles = law_roles(law)
+        missing, extra = sorted(roles - set(entity.roles)), sorted(set(entity.roles) - roles)
+        if missing or extra:
+            raise ValueError(
+                f"{where}: the law's roles are {sorted(roles)}; it lacks {missing} and binds "
+                f"{extra}, which are not the law's"
+            )
+        ends = sorted(law_ends(law) - set(entity.ends))
+        if ends:
+            raise ValueError(f"{where}: it places no node at the ends {ends} its law's rows name")
+        counts = sorted(law_count_names(law) - set(entity.parameters))
+        if counts:
+            raise ValueError(f"{where}: it gives no value for the counts {counts} its law names")
+    return entities
 
 
 def _suffix_role(field):
@@ -696,6 +828,8 @@ def declaration_errors(kind):
         out.append("it declares ledgers and ledger_bounds together, each a callable")
     if kind.standard_free_energies is not None and not callable(kind.standard_free_energies):
         out.append("its standard_free_energies is a callable, or None")
+    if kind.role_species is not None and not callable(kind.role_species):
+        out.append("its role_species is a callable, or None")
     return out + _axis_errors(kind, static)
 
 
