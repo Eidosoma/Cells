@@ -16,6 +16,13 @@ Code awaiting qualification belongs in the checkout with its existing guards
 and validation status intact; integration alone grants no scientific acceptance.
 Coordinate file ownership in this shared checkout and do not overwrite another
 developer's changes.
+Several agents commit to main in this one checkout (user direction, 19 November 2026, D227).
+Commit only your own paths, and name them: `git add <paths>`, then
+`git commit -m "..." -- <paths>`, so that another agent's staged changes are never swept into
+your commit. Never use `git add -A`, `git add .`, `git commit -a`, or a commit without paths
+while anything else is staged. Check `git diff --cached --name-only` before committing. If git
+reports a merge in progress, another agent is landing: wait, and do not commit, reset, stash or
+check out over it. Never rebase, amend a pushed commit or force-push main.
 
 # BETSE's role
 

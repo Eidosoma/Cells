@@ -421,12 +421,37 @@ def _host_activity(host_kind, p, *, xp):
     return hosts[:m] if host_kind == "patch" else hosts[m:]
 
 
+def _channel_activity(p, *, xp):
+    """[channel slot] each population's activity: its own slot's and its patch's, as a
+    composite's close() closes a population on a closed patch."""
+    return p.channel_active & _host_activity("patch", p, xp=xp)[p.channel_membranes]
+
+
+def _face_activity(p, *, xp):
+    """[face slot] each face's activity: its own slot's and both its outside nodes', as close()
+    closes a face at a closed node."""
+    nodes = _host_activity("outside_node", p, xp=xp)
+    return p.face_active & nodes[p.face_sender] & nodes[p.face_receiver]
+
+
+# Q2's hosts for @3's slot axes that index no host kind (the lead's ruling of 19 November 2026,
+# the operators owner's finding: a planted kind's channel_slot presence met the gate as a
+# KeyError): channel populations and faces, each active where its slot and its hosts are.
+SLOT_ACTIVITY = MappingProxyType({"channel_slot": _channel_activity, "face_slot": _face_activity})
+# Every @3 slot axis whose entities the presence gate closes: one list for the gate and for the
+# composite's lifecycle check of the axes it can host.
+PRESENCE_SLOT_AXES = (*SLOT_AXIS_HOSTS, *SLOT_ACTIVITY)
+
+
 def entity_activity(kind, axis, p, *, xp=jnp):
     """[entity] each of a kind's entities' host activity on one of its entity axes: an @3 slot
-    axis is its own host (SLOT_AXIS_HOSTS); an own axis names its host kind and the layout field
-    of each entity's host index (kind.axis_hosts, AxisHost(kind, index))."""
+    axis that indexes a host kind is its own host (SLOT_AXIS_HOSTS); a channel population or a face
+    is active where its slot and its hosts are (SLOT_ACTIVITY); an own axis names its host kind and
+    the layout field of each entity's host index (kind.axis_hosts, AxisHost(kind, index))."""
     if axis in SLOT_AXIS_HOSTS:
         return _host_activity(SLOT_AXIS_HOSTS[axis], p, xp=xp)
+    if axis in SLOT_ACTIVITY:
+        return SLOT_ACTIVITY[axis](p, xp=xp)
     host = kind.axis_hosts[axis]
     return _host_activity(host.kind, p, xp=xp)[getattr(p, host.index)]
 
@@ -1454,7 +1479,14 @@ def check_definition(spec, *, structure=None):
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     control_type = kind_types(structure).Control if structure is not None else Control
     if kinds:
-        _check_device_hooks(kinds, state, p, control_type(*(v[0] for v in controls)))
+        _check_device_hooks(
+            kinds,
+            state,
+            p,
+            control_type(*(v[0] for v in controls)),
+            ledgers=structure.kind_ledgers,
+            tol=np.asarray(compact.execution.material_balance_atol_fmol),
+        )
         _check_routes(spec, structure, kinds, state, p, control_type(*(v[0] for v in controls)))
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
@@ -1471,8 +1503,9 @@ def check_definition(spec, *, structure=None):
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
         _check_moved_rows(compact, structure, kinds, state, p, each)
         _check_presence(structure, kinds, state, p, each)  # Q2's contract (no program change).
-        if structure.padding_fill:  # Q2: beside a closer, an entity the gate cannot close.
-            _check_closable(kinds)
+        # Beside a closer, a kind with entities and no presence is the composite's refusal
+        # (pump_composite_adapter.kind_lifecycle_errors): a composite's parse checks the inner
+        # projection, whose structure declares no closer, so a check here would never fire.
 
 
 # The moved-rows guard's perturbed state: each stored amount raised by up to this fraction of its
@@ -1537,19 +1570,6 @@ def _check_moved_rows(spec, structure, kinds, state, p, controls):
                             f"{nodes[node]}, which its moved_rows does not declare (refusal 4 "
                             "admits a kind by its moved_rows)"
                         )
-
-
-def _check_closable(kinds):
-    """Q2 beside a closer: a kind whose own fields carry entities (kind_registry.entity_axes) but
-    that declares no presence cannot be closed by the presence gate, so the definition is refused
-    (F's contract: {} from presence_fields with entity axes is a refusal)."""
-    for kind in kinds:
-        axes = kind_registry.entity_axes(kind)
-        if axes and not kind_registry.presence_fields(kind):
-            raise ConfigError(
-                f"Kind {kind.kind_id} has entities on {', '.join(axes)} but declares no "
-                "presence, so a closer cannot close them (Q2's presence gate)"
-            )
 
 
 def _check_presence(structure, kinds, state, p, controls):
@@ -1728,7 +1748,7 @@ def _check_held_rows(spec, kinds):
 LEDGER_TERM_KEYS = ("cell", "outside", "produced", "heat_pJ", "work_pJ", "stored_pJ")
 
 
-def _check_device_hooks(kinds, state, p, control):
+def _check_device_hooks(kinds, state, p, control, *, ledgers=(), tol=None):
     """§7.4 (k): the check-path hooks (stage_read, which domain_valid evaluates, domain,
     control_domain, ledger_terms) trace under jax.numpy with no value branch, so the device's row
     checks include the kinds as the host's do. Each is traced once here, on the definition's
@@ -1769,14 +1789,29 @@ def _check_device_hooks(kinds, state, p, control):
         if kind.control_domain is not None:
             hook = partial(kind.control_domain, xp=jnp)
             boolean(kind, "control_domain", traced(kind, "control_domain", hook, control, p))
+        own = [ledger for ledger, _ in dict(ledgers).get(kind_registry.qualified(kind.kind_id), ())]
+        if own and kind.ledger_terms is None:
+            refuse(kind, "ledger_terms", f"is missing, so it values none of its ledgers {own}")
         if kind.ledger_terms is not None:
             terms = traced(kind, "ledger_terms", partial(kind.ledger_terms, xp=jnp), state, p)
-            unknown = set(terms) - set(LEDGER_TERM_KEYS)
+            unknown = set(terms) - set(LEDGER_TERM_KEYS) - set(own)
             if unknown:
                 refuse(kind, "ledger_terms", f"returns unknown terms {sorted(unknown)}")
             for key, shape in shapes.items():
                 if key in terms and tuple(terms[key].shape) != shape:
                     refuse(kind, "ledger_terms", f"returns {key} of shape {terms[key].shape}")
+            missing = [ledger for ledger in own if ledger not in terms]
+            if missing:  # E (§7.3): each declared ledger is valued under its own name.
+                refuse(kind, "ledger_terms", f"values none of its declared ledgers {missing}")
+        if own:  # Its bounds: one per ledger, each broadcasting against its value.
+            bound = partial(kind.ledger_bounds, xp=jnp)
+            bounds = traced(kind, "ledger_bounds", bound, state, p, tol, 0)
+            if not (isinstance(bounds, tuple) and len(bounds) == len(own)):
+                refuse(kind, "ledger_bounds", f"must return one bound per ledger ({len(own)})")
+            for ledger, limit in zip(own, bounds, strict=True):
+                shape = tuple(terms[ledger].shape)
+                if np.broadcast_shapes(shape, tuple(limit.shape)) != shape:
+                    refuse(kind, "ledger_bounds", f"bounds {ledger} with shape {limit.shape}")
 
 
 def _check_routes(spec, structure, kinds, state, p, control):
@@ -2157,22 +2192,29 @@ def balances(state, p, *, structure=None):
         species_sum(state.channel_dissipated_energy_pJ, xp=np), axis=None, xp=np
     )
     if structure is not None and structure.kinds:
-        _fold_kind_ledgers(result, state, p, _kinds(structure), xp=np)
+        _fold_kind_ledgers(
+            result, state, p, _kinds(structure), xp=np, ledgers=structure.kind_ledgers
+        )
     return result
 
 
-def _fold_kind_ledgers(result, state, p, kinds, *, xp):
+def _fold_kind_ledgers(result, state, p, kinds, *, xp, ledgers=()):
     """Rule (a): each kind's ledger terms fold into today's ledgers by role. Its cumulative
     inward-positive node transfers close the material ledgers (they are in the amounts, rule
     (c)); its heat and work accumulators join the energy ledger as dissipation and work; its
     stored term (free energy it holds beyond the stored rows' own terms, since the start: FR-4's
     buffer term, finite fuel's standard term) joins the stored energy. Its net production per
     species (`produced`, a reaction's record: finite fuel's ATP -> ADP + Pi) joins the global
-    material ledger, which otherwise holds every kind to transfers (§7.4 (m))."""
+    material ledger, which otherwise holds every kind to transfers (§7.4 (m)).
+
+    E (§7.3): `ledgers`, the structure's kind_ledgers, then appends each kind's own ledgers after
+    today's ten, in that order, each valued by the kind's ledger_terms under its own name (a
+    moiety's Σ w x net production, say). () adds none, so today's balances are unchanged."""
+    terms_of = {}
     for kind in kinds:
         if kind.ledger_terms is None:
             continue
-        terms = kind.ledger_terms(state, p, xp=xp)
+        terms = terms_of[kind_registry.qualified(kind.kind_id)] = kind.ledger_terms(state, p, xp=xp)
         if "cell" in terms:
             result["local"] = result["local"] - terms["cell"]
         if "outside" in terms:
@@ -2185,6 +2227,10 @@ def _fold_kind_ledgers(result, state, p, kinds, *, xp):
             result["energy"] = result["energy"] - entity_sum(terms["work_pJ"], axis=None, xp=xp)
         if "stored_pJ" in terms:
             result["energy"] = result["energy"] + entity_sum(terms["stored_pJ"], axis=None, xp=xp)
+    for kind_id, pairs in ledgers:
+        terms = terms_of[kind_registry.qualified(kind_id)]
+        for ledger, _ in pairs:
+            result[ledger] = terms[ledger]
 
 
 def channel_magnitudes(row, p, *, xp=np, structure=None):
@@ -2321,11 +2367,50 @@ def ledger_lists(structure):
     """The ledger protocol of a structure (docs/INNER_MODEL_V4_DESIGN.md §7.4 (p)): LEDGERS,
     LEDGER_DIAGNOSTICS, ledger_limits and ENERGY_RTOL, which the shared check paths read
     (surface_pump.checked_rows, surface_pump_checks.row_checks), with DEVICE_CHECKS and
-    DEVICE_DIAGNOSTICS built from them. Every structure has today's: @1's own objects. A kind
-    that declares a ledger of its own will append to them here (the hook, ledgers(declaration),
-    follows its first consumer; §7.4 (p)). None is the module's."""
+    DEVICE_DIAGNOSTICS built from them. A structure whose kinds declare no ledger of their own
+    has today's: @1's own objects, so its programs are unchanged. Each declared kind's own ledgers
+    (E, CORE_SEAMS §7.3; InnerStructure.kind_ledgers) follow @1's ten, in the structure's order:
+    their names and diagnostics, their bounds through ledger_limits (the kind's ledger_bounds) and
+    their values through balances (the kind's ledger_terms under the same names), which the shared
+    check paths take with no edit. None is the module's."""
     names = LEDGER_NAMES + ("DEVICE_CHECKS", "DEVICE_DIAGNOSTICS")
-    return SimpleNamespace(**{name: getattr(first, name) for name in names})
+    if structure is None or not structure.kind_ledgers:
+        return SimpleNamespace(**{name: getattr(first, name) for name in names})
+    own = [pair for _, pairs in structure.kind_ledgers for pair in pairs]
+    ledgers = (*first.LEDGERS, *(ledger for ledger, _ in own))
+    diagnostics = (*first.LEDGER_DIAGNOSTICS, *(diagnostic for _, diagnostic in own))
+    after = first.DEVICE_DIAGNOSTICS[len(first.LEDGER_DIAGNOSTICS) :]  # The two ratios.
+    return SimpleNamespace(
+        LEDGERS=ledgers,
+        LEDGER_DIAGNOSTICS=diagnostics,
+        ledger_limits=partial(_kind_ledger_limits, structure=structure),
+        ENERGY_RTOL=first.ENERGY_RTOL,
+        DEVICE_CHECKS=("domain", *ledgers, "dissipation"),
+        DEVICE_DIAGNOSTICS=(*("max_" + k for k in diagnostics), *after),
+    )
+
+
+def _kind_ledger_limits(
+    row, p, tol, rtol, *, steps, magnitudes, xp=np, flow_fields=None, structure
+):
+    """surface_pump.ledger_limits, then each declared kind's own ledgers' bounds, its
+    ledger_bounds(row, p, tol, steps, *, xp), in the structure's order (E, §7.3): functions of the
+    row and the layout at check time, one per ledger."""
+    flows, bounds = first.ledger_limits(
+        row, p, tol, rtol, steps=steps, magnitudes=magnitudes, xp=xp, flow_fields=flow_fields
+    )
+    kinds = {kind_registry.qualified(kind.kind_id): kind for kind in _kinds(structure)}
+    extra = []
+    for kind_id, pairs in structure.kind_ledgers:
+        own = tuple(
+            kinds[kind_registry.qualified(kind_id)].ledger_bounds(row, p, tol, steps, xp=xp)
+        )
+        if len(own) != len(pairs):
+            raise ValueError(
+                f"Kind {kind_id}'s ledger_bounds gives {len(own)} bounds for {len(pairs)} ledgers"
+            )
+        extra.extend(own)
+    return flows, (*bounds, *extra)
 
 
 def device_balances(state, p, *, structure=None):
@@ -2336,7 +2421,9 @@ def device_balances(state, p, *, structure=None):
         species_sum(state.channel_dissipated_energy_pJ, xp=jnp), axis=None, xp=jnp
     )
     if structure is not None and structure.kinds:
-        _fold_kind_ledgers(result, state, p, _kinds(structure), xp=jnp)
+        _fold_kind_ledgers(
+            result, state, p, _kinds(structure), xp=jnp, ledgers=structure.kind_ledgers
+        )
     return result
 
 
@@ -2844,7 +2931,30 @@ def structure(model):
         routes=_routes(model),
         heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
         free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
+        kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
     )
+
+
+def _kind_ledgers(model):
+    """E's list (InnerStructure.kind_ledgers; CORE_SEAMS §7.3): each declared kind's own ledgers,
+    ((kind ID, ((ledger, diagnostic), ...)), ...) in canonical (kind ID) order, read once from
+    its declaration through the kind contract's kind_ledgers. Names only: values and bounds are
+    the kind's ledger_terms and ledger_bounds at check time. A malformed hook result, or a name
+    one of @1's ten ledgers or their diagnostics holds, refuses the definition, naming the kind."""
+    registry, taken, out = kind_registry.active(), {*first.LEDGERS, *first.LEDGER_DIAGNOSTICS}, []
+    for kind_id, declaration in sorted(getattr(model, "kinds", ()), key=lambda entry: entry[0]):
+        try:
+            pairs = kind_registry.kind_ledgers(registry.lookup(kind_id), declaration)
+        except ValueError as error:
+            raise ConfigError(f"Kind {kind_id}'s ledgers are refused: {error}") from error
+        clash = sorted({name for pair in pairs for name in pair} & taken)
+        if clash:
+            raise ConfigError(
+                f"Kind {kind_id}'s ledgers {clash} take names of @1's ledgers or diagnostics"
+            )
+        if pairs:
+            out.append((kind_id, tuple(pairs)))
+    return tuple(out)
 
 
 def reads_free_amounts(row, laws):

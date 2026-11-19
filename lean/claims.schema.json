@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cells scientific claims register",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "comparisons", "claims"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "version": {"const": 1},
+    "comparisons": {"type": "object", "additionalProperties": {"$ref": "#/$defs/comparison"}},
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1},
+    "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "texts": {"type": "array", "items": {"$ref": "#/$defs/text"}, "uniqueItems": true},
+    "links": {"type": "object", "additionalProperties": {"$ref": "#/$defs/text"}},
+    "comparison": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "models", "laws", "record_revision", "sources", "driver", "record"],
+      "if": {"properties": {"kind": {"const": "engine"}}},
+      "then": {"required": ["engine_revision"]},
+      "properties": {
+        "kind": {"enum": ["engine", "reference"]},
+        "models": {"$ref": "#/$defs/texts"}, "laws": {"$ref": "#/$defs/texts"},
+        "engine_revision": {"$ref": "#/$defs/revision"}, "record_revision": {"$ref": "#/$defs/revision"},
+        "sources": {"$ref": "#/$defs/links"},
+        "driver": {"$ref": "#/$defs/text"}, "record": {"$ref": "#/$defs/text"}
+      }
+    },
+    "claim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "statement", "assumptions", "formal", "numerical", "biology"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+        "title": {"$ref": "#/$defs/text"}, "statement": {"$ref": "#/$defs/text"},
+        "assumptions": {"$ref": "#/$defs/texts"}, "uses": {"$ref": "#/$defs/texts"},
+        "formal": {
+          "type": "object", "additionalProperties": false, "required": ["status", "theorems"],
+          "properties": {"status": {"enum": ["proved", "open"]}, "theorems": {"$ref": "#/$defs/links"}}
+        },
+        "numerical": {
+          "type": "object", "additionalProperties": false, "required": ["status", "comparisons", "result"],
+          "properties": {
+            "status": {"enum": ["checked", "failed", "open"]},
+            "comparisons": {"$ref": "#/$defs/texts"}, "result": {"$ref": "#/$defs/text"}
+          }
+        },
+        "biology": {
+          "type": "object", "additionalProperties": false, "required": ["status", "observable", "unit", "evidence"],
+          "properties": {
+            "status": {"enum": ["open", "not_assessable", "supported", "disagrees", "mixed"]},
+            "observable": {"$ref": "#/$defs/text"}, "unit": {"$ref": "#/$defs/text"},
+            "evidence": {"type": "array", "items": {"$ref": "#/$defs/experiment"}}
+          }
+        }
+      }
+    },
+    "experiment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["dataset_id", "manifest", "citation", "locator", "context", "role", "uncertainty", "assessment", "report"],
+      "properties": {
+        "dataset_id": {"$ref": "#/$defs/text"}, "manifest": {"$ref": "#/$defs/text"},
+        "measurements": {"$ref": "#/$defs/text"},
+        "citation": {"$ref": "#/$defs/text"}, "doi": {"$ref": "#/$defs/text"}, "url": {"$ref": "#/$defs/text"},
+        "locator": {"$ref": "#/$defs/text"}, "context": {"$ref": "#/$defs/text"},
+        "role": {"enum": ["held_out_from_fitting", "calibration", "prospective", "descriptive"]},
+        "fit": {"$ref": "#/$defs/texts"}, "evaluation": {"$ref": "#/$defs/texts"}, "excluded": {"$ref": "#/$defs/texts"},
+        "observed": {"type": "number"}, "predicted": {"type": "number"},
+        "uncertainty": {"$ref": "#/$defs/text"}, "assessment": {"$ref": "#/$defs/text"}, "report": {"$ref": "#/$defs/text"}
+      },
+      "anyOf": [{"required": ["doi"]}, {"required": ["url"]}]
+    }
+  }
+}

@@ -213,7 +213,11 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-33772564/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-f49557fd/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/seam-a-decl-remeasure-20261119/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-b442f464/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-b442f464/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-325a55b3/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-674f077a/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-f0ddf5c0/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-3a882746/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1783,6 +1787,38 @@
    "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-b442f464",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T08:11:39+00:00"
+  },
+  {
+   "git_revision": "325a55b394d860784cabd4e6e9c9fad1774d6f7c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-325a55b3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T08:47:24+00:00"
+  },
+  {
+   "git_revision": "674f077a3c634aa033f73fa74024c0e7ad14ba6a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-674f077a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T08:35:05+00:00"
+  },
+  {
+   "git_revision": "f0ddf5c0d39a10edc42f923b411f208f224c5377",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-f0ddf5c0",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T11:13:43+00:00"
+  },
+  {
+   "git_revision": "3a882746fbd440ed3d626119ae373c6d45de3c5e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-3a882746",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T11:02:26+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2752,7 +2788,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 18.41,
+    "seconds": 17.26,
     "exit_code": 0,
     "counts": {
      "passed": 24
@@ -3538,7 +3574,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.47,
+    "seconds": 2.62,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -3578,10 +3614,10 @@
    },
    {
     "file": "tests/unit/test_kind_presence_gate.py",
-    "seconds": 3.27,
+    "seconds": 4.38,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 7
     }
    },
    {
@@ -3610,10 +3646,10 @@
    },
    {
     "file": "tests/unit/test_kinds_lifecycle_declarations.py",
-    "seconds": 3.48,
+    "seconds": 4.22,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -3794,7 +3830,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 3.17,
+    "seconds": 2.97,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4091,7 +4127,7 @@
    },
    {
     "file": "tests/unit/test_p1_predictor.py",
-    "seconds": 13.45,
+    "seconds": 13.85,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -4292,7 +4328,7 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_parse.py",
-    "seconds": 12.8,
+    "seconds": 13.11,
     "exit_code": 0,
     "counts": {
      "passed": 21
@@ -4300,10 +4336,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 16.21,
+    "seconds": 18.36,
     "exit_code": 0,
     "counts": {
-     "passed": 15
+     "passed": 12
     }
    },
    {
@@ -4729,6 +4765,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_species_registry_movers.py",
+    "seconds": 0.52,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -5804,6 +5848,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_kind_ledgers.py",
+    "seconds": 50.16,
+    "exit_code": 0,
+    "counts": {
+     "passed": 8
     }
    },
    {

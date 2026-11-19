@@ -7275,3 +7275,135 @@ these rulings.
    - **The larger saving is slimming the heaviest files while keeping their claims,** with shared
      compiled fixtures and smaller worlds, measured before and after. One agent does it once the
      queue drains.
+
+**Amended the same day, about 11:50 UTC (the lead's rulings on X2, after the @3 owner's checks of the
+records):**
+- **Amendment 2 is not adopted.** It was registered at 11:36:41 UTC. Re-evaluating the saved
+  records reproduced the registered verdicts, but the running form refused 47 worlds that the
+  whole-run form admits. So the order condition and the held-step cap are decided over the whole run,
+  as registered.
+- **The cap is per row:** Σ|a|_k ≤ cap·F_k + floor_k at every row, like today's bound.
+  - A cap decided at the run's end would weaken as a run grows and would say nothing about the
+    early rows.
+  - For FR-18's three refused arms, Σ|a|/F peaks at row 1, at 2.3e-2, 5.7e-3 and 2.6e-3, so a
+    registration declares at least those values.
+  - There is no default. A missing, non-finite or non-positive cap is refused at parse.
+- **The switch and the cap's constants:**
+  - The switch lives in the execution spec, beside row_checks.
+  - The cap's constants have their own type, used only when X2 is on. When X2 is off, crossrev is
+    identical, and R1's parse row differs only by a defaulted field's text.
+- **The half steps** are taken at the model's step function, so a composite's operators are
+  included. The run-level sums travel in the checkpoint, not in the model state. Recorded
+  exceptions cover the execution layer's runner, windows, row checks, checkpoint IO and the
+  execution spec.
+- **The corrections, worded exactly:**
+  - X2 missed 15 of 378 plant cases. In each, the plant sat inside the allowance, and κΣ|a|
+    dominates that allowance.
+  - 14 GB was H2's raised admission limit, and 26 GB was cleft_egg's own trace estimate.
+  - The replay runs peaked at 2.2–6.5 GB, including the harness's per-row arrays.
+  - The check's work is two extra half steps per checked step. Its overhead inside the engine is to
+    be measured.
+
+## D225: The Xenopus bioelectric cancer replication is one of the top three priorities
+
+2026-11-19, about 12:40 UTC. The user checked in an external review,
+[docs/lanes/LEVIN_CANCER_XENOPUS.md](lanes/LEVIN_CANCER_XENOPUS.md). It proposes a lane for Levin
+and colleagues' Xenopus tumour experiments, starting with Chernet and Levin (2013): local
+hyperpolarisation suppressing oncogene-induced tumour-like structures, through a proposed
+SLC5A8–butyrate–HDAC route. The user's words: "get an agent to look into this at first to see if we
+are missing something in the engine or architecture to make this work, but then we want to have
+this as one of our top 3 priorities to replicate with our physics laws and to visualize on multiple
+scales in the main engine visualization tool".
+- **Priority:** the lane joins the core pass and the FRs (D222) as the third of the top three.
+- **First step:** one agent checks the review's claims about Cells and analyses, per experiment,
+  what the engine and its architecture already provide and what is missing. Missing pieces are
+  named as general, reusable engine models (D136, D144), not built for one experiment.
+- **Discussion before building:** the gap analysis and the build options go to the user before any
+  code.
+- **Replication:** it uses Cells' own physics laws, under a protocol registered before each judged
+  run.
+- **Visualization:** on multiple scales (embryo, tissue and cell) in the main viewer. The
+  visualizer session gets the layers the analysis names.
+
+## D226: The Xenopus lane goes ahead as option B, with a first experiment that can fail
+
+2026-11-19, about 13:10 UTC. The user chose option B of the gap analysis ("1. B"). On whether a
+transport reconstruction with conditional tumour-incidence projections counts as XC1's success:
+"Yes but get adviser also in on this but lets go". The advisor reviewed it.
+- **Option B:** the review's first bundle (XC0, and XC1's local transport: one-cell and two-cell
+  preparations, a small mosaic, the matched three-arm replay) runs beside general features that
+  other users also need:
+  - charged species in the species operators (FR-15, its F2 part, whose first step is the
+    `check_impermeant` diagnosis);
+  - anatomy as data.
+
+  A decision point follows the matched replay. Cell migration and light-driven pumps stay as design
+  notes until then. XC4's regression claim and XC5 wait for a second decision.
+- **The regulation-to-behaviour path** (a regulatory state driving cell-kind rates) is logged with a
+  design note and not started. It belongs to FR-7's family, and the first bundle does not need it.
+- **XC1's success is defined so that it can fail.** Its registration lists every published
+  transport-level number it is scored against, and the outcomes that count as failure, taken from
+  the review's §6. Examples: justified ionic conditions cannot reproduce the electrical response;
+  voltage matches but uptake does not; a mechanism-disruption result is missed. If those numbers are
+  few, the first result is reported as "qualified physics plus conditional projections", not as a
+  replication. The user is told that before the mosaic is built.
+- **Order:** the evidence ledger first. It confirms the matched arms, KRAS in one assay, and the
+  effect sizes, including the 1.3-fold figure, which so far rests on one reading. A parse-only
+  engine probe of the carrier comes before any protocol is registered or law is coded.
+- **Agents and models:** after a safeguard stop on Opus 5.5 in the first gap analysis, the user
+  chose Sonnet. Lane-specific agents run on Sonnet. General laws and operators go to their file
+  owners, briefed as general features (D136). The lane's code-blind references agent is fresh and
+  briefed from the physics alone. Any further safeguard stop is held and put to the user.
+
+## D227: Bare published numbers may be committed with their citation; one rule for commits in the shared checkout
+
+2026-11-19, about 13:30 UTC. The user answered two questions: "1. a as you recommend 2. yes please add
+this to agents and give me copy paste for Codex to make this smooth". On the Xenopus lane's first
+result, the user wrote "fine with \"not a replication\" we do our best".
+1. **Licences:** a paper under a non-commercial licence, such as Chernet and Levin 2013 (CC BY-NC-SA
+   3.0), may be cited in the repository with its bare published numbers. An example is "1.32-fold,
+   P = 0.01 (Chernet and Levin 2013, Table 2)". Numbers are facts, not the licensed text.
+   - Figures, tables reproduced as tables, article text, images, supplements and datasets under such
+     licences stay out of the repository. They are analysis-only, as before.
+   - Source extracts stay in the workspace.
+2. **Commits:** AGENTS.md now asks every agent to commit only its own named paths
+   (`git commit -- <paths>`), to check what is staged first, never to commit, reset or stash over a
+   merge in progress, and never to rebase, amend a pushed commit or force-push main. The rule exists
+   because another agent, the Lean proofs project in `lean/`, now commits to main from this same
+   checkout. The lead's landings already assert the staged tree against the checked trial.
+3. **The Xenopus lane's first result** is reported as "qualified physics plus conditional
+   projections", not as a replication. The ledger found three scorable transport-level numbers, none
+   with uncertainties, and incidence ratios without counts (D226).
+
+## D228: Gaps found by real use cases are prioritised as general engine features
+
+2026-11-19, about 13:45 UTC. The user: "that is the good thing looking at real upcoming use cases
+find gaps, so lets prioritze those gaps". The Xenopus lane's XC0 design, the kinds owner's probe and
+the @3 owner's answers (all of 19 November) found these gaps. Each is a general, reusable feature
+(D136, D144), qualified with its own references and tier gate. They are scheduled into the core
+pass as its current heads land, in this order:
+1. **An electrogenic Na⁺-coupled anion symporter cycle law,** SLC5-type (the kinds owner). Version 1
+   is the fuel-free factored form with an integer coupling count. Version 2 is an eight-state diagram
+   with voltage-dependent edges. The kinds owner's probe showed it parses, binds and closes every
+   ledger on main today.
+2. **An instantaneous inward-rectifier route law** on the passive-routes kind (the kinds owner): a
+   driving force of V − E_K, conductance scaling with √K_o, and data coefficients in the route's
+   declaration. It serves Kir4.1 and other inward rectifiers. Today's channel-law seam sees only the
+   voltage.
+3. **Cl⁻ as a permeant ion in channel populations** (the H1 seam). The @3 owner's part is small: the
+   valence table and its tests. A registered Cl⁻ channel law is the F owner's. Until it lands, a
+   Cl⁻-only membrane patch carries a constitutive Cl⁻ conductance.
+4. **Charged species in the species operators** (FR-15 F2, the operators owner). It starts with the
+   `check_impermeant` diagnosis. Butyrate and serotonin chemistry need it, as does the gap-junction
+   replication's microRNA.
+5. **Availability schedules** for the cycle kind's general layout (the kinds owner). Today a
+   population's availability there is fixed at 1.
+6. **A check in the kind contract that each state field's array matches its declared axes** (the F
+   owner), with planted kinds corrected. The review's trace-estimate work exposed this.
+7. **Later, as design notes until the lane's first decision point (D226):**
+   - field-input providers beyond 64 field nodes;
+   - a regulatory state that drives cell behaviour (FR-7's family);
+   - light as an energy input;
+   - cell migration and topology changes.
+
+Each lands through its owner's gate. The lane uses each one only after its qualification.
