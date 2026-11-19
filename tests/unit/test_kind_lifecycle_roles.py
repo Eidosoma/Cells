@@ -17,15 +17,19 @@ left to the closers' records until composition's M5 Q2.
 import dataclasses
 from types import MappingProxyType
 
+import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as pump3
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, partition
 from cells.registry import kind_registry
-from cells.registry.kind_registry import PartitionRole
+from cells.registry.kind_registry import Kind, PartitionRole
 from cells.registry.models import get_model
 from tests import kind_fixtures as kf
+from tests import partition_fixtures as pfx
 from tests.unit.test_pump_composite_kinds import SLOT_CHANGERS, composite, world
 
 RETIRES = "opens, closes or retires slots"
@@ -182,3 +186,855 @@ def test_the_held_row_check_reads_the_kind_bound_to_its_entry(monkeypatch):
         monkeypatch.setattr(kind_registry, "bound", per_entry)
         errors = pump_composite.held_row_errors(pairs, spec)
         assert len(errors) == 1 and errors[0].startswith(f"Kind {kf.KIND_ID} holds F at cell_0")
+
+
+# ------------------------------------------------------------------ @3's roles and the partition
+# B1's last slice, its equality checks (the lead's rulings of 19 November 2026 on design statement
+# 1, CORE_SEAMS §18): tests only. partition.event_map's hand-written handling of @3's fields
+# stays, and these show that @3's role table (surface_pump_v3.FIELD_ROLES, converted once)
+# reproduces it. Each check has a flipped-role plant.
+
+RETIRED_AXES = ("membrane_slot", "edge_slot", "channel_slot")  # What a retired cell takes down.
+DIVIDED_AXES = ("cell_slot", "membrane_slot", "edge_slot")  # Where check_structure checks anchors.
+# The pumps' history, left to the closers' own records until composition's M5 Q2.
+PUMP_HISTORY = (
+    "pump_cycles",
+    "pump_dissipated_energy_pJ",
+    "metabolic_work_pJ",
+    "calcium_pump_cycles",
+    "calcium_pump_dissipated_energy_pJ",
+    "calcium_metabolic_work_pJ",
+)
+PUMP_CAPACITIES = ("pump_capacity", "calcium_pump_capacity")  # Refused on a dividing cell.
+# check_structure's anchors, by the layout field each check holds: per cell the volume, the species'
+# amounts and the charge anchor (its fixed-charge check has no layout field of its own: it enters
+# the charge anchor); per patch the area and capacitance; per contact the area.
+CHECKED_ANCHORS = {
+    "volume",
+    "amount_reference",
+    "initial_cell_charge_C",
+    "membrane_area",
+    "membrane_capacitance",
+    "junction_area",
+}
+# What closure (pump_composite_adapter.close) leaves unpadded although its role pads it at
+# retirement, by kind. A new field in none of these and not padded fails the test and forces a
+# decision (the lead's ruling 6).
+UNPADDED = {
+    "geometry, kept for the capacitor solve": {
+        "volume",
+        "extracellular_volume",
+        "membrane_area",
+        "membrane_capacitance",
+        "junction_area",
+    },
+    "parameters read only on active slots (the masks)": {
+        "membrane_permeability",
+        "channel_abundance",
+        "channel_permeability",
+        "channel_relative_permeability",
+        "junction_permeability",
+        "junction_threshold_voltage",
+    },
+    "hosts and ends, the topology kept": {
+        "channel_membranes",
+        "membrane_cell",
+        "membrane_outside",
+        "junction_sender",
+        "junction_receiver",
+    },
+    "the pumps, gated by their host's activity": {
+        "pump_present",
+        "calcium_pump_present",
+        "pump_capacity",
+        "calcium_pump_capacity",
+    },
+}
+SIZES = dict(  # Distinct capacities, so each layout array's shape names its axes.
+    capacity=5,
+    extracellular_capacity=6,
+    membrane_capacity=7,
+    edge_capacity=8,
+    face_capacity=9,
+    channel_capacity=10,
+)
+AXIS_OF_SIZE = {
+    5: "cell_slot",
+    6: "extracellular_slot",
+    7: "membrane_slot",
+    8: "edge_slot",
+    9: "face_slot",
+    10: "channel_slot",
+}
+
+
+@pytest.fixture(scope="module")
+def inner_roles():
+    """@3's role table converted once ({field: (PartitionRole, axes)}): the state fields' axes from
+    the adapter's STATE_AXES, each layout field's read from a parsed world's layout, whose
+    capacities are all distinct (padding included), so an array's shape names its axes."""
+    from cells.definitions.specs import parse_spec
+    from cells.models import surface_pump_v3
+    from validation.tissue import secreted_species_fixtures as fx
+
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"),),
+        faces=(),
+        end=0.004,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-6),
+    )
+    raw["execution"].update(SIZES)
+    spec = parse_spec(raw)
+    _, p = get_model(spec.model).initial_values(spec)
+    layout = pump3.inner_layout(p)
+    species = len(spec.model.species_ids)
+    assert species not in AXIS_OF_SIZE
+    axes = {name: tuple(axis) for name, axis in pump3.STATE_AXES.items()}
+    for name in surface_pump_v3.FIELD_ROLES:
+        if name not in axes:
+            shape = getattr(layout, name).shape
+            axes[name] = tuple(
+                "species" if size == species else AXIS_OF_SIZE[size] for size in shape
+            )
+    return pump3.inner_role_table(surface_pump_v3.FIELD_ROLES, axes)
+
+
+def retired_history(table):
+    """The history state fields on the retired axes, less the pumps': what a retirement records."""
+    return {
+        name
+        for name, (role, axes) in table.items()
+        if name in pump3.STATE_AXES and role.role == "history" and set(axes) & set(RETIRED_AXES)
+    } - set(PUMP_HISTORY)
+
+
+def resets(table):
+    """The intensive state fields: what a division copies to the daughters."""
+    state = pump3.STATE_AXES
+    return {k for k, (role, _) in table.items() if k in state and role.role == "intensive"}
+
+
+def anchors(table):
+    """The extensive layout fields on the divided axes, less the pumps' capacities."""
+    return {
+        name
+        for name, (role, axes) in table.items()
+        if name not in pump3.STATE_AXES
+        and role.role == "extensive"
+        and set(axes) & set(DIVIDED_AXES)
+    } - set(PUMP_CAPACITIES)
+
+
+def padded(table):
+    """The layout fields whose role pads them at retirement, less what closure leaves unpadded."""
+    left = set().union(*UNPADDED.values())
+    return {
+        name
+        for name, (role, _) in table.items()
+        if name not in pump3.STATE_AXES and role.role in ("extensive", "intensive", "structural")
+    } - left
+
+
+def flipped(table, name, role):
+    out = dict(table)
+    out[name] = (PartitionRole(role, 0 if role == "structural" else None), table[name][1])
+    return out
+
+
+def test_roles_reproduce_the_partitions_retirement_record(inner_roles):
+    from cells.operators import partition
+
+    assert retired_history(inner_roles) == set(partition.RECORD)
+    # Planted: a retired history field taken for an intensive one leaves the record.
+    assert retired_history(flipped(inner_roles, "junction_transferred", "intensive")) != set(
+        partition.RECORD
+    )
+
+
+def test_roles_reproduce_the_partitions_kinetic_resets(inner_roles):
+    from cells.operators import partition
+
+    resets_declared = OPERATORS[partition.LAW_ID].STATE_RESETS
+    assert resets(inner_roles) == set(resets_declared) == {"channel_gate", "junction_gate"}
+    assert resets(flipped(inner_roles, "junction_gate", "history")) != set(resets_declared)
+
+
+def test_roles_reproduce_the_anchors_the_partition_checks(inner_roles):
+    assert anchors(inner_roles) == CHECKED_ANCHORS
+    assert anchors(flipped(inner_roles, "membrane_capacitance", "intensive")) != CHECKED_ANCHORS
+
+
+def test_roles_reproduce_closures_padded_fields_but_for_what_the_masks_hold(inner_roles):
+    """PADDED_FIELDS is the padded roles' layout fields less what closure leaves unpadded (UNPADDED,
+    written here by kind). Every field of UNPADDED has a padding role, the kinds are disjoint, and
+    none of them is padded."""
+    assert padded(inner_roles) == set(pump3.PADDED_FIELDS)
+    groups = list(UNPADDED.values())
+    assert sum(len(g) for g in groups) == len(set().union(*groups))  # Disjoint.
+    for name in set().union(*groups):
+        assert inner_roles[name][0].role in ("extensive", "intensive", "structural"), name
+        assert name not in pump3.PADDED_FIELDS, name
+    assert padded(flipped(inner_roles, "channel_laws", "history")) != set(pump3.PADDED_FIELDS)
+
+
+# ------------------------------------------------------------------ the lifecycle by roles (step A)
+# The single lifecycle implementation for kinds' state fields
+# (pump_composite_adapter.lifecycle_split and lifecycle_retire): the split by the
+# partition's maps, retirement by its masks. Nothing calls it in a program yet (B wires it
+# to the partition's event, beside a kind with entity fields, which Q7 (a) still refuses),
+# so it is tested on planted states over a parsed division world.
+
+
+@pytest.fixture(scope="module")
+def division():
+    """FR-1's division world with a neighbour (tests/partition_fixtures.divided), bound: its spec,
+    model, initial state and layout, and its one division due."""
+    import numpy as np
+
+    from tests import partition_fixtures as pfx
+    from tests.unit.test_partition import bind
+
+    spec, model, state, p = bind(pfx.divided(neighbour=True))
+    return spec, model, state, p, np.ones(1, dtype=bool)
+
+
+def test_the_retirement_masks_are_what_the_partitions_event_retires(division):
+    """partition.retirement_masks, the one source the lifecycle reads, equals what event_map moves
+    into the partition's record for @3's history: with history 1 on every active slot, the record
+    holds 1 exactly where the mask is set."""
+    import numpy as np
+
+    from cells.operators import partition
+    from tests.unit.test_partition import divide
+
+    spec, model, state, p, due = division
+    axes = dict(pump3.STATE_AXES)
+    ones = {
+        k: np.where(np.ones_like(np.asarray(getattr(state, k))) > 0, 1.0, 0.0)
+        for k in partition.RECORD
+    }
+    after, ok = divide(model, state._replace(**ones), p)
+    assert bool(ok)
+    masks = partition.retirement_masks(due, p, xp=np)
+    for field, record in partition.RECORD.items():
+        mask = masks[axes[field][-1]]
+        kept = np.asarray(getattr(after, record)) != 0
+        assert (kept == np.broadcast_to(mask, kept.shape)).all(), field
+    assert masks["membrane_slot"].any() and not masks["membrane_slot"].all()
+
+
+PLANTED_ROLES = {
+    "planted_amount_fmol": (PartitionRole("extensive"), ("species", "membrane_slot")),
+    "planted_cell_amount_fmol": (PartitionRole("extensive"), ("cell_slot",)),
+    "planted_saturation": (PartitionRole("intensive"), ("membrane_slot",)),
+    "planted_cycles": (PartitionRole("history"), ("membrane_slot",)),
+    "planted_law": (PartitionRole("structural", 7), ("membrane_slot",)),
+    "planted_node_amount_fmol": (PartitionRole("extensive"), ("extracellular_slot",)),
+}
+
+
+def planted_values(p, *, value=0.3):
+    """Planted kind state: every slot of each planted field at `value`, but the history's daughters
+    (pending slots) at 0."""
+    import numpy as np
+
+    from cells.operators import partition
+
+    sizes = dict(
+        membrane_slot=p.membrane_active.size,
+        cell_slot=p.active.size,
+        extracellular_slot=p.outside_active.size,
+    )
+    out = {}
+    for name, (_, axes) in PLANTED_ROLES.items():
+        shape = tuple(2 if a == "species" else sizes[a] for a in axes)
+        out[name] = np.full(shape, value)
+    maps = partition.division_maps(np.ones(1, dtype=bool), p)
+    out["planted_cycles"][..., maps["membrane_slot"][1].ravel()] = 0.0
+    return out
+
+
+def test_the_split_follows_each_role_through_the_partitions_maps(division):
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, due = division
+    values = planted_values(p)
+    maps = partition.division_maps(due, p)
+    out, valid = pump3.lifecycle_split(values, PLANTED_ROLES, maps, xp=np)
+    assert bool(valid)
+    for axis, name in (
+        ("membrane_slot", "planted_amount_fmol"),
+        ("cell_slot", "planted_cell_amount_fmol"),
+    ):
+        parent, kids, fraction, _ = maps[axis]
+        x = values[name][..., parent]
+        one, two = out[name][..., kids[:, 0]], out[name][..., kids[:, 1]]
+        assert (one == fraction * x).all() and (two == x - fraction * x).all()
+        assert (one + two == x).all() and (out[name][..., parent] == 0).all()  # Exactly.
+    parent, kids, _, _ = maps["membrane_slot"]
+    assert (out["planted_saturation"][kids] == values["planted_saturation"][parent][:, None]).all()
+    for name in ("planted_cycles", "planted_law", "planted_node_amount_fmol"):
+        assert (out[name] == values[name]).all(), name  # Untouched: history, structure, no map.
+    # An extensive field on edge slots, whose map binds no fraction, is refused.
+    contact = {"planted_contact_fmol": (PartitionRole("extensive"), ("edge_slot",))}
+    edges = {"planted_contact_fmol": np.ones(p.junction_active.size)}
+    with pytest.raises(ValueError, match="needs its map's fraction"):
+        pump3.lifecycle_split(edges, contact, maps, xp=np)
+    # Planted: a pending daughter that already holds history makes the split invalid.
+    stale = dict(values, planted_cycles=np.full_like(values["planted_cycles"], 0.3))
+    assert not bool(pump3.lifecycle_split(stale, PLANTED_ROLES, maps, xp=np)[1])
+
+
+def test_retirement_records_history_and_pads_the_rest(division):
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, due = division
+    values = planted_values(p, value=1.0)
+    masks = partition.retirement_masks(due, p, xp=np)
+    records = {
+        "planted_cycles": ("planted_cycles_retired", np.zeros_like(values["planted_cycles"]))
+    }
+    out, kept = pump3.lifecycle_retire(values, PLANTED_ROLES, masks, records, xp=np)
+    gone = masks["membrane_slot"]
+    assert (kept["planted_cycles_retired"] == np.where(gone, 1.0, 0.0)).all()
+    assert (
+        out["planted_cycles"] + kept["planted_cycles_retired"] == values["planted_cycles"]
+    ).all()
+    assert (out["planted_amount_fmol"][..., gone] == 0).all() and (
+        out["planted_saturation"][gone] == 0
+    ).all()
+    assert (out["planted_law"][gone] == 7).all() and (out["planted_law"][~gone] == 1.0).all()
+    assert (out["planted_cell_amount_fmol"][masks["cell_slot"]] == 0).all()
+    assert (out["planted_node_amount_fmol"] == 1.0).all()  # Outside nodes are never retired.
+    # Planted: a history field with no record would lose its history, so it is refused.
+    with pytest.raises(ValueError, match="retires only into its record"):
+        pump3.lifecycle_retire(values, PLANTED_ROLES, masks, {}, xp=np)
+
+
+def test_the_lifecycle_acts_along_one_entity_axis_its_last():
+    assert pump3.lifecycle_axis("gates", ("gate", "channel_slot")) == "channel_slot"
+    assert pump3.lifecycle_axis("shared", ("species",)) is None
+    for axes in (("membrane_slot", "species"), ("membrane_slot", "channel_slot")):
+        with pytest.raises(ValueError, match="one entity axis, its last"):
+            pump3.lifecycle_axis("planted", axes)
+
+
+# ------------------------------------------------------------------ the record and the door (B)
+# Q6 (b): the composite owns a record per kind history field (and a moved accumulator per
+# extensive one), written through the partition's event (lifecycle=), added back before the
+# checks; ruling 4 (b): field plus record unchanged across a retiring event. Q7 (a) refuses a
+# per-patch kind beside the partition, so these patch pump_composite._kinds_lifecycle only (the
+# accepted bypass, as the silence tests bypass refusals 4 and 5).
+
+
+def per_patch_carrier(transferred="history"):
+    """The carrier with its two state fields per patch (its transfers, history unless given, and
+    its work, history), its rate and availability on shared axes."""
+    kind = axed(kf.carrier(), {"carrier_rate_fmol_s": ("species",), "carrier_availability": ()})
+    roles = roles_for(kind, "intensive") | {
+        "carrier_transferred": PartitionRole(transferred),
+        "carrier_work_pJ": PartitionRole("history"),
+    }
+    return dataclasses.replace(kind, partition_roles=roles)
+
+
+@pytest.fixture(params=["history"])
+def lifecycle_world(monkeypatch, request):
+    """The division world with the carrier on its parent's first patch, parsed with the bypass:
+    (spec, model, a planted pre-event state with history on that patch, layout, patch slot)."""
+    import numpy as np
+
+    from cells.definitions.specs import parse_spec
+    from tests import partition_fixtures as pfx
+
+    monkeypatch.setattr(
+        pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
+    )
+    raw = pfx.divided()
+    division = next(o for o in raw["model"]["operators"] if o["law"] == "isopotential_partition@1")
+    parent = division["divisions"][0]["parent"]
+    patch = next(m["id"] for m in raw["model"]["membranes"] if m["inside"] == parent)
+    with kind_registry.scope(kf.registry(per_patch_carrier(request.param))):
+        spec = parse_spec(kf.declare_carrier(raw, species="K", membrane=patch))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        k = [m.id for m in spec.model.membranes].index(patch)
+        transferred = np.array(state.carrier_transferred, copy=True)
+        transferred[:, k] = 0.2
+        work = np.array(state.carrier_work_pJ, copy=True)
+        work[k] = 1e-6
+        yield (
+            spec,
+            model,
+            state._replace(carrier_transferred=transferred, carrier_work_pJ=work),
+            p,
+            k,
+        )
+
+
+def retire(model, state, p):
+    from types import SimpleNamespace
+
+    import numpy as np
+
+    from cells.operators import partition
+
+    op = next(o for o in model.operators if o.LAW_ID == partition.LAW_ID)
+    control = SimpleNamespace(partition_due=np.ones(1))
+    view = lambda s: model.view(p, s, xp=np)  # noqa: E731
+    return op.event(state, control, p, xp=np, view=view, lifecycle=model._lifecycle)
+
+
+def test_the_composite_owns_a_record_per_kind_history_field(lifecycle_world):
+    """The records are composite state, named without the energy suffix (ruling 3)."""
+    spec, model, state, p, k = lifecycle_world
+    assert model.KIND_RECORDS == {
+        "carrier_transferred": "carrier_transferred_retired",
+        "carrier_work_pJ": "carrier_retired_work_energy_pJ",
+    }
+    assert model.KIND_MOVED == {}
+    assert model.FIELD_MAP["state"]["carrier_transferred_retired"]["owner"] == "composite"
+    records = set(model.KIND_RECORDS.values())
+    assert not records & set(model.ENERGY_FLOW_FIELDS)  # In no energy sum by role,
+    assert not any(r.endswith(("_dissipated_energy_pJ", "_work_pJ")) for r in records)  # nor name.
+
+
+def test_a_retirement_moves_the_kinds_history_into_the_record_and_back_for_the_checks(
+    lifecycle_world,
+):
+    import numpy as np
+
+    spec, model, state, p, k = lifecycle_world
+    after, ok = retire(model, state, p)
+    assert bool(ok)
+    assert (np.asarray(after.carrier_transferred)[:, k] == 0).all()
+    assert (np.asarray(after.carrier_transferred_retired)[:, k] == 0.2).all()
+    assert float(np.asarray(after.carrier_retired_work_energy_pJ)[k]) == 1e-6
+    assert bool(model._history_kept(state, after, xp=np))
+    adjusted = model._adjusted(after, p, xp=np)
+    assert (np.asarray(adjusted.carrier_transferred) == np.asarray(state.carrier_transferred)).all()
+    # The ledgers read the adjusted row as if nothing moved: each equals the pre-event one.
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    for name in ("local", "energy"):
+        np.testing.assert_allclose(after_l[name], before_l[name], rtol=1e-9, atol=1e-15)
+
+
+def test_a_retirement_that_loses_history_is_refused(lifecycle_world, monkeypatch):
+    """Planted (ruling 4): the lifecycle's retirement drops the record. The field-plus-record check
+    refuses it whatever the field (a cycle count no ledger reads included), and the material ledger
+    that reads the transfers sees them gone."""
+    import numpy as np
+
+    spec, model, state, p, k = lifecycle_world
+    real = pump3.lifecycle_retire
+
+    def losing(values, table, masks, records, *, xp):
+        out, kept = real(values, table, masks, records, xp=xp)
+        return out, {r: held for r, held in records.values()}  # The history zeroed, not kept.
+
+    monkeypatch.setattr(pump3, "lifecycle_retire", losing)
+    after, ok = retire(model, state, p)
+    assert not bool(model._history_kept(state, after, xp=np))
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    assert np.max(np.abs(np.asarray(after_l["local"]) - np.asarray(before_l["local"]))) > 0.1
+
+
+def test_a_retiring_operator_without_the_lifecycle_door_is_refused(lifecycle_world, monkeypatch):
+    """Ruling 1, fail closed: beside the kinds' lifecycle fields, a retiring operator whose event
+    map takes no lifecycle= is refused at the structure. Planted: the partition with
+    TAKES_LIFECYCLE false."""
+    from cells.operators import partition
+
+    spec, model, state, p, k = lifecycle_world
+    op = next(o for o in model.operators if o.LAW_ID == partition.LAW_ID)
+    assert pump_composite.lifecycle_errors(model.inner, model.operators) == []
+    monkeypatch.setattr(type(op), "TAKES_LIFECYCLE", False)
+    (error,) = pump_composite.lifecycle_errors(model.inner, model.operators)
+    assert error.startswith(f"{partition.LAW_ID} retires slots beside the kinds' fields")
+
+
+def test_a_per_cell_extensive_kind_field_is_refused_beside_a_dividing_closer(lifecycle_world):
+    """Ruling 7 (c): a per-cell extensive kind field waits for a charge rule. Planted: the table
+    with one such field."""
+    spec, model, state, p, k = lifecycle_world
+    table = dict(
+        model.kind_lifecycle, planted_cell_fmol=(PartitionRole("extensive"), ("cell_slot",))
+    )
+    import unittest.mock
+
+    with unittest.mock.patch.object(
+        pump_composite, "kind_lifecycle_table", lambda inner, ops: table
+    ):
+        errors = pump_composite.lifecycle_errors(model.inner, model.operators)
+    assert errors == [
+        "The kinds' per-cell extensive fields ['planted_cell_fmol'] are refused beside a dividing "
+        "closer until a charge rule exists: a division splits them by the volume fraction alone"
+    ]
+
+
+def test_an_extensive_kind_field_on_edge_slots_is_refused_at_the_definition(lifecycle_world):
+    """CORE_SEAMS §18 (02:25 UTC, 19 November 2026): the partition binds no contact fraction, so an
+    extensive kind field on edge slots is refused at the structure, not first when the event is
+    traced (lifecycle_split's own refusal stays, behind it). Planted: the table with one such
+    field; an intensive one there is admitted."""
+    import unittest.mock
+
+    spec, model, state, p, k = lifecycle_world
+
+    def errors_with(role):
+        planted = (PartitionRole(role), ("edge_slot",))
+        table = dict(model.kind_lifecycle, planted_contact_fmol=planted)
+        with unittest.mock.patch.object(
+            pump_composite, "kind_lifecycle_table", lambda inner, ops: table
+        ):
+            return pump_composite.lifecycle_errors(model.inner, model.operators)
+
+    assert errors_with("extensive") == [
+        "The kinds' extensive fields on edge slots ['planted_contact_fmol'] are refused beside a "
+        "dividing closer: the partition binds no contact fraction to split them by"
+    ]
+    assert errors_with("intensive") == []
+
+
+def test_no_composition_admitted_today_gains_a_lifecycle_field():
+    """Q7 (a) refuses a kind with entity fields beside a closer, so every registered composition
+    keeps its types: the table is empty beside the partition with a shared-axis kind, and without
+    a retiring operator."""
+    with kind_registry.scope(kf.registry(shared_carrier())):
+        inner = get_model(composite(kf.declare_carrier(world(), species="K")).model).inner
+        partition_op = OPERATORS["isopotential_partition@1"]
+        assert pump_composite.kind_lifecycle_table(inner, (partition_op,)) == {}
+    assert pump_composite.kind_lifecycle_table(pump3, (partition_op,)) == {}
+
+
+@pytest.mark.parametrize("lifecycle_world", ["extensive"], indirect=True)
+def test_an_extensive_kind_field_is_split_and_its_move_booked(lifecycle_world):
+    """Ruling 5: the carrier's transfers declared extensive. The daughters' patches take the
+    anchor rule's shares and the parent's goes to 0; the composite's moved accumulator books the
+    split, so the adjusted row is the pre-event one and the ledgers equal the pre-event ones."""
+    import numpy as np
+
+    from cells.operators import partition
+
+    spec, model, state, p, k = lifecycle_world
+    assert model.KIND_MOVED == {"carrier_transferred": "carrier_transferred_moved"}
+    after, ok = retire(model, state, p)
+    assert bool(ok)
+    parent, kids, fraction, _ = partition.division_maps(np.ones(1, dtype=bool), p)["membrane_slot"]
+    row = int(np.flatnonzero(np.asarray(parent) == k)[0])
+    x = np.asarray(state.carrier_transferred)[:, k]
+    one = np.asarray(after.carrier_transferred)[:, kids[row, 0]]
+    two = np.asarray(after.carrier_transferred)[:, kids[row, 1]]
+    assert (one + two == x).all() and (np.asarray(after.carrier_transferred)[:, k] == 0).all()
+    adjusted = model._adjusted(after, p, xp=np)
+    assert (np.asarray(adjusted.carrier_transferred) == np.asarray(state.carrier_transferred)).all()
+    before_l, after_l = model.balances(state, p), model.balances(after, p)
+    np.testing.assert_allclose(after_l["local"], before_l["local"], rtol=1e-9, atol=1e-15)
+
+
+# ------------------------------------------------------------------ the declared fields by role (C)
+# Step C (the lead's ruling 2 of 19 November 2026): a kind's layout and control fields on the
+# divided slot axes are checked by role at the definition, in the partition's check_definition
+# (partition.check_kind_roles), since a kind's layout values exist only at binding. The planted
+# kind declares its values slot by slot on the asymmetric division world (f 0.75, the patch's
+# fraction 0.6, so a population's split shows that it takes its patch's fraction), beside the
+# partition under the accepted bypass. One plant per role, each refused with its field named.
+
+PLANTED_ID = "tests.planted_population@1"
+PLANTED_KEY = "test_planted_population"
+PLANTED_FIELDS = {  # field: (layout or control, entity axis, role)
+    "planted_capacity_fmol_s": ("layout", "membrane_slot", PartitionRole("extensive")),
+    "planted_km_mM": ("layout", "membrane_slot", PartitionRole("intensive")),
+    "planted_law": ("layout", "membrane_slot", PartitionRole("structural", 0)),
+    "planted_units": ("layout", "channel_slot", PartitionRole("extensive")),
+    "planted_availability": ("control", "membrane_slot", PartitionRole("intensive")),
+}
+SLOT_LISTS = dict(  # Each slot axis: its capacity in the execution block, its entity list.
+    cell_slot=("capacity", "cells"),
+    membrane_slot=("membrane_capacity", "membranes"),
+    channel_slot=("channel_capacity", "channels"),
+    edge_slot=("edge_capacity", "junctions"),
+)
+
+
+def _freeze(value):
+    return tuple(_freeze(v) for v in value) if isinstance(value, (list, tuple)) else float(value)
+
+
+def _thaw(value):
+    return [_thaw(v) for v in value] if isinstance(value, tuple) else value
+
+
+def _planted_slots(spec, axis):
+    capacity, entities = SLOT_LISTS[axis]
+    return getattr(spec.execution, capacity), [e.id for e in getattr(spec.model, entities)]
+
+
+def planted_population(fields=PLANTED_FIELDS, *, bound_on=None):
+    """The planted per-slot kind: `fields` {field: (layout or control, entity axis, role)}, with
+    their roles and axes declared, every value given slot by slot in its model block ({field: {slot:
+    value}}, a control's value a schedule [[time, value], ...]). `bound_on` {field: axis} binds a
+    field along another axis than it declares (a planted shape). No state, rates or moves."""
+    bound_on = bound_on or {}
+    layout = tuple(k for k, (what, _, _) in fields.items() if what == "layout")
+    control = tuple(k for k, (what, _, _) in fields.items() if what == "control")
+
+    def initial(spec, declaration, entries):
+        values, out = dict(declaration), {}
+        for name in layout:
+            _, ids = _planted_slots(spec, fields[name][1])  # The declared axis's slots ...
+            size, _ = _planted_slots(spec, bound_on.get(name, fields[name][1]))  # ... bound here.
+            structural = fields[name][2].role == "structural"
+            out[name] = np.zeros(size, dtype=np.int64 if structural else float)
+            for slot, value in values.get(name, ()):
+                out[name][ids.index(slot)] = value
+        return {}, out
+
+    def control_values(spec, declaration, times):
+        values, out = dict(declaration), {}
+        for name in control:
+            size, ids = _planted_slots(spec, fields[name][1])
+            out[name] = np.zeros((len(times), size))
+            for slot, schedule in values.get(name, ()):
+                for start, value in schedule:  # Piecewise constant, each point from its time on.
+                    out[name][np.asarray(times) >= start, ids.index(slot)] = value
+        return out
+
+    return Kind(
+        kind_id=PLANTED_ID,
+        model_key=PLANTED_KEY,
+        layout_fields=layout,
+        control_fields=control,
+        parse=lambda entries, base: tuple(
+            (name, tuple((slot, _freeze(v)) for slot, v in sorted(values.items())))
+            for name, values in sorted(entries.items())
+        ),
+        to_dict=lambda declaration: {
+            name: {slot: _thaw(v) for slot, v in values} for name, values in declaration
+        },
+        structure_entry=lambda declaration: (),
+        initial=initial,
+        control_values=control_values,
+        partition_roles=MappingProxyType({k: role for k, (_, _, role) in fields.items()}),
+        field_axes=MappingProxyType({k: (axis,) for k, (_, axis, _) in fields.items()}),
+    )
+
+
+CAPACITY, KM, UNITS = 0.3, 0.2, 6.0  # The parent's planted values.
+
+
+def planted_world(**changes):
+    """(raw, its division block): the asymmetric division world with the planted kind's values
+    following every role: the capacity and each population's units split by the patch's fraction
+    (the anchor rule), the Michaelis constant and the availability (a control, held 1 from t = 0)
+    equal, and the law as declared, different at each daughter. changes: {field: {slot: value}}."""
+    raw = pfx.divided(f=0.75, area_fraction=0.6, carriers={"Na": 0.5, "K": 0.5})
+    block = next(o for o in raw["model"]["operators"] if o["law"] == partition.LAW_ID)
+    (division,) = block["divisions"]
+    (patch,) = division["patches"]
+    a, (one, two) = patch["fraction"], patch["daughters"]
+    slots = (patch["parent"], one, two)
+    values = dict(
+        planted_capacity_fmol_s=dict(
+            zip(slots, (CAPACITY, *partition.split(CAPACITY, a)), strict=True)
+        ),
+        planted_km_mM=dict.fromkeys(slots, KM),
+        planted_law=dict(zip(slots, (2, 3, 4), strict=True)),
+        planted_availability={slot: [[0.0, 1.0]] for slot in slots},
+        planted_units={},
+    )
+    for population in division["populations"]:
+        rows = (population["parent"], *population["daughters"])
+        values["planted_units"].update(zip(rows, (UNITS, *partition.split(UNITS, a)), strict=True))
+    for name, update in changes.items():
+        values[name] = {**values.get(name, {}), **update}
+    raw["model"][PLANTED_KEY] = values
+    return raw, division
+
+
+@pytest.fixture
+def planted(monkeypatch):
+    """parse(raw, fields=PLANTED_FIELDS, bound_on=None) -> spec, under the accepted bypass (Q7 (a)
+    refuses a per-entity kind beside a closer at the structure) and a registry with the planted
+    kind; and the registry's scope, for binding the parsed spec."""
+    monkeypatch.setattr(
+        pump_composite, "_kinds_lifecycle", lambda inner, kinds: dict.fromkeys(kinds, ())
+    )
+
+    def parse(raw, fields=PLANTED_FIELDS, bound_on=None):
+        with kind_registry.scope(kf.registry(planted_population(fields, bound_on=bound_on))):
+            return parse_spec(raw)
+
+    return parse
+
+
+def roles_of(**changes):
+    """PLANTED_FIELDS with the named fields' roles changed ({field: PartitionRole})."""
+    return {
+        k: (what, axis, changes.get(k, role)) for k, (what, axis, role) in PLANTED_FIELDS.items()
+    }
+
+
+def test_declared_fields_that_follow_their_roles_are_admitted(planted):
+    """The admitted world, not vacuously: the check compares the four non-structural fields, which
+    the bound layout and controls hold at the daughters as planted (the anchor rule's shares by the
+    patch's fraction 0.6, not by f 0.75), and the structural law differs at each daughter."""
+    raw, division = planted_world()
+    spec = planted(raw)
+    with kind_registry.scope(kf.registry(planted_population())):
+        model = get_model(spec.model)
+        checked = partition.kind_role_fields(model)
+        _, p = model.initial_values(spec)
+    fields = {(name, role.role, axis, what) for _, name, role, axis, what in checked}
+    assert fields == {
+        (name, role.role, axis, what) for name, (what, axis, role) in PLANTED_FIELDS.items()
+    }
+    ids = [m.id for m in spec.model.membranes]
+    (patch,) = division["patches"]
+    held = [p.planted_capacity_fmol_s[ids.index(s)] for s in (patch["parent"], *patch["daughters"])]
+    assert held[1:] == list(partition.split(CAPACITY, 0.6)) and held[1] + held[2] == CAPACITY
+    assert held[1] != 0.75 * CAPACITY
+    assert sorted(p.planted_law[: len(ids)]) == [2, 3, 4]
+
+
+def test_an_extensive_field_off_the_anchor_rule_by_one_ulp_is_refused(planted):
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    one = raw["model"][PLANTED_KEY]["planted_capacity_fmol_s"][patch["daughters"][0]]
+    raw["model"][PLANTED_KEY]["planted_capacity_fmol_s"][patch["daughters"][0]] = np.nextafter(
+        one, np.inf
+    )
+    with pytest.raises(ConfigError, match="planted_capacity_fmol_s is extensive, so its values at"):
+        planted(raw)
+
+
+def test_a_population_takes_its_patchs_fraction(planted):
+    """Planted: a population's units split by the volume fraction f 0.75, not by its patch's 0.6."""
+    raw, division = planted_world()
+    population = division["populations"][0]
+    shares = dict(zip(population["daughters"], partition.split(UNITS, 0.75), strict=True))
+    raw["model"][PLANTED_KEY]["planted_units"].update(shares)
+    with pytest.raises(ConfigError, match="planted_units is extensive"):
+        planted(raw)
+
+
+def test_an_intensive_field_that_differs_at_a_daughter_is_refused(planted):
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    raw["model"][PLANTED_KEY]["planted_km_mM"][patch["daughters"][1]] = 0.25
+    with pytest.raises(ConfigError, match="planted_km_mM is intensive, so its values at"):
+        planted(raw)
+
+
+def test_a_structural_field_is_as_declared_until_it_is_declared_intensive(planted):
+    """Structural: as declared (law, host, orientation), as the run-time split keeps it, so the
+    admitted world's laws differ at each daughter. Planted: the same definition with the law
+    declared intensive is refused."""
+    raw, _ = planted_world()
+    planted(raw)  # Admitted: 2 at the parent, 3 and 4 at the daughters.
+    with pytest.raises(ConfigError, match="planted_law is intensive"):
+        planted(raw, roles_of(planted_law=PartitionRole("intensive")))
+
+
+def test_a_layout_field_declared_history_is_refused(planted):
+    """Planted: a layout field declared history; it accumulates nothing for a record to keep."""
+    raw, _ = planted_world()
+    with pytest.raises(ConfigError, match="planted_km_mM on membrane_slot, declared history"):
+        planted(raw, roles_of(planted_km_mM=PartitionRole("history")))
+
+
+def test_a_control_is_checked_at_every_change_record(planted):
+    """Planted: a daughter's availability, equal at t = 0, drops at a later change record. A kind's
+    controls are evaluated at the inner model's change records and held between them, so the test
+    adds one at t = 1 ms, a neutral point of a patch's own schedule (the same availability)."""
+    raw, division = planted_world()
+    (patch,) = division["patches"]
+    later = pfx.DT
+    control = next(
+        c for c in raw["experiment"]["membrane_controls"] if c["membrane_id"] == "membrane_0"
+    )
+    control["schedule"].append(
+        dict(time=later, availability=control["schedule"][-1]["availability"])
+    )
+    planted(raw)  # Admitted: the record changes nothing.
+    raw["model"][PLANTED_KEY]["planted_availability"][patch["daughters"][0]] = [
+        [0.0, 1.0],
+        [later, 0.5],
+    ]
+    with pytest.raises(ConfigError, match=f"planted_availability is intensive.*at t = {later!r}"):
+        planted(raw)
+
+
+def test_extensive_fields_per_cell_or_per_contact_are_refused(planted):
+    """Planted: an extensive layout field per cell (ruling 7 (c): until a charge rule exists) and
+    one per contact (the partition binds no contact fraction), each refused before any binding."""
+    raw, division = planted_world()
+    for axis, words in (
+        ("cell_slot", "a per-cell extensive kind field is refused"),
+        ("edge_slot", "binds no contact fraction"),
+    ):
+        fields = dict(PLANTED_FIELDS, planted_extent=("layout", axis, PartitionRole("extensive")))
+        refused = f"planted_extent on {axis}, declared extensive.*{words}"
+        with pytest.raises(ConfigError, match=refused):
+            planted(raw, fields)
+
+
+@pytest.mark.parametrize("axis", ["cell_slot", "edge_slot"])
+def test_an_intensive_field_per_cell_or_per_contact_follows_its_map(planted, axis):
+    """The cell and contact maps' rows and their divisions, on the neighbour world (the parent's
+    contact mapped to both daughters): an intensive field per cell or per contact is admitted equal
+    at the daughters and refused, naming the division and the slots, when one differs."""
+    raw = pfx.divided(neighbour=True)
+    block = next(o for o in raw["model"]["operators"] if o["law"] == partition.LAW_ID)
+    (division,) = block["divisions"]
+    if axis == "cell_slot":
+        parent, kids = division["parent"], division["daughters"]
+    else:
+        (contact,) = division["contacts"]
+        parent, kids = contact["parent"], contact["daughters"]
+    fields = {"planted_entity_km_mM": ("layout", axis, PartitionRole("intensive"))}
+    raw["model"][PLANTED_KEY] = {"planted_entity_km_mM": dict.fromkeys((parent, *kids), KM)}
+    planted(raw, fields)
+    raw["model"][PLANTED_KEY]["planted_entity_km_mM"][kids[1]] = 0.25
+    refused = (
+        f"Division {division['id']}: .* planted_entity_km_mM is intensive, so its values at "
+        f"{kids[0]} and {kids[1]} must be its value at {parent}"
+    )
+    with pytest.raises(ConfigError, match=refused):
+        planted(raw, fields)
+
+
+def test_a_field_bound_along_another_axis_than_it_declares_is_refused(planted):
+    """Planted: the Michaelis constant declared per patch but bound per population (6 slots, not
+    the patches' 3); read along the patches' maps it would be compared at the wrong slots."""
+    raw, _ = planted_world()
+    with pytest.raises(ConfigError, match=r"planted_km_mM binds shape \(6,\)"):
+        planted(raw, bound_on={"planted_km_mM": "channel_slot"})
+
+
+def test_nothing_is_bound_without_a_field_to_compare(planted, monkeypatch):
+    """A kind on shared axes only (admitted beside closers today) gives no field, and a structural
+    field alone is compared with nothing, so neither binds the definition again."""
+    with kind_registry.scope(kf.registry(shared_carrier())):
+        inner = get_model(composite(kf.declare_carrier(world(), species="K")).model).inner
+        assert partition.kind_role_fields(type("Model", (), {"inner": inner})) == ()
+    raw, _ = planted_world()
+    for name in list(raw["model"][PLANTED_KEY]):
+        if name != "planted_law":
+            del raw["model"][PLANTED_KEY][name]
+    law = {"planted_law": PLANTED_FIELDS["planted_law"]}
+    spec = planted(raw, law)
+    with kind_registry.scope(kf.registry(planted_population(law))):
+        model = get_model(spec.model)
+        assert [f[1] for f in partition.kind_role_fields(model)] == ["planted_law"]
+        monkeypatch.setattr(type(model), "initial_values", lambda *a, **k: pytest.fail("bound"))
+        op, declaration, schedule = next(
+            e for e in composite_spec.entries(spec) if e[0].LAW_ID == partition.LAW_ID
+        )
+        partition.check_kind_roles(spec, declaration, model)
