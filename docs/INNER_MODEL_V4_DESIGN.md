@@ -1836,6 +1836,22 @@ active), with check_onsets' refusal kept.
 - The in-place guard's quiet host check takes `ledgers`.
 - The tests are in `tests/unit/test_ledger_lists.py`.
 
+**The kind's hook, as built (E, CORE_SEAMS §7.3; the lead's ruling (b) of 19 November 2026).**
+- `structure(model)` reads each declared kind's ledgers once, through the kind contract's
+  `kind_ledgers(kind, declaration)`, into `InnerStructure.kind_ledgers`: ((kind ID, ((ledger,
+  diagnostic), ...)), ...) by kind ID, names only. A malformed result, or a name one of @1's ten
+  ledgers or their diagnostics holds, refuses the definition, naming the kind.
+- With no kind ledger, `ledger_lists` returns @1's own objects, so today's programs are unchanged.
+  Otherwise each kind's ledgers follow @1's ten: their names and diagnostics, their bounds
+  through `ledger_limits` (the kind's `ledger_bounds`, a function of the row and the layout at
+  check time) and their values through `balances` and `device_balances` (the kind's
+  `ledger_terms` under the same names).
+- At binding, a declared ledger its `ledger_terms` does not value is refused, and so is a
+  `ledger_bounds` that gives one bound per ledger in another number or shape.
+- The composite builds its lists from its inner model's, so it takes the ledgers with no edit.
+- The tests are in `tests/unit/test_kind_ledgers.py`: a planted producer's adenine moiety on both
+  check paths and through a composite, its off-by-one plant, and the refusals.
+
 **The D148 case.** This is an in-place change to shared qualified code, `checked_rows` and
 `row_checks`. Nothing should change, so the criteria are checked as "identical":
 1. Programs: crossrev, all eight sets, and the kinds pair, against 82d3d67a's saved outputs, the
