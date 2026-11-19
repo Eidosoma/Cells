@@ -182,7 +182,8 @@
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/8bf4c771/measured-new-files.json",
   "/mnt/workspaces/Cells/core-pass-kickoff-20261118/landings/recount-7d115585/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-d5c44163/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-44550c4f/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-44550c4f/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-487710c6/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1507,6 +1508,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-44550c4f",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-18T19:33:49+00:00"
+  },
+  {
+   "git_revision": "487710c68a6fe1c9b307b152ccfadc6bb94497b0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-487710c6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T01:03:35+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2468,10 +2477,10 @@
    },
    {
     "file": "tests/unit/test_declarations.py",
-    "seconds": 2.67,
+    "seconds": 3.12,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -2548,10 +2557,10 @@
    },
    {
     "file": "tests/unit/test_ensemble_adapters.py",
-    "seconds": 1.17,
+    "seconds": 4.73,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 6
     }
    },
    {
@@ -3198,10 +3207,10 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.52,
+    "seconds": 2.72,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 8
     }
    },
    {
@@ -3214,7 +3223,7 @@
    },
    {
     "file": "tests/unit/test_kind_lifecycle_roles.py",
-    "seconds": 3.93,
+    "seconds": 4.78,
     "exit_code": 0,
     "counts": {
      "passed": 15
@@ -3390,7 +3399,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 2.67,
+    "seconds": 2.72,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -5348,10 +5357,10 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 22.02,
+    "seconds": 24.19,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 8
     }
    },
    {

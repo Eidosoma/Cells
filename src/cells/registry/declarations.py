@@ -347,6 +347,15 @@ def _provenance(declaration):
     )
 
 
+def _cycle_changes(law):
+    """A cycle law's change rows: its general form's (`law.cycle.changes()`: ({role, per_cycle,
+    mode}, ...), each mode's moves, inward-positive) where the form gives them, else its moves."""
+    changes = getattr(law.cycle, "changes", None)
+    if callable(changes):
+        return [dict(row) for row in changes()]
+    return [dict(role=role, per_cycle=count) for role, count in law.moves]
+
+
 def law_entry(law, context):
     """A law's entry: its template fields, then its interface's own (registry/laws.py). The role
     keys are read from the cells interfaces' own fields; a family's interface keeps all of its own
@@ -363,7 +372,7 @@ def law_entry(law, context):
                 dict(species=s, valence=z, relative_permeability=w) for s, z, w in law.permeant
             ]
         elif isinstance(law, law_registry.CycleLaw):
-            changes = [dict(role=role, per_cycle=count) for role, count in law.moves]
+            changes = _cycle_changes(law)
     module = context.laws.module(law.law_id)
     fields = {
         n: _json(v)
@@ -441,7 +450,11 @@ def operator_entry(operator, context):
     cls = type(operator)
     parts = (("event", "EVENT"), ("split", "SPLIT"), ("process", "PROCESS"))
     read_fields = [*dict.fromkeys((*cls.VIEW_READS, *cls.CONFLICTS_VIEW, *cls.SCOPED_READS))]
-    reads = [dict(name=f, **_json(cls.scoped_read(f))) for f in read_fields]
+    # Every Read of each field, one per stage (door S's reads_of; composition's M2 reads one field
+    # at two stages).
+    from cells.operators.contract import reads_of
+
+    reads = [dict(name=f, **_json(read)) for f in read_fields for read in reads_of(cls, f)]
     writes = _json(cls.ENTITY_WRITES)
     accumulators = [a for booked in writes.values() for a in booked]
     provides = [*cls.VIEW_FIELDS, *cls.READOUT_COLUMNS]
