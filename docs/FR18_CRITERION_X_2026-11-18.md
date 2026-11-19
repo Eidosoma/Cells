@@ -210,3 +210,40 @@ one rule to every FR-8 world: a definition whose whole-horizon estimate exceeds 
 570df4fd (22:38:17Z), amendment 1's is e886e928 (00:59:55Z), and the two notes' are 68e8da48
 (01:03:34Z) and 344a847e (01:05:36Z). The run of record on FR-8's worlds launched at 01:06:00Z from
 a snapshot of 344a847e.*
+
+## Amendment 2: the run-level conditions in a running form, registered before their re-evaluation
+
+*19 November 2026 (its commit's time), at the lead's direction under D224 item 2, before any
+re-evaluation and before any engine code. The per-row check, κ, the band, the floor, the counted
+and held steps and each held step's own bound are unchanged.*
+
+**Why.** X2 is adopted as an opt-in energy check (D224). An engine checks rows as each window
+ends. The order condition (the median of q_k over the counted steps) and X2's held-step cap (at
+most max(8, ⌈0.02 |Q|⌉) out-of-band steps) are whole-run quantities, decided here at the run's end,
+so a check decided at window ends could give a different verdict.
+
+**The running form.** At each window end, at a row k:
+- the order condition holds if no step j ≤ k is counted, or the median of q_j over the counted
+  steps j ≤ k lies in [3.5, 4.6];
+- X2's cap holds if the out-of-band held steps j ≤ k number at most max(8, ⌈0.02 |Q_k|⌉), with Q_k
+  the counted steps j ≤ k.
+
+A run is refused at the first window end where either fails. The registered form is the running
+form decided at the last row only. Which steps are held, and so C_k, already depends only on each
+step's own q, so the per-row check is the same in both forms.
+
+**The test, on the saved records only, with no new simulation.**
+- Both conditions are re-evaluated at every row, the strictest running form, on every evaluated
+  world of the full set (`fr18-x/out/`) and of FR-8's worlds (`fr18-x/fr8/out/`). Everything else
+  is the registered evaluator's.
+- From them come X2's (a), (b) and (c) on the full set, and the decision on FR-8's worlds.
+- **If every verdict equals the registered run's,** the running form is adopted. Every row is a
+  window end here, so any window partition gives the same verdicts: its window ends are rows, and
+  the last row is always one.
+- **If any verdict differs,** the conditions stay as registered, decided over the whole run, and
+  the engine decides them at the run's end.
+- Either way, the report lists each world whose running conditions fail at some row, with that
+  row and the condition.
+
+**Tool.** `evaluate_x_running.py`, beside `evaluate_x.py`, which it imports unchanged. Its digest is
+recorded before it runs.
