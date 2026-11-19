@@ -205,10 +205,16 @@ column is unchanged. The planarian's machine dossiers count the added entries as
 and call a family "not in the table" by the scan only where a database run on every
 protein has a signature in it (`schema/MACHINE_DOSSIERS.md`): no part of its machines is
 left as "cannot tell" (60 were), and myosin II has candidates and stands on its bench.
-The Protein atlas and its shelves still read the table's own column: whether they take
-the scan's entries is not decided. CDD, which states no terms, stands by the decision of
-18 November 2026 and is held in a register of the licence test; NCBIfam is under a
-share-alike licence.
+On 19 November 2026 it was decided that the shelves take the scan's added entries: their
+filing reads them beside the table's own column, so 3,147 of the 18,882 proteins stand on
+another shelf and 2,650 have a family they lacked ("No family assigned" holds 7,371, from
+10,021). A member filed by what the scan added says so in its panel, with the databases
+whose signatures reached it (PANTHER for most; CDD and NCBIfam named with their terms),
+and those databases are sources of the shelves' file (`schema/SPECIES_PROTEINS.md`, "A
+species' own scan"). Sides, districts and the atlas's candidates for Cells' law units
+still read the column alone; a unit's panel leads to the families its candidates are now
+filed under. CDD, which states no terms, stands by the decision of 18 November 2026 and is
+held in a register of the licence test; NCBIfam is under a share-alike licence.
 
 ## Species
 

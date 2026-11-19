@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-18",
-  "generated_at": "2026-11-18T23:46:04Z",
+  "generated_at": "2026-11-19T12:31:35Z",
   "revision": "4dda2285",
   "revision_date": "2026-11-18",
   "dirty": false,
@@ -3281,14 +3281,14 @@
    {
     "id": "planarian",
     "file": "proteins/planarian/shelves.json",
-    "bytes": 548307,
-    "made": "2026-11-15",
+    "bytes": 640492,
+    "made": "2026-11-19",
     "from": "predicted_proteins.tsv: 18,882 proteins of Schmidtea mediterranea, 17,294 gene models of one genome annotation and 1,588 UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
     "kind": "families",
     "proteins": 18882,
-    "families": 3457,
-    "no_family": 10021,
-    "parts": 509,
+    "families": 4232,
+    "no_family": 7371,
+    "parts": 380,
     "members": [
      "members-00.json",
      "members-01.json",
@@ -3322,6 +3322,26 @@
      {
       "name": "UniProt",
       "class": "permissive"
+     },
+     {
+      "name": "Pfam",
+      "class": "permissive"
+     },
+     {
+      "name": "CATH-Gene3D",
+      "class": "permissive"
+     },
+     {
+      "name": "NCBIfam",
+      "class": "permissive"
+     },
+     {
+      "name": "PANTHER",
+      "class": "permissive"
+     },
+     {
+      "name": "CDD",
+      "class": "no stated terms"
      },
      {
       "name": "TMHMM",

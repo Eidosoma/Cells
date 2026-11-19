@@ -12,8 +12,8 @@ as built on 14 November 2026; the build prints them again.
 | The atlas | `data/proteins/atlases/planarian.json`, in the form `schema/SPECIES_ATLAS.md` fixes (283 KB) |
 | The open set, whole | `data/proteins/planarian/predicted_proteins.tsv` (18,882 proteins: 17,294 gene models and 1,588 UniProtKB entries; 2.2 MB, no sequences), brought in by the user's decision of 14 November 2026 |
 | The proteins the atlas names | `data/proteins/planarian/reference_proteins.tsv` (229 proteins: the 227 it names and 2 joined to them; 35 KB) and the folder's `README.md` |
-| The shelves | `data/proteins/planarian/shelves.json` (the families, 541 KB) and `shelf_members.tsv` (every protein's family, side and basis, 860 KB), in the form `schema/SPECIES_PROTEINS.md` fixes; see "The shelves" below |
-| The own scan | `data/proteins/planarian/interproscan_added.tsv` and `interproscan.json`: the InterPro entries a new scan of all 18,882 proteins added to the lines, and its record (18 November 2026); see "The planarian's own scan" below |
+| The shelves | `data/proteins/planarian/shelves.json` (the families, 640 KB) and `shelf_members.tsv` (every protein's family, side and basis, 859 KB), in the form `schema/SPECIES_PROTEINS.md` fixes; see "The shelves" below |
+| The own scan | `data/proteins/planarian/interproscan_added.tsv` and `interproscan.json`: the InterPro entries a new scan of all 18,882 proteins added to the lines, and its record (18 November 2026); the machine dossiers read them, and since 19 November 2026 so does the shelves' filing; see "The planarian's own scan" below |
 | The tool | `tools/build_planarian_atlas.py`: `fetch` uses the network, `build` and `members` do not |
 | The check | `node --test tests/planarian_atlas.test.mjs` |
 | The evidence | `/mnt/workspaces/Cells/visualizer-planarian-proteins-20261114-01` (65 MB): 179 requests on record, one of them a refusal, and every response that came back |
@@ -343,6 +343,36 @@ candidates of the number rule alone that the scan's rule no longer gives. A fami
 shows absent, where a broader family stood in before, loses that broader family's candidates:
 the scan could see the family itself, on every protein, and no protein carries it.
 
+**How the shelves read it.** On 19 November 2026 it was decided that the shelves take the
+scan's added entries. Since then a protein's signatures, for its filing alone, are those of the
+table's own column and the entries the scan added to its line; the rule is unchanged (the
+narrowest family, then the deepest, then the one fewer proteins are in, then the first by
+accession; else a superfamily, else the two other parts of "No family assigned"). The side of a
+protein and its basis, the districts and the places named for a family read the column alone,
+as before: the user's decision was put as filing by family. The two rules side by side:
+
+| | Before 19 November 2026 | Since |
+| --- | --- | --- |
+| A protein's family, or its part of "No family assigned" | the table's own column | the column and the scan's added entries |
+| Its side and the basis of it (where places are read) | the column | the column |
+| Its district, and a family's district and named places | the column | the column |
+| What a placement says it rests on | the column, as for every protein | a member filed by an entry the scan added carries the mark `scan`, the databases whose signatures reached that entry, and its panel says so with the tool's release and the days of the run |
+
+What it changed, counted by the build against the filing by the column alone, and checked
+protein by protein against the members' table before it: 3,147 proteins stand on another shelf
+than before. 3,117 of them gained an entry and are filed by what the scan added (3,056 under a
+family, 7 under a superfamily, 54 that had no signature and now carry only the scan's domain,
+repeat or site entries). 2,650 left "No family assigned" (10,021 before, 7,371 now), none entered
+it, and 61 moved between its parts. 30 gained nothing: each is a UniProtKB entry that carries two
+unrelated families of its own, and the rule's second step (the family fewer proteins are in) now
+counts what the scan added to other lines; 18 of them are settled by the accession, 12 by size.
+Proteins filed among several unrelated families: 221 before, 972 now. The placements rest on
+PANTHER 3,031, Pfam 77, CDD 8, CATH-Gene3D 7 and NCBIfam 3 (a placement may rest on two); on CDD
+alone 7, on NCBIfam alone 2. Had the rest read the added entries too, no side and no basis would
+change, none of the 795 proteins not placed would be placed, 112 proteins would fall in another
+district (31 families) and the places named for 6 families would change. The scan agrees with
+what the report of its reader (`report`, below) predicted for the shelves, to the protein.
+
 **The record's numbers.** The block below is written by the tool from the record
 (`python3 -I tools/read_planarian_scan.py note`), and the planarian scan's test fails when it
 is not the record's.
@@ -403,7 +433,8 @@ python3 -I tools/read_planarian_scan.py build --scan SCAN --tool TOOL --datasets
 python3 -I tools/read_planarian_scan.py report --datasets DATA --out FILE              # what the added entries would change for the atlas and the shelves
 python3 -I tools/gather_machines.py build --datasets DATA                              # the dossiers
 python3 tools/build_catalogue.py                                                       # the benches and the catalogue
-node --test tests/planarian_scan.test.mjs
+python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA/planarian  # the shelves, whose filing reads the two files
+node --test tests/planarian_scan.test.mjs tests/planarian_atlas.test.mjs
 ```
 
 `SCAN` is the scan's folder (its `out/`, `logs/` and `input/`), `TOOL` the tool's unpacked
@@ -434,12 +465,14 @@ holds no value and no statement from a source of the last two classes; such a so
 named as a pointer. A note may cite a single value from one, with its class beside it.
 
 **The tables, the atlas and the shelves take what they hold from permissive sources
-alone:** UniProt (CC BY 4.0), WormBase ParaSite (no restriction stated), InterPro (CC0),
-the Gene Ontology (CC BY 4.0), the nucleotide archive's records, and three papers under
-CC BY that name genes (Cowles and others 2014, Vu and others 2015, Roberts-Galbraith and
-others 2016). Each source carries its `class` in the files. **But nearly every side in
-the shelves is a prediction that one of those databases gives out and a program of
-another owner computed.** That is set out at the end of this section.
+alone,** but for CDD behind 8 of the shelves' placements (below): UniProt (CC BY 4.0),
+WormBase ParaSite (no restriction stated), InterPro (CC0), the Gene Ontology (CC BY 4.0), the
+nucleotide archive's records, three papers under CC BY that name genes (Cowles and others
+2014, Vu and others 2015, Roberts-Galbraith and others 2016), and, behind the shelves'
+filing since 19 November 2026, the scan's databases. Each source carries its `class` in the
+files. **But nearly every side in the shelves is a prediction that one of those databases
+gives out and a program of another owner computed.** That is set out at the end of this
+section.
 
 **Papers whose terms do not allow a copy are named, and nothing of their findings is
 said.** Each has its class on its citation in the atlas:
@@ -472,6 +505,19 @@ register of its own (`DECIDED`, by species), so that a second source of that cla
 test and is put to the user. Every added entry keeps its databases, and the scan's record
 counts the entries NCBIfam alone and CDD alone added, so that either can be taken out without a
 new scan.
+
+**The shelves since 19 November 2026.** On 19 November 2026 it was decided that the shelves
+take the scan's added entries, so the scan's databases now stand behind placements on the
+shelves too, each a source of `shelves.json` copied from the scan's record with its terms and
+class. **PANTHER** (CC BY 4.0 for its data and data products, its terms page read in a browser
+because its site refuses automated reads) stands behind 3,031 of the 3,117 placements that rest
+on the scan, 3,023 of them on it alone. **NCBIfam** (CC BY-SA 4.0, share-alike) stands behind 3,
+2 on it alone. **CDD** (no stated terms, by the decision of 18 November 2026) stands behind 8, 7
+on it alone; the licence test holds the shelves' copy of it through the same register `DECIDED`
+as the scan's record and the dossiers' copies, so a second source of that class fails there as
+well. Pfam (CC0 1.0) stands behind 77 and CATH-Gene3D (CC BY 4.0) behind 7. Each such member
+names the databases behind it in its panel and in the members' file, CDD and NCBIfam with their
+terms.
 
 **What the two databases give out that others computed.** The helices and signal
 peptides behind the sides were predicted by programs that WormBase ParaSite and UniProt
@@ -541,8 +587,10 @@ The families and districts do not rest on these programs: they come from InterPr
 and the Gene Ontology (CC BY 4.0). InterPro's entries do gather the signatures of member
 databases, PROSITE among them; its licence page, quoted above, is what was read of that.
 By the same rule the families stand on InterPro's terms, since they were read in its
-records. The member databases behind each InterPro entry are not named or counted in the
-files: that was not looked into.
+records. The member databases behind each InterPro entry of the table's own column are not
+named or counted in the files: that was not looked into. Those behind an entry the
+species' own scan added are: the scan ran their signatures itself, and each placement that
+rests on one names them (above).
 
 ## What a whole-proteome catalogue would take
 
@@ -581,53 +629,66 @@ the animal makes a protein, where it was seen, or which of the cell's membranes 
 
 | File | What it holds | Size |
 | --- | --- | --- |
-| `shelves.json` | 3,457 families and the 509 parts of "No family assigned", each with its side, its district, how many members sit on each side, and where its members are to be read | 541 KB |
-| `shelf_members.tsv` | One line for each of the 18,882 proteins: what it is filed under, its side, the basis, the helices and signal peptide predicted, and the atlas's units it is a candidate for | 860 KB |
+| `shelves.json` | 4,232 families and the 380 parts of "No family assigned", each with its side, its district, how many members sit on each side, and where its members are to be read | 640 KB |
+| `shelf_members.tsv` | One line for each of the 18,882 proteins: what it is filed under, its side, the basis, the helices and signal peptide predicted, and the atlas's units it is a candidate for | 859 KB |
 
-Together they add 1.40 MB. No existing file changed its bytes except the folder's
-generated README.
+Together they add 1.50 MB (1.40 MB when first made; the files grew when the filing began to
+read the species' own scan, 19 November 2026, and stand about 1 KB under the 1.5 MB that
+`tests/planarian_atlas.test.mjs` holds them to). No existing file changed its bytes except the
+folder's generated README.
 
 ### One family for each protein
 
 A family is an InterPro entry of the type Family (release 111.0). A protein is filed
 under the narrowest family among its signatures: one that is not a broader kind of
-another it carries, by InterPro's own tree of entries.
+another it carries, by InterPro's own tree of entries. Its signatures are those of the
+table's own column and, since 19 November 2026, the entries the species' own scan added to
+its line ("The planarian's own scan", above); the counts here are of both together.
 
-- 7,231 proteins carry one family and 1,630 carry several. For all but 221 of those,
-  the tree leaves one narrowest family.
-- For the 221, several unrelated families remain. A rule chooses: the deepest in the
+- 9,164 proteins carry one family and 2,347 carry several (7,231 and 1,630 by the column
+  alone). For all but 972 of those, the tree leaves one narrowest family (221 by the column
+  alone).
+- For the 972, several unrelated families remain. A rule chooses: the deepest in the
   tree, then the one fewest proteins of this catalogue are in, then the first by
-  accession. The rule is the tool's and is stated in the file.
-- **10,021 proteins (53%) carry no family signature.** They are kept, under "No family
-  assigned" (next).
+  accession. The rule is the tool's and is stated in the file. For 775 of the 972, one of
+  the unrelated families is one that PANTHER's signatures added: InterPro's tree mostly
+  does not put a PANTHER-made family under the older family of the same proteins.
+- **7,371 proteins (39%) carry no family signature** (10,021, 53%, by the column alone).
+  They are kept, under "No family assigned" (next).
 
 | Members | Families | Their proteins |
 | --- | ---: | ---: |
-| 1 | 2,153 | 2,153 |
-| 2 to 4 | 977 | 2,433 |
-| 5 to 9 | 213 | 1,399 |
-| 10 to 49 | 104 | 1,779 |
-| 50 or more | 10 | 1,097 |
-| All | 3,457 | 8,861 |
+| 1 | 2,476 | 2,476 |
+| 2 to 4 | 1,258 | 3,171 |
+| 5 to 9 | 328 | 2,132 |
+| 10 to 49 | 160 | 2,753 |
+| 50 or more | 10 | 979 |
+| All | 4,232 | 11,511 |
 
-The largest are the rhodopsin-like G protein-coupled receptors (415), the major
-facilitator superfamily (122), alpha tubulin (98), the small GTPases (89), the epithelial
-sodium channels (85) and the innexins (70).
+The largest are the rhodopsin-like G protein-coupled receptors (349), alpha tubulin (98),
+PANTHER's GPCR_Ligand_Interaction (94), the epithelial sodium channels (85), the innexins
+(70), and the sodium:neurotransmitter symporters and PANTHER's proton-linked monocarboxylate
+transporters (65 each). By the column alone the major facilitator superfamily (122) and the
+small GTPases (89) were among them; the scan's narrower families took most of their members
+(39 and 20 are left).
 
 ### The proteins with no family
 
 Asked whether a broader grouping would be honest and useful, the answer taken here is yes
 for superfamilies, as parts of "No family assigned" and never as families:
 
-- **507 parts are InterPro superfamilies** (entries of the type Homologous superfamily: a
-  wider grouping, by shared structure). They hold 5,247 proteins. A protein with several
-  superfamilies (2,091 proteins) goes under the one fewest proteins of this catalogue
-  carry. The largest are the protein kinase-like domain superfamily (283), TRAF-like
-  (181) and the ankyrin repeat-containing domain superfamily (177).
-- **887 proteins** carry only a domain, repeat or site signature. No grouping of them was
-  made: a protein has as many domains as it has, and none stands for it.
-- **3,887 proteins carry no signature of any kind.** Nothing in these sources says what
-  they are.
+- **378 parts are InterPro superfamilies** (entries of the type Homologous superfamily: a
+  wider grouping, by shared structure). They hold 2,949 proteins. A protein with several
+  superfamilies (1,171 proteins) goes under the one fewest proteins of this catalogue
+  carry. The largest are TRAF-like (179), the ankyrin repeat-containing domain superfamily
+  (126) and the protein kinase-like domain superfamily (123). (By the column alone: 507
+  parts holding 5,247, the protein kinase-like domain superfamily the largest at 283.)
+- **671 proteins** carry only a domain, repeat or site signature (887 by the column alone;
+  54 of the 671 carry only entries the scan added). No grouping of them was made: a protein
+  has as many domains as it has, and none stands for it.
+- **3,751 proteins carry no signature of any kind** (3,887 by the column alone): neither
+  their line's own scan nor the species' own scan found one. Nothing in these sources says
+  what they are.
 
 The families' list holds families only, so a reader who wants InterPro families alone
 loses nothing. If the superfamily parts are not wanted, the three kinds can be shown as
@@ -693,22 +754,24 @@ set while looking at those pairs, so that is not an independent test of it.
   compartments. An animal cell's several shelves cannot be told apart from these
   predictions.
 - **A hint at the place.** Where the Gene Ontology terms of at least half of a family's
-  placed members name a place in the cell, the family carries it (`where`): 887 families,
-  most often the nucleus (368), the plasma membrane (123) and the mitochondrion (92). It
-  is an annotation carried by signatures, not a prediction for these proteins.
+  placed members name a place in the cell, the family carries it (`where`): 903 families,
+  most often the nucleus (379), the plasma membrane (120) and the mitochondrion (91). It
+  is an annotation carried by signatures, not a prediction for these proteins. The terms
+  are those of the table's own column: the scan's added entries are not read for places.
 - **Helices only.** TMHMM predicts helices. A membrane protein built as a barrel is
   missed: the family of the mitochondrial porin comes out inside the cell.
 - **Truncated models.** 1,138 gene models do not begin with methionine.
-- **An older run of the signatures.** A gene model's signatures are those WormBase
+- **An older run of the signatures.** A gene model's own signatures are those WormBase
   ParaSite computed for its release, read under the names and types of InterPro 111.0;
-  55 of them are no longer InterPro entries. A current run on the same sequences would
-  find families for some of the 10,021 that have none here.
+  55 of them are no longer InterPro entries. The species' own scan, a current run on the
+  same sequences, found families for 2,650 of the 10,021 that had none, and since 19
+  November 2026 the filing reads it; the sides, the districts and the places do not.
 
 ### Districts
 
-A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
-those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
-joined to it. With every broader term, the protein falls in the first district, in the
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures in the
+table's own column (not those the species' own scan added) and those UniProt gives a
+UniProtKB entry; a gene model takes also the terms of the entries joined to it. With every broader term, the protein falls in the first district, in the
 order below, one of whose terms it carries. A family's members are one kind of protein,
 so a family stands where most of its classed members fall. A part of "No family
 assigned" is a looser grouping and stands in a district only if more than half of all
@@ -716,15 +779,21 @@ its members fall there. The choice of the terms and their order is the viewer's.
 
 | District | Families | Their proteins | With 5 members or more |
 | --- | ---: | ---: | ---: |
-| Channels | 66 | 545 | 24 |
-| Transporters and pumps | 141 | 856 | 48 |
-| Receptors and signalling | 156 | 1,083 | 34 |
-| DNA, RNA and making proteins | 789 | 1,533 | 55 |
-| Protein folding, change, sorting and breakdown | 320 | 701 | 31 |
-| Cytoskeleton, movement and adhesion | 133 | 482 | 15 |
-| Enzymes and metabolism | 593 | 1,329 | 45 |
-| Other functions | 588 | 1,225 | 44 |
-| Not classed by function | 671 | 1,107 | 31 |
+| Channels | 71 | 591 | 26 |
+| Transporters and pumps | 150 | 893 | 55 |
+| Receptors and signalling | 168 | 1,227 | 47 |
+| DNA, RNA and making proteins | 861 | 1,894 | 87 |
+| Protein folding, change, sorting and breakdown | 387 | 1,171 | 63 |
+| Cytoskeleton, movement and adhesion | 140 | 601 | 20 |
+| Enzymes and metabolism | 683 | 1,525 | 61 |
+| Other functions | 830 | 1,912 | 83 |
+| Not classed by function | 942 | 1,697 | 56 |
+
+"Not classed by function" grew from 671 families: a family whose members only the scan
+filed, and whose own lines carry no term, stands there (PANTHER's Blood Group
+Antigen-Binding Lectin, 50 members, among them). Had the districts read the added entries
+too, 112 proteins would fall in another district and 31 families would stand in another,
+923 of them not classed.
 
 The file gives each district's terms. Two things to know:
 - **InterPro's own mapping alone was too thin.** It gives the innexins no term at all,
@@ -739,28 +808,38 @@ The file gives each district's terms. Two things to know:
 
 - 29 families hold the atlas's candidate products, for 41 of the inventory's units, and
   carry those units' ids (`units`). Each of the 204 products carries its units in the
-  members' table.
+  members' table. The products themselves, and every unit's finding, are the atlas's and
+  read the table's own column; where a product is filed on the shelves follows the filing,
+  so since 19 November 2026 14 products stand in another family than before (below).
 - **Every family that holds a membrane-spanning product comes out in a membrane,** as the
   atlas draws those units: the sodium, potassium and calcium channels, the innexins, the
   pumps and the exchangers. The build stops if one does not.
 - **Three families come out inside the cell, and should:** the calcium channels' beta
   subunit and the potassium channels' beta subunit, which sit on the channel's inner
   face, and the mitochondrial uniporter's regulator MICU, which is not in the membrane.
-- 9 products have no family: 5 alpha-2/delta gene models, 2 HCN-like models, 1 innexin
-  and 1 calcium-activated potassium channel. Eight carry only domain or superfamily
-  signatures; one carries none in this annotation, and the atlas found it through
-  UniProt's archive. They sit under "No family assigned" with their units.
+- 1 product has no family: an innexin gene model with only domain signatures, under "No
+  family assigned" with its units. By the column alone 9 had none; the scan's entries file
+  the other 8: the 5 alpha-2/delta gene models under PANTHER's Voltage-dependent calcium
+  channel subunit alpha-2/delta (IPR051173, now a family with units U24 to U30), the 2
+  HCN-like models under the HCN-type family IPR051413, and the calcium-activated potassium
+  channel model that carried no signature at all under the BK beta subunit's IPR003930.
+- 6 more products moved with nothing added, by the tie-break among the two unrelated
+  families of their own: the 5 sodium-calcium exchanger entries of U42 (from IPR051171 to
+  IPR004836, so IPR051171 no longer holds a product) and A0A1Z1R0Y6 of U20 to U23 (from the
+  HCN-type IPR051413 to IPR003938; its own gene model is now in IPR051413).
 
 ### Sizes the drawing will meet, and a proposal
 
-- 3,457 families, of which 2,153 have one member. 327 have five or more and hold 4,275
-  proteins; 114 have ten or more and hold 2,876.
-- "No family assigned" has 10,021 proteins: 107 superfamily parts of ten or more hold
-  4,140; 154 superfamily parts have one member; the two other parts hold 887 and 3,887.
-- 271 families have members on more than one side, and each member keeps its own side.
-  In 34 families of five or more, the largest side holds less than 70%.
+- 4,232 families, of which 2,476 have one member. 498 have five or more and hold 5,864
+  proteins; 170 have ten or more and hold 3,732. (By the column alone: 3,457, 2,153, 327
+  holding 4,275, 114 holding 2,876.)
+- "No family assigned" has 7,371 proteins: 62 superfamily parts of ten or more hold
+  2,059; 139 superfamily parts have one member; the two other parts hold 671 and 3,751.
+- 409 families have members on more than one side, and each member keeps its own side.
+  In 59 families of five or more, the largest side holds less than 70%.
+- The page draws 599 markers at rest (473 by the column alone).
 
-**Proposal.** A family of five or more gets a marker of its own: 327 markers over nine
+**Proposal** (as made on 15 November 2026, with that day's numbers). A family of five or more gets a marker of its own: 327 markers over nine
 districts, between 15 and 55 in each. The 3,130 smaller families (4,586 proteins) are
 gathered by district and side into one marker, "smaller families", which opens to the
 list of its families, each of which opens to its members. "No family assigned" is shown
@@ -770,16 +849,18 @@ parts as two markers. Every protein stays within three openings, and none is hid
 **How members are read.** The members' table is in the members' order: the families as
 `shelves.json` lists them (by district, then size), then the parts. For the page they
 are cut into 9 files of at most 2,000 members, a family never split; the part with no
-signature is 3,887 and has a file of its own. Each family gives its file and its place
-there. `python3 tools/build_planarian_atlas.py members --out DIR` writes the files (2.7
-MB in all); they are not kept in the repository.
+signature is 3,751 and has a file of its own. Each family gives its file and its place
+there. A member filed by what the species' own scan added carries the mark `scan`, the
+databases behind it, cut from `interproscan_added.tsv` and its `under`. `python3
+tools/build_planarian_atlas.py members --out DIR` writes the files (2.6 MB in all); they
+are not kept in the repository.
 
 ### What the contract lacked
 
 `schema/SPECIES_PROTEINS.md` needed four things this data has, all declared in the file:
 - `units` and `where` as further family columns;
-- parts within `no_family`, each with its own file and place, because 10,021 members do
-  not fit one file of a few thousand;
+- parts within `no_family`, each with its own file and place, because 10,021 members (7,371
+  since the scan) do not fit one file of a few thousand;
 - a member's `unit` as a list, because a protein can be a candidate for several units of
   one family;
 - a word for the shelf of an animal whose membranes the data cannot tell apart.

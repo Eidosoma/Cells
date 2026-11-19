@@ -6,7 +6,7 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, human, ecoli, stack, accessory, trail, search, map, colours, gathering,
+// SCENARIO is syn3a (the default), planarian, scan, human, ecoli, stack, accessory, trail, search, map, colours, gathering,
 // frame, nofiles, resize, units-small, shots or pictures. trail, search and map check the ways around a species' own
 // proteins (docs/ATLAS_LOOK.md): the trail's steps, its arrow and Escape one level back; the search in view, a gene
 // found inside a family not yet opened, on a phone from "Find"; the map of the stack (SPECIES names its species; thale
@@ -15,7 +15,9 @@
 // the largest catalogue's largest family open, wide and at a phone's width. accessory checks a species whose atlas lists proteins with a unit only as going with its machine (SPECIES
 // names it; the mouse by default): those families and members are drawn plain and their panels say so.
 // MEMBERS=DIR serves the members' files from DIR (written there when missing), for a copy of the tree whose out/ is shared. stack checks any species with several shelves against its own file (SPECIES names it; thale
-// cress by default): a frame and a legend line for every shelf, a shelf in focus, the stack back. human checks a species with several shelves, on the human's file: the stack,
+// cress by default): a frame and a legend line for every shelf, a shelf in focus, the stack back. scan checks the planarian's members filed by
+// what its own scan added: each says so in its panel, with the databases behind it, and one filed by its own column reads as before.
+// human checks a species with several shelves, on the human's file: the stack,
 // a shelf in focus, a family over its own shelf, the same family on another shelf, the
 // families of one, what is set apart, the list, the keyboard and a phone-sized window; with
 // OUT_DIR it also writes pictures of what it reaches (the whole stack and a shelf, wide and
@@ -250,6 +252,19 @@ const until = async (test, ms = 20000) => {
 const frame = () =>
   evaluate(`(() => { const v = ${V}; const times = []; for (let i = 0; i < 5; i++) { const t = performance.now(); v.stage.renderer.render(v.stage.scene, v.stage.camera); v.stage.renderer.getContext().finish(); times.push(performance.now() - t); } times.sort((a, b) => a - b); return { ms: Math.round(times[2] * 10) / 10, calls: v.stage.renderer.info.render.calls, triangles: v.stage.renderer.info.render.triangles }; })()`);
 
+// The search in view: text typed into the field (a real key input), then the results as they stand once shown.
+const typeIn = async (text) => {
+  await page("Input.insertText", { text });
+  for (let tries = 0; tries < 80; tries++) {
+    await sleep(150);
+    const shown = await evaluate(`(() => { const box = ${V}.shadowRoot.querySelector(".atlas-results"); return Boolean(box && !box.hidden && box.querySelector(".atlas-hit, .atlas-note:not([role=status])")); })()`);
+    if (shown) break;
+  }
+  await sleep(300);
+  return evaluate(`[...${V}.shadowRoot.querySelectorAll(".atlas-results section")].map((section) => section.querySelector("h4").textContent + ": " + [...section.querySelectorAll(".atlas-hit")].map((row) => row.querySelector(".atlas-hit-name").textContent + " (" + row.querySelector(".atlas-hit-where").textContent + ")").join(" / "))`);
+};
+const clear = () => evaluate(`(() => { const input = ${V}.shadowRoot.querySelector("#atlas-find"); input.value = ""; input.dispatchEvent(new Event("input")); })()`); // (scripted: the field emptied)
+
 try {
   if (scenario === "syn3a") {
     await open("lens=proteins&species=syn3a");
@@ -376,7 +391,8 @@ try {
     const took = Date.now() - started;
     await sleep(500);
     s = await state();
-    check("its own proteins: 473 markers for 18,882 proteins", s.show === "own" && s.drawn?.markers === 473, JSON.stringify(s.drawn));
+    // 473 markers until 19 November 2026; 599 since its filing reads the entries its own scan added.
+    check("its own proteins: 599 markers for 18,882 proteins", s.show === "own" && s.drawn?.markers === 599, JSON.stringify(s.drawn));
     note(`from the press to the shelves: ${took} ms (fetching the file, laying it out and building it)`);
     note(`built in: ${JSON.stringify(await evaluate(`(() => { const lens = ${L}; const state = lens.own.get("planarian"); const t = performance.now(); const { ShelvesView } = { ShelvesView: lens.mounted.constructor }; const view = new ShelvesView(lens, state.shelves, { shape: lens.mounted.shape }); const ms = performance.now() - t; view.dispose(); return Math.round(ms); })()`))} ms for a second copy of the shelves (layout and meshes)`);
     note(`at rest: ${JSON.stringify(await frame())}`);
@@ -421,7 +437,8 @@ try {
     note(`the largest: opened in ${Date.now() - t1} ms`);
     await sleep(800);
     s = await state();
-    check("the largest group opens to its 3,887 proteins", s.drawn.open?.members === 3887, JSON.stringify(s.drawn.open));
+    // 3,887 until 19 November 2026: since then 136 of them are filed by entries the planarian's own scan added.
+    check("the largest group opens to its 3,751 proteins", s.drawn.open?.members === 3751, JSON.stringify(s.drawn.open));
     note(`with the largest open: ${JSON.stringify(await frame())}`);
     note(`building the largest again, its file already in: ${JSON.stringify(await evaluate(`(async () => { const view = ${L}.mounted; const key = view.opened.key; const times = []; for (let i = 0; i < 3; i++) { view.close({ quiet: true }); const t = performance.now(); await view.open(key); times.push(Math.round(performance.now() - t)); } return times; })()`))} ms, three times`);
     await sleep(600);
@@ -482,6 +499,55 @@ try {
     s = await state();
     check("the legend shows the families holding a unit of the law inventory alone", s.lit > 0 && s.lit < 60, `${s.lit} lit; ${s.legend}`);
     await shot("planarian-units-only");
+  }
+
+  if (scenario === "scan") {
+    // The planarian's shelves take the entries its own scan added (decided on 19 November 2026). Real presses and typing:
+    // the card's counts; a member filed by an entry that CDD alone reached, one that NCBIfam alone reached, one of
+    // PANTHER's and its family; a member that moved with nothing added, which reads as before; one of "No family
+    // assigned" filed by the scan's domain signatures alone. Each found by the search, as a visitor finds it.
+    await open("lens=proteins&species=planarian&show=own");
+    for (let tries = 0; tries < 480 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    let s = await state();
+    check("the card counts 18,882 proteins, 4,232 families that open and 7,371 with no family", /18,882\s*proteins, all predicted/.test(s.stats) && /4,232\s*families that open/.test(s.stats) && /7,371\s*with no family/.test(s.stats) && s.drawn?.markers === 599, JSON.stringify([s.stats, s.drawn?.markers]));
+    const method = await evaluate(`${V}.shadowRoot.querySelector(".view-card")?.textContent || ""`);
+    check("the card's method says the families read the scan's added entries, with the tool's release and the days", /since 19 November 2026, the InterPro entries that the species' own scan \(InterProScan 5\.78-109\.0, 18 to 19 November 2026\) found on it and the column lacks/.test(method), method.slice(0, 160));
+    const SAYS = "what the species' own scan (InterProScan 5.78-109.0, 18 to 19 November 2026) added to its line, by the signatures of ";
+    const choose = async (id) => {
+      await clear();
+      await press("#atlas-find", 300);
+      const found = await typeIn(id);
+      await press(".atlas-results .atlas-hit", 600);
+      const now = await until((state) => state.selected === `own:planarian:p:${id}` && Boolean(state.panel?.facts), 20000);
+      return { found, now };
+    };
+    const facts = (now) => Object.fromEntries((now.panel?.facts || "").split(" | ").map((line) => [line.slice(0, line.indexOf(": ")), line.slice(line.indexOf(": ") + 2)]));
+    let { found, now } = await choose("h1SMcG0009143");
+    let said = facts(now);
+    check("a member filed by an entry CDD alone reached says so, with CDD's terms, under its family", said["Filed by"] === `${SAYS}CDD, which states no terms (used by the decision of 18 November 2026); the table's own column does not carry it` && said.Family === "Rab1/Ypt1 (IPR057289)" && /No stated terms/.test(now.panel?.tags || ""), JSON.stringify([found, now.panel?.facts, now.panel?.tags]));
+    note(`panel: ${JSON.stringify(now.panel)}`);
+    await shot("scan-cdd-member");
+    ({ found, now } = await choose("h1SMcG0001140"));
+    said = facts(now);
+    check("one NCBIfam alone reached says so, with its share-alike licence", said["Filed by"] === `${SAYS}NCBIfam, under CC BY-SA 4.0 (share-alike); the table's own column does not carry it` && /IPR057266/.test(said.Family || ""), JSON.stringify([found, now.panel?.facts]));
+    ({ found, now } = await choose("h1SMcG0005349"));
+    said = facts(now);
+    check("under \"No family assigned\", one filed by the scan's domain signatures alone says so", /^A domain, repeat or site signature/.test(said["Filed under"] || "") && said["Filed by"]?.startsWith(SAYS) && /CDD, which states no terms/.test(said["Filed by"]), JSON.stringify([found, now.panel?.facts]));
+    await shot("scan-no-family-member");
+    // A member of a family that the scan's PANTHER entries made: the member, then its family, which counts them.
+    const member = await evaluate(`(async () => { const s = ${L}.mounted.shelves, line = s.families.find((item) => item.id === "IPR051941"); await ${L}.loadMembers(s, s.filesOf(line)); return s.membersOf(line)[0].id; })()`); // (scripted: which member to look for)
+    ({ found, now } = await choose(member));
+    said = facts(now);
+    check("a member of a family PANTHER's signatures made says so", said["Filed by"] === `${SAYS}PANTHER; the table's own column does not carry it` && /IPR051941/.test(said.Family || ""), JSON.stringify([member, now.panel?.facts]));
+    await press("cells-panel .opens .link-button", 600);
+    now = await until((state) => /^own:planarian:(f:IPR051941|m:)/.test(state.selected || "") && /Members filed by the species' own scan/.test(state.panel?.facts || ""), 20000);
+    check("its family's panel counts the members the scan filed: all 50", /Members filed by the species' own scan: all 50/.test(now.panel?.facts || ""), JSON.stringify([now.selected, now.panel?.facts]));
+    await shot("scan-panther-family");
+    // A protein that moved with nothing added: filed by its own column, it reads as before.
+    ({ found, now } = await choose("A0A0H3YEU5"));
+    said = facts(now);
+    check("a protein that moved with nothing added reads as before: its own column's family, and no word of the scan", said.Family === "Sodium:dicarboxylate symporter (IPR001991)" && !("Filed by" in said), JSON.stringify([found, now.panel?.facts]));
   }
 
   if (scenario === "human") {
@@ -970,17 +1036,6 @@ try {
     // The search in view: a gene's name typed finds its protein inside a family that is not open, a press on it opens
     // that family with the protein chosen; a word finds proteins and families; Escape in the field empties it. Real
     // presses and typing; on a phone it opens from the trail's "Find".
-    const typeIn = async (text) => {
-      await page("Input.insertText", { text });
-      for (let tries = 0; tries < 80; tries++) {
-        await sleep(150);
-        const shown = await evaluate(`(() => { const box = ${V}.shadowRoot.querySelector(".atlas-results"); return Boolean(box && !box.hidden && box.querySelector(".atlas-hit, .atlas-note:not([role=status])")); })()`);
-        if (shown) break;
-      }
-      await sleep(300);
-      return evaluate(`[...${V}.shadowRoot.querySelectorAll(".atlas-results section")].map((section) => section.querySelector("h4").textContent + ": " + [...section.querySelectorAll(".atlas-hit")].map((row) => row.querySelector(".atlas-hit-name").textContent + " (" + row.querySelector(".atlas-hit-where").textContent + ")").join(" / "))`);
-    };
-    const clear = () => evaluate(`(() => { const input = ${V}.shadowRoot.querySelector("#atlas-find"); input.value = ""; input.dispatchEvent(new Event("input")); })()`); // (scripted: the field emptied)
     await open("lens=proteins&species=human&show=own");
     for (let tries = 0; tries < 480 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
     await still();

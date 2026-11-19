@@ -291,6 +291,42 @@ test("a family opens to its members once their file is in, and a gathering to th
 
 // ---------------------------------------------------------------- the words
 
+test("a member filed by what a species' own scan added says so, in the file's sentence, with the databases behind it; its family counts such members", () => {
+  // The planarian's shelves (19 November 2026): the mark `scan` names the databases whose signatures reached the entry a
+  // member is filed by, and the file says it in a sentence (`says`), a database that is not plainly permissive with its terms (`words`).
+  const { data, memberFiles } = madeUpFamilies();
+  data.marks.scan = {
+    label: "Filed by", members_label: "Members filed by the species' own scan", values: "text", measured: false,
+    says: "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of {value}; the table's own column does not carry it",
+    words: { CDD: "CDD, which states no terms (used by a made-up decision)" }, source: "made-up-added.tsv, by the signatures of PANTHER, Pfam and CDD", note: "A made-up note.",
+  };
+  const lines = memberFiles["members-00.json"].members;
+  lines[0][7].scan = ["PANTHER"];
+  lines[1][7].scan = ["CDD"];
+  lines[2][7].scan = ["PANTHER", "Pfam"];
+  const shelves = new Shelves(data, { label: "Test worm", links: LINKS, units: UNITS });
+  shelves.addMembers("members-00.json", memberFiles["members-00.json"]);
+  const innexin = shelves.get(keyOf("testworm", "f", "IPR000001"));
+  const [first, second, third, fourth] = shelves.membersOf(innexin);
+  const facts = (member) => shelves.describe(member.key).facts;
+  // Right after what it is filed under, and once.
+  const said = facts(first);
+  const at = said.findIndex(([label]) => label === "Family");
+  assert.deepEqual(said[at + 1], ["Filed by", "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of PANTHER; the table's own column does not carry it"]);
+  assert.equal(said.filter(([label]) => label === "Filed by").length, 1);
+  assert.equal(Object.fromEntries(facts(second))["Filed by"], "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of CDD, which states no terms (used by a made-up decision); the table's own column does not carry it");
+  assert.match(Object.fromEntries(facts(third))["Filed by"], /by the signatures of PANTHER and Pfam;/);
+  // A member filed by its own column reads as before.
+  assert.equal(Object.fromEntries(facts(fourth))["Filed by"], undefined);
+  assert.ok(shelves.describe(first.key).disclosures.some((more) => more.lines.some((line) => line === "Filed by: A made-up note. Source: made-up-added.tsv, by the signatures of PANTHER, Pfam and CDD.")));
+  // The family, once its members are in, counts them; a family with none says nothing of it.
+  assert.equal(Object.fromEntries(shelves.describe(innexin.key).facts)["Members filed by the species' own scan"], "3 of 8");
+  assert.equal(Object.fromEntries(shelves.describe(keyOf("testworm", "f", "IPR000002")).facts)["Members filed by the species' own scan"], undefined);
+  // A file without the mark reads as before.
+  const before = large();
+  assert.equal(Object.fromEntries(before.describe(before.membersOf(before.get(keyOf("testworm", "f", "IPR000001")))[0].key).facts)["Filed by"], undefined);
+});
+
 test("a protein's panel gives its name, gene, identifier, side and how that is known, its marks, a link out and the sources", () => {
   const shelves = small();
   const said = shelves.describe(keyOf("testbug", "p", "TB_004"));

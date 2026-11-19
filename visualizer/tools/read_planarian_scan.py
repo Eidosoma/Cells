@@ -607,11 +607,12 @@ def report(datasets, out=None):
 
     members = {row["id"]: row["under"] for row in csv.DictReader(io.StringIO((ROOT / "data/proteins/planarian/shelf_members.tsv").read_text(encoding="utf-8")), delimiter="\t")}
     now, then = filed(own), filed(union)
-    as_members = {i: (v if not v.startswith("no family: ") else v[len("no family: "):]) for i, v in now.items()}
-    agree = sum(1 for i in order if as_members[i] == members.get(i))
+    as_members = lambda filed_: {i: (v if not v.startswith("no family: ") else v[len("no family: "):]) for i, v in filed_.items()}
+    # Since 19 November 2026 the members' table is filed with the scan's added entries, so the rule is checked against both.
+    agree = {label: sum(1 for i, v in as_members(filed_).items() if v == members.get(i)) for label, filed_ in (("column", now), ("union", then))}
     moved = [i for i in order if now[i] != then[i]]
     gained_any = {i for i in order if union[i] != own[i]}
-    shelves = {"reproduces_members_table": f"{agree:,} of {len(order):,} proteins filed as the members' table files them", "change_shelf": len(moved),
+    shelves = {"reproduces_members_table": f"{agree['column']:,} of {len(order):,} proteins filed as the members' table files them by the column alone, {agree['union']:,} with the scan's added entries", "change_shelf": len(moved),
                "change_shelf_and_gained_an_entry": sum(1 for i in moved if i in gained_any), "change_shelf_and_gained_nothing": sum(1 for i in moved if i not in gained_any),
                "leave_no_family_assigned": sum(1 for i in moved if now[i].startswith("no family") and not then[i].startswith("no family")),
                "enter_no_family_assigned": sum(1 for i in moved if then[i].startswith("no family") and not now[i].startswith("no family")),

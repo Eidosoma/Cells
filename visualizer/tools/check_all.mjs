@@ -152,6 +152,8 @@ const SUITE = [
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)
   { name: "shelves-planarian", tool: "check_shelves.mjs", args: ["planarian"], minutes: 2 },
+  // The planarian's members filed by what its own scan added (19 November 2026): each says so, with the databases behind it.
+  { name: "shelves-scan", tool: "check_shelves.mjs", args: ["scan"], minutes: 2 },
   { name: "layers-closeup", tool: "check_layers.mjs", args: ["closeup"], env: { RUN: SHEET }, minutes: 2 },
   { name: "shelves-syn3a", tool: "check_shelves.mjs", args: ["syn3a"], minutes: 1 },
   { name: "shelves-nofiles", tool: "check_shelves.mjs", args: ["nofiles"], minutes: 1 },

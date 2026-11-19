@@ -652,18 +652,30 @@ export class Shelves {
   /**
    * The marks a protein carries, as lines of facts, in the file's own labels (an estimate is
    * labelled so there). A mark the file declares as measured says so; no other is called measured.
+   * A mark may say its value in a sentence of the file's own (`says`, with "{value}" where the
+   * value goes), each value in the words the file gives it (`words`): the planarian's members
+   * filed by what its own scan added say so, with the databases behind them. `only` keeps those alone.
    */
-  markFacts(item, but = []) {
+  markFacts(item, but = [], only = false) {
     const facts = [];
     for (const [name, value] of Object.entries(item.marks || {})) {
       const mark = this.marks[name];
-      if (!mark || value === null || value === undefined || but.includes(name)) continue;
+      if (!mark || value === null || value === undefined || but.includes(name) || only !== this.tells(name)) continue;
       // "No" is said only of a mark that can be either; a mark that is only ever set is left out when it is not.
       if (value === false && !(Array.isArray(mark.values) && mark.values.includes(false))) continue;
-      const said = value === true ? "yes" : value === false ? "no" : Array.isArray(value) ? value.join(", ") : typeof value === "number" ? value.toLocaleString("en-US") : String(value);
+      let said = value === true ? "yes" : value === false ? "no" : Array.isArray(value) ? value.join(", ") : typeof value === "number" ? value.toLocaleString("en-US") : String(value);
+      if (this.tells(name)) {
+        const words = [].concat(value).map((one) => String(mark.words?.[one] ?? one));
+        said = mark.says.replace("{value}", words.length > 1 ? `${words.slice(0, -1).join(", ")} and ${words.at(-1)}` : words[0]);
+      }
       facts.push([mark.label || name, mark.measured ? `${said} (measured)` : said]);
     }
     return facts;
+  }
+
+  /** Whether a mark says its value in a sentence of the file's own (`says`). */
+  tells(name) {
+    return typeof this.marks[name]?.says === "string" && this.marks[name].says.includes("{value}");
   }
 
   /**
@@ -720,6 +732,8 @@ export class Shelves {
     const family = alone ? [].concat(protein.marks?.family || []) : [];
     if (under && !alone) facts.push([under.type === "g" ? "Filed under" : "Family", `${under.label}${/^IPR\d/.test(under.id) ? ` (${under.id})` : ""}`]);
     if (family.length) facts.push(["Family", `${family[1] || family[0]}${family[1] && /^IPR\d/.test(family[0]) ? ` (${family[0]})` : ""}: its only member in this catalogue`]);
+    // What it is filed by, where the file says so in a sentence (a member filed by what the species' own scan added).
+    facts.push(...this.markFacts(protein, [], true));
     if (protein.group || under) facts.push(["District", this.districtPath(under || protein)]);
     if (this.several) facts.push(["Shelf", shelf ? shelf.label : "None: no place is known"]);
     facts.push(...this.markFacts(protein, family.length ? ["family"] : []));
@@ -807,6 +821,11 @@ export class Shelves {
     if (spread.length) facts.push(["Where its members sit", spread.join("; ")]);
     if (others.length) facts.push(["Elsewhere", others.map((other) => `${count(other.count, "protein")} ${other.shelf === null ? "on no shelf" : `at ${this.membraneOf(other.shelf)}`}`).join("; ")]);
     if (item.where?.length) facts.push(["Named place", `${item.where.join(", ")} (an annotation carried by signatures, not a prediction for these proteins)`]);
+    // Once its members are in: how many are filed by what a mark that tells its ground names (the planarian's own scan).
+    for (const [name, mark] of Object.entries(this.marks)) {
+      const by = this.tells(name) && mark.members_label && members ? members.filter((member) => member.marks?.[name]).length : 0;
+      if (by) facts.push([mark.members_label, by === members.length ? (by === 1 ? "its one member" : `all ${by.toLocaleString("en-US")}`) : `${by.toLocaleString("en-US")} of ${members.length.toLocaleString("en-US")}`]);
+    }
     const links = this.linksFor(item);
     const listed = (members || []).slice(0, 400).map((member) => ({ id: member.key, label: member.label === item.label ? member.id : `${member.label} · ${member.id}`, swatch: member.units.length ? "map-assigned" : "own-plain" }));
     const held = gathered ? item.holds.slice(0, 400).map((family) => ({ id: family.key, label: `${family.label} · ${family.count}`, swatch: family.units.length ? "map-assigned" : "own-family" })) : [];
