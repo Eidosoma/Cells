@@ -12,7 +12,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { ROOT } from "../tools/lib/build_page.mjs";
 import { Catalogue, CATALOGUE_FORMAT, pageId, kindOf } from "../src/lenses/machines_data.js";
-import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf } from "../src/lenses/machines_card.js";
+import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf, lookedFor } from "../src/lenses/machines_card.js";
 import { layoutOf, shapeOf, UNIT_NM, CARD } from "../src/lenses/machines_layout.js";
 import { MachinesLens, MARKS } from "../src/lenses/machines.js";
 
@@ -31,6 +31,14 @@ const CLAIMED = /(?<!not |no )\b(modelled|modeled|qualified|judged|designed|simu
 /** A catalogue in which the thale cress has no size in hand (no species has none since 17 November 2026): the all-cards case. */
 const bare = { ...raw, entries: raw.entries.map((entry) => (entry.species === "thalecress" ? { ...entry, size: undefined } : entry)), unit_sizes: { ...raw.unit_sizes, species: raw.unit_sizes.species.filter((value) => value !== "thalecress") } };
 const bareScene = { ...scene, catalogue: bare };
+/** The catalogue's copy of a source of a species' own scan that is not permissive (CDD): it stands only as the species' scan record carries it, with the
+ * record's terms and class (`gathered:<species>:scan_<key>`); tests/licence_classes.test.mjs holds that record against its register DECIDED. */
+function scanCopy(key, source) {
+  const [, species, own] = /^gathered:([^:]+):scan_(\w+)$/.exec(key) || [];
+  const record = species && read("data/catalogue/gather.json").species[species]?.atlas?.scan?.record;
+  const held = record ? read(record).sources?.[own] : null;
+  return Boolean(held && held.licence === source?.licence && held.class === source?.class);
+}
 
 test("the catalogue is what its tool writes, from the files it names", () => {
   // The core and every bench are what the tool writes (`--check`), and together they are its whole catalogue.
@@ -61,7 +69,7 @@ test("each entry is a kind of the catalogue, once for its species, and a machine
 test("every number stands on a permissive source the entry names, and a size is its species file's own, never a second number", () => {
   for (const entry of raw.entries) {
     for (const block of [entry.count, entry.size, entry.named].filter(Boolean)) {
-      for (const key of block.sources || []) assert.equal(raw.sources[key]?.class, "permissive", `${entry.species} ${entry.id}: ${key}`);
+      for (const key of block.sources || []) assert.ok(raw.sources[key]?.class === "permissive" || scanCopy(key, raw.sources[key]), `${entry.species} ${entry.id}: ${key}`);
     }
     if (entry.count) assert.ok(entry.count.sources.length && /\d/.test(entry.count.text), `${entry.species} ${entry.id}: a count with its sources`);
     if (entry.size?.shape === "rod") assert.ok(entry.size.long_nm.every((n) => entry.size.text.includes(String(n))), `${entry.species} ${entry.id}`);
@@ -210,6 +218,16 @@ test("the layout: one scale for every shape, a card's size the same for all, not
   }
   const proteinsTray = planarian.trays.find((tray) => tray.group === "proteins");
   assert.ok(proteinsTray.w * UNIT_NM <= 130, `the ribosome's tray: ${proteinsTray.w * UNIT_NM} nm wide`);
+  // A group that stands behind (the particles whose job is not known: the vault is the largest shape on a bench) has its tray at the very
+  // back, behind the units' tray, at one column and at three: nothing stands behind it to be hidden (19 November 2026).
+  assert.equal(raw.groups.find((group) => group.id === "unknown").stands, "behind");
+  for (const columns of [1, 3]) {
+    const bench = layoutOf(catalogue.of("planarian"), raw.groups, { columns });
+    const unknown = bench.trays.find((tray) => tray.group === "unknown"), ions = bench.trays.find((tray) => tray.group === "ions");
+    assert.ok(unknown.z + unknown.d / 2 < ions.z - ions.d / 2, `${columns} across: the vault's tray stands behind the units'`);
+    assert.ok(bench.trays.every((tray) => tray === unknown || tray.z - tray.d / 2 > unknown.z + unknown.d / 2), `${columns} across: no tray stands behind the vault's`);
+    assert.ok(bench.bounds.minZ < unknown.z - unknown.d / 2, `${columns} across: the bench reaches past it`);
+  }
   assert.equal(layoutOf(new Catalogue(bare, bareScene).of("thalecress"), raw.groups, { columns: 1 }).scale, null, "no scale bar where nothing is drawn to scale");
 });
 
@@ -271,7 +289,7 @@ test("the animals' benches: the machines they share, each measured from a struct
     assert.ok(catalogue.item(species, "machine:ribosome").size.entry === "8YOP", `${species}: the eukaryotic ribosome, from a structure of the human one`);
     for (const unit of ["unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]) if (catalogue.item(species, unit)) assert.ok(catalogue.item(species, unit).size, `${species}: ${unit}`);
   }
-  assert.deepEqual(sized("planarian"), ["machine:ribosome", "unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]);
+  assert.deepEqual(sized("planarian"), ["machine:ribosome", "machine:vault", "unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]);
   // Only these five units have a size, each from a structure of its own kind (Kv1.1 is not Kv1.2; Cx45 is not Cx43).
   const units = Object.keys(raw.unit_sizes.units).sort();
   assert.deepEqual(units, ["unit.U06", "unit.U36", "unit.U39", "unit.U41", "unit.U43"]);
@@ -406,6 +424,18 @@ test("the ATP synthase stands as its measured parts, ring below head, and shows 
   assert.match(lens.describe("machine:atp-synthase:peripheral-stalk").facts.find(([label]) => label === "Drawn as")[1], /^Its 3 chains' ellipsoids/);
 });
 
+test("a species the catalogue holds no bench for says so, by rule: its units of the law inventory stand alone", () => {
+  // A catalogue made here without the mouse's bench: the mouse, which has an atlas, is shown for its units and the card says why.
+  const without = { ...raw, benches: Object.fromEntries(Object.entries(raw.benches).filter(([id]) => id !== "mouse")), entries: raw.entries.filter((entry) => entry.species !== "mouse") };
+  const { lens } = lensFor("mouse", { raw: { ...scene, catalogue: without } });
+  // Its units are cards where the catalogue gives them no size (the mouse's have sizes; the frog's, today, none).
+  assert.equal(lens.chrome().card.notice, `No bench of machines has been gathered for Mouse yet: only the units of the law inventory that its atlas finds stand here${lens.counts.sized ? "" : ", each a card"}.`);
+  assert.ok(lens.catalogue.of("mouse").every((item) => item.unit), "nothing but its units");
+  // A species with its bench says nothing of it; and in the scene as built, every species with an atlas and no bench says the same.
+  assert.doesNotMatch(lensFor("mouse").lens.chrome().card.notice || "", /No bench/);
+  for (const atlas of (scene.proteins.atlases || []).filter((item) => !item.reference && !catalogue.species.includes(item.id))) assert.match(lensFor(atlas.id).lens.chrome().card.notice, /^No bench of machines has been gathered for .+ yet/, atlas.id);
+});
+
 test("the legend names every mark that is drawn, and the card says what is and is not in hand", () => {
   const { lens } = lensFor("thalecress", { raw: bareScene });
   const chrome = lens.chrome();
@@ -436,7 +466,7 @@ test("the dossiers on the benches: which machines, named by what, their proteins
     for (const id of kinds) assert.ok(catalogue.item(species, id), `${species}: ${id}`);
   }
   assert.equal(catalogue.of("ecoli").filter((item) => !item.unit).length, 21);
-  assert.equal(catalogue.of("human").filter((item) => !item.unit).length, 32);
+  assert.equal(catalogue.of("human").filter((item) => !item.unit).length, 33); // 32, and the vault (19 November 2026)
   const words = (species, id) => describe(catalogue, species, id, { scene });
   const fact = (panel, label) => panel.facts.find(([name]) => name === label)?.[1];
   const rnap = words("ecoli", "machine:rna-polymerase");
@@ -577,7 +607,7 @@ test("the Shape level: offered where a shape file is published, one draw, each s
 test("what Version 33's looks found: the card's words where there are units, polymerase II's name, the opening view", () => {
   // The card speaks of the law inventory's tray only where the species has units.
   assert.doesNotMatch(lensFor("ecoli").lens.chrome().card.text, /law inventory/);
-  assert.match(lensFor("planarian").lens.chrome().card.text, /The membrane machines in the last tray are units of the law inventory/);
+  assert.match(lensFor("planarian").lens.chrome().card.text, /The membrane machines in the tray of moving ions are units of the law inventory/);
   // The human's RNA polymerase II, named by its dossier's term, beside I and III; E. coli's keeps the kind's label.
   assert.deepEqual(["rna-polymerase", "rna-polymerase-i", "rna-polymerase-iii"].map((kind) => catalogue.item("human", `machine:${kind}`).label), ["RNA polymerase II", "RNA polymerase I", "RNA polymerase III"]);
   assert.equal(catalogue.item("ecoli", "machine:rna-polymerase").label, "RNA polymerase");
@@ -661,17 +691,20 @@ test("the eight dossiers on the benches: candidates by family said as such, and 
   assert.match(fact(proteasome, "Its proteins"), /candidates by their family \(InterPro\) for parts of Human's machine: candidates, not the machine's parts/);
   // Nothing of the species names it: its line says what was looked for, labelled so, and never "Named by".
   assert.equal(fact(proteasome, "Named by"), undefined);
-  assert.equal(fact(proteasome, "Looked for, by family"), "31 of Planarian's proteins are candidates, by their InterPro family, for 22 of the 32 parts of Human's machine. For 2 parts no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 8 the table cannot tell, its scan being older than the family; 0 have no family to look for.");
+  assert.equal(fact(proteasome, "Looked for, by family"), "64 of Planarian's proteins are candidates, by their InterPro family, for 31 of the 32 parts of Human's machine. For 1 part no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 0 the table cannot tell, its scan being older than the family; 0 have no family to look for.");
   assert.ok(section(proteasome, "Candidates by family, not its parts").items.length > 0);
   assert.ok(!proteasome.sections.some((value) => /^Its parts/.test(value.title)), "no list calls them parts");
   const looked = section(proteasome, "What was looked for, part by part").items.map((value) => value.detail);
-  assert.ok(looked.some((value) => /not in the table: no line of the species' table carries its family, which says what the table holds, not that the species lacks the protein/.test(value)) && looked.some((value) => /cannot tell/.test(value)));
+  // Since the planarian's own scan (19 November 2026) no part is left as "cannot tell": each has candidates, or no line of the table carries its family.
+  assert.ok(looked.some((value) => /not in the table: no line of the species' table carries its family, which says what the table holds, not that the species lacks the protein/.test(value)) && !looked.some((value) => /cannot tell/.test(value)));
+  // The words for a table that cannot tell stay, for a species whose table's scan is older than a family: on planted rows.
+  assert.match(lookedFor({ looked_for: [["A", "part", "cannot tell"], ["B", "part", "candidates"], ["C", "part", "cannot tell"]], proteins: [["p1"]] }, "Planarian", "Human"), /^1 of Planarian's proteins is a candidate, by its InterPro family, for 1 of the 3 parts of Human's machine\. For 0 parts no line of Planarian's table carries the family, which says what the table holds, not that Planarian lacks the protein; for 2 the table cannot tell, its scan being older than the family; 0 have no family to look for\.$/);
   assert.match(fact(proteasome, "A structure elsewhere"), /^Protein Data Bank entry 7QYB, “Proteasome-ZFAND5 Complex Z-C state” \(4\.1 Å\), a structure of Homo sapiens; none of Planarian's own is in hand$/);
   // The species' own records keep their place above the dossier's.
   const ribosome = words("planarian", "machine:ribosome");
   assert.match(fact(ribosome, "Named by"), /CELL_STRUCTURES/);
   assert.equal(fact(ribosome, "Also named by"), undefined);
-  assert.match(fact(ribosome, "Looked for, by family"), /^81 of Planarian's proteins are candidates, by their InterPro family, for 65 of the 95 parts of Human's machine \(56 of the 80 its entry holds\)\./);
+  assert.match(fact(ribosome, "Looked for, by family"), /^105 of Planarian's proteins are candidates, by their InterPro family, for 68 of the 95 parts of Human's machine \(59 of the 80 its entry holds\)\./);
   // Syn3A's own file names its ribosome ("Named by"); the family route beside it is what was looked for.
   const syn3a = words("syn3a", "machine:ribosome");
   assert.match(fact(syn3a, "Named by"), /^Syn3A's file: “/);
@@ -691,7 +724,7 @@ test("the eight dossiers on the benches: candidates by family said as such, and 
     assert.deepEqual([proteins, parts, found, heldFound, held, absent, unknown, none], own, `${entry.species} ${entry.id}: ${entry.gathered.route.text}`);
     assert.ok(!panel.facts.some(([label, text]) => /^(Also )?Named by$/.test(label) && text === entry.gathered.route.text), `${entry.species} ${entry.id}: the family route is not said to name it`);
   }
-  assert.equal(routes, 49, "the planarian's, Syn3A's and M. pneumoniae's machines by family, with candidates or named by their own records");
+  assert.equal(routes, 50, "the planarian's, Syn3A's and M. pneumoniae's machines by family, with candidates or named by their own records (49 until the planarian's own scan found candidates for myosin II)");
   // One "part", many "parts".
   assert.match(fact(words("syn3a", "machine:ftsh"), "Looked for, by family"), /^1 of Syn3A's proteins is a candidate, by its InterPro family, for 1 of the 3 parts of E\. coli's machine\. For 2 parts /);
   assert.match(fact(words("syn3a", "machine:lon"), "Looked for, by family"), /for 1 of the 1 part of E\. coli's machine\. For 0 parts /);
@@ -813,7 +846,8 @@ test("a bench by family holds only the machines its species' records name or tha
   }
   // The three benches by family: what stands on each, and what is listed apart.
   const shown = (species) => ({ machines: benchOf(species).entries.length, named: benchOf(species).entries.filter((entry) => entry.named?.by !== "family signature").length, family: benchOf(species).entries.filter((entry) => entry.named?.by === "family signature").length, none: (benchOf(species).none_found || []).map((row) => row.id) });
-  assert.deepEqual(shown("planarian"), { machines: 30, named: 1, family: 29, none: ["myosin-ii"] });
+  // Since the planarian's own scan (19 November 2026) every machine looked for has a candidate: myosin II stands on the bench, and none is listed apart.
+  assert.deepEqual(shown("planarian"), { machines: 32, named: 1, family: 31, none: [] }); // and the vault, a candidate by family (19 November 2026)
   assert.deepEqual(shown("syn3a"), { machines: 9, named: 6, family: 3, none: ["tat-translocase", "bam-complex", "chaperonin", "clpxp", "hslv", "complex-i", "complex-ii", "cytochrome-bo3", "recbcd", "chemoreceptor-array"] });
   assert.deepEqual(shown("mpneumoniae"), { machines: 11, named: 7, family: 4, none: ["tat-translocase", "bam-complex", "clpxp", "hslv", "complex-i", "complex-ii", "cytochrome-bo3", "recbcd", "chemoreceptor-array"] });
   // What the species' own file names stays, whatever the family route found.
@@ -833,7 +867,7 @@ test("a bench by family holds only the machines its species' records name or tha
       assert.equal(faces.includes(said) && faces.includes("by family"), item.entry.named?.by === "family signature" ? true : faces.includes(said), `${species} ${item.id}`);
     }
   }
-  assert.ok(lensFor("planarian").lens.plaques.some((plaque) => plaque.text === "candidates for 22 of 32 parts," && plaque.tone === "soft"));
+  assert.ok(lensFor("planarian").lens.plaques.some((plaque) => plaque.text === "candidates for 31 of 32 parts," && plaque.tone === "soft"));
   // Listed apart: in the List under its own heading with the caveat, each with its reference; the search finds it there.
   const list = sections(catalogue, "syn3a");
   const apart = list.find((section) => section.label === "Looked for by family, no candidate found");
@@ -860,7 +894,11 @@ test("a protein's door into Machines says what its dossier makes it: a part, a p
     part: /^It is a part of the [^:]+: show it in Machines$/,
     "part by keyword": /^It is a part, by UniProt's keyword, of the [^:]+: show it in Machines$/,
     named: /^It is named with the [^:]+: show it in Machines$/,
-    "candidate by family": /^It is a candidate, by its family, for a part of (?:Human|E\. coli)'s [^:]+: show it in Machines$/,
+    "candidate by family": /^It is a candidate, by its family, for a part of (?:(?:Human|E\. coli)'s [^:]+|the vault): show it in Machines$/,
+    // The vault's footings, each in its own words (19 November 2026); the record alone says part.
+    "part by record": /^It is a part, by the Complex Portal's record, of the vault: show it in Machines$/,
+    "named by a reviewed entry, by similarity": /^It is named with the vault in UniProt's reviewed entry, by similarity to another species' protein: show it in Machines$/,
+    "named by a reviewed entry, citing publications": /^It is named with the vault in UniProt's reviewed entry, which cites publications for some of its lines: show it in Machines$/,
   };
   let doors = 0;
   for (const species of Object.keys(core.benches)) {
@@ -956,4 +994,67 @@ test("a chain named by an address while a shape of parts is shown: the machine g
   assert.equal(lens.chrome().card.modes.active, "3");
   assert.ok(told > 0, "the card is drawn again");
   assert.ok(lens.cost().triangles <= 40000, JSON.stringify(lens.cost()));
+});
+
+// Since 19 November 2026: the Complex Portal's forms in a kind's panel, and the vault with its three footings. About 0.1 s
+// (panels only, nothing compiled or drawn). The reason: these are the words the page says, and a footing said in the wrong words,
+// or a form counted as a machine, is a claim the record does not make.
+test("a kind's forms stand in its panel and are no machines; the vault says each footing in its own words and puts no prokaryotic vault on a bench", () => {
+  const words = (species, id) => describe(catalogue, species, id, { scene });
+  const fact = (panel, label) => panel.facts.find(([name]) => name === label)?.[1];
+  const forms = (panel) => panel.sections.find((section) => section.title === "Forms the Complex Portal curates");
+  // Forms: lines of a kind's panel, in no count and on no bench of their own.
+  const proteasome = forms(words("human", "machine:proteasome"));
+  assert.equal(proteasome.items.length, 13);
+  assert.equal(proteasome.shown, 4, "the first few stand and the rest open by a press");
+  assert.ok(proteasome.items.every((item) => /^CPX-\d+ · \d+ proteins? · holds \d+ of this machine's \d+ parts$/.test(item.detail) && /^https:\/\/www\.ebi\.ac\.uk\/complexportal\/complex\/CPX-\d+$/.test(item.links[0].url)));
+  const evidence = new Set(proteasome.items.map((item) => item.lines.at(-1).replace(/^Evidence ECO:\d+\. /, "")));
+  assert.ok([...evidence].every((line) => ["Seen in this species' own proteins (a physical interaction).", "Put together by the Complex Portal's curators from the literature.", "Inferred: not observed in this species. The Complex Portal takes it from the same complex in another species, which its record does not name."].includes(line) || /^Taken from a paralogous complex of this species\.$|^Inferred: not observed in this species\. The Complex Portal takes it from the same complex in /.test(line)), [...evidence].join(" | "));
+  const mouse = Object.values(Object.fromEntries(catalogue.of("mouse").filter((item) => item.entry?.gathered?.forms).map((item) => [item.id, item.entry.gathered.forms.items.length])));
+  assert.ok(mouse.length > 0 && catalogue.of("mouse").every((item) => !item.id.startsWith("machine:CPX")), "forms are no machine");
+  assert.ok(!forms(words("human", "machine:myosin-ii")) && !forms(words("human", "machine:axonemal-dynein")), "an entry that is not a form of the kind is kept out (the nexin-dynein regulatory complex holds 2 of the 14 parts)");
+  assert.ok(!forms(words("human", "machine:nuclear-pore")).items.some((item) => item.detail.startsWith("CPX-2477")), "TREX-2 is an exception, with its reason in gather.json");
+  // The vault: three footings, each in its own words.
+  const human = words("human", "machine:vault"), mouseVault = words("mouse", "machine:vault"), planarian = words("planarian", "machine:vault");
+  assert.match(fact(human, "Named by"), /^By the record: the Complex Portal's entry CPX-10181, “Vault ribonucleoprotein complex”, lists MVP \(78 copies\), TEP1 \(no number of copies given\) and PARP4 \(no number of copies given\) and 4 vault RNAs, named by their RNAcentral identifiers/);
+  assert.match(fact(mouseVault, "Named by"), /^Named by a reviewed entry, by similarity or with citations: UniProt's reviewed entries E9PYK3, P97499 and Q9EQK5 name the vault particle .* the proteins are not called parts\./);
+  assert.match(fact(planarian, "Named by"), /^By family alone: h1SMcG0002250 \(IPR039059\) carries the signature of the major vault protein family \(IPR039059\) or PARP4's marker domain \(IPR058904\), as marked\. A candidate is a candidate\. A signature not found is not an absence/);
+  const footing = (panel, gene) => panel.sections.find((section) => section.title === "Its proteins, each on its own footing").items.find((item) => item.label === gene).lines.join("\n");
+  assert.match(footing(mouseVault, "Parp4"), /every one marked “by similarity” to the human protein Q9UKK3\. This is a footing of its own, firmer than a family alone and weaker than a record; it does not make the protein a part of the vault\./);
+  assert.match(footing(mouseVault, "Mvp"), /1 cites publications and 5 are marked “by similarity” to the human protein Q14764/);
+  assert.match(footing(human, "PARP4"), /Copies of PARP4 in a vault, two curated sources: the Complex Portal's entry says “There are about 9 copies of PARP4 per vault which may act to ADP-ribosylate itself and MVP”; UniProt's entry says “Interacts with MVP \(via MVP repeats 3 and 4\); each MVP subunit binds a single PARP4 molecule, allowing each vault to house up to 78 PARP4 molecules \(PubMed:40691181\)”\. Both stand, each in its source's words; the page reconciles nothing\./);
+  assert.match(footing(human, "TEP1"), /Its entry also names it a component of another complex, FUNCTION: “Component of the telomerase ribonucleoprotein complex that is essential for the replication of chromosome termini \(PubMed:19179534\)” \(cites PubMed:19179534\)/);
+  assert.match(footing(human, "TEP1"), /\(by similarity to the mouse protein P97499\)/, "the human TEP1's vault lines are by similarity to the mouse's TEP1, not to a human protein");
+  assert.match(footing(planarian, "h1SMcG0002250"), /A candidate is a candidate: it is not called a part of the vault/);
+  for (const panel of [human, mouseVault, planarian]) {
+    assert.match(fact(panel, "How big"), /^The Complex Portal's entry CPX-10181 \(the human vault\): 72\.5 by 41 by 41 nm, about 13 MDa\. The preprint, for mammalian vaults: “about 67 nm long and 40 nm wide” \(Introduction, .*The viewer's measure of a structure: 74\.5 by 50\.4 by 50\.4 nm/);
+    const preprint = fact(panel, "A preprint on prokaryotic vaults");
+    assert.match(preprint, /^A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10\.64898\/2026\.11\.04\.764334, version 1 \(CC BY 4\.0\), reports that relatives of the major vault protein from phages and some bacteria form vault-like particles when they are made in a host bacterium: it says “homologs assemble into vaults when expressed in Escherichia coli” \(Introduction, the paragraph that begins “Here, we survey”\), “found MVP homologs in 29 bacterial and 4 archaeal phyla” \(Abstract\)/);
+    assert.match(preprint, /Whether such particles form in the organisms themselves, and what they do, is not known: .* No prokaryotic vault stands on any bench as a species' machine/);
+    assert.match(fact(panel, "What it does"), /^Not known\./);
+  }
+  assert.match(fact(human, "How many"), /predicted to hold about 10,000 vaults.*not a measured count/);
+  assert.equal(fact(mouseVault, "How many"), "No count in hand for this species");
+  assert.match(fact(mouseVault, "A structure of its own"), /3GF5, 3GNF and 3GNG, which are fragments or parts of the particle, none taken for it\. The size and shape are those of a vault of the human, measured from Protein Data Bank entry 9MXV/);
+  assert.doesNotMatch(fact(mouseVault, "How big"), /none in hand/, "the mouse's own fragments exist: the page does not say none is in hand");
+  // A species in which no signature was found: no vault on its bench, and the panel that names it says what was looked for, not an absence.
+  for (const species of ["ecoli", "fruitfly", "thalecress", "syn3a", "mpneumoniae"]) {
+    assert.ok(!catalogue.item(species, "machine:vault"), `${species}: no vault on its bench`);
+    const panel = words(species, "machine:vault");
+    assert.match(panel.eyebrow, /^Machines · not shown for /);
+    assert.match(fact(panel, "What was looked for"), /^(UniProt's list of the entries of the reference proteome|No protein of .* table carries) .*the vault particle\.$/);
+    assert.match(panel.note, /A signature not found in a species is not an absence/);
+  }
+  // A species the catalogue holds no bench for (the frog): its panel says that no bench was gathered, never that the species lacks the
+  // machine, and nothing of a signature looked for, since none was.
+  const frog = words("xenopus", "machine:vault");
+  assert.match(frog.eyebrow, /^Machines · no bench for /);
+  assert.match(frog.note, /^No bench of machines has been gathered for .* yet: nothing here says whether it has this one\. The catalogue lists it for /);
+  assert.ok(!/signature|absence/.test(frog.note) && frog.facts.length === 0, frog.note);
+  // Its way to and from the Protein atlas, per protein.
+  assert.ok(["Q14764", "Q99973", "Q9UKK3"].every((id) => human.doors.some((door) => door.find === id)) && ["Q9EQK5", "E9PYK3"].every((id) => mouseVault.doors.some((door) => door.find === id)) && planarian.doors.some((door) => door.find === "h1SMcG0002250"));
+  assert.ok(catalogue.machinesOf("mouse", "Q9EQK5").some(([kind, tier]) => kind === "vault" && tier === "named by a reviewed entry, citing publications"));
+  assert.equal(catalogue.item("human", "machine:vault").size.entry, "9MXV-assembly1");
+  assert.equal(catalogue.kinds.get("vault").group, "unknown");
+  assert.ok(catalogue.groupById.get("unknown") && catalogue.kinds.get("vault").identified_by === "vault");
 });

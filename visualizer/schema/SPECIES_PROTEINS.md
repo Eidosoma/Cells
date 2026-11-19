@@ -125,6 +125,35 @@ catalogue table, the same bytes every time.
   - `also`: another side that a source states for the same protein. `side` is then the
     one stated first;
   - `complex`: the assembly the protein is a member of.
+- **A mark may say its value in a sentence** (19 November 2026): `says`, with `{value}` where
+  the value goes (a list's values joined by commas and a last "and"), and `words`, what to
+  write for a value in its place. Such a mark is shown right after what the protein is filed
+  under, as `label` and the sentence; `members_label`, where given, is how a family's panel
+  counts its members that carry it, once they are in.
+- **A species' own scan** (19 November 2026, the planarian). Where a species' proteins were
+  scanned again and the filing reads the entries that scan added beside the catalogue's own
+  column (`docs/PLANARIAN_ATLAS.md`, "The planarian's own scan"), the file says so:
+  - `scan`: `record` and `added`, the scan's record and its table of added entries in the
+    same folder, `tool` (its name and release), `licence` (the tool's), `days` (of the run,
+    in words) and `decided` (the decision, in plain past tense with its date, and what still
+    reads the column alone).
+  - Each database whose signatures stand behind a placement is a source of the file, a copy
+    of the record's own: its `name`, `url`, `licence` and `class` exactly as the record has
+    them, `scan` (its key in the record), its `release`, `accessed` (the day its terms were
+    read) and `cite` (the record's citation, or null where it has none). It stands for
+    itself, without `through`: the scan ran its signatures, no database gave them out. One
+    that is not permissive stands only as `tests/licence_classes.test.mjs` admits it through
+    its register `DECIDED` (CDD, by the decision of 18 November 2026), as the dossiers' copies
+    do; a second source of that class fails the test. The tool is named in `scan`, and is not
+    a source: it is a program, and its licence gives no class.
+  - A member filed by what the scan added carries the mark `scan`: the databases whose
+    signatures reached the entry it is filed under, or, for one with only a domain, repeat or
+    site signature whose own column holds none, those behind all its added entries. The mark
+    says so in a sentence (`says`) with the tool's release and the days, and names a database
+    that is not plainly permissive with its terms (`words`). A member filed by its own column
+    has no such mark. The members' table is unchanged: its `under` and the added table say it.
+  - The side, its basis, the districts and a family's `where` read the catalogue's own column
+    alone; only the filing reads the scan.
 - **`side_notes`** has an entry for each basis the file uses, under the basis's own word
   (`stated`, `predicted`, `by function`, `none`), saying in one or two sentences how it
   was applied.
@@ -169,12 +198,17 @@ catalogue table, the same bytes every time.
   was downloaded from it and what rests on it, as the bullet above sets out. Such a
   value may stay: by the user's ruling of 15 November 2026 it stands on the terms of the
   database it was read from, and the tool behind it is named and counted, in the file
-  and in the test's register. `tests/licence_classes.test.mjs` holds every file to it.
+  and in the test's register. `tests/licence_classes.test.mjs` holds every file to it. The
+  one other way: a copy of a species' own scan's source that the test's register `DECIDED`
+  admits (above, "A species' own scan").
 - A file may carry further keys of its own, such as the checks its tool ran. The drawing
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
   marker each to be read, is never cut down: it is shown whole, as families that open
-  (below). Human is the last to be done.
+  (below). Human is the last to be done. A species may have bounds of its own, for this file
+  and for each file of its members, named with since when and why in the proteins' overlay
+  (`data/proteins/overlay.json`, `shelves.limits`); the builder and the tests hold it to them.
+  The frog's are there since 19 November 2026, and its members are cut 6,000 to a file.
 - **Terms and honesty** are as in `SPECIES_ATLAS.md`: every source with its terms, no
   machine path, nothing copied from a source that forbids it, and no word that the engine
   models a protein beyond `unit`.
@@ -231,7 +265,11 @@ its members, each a protein of the catalogue.
   side. A row's file and its place there follow from the order and the counts, and a name
   leads to its line by the same `file` and `at` the shelves give, so the
   page's search finds a protein whose family is not open. Like the members' files it is
-  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB).
+  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB). A mark the
+  shelves declare with `search: true` (19 November 2026, the frog's `same_gene`) is one more
+  column of the names file for each such mark, after the four, holding the member's values of
+  it joined by ", "; the page's search finds a member by them too, and a hit found by them alone
+  says so, in the mark's label. A file that declares none is written as before.
 - **`by_basis`**, for each side how many proteins have it by each basis, is given by
   every catalogue in families: the page's words on how sides are known rest on it.
 
@@ -346,6 +384,11 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   that a rule system states in an unreviewed entry is `stated` with the evidence `rule`.
   The file gives, under `curated`, how many places rest on each kind of evidence, for
   reviewed and for unreviewed entries apart, so that the page can say how sure it is.
+  The frog (19 November 2026, `docs/XENOPUS.md`) shows that set less the unreviewed entries
+  of a gene that also has a reviewed entry in it: a gene is the entries tied by the NCBI gene
+  identifiers UniProt gives them, used while building only. The reviewed entry names those
+  it stands for in its mark `same_gene`, and every protein carries the copy of its gene
+  (`copy`) and its chromosomes (`chromosome`), read from UniProt's proteome component.
 - **A cell with two membranes of its own** (a bacterium with an inner and an outer
   membrane) has the shelves `inner`, `outer` and `membrane`, in that order. The cytoplasm
   is `inside` of `inner`; what is outside the cell is `outside` of `outer`. Of the space

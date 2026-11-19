@@ -3,7 +3,41 @@
   "note": "The hand-kept part of the Machines catalogue's dossiers (schema/MACHINE_DOSSIERS.md): which machines are looked for in which species, the Gene Ontology term and the UniProt keyword that name each one's proteins, the RNA chains a chosen structure holds as parts, and the numbers per cell read from open papers with where they stand. tools/gather_machines.py reads this file, the saved answers of UniProt, the Gene Ontology, the Protein Data Bank and Europe PMC, and the species' own proteins, and writes data/catalogue/dossiers/<species>.json. No protein is matched by its name here: a protein is named by an identifier its own record gives.",
   "decided": "The gathering was asked for on 17 November 2026: which molecular machines each species of the page has, their parts as the species' own proteins in the Protein atlas, how many a cell holds where an open paper gives a number, and which Protein Data Bank entries a size can be measured from. E. coli and the human came first.",
   "sources_held": {
-    "complex_portal": { "use": false, "held": "Held on 17 November 2026: the Complex Portal's licence is stated in its team's 2022 paper and not on its site, and the user decides whether that is enough. Its saved files stay in their folders; while use is false, no dossier holds anything read from it." }
+    "complex_portal": {
+      "use": true,
+      "held": "Held on 17 November 2026: the Complex Portal's licence is stated in its team's 2022 paper and not on its site, and the user decides whether that is enough. Its saved files stay in their folders.",
+      "switched_on": "Switched on on 18 November 2026: the user decided that the Complex Portal may be used, its CC0 1.0 being stated in its team's 2022 paper, which was taken as enough. The human's and E. coli's sets stood in blocks already; the mouse's and the fruit fly's were added on 19 November 2026 from the files another round saved. The thale cress's set was left off: of its 245 entries none has two proteins that are parts of one of the catalogue's kinds, so it would add nothing to any panel. The planarian, Syn3A and M. pneumoniae have no set at the Complex Portal.",
+      "left_off": ["thalecress", "planarian", "syn3a", "mpneumoniae"],
+      "forms": {
+        "rule": "An entry is a form of a kind where at least 80 per cent of its protein members are parts of the kind in the species' own dossier (the tiers part and part by keyword) and at least two are. A member that is no protein (an RNA, a ligand, an ion) is not counted either way. An entry that fits two kinds stops the build.",
+        "share": 0.8,
+        "minimum": 2,
+        "evidence": {
+          "ECO:0000353": "Seen in this species' own proteins (a physical interaction).",
+          "ECO:0005547": "Put together by the Complex Portal's curators from the literature.",
+          "ECO:0005546": "Taken from a paralogous complex of this species.",
+          "ECO:0005544": "Inferred: not observed in this species. The Complex Portal takes it from the same complex in {from}.",
+          "ECO:0005610": "Inferred: not observed in this species. The Complex Portal takes it from the same complex in {from}.",
+          "ECO:0005543": "Inferred: not observed in this species. The Complex Portal takes it from the same complex in {from}."
+        },
+        "exceptions": [
+          {"species": "human", "kind": "nuclear-pore", "entry": "CPX-2477", "fits": false, "why": "Decided on 19 November 2026: TREX-2 (the transcription-export complex, CETN2 variant) is a complex of its own that sits at the nuclear pore; four of its five proteins are also named with the pore by the Gene Ontology, so the rule fits it, but the entry is not a form of the pore."}
+        ]
+      },
+      "index": [
+        {"folder": "human/complex-portal-g", "file": "9606.tsv", "name": "the human"},
+        {"folder": "mouse/complex-portal-e1", "file": "10090.tsv", "name": "the mouse"},
+        {"folder": "rat/complex-portal-e1", "file": "10116.tsv", "name": "the rat"},
+        {"folder": "fruitfly/complex-portal-e1", "file": "7227.tsv", "name": "the fruit fly"},
+        {"folder": "thalecress/complex-portal-e1", "file": "3702.tsv", "name": "thale cress"},
+        {"folder": "ecoli/complex-portal-g", "file": "83333.tsv", "name": "E. coli"},
+        {"folder": "yeast/complex-portal-e1", "file": "559292.tsv", "name": "budding yeast"},
+        {"folder": "pombe/complex-portal-e1", "file": "284812.tsv", "name": "fission yeast"},
+        {"folder": "celegans/complex-portal-e1", "file": "6239.tsv", "name": "C. elegans"},
+        {"folder": "zebrafish/complex-portal-e1", "file": "7955.tsv", "name": "the zebrafish"},
+        {"folder": "xenopus/complex-portal-e1", "file": "8355.tsv", "name": "Xenopus laevis"}
+      ]
+    }
   },
   "entries_left_out": [
     {"species": "thalecress", "kind": "rna-polymerase", "entry": "7EU1", "title": "The cryo-EM structure of A. thaliana Pol IV-RDR2 holoenzyme", "why": "Left out on 18 November 2026: the entry's own title names another complex than the machine."},
@@ -44,7 +78,8 @@
     { "id": "dna", "label": "Copying and mending DNA", "plain": "Machines that copy a cell's DNA before it divides, hold its strands and mend them." },
     { "id": "folding", "label": "Folding proteins", "plain": "Cages and rings that give a new protein a closed space to fold in, using ATP." },
     { "id": "traffic", "label": "Carrying cargo", "plain": "Motors that walk along the cell's filaments, carrying cargo from place to place." },
-    { "id": "light", "label": "Capturing light", "plain": "Machines of the chloroplast that catch light, make ATP and NADPH from it, and fix carbon dioxide." }
+    { "id": "light", "label": "Capturing light", "plain": "Machines of the chloroplast that catch light, make ATP and NADPH from it, and fix carbon dioxide." },
+    { "id": "unknown", "label": "Particles whose job is not known", "plain": "Large particles whose function has not been found." }
   ],
   "kinds": [
     { "id": "ribosome", "label": "Ribosome", "group": "proteins" },
@@ -99,7 +134,11 @@
     { "id": "photosystem-i", "label": "Photosystem I", "group": "light", "plain": "Catches light and uses its energy to pass electrons on to make NADPH." },
     { "id": "photosystem-ii", "label": "Photosystem II", "group": "light", "plain": "Catches light and uses its energy to split water, releasing oxygen." },
     { "id": "cytochrome-b6f", "label": "Cytochrome b6f complex", "group": "light", "plain": "Passes electrons between the two photosystems and pumps protons as it does." },
-    { "id": "rubisco", "label": "Rubisco", "group": "light", "plain": "The enzyme that fixes carbon dioxide from the air into sugar." }
+    { "id": "rubisco", "label": "Rubisco", "group": "light", "plain": "The enzyme that fixes carbon dioxide from the air into sugar." },
+    { "id": "vault", "label": "Vault", "group": "unknown", "plain": "A hollow, barrel-shaped particle of protein and RNA, among the largest in a cell. What it does has not been found.",
+      "identified_by": "vault",
+      "identity": "Decided 19 November 2026: the vault is a named exception to how a kind is identified. The Gene Ontology has no term for it and UniProt no keyword, so its proteins are not found by a term. They are found by three footings, kept apart: the Complex Portal's entry of the species whose name holds the word vault (by record); the saved reviewed UniProt entries of the species whose FUNCTION or SUBUNIT sentences name the vault particle, found by that rule, each sentence with the evidence it carries (named by a reviewed entry); and the proteins of the species' own table that carry the signature of the major vault protein family or the PARP4 marker (candidates by family). No other kind changes its identity.",
+      "absence": "A signature not found in a species is not an absence: it says what was looked for in that species' table, and nothing says the species has no vault." }
   ],
   "species": {
     "ecoli": {
@@ -195,8 +234,9 @@
       "uniprot": {"folder": "mouse/uniprot-mouse-reference-proteome", "proteome": "UP000000589", "scope": "all", "keywords": "mouse/uniprot-mouse-keywords-g", "subunit": "mouse/uniprot-mouse-subunit-g"},
       "rcsb": "mouse/rcsb-machines-g",
       "papers": "mouse/europepmc-machine-counts-g",
+      "complex_portal": {"folder": "mouse/complex-portal-e1", "file": "10090.tsv"},
       "elsewhere": "human",
-      "downloads": [{"folder": "mouse/paxdb-g", "name": "10090-WHOLE_ORGANISM-integrated.txt", "url": "https://pax-db.org/downloads/latest/datasets/10090/10090-WHOLE_ORGANISM-integrated.txt", "role": "PaxDb's integrated whole-organism abundance dataset of Mus musculus", "what": "PaxDb abundance datasets (release 6.1), read for each machine's parts; the links to UniProt are read from human/paxdb-g", "licence": "CC BY 4.0, as PaxDb's home page declares for the database (saved with the deed in human/terms-paxdb-g)"}],
+      "downloads": [{"source": "complex_portal", "folder": "mouse/complex-portal-e1", "name": "10090.tsv", "url": "https://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/10090.tsv", "role": "the Complex Portal's curated complexes of Mus musculus (taxon 10090): each complex's members by UniProt accession with their stoichiometry", "what": "The Complex Portal's per-species file of curated complexes (complextab), read for each machine's members and their stoichiometry", "licence": "CC0 1.0, as the Complex Portal 2022 paper states for the resource's data (saved with the deed in human/terms-complex-portal-g)"}, {"folder": "mouse/paxdb-g", "name": "10090-WHOLE_ORGANISM-integrated.txt", "url": "https://pax-db.org/downloads/latest/datasets/10090/10090-WHOLE_ORGANISM-integrated.txt", "role": "PaxDb's integrated whole-organism abundance dataset of Mus musculus", "what": "PaxDb abundance datasets (release 6.1), read for each machine's parts; the links to UniProt are read from human/paxdb-g", "licence": "CC BY 4.0, as PaxDb's home page declares for the database (saved with the deed in human/terms-paxdb-g)"}],
       "paxdb": {"folder": "mouse/paxdb-g", "dataset": "10090-WHOLE_ORGANISM-integrated.txt", "join": "entry name", "links_folder": "human/paxdb-g", "links": "paxdb-uniprot-links-v6.1.tsv", "taxon_prefix": "10090."},
       "machines": [
         {"kind": "ribosome", "go": ["GO:0022625", "GO:0022627"], "keyword": ["Ribosomal protein"], "parts_by": {"go": {"large": "GO:0022625", "small": "GO:0022627"}}, "frame": ["large", "small"], "rna_entities": {"7LS2": {"9": {"description": "28S rRNA", "part": "large"}, "10": {"description": "5S rRNA", "part": "large"}, "11": {"description": "5.8S rRNA", "part": "large"}, "46": {"description": "18S rRNA", "part": "small"}}}, "per_cell": [{"value": 264000, "says": ["264,000"], "counts": "60S ribosomal subunits", "cell": "resting OT-I T cells, the paper's mouse T cells", "source": "seedhom2024", "where": {"section": "Results > Accounting for translation in lymphocytes: measuring the protein-to-ribosome ratio", "paragraph": 3}}, {"value": 3600000, "says": ["3.6"], "scale": 1000000, "written": "~3.6 million", "counts": "60S ribosomal subunits", "cell": "OT-I T cells after 2 days of activation in vitro, the paper's maximum", "source": "seedhom2024", "where": {"section": "Results > Accounting for translation in lymphocytes: measuring the protein-to-ribosome ratio", "paragraph": 3}}, {"value": 2300000, "says": ["2.3"], "scale": 1000000, "written": "2.3 million", "counts": "60S ribosomal subunits", "cell": "OT-I T cells activated in vivo", "source": "seedhom2024", "where": {"section": "Results > Paradoxical discrepancy in OT-I cell division rate and protein synthesis capacity", "paragraph": 1}}]},
@@ -240,8 +280,9 @@
       "lineage": [7227, "Drosophila melanogaster"],
       "uniprot": {"folder": "fruitfly/uniprot-fruitfly-reference-proteome", "proteome": "UP000000803", "scope": "all", "keywords": "fruitfly/uniprot-fruitfly-keywords-g", "subunit": "fruitfly/uniprot-fruitfly-subunit-g"},
       "rcsb": "fruitfly/rcsb-machines-g",
+      "complex_portal": {"folder": "fruitfly/complex-portal-e1", "file": "7227.tsv"},
       "elsewhere": "human",
-      "downloads": [{"folder": "fruitfly/paxdb-g", "name": "7227-WHOLE_ORGANISM-integrated.txt", "url": "https://pax-db.org/downloads/latest/datasets/7227/7227-WHOLE_ORGANISM-integrated.txt", "role": "PaxDb's integrated whole-organism abundance dataset of Drosophila melanogaster", "what": "PaxDb abundance datasets (release 6.1), read for each machine's parts; the links to UniProt are read from human/paxdb-g", "licence": "CC BY 4.0, as PaxDb's home page declares for the database (saved with the deed in human/terms-paxdb-g)"}],
+      "downloads": [{"source": "complex_portal", "folder": "fruitfly/complex-portal-e1", "name": "7227.tsv", "url": "https://ftp.ebi.ac.uk/pub/databases/intact/complex/current/complextab/7227.tsv", "role": "the Complex Portal's curated complexes of Drosophila melanogaster (taxon 7227): each complex's members by UniProt accession with their stoichiometry", "what": "The Complex Portal's per-species file of curated complexes (complextab), read for each machine's members and their stoichiometry", "licence": "CC0 1.0, as the Complex Portal 2022 paper states for the resource's data (saved with the deed in human/terms-complex-portal-g)"}, {"folder": "fruitfly/paxdb-g", "name": "7227-WHOLE_ORGANISM-integrated.txt", "url": "https://pax-db.org/downloads/latest/datasets/7227/7227-WHOLE_ORGANISM-integrated.txt", "role": "PaxDb's integrated whole-organism abundance dataset of Drosophila melanogaster", "what": "PaxDb abundance datasets (release 6.1), read for each machine's parts; the links to UniProt are read from human/paxdb-g", "licence": "CC BY 4.0, as PaxDb's home page declares for the database (saved with the deed in human/terms-paxdb-g)"}],
       "paxdb": {"folder": "fruitfly/paxdb-g", "dataset": "7227-WHOLE_ORGANISM-integrated.txt", "join": "entry name", "links_folder": "human/paxdb-g", "links": "paxdb-uniprot-links-v6.1.tsv", "taxon_prefix": "7227."},
       "machines": [
         {"kind": "ribosome", "go": ["GO:0022625", "GO:0022627"], "keyword": ["Ribosomal protein"], "parts_by": {"go": {"large": "GO:0022625", "small": "GO:0022627"}}, "frame": ["large", "small"], "rna_entities": {"4V6W": {"36": {"description": "18S ribosomal RNA", "part": "small"}, "83": {"description": "28S ribosomal RNA", "part": "large"}, "84": {"description": "2S ribosomal RNA", "part": "large"}, "85": {"description": "5S ribosomal RNA", "part": "large"}, "86": {"description": "5.8S ribosomal RNA", "part": "large"}}}},
@@ -329,9 +370,39 @@
         {"kind": "rubisco", "go": ["GO:0048492"]}
       ]
     },
-    "planarian": {"label": "Planarian", "organism": "Schmidtea mediterranea", "taxon": 79327, "lineage": [79327, "Schmidtea mediterranea"], "route": "family", "reference": "human", "atlas": {"table": "data/proteins/planarian/predicted_proteins.tsv", "id": "id", "label": "name", "gene": "gene", "kind": "kind", "signatures": "interpro", "accessions": ["id", "match"], "match": "match", "length": "length", "source": "The planarian atlas's own table of the species' proteins (data/proteins/planarian/predicted_proteins.tsv): the gene models of one genome annotation in WormBase ParaSite (release WBPS19) with the InterPro signatures it computed on them, and the species' UniProtKB entries with the signatures UniProt gives them.", "licence": "No restrictions on use stated by WormBase ParaSite (its disclaimer: Ensembl imposes no restrictions on access to, or use of, the data provided); UniProt's entries are CC BY 4.0"}, "rcsb": "planarian/rcsb-machines-g"},
+    "planarian": {"label": "Planarian", "organism": "Schmidtea mediterranea", "taxon": 79327, "lineage": [79327, "Schmidtea mediterranea"], "route": "family", "reference": "human", "atlas": {"table": "data/proteins/planarian/predicted_proteins.tsv", "id": "id", "label": "name", "gene": "gene", "kind": "kind", "signatures": "interpro", "accessions": ["id", "match"], "match": "match", "length": "length", "source": "The planarian atlas's own table of the species' proteins (data/proteins/planarian/predicted_proteins.tsv): the gene models of one genome annotation in WormBase ParaSite (release WBPS19) with the InterPro signatures it computed on them, and the species' UniProtKB entries with the signatures UniProt gives them.", "licence": "No restrictions on use stated by WormBase ParaSite (its disclaimer: Ensembl imposes no restrictions on access to, or use of, the data provided); UniProt's entries are CC BY 4.0", "scan": {"record": "data/proteins/planarian/interproscan.json", "added": "data/proteins/planarian/interproscan_added.tsv"}}, "rcsb": "planarian/rcsb-machines-g"},
     "syn3a": {"label": "Syn3A", "organism": "JCVI-syn3A", "taxon": 2144189, "lineage": [2144189, "JCVI-syn3A"], "route": "family", "reference": "ecoli", "atlas": {"table": "data/proteins/syn3a/proteins.tsv", "id": "locus_tag", "label": "product", "gene": "gene", "signatures": "interpro", "accessions": ["uniprotkb_identical"], "length": "length", "source": "The Syn3A atlas's own table (data/proteins/syn3a/proteins.tsv): the protein products of the genome record GenBank CP016816.2, with the InterPro signatures UniProt (UniParc, release 2026_04) computes on each sequence.", "licence": "No restrictions on use: NCBI places no restrictions on the use or distribution of the GenBank data; UniProt is CC BY 4.0"}, "rcsb": "syn3a/rcsb-machines-g", "papers": "syn3a/europepmc-machine-counts-g", "own_mark": {"file": "data/proteins/syn3a/shelves.json", "mark": "complex", "values": {"ribosome": "ribosome", "atp-synthase": "ATP synthase", "rna-polymerase": "RNA polymerase"}}, "compare": {"ribosome": [{"id": "7K00", "by": "the species file's ribosome size, measured from this entry of Escherichia coli"}]}, "per_cell": {"ribosome": [{"fact": "Ribosomes", "counts": "ribosomes"}], "rna-polymerase": [{"value": 187, "says": ["187"], "counts": "RNA polymerase", "cell": "a JCVI-syn3A cell, by the genome-wide proteomics counts the paper cites", "cites": "Chong and others 2014; Breuer and others 2019", "source": "gilbert2021", "where": {"section": "1 Introduction", "paragraph": 6}}]}},
     "mpneumoniae": {"label": "M. pneumoniae", "organism": "Mycoplasma pneumoniae M129", "taxon": 272634, "lineage": [2104, "Mycoplasma pneumoniae"], "route": "family", "reference": "ecoli", "atlas": {"table": "data/proteins/mpneumoniae/proteins.tsv", "id": "locus_tag", "label": "product", "gene": "gene", "signatures": "interpro", "accessions": ["uniprotkb"], "length": "length", "source": "The M. pneumoniae atlas's own table (data/proteins/mpneumoniae/proteins.tsv): the protein products of the genome record GenBank U00089.2, each with its UniProtKB accession and the InterPro signatures UniProt (UniParc, release 2026_04) computes on its sequence.", "licence": "No restrictions on use: NCBI places no restrictions on the use or distribution of the GenBank data; UniProt is CC BY 4.0"}, "rcsb": "mpneumoniae/rcsb-machines-g", "rna_entities": {"9SKF": {"4": {"description": "23S ribosomal RNA", "part": "large"}, "5": {"description": "5S ribosomal RNA", "part": "large"}, "6": {"description": "16S ribosomal RNA", "part": "small"}}}, "compare": {"ribosome": [{"id": "7K00", "by": "the species file's ribosome size, measured from this entry of Escherichia coli"}]}, "per_cell": {"ribosome": [{"fact": "Ribosomes", "counts": "ribosomes"}]}}
+  },
+  "vault": {
+    "note": "What the vault's three footings read (tools/gather_vault.py): the saved entry files of UniProt, the signature lists and tables, the Complex Portal's files, the Protein Data Bank's answer and the preprint's saved page. Nothing here names a protein of a species: the rules find them.",
+    "portal_name": "vault",
+    "entries": ["vault/uniprot-vault-e1", "vault/uniprot-vault-2a"],
+    "signatures": { "family": "IPR039059", "domains": ["IPR021870", "IPR041139", "IPR041134", "IPR040989", "IPR041136"], "parp4": "IPR058904" },
+    "lists": { "folder": "machines-expansion/uniprot-vault-family-counts-e1", "species": { "human": "human.UP000005640", "mouse": "mouse.UP000000589", "fruitfly": "fruitfly.UP000000803", "thalecress": "thalecress.UP000006548", "ecoli": "ecoli-k12.UP000000625" } },
+    "structure": {
+      "folder": "vault/rcsb-vault-e1", "answer": "entries_graphql.json", "share": 0.7, "copies": 78, "of": "human",
+      "held": [{ "entry": "9MXV", "assembly": "1", "folder": "vault/wwpdb-vault-9mxv-e1", "file": "9MXV-assembly1.cif.gz" }]
+    },
+    "preprint": {
+      "folder": "vault/biorxiv-preprint-e1", "file": "full.html",
+      "text": "A bioRxiv preprint, not peer reviewed, posted 5 November 2026: Athukoralage and others, doi:10.64898/2026.11.04.764334, version 1",
+      "doi": "10.64898/2026.11.04.764334",
+      "url": "https://www.biorxiv.org/content/10.64898/2026.11.04.764334v1",
+      "licence": "CC BY 4.0, as the preprint's own page states (\"It is made available under a CC-BY 4.0 International license\"; saved in vault/biorxiv-preprint-e1)",
+      "statements": [
+        { "id": "survey", "section": "Abstract", "place": "Abstract", "contains": "found MVP homologs in 29 bacterial and 4 archaeal phyla" },
+        { "id": "eight", "section": "Abstract", "place": "Abstract", "contains": "vault particles of eight homologs expressed in Escherichia coli" },
+        { "id": "shell", "section": "Abstract", "place": "Abstract", "contains": "a shell of 96 MVP chains" },
+        { "id": "resolution", "section": "Results", "place": "Results, the first paragraph of the subsection on the structure of the phage relative L05", "contains": "nominal resolution of 3.2 Å" },
+        { "id": "host", "section": "Introduction", "place": "Introduction, the paragraph that begins “Here, we survey”", "begins": "Here, we survey", "contains": "homologs assemble into vaults when expressed in Escherichia coli" },
+        { "id": "rare", "section": "Introduction", "place": "Introduction, the paragraph that begins “Here, we survey”", "begins": "Here, we survey", "contains": "less than 1% of species-representative assemblies" },
+        { "id": "mammal-size", "section": "Introduction", "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”", "begins": "Vaults are the largest ribonucleoprotein particles described", "contains": "about 67 nm long and 40 nm wide" },
+        { "id": "per-cell", "section": "Introduction", "place": "Introduction, the paragraph that begins “Vaults are the largest ribonucleoprotein particles described”", "begins": "Vaults are the largest ribonucleoprotein particles described", "contains": "a typical human cell is predicted to hold about 10,000 vaults" },
+        { "id": "function", "section": "Introduction", "place": "Introduction, the paragraph that begins “In mammals, the shell encloses”", "begins": "In mammals, the shell encloses", "contains": "Yet the function of vaults remains unknown" },
+        { "id": "not-established", "section": "Discussion", "place": "Discussion", "contains": "we have likewise not yet established the function of prokaryotic vaults" }
+      ]
+    }
   },
   "papers": {
     "fan2023": { "pmc": "PMC10450203" },

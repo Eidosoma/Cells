@@ -1,0 +1,203 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "xenopus",
+ "label": "Frog",
+ "organism": "Xenopus laevis",
+ "taxon": 8355,
+ "plain": "The African clawed frog of the laboratory: 36,429 genes in UniProt's reference proteome, on two sets of chromosomes, L and S, and 35,004 proteins shown, both copies of a gene among them. Its cell is drawn as the mouse's is: one cell of a sheet that stands for skin-like tissue. The frog is drawn as an adult; its life stages are not drawn yet.",
+ "group": "Animals",
+ "order": 17,
+ "default": false,
+ "made": "2026-11-19",
+ "modelled": {
+  "state": "generic",
+  "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on a hind foot for the scales only. The foot and the frog are placeholder outlines: nothing at those scales is simulated."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 6,
+    "radius_um": 10.6,
+    "height_um": 13,
+    "corner_um": 2.4,
+    "edge_um": 1.3
+   },
+   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a frog's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer is scenery: Cells models nothing beneath the sheet.",
+   "notes": [
+    {
+     "text": "One cell of the skin-like layer"
+    },
+    {
+     "text": "Its flat-sided shape is the picture's choice",
+     "roomy": true
+    }
+   ],
+   "fade_out_um": [
+    120,
+    190
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 6,
+    "beyond": [
+     [
+      8,
+      0.34
+     ],
+     [
+      10,
+      0.2
+     ],
+     [
+      11,
+      0.1
+     ]
+    ]
+   },
+   "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn on the hind foot of the placeholder frog for the scales only; the simulated sheet is not the frog's skin.",
+   "notes": [
+    {
+     "text": "The sheet stands for skin-like tissue: a single layer of cells",
+     "short": "Stands for skin-like tissue"
+    }
+   ],
+   "fade_in_um": [
+    100,
+    190
+   ]
+  },
+  {
+   "id": "organ",
+   "label": "Hind foot",
+   "shape": {
+    "kind": "outline",
+    "ref": "xenopus",
+    "parts": [
+     "left hind foot",
+     "left hind toes"
+    ],
+    "context": [
+     "head and body",
+     "left hind leg"
+    ]
+   },
+   "note": "The outline drawn is a frog's webbed hind foot, as a placeholder: a flat blade from the ankle, widening to the spread of its five toes, laid level so that the sheet of cells, drawn level, can lie on it. The foot is the picture's choice of organ, so that the sheet that stands for skin-like tissue lies on a part of the animal a visitor knows; no foot is modelled, and the foot's own cells are not modelled. The sheet is drawn on the foot so that the scales follow one another; it is not the foot's tissue. The foot's length, its breadth, its thickness and its shape are the picture's choice: no measurement of a foot was read for this file.",
+   "sheet_mark": {
+    "band": 0.15,
+    "note": "The sheet, to scale: drawn on the foot for the scales only",
+    "note_at_um": [
+     0,
+     0,
+     -16000
+    ]
+   },
+   "notes": [
+    {
+     "text": "A frog's hind foot: a placeholder outline"
+    },
+    {
+     "text": "The foot's own cells are not modelled",
+     "lift": -22,
+     "roomy": true
+    }
+   ]
+  },
+  {
+   "id": "organism",
+   "label": "Whole frog",
+   "shape": {
+    "kind": "outline",
+    "ref": "xenopus"
+   },
+   "note": "The outline drawn is an adult frog seen from above, its hind legs bent as in a kick, as a placeholder: 12.1 cm from snout to vent, 5.1 cm wide behind the forelimbs and 6.2 cm in front of the hindlimbs, a thigh 3.4 cm wide, the means that one study measured in 198 adult females (190 for the thigh) kept as laboratory animals. Where along the body the widths are drawn, the height, the head's shape, every limb's length, the feet and the pose are the picture's choice. The sheet of cells is drawn on the left hind foot for the scales only.",
+   "sources": [
+    "boswald2022"
+   ],
+   "view": {
+    "azimuth": 0,
+    "polar": 0.5
+   },
+   "sheet_mark": {
+    "band": 0.22,
+    "note": "Here lies the sheet: too small to see, so its ring is not to scale",
+    "note_at_um": [
+     0,
+     0,
+     -14000
+    ],
+    "roomy": true
+   },
+   "notes": [
+    {
+     "text": "An adult frog: a placeholder outline"
+    }
+   ]
+  }
+ ],
+ "cell": {
+  "facts": [
+   {
+    "label": "Proteins",
+    "value": "36,429 genes in UniProt's reference proteome, with 62,048 entries: 3,523 reviewed by a curator and 58,525 annotated automatically. Both copies of a gene are shown, each as its own protein; where a gene has a reviewed entry, its unreviewed entries in UniProt's gene-by-gene set (1,425) are not shown: 35,004 proteins in all",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Copies",
+    "value": "of the 35,004 proteins shown, UniProt places 20,031 on an L chromosome, 14,296 on an S chromosome, 132 on chromosomes of both sets, and 545 on neither (an unplaced scaffold, or the mitochondrion)",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Cells' units",
+    "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the frog; the other 6 name no natural protein to look for",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "The outline's sizes",
+    "value": "12.1 cm from snout to vent, 5.1 cm wide behind the forelimbs and 6.2 cm in front of the hindlimbs, a thigh 3.4 cm wide: the means of 198 adult females (190 for the thigh) kept as laboratory animals; males were 7.7 cm from snout to vent",
+    "sources": [
+     "boswald2022"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": true,
+   "organelles": [
+    "er",
+    "golgi",
+    "mitochondria"
+   ]
+  }
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000186698 (Xenopus laevis (strain J_2021)), its entries, their proteome components and its gene-by-gene set.",
+   "url": "https://www.uniprot.org/proteomes/UP000186698",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  },
+  "boswald2022": {
+   "text": "Böswald LF, Matzek D, Mohr H, Kienzle E, Popper B (2022) Morphometrics of Xenopus laevis Kept as Laboratory Animals. Animals (Basel) 12(21):2986. Its Table 1 gives, for 198 adult females kept as laboratory animals, a snout-vent length of 12.1 ± 1.0 cm, a width directly behind the forelimbs of 5.1 ± 0.5 cm and directly in front of the hindlimbs of 6.2 ± 0.7 cm, and (for 190) a thigh width of 3.4 ± 0.3 cm; for 40 males, a snout-vent length of 7.7 ± 0.3 cm.",
+   "doi": "10.3390/ani12212986",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  }
+ }
+}

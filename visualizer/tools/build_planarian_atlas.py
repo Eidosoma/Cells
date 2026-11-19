@@ -18,7 +18,8 @@ Three steps, kept apart:
         network.
 
     python3 tools/build_planarian_atlas.py build --evidence DIR --datasets DATA
-        reads only DIR, DATA and the inventory snapshot, and writes
+        reads only DIR, DATA, the inventory snapshot and the species' own scan beside the
+        tables (interproscan.json and interproscan_added.tsv), and writes
         data/proteins/atlases/planarian.json and, in data/proteins/planarian/,
         predicted_proteins.tsv, reference_proteins.tsv, shelves.json, shelf_members.tsv
         and README.md: the same bytes every time.
@@ -37,7 +38,10 @@ protein and every UniProtKB entry of the species. It is predicted, not measured.
 The shelves (schema/SPECIES_PROTEINS.md) lay that open set out for the atlas: every
 protein is given one family, a side of a membrane and how that side is known, and the
 families open to show their members. Everything in them is a prediction on a predicted
-protein.
+protein. Since 19 November 2026 the filing also reads the InterPro entries the species' own
+scan added to the lines (docs/PLANARIAN_ATLAS.md, "The planarian's own scan"), and a member
+filed by one says so; the sides, the districts and the atlas's candidates read the table's
+own column alone.
 
 This is the viewer's reference data. It is not the engine's protein catalogue and it
 makes no claim about the engine: the laws are the same for every species.
@@ -1589,6 +1593,15 @@ SHELF_FORMAT = "cells.visualizer.species_proteins@1"
 MEMBERS_FORMAT = "cells.visualizer.species_protein_members@1"
 SHELVES_FILE = "shelves.json"
 MEMBERS_FILE = "shelf_members.tsv"
+# The species' own scan (docs/PLANARIAN_ATLAS.md, "The planarian's own scan"): its record and the InterPro entries
+# it added to the table's lines, both written by tools/read_planarian_scan.py into the tree. On 19 November 2026 it
+# was decided that the shelves take the scan's added entries: the filing reads them beside the table's own column.
+# The districts, the places and so the sides read the column alone, as before; the build counts what they would change.
+SCAN_RECORD = "interproscan.json"
+SCAN_ADDED = "interproscan_added.tsv"
+SCAN_FORMAT = "cells.visualizer.interpro_scan@1"
+SCAN_MARK = "scan"   # a member's mark: the databases whose signatures reached what the scan added and it is filed by
+SCAN_DECIDED = "19 November 2026"
 MEMBERS_COLUMNS = ["id", "under", "side", "basis", "helices", "signal", "units"]
 SIDES = ["outside", "in", "inside", "not known"]
 SIDE_TIE = ["in", "outside", "inside", "not known"]  # where a family's members are split evenly
@@ -1912,6 +1925,58 @@ def side_from_where(where):
     return None
 
 
+def read_added(path):
+    """The scan's added entries, {id: {entry: [databases]}}, as tools/read_planarian_scan.py writes them."""
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0] != "id\tadded":
+        raise SystemExit(f"{Path(path).name} is not a table of added entries")
+    out = {}
+    for line in lines[1:]:
+        protein, field = line.split("\t")
+        out[protein] = {item.split(":")[0]: item.split(":")[1].split(",") for item in field.split(";")}
+    return out
+
+
+def read_scan(folder, rows, release, names):
+    """The species' own scan as the shelves' filing reads it: its record and the entries it added to the table's lines.
+    Refused where the record was made against another copy of the table or another InterPro release, or where the
+    added entries name a line the table lacks, an entry the table's line carries already, or one this release lacks."""
+    folder = Path(folder)
+    record = json.loads((folder / SCAN_RECORD).read_text(encoding="utf-8"))
+    if record.get("format") != SCAN_FORMAT:
+        raise SystemExit(f"{SCAN_RECORD} is not {SCAN_FORMAT}")
+    if record["run"]["table"]["sha256"] != hashlib.sha256(table(rows).encode("utf-8")).hexdigest():
+        raise SystemExit(f"{SCAN_RECORD} was made against another copy of {FULL_FILE}: run tools/read_planarian_scan.py build again")
+    if record["could_see"]["release"] != release:
+        raise SystemExit(f"{SCAN_RECORD} was made against InterPro {record['could_see']['release']}, not the shelves' {release}")
+    added = read_added(folder / SCAN_ADDED)
+    own = {row[1]: set(row[6].split(";")) for row in rows}
+    stray = sorted(set(added) - set(own), key=natural)
+    again = sorted((protein for protein, gained in added.items() if protein in own and set(gained) & own[protein]), key=natural)
+    unknown = sorted({entry for gained in added.values() for entry in gained if entry not in names})
+    if stray or again or unknown:
+        raise SystemExit(f"{SCAN_ADDED} does not fit the table: lines it lacks {stray[:3]}, entries a line carries already {again[:3]}, entries InterPro {release} lacks {unknown[:3]}")
+    days = record["run"]["days"]
+    when = lambda day: f"{int(day[8:])} {MONTHS[int(day[5:7]) - 1]} {day[:4]}"
+    span = when(days[0]) if len(days) == 1 else f"{int(days[0][8:])} to {when(days[-1])}" if days[0][:7] == days[-1][:7] else f"{when(days[0])} to {when(days[-1])}"
+    return {"record": record, "added": added, "tool": f"{record['tool']['name']} {record['tool']['release']}", "days": span, "last": days[-1]}
+
+
+MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+
+def scan_ground(under, gained, own):
+    """The databases whose signatures reached what a protein is filed by, where that rests on the species' own scan:
+    a family or a superfamily the scan added to its line (gained: {entry: [databases]}), or the part of the proteins
+    with only a domain, repeat or site signature where its own column (own) holds no signature at all. Else None: a
+    protein filed by its own column reads as before. The build and the members' files (cut_members) both use it."""
+    if under in gained:
+        return list(gained[under])
+    if under == "other-signature" and gained and not own:
+        return sorted({name for names in gained.values() for name in names})
+    return None
+
+
 class Shelves:
     """Everything the shelves are made from, and each protein's family, side and district."""
 
@@ -1939,7 +2004,15 @@ class Shelves:
                 for item in product["ids"]:
                     self.units[item["id"]].add(unit_id)
                     self.roles[item["id"]].add(product["role"])
-        self.file_proteins()
+        # The filing reads the table's own column and the entries the species' own scan added to each line (decided on
+        # 19 November 2026); the districts, the places and so the sides read the column alone. The filing by the column
+        # alone, as the shelves stood before, is kept to count what moved.
+        self.scan = read_scan(REFERENCE_DIR, rows, self.release, c.entry_names)
+        self.signatures = {row[1]: [s for s in row[6].split(";") if s] for row in rows}
+        self.filing = {protein: sorted(set(found) | set(self.scan["added"].get(protein, {}))) for protein, found in self.signatures.items()}
+        self.by_column = self.file_proteins(self.signatures)
+        self.file_proteins(self.filing)
+        self.by_scan = self.filed_by_scan()
         self.class_proteins()
         self.place_proteins()
 
@@ -1958,9 +2031,11 @@ class Shelves:
             out.append(accession)
         return out
 
-    def file_proteins(self):
-        """under[id] is the family the protein is filed under, or the part of "no family"."""
-        signatures = {row[1]: [s for s in row[6].split(";") if s] for row in self.rows}
+    def file_proteins(self, signatures=None):
+        """family[id] is the family the protein is filed under, part[id] the part of "no family": by the shelves' rule
+        on the signatures given ({id: [accessions]}; by default the table's own column). Returns (family, part, several)."""
+        if signatures is None:
+            signatures = {row[1]: [s for s in row[6].split(";") if s] for row in self.rows}
         narrowest, carried = {}, Counter()
         for protein, found in signatures.items():
             families = [s for s in found if self.kind(s) == "Family"]
@@ -1981,19 +2056,31 @@ class Shelves:
                 self.part[protein] = min(wider, key=lambda s: (carried[s], s))
             else:
                 self.part[protein] = "other-signature" if signatures[protein] else "no-signature"
-        self.signatures = signatures
+        return self.family, self.part, self.several
+
+    def filed_by_scan(self):
+        """Each protein whose place on the shelves rests on what the species' own scan added: (what it is filed under,
+        the databases whose signatures reached it), by scan_ground."""
+        out = {}
+        for protein, gained in self.scan["added"].items():
+            under = self.family.get(protein) or self.part[protein]
+            found = scan_ground(under, gained, self.signatures[protein])
+            if found:
+                out[protein] = (under, found)
+        return out
 
     # --- what a protein's signatures say it does, and where -------------------------------
 
-    def class_proteins(self):
+    def class_proteins(self, signatures=None):
         """classed[id] is the district the protein's own terms put it in; places[id] the
-        places in the cell they name."""
+        places in the cell they name. By default the terms are those of the table's own column
+        (and UniProt's); with other signatures given, (classed, places) are returned and nothing is kept."""
         joined = defaultdict(list)
         for accession, match in self.c.matches.items():
             joined[match["gene"]].append(accession)
-        self.classed, self.places, self.dropped = {}, {}, set()
+        classed, places, dropped = {}, {}, set()
         for row in self.rows:
-            direct = [term for signature in self.signatures[row[1]] for term in self.signature_terms.get(signature, [])]
+            direct = [term for signature in (signatures or self.signatures)[row[1]] for term in self.signature_terms.get(signature, [])]
             for accession in ([row[1]] if row[0] == "uniprot" else sorted(joined.get(row[1], []))):
                 direct += self.entry_terms[accession]
             terms = set()
@@ -2002,16 +2089,19 @@ class Shelves:
                 if usable:
                     terms |= self.up(usable)
                 else:
-                    self.dropped.add(term)
-            self.places[row[1]] = [key for key, term, _ in WHERE if term in terms]
-            self.classed[row[1]] = next((key for key, _, wanted in DISTRICTS if any(term in terms for term, _ in wanted)), OTHER_DISTRICT[0] if terms else NO_DISTRICT[0])
+                    dropped.add(term)
+            places[row[1]] = [key for key, term, _ in WHERE if term in terms]
+            classed[row[1]] = next((key for key, _, wanted in DISTRICTS if any(term in terms for term, _ in wanted)), OTHER_DISTRICT[0] if terms else NO_DISTRICT[0])
+        if signatures is not None:
+            return classed, places
+        self.classed, self.places, self.dropped = classed, places, dropped
 
-    def district(self, proteins, loose=False):
+    def district(self, proteins, loose=False, classed=None):
         """A family's members are one kind of protein, so the district most of its classed
         members fall in speaks for it; of equal counts, the first district. A part of
         "no family" is a looser grouping (loose): it stands in a district only if more
         than half of all its members fall there."""
-        found = Counter(self.classed[protein] for protein in proteins)
+        found = Counter((classed or self.classed)[protein] for protein in proteins)
         order = [key for key, _, _ in DISTRICTS]
         best = max(order, key=lambda key: (found.get(key, 0), -order.index(key)))
         if loose:
@@ -2021,14 +2111,39 @@ class Shelves:
             return best
         return OTHER_DISTRICT[0] if found.get(OTHER_DISTRICT[0]) else NO_DISTRICT[0]
 
-    def where(self, proteins):
+    def where(self, proteins, places=None):
         """The places at least half of the proteins that are given any place are given."""
-        placed = [self.places[protein] for protein in proteins if self.places[protein]]
+        places = places or self.places
+        placed = [places[protein] for protein in proteins if places[protein]]
         return [key for key, _, _ in WHERE if 2 * sum(key in found for found in placed) >= len(placed) > 0]
+
+    def unread(self, members):
+        """What the scan's added entries would change if the districts, the places and so the sides read them too. They
+        do not: these are counts for the file and the note, and nothing else uses them."""
+        classed, places = self.class_proteins(self.filing)
+        side = {"with a side": Counter(), "not placed": Counter()}
+        for row in self.rows:
+            now = self.placed[row[1]][:2]
+            then = (self.side_of_model if row[0] == "wormbase_parasite" else self.side_of_entry)(row, places)[:2]
+            if now[0] == "not known":
+                side["not placed"]["proteins"] += 1
+                side["not placed"]["gain an entry"] += row[1] in self.scan["added"]
+                side["not placed"][f"would be placed {then[0]}" if then[0] != "not known" else "would stay not placed"] += 1
+            else:
+                side["with a side"]["proteins"] += 1
+                side["with a side"]["gain an entry"] += row[1] in self.scan["added"]
+                side["with a side"]["would change side"] += then[0] != now[0]
+                side["with a side"]["would change basis"] += then[1] != now[1]
+        return {
+            "side": {group: dict(counts) for group, counts in side.items()},
+            "proteins whose own district would change": sum(1 for protein in classed if classed[protein] != self.classed[protein]),
+            "families whose district would change": sum(1 for family, held in members.items() if self.district(held) != self.district(held, classed=classed)),
+            "families whose named places would change": sum(1 for family, held in members.items() if self.where(held) != self.where(held, places)),
+        }
 
     # --- the side of each protein -------------------------------------------------------
 
-    def side_of_model(self, row):
+    def side_of_model(self, row, places=None):
         """A gene model: by TMHMM and SignalP on its longest predicted protein."""
         protein = row[8].split()[0]
         helices, signal = self.helices.get(protein, 0), protein in self.signals
@@ -2054,10 +2169,10 @@ class Shelves:
         # The model does not begin with a start codon's methionine, so a signal peptide may
         # be missing with its beginning: nothing was predicted, and nothing can be said
         # from that, unless what its family is annotated to be leaves no real doubt.
-        side = side_from_where(self.places[row[1]])
+        side = side_from_where((places or self.places)[row[1]])
         return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
 
-    def side_of_entry(self, row):
+    def side_of_entry(self, row, places=None):
         """A UniProtKB entry: by what the entry states or what UniProt predicts on it."""
         known = self.topology[row[1]]
         helices, signal = known["helices"], known["signal"]
@@ -2077,7 +2192,7 @@ class Shelves:
             return side, "by function", helices, signal, ("entry", "a stated place", said(side))
         if not known["start_missing"]:
             return "inside", "predicted", helices, signal, ("entry", "nothing found", frozenset())
-        side = side_from_where(self.places[row[1]])
+        side = side_from_where((places or self.places)[row[1]])
         return (side, "by function", helices, signal, None) if side else ("not known", "none", helices, signal, None)
 
     def place_proteins(self):
@@ -2293,6 +2408,59 @@ def build_shelves(c, d, rows, atlas, facts):
     if len(sequence) != len(rows) or len(set(sequence)) != len(rows):
         raise SystemExit("a protein is filed twice or not at all")
 
+    # What the scan's added entries changed, against the filing by the table's own column alone.
+    scan, record = s.scan, s.scan["record"]
+    family_then, part_then, several_then = s.by_column
+    then = lambda protein: family_then.get(protein) or part_then[protein]
+    now = lambda protein: s.family.get(protein) or s.part[protein]
+    moved = [row[1] for row in rows if then(row[1]) != now(row[1])]
+    gained = set(scan["added"])
+    changed = {
+        "proteins on another shelf": len(moved), "of them, proteins that gained an entry": sum(1 for p in moved if p in gained), "of them, proteins that gained none": sum(1 for p in moved if p not in gained),
+        "leave no_family": sum(1 for p in moved if p in part_then and p in s.family), "enter no_family": sum(1 for p in moved if p in family_then and p in s.part),
+        "move within no_family": sum(1 for p in moved if p in part_then and p in s.part), "no_family by the column alone": len(part_then),
+        "filed by several unrelated families, by the column alone": several_then,
+    }
+    if sum(changed[key] for key in ("leave no_family", "enter no_family", "move within no_family")) + sum(1 for p in moved if p in family_then and p in s.family) != len(moved):
+        raise SystemExit("a protein that moved is not counted")
+    # The databases behind the placements that rest on the scan: each a source of the file, copied from the record.
+    behind = Counter(name for _, found in s.by_scan.values() for name in found)
+    if set(behind) - set(record["databases"]):
+        raise SystemExit(f"a placement rests on a database the scan's record does not hold: {sorted(set(behind) - set(record['databases']))}")
+    scan_sources = []
+    for name, item in record["databases"].items():
+        if not behind.get(name):
+            continue
+        said = record["sources"][item["source"]]
+        read_on = re.search(r"\((\d{4}-\d{2}-\d{2})\)$", said["terms_read"]).group(1)
+        scan_sources.append({
+            "name": said["name"], "url": said["url"], "release": item["release"], "accessed": read_on,
+            "licence": said["licence"], "class": said["class"], "scan": item["source"],
+            "cite": said.get("citation"),
+            "holds": f"its signatures' matches in the species' own scan: {behind[name]:,} proteins are filed by them",
+        })
+    # A database that is not plainly permissive is named with its terms wherever a placement rests on it.
+    scan_words = {}
+    for source in scan_sources:
+        if source["class"] == "no stated terms":
+            decided = re.search(r"decided on (\d+ \w+ \d{4})", source["licence"]).group(1)
+            scan_words[source["name"]] = f"{source['name']}, which states no terms (used by the decision of {decided})"
+        elif "share-alike" in source["licence"]:
+            scan_words[source["name"]] = f"{source['name']}, under {source['licence'].split(',')[0]}"
+    alone = Counter(found[0] for _, found in s.by_scan.values() if len(found) == 1)
+    filed_by_it = {
+        "proteins": len(s.by_scan), "under a family": sum(1 for p in s.by_scan if p in s.family),
+        "under a superfamily": sum(1 for p, (under, _) in s.by_scan.items() if p in s.part and under != "other-signature"),
+        "with only a domain, repeat or site signature": sum(1 for under, _ in s.by_scan.values() if under == "other-signature"),
+        "by database": {name: behind[name] for name in record["databases"] if behind.get(name)}, "by one database alone": {name: alone[name] for name in record["databases"] if alone.get(name)},
+    }
+    unread = s.unread(members)
+    # A protein the scan added nothing to moves only where it carries several unrelated families of its own and the
+    # rule's second step (the family fewer proteins are in) counts what the scan added to other lines.
+    still = [p for p in moved if p not in gained]
+    if any(not (p in family_then and p in s.family) for p in still):
+        raise SystemExit("a protein the scan added nothing to moves for another reason than the size of its families; the files have no word for it")
+
     family_rows, unit_families = [], defaultdict(list)
     for family in families:
         sides = Counter(s.placed[protein][0] for protein in members[family])
@@ -2336,20 +2504,21 @@ def build_shelves(c, d, rows, atlas, facts):
     header = {
         "format": SHELF_FORMAT,
         "species": "planarian",
-        "made": d.last_day(),
+        "made": max(d.last_day(), scan["last"]),
         "from": f"{FULL_FILE}: {len(rows):,} proteins of {ORGANISM}, {models:,} gene models of one genome annotation and {entries:,} UniProtKB entries. Every one is predicted, from the genome or from transcripts; none was measured.",
         "predicted": True,
         "shelves": [SHELF],
         "groups": groups,
         "groups_from": (
-            "A protein's Gene Ontology terms are those InterPro maps to any of its signatures and, for a UniProtKB entry, those UniProt gives the entry; a gene model takes also the terms of the entries joined to it. "
+            "A protein's Gene Ontology terms are those InterPro maps to any of its signatures in the table's own column (not those the species' own scan added) and, for a UniProtKB entry, those UniProt gives the entry; a gene model takes also the terms of the entries joined to it. "
             "With every broader term (by the ontology's kind-of and part-of links), the protein falls in the first district, in the order listed, one of whose terms it carries. "
             "A family's members are one kind of protein, so it stands in the district most of its classed members fall in; of equal counts, the first listed. A part of no_family is a looser grouping: it stands in a district only if more than half of all its members fall there. The choice of the districts' terms and their order is the viewer's."
         ),
         "family_from": (
             f"A family is an InterPro entry of the type Family (InterPro {s.release}). A protein is filed under the narrowest family among its signatures: one that is not a broader kind of another it carries, by InterPro's tree of entries. "
+            f"Its signatures are those of the table's own column and, since {SCAN_DECIDED}, the InterPro entries that the species' own scan ({scan['tool']}, {scan['days']}) found on it and the column lacks; a member filed by one of those says so. "
             f"Where several unrelated families remain ({s.several:,} proteins), it is the deepest in that tree, then the one fewest proteins of this catalogue are in, then the first by accession. "
-            "A gene model's signatures are those on any of its predicted proteins, as the catalogue lists them."
+            "A gene model's own signatures are those on any of its predicted proteins, as the catalogue lists them; the scan read its longest."
         ),
         "family_columns": ["id", "label", "shelf", "side", "group", "count", "sides", "file", "at", "units", "where"],
         "family_notes": {
@@ -2363,7 +2532,7 @@ def build_shelves(c, d, rows, atlas, facts):
         "count": len(s.part),
         "sides": ordered_sides(no_family_sides),
         "parts_from": (
-            "A protein with no family is filed under one part. If it carries an InterPro entry of the type Homologous superfamily, the part is that superfamily: a wider grouping than a family, by shared structure. "
+            "A protein with no family is filed under one part, its signatures read as for the families. If it carries an InterPro entry of the type Homologous superfamily, the part is that superfamily: a wider grouping than a family, by shared structure. "
             "Of several superfamilies it is the one fewest proteins of this catalogue carry, then the first by accession. The other two parts hold the proteins with only a domain, repeat or site signature, and those with no signature at all."
         ),
         "part_columns": ["id", "label", "kind", "side", "group", "count", "sides", "file", "at"],
@@ -2399,9 +2568,24 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
             "signal": {"label": "A signal peptide is predicted", "values": [True, False], "measured": False, "source": "WormBase ParaSite (SignalP) for a gene model; UniProt for an entry"},
             "kind": {"label": "What the line is", "values": ["gene model", "unreviewed entry", "reviewed entry"], "measured": False, "source": FULL_FILE},
             "same": {"label": "The other line of the same sequence: a gene model's UniProtKB entries, or an entry's gene model", "measured": False, "source": FULL_FILE},
+            # A member filed by what the species' own scan added: the databases whose signatures reached it. The
+            # members' files carry it (cut_members); the members' table does not, for its entry is the member's
+            # 'under' and the added table names the databases.
+            SCAN_MARK: {
+                "label": "Filed by", "members_label": "Members filed by the species' own scan", "values": "text", "measured": False,
+                "says": f"what the species' own scan ({scan['tool']}, {scan['days']}) added to its line, by the signatures of {{value}}; the table's own column does not carry it",
+                "words": scan_words,
+                "source": f"{SCAN_ADDED}, by the signatures of {', '.join(source['name'] for source in scan_sources)}",
+                "note": f"On {SCAN_DECIDED} it was decided that the shelves take the scan's added entries. The value names the databases whose signatures reached what the protein is filed by; their terms are among the sources. A protein filed by its own column has none.",
+            },
         },
         # How the atlas found each protein listed with a unit, where it is not the default (schema/SPECIES_PROTEINS.md).
         "found_by": found_by_block(atlas, members),
+        # The species' own scan, whose added entries the filing reads (the README counts what it changed).
+        "scan": {
+            "record": SCAN_RECORD, "added": SCAN_ADDED, "tool": scan["tool"], "licence": record["tool"]["licence"], "days": scan["days"],
+            "decided": f"On {SCAN_DECIDED} it was decided that the shelves take the scan's added entries. Sides, bases, districts and places read the table's own column alone.",
+        },
         "counts": {side: all_sides.get(side, 0) for side in SIDES},
         "by_basis": {side: {basis: bases[side, basis] for basis in ("stated", "predicted", "by function", "none") if bases.get((side, basis))} for side in SIDES},
         "rests_on": rests,
@@ -2416,7 +2600,7 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
             {
                 "name": "InterPro", "url": "https://www.ebi.ac.uk/interpro/", "release": s.release, "accessed": d.day("interpro-hierarchy-and-go", "ParentChildTreeFile.txt"), "licence": "CC0 1.0", "class": PERMISSIVE,
                 "cite": cite["InterPro"],
-                "holds": "the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms",
+                "holds": f"the type and name of each entry, the tree of broader and narrower entries, and the mapping of entries to Gene Ontology terms; for the scan's entries, which member signature is of which entry ({SCAN_RECORD})",
             },
             {
                 "name": "Gene Ontology", "url": "https://geneontology.org/", "release": s.ontology, "accessed": d.day("geneontology-go-basic", "go-basic.obo"), "licence": "CC BY 4.0", "class": PERMISSIVE,
@@ -2430,6 +2614,8 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
             },
             # The tools and rule systems whose results the two databases give out: each with
             # its own terms, the sources it was read through, and what rests on it.
+            # The databases behind the placements that rest on the species' own scan: copies of the record's sources.
+            *scan_sources,
             *upstream,
         ],
     }
@@ -2462,6 +2648,7 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
         "member_files": sorted({plan[key][0] for key in plan}), "largest_file": max(Counter(plan[key][0] for key in plan for _ in range(plan[key][1][1] - plan[key][1][0])).values()),
         "retired": len({sig for found in s.signatures.values() for sig in found if sig not in names}),
         "family_rows": family_rows, "part_rows": part_rows,
+        "scan": {"tool": scan["tool"], "licence": record["tool"]["licence"], "days": scan["days"], "changed": changed, "filed_by_it": filed_by_it, "unread": unread, "sources": scan_sources, "words": scan_words},
     }
     report["text"] = body
     return body, members_table, report
@@ -2469,9 +2656,12 @@ f"a stretch of {HYDROPHOBIC_WINDOW} residues of which {HYDROPHOBIC_LEAST} or mor
 
 def cut_members(folder):
     """The members' files the page publishes beside it, cut from the two tables as
-    shelves.json says: {file name: text}. Reads only the repository's files."""
+    shelves.json says: {file name: text}. Reads only the repository's files. Where the
+    shelves' filing reads the species' own scan (shelves.json's 'scan'), a member filed by
+    what the scan added carries the mark 'scan', from the added table beside the two."""
     folder = Path(folder)
     shelves = json.loads((folder / SHELVES_FILE).read_text(encoding="utf-8"))
+    added = read_added(folder / shelves["scan"]["added"]) if shelves.get("scan") else {}
     catalogue = {}
     with open(folder / FULL_FILE, encoding="utf-8") as handle:
         header = handle.readline().rstrip("\n").split("\t")
@@ -2498,6 +2688,9 @@ def cut_members(folder):
             marks = {"helices": int(row["helices"]), "signal": row["signal"] == "1", "kind": entry["kind"]}
             if entry["match"]:
                 marks["same"] = entry["match"].split(";")
+            ground = scan_ground(row["under"], added.get(row["id"], {}), [s for s in entry["interpro"].split(";") if s])
+            if ground:
+                marks[SCAN_MARK] = ground
             unit = row["units"].split(";") if row["units"] else None
             files[file].append([row["id"], entry["name"] or fallback or "", entry["gene"], row["side"], row["basis"], int(entry["length"]), unit, marks])
     compact = lambda value: json.dumps(value, ensure_ascii=False, separators=(",", ":"))
@@ -2507,6 +2700,48 @@ def cut_members(folder):
         out[file] = json.dumps(head, indent=1, ensure_ascii=False)[:-2] + ',\n "members": [\n' + ",\n".join("  " + compact(member) for member in files[file]) + "\n ]\n}\n"
         json.loads(out[file])
     return out
+
+
+def scan_bullet(report):
+    """What the README says of the species' own scan on the shelves, from what the build counted."""
+    scan = report["scan"]
+    changed, filed, unread = scan["changed"], scan["filed_by_it"], scan["unread"]
+    side, unplaced = unread["side"]["with a side"], unread["side"]["not placed"]
+    by = ", ".join(f"{name} {count:,}" for name, count in filed["by database"].items())
+    alone = ", ".join(f"{name} alone {count:,}" for name, count in filed["by one database alone"].items() if name in scan["words"])
+    return f"""- **The species' own scan.** On {SCAN_DECIDED} it was decided that the shelves take the scan's added
+  entries: a protein's signatures are those of the table's own column and the InterPro entries that
+  {scan['tool']} found on its line ({scan['days']}) and the column lacks (`{SCAN_ADDED}`). {filed['proteins']:,} proteins
+  are filed by what the scan added ({filed['under a family']:,} under a family, {filed['under a superfamily']:,} under a superfamily, {filed['with only a domain, repeat or site signature']:,} with only a domain,
+  repeat or site signature), and each says so in the members' files: the mark `{SCAN_MARK}` names the databases
+  whose signatures reached it ({by}; {alone}). By the column alone {changed['no_family by the column alone']:,} proteins had
+  no family: {changed['leave no_family']:,} have one now, and {changed['enter no_family']:,} lost one. {changed['proteins on another shelf']:,} proteins stand on another shelf than by the
+  column alone; {changed['of them, proteins that gained none']:,} of them gained nothing: each carries several unrelated families of its own, and the
+  rule's second step (the family fewer proteins are in) now counts what the scan added to other lines. The
+  sides and their bases, the districts and the places named for a family still read the column alone. Had
+  they read the added entries too, {side['would change side']:,} sides and {side['would change basis']:,} bases would change, {sum(n for key, n in unplaced.items() if key.startswith('would be placed')):,} of the {unplaced['proteins']:,} proteins
+  not placed would be placed, {unread['proteins whose own district would change']:,} proteins would fall in another district ({unread['families whose district would change']:,} families), and the
+  places named for {unread['families whose named places would change']:,} families would change."""
+
+
+def scan_terms(report):
+    """The README's sentence on the terms of the two tables' sources, the scan's among them."""
+    scan = report["scan"]
+    plain = [source for source in scan["sources"] if source["class"] == "permissive" and "share-alike" not in source["licence"]]
+    other = [source for source in scan["sources"] if source not in plain]
+    if not other:
+        return "Every source in the two tables is permissive: its terms allow what is taken, with\nattribution."
+    said = []
+    for source in other:
+        count = scan["filed_by_it"]["by database"][source["name"]]
+        alone = scan["filed_by_it"]["by one database alone"].get(source["name"], 0)
+        if source["class"] == "no stated terms":
+            said.append(f"{source['name']} states no terms, and stands behind {count:,} placements ({alone:,} on it alone) by the decision its terms give; `tests/licence_classes.test.mjs` keeps it in its register `DECIDED`, so that a second source of that class is put to the user")
+        else:
+            said.append(f"{source['name']} is under {source['licence'].split(',')[0]}, and stands behind {count:,} placements ({alone:,} on it alone)")
+    number = ["No", "One", "Two", "Three", "Four", "Five"][len(other)] if len(other) < 6 else str(len(other))
+    return (f"{number} of the scan's databases {'is' if len(other) == 1 else 'are'} not plainly permissive. {'. '.join(said)}. Every other source in the two tables is "
+            f"permissive: its terms allow what is taken, with attribution. The tool that ran the scan, {scan['tool']}, is named and is not a source: it is a program, under its own licence ({scan['licence']}).")
 
 
 def shelves_section(report, c, d, everything):
@@ -2544,6 +2779,7 @@ makes a protein, where it was seen, or which membrane it is in.
   superfamilies, a wider grouping by shared structure, and hold {part_proteins['superfamily']:,}; {part_proteins['other signature']:,}
   proteins carry only a domain, repeat or site signature; {part_proteins['no signature']:,} carry no signature
   of any kind.
+{scan_bullet(report)}
 - **Sides.** {sides['in']:,} span a membrane, {sides['outside']:,} are beyond one, {sides['inside']:,} are inside the cell
   and {sides['not known']:,} are not placed. By how it is known: {sum(count for (_, basis), count in bases.items() if basis == 'predicted'):,} predicted,
   {sum(count for (_, basis), count in bases.items() if basis == 'by function'):,} by function, {sum(count for (_, basis), count in bases.items() if basis == 'stated'):,} stated.
@@ -2581,9 +2817,9 @@ A family, and a part of "No family assigned", stands in a district:
 | --- | ---: | ---: | --- |
 {districts}
 
-A protein's Gene Ontology terms are those InterPro maps to any of its signatures and
-those UniProt gives a UniProtKB entry; a gene model takes also the terms of the entries
-joined to it. The protein falls in the first district, in the order of the table, one of
+A protein's Gene Ontology terms are those InterPro maps to any of its signatures in the
+table's own column and those UniProt gives a UniProtKB entry; a gene model takes also the
+terms of the entries joined to it. The protein falls in the first district, in the order of the table, one of
 whose terms it carries, and a family stands where most of its classed members fall. The
 choice of the terms and their order is the viewer's.
 
@@ -2748,14 +2984,15 @@ Cite:
 
 {cites}
 
-For the shelves, more was taken from the same sources, and the Gene Ontology was added:
+For the shelves, more was taken from the same sources, and the Gene Ontology was added;
+since {SCAN_DECIDED} the filing also takes the entries of the species' own scan, and each
+database whose signatures stand behind a placement is listed with the terms its record gives:
 
 | Source | What the shelves take | Terms |
 | --- | --- | --- |
 {shelf_rows}
 
-Every source in the two tables is permissive: its terms allow what is taken, with
-attribution.
+{scan_terms(report)}
 
 **What the two databases give out that a tool or a rule system computed.** The sides
 are predictions, and the programs and rules that made them have terms of their own.
@@ -2900,6 +3137,9 @@ def shelves_summary(report):
         "a whole UniProtKB entry against the gene model it is joined to (model side, entry side): " + str(dict(sorted(report["agreement"].items()))),
         "  of those, the models with one helix and a signal peptide: " + str(dict(sorted(report["settled"].items()))),
         "families that hold the atlas's products, by unit: " + "; ".join(f"{unit}: {', '.join(found)}" for unit, found in report["unit_families"].items()),
+        f"the species' own scan ({report['scan']['tool']}), against the filing by the column alone: {report['scan']['changed']}",
+        f"  filed by what the scan added: {report['scan']['filed_by_it']}",
+        f"  what it would change if the rest read it too (it does not): {report['scan']['unread']}",
     ]
     return "\n".join(lines)
 

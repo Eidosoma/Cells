@@ -324,9 +324,10 @@ test("the sheet is Cells' extension, said in full with its own bracket, with the
   assert.doesNotMatch(all, /Grodstein|Levin|preprint|reproduc|agree|\bmatch|the user|“/i);
   assert.doesNotMatch(all.replace(/extension beyond the replication, not part of it|not part of the replication/g, ""), /replicat/i, "the replication is named only to say the sheet is not part of it");
   for (const source of [...sheet.sources, ...sheet.tissue.sources, ...sheet.outcome.sources]) assert.match(source.revision, /^[0-9a-f]{40}$/);
-  // Which part the tab opens on is one field, the example's opens.part: the line, until the user says otherwise.
+  // Which part the tab opens on is one field, the example's opens.part: the sheet, Cells' own tissue of hexagons, since the
+  // user asked for it on 19 November 2026 (the line until then).
   const whole = overlay.experiments["gap-junction-linear-network"];
-  assert.equal(whole.opens.part, "gap-junction-tissue-line");
+  assert.equal(whole.opens.part, "gap-junction-tissue-sheet");
   const raw = (part) => ({ experiments: [{ id: "gap-junction-linear-network", listed: true, opens: { part } }, { id: "gap-junction-tissue-line", part_of: "gap-junction-linear-network", tissue: {} }, { id: "gap-junction-tissue-sheet", part_of: "gap-junction-linear-network", tissue: {} }], runs: [{ id: "l--a", experiment: "gap-junction-tissue-line" }, { id: "s--a", experiment: "gap-junction-tissue-sheet" }] });
   assert.equal(openingPart(raw("gap-junction-tissue-line")), "gap-junction-tissue-line");
   assert.equal(openingPart(raw("gap-junction-tissue-sheet")), "gap-junction-tissue-sheet");

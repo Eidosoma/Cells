@@ -1,0 +1,3 @@
+IPR900000::Made-up broader family that a line carries::
+--IPR900003::Made-up family with a PANTHER signature under IPR900000::
+--IPR900006::Made-up family with a Pfam signature under IPR900000::

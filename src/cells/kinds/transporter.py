@@ -2254,5 +2254,8 @@ TRANSPORTER = BUILTIN.register(
         presence=PRESENCE,
         standard_free_energies=standard_free_energies,
         role_species=role_species,
+        # Version 1's per-law masks: full on the patches, or empty where their law is undeclared
+        # (the static dispatch), which F's array-axes check admits for these alone.
+        dispatch_masks=("transporter_neutral", "transporter_proton"),
     )
 )

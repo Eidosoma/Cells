@@ -63,6 +63,22 @@ const named = (columns, row) => Object.fromEntries(columns.map((name, index) => 
 const families = shelves.families.map((row) => named(shelves.family_columns, row));
 const parts = shelves.no_family.parts.map((row) => named(shelves.no_family.part_columns, row));
 const units = Object.entries(atlas.units);
+// The species' own scan (docs/PLANARIAN_ATLAS.md, "The planarian's own scan"): since 19 November 2026 the filing reads the
+// entries it added beside the table's own column. A member filed by what it added is one whose `under` is an entry the
+// scan added to its line, or one with only a domain, repeat or site signature whose own column holds none; its ground is
+// the databases whose signatures reached that (tools/build_planarian_atlas.py, scan_ground).
+const RECORD = JSON.parse(await readFile(path.join(FOLDER, "interproscan.json"), "utf8"));
+const ADDED = new Map((await readFile(path.join(FOLDER, "interproscan_added.tsv"), "utf8")).trimEnd().split("\n").slice(1).map((line) => {
+  const [id, field] = line.split("\t");
+  return [id, Object.fromEntries(field.split(";").map((item) => [item.split(":")[0], item.split(":")[1].split(",")]))];
+}));
+const ownColumn = new Map(catalogue.map((row) => [row.id, row.interpro.split(";").filter(Boolean)]));
+function groundOf(row) {
+  const gained = ADDED.get(row.id) || {};
+  if (gained[row.under]) return gained[row.under];
+  if (row.under === "other-signature" && Object.keys(gained).length && !ownColumn.get(row.id).length) return [...new Set(Object.values(gained).flat())].sort();
+  return null;
+}
 const products = [...units.flatMap(([id, unit]) => unit.products.map((product) => [id, product])), ...atlas.extra.map((product) => ["extra", product])];
 
 test("the file says what it is: format, species, date, method, and what was not copied", () => {
@@ -307,8 +323,10 @@ test("the shelves file keeps its contract: format, one shelf, declared districts
     assert.ok(["superfamily", "other signature", "no signature"].includes(part.kind), part.id);
   }
   // What the shelves take, they take from permissive sources. A tool or rule system whose
-  // results one of those gives out is a source of its own (below): it has `through`.
-  const taken = shelves.sources.filter((source) => !source.through);
+  // results one of those gives out is a source of its own (below): it has `through`. A
+  // database of the species' own scan is a copy of the scan record's source (`scan`), held
+  // below and by tests/licence_classes.test.mjs.
+  const taken = shelves.sources.filter((source) => !source.through && !("scan" in source));
   assert.ok(taken.length >= 4);
   for (const source of taken) {
     for (const field of ["name", "licence", "holds", "accessed", "cite"]) assert.ok(source[field]?.trim(), `${source.name}: ${field}`);
@@ -485,6 +503,8 @@ test("the members' files are planned without splitting a family, and the tool cu
         assert.equal(member.length, Number(byId.get(member.id).length));
         assert.deepEqual(member.unit, line.units ? line.units.split(";") : null);
         assert.ok(member.label !== undefined && member.marks.kind === byId.get(member.id).kind);
+        // A member filed by what the species' own scan added carries the databases behind it; no other carries the mark.
+        assert.deepEqual(member.marks.scan ?? null, groundOf(line), `${member.id}: the scan's mark`);
       });
       at += size;
       total += size;
@@ -493,6 +513,40 @@ test("the members' files are planned without splitting a family, and the tool cu
   } finally {
     await rm(out, { recursive: true, force: true });
   }
+});
+
+test("the filing reads the species' own scan: its sources are the record's own, exactly the databases behind the members it files, and each such member says so", () => {
+  const scan = shelves.scan;
+  assert.deepEqual([scan.record, scan.added, scan.tool, scan.licence], ["interproscan.json", "interproscan_added.tsv", `${RECORD.tool.name} ${RECORD.tool.release}`, RECORD.tool.licence]);
+  assert.match(scan.decided, /^On 19 November 2026 it was decided that the shelves take the scan's added entries\./);
+  assert.match(shelves.family_from, new RegExp(`the InterPro entries that the species' own scan \\(${scan.tool.replace(/\./g, "\\.")}, ${scan.days}\\) found on it and the column lacks`));
+  const behind = new Map();
+  let filed = 0;
+  for (const row of placed) {
+    const ground = groundOf(row);
+    if (!ground) continue;
+    filed += 1;
+    for (const name of ground) behind.set(name, (behind.get(name) || 0) + 1);
+  }
+  assert.ok(filed > 3000, `${filed} members filed by what the scan added`);
+  // The copies: the record's source for each database behind a member it files, with the record's terms, and no other.
+  const copies = shelves.sources.filter((source) => "scan" in source);
+  assert.deepEqual(copies.map((source) => source.name).sort(), [...behind.keys()].sort(), "the scan's sources are the databases behind the members it files");
+  for (const source of copies) {
+    const name = Object.keys(RECORD.databases).find((key) => RECORD.databases[key].source === source.scan);
+    const own = RECORD.sources[source.scan];
+    assert.deepEqual([source.name, source.url, source.licence, source.class, source.release], [own.name, own.url, own.licence, own.class, RECORD.databases[name].release], source.name);
+    assert.equal(source.cite, own.citation ?? null, `${source.name}: its citation is the record's, or none where the record has none`);
+    assert.ok(source.holds.includes(`${behind.get(source.name).toLocaleString("en-US")} proteins are filed by them`), source.name);
+  }
+  // The mark says what filed it, with the tool's release and the days of the run, and names a database that is not plainly permissive with its terms.
+  const mark = shelves.marks.scan;
+  assert.ok(mark.says.includes(`(${scan.tool}, ${scan.days})`) && mark.says.includes("{value}") && mark.measured === false, mark.says);
+  const notPlain = copies.filter((source) => source.class !== "permissive" || /share-alike/.test(source.licence)).map((source) => source.name).sort();
+  assert.deepEqual(Object.keys(mark.words).sort(), notPlain);
+  assert.match(mark.words.CDD, /^CDD, which states no terms \(used by the decision of 18 November 2026\)$/);
+  assert.match(mark.words.NCBIfam, /^NCBIfam, under CC BY-SA 4\.0 \(share-alike\)$/);
+  for (const source of copies) assert.ok(mark.source.includes(source.name), `the mark's source names ${source.name}`);
 });
 
 test("the shelves are tied to the atlas: a unit's products carry its id, and their families sit in a membrane", () => {
