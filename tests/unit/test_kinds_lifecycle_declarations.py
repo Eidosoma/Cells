@@ -231,7 +231,8 @@ def test_a_diagram_pumps_cycle_declares_the_free_energy_its_constants_imply():
     _, _, declaration, _, _, _ = built["diagram_pump"]
     with scoped():
         declared = kind_registry.kind_standard_free_energies(kind, declaration)  # Its form, checked.
-    ((stoichiometry, value, c0),) = declared
+    (entry,) = declared
+    stoichiometry, value, c0 = entry.stoichiometry, entry.dG_RT, entry.c0
     assert stoichiometry == (("ATP", -1), ("ADP", 1), ("Pi", 1)) and c0 == 1000.0  # H only moves.
     valence = dict(tf.PUMP_ROLES)
     potential = {role: tf.PUMP_MU[(role, "N")] for role in ("ATP", "ADP", "Pi")}

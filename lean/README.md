@@ -12,6 +12,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | Open |
 | [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | Open |
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | Open |
+| [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | Open |
 | [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | Open |
 | [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | Open |
 | [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | Open |
@@ -19,6 +20,7 @@ This Lean library organizes results by biological mechanism. Each claim links to
 | [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) | Proved | Checked | Open |
 | [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | Open |
 | [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | Proved | Checked | Open |
+| [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | Proved | Failed | Open |
 | [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | Open |
 | [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | Not assessable |
 
@@ -107,6 +109,14 @@ export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
 cells_python=${CELLS_PYTHON:-python}
 ```
 
+For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
+
+```bash
+"$cells_python" -B checks/membrane_insertion.py
+"$cells_python" -B checks/membrane_insertion.py --one-patch-control heat
+"$cells_python" -B checks/membrane_insertion.py --one-patch-control heat-and-charge
+```
+
 For single-site binding, compare the compiled law against the independent S1 states and read the occupied fraction in a tissue cell. The input substitution checks whether the comparison distinguishes free and total ligand. [Binding driver](checks/single_site_binding.py)
 
 ```bash
@@ -127,6 +137,12 @@ For neutral permeation, compare the compiled inward flux and the final amounts i
 
 ```bash
 "$cells_python" -B checks/neutral_permeation.py
+```
+
+For proton leak, check the reversal voltage, instantaneous heat, the small-voltage branch and the free H⁺ read in a buffered tissue cell. The driver also resolves the polynomial’s reversal ratio at 80-digit precision. [Proton driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10)
+
+```bash
+"$cells_python" -B checks/proton_leak.py
 ```
 
 For extracellular faces, run the direction and power cases and the closed tissue model. The driver checks the engine's two mean thresholds, opposing drives, an adjacent-float pair and an intentionally reversed flux. The reference test checks the scalar mean against Decimal. [Face driver](checks/logmean_face.py) · [Scalar reference](../validation/tissue/surface_reference.py#L13)

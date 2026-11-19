@@ -217,7 +217,11 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-325a55b3/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-674f077a/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/gate-f0ddf5c0/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-3a882746/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-3a882746/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-f-20261118/gate-3a6f4024/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-71a044cc/measure/measured.json",
+  "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/tiers-cmp-65d8c1e4/measured.three.json",
+  "/mnt/workspaces/Cells/fr2-references-interface-20261119/tiers-309cfb50/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -1819,6 +1823,38 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-3a882746",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T11:02:26+00:00"
+  },
+  {
+   "git_revision": "3a6f402467300a71e001aa288ade1cb44fd99b22",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-f-20261118/snapshot-3a6f4024",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T09:34:36+00:00"
+  },
+  {
+   "git_revision": "71a044cc42aa9abe359122cf640907cb8b24dacb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/cmp-71a044cc",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T12:56:10+00:00"
+  },
+  {
+   "git_revision": "65d8c1e43fdfcfea0dc0633b8edfc1a60643dc77",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-retrieval-v1-20261119/snapshots/cmp-65d8c1e4",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T12:12:05+00:00"
+  },
+  {
+   "git_revision": "309cfb50c37dfa6b4503bbce48b7e25c108fffa6",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr2-references-interface-20261119/snapshot-309cfb50",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T11:32:15+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3574,7 +3610,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.62,
+    "seconds": 2.52,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -3797,6 +3833,14 @@
     }
    },
    {
+    "file": "tests/unit/test_membrane_trafficking_comparison.py",
+    "seconds": 5.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 802
+    }
+   },
+   {
     "file": "tests/unit/test_membrane_trafficking_laws.py",
     "seconds": 3.88,
     "exit_code": 0,
@@ -3806,7 +3850,7 @@
    },
    {
     "file": "tests/unit/test_membrane_trafficking_references.py",
-    "seconds": 2.47,
+    "seconds": 2.42,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -3830,7 +3874,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 2.97,
+    "seconds": 2.92,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4103,10 +4147,10 @@
    },
    {
     "file": "tests/unit/test_operator_registry.py",
-    "seconds": 2.12,
+    "seconds": 2.72,
     "exit_code": 0,
     "counts": {
-     "passed": 5
+     "passed": 6
     }
    },
    {
@@ -5948,26 +5992,26 @@
    },
    {
     "file": "tests/unit/test_membrane_trafficking_batch.py",
-    "seconds": 76.05,
+    "seconds": 71.6,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 145
     }
    },
    {
     "file": "tests/unit/test_membrane_trafficking_runs.py",
-    "seconds": 70.81,
+    "seconds": 72.7,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 50
     }
    },
    {
     "file": "tests/unit/test_membrane_trafficking_sheet.py",
-    "seconds": 68.7,
+    "seconds": 73.65,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 113
     }
    },
    {

@@ -29,8 +29,11 @@ def sixty_digits():
 
 def test_registered_files_regenerate_identically(computed):
     vals, des = computed
-    assert design.VALUES_FILE.read_text() == design.dumps(vals)
-    assert design.DESIGN_FILE.read_text() == design.dumps(des)
+    text_v, text_d = design.dumps(vals), design.dumps(des)
+    assert design.VALUES_FILE.read_text() == text_v
+    assert design.DESIGN_FILE.read_text() == text_d
+    # the comparison bands (the interface) are the design's and values' own, with no drift
+    assert design.INTERFACE_FILE.read_text() == design.interface_text(text_v, text_d)
 
 
 def test_declared_inputs_are_frozen_with_their_provenance():

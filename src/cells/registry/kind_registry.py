@@ -48,6 +48,7 @@ __all__ = (
     "SHARED_AXES",
     "AxisHost",
     "EntityBinding",
+    "FreeEnergyEntry",
     "EnergyRole",
     "HOOKS",
     "Kind",
@@ -64,6 +65,7 @@ __all__ = (
     "declared_schedule",
     "energy_role",
     "finite_number",
+    "free_energy_entries",
     "kind_ledgers",
     "kind_role_species",
     "kind_standard_free_energies",
@@ -340,10 +342,11 @@ class Kind:
       declared, before the kind's rates, readouts and stage checks. Until then every kind with an
       entity axis stays refused beside a closer (Q7 (a)), and after it every kind that declares
       none. entity_axes and presence_fields read them for the core;
-    - `standard_free_energies(declaration)` -> ((((species, nu), ...), dG°/RT, c0 in mM), ...), the
-      reaction-level standard free energies it declares (§7.1, seam E), in the operators' form: nu
-      signed, products positive; () when it declares none. The species registry's check compares
-      each with its own sum of nu mu°/RT (kind_standard_free_energies checks the form);
+    - `standard_free_energies(declaration)` -> (FreeEnergyEntry, ...), the reaction-level standard
+      free energies it declares (§7.1, seam E), each with the cycle law and mode that produced it,
+      a law the kind hosts with a general form, or None for both; () when it declares none. The
+      species registry's check compares each with its own sum of nu mu°/RT
+      (kind_standard_free_energies checks the form; today's 3-tuples still read, transitionally);
     - `role_species(declaration)` -> (EntityBinding, ...), one per entity the declaration declares
       (a transporter population, say), in its own entity order: the cycle law the entity runs,
       one the kind hosts; the species each of that law's roles binds, the roles being those its
@@ -410,9 +413,7 @@ class Kind:
     axis_hosts: object = MappingProxyType({})  # {own axis: AxisHost}
     internal_axes: tuple = ()  # Its laws' internal axes: copied whole at a split, never hosted.
     presence: object = MappingProxyType({})  # {entity axis: (bool presence layout field, ...)}
-    standard_free_energies: Callable | None = (
-        None  # (declaration) -> ((stoichiometry, dG/RT, c0), ...)
-    )
+    standard_free_energies: Callable | None = None  # (declaration) -> (FreeEnergyEntry, ...)
     role_species: Callable | None = None  # (declaration) -> (EntityBinding, ...)
 
     @property
@@ -569,6 +570,22 @@ class EntityBinding(NamedTuple):
     parameters: object = MappingProxyType({})  # {name: value}
 
 
+class FreeEnergyEntry(NamedTuple):
+    """One reaction-level standard free energy a kind or an operator declares (seam E, §7.1;
+    D142): `stoichiometry`, ((species, nu), ...), nu signed, products positive; `dG_RT`, dG°/RT;
+    `c0`, the standard concentration in mM; and `law_id` and `mode`, the cycle law and the mode of
+    its form that produced it, or None where none did (an operator's reaction, say). The species
+    registry's check compares each with its own sum of nu mu°/RT, and the binding owner's check
+    computes each entry's band from the law's form, never from the entry, so no band is
+    self-certified. free_energy_entries checks it."""
+
+    stoichiometry: tuple
+    dG_RT: float
+    c0: float
+    law_id: str | None = None
+    mode: str | None = None
+
+
 def _named(value):
     return isinstance(value, str) and bool(value)
 
@@ -577,37 +594,77 @@ def _finite(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def free_energy_entries(entries, hosted, where):
+    """The checked entries of a standard_free_energies hook, a kind's or an operator's (`where`
+    names it in each refusal): a tuple of FreeEnergyEntry, each with a stoichiometry of distinct
+    named species with signed nonzero coefficients, dG°/RT finite and c0 finite and positive, and
+    law_id and mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle
+    law}; none for an operator, which hosts no law), a law with a general form, and its mode one of
+    that form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has
+    neither. Transitional: an entry may still be today's 3-tuple (stoichiometry, dG°/RT, c0), read
+    as an entry that names no law, until the kinds owner's transporter hook gives entries; remove
+    this reading then."""
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    if not isinstance(entries, tuple):
+        raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
+    out = []
+    for index, entry in enumerate(entries):
+        at = f"{where}, entry {index}"
+        if not isinstance(entry, FreeEnergyEntry):
+            if not (isinstance(entry, tuple) and len(entry) == 3):  # Transitional (docstring).
+                raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
+            entry = FreeEnergyEntry(*entry)
+        stoichiometry = entry.stoichiometry
+        if not (
+            isinstance(stoichiometry, tuple)
+            and stoichiometry
+            and all(
+                isinstance(pair, tuple)
+                and len(pair) == 2
+                and _named(pair[0])
+                and _finite(pair[1])
+                and pair[1] != 0
+                for pair in stoichiometry
+            )
+            and len({pair[0] for pair in stoichiometry}) == len(stoichiometry)
+        ):
+            raise ValueError(
+                f"{at}: its stoichiometry is ((species, nu), ...), distinct species, nu nonzero"
+            )
+        if not _finite(entry.dG_RT):
+            raise ValueError(f"{at}: its dG°/RT is finite")
+        if not (_finite(entry.c0) and entry.c0 > 0):
+            raise ValueError(f"{at}: its c0 is finite and positive")
+        if (entry.law_id is None) != (entry.mode is None):
+            raise ValueError(f"{at}: it names its law and its mode together, or neither")
+        if entry.law_id is not None:
+            law = hosted.get(qualified(entry.law_id)) if _named(entry.law_id) else None
+            if law is None:
+                raise ValueError(f"{at}: {entry.law_id!r} is not a cycle law it hosts")
+            if law.cycle is None:
+                raise ValueError(f"{at}: {entry.law_id} is a version-1 law, with no form or mode")
+            modes = {row["mode"] for row in law_registry.cycle_changes(law)}
+            if entry.mode not in modes:
+                raise ValueError(f"{at}: {entry.law_id}'s form has no mode {entry.mode!r}")
+        out.append(entry)
+    return tuple(out)
+
+
 def kind_standard_free_energies(kind, declaration):
-    """A kind's reaction-level standard free energies (Kind.standard_free_energies), checked to be
-    the operators' form: ((((species, nu), ...), dG°/RT, c0 in mM), ...), each stoichiometry of
-    distinct named species with signed nonzero coefficients, dG°/RT finite, c0 finite and positive.
-    () for a kind that declares none."""
+    """A kind's reaction-level standard free energies (Kind.standard_free_energies), checked by
+    free_energy_entries, any law an entry names being one of the cycle laws the kind hosts in the
+    active law registry: a tuple of FreeEnergyEntry; () for a kind that declares none."""
     if kind.standard_free_energies is None:
         return ()
-    declared = kind.standard_free_energies(declaration)
-    form = (
-        "((((species, nu), ...), dG°/RT, c0 in mM), ...), with distinct species, nu nonzero, "
-        "dG°/RT finite and c0 positive"
-    )
-    if not isinstance(declared, tuple):
-        raise ValueError(f"Kind {kind.kind_id}'s standard_free_energies returns {form}")
-    for entry in declared:
-        ok = isinstance(entry, tuple) and len(entry) == 3
-        stoichiometry, energy, c0 = entry if ok else ((), None, None)
-        ok = ok and isinstance(stoichiometry, tuple) and bool(stoichiometry)
-        ok = ok and all(
-            isinstance(pair, tuple)
-            and len(pair) == 2
-            and _named(pair[0])
-            and _finite(pair[1])
-            and pair[1] != 0
-            for pair in stoichiometry
-        )
-        ok = ok and len({pair[0] for pair in stoichiometry}) == len(stoichiometry)
-        ok = ok and _finite(energy) and _finite(c0) and c0 > 0
-        if not ok:
-            raise ValueError(f"Kind {kind.kind_id}'s standard_free_energies returns {form}")
-    return declared
+    from cells.registry import laws as law_registry  # registry/laws imports this module.
+
+    hosted = {
+        qualified(law.law_id): law
+        for law in law_registry.active().laws(law_registry.CYCLE_LAW, kind.kind_id)
+    }
+    where = f"Kind {kind.kind_id}'s standard_free_energies"
+    return free_energy_entries(kind.standard_free_energies(declaration), hosted, where)
 
 
 def _form_role_end(row):

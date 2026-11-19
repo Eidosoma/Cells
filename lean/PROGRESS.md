@@ -1,5 +1,61 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Membrane insertion heat
+
+Both versions of `scheduled_membrane_insertion` add uncharged membrane at fixed free-node charges and held bath potentials. They call `fixed_charge_change` and require every booked patch heat to be finite and at least zero. Lean shows that the exact field equations give the network heat in pJ as `(10¹²/2) Σ [C(ΔV)² + ΔC(V + ΔV)²]`. Here `V` is the old patch voltage and `ΔV` its change. Each term is nonnegative for nonnegative capacitances and additions. In one patch against a held bath, the heat is `(10¹²/2) C V² ΔC/(C + ΔC)` and the bath’s image charge change is exactly zero. All seven public theorems use the standard Lean axioms. [Proof](CellsProofs/Tissue/MembraneInsertion.lean) · [Shared field calculation](../src/cells/models/pump_composite_adapter.py#L959) · [Version 1 guard](../src/cells/operators/membrane_insertion.py#L424) · [Version 2 guard](../src/cells/operators/membrane_insertion_v2.py#L244)
+
+**Engine finding, open for review.** Both operators refuse a 1 ms step on an admitted one-patch input with `ΔC/C = 1.7 × 10¹⁶` per initial half-step. The compiled CPU half-step computes **−0.043037 pJ**. An 80-digit calculation at the same initial charge gives **+0.051603 pJ**. The first energy term alone is about 8.77 × 10¹⁴ pJ, with float64 spacing of 0.125 pJ. The implementation adds a nearly equal correction of opposite sign. This stress input doubles the area on the first half-step using an extreme inserted specific capacitance of 8.5 × 10¹⁴ F/m². All 12 ordinary control half-steps passed at the existing relative tolerance of 10⁻⁹, and both 1 ms control runs completed. Four existing tests also passed, including two clamps and a finite cleft. [Reproducer](checks/membrane_insertion.py) · [One-patch fixture and tolerance](../tests/unit/test_membrane_insertion.py#L145) · [Two-version comparison](../tests/unit/test_membrane_insertion_v2.py#L203)
+
+The same field solve gives **+0.051603 pJ** with the sum of squares. Substituting that heat alone in a separate diagnostic run exposed an electrode accounting failure. The unmodified field calculation gives **−3.638 × 10⁻¹² C** of bath image charge for this single patch. With the sum-of-squares heat and the known single-patch image charge of zero substituted, both runs completed. Multi-patch worlds can have real image charge at individual baths. The single-patch control isolates the two calculations involved in this refusal. [Image charge and heat](../src/cells/models/pump_composite_adapter.py#L985) · [Diagnostic controls](checks/membrane_insertion.py)
+
+```json
+{
+  "engine_revision": "06e25525a39f3a2995bd5aa26a7e38bd67b211c3",
+  "model": "resolved_pump_composite@1", "inner": "resolved_pump_tissue@3",
+  "operators": ["scheduled_membrane_insertion@1", "scheduled_membrane_insertion@2"],
+  "backend": "cpu", "dtype": "float64", "jax": "0.11.1", "jaxlib": "0.11.1",
+  "half_step_s": 0.0005, "end_s": 0.001,
+  "control_ratios": [0, 0.000001, 0.5, 1, 5, 1000], "control_cases_passed": 12,
+  "max_control_relative_heat_error": 1.857494947841975e-14, "heat_rtol": 1e-9,
+  "stress_ratio": 1.7e16, "stress_specific_capacitance_F_per_m2": 8.5e14,
+  "initial_capacitance_F": 1.6306360828084532e-11, "initial_charge_C": -1.2972730823853619e-12,
+  "computed_heat_pJ": -0.04303697682917118, "reference_heat_pJ": 0.05160309734417014,
+  "sum_of_squares_pJ": 0.05160309734417019,
+  "computed_image_C": -3.637978807091713e-12, "reference_image_C": 0,
+  "stress_runs": {"original": "both refused the first step", "heat_only": "both failed electrode accounting",
+                  "heat_and_single_patch_image": "both completed"}
+}
+```
+
+## 19 November 2026 · Passive proton leak
+
+For `proton_constant_field_leak@1`, an open route carries free H⁺ inward when the outside concentration exceeds the reversal concentration. With `x = F V/(RT)`, inside-minus-outside voltage and evaluator `B`, Lean gives that concentration as `hIn × B(−x)/B(x)` on both engine branches. The analytic constant-field law reverses at `V = (RT/F) × (ln hOut − ln hIn)` and releases nonnegative instantaneous heat. Those results also apply to the engine’s real-arithmetic formula at zero and for `|x| ≥ 10⁻⁴`. All seven public theorems use the standard Lean axioms. [Proof](CellsProofs/Transport/ProtonLeak.lean) · [Engine flux and heat](../src/cells/laws/transport/proton_leak.py#L28) · [Bernoulli evaluator](../src/cells/laws/electrochemistry.py#L17) · [Goldman’s constant-field model](https://doi.org/10.1085/jgp.27.1.37)
+
+Inside the small-voltage branch the polynomial shifts the reversal ratio. At `x = 0.00009`, an 80-digit calculation found `B(−x)/B(x) − exp(x) ≈ 1.582 × 10⁻³³`, below float64 spacing near 1. Halfway between the thresholds the polynomial gives outward flux with a positive inward electrochemical drive. This limits the engine docstring’s unconditional instantaneous-heat sign claim. [Reversal calculation](checks/proton_leak.py) · [Engine heat contract](../src/cells/laws/transport/proton_leak.py#L35)
+
+**Lead decision.** A numerical tolerance is sufficient. The instantaneous proton heat feeds the step booking. The charged leak uses the solver’s tableau, and the 16 ε negative-share floor applies to routes eligible for exact booking. The lead will clarify the heat docstring. Exact nonnegativity applies to the analytic law, with the polynomial and float64 covered to numerical tolerance. [Route selection](../src/cells/kinds/passive_routes.py#L246) · [Step booking](../src/cells/kinds/passive_routes.py#L500) · [Exact-share floor](../src/cells/kinds/passive_routes.py#L458)
+
+Twelve compiled CPU float64 cases covered opposing drives, the Nernst crossing, blocking, partial opening and both sides of the two branch boundaries. The flux reference uses 70-digit Decimal arithmetic. In a 4 ms `resolved_pump_tissue@3` run, the buffered cell initially took up **3.310 × 10⁻⁶ fmol/s**. Using total intracellular proton equivalents in the reference gave **−3.183 fmol/s**. Two four-core runs took 13–16 s, and three existing law and tissue tests passed. [Driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10) · [Independent buffer closure](../validation/compartment_ph/ph_reference.py#L167) · [Tissue fixture](../tests/unit/test_proton_buffer_kind.py#L258)
+
+```json
+{
+  "engine_revision": "1dee280f681af373071079c5f9b5921725dc7ed3",
+  "model": "resolved_pump_tissue@3", "law": "proton_constant_field_leak@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 12,
+  "max_flux_error_fmol_s": 1.543812817544248e-20, "flux_atol_fmol_s": 4.7124e-17,
+  "max_heat_error_pJ_s": 2.0328790734103208e-19, "heat_atol_pJ_s": 1.214613282895345e-16,
+  "opposed_flux_fmol_s": -1.9698929665489864e-5, "nernst_residual_fmol_s": 4.3159515760814405e-21,
+  "small_voltage_x": 0.00009, "outside_inside_ratio_shift": 1.581812000278e-33,
+  "end_s": 0.004, "initial_voltage_V": -0.02151770525721294,
+  "free_inside_mM": 6.309573444801929e-5, "total_inside_mM": 25.000063095734447,
+  "free_outside_mM": 3.981071705534969e-5,
+  "initial_inward_fmol_s": 3.3097843238305726e-6, "reference_inward_fmol_s": 3.309784324017176e-6,
+  "using_total_inward_fmol_s": -3.183387556995154, "booked_heat_pJ": 1.1771717405987001e-8
+}
+```
+
+**Biological evidence.** Schilling et al. measured reversal of an activated proton current in Jurkat T cells at 20–23 °C. Figure 2E gives a fitted slope of **−47 mV per unit of outside-minus-inside pH** across six gradients, alongside an ideal Nernst slope of **−58 mV per pH unit**. The observed shift has the predicted direction and is 11 mV per pH unit shallower. The figure reports group means and standard errors. Uncertainty in the fitted slope and the relation between pipette pH and intracellular pH matter for a quantitative comparison. The current amplitude also depends on channel opening. Biological validation of the Cells leak remains open. [Schilling et al., Fig. 2E and Methods](https://doi.org/10.1113/jphysiol.2002.028878)
+
 ## 19 November 2026 · Passive neutral permeation
 
 For `passive_neutral_permeation@1`, the zero-valence specialization of the existing constant-field theorem gives inward flux `J = scale × (cOut − cIn)` at any voltage. In a closed pair of fixed positive volumes, the outside-minus-inside concentration difference changes at rate `−k × (cOut − cIn)`, with `k = scale × (1/vIn + 1/vOut)`. The three Lean theorems use the standard axioms `propext`, `Classical.choice` and `Quot.sound`. [Neutral proof](CellsProofs/Transport/NeutralPermeation.lean) · [Engine law](../src/cells/laws/routes/passive_permeation.py#L43) · [Tissue rate bound at full opening](../src/cells/kinds/passive_routes.py#L553)
@@ -35,6 +91,8 @@ The first literature handoff covered 11 of the 12 claims registered at review ti
 | RPTEC C3 voltage | Bonzanni et al. (Fig. 3C) reported 20 cells across three experiments. The ±2 mV in the Cells record is figure-reading uncertainty. Experiment-level uncertainty for the +3.41 mV prediction residual is unresolved. [Primary study](https://doi.org/10.1242/bio.048553) · [Existing comparison](claims/rptec-voltage-c3.md) |
 
 **Single-site binding** was the missing claim. A primary lead is the human myoglobin oxygen-equilibrium study by Rossi-Fanelli and Antonini. Look for observed site occupancy across known free ligand values, record temperature and solution conditions, and identify which observations set the affinity and which test it. For oxygen pressure, report the solubility used to convert to dissolved concentration or compare the dimensionless pressure ratio at the same temperature. A myoglobin comparison would test the one-site curve in that preparation. [Cells binding claim](claims/single-site-binding.md) · [Human myoglobin study](https://pubmed.ncbi.nlm.nih.gov/13584010/)
+
+**Research follow-up.** I reproduced the proposed within-figure comparison for human myoglobin at 10 °C. Of the first five published digitized points, fitting the first and fourth gave a half-saturation pressure of 0.3311 Torr. The other three had a root-mean-square occupancy residual of 0.0422. This retrospective split shares a preparation and a figure, with unknown pointwise uncertainty. The PGI workbook gave first-to-last changes in measured G6P + F6P of −0.613357, −1.534898, +0.099302, +0.391083 and −0.207509 mM for datasets 1–5 respectively. Both biological assessments remain open. [Myoglobin experiment](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Caltech’s Fig. 2 digitization](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html) · [PGI workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 ## 19 November 2026 · Single-site binding and face-power units
 

@@ -29,7 +29,8 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     On 19 November: FR-2 version 1, `scheduled_membrane_trafficking@1` (merge 1bd35184). Its
     registered comparison against its code-blind references (run entry below): run 1, 770 of
     782 rows; run 2, after a blind references erratum, 782 of 782, which is weaker evidence
-    after the failed run 1.
+    after the failed run 1. The comparison landed on main (merge d2dc7b8c, tag
+    `fr2-comparison-landed-2026-11-19`), so every row is checked in every gate.
   - **Landed (16 November):** D172's single restructure round (D176), as main ab267c39, tagged
     `d172-landed-2026-11-16`, with FR-4's kinds in it. Its gates are in the run entry "D172's round
     landed on main" below.
@@ -140,6 +141,8 @@ machine-readable inputs, results, checks and failures.
     - 1110 of 1110 tests pass: 782 of 782 rows, 3 of 3 criteria and 322 of 322 plants.
     - The largest margin is 0.0045 of its band, in the corrected class, and 0.0036 elsewhere.
     - **This is weaker evidence after the failed run 1:** its bands were corrected after run 1 failed.
+  - **Landed** at d2dc7b8c (tiers-and-IDs gate at 97a9ca11; merged check on trial 9b24667a),
+    with the references' interface bands and their erratum.
   - A kernel form that would avoid the cancellation is logged as an engine note for a later
     declared-freeze batch.
 

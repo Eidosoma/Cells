@@ -38,9 +38,14 @@ with a planted error it must catch (D187):
 - an entry's `without` removes those hooks from the kind bound to it, so a hook a later layout
   adds never reaches an earlier entry (the kinds owner's design statement 1 §6; planted: a name
   that is no hook, refused at binding);
-- a kind's standard free energies are () by default and checked to the operators' form when read
-  (planted, each refused: a bare species, a zero coefficient, a repeated species, a non-finite
-  energy, a non-positive c0, a list);
+- a kind's standard free energies are () by default and checked when read: a tuple of
+  FreeEnergyEntry, each naming the law and mode that produced it, a law the kind hosts with a
+  general form and a mode it has, or neither; today's 3-tuples still read, transitionally, as
+  entries that name no law (planted, each refused, naming the entry: a list, a mapping, a
+  four-item tuple, a bare species, a zero coefficient, a repeated species, an empty
+  stoichiometry, a non-finite energy, a zero and a negative c0, a law without its mode, a mode
+  without its law, a law another kind hosts, an unregistered law, a version-1 law, a mode the
+  form lacks, and a hook that is not a callable, refused at registration);
 - a kind's role_species is None by default, not refused by its reader, and where set gives one
   EntityBinding per entity: a cycle law the kind hosts, exactly that law's roles bound to species
   IDs (a version-1 law's moves and a general form's "role@end" rows read as their roles), a node
@@ -314,22 +319,54 @@ def test_an_entry_s_without_removes_those_hooks_from_its_bound_kind():
 
 
 def test_standard_free_energies_are_none_by_default_and_checked_when_read():
+    def kernel(*args, **kwargs):
+        raise AssertionError("a planted law's kernel is never called")
+
+    entry = kind_registry.FreeEnergyEntry
+    hydrolysis = (("ATP", -1), ("ADP", 1), ("Pi", 1))
+    formed = law_registry.CycleLaw(
+        "tests.booked_formed_cycle@1", cycle=RolesForm(), host=PLANTED_ID
+    )
+    version_1 = law_registry.CycleLaw(
+        "tests.booked_cycle@1", (("substrate", -1),), (), kernel, kernel, host=PLANTED_ID
+    )
+    elsewhere = law_registry.CycleLaw(
+        "tests.elsewhere_cycle@1", cycle=RolesForm(), host="cells.transporter@1"
+    )
+    plain = entry(hydrolysis, -12.3, 1000.0)  # Names no law: an operator's reaction, say.
+    coupled = entry(hydrolysis, -12.3, 1000.0, "tests.booked_formed_cycle@1", "coupled")
+    assert (plain.law_id, plain.mode) == (None, None)
     assert kind_registry.kind_standard_free_energies(planted(), ()) == ()
-    hydrolysis = ((("ATP", -1), ("ADP", 1), ("Pi", 1)), -12.3, 1000.0)
-    kind = planted(standard_free_energies=lambda declaration: (hydrolysis,))
+    kind = planted(standard_free_energies=lambda declaration: (plain, coupled))
     assert kind_registry.declaration_errors(kind) == []
-    assert kind_registry.kind_standard_free_energies(kind, ()) == (hydrolysis,)
-    for declared in (  # Each a tuple of entries, one entry broken.
-        ((("ATP",), -12.3, 1000.0),),
-        (((("ATP", 0), ("ADP", 1)), -12.3, 1000.0),),
-        (((("ATP", -1), ("ATP", 1)), -12.3, 1000.0),),
-        (((("ATP", -1), ("ADP", 1)), math.inf, 1000.0),),
-        (((("ATP", -1), ("ADP", 1)), -12.3, 0.0),),
-        [hydrolysis],
-    ):
-        planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
-        with pytest.raises(ValueError, match="standard_free_energies returns"):
-            kind_registry.kind_standard_free_energies(planted_kind, ())
+    with law_registry.scope(law_registry.BUILTIN.extended(formed, version_1, elsewhere)):
+        assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled)
+        # Transitional, until the kinds owner's transporter hook gives entries: today's 3-tuple
+        # still reads, as an entry that names no law.
+        legacy = planted(standard_free_energies=lambda declaration: ((hydrolysis, -12.3, 1000.0),))
+        assert kind_registry.kind_standard_free_energies(legacy, ()) == (plain,)
+        plants = (  # Each refused when read, naming the entry.
+            ([plain], "returns a tuple of FreeEnergyEntry"),
+            ((dict(plain._asdict()),), "returns a tuple of FreeEnergyEntry"),
+            (((hydrolysis, -12.3, 1000.0, "x"),), "returns a tuple of FreeEnergyEntry"),
+            ((plain._replace(stoichiometry=(("ATP",),)),), "entry 0: its stoichiometry"),
+            ((plain._replace(stoichiometry=(("ATP", 0), ("ADP", 1))),), "its stoichiometry"),
+            ((plain._replace(stoichiometry=(("ATP", -1), ("ATP", 1))),), "its stoichiometry"),
+            ((plain._replace(stoichiometry=()),), "its stoichiometry"),
+            ((plain._replace(dG_RT=math.inf),), "its dG°/RT is finite"),
+            ((plain._replace(c0=0.0),), "its c0 is finite and positive"),
+            ((plain._replace(c0=-1.0),), "its c0 is finite and positive"),
+            ((plain, coupled._replace(mode=None)), "entry 1: it names its law and its mode"),
+            ((plain._replace(mode="coupled"),), "it names its law and its mode together"),
+            ((coupled._replace(law_id="tests.elsewhere_cycle@1"),), "is not a cycle law it hosts"),
+            ((coupled._replace(law_id="tests.unregistered@1"),), "is not a cycle law it hosts"),
+            ((coupled._replace(law_id="tests.booked_cycle@1"),), "is a version-1 law"),
+            ((coupled._replace(mode="uncoupled"),), "form has no mode 'uncoupled'"),
+        )
+        for declared, words in plants:
+            planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
+            with pytest.raises(ValueError, match=re.escape(words)):
+                kind_registry.kind_standard_free_energies(planted_kind, ())
     with pytest.raises(ValueError, match=PLANTED_ID):
         kind_registry.KindRegistry().register(planted(standard_free_energies="not a hook"))
 
