@@ -12,7 +12,7 @@ The compiled runs are in the _runs and _bitwise files.
 """
 
 import copy
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 import pytest
@@ -23,7 +23,7 @@ from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
 from cells.operators import species_regulated_availability as sra
-from cells.operators.contract import check_declarations
+from cells.operators.contract import Read, check_declarations
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as crfx
@@ -1119,3 +1119,58 @@ def test_version_2_holds_and_records_each_factor_where_it_is_applied(monkeypatch
     off = np.asarray(state2.coupling_enabled).copy()
     off[0] = 0.0  # c_j switched off: its range is not held.
     assert bool(coupling2.factor_valid(state2._replace(coupling_enabled=off), p2, xp=np))
+
+
+class _ControlViewReader(sra.SpeciesRegulatedAvailabilityV2):
+    """R2, planted: @2 with a current read of channel_abundance at the control view; each of its
+    control-view hooks keeps the view it is given."""
+
+    SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
+    VIEW_READS = ("channel_abundance",)
+
+    def __init__(self):
+        self.seen = []
+
+    def control_factors(self, state, p, *, xp, view=None):
+        self.seen.append(("control_factors", view(state)))
+        return super().control_factors(state, p, xp=xp)
+
+    def factor_valid(self, state, p, *, xp, view=None):
+        self.seen.append(("factor_valid", view(state)))
+        return super().factor_valid(state, p, xp=xp)
+
+    def factor_record(self, state, p, target, field, *, xp, view=None):
+        self.seen.append(("factor_record", None if view is None else view(state)))
+        return super().factor_record(state, p, target, field, xp=xp)
+
+
+def test_a_factor_operator_reads_the_control_view_only_where_it_declares_it():
+    """R2 (FR-7's request; development, not judged): a factor operator's current read at stage
+    inner gets view=, the reader view of its fields (C4) as a function of state, in its three
+    control-view hooks; a routed half-step's factor_record gets none. Without such a read, as for
+    @2 itself, the composite passes nothing (static). Host only, about 3 s."""
+    spec = parse_spec(routed(inner=(0.0, 1.0)))
+    model = get_model(spec.model)
+    assert model.factor_fields == {}
+    check_declarations(_ControlViewReader)
+    planted = _ControlViewReader()
+    reading = pump_composite.Composition(
+        model.inner, tuple(planted if o.LAW_ID == LAW_V2 else o for o in model.operators)
+    )
+    assert reading.factor_fields == {planted: ("channel_abundance",)}
+    state, p = reading.initial_values(spec)
+    control = reading.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    full = reading.view(p, state, xp=np)
+    plain = model.control_view(control, state, p, xp=np)
+    viewed = reading.control_view(control, state, p, xp=np)
+    assert all(np.array_equal(a, b) for a, b in zip(viewed, plain, strict=True))
+    reading._control_factor_checks(state, p, xp=np)
+    turnover = next(o for o in reading.operators if o.LAW_ID == sfx.TURNOVER)
+    reading._half_step(turnover, state, 0.5 * spec.execution.dt, control, p, xp=np)
+    hooks = [name for name, _ in planted.seen]
+    assert hooks == ["control_factors", "factor_valid", "factor_record", "factor_record"]
+    *at_view, (_, routed_view) = planted.seen
+    assert routed_view is None  # The target's half-step passes no view.
+    for _, view in at_view:
+        assert type(view)._fields == ("channel_abundance",)
+        assert np.array_equal(view.channel_abundance, full.channel_abundance)
