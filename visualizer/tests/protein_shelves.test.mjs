@@ -393,7 +393,7 @@ test("a protein the atlas lists with a unit only as going with its machine says 
 });
 
 test("every species' shelves name the proteins their atlas lists with a unit only as going with its machine, and the families all of whose such proteins are so", async () => {
-  for (const id of ["fruitfly", "mouse", "thalecress", "planarian"]) {
+  for (const id of ["fruitfly", "mouse", "xenopus", "thalecress", "planarian"]) {
     const shelves = JSON.parse(await readFile(path.join(PROTEINS, id, "shelves.json"), "utf8"));
     const atlas = JSON.parse(await readFile(path.join(PROTEINS, "atlases", `${id}.json`), "utf8"));
     const found = new Map();
@@ -410,7 +410,7 @@ test("every species' shelves name the proteins their atlas lists with a unit onl
 test("the atlas's words stand on the law inventory: a unit, protein or family is listed in it or with one of its units, never one Cells has a law for", async () => {
   // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of 38 of the 48 units are
   // implemented in older code only. The sources of the atlas's words, and the species files they read.
-  const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
+  const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "xenopus", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
   for (const file of files) {
     if (!existsSync(path.join(ROOT, file))) continue;
     const text = await readFile(path.join(ROOT, file), "utf8");
@@ -697,8 +697,9 @@ const READER = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from lib.protein_atlas import read_shelves, shelf_links
-summaries, warnings = read_shelves(sys.argv[2])
-print(json.dumps({"summaries": summaries, "warnings": warnings, "links": shelf_links(json.load(open(sys.argv[3], encoding="utf-8"))["shelves"])}))
+overlay = json.load(open(sys.argv[3], encoding="utf-8"))["shelves"]
+summaries, warnings = read_shelves(sys.argv[2], overlay.get("limits"))
+print(json.dumps({"summaries": summaries, "warnings": warnings, "links": shelf_links(overlay)}))
 `;
 function readShelves(folder) {
   const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, path.join(PROTEINS, "overlay.json")], { encoding: "utf8" });
@@ -1921,7 +1922,8 @@ test("every shelves file of the repository holds to the contract, as the builder
   for (const summary of summaries) {
     const text = await readFile(path.join(PROTEINS, summary.id, "shelves.json"), "utf8");
     const data = JSON.parse(text);
-    assert.ok(Buffer.byteLength(text) < 1024 * 1024, `${summary.id}: a species' file stays under 1 MB`);
+    // Under 1 MB, or under the bound the overlay gives a species of its own (shelves.limits), with its reason.
+    assert.ok(Buffer.byteLength(text) < (OVERLAY.shelves.limits?.[summary.id]?.shelves_bytes ?? 1024 * 1024), `${summary.id}: a species' file stays under its bound`);
     assert.ok(!MACHINE.test(text), `${summary.id}: a machine path`);
     assert.deepEqual(validateShelves(data), [], summary.id);
     const shelves = new Shelves(data, { label: summary.id, links: OVERLAY.shelves.links, units: UNITS });
@@ -1991,7 +1993,7 @@ test("a large catalogue's members are cut into files by the step it names, and e
     for (const file of files) {
       const text = await readFile(file.source, "utf8");
       bytes += Buffer.byteLength(text);
-      assert.ok(Buffer.byteLength(text) < 1024 * 1024, `${file.path} is over 1 MB`);
+      assert.ok(Buffer.byteLength(text) < (OVERLAY.shelves.limits?.[summary.id]?.members_bytes ?? 1024 * 1024), `${file.path} is over its bound`);
       shelves.addMembers(path.basename(file.path), JSON.parse(text));
     }
     // Every family, part and gathering opens to as many members as it says, each a protein of its own.

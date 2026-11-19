@@ -247,10 +247,31 @@ test("the protein atlas links out only to the named public resources, and copies
   }
   assert.ok(count > 100, "the atlas should carry its links out");
   for (const [name, data] of [["snapshot", snapshot], ["scene", scene.proteins], ["units", units]]) {
-    const text = JSON.stringify(data).replace(/No Xenbase data/g, "");
-    assert.ok(!/xenbase|XB-GENE/i.test(text), `Xenbase content in the ${name}`);
+    // The frog's one named dependence may stand in the scene alone; the snapshot and the units are held as before.
+    assert.ok(name === "scene" ? xenbaseFree(JSON.stringify(data)) : !/xenbase|XB-GENE/i.test(JSON.stringify(data).replace(/No Xenbase data/g, "")), `Xenbase content in the ${name}`);
   }
   assert.ok(snapshot.sources.some((source) => source.name === "UniProt" && source.licence === "CC BY 4.0" && source.release), "the UniProt notice with its release");
+});
+
+// The one way Xenbase may stand in the scene: the frog's shelves name it as the source behind the gene names UniProt gives,
+// read through UniProt (decided on 19 November 2026), and the scene carries that source as exactly this entry. Every other
+// mention fails: an identifier, a link, a second source naming it, the entry with anything more, the word anywhere else.
+const NAMED_XENBASE = '{"name":"Xenbase","class":"non-commercial","through":"UniProt"}';
+const xenbaseFree = (text) => !/xenbase|XB-GENE/i.test(text.replace(/No Xenbase data/g, "").replaceAll(NAMED_XENBASE, ""));
+
+test("the scene names Xenbase only as the frog's dependence read through UniProt, in that one exact entry", () => {
+  const entry = JSON.parse(NAMED_XENBASE);
+  const planted = (sources, more = {}) => JSON.stringify({ shelves: [{ id: "xenopus", ...more, sources }] });
+  assert.ok(xenbaseFree(planted([{ name: "UniProt", class: "permissive" }, entry])), "the one exact entry stands");
+  assert.ok(!xenbaseFree(planted([{ ...entry, url: "https://www.xenbase.org/" }])), "the entry with its address");
+  assert.ok(!xenbaseFree(planted([{ ...entry, holds: "gene names" }])), "the entry with anything more");
+  assert.ok(!xenbaseFree(planted([entry, { name: "Xenbase", class: "non-commercial", through: "UniProt and InterPro" }])), "a second source naming it, with other fields");
+  assert.ok(!xenbaseFree(planted([entry], { from: "gene names from Xenbase" })), "the word elsewhere");
+  assert.ok(!xenbaseFree(planted([entry, { name: "UniProt", class: "permissive", id: "XB-GENE-1" }])), "an identifier (made up)");
+  assert.ok(!xenbaseFree(planted([entry], { link: "https://www.xenbase.org/made-up-page" })), "a link");
+  // The scene as built holds it once, from the frog's shelves, and the frog's atlas names no Xenbase.
+  assert.equal(JSON.stringify(scene.proteins.shelves).split(NAMED_XENBASE).length - 1, (scene.proteins.shelves || []).some((item) => item.id === "xenopus") ? 1 : 0);
+  assert.ok(!/xenbase/i.test(JSON.stringify((scene.proteins.atlases || []).find((atlas) => atlas.id === "xenopus") || {})), "the frog's atlas names Xenbase");
 });
 
 test("a species atlas links out only to its named sources, over https", () => {

@@ -258,7 +258,7 @@ export class LandingLens {
       "article",
       { class: `landing-card is-${replay ? "replay" : "record"}`, dataset: { card: card.id, kind: String(card.kind || "") } },
       image ? h("div", { class: "landing-still-box", style: `aspect-ratio: ${still.width} / ${still.height}` }, image) : null,
-      part ? h("p", { class: "landing-part" }, h("span", { class: "landing-part-label" }, "Opens on"), part) : null,
+      part ? h("p", { class: "landing-part" }, h("span", { class: "landing-part-label" }, "Opens on"), " ", part) : null,
       h(
         "h3",
         { class: "landing-title" },

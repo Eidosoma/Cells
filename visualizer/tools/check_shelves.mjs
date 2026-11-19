@@ -6,14 +6,16 @@
 //
 //   node tools/check_shelves.mjs [SCENARIO] [SCENE_FILE] [OUT_DIR]
 //
-// SCENARIO is syn3a (the default), planarian, scan, human, ecoli, stack, accessory, trail, search, map, colours, gathering,
+// SCENARIO is syn3a (the default), planarian, scan, human, ecoli, stack, accessory, twins, trail, search, map, colours, gathering,
 // frame, nofiles, resize, units-small, shots or pictures. trail, search and map check the ways around a species' own
 // proteins (docs/ATLAS_LOOK.md): the trail's steps, its arrow and Escape one level back; the search in view, a gene
 // found inside a family not yet opened, on a phone from "Find"; the map of the stack (SPECIES names its species; thale
 // cress by default). colours holds the side colours as drawn and lit to the palette check, in both themes; gathering
 // reads what lies under the pointer at rest on each gathering and presses some; frame measures a frame's cost with
 // the largest catalogue's largest family open, wide and at a phone's width. accessory checks a species whose atlas lists proteins with a unit only as going with its machine (SPECIES
-// names it; the mouse by default): those families and members are drawn plain and their panels say so.
+// names it; the mouse by default): those families and members are drawn plain and their panels say so. twins checks a species whose
+// reviewed entries name the unreviewed entries of their gene that are not shown (SPECIES names it; the frog by default): the search
+// finds the reviewed entry by a twin, its panel lists the twin and the copy of its gene, and its sources say what they are read through.
 // MEMBERS=DIR serves the members' files from DIR (written there when missing), for a copy of the tree whose out/ is shared. stack checks any species with several shelves against its own file (SPECIES names it; thale
 // cress by default): a frame and a legend line for every shelf, a shelf in focus, the stack back. scan checks the planarian's members filed by
 // what its own scan added: each says so in its panel, with the databases behind it, and one filed by its own column reads as before.
@@ -1534,6 +1536,47 @@ try {
       check("a click on the form selects the protein, and the panel ties it to the machine", s.selected === spot.key && /Would make a unit of the law inventory/.test(s.panel?.chips || "") && /Drawn in the atlas as/.test(s.panel?.heads || ""), JSON.stringify([s.selected, s.panel?.chips, s.panel?.heads]));
     }
     await shot("small-with-units");
+  }
+
+  if (scenario === "twins") {
+    // A species whose shelves name, on a reviewed entry, the unreviewed entries of its gene that are not shown, and mark each
+    // protein with the copy of its gene (SPECIES names it; the frog by default, schema/SPECIES_PROTEINS.md): the search
+    // finds the reviewed entry by a twin's accession and says by which, a press opens its family with it chosen, its panel
+    // lists the twin and its copy, its sources name what stands behind the gene names with class and "read through", and a
+    // protein whose name is not written is found by its accession. Real presses and typing.
+    const id = process.env.SPECIES || "xenopus";
+    const file = JSON.parse(await readFile(new URL(`../data/proteins/${id}/shelves.json`, import.meta.url), "utf8"));
+    const table = (await readFile(new URL(`../data/proteins/${id}/proteins.tsv`, import.meta.url), "utf8")).trim().split("\n").map((line) => line.split("\t"));
+    const at_ = Object.fromEntries(table[0].map((name, index) => [name, index]));
+    const holder = table.slice(1).find((row) => row[at_.same_gene] && !row[at_.same_gene].includes(";") && row[at_.gene]);
+    const [twin, twinGene] = holder[at_.same_gene].split("|");
+    const twinSaid = twinGene ? `${twinGene} (${twin})` : twin;
+    const label = file.marks.same_gene.label;
+    await open(`lens=proteins&species=${id}&show=own`);
+    for (let tries = 0; tries < 480 && !(await evaluate(`Boolean(${L}.mounted)`)); tries++) await sleep(250);
+    await still();
+    await press("#atlas-find", 300);
+    let found = await typeIn(twin);
+    check(`the twin's accession ${twin} finds the reviewed entry ${holder[at_.id]} that stands for it, and the hit says by which`, (found[0] || "").startsWith("Proteins · ") && found[0].includes(`${holder[at_.gene]} · ${holder[at_.name]} (${label}: ${twinSaid}`), JSON.stringify(found));
+    await shot(`twins-${id}-search`);
+    await press(".atlas-results .atlas-hit", 600);
+    let s = await until((now) => now.selected === `own:${id}:p:${holder[at_.id]}` && Boolean(now.panel), 20000);
+    check("a press on it opens its family with the protein chosen", s.selected === `own:${id}:p:${holder[at_.id]}` && Boolean(s.opened), JSON.stringify([s.selected, s.opened]));
+    const copyLabel = file.marks.copy.label, chromosomeLabel = file.marks.chromosome.label;
+    check("its panel lists the twin as an unreviewed entry of its gene, not shown, and its copy and chromosome", (s.panel?.facts || "").includes(`${label}: ${twinSaid}`) && (s.panel?.facts || "").includes(`${copyLabel}: ${holder[at_.copy]}`) && (s.panel?.facts || "").includes(`${chromosomeLabel}: ${holder[at_.chromosome]}`), s.panel?.facts);
+    // The sources: a dependence read through UniProt shows its class and the words "Read through UniProt", as the tools do.
+    const sources = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel li")].map((li) => li.textContent.replace(/\\s+/g, " ")).filter((text) => /Read through/.test(text))`);
+    const named = file.sources.filter((source) => source.through && source.class !== "permissive").map((source) => source.name);
+    check("its sources list each dependence read through UniProt with its class", named.length > 0 && named.every((name) => sources.some((text) => text.includes(name) && text.includes("Read through UniProt") && /Non-commercial|No stated terms/.test(text))), JSON.stringify([named, sources.map((text) => text.slice(0, 60))]));
+    await shot(`twins-${id}-panel`);
+    // A protein with no gene name written (UniProt gives none, or a placeholder name left out) is found by its accession.
+    const nameless = table.slice(1).find((row) => !row[at_.gene] && row[at_.name]);
+    await evaluate(`${V}.select(null)`);
+    await clear();
+    await press("#atlas-find", 300);
+    found = await typeIn(nameless[at_.id]);
+    check(`a protein with no gene name written (${nameless[at_.id]}) is found by its accession`, (found[0] || "").startsWith("Proteins · ") && found[0].includes(nameless[at_.name]), JSON.stringify(found));
+    check("no result names a placeholder name", !found.some((text) => /\bXB\d{4,}/.test(text)), JSON.stringify(found));
   }
 
   if (scenario === "nofiles") {

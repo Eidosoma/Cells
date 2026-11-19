@@ -205,7 +205,10 @@ catalogue table, the same bytes every time.
   ignores what it does not know.
 - **Size.** A species' file stays under 1 MB. A catalogue too large for that, or for one
   marker each to be read, is never cut down: it is shown whole, as families that open
-  (below). Human is the last to be done.
+  (below). Human is the last to be done. A species may have bounds of its own, for this file
+  and for each file of its members, named with since when and why in the proteins' overlay
+  (`data/proteins/overlay.json`, `shelves.limits`); the builder and the tests hold it to them.
+  The frog's are there since 19 November 2026, and its members are cut 6,000 to a file.
 - **Terms and honesty** are as in `SPECIES_ATLAS.md`: every source with its terms, no
   machine path, nothing copied from a source that forbids it, and no word that the engine
   models a protein beyond `unit`.
@@ -262,7 +265,11 @@ its members, each a protein of the catalogue.
   side. A row's file and its place there follow from the order and the counts, and a name
   leads to its line by the same `file` and `at` the shelves give, so the
   page's search finds a protein whose family is not open. Like the members' files it is
-  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB).
+  generated and stays out of git (the human's is 1.32 MB, thale cress's 1.81 MB). A mark the
+  shelves declare with `search: true` (19 November 2026, the frog's `same_gene`) is one more
+  column of the names file for each such mark, after the four, holding the member's values of
+  it joined by ", "; the page's search finds a member by them too, and a hit found by them alone
+  says so, in the mark's label. A file that declares none is written as before.
 - **`by_basis`**, for each side how many proteins have it by each basis, is given by
   every catalogue in families: the page's words on how sides are known rest on it.
 
@@ -377,6 +384,11 @@ stacked in the page. Fixed on 15 November 2026, before the human data was made.
   that a rule system states in an unreviewed entry is `stated` with the evidence `rule`.
   The file gives, under `curated`, how many places rest on each kind of evidence, for
   reviewed and for unreviewed entries apart, so that the page can say how sure it is.
+  The frog (19 November 2026, `docs/XENOPUS.md`) shows that set less the unreviewed entries
+  of a gene that also has a reviewed entry in it: a gene is the entries tied by the NCBI gene
+  identifiers UniProt gives them, used while building only. The reviewed entry names those
+  it stands for in its mark `same_gene`, and every protein carries the copy of its gene
+  (`copy`) and its chromosomes (`chromosome`), read from UniProt's proteome component.
 - **A cell with two membranes of its own** (a bacterium with an inner and an outer
   membrane) has the shelves `inner`, `outer` and `membrane`, in that order. The cytoplasm
   is `inside` of `inner`; what is outside the cell is `outside` of `outer`. Of the space

@@ -738,8 +738,9 @@ export class MachinesLens {
         find: { label: "Find a machine", placeholder: "Find a machine or a gene", value: this.query },
         marks: groups.length > 1 ? { label: "Group", options: [["all", "All groups"], ...groups.map((group) => [group.id, group.label])], active: this.focusGroup || "all" } : null,
         modes: levels ? { label: "Detail", options: levels.map((level) => [String(level.id), level.label]), active: String(this.built?.get(chosen.id)?.level ?? this.level), oneRow: true } : null,
-        // While its bench is read, and where it cannot be, the card says so; else whether any machine has a size in hand.
-        notice: this.catalogue.benchState(this.species)?.status === "failed" ? this.catalogue.benchState(this.species).words : this.catalogue.raw.benches?.[this.species] && !this.catalogue.hasBench(this.species) ? `Reading the machines of ${label}…` : counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
+        // A species the catalogue holds no bench for (one with an atlas, shown for its units of the law inventory) says so first,
+        // by rule; while its bench is read, and where it cannot be, the card says so; else whether any machine has a size in hand.
+        notice: !this.catalogue.species.includes(this.species) ? `No bench of machines has been gathered for ${label} yet${counts.laws ? `: only the units of the law inventory that its atlas finds stand here${counts.sized ? "" : ", each a card"}` : ""}.` : this.catalogue.benchState(this.species)?.status === "failed" ? this.catalogue.benchState(this.species).words : this.catalogue.raw.benches?.[this.species] && !this.catalogue.hasBench(this.species) ? `Reading the machines of ${label}…` : counts.sized ? null : `No machine of ${label} has a size in hand: each is a card, not a shape.`,
         // A species whose dossier looks by family: how many machines its own records name, and how many are candidates by family.
         stats: counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
         own: () => this.cardNoneFound(),

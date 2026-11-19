@@ -974,13 +974,19 @@ export class Shelves {
     }
     for (const list of lines.values()) list.sort((a, b) => a.at[0] - b.at[0]);
     // Each row's file and its place there, from the files' order and counts.
+    // Columns after the four are marks the catalogue says the search finds a member by (its other entries' names).
+    const searched = file.columns.filter((name) => !["id", "gene", "label", "side"].includes(name));
     let index = 0, row = 0;
     this.names = file.names.map((line) => {
       while (row >= file.counts[index]) (index += 1), (row = 0);
-      return { id: line[at.id], gene: line[at.gene] || "", label: line[at.label] || "", side: line[at.side] || null, file: file.files[index], row: row++ };
+      const more = searched.map((mark) => [mark, String(line[at[mark]] || "")]).filter(([, value]) => value);
+      return { id: line[at.id], gene: line[at.gene] || "", label: line[at.label] || "", side: line[at.side] || null, file: file.files[index], row: row++, ...(more.length ? { more } : {}) };
     });
     this.namesLines = lines;
-    for (const name of this.names) name.text = `${name.gene} ${name.label} ${name.id}`.toLowerCase();
+    for (const name of this.names) {
+      name.own = `${name.gene} ${name.label} ${name.id}`.toLowerCase();
+      name.text = name.more ? `${name.own} ${name.more.map(([, value]) => value).join(" ")}`.toLowerCase() : name.own;
+    }
   }
 
   /** The line a named member stands on: the family, part or gathering of families of one whose members hold its row. */
@@ -1015,7 +1021,10 @@ export class Shelves {
       for (const name of this.names) {
         if (!name.text.includes(q)) continue;
         const line = this.lineOfName(name);
-        proteins.push({ rank: rank(name.gene, name.text), id: name.id, gene: name.gene, label: name.label || line?.label || name.id, line, side: name.side, shelf: line ? line.shelf ?? null : null, under: line ? (line.type === "l" ? "the only member of its family" : line.label) : "" });
+        // Found only by a mark the search reads (an entry of its gene that is not shown): the hit says by which, in the mark's own label.
+        const by = !name.own.includes(q) && name.more ? name.more.find(([, value]) => value.toLowerCase().includes(q)) : null;
+        const via = by ? { label: this.marks[by[0]]?.label || by[0], value: by[1] } : null;
+        proteins.push({ rank: rank(name.gene, name.text) + (via ? 1 : 0), id: name.id, gene: name.gene, label: name.label || line?.label || name.id, line, side: name.side, shelf: line ? line.shelf ?? null : null, under: line ? (line.type === "l" ? "the only member of its family" : line.label) : "", ...(via ? { via } : {}) });
       }
     }
     proteins.sort((a, b) => a.rank - b.rank || (a.gene || a.label).localeCompare(b.gene || b.label));

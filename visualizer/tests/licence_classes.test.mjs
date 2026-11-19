@@ -47,7 +47,8 @@ const SECTION = "## What rests on non-commercial or unlicensed sources";
 // A program given out under an academic licence, or for academic users only, is of the same
 // class: its terms do not allow a commercial project to run it. A tool whose terms could not
 // be read is held as one that states none.
-const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b/;
+// Data given out for research and education only are of the same class: Xenbase's terms, read on 19 November 2026.
+const NON_COMMERCIAL = /CC BY-NC|^Academic licence\b|^For academic users only\b|^For research and education only\b/;
 const NO_TERMS = /^(No open licence stated|no licence stated|no open licence|Terms not read\b)/;
 const PERMISSIVE = /^CC BY\b(?!-NC)|^CC0\b|[Nn]o restrictions?\b|places no restriction|[Ii]mposes no restrictions|no use restrictions|^Public domain|BSD 3-Clause|^Bibliographic facts only/;
 function classOf(licence) {
@@ -57,7 +58,7 @@ function classOf(licence) {
 }
 
 // Which note speaks for which record: by the species or the subject the record is of.
-const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md", mouse: "docs/MOUSE.md" };
+const NOTES = { syn3a: "docs/SYN3A.md", mpneumoniae: "docs/MPNEUMONIAE.md", planarian: "docs/PLANARIAN_ATLAS.md", planarian_bioelectric: "docs/PLANARIAN_BIOELECTRIC_EVIDENCE.md", human: "docs/HUMAN_PROTEOME.md", ecoli: "docs/ECOLI.md", fruitfly: "docs/FRUITFLY.md", thalecress: "docs/THALECRESS.md", mouse: "docs/MOUSE.md", xenopus: "docs/XENOPUS.md" };
 // The register of the dependences that the user's ruling covers, by species: a tool or a
 // rule system that is not permissive, whose results a permissive database gives out and a
 // record rests on. The user ruled on 15 November 2026 that such a value stands on the
@@ -85,6 +86,10 @@ const NAMED = {
   thalecress: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
   // The mouse's line, added with its data on 16 November 2026: the same eight tools, none new.
   mouse: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", "big-PI": "UniProt" },
+  // The frog's line, added with its data on 19 November 2026: seven of the mouse's tools (no frog place rests on big-PI), and
+  // Xenbase, whose nomenclature UniProt's entries name as the source of the frog's gene names. It was decided on 19 November
+  // 2026 that the names are used as read from UniProt, with Xenbase named behind them, and that nothing else of Xenbase is used.
+  xenopus: { PROSITE: "UniProt", TMHMM: "UniProt", Phobius: "UniProt", SignalP: "UniProt", TargetP: "UniProt", Memsat: "UniProt", Predotar: "UniProt", Xenbase: "UniProt" },
 };
 // The register of the sources of no stated terms that a record may still rest on, each by a decision of its own: by
 // species, and by the source's key in the species' scan record (data/proteins/<species>/interproscan.json). It was decided

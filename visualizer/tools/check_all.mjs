@@ -161,6 +161,9 @@ const SUITE = [
   { name: "shelves-stack-thalecress", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "thalecress" }, minutes: 1 },
   { name: "shelves-stack-mouse", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "mouse" }, minutes: 1 },
   { name: "shelves-accessory-mouse", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "mouse" }, minutes: 1 },
+  // The frog (19 November 2026): its stack of six shelves, and a reviewed entry found by the twin of its gene that is not shown.
+  { name: "shelves-stack-xenopus", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "xenopus" }, minutes: 1 },
+  { name: "shelves-twins", tool: "check_shelves.mjs", args: ["twins"], env: { SPECIES: "xenopus" }, minutes: 2 },
   { name: "shelves-trail", tool: "check_shelves.mjs", args: ["trail"], minutes: 2 },
   { name: "shelves-search", tool: "check_shelves.mjs", args: ["search"], minutes: 2 },
   { name: "shelves-map", tool: "check_shelves.mjs", args: ["map"], env: { SPECIES: "thalecress" }, minutes: 1 },

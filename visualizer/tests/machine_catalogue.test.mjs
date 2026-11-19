@@ -414,6 +414,18 @@ test("the ATP synthase stands as its measured parts, ring below head, and shows 
   assert.match(lens.describe("machine:atp-synthase:peripheral-stalk").facts.find(([label]) => label === "Drawn as")[1], /^Its 3 chains' ellipsoids/);
 });
 
+test("a species the catalogue holds no bench for says so, by rule: its units of the law inventory stand alone", () => {
+  // A catalogue made here without the mouse's bench: the mouse, which has an atlas, is shown for its units and the card says why.
+  const without = { ...raw, benches: Object.fromEntries(Object.entries(raw.benches).filter(([id]) => id !== "mouse")), entries: raw.entries.filter((entry) => entry.species !== "mouse") };
+  const { lens } = lensFor("mouse", { raw: { ...scene, catalogue: without } });
+  // Its units are cards where the catalogue gives them no size (the mouse's have sizes; the frog's, today, none).
+  assert.equal(lens.chrome().card.notice, `No bench of machines has been gathered for Mouse yet: only the units of the law inventory that its atlas finds stand here${lens.counts.sized ? "" : ", each a card"}.`);
+  assert.ok(lens.catalogue.of("mouse").every((item) => item.unit), "nothing but its units");
+  // A species with its bench says nothing of it; and in the scene as built, every species with an atlas and no bench says the same.
+  assert.doesNotMatch(lensFor("mouse").lens.chrome().card.notice || "", /No bench/);
+  for (const atlas of (scene.proteins.atlases || []).filter((item) => !item.reference && !catalogue.species.includes(item.id))) assert.match(lensFor(atlas.id).lens.chrome().card.notice, /^No bench of machines has been gathered for .+ yet/, atlas.id);
+});
+
 test("the legend names every mark that is drawn, and the card says what is and is not in hand", () => {
   const { lens } = lensFor("thalecress", { raw: bareScene });
   const chrome = lens.chrome();
