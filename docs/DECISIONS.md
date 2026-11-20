@@ -8024,3 +8024,27 @@ approval.
 3. **FR-21's site binding** is admitted only for a declared site species and a declared complex
    species, never by stoichiometry alone. OL5's registered refusal worlds therefore stay refused.
    OL5's reference parser needs its own amendment before an FR-21 world is registered.
+
+## D247: Breaks both induced and spontaneous; the blocked timing measurement may run; the fuel note is merged
+
+2026-11-20, about 19:58 UTC. The lead asked two questions. The user: "both - yes the agent can run
+the timing measurments".
+
+1. **How OL9 tests break and renew: both ways.**
+   - The fuel note's desk probe found that a vesicle of real size never switches composition on its
+     own. The mean switching time grows exponentially with the amphiphile count.
+   - **So at realistic sizes, breaks are induced,** for example by a pulse of the other amphiphile
+     through FR-20's pool replacement, and the lineage is then followed for renewal.
+   - **In small vesicles of a few tens of amphiphiles, breaks are spontaneous,** as a comparison
+     with GARD's regime.
+2. **The blocked timing measurement may run.** It is the second origin-of-life builder's tier
+   measurement on the timed lane, which a guard refused as "[Unauthorized Access]". If the guard
+   refuses it again, the agent stops and reports. It never routes around a refusal.
+3. **The fuel note** ([ORIGIN_OF_LIFE_FUEL_DESIGN.md](ORIGIN_OF_LIFE_FUEL_DESIGN.md)) is merged with
+   the lead's rulings written into it:
+   - (d)'s dividing null;
+   - D245's fuel line covering (d0) and held-block worlds;
+   - the generational reading's name;
+   - this U5 answer.
+
+   OL5's fuel references are written from the note at tag `ol4-fuel-note-2026-11-20` alone.
