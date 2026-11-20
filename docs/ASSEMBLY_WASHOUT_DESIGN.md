@@ -128,10 +128,17 @@ in place order.
   - **at the stop,** a lysis whose event committed at the replacement's own time. An event exactly
     at a stop's time commits before the stop.
 
-**Q3 as built** is broader than its approved words, "a held tracer concentration is refused". The
-engine cannot tell which species is the tracer, so a replacement refuses every held pool species
-that also has a membrane or lumen place, a held lipid supply included. Such a world declares the
-species finite, with its count in `pool`.
+**Q3 as built: a declared version-1 limit** (the lead's ruling of 20 November, D244). It is broader
+than its approved words, "a held tracer concentration is refused". A replacement refuses every held
+pool species that also has a membrane or lumen place, a held lipid supply included.
+- **Why.** A replacement replaces the exterior. A held species that the assemblies take up would
+  keep its exterior concentration through every replacement while the assemblies go on exchanging
+  with it, so the wash would be silently partial, which the rule above forbids for finite species.
+  The engine cannot tell a tracer from any other such species, so version 1 refuses them all.
+- **The books** would close either way, since a held place is a reservoir. The reason is physical,
+  not bookkeeping.
+- **What a world does instead:** it declares such a species finite, with its count in `pool`. The
+  same count as before keeps it unchanged through the wash.
 
 **Non-claims and status:**
 - tracer captured on an exposed-site control is not claimed until FR-21;
