@@ -1,5 +1,33 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Size-triggered fission and daughter continuation
+
+<a id="size-threshold-fission"></a>
+
+**Partition at the size threshold.** In `cells.assembly_lineages@1`, each growth event moves one molecule and a split assigns each occupied place to one daughter. Lean proves that such a history stays within the threshold and that each species balances across the two daughters. With an exact quota of `k`, precisely the first `k` occupied ranks go to the first daughter. With independent assignment probability `p`, a named daughter receives none of `r` marked molecules with probability `(1 − p)ʳ`. At fixed `r`, its mean marked count is `rp` and its variance is `rp(1 − p)`. [Threshold and count proofs](CellsProofs/Chemistry/LineageFission.lean#L23) · [Independent assignment proofs](CellsProofs/Chemistry/LineageFission.lean#L78) · [Engine partition](../src/cells/models/assembly_lineages/fission.py#L120)
+
+For a four-molecule parent with two marked molecules, a fixed half split leaves the first daughter without a marker in **4 of 24** possible rank orders. Independent fair assignment gives **4 of 16** possible assignments. The compiled partition matched each case, including the engine’s rules for padding, tied ranks and draws exactly at the probability boundary. The quota uses the floored float64 product. At size ten, `0.3` gives three molecules and its immediate float64 predecessor gives two. [Exhaustive controls](checks/lineage_fission.py#L28)
+
+**Measured bead partition.** Fornell et al. counted 10 µm polystyrene beads after water droplets split into three approximately equal-volume daughters with ultrasound off. We used the 180 plotted splits and compared the center against both sides pooled. The nominal volumes give `p = 1/3` without fitting to the counts. In the three bins below the engine’s enumerated assignment variances equal the Lean formula. The measurements show variation at fixed total count. The small bins and possible volume and flow differences leave the independent-assignment assumption open. [Fornell et al., Fig. 2c](https://doi.org/10.1063/1.4984131) · [Figure readings and extraction method](checks/data/fornell2017_partition.json) · [Variance calculation](checks/lineage_fission.py#L83)
+
+| Reconstructed total beads | Plotted splits | Measured center variance (beads²) | Independent assignment (beads²) |
+| ---: | ---: | ---: | ---: |
+| 7 | 7 | 0.95 | 1.56 |
+| 9 | 12 | 2.18 | 2.00 |
+| 12 | 7 | 4.48 | 2.67 |
+
+Across the observed totals of 7–60 beads, the model expects 1.33 empty centers. Under independent splits the probability of seeing none is 0.258. The figure shows none. A bead-free droplet still contains liquid, and the two pooled sides hide any individual empty side. This assay does not measure lineage extinction or a decision to follow a sibling. [Primary figure, printed page 031101-3](https://uu.diva-portal.org/smash/get/diva2:1109652/FULLTEXT01.pdf#page=4) · [Denominators and readings](checks/data/fornell2017_partition.json)
+
+<a id="lineage-daughter-continuation"></a>
+
+**Empty daughters and immediate division.** For a positive parent, switching an empty initial pick to its sibling always retains a nonempty daughter. This changes the sampled lineage. Across all 16 fair assignments of four molecules and both initial picks, retaining the original pick averaged **2.00** molecules at birth and gave two empty picks out of 32. Switching to the sibling averaged **2.25** molecules and gave zero empty picks. Lean proves the mean difference for each realized partition. [Selection proof](CellsProofs/Chemistry/LineageFission.lean#L125) · [Engine selection](../src/cells/models/assembly_lineages/continuation.py#L98)
+
+The same edge case occurs with a fixed fraction. At threshold four and fraction one eighth, the first daughter always has zero molecules. Selecting that daughter under `extinct` ended the lineage on its first split. Switching to the full sibling or selecting it from the start gave six fissions at one timestamp, reaching the declared limit with five immediate re-splits and no intervening chemistry. Recording every descendant through four generations gave four empty births and four full births at one timestamp, even when the initially selected branch ended. A separate binomial lineage had six immediate re-splits in twelve divisions. Across the six CPU worlds on engine `ea073ff872ec64b34346fb01fdc40bb38c8f2861`, the largest ledger residual was 3.55 × 10⁻¹⁵ k_BT. The four engine test files and eight repository guards passed 111 tests. [Single-lineage replay](checks/lineage_fission.py#L164) · [Every-descendant check](checks/lineage_fission.py#L251)
+
+<a id="lineage-fission-sink-sign"></a>
+
+**Documentation finding for the assembly owner.** Line 38 of the version-1 ledger docstring gives the sink the wrong sign. With split work `W = Φ(parent) − Φ(kept) − Φ(sibling)` and outgoing free energy `S = −Φ(sibling)`, the followed daughter’s log-weight change is **−W + S**. In the one-species control at unit activity, four molecules split two and two. The exact work is zero and both the sink and the log-weight change are **+ln 2**. The compiled booking and the closure equation on line 34 both agree with Lean. Only the derivation on line 38 needs correcting. [Ledger derivation](../src/cells/models/assembly_lineages/ledger.py#L38) · [Sign proof](CellsProofs/Chemistry/LineageFission.lean#L148) · [Reproducer](checks/lineage_fission.py#L279)
+
 ## 20 November 2026 · Serial transfer and shear fission
 
 <a id="vesicle-serial-transfer"></a>

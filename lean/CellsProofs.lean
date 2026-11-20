@@ -3,6 +3,7 @@ import CellsProofs.Chemistry.AssemblyKinetics
 import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
+import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
