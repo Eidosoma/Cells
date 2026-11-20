@@ -597,7 +597,12 @@ class FreeEnergyEntry(NamedTuple):
     it, or None where none did (an operator's reaction, say). A law that cites dG° in kJ/mol (Beard
     2005's tables, say) gives it so, since no temperature is written into a law: the species
     registry converts it to dG°/RT at the world's declared temperature, the one conversion (D234's
-    option (b)), and compares each entry with its own sum of nu mu°/RT. The binding owner's check
+    option (b)), and compares each entry with its own sum of nu mu°/RT. `dG_RT_offset`, beside
+    dG_kJ_mol alone (0 by default), is a temperature-free term in RT units that the conversion adds:
+    dG°/RT = 1000 dG_kJ_mol / (R T) + dG_RT_offset. A value cited at pH 7 puts nu_H ln 10^7 there,
+    and, for a total, nu ln P(10^-7 M), so the temperature-scaled and temperature-free parts split
+    as the species registry's named sets split them; the basis refers to the kJ part (the lead's
+    ruling with the binding owner, 20 November 2026). The binding owner's check
     computes each entry's band from the law's form, never from the entry, so no band is
     self-certified. free_energy_entries checks it. Every field after the stoichiometry has a
     default, so either form is written by keyword; today's (stoichiometry, dG_RT, c0) positions
@@ -610,6 +615,7 @@ class FreeEnergyEntry(NamedTuple):
     mode: str | None = None
     dG_kJ_mol: float | None = None
     dG_basis: str | None = None
+    dG_RT_offset: float = 0.0
 
 
 def _named(value):
@@ -624,13 +630,13 @@ def free_energy_entries(entries, hosted, where):
     """The checked entries of a standard_free_energies hook, a kind's or an operator's (`where`
     names it in each refusal): a tuple of FreeEnergyEntry, each with a stoichiometry of distinct
     named species with signed nonzero coefficients, dG° in exactly one form (dG°/RT finite, or
-    dG° in kJ/mol finite with a basis from DG_BASES, and no basis beside dG°/RT), c0 finite and
-    positive, and law_id and mode set together or neither. A set law_id is one of `hosted`
-    ({qualified ID: cycle law}; none for an operator, which hosts no law), a law with a general
-    form, and its mode one of that form's modes (the mode column of its
-    registry/laws.cycle_changes): a version-1 law has neither. Every kind declares
-    FreeEnergyEntry since the kinds owner's follow-up 2 (4e6ca60e), so a bare (stoichiometry,
-    dG°/RT, c0) tuple is refused like any other non-entry."""
+    dG° in kJ/mol finite with a basis from DG_BASES, and neither a basis nor a nonzero
+    dG_RT_offset beside dG°/RT), a finite dG_RT_offset, c0 finite and positive, and law_id and
+    mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle law}; none
+    for an operator, which hosts no law), a law with a general form, and its mode one of that
+    form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has neither.
+    Every kind declares FreeEnergyEntry since the kinds owner's follow-up 2 (4e6ca60e), so a bare
+    (stoichiometry, dG°/RT, c0) tuple is refused like any other non-entry."""
     from cells.registry import laws as law_registry  # registry/laws imports this module.
 
     if not isinstance(entries, tuple):
@@ -659,12 +665,18 @@ def free_energy_entries(entries, hosted, where):
             )
         if (entry.dG_RT is None) == (entry.dG_kJ_mol is None):
             raise ValueError(f"{at}: it gives its dG° in exactly one form, dG_RT or dG_kJ_mol")
+        if not _finite(entry.dG_RT_offset):
+            raise ValueError(f"{at}: its dG_RT_offset is finite, in RT units")
         if entry.dG_kJ_mol is None:
             if not _finite(entry.dG_RT):
                 raise ValueError(f"{at}: its dG°/RT is finite")
             if entry.dG_basis is not None:
                 raise ValueError(
                     f"{at}: its dG_basis qualifies a dG_kJ_mol, which it does not give"
+                )
+            if entry.dG_RT_offset != 0:
+                raise ValueError(
+                    f"{at}: its dG_RT_offset belongs beside a dG_kJ_mol, which it does not give"
                 )
         else:
             if not _finite(entry.dG_kJ_mol):
