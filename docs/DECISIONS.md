@@ -8303,3 +8303,31 @@ focus on core and fr tonight while I sleep".
      and is the user's call, since D241 set voltage.
    - **Get the missing measurement:** each line's barium-induced voltage shift, or mock-cell voltage
      and resistance in Ambrosini's solutions, with Fig. 3F's configuration.
+
+## D257: The Kir2.1 variant panel cannot test abundance against current; item 4 still waits for the user
+
+2026-11-20, about 22:43 UTC. The user found a Kir2.1 variant study (Ross et al., J Biol Chem 2025,
+doi:10.1016/j.jbc.2025.110985, CC BY 4.0) and downloaded its supplementary tables. It was offered
+with the advice to keep surface abundance and channel activity as separate measurements. The FR-7
+lane extracted Tables S1, S2 and S6, which are merged as bare cited values in validation/fr7/data/.
+
+- **What the panel holds:**
+  - surface expression with the variant co-expressed with wild type, for 70 variants;
+  - surface with the variant alone, for 10;
+  - yeast growth for 20;
+  - barium-subtracted current density at −50 and −100 mV in HEK293 cells expressing one variant
+    each, for 13.
+- **Why it can't test current against abundance:**
+  - Only one variant (D71Y) has its surface level and its current measured in the same channel
+    make-up.
+  - Ten of the 13 current lines are null.
+  - Every value has been seen, so any test would be retrospective.
+  - "Abundance alone" has one parameter, fixed by wild type, so a held-out split has nothing to fit.
+  - The two-voltage scale check has no detectable power.
+  - The panel holds no K346T and no membrane voltage.
+- **What it does show** is why abundance and per-channel activity must stay separate quantities,
+  which the FR-7 design keeps.
+- **What would make a test:** surface abundance measured in the same single-variant lines that were
+  patch-clamped (Table S4's totals, if from single-variant lines, measure total protein only).
+- **Item 4's options are unchanged** (D256): close it as unmet, change the endpoint, or get the
+  measurement. The user decides.
