@@ -47,8 +47,9 @@ with a planted error it must catch (D187):
   empty stoichiometry, a non-finite energy, a zero, a negative and a missing c0, a law without
   its mode, a mode without its law, a law another kind hosts, an unregistered law, a version-1
   law, a mode the form lacks, both forms, neither, a kJ/mol value without its basis, an unknown
-  basis, a non-finite and a bool kJ/mol value, a basis beside dG°/RT, and a hook that is not a
-  callable, refused at registration);
+  basis, a non-finite and a bool kJ/mol value, a basis beside dG°/RT, an offset beside dG°/RT,
+  a NaN and a bool offset, and a hook that is not a callable, refused at registration); an entry
+  with a temperature-free offset in RT units beside its kJ/mol value (a pH 7 value's) reads;
 - a kind's role_species is None by default, not refused by its reader, and where set gives one
   EntityBinding per entity: a cycle law the kind hosts, exactly that law's roles bound to species
   IDs (a version-1 law's moves and a general form's "role@end" rows read as their roles), a node
@@ -357,11 +358,19 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
         mode="coupled",
     )
     assert cited.dG_RT is None and kind_registry.DG_BASES == ("temperature_independent",)
+    assert plain.dG_RT_offset == cited.dG_RT_offset == 0  # Temperature-free part: none by default.
+    # A value cited at pH 7: its temperature-free part, here nu_H ln 10^7, beside the kJ part.
+    at_ph7 = cited._replace(dG_RT_offset=math.log(1e7))
     assert kind_registry.kind_standard_free_energies(planted(), ()) == ()
-    kind = planted(standard_free_energies=lambda declaration: (plain, coupled, cited))
+    kind = planted(standard_free_energies=lambda declaration: (plain, coupled, cited, at_ph7))
     assert kind_registry.declaration_errors(kind) == []
     with law_registry.scope(law_registry.BUILTIN.extended(formed, version_1, elsewhere)):
-        assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled, cited)
+        assert kind_registry.kind_standard_free_energies(kind, ()) == (
+            plain,
+            coupled,
+            cited,
+            at_ph7,
+        )
         plants = (  # Each refused when read, naming the entry.
             ([plain], "returns a tuple of FreeEnergyEntry"),
             (((hydrolysis, -12.3, 1000.0),), "returns a tuple of FreeEnergyEntry"),  # Bare.
@@ -392,6 +401,10 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
                 "qualifies a dG_kJ",
             ),
             ((cited._replace(c0=None),), "its c0 is finite and positive"),
+            # The temperature-free offset: beside dG_kJ_mol alone, finite, not a bool.
+            ((plain._replace(dG_RT_offset=1.0),), "its dG_RT_offset belongs beside a dG_kJ_mol"),
+            ((cited._replace(dG_RT_offset=math.nan),), "its dG_RT_offset is finite"),
+            ((cited._replace(dG_RT_offset=True),), "its dG_RT_offset is finite"),
         )
         for declared, words in plants:
             planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
