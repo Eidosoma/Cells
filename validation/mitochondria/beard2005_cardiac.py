@@ -30,6 +30,16 @@ Reading notes (each checked at the typeset image, not a text layer):
   printed coefficients are the ones that agree with the reactions.
 - Table 1 describes V_i as a fraction "per total cell volume"; with footnote f (matrix 90%, IMS 10%
   of the water) and V_x = 0.6435 it reads as per total mitochondrial volume.
+- K_AK (Eqs. 17 and 18, IMS only) is on totals: the source's unprefixed [ATP]_i, [ADP]_i and
+  [AMP]_i are totals (its f and m prefixes mark the Mg-free and Mg-bound parts; Eq. 22 moves the
+  totals by J_AKi), and AMP binds nothing in the source. It is the equilibrium constant of the
+  direction written, 2 ADP -> ATP + AMP: J_AKi = X_AK (K_AK [ADP]_i^2 - [AMP]_i [ATP]_i) > 0 makes
+  ATP and AMP (Eq. 22: ATP_i +1, ADP_i -2, AMP_i +1 per J_AKi), so K_AK = [ATP][AMP]/[ADP]^2 at
+  equilibrium; dimensionless, so free of any standard state. Table 1 footnote c: computed from
+  Alberty 2003's tables, at conditions the source does not print. In base forms (ATP4-, ADP3-,
+  AMP2-; no proton in the reaction) under the source's binding set it is K_AK (1 + [Mg]_i/K_MgADP)^2
+  / (1 + [Mg]_i/K_MgATP), which depends on the free Mg2+ it is matched at: 0.153 at 1 mM, 0.389 at
+  3.81 mM (a 5 mM Mg, 1.3 mM ADP buffer), 0.491 at 5 mM. That match is a declared choice.
 - No temperature, gas constant or Faraday constant is printed. DECLARED below holds ours. The
   temperature is 298.15 K by the lead's ruling of 20 November 2026 (isolated-organelle worlds):
   the code-blind whole-organelle reference (MR1) reproduces the source's published curves at
