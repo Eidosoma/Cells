@@ -16,7 +16,9 @@ import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CellReplacement
 import CellsProofs.Tissue.CurrentInjection
+import CellsProofs.Tissue.DivisionBridge
 import CellsProofs.Tissue.MembraneInsertion
+import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Tissue.RestrictedLumen
 import CellsProofs.Transport.ATPCycle
