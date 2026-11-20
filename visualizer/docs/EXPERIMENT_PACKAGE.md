@@ -1,15 +1,17 @@
 # The experiment package: one way in for every experiment the viewer plays
 
-Status: **decided by the owner on 19 November 2026; round one is built (section 5, "What is built").** The owner asked whether
-the Experiments tab has a standard package format, with future use in mind, then for a draft
-with options, and accepted the recommendations of section 4 the same evening: both levels, the
-words in the package, schema files with a validator and a conformance set, a required visibility
-and licence, the arrays as they are, the three older experiments left as derived, and the
-specification kept by the engine's lead. Sections 1 and 2 describe what exists, read from the
-files. Section 3 is what was accepted; its names stay proposals until the engine's lead has read
-them, since the source level is the engine's to write. Building is in two rounds on the viewer's
-side (section 5): the manifest's contract and the validator, then the play package. The engine's
-side of it (the run view and its writer) is the engine's lead's; this note changes nothing there.
+Status: **decided by the owner on 19 November 2026; round one is built (section 5, "What is
+built"), and its names were settled by the engine's lead on 20 November 2026 (section 6).** The
+owner asked whether the Experiments tab has a standard package format, with future use in mind,
+then for a draft with options, and accepted the recommendations of section 4 the same evening:
+both levels, the words in the package, schema files with a validator and a conformance set, a
+required visibility and licence, the arrays as they are, the three older experiments left as
+derived, and the specification kept by the engine's lead. Sections 1 and 2 describe what existed
+when the note was written, read from the files. Section 3 is what was accepted, shown with the
+names the engine's lead settled, since the source level is the engine's to write. Building is in
+two rounds on the viewer's side (section 5): the manifest's contract and the validator, then the
+play package. The engine's side of it (the run view and its writer) is the engine's lead's; this
+note changes nothing there.
 
 ## 1. What exists today
 
@@ -182,8 +184,11 @@ The last column is what the owner accepted on 19 November 2026.
   reading a manifest where a folder has one (and going on reading folders that have none), and
   the staging tools' refusal of private or unlicensed packages. About two days of an agent's
   work, in two rounds: the manifest and validator first, the play package second.
-- **The engine's side** (the lead's): one shared writer for the manifest, in place of each
-  driver's `index.json` and `run.json`; the run view's note moved from proposed to accepted.
+- **The engine's side** (the lead's): as proposed here, one shared writer for the manifest, in
+  place of each driver's `index.json` and `run.json`, and the run view's note moved from proposed
+  to accepted. The lead settled the first otherwise on 20 November 2026 (section 6): a tool beside
+  the run view's writer writes the manifest, `run.json` stays as the run's own record, and a
+  driver's `index.json` is written with relative paths until that driver takes up the manifest.
 - **Not proposed here:** a database, an API for packages, a binary container, runs on request,
   or any change to a frozen evidence folder.
 

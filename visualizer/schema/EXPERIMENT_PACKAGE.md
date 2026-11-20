@@ -135,9 +135,11 @@ A made-up example:
   wrote one) stays where it is, and is what the manifest points at. `engine` copies three things and no more: the
   revision, the snapshot, and whether the tree was clean. Where `engine` is given, a view that states otherwise is
   refused (`run.source.revision`, `run.source.dirty`), and so is a `run.json` that does (`revision`, `snapshot`,
-  `clean`). A `run.json` is not required. Its key for a clean tree is `clean`; one written before the manifest may
-  say `snapshot_clean`, and is read as the same. The engine models a package runs are each view's own statement
-  (`run.engine_models`), which the manifest does not copy.
+  `clean`). A `run.json` is not required; one that is there and cannot be read (not JSON, or over the cap) is a
+  problem, since the manifest's copies cannot be held to it. Its key for a clean tree is `clean`; one written before
+  the manifest may say `snapshot_clean`, and is read as the same. Of a `run.json` a reader reads these and its
+  `sidecars`, and nothing else: its format is its driver's own. The engine models a package runs are each view's own
+  statement (`run.engine_models`), which the manifest does not copy.
 - **Versions.** Within a major, a reader ignores a field it does not know (the validator names it in a note). A change
   that an older reader would misread is a new major (`cells.experiment_package@2`), which a reader of @1 refuses.
 
