@@ -14,9 +14,9 @@
 | Near carrier stall | 64 over 10 ms | 0.0002123253952 / 0.0002123253953 | 0.00007233328 / 0.00007235229 |
 | Water alone | 32 over 200 ms | −0.006870671 / −0.006870672 | 0 / 0 |
 
-All five accepted runs preserved the two ion inventories and charge to the reported global precision. The largest global water residual was 2.17 × 10⁻¹⁹ pL. A separate water-only input gave dt × water rate = 0.0870 and was refused against the 0.05 limit. The coupled check took 32 s on four CPU cores. The 56 existing water component and integration tests and 82 repository guard tests passed. Before and after test discovery recorded identical sets of 20,555 test IDs and the same five collection errors from unavailable archived run inputs. [Water component tests](../tests/unit/test_osmotic_water.py) · [Held-bath osmometer and ledger tests](../tests/unit/test_surface_pump_water.py#L199)
+All five accepted runs preserved the two ion inventories and charge to the reported global precision. The largest global water residual was 2.17 × 10⁻¹⁹ pL. A separate water-only input gave dt × water rate = 0.0870 and was refused against the 0.05 limit. The coupled check took 32 s on four CPU cores. The 56 water tests, 10 cotransport tests and 82 repository guard tests passed. Before and after test discovery recorded identical sets of 20,555 test IDs and the same five collection errors from unavailable archived run inputs. [Water component tests](../tests/unit/test_osmotic_water.py) · [Held-bath osmometer and ledger tests](../tests/unit/test_surface_pump_water.py#L199)
 
-**Biological measurements from Search.** These are retrospective comparisons. Each preparation has its own calibration. The two equilibrium studies probe the water potential, while a pressure clamp probes the initial flow. [Reproduce the comparisons](checks/osmometry.py)
+**Biological measurements from Search.** These are retrospective comparisons. Each row below uses its own calibration. The two equilibrium studies probe the water potential, while a pressure clamp probes the initial flow. [Reproduce the comparisons](checks/osmometry.py)
 
 | Preparation and calibration | Measurement held out from calibration | Cells prediction |
 | --- | --- | --- |
@@ -25,7 +25,11 @@ All five accepted runs preserved the two ion inventories and charge to the repor
 | Intact human red cells, 33 fL inactive volume and a separate 333 mOsm/L calibration. | 111.5 ± 1.2 fL at 184 mOsm/L (SD) | 122.58 fL. The zero-stiffness ideal-water model overpredicted swelling here by 11.08 fL. [Kwant and Seeman, Table I](https://doi.org/10.1085/jgp.55.2.208) |
 | One *Chara* internode, 23 ± 2 °C. A −0.370 bar step and +5.1 nL/s inward flow set the conductance. | −5.3 nL/s inward after a +0.350 bar step | −4.82 nL/s. The second baseline was 0.060 bar lower. The individual slope uncertainties are unavailable. [Wendler and Zimmermann, Fig. 2A](https://doi.org/10.1104/pp.69.5.998) · [Inputs](checks/data/wendler1982_pressure.json) |
 
-The vesicle fit applies to small strains over this concentration interval. The intact-cell volume discrepancy leaves room for mechanics, nonideal solutes and uncertainty in inactive volume. Simultaneous water and K–anion measurements in one preparation would test their coupling.
+The vesicle fit applies to small strains over this concentration interval. The intact-cell volume discrepancy leaves room for mechanics, nonideal solutes and uncertainty in inactive volume.
+
+**Paired water and solute measurements.** Search also identified trout red cells with measured water, K, Cl, Na and taurine content from the initial swelling to 60 min in a 215 mOsm/kg bath. Dividing the reported change in total osmoles by the bath osmolality reproduces the authors' conditional ideal-water calculation. The sodium bath gives −0.375 g water per g dry cell solids, against −0.37 ± 0.02 measured (21 experiments, SEM). Replacing external sodium with potassium gives +0.078 against +0.06 ± 0.02 (three experiments). The printed sodium-bath species means sum to −81.07 µmol/g and the table's reported total is −80.69 µmol/g. Either gives −0.38 g/g to the paper's precision. The ion and taurine measurements constrain the total osmolyte change. Isolating K–anion cotransporter kinetics requires a pathway-specific measurement. [Guizouarn et al., Fig. 1 and Table 1](https://doi.org/10.1111/j.1469-7793.2000.t01-1-00147.x) · [Measured inputs](checks/data/guizouarn2000_water_solutes.json) · [Calculation](checks/osmometry.py)
+
+For a time-course comparison, a separate trout study measured water, K, Na and Cl at matched times through 90 min. It inferred taurine from the osmotic balance. Its ion and water traces can therefore test the timing of a future model fit, while the earlier study supplies an independently assayed taurine endpoint. [Maxime, Fig. 1 and Table 1](https://doi.org/10.33594/000000440)
 
 ## 19 November 2026 · Potassium and anion cotransport
 

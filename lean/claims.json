@@ -257,6 +257,50 @@
       "driver": "lean/checks/potassium_anion_symport.py",
       "record": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
     },
+    "osmotic-water": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "ideal_osmosis_linear_compliance_water@1",
+        "k_anion_symport_mass_action@1"
+      ],
+      "engine_revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+      "record_revision": "ec0c89db3342a07a8b4cfc4f48bd598b0bb77743",
+      "sources": {
+        "Water potential, flow and heat": "src/cells/numerics/osmotic_water.py#L193",
+        "Start-of-half-step rate bound": "src/cells/operators/osmotic_water.py#L148",
+        "Heun predictor and corrector": "src/cells/operators/osmotic_water.py#L211",
+        "Finite and held-bath water ledgers": "src/cells/operators/osmotic_water.py#L255",
+        "Independent held-bath trajectory": "tests/unit/test_surface_pump_water.py#L214",
+        "Cotransporter step bound": "src/cells/operators/k_anion_symport.py#L173"
+      },
+      "driver": "lean/checks/osmotic_water.py",
+      "record": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+    },
+    "potassium-anion-symport-retest": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "k_anion_symport_mass_action@1"
+      ],
+      "engine_revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+      "record_revision": "ec0c89db3342a07a8b4cfc4f48bd598b0bb77743",
+      "sources": {
+        "Finite outside and shared-node step bound": "src/cells/operators/k_anion_symport.py#L173",
+        "Step admission": "src/cells/operators/k_anion_symport.py#L286",
+        "Concentration-product affinity": "src/cells/laws/routes/k_anion_symport.py#L66"
+      },
+      "driver": "lean/checks/potassium_anion_symport.py",
+      "record": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+    },
     "regional-chain": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
@@ -1166,8 +1210,8 @@
         }
       },
       "numerical": {
-        "status": "failed", "comparisons": ["potassium-anion-symport"],
-        "result": "All 27 ordinary component cases passed. The closed two-compartment world accepted a 10 ms step and booked 2.141 × 10⁻⁶ fmol inward against an exact 8.669 × 10⁻⁷ fmol outward. The same interval split into 32 or 64 steps gave outward flow. Separately, a component-level extreme concentration ratio produced infinite affinity and heat with finite references."
+        "status": "failed", "comparisons": ["potassium-anion-symport-retest", "osmotic-water", "potassium-anion-symport"],
+        "result": "The 20 November retest refused the 10 ms step that previously ran in the wrong direction. Its updated bound was 3.761 against a limit of 1, with water fixed or moving. The 32- and 64-step runs completed and converged in each case. All 27 ordinary component checks passed. The remaining failure is at component level, where an extreme concentration ratio still produces infinite affinity and heat against finite references."
       },
       "biology": {
         "status": "open",
@@ -1186,6 +1230,123 @@
           "assessment": "The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open.",
           "report": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
         }]
+      }
+    },
+    {
+      "id": "osmotic-water",
+      "title": "Water potential sets flow, heat and osmometric equilibrium",
+      "statement": "Water moves down the hydrostatic-minus-osmotic pressure difference. At frozen solute amounts this potential is the volume derivative of free energy after unit conversion. Dissipated heat is nonnegative. An outward potassium–anion cycle increases the outward water drive by moving two osmoles across the membrane.",
+      "assumptions": [
+        "All volumes and temperature are positive. Osmoles are ideal, elastic pressure is linear in volume, and mobility and stiffness are nonnegative. Each held bath has fixed pressure and concentrations.",
+        "The Heun direction result applies to one finite edge at frozen amounts. Both positive predictor volumes are at least one quarter of their respective start volumes, and the full-step mobility times the sum of the initial pressure slopes is at most 0.05.",
+        "The equilibrium comparisons use positive mobility. The vesicle fit uses a common effective modulus across two small swelling conditions. The ideal red-cell comparison uses aqueous volume and a separate inactive-volume estimate for each preparation."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.ideal_osmosis_linear_compliance_water@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.OsmoticWater.declared_potential": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.energy_has_deriv": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.endpoint_ledger": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.potential_has_deriv": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.potential_change": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.pressure_step_flow": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.edge_power": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.heat_nonneg": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.heun_transfer": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.heun_direction": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.secant_bound": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.guarded_heun_direction": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.compliant_bath_stall": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.ideal_bath_stall": "lean/CellsProofs/Transport/OsmoticWater.lean",
+          "CellsProofs.Transport.OsmoticWater.symport_drive_change": "lean/CellsProofs/Transport/OsmoticWater.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "osmotic-water"
+        ],
+        "result": "Five accepted CPU float64 runs tested water alone and water coupled to potassium–anion transport. Halving the step in two coupled worlds reduced the errors in both transfers and both heats by factors of 4.00–4.11 against an independent two-extent calculation. Separate oversized water and cotransport inputs triggered their respective step bounds."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium swelling in vesicles and red cells, water flow after pressure steps in a Chara internode, and the water change accompanying net solute movement in trout red cells. A pathway-specific rate for K–anion cotransport during swelling remains open.",
+        "unit": "% swelling, fL cell volume, nL/s inward flow, g water per g dry cell solids",
+        "evidence": [
+          {
+            "dataset_id": "shibly2016_dopc_swelling@1",
+            "manifest": "lean/checks/data/shibly2016_swelling.json",
+            "citation": "Shibly et al., Fig. 2B",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Figure 2B and the adjacent results give the equilibrium volume increments after single-vesicle transfers.",
+            "context": "DOPC vesicles at 25 ± 1 °C contained 98 mM sucrose and were transferred into glucose solutions.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "96 mM glucose, 14 vesicles"
+            ],
+            "evaluation": [
+              "95 mM glucose, 17 vesicles"
+            ],
+            "uncertainty": "The reported ±0.1 percentage point has unspecified statistic. The two concentration steps are nominal.",
+            "assessment": "A stiffness fitted to 1.7% swelling predicted 2.57% on the second bath against 2.6 ± 0.1% measured.",
+            "report": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+          },
+          {
+            "dataset_id": "kwant1970_red_cell_osmometry@1",
+            "manifest": "lean/checks/data/kwant1970_osmometry.json",
+            "citation": "Kwant and Seeman, Tables I–II",
+            "doi": "10.1085/jgp.55.2.208",
+            "locator": "Table II, 126 mOsm/L ghost series, and Table I, Coulter measurements of intact cells.",
+            "context": "Sealed human red-cell ghosts were sized at 37 °C. Temperature for intact-cell sizing is unspecified. Each calibration uses the study's separate estimate of inactive volume.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Ghosts at 126 mOsm/L",
+              "Intact cells at 333 mOsm/L"
+            ],
+            "evaluation": [
+              "Ghosts at 132, 143, 163, 184 and 211 mOsm/L",
+              "Intact cells at 184 mOsm/L"
+            ],
+            "uncertainty": "The volume spreads are reported SDs. The calibration volume, inactive volume and bath osmolarity contribute additional uncertainty to predictions.",
+            "assessment": "At 184 mOsm/L the ideal model predicted 111.4 fL for ghosts (109.0 ± 1.0 measured) and 122.6 fL for intact cells (111.5 ± 1.2 measured).",
+            "report": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+          },
+          {
+            "dataset_id": "wendler1982_chara_pressure@1",
+            "manifest": "lean/checks/data/wendler1982_pressure.json",
+            "citation": "Wendler and Zimmermann, Fig. 2A",
+            "doi": "10.1104/pp.69.5.998",
+            "locator": "Figure 2A gives the first 40 s slopes of two opposite pressure clamps on cell 12.",
+            "context": "A Chara corallina internode in artificial pond water at 23 ± 2 °C re-equilibrated between the two pressure steps.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "−0.370 bar pressure step"
+            ],
+            "evaluation": [
+              "+0.350 bar pressure step"
+            ],
+            "uncertainty": "Individual slope uncertainties are unavailable. The second resting turgor was 0.060 bar lower.",
+            "assessment": "One measured pressure step predicted reversed water flow of 4.82 nL/s outward on the second step. The measured flow was 5.3 nL/s outward.",
+            "report": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+          },
+          {
+            "dataset_id": "guizouarn2000_trout_water_solutes@1",
+            "manifest": "lean/checks/data/guizouarn2000_water_solutes.json",
+            "citation": "Guizouarn et al., Table 1",
+            "doi": "10.1111/j.1469-7793.2000.t01-1-00147.x",
+            "locator": "Figure 1 and Table 1 give the 60-minute water and solute changes after initial hypotonic swelling.",
+            "context": "Rainbow-trout red cells were held at 215 mOsm/kg with ouabain. Each condition measured changes in cellular water, sodium, potassium, chloride and taurine.",
+            "role": "descriptive",
+            "evaluation": ["Sodium bath, n = 21", "Potassium bath, n = 3"],
+            "excluded": ["Choline bath, total osmole change unavailable"],
+            "uncertainty": "The paper reports SEM. The water prediction uses the measured osmole total. Covariance with measured water is unavailable.",
+            "assessment": "Measured osmole changes imply water changes of −0.375 and +0.078 g/g in two baths, against −0.37 and +0.06 measured. Multiple transport pathways contribute.",
+            "report": "lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport"
+          }
+        ]
       }
     },
     {

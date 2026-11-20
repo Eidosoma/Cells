@@ -1,6 +1,6 @@
 # Cells proofs
 
-This Lean library connects engine laws to their proofs, numerical checks and experimental measurements. Each claim page records the assumptions and links to the code and sources. [Review of all 30 laws and the biological evidence](PROGRESS.md#19-november-2026--law-and-evidence-review)
+This Lean library connects engine laws to their proofs, numerical checks and experimental measurements. Each claim page records the assumptions and links to the code and sources. [Current law and operator coverage](COVERAGE.md) · [November 19 review of 30 laws and their biological evidence](PROGRESS.md#19-november-2026--law-and-evidence-review)
 
 ## Biological evidence
 
@@ -42,6 +42,7 @@ The last column below gives the experimental result and what it can test. **Part
 | [Potassium rectification sets reversal, dissipation and a bound on slope conductance](claims/inward-rectifier.md) | Proved | Failed | **Mixed.** Observed -0.59 pA. Predicted -0.385 pA. At 15 mM external K the current magnitude fell less than the model predicted, as it did at the other three held-out concentrations. The model’s −59.67 mV shift in reversal agreed with the approximately −60 mV measured. [Tada et al. (1998), Fig. 4B–D](https://doi.org/10.2170/jjphysiol.48.71) |
 | [Sodium coupling sets net charge and the stall voltage of an anion carrier](claims/sodium-anion-symport.md) | Proved | Checked | **Partial evidence.** Observed 1.04 net positive charges per lactate. Predicted 1 net positive charges per lactate. The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 for both sodium halvings. The experimental means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open. [Coady et al. (2007), Figs. 1, 2 and 4](https://doi.org/10.1529/biophysj.107.108555) Measured net charge exceeded the prediction at all four human points by approximately 65–85 pmol. At 370 pmol lactate, Cells predicted 370 pmol net charge and the figure gives about 450 pmol. [Gopal et al. (2004), Fig. 9A](https://doi.org/10.1074/jbc.M405365200) |
 | [Potassium–anion cotransport follows the concentration products in a closed pair](claims/potassium-anion-symport.md) | Proved | Failed | **Partial evidence.** Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/) The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open. [Lauf and Adragna (1996), Fig. 8](https://doi.org/10.1085/jgp.108.4.341) |
+| [Water potential sets flow, heat and osmometric equilibrium](claims/osmotic-water.md) | Proved | Checked | **Partial evidence.** A stiffness fitted to 1.7% swelling predicted 2.57% on the second bath against 2.6 ± 0.1% measured. [Shibly et al., Fig. 2B](https://doi.org/10.1016/j.bpj.2016.09.043) At 184 mOsm/L the ideal model predicted 111.4 fL for ghosts (109.0 ± 1.0 measured) and 122.6 fL for intact cells (111.5 ± 1.2 measured). [Kwant and Seeman, Tables I–II](https://doi.org/10.1085/jgp.55.2.208) One measured pressure step predicted reversed water flow of 4.82 nL/s outward on the second step. The measured flow was 5.3 nL/s outward. [Wendler and Zimmermann, Fig. 2A](https://doi.org/10.1104/pp.69.5.998) Measured osmole changes imply water changes of −0.375 and +0.078 g/g in two baths, against −0.37 and +0.06 measured. Multiple transport pathways contribute. [Guizouarn et al., Table 1](https://doi.org/10.1111/j.1469-7793.2000.t01-1-00147.x) |
 | [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | **Partial evidence.** A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811) |
 | [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | **Not assessable.** Observed -18 mV. Predicted -14.59 mV. The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized. [Bonzanni et al. (2020)](https://doi.org/10.1242/bio.048553) |
 
@@ -260,11 +261,18 @@ The inward-rectifier driver checks the bound on the current–voltage slope, a c
 "$cells_python" -B checks/sodium_anion_symport.py
 ```
 
-For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The full comparison reports the wrong-direction step and the component affinity overflow at the tested revision. The controls use smaller steps and finite product ratios. [Results and experimental measurements](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport)
+For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The latest retest confirmed that the engine refuses the earlier wrong-direction step. The full comparison still reports the extreme concentration-ratio overflow. The controls use smaller steps and finite product ratios. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Retest](PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
 
 ```bash
 "$cells_python" -B checks/potassium_anion_symport.py
 "$cells_python" -B checks/potassium_anion_symport.py --controls-only
+```
+
+For water and potassium–anion transport in changing volumes, compare the CPU engine with two independent numerical integrators. The second command checks vesicle swelling, red-cell volumes, pressure-driven flow and the water change accompanying measured solute transfer in trout red cells. [Proof, experiments and numerical results](claims/osmotic-water.md)
+
+```bash
+"$cells_python" -B checks/osmotic_water.py
+"$cells_python" -B checks/osmometry.py
 ```
 
 For the tissue balance, the driver follows A and B through one 50 ms composite step on twelve finite extracellular compartments. It compares the change in their stored amounts at nodes 2 through 5 with the signed transfers on the two boundary faces. Each species also has to account for its share of the local conversion. The same comparison runs on the full chain and with the largest boundary face reversed in the recorded transfers. The existing passive-chain test checks the trajectory against the independent split-step reference. [Regional driver](checks/regional_balance.py) · [Reference comparison](../tests/unit/test_species_reactions_composition.py#L84)

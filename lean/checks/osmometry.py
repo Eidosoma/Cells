@@ -100,6 +100,25 @@ def pressure_reversal():
     )
 
 
+def water_from_solute_changes():
+    d = json.loads((DATA / "guizouarn2000_water_solutes.json").read_text())
+    bath = d["bath_mOsm_per_kg_water"]  # numerically also µmol of particles per g water
+    rows = []
+    for field in d["conditions"]:
+        total, sem = field["reported_total_osmoles"]
+        species_sum = sum(v[0] for v in field["solute_changes"].values())
+        rows.append(
+            dict(
+                bath=field["bath_cation"],
+                from_reported_total_g_g=total / bath,
+                sem_from_total_g_g=sem / bath,
+                from_species_means_g_g=species_sum / bath,
+                measured_water_g_g=field["measured_water"],
+            )
+        )
+    return rows
+
+
 if __name__ == "__main__":
     cells = json.loads((DATA / "kwant1970_osmometry.json").read_text())
     print(
@@ -109,6 +128,7 @@ if __name__ == "__main__":
                 ghosts=red_cell(cells["ghosts"]),
                 intact=red_cell(cells["intact"]),
                 pressure_clamp=pressure_reversal(),
+                trout_water_from_solutes=water_from_solute_changes(),
             ),
             indent=2,
             allow_nan=False,

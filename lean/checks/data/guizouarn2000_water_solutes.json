@@ -1,0 +1,25 @@
+{
+  "dataset_id": "guizouarn2000_trout_water_solutes@1",
+  "doi": "10.1111/j.1469-7793.2000.t01-1-00147.x",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2269780/",
+  "locator": "Figure 1 and Table 1, sodium and potassium baths",
+  "preparation": "Washed rainbow-trout erythrocytes after transfer from 320 to 215 mOsm/kg water in ouabain. Changes are from initial swelling to 60 minutes in the hypotonic bath.",
+  "bath_mOsm_per_kg_water": 215,
+  "solute_unit": "micromol per g dry cell solids",
+  "water_unit": "g water per g dry cell solids",
+  "values": "Pairs are mean and SEM. Positive values are gains by the cell.",
+  "conditions": [
+    {
+      "bath_cation": "Na", "n": 21,
+      "solute_changes": {"Na": [18.61, 0.99], "K": [-38.86, 1.94], "Cl": [-17.85, 1.59], "taurine": [-42.97, 1.87]},
+      "reported_total_osmoles": [-80.69, 3.73], "measured_water": [-0.37, 0.02]
+    },
+    {
+      "bath_cation": "K", "n": 3,
+      "solute_changes": {"Na": [-0.89, 0.39], "K": [28.21, 1.94], "Cl": [26.84, 1.47], "taurine": [-37.30, 0.92]},
+      "reported_total_osmoles": [16.86, 3.10], "measured_water": [0.06, 0.02]
+    }
+  ],
+  "mapping": "At isosmotic endpoints with the same bath, the ideal change in water mass per g dry solids is the measured change in micromoles of particles per g dry solids divided by the bath value in micromoles per g water. This reproduces the paper's conditional calculation. The table supplies both an aggregate and individual ion and taurine means.",
+  "omission": "The choline row lacks a total osmole change. Species-specific net changes include all pathways in each condition."
+}
