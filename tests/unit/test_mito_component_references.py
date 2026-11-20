@@ -31,7 +31,7 @@ def _load(name):
 
 def test_interface_parses_and_rows_match_states():
     inputs, rows = _load("inputs.json"), _load("rows.json")
-    assert inputs["status"] == rows["status"] == "proposed, not registered"
+    assert inputs["status"] == rows["status"] == "prepared for registration; the lead's tag registers it"
     assert set(inputs["states"]) == set(rows["laws"]) == set(design.FORMS)
     for key, forms in rows["laws"].items():
         ids = [st["id"] for st in inputs["states"][key]]

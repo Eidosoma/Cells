@@ -5133,6 +5133,10 @@
        "caught": 0,
        "max_margin": "0"
       },
+      "upkeep_work_W_per_L": {
+       "caught": 31,
+       "max_margin": "4.73E+3"
+      },
       "x": {
        "caught": 0,
        "max_margin": "0"
@@ -6393,6 +6397,10 @@
        "caught": 0,
        "max_margin": "0"
       },
+      "upkeep_work_W_per_L": {
+       "caught": 39,
+       "max_margin": "1.60E+10"
+      },
       "x": {
        "caught": 0,
        "max_margin": "0"
@@ -7375,6 +7383,10 @@
        "caught": 0,
        "max_margin": "0"
       },
+      "upkeep_work_W_per_L": {
+       "caught": 41,
+       "max_margin": "9.51E+14"
+      },
       "x": {
        "caught": 41,
        "max_margin": "6.58E+12"
@@ -7451,6 +7463,10 @@
       "slopes_lnS": {
        "caught": 0,
        "max_margin": "0"
+      },
+      "upkeep_work_W_per_L": {
+       "caught": 39,
+       "max_margin": "5.55E+12"
       },
       "x": {
        "caught": 0,
@@ -7531,6 +7547,10 @@
       "slopes_lnS": {
        "caught": 0,
        "max_margin": "0"
+      },
+      "upkeep_work_W_per_L": {
+       "caught": 39,
+       "max_margin": "1.06E+13"
       },
       "x": {
        "caught": 0,
@@ -7615,6 +7635,10 @@
        "caught": 0,
        "max_margin": "0"
       },
+      "upkeep_work_W_per_L": {
+       "caught": 41,
+       "max_margin": "2.56E+7"
+      },
       "x": {
        "caught": 41,
        "max_margin": "2.56E+7"
@@ -7691,6 +7715,10 @@
       "slopes_lnS": {
        "caught": 0,
        "max_margin": "0"
+      },
+      "upkeep_work_W_per_L": {
+       "caught": 41,
+       "max_margin": "1.96E+11"
       },
       "x": {
        "caught": 41,
@@ -7769,6 +7797,10 @@
        "caught": 41,
        "max_margin": "1.55E+14"
       },
+      "upkeep_work_W_per_L": {
+       "caught": 39,
+       "max_margin": "2.71E+13"
+      },
       "x": {
        "caught": 0,
        "max_margin": "0"
@@ -7796,8 +7828,137 @@
    "kind": "kinetic",
    "law": "nadh_supply",
    "section_8_named": false
+  },
+  "supply_upkeep_ratio_only": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "upkeep_work_W_per_L": {
+       "caught": 39,
+       "max_margin": "2.78E+13"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 39,
+     "caught_by_J_alone": 0,
+     "excluded_quantities": [],
+     "max_at": "corner:Pi_N=2e-2,f_NAD=0.01,pH_N=8.2",
+     "max_margin": "2.78E+13",
+     "max_quantity": "upkeep_work_W_per_L",
+     "min_at": "near_eq:A:x=1e-6",
+     "min_margin_where_caught": "9.32E+5",
+     "no_power_on_J": [
+      "center",
+      "corner:Pi_N=1e-4,f_NAD=0.01,pH_N=6.8",
+      "corner:Pi_N=1e-4,f_NAD=0.01,pH_N=8.2",
+      "corner:Pi_N=1e-4,f_NAD=0.99,pH_N=6.8",
+      "corner:Pi_N=1e-4,f_NAD=0.99,pH_N=8.2",
+      "corner:Pi_N=2e-2,f_NAD=0.01,pH_N=6.8",
+      "corner:Pi_N=2e-2,f_NAD=0.01,pH_N=8.2",
+      "corner:Pi_N=2e-2,f_NAD=0.99,pH_N=6.8",
+      "corner:Pi_N=2e-2,f_NAD=0.99,pH_N=8.2",
+      "interior:1",
+      "interior:2",
+      "interior:3",
+      "interior:4",
+      "interior:5",
+      "interior:6",
+      "near_eq:A:x=-3",
+      "near_eq:A:x=-1",
+      "near_eq:A:x=-0.1",
+      "near_eq:A:x=-1e-3",
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:A:x=1e-3",
+      "near_eq:A:x=0.1",
+      "near_eq:A:x=1",
+      "near_eq:A:x=3",
+      "near_eq:B:x=-3",
+      "near_eq:B:x=-1",
+      "near_eq:B:x=-0.1",
+      "near_eq:B:x=-1e-3",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6",
+      "near_eq:B:x=1e-3",
+      "near_eq:B:x=0.1",
+      "near_eq:B:x=1",
+      "near_eq:B:x=3",
+      "stall:printed:A",
+      "stall:printed:B",
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ],
+     "rows": 41,
+     "zero_power": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "the upkeep's work from the pair's ratio alone, without section 9's standard potentials",
+   "kind": "free-energy entry",
+   "law": "nadh_supply",
+   "section_8_named": false
   }
  },
  "power_margin": "3",
- "status": "proposed, not registered"
+ "status": "prepared for registration; the lead's tag registers it"
 }

@@ -78,7 +78,7 @@ def _const_plant(law, **const_kw):
 
 # --- Section 1.1 ------------------------------------------------------------------------------
 class C1QReversed(laws.ComplexI):
-    """Section 8's planted control: complex I with -4u in place of +4u (q = -4)."""
+    """Section 10's planted control: complex I with -4u in place of +4u (q = -4)."""
 
     def q(self, P):
         return -4
@@ -248,6 +248,14 @@ class SupplyHeldRatioR(laws.HeldReductantSupply):
         t = dict(s)
         t["S_red_N"] = B.n(P["r"]) * s["S_ox_N"]
         return super().x_terms(B, P, C, t)
+
+
+class SupplyUpkeepRatioOnly(laws.HeldReductantSupply):
+    """The upkeep's work booked from the pair's ratio alone, without its standard potentials
+    (only the ratio enters the flux, but the work needs the potentials)."""
+
+    def upkeep_y(self, B, P, C, s):
+        return B.ln(s["S_ox_N"] / s["S_red_N"])
 
 
 class SupplyPhiInverted(laws.HeldReductantSupply):
@@ -481,6 +489,9 @@ _add_cross_forms(L["nadh_supply"])
 _add("supply_held_ratio_r", "nadh_supply",
      "Section 6: the held pair at S_red/S_ox = r, without 10^-0.10 (equilibrium at pH_N 7.00)",
      "thermodynamic", _same_form(SupplyHeldRatioR()), named=True)
+_add("supply_upkeep_ratio_only", "nadh_supply",
+     "the upkeep's work from the pair's ratio alone, without section 9's standard potentials",
+     "free-energy entry", _same_form(SupplyUpkeepRatioOnly()))
 _add("supply_dG0_display", "nadh_supply",
      "dG0_S at 1 M as section 9 displays it, +39.956 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.HeldReductantSupply, "39956")))

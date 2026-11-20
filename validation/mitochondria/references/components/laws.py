@@ -1,6 +1,6 @@
 """The appendix's six declared laws, written from its equations alone.
 
-Source: docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20 (sections 0-7).
+Source: docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (sections 0-10).
 Every function is generic over a backend ``B`` (``hp.DEC`` or ``hp.F64``), a parameter dict
 ``P`` of strings (``hp.parameters``), constants ``C`` (``hp.constants``) and a state ``s``:
 a dict of concentrations in M, free h_N and h_P in M, and ``dpsi_mV`` (phi_P - phi_N).
@@ -948,6 +948,15 @@ class HeldReductantSupply(Law):
             return self.printed(B, P, C, s)[0], self.backward_closed(B, P, C, s)
         return self.printed(B, P, C, s)
 
+    def upkeep_y(self, B, P, C, s):
+        """(mu_S_ox - mu_S_red)/RT from section 9's potentials; the pair is neutral."""
+        mu = hp.potentials(B, P, C)
+        return mu["S_ox"] - mu["S_red"] + B.ln(s["S_ox_N"] / s["S_red_N"])
+
+    def extra_quantities(self, B, P, C, s, out):
+        """Section 6's energy: the held pair's upkeep supplies work at -J (mu_S_ox - mu_S_red)."""
+        return {"upkeep_work_W_per_L": -out["J"] * C["RT"] * self.upkeep_y(B, P, C, s)}
+
     def slopes_lnA(self, B, P, C, s):
         z = B.n(0)
         return {"NAD_N": B.n(1), "Pi_N": self._phi_slope(B, P, s), "NADH_N": z, "h_N": z,
@@ -1184,6 +1193,8 @@ def evaluate(law, B, P, C, s, form="declared"):
         out["slopes_lnS"] = sS
         dJ = {v: J * sS[v] - Jm * B.n(nu_u.get(v, 0)) for v in reads}
     out["slopes_J"] = dJ
+    if hasattr(law, "extra_quantities"):
+        out.update(law.extra_quantities(B, P, C, s, out))
     out["I_A_per_L"] = B.n(q) * F * J
     out["dissipation_W_per_L"] = -J * RT * x
     out["dI_ddpsi_A_per_L_per_mV"] = B.n(q) * F * dJ["u"] * FRT

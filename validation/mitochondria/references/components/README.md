@@ -1,6 +1,6 @@
 # MT-1 component references: the mitochondrial laws
 
-**Status: ready for registration, not registered.**
+**Status: prepared for registration; the lead's tag registers it.**
 - **Source:** written against `docs/MITOCHONDRIA_LAWS_APPENDIX.md` at tag
   `mito-laws-appendix-2026-11-20b` (commit c9c5be1f), the appendix the user ruled on (D236).
 - **Registration:** the lead tags this branch's head as the registration.
@@ -65,7 +65,16 @@ supply is now balanced on its held pair (§6).
 - **The external side uses pH_P's range, 6.5–7.6.** Mg²⁺ and the adenylates vary at each end, so
   the total-in-place-of-forms plant has power.
 - **The held pair:** S_ox = 1 mM and S_red = 10^−0.10 r · S_ox, both listed as inputs. Only their
-  ratio enters.
+  ratio enters the flux.
+- **The kinase's approach to equilibrium:** its near-equilibrium states move AMP²⁻ and ATP⁴⁻
+  together, with binding kept.
+- **The outer membrane's corners:** they vary Mg²⁺, pH and ATP/ADP at both ends, with AMP and Pi
+  held at base. The interior points vary those too.
+- **The labels:** "adenylate_kinase (section 7)" and "outer_membrane (section 8)", since the tag
+  names neither law.
+- **Complex IV's range:** §10's ranges reach x = −118.7 RT, against §1.3's "about −94 RT". The
+  corner is: cytochrome c 99% reduced, O₂ 0.3 mM, pH_N 6.8, pH_P 7.6 and Δψ 0. The grid is
+  unchanged; the lead passes §1.3's note to the lane.
 
 **Definitions and displays:**
 - **Definitions:**
@@ -79,9 +88,9 @@ supply is now balanced on its held pair (§6).
   potentials, at 9 decimals, and all ten M values, at 3 decimals, reproduce the tag's tables
   (`appendix_numbers`).
 
-**The parameter transcription** (`hp.py`) was compared with the first tag's table (24 rows, no
-mismatch). The second tag adds K_AK, X_AK, p_A, p_Pi and γ with the same values in both columns,
-and the declared match and supply values (§9).
+**The parameter transcription** (`hp.py`) was compared with tag b's `<!-- parameters -->` table:
+29 rows, both columns, no mismatch. θ_P, θ_N, T, the kinase's buffer and the supply's
+reference pH match its text.
 
 ## The registered forms (D236, frame B)
 
@@ -123,6 +132,9 @@ That is 770 states, with one row each, in the registered form.
   - S_red(N) + NAD(N) → S_ox(N) + NADH(N) + H⁺(N), with ΔG°_S = 0 at pH 7.
   - The held ratio S_red/S_ox = 10^−0.10 r puts its equilibrium at [NADH]/[NAD] = r at pH_N 7.10.
   - Balanced: J = X_DH φ_DH (r [NAD] − [NADH] h_N/10^−7.10), with S = X_DH φ_DH r [NAD].
+  - Its energy (the lead's request) is the upkeep row `upkeep_work_W_per_L`,
+    −J (μ̃_S_ox − μ̃_S_red), from §9's potentials. It is checked to equal the heat −J ΔG plus the
+    work delivered to the NAD pool, J (μ̃_NADH + μ̃_H − μ̃_NAD).
 - **The kinase (§7):**
   - 2 ADP³⁻ → ATP⁴⁻ + AMP²⁻, at P.
   - J = X_AK (1 + [Mg²⁺]_P/K_MgATP)(K_base [ADP³⁻]² − [AMP²⁻][ATP⁴⁻]). It equals the source's
@@ -191,6 +203,7 @@ That is 770 states, with one row each, in the registered form.
   - −J ΔG;
   - the static head (q ≠ 0);
   - the slopes of ln S and of J.
+- **For the supply:** also `upkeep_work_W_per_L`.
 - **For the outer membrane, per form:** J, S, J⁻, x, ΔG, −J ΔG and the slopes, plus `class_J`,
   `eq13_J`, `ligand_J` (Mg²⁺ and H⁺ carried) and `dissipation_total`.
 
@@ -215,15 +228,20 @@ references' own error: 20-digit storage, and computation at about 10⁻⁴⁵ of
 - **Two-term forms:** band_A + band_B.
 - **The outer membrane:** both arrangements of J (two terms, or S (1 − e^x)) are covered.
 
-**Calibration:** correct float64 kernels in three operation orders reach 0.036 of the band at
-worst (`float64_calibration`).
+**Calibration:** correct float64 kernels were run in four operation orders (`float64_calibration`).
+- **The first three:** the reference's formulas, the closed forms or literal transcriptions, and
+  the two-term arrangement with x summed in reverse.
+- **The fourth, §9's route for a kernel:** x = Σν(μ°/RT − ln 1000) + Σν ln(c/1 mM) + q u, with
+  each potential rounded once to a double.
+- **Worst over all rows and quantities:** 0.036 of the band. The fourth order alone reaches
+  0.018 of x's band, so the M term holds for that route.
 
 **The power margin is 3:** a plant is caught at a row when some quantity misses by 3 bands or
 more.
 
 ## Plants
 
-There are 83 plants, every one caught on the registered rows.
+There are 84 plants, every one caught on the registered rows.
 - **Named in the tag:**
   - §10's two controls (`C1_q_reversed`, `ANT_shares_0.35_0.60`);
   - §6's held ratio r (`supply_held_ratio_r`);
@@ -253,6 +271,7 @@ There are 83 plants, every one caught on the registered rows.
 | `supply_held_ratio_r` (§6) | nadh_supply | 41/41 | 41 | 2.2e11 | 0 |
 | `supply_as_printed` (Eq. 1) | nadh_supply | 41/41 | 39 | 5.2e11 | 0 |
 | `supply_dG0_display` (+39.956), `supply_phi_inverted`, `supply_X_DH_without` | nadh_supply | 41/41 each | 41, 39, 39 | 2.5e7 and up | 0 |
+| `supply_upkeep_ratio_only` (the work without §9's potentials) | nadh_supply | 39/41 | 0 (J is unchanged) | 9.3e5 | 2 |
 | `AK_no_prefactor` (§7) | adenylate_kinase | 41/41 | 39 | 1.3e14 | 0 |
 | `AK_as_printed` (Eq. 18 on totals) | adenylate_kinase | 41/41 | 39 | 1.9e14 | 0 |
 | `AK_K_base_rounded` (0.38896), `AK_K_AK_on_base_forms`, `AK_prefactor_MgADP` | adenylate_kinase | 41/41 each | 41, 41, 39 | 5.4e7 and up | 0 |
@@ -267,9 +286,11 @@ There are 83 plants, every one caught on the registered rows.
 
 **Zero power, where it is expected:**
 - **`OM_total_split_upstream`:** none at the 38 rows where both sides share Mg²⁺ and pH. There the
-  split is exact: 16 corners, and the 22 rows next to equilibrium.
+  split is exact, so these rows are expected to be powerless: 16 corners, and the 22 rows next to
+  equilibrium.
 - **`OM_MgADP_dropped`:** none at the 18 rows where MgADP⁻ is equal on both sides and carries
   nothing.
+- **`supply_upkeep_ratio_only`:** none at the 2 rows at x = 0, where J = 0 and both works vanish.
 - **The RT and T plants:** none at the neutral laws' rows within 10⁻⁶ of equilibrium. Those laws'
   x has no RT, and ΔG ≈ 0 there.
 - **Activities in mM:** the exchange, the phosphate carrier, the K⁺/H⁺ exchange and the kinase
@@ -290,6 +311,7 @@ There are 83 plants, every one caught on the registered rows.
 **The specific checks:**
 - **Supply:**
   - the balanced J equals X_DH φ (r[NAD] − [NADH] h_N/10^−7.10) to 6·10⁻⁵⁹;
+  - the upkeep's work equals the heat plus the work delivered to the NAD pool, to 10⁻⁶⁰;
   - x = 0 at [NADH] = r[NAD] and pH_N 7.10;
   - the balanced J equals Eq. 1 at pH_N 7.10.
 - **Kinase:**
@@ -341,13 +363,10 @@ There are 83 plants, every one caught on the registered rows.
 
 ## Findings for the lead
 
-1. **§1.3 says complex IV's x "reaches about −94 RT on the grid of §10".** On this grid, built from
-   §10's ranges, the extreme corner reaches −118.7. That corner has cytochrome c 99% reduced,
-   O₂ 0.3 mM, pH_N 6.8, pH_P 7.6 and Δψ 0. The difference is the grid's extent, not the law.
-2. **The displays are planted:** the 1 M entries, RT, F/RT and K_base at 0.38896.
-   - Each is refused by margins of 10⁷ or more on the charged laws, and of 11 or more on the
-     neutral laws.
-   - So a registry must carry the exact definitions, as §7 and §9 say.
+**The displays are planted:** the 1 M entries, RT, F/RT and K_base at 0.38896.
+- Each is refused by margins of 10⁷ or more on the charged laws, and of 11 or more on the neutral
+  laws.
+- So a registry must carry the exact definitions, as §7 and §9 say.
 
 ## Regenerate and test
 

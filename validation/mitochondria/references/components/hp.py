@@ -1,7 +1,7 @@
 """Arithmetic backends, constants and the cited parameters of the component references.
 
 The reference values are computed with the standard library's ``decimal`` at ``PREC``
-significant digits (60; the appendix's section 8 asks for 50 or more). ``PREC_CHECK`` (80) is
+significant digits (60; the appendix's section 10 asks for 50 or more). ``PREC_CHECK`` (80) is
 the re-run that measures the references' own error. A float64 backend with the same interface
 evaluates the same formulas the way an engine's kernel would; it is used only to size and
 calibrate the bands.
@@ -129,7 +129,7 @@ def constants(B, T: str = T_KELVIN, overrides: dict | None = None) -> dict:
 
 # --- Cited parameters ------------------------------------------------------------------------
 # Beard 2005 (PLoS Comput Biol 1(4):e36) with its 2006 correction (2(1):e8), Table 1 as the
-# appendix's section 7 lists it, and Table 2's standard free energies at pH 7 (J/mol). Units:
+# appendix's section 9 lists it, and Table 2's standard free energies at pH 7 (J/mol). Units:
 # M unless the key ends in _mM. The appendix's conventions (approved by the lead): every law
 # uses the "With Pi control" column; the Eq. 7 rows use the "Without" column's X_C3.
 PARAMS_WITH_PI_CONTROL = {

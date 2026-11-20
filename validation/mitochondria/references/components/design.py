@@ -231,6 +231,12 @@ def bands_cycle(law, P, C, s, form, ref, extra_scale_x=None):
                 v: abs(ref["slopes_lnS"][v]) * bJ + abs(J) * b["slopes_lnS"][v]
                 + abs(Decimal(nu_u.get(v, 0))) * bJm
                 for v in ref["slopes_J"]}
+        if "upkeep_work_W_per_L" in ref:
+            y = law.upkeep_y(DEC, P, C, s)
+            mu = hp.potentials(DEC, P, C)
+            dy = CB * EPS * (abs(mu["S_red"]) + abs(mu["S_ox"]) + abs(s["S_ox_N"].ln())
+                             + abs(s["S_red_N"].ln()) + 1)
+            b["upkeep_work_W_per_L"] = C["RT"] * (abs(y) * b["J"] + abs(J) * dy)
         b["I_A_per_L"] = abs(q) * C["F"] * b["J"]
         # -J RT x is quadratic next to x = 0: the band carries the second-order term too.
         b["dissipation_W_per_L"] = C["RT"] * (abs(ref["x"]) * b["J"] + abs(J) * dx + b["J"] * dx)
@@ -371,7 +377,7 @@ def build_rows():
 def _binding_key_applies(law_key, k):
     """Mg2+ pairs for the adenylate laws, H+ pairs for the phosphate laws."""
     phosphate = "PO4" in k
-    if law_key == "nucleotide_exchange":
+    if law_key in ("nucleotide_exchange", "adenylate_kinase"):
         return not phosphate
     if law_key == "phosphate_carrier":
         return phosphate
@@ -391,12 +397,32 @@ def s_binding(law, s):
 # ============================================================================================
 # The float64 calibration
 # ============================================================================================
-def _f64_orders(law, P, fl, form):
+def _potentials_f64(P):
+    """Section 9's potentials, evaluated at full precision and rounded once to doubles."""
+    with precision():
+        return {k: float(v) for k, v in hp.potentials(DEC, P, hp.constants(DEC)).items()}
+
+
+def _x_by_potentials(law, P, C64, s, mu64):
+    """x as section 9 writes it for a kernel with concentrations in mM:
+    x = sum nu (mu0/RT - ln 1000) + sum nu ln(c/1 mM) + q u, in float64."""
+    ln1000 = math.log(1000.0)
+    x = 0.0
+    for k, _side, nu, _z in law.legs_(P):
+        if k is None:
+            continue
+        x += nu * (mu64[hp.species_of(k)] - ln1000) + nu * math.log(s[k] * 1000.0)
+    return x + law.q(P) * C64["F_RT_per_mV"] * s["dpsi_mV"]
+
+
+def _f64_orders(law, P, fl, form, mu64=None):
     C64 = hp.constants(F64)
     s = dict(fl)
     if law.key == "outer_membrane":
         return {"generic": law.evaluate(F64, P, C64, s)}
     res = {"generic": laws.evaluate(law, F64, P, C64, s, form)}
+    if mu64 is not None:
+        res["potentials"] = {"x": _x_by_potentials(law, P, C64, s, mu64)}
     if not law.has_flux:
         x2 = 0.0
         for _k, v in reversed(law.x_terms(F64, P, C64, s)):
@@ -431,12 +457,13 @@ def calibrate(refs):
     for key, forms in refs.items():
         law = laws.LAWS_BY_KEY[key]
         P = hp.parameters(law.column)
+        mu64 = None if key == "outer_membrane" else _potentials_f64(P)
         out[key] = {}
         for form, rows in forms.items():
             agg = {}
             for sid, s, ref, band in rows:
                 fl = {k: float(v) for k, v in s.items()}
-                for order, vals in _f64_orders(law, P, fl, form).items():
+                for order, vals in _f64_orders(law, P, fl, form, mu64).items():
                     for k, v in vals.items():
                         if k not in ref:
                             continue
@@ -654,7 +681,7 @@ def inputs_doc(st):
         consts = {k: hp.fmt(v, 30) for k, v in C.items()}
     return {
         "kind": "cells.mito_component_reference_inputs@1",
-        "status": "proposed, not registered",
+        "status": "prepared for registration; the lead's tag registers it",
         "source": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
         "registered_forms": REGISTERED_FORMS,
         "readings_of_the_tag": [
@@ -728,10 +755,10 @@ def generate():
     files = {}
     files["inputs.json"] = _dump_states(inputs_doc(st))
     files["rows.json"] = _dump_rows({
-        "kind": "cells.mito_component_reference_rows@1", "status": "proposed, not registered",
+        "kind": "cells.mito_component_reference_rows@1", "status": "prepared for registration; the lead's tag registers it",
         "digits": DIGITS, "inputs": "interface/inputs.json", "laws": rows})
     files["plants.json"] = json.dumps({
-        "kind": "cells.mito_component_reference_plants@1", "status": "proposed, not registered",
+        "kind": "cells.mito_component_reference_plants@1", "status": "prepared for registration; the lead's tag registers it",
         "power_margin": str(POWER), "plants": measure_plants(refs)}, indent=1, sort_keys=True) + "\n"
     chk = run_checks(exact, refs)
     chk["own_precision_worst_diff_60_vs_80_digits_over_band"] = own

@@ -234,10 +234,28 @@ def supply_checks(exact_states):
             A, Bp = sp.printed(DEC, P, C, t_)
             b = laws.evaluate(sp, DEC, P, C, t_, "balanced")
             w_eq1 = max(w_eq1, abs(b["J"] - (A - Bp)) / (A + Bp))
+    # The upkeep's work is the heat plus the work delivered to the NAD pool:
+    # -J (mu_S_ox - mu_S_red) = -J dG + J (mu_NADH + mu_H - mu_NAD), from section 9's potentials.
+    w_bal = Decimal(0)
+    with precision():
+        C = hp.constants(DEC)
+        mu = hp.potentials(DEC, P, C)
+        for _sid, s in exact_states:
+            ref = laws.evaluate(sp, DEC, P, C, s, "balanced")
+            J = ref["J"]
+            y_del = mu["NADH"] + mu["H"] - mu["NAD"] + (s["NADH_N"] * s["h_N"] / s["NAD_N"]).ln()
+            delivered = J * C["RT"] * y_del
+            lhs = ref["upkeep_work_W_per_L"]
+            rhs = ref["dissipation_W_per_L"] + delivered
+            # Scaled by J+ RT and the terms' sizes, which never vanish (J does, at x = 0).
+            scale = ref["S"] * C["RT"] * (abs(sp.upkeep_y(DEC, P, C, s)) + abs(y_del) + abs(ref["x"]) + 1)
+            w_bal = max(w_bal, abs(lhs - rhs) / scale)
+    out["upkeep_equals_heat_plus_delivered_rel"] = _f(w_bal, 3)
     out["balanced_J_closed_form_rel"] = _f(w_closed, 3)
     out["x_at_r_and_pH_7.10"] = _f(x_at, 3)
     out["balanced_equals_eq1_at_pH_7.10_rel"] = _f(w_eq1, 3)
-    out["passes"] = w_closed <= TOL_EXACT and abs(x_at) <= TOL_EXACT and w_eq1 <= TOL_EXACT
+    out["passes"] = (w_closed <= TOL_EXACT and abs(x_at) <= TOL_EXACT and w_eq1 <= TOL_EXACT
+                     and w_bal <= TOL_EXACT)
     return out
 
 

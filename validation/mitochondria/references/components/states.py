@@ -1,4 +1,4 @@
-"""States for the component references: the appendix's section 8 grid, interior points,
+"""States for the component references: the appendix's section 10 grid, interior points,
 states next to each turnover's equilibrium, and the binding closure from totals to forms.
 
 A state spec gives dpsi_mV, pH_N and pH_P, the reduced fractions (f_NAD, f_Q, f_c) of pools
@@ -18,7 +18,7 @@ from itertools import product
 
 from .hp import DEC, precision
 
-# Section 8's grid ranges ("lin" or "log" spacing for interior points).
+# Section 10's grid ranges ("lin" or "log" spacing for interior points).
 RANGES = {
     "dpsi_mV": ("0", "250", "lin"),
     "pH_N": ("6.8", "8.2", "lin"),
