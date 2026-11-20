@@ -1809,7 +1809,9 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None):
         ev = judge_events(series_events(arm), wa_events)
         sets = dict(own=arm.ms, common=arm.ms[arm.ms % 100 == 0])
         verdicts, tables = arm_reading(arm, parts, sets, [("events", ev["verdict"])])
-        save_retention(Path(output).with_suffix(""), "H2-C", tables)
+        retention = Path(output).with_suffix("")
+        retention.mkdir(exist_ok=True)
+        save_retention(retention, "H2-C", tables)
         out["events"] = ev
         out["readings"] = verdicts
         out["largest_deltas"] = {s: {k: float(np.nanmax(v["delta"])) for k, v in tbl[1].items()}
