@@ -25,6 +25,7 @@ Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engi
 """
 
 import argparse
+import hashlib
 import json
 import platform
 import re
@@ -53,6 +54,29 @@ def git(*args):
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout
+
+
+def provenance():
+    """The source's identity: a frozen snapshot's record (validation/source_snapshot.py) when run
+    from one, else the checkout's revision and dirty diff."""
+    snapshot = ROOT / "SNAPSHOT.json"
+    if snapshot.exists():
+        d = json.loads(snapshot.read_text())
+        clean = d["patch_sha256"] == hashlib.sha256(b"").hexdigest()
+        return dict(
+            engine_revision=d["git_revision"],
+            checkout_dirty=not clean,
+            snapshot=str(ROOT),
+            snapshot_patch_sha256=d["patch_sha256"],
+        ), None
+    status = git("status", "--porcelain")
+    dirty = bool(status.strip())
+    return dict(
+        engine_revision=git("rev-parse", "HEAD").strip(),
+        checkout_dirty=dirty,
+        checkout_status=status.splitlines(),
+        dirty_diff="checkout.patch" if dirty else None,
+    ), git("diff", "HEAD") if dirty else None
 
 
 def slug(text):
@@ -252,21 +276,16 @@ def main(argv=None):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    revision = git("rev-parse", "HEAD").strip()
-    status = git("status", "--porcelain")
-    dirty = bool(status.strip())
-    if dirty:
-        (out / "checkout.patch").write_text(git("diff", "HEAD"))
+    source, patch = provenance()
+    if patch is not None:
+        (out / "checkout.patch").write_text(patch)
     everything = sheet.potential_sets(interior=any(s.startswith("interior") for s in args.sets))
     sets = {label: everything[label] for label in args.sets}
     names = worlds.names() if args.worlds == ["all"] else args.worlds
     record = dict(
         what="The engine's development runs of option A (G4). Development, not judged.",
         sheet_tag=SHEET_TAG,
-        engine_revision=revision,
-        checkout_dirty=dirty,
-        checkout_status=status.splitlines(),
-        dirty_diff="checkout.patch" if dirty else None,
+        **source,
         python=platform.python_version(),
         dt_s=args.dt,
         sets={label: {k: str(v) for k, v in s.items()} for label, s in sets.items()},
