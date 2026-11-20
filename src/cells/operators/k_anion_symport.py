@@ -21,7 +21,8 @@ Contract (operators/contract.py):
   declared maximum volume;
 * refusal: the route's explicit rate at the maximum volume above the family's
   bound (its cell's and, at a finite outside node, that node's concentrations and
-  volume; route_rate), an availability outside [0, 1] and the law's own domain.
+  volume, each with the summed rate of its routes; route_rate), an availability
+  outside [0, 1] and the law's own domain.
 """
 
 from bisect import bisect_right
@@ -160,17 +161,35 @@ def outside_term(state, p, k, a):
     return term[np.asarray(p.membrane_outside)]
 
 
+def node_sums(scale, p):
+    """([membrane], [membrane]) the summed k f of the routes on each patch's cell and on its
+    outside node (scale: each route's k f, zero off the routes)."""
+    cells, outside = np.asarray(p.membrane_cell), np.asarray(p.membrane_outside)
+    on_cell = scatter(scale, np.zeros(np.shape(p.volume)), (cells,), xp=np)
+    on_node = scatter(scale, np.zeros(np.shape(p.extracellular_volume)), (outside,), xp=np)
+    return on_cell[cells], on_node[outside]
+
+
 def route_rate(spec, model):
     """The largest route relaxation rate at the declared state, with the volume factor at the
     declared maximum volume (the symport's step bound, read once).
 
     A route's outward extent q (fmol) moves its product difference D = K_i A_i - K_o A_o at the
     linear rate (K_i + A_i) / V_i + (K_o + A_o) / V_o per fmol, each volume its own (the independent
-    Lean project's finite_volume_drive, lean/CellsProofs/Transport/PotassiumAnionSymport.lean). So
-    D relaxes at k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o], and above h x rate = 2 the explicit
-    ARS(2,2,2) stages book the step against D (its explicit_step and step_points_inward). A held
-    bath keeps its concentrations: its term is zero, and the rate is k f (K_i + A_i) / V_i bit for
-    bit, as before the outside term was added (19 November 2026's finding)."""
+    Lean project's finite_volume_drive, lean/CellsProofs/Transport/PotassiumAnionSymport.lean), and
+    above h x rate = 2 the explicit ARS(2,2,2) stages book a step against D (its explicit_step and
+    step_points_inward). A held bath keeps its concentrations: its term is zero. Every route on a
+    cell or an outside node moves that node's concentrations, so a route's rate is
+    W_cell (K_i + A_i) / V_i + W_node (K_o + A_o) / V_o, with W the summed k f of the node's routes
+    (node_sums): the column sums of the routes' Jacobian, which bound its spectral radius. With one
+    route per node it is the proof's k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o], and with a held
+    bath k f (K_i + A_i) / V_i bit for bit, the bound before 20 November 2026.
+
+    Its limits. The rate is the linear one: with unequal volumes, finite_volume_drive's quadratic
+    term raises the rate along a step's own transfer, so a step far from stall into a small finite
+    node can outrun it within the step (in the case measured, the energy ledger then refused the
+    step at run time). And it is read once, at the declared state, so concentrations and volumes
+    that move during a run can outgrow it. A check at each explicit stage would cover both."""
     state, p = model.initial_values(spec)
     cells = np.asarray(p.membrane_cell)
     k, a = int(p.symport_potassium_species), int(p.symport_anion_species)
@@ -179,9 +198,11 @@ def route_rate(spec, model):
     factor = np.exp(
         (vmax - p.symport_set_volume_pL) / (p.symport_steepness * p.symport_set_volume_pL)
     )
-    rate = p.symport_capacity_fmol_s_mM2 * factor * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
-    rate = rate + p.symport_capacity_fmol_s_mM2 * factor * outside_term(state, p, k, a)
-    return np.max(np.where(p.symport_route & p.membrane_active, rate, 0.0), initial=0.0)
+    route = p.symport_route & p.membrane_active
+    on_cell, on_node = node_sums(np.where(route, p.symport_capacity_fmol_s_mM2 * factor, 0.0), p)
+    rate = on_cell * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
+    rate = rate + on_node * outside_term(state, p, k, a)
+    return np.max(np.where(route, rate, 0.0), initial=0.0)
 
 
 class KAnionSymport(Operator):
@@ -264,10 +285,10 @@ class KAnionSymport(Operator):
 
     def check_steps(self, spec, declaration, schedule, steps, controls, model):
         """The route bound: the relaxation rate of a route's product difference,
-        k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o] at the declared state (the outside
-        term zero at a held bath) with the volume factor at the declared maximum volume
-        (route_rate; the routes are electroneutral, so they add no membrane conductance
-        to @3's explicit-stage bound)."""
+        k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o] at the declared state, each node's term
+        with the summed k f of its routes (the outside term zero at a held bath), with the
+        volume factor at the declared maximum volume (route_rate; the routes are
+        electroneutral, so they add no membrane conductance to @3's explicit-stage bound)."""
         self.bind_check_steps(spec, declaration, schedule, model)(steps)
 
     def bind_check_steps(self, spec, declaration, schedule, model):

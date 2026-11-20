@@ -11,7 +11,8 @@ pump_water_reference.kcc_cycles) gives the same cycles.
 
 The operator's step bound (one table, each row a claim with its plant; the independent Lean
 project's finding of 19 November 2026, lean/PROGRESS.md): a finite outside node's concentrations
-and volume enter the route's relaxation rate, each volume its own, and a held bath adds nothing.
+and volume enter the route's relaxation rate, each volume its own, a held bath adds nothing, and
+routes that share a node add their rates there.
 """
 
 import contextlib
@@ -127,14 +128,22 @@ REFUSED = "Symport rate exceeds the explicit-rate bound"
 
 
 def closed_pair(concentrations, steps, *, duration=0.01, capacity=2.5, volumes=(1.0, 1.0),
-                held=False):  # fmt: skip
+                held=False, routes=1):  # fmt: skip
     """The pair of lean/checks/potassium_anion_symport.py: water and every other membrane transfer
-    closed, one route of steepness 10. The outside node is finite (and the gauge), or the cell's
-    held bath; each node's amounts are its concentrations times its volume (pL)."""
+    closed, a route of steepness 10 on each of `routes` identical patches between the cell and the
+    outside node (the second without a pump or channels). The outside node is finite (and the
+    gauge), or the cell's held bath; each node's amounts are its concentrations times its volume
+    (pL)."""
     dt = duration / steps
     raw = fixture.heredity_cell("D", dt=dt, end_time=duration, observation_times=[0.0, duration])
     model, experiment = raw["model"], raw["experiment"]
     cell, outside = model["cells"][0], model["extracellular"][0]
+    for i in range(1, routes):
+        model["membranes"].append(dict(model["membranes"][0], id=f"membrane_{i}", pump=None))
+        experiment["membrane_controls"].append(
+            dict(membrane_id=f"membrane_{i}", schedule=[dict(time=0.0, availability=0.0)])
+        )
+    raw["execution"]["membrane_capacity"] = routes
     if not held:
         outside["reservoir"] = False
         model["closure"]["gauge_reference"] = outside["id"]
@@ -150,7 +159,8 @@ def closed_pair(concentrations, steps, *, duration=0.01, capacity=2.5, volumes=(
         for control in experiment[key]:
             control["schedule"][0]["availability"] = 0.0
     raw = fixture.with_symport(fixture.with_water(raw, availability=0.0), steepness=10.0)
-    raw["model"]["symport"]["routes"][0]["capacity_fmol_s_mM2"] = capacity
+    for route in raw["model"]["symport"]["routes"]:
+        route["capacity_fmol_s_mM2"] = capacity
     return parse_spec(frozen_definition(raw))
 
 
@@ -214,6 +224,10 @@ def unmasked_term(state, p, k, a):  # Planted: a held bath's concentrations coun
     )
 
 
+def per_route_sums(scale, p):  # Planted: each route alone, as if no node were shared.
+    return scale, scale
+
+
 @contextlib.contextmanager
 def replaced(name, replacement):
     """An operator function replaced for the block (a plant)."""
@@ -262,6 +276,18 @@ def bound_failures(row):
             out.append("h x rate = 1.2 admitted")
         if not admitted(closed_pair(ORDINARY, 1, duration=0.8 / expected, volumes=(1.0, 0.25))):
             out.append("h x rate = 0.8 refused")
+    elif row == "shared_node":
+        # Two identical routes on one cell and one finite node: each node's term carries both
+        # routes' k f, so the rate is twice one route's. The step puts h x rate at 1.2: refused,
+        # and 0.6 if each route were counted alone.
+        probe = closed_pair(NEAR_STALL, 1, routes=2)
+        expected = 2.0 * 2.5 * factor_at_maximum(probe) * sum(NEAR_STALL) / 1.0
+        if not close(rate(probe), expected, 4):
+            out.append(f"rate {rate(probe)!r} against {expected!r}")
+        if admitted(closed_pair(NEAR_STALL, 1, duration=1.2 / expected, routes=2)):
+            out.append("h x rate = 1.2 admitted")
+        if not admitted(closed_pair(NEAR_STALL, 1, duration=0.8 / expected, routes=2)):
+            out.append("h x rate = 0.8 refused")
     elif row == "held_bath":
         # The same pair with the cell's held bath outside: the rate is the inside-only bound's, bit
         # for bit (every registered symport world faces held baths, 20 November 2026).
@@ -274,15 +300,18 @@ def bound_failures(row):
     return out
 
 
-BOUND = (
-    pytest.param("lean_pair", no_outside_term, id="lean_pair"),
-    pytest.param("unequal_volumes", cell_volume_term, id="unequal_volumes"),
-    pytest.param("held_bath", unmasked_term, id="held_bath"),
+BOUND = (  # Each plant a context: an operator function replaced.
+    pytest.param("lean_pair", lambda: replaced("outside_term", no_outside_term), id="lean_pair"),
+    pytest.param(
+        "unequal_volumes", lambda: replaced("outside_term", cell_volume_term), id="unequal_volumes"
+    ),
+    pytest.param("shared_node", lambda: replaced("node_sums", per_route_sums), id="shared_node"),
+    pytest.param("held_bath", lambda: replaced("outside_term", unmasked_term), id="held_bath"),
 )
 
 
 @pytest.mark.parametrize("row, plant", BOUND)
 def test_the_step_bound_reads_a_finite_outside_node_and_each_plant_breaks_it(row, plant):
     assert bound_failures(row) == []
-    with replaced("outside_term", plant):
+    with plant():
         assert bound_failures(row) != []
