@@ -1468,9 +1468,14 @@ tag before the next starts.
   - So J = kTM/(1 + kTτ). It rises linearly at small T and saturates at M/τ.
   - With two genes, J_g = k_g T_g M/(1 + Σ_h k_h T_h τ_h): each takes its share of one budget.
   - The transient comes from R-share's stiff ODE.
-- **Its own plants.** Each must fail one of the arm's judged items: the J–T curve at the saturated
-  end, or the machine identity at every row.
-  1. Initiation reads the total machines, not the free ones. That removes the saturation.
+- **Its own plants.** Each must fail one of the arm's judged items: the J–T curve, or the machine
+  identity at every row.
+  1. **Initiation reads the total machines, not the free ones.** That removes the saturation.
+     - It is registered at a T where F stays positive, T = 5 (λτ ≈ 0.5). There initiation on total
+       machines reads J ≈ 1.5 J*.
+     - Nearer the saturated end, at T ≥ 10, the same edit drives F below zero, and the engine would
+       refuse the step rather than yield a J.
+     - The lead's ruling of 20 November 2026; TEMPLATED_POLYMERISATION_LAWS §5.2.
   2. A machine is not returned at release. That breaks free plus engaged equals total, and drains
      the budget.
 

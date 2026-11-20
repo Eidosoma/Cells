@@ -41,10 +41,11 @@ outside Python's standard library, and it names no potential set. What it shows:
    - its entries in RT units;
    - each arm's parameters, and the derived values at the numeric test instance.
 
-7. With --bounds (NumPy, about six minutes on one CPU), §5.6's measurement:
-   - the full system of §4.7, by RK4 at 0.25 s, checked against a second pass at 0.5 s;
-   - every world of §5.1 and §5.2 at 18 potential sets: the test instance, Spirin's peptide value
-     and the 16 corners of §3.3's ranges;
+7. With --bounds (NumPy, a few CPU-minutes), §5.6's measurement:
+   - the full system of §4.7, by RK4 at 0.5 s, checked against a second pass at 1 s over the 18
+     edge sets;
+   - every world of §5.1 and §5.2 at 50 potential sets: the test instance, Spirin's peptide value,
+     the 16 corners of §3.3's ranges and a 32-point Latin hypercube inside them;
    - against A1's phase-1 limit and A1-M's closed forms;
    - the largest per-residue affinity of every one-sided move, which must stay at or below
      x_dom = -1;
@@ -1229,13 +1230,36 @@ def check():
 # ------------------------------------------------------------------ the measured bounds (§5.6)
 
 BOUND_MARGIN = 2  # Each bound is twice the largest gap measured, rounded up to one digit.
-BOUND_STEP_S = 0.25  # The RK4 step of the measurement; a second pass at twice it checks it.
+# The RK4 step of the measurement; a second pass at twice it, over the 18 edge sets, checks it. An
+# earlier pass at 0.25 s agreed with 0.5 s to 6e-10 of every gap (the sheet's §5.6).
+BOUND_STEP_S = 0.5
+INTERIOR_SEED = 20261120  # The interior sample's seed (§5.6).
+INTERIOR_POINTS = 32
+# §3.3's ranges, in the order the interior sample draws them: (symbol, low, high, unit).
+RANGES = (("G_ATP", -40, -25, "kJ/mol"), ("E_pd", -30, -15, "kJ/mol"),
+          ("E_pep", -25, 0, "kJ/mol"), ("E_rc", -1, 1, "RT"))  # fmt: skip
+INTERIOR = "interior"
 
 
-def potential_sets():
-    """The 18 potential sets of the bounds' measurement (§5.6), each {G_ATP, E_pd, E_pep, E_rc}
-    in RT units at T_K: the test instance, the test instance with Spirin's peptide value, and the
-    16 corners of §3.3's ranges."""
+def interior_sample():
+    """§5.6's Latin hypercube over §3.3's four ranges, with random.Random(INTERIOR_SEED): for each
+    symbol in RANGES' order, its range cut into INTERIOR_POINTS equal strata, the strata shuffled,
+    and point k placed uniformly in the k-th shuffled stratum (one random() each, in order). Each
+    point is {symbol: value} in the range's unit."""
+    rng = random.Random(INTERIOR_SEED)
+    columns = []
+    for _, low, high, _ in RANGES:
+        strata = list(range(INTERIOR_POINTS))
+        rng.shuffle(strata)
+        columns.append([low + (high - low) * (k + rng.random()) / INTERIOR_POINTS for k in strata])
+    names = [name for name, _, _, _ in RANGES]
+    return [dict(zip(names, point, strict=True)) for point in zip(*columns, strict=True)]
+
+
+def potential_sets(interior=False):
+    """The potential sets of the bounds' measurement (§5.6), each {G_ATP, E_pd, E_pep, E_rc} in RT
+    units at T_K: the test instance, the test instance with Spirin's peptide value, and the 16
+    corners of §3.3's ranges; with interior, also the 32 points of interior_sample()."""
     e = entries_RT()
     test = {k: e[k] for k in ("G_ATP", "E_pd", "E_pep", "E_rc")}
     out = {"test instance": test, "Spirin's E_pep": dict(test, E_pep=D("-0.5") * KCAL / RT)}
@@ -1247,6 +1271,12 @@ def potential_sets():
                     out[name] = dict(
                         G_ATP=D(g) / RT, E_pd=D(pd) / RT, E_pep=D(pep) / RT, E_rc=D(rc)
                     )
+    if interior:
+        for k, point in enumerate(interior_sample()):
+            out[f"{INTERIOR} {k + 1}"] = {
+                name: D(repr(point[name])) / (RT if unit == "kJ/mol" else 1)
+                for name, _, _, unit in RANGES
+            }
     return out
 
 
@@ -1508,18 +1538,29 @@ def _integrate_batch(np, worlds, names, sets, h):
     return out
 
 
-def measure_bounds(h=BOUND_STEP_S):
-    """§5.6: every world of §5.1 and §5.2 at every potential set, batched by horizon. Returns the
-    largest gap per arm and readout with the set it occurs at, and the largest per-residue
-    affinity over every trajectory (§3.5: at most x_dom = -1)."""
+def measure_rows(h, sets):
+    """Every world of §5.1 and §5.2 at every set of `sets`, batched by horizon: one row per lane."""
     import numpy as np
 
-    worlds, sets = bound_worlds(), potential_sets()
+    worlds = bound_worlds()
     rows = []
     for kinds in (("A1",), ("pol", "two"), ("rib",)):
         names = [w for w, v in worlds.items() if v["kind"] in kinds]
         rows += _integrate_batch(np, worlds, names, sets, h)
-    result = dict(step_s=h, arms={}, domain=max((r["x_max"], r["world"], r["set"]) for r in rows))
+    return rows
+
+
+def measure_bounds(h=BOUND_STEP_S, sets=None):
+    """§5.6 over `sets` (by default the 18 of potential_sets())."""
+    return summarize(measure_rows(h, potential_sets() if sets is None else sets))
+
+
+def summarize(rows):
+    """The largest gap per arm and readout with the world and set it occurs at, the largest
+    per-residue affinity over every trajectory (§3.5: at most x_dom = -1), and the largest
+    conservation residual."""
+    worlds = bound_worlds()
+    result = dict(arms={}, domain=max((r["x_max"], r["world"], r["set"]) for r in rows))
     result["conservation"] = {
         k: max(r["conservation"][k] for r in rows) for k in rows[0]["conservation"]
     }
@@ -1543,12 +1584,16 @@ def bound_value(gap):
     return math.ceil(x / 10**exponent) * 10**exponent
 
 
-def bound_values(result):
-    """{key of the sheet's bounds table: value} from a measurement."""
+def bound_values(result, interior=None):
+    """{key of the sheet's bounds table: value} from a measurement; with `interior` (the same
+    summary over the interior sample alone), each arm's largest interior gap too. Each bound comes
+    from the largest gap over every set, the interior included."""
     out = {}
     for arm, worst in result["arms"].items():
         for k, (v, _, _) in worst.items():
             out[f"{arm} {k}"] = v
+        if interior is not None:
+            out[f"{arm} {INTERIOR}"] = max(v for v, _, _ in interior["arms"][arm].values())
     out["eps_A1"] = bound_value(max(v for k, v in out.items() if k.startswith("A1 ")))
     out["eps_M"] = bound_value(max(v for k, v in out.items() if k.startswith("A1-M ")))
     out["x_max"] = result["domain"][0]
@@ -1585,11 +1630,22 @@ def bounds_consistency(path=SHEET):
 
 
 def bounds_report():
-    """--bounds: the measurement at the step and at twice it, against the sheet's typed table."""
-    fine, coarse = measure_bounds(BOUND_STEP_S), measure_bounds(2 * BOUND_STEP_S)
-    v_fine, v_coarse = bound_values(fine), bound_values(coarse)
-    gap_keys = [k for k in v_fine if k.startswith("A1")]
-    change = max(abs(v_fine[k] - v_coarse[k]) / v_fine[k] for k in gap_keys)
+    """--bounds: the 50 sets at the step, the 18 edge sets again at twice it (the step's check),
+    against the sheet's typed table."""
+    sets = potential_sets(interior=True)
+    edges = {k: v for k, v in sets.items() if not k.startswith(INTERIOR)}
+    rows = measure_rows(BOUND_STEP_S, sets)
+    fine = summarize(rows)
+    inner = summarize([r for r in rows if r["set"].startswith(INTERIOR)])
+    v_fine = bound_values(fine, inner)
+    v_edges = bound_values(summarize([r for r in rows if not r["set"].startswith(INTERIOR)]))
+    v_coarse = bound_values(measure_bounds(2 * BOUND_STEP_S, edges))
+    gap_keys = [k for k in v_edges if k.startswith("A1") and INTERIOR not in k]
+    change = max(abs(v_edges[k] - v_coarse[k]) / v_edges[k] for k in gap_keys)
+    above_half = [
+        arm for arm, eps in (("A1", "eps_A1"), ("A1-M", "eps_M"))
+        if v_fine[f"{arm} {INTERIOR}"] > v_fine[eps] / 2
+    ]  # fmt: skip
     typed = typed_bounds() or {}
     errors = []
     for k, v in v_fine.items():
@@ -1609,6 +1665,11 @@ def bounds_report():
         },  # fmt: skip
         domain_at=f"{fine['domain'][1]}, {fine['domain'][2]}",
         largest_relative_change_at_twice_the_step=f"{change:.2e}",
+        interior_sample=dict(
+            seed=INTERIOR_SEED,
+            points=INTERIOR_POINTS,
+            arms_above_half_their_bound=above_half or "none",
+        ),  # fmt: skip
         conservation_at_t_end={k: f"{v:.2e}" for k, v in fine["conservation"].items()},
         sheet=errors or "agree",
     )
@@ -1629,7 +1690,7 @@ def main(argv=None):
     parser.add_argument("--out", help="write the report as JSON here")
     parser.add_argument("--print-derived", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
-        "--bounds", action="store_true", help="measure §5.6's bounds (NumPy, about 5 minutes)"
+        "--bounds", action="store_true", help="measure §5.6's bounds (NumPy, a few CPU-minutes)"
     )
     args = parser.parse_args(argv)
     if args.print_derived:

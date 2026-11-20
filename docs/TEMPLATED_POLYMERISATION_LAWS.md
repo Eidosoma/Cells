@@ -811,15 +811,24 @@ need the dynamics, so the references show them.
 
 **What was measured** (`sheet_check.py --bounds`, the lane's own tool; the references do not read
 it):
-- **The system:** §4.7's full system, by RK4 at a 0.25 s step. A second pass at 0.5 s changed no
-  measured gap by more than 6 × 10⁻¹⁰ of itself.
+- **The system:** §4.7's full system, by RK4 at a 0.5 s step.
+  - The tool's check pass at 1 s, over the 18 edge sets below, changed no gap by more than
+    2.2 × 10⁻¹⁰ of itself.
+  - An earlier pass at 0.25 s agreed with 0.5 s to 6 × 10⁻¹⁰.
 - **The worlds:** every world of §5.1 and §5.2. That is A1, the seven polymerase-limited worlds,
   the two-gene world and the seven ribosome-limited worlds.
-- **The potential sets,** 18 of them:
+- **The potential sets,** 50 of them. Eighteen are edge sets:
   - the test instance;
   - the test instance with Spirin's E_pep, −0.5 kcal/mol;
   - the 16 corners of §3.3's ranges, ΔG′°_ATP ∈ {−40, −25} kJ/mol, E_pd ∈ {−30, −15} kJ/mol,
     E_pep ∈ {−25, 0} kJ/mol and E_rc/RT ∈ {−1, 1}.
+- **The interior sample:** 32 points inside the ranges, a Latin hypercube with seed 20261120
+  (Python's `random.Random`).
+  - For each symbol in the order ΔG′°_ATP, E_pd, E_pep, E_rc/RT, its range is cut into 32 equal
+    strata and the strata are shuffled.
+  - Point k is placed uniformly in the k-th shuffled stratum, with one `random()` draw each, in
+    order.
+  - So each symbol has exactly one point per stratum.
 - **A1's gaps:** the closed forms' phase-1 limit (§5.1), integrated beside the full system, at the
   outputs every 60 s on [0, t_off). Each gap is relative to the limit's steady state.
 - **A1-M's gaps:** J̄ over the final window, and E and F at t_end, each against its closed form
@@ -829,27 +838,32 @@ it):
 - **Conservation, as a check on the measurement itself.** These are §4.8's conserved totals at
   t_end on every lane: the machines per pool, and the four moieties over the rows and the residues
   in transit.
-  - They stay within 1.4 × 10⁻¹² of their initial values. That is rounding over up to 86,400 steps;
-    the largest is a polymerase pool, and the moieties stay within 6 × 10⁻¹⁴.
+  - They stay within 8.9 × 10⁻¹³ of their initial values, which is rounding. The largest is a
+    polymerase pool, and the moieties stay within 4 × 10⁻¹⁴.
   - So the measurement's transcription of §4.7 conserves what the move matrix conserves.
-- **Each bound** is twice the largest gap, rounded up to one significant digit.
+- **Each bound** is twice the largest gap over all 50 sets, rounded up to one significant digit.
 
 <!-- bounds -->
 | Key | Value | Where the largest occurs |
 | --- | --- | --- |
-| `A1 n_R` | 2.5e-4 | A1, corner ΔG′°_ATP −25, E_pd −30, E_pep 0, E_rc/RT +1 |
-| `A1 n_P` | 5.1e-4 | The same corner |
+| `A1 n_R` | 2.5e-4 | A1, corner ΔG′°_ATP −25, E_pd −30, E_rc/RT +1, at either E_pep (n_R does not depend on it) |
+| `A1 n_P` | 5.1e-4 | A1, corner −25, −30, 0, +1 |
 | `A1 E_tx` | 4.4e-4 | Corner −25, −30, −25, −1 |
 | `A1 E_tl` | 3.85e-4 | Corner −25, −30, −25, +1 |
 | `A1-M J` | 4.6e-5 | Ribosome-limited n_R = 100, corner −40, −30, 0, −1 |
 | `A1-M E` | 3.1e-5 | Polymerase-limited T = 1, corner −25, −30, −25, +1 |
 | `A1-M F` | 5.1e-5 | Ribosome-limited n_R = 100, corner −40, −30, 0, −1 |
+| `A1 interior` | 5.0e-4 | A1's largest gap over the 32 interior points, any readout |
+| `A1-M interior` | 5.1e-5 | A1-M's largest gap over the 32 interior points. F's gap comes from the draws' drift, which barely depends on the potentials |
 | `eps_A1` | 2e-3 | ε_A1: twice the largest A1 gap, rounded up |
 | `eps_M` | 2e-4 | ε_M: twice the largest A1-M gap, rounded up |
 | `x_max` | −5.21 | The largest per-residue affinity: ribosome-limited n_R = 1, corner −40, −30, 0, +1 (protein degradation at E_pep = 0) |
 <!-- /bounds -->
 
 **What it shows.**
+- **The interior.** No interior gap exceeds half its bound: 5.0 × 10⁻⁴ against 10⁻³ in A1, and
+  5.1 × 10⁻⁵ against 10⁻⁴ in A1-M. So the bounds stand by their rule. They were measured at the
+  corners, both peptide values and the interior sample.
 - **Peptide energies.** Both candidates for E_pep, and the range's ends, sit inside both bounds.
   The kinetic effect of E_pep reaches the closed forms only through protein degradation's
   back-term, e^(y_P).
@@ -917,13 +931,16 @@ every declared value. The numeric test instance is the one that is run.
     frozen system has no logarithm, so zero is admitted.
   - **The readouts:** in A1, F_pol, F_rib, E_tx, E_tl, n_R and n_P; at T = 10, F, E and n_R. All
     are in molecules.
-  - **The sampling band.** At every output and readout,
+  - **The sampling band** (declared, uncited: 4.5 SE, the 10/N floor and N = 1,000 are this sheet's
+    constants). At every output and readout,
     |sample mean − deterministic mean| ≤ 4.5 SE + 10/N.
     - N = 1,000 replicates, and SE is the sample standard deviation over √N.
     - The 10/N floor keeps a readout whose replicates are all equal (all zero, early on) from being
       judged on a zero band.
-    - At 4.5 SE, the normal tails give a false-alarm rate below 1 % over each world's comparisons:
-      about 1,090 in A1 and 360 at T = 10.
+    - **The false-alarm rate.** The two-sided normal tail beyond 4.5 SE is 6.8 × 10⁻⁶ per
+      comparison.
+    - So over each world's comparisons the family-wise rate is about 0.7 % for A1 (about 1,090
+      comparisons) and 0.25 % at T = 10 (about 360).
   - **What the band judges.**
     - The T = 10 control must stay within it at every output. This is the references' own check of
       their stochastic simulation.
