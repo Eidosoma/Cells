@@ -27,6 +27,7 @@ from cells.operators import OPERATORS
 from cells.operators import site_occupancy as so
 from cells.operators.contract import check_declarations
 from cells.registry.models import get_model
+from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import site_occupancy_fixtures as sfx
@@ -100,6 +101,14 @@ REFUSALS = {
     "a node below the trace": (
         lambda: world(ligands=[sfx.ligand(trace_mM=2e-3)]),
         "below its declared trace",
+    ),
+    # FR-23 (D244): the bath at the trace, halved at 10 ms, a step the bath schedule's own rule
+    # admits (neutral, down, ratio 2): only the sites' trace rule refuses it.
+    "a scheduled dose below the trace": (
+        lambda: bfx.with_bath_schedule(
+            world(), ["bath"], bfx.CARGO, [(bfx.on_grid(0.01, 1e-3), ["bath"], {"cargo": -5e-13})]
+        ),
+        "scheduled bath bath from 0.01 s, below its declared trace",
     ),
     "a trace above 1e-6 K_d": (
         lambda: world(_pop(k_on=1e7, k_off=1.0)),
@@ -300,11 +309,53 @@ def test_the_structure_check_admits_its_neighbours():
         ("species_regulated_availability@1",),
         ("electrode_current_injection@1",),
         ("scheduled_cell_replacement@1",),
+        ("scheduled_bath_composition@1",),  # FR-23 (D244): both declare their slots (door S).
         (STATE,),
     ):
         for order in ((*laws, so.LAW_ID), (so.LAW_ID, *laws)):
             errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
             assert errors == [], (order, errors)
+
+
+def test_a_bath_dose_beside_occupied_sites_books_the_dose_and_leaves_the_sites():
+    """FR-23's acceptance at the event boundary (D244), in NumPy with no compile, about a second.
+    The bath schedule's dosed world: the held bath joined by face_0 to the finite node ecs_0, which
+    an occupied outward population on cell_0's contact_0 faces, and a x10 dose of the ligand at the
+    bath at t_e (a measured step). Admitted with the sites' reads scoped to ecs_0; the event maps at
+    t_e book the dose as the held content's change and leave every site field bitwise."""
+    t_e, offset = bfx.on_grid(0.02, 1e-3), 9e-3
+    raw = bfx.dosed_world(c0=1e-3, trace_mM=sfx.TRACE_mM, end=0.05)
+    raw = sfx.with_site_occupancy(raw, [sfx.population("r0", theta0=0.5)])
+    spec = parse_spec(
+        bfx.with_bath_schedule(raw, ["bath"], bfx.CARGO, [(t_e, ["bath"], {"cargo": offset})])
+    )
+    sites = next(op for op in OPERATORS.values() if op.LAW_ID == so.LAW_ID)
+    outside = [c.id for c in spec.model.extracellular]
+    declaration = next(d for op, d, _ in cs.entries(spec) if op.LAW_ID == so.LAW_ID)
+    assert sites.read_slots(spec, declaration) == dict.fromkeys(
+        so.SiteOccupancy.SCOPED_READS, (outside.index("ecs_0"),)
+    )
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [t_e])))
+    after = state
+    for op in model.events:
+        after, ok = op.event(after, control, p, xp=np)
+        assert ok is None or bool(ok)
+    for name in so.STATE_AXES:  # Occupied sites keep their bound material across the event.
+        assert (
+            np.asarray(getattr(after, name)).tobytes() == np.asarray(getattr(state, name)).tobytes()
+        )
+    s, bath = list(spec.model.species_ids).index(fx.SPECIES), outside.index("bath")
+    change = (
+        np.asarray(after.bath_held_amount_fmol)[s, bath]
+        - np.asarray(state.bath_held_amount_fmol)[s, bath]
+    )
+    dose = np.asarray(after.bath_dose_fmol)[s, bath]
+    assert dose == change  # The bath records the dose: its held content's change, bit for bit.
+    assert dose == pytest.approx(
+        spec.model.extracellular[bath].volume_pL * offset, rel=1e-15, abs=0
+    )
 
 
 # ------------------------------------------------------------------ A2 to A4

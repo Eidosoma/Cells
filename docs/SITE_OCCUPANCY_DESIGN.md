@@ -1515,6 +1515,36 @@ and column 19). The operator's eleven refusals all come from its `CONFLICTS_VIEW
 - the doors of §9;
 - the tier record (the lead measures at landing).
 
+## 13. FR-23: beside a bath dose (20 November 2026; D244)
+
+The design is [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)
+§2, option A, as D244 decided it. This is development, not judged.
+
+**What changed** (`site_occupancy.py`):
+- **Door S's scoped reads.** The operator declares its outside anchors and volumes
+  (`extracellular_amount_reference`, `extracellular_volume`) as `fixed` reads at stage `split`,
+  scoped to the outside nodes its populations face (`read_slots`, `facing_outside_nodes`).
+  - They are finite nodes, since a population facing a held bath is refused at parse.
+  - Cells' volumes and the masks stay unscoped, so water, insertion and the closers stay refused.
+- **So it composes with the bath schedule in either order.** The dose changes the anchors at held
+  baths only. The composition matrix's cells 17↔19 go from `n` to ✓, and the nominal row goes.
+- **The trace rule covers scheduled compositions** (`check_schedule_traces`). A dose may not set a
+  ligand below its declared trace at a held bath, read from the bath schedule's parsed program, as
+  a declared node or a replacement template may not.
+
+**What stays:**
+- **Every world, at all three levels.** The declarations are host-side, and the check runs at the
+  definition.
+- **FR-3's judged scope,** which named site occupancy beside a bath schedule as not claimed.
+- **A dose into a finite node is still refused** by the bath schedule ("a finite node cannot be
+  clamped"). D244 names it as not covered.
+
+**Evidence:**
+- the event-boundary row (`tests/unit/test_site_occupancy.py`): the dose is booked as the held
+  content's change, and every site field is unchanged, bit for bit;
+- the flipped structure assertion, beside its still-refused twin (`tests/unit/test_door_s.py`);
+- the dosed and undosed development run, `/mnt/workspaces/Cells/operators-fr23-20261120/`.
+
 ## Appendix A. Equations for the independent references
 
 The references are written from these equations, not from engine code. Units are @3's: fmol, pL, mM,
