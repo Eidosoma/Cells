@@ -354,7 +354,14 @@ def test_every_refusal_of_a_replacement(case):
         parse_spec(refusal(case))
 
 
-def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path):
+def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path, monkeypatch):
+    """FR-22's qualification around a wash (the lead's ruling of 20 November): a run cut at the last
+    event before each replacement, or at the first after it, and resumed from its checkpoint on
+    disk reproduces the uninterrupted run bit for bit: every row (the counts, the ledger's heat,
+    work, F and residual, each schedule's column), the trace, the diagnostics, the lives and the
+    replacement records. A cut cannot fall at the replacement itself, since cuts are at events and
+    a replacement lies between two. Planted: a resumed run that redoes the wash (its checkpoint's
+    applied stops one short, after the wash) or skips it (one over, before it) is caught."""
     spec, a, at = world()
     assert parse_spec(spec.to_dict()).fingerprint == spec.fingerprint  # the round trip
     for _, _, n in at:
@@ -365,6 +372,18 @@ def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path):
             assert differences(a, b1, b2, k) == []
             done = b2.population["numbering"]["replacements"]
             assert a.population["replacements"][done:] == b2.population["replacements"]
+    real, (_, _, n) = checkpoints.admit, at[-1]  # the wash
+    for k, shift in ((n + 1, -1), (n, 1)):  # redone after a cut past it; skipped before it
+
+        def shifted(spec_, checkpoint, shift=shift):
+            record, lane, host = real(spec_, checkpoint)
+            doc = dict(host["doc"], applied_stops=host["doc"]["applied_stops"] + shift)
+            return record, lane, dict(host, doc=doc)
+
+        monkeypatch.setattr(checkpoints, "admit", shifted)
+        b1 = stopped(k)
+        assert differences(a, b1, runner.run(spec, start=b1.checkpoint()), k) != []
+        monkeypatch.undo()
 
 
 T_WASH = 1e-7  # s: before the binding's first event (about 3e-4 likely otherwise, at 2.7e3 /s)
