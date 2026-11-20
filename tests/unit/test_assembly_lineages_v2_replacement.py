@@ -22,10 +22,19 @@ Each claim with a planted error it must catch (D187):
 - W6: the refusals: no population, an omitted pool species, solutes above c_ext, a held species
   the assemblies take up (Q3 as built), and a replacement at another schedule's declared time;
 - around a wash (FR-22): a cut at the last event before each replacement and at the first after
-  it, resumed bitwise; and the definition's round trip keeps its fingerprint.
+  it, resumed bitwise; and the definition's round trip keeps its fingerprint;
+- FR-21's acceptance (the requester's, relayed by the lead on 20 November 2026): on the
+  one-particle fixture, a pool ligand X binds a declared site R in one step to its declared
+  complex XR (the requester's S and XS; this world's S is a lumen solute). Immediately before the
+  wash the pool holds 8 free X, the particle 4 vacant and 2 occupied sites; the wash by X-free
+  liquid removes 8 X, supplies none and keeps the particle's 4 and 2. With no free X, binding's
+  rate is exactly 0, so the binding step's next event is a release: 1 free X, 5 vacant, 1 occupied.
+  A rebinding then restores the post-wash counts (seed-specific: the rates make it about 0.996
+  likely before a second release). Both states are read from runs stopped at those events.
 
 World-compiling cost: one population program (K = 2) and about 14 runs, 51.4 s for the whole file
-on the timed lane. Reason: the claims are the runs' own stops, books and events.
+on the timed lane, before FR-21's acceptance, which adds one program (K = 1) and three runs.
+Reason: the claims are the runs' own stops, books and events.
 """
 
 import copy
@@ -44,10 +53,10 @@ from cells.models.assembly_lineages_v2 import (
     population,
     runner,
 )
-from tests.assembly_lineage_v2_fixtures import definition, species, step
+from tests.assembly_lineage_v2_fixtures import definition, site_binding, species, step
 from tests.unit.test_assembly_lineages_v2_checkpoints import differences
 from tests.unit.test_assembly_lineages_v2_lumen import K_L, osmotic_world
-from tests.unit.test_assembly_lineages_v2_population import host_rates
+from tests.unit.test_assembly_lineages_v2_population import FOUNDER, host_rates
 
 PULSE, WASH = 1.0, 2.0
 TRACER_STEPS = ("entry", "join_S")  # the tracer's moves between the pool and a vesicle
@@ -356,3 +365,54 @@ def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path):
             assert differences(a, b1, b2, k) == []
             done = b2.population["numbering"]["replacements"]
             assert a.population["replacements"][done:] == b2.population["replacements"]
+
+
+T_WASH = 1e-7  # s: before the binding's first event (about 3e-4 likely otherwise, at 2.7e3 /s)
+
+
+def site_wash_spec():
+    """FR-21's acceptance world (module docstring): the one-particle fixture (the population tests'
+    pop_spec([FOUNDER], 1)) with the declared binding, 8 free X, and the wash at T_WASH. The
+    binding's constants (k_f 5000 /s, mu_XR -10) make a released X rebind before another release
+    about 0.996 of the time, and a release within the horizon all but certain."""
+    w = osmotic_world(L_pool=30, L_mem=0, S_pool=6, S_lumen=0, I_lumen=0, floor=4 * K_L)
+    site_binding(w)
+    w["founder"]["X@pool"] = 8
+    particle = dict(FOUNDER, **{"R@membrane": 4, "XR@membrane": 2})
+    w["population"] = {"structure": SHARED_POOL, "slots": 1, "founders": [particle]}
+    d = definition(w, molecules=128, horizon=5.0, event_limit=20000, row_every=20, uniforms=True)
+    d["execution"]["mode"] = "population"
+    d["experiment"]["schedules"] = [
+        {"index": 1, "kind": "replacement", "times_s": [T_WASH], "pool": pool_of(d, L=30, S=6)}
+    ]
+    return parse_spec(d)
+
+
+def test_a_site_bound_ligand_stays_through_a_wash_and_a_released_one_rebinds():
+    spec = site_wash_spec()
+    names = [p.name for p in spec.model.world.places]
+    structure = model.structure(spec)
+    P, R = structure.places, structure.steps
+    r = [s.id for s in spec.model.world.steps].index("bind")
+
+    def sites(pool, slot):  # (free X, vacant sites, occupied sites)
+        at = names.index
+        return int(pool[at("X@pool")]), int(slot[at("R@membrane")]), int(slot[at("XR@membrane")])
+
+    a = runner.run(spec).check()
+    (record,) = a.population["replacements"]
+    assert record["removed"]["X@pool"] == 8 and record["supplied"]["X@pool"] == 0
+    i = int(np.flatnonzero(a.rows["row_kind"] == population.REPLACEMENT)[0])
+    pool, slot = a.rows["pool_count"][i], a.rows["slot_count"][i][0]
+    assert sites(pool, slot) == (0, 4, 2)  # 8 X removed with no event before: still 4 and 2
+    rates, _ = host_rates(spec, padded(pool, P), padded(slot, P)[None, :], np.array([True]))
+    assert rates[1][r] == 0.0 and rates[1][R + r] > 0.0  # no free X: binding cannot fire
+    trace = a.trace
+    moves = [(n, int(c)) for n, (c, t) in enumerate(zip(trace["event_channel"],
+                                                        trace["event_time"], strict=True))
+             if t > T_WASH and abs(int(c)) == r + 1]  # fmt: skip
+    (n1, c1), (n2, c2) = moves[:2]
+    assert (c1, c2) == (-(r + 1), r + 1)  # a release, then (for this seed) a rebinding
+    for n, after in ((n1, (1, 5, 1)), (n2, (0, 4, 2))):
+        b = runner.run(spec, stop=n + 1).check()  # FR-22: the world stopped at that event
+        assert sites(b.rows["pool_count"][-1], b.rows["slot_count"][-1][0]) == after

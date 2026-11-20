@@ -328,3 +328,18 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
     its count at the event (mode `event`);
   - a world without a replacement writes none of these, but for the `row_kind` legend in
     `run.json`, which lists `replacement` for every population.
+
+## FR-21, the site step: one-step binding to a declared site (§0.2f)
+
+- **The world's optional `sites`:** `[{"site": "R", "complex": "XR"}, ...]`.
+  - Both are membrane species, distinct, and a complex belongs to one site.
+  - A world without sites writes no key, so its id and fingerprint are unchanged.
+- **The step it admits** in a world with a geometry (rule 3, amended):
+  - `{"locus": "membrane", "reactants": {"X@pool": 1, "R@membrane": 1}, "products":
+    {"XR@membrane": 1}, "law": "cells.stochastic_mass_action@1", "forward_rate_per_s": k_f}`;
+  - declared in this direction, for a declared pair.
+
+  Its rates are a⁺ = k_f·θ⁺·n_R and a⁻ = k_f·exp(μ°_XR − μ°_R − μ°_X)·n_XR. Any other interfacial
+  shape is refused, as before.
+- **No new record.** The step is an ordinary step of the event table and of relations@2. On a
+  bilayer, R and XR carry their own area quanta.

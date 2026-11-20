@@ -231,6 +231,8 @@ that refine it.
      an entry;
    - a join from the lumen, an interfacial reaction and a pool-to-lumen reaction are refused until
      a geometric encounter is declared for them.
+   - **Amended 20 November 2026 (§0.2f):** one interfacial shape is admitted, a pool molecule
+     binding a declared site to form its declared complex.
 
    Worlds without a geometry keep `count_on_m` on every membrane-locus step. That covers OL1's
    worlds, the probes and the GARD limit.
@@ -521,6 +523,44 @@ export of the registered OL2 and OL3 inputs, made at main e8759b48, showed what 
    - It shipped in OL2 milestone 1 on 18 November, so it is recorded there as rule 16's listed
      amendment. Before that milestone lands, the lead checks that each of the 47 files is in the
      tool's leaf-compared set.
+
+### 0.2f The lead's rulings for FR-21's site step (20 November 2026; D244, D246)
+
+The user delegated FR questions to the lead (D244). The lead decided these with the advisor; they
+are not the user's approval.
+
+1. **Rule 3 of §0.2c is amended** to admit exactly one interfacial shape, one-step site binding:
+   X@pool + site@membrane -> complex@membrane.
+   - It is admitted under the existing `cells.stochastic_mass_action@1` with `count_on_m`. No new
+     law is added.
+   - Its encounter is the site count, since the law's membrane factor cancels to n_site. So
+     a⁺ = k_f·θ⁺·n_site, and a⁻ = k_f·exp(Σνμ°)·n_complex, its reverse from F.
+   - The world declares the pair, `"sites": [{"site": ..., "complex": ...}]`: both are membrane
+     species, distinct, and a complex belongs to one site.
+2. **Admission is keyed on the declaration** (D246), never on stoichiometry alone.
+   - The step must be declared in the binding direction: one pool molecule and the declared site
+     form the site's declared complex.
+   - Still refused:
+     - an undeclared pair;
+     - a binding of two ligands;
+     - a ligand in the lumen;
+     - the step declared as the release;
+     - every other interfacial step, as before.
+   - **OL5's registered refusal worlds stay refused.** `refuse_count_on_m_cross_phase` has the
+     shape but declares no site or complex.
+3. **On a bilayer, sites and complexes take area,** as every membrane species does. The shell's
+   own geometry, where sites set nothing, comes after this step lands.
+4. **Not yet settled:**
+   - **OL5's reference parser,** `refusals2.validate` in `validation/ool/references/`, refuses every
+     cross-phase step under a geometry. It needs OL5's own amendment before an FR-21 world can be
+     registered. That is OL5's work, later.
+   - **k_f's provenance.** FR-21's note says k_f carries its provenance (§0.2e item 3). The
+     mass-action law's rate key is a bare number, so where the provenance lives is a world-format
+     question for the lead before a world is registered.
+5. **The acceptance** is the requester's, relayed on 20 November 2026. It is a test in
+   `tests/unit/test_assembly_lineages_v2_replacement.py`:
+   - on the one-particle fixture, a bound ligand stays through FR-20's wash;
+   - a released one rebinds.
 
 ### 0.3 Estimate, order and questions
 
