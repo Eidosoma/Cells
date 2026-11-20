@@ -1540,6 +1540,9 @@ class SiteOccupancy(Operator):
 # recorded as arrived. site_occupancy@1 and replacement@1 keep their structure and programs.
 
 REPLACEMENT_LAW = common.REPLACEMENT_LAW
+# A newcomer's bound and free sites each lie at least this many ulps of the capacity from empty:
+# the event writes anchor + (amount - anchor), within about 1.5 ulps of the amount (check_occupant).
+ARRIVAL_ULPS = 4
 SITES_LAW = LAW_ID  # site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
 OCCUPANT_LAW = "site_occupant_replacement@1"
 OCCUPANT_STATE_AXES = {
@@ -1600,9 +1603,11 @@ def parse_occupant(raw, base):
             theta = _number(values["initial_occupancy"], f"{tid}'s occupancy of {pid}")
             if not 0 < theta < 1:
                 raise ConfigError(
-                    f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: "
-                    "site_occupancy@1's site free energy reads an exactly empty pool, reached from "
-                    "a positive anchor, as 0 x log1p(-1)"
+                    f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: as "
+                    "everywhere in the engine, a pool goes to its trace and is never exactly empty "
+                    "(FR-23's dose rule), so a template gives a fresh cell's occupancy at a trace "
+                    "level (site_occupancy@1's site free energy reads an exactly empty pool, "
+                    "reached from a positive anchor, as 0 x log1p(-1))"
                 )
             binding = _number(values["binding_multiplier"], f"{tid}'s binding of {pid}", low=0.0)
             internal = values.get("internalisation_multiplier")
@@ -1711,6 +1716,23 @@ def check_occupant(spec, declaration):
                     f"{OCCUPANT_LAW}: template {t.template_id} gives {pid} an internalisation "
                     "multiplier exactly when it internalises"
                 )
+    for t in declaration.templates:  # The trace rule on the pools as the owner reads them.
+        for pid, theta, _, _ in t.populations:
+            p = by_id[pid]
+            capacity = p.accessible_fraction * p.sites_per_copy * p.copies / SITES_PER_FMOL
+            least = ARRIVAL_ULPS * float(np.spacing(capacity))
+            for which, amount in (
+                ("bound", theta * capacity),
+                ("free", capacity - theta * capacity),
+            ):
+                if amount < least:
+                    raise ConfigError(
+                        f"{OCCUPANT_LAW}: {t.template_id}'s occupancy {theta!r} of {pid} leaves "
+                        f"its {which} sites within {ARRIVAL_ULPS} ulps of its capacity, which its "
+                        "anchor plus the event's increment may round to exactly empty: a fresh "
+                        f"cell's {which} sites are a trace above that, at least "
+                        f"{least / capacity:.1e} of the capacity"
+                    )
     for tid, slots in filled.items():
         named = {pid for pid, *_ in templates[tid].populations} if tid in templates else set()
         for cell in sorted(slots):
@@ -1780,18 +1802,21 @@ def occupant_event(state, control, p, *, xp=jnp):
     ]
     jump = (g[1] - g[0]) + (g[3] - g[2])
     terms = xp.abs(g[0]) + xp.abs(g[1]) + xp.abs(g[2]) + xp.abs(g[3])
-    valid &= xp.all(xp.where(due, xp.isfinite(jump) & (theta >= 0) & (theta <= 1), True))
+    bound_increment = arrived - p.site_bound_anchor_fmol
+    free_increment = (capacity - arrived) - p.site_free_anchor_fmol
+    # The pools as the owner reads them are never exactly empty (the trace rule; the definition
+    # refuses an occupancy within ARRIVAL_ULPS of either end, so this fails closed only).
+    reads_positive = (p.site_bound_anchor_fmol + bound_increment > 0) & (
+        p.site_free_anchor_fmol + free_increment > 0
+    )
+    valid &= xp.all(xp.where(due, xp.isfinite(jump) & reads_positive, True))
 
     def add(name, term):
         return xp.where(due, getattr(state, name) + term, getattr(state, name))
 
     new = state._replace(
-        site_bound_increment_fmol=xp.where(
-            due, arrived - p.site_bound_anchor_fmol, state.site_bound_increment_fmol
-        ),
-        site_free_increment_fmol=xp.where(
-            due, (capacity - arrived) - p.site_free_anchor_fmol, state.site_free_increment_fmol
-        ),
+        site_bound_increment_fmol=xp.where(due, bound_increment, state.site_bound_increment_fmol),
+        site_free_increment_fmol=xp.where(due, free_increment, state.site_free_increment_fmol),
         site_departed_fmol=add("site_departed_fmol", bound),
         site_arrived_fmol=add("site_arrived_fmol", arrived),
         site_replacement_free_energy_pJ=add("site_replacement_free_energy_pJ", jump),

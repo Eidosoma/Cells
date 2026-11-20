@@ -487,9 +487,14 @@ and a 457-line test file of 21 tests, about 25 s.
 occupant rule and part C′. Part C, contacts, donor copies, templates that change capacity or
 constants, and a newcomer's own schedule are not in version 1. The build departs from the note
 below in these places.
-- **A newcomer's occupancy lies in (0, 1).** site_occupancy@1's `site_free_energy` reads an exactly
-  empty pool, reached from a positive anchor, as 0 × log1p(−1), and @3's energy ledger would read
-  NaN at the event. W's own jump is formed from the endpoints and is finite there.
+- **A newcomer's occupancy lies in (0, 1), its bound and free sites each at least 4 ulps of the
+  capacity from empty** (the lead's ruling: the engine's trace convention, as FR-23's dose rule).
+  - site_occupancy@1's `site_free_energy` reads an exactly empty pool, reached from a positive
+    anchor, as 0 × log1p(−1) = NaN. This is recorded as that note's known limit (§4.3).
+  - An occupancy inside (0, 1) but below the anchor's rounding reaches the same NaN: anchor +
+    (θ′S − anchor) rounds to zero. Hence the margin, and the event's fail-closed check that the
+    pools as the owner reads them stay positive.
+  - W's own jump is formed from the endpoints, and is finite at either end.
 - **The order rule: the reads stay exact.** R3's readers read θ, B and S at the start of a target's
   half-steps.
   - W has only an event part, and events run before every split part's first half. So at the step

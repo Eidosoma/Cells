@@ -820,6 +820,28 @@ an exact Riccati solution (Appendix A.4), a candidate for that door.
 - **The anchored stall** (D150 §1.3, amended). A pool anchored at a positive value and drained follows
   its closed form until about ε × its anchor, then stalls, positive and unrefused. A pool anchored at
   zero carries its whole value in the increment.
+- **Known limit: an exactly empty pool reached from a positive anchor** (found in FR-26, 20 November
+  2026).
+  - **What happens:** `site_free_energy`'s stable increment form evaluates such a pool as
+    0 × log1p(−1) = NaN, and with it the energy ledger.
+  - **No path reaches it in version 1 except W, which refuses it.**
+    - *The half-step cannot reach it.* Each Euler stage keeps at least half of a pool (h L ≤ θ = ½),
+      so a half-step keeps at least 0.604 of it, and the stored anchor + increment never rounds a
+      positive pool to zero: the stall above. A step that ended exactly empty would fail its own
+      finiteness check, through the same form.
+    - *No other operator writes the pools.* `site_occupant_replacement@1` (W, §5.2) is the only
+      accepted writer.
+    - *W refuses it,* by the engine's trace convention: a pool goes to its trace, never exactly to
+      zero (FR-23's dose rule). A template gives a newcomer's occupancy in (0, 1), and its bound and
+      free sites each lie at least 4 ulps of the capacity from empty. The event writes
+      anchor + (amount − anchor), which is within about 1.5 ulps of the amount, and it refuses a
+      step whose pools would read as non-positive (fail closed).
+  - **The check:** `/mnt/workspaces/Cells/operators-fr26-20261120/check_arrival_margin.json`. It
+    samples 2 × 10⁶ capacities and anchors at 4 to 6 ulps from either end, and finds every pool
+    positive, both in NumPy and in a jitted program. The jitted program rounds differently from
+    NumPy in a quarter of the samples, which is why the rule is a margin rather than an emulation
+    of the event's arithmetic. Below the margin, at θ′ = 10⁻¹⁷ or 1 − 2⁻⁵³, 42% of the samples read
+    exactly empty.
 - **The trace refusal** (ruling on question 9: "when both the trace and K_d are declared, refuse at
   the definition", with the threshold stated).
   - **Why it is needed.** D150's "absent" ligand is a trace c_bg > 0, and high-affinity sites bind
@@ -1034,9 +1056,9 @@ an event part of this operator; [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATO
 - **Refused in version 1:**
   - contact populations incident to a replaced slot;
   - donor copies onto a slot with populations;
-  - a newcomer's occupancy of exactly 0 or 1. This operator's `site_free_energy` reads an exactly
-    empty pool, reached from a positive anchor, as 0 × log1p(−1). That is a finding for its owner;
-    the pool is otherwise unreachable in its dynamics;
+  - a newcomer's occupancy of exactly 0 or 1, or within 4 ulps of the capacity from either end. By
+    the engine's trace convention a template gives a fresh cell's occupancy at a trace level (§4.3,
+    the known limit);
   - templates that change capacity or constants.
 
 ### 5.3 The chain: binding (FR-3), internalisation with membrane (FR-2), delivery (FR-1)
@@ -1272,7 +1294,7 @@ S/(V (K_d + c)).
 | Internalisation with membrane (FR-2) | FR-2's retrieval writing these pools and membrane state's through `ACCEPTS_WRITES`; its energy source |
 | A compartment destination (FR-1) | FR-1's node; a destination key value; refusal of internalisation from a compartment-facing patch |
 | Partition | A partition version writing these pools; the one liveness rule (coupling ruling 8) |
-| Replacement | D150's occupant tables; an event part at replacement's steps (§5.2) |
+| Replacement | Built (FR-26): W, `site_occupant_replacement@1`, on D150's occupant tables (§5.2). Contact populations and donor copies remain doors |
 | Volume (water, the lumens) | D150 §5.1's `VIEW_READS` fallback and bookings at the view |
 | Regulated accessibility | The kinetic form through the routing door (D156); a regulated capacity with its work booking and its rule for a fall below occupancy (§2.3) |
 | Competition (several ligands per population) | Shared free sites; the competitive Langmuir law; its references |

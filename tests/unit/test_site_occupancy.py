@@ -277,6 +277,14 @@ REFUSALS.update(
             lambda: w_world({**W_TEMPLATE, "i1": (1.0, 0.5, None)}),
             "occupancy of i1 lies in \\(0, 1\\) in version 1",
         ),
+        "W: a newcomer within the capacity's rounding of empty": (
+            lambda: w_world({**W_TEMPLATE, "o1": (1e-17, 2.0, None)}),
+            "occupancy 1e-17 of o1 leaves its bound sites within 4 ulps of its capacity",
+        ),
+        "W: a newcomer within the capacity's rounding of full": (
+            lambda: w_world({**W_TEMPLATE, "i1": (1 - 2**-53, 0.5, None)}),
+            "of i1 leaves its free sites within 4 ulps of its capacity",
+        ),
         "W: a founder's change after its death": (
             _w_edit(_late_founder_change),
             "changes at 0.007 s, after its founder's death at 0.005 s",
@@ -380,6 +388,11 @@ def test_w_resets_a_replaced_slots_populations_from_the_newcomers_template():
     )
     stale = control._replace(site_replacement_count=control.site_replacement_count + 1)
     assert not bool(w.event(state, stale, p, xp=np)[1])
+    theta = np.asarray(control.site_arrival_occupancy).copy()
+    theta[0] = (
+        1e-17  # Below o1's anchor rounding: the definition refuses it; the event fails closed.
+    )
+    assert not bool(w.event(state, control._replace(site_arrival_occupancy=theta), p, xp=np)[1])
     big = (("o1", dict(patch="contact_1", theta0=0.5, copies=60 * so.SITES_PER_FMOL, alpha=1.0)),)
     for theta_new in (1e-9, 1.0 - 1e-9):
         raw = w_world({"o1": (theta_new, 1.0, None)}, populations=big)
