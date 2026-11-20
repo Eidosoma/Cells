@@ -24,7 +24,10 @@ Each claim with its plant (D187):
   -4u for +4u misses; the supply's pair held at r, without 10^-0.10, moves x by -0.10 ln 10; and
   the kinase without its prefactor has S too small by exactly (1 + [Mg2+]_P/K_MgATP).
 The full comparison, every registered row with both plants, is the harness's run: landing
-evidence, outside the suite (the lead's ruling 4)."""
+evidence, outside the suite (the lead's ruling 4).
+
+Its cost (D224): 10.4 s for the five tests, measured at f671fc2d on the timed lane. The world
+test parses one numpy world and steps it twice, uncompiled; the others parse it or read rows."""
 
 import contextlib
 import copy
