@@ -255,7 +255,8 @@ form's, transformed:
   - (a) the transform equals the pseudoisomer sum, for every row;
   - (b) every move's ΔG is equal in both forms, over random states;
   - (c) every charged move conserves charge;
-  - (d) the laws on totals give the same flux, and the free-form rule holds.
+  - (d) the free-form rule holds. That the laws on totals give the same flux in both forms is a
+    corollary of (b), since both forms see the same totals.
 
 ### 3.3 The entries, and where each potential comes from
 
@@ -298,7 +299,9 @@ At another c₀, an entry moves by (Σν) ln(c₀/1000 mM): L_R − 1 and L_P �
   molecule).
 - Each carries dG_RT_offset = −ν_H ln(h/c°) + Σ_s ν_s ln P_s(h, m), at pH 7 and m = 1 mM. μ°_H
   cancels.
-- The check's `entry_offset` computes it.
+- E_rc is in RT units, and an entry in RT units takes no separate offset. So its offset, here only
+  the binding polynomials' terms (ν_H = 0), is added to its dG_RT.
+- The check's `entry_offset` computes the offset.
 
 **Transcription and translation follow** (ΔG°′ of each move):
 - ΔG°′_tx = 2 ΔG′°_ATP − E_pd − E_rc per residue;
@@ -344,8 +347,16 @@ G(state) = Σ_rows n_s [μ°_s + RT (ln a_s − 1)] + Σ_ρ μ°_ρ,res W_ρ   (
 - One passage telescopes: L_R ΔG_tx + ΔG_rel,R = μ_R + 2 L_R μ_Pi − L_R μ_N, the net move's ΔG.
   The same holds for translation.
 
+**The heat classes.** Each is in pJ, from t = 0:
+- **H_tx:** every transcription stage exit books r_tx (−ΔG_tx), and an exit from the last stage also
+  books −ΔG_rel,R. So H_tx's rate is r_tx S_tx (−ΔG_tx) + Q_tx (−ΔG_rel,R), with S and Q from §4.7.
+- **H_tl:** the same for translation, with ΔG_tl and ΔG_rel,P.
+- **H_deg,R, H_deg,P and H_rc:** each flux times its −ΔG.
+- Initiation books none. So a release's heat is in its route's class.
+
 **The identity.** No work is done on these rows: there is no regenerator and no driven route. So
-G(t) − G(0) + Σ_k H_k(t) = 0, with H_k(t) = ∫₀ᵗ J_k (−ΔG_k) dt ≥ 0 for each move class k.
+G(t) − G(0) + H_tx + H_tl + H_deg,R + H_deg,P + H_rc = 0, and each class is non-negative and
+non-decreasing inside the domain.
 
 ### 3.5 The domain
 
@@ -443,28 +454,58 @@ A machine is returned at every release.
 
 ### 4.7 The equations of motion
 
-For genes g, with the sums over j = 1, …, m:
+**The chain, per route ρ:**
+- dC_ρ,1/dt = J^I_ρ − J_ρ,1, and dC_ρ,j/dt = J_ρ,j−1 − J_ρ,j for j = 2, …, m_ρ;
+- E_ρ = Σ_j C_ρ,j, the engaged machines;
+- S_ρ = Σ_j J_ρ,j, every stage exit;
+- Q_ρ = J_ρ,m, the releases.
 
-- dF_pol/dt = −Σ_g J^I_tx,g + Σ_g J_tx,g,m
-- dF_rib/dt = −Σ_g J^I_tl,g + Σ_g J_tl,g,m
-- dC_ρ,1/dt = J^I_ρ − J_ρ,1, and dC_ρ,j/dt = J_ρ,j−1 − J_ρ,j for j ≥ 2
-- dn_R,g/dt = J_tx,g,m − J^D_R,g
-- dn_P,g/dt = J_tl,g,m − J^D_P,g
-- dn_N/dt = −Σ_g r_tx,g Σ_j J_tx,g,j + J^C
-- dn_M/dt = Σ_g L_R,g J^D_R,g − J^C
-- dn_A/dt = −Σ_g r_tl,g Σ_j J_tl,g,j + Σ_g L_P,g J^D_P,g
-- dn_ATP/dt = −4 Σ_g r_tl,g Σ_j J_tl,g,j − 2 J^C
-- dn_ADP/dt = +4 Σ_g r_tl,g Σ_j J_tl,g,j + 2 J^C
-- dn_Pi/dt = 2 Σ_g r_tx,g Σ_j J_tx,g,j + 4 Σ_g r_tl,g Σ_j J_tl,g,j
-- dn_X/dt = P_X − k_X n_X
+**The regulator:** dn_X/dt = P_X − k_X n_X.
+
+**Everything else, for one gene.** Read each row as d(amount)/dt = Σ over the columns of
+coefficient × flux, with every flux in fmol/s:
+- J_I_tx = J^I_tx and J_I_tl = J^I_tl, the initiations;
+- S_tx, S_tl, the stage exits, and Q_tx, Q_tl, the releases;
+- D_R = J^D_R and D_P = J^D_P, the degradations;
+- J_C = J^C, recharging.
+
+<!-- motion -->
+| Amount | `J_I_tx` | `S_tx` | `Q_tx` | `D_R` | `J_I_tl` | `S_tl` | `Q_tl` | `D_P` | `J_C` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `F_pol` | −1 | | +1 | | | | | | |
+| `E_tx` | +1 | | −1 | | | | | | |
+| `W_tx` | | +r_tx | −L_R | | | | | | |
+| `R` | | | +1 | −1 | | | | | |
+| `N` | | −r_tx | | | | | | | +1 |
+| `M` | | | | +L_R | | | | | −1 |
+| `Pi` | | +2r_tx | | | | +4r_tl | | | |
+| `F_rib` | | | | | −1 | | +1 | | |
+| `E_tl` | | | | | +1 | | −1 | | |
+| `W_tl` | | | | | | +r_tl | −L_P | | |
+| `P` | | | | | | | +1 | −1 | |
+| `A` | | | | | | −r_tl | | +L_P | |
+| `ATP` | | | | | | −4r_tl | | | −2 |
+| `ADP` | | | | | | +4r_tl | | | +2 |
+<!-- /motion -->
+
+- **What the check verifies of this table.**
+  - Each column is the move matrix's composition: S as r residue moves; Q as a release plus a
+    machine's return; D and J_C as their moves; J_I as a machine engaged.
+  - So every column conserves the moieties and the machines.
+  - Each column's free energy is its move's: r ΔG_tx for S_tx, ΔG_rel,R for Q_tx, and so on, so
+    dG/dt = Σ J ΔG.
+- **Several genes.** Each gene g has its own columns, with its own r and L, and its own R_g, P_g,
+  E_ρ,g and W_ρ,g. The machines, N, M, A, ATP, ADP and Pi are shared, so their rates sum over the
+  genes.
 
 ### 4.8 The identities
 
 - **Machines:** F_q + Σ over the routes on q of Σ_j C_ρ,j = M_q.
-- **Residues, per route:** r_ρ S_ρ(t) = W_ρ(t) + L_ρ Q_ρ(t).
-  - S_ρ is the cumulative stage exits, over all stages.
-  - Q_ρ is the cumulative releases.
-- **Products:** n_prod(t) = n_prod(0) + Q(t) − D(t), with D the cumulative degradations.
+- **Residues, per route:** r_ρ ∫S_ρ(t) = W_ρ(t) + L_ρ ∫Q_ρ(t).
+  - S_ρ and Q_ρ are §4.7's fluxes.
+  - ∫S_ρ(t) = ∫₀ᵗ S_ρ dt and ∫Q_ρ(t) are their cumulative extents: every stage exit and every
+    release since t = 0.
+- **Products:** n_prod(t) = n_prod(0) + ∫Q(t) − ∫D(t), with D the degradation flux.
 - **Moieties:** each total over the rows and the residues in transit is constant.
 - **Energy:** §3.4's identity.
 
@@ -549,19 +590,28 @@ B1′. A1's rows are X, N, M, A, ATP, ADP, Pi, R and P.
                + (J^I_tx/k₀_R) [P(m, κ₀ t) − e^(−k₀_R t) (κ₀/(κ₀ − k₀_R))^m P(m, (κ₀ − k₀_R) t)]
 
 - **The engaged polymerases:** E_tx(t) = (J^I_tx/κ₀) Σ_{j=1}^{m} P(j, κ₀ t).
-- **The whole state.** The protein and the ribosomes' stages follow from the same linear system,
-  ẏ = A y + b. Its exact solution is y(t) = e^(At)(y(0) + A⁻¹b) − A⁻¹b.
+- **The whole state.** y = (C_tx,1, …, C_tx,m, n_R, C_tl,1, …, C_tl,m, n_P), all in fmol, obeys
+  - C_tx,1′ = J^I_tx − κ₀_tx C_tx,1, and C_tx,j′ = κ₀_tx (C_tx,j−1 − C_tx,j);
+  - n_R′ = κ₀_tx C_tx,m − k₀_R n_R;
+  - C_tl,1′ = β n_R − κ₀_tl C_tl,1, and C_tl,j′ = κ₀_tl (C_tl,j−1 − C_tl,j);
+  - n_P′ = κ₀_tl C_tl,m − k₀_P n_P.
+
+  So ẏ = A y + b, with b's first entry J^I_tx, its other entries 0, and A the rest. The exact
+  solution is y(t) = e^(At)(y(0) + A⁻¹b) − A⁻¹b, from y(0) = 0 except the products' traces.
 - **The steady state:**
   - n_R* = J^I_tx/k₀_R;
   - n_P* = β n_R*/k₀_P;
   - E_tx* = J^I_tx τ₀_tx and E_tl* = β n_R* τ₀_tl.
 - **The bound.**
-  - Each closed form is compared with A1's full ODE on [0, t_off), within ε_A1 = 5 × 10⁻³ of its
-    phase-1 plateau.
-  - The bound covers the pools' drift, the machines engaged (about 3 × 10⁻⁴ of each pool) and the
-    factors' change from their frozen values.
-  - The references report the actual gap. A gap above the bound resizes the world before
-    registration.
+  - Each closed form (n_R, n_P, E_tx and E_tl) is compared with A1's full ODE on [0, t_off). The
+    tolerance is ε_A1 = 5 × 10⁻³ times the readout's steady state in the limit (n_R*, n_P*, E_tx*
+    and E_tl*).
+  - The bound covers the pools' drift, the machines engaged and the factors' change from their
+    frozen values.
+  - Its sizes are the lane's estimates, not measurements: about 2.5 of 10⁴ polymerases and 170 of
+    10⁶ ribosomes engaged, and drifts of a few 10⁻⁴ in φ.
+  - The references report the actual gap. A gap above the bound resizes the world, which changes
+    this sheet and its tag.
 - **What judges the dynamics.** A1's full ODE, with both phases, finite pools and every factor live.
 
 ### 5.2 A1-M, the machine-limited arm
@@ -570,21 +620,21 @@ Machines are scarce against templates. Monomers and fuel are in excess, so the c
 its initial value. There is no regulator (u = 1). Every value not in this table is A1's.
 
 <!-- a1m -->
-| Symbol | Value | Unit | What |
-| --- | --- | --- | --- |
-| `M_pol` | 100 | copies | RNA polymerases, in the polymerase-limited worlds |
-| `k_I_tx` | 2.5e6 | mM⁻¹ s⁻¹ | Transcription's initiation |
-| `L_2` | 2400 | nt | Gene 2's length in the two-gene world (m = 8, so r = 300) |
-| `T_1` | 10 | copies | Gene 1's copies in the two-gene world |
-| `T_2` | 5 | copies | Gene 2's copies in the two-gene world |
-| `c_N` | 5.0 | mM | Initial NTP, in the polymerase-limited worlds |
-| `M_rib` | 1000 | copies | Ribosomes, in the ribosome-limited worlds |
-| `k_I_tl` | 2.4e6 | mM⁻¹ s⁻¹ | Translation's initiation |
-| `c_A` | 5.0 | mM | Initial amino acid, in the ribosome-limited worlds |
-| `t_end_pol` | 3600 | s | The polymerase-limited horizon |
-| `t_end_rib` | 600 | s | The ribosome-limited horizon |
-| `window_pol` | 600 | s | The final window for the release rate, polymerase-limited |
-| `window_rib` | 120 | s | The final window, ribosome-limited |
+| Symbol | Value | Unit | What | Basis |
+| --- | --- | --- | --- | --- |
+| `M_pol` | 100 | copies | RNA polymerases, in the polymerase-limited worlds | Declared, uncited |
+| `k_I_tx` | 2.5e6 | mM⁻¹ s⁻¹ | Transcription's initiation | Declared, uncited |
+| `L_2` | 2400 | nt | Gene 2's length in the two-gene world (m = 8, so r = 300) | Declared, uncited |
+| `T_1` | 10 | copies | Gene 1's copies in the two-gene world | Declared |
+| `T_2` | 5 | copies | Gene 2's copies in the two-gene world | Declared |
+| `c_N` | 5.0 | mM | Initial NTP, in the polymerase-limited worlds | Declared, uncited |
+| `M_rib` | 1000 | copies | Ribosomes, in the ribosome-limited worlds | Declared, uncited |
+| `k_I_tl` | 2.4e6 | mM⁻¹ s⁻¹ | Translation's initiation | Declared, uncited |
+| `c_A` | 5.0 | mM | Initial amino acid, in the ribosome-limited worlds | Declared, uncited |
+| `t_end_pol` | 3600 | s | The polymerase-limited horizon, the two-gene world's included | Declared |
+| `t_end_rib` | 600 | s | The ribosome-limited horizon | Declared |
+| `window_pol` | 600 | s | The final window for the release rate, polymerase-limited | Declared |
+| `window_rib` | 120 | s | The final window, ribosome-limited | Declared |
 <!-- /a1m -->
 
 **Polymerase-limited first: one world per copy number.**
@@ -599,8 +649,11 @@ its initial value. There is no regulator (u = 1). Every value not in this table 
 
 **The two-gene world.**
 - Gene 1 has T_1 = 10 copies of L_R = 1200 nt. Gene 2 has T_2 = 5 copies of L_2 = 2400 nt.
-- Both have m = 8, v = 50 nt/s and k_I_tx, and they share the 100 polymerases.
+- Both have m = 8, v = 50 nt/s, k_I_tx and k_R, and they share the 100 polymerases.
 - Its rows are R_1, R_2, N, M, ATP, ADP and Pi.
+- **Initial state:** as the polymerase-limited worlds', with R_1 and R_2 both at A1's trace.
+- **Horizon and outputs:** as the polymerase-limited worlds': t_end_pol, every 30 s, with the
+  window window_pol.
 
 **Ribosome-limited second: one world per mRNA amount.**
 - The mRNA is held at n_R = 1, 2, 5, 10, 20, 50 or 100 copies. Nothing writes it: there is no
@@ -609,7 +662,9 @@ its initial value. There is no regulator (u = 1). Every value not in this table 
 - **Initial state:** A 5.0 mM, ATP, ADP and Pi as A1's, P at A1's trace, and every ribosome free.
 - **Outputs:** every 10 s, from 0 to 600 s.
 
-**R-machine's closed forms: the steady state, a limit with τ₀ frozen at the start.**
+**R-machine's closed forms: the steady state, a limit with τ₀ frozen at the start.** Every closed
+form is in fmol: M is the pool as an amount (copies × 10¹⁵/N_A), and J* is in fmol/s. Dividing by
+10¹⁵/N_A gives copies.
 - **One gene:** J* = λ M/(1 + λ τ₀).
   - λ = k_I c₁ T for transcription, and k_I c₁ n_R for translation.
   - It follows from three facts: Little's law, E = J τ₀; the free machines, F = M − E; and
@@ -617,20 +672,24 @@ its initial value. There is no regulator (u = 1). Every value not in this table 
   - J* rises linearly at small T and saturates at M/τ₀.
 - **Two genes:** J*_g = λ_g M/(1 + Σ_h λ_h τ₀,h). Each gene takes its share of one budget.
 - **The engaged and free machines:** E*_g = J*_g τ₀,g, and F* = M/(1 + Σ_h λ_h τ₀,h).
-- **The readout.** J̄ is the release rate over the final window: J̄ = (Q(t_end) − Q(t_end − window))
-  / window.
+- **The readout.** J̄ is the release rate over the final window, in fmol/s:
+  J̄ = (∫Q(t_end) − ∫Q(t_end − window))/window, with ∫Q the cumulative releases (§4.8). In the
+  two-gene world it is per gene.
 - **The bound.** J̄, E and F at t_end are compared with the closed forms within ε_M = 5 × 10⁻⁴,
-  relative. The bound covers the draws' drift, which is about 10⁻⁵ at these sizes.
+  relative. It covers the draws' drift, which the lane estimates at about 10⁻⁵ to 5 × 10⁻⁵ at
+  these sizes. A miss at G2 changes this sheet and its tag.
 - **The transient** comes from R-share's ODE.
 
-**Its two plants.** Each must fail one of the arm's judged items.
+**Its two plants.** Each is an exact edit, and each must fail one of the arm's judged items.
 1. **Initiation reads the total machines, not the free ones.**
-   - J = λ M, with no saturation.
-   - At T = 100 it is about 11 times J*. So it fails the J–T curve at its saturated end.
-   - It also drives F below zero.
+   - The edit: J^I = λ M_q in place of λ F_q (§4.1).
+   - J has no saturation. At T = 100 it is about 11 times J*, so it fails the J–T curve at its
+     saturated end.
+   - It also drives F below zero, so the engine may refuse the step before it yields a J.
 2. **A machine is not returned at release.**
-   - The pool drains, and J̄ falls to about 0.
-   - So it fails F + E = M in every world, and the J–T curve.
+   - The edit: the `Q_tx` column's `F_pol` entry is 0 (§4.7), in every world.
+   - The pool drains and J̄ falls to about 0. So it fails F + E = M in every world, and the J–T
+     curve.
 
 ### 5.3 Derived values
 
@@ -677,18 +736,32 @@ each one, and each is typed to its last digit.
 
 ### 5.4 A1's plants
 
-These are the plants of GENE_REGULATION §4.1. Each is a variant of A1, and each must fail a judged
-item. The references run each plant and report the largest change in each readout, so that the
-protocol can register which item each one fails.
-1. **A wrong stage count:** m_tx = 6, so r = 200. It fails the engaged polymerases E_tx(t), the
-   stage occupancies and n_R's rise.
-2. **A wrong speed:** v_tx = 40. τ₀ is 25 % longer, so it fails E_tx's plateau and n_R's delay.
-3. **A dropped fuel term:** translation draws no ATP. It fails ATP, ADP and Pi.
-4. **A machine not returned:** it fails F + E = M.
-5. **A factor applied twice:** u² in place of u, 0.26 against 0.51 in phase 1. It halves n_R and
-   n_P.
-6. **A wrong residue count:** the product receives L_P residues while 49 per stage are drawn. It
-   fails the residue identity and A.
+These are the plants of GENE_REGULATION §4.1. Each is an exact edit of A1, and each must fail a
+judged item. The references run each plant and report the largest change in each readout, so that
+the protocol can register which item each one fails.
+1. **A wrong stage count.**
+   - The edit: m_tx = 6, so r_tx = 200 and κ_tx = v_tx/200; everything else is unchanged.
+   - It fails the engaged polymerases E_tx(t), the stage occupancies and n_R's rise.
+2. **A wrong speed.**
+   - The edit: v_tx = 40.
+   - τ₀ is 25 % longer, so it fails E_tx's plateau and n_R's delay.
+3. **A dropped fuel term.**
+   - The edit: the `S_tl` column's `ATP`, `ADP` and `Pi` entries are 0 (§4.7); the laws, φ_tl and
+     ΔG_tl, are unchanged.
+   - It fails ATP, ADP and Pi, and G's identity.
+4. **A machine not returned.**
+   - The edit: the `Q_tx` column's `F_pol` entry is 0.
+   - It fails F_pol + E_tx = M_pol.
+5. **A factor applied twice.**
+   - The edit: u² in place of u in J^I_tx, which is 0.26 against 0.51 in phase 1.
+   - It halves n_R and n_P.
+6. **A wrong residue count.**
+   - The edit: the `S_tl` column's `A` entry is −49, while `W_tl` gains 50 per exit and each
+     release delivers L_P = 400.
+   - It fails the amino-acid moiety, the residue identity and A.
+
+The check confirms that edits 3, 4 and 6 break the identity each names (part 6). The other three
+need the dynamics, so the references show them.
 
 ### 5.5 A2, the coupling to Vm (development, not judged)
 
@@ -706,14 +779,14 @@ every declared value. The numeric test instance is the one that is run.
 **The readouts, per world** (exact definitions, in the units of §0):
 - every row's amount n_s(t), and X's in A1;
 - per pool, F_q(t). Per route, every stage's C_ρ,j(t), and E_ρ(t) = Σ_j C_ρ,j(t);
-- the cumulative extents from t = 0:
-  - initiations I_ρ;
-  - stage exits S_ρ;
-  - releases Q_ρ;
-  - degradations D_s;
-  - the recharging extent Ξ, signed;
+- the cumulative extents from t = 0, ∫₀ᵗ of each flux of §4.7:
+  - ∫J_I_ρ, the initiations;
+  - ∫S_ρ, the stage exits;
+  - ∫Q_ρ, the releases;
+  - ∫D_s, the degradations;
+  - ∫J_C, recharging, signed;
 - the residues in transit W_ρ(t);
-- G(t) − G(0) and each move class's heat H_k(t), in pJ (§3.4);
+- G(t) − G(0), and the five heat classes H_tx, H_tl, H_deg,R, H_deg,P and H_rc, in pJ (§3.4);
 - the residuals of every identity in §4.8;
 - A1-M's window rate J̄.
 
@@ -733,7 +806,8 @@ every declared value. The numeric test instance is the one that is run.
 - **R-machine:** §5.2's closed forms, with their gap to R-share's ODE at t_end.
 - **R-noise** (reported, not judged): an exact stochastic simulation, in counts.
   - **The worlds:**
-    - A1's phase 1, frozen as in §5.1's limit, over [0, 10,800 s];
+    - A1's phase 1 over [0, 10,800 s], with the factors frozen as in §5.1's limit. The machines are
+      counted, not taken as abundant;
     - the polymerase-limited world at T = 10, over its horizon. This one is a control: its system is
       linear in counts, so its mean must equal the deterministic one.
   - **The counts:** the free machines, the complexes per stage, and the mRNA and protein molecules.
@@ -743,8 +817,13 @@ every declared value. The numeric test instance is the one that is run.
     - a stage exit, κ₀ c_j;
     - a degradation, k₀ N.
   - **The rest:** monomer and fuel rows are not counted; their factors are frozen.
-  - **The size:** 1,000 replicate cells each, with independent seeds. It reports the sample mean
-    and its standard error beside the deterministic mean, at the outputs.
+  - **The initial counts:** every machine free (10⁴ polymerases and 10⁶ ribosomes in A1; 100
+    polymerases at T = 10), no complexes, and no mRNA or protein. The traces are below one
+    molecule.
+  - **The size and outputs:** 1,000 replicate cells each, with independent seeds. It reports the
+    sample mean and its standard error beside the deterministic mean of the same frozen system:
+    its ODE, with the machines counted, F = M − E. Outputs are every 60 s for A1 and every 30 s for
+    T = 10.
 
 **The tolerances the references must reach.**
 - **ODE trajectories.** A second solve, with tolerances 100 times tighter, changes no readout by
@@ -790,11 +869,12 @@ summariser of the pages. The publisher pages were not opened.
 - **Dickson KS, Burns CM, Richardson JP (2000).** Determination of the free-energy change for repair
   of a DNA phosphodiester bond. *J Biol Chem* 275(21):15828–15831, doi:10.1074/jbc.M910044199.
   CC BY, per Europe PMC's record.
-  - Read: the abstract.
+  - Read: the abstract, in Europe PMC's record, through a summariser.
   - From the T4 DNA ligase equilibrium, K_eq = 3.89 × 10⁴ M at 25 °C and pH 7, so ΔG°′ = −6.3
     kcal/mol for ligation.
-  - The hydrolysis of a DNA phosphodiester bond is −5.3 kcal/mol. The source derives it by
-    subtracting its value for ATP → AMP + PPi; that value was not read.
+  - The hydrolysis of a DNA phosphodiester bond is −5.3 kcal/mol. The source obtains it by
+    subtracting "the known energy contribution" of ATP → AMP + PPi, whose value the abstract does
+    not give.
 - **Lawson JW, Veech RL (1979).** Effects of pH and free Mg²⁺ on the Keq of the creatine kinase
   reaction and other phosphate hydrolyses and phosphate transfer reactions. *J Biol Chem*
   254(14):6528–6537, doi:10.1016/s0021-9258(18)50400-2. CC BY, per Europe PMC's record.

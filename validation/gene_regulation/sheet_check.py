@@ -15,9 +15,10 @@ outside Python's standard library, and it names no potential set. What it shows:
        at a pH other than the state's);
    (c) every charged move conserves charge, with the residues in transit counted (planted:
        translation's four protons written as three);
-   (d) every rate law written on totals gives the same flux in both forms, and a law written on a
-       free form equals one on totals with its constant divided by the form's fraction (planted:
-       the constant left undivided).
+   (d) a law written on a free form equals one on totals with its constant divided by the form's
+       fraction (planted: the constant left undivided). A law on totals gives the same flux in both
+       forms as a corollary of (b), since both forms see the same totals; it is reported, not
+       counted as a separate test.
 2. Every move conserves every moiety in integers, in both forms (planted: recharging with one ATP).
 3. The derivation of the world's potentials (§3.3). From a source's charged base potentials and
    forms, the world's two references, and the three cited entries with their offsets, the
@@ -30,10 +31,13 @@ outside Python's standard library, and it names no potential set. What it shows:
 5. The closed forms (§5):
    - the chain's exact steady state gives J = lambda M / (1 + lambda tau) and the two-gene
      budget (planted: initiation on the total machines; a machine not returned);
-   - the passage time has mean tau and variance tau^2 / m;
-   - the mRNA's closed form matches a direct integration of its chain.
-6. The sheet's typed numbers:
+   - the passage time, from the chain's generator, has mean tau and variance tau^2 / m;
+   - the closed forms of n_R(t) and E(t) match a direct integration of the chain.
+6. The sheet's typed numbers and its equations of motion:
    - its move matrix and moieties against this file's;
+   - its motion table (§4.7) against the moves composed, and its machine, moiety and free-energy
+     identities column by column. Plants 3, 4 and 6 of §5.4 (and A1-M's second), as edits of that
+     table, must each break the identity they name;
    - its entries in RT units;
    - each arm's parameters, and the derived values at the numeric test instance.
 
@@ -373,7 +377,7 @@ def check_reduction(n_states=300, seed=20261120):
     report["a_planted_lnP_dropped"] = f"{planted['a']:.3e}"
     report["b_move_dG_charged_vs_neutral"] = f"{worst['b']:.3e}"
     report["b_planted_pH_not_held"] = f"{planted['b']:.3e}"
-    report["d_flux_on_totals"] = f"{worst['d']:.3e}"
+    report["d_flux_on_totals_corollary_of_b"] = f"{worst['d']:.3e}"
     report["d_free_form_law_vs_scaled_total_law"] = f"{worst['d_free']:.3e}"
     report["d_planted_K_undivided"] = f"{planted['d']:.3e}"
     ok &= worst["a"] < TOLERANCE and worst["b"] < TOLERANCE
@@ -698,12 +702,20 @@ def check_closed_forms(seed=3):
         planted_return = max(
             planted_return, max(abs(a - b) / b for a, b in zip(lost, closed, strict=True))
         )
-    # The passage time through m stages of rate kappa: mean m / kappa, variance m / kappa^2.
+    # The passage time through m stages of rate kappa, from the chain's sub-generator G (G_jj =
+    # -kappa, G_j,j+1 = kappa): mean e_1' (-G)^-1 1 and second moment 2 e_1' (-G)^-2 1.
     moments = []
-    for m, kappa in ((8, Fraction(1, 3)), (8, Fraction(8, 25)), (3, Fraction(7, 10))):
-        mean = sum(Fraction(1) / kappa for _ in range(m))
-        var = sum(Fraction(1) / kappa**2 for _ in range(m))
-        moments.append(mean == m / kappa and var == (m / kappa) ** 2 / m)
+    for m, kappa in ((8, Fraction(1, 3)), (8, Fraction(8, 25)), (3, Fraction(7, 10)), (6, 2)):
+        kappa = Fraction(kappa)
+        minus_g = [
+            [kappa if i == j else (-kappa if j == i + 1 else Fraction(0)) for j in range(m)]
+            for i in range(m)
+        ]
+        first = _solve(minus_g, [Fraction(1)] * m)
+        second = _solve(minus_g, first)
+        mean, var = first[0], 2 * second[0] - first[0] ** 2
+        tau = m / kappa
+        moments.append(mean == tau and var == tau**2 / m)
     mrna = mrna_closed_form_gap()
     ok = worst == 0 and planted_total > Fraction(1, 100) and planted_return > Fraction(1, 100)
     ok &= all(moments) and mrna < 1e-9
@@ -767,6 +779,102 @@ def mrna_closed_form_gap():
             engaged = sum(y[:m])
             worst = max(worst, abs(engaged - engaged_closed_form(t, J, kappa, m)) / (J * m / kappa))
     return worst
+
+
+# ------------------------------------------------------------------ the motion table (§4.7)
+
+MOTION_COLUMNS = ("J_I_tx", "S_tx", "Q_tx", "D_R", "J_I_tl", "S_tl", "Q_tl", "D_P", "J_C")
+TRANSIT = {"R_res": "W_tx", "P_res": "W_tl"}
+
+
+def motion(L_R, L_P, r_tx, r_tl):
+    """§4.7's columns composed from the move matrix: {column: {amount: coefficient}}."""
+    mv = moves(L_R, L_P, charged=False)
+
+    def scaled(move, k, extra=None):
+        out = {TRANSIT.get(s, s): k * n for s, n in mv[move].items()}
+        for s, n in (extra or {}).items():
+            out[s] = out.get(s, 0) + n
+        return {s: n for s, n in out.items() if n}
+
+    return {
+        "J_I_tx": {"F_pol": -1, "E_tx": 1},
+        "S_tx": scaled("tx", r_tx),
+        "Q_tx": scaled("rel_R", 1, {"F_pol": 1, "E_tx": -1}),
+        "D_R": scaled("deg_R", 1),
+        "J_I_tl": {"F_rib": -1, "E_tl": 1},
+        "S_tl": scaled("tl", r_tl),
+        "Q_tl": scaled("rel_P", 1, {"F_rib": 1, "E_tl": -1}),
+        "D_P": scaled("deg_P", 1),
+        "J_C": scaled("rc", 1),
+    }
+
+
+def motion_errors(table, L_R, L_P, r_tx, r_tl, seed=5):
+    """The identities a motion table must keep, column by column: the machines (F + E per pool),
+    every moiety (the residues in transit W carrying R_res's and P_res's weights), and each
+    column's free energy per unit flux equal to its move's (S: r per residue; Q: the release; D,
+    J_C: their moves; J_I: zero), at a random state of the test instance."""
+    out = []
+    weights = {
+        k: {TRANSIT.get(s, s): w for s, w in v.items()} for k, v in moieties(L_R, L_P).items()
+    }
+    rng = random.Random(seed)
+    mu = test_instance_potentials()
+    mu["R"], mu["P"] = L_R * mu["R_res"], L_P * mu["P_res"]
+    n = {
+        s: D(10) ** D(repr(rng.uniform(-6, 1)))
+        for s in ("N", "M", "A", "ATP", "ADP", "Pi", "R", "P")
+    }
+
+    def potential(amount):
+        if amount in ("W_tx", "W_tl"):
+            return mu["R_res" if amount == "W_tx" else "P_res"]
+        if amount in ("F_pol", "E_tx", "F_rib", "E_tl"):
+            return D(0)  # Machines carry no free energy.
+        return mu[amount] + ln(n[amount] / 1000)  # V = 1 pL, c° = 1000 mM.
+
+    mv = moves(L_R, L_P, charged=False)
+    expected_dG = {
+        "J_I_tx": D(0),
+        "S_tx": r_tx * move_dG(n, mu, 1, mv["tx"]),
+        "Q_tx": move_dG(n, mu, 1, mv["rel_R"]),
+        "D_R": move_dG(n, mu, 1, mv["deg_R"]),
+        "J_I_tl": D(0),
+        "S_tl": r_tl * move_dG(n, mu, 1, mv["tl"]),
+        "Q_tl": move_dG(n, mu, 1, mv["rel_P"]),
+        "D_P": move_dG(n, mu, 1, mv["deg_P"]),
+        "J_C": move_dG(n, mu, 1, mv["rc"]),
+    }
+    for column, coefficients in table.items():
+        for pool in (("F_pol", "E_tx"), ("F_rib", "E_tl")):
+            if sum(coefficients.get(a, 0) for a in pool) != 0:
+                out.append(f"{column}: the machines {pool} are not conserved")
+        for moiety, w in weights.items():
+            total = sum(k * w.get(a, 0) for a, k in coefficients.items())
+            if total != 0:
+                out.append(f"{column}: moiety {moiety} changes by {total}")
+        dg = sum((k * potential(a) for a, k in coefficients.items()), D(0))
+        if abs(dg - expected_dG[column]) > TOLERANCE * (1 + abs(expected_dG[column])):
+            out.append(f"{column}: its free energy is not its move's")
+    return out
+
+
+def motion_plants(L_R, L_P, r_tx, r_tl):
+    """Plants 3, 4 and 6 of the sheet's §5.4 (4 is also A1-M's second), as edits of the motion
+    table: {plant: (edited table, the words its error must contain)}."""
+    base = motion(L_R, L_P, r_tx, r_tl)
+    fuel = {k: dict(v) for k, v in base.items()}
+    fuel["S_tl"] = {a: k for a, k in base["S_tl"].items() if a not in ("ATP", "ADP", "Pi")}
+    machine = {k: dict(v) for k, v in base.items()}
+    machine["Q_tx"].pop("F_pol")
+    residues = {k: dict(v) for k, v in base.items()}
+    residues["S_tl"]["A"] = -(r_tl - 1)  # 49 amino acids drawn per exit, while W_tl gains 50.
+    return {
+        "3_dropped_fuel": (fuel, "free energy"),
+        "4_machine_not_returned": (machine, "machines"),
+        "6_wrong_residue_count": (residues, "amino_acid"),
+    }
 
 
 # ------------------------------------------------------------------ the arms' numbers (§5)
@@ -933,13 +1041,13 @@ def _table(block):
     return rows[0], rows[1:]
 
 
-def _cell(text, L_R, L_P):
+def _cell(text, L_R, L_P, r_tx=150, r_tl=50):
     t = _number(text)
     if t == "":
         return 0
     sign = -1 if t.startswith("-") else 1
     t = t.lstrip("-")
-    for name, value in (("L_R", L_R), ("L_P", L_P)):
+    for name, value in (("L_R", L_R), ("L_P", L_P), ("r_tx", r_tx), ("r_tl", r_tl)):
         if t.endswith(name):
             k = t[: -len(name)]
             return sign * (int(k) if k else 1) * value
@@ -1002,6 +1110,24 @@ def sheet_errors(path=SHEET):
             }
         if weights != moieties(L_R, L_P):
             out.append(f"the moiety table differs: {weights}")
+    block = _marked(text, "motion")
+    if block is None:
+        out.append("the sheet has no marked motion table")
+    else:
+        head, rows = _table(block)
+        columns = [_id(h) for h in head[1:]]
+        if columns != list(MOTION_COLUMNS):
+            out.append(f"the motion table's columns are {columns}")
+        typed = {c: {} for c in columns}
+        for row in rows:
+            amount = _id(row[0])
+            for c, cell in zip(columns, row[1:], strict=False):
+                v = _cell(cell, L_R, L_P)
+                if v:
+                    typed[c][amount] = v
+        if typed != motion(L_R, L_P, 150, 50):
+            out.append(f"the motion table differs from the moves composed: {typed}")
+        out += [f"motion table: {e}" for e in motion_errors(typed, L_R, L_P, 150, 50)]
     values = entries_RT()
     block = _marked(text, "entries")
     if block is None:
@@ -1075,6 +1201,12 @@ def check():
     errors = sheet_errors()
     report["6_sheet_numbers"] = errors or "agree"
     ok &= not errors
+    plants = {}
+    for name, (table, words) in motion_plants(1200, 400, 150, 50).items():
+        found = [e for e in motion_errors(table, 1200, 400, 150, 50) if words in e]
+        plants[name] = "caught" if found else "NOT CAUGHT"
+        ok &= bool(found)
+    report["6_motion_plants"] = plants
     return ok, report
 
 
