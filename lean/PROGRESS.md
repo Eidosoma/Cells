@@ -1,5 +1,36 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Saturable uptake from a finite extracellular pool
+
+<a id="saturable-species-exchange"></a>
+
+The import route of `cells.scheduled_species_exchange@1` moves neutral solute from a finite extracellular pool into its receiving cell. For starting amount `n`, remaining amount `q`, saturation amount `b = K_M × volume` and dose `d = area × V_max × time`, the integrated equation is `b log(n/q) + n − q = d`. Lean proves it has one positive solution for positive `n` and `b` and nonnegative dose. The cell gains exactly what the pool loses. The engine’s Newton initializer and every real-arithmetic iterate stay on the same side of the root. The absolute equation residual in fmol bounds the error in the remaining amount. [Lean proofs](CellsProofs/Transport/SpeciesExchange.lean) · [Engine solver](../src/cells/operators/species_exchange.py#L305)
+
+On engine `b09b53f8583524a7c0b5526f3cd11ad4c33695ad`, 48 component cases on each of NumPy and compiled CPU covered three pool sizes, four saturation amounts per pool and four doses, including zero. The largest remaining-amount error against the 50-digit reference was 1.12 × 10⁻¹⁶ of the starting pool. In a separate near-depletion example with `b/n = 10⁻⁵` and `d/n = 0.9999`, the single eight-iteration solve refused. Dividing the same dose into 32 steps satisfied the guard and left 9.29514 × 10⁻⁸ fmol, within 2.75 × 10⁻¹⁷ fmol of the reference. [Reproduce all comparisons](checks/species_exchange.py) · [Independent Wright omega and high-precision reference](../validation/fr1/references/forms.py#L107)
+
+**Two cells drawing on one pool.** With the same `K_M`, the exact continuous model allocates uptake in proportion to the two route capacities. Each successive exact route also depletes the shared pool by its own dose. The engine’s symmetric route ordering introduces a finite-step error in how much goes to each cell. Six `resolved_pump_composite@1` runs around `resolved_pump_tissue@3` used a 1 fmol initial pool and a 1:3 capacity ratio. After 0.5 s the exact pool was 0.16153054 fmol and cell 0’s exact gain was 0.20961737 fmol. Both route orders reproduced the pool within 1.39 × 10⁻¹⁶ fmol across all stored rows. Summed route work agreed with the endpoint chemical energy change to 1.06 × 10⁻¹⁵ pJ. [Ranked route stages](../src/cells/operators/species_exchange.py#L399)
+
+| Steps over 0.5 s | Cell 0 gain error when its route runs first (fmol) | Cell 0 gain error when its route runs second (fmol) |
+| ---: | ---: | ---: |
+| 2 | −3.47 × 10⁻⁴ | +2.49 × 10⁻⁴ |
+| 4 | −8.59 × 10⁻⁵ | +6.14 × 10⁻⁵ |
+| 8 | −2.14 × 10⁻⁵ | +1.53 × 10⁻⁵ |
+
+**Float64 at extreme depletion.** A one-step closed-pair test started with 1 fmol outside and progressively increased the dose. At a target of 6.3051 × 10⁻¹⁶ fmol remaining, the accepted world stored 6.6613 × 10⁻¹⁶ fmol. That is 5.65% high relative to the remainder and 3.56 × 10⁻¹⁷ fmol high in absolute terms. At a target of 3.1391 × 10⁻¹⁷ fmol both scalar half-step solves converged. The stored trial rounded to zero and the runner refused it. Near exhaustion, adjacent representable changes to this 1 fmol anchor are 1.1102 × 10⁻¹⁶ fmol apart. The scalar solver checks its logarithmic residual and the operator separately checks positivity after booking. [Stored amount and guard](../src/cells/operators/species_exchange.py#L363)
+
+**Measured initial uptake.** Search located the zero-trans 3-O-methylglucose series in initially sugar-depleted human red cells. Using the 0.4 and 5 mM points for calibration gave `K_M = 1.19 mM` and a maximum rate of 151.0 µmol/L/min. The paper’s all-dose estimates were 1.4 ± 0.2 mM and 161 ± 10 µmol/L/min. The predictions below are the zero-duration rate of the actual Cells uptake kernel. The experiment used 30 s uptake on ice. [Sage and Carruthers, Fig. 2A](https://doi.org/10.1152/ajpcell.00044.2014) · [Primary figure](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/e148/4024712/0ccab68c1842/zh00091474890002.jpg) · [Digitized inputs](checks/data/sage2014_zero_trans.json)
+
+| Held-out concentration (mM) | Measured rate ± SE (µmol/L/min) | Predicted rate (µmol/L/min) |
+| ---: | ---: | ---: |
+| 0.1 | 11, error bar unresolved | 11.7 |
+| 0.8 | 60 ± 4 | 60.7 |
+| 1.0 | 60 ± 8 | 69.0 |
+| 3.0 | 117 ± 5 | 108.1 |
+
+The four points were held out of this two-point fit within one study. The error bars are from three independent experiments performed in triplicate. Figure-reading precision is about ±1 µmol/L/min and ±0.02 mM. At 3 mM, varying both calibration rates by one plotted SE gives predictions from 100.8 to 115.5 µmol/L/min. This is a calibration sensitivity range. The volume underlying the published rate unit is unspecified. The series tests initial concentration dependence. Later red-cell equilibration, reverse transport and a measured finite-bath depletion trajectory remain outside this comparison.
+
+All 12 new theorem declarations build with the standard Lean axioms. The 106 exchange and repository guard tests passed. Test collection returned the same 20,556 IDs and the same five errors from unavailable archived inputs before and after this change.
+
 ## 20 November 2026 · Site occupancy, electrode pulses and mixed-ion reversal
 
 The comparisons below ran on CPU in float64 with Cells main at `b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc`. The two operators ran in `resolved_pump_composite@1` around `resolved_pump_tissue@3`. The mixed-ion membrane ran in `resolved_pump_tissue@3`.
