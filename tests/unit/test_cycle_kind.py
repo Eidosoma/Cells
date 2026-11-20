@@ -465,6 +465,23 @@ def test_the_population_axis_step_terms_are_version_1s_for_the_proton_law():
     np.testing.assert_allclose(b2, b1, rtol=64 * U * 100, atol=0.0)
     np.testing.assert_allclose(s2, s1, rtol=64 * U * 100, atol=0.0)
     assert r2 == pytest.approx(r1, rel=1e-13, abs=0)
+    # Planted: a held row's steep saturation (the proton law's ATP factor at Hill 4, K 1e100 mM)
+    # makes (K/c)^h overflow a float, which raised OverflowError; the bound, in log space, admits
+    # it with that population's term at e^(-huge) = 0 (D148's recorded widening).
+    form = transporter.PROTON.cycle
+    steep_factors = (form.saturation[0][0], Saturation(("ATP", "N"), "km_atp_mM", 4))
+    steep = dataclasses.replace(
+        transporter.PROTON,
+        law_id="tests.steep_fuel@1",
+        cycle=form._replace(saturation=(steep_factors,)),
+    )
+    raw = tk.charged_world()
+    entry = general(raw["model"]["transporters"][0])
+    entry["law"], entry["parameters"]["km_atp_mM"] = "tests.steep_fuel@1", 1e100
+    raw["model"]["transporters"] = [entry]
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(law_registry.BUILTIN.extended(steep)):
+        spec = parse_spec(raw)
+        assert transporter.bound_rate(spec, dict(spec.model.kinds)[transporter.KIND_ID]) == 0.0
 
 
 # ------------------------------------------------------------------ finite fuel's population

@@ -1758,7 +1758,9 @@ def _population_bound_rate(spec, declaration):
     """B7's definition-time term on the population axis: as version 1's, for each factored
     population with a charged mode, (F/RT) CHARGE sum_m q_m^2 k S_max_m at the free nodes among its
     host's ends, over each node's capacitance; S_max takes a held row's saturation at its declared
-    amount and every other factor at 1, availability and e^x at most 1."""
+    amount and every other factor at 1, availability and e^x at most 1. Each saturation is taken
+    in log space, -log(1 + e^(h ln(K/c))), so a steep factor's (K/c)^h never overflows: where it
+    would, the population's term is e^(-huge) = 0."""
     m = spec.model
     ids = list(m.species_ids)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
@@ -1786,7 +1788,8 @@ def _population_bound_rate(spec, declaration):
                     role, end = form.rows[row]
                     node = nodes[_end_node(t, end)]
                     c = node.initial_amount_fmol[ids.index(roles[role])] / node.volume_pL
-                    log_s -= math.log1p((k_mM / c) ** hill)
+                    # In log space, as the rate path (probe) is: (K/c)^h can overflow a float.
+                    log_s -= float(np.logaddexp(0.0, hill * (math.log(k_mM) - math.log(c))))
             slope += q * q * F / (R * m.temperature_K) * CHARGE_PER_FMOL * t.capacity_fmol_s * math.exp(log_s)
         for node in (t.inside, t.outside):
             if slope and node not in held_bath and node not in faced:
