@@ -899,6 +899,61 @@
     "nature": "a mechanism control on a world where N2's implicit path is active"
    },
    "order": "section 6 is read only after both rows pass on both worlds; a failure goes to the lead first"
+  },
+  {
+   "entry": "10.16",
+   "entry_utc": "2026-11-20T16:34Z",
+   "title": "section 10.15's results, recorded",
+   "records": "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/s1015/out-badc86ac/",
+   "plants": {
+    "H2-slow-100": {
+     "binding": "shown",
+     "eps_star": 1.06e-06
+    },
+    "W0-5": {
+     "binding": "shown",
+     "eps_star": 1.98e-06
+    },
+    "reading": "binding shown; in-step eps* above 1e-6 in both"
+   },
+   "cap_controls": {
+    "H2-slow-100": {
+     "first_counted_step": 1,
+     "refused_at_step": 3
+    },
+    "W0-5": {
+     "first_counted_step": 1,
+     "refused_at_step": 6
+    },
+    "verdict": "failed by the rule's letter: the first counted steps were out of band and held (a = 0); the cap fired at the first in-band counted step",
+    "how_run": "a 1,000-step window, scalar windows with device row checks, c' = 1e-13, the new ID set by a wrapper after rung1.definition returned",
+    "flaw": "the derivation covers in-band counted steps; the pass condition said the first counted step"
+   },
+   "attribution": {
+    "H2": "at 20 ms both IDs start in band (today 4.21, N2 3.75); at 100 ms only N2 runs (today's refused at its first step) and its first two counted steps are out of band (2.32, 3.12)",
+    "W0": "the @3 owner runs today's ID at 5 ms; if it starts in band, the out-of-band start is an N2 finding for section 6 and (a)",
+    "so_far": "nothing yet attributes the out-of-band first steps to N2"
+   },
+   "replaces": "section 10.15 item 2 is replaced by section 10.17's row"
+  },
+  {
+   "entry": "10.17",
+   "entry_utc": "2026-11-20T16:34Z",
+   "title": "the cap control, corrected, on arms nobody has seen, committed before it runs",
+   "rule": "k* is the first counted step X2 does not hold; the cap fires at k_r <= k*; passes if refused with 'the integration error exceeds the registration's cap' at k_r <= k*, with no earlier refusal of another kind; untested if no counted unheld step within 1,000 steps and no refusal (an instrument failure)",
+   "constants": "a held step carries a = 0; a counted unheld step has |a| >= (4/3)(3.5 - 1) x 1000 eps M ~ 7.4e-13 M; F <= M; so at c' = 1e-13 the comparison must fire by k* for k up to about 1,150; uncounted unheld steps add to sum|a| and may fire it earlier",
+   "reported": [
+    "k_r",
+    "k*",
+    "sum|a|, F, M and the floor at k_r"
+   ],
+   "arms_rule": "I3's g1 worlds with registered horizons of at least 200 steps, one row per world, under N2 alone from t = 0 with X2 at c'",
+   "arms": [
+    "W1_P4 at 1 ms (crossrev qualification form)",
+    "s3 cleft_egg"
+   ],
+   "runner": "the @3 owner, from a frozen badc86ac, the ID set as in section 10.16",
+   "gate": "section 6 opens only once both rows pass; a failure goes to the lead first"
   }
  ]
 }
