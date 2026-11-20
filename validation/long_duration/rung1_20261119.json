@@ -760,6 +760,67 @@
    "FR3_plant": "a cross-check, run at the largest step claimed and reported",
    "code": "rung1.py inworld-plant ARM OUTPUT",
    "changed": "no registered number, budget or outcome of the control"
+  },
+  {
+   "entry": "10.8",
+   "entry_utc": "2026-11-20T04:23Z",
+   "title": "a development probe of the calm stretch, written before it runs (information)",
+   "steps_ms": [
+    20,
+    50,
+    100,
+    200,
+    250
+   ],
+   "from_s": 1000.0,
+   "to_s": 1790.0,
+   "source": "the control's H2-slow-1 (rule (b))",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/calm-probe/"
+  },
+  {
+   "entry": "10.9",
+   "entry_utc": "2026-11-20T10:57Z",
+   "title": "X2 across a step change, a development run, written before it runs (information)",
+   "grid": "H2 at a nominal 20 ms with 1 ms steps inside [1799.98, 1802.00] s, from t = 0 to 1830 s, by no-op schedule entries (kir_0 kept at 1)",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/step-change/"
+  },
+  {
+   "entry": "10.10",
+   "entry_utc": "2026-11-20T11:00Z",
+   "title": "C, the fine-window executor, added to rung 1 with its own acceptance, before any C run",
+   "decision": "D235",
+   "what_C_is": "one definition, one run: a coarse step outside declared fine windows and a fine step inside them (one grid, two rates), run by the scalar windowed runner with X2 on at the registered cap; windows declared in the definition from the start; first on today's integrator, with N2 in a later dated entry",
+   "arm": {
+    "world": "H2",
+    "from_s": 0.0,
+    "to_s": 3600.0,
+    "coarse_ms": 20,
+    "fine_ms": 1,
+    "fine_window_s": [
+     1799.98,
+     1802.0
+    ],
+    "why_window": "holds the cue's edges and the crossing; on R3's rows |dVm/dt| < 1e-4 V/s and |dg/dt| < 1e-3 /s from 1801.72 s on",
+    "start_up": "no window: 20 ms completes it from t = 0 (the control's H2-slow-20)",
+    "rows": "R3's kept rows on the arm's grid"
+   },
+   "acceptance": {
+    "a": "(I) on H2 under B_P as registered: every row and the event criteria (peak within 1e-3; each crossing within 0.5 ms, located between rows at most 1 ms apart)",
+    "b": "X2 passes, no refusal of any kind (section 10.6), with its sensitivity shown at the coarse step (section 10.7; H2's plant at 20 ms shows it)",
+    "c": "a gain over today's dt*(I) of 1 ms of at least 10 (D231), read as the ratio of step counts (3.6e6 over C's); the timed cost per simulated second against H2-full-1's 0.34 s is reported beside",
+    "reported": "B_A and histories, not judged"
+   },
+   "prediction": {
+    "step_gain": 19.8,
+    "cost_gain": 16.6,
+    "a": "pass",
+    "b": "depends on X2 across the two step changes (section 10.9)"
+   },
+   "not_claimed": [
+    "W0: its coarse step is held at 5 ms by the junction-gate bound under today's ID, which C cannot lift, and its (I) already passes at 5 ms",
+    "windows ended by settling thresholds (the composite readout gap): a later version",
+    "C with N2: its own dated entry after N2 lands"
+   ]
   }
  ]
 }
