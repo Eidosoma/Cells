@@ -32,7 +32,15 @@ Direct proof subject `cells.scheduled_species_turnover@1`
 
 ## Numerical comparison
 
-**Failed.** 144 scalar cases per backend and two ordinary four-phase schedules matched the 60-digit reference. A one-second compiled run at extreme production and clearance accepted 1 fmol and zero work against a reference of 2 fmol and 0.995667 pJ. The two rounded gross bookings erased the net movement. Halving both rates recovered the correct result. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)
+**Checked.** All 144 scalar cases on each backend and two ordinary four-phase schedules matched the 60-digit reference. Both extreme-rate worlds stored the reference 2 fmol and booked 0.995667 pJ of chemical work. The earlier engine stored 1 fmol and zero work in the larger-rate case. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.scheduled_species_turnover@1`
+
+[Net change during rapid turnover](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/operators/species_turnover.py#L273) · [Stored amount, production, clearance and work](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/operators/species_turnover.py#L278) · [Engine regression at the switch in net calculation](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/tests/unit/test_species_turnover.py#L450) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/species_turnover.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine dd085e36e9ce](https://github.com/Eidosoma/Cells/commit/dd085e36e9ced2edfed88c7194e970bd335f3ad0) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

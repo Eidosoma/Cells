@@ -13,9 +13,9 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 13 checked · 3 failed | 14 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 5 checked · 1 failed | 4 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 15 checked · 1 failed | 14 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 15 checked · 2 failed | 13 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->

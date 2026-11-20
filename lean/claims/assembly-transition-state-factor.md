@@ -29,7 +29,13 @@ Uses [Finite molecule counts set stochastic encounter rates and paired event hea
 
 ## Numerical comparison
 
-**Failed.** Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error.
+**Checked.** The directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In the opposed ±20 kBT contact case, both rates were 2.0611536224/s and the first event occurred at the reference 0.3459699807 s. All four seeded clocks fired four events with closed ledgers. The earlier comparison records the spurious inert state.
+
+**Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
+
+[Choice of the count-weighted mean](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/models/assembly_lineages_v2/transition_state.py#L143) · [Common-state transition factor](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/models/assembly_lineages_v2/transition_state.py#L170) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/assembly_kinetics.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine dd085e36e9ce](https://github.com/Eidosoma/Cells/commit/dd085e36e9ced2edfed88c7194e970bd335f3ad0) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
 
 **Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
 
