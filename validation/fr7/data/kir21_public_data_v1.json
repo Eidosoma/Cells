@@ -1,0 +1,109 @@
+{
+ "scope": "Retrospective source handoff for the FR-7 abundance and resting-voltage comparison in Cells decision D238. The published voltage contrast was known before the figure readings were taken.",
+ "readings": "validation/fr7/data/kir21_ambrosini_2014_readings.csv",
+ "studies": [
+  {
+   "authors": "Ambrosini et al. (2014)",
+   "doi": "10.1093/hmg/ddu201",
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "public_root": "https://pmc-oa-opendata.s3.amazonaws.com/PMC4140467.1/",
+   "files": [
+    {
+     "name": "PMC4140467.1.xml",
+     "bytes": 143796,
+     "sha256": "e84a33b22808b401cbd40f991f377d515b64a1a5de34af0d30cf2b878ac18915"
+    },
+    {
+     "name": "ddu20103.jpg",
+     "bytes": 125849,
+     "sha256": "6d58f2b4130cf2557b1d8604b9a33d67f8bf56ab3c18bbbe3f72f6d641415143"
+    },
+    {
+     "name": "ddu20104.jpg",
+     "bytes": 117510,
+     "sha256": "cbbdf527223845d31d32f3182ea686f8b99bc2d66cb2395d0566a1541b173432"
+    },
+    {
+     "name": "PMC4140467.1.pdf",
+     "bytes": 877589,
+     "sha256": "1bfc7d9381aa509e732ccd9c544c841693fb57a51c29e896ce9129d35c46b905"
+    },
+    {
+     "name": "supp_ddu201_ddu201supp.pdf",
+     "bytes": 2254299,
+     "sha256": "7326fe66ad27a54f1f463838f80f86704723617657fee16ed109185a0f4e52e1"
+    }
+   ]
+  },
+  {
+   "authors": "Qile et al. (2019)",
+   "doi": "10.3389/fphys.2019.00863",
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "public_root": "https://pmc-oa-opendata.s3.amazonaws.com/PMC6624654.1/",
+   "files": [
+    {
+     "name": "PMC6624654.1.xml",
+     "bytes": 99305,
+     "sha256": "14915001a9062a27e289650772e3015f3b6afd6caa2d9dca41a674441b031266"
+    },
+    {
+     "name": "fphys-10-00863-g004.jpg",
+     "bytes": 109917,
+     "sha256": "070b873118fbc619fb0f21f41b34825424d7c4f9aae219a251387383c60a1488"
+    }
+   ],
+   "reported_measurement": {
+    "panel": "4B",
+    "observable": "total wild-type human Kir2.1 protein after synthesis was stopped",
+    "cell_system": "HEK293T",
+    "half_life_h": 2.6,
+    "source": "Results text for Figure 4, rounded as printed"
+   }
+  }
+ ],
+ "digitization": {
+  "source": "Ambrosini et al. The CSV contains approximate group means and SEM read from the original JPEGs. Pixels start at the upper left. Convert each mean_y_px by linear interpolation between the two ticks. SEM is the absolute distance from the mean to the error-bar cap times units per pixel. No time point was assigned to the untreated controls.",
+  "panels": {
+   "3E": {
+    "file": "ddu20103.jpg",
+    "y_px": [
+     485,
+     336
+    ],
+    "tick_values": [
+     0,
+     50
+    ],
+    "decimal_places": 1
+   },
+   "3F": {
+    "file": "ddu20103.jpg",
+    "y_px": [
+     271,
+     484
+    ],
+    "tick_values": [
+     -60,
+     -80
+    ],
+    "decimal_places": 1
+   },
+   "4B": {
+    "file": "ddu20104.jpg",
+    "y_px": [
+     1165,
+     648
+    ],
+    "tick_values": [
+     0,
+     1.2
+    ],
+    "decimal_places": 3
+   }
+  }
+ },
+ "attribution": [
+  "Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet., doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0.",
+  "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0."
+ ]
+}

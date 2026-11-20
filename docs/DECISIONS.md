@@ -7741,3 +7741,136 @@ the order of that landing is put to the user.
 6. the gap-junction pricing note;
 7. FR-21's design note;
 8. further origin-of-life building.
+
+## D239: FR-23 to FR-26 join the high-priority feature requests; the bath recipe's six-order regression
+
+2026-11-20, about 17:24 UTC. The user pasted a verified bug report and four feature requests, and
+said "high priority feature request".
+
+**The bug:** `scheduled_bath_composition@1`'s per-species running sum loses a small dose between
+large opposite contributions, so its result depends on order. In a 1 pL bath, "+24, −24, +2⁻⁴⁹ mM"
+records 2⁻⁴⁹ fmol, but "+24, +2⁻⁴⁹, −24" records 0.
+- **The fix**, already in hand (`math.fsum` per species, D148 in place; no registered world
+  changes), gains the user's regression test: all six orders give the exact expected target and
+  dose.
+
+**The requests** are logged in docs/FEATURE_REQUESTS.md at high priority, beside FR-20 to FR-22
+(D237):
+- **FR-23:** timed bath changes beside binding sites on distinct finite nodes;
+- **FR-24:** binding-site occupancy as an input to reaction rates;
+- **FR-25:** a reusable one-gene expression unit, folded into gene regulation's option A (D235);
+- **FR-26:** owned state when a cell is replaced.
+
+Each becomes a design note before code (D142) and a general feature (D144).
+
+## D240: FR-20's design approved; the user runs FR-7's data search
+
+2026-11-20, about 17:37 UTC. The user, on the lead's two questions: "1. Small new operator as you
+suggest", "2. I'm doing the search myself".
+
+1. **FR-20, the pulse and washout: the design note's recommendation is approved**
+   (docs/ASSEMBLY_WASHOUT_DESIGN.md). A new operator, `cells.pool_replacement@1`: a host stop that
+   draws nothing, keeps every assembly as it stands, and replaces the pool from a declared source. It
+   records the old pool to the sink and the fresh pool from its source, with their free energies,
+   and gives relations a pool node. The note's five answers:
+   - **Q1:** the wash bath has the pool's own volume.
+   - **Q2:** a pulse is a replacement with tracer-containing solution, not an addition.
+   - **Q3:** a held tracer concentration is refused.
+   - **Q4:** the transfer's osmotic refusal is kept as it is.
+   - **Q5:** the name is `cells.pool_replacement@1`.
+
+   The cost is about 2–2.5 agent-days. The origin-of-life builder builds it now, ahead of its own
+   repairs (D237's priority). An exposed site that binds in one step is FR-21's ground.
+2. **FR-7's measured response (D238 item 4): the user does the search for an openly licensed
+   dataset of measured channel lifetimes.** The agents' search was stopped by a safeguard and is
+   not retried by any route. FR-7's item 4 waits for the user's source.
+
+## D241: FR-7's measured response gets a public source: Kir2.1 in U251MG cells, for a retrospective comparison
+
+2026-11-20, about 17:59 UTC. The user, after doing the search themselves (D240): "Use option (a)
+for the data handoff", with the results.
+- **The source:** Ambrosini et al. (2014, doi:10.1093/hmg/ddu201, CC BY 4.0) measured Kir2.1
+  membrane-fraction abundance, resting voltage and total-protein decay in the same human U251MG
+  model, for wild type and K346T. The variant has more channel protein in the membrane fraction and
+  a resting voltage about 6 mV more negative.
+- **The second study:** Qile et al. (2019, CC BY 4.0) give a 2.6 h half-life for wild-type human
+  Kir2.1 protein in HEK293T cells.
+- **The readings:** 12 group means with their plotted SEMs and a sanitized manifest, in
+  validation/fr7/data/ (bare cited numbers with attribution; no figure images).
+
+**The scope, in the user's terms:**
+- **A retrospective group comparison only.**
+  - Record which protein pool each model state represents.
+  - Fix the abundance-to-conductance conversion independently of the two voltage means.
+  - Compare the predicted K346T-minus-wild-type voltage contrast with the published one.
+- **The judged run stays pending** until the mapping from measured protein to functional surface
+  units and FR-8's timing are decided.
+- **No claim about persistence after a trigger.** It would need voltage through recovery and a
+  measured trigger-clearance time.
+
+This gives FR-7's channel target a public-data path ahead of its junction stage (U1).
+
+## D242: Origin of life takes the lipid route, through fuel; the Lean repairs land now
+
+2026-11-20, about 18:25 UTC. Asked how close a break-and-renew run is, the lead gave two routes:
+1. GARD on `cells.assembly_lineages@1`, whose G3 and G4 have never run;
+2. the lipid simulation D212 asked for. Four pieces are missing:
+   - a world that combines catalysis with vesicles, division and the pool;
+   - F12's restored futures on @2;
+   - an F12 reader for @2's records;
+   - the paused Lean repairs.
+
+The lead added a caveat. @2's catalysis keeps detailed balance, so without a drive the vesicles may
+relax to one composition and the result could be null; fuel may be needed.
+
+The user: "2. and yes lets get everything working inclduing Fuel", then "and lets get lean repears
+done".
+
+- **The route:** the lipid simulation. GARD's G3 and G4 stay unscheduled.
+- **The scope, as the lead reads it:**
+  - the four missing pieces;
+  - then the parts of the official version the lead named in the message the user answered: OL4
+    (energy, with fuel), OL6 (the GARD limit and the deterministic representation), OL8
+    (oligomers) and OL9 (the first experiment, registered before any judged run).
+  - This answers D199's U8 (OL0–OL9 as one programme) as far as these parts go. OL8 cannot start
+    before OL4 lands.
+- **Fuel starts as a desk note.**
+  - It says what of ORIGIN_OF_LIFE_ENGINE_DESIGN §3 already exists in the version-2 family.
+  - It gives options for which step fuel pays for. Fuel answers the caveat only if fuel-driven
+    steps make or unmake membrane species, as in anchor A5, with member catalysis acting on those
+    steps. The options go to the user.
+  - It says how its files sit beside the origin-of-life builder's.
+  - No fueled world runs before OL5's references for it are registered.
+- **The Lean repairs land now:**
+  - the three on `ol-lean-repairs`: GARD's pair-consistent leave, the transition-state factor, and
+    the lumen's tension formed from the physical area;
+  - the declared-lumen crash (`ol-pool-declared-lumen`);
+  - the @1 ledger docstring's sink sign. It reached the lead the same evening, and the docstring
+    should read ΔΦ = −W + S;
+  - `species_exchange`'s depletion remainder, in the robustness batch.
+
+  The origin-of-life repairs gate as one stack, and D230's lane rule is lifted for that stack only.
+  A repair is done when the Lean project's own reproducers pass at the landed head.
+- **Priority:** D230 stands until the user answers one question: whether origin of life now queues
+  on equal terms with the core and feature-request work.
+
+## D243: Origin of life gets one more agent; the rest is the lead's call
+
+2026-11-20, about 18:29 UTC. The lead asked whether origin of life should now compete for agents
+and test lanes on equal terms with the core and feature-request work. The user: "just add one more
+agent", "then as you see fit".
+
+- **One more agent works on origin of life:** a second builder, beside the first builder and the
+  fuel desk agent (D242).
+- **The second builder's work** is the break-and-renew development pieces in files that no open
+  origin-of-life head touches:
+  - the F12 reader for @2's records;
+  - the world that combines catalysis with vesicles, division and the pool;
+  - F12's restored futures, through a single-lineage checkpoint (rung S) and a branch rule.
+
+  It starts with the plan and price the lead had asked of the first builder. After the fuel note is
+  ruled, it builds OL4.
+- **The first builder keeps** FR-20 and the Lean repairs, then slice 5, the population runs and
+  OL5's probe roles, then OL6.
+- **Everything else is the lead's call,** within D230 and D242. Core and feature requests keep
+  their claim on seats and lanes, and origin of life may get more as seats free.

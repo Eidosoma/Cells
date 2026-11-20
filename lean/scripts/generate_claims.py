@@ -258,8 +258,8 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         parts += [
             f"## Registered {kind}s",
             f"Direct Lean claims cover {n_direct} of {len(rows)} registered {kind}s. "
-            f"Recorded numerical comparisons exercise {n_checked}. A run can exercise a "
-            f"{kind} while checking a different property.",
+            f"Recorded numerical comparisons exercise {n_checked}. Each linked record names "
+            "the property tested.",
         ]
         table = [
             f"| {kind.title()} | Direct Lean claims | Recorded comparisons |",

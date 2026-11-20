@@ -6,16 +6,16 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [34 of 37 laws](COVERAGE.md#registered-laws) and [14 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [20 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 4 of 5 | 7 of 7 | 7 checked | 7 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 9 of 9 | 9 checked | 9 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 8 of 10 | 10 of 10 | 7 checked · 3 failed | 7 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 11 of 11 | 8 checked · 3 failed | 8 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 13 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 14 of 14 | 10 checked · 4 failed | 10 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
 <!-- /generated -->
@@ -126,6 +126,33 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For scheduled cell replacement, compare simultaneous donor and template arrivals, including a volume-preserving copy with nonzero water free energy. The optional second command isolates the v2 definition that refuses a strictly interior volume and returns a failure while the refusal persists. [Material and charge](PROGRESS.md#scheduled-cell-replacement) · [Water and measured cell volumes](PROGRESS.md#cell-replacement-water) · [Boundary reproducer](PROGRESS.md#cell-replacement-volume-boundary)
+
+```bash
+"$cells_python" -B checks/cell_replacement.py
+"$cells_python" -B checks/cell_replacement.py --boundary-only --require-interior
+```
+
+For size-triggered fission and daughter continuation, compare fixed-quota and independent partitions, then follow empty and full daughters through the engine. The driver also compares measured bead-count variance with the probability model. To verify the figure readings, run `pdftocairo -f 3 -l 3 -svg article.pdf figure.svg` on the four-page PDF listed as `vector_pdf` and pass `--figure-svg figure.svg` to the driver. [Partition results and measurements](PROGRESS.md#size-threshold-fission) · [Daughter selection](PROGRESS.md#lineage-daughter-continuation) · [Ledger documentation finding](PROGRESS.md#lineage-fission-sink-sign) · [Figure source](checks/data/fornell2017_partition.json)
+
+```bash
+"$cells_python" -B checks/lineage_fission.py
+```
+
+For serial transfer and shear fission, follow an impermeant tracer through successive washes and from each parent to its daughters. The driver also checks discarded material, signed free energy and refused splits. The biological records include measured wash recovery and paired parent–daughter fluorescence. [Transfer results](PROGRESS.md#vesicle-serial-transfer) · [Division results](PROGRESS.md#vesicle-shear-fission)
+
+```bash
+"$cells_python" -B checks/vesicle_population.py
+```
+
+For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. Its one-event fixed-volume reproducer exits with status 1 on the recorded engine revision. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Fixed-volume reporting failure](PROGRESS.md#shared-pool-declared-volume)
+
+```bash
+"$cells_python" -B checks/vesicle_exchange.py
+"$cells_python" -B checks/shared_pool.py --controls-only
+"$cells_python" -B checks/shared_pool.py --declared-only
+```
 
 For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. It also reports measured deflation and swelling. The full run exits with status 1 if either near-threshold rupture decision disagrees with the reference. [Physical results, biological measurements and rupture finding](PROGRESS.md#bilayer-footprint)
 

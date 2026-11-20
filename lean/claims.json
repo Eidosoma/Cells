@@ -18,6 +18,255 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "scheduled-cell-replacement": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Simultaneous donor and template state": "src/cells/operators/cell_replacement.py#L245",
+        "Charge, field and electrode work": "src/cells/operators/cell_replacement.py#L301",
+        "Once-per-generation schedule": "src/cells/operators/cell_replacement.py#L327"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#scheduled-cell-replacement"
+    },
+    "cell-replacement-water": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Gross volume, donor copy and water booking": "src/cells/operators/cell_replacement_v2.py#L99",
+        "Per-node water free energy": "src/cells/operators/osmotic_water.py#L299",
+        "Equal donor compartment admission": "src/cells/operators/cell_replacement_v2.py#L186"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#cell-replacement-water"
+    },
+    "cell-replacement-volume-boundary": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Strict declared interval": "src/cells/operators/cell_replacement_v2.py#L186",
+        "Template stored as an offset": "src/cells/operators/cell_replacement_v2.py#L107",
+        "Strict runtime water domain": "src/cells/numerics/osmotic_water.py#L96",
+        "Newcomer domain check during definition admission": "src/cells/operators/cell_replacement.py#L510"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#cell-replacement-volume-boundary"
+    },
+    "size-threshold-fission": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1"
+      ],
+      "operators": [
+        "cells.size_threshold_fission@1"
+      ],
+      "engine_revision": "ea073ff872ec64b34346fb01fdc40bb38c8f2861",
+      "record_revision": "4231c96210f7d0f63206ca08b88affab48ac1717",
+      "sources": {
+        "Single-molecule threshold trigger": "src/cells/models/assembly_lineages/kernel.py#L299",
+        "Ranked and binomial partitions": "src/cells/models/assembly_lineages/fission.py#L120",
+        "Sibling counts from the actual partition": "src/cells/models/assembly_lineages/kernel.py#L365"
+      },
+      "driver": "lean/checks/lineage_fission.py",
+      "record": "lean/PROGRESS.md#size-threshold-fission"
+    },
+    "lineage-daughter-continuation": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1"
+      ],
+      "operators": [
+        "cells.size_threshold_fission@1",
+        "cells.daughter_continuation@1"
+      ],
+      "engine_revision": "ea073ff872ec64b34346fb01fdc40bb38c8f2861",
+      "record_revision": "4231c96210f7d0f63206ca08b88affab48ac1717",
+      "sources": {
+        "Choose a daughter and apply the fallback": "src/cells/models/assembly_lineages/continuation.py#L98",
+        "Book work and the outgoing sibling, decide the birth status": "src/cells/models/assembly_lineages/kernel.py#L365",
+        "Record both branches of a split": "src/cells/models/assembly_lineages/runner.py#L682",
+        "Ledger closure implementation": "src/cells/models/assembly_lineages/ledger.py#L90",
+        "Sink sign in the derivation": "src/cells/models/assembly_lineages/ledger.py#L38"
+      },
+      "driver": "lean/checks/lineage_fission.py",
+      "record": "lean/PROGRESS.md#lineage-daughter-continuation"
+    },
+    "vesicle-serial-transfer": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [
+        "cells.serial_transfer@1"
+      ],
+      "engine_revision": "5011ed3d6bb64721abc5acfb9f3c834fa12c97ce",
+      "record_revision": "8b72a3ed05b95e5b4f4f13305b608f17cefbf0a3",
+      "sources": {
+        "Rank the living slots by their draws": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Apply the sample, replace the bath and book work and sink": "src/cells/models/assembly_lineages_v2/population.py#L588"
+      },
+      "driver": "lean/checks/vesicle_population.py",
+      "record": "lean/PROGRESS.md#vesicle-serial-transfer"
+    },
+    "vesicle-shear-fission": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [
+        "cells.shear_fission@1"
+      ],
+      "engine_revision": "5011ed3d6bb64721abc5acfb9f3c834fa12c97ce",
+      "record_revision": "8b72a3ed05b95e5b4f4f13305b608f17cefbf0a3",
+      "sources": {
+        "Membrane and lumen partition": "src/cells/models/assembly_lineages_v2/division.py#L226",
+        "Volume gate and division attempt": "src/cells/models/assembly_lineages_v2/division.py#L283",
+        "Acceptance, shear work and sibling sink": "src/cells/models/assembly_lineages_v2/division.py#L380",
+        "Follow one daughter": "src/cells/models/assembly_lineages_v2/runner.py#L257",
+        "Keep all daughters in the shared pool": "src/cells/models/assembly_lineages_v2/population.py#L497"
+      },
+      "driver": "lean/checks/vesicle_population.py",
+      "record": "lean/PROGRESS.md#vesicle-shear-fission"
+    },
+    "vesicle-exchange-rates": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Directional activities and geometric factor": "src/cells/models/assembly_lineages_v2/exchange.py#L42",
+        "Area or radius on the common footprint": "src/cells/models/assembly_lineages_v2/kernel.py#L327",
+        "Bidirectional engine rates": "src/cells/models/assembly_lineages_v2/kernel.py#L367"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#vesicle-phase-exchange"
+    },
+    "vesicle-permeation-size": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Permeation into the lumen": "src/cells/models/assembly_lineages_v2/permeation.py#L8",
+        "Reverse propensity and energy adjustment": "src/cells/models/assembly_lineages_v2/kernel.py#L289",
+        "Physical area of the bilayer": "src/cells/models/assembly_lineages_v2/geometry.py#L245"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#vesicle-permeation"
+    },
+    "shared-pool-inventory": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.stochastic_mass_action@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Pool and live-slot rates": "src/cells/models/assembly_lineages_v2/population.py#L187",
+        "One pool and one slot updated per event": "src/cells/models/assembly_lineages_v2/population.py#L220",
+        "Counts saved and checked against the device endpoint": "src/cells/models/assembly_lineages_v2/population.py#L669"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#shared-pool-inventory"
+    },
+    "shared-pool-declared-volume": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Accepted population inputs": "src/cells/models/assembly_lineages_v2/population.py#L54",
+        "Dispatch by execution mode": "src/cells/models/assembly_lineages_v2/runner.py#L343",
+        "Volume reported for every live slot": "src/cells/models/assembly_lineages_v2/population.py#L717",
+        "Outside osmolarity used by the volume calculation": "src/cells/models/assembly_lineages_v2/lumen.py#L86"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#shared-pool-declared-volume"
+    },
     "bilayer-footprint": {
       "kind": "engine",
       "models": [
@@ -915,6 +1164,565 @@
     }
   },
   "claims": [
+    {
+      "id": "scheduled-cell-replacement",
+      "category": "tissue-and-conservation",
+      "title": "Simultaneous replacement books the old and arriving species, charge and electrical work",
+      "statement": "At each due site the previous occupant leaves and a template or a copy of a pre-event donor enters. Gross supply minus gross removal equals the tissue change for each species. Valence weights give the signed charge. The equal shares of field energy less electrode work sum to one field adjustment.",
+      "assumptions": [
+        "A finite set of tissue sites is replaced simultaneously. Sites outside that set retain their amounts. Copying a donor uses its pre-event amounts, including when that donor is also due.",
+        "Field-energy sharing requires at least one due site. Capacitor energy and held-electrode work enter the formal result as signed inputs. The numerical comparison computes each independently for a sheet with one membrane and one held bath per cell."
+      ],
+      "uses": [],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.simultaneous_copy": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.gross_balance": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.booked_charge": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.shared_field_energy": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "scheduled-cell-replacement"
+        ],
+        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time between basal-layer exit and compensating local division, and the species amounts in the departing and arriving cells at one site.",
+        "unit": "days and fmol per cell",
+        "evidence": [
+          {
+            "dataset_id": "mesa2018_epidermal_neighbor_fates@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Mesa et al. (2018), Fig. 3C",
+            "doi": "10.1016/j.stem.2018.09.005",
+            "locator": "Figure 3C follows neighboring fates after a basal cell differentiates.",
+            "context": "Intravital recordings covered two 90 × 90 µm fields of adult mouse epidermis and counted 524 divisions and 529 differentiations.",
+            "role": "descriptive",
+            "uncertainty": "The main panel shows one mouse. The 1.8-day estimate is a fitted coordination time scale.",
+            "assessment": "Neighboring division followed differentiation on a 1.8-day time scale. Cells takes its schedule as an input. The assay leaves the identity and ion inventory of an immediate same-site arrival open.",
+            "report": "lean/PROGRESS.md#scheduled-cell-replacement"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cell-replacement-water",
+      "category": "tissue-and-conservation",
+      "title": "Replacement over water accounts for incoming volume and composition-dependent free energy",
+      "statement": "For a donor copy, transfer of the donor's volume increment preserves its physical volume when reference volumes agree. Adding the water term to the chemical energy at the declared volume evaluates all tracked species at the physical volume. A composition change can give nonzero water free energy even at zero net volume transfer.",
+      "assumptions": [
+        "All cell volumes and the reference volume are positive. The finite-species ideal chemical identity assumes positive amounts. Each site keeps its own elastic pressure law and fixed extra impermeant amount.",
+        "The donor and receiver have the same declared water compartment and initial reference volume. Species amounts and physical volume are read at the two endpoints of the event."
+      ],
+      "uses": [
+        "scheduled-cell-replacement",
+        "osmotic-water"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.gross_balance": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.donor_volume": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.ideal_at_volume": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.physical_endpoint": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.water_jump": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.same_volume_water_jump": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "cell-replacement-water"
+        ],
+        "result": "The copy stayed at 0.788048 pL, gained 1.1003 fmol of tracked osmoles and booked −0.138369 pJ of water free energy. The template changed both amount and volume at the other site. The largest combined energy discrepancy was 4.32 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked run reproduced both gross volume bookings."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired volume before removal and after arrival at the same site, with intracellular osmoles and mechanical or osmotic work.",
+        "unit": "pL per cell, µm³ per division, % of baseline volume and pJ per event",
+        "evidence": [
+          {
+            "dataset_id": "xie2020_paired_epidermal_volumes@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Xie and Skotheim (2020), Fig. S2L",
+            "doi": "10.1016/j.cub.2019.12.062",
+            "locator": "Supplement page 4, panel marked S2L. Eleven line segments pair the mitotic parent with both daughters at the next frame.",
+            "context": "Mouse basal epidermal cells were followed in vivo at 12-hour intervals. The register stores the paired figure readings in µm³.",
+            "role": "descriptive",
+            "uncertainty": "The paired changes had a sample SD of 100 µm³. The authors report 9.1 ± 8.6% repeat-segmentation error overall. Imaging spans a full frame interval.",
+            "assessment": "Mean volume was 770 µm³ for each parent and 677 µm³ for the sum of its daughters, with nine of eleven pairs decreasing. The paired change averaged −94 µm³. This measures division and leaves the same-site replacement volume and work open.",
+            "report": "lean/PROGRESS.md#cell-replacement-water"
+          },
+          {
+            "dataset_id": "mitchell2025_extruding_cell_volume@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Mitchell et al. (2025), Fig. 1l",
+            "doi": "10.1038/s41586-025-09514-w",
+            "locator": "Figure 1l and the accompanying results give the change in GFP-derived cytoplasmic volume.",
+            "context": "MDCKII epithelial monolayers experienced a 20% hypertonic shock. Cells were grouped by subsequent extrusion or retention.",
+            "role": "descriptive",
+            "uncertainty": "Values are mean ± SEM. The caption reports n = 5.",
+            "assessment": "Cells subsequently extruded lost 20 ± 3% of baseline volume and retained cells lost 11 ± 2.5%. The assay measures outgoing shrinkage. Incoming absolute volume, osmole counts and work remain open.",
+            "report": "lean/PROGRESS.md#cell-replacement-water"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cell-replacement-volume-boundary",
+      "category": "tissue-and-conservation",
+      "title": "Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic",
+      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.",
+      "assumptions": [
+        "The water volume interval is open at both endpoints. The exact theorem uses a common real-valued reference for storing and reconstructing the target.",
+        "The admission comparison uses a single template with the slot's own species amounts. Water flow is disabled and all other inputs are held fixed."
+      ],
+      "uses": [
+        "cell-replacement-water"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.template_volume_interior": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "cell-replacement-volume-boundary"
+        ],
+        "result": "At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.",
+        "unit": "pL",
+        "evidence": []
+      }
+    },
+    {
+      "id": "size-threshold-fission",
+      "category": "molecular-assembly",
+      "title": "Size-triggered fission conserves each species under fixed-quota and independent partitions",
+      "statement": "Single-molecule growth and conservative division at the threshold cannot overshoot it. Ranking all occupied places selects exactly the declared quota. For a tracer species, fixed-quota sampling and independent per-molecule assignment give different probabilities of a tracer-free daughter, even when their mean allocations agree.",
+      "assumptions": [
+        "Each molecule occupies one place and belongs to one species. The second daughter receives the complement. A split acts at the threshold before further growth.",
+        "The rank proof applies to any realized stable ordering and integer quota. The equal-subset probability assumes equiprobable rankings. The engine floors the float64 product of the fraction and the parent size.",
+        "For the binomial probabilities each molecule independently enters the named daughter with the same probability p. Comparing a center branch to two pooled side branches also assumes p is represented by the center volume fraction."
+      ],
+      "uses": [
+        "vesicle-shear-fission"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.size_threshold_fission@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.LineageFission.mem_rankedFirst": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.ranked_sizes": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.threshold_history": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.binary_inventory": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.fixed_quota_no_marker": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.fair_split_no_marker": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.independent_no_marker": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.binomial_moments": "lean/CellsProofs/Chemistry/LineageFission.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "size-threshold-fission"
+        ],
+        "result": "For a parent with two marked and two unmarked molecules, the named daughter had zero markers in 4 of 24 fixed-half rankings and 4 of 16 independent fair assignments. Padded places, ties and adjacent float64 quotas matched the specification. Exact weighted enumeration at parent counts 7, 9 and 12 matched the binomial variances at p = 1/3."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Variance of the center daughter's marked-particle count across divisions with a fixed reconstructed total.",
+        "unit": "beads²",
+        "evidence": [
+          {
+            "dataset_id": "fornell2017_passive_bead_partition@1",
+            "manifest": "lean/checks/data/fornell2017_partition.json",
+            "citation": "Fornell et al. (2017), Fig. 2c",
+            "doi": "10.1063/1.4984131",
+            "locator": "Figure 2c on printed page 031101-3. The pale-blue series gives the ultrasound-off control. Both side outlets are pooled.",
+            "context": "Water droplets containing polystyrene beads split into three daughters of approximately equal volume. All 180 plotted control splits contribute to the empty-center comparison. The sample variances use reconstructed totals of 7, 9 and 12 beads.",
+            "role": "descriptive",
+            "observed": 2.1818,
+            "predicted": 2,
+            "uncertainty": "At nine beads there are twelve plotted splits. The seven- and twelve-bead groups each contain seven splits. Counts were read from vector markers, including overlapping markers. Per-split volume fractions and raw paired counts are unavailable in the cited figure.",
+            "assessment": "At nine beads the measured sample variance was 2.18, compared with 2.00 under independent assignment. At seven and twelve beads the measured values were 0.95 and 4.48, compared with 1.56 and 2.67. The 180 splits had zero empty centers. The nominal volume model gives a 26% probability of that outcome if splits are independent. The data leave independence and the engine’s size trigger unresolved.",
+            "report": "lean/PROGRESS.md#size-threshold-fission"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lineage-daughter-continuation",
+      "category": "molecular-assembly",
+      "title": "Switching an empty daughter pick to its sibling changes the sampled lineage",
+      "statement": "For a positive parent, the fallback always retains a nonempty daughter. When one daughter is empty, a fair initial pick retains the whole parent under fallback and half the parent on average if the initial pick stands. For either choice, the followed daughter’s log-weight jump equals minus the split work plus its sibling’s outgoing free energy.",
+      "assumptions": [
+        "The initial choice and the partition are separate. The selection average gives each daughter label equal probability, then applies the declared empty-daughter policy.",
+        "An empty assembly has zero total molecules. A tracer-free daughter can still contain other species. Counts are measured at birth, before further chemical events.",
+        "A daughter at the size threshold divides again if its fission limit allows it. The signed work and sink use the assembly’s log weight with zero log weight for the empty state."
+      ],
+      "uses": [
+        "size-threshold-fission"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.daughter_continuation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.LineageFission.nonempty_fallback": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.fallback_selection_bias": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.zero_quota_at_threshold": "lean/CellsProofs/Chemistry/LineageFission.lean",
+          "CellsProofs.Chemistry.LineageFission.log_weight_jump": "lean/CellsProofs/Chemistry/LineageFission.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "lineage-daughter-continuation"
+        ],
+        "result": "Across 32 equiprobable partition-and-pick outcomes for four molecules, fallback raised mean retained size from 2.00 to 2.25. At quota zero, selecting an empty daughter ended a lineage and following the full sibling gave five immediate re-splits before the limit. The every-descendant run recorded four empty and four full daughter births. The signed energy bookings matched the reference within 3.11 × 10⁻¹⁵ k_BT. The ledger docstring has a sign typo in its derivation."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Birth sizes and subsequent fates of both daughters, with the rule used to select the tracked daughter recorded for empty as well as occupied outcomes.",
+        "unit": "molecules in the retained assembly",
+        "finding": "The bead experiment in the partition claim measures the cargo of a liquid droplet. Its center-versus-pooled-sides readout cannot identify an empty assembly or which sibling was followed. A direct measurement of this selection effect remains open.",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-serial-transfer",
+      "category": "molecular-assembly",
+      "title": "Serial transfer accounts for the spent bath and the vesicles removed",
+      "statement": "For each species, the new world plus the spent bath and removed vesicles contains the old world plus the fresh bath. Across consecutive washes, each slot retains its original cargo exactly when it is kept both times. The change in world free energy equals fresh-bath work minus the free energy exported.",
+      "assumptions": [
+        "A transfer is instantaneous. It replaces the finite bath with declared counts and keeps each sampled vesicle intact. The proof conditions on the selected slots.",
+        "World free energy is the signed sum of the bath and individual live-vesicle free energies. Consecutive-wash composition assumes no intervening reaction or transport event."
+      ],
+      "uses": [
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.serial_transfer@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.partition_slots": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.transfer_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.successive_transfers": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.transfer_free_energy": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-serial-transfer"
+        ],
+        "result": "Three compiled washes kept three of three, one of three, and one of one vesicles. All three species balanced exactly, including across two same-time schedules. The largest difference from independently calculated work, sink or world-energy change was 1.42 × 10⁻¹⁴ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer recovered in retained vesicles, the spent bath and removed vesicles across a wash, relative to the initial tracer and any fresh input.",
+        "unit": "fraction of tracer input",
+        "evidence": [
+          {
+            "dataset_id": "fayolle2018_serial_wash@1",
+            "manifest": "lean/checks/data/vesicle_population_measurements.json",
+            "citation": "Fayolle et al. (2018), Table 1 and Fig. 3",
+            "doi": "10.1371/journal.pone.0192975",
+            "locator": "Table 1 reports three successive retentates. Figure 3A–E shows calcein fluorescence inside and outside vesicles.",
+            "context": "Calcein-loaded DOPC/DOPA giant vesicles underwent successive dilution and microfiltration. The authors measured lipid in each retained fraction independently.",
+            "role": "descriptive",
+            "uncertainty": "The signal ratios have a reported ±20% uncertainty. Later exterior signals reached the detector floor. The table gives no lipid error bars.",
+            "assessment": "Exterior clearance raised the lumen-to-exterior signal ratio to 39, 89 and 137. Cumulative lipid recoveries were 40%, 26% and 16%. The individual tracer amounts in the retained and discarded fractions remain unresolved.",
+            "report": "lean/PROGRESS.md#vesicle-serial-transfer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-shear-fission",
+      "category": "molecular-assembly",
+      "title": "Shear fission partitions the parent among all daughters and books discarded siblings",
+      "statement": "Assigning each molecule to one daughter preserves per-species inventories and the membrane footprint. If the total footprint cannot cover all daughter minima, every assignment fails. Shear work includes every daughter’s free energy. Following one daughter exports its siblings’ free energy.",
+      "assumptions": [
+        "Counts are nonnegative integers, each molecule has one daughter, and each membrane species has a fixed footprint. The partition is evaluated before any daughter lysis.",
+        "The geometric admission formula assumes a nonnegative area and volume, a positive daughter count and consistent length units. The spherical capacity is computed from the available membrane area.",
+        "Each live daughter pays the same per-vesicle closure cost. The tracer signal comparison assumes a common linear calibration, zero background and no tracer leakage during the split."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "osmotic-vesicle-volume",
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.shear_fission@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.split_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.followed_and_siblings": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.split_footprint": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.insufficient_footprint": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.split_signal": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.followed_free_energy": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.closure_work": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.volume_gate": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-shear-fission"
+        ],
+        "result": "Five accepted divisions conserved lipid and both solutes. Independent work and sibling-sink errors were at most 7.11 × 10⁻¹⁵ k_BT. Two parents below the combined daughter minimum stayed intact. The population stopped before drawing when its slots filled. Controls checked stress and volume refusals and 48 heterogeneous partitions."
+      },
+      "biology": {
+        "status": "disagrees",
+        "observable": "Slope of the two daughters’ summed tracer signal against their parent’s signal in successful divisions.",
+        "unit": "daughter-to-parent signal slope",
+        "evidence": [
+          {
+            "dataset_id": "deshpande2018_fission_signal@1",
+            "manifest": "lean/checks/data/vesicle_population_measurements.json",
+            "citation": "Deshpande et al. (2018), Fig. 4a",
+            "doi": "10.1021/acsnano.7b08411",
+            "locator": "Figure 4a pairs total daughter and parent fluorescence for 78 divisions. The accompanying text describes the geometry and optical corrections.",
+            "context": "DOPC-based giant liposomes divided at a microfluidic Y-junction. Each plotted parent produced two observable daughters.",
+            "role": "descriptive",
+            "observed": 0.87,
+            "predicted": 1,
+            "uncertainty": "The authors report slope 0.87 ± 0.01 (SD) and R² = 0.94. The estimated geometry and optical corrections approximately cancel.",
+            "assessment": "The combined optical signal fell about 13% below perfect recovery. This disagrees with the conservative split under a common linear signal calibration. The escaped dye amount was not independently recovered.",
+            "report": "lean/PROGRESS.md#vesicle-shear-fission"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-phase-exchange",
+      "category": "molecular-assembly",
+      "title": "Lipid insertion scales with membrane area and diffusion-limited capture scales with radius",
+      "statement": "At fixed external number density, scaling the area-equivalent radius by s scales area-limited insertion by s² and diffusion-limited capture by s. A join and its reverse share the footprint before insertion. Their rate ratio is the exponential of reservoir work minus free-energy change in thermal units.",
+      "assumptions": [
+        "The same species transfers between the pool and the bilayer. Each comparison holds its kinetic coefficient and external number density fixed.",
+        "The rate-ratio statement applies to an enabled two-way edge with a positive common coefficient, sufficient reactants and a defined discrete membrane counting measure. The endpoint energies include the declared excess terms.",
+        "The spherical diffusion-capture approximation uses the area-equivalent radius. The two encounter conventions describe different limiting mechanisms."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "assembly-stochastic-encounter"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.phase_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.common_footprint_swap": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.transfer_footprint": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.pair_balance": "lean/CellsProofs/Chemistry/VesicleExchange.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-exchange-rates"
+        ],
+        "result": "Doubling radius gave 4× area-limited insertion and 2× diffusion-limited capture. Across both transport steps, eight compiled configurations tested finite and held baths and both counting measures. All 40 blocked directions had zero rate. Across 64 active pairs the largest free-energy residual was 1.43 × 10⁻¹⁴ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Lipid molecules inserted per vesicle per second at measured radius and matched free-monomer concentration, composition and temperature.",
+        "unit": "molecules/s per vesicle",
+        "evidence": [
+          {
+            "dataset_id": "jin2021_pazepc_insertion@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Jin and Baumgart (2021), Table 1",
+            "doi": "10.1039/D1SM00652E",
+            "locator": "Table 1 gives the PAzePC row. Equation 2 fits the area response.",
+            "context": "Soluble PAzePC monomers at 0.5–1 µM were supplied to aspirated POPC vesicles under flow.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across 11 vesicles for the fitted PAzePC rates.",
+            "assessment": "The measured association constant was 0.0027 ± 0.0005 µM⁻¹ s⁻¹. Release and movement between leaflets had separate rates. The pooled fractional area kinetics leave molecule flux by radius unresolved.",
+            "report": "lean/PROGRESS.md#vesicle-phase-exchange"
+          },
+          {
+            "dataset_id": "hentrich2014_oleate_growth@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Hentrich and Szostak (2014), Fig. 2A",
+            "doi": "10.1021/la503933x",
+            "locator": "Figure 2A plots initial filament elongation against starting vesicle diameter.",
+            "context": "Multilamellar oleate vesicles grew under flow with 0.8 mM oleate micelles.",
+            "role": "descriptive",
+            "uncertainty": "There is substantial scatter at each diameter. Filament width and free monomer concentration are additional uncertainties in a conversion to molecular flux.",
+            "assessment": "Larger vesicles generally elongated faster. The authors could resolve neither a linear nor a quadratic dependence uniquely from this length readout.",
+            "report": "lean/PROGRESS.md#vesicle-phase-exchange"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-permeation",
+      "category": "membrane-transport",
+      "title": "Neutral solute entry scales with area and spherical washout with inverse radius",
+      "statement": "The inward molecular rate equals permeability times area times outside number density. In an ideal lumen of fixed volume the exit rate per molecule is permeability times area divided by volume. On a sphere this predicts the first-order washout rate at a second radius from one calibration.",
+      "assumptions": [
+        "External density and permeability are fixed for the forward-area comparison. A neutral molecule crosses between the bath and lumen without changing the footprint.",
+        "The outward concentration law assumes equal solution standard potentials, a well-mixed fixed volume and ideal solute with no extra energy change. A maintained solute-free exterior gives the exponential washout equation for the mean count.",
+        "For the liposome assay, use the study’s inner radius for both area and volume, a 4 nm bilayer thickness and a common permeability between sizes. The compiled readout is the initial exit rate divided by molecule count."
+      ],
+      "uses": [
+        "vesicle-phase-exchange",
+        "bilayer-footprint",
+        "scheduled-species-turnover"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.membrane_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.pair_balance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.fixed_volume_drift": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.spherical_clearance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.transfer_clearance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.washout_derivative": "lean/CellsProofs/Chemistry/VesicleExchange.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-exchange-rates",
+          "vesicle-permeation-size"
+        ],
+        "result": "Doubling radius quadrupled molecular entry under both lipid-encounter conventions. The compiled exit rate per molecule at counts 1, 7 and 14 was 1.7500 s⁻¹ at the calibration radius and 1.2971 s⁻¹ at the second radius. All rate controls agreed with their independent calculations within 2 × 10⁻¹³ relative error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Neutral-solute washout rate in fixed-size liposomes, and inward molecular uptake as a function of membrane area.",
+        "unit": "s⁻¹",
+        "evidence": [
+          {
+            "dataset_id": "branden2010_glycerol_radius@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Brändén et al. (2010), Fig. 3A and passive diffusion results",
+            "doi": "10.1016/j.bpj.2010.03.059",
+            "locator": "Figure 3A and the accompanying results report the size-specific rates and the bilayer thickness.",
+            "context": "Glycerol washed out of tethered POPC liposomes at 22 °C. Surface plasmon resonance tracked the change of internal concentration.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "71 nm outer diameter, washout 1.75 ± 0.02 s⁻¹"
+            ],
+            "evaluation": [
+              "93 nm outer diameter"
+            ],
+            "observed": 1.46,
+            "predicted": 1.2971,
+            "uncertainty": "The smaller group reports ±0.02 s⁻¹ (n = 7). The 93 nm repeat has no published uncertainty or trace. Its exact concentration series is unspecified.",
+            "assessment": "The larger liposomes emptied more slowly. Calibration at the smaller size underpredicts their rate by 0.163 s⁻¹. The uncertainty of the size transfer remains open.",
+            "report": "lean/PROGRESS.md#vesicle-permeation"
+          },
+          {
+            "dataset_id": "peterlin2012_urea_size@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Peterlin et al. (2012), Fig. 2a",
+            "doi": "10.1039/C1SM06670F",
+            "locator": "Three unarrowed traces in Figure 2a, from 20 to 80 s after each radius minimum.",
+            "context": "Individual POPC vesicles stretched in the same 0.1 M urea bath. Swelling estimates net entry if water equilibrates rapidly and trapped sucrose is retained.",
+            "role": "descriptive",
+            "uncertainty": "Moving either radius reading by ±0.10 µm gives ranges of 10.7–19.5, 15.9–32.1 and 25.6–47.3 fmol/s from smallest to largest. These describe figure resolution. Temperature and per-trace uncertainty were unreported.",
+            "assessment": "For radii 31.80, 43.66 and 50.44 µm, inferred uptake was 15.1, 24.0 and 36.4 fmol/s. The largest/smallest uptake ratio was 2.41 and the compiled forward-area ratio was 2.52. The measured optical quantity was radius.",
+            "report": "lean/PROGRESS.md#vesicle-permeation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "shared-pool-inventory",
+      "category": "molecular-assembly",
+      "title": "Vesicles withdrawing from a finite shared bath conserve each species across the population",
+      "statement": "Each passive transfer changes one vesicle and the single bath by opposite integer counts. The inventory is conserved over every finite history of such transfers. Each live vesicle sees the same remaining bath density, and a permutation of the slots preserves the exact total rate.",
+      "assumptions": [
+        "Follow one conserved species at a time with a finite common bath. The count proof covers passive uptake and release. Chemical conversion, fission, lysis, bath replacement and external supply need their own accounting.",
+        "A slot's uptake coefficient includes its own membrane geometry. The uptake-rate decrement in another slot assumes that slot's coefficient and the bath volume stay fixed. A relabelling carries occupancy and the full vesicle state together.",
+        "For the experimental area comparison, both populations start with equal lipid amounts and share an area per molecule. A 25% donor loss predicts a 25% recipient gain conditional on zero net change of free lipid in the bath."
+      ],
+      "uses": [
+        "vesicle-phase-exchange",
+        "vesicle-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.shared_pool@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.SharedPool.event_inventory": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.history_inventory": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.population_uptake": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.depletion": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.relabel_rate": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.fractional_gain": "lean/CellsProofs/Chemistry/SharedPool.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "shared-pool-inventory",
+          "shared-pool-declared-volume"
+        ],
+        "result": "Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired changes in donor and recipient membrane area during passive competition, with independent measurement of material left in the common bath.",
+        "unit": "% recipient area change",
+        "evidence": [
+          {
+            "dataset_id": "chen2004_oleate_competition@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Chen, Roberts and Szostak (2004), Figs. 1B and 1D",
+            "doi": "10.1126/science.1100757",
+            "locator": "Figures 1B and 1D and the accompanying 1:1 mixing result on page 1475.",
+            "context": "Matched experiments label either the isotonic donor or the osmotically swollen recipient population of oleate vesicles.",
+            "role": "descriptive",
+            "observed": 25,
+            "predicted": 25,
+            "uncertainty": "Both area changes are approximate. Figure 1 gives no endpoint uncertainty. Fluorescence reports area and the free lipid pool was unmeasured.",
+            "assessment": "The measured donor loss gives the conditional recipient gain shown. The experiment supports redistribution between populations. An empirical test of molecule closure still needs independent counts for donor, recipient and bath.",
+            "report": "lean/PROGRESS.md#shared-pool-inventory"
+          }
+        ]
+      }
+    },
     {
       "id": "bilayer-footprint",
       "category": "molecular-assembly",

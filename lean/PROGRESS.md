@@ -1,5 +1,126 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Scheduled cell replacement
+
+<a id="scheduled-cell-replacement"></a>
+
+**Material, charge and electrical work.** Both operator versions replace the contents of a fixed tissue site from a template or a donor. Lean proves that the tissue's change in each species equals gross supply minus gross removal, and that valence-weighting gives the signed charge. All donors are read before any replacement at that time. The field-energy change less electrode work is shared among the due sites and enters the total exactly once. [Proofs](CellsProofs/Tissue/CellReplacement.lean#L29) · [Engine event and electrical booking](../src/cells/operators/cell_replacement.py#L245)
+
+In a seven-cell sheet, A copied B while B received a template at the same timestamp. The compiled events supplied A with B's old amounts, removed each site's own amounts, and left every replacement ledger unchanged on replay. A held bath at 0.01 V and two small ionic charge changes made both electrical terms measurable. The field changed by −0.00154843 pJ and the largest individual electrode work was 0.000289456 pJ in magnitude. Across the two due sites and five undisturbed sites, v1's largest energy discrepancy from a calculation using physical amounts and capacitor charges was 2.21 × 10⁻¹³ pJ (rounded up). The tolerance was 2 × 10⁻¹¹ pJ. [Comparison and fixture](checks/cell_replacement.py#L24)
+
+Search located a time-resolved example of ordinary epithelial turnover. In two mouse epidermal fields, 524 divisions and 529 differentiations gave a fitted time scale of **1.8 days** for coordination of neighboring fates. Cells supplies its replacement times as inputs. The measurement constrains interpreting an instantaneous exchange as a whole tissue-turnover event. The paper does not identify an incoming carrier's species inventory at the same site. [Mesa et al., Fig. 3C](https://doi.org/10.1016/j.stem.2018.09.005) · [Measurement records](checks/data/cell_replacement_measurements.json)
+
+<a id="cell-replacement-water"></a>
+
+**Water volume and free energy.** Version 2 books the old and arriving volumes. Lean proves that copying a donor's volume increment recovers its physical volume exactly when both sites have the same volume reference. The change in water free energy contains a composition term as well as the volume and elastic terms. In the compiled example A stayed at **0.788048 pL** and gained **1.1003 fmol** of tracked osmoles. Its water booking was **−0.138369 pJ**. At B, the template changed both volume and composition. The largest v2 discrepancy for the combined chemical, water and electrical booking was 4.32 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. [Endpoint and jump proofs](CellsProofs/Tissue/CellReplacement.lean#L83) · [Engine water booking](../src/cells/operators/cell_replacement_v2.py#L99) · [Independent energy calculation](checks/cell_replacement.py#L41)
+
+Two measurements describe parts of the volume change. In living mouse epidermis, 11 measured mitotic parents averaged **770 µm³** and their two daughters together averaged **677 µm³** in the next image, 12 hours later. The paired change was **−94 ± 100 µm³** (sample SD), with decreases in 9 of 11 divisions. Search recovered the paired coordinates and the comparison reproduces the statistics from the supplement. In a separate MDCKII assay under 20% hypertonic shock, cells later extruded lost **20 ± 3%** of their baseline volume and cells that stayed lost **11 ± 2.5%** (SEM, figure caption n = 5). Neither study measured immediate one-for-one incoming volume, species transfer or replacement work. The biological comparison for v2 remains open. [Xie and Skotheim, Fig. S2L](https://doi.org/10.1016/j.cub.2019.12.062) · [Mitchell et al., Fig. 1l](https://doi.org/10.1038/s41586-025-09514-w) · [Figure readings and extraction method](checks/data/cell_replacement_measurements.json)
+
+Both versions also passed three steps of the normal checked solver on `resolved_pump_composite@1`. Its histories recorded a single generation change per due site and the expected gross supplies and removals. The targeted engine tests and eight repository guards passed **94 tests**. Lean 4.19.0 checked the ten theorems using only standard axioms. The CPU float64 comparison used engine `4638694ac13bedae5f93aa56d77cf8820e687ec1`. [Driver](checks/cell_replacement.py) · [Existing water and rollback tests](../tests/unit/test_cell_replacement_v2_runs.py)
+
+<a id="cell-replacement-volume-boundary"></a>
+
+**Engine finding for the operators owner.** A v2 template strictly inside its declared water-volume interval can be refused during definition checking. At a reference volume of 0.7505222518670602 pL, storing `target − reference` and adding the reference back rounds the first admissible target down to the excluded lower bound. With water flow disabled and all other inputs fixed, the following controls isolate the refusal. [Exact-volume identity](CellsProofs/Tissue/CellReplacement.lean#L64) · [Template admission](../src/cells/operators/cell_replacement_v2.py#L186) · [Offset storage](../src/cells/operators/cell_replacement_v2.py#L107) · [Strict water domain](../src/cells/numerics/osmotic_water.py#L96)
+
+| Declared lower bound (pL) | Declared target (pL) | Reconstructed volume (pL) | Definition admission |
+| ---: | ---: | ---: | --- |
+| 0.18763056296676506 | 0.18763056296676506 | 0.18763056296676506 | Refused at the declared bound |
+| 0.18763056296676506 | 0.18763056296676509 | 0.18763056296676506 | **Refused inside the interval** |
+| 0.18763056296676506 | 0.18763056296676510 | 0.18763056296676517 | Admitted |
+| 0.18763056296676503 | 0.18763056296676509 | 0.18763056296676506 | Admitted |
+
+The one-step interior target is 2.78 × 10⁻¹⁷ pL above the limit. This is a refusal before simulation. The driver prints all four outcomes. With `--boundary-only --require-interior` it exits with status 1 on the tested revision. [Four-case reproducer](checks/cell_replacement.py#L176)
+
+## 20 November 2026 · Size-triggered fission and daughter continuation
+
+<a id="size-threshold-fission"></a>
+
+**Partition at the size threshold.** In `cells.assembly_lineages@1`, each growth event moves one molecule and a split assigns each occupied place to one daughter. Lean proves that such a history stays within the threshold and that each species balances across the two daughters. With an exact quota of `k`, precisely the first `k` occupied ranks go to the first daughter. With independent assignment probability `p`, a named daughter receives none of `r` marked molecules with probability `(1 − p)ʳ`. At fixed `r`, its mean marked count is `rp` and its variance is `rp(1 − p)`. [Threshold and count proofs](CellsProofs/Chemistry/LineageFission.lean#L23) · [Independent assignment proofs](CellsProofs/Chemistry/LineageFission.lean#L78) · [Engine partition](../src/cells/models/assembly_lineages/fission.py#L120)
+
+For a four-molecule parent with two marked molecules, a fixed half split leaves the first daughter without a marker in **4 of 24** possible rank orders. Independent fair assignment gives **4 of 16** possible assignments. The compiled partition matched each case, including the engine’s rules for padding, tied ranks and draws exactly at the probability boundary. The quota uses the floored float64 product. At size ten, `0.3` gives three molecules and its immediate float64 predecessor gives two. [Exhaustive controls](checks/lineage_fission.py#L28)
+
+**Measured bead partition.** Fornell et al. counted 10 µm polystyrene beads after water droplets split into three approximately equal-volume daughters with ultrasound off. We used the 180 plotted splits and compared the center against both sides pooled. The nominal volumes give `p = 1/3` without fitting to the counts. In the three bins below the engine’s enumerated assignment variances equal the Lean formula. The measurements show variation at fixed total count. The small bins and possible volume and flow differences leave the independent-assignment assumption open. [Fornell et al., Fig. 2c](https://doi.org/10.1063/1.4984131) · [Figure readings and extraction method](checks/data/fornell2017_partition.json) · [Variance calculation](checks/lineage_fission.py#L83)
+
+| Reconstructed total beads | Plotted splits | Measured center variance (beads²) | Independent assignment (beads²) |
+| ---: | ---: | ---: | ---: |
+| 7 | 7 | 0.95 | 1.56 |
+| 9 | 12 | 2.18 | 2.00 |
+| 12 | 7 | 4.48 | 2.67 |
+
+Across the observed totals of 7–60 beads, the model expects 1.33 empty centers. Under independent splits the probability of seeing none is 0.258. The figure shows none. A bead-free droplet still contains liquid, and the two pooled sides hide any individual empty side. This assay does not measure lineage extinction or a decision to follow a sibling. [Primary figure, printed page 031101-3](https://uu.diva-portal.org/smash/get/diva2:1109652/FULLTEXT01.pdf#page=4) · [Denominators and readings](checks/data/fornell2017_partition.json)
+
+<a id="lineage-daughter-continuation"></a>
+
+**Empty daughters and immediate division.** For a positive parent, switching an empty initial pick to its sibling always retains a nonempty daughter. This changes the sampled lineage. Across all 16 fair assignments of four molecules and both initial picks, retaining the original pick averaged **2.00** molecules at birth and gave two empty picks out of 32. Switching to the sibling averaged **2.25** molecules and gave zero empty picks. Lean proves the mean difference for each realized partition. [Selection proof](CellsProofs/Chemistry/LineageFission.lean#L125) · [Engine selection](../src/cells/models/assembly_lineages/continuation.py#L98)
+
+The same edge case occurs with a fixed fraction. At threshold four and fraction one eighth, the first daughter always has zero molecules. Selecting that daughter under `extinct` ended the lineage on its first split. Switching to the full sibling or selecting it from the start gave six fissions at one timestamp, reaching the declared limit with five immediate re-splits and no intervening chemistry. Recording every descendant through four generations gave four empty births and four full births at one timestamp, even when the initially selected branch ended. A separate binomial lineage had six immediate re-splits in twelve divisions. Across the six CPU worlds on engine `ea073ff872ec64b34346fb01fdc40bb38c8f2861`, the largest ledger residual was 3.55 × 10⁻¹⁵ k_BT. The four engine test files and eight repository guards passed 111 tests. [Single-lineage replay](checks/lineage_fission.py#L164) · [Every-descendant check](checks/lineage_fission.py#L251)
+
+<a id="lineage-fission-sink-sign"></a>
+
+**Documentation finding for the assembly owner.** Line 38 of the version-1 ledger docstring gives the sink the wrong sign. With split work `W = Φ(parent) − Φ(kept) − Φ(sibling)` and outgoing free energy `S = −Φ(sibling)`, the followed daughter’s log-weight change is **−W + S**. In the one-species control at unit activity, four molecules split two and two. The exact work is zero and both the sink and the log-weight change are **+ln 2**. The compiled booking and the closure equation on line 34 both agree with Lean. Only the derivation on line 38 needs correcting. [Ledger derivation](../src/cells/models/assembly_lineages/ledger.py#L38) · [Sign proof](CellsProofs/Chemistry/LineageFission.lean#L148) · [Reproducer](checks/lineage_fission.py#L279)
+
+## 20 November 2026 · Serial transfer and shear fission
+
+<a id="vesicle-serial-transfer"></a>
+
+**Serial transfer.** A wash replaces the finite bath and keeps the contents of each sampled vesicle. For every species, the old inventory plus the fresh bath equals the new inventory plus the spent bath and removed vesicles. Lean proves this for any realized sample. For two consecutive transfers, a slot keeps its original cargo exactly when it survives both. The corresponding signed free-energy change equals fresh-bath work minus the outgoing free energy. [Proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L27) · [Sampling rule](../src/cells/models/assembly_lineages_v2/transfer.py#L81) · [Transfer booking](../src/cells/models/assembly_lineages_v2/population.py#L588)
+
+Three scheduled transfers in a compiled `cells.assembly_lineages@2` population preserved the integer balance for lipid, permeant solute and impermeant tracer. The first two transfers shared a time and ran in schedule-index order. The driver checked the selected slots against the recorded draws, their keys and contents against the pre-transfer row, and every work and sink entry against independent closed-form energies. The largest energy difference was 1.42 × 10⁻¹⁴ k_BT. Both operator comparisons used engine `5011ed3d6bb64721abc5acfb9f3c834fa12c97ce` on CPU with 64-bit arithmetic. [Runnable comparison](checks/vesicle_population.py#L42)
+
+| Time (s) | Vesicles kept | Tracer in spent bath | Tracer in fresh bath | Tracer in retained vesicles | Tracer exported in bath and removed vesicles |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 3 of 3 | 5 | 0 | 6 | 5 |
+| 1 | 1 of 3 | 0 | 4 | 3 | 3 |
+| 2 | 1 of 1 | 4 | 0 | 3 | 4 |
+
+Fayolle et al. washed calcein-loaded DOPC/DOPA vesicles three times. The lumen-to-exterior fluorescence ratios were 39, 89 and 137 (reported uncertainty ±20%). The retained samples contained 40%, 26% and 16% of the starting lipid. The later exterior signals reached the microscope’s detection floor. These measurements support exterior clearance with appreciable material loss. Exact tracer closure would require independent amounts in the retained and discarded fractions. Lipid recovery alone does not determine how many vesicles survived. [Fayolle et al., Table 1 and Fig. 3](https://doi.org/10.1371/journal.pone.0192975) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
+<a id="vesicle-shear-fission"></a>
+
+**Shear fission.** Assigning every membrane and lumen molecule to one daughter preserves each species count and the total membrane footprint. A parent with less membrane than the combined daughter minima must fail the floor test for every possible partition. Lean also proves the spherical volume gate and the free-energy identities for retaining all daughters or following one and booking its siblings as a sink. [Partition and floor proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L57) · [Energy and volume proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L99) · [Engine attempt](../src/cells/models/assembly_lineages_v2/division.py#L380)
+
+The compiled single lineage divided three times. Later parents with six and four lipids were each refused intact because two viable daughters required at least eight lipids. A separate population kept both daughters from each of two divisions and stopped before another draw when its slots filled. All five accepted divisions conserved the three species, kept the common bath unchanged and matched the independent work and sibling-sink calculations within 7.11 × 10⁻¹⁵ k_BT. Controls also exercised pre-draw stress and volume refusals and 48 heterogeneous partitions into two, three or four daughters. Across all three compiled worlds the largest ledger residual was 3.91 × 10⁻¹⁴ k_BT. The two engine test files and eight repository guards passed all 105 tests. [Compiled comparisons](checks/vesicle_population.py#L124) · [Partition and admission controls](checks/vesicle_population.py#L216)
+
+Deshpande et al. measured a slope of **0.87 ± 0.01** (reported SD, R² = 0.94) for combined daughter fluorescence against parent fluorescence in 78 successful mechanical divisions of giant liposomes. With the same linear calibration and zero background, a conservative split predicts **1.00**. The five Cells splits gave 1.00 for impermeant tracer counts. The authors estimated about 13% leakage at division. The optical assay did not independently recover that amount in the exterior, and the engine does not model the splitter optics. The discrepancy applies to the ideal signal prediction in this assay. [Deshpande et al., Fig. 4a](https://doi.org/10.1021/acsnano.7b08411) · [Signal proof](CellsProofs/Chemistry/VesiclePopulation.lean#L93) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
+## 20 November 2026 · Exchange between vesicles and their bath
+
+<a id="vesicle-phase-exchange"></a>
+
+**Insertion and capture.** In `cells.assembly_lineages@2`, a lipid moves from the solution to the membrane. At fixed external number density, insertion velocity times area gives the area-limited rate coefficient. For diffusion-limited capture the coefficient is diffusivity times `4πR`. Doubling the area-equivalent radius therefore multiplies entry by **4** or **2**, respectively. For the reverse event the membrane footprint excludes the lipid about to leave. Lean proves that exchanging the two endpoints gives the same footprint. On an enabled pair the common geometry cancels, giving the forward-to-reverse rate ratio `exp(−ΔF + w)` with free energy and reservoir work in units of k_BT. [Size and common-footprint proofs](CellsProofs/Chemistry/VesicleExchange.lean#L23) · [Detailed balance](CellsProofs/Chemistry/VesicleExchange.lean#L60) · [Engine encounter calculation](../src/cells/models/assembly_lineages_v2/kernel.py#L327)
+
+On engine `3d3d9641932a52852727df7e4722e15ded245766`, eight compiled CPU configurations combined both encounter laws, both membrane counting conventions and either a finite or a held bath. We checked both directions against independent count, area and volume formulas. The largest relative rate error was 1.07 × 10⁻¹⁴. All 40 disabled directions had zero rate. Permeation could still fire below the membrane floor, where membrane-changing steps were blocked. Across 64 active forward/reverse pairs, the largest difference from the independently calculated free-energy change and reservoir work was 1.43 × 10⁻¹⁴ k_BT. Two 48-event finite trajectories exercised all four directions and conserved the lipid and solute counts at every saved row. [Compiled comparisons and reference formulas](checks/vesicle_exchange.py#L70)
+
+For PAzePC supplied as soluble monomers to POPC vesicles, Jin and Baumgart estimated an association constant of **0.0027 ± 0.0005 µM⁻¹ s⁻¹**, a release rate of **0.02 ± 0.01 s⁻¹**, and a leaflet-crossing rate of **0.0017 ± 0.0004 s⁻¹** (mean ± SEM, 11 vesicles). These are fractional membrane kinetics pooled across vesicles. Hentrich and Szostak measured faster filament elongation in larger oleate vesicles under the same micellar flow. Filament width affects how many lipids each micrometre of growth requires, and the data permit both linear and quadratic diameter dependence. Selecting an encounter law needs molecular uptake rates by radius at matched free-monomer concentration. [Jin and Baumgart, Table 1](https://doi.org/10.1039/D1SM00652E) · [Hentrich and Szostak, Fig. 2A](https://doi.org/10.1021/la503933x)
+
+<a id="vesicle-permeation"></a>
+
+**Neutral solute entry and washout.** Permeation into the lumen uses membrane area under either lipid-encounter convention. With a fixed ideal lumen and equal solution standard potentials, the exit rate per molecule is `P × area / volume`. A sphere using the same radius for area and volume gives `3P/r`. The associated well-mixed washout equation has an exponential solution. These fixed-volume assumptions matter for interpreting washout in a vesicle whose volume can change. [Drift and washout proofs](CellsProofs/Chemistry/VesicleExchange.lean#L80) · [Permeation law](../src/cells/models/assembly_lineages_v2/permeation.py#L8)
+
+Brändén et al. measured glycerol washout from tethered POPC liposomes at 22 °C. At 71 nm outer diameter the rate **1.75 ± 0.02 s⁻¹** fixes `P = 1.8375 × 10⁻⁸ m/s` using the authors' 4 nm bilayer thickness and 31.5 nm inner radius. Applying that permeability to the 93 nm liposomes (42.5 nm inner radius) predicts **1.297 s⁻¹** against **1.46 s⁻¹** measured. The compiled exit propensity per molecule gave the same result at lumen counts 1, 7 and 14 with an initially empty finite bath. This compares the predicted first-order coefficient. The larger preparation has no published uncertainty or trace. [Brändén et al., Fig. 3 and passive-diffusion results](https://doi.org/10.1016/j.bpj.2010.03.059) · [Calibration and held-out calculation](checks/vesicle_exchange.py#L227)
+
+Peterlin et al. measured radii of individual POPC vesicles in a 0.1 M urea bath. We digitized three pre-rupture traces from 20 to 80 seconds after each radius minimum. Multiplying the spherical volume gain per second by bath concentration estimates net urea entry if water equilibrates rapidly and trapped sucrose stays inside. The Cells column gives the forward-area prediction for equal exterior density, normalized to the smallest vesicle. Compiled controls used a common 1:1,000 length scale, which cancels in the ratios. The reading ranges move each endpoint by ±0.10 µm in opposite directions and are distinct from experimental confidence intervals. The bath temperature and per-trace uncertainty were unreported. [Peterlin et al., Fig. 2a](https://doi.org/10.1039/C1SM06670F) · [Digitized endpoints and assay conditions](checks/data/vesicle_exchange_measurements.json) · [Volume and rate calculation](checks/vesicle_exchange.py#L253)
+
+| Radius at minimum (µm) | Inferred uptake (fmol/s) | Figure-reading range (fmol/s) | Uptake ratio | Cells area ratio |
+| ---: | ---: | ---: | ---: | ---: |
+| 31.80 | 15.1 | 10.7–19.5 | 1.00 | 1.00 |
+| 43.66 | 24.0 | 15.9–32.1 | 1.59 | 1.89 |
+| 50.44 | 36.4 | 25.6–47.3 | 2.41 | 2.52 |
+
+<a id="shared-pool-inventory"></a>
+
+**Finite shared pool.** For any number of vesicles, Lean proves that a transfer between one vesicle and the common bath preserves the integer inventory of that species. The result extends to every finite sequence of transfers. When one vesicle takes the last available molecule, the other vesicles' uptake rates for that species fall to zero. Relabelling the slots preserves the exact sum of the rates with the pool-only reactions counted once. A fixed seed can select different individual events after a relabelling. [Count and rate proofs](CellsProofs/Chemistry/SharedPool.lean#L24) · [Population rates and count updates](../src/cells/models/assembly_lineages_v2/population.py#L187)
+
+Two compiled 96-event populations on the same engine revision each started with one exchangeable lipid and one permeant solute in a single bath, two vesicles and one empty slot. Before uptake the vesicles' lipid entry rates were 0.24 and 0.96 s⁻¹. Both fell to zero when the first vesicle took the lipid. All six slot permutations preserved the individual rates under relabelling and the 0.20 s⁻¹ pool-only reaction. We independently tracked both molecules through the signed event records. Both visited both vesicles, the unused slot stayed empty, and every row had exactly one copy of each molecule across the whole world. The largest energy closure residual was 1.07 × 10⁻¹⁴ k_BT. [Rate controls and trace reconstruction](checks/shared_pool.py#L49)
+
+Chen, Roberts and Szostak mixed equal amounts of lipid in osmotically swollen and isotonic oleate vesicles. Parallel runs with opposite fluorescent labels gave approximately **25% area gain** in the swollen population and **25% loss** in the isotonic population. With equal starting lipid inventories, a common area per lipid and zero net change of free lipid in solution, the donor loss predicts a 25% recipient gain. The experiment leaves the free lipid inventory unmeasured and gives no endpoint uncertainty. This is evidence of redistribution. Exact molecule closure is checked in Cells against its event counts. [Chen et al., Figs. 1B and 1D](https://doi.org/10.1126/science.1100757) · [Two-population balance](CellsProofs/Chemistry/SharedPool.lean#L58)
+
+<a id="shared-pool-declared-volume"></a>
+
+**Engine finding for the assembly owner.** A single shared-pool vesicle with a declared lumen of 10⁻²² L, one solute molecule in the bath, four structural lipids and a one-event limit passes parsing. Its sole possible first event is solute entry. When the population runner assembles the output rows it calls the osmotic volume and tension routines for each live slot unconditionally. The volume routine requests an external osmolarity and raises a `TypeError` because this fixed-volume world has none. The caller receives no records. The same fixed-volume permeation mode returns records in the single-lineage controls above. The isolated reproducer is `checks/shared_pool.py --declared-only` and exits with status 1 on the tested revision. [Reproducer](checks/shared_pool.py#L137) · [Population recorder](../src/cells/models/assembly_lineages_v2/population.py#L717) · [Osmotic constants](../src/cells/models/assembly_lineages_v2/lumen.py#L86)
+
+All 14 new theorems built with the standard Lean axioms. The 125 selected engine geometry, lumen, population and repository guard tests passed. The two drivers emit JSON. The shared-pool driver runs the ordinary controls with `--controls-only` and includes the fixed-volume failure by default.
+
 ## 20 November 2026 · Bilayer area and osmotic vesicle volume
 
 <a id="bilayer-footprint"></a>

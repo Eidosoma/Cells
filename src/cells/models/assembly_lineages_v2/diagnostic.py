@@ -202,10 +202,15 @@ def _shear_events(spec, layout, holder):
 
 
 def build_population(spec, layout, ctx, draws, committed, codes, values, after_events, status,
-                     start, final, world_key, ended):  # fmt: skip
+                     start, final, world_key, ended, offsets=None):  # fmt: skip
     """(diagnostic.json's body, diagnostic.npz's arrays) of a population run: the world's draws
     (domain 5, carrier word 0, counter = the draw's index) read from the device, each crossing draw
-    discarded at its schedule stop and the last one ending the run when the device ended it."""
+    discarded at its schedule stop and the last one ending the run when the device ended it.
+
+    offsets: a run from a checkpoint's (FR-22, rung P): {events, counter, heat, work} before its
+    start. Its draws' counters continue the checkpoint's, each event's heat and work are their
+    increments over the checkpoint's sums, and a lysis's event index is the world's count. So its
+    record is the uninterrupted run's after the cut (checkpoints.py states the joining rule)."""
     from cells.models.assembly_lineages import keys as keys_rules
 
     world = spec.model.world
@@ -215,16 +220,19 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
     stream = streams.stream_key_data(layout.base_key, streams.WORLD_CARRIER, "world")
     import jax
 
-    counters = np.arange(len(draws), dtype=np.int64)
+    first = 0 if offsets is None else offsets["counter"]
+    counters = np.arange(first, first + len(draws), dtype=np.int64)
     again = np.asarray(jax.vmap(lambda c: streams.uniforms(stream, c, 3))(counters))
     if not np.array_equal(again, draws):
         raise AssertionError("The world's draws differ from their addresses' uniforms: a fault")
     heat = values[:, 1] if len(values) else np.zeros(0)
     work = values[:, 3] if len(values) else np.zeros(0)
+    heat_0, work_0, k0 = (0.0, 0.0, 0) if offsets is None else (
+        offsets["heat"], offsets["work"], offsets["events"])  # fmt: skip
     lysed = np.zeros(len(codes), dtype=bool)
     for record in ctx.lyses:
         if not record["at_birth"]:
-            lysed[record["event"] - 1] = True
+            lysed[record["event"] - k0 - 1] = True
     arrays = {
         "draw_domain": np.full(len(draws), 5, dtype=np.int8),
         "draw_key": np.zeros(len(draws), dtype=np.int64),
@@ -235,8 +243,8 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
         "event_group": codes[:, 0].astype(np.int32),
         "event_channel": codes[:, 1].astype(np.int32),
         "event_lysed": lysed,
-        "event_heat_kT": np.diff(np.concatenate(([0.0], heat))),
-        "event_reservoir_work_kT": np.diff(np.concatenate(([0.0], work))),
+        "event_heat_kT": np.diff(np.concatenate(([heat_0], heat))),
+        "event_reservoir_work_kT": np.diff(np.concatenate(([work_0], work))),
         "event_vesicle_after": np.asarray([a for a, _ in after_events]).reshape(len(codes), -1),
         "event_pool_after": np.asarray([b for _, b in after_events]).reshape(len(codes), -1),
     }
