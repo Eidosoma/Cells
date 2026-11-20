@@ -79,6 +79,26 @@ unknown element; an outside-node element (version 2 routes cell-side elements on
 source is read in the element's cell); a state source not declared in an element's cell; and an
 element on a replaced slot. The definition refuses a route to a target declared before the
 coupling (pump_composite.rate_route_definition_errors).
+
+**@2's population source** (FR-7's part (b); docs/ABUNDANCE_TO_FUNCTION_DESIGN.md §6.2; D218;
+development, not judged): a coupling's source may be {"population": channel id}, the population's
+absolute density rho = N/A in units per µm² (the lead's ruling: a density, never a count), through
+hill_activation or hill_inhibition with half_saturation_per_um2 and hill_coefficient. At the read
+rho = a rho_ref: a is @3's current channel_abundance in the coupling's reader view at the control
+view (contract R2: a current read at stage inner), and rho_ref is the population's reference density
+declared in membrane_entity_state@1, bound host side. Its target is an inner channel target
+("step_view"), and its operating range [low, high] is in units per µm², checked where the factor is
+evaluated. Units and area change only in writers' half-steps and event maps, so the held factor is
+the exact one; an in-step process that writes either is refused. Refused at parsing: a self-source
+(the population is one of the target's elements: @3 already scales its conductance by a, so a
+factor would count its abundance twice; D218); a count or any half-saturation other than
+half_saturation_per_um2; a source population outside the target's cell; a junction target (side
+"both" needs a population per endpoint; later, with U1); an operator target (its half-steps receive
+no view); an unknown population; a law other than a Hill law. Refused at binding: a population
+source without membrane_entity_state@1. A source no declared writer of units or area changes is
+reported, not refused: "constant source: the factor cannot vary in this run" (the summary). A
+population route's law code is its Hill kind plus POPULATION_OFFSET, so @1's kernels give it
+exactly f = 1 (padding); only version 2's population kernel evaluates it, and only from a view.
 """
 
 from contextlib import contextmanager
@@ -92,8 +112,9 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
 from cells.numerics.species_sums import entity_sum
+from cells.operators import membrane_state
 from cells.operators import species_common as common
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.registry import species_registry
 
 LAW_ID = "species_regulated_availability@1"
@@ -106,6 +127,10 @@ SIDES = ("first", "second", "both")
 SPECIES_LAWS = hill_factors.KINDS  # hill_activation 1, hill_inhibition 2.
 STATE_FRACTION, STATE_COMPLEMENT = 3, 4
 STATE_FACTOR_LAWS = {"state_fraction": STATE_FRACTION, "state_complement": STATE_COMPLEMENT}
+# Version 2's population source (FR-7's part (b)): a route's law code is its Hill kind plus the
+# offset, which @1's kernels treat as padding (f = 1).
+POPULATION_OFFSET = 4
+POPULATION_LAWS = {name: kind + POPULATION_OFFSET for name, kind in SPECIES_LAWS.items()}
 FROM_SPECIES, FROM_STATE = 1, 2
 CONTROLS_KEY, WRITES_KEY = "coupling_controls", "regulatory_writes"
 
@@ -128,7 +153,7 @@ LAYOUT_FIELDS = (
     "regulatory_input_kind",  # [slot, input] int64: 1 activation, 2 inhibition, 0 padding
     "regulatory_input_half_saturation_mM",  # [slot, input] (1 on padding)
     "regulatory_input_coefficient",  # [slot, input] (1 on padding)
-    "coupling_route_law",  # [route] int64: 1, 2 (species), 3, 4 (state)
+    "coupling_route_law",  # [route] int64: 1, 2 (species), 3, 4 (state), 5, 6 (population; @2)
     "coupling_route_row",  # [route] int64 species row (0 for a state route)
     "coupling_route_cell",  # [route] int64 the cell the route reads
     "coupling_route_slot",  # [route] int64 state slot (0 for a species route)
@@ -157,7 +182,17 @@ LAYOUT_FIELDS_V2 = (
     *OPERATOR_TABLES.values(),
     "coupling_route_low",
     "coupling_route_high",
+    # The population source (FR-7's part (b)): each route's population route (-1: none), and
+    # each population route's source channel slot, reference density and half-saturation
+    # (units per µm²). Their shape is static: no population route, no read of the view.
+    "coupling_route_population",
+    "coupling_population_channel",
+    "coupling_population_reference_density_per_um2",
+    "coupling_population_half_saturation_per_um2",
 )
+MEMBRANE_STATE = membrane_state.LAW_ID  # Its declaration holds each reference density.
+UNIT_FIELDS = ("population_abundance_increment", "membrane_area_increment_m2")  # rho = N / A.
+CONSTANT_SOURCE = "constant source: the factor cannot vary in this run"
 # Version 2's exact record (contract FACTOR_RECORD): each route's factor where it was last applied,
 # at the control view (a step_view route) or at its target's half-step (an operator route).
 STATE_AXES_V2 = {**STATE_AXES, "coupling_applied_factor": ["coupling_route"]}
@@ -226,6 +261,15 @@ class Coupling:
     half_saturation_mM: float | None
     hill_coefficient: float | None
     basal: float
+
+
+@dataclass(frozen=True)
+class PopulationCoupling(Coupling):
+    """Version 2's population source (FR-7's part (b)): a Hill law of the source population's
+    absolute density N/A in units per µm² (the lead's ruling), with K in the same unit.
+    half_saturation_mM is None; source_kind is "population" and source the channel population."""
+
+    half_saturation_per_um2: float
 
 
 @dataclass(frozen=True)
@@ -447,6 +491,64 @@ def _inner_target(raw, name, elements, version):
     return Target("inner", t["control"], ids, t["side"])
 
 
+def _population_coupling(entry, m, elements):
+    """Version 2's population source (the module docstring): a Hill law of the source
+    population's density (units per µm²) on @3's channel targets in its own cell."""
+    name = identifier(entry.get("id"))
+    origin = identifier(entry["source"]["population"])
+    for key in entry:
+        if key.startswith("half_saturation_") and key != "half_saturation_per_um2":
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads population {origin!r} through {key}; a "
+                "population source is its density, half_saturation_per_um2 (units per µm²): a "
+                "count would make the factor depend on the host's size"
+            )
+    keys = {"id", "target", "source", "law", "basal", "half_saturation_per_um2", "hill_coefficient"}
+    _fields(entry, keys, f"{LAW_ID_V2} coupling")
+    law = entry["law"]
+    if law not in SPECIES_LAWS:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population through a Hill law: "
+            + ", ".join(SPECIES_LAWS)
+        )
+    raw_target = entry["target"]
+    if isinstance(raw_target, dict) and raw_target.get("operator") != "inner":
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population onto an operator target; a "
+            "population is read at the control view, which an operator target's half-steps do "
+            "not receive, so its targets are @3's channels"
+        )
+    target = _inner_target(raw_target, name, elements, 2)
+    if target.control != "channel":
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population onto a junction; a population "
+            "source targets @3's channels (a junction's side both needs a population per "
+            "endpoint: later, with U1)"
+        )
+    channels = {c.id: c for c in m.channels}
+    if origin not in channels:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name} reads an unknown population {origin!r}")
+    if origin in target.ids:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads population {origin}'s own abundance onto its "
+            "availability; @3 already scales its conductance by that abundance, so a factor "
+            "would count it twice (D218)"
+        )
+    membranes = {p.id: p for p in m.membranes}
+    home = membranes[channels[origin].membrane_id].inside
+    for element in target.ids:
+        (cell,) = _target_cells(m, target, element)
+        if cell != home:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads population {origin}, in {home}, onto "
+                f"{element}, in {cell}; a population source is read in its target's cell"
+            )
+    k = _positive(entry["half_saturation_per_um2"], f"coupling {name}'s half_saturation_per_um2")
+    n = _positive(entry["hill_coefficient"], f"coupling {name}'s hill_coefficient")
+    basal = _fraction(entry["basal"], f"coupling {name}'s basal level", upper_open=True)
+    return PopulationCoupling(name, target, "population", origin, law, None, n, basal, k)
+
+
 def _parse_couplings(raw, base, listed, states, *, version=1):
     if type(raw) is not list:
         raise ConfigError(f"{LAW_ID} declares its couplings in an explicit list")
@@ -458,6 +560,10 @@ def _parse_couplings(raw, base, listed, states, *, version=1):
     for entry in raw:
         if not isinstance(entry, dict):
             raise ConfigError(f"{LAW_ID}: a coupling is an object")
+        source = entry.get("source")
+        if version == 2 and isinstance(source, dict) and set(source) == {"population"}:
+            couplings.append(_population_coupling(entry, m, elements))
+            continue
         law = entry.get("law")
         keys = {"id", "target", "source", "law", "basal"}
         if law in SPECIES_LAWS:
@@ -616,6 +722,11 @@ def declaration_to_dict(declaration):
                         half_saturation_mM=c.half_saturation_mM, hill_coefficient=c.hill_coefficient
                     )
                     if c.source_kind == "species"
+                    else dict(
+                        half_saturation_per_um2=c.half_saturation_per_um2,
+                        hill_coefficient=c.hill_coefficient,
+                    )
+                    if c.source_kind == "population"
                     else {}
                 ),
             )
@@ -731,6 +842,50 @@ def _writes_at(entries, time):
 # ------------------------------------------------------------------ binding
 
 
+def reference_densities(spec):
+    """Version 2: {population: its reference density (units/m^2)} from the definition's
+    membrane_entity_state@1 declaration (FR-7's Q5 (a)); refused without one."""
+    for op, block, _ in composite_spec.entries(spec):
+        if op.LAW_ID == MEMBRANE_STATE:
+            return {p.channel_id: p.reference_density_per_m2 for p in block.populations}
+    raise ConfigError(
+        f"{LAW_ID_V2}: a population source needs {MEMBRANE_STATE}, whose declared reference "
+        "density turns @3's abundance into the source's density"
+    )
+
+
+def _population_layout(spec, declaration, routes):
+    """Version 2: each population route's law code set (its Hill kind plus POPULATION_OFFSET,
+    so @1's kernels give it f = 1), and its arrays: the route map ([route], -1 elsewhere), and
+    per population route its source's channel slot, reference density and half-saturation (per
+    µm²). Refused here, where the binding first reads it: a population source without
+    membrane_entity_state@1."""
+    index = -np.ones(len(routes), dtype=np.int64)
+    population = [
+        i
+        for i, r in enumerate(routes)
+        if type(declaration.couplings[r["coupling"]]) is PopulationCoupling
+    ]
+    couplings = [declaration.couplings[routes[i]["coupling"]] for i in population]
+    density = reference_densities(spec) if population else {}
+    channels = [c.id for c in spec.model.channels]
+    for j, (i, coupling) in enumerate(zip(population, couplings, strict=True)):
+        routes[i]["law"] = POPULATION_LAWS[coupling.law]
+        index[i] = j
+    return dict(
+        coupling_route_population=index,
+        coupling_population_channel=np.asarray(
+            [channels.index(c.source) for c in couplings], dtype=np.int64
+        ),
+        coupling_population_reference_density_per_um2=np.asarray(
+            [density[c.source] * 1e-12 for c in couplings], dtype=float
+        ),
+        coupling_population_half_saturation_per_um2=np.asarray(
+            [c.half_saturation_per_um2 for c in couplings], dtype=float
+        ),
+    )
+
+
 def _operator_routes(spec, declaration, routes, slot_keys):
     """Version 2: each operator target's routes, appended to `routes` after the inner ones, and
     ({table field: [elements, width] route per element, -1 pads}, [(low, high) per appended
@@ -806,6 +961,7 @@ def _operator_routes(spec, declaration, routes, slot_keys):
         for index, members in on_element[key].items():
             table[index, : len(members)] = members
         tables[field] = table
+    tables.update(_population_layout(spec, declaration, routes))  # FR-7's part (b).
     return tables, ranges
 
 
@@ -852,12 +1008,13 @@ def bind(spec, declaration, schedule):
         for element in coupling.target.ids:
             for cell in _target_cells(m, coupling.target, element):
                 from_state = coupling.source_kind == "state"
+                padded = from_state or coupling.source_kind == "population"  # Version 2's.
                 route = dict(
                     law=law,
-                    row=0 if from_state else species.index(coupling.source),
+                    row=0 if padded else species.index(coupling.source),
                     cell=cells.index(cell),
                     slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
-                    half=1.0 if from_state else coupling.half_saturation_mM,
+                    half=1.0 if padded else coupling.half_saturation_mM,
                     coefficient=1.0 if from_state else coupling.hill_coefficient,
                     basal=coupling.basal,
                     coupling=c_index,
@@ -1022,10 +1179,12 @@ def used_routes(tables, count, *, xp):
     return used
 
 
-def range_valid(state, p, used, *, xp):
+def range_valid(state, p, used, *, xp, density=None):
     """Version 2: every enabled route of `used` inside its declared operating range at `state`,
     where its factor is evaluated: a species route's concentration (mM, in its cell at the
-    declared volume) or a state route's fraction. A switched-off coupling's routes are skipped
+    declared volume), a state route's fraction, or a population route's density (units per µm²;
+    `density` [population route], given at the control view, its one point of evaluation, and
+    elsewhere None, which leaves those routes out). A switched-off coupling's routes are skipped
     (its factor is exactly 1)."""
     law = p.coupling_route_law
     rows, cells = p.coupling_route_row, p.coupling_route_cell
@@ -1034,9 +1193,57 @@ def range_valid(state, p, used, *, xp):
     if p.regulatory_slot_cell.shape[0] > 0:  # Static: states declared.
         s = state.regulatory_state[p.coupling_route_slot]
         source = xp.where(law >= STATE_FRACTION, s, source)
+    if has_population(p):  # Static (FR-7's part (b)).
+        population = p.coupling_route_population >= 0
+        if density is None:
+            used = used & ~population
+        else:
+            source = xp.where(
+                population, density[xp.maximum(p.coupling_route_population, 0)], source
+            )
     inside = (source >= p.coupling_route_low) & (source <= p.coupling_route_high)
     on = state.coupling_enabled[p.coupling_route_coupling] > 0
     return xp.all(inside | ~on | ~used)
+
+
+def has_population(p):
+    """Version 2: whether any route reads a population (static, by shape)."""
+    return p.coupling_population_channel.shape[0] > 0
+
+
+def _required(view):
+    """Version 2: the reader view a population route is evaluated from (R2), refused if none."""
+    if view is None:
+        raise ValueError(
+            f"{LAW_ID_V2}: a population route is evaluated at the control view, from the reader "
+            "view the composite passes there (R2), and none was passed"
+        )
+    return view
+
+
+def population_densities(view, p, *, xp):
+    """Version 2: [population route] its source's density (units per µm²) in a view: rho =
+    a rho_ref, from @3's current channel_abundance (FR-7's part (b))."""
+    a = view.channel_abundance[p.coupling_population_channel]
+    return a * p.coupling_population_reference_density_per_um2
+
+
+def with_population_factors(values, state, p, density, *, xp):
+    """Version 2: [route] `values` with each population route's F = b + (1 - b) f, f its Hill
+    law of the source's density (`density`, [population route]); exactly 1 for a switched-off
+    coupling, as every route's."""
+    index = p.coupling_route_population
+    j = xp.maximum(index, 0)
+    hill = hill_factors.factor(
+        xp.log(density[j]),
+        p.coupling_population_half_saturation_per_um2[j],
+        p.coupling_route_coefficient,
+        p.coupling_route_law - POPULATION_OFFSET,
+        xp=xp,
+    )
+    basal = p.coupling_route_basal
+    on = state.coupling_enabled[p.coupling_route_coupling] > 0
+    return xp.where((index >= 0) & on, basal + (1.0 - basal) * hill, values)
 
 
 def own_valid(state, *, xp):
@@ -1153,6 +1360,35 @@ def check_replaced_operator_elements(spec, declaration):
                     f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}'s {element}, "
                     f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces (refused in version 2)"
                 )
+
+
+def check_population_sources(spec, declaration):
+    """Version 2: a population source needs membrane_entity_state@1 (reference_densities), and
+    no in-step process may write population units or membrane area: its factor is held through
+    @3's step, which is exact only while both change in half-steps and event maps."""
+    readers = [c for c in declaration.couplings if type(c) is PopulationCoupling]
+    if not readers:
+        return
+    reference_densities(spec)
+    for op, _, _ in composite_spec.entries(spec):
+        written = [field for field in UNIT_FIELDS if field in op.ENTITY_WRITES]
+        if op.PROCESS and written:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {readers[0].id} holds a population's density through @3's "
+                f"step, but {op.LAW_ID}'s in-step process writes {written[0]}: the held factor "
+                "would lag it (first order)"
+            )
+
+
+def unit_writers(spec):
+    """Version 2: the definition's operators that declare a write of population units or
+    membrane area (ENTITY_WRITES; class level), in declared order: those that could change a
+    population source's density, rho = N / A."""
+    return [
+        op.LAW_ID
+        for op, _, _ in composite_spec.entries(spec)
+        if any(field in op.ENTITY_WRITES for field in UNIT_FIELDS)
+    ]
 
 
 def check_rate_limit(spec, declaration):
@@ -1378,15 +1614,24 @@ def _named_v2():
 
 class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
     """species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′,
-    docs/INVENTORY_COUPLING_DESIGN.md §2.1). It shares @1's laws, states, events and inner
-    targets; its layout adds the operator targets' element tables and every route's operating
-    range. Development, not judged."""
+    docs/INVENTORY_COUPLING_DESIGN.md §2.1) and the population source (FR-7's part (b)). It
+    shares @1's laws, states, events and inner targets; its layout adds the operator targets'
+    element tables, every route's operating range and the population routes' arrays. A
+    population route is evaluated from its reader view of channel_abundance where the composite
+    passes it (R2): control_factors, factor_valid and factor_record at the control view, and
+    observe from the row's view. Elsewhere (@1's rate_checks and domain_valid, and the target
+    half-steps' factor_record, where it stands in no table) its factor is @1's padding, exactly
+    1; at a step's end membrane state's domain (finite units, at least 0, positive area) keeps
+    its density finite and nonnegative, so its factor lies in [b, 1]. Development, not judged."""
 
     LAW_ID = LAW_ID_V2
     LAYOUT_FIELDS = LAYOUT_FIELDS_V2
     STATE_AXES = STATE_AXES_V2
     FACTOR_RECORD = "coupling_applied_factor"
     RATE_ROUTES = tuple(OPERATOR_TABLES)
+    # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view.
+    VIEW_READS = ("channel_abundance",)
+    SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
     # Its run view (the contract; an operator registered after the run view declares it).
     VIEW_LAYERS = (
         {
@@ -1489,6 +1734,7 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
             check_replaced_slots(spec, declaration)
             check_replaced_operator_elements(spec, declaration)
+            check_population_sources(spec, declaration)
             check_rate_limit(spec, declaration)
 
     def batch_signature(self, declaration):
@@ -1504,6 +1750,22 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
                     evaluation=c.target.evaluation,
                     operating_range=list(c.target.operating_range),
                 )
+        population = [c for c in declaration.couplings if type(c) is PopulationCoupling]
+        if population:  # FR-7's part (b): its K and range per µm², and the constant source.
+            writers = unit_writers(spec)
+            for c in population:
+                entry = out["coupling_targets"][c.id]
+                del entry["half_saturation_mM"]
+                entry.update(
+                    half_saturation_per_um2=c.half_saturation_per_um2,
+                    evaluation=c.target.evaluation,
+                    operating_range_per_um2=list(c.target.operating_range),
+                    source_writers=writers,
+                )
+            # Class level (ENTITY_WRITES): a declared writer may leave this population alone.
+            out["coupling_constant_sources"] = (
+                {} if writers else {c.id: CONSTANT_SOURCE for c in population}
+            )
         return out
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
@@ -1513,27 +1775,58 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             state, layout = bind(spec, declaration, schedule)
         read = SimpleNamespace(**inner_state._asdict(), **state)
         bound = SimpleNamespace(**inner_layout._asdict(), **layout)
-        state["coupling_applied_factor"] = np.asarray(route_factors(read, bound, xp=np), float)
+        values = route_factors(read, bound, xp=np)
+        if has_population(bound):  # The declared abundance: no increment at the bound state.
+            density = population_densities(bound, bound, xp=np)
+            values = with_population_factors(values, read, bound, density, xp=np)
+        state["coupling_applied_factor"] = np.asarray(values, float)
         return state, layout
 
-    def factor_valid(self, state, p, *, xp):
+    def _values(self, state, p, view, *, xp):
+        """[route] every route's factor at `state`, a population route's from `view` (its reader
+        view, R2), which is called only with a population route (static)."""
+        values = route_factors(state, p, xp=xp)
+        if not has_population(p):
+            return values
+        density = population_densities(_required(view)(state), p, xp=xp)
+        return with_population_factors(values, state, p, density, xp=xp)
+
+    def control_factors(self, state, p, *, xp, view=None):
+        """@1's factors, with each population route's from `view` (static: without a population
+        route, @1's call)."""
+        if not has_population(p):
+            return super().control_factors(state, p, xp=xp)
+        values = self._values(state, p, view, xp=xp)
+        return {
+            name: element_product(values, getattr(p, TARGET_TABLES[name]), xp=xp)
+            for name in self.CONTROL_FACTORS
+            if getattr(p, TARGET_TABLES[name]).shape[1]
+        }
+
+    def factor_valid(self, state, p, *, xp, view=None):
         """Its step_view routes' sources inside their declared ranges at the control view, where
-        their factors are evaluated (enabled routes only); None without one (static)."""
+        their factors are evaluated (enabled routes only), a population's density from `view`;
+        None without one (static)."""
         tables = [getattr(p, field) for field in TARGET_TABLES.values()]
         if not any(table.shape[1] for table in tables):
             return None
         used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
-        return range_valid(state, p, used, xp=xp)
+        density = None
+        if has_population(p):  # Static.
+            density = population_densities(_required(view)(state), p, xp=xp)
+        return range_valid(state, p, used, xp=xp, density=density)
 
-    def factor_record(self, state, p, target, field, *, xp):
+    def factor_record(self, state, p, target, field, *, xp, view=None):
         """(each route's factor at `state`, the routes evaluated there): the step_view routes at
         the control view (target None), or one operator target's at its half-step."""
         if target is None:
             tables = [getattr(p, name) for name in TARGET_TABLES.values()]
-        else:
+            values = self._values(state, p, view, xp=xp)
+        else:  # No population route stands in an operator table.
             tables = [getattr(p, OPERATOR_TABLES[(target, field)])]
+            values = route_factors(state, p, xp=xp)
         used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
-        return route_factors(state, p, xp=xp), used
+        return values, used
 
     def declared_rate_routes(self, declaration):
         return tuple(
@@ -1554,3 +1847,12 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         values = route_factors(state, p, xp=xp)
         used = used_routes((table,), values.shape[0], xp=xp)
         return element_product(values, table, xp=xp), range_valid(state, p, used, xp=xp)
+
+    def observe(self, row, state, control, p, view, model, spec):
+        """@1's columns; a population route's coupling_factor from the row's view."""
+        columns = super().observe(row, state, control, p, view, model, spec)
+        if has_population(p):
+            density = population_densities(view, p, xp=np)
+            factor = with_population_factors(columns["coupling_factor"], state, p, density, xp=np)
+            columns["coupling_factor"] = np.asarray(factor)
+        return columns
