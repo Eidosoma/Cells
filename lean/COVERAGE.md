@@ -1,12 +1,94 @@
 <!-- Generated from lean/registry.json and lean/claims.json. -->
 
-# Engine law coverage
+# Proof and evidence catalog
 
-Each row links to a Cells registry declaration. The proof column lists named claims about that piece. The comparison column links to runs that exercised it, including runs checking another property. Open means the Cells claim register has no entry in that column. [Proof index](README.md#proof-index) · [Registry inventory](registry.json)
+Choose a claim for its assumptions, theorems, numerical results and sources. Partial evidence covers a measured part of a claim. A result marked not assessable has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · [Registered laws](#registered-laws) · [Registered operators](#registered-operators)
+
+<a name="category-membrane-transport"></a>
+
+## Membrane transport and osmosis
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | **Partial evidence.** Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) |
+| [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | **Partial evidence.** In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) |
+| [Water potential sets flow, heat and osmometric equilibrium](claims/osmotic-water.md) | Proved | Checked | **Partial evidence.** A stiffness fitted to 1.7% swelling predicted 2.57% on the second bath against 2.6 ± 0.1% measured. [Shibly et al., Fig. 2B](https://doi.org/10.1016/j.bpj.2016.09.043) At 184 mOsm/L the ideal model predicted 111.4 fL for ghosts (109.0 ± 1.0 measured) and 122.6 fL for intact cells (111.5 ± 1.2 measured). [Kwant and Seeman, Tables I–II](https://doi.org/10.1085/jgp.55.2.208) One measured pressure step predicted reversed water flow of 4.82 nL/s outward on the second step. The measured flow was 5.3 nL/s outward. [Wendler and Zimmermann, Fig. 2A](https://doi.org/10.1104/pp.69.5.998) Measured osmole changes imply water changes of −0.375 and +0.078 g/g in two baths, against −0.37 and +0.06 measured. Multiple transport pathways contribute. [Guizouarn et al., Table 1](https://doi.org/10.1111/j.1469-7793.2000.t01-1-00147.x) |
+
+<a name="category-channels-and-junctions"></a>
+
+## Ion channels and junctions
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) | Proved | Checked | **Partial evidence.** A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
+| [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | **Partial evidence.** Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15) |
+| [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | **Partial evidence.** Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/) |
+| [Junction conductance relaxes toward a voltage-dependent target](claims/junction-gate.md) | Proved | Checked | **Partial evidence.** Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) |
+| [Voltage-gated channel openings stay between zero and one](claims/channel-gate-bounds.md) | Proved | Checked | **Partial evidence.** Rat Kv1.1 decay at −20 mV and 25 °C was 313 ± 82 ms (SD). Cells retained 88% of its peak after 1.5 s and gave a fit of about 8 s from an equilibrated −80 mV hold. Rat Kv1.4 retained under 2% after 3.2 s at 0 mV, versus 0.57% in Cells. Four gate parameters match that paper. Human NaV1.2 rose in 0.38 ± 0.05 ms (10–90%, SEM), versus 0.296 ms in Cells. Its fitted inactivation midpoint was −63.53 ± 0.79 mV, while Cells gave half of its −120 mV reference response at −54.9 mV. [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6) |
+| [Channel opening scales the signed transfer of sodium or potassium](claims/channel-ion-transfer.md) | Proved | Checked | **Partial evidence.** At −60 mV, 100 µM cytoplasmic spermine reduced the Kir2.1 single-channel current magnitude from 2.00 ± 0.04 to 1.40 ± 0.04 pA with no significant change in open probability. A voltage-only gate misses that change in unitary conductance. The two generic leak laws have no assigned molecular isoform or preparation-specific permeability. [Xie et al., Figs. 1–3](https://doi.org/10.1085/jgp.20028576) |
+| [Chloride gradients set leak reversal and inward chloride carries positive outward current](claims/chloride-channel-charge.md) | Proved | Checked | **Partial evidence.** Observed 45 mV. Predicted 60.6 mV. The measured shift is approximate. Lowering nominal outside chloride from 145 to 15 mM in rabbit kidney patches at 37 °C shifted reversal in the predicted positive direction. The channels also passed bromide and showed regulated opening. Absolute permeability remains uncalibrated. [Ling et al., Fig. 1B](https://doi.org/10.1172/JCI117037) |
+| [Potassium rectification sets reversal, dissipation and a bound on slope conductance](claims/inward-rectifier.md) | Proved | Failed | **Mixed.** Observed -0.59 pA. Predicted -0.385 pA. At 15 mM external K the current magnitude fell less than the model predicted, as it did at the other three held-out concentrations. The model’s −59.67 mV shift in reversal agreed with the approximately −60 mV measured. [Tada et al. (1998), Fig. 4B–D](https://doi.org/10.2170/jjphysiol.48.71) |
+
+<a name="category-pumps-and-cotransport"></a>
+
+## Pumps and cotransport
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | Proved | Checked | **Partial evidence.** In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/) |
+| [Stall voltages and net charge of the sodium–potassium and calcium pumps](claims/electrogenic-pump-charge.md) | Proved | Checked | **Partial evidence.** Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230) |
+| [Sodium coupling sets net charge and the stall voltage of an anion carrier](claims/sodium-anion-symport.md) | Proved | Checked | **Partial evidence.** Observed 1.04 net positive charges per lactate. Predicted 1 net positive charges per lactate. The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 for both sodium halvings. The experimental means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open. [Coady et al. (2007), Figs. 1, 2 and 4](https://doi.org/10.1529/biophysj.107.108555) Measured net charge exceeded the prediction at all four human points by approximately 65–85 pmol. At 370 pmol lactate, Cells predicted 370 pmol net charge and the figure gives about 450 pmol. [Gopal et al. (2004), Fig. 9A](https://doi.org/10.1074/jbc.M405365200) |
+| [Potassium–anion cotransport follows the concentration products in a closed pair](claims/potassium-anion-symport.md) | Proved | Failed | **Partial evidence.** Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/) The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open. [Lauf and Adragna (1996), Fig. 8](https://doi.org/10.1085/jgp.108.4.341) |
+
+<a name="category-reactions-and-binding"></a>
+
+## Reactions and binding
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) | Proved | Checked | **Partial evidence.** The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip) |
+| [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | **Partial evidence.** NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/) |
+| [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | Proved | Checked | **Partial evidence.** For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html) |
+
+<a name="category-molecular-assembly"></a>
+
+## Molecular assembly and catalysis
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) | Proved | Checked | **Partial evidence.** Accessible fluorescent lipid washed out of 310 protein-free vesicles at 0.0108 ± 0.0045 s⁻¹ (24 °C, mean ± SD). The retained fraction was 49.5 ± 8.5%. In a separate sterol assay, adding more equal-sized vesicles increased transfer at 25 °C. The insertion constant fitted at 35 °C was (6.4 ± 0.6) × 10⁷ M⁻¹ s⁻¹ per molar vesicles. Individual vesicle size, free monomer activity and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8) · [Estronca et al., Fig. 2 and Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC2098731/) |
+| [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | Proved | Checked | **Measurement sought.** Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions. |
+| [Pair-consistent catalysis preserves the heat of a reversible transfer](claims/gard-pair-heat.md) | Proved | Failed | **Partial evidence.** For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007) |
+| [Single-event catalysis can give different forward and reverse cycle rate products](claims/gard-single-cycle.md) | Proved | Checked | **Measurement sought.** Forward and reverse transition rates around the same four known lipid compositions under a fixed reservoir, including the identity of the moving lipid. |
+| [Whole-molecule counts set the ideal mixing cost of membrane entry](claims/assembly-ideal-mixing.md) | Proved | Checked | **Partial evidence.** Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open. [Shaw et al. (2023), Fig. 2A and Table S1](https://doi.org/10.1016/j.bpj.2023.02.009) Extrapolating from the highest fitted composition (45.6 mol%) to the independently measured crystal onset (66 ± 2 mol%) gives activity 1.119. The expected value is 1 if the crystal references match. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6) |
+| [Pair interactions change the energy of membrane entry with composition](claims/assembly-regular-mixing.md) | Proved | Checked | **Partial evidence.** The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT. [Shaw et al. (2023), Fig. 2A and Table S1](https://doi.org/10.1016/j.bpj.2023.02.009) Extrapolating from 45.6 mol% to the independently measured crystal onset (66 ± 2 mol%) gives activity 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6) |
+| [Finite molecule counts set stochastic encounter rates and paired event heat](claims/assembly-stochastic-encounter.md) | Proved | Checked | **Partial evidence.** For identical membrane partners, live-cell homodimer imaging measured a 91 ± 16 ms lifetime. It reported surface densities, leaving the repeated-reactant draw at fixed small counts open. [Kasai et al., Figs. 4–6](https://doi.org/10.1083/jcb.201009128) From one partner’s measured 0.48 bound probability, Cells predicted 0.649 and 0.735 with two and three partners. The figure gives about 0.64 and 0.67, respectively. [Shon and Cohen (2012), Fig. 4f](https://doi.org/10.1021/ja3062425) |
+| [A common catalyst factor preserves reversible rate ratios and equilibrium weights](claims/assembly-transition-state-factor.md) | Proved | Failed | **Partial evidence.** At 37 °C, cholesterol exchange between vesicles sped up about 57-fold with 1 mM β-cyclodextrin. Half-times were 195 ± 13 and about 3.4 minutes. A separate 0.5 mM equilibrium series gave a partition coefficient of 0.91 ± 0.06. Equal scaling of the two directional rates remains unmeasured. This transfer catalyst is in solution. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0) |
+
+<a name="category-tissue-and-conservation"></a>
+
+## Tissue transport and conservation
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | **Partial evidence.** Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906) |
+| [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | **Partial evidence.** Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf) |
+| [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | **Partial evidence.** Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
+| [Only boundary transfers change a region’s inventory during transport](claims/transfer-inventory.md) | Proved | Checked | **Partial evidence.** Perfused rat hearts lost 139 ± 12 μmol of K⁺ per g dry weight in effluent over 40 min. Tissue depletion was measured in separate hearts, leaving the within-heart balance open. [Kuki et al., Figs. 3–4](https://doi.org/10.1161/01.RES.67.2.401) |
+| [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | Proved | Failed | **Partial evidence.** Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712) |
+| [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | **Partial evidence.** A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811) |
+
+<a name="category-cell-physiology"></a>
+
+## Cell physiology
+
+| Claim | Lean proof | Numerical check | Biological measurements and limits |
+| --- | --- | --- | --- |
+| [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | **Not assessable.** Observed -18 mV. Predicted -14.59 mV. The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized. [Bonzanni et al. (2020)](https://doi.org/10.1242/bio.048553) |
 
 ## Registered laws
 
-Direct Lean claims cover 30 of 32 registered laws. Recorded numerical comparisons exercise 30.
+Direct Lean claims cover 30 of 32 registered laws. Recorded numerical comparisons exercise 30. A run can exercise a law while checking a different property.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -45,7 +127,7 @@ Direct Lean claims cover 30 of 32 registered laws. Recorded numerical comparison
 
 ## Registered operators
 
-Direct Lean claims cover 5 of 24 registered operators. Recorded numerical comparisons exercise 8.
+Direct Lean claims cover 5 of 24 registered operators. Recorded numerical comparisons exercise 8. A run can exercise a operator while checking a different property.
 
 | Operator | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |

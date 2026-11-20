@@ -1,6 +1,15 @@
 {
   "$schema": "./claims.schema.json",
   "version": 1,
+  "categories": {
+    "membrane-transport": "Membrane transport and osmosis",
+    "channels-and-junctions": "Ion channels and junctions",
+    "pumps-and-cotransport": "Pumps and cotransport",
+    "reactions-and-binding": "Reactions and binding",
+    "molecular-assembly": "Molecular assembly and catalysis",
+    "tissue-and-conservation": "Tissue transport and conservation",
+    "cell-physiology": "Cell physiology"
+  },
   "comparisons": {
     "junction": {
       "kind": "engine",
@@ -442,6 +451,7 @@
   "claims": [
     {
       "id": "junction-flux-reversal",
+      "category": "channels-and-junctions",
       "title": "Reversing a junction reverses its flux",
       "statement": "Exchanging the concentrations at the two ends of a constant-field junction and reversing the voltage difference negates the signed flux.",
       "assumptions": ["The ion, temperature, area, permeability and opening are the same in both orientations. Voltage is sender potential minus receiver potential, scaled by zF/(RT).", "The proof treats both the analytic Bernoulli factor and the engine’s near-zero series in real arithmetic. A floating-point error bound for the series remains open."],
@@ -453,6 +463,7 @@
     },
     {
       "id": "junction-concentration-gradient",
+      "category": "channels-and-junctions",
       "title": "At equal voltage, junction flux follows the concentration gradient",
       "statement": "At equal potentials the signed flux is scale × (sender concentration − receiver concentration). A positive scale gives flow from higher to lower concentration.",
       "assumptions": ["The transport factor has value one at zero voltage. The scale is area × permeability × opening divided by mol/fmol. The direction claim requires a positive scale."],
@@ -465,6 +476,7 @@
     },
     {
       "id": "junction-blocking",
+      "category": "channels-and-junctions",
       "title": "A blocked junction carries zero flux",
       "statement": "Setting the effective transport scale to zero gives zero junction flux at every voltage and concentration difference.",
       "assumptions": ["The constant-field route multiplies the concentration-dependent term by its effective area, permeability and opening scale."],
@@ -476,6 +488,7 @@
     },
     {
       "id": "junction-gate",
+      "category": "channels-and-junctions",
       "title": "Junction conductance relaxes toward a voltage-dependent target",
       "statement": "At fixed voltage the intrinsic gate approaches its target with one exponential time constant and stays between its residual conductance fraction and one. Increasing voltage magnitude lowers the target if the residual fraction is below one. Reversing polarity preserves the trajectory from the same initial state.",
       "assumptions": ["The junction has one intrinsic conductance state, the declared opening and closing rates, and a fixed threshold. Elapsed time is nonnegative and the initial conductance lies between the residual fraction and one.", "The tissue applies an external availability multiplier to transport. The intrinsic gate keeps evolving during a block. The time-course identity assumes constant junction voltage throughout the interval."],
@@ -495,6 +508,7 @@
     },
     {
       "id": "channel-gate-bounds",
+      "category": "channels-and-junctions",
       "title": "Voltage-gated channel openings stay between zero and one",
       "statement": "For the six Kv1 laws, Kir2.1 and NaV1.2, both targets lie between zero and one and both time constants are positive on the declared voltage interval. An exponential tissue stage preserves the opening bounds when its two endpoint voltages differ. At a fixed voltage each gate’s deviation from its target decays exponentially. The whole-current response combines both gates.",
       "assumptions": ["Voltage is inside minus outside. Both stage endpoint voltages are between −120 and +60 mV, the elapsed time is nonnegative, and both initial gates lie in [0, 1].", "The proof uses the declared kinetics and the tissue’s exponential stage in real arithmetic, including the small-step series and both branches of the regularized sodium rates. A whole-current trace at fixed voltage and concentrations is proportional to the open fraction."],
@@ -516,6 +530,7 @@
     },
     {
       "id": "channel-ion-transfer",
+      "category": "channels-and-junctions",
       "title": "Channel opening scales the signed transfer of sodium or potassium",
       "statement": "The seven gated K⁺ laws, one gated Na⁺ law and two single-ion leaks multiply the fully open constant-field flux by their opening and external availability. The opening is m h² for Kv1.1 and Kir2.1, m h for Kv1.2–Kv1.6, m³ h for NaV1.2 and one for the two leaks. With availability between zero and one the magnitude cannot exceed the fully open flux. Blocking gives zero. Only the declared ion crosses, debiting the cell and crediting the exterior.",
       "assumptions": ["The declared population conducts K⁺ or Na⁺ with relative permeability one. The same area, permeability, abundance, voltage and concentrations define the fully open comparison. Positive flux points from the cell to the exterior.", "The gate values and external availability are in [0, 1]. The formal booking uses one cell–exterior pair. A held bath offsets the exterior credit with reservoir supply."],
@@ -533,6 +548,7 @@
     },
     {
       "id": "chloride-channel-charge",
+      "category": "channels-and-junctions",
       "title": "Chloride gradients set leak reversal and inward chloride carries positive outward current",
       "statement": "For the gate-free Cl⁻ population, outward material flux J produces outward electrical current −F × 10⁻¹⁵ × J amperes for J in fmol/s. The conducting route reverses at V = (RT/F) × (ln inside − ln outside) on the regular Bernoulli branch and at zero voltage. On the small nonzero branch its reversal follows the implemented polynomial ratio.",
       "assumptions": ["Voltage is inside minus outside. Concentrations, absolute temperature, F and RT are positive. Permeability, area, abundance and availability give a positive scale for the reversal claim.", "The formal calculation is over real numbers. The regular branch uses |FV/(RT)| ≥ 10⁻⁴. The sign conversion applies to either flux branch. In the tissue comparison, a single membrane connects the cell to a grounded bath and the chloride population is the only conductive route."],
@@ -559,6 +575,7 @@
     },
     {
       "id": "neutral-permeation",
+      "category": "membrane-transport",
       "title": "Passive neutral solute follows its concentration gradient",
       "statement": "For a neutral solute the inward constant-field flux is the route scale times outside minus inside concentration at any voltage. With a positive scale it is inward exactly when concentration is higher outside. In a closed pair the gradient changes at rate −k times the gradient, where k is the scale times the sum of the reciprocal compartment volumes.",
       "assumptions": ["Valence is zero. The route scale is area × permeability × opening divided by mol/fmol. Concentrations are in mM and flux is in fmol/s.", "The relaxation identity applies to two well-mixed compartments at fixed positive volumes in pL, with this route as the sole transfer of the solute."],
@@ -573,6 +590,7 @@
     },
     {
       "id": "proton-leak",
+      "category": "membrane-transport",
       "title": "Voltage and free proton concentrations set the leak reversal",
       "statement": "For an open route, inward flux is positive exactly when hOut exceeds hIn × B(−x)/B(x), using the engine’s selected Bernoulli factor at x = FV/(RT). The analytic law reverses at V = (RT/F) × (ln hOut − ln hIn) and releases nonnegative instantaneous heat. The engine’s real-arithmetic evaluator gives the analytic flux at x = 0 and for |x| ≥ 10⁻⁴. At other x the polynomial has its own reversal ratio.",
       "assumptions": ["Positive free H⁺ concentrations on both sides in mM, positive absolute temperature and proton valence +1. Voltage is inside minus outside, with positive flux inward.", "Area × permeability × opening is positive for directional claims and may be zero for the heat inequality. The proof interprets both evaluator branches in real arithmetic."],
@@ -593,6 +611,7 @@
     },
     {
       "id": "atp-cycle",
+      "category": "pumps-and-cotransport",
       "title": "Free energy sets ATP-driven transport direction and stall",
       "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
       "assumptions": ["One tightly coupled mode hydrolyses one ATP on side N and moves n cargo units from N to P. Cargo valence is +1 for free protons and zero for the neutral role. Voltage is V_N − V_P.", "Activities and absolute temperature are positive. In an enabled population, capacity, availability and the saturation factor are positive. Lean represents their product by its finite logarithm and uses real arithmetic."],
@@ -611,6 +630,7 @@
     },
     {
       "id": "electrogenic-pump-charge",
+      "category": "pumps-and-cotransport",
       "title": "Stall voltages and net charge of the sodium–potassium and calcium pumps",
       "statement": "The Na⁺/K⁺ pump stalls at ψ = g_NaK − 3r_Na + 2r_K and the calcium pump at ψ = (g_Ca − r_Ca)/2. An enabled pump runs forward above its own stall voltage. Their outward charge flux in elementary-charge equivalents is J_NaK + 2J_Ca. The same sum determines their voltage-dependent free-energy change. The two currents cancel exactly when J_NaK = −2J_Ca.",
       "assumptions": [
@@ -632,6 +652,7 @@
     },
     {
       "id": "extracellular-face-direction",
+      "category": "tissue-and-conservation",
       "title": "Extracellular face flux follows the electrochemical potential drop",
       "statement": "Reversing the endpoints and voltage reverses the signed flux. A positive face coefficient gives positive flux exactly when the sender’s electrochemical potential is higher. At equilibrium the flux is zero, including when the concentration and electrical drives cancel.",
       "assumptions": ["Both endpoint concentrations and RT are positive. The two orientations use the same ion, temperature, geometry and diffusivity.", "The proof evaluates the two log-ratio branches and the fourth-degree small-gradient mean in exact real arithmetic. The force uses the difference of the endpoint logs."],
@@ -648,6 +669,7 @@
     },
     {
       "id": "extracellular-face-dissipation",
+      "category": "tissue-and-conservation",
       "title": "Passive extracellular face transport dissipates energy",
       "statement": "Each ion’s signed flux multiplied by its electrochemical potential drop is nonnegative. Summing the contributions over all ions gives nonnegative instantaneous face power.",
       "assumptions": ["Endpoint concentrations and RT are positive. Each ion has a nonnegative face coefficient. Power is evaluated at a single state."],
@@ -666,6 +688,7 @@
     },
     {
       "id": "transfer-orientation",
+      "category": "tissue-and-conservation",
       "title": "Edge orientation preserves each compartment’s transfer balance",
       "statement": "Reversing any subset of edge orientations and their signed fluxes preserves each compartment’s credit or debit.",
       "assumptions": ["Every transfer is booked once at its sender and once at its receiver. The edge set is finite and multiple edges may share a compartment."],
@@ -677,6 +700,7 @@
     },
     {
       "id": "transfer-inventory",
+      "category": "tissue-and-conservation",
       "title": "Only boundary transfers change a region’s inventory during transport",
       "statement": "Internal edges cancel when transfers are summed over a region. On the entire closed graph each species and any charge-weighted sum are conserved.",
       "assumptions": ["Each edge transfers equal amounts between its two endpoints. A held bath needs an external supply term when included in an inventory."],
@@ -690,6 +714,7 @@
     },
     {
       "id": "reaction-inventory",
+      "category": "reactions-and-binding",
       "title": "Balanced reactions preserve a weighted inventory",
       "statement": "If each reaction balances an integer-weighted inventory, the combined update preserves that inventory for any signed real reaction extents.",
       "assumptions": ["The species and reaction sets at the site are finite. Each species change equals its signed stoichiometric coefficients times the extents, summed over reactions."],
@@ -701,6 +726,7 @@
     },
     {
       "id": "enzyme-inventories",
+      "category": "reactions-and-binding",
       "title": "Binding and catalysis conserve enzyme and substrate",
       "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
       "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
@@ -715,6 +741,7 @@
     },
     {
       "id": "single-site-binding",
+      "category": "reactions-and-binding",
       "title": "One-site binding follows the free ligand concentration",
       "statement": "At equilibrium the occupied fraction of sites is c / (Kd + c), where c is free ligand concentration and Kd is the dissociation constant. The normalized weights of the two binder forms give the same fraction.",
       "assumptions": ["One ligand binds one site. Each binder has a free and a singly occupied form, with positive total sites and positive association and dissociation rates. Kd is their off-rate divided by their on-rate.", "Both concentrations are expressed in mM. The rate-balance theorem allows zero free ligand. The log-weight theorem uses positive free ligand and a positive Kd."],
@@ -730,6 +757,7 @@
     },
     {
       "id": "membrane-insertion-heat",
+      "category": "tissue-and-conservation",
       "title": "Uncharged membrane insertion dissipates nonnegative capacitor heat",
       "statement": "The exact network heat in pJ is (10¹²/2) times the sum of C(ΔV)² + ΔC(V + ΔV)² over patches and every allocated patch share is nonnegative. For a single patch against a held bath, the heat is (10¹²/2) C V² ΔC/(C + ΔC) and the bath supplies zero image charge during insertion.",
       "assumptions": ["Inserted membrane arrives uncharged. Each free node keeps its charge and each held node keeps its potential. The network is finite and the voltage changes obey its capacitor equations.", "C and ΔC are nonnegative, expressed in F, with positive starting C in the one-patch formula. V and ΔV are in volts. The proof uses real arithmetic."],
@@ -747,6 +775,7 @@
     },
     {
       "id": "assembly-reservoir-exit",
+      "category": "molecular-assembly",
       "title": "Molecule entry scales with reservoir activity and assembly size, and exit with species count",
       "statement": "For species i, each molecule in an assembly adds kᵢ to its exit rate. Entry occurs at kᵢθᵢN, where θᵢ = Kᵢρᵢ and N is total size. Balancing every species’ entry and exit at a nonempty state requires Σθᵢ = 1. With a common positive leave constant, the mean-field fractions are stationary at xᵢ = θᵢ/Σθⱼ during growth. Unequal leave constants can move the fractions away from those proportions.",
       "assumptions": ["The well-mixed assembly has finitely many species with integer counts. The transfer constants Kᵢ, held activities ρᵢ and leave constants kᵢ are positive. Exchange has no catalytic multiplier and time is nominal.", "A species’ instantaneous net rate is its entry rate minus its exit rate at the same state. The mean-field fraction derivative uses these rates for the count derivatives and requires N > 0."],
@@ -765,6 +794,7 @@
     },
     {
       "id": "assembly-exchange-heat",
+      "category": "molecular-assembly",
       "title": "Single-molecule exchange heat equals the change in assembly log weight",
       "statement": "For entry between two nonempty compositions, the logarithm of the entry rate divided by the reverse exit rate at arrival equals the change in the assembly’s log weight. Reversing the event reverses the heat. At extinction the engine assigns the empty state log weight zero, so the last molecule of type i books −ln θᵢ.",
       "assumptions": ["The uncatalyzed assembly exchanges one molecule at a time with positive activities and rate constants. For N > 0 the composition weight is (N−1)! times the product of θᵢ^(nᵢ)/nᵢ! over all species, where θᵢ = Kᵢρᵢ.", "The empty state has zero entry propensity. Its terminal booking uses the change in log weight. The theorem concerns individual transfers in exact arithmetic."],
@@ -779,6 +809,7 @@
     },
     {
       "id": "gard-pair-heat",
+      "category": "molecular-assembly",
       "title": "Pair-consistent catalysis preserves the heat of a reversible transfer",
       "statement": "A molecule entering an assembly sees the same catalytic multiplier as its reverse exit when the moving molecule is excluded from both catalyst counts. The log ratio of the two rates then equals the base exchange log-weight change. A singleton’s exit has multiplier one.",
       "assumptions": ["The species set is finite. The counts are nonnegative integers and the catalytic matrix β has nonnegative entries. The assembly exchanges one molecule at a time, with positive rate and transfer constants and fixed positive reservoir activities.", "The reversible transfer connects two nonempty compositions. The singleton’s exit into the empty state is a separate boundary case. Lean evaluates the sums in exact arithmetic."],
@@ -795,6 +826,7 @@
     },
     {
       "id": "gard-single-cycle",
+      "category": "molecular-assembly",
       "title": "Single-event catalysis can give different forward and reverse cycle rate products",
       "statement": "The single-event rule evaluates the moving species’ multiplier at each event’s departure state. This adds the log ratio of two composition-dependent multipliers to the base heat. A rank-one β with only β_AA = 1 gives a four-transfer cycle ratio of 81/80. If adding one to every entry of β gives a positive rank-one matrix, the extra heat is a difference of state values and sums to zero around closed paths.",
       "assumptions": ["The assembly exchanges with a held reservoir and each reversible edge joins nonempty states. Base propensities and multipliers are positive on the edges in the cycle.", "The explicit square starts with one molecule each of A and B and follows +A, +B, −A, −B. The sufficient rank-one condition is 1 + βᵢⱼ = uᵢvⱼ. Then the correction to the base log weight is −ln(Σⱼ vⱼnⱼ / N)."],
@@ -810,6 +842,7 @@
     },
     {
       "id": "assembly-ideal-mixing",
+      "category": "molecular-assembly",
       "title": "Whole-molecule counts set the ideal mixing cost of membrane entry",
       "statement": "For a membrane with N molecules and a molecules of the incoming species, the activity for adding one molecule relative to its standard state is (a + 1)/(N + 1 − c). A finite source pool also contributes its count and standard concentration to the transfer energy.",
       "assumptions": [
@@ -871,6 +904,7 @@
     },
     {
       "id": "assembly-regular-mixing",
+      "category": "molecular-assembly",
       "title": "Pair interactions change the energy of membrane entry with composition",
       "statement": "Updating the symmetric pair energy equals recomputing it from all membrane counts. For A entering a binary membrane with b molecules of B and total N, the excess insertion energy is χb²/[N(N + 1)] and the bulk excess chemical potential is χ(b/N)².",
       "assumptions": [
@@ -934,6 +968,7 @@
     },
     {
       "id": "assembly-stochastic-encounter",
+      "category": "molecular-assembly",
       "title": "Finite molecule counts set stochastic encounter rates and paired event heat",
       "statement": "A molecular encounter draws from the available counts without replacement. For a regular, finite two-way edge with a common locus extent and catalyst factor, log(forward rate / reverse rate) equals minus the free-energy change plus held-reservoir work. At full membrane consumption the declared cancellation determines the boundary rate.",
       "assumptions": [
@@ -990,6 +1025,7 @@
     },
     {
       "id": "assembly-transition-state-factor",
+      "category": "molecular-assembly",
       "title": "A common catalyst factor preserves reversible rate ratios and equilibrium weights",
       "statement": "On a positive reversible edge, catalysis preserves the forward-to-reverse rate ratio exactly when both rates receive the same multiplier. The transition-state law assigns a positive factor from the molecules common to both endpoints. The same equilibrium weights then balance the edge.",
       "assumptions": [
@@ -1027,6 +1063,7 @@
     },
     {
       "id": "inward-rectifier",
+      "category": "channels-and-junctions",
       "title": "Potassium rectification sets reversal, dissipation and a bound on slope conductance",
       "statement": "On an open route the outward current changes sign at the Nernst potential and dissipates nonnegative heat. At fixed drive it scales with the square root of external concentration. The voltage derivative obeys the host’s upper bound even when the differential conductance is negative.",
       "assumptions": [
@@ -1096,6 +1133,7 @@
     },
     {
       "id": "sodium-anion-symport",
+      "category": "pumps-and-cotransport",
       "title": "Sodium coupling sets net charge and the stall voltage of an anion carrier",
       "statement": "A forward cycle imports n sodium ions and one monovalent anion. The two source-side saturations and capacity scale the net rate. With n > 1 the carrier imports below its unique stall voltage. With n = 1 its rate is independent of voltage.",
       "assumptions": [
@@ -1183,6 +1221,7 @@
     },
     {
       "id": "potassium-anion-symport",
+      "category": "pumps-and-cotransport",
       "title": "Potassium–anion cotransport follows the concentration products in a closed pair",
       "statement": "The active 1:1 route moves outward when the inside concentration product is larger, stalls at equality and dissipates nonnegative heat. Equal amounts of the two ions move together. With equal fixed volumes, the exact trajectory approaches equilibrium monotonically. An explicit ARS(2,2,2) step can move in the opposite direction if it is too large for the closed pair.",
       "assumptions": [
@@ -1234,6 +1273,7 @@
     },
     {
       "id": "osmotic-water",
+      "category": "membrane-transport",
       "title": "Water potential sets flow, heat and osmometric equilibrium",
       "statement": "Water moves down the hydrostatic-minus-osmotic pressure difference. At frozen solute amounts this potential is the volume derivative of free energy after unit conversion. Dissipated heat is nonnegative. An outward potassium–anion cycle increases the outward water drive by moving two osmoles across the membrane.",
       "assumptions": [
@@ -1351,6 +1391,7 @@
     },
     {
       "id": "regional-reaction-transport",
+      "category": "tissue-and-conservation",
       "title": "Regional inventory changes by net boundary transfer across a split step",
       "statement": "A reaction–transport–reaction step changes a region’s weighted inventory by exactly its signed boundary inflow. The total over a closed graph is conserved.",
       "assumptions": ["Node identities and the region stay fixed. Every local reaction inside the region balances the inventory. Each transport edge debits and credits its endpoints."],
@@ -1364,6 +1405,7 @@
     },
     {
       "id": "rptec-voltage-c3",
+      "category": "cell-physiology",
       "title": "Membrane voltage in kidney epithelial cells under condition C3",
       "statement": "Fit a conditioned voltage equation on C1 and C2 and predict the membrane voltage under the higher-potassium C3 solution.",
       "assumptions": ["The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents."],
