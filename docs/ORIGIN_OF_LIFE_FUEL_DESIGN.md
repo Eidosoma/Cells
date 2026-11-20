@@ -76,8 +76,9 @@ Option (b1) would add one new reaction law (§3).
    - Fuel reacting at the membrane, option (b1), is a new law at about +2–3 agent-days. The user
      decides.
 4. **A risk outside OL4 (S, §2.4).** F12 scores each fission by comparing the parent with its
-   daughter at the split. At the sizes OL9 plans, every split is inherited for every option, so
-   F12 alone cannot show what fuel adds. That is a question for the user (U4).
+   daughter at the split. From about a hundred molecules up, with a few species, every split is
+   inherited for every option, so F12 alone cannot show what fuel adds. That is a question for the
+   user (U4).
 
 ## 1. What of §3 exists in the version-2 family
 
@@ -205,8 +206,8 @@ The fission is inherited if H > 0.9, and a break otherwise.
   - A half split of N molecules moves the share by about 1/(2√N), one standard deviation.
   - So a break needs a deviation of about 0.48·√N standard deviations: 2 at N = 17, and 15 at
     N = 1,000.
-- **At the planned sizes F12 scores 0 for every option.** §1.2 plans exact events for assemblies
-  of up to 10³–10⁴ molecules.
+- **From about a hundred molecules up, F12 scores 0 for every option.** §1.2 plans exact events
+  for assemblies of up to 10³–10⁴ molecules; OL9's sizes are not yet set.
   - At N = 100, a break already needs a 4.8-standard-deviation split, fewer than two in a million
     (normal approximation).
   - So from about a hundred molecules up, with a few species, every mark is 1. A run of inherited
@@ -217,9 +218,9 @@ The fission is inherited if H > 0.9, and a break otherwise.
     faithfully.
   - It changes what follows a break: a noisy split can send a daughter across to the other state.
   - A switch between fissions leaves no mark.
-- **So at the planned sizes, F12's marks cannot tell (d) from option 0.** The species set of the
-  F12 reader for @2's records (D243's second builder) also matters. This note does not change F12;
-  it asks the user (U4).
+- **So from about a hundred molecules up, F12's marks cannot tell (d) from option 0.** The species
+  set of the F12 reader for @2's records (D243's second builder) also matters. This note does not
+  change F12; it asks the user (U4).
 
 ## 3. Options
 
@@ -273,8 +274,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
     product. It anchors the cycle, its ledger and the lifetime against fuel, not member-catalysed
     activation.
   - Its assemblies are fibres and colloids, so its worlds have no geometry. They use a condensed
-    phase under `count_on_m`, OL1's kind of world. Their pool is small enough for exact events:
-    10 mM in 1 fL is about 6,000 molecules (S, arithmetic).
+    phase under `count_on_m`, OL1's kind of world. Their pool must be small enough for exact
+    events: 10 mM in 1 aL (10⁻¹⁸ L) is about 6,000 molecules, and in 1 fL about 6 × 10⁶ (S,
+    arithmetic).
   - Role: reported, as D199 set it. A judged anchor would need Supplementary Table 1's
     activation constants, which were not read (§11).
 - **OL5's references.** The shared checks (§5). The batch ODE of the cycle with a finite fuel, as
@@ -360,6 +362,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
     catalysed by its own product L_i, through the factor with β > 0.
   - L_i decays to S, uncatalysed. S leaves for the pool, where fuel recharges it.
   - Moieties: B, S, L_1 and L_2 share the building block's moiety; F and W share the fuel's.
+  - Places: B, S, L_1 and L_2 each have a pool place and a membrane place, since in a world that
+    can lyse every membrane species needs a pool place (§0.2c rule 8). Each membrane species
+    declares its area quanta (§0.2e rule 5). F and W are pool places only, held or finite.
 - **What it makes possible.**
   - It is the one option with two stable compositions in the deterministic limit (§2.3): an
     L_1-rich state and an L_2-rich state, each kept by its own autocatalysis, above a drive
@@ -424,7 +429,7 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   before any world is built. It solves §2.3's reduced model for its steady states and their
   stability, in exact arithmetic where it can, with no engine run. OL5's closed forms check it as
   well.
-- **F12's marks may not show what (d) adds** at the planned sizes (§2.4, U4).
+- **F12's marks may not show what (d) adds** from about a hundred molecules up (§2.4, U4).
 
 ## 5. The checks OL5 writes, for every option
 
@@ -519,7 +524,7 @@ Every existing @1 and @2 world must be unchanged.
 - **The one new refusal runs after every existing check,** in a second pass. Every registered
   refusal world therefore keeps its message.
   - OL1's `refuse_dilute_catalyst` names a pool step (`p1`) with a pool catalyst.
-  - The catalyst check refuses it first, and must still do so.
+  - An existing check refuses it first, and must still do so.
 - **The sweep.** No registered world declares a factor on a pool-only step:
   - OL1's inputs do so only in `refuse_dilute_catalyst`;
   - no world in OL5's export of OL2 and OL3 declares a factor at all;
@@ -600,9 +605,9 @@ were 4–6 there.
   CC BY 4.0:
   - A9, Tena-Solsona et al. 2018: selection by protection;
   - A10, Morrow et al. 2019: a fuelled surfactant that catalyses its own formation.
-- **U4. F12.** F12 compares a parent with its daughter at each split. At the planned sizes, every
-  split counts as inherited for every option, so F12 cannot see a vesicle switch composition
-  between fissions. For OL9, should we:
+- **U4. F12.** F12 compares a parent with its daughter at each split. From about a hundred
+  molecules up, with a few species, every split counts as inherited for every option, so F12
+  cannot see a vesicle switch composition between fissions. For OL9, should we:
   - (i) keep F12 as it is and use small vesicles;
   - (ii) also register a second reading, each parent against the next parent;
   - or (iii) decide at OL9?
@@ -629,6 +634,8 @@ were 4–6 there.
   the two modes disagree on a pool-only step. Both come from reading the code
   (`kernel.py:289–290`, `population.py:205`), not from running it. No test or registered world
   declares a factor with a geometry.
+- **(d)'s core step in a vesicle world.** A step with a membrane place on both sides parses under
+  `multinomial` (`spec.py:390–401`), but no vesicle world has run one.
 - **The F12 numbers in §2.4.** They are arithmetic on `inheritance.py`'s definition. The species set
   of @2's F12 reader is not yet written.
 - **FR-20's later slices touching `runner.py`, `spec.py` and `world.py`.** That is the lead's list;
@@ -658,14 +665,22 @@ the fetched text stated them (D186, D201, D227). Nothing was copied into the rep
 
 **Engine documents and code read:**
 - AGENTS.md;
-- DECISIONS.md: D152, D197, D199, D212, D215, D237–D243;
+- DECISIONS.md: D152, D197, D199, D212, D215, D242 and D243 in full; D237–D241 by their headings;
 - ORIGIN_OF_LIFE_ENGINE_DESIGN.md: §0.1–§0.2e, §1–§10;
 - ORIGIN_OF_LIFE_OL2_OL3_CHECK.md: §1.6, §1.7 and §4;
-- SHARED_INVENTORY_REACTIONS_DESIGN.md: §2 and §3;
-- ASSEMBLY_WASHOUT_DESIGN.md and GARD_DESIGN.md §2.1;
-- `src/cells/models/assembly_lineages_v2/`: every module's docstring, with the kernels of the files
-  cited above;
-- `validation/assembly_lineages/inheritance.py`, the v2 test files' claims, and the tier records.
+- SHARED_INVENTORY_REACTIONS_DESIGN.md: §2 and §3.1–§3.3;
+- ASSEMBLY_WASHOUT_DESIGN.md, GARD_DESIGN.md §2.1, and FEATURE_REQUESTS.md's FR-20 to FR-22;
+- in `src/cells/models/assembly_lineages_v2/`:
+  - in full: `world.py`, `ledger.py`, `mass_action.py`, `transition_state.py`, `spec.py`,
+    `kernel.py`, `interfaces.py`, `model.py`, `exchange.py` and `permeation.py`;
+  - in part: `population.py`, `division.py`, `transfer.py` and `records.py`;
+  - their docstrings only: `geometry.py`, `lumen.py`, `runner.py`, `diagnostic.py`, `balance.py`,
+    `ideal_mixing.py`, `conventions.py` and `__init__.py`;
+  - not opened: `regular_mixing.py`, `checkpoints.py`, `streams.py` and `reference.py`;
+- `validation/assembly_lineages/inheritance.py`, the v2 test files' claims, the v2 fixtures, the
+  invariance script and the tier records;
+- the open branches' file lists: `ol-fr20-replacement`, `ol-pool-declared-lumen` and
+  `ol-lean-repairs`.
 
 The references' code under `validation/ool/references/` was not read. Only the frozen exports of
 registered inputs were read, for the sweep in §7.
