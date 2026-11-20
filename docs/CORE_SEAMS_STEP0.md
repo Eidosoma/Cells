@@ -1773,3 +1773,21 @@ the fix that §9.4 preferred, on branch `core-pass-binding-x2floor` at 264bca94.
 - **Not tested here:** whether §9.4's residual, near 800 eps M at a thousandth of the binders, was
   the old term's. The other rungs of P1′'s reading (b), on both hosts and in arm S, are not rerun
   on the fix.
+
+**Note (20 November 2026), committed before the run: P1′'s reading (b) again, on the fix.** This
+follows the lead's request after the results above. It is information for the user's host
+question.
+- **Source:** the clean snapshot of 264bca94. P1′'s probe is unchanged (`p1p_probe.py` and
+  `p1p_scale.py` at their recorded hashes), with §9.1's worlds and amendments.
+- **What runs:**
+  - **(P-b):** reading (b) at every rung, 0.01 to 2, and its reference arms, 0.005 and 0.0025 in
+    reading (a).
+  - **The two-cycle arm:** reading (b) at every rung, 0.01 to 2. Its reference is Radau.
+  - **Arm S, S150 and S180:** reading (b) at 0.01, 0.05 and 0.28, and the 0.0025 reference in
+    reading (a), as amendment 4 set them.
+  - (P-a) is not rerun. Its face's first-order error binds below 0.01 in both readings (§9.2).
+- **The reading:** §9.1's rules, unchanged. Per arm, L_eff(X2) = min(L_stage, L_X2, L_err,
+  L_other), and branch E holds if it is at least 0.05. The rung reported is L_eff(X2). Arm S's
+  limits are also given as absolute steps.
+- **How:** two detached units on light CPUs at nice 10: (P-b) then the two-cycle arm on one, arm S
+  on the other. Each rung has 3,600 s, and a timeout is re-run once and is never a result.
