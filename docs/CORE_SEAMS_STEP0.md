@@ -1251,3 +1251,25 @@ activity.** This is the lead's request, from the mitochondria lane's appendix (b
   - `check_closure_rows` refuses a face at a row the closure holds. MT-1's host P needs ATP, ADP
     and Pi to cross the outer membrane, and in the IMS they are closure rows.
   - The options and their costs are reported with the results.
+
+**Amendment 5 to §9.1 (20 November 2026), execution only, committed before any rung's result.**
+The third launch was stopped by the @3 owner before any rung finished, and arm S's first launch
+likewise. Their folders are kept as stopped.
+- **Why.** A profile of one off-ladder rung, (P-b) at 0.1 in reading (a), found the host's per-row
+  checks and records spending 200 of 225 s in the general closure's Newton solve.
+  - That solve runs in Python per row on the host, about 0.13 s a call.
+  - The device rollout is a small part of the time.
+  - At the light CPUs' share tonight, about a fifth of a CPU, (P-b)'s ladder alone would take
+    about six hours.
+- **The changes:**
+  - **The device row checks** (`row_checks="device"`). The arrays, records and verdicts are host
+    mode's. The device decides each window's rows, and a window near a bound goes back to the
+    host's check (WINDOW_DEVICE_CHECKS_DESIGN §9). All three worlds are admitted.
+  - **Host P's records at common times:** every multiple of 1.4/(ΣG/C at the start), the least
+    common multiple of the admitted rungs' steps.
+    - Every rung and the reference arms record the same physical times, 16 over the run, plus the
+      run's end.
+    - Host P's error is read at those times. They replace amendment 3's record strides.
+  - **Host C's two-cycle arm** records every steps//50 steps, since its Radau reference is read at
+    any time.
+- **What does not change:** the worlds, the ladder, the readings and the rules.
