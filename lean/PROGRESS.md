@@ -1,5 +1,44 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Bilayer area and osmotic vesicle volume
+
+<a id="bilayer-footprint"></a>
+
+`cells.bilayer_geometry@1` adds the area occupied by every lipid molecule and divides by two for the two leaflets. Lean proves that changing the size of the area unit while preserving each lipid’s footprint preserves the membrane area. It also bounds the area error from uncertain molecular footprints. For example, Kučerka et al. inferred **0.643 ± 0.013 nm² per POPC molecule at 30 °C** from neutron and X-ray scattering. With that measurement as input, a compiled 64-lipid control recorded 41,152 area quanta of 0.001 nm². The resulting bilayer area was 20.576 nm², with 0.416 nm² propagated uncertainty if all lipids share the reported footprint error. Its empty lumen had zero volume and tension. This calibrates the molecular input. [Area proofs](CellsProofs/Chemistry/Vesicle.lean#L25) · [Compiled calibration](checks/vesicle.py#L141) · [Kučerka et al., Table 1](https://doi.org/10.1016/j.bbamem.2011.07.022)
+
+<a id="osmotic-vesicle-volume"></a>
+
+For `cells.osmotic_lumen@1`, the volume is the smaller of the ideal osmotic volume and the volume of a sphere with the available membrane area. Lean proves this is the unique free-energy minimum for positive trapped solute and positive feasible volumes. Membrane tension is zero while surplus area is available. Once the vesicle reaches the cap, a further reduction of bath osmolarity keeps volume fixed and increases tension according to Laplace’s law. The proof reuses the existing ideal water-flow equilibrium. [Volume and tension proofs](CellsProofs/Chemistry/Vesicle.lean#L95) · [Engine volume and energy](../src/cells/models/assembly_lineages_v2/lumen.py#L114)
+
+On engine `9d03bd2bd907a3c48bb43679b8e05c392df9adac`, two compiled `cells.assembly_lineages@2` runs followed the same two-lipid vesicle for 96 events with one encoding using 32 times as many quanta. The molecule counts matched at all 98 stored rows in each run. Each trajectory visited six footprints, with 34 rows below the volume cap and 64 under tension. The largest relative volume error against a 70-digit radius-based calculation was 1.07 × 10⁻¹⁴. The largest tension error was 2.24 × 10⁻¹⁷ N/m and the largest osmotic free-energy error was 2.54 × 10⁻¹⁴ k_BT. [Full-world comparison and reference](checks/vesicle.py#L22)
+
+**Volume in measured vesicles.** Wolfisberg et al. labelled five successive observations of the same POPC vesicle during osmotic deflation. Reduced volume is the enclosed volume divided by the spherical volume at the measured area. We ran small fixed-count worlds at the corresponding solute densities, using the prepared 25 mM sucrose and, separately, using only the first observation to set the effective trapped solute. Under this model the reduced volumes transfer between sizes. [Figure 2B, printed labels](https://doi.org/10.1021/jacs.5c13925) · [Measurements and precision](checks/data/wolfisberg2025_vesicle.json) · [Compiled bath comparisons](checks/vesicle.py#L117)
+
+| Bath (mOsm/L) | Measured reduced volume | Cells from prepared sucrose | Cells calibrated at 26 mOsm/L |
+| ---: | ---: | ---: | ---: |
+| 26 | 0.98 | 0.962 | 0.980 (calibration) |
+| 32 | 0.69 | 0.781 | 0.796 |
+| 46 | 0.42 | 0.543 | 0.554 |
+| 58 | 0.30 | 0.431 | 0.439 |
+| 83 | 0.21 | 0.301 | 0.307 |
+
+The model predicts the direction of deflation and overestimates the volume at all four later steps, even after the initial calibration. The osmometer precision was ±2 mOsm/L. Figure 2B gives no reconstruction uncertainty for each point. The vesicle adhered weakly to a supported bilayer in 0.4% PEG. These five measurements describe a single vesicle in the study’s 21-vesicle analysis. [Wolfisberg et al., Figs. 2–3](https://doi.org/10.1021/jacs.5c13925)
+
+For swelling, Shibly et al. transferred aspirated DOPC vesicles from 98 mM into 96 and 95 mM glucose. A vesicle starting at its fixed-area cap predicts zero swelling. Using the first group’s measured 1.7% swelling to set a common volume reserve predicts **1.7%** in the second group, which swelled **2.6 ± 0.1%** (17 vesicles). This tests the assumption of a common reserve across groups. A separate rupture-rate experiment estimated **2.6 ± 0.1 mN/m** osmotic tension at an initial 1.9 mM difference. For an initially spherical inextensible membrane, the compiled calculation scaled to the reported 13.4 µm radius gives **31.56 mN/m**. Stretch and the aspirated geometry matter when applying the spherical cap to these experiments. The existing compliant-water comparison uses its own measured stiffness calibration. [Shibly et al., Fig. 2B and Table 1](https://doi.org/10.1016/j.bpj.2016.09.043) · [Experimental inputs](checks/data/shibly2016_swelling.json) · [Compliant-water result](claims/osmotic-water.md)
+
+<a id="vesicle-lysis-threshold"></a>
+
+**Engine finding for the assembly owner.** The choice of area unit can change whether a vesicle ruptures. The two worlds use the same lipid area, temperature, osmolarity, initial counts, seed, physical floor and lysis threshold. One uses 60 quanta of 10⁻¹⁹ m² per lipid. The other uses 1,920 quanta of 10⁻¹⁹/32 m² per lipid. The only possible first event removes one membrane lipid, leaving four membrane lipids and four trapped osmoles immediately before the rupture check. The 70-digit reference tension is **0.0008412963098275772 N/m**. Lean proves that both encodings give the same strict threshold decision. [Unit-invariance proof](CellsProofs/Chemistry/Vesicle.lean#L165) · [Log-space tension calculation](../src/cells/models/assembly_lineages_v2/lumen.py#L164) · [Compiled decision](../src/cells/models/assembly_lineages_v2/kernel.py#L340)
+
+| Threshold (N/m) | Reference | Engine, 60 quanta/lipid | Engine, 1,920 quanta/lipid |
+| ---: | --- | --- | --- |
+| 0.0008412963098275742 | Rupture | Ruptured | **Remained intact** |
+| 0.0008412963098275802 | Remain intact | **Ruptured** | Remained intact |
+
+The engine forms the spherical volume from separate logarithms of the quantum size and footprint. Its reported tensions differ by 1.45 × 10⁻¹⁷ N/m. The strict comparison turns that rounding difference into a different material outcome. Rupture releases the four lipids and four osmoles to the pool. Both encodings decided correctly with thresholds 1% above and below the reference. Computing physical area first and using the radius to obtain spherical volume gave the reference decision at both close thresholds in float64. The full driver exits with status 1 when a compiled outcome disagrees. With `--controls-only` it runs the trajectories, biological comparisons and the wider thresholds. [Reproducer](checks/vesicle.py#L222)
+
+All 16 new theorem declarations built with the standard axioms. The 121 selected geometry, lumen, registration and repository guard tests passed. [Lean module](CellsProofs/Chemistry/Vesicle.lean)
+
 ## 20 November 2026 · Filling a restricted cleft from a held bath
 
 <a id="cleft-bath-fill"></a>
