@@ -37,7 +37,11 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   basis (converted at 310.15 K and held) are refused at 298.15 K;
 - the moieties (B2): a moiety naming no row is refused; the ATP-driven law's fuel mode conserves
   phosphorus and adenine, and §7.3's planted error, the same mode with Pi +2, is refused naming the
-  moiety, as is an entry with Pi +2.
+  moiety, as is an entry with Pi +2;
+- an operator's reported moves (the contract's species_moieties; GENE_REGULATION_DESIGN §7.6): the
+  enzyme network's two moves conserve its enzyme and substrate moieties and are admitted; planted,
+  a move with P +2 is refused naming the operator, the move and the moiety, a move naming water is
+  refused as naming no row, and a non-integer count is refused at the hook's reading.
 The pump's rows use the kinds owner's diagram pump world (tests/unit/test_kinds_lifecycle_
 declarations.py); the operator's, the reactions fixture's enzyme network at a registry c0 of
 1000 mM (as tests/unit/test_species_potentials.py).
@@ -363,6 +367,23 @@ def a_fuel_mode_off_by_one(monkeypatch):
     return fuel_world("seamtest.atp_pi_off_by_one@1"), law_registry.scope(laws)
 
 
+ENZYME = ("enzyme", (("E", 1), ("C", 1)))
+SUBSTRATE = ("substrate", (("S", 1), ("C", 1), ("P", 1)))
+MOVES = r"Operator local_species_reactions@1's"
+
+
+def operator_moves(moves):
+    """The enzyme network with its two moieties, its operator reporting `moves`."""
+
+    def setup(monkeypatch):
+        monkeypatch.setattr(
+            LocalSpeciesReactions, "species_moieties", lambda self, declaration: moves
+        )
+        return with_moieties(enzyme_world(), ENZYME, SUBSTRATE), contextlib.nullcontext()
+
+    return setup
+
+
 def an_entry_off_by_one(monkeypatch):
     planted = entry()._replace(stoichiometry=(("ATP", -1), ("ADP", 1), ("Pi", 2)))
     return with_moieties(pump_world(), PHOSPHORUS), kind_scope((planted,))
@@ -526,6 +547,27 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "an entry with Pi off by one": (
         an_entry_off_by_one,
         rf"{KIND}: it changes moiety phosphorus by \+1 per turnover",
+    ),
+    "an operator's moves that conserve every moiety": (
+        operator_moves(
+            (
+                ("binding", (("E", -1), ("S", -1), ("C", 1))),
+                ("catalysis", (("C", -1), ("E", 1), ("P", 1))),
+            )
+        ),
+        None,
+    ),
+    "an operator's move with P off by one": (
+        operator_moves((("catalysis", (("C", -1), ("E", 1), ("P", 2))),)),
+        rf"{MOVES} move catalysis: it changes moiety substrate by \+1 per turnover",
+    ),
+    "an operator's move naming a species that is not a row": (
+        operator_moves((("leak", (("S", -1), ("H2O", 1))),)),
+        rf"{MOVES} move leak: it names 'H2O', which is not a species of the model",
+    ),
+    "an operator's move with a count that is not an integer": (
+        operator_moves((("half", (("S", -1), ("P", 0.5))),)),
+        rf"{MOVES} species_moieties: move 'half' is a non-empty",
     ),
 }
 
