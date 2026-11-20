@@ -885,6 +885,9 @@ GENERAL_FIELDS = (
 )
 ENDS = ("a", "b")  # A host's ends: a patch's cell (a) and its outside node (b).
 FORM_CODES = MappingProxyType({"factored": 0, "diagram": 1, "net_flow": 2, "monomial": 3})
+# Seam D's non-negative heat booking (CORE_SEAMS §6.1), which the kind admits beyond the tableau
+# (K2): the core books a picked kind's heat fields as dt (q_start + q_end) / 2.
+TRAPEZOID_BOOKING = "trapezoid_nonnegative@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0  # Per mode, as version 1's laws (§3.2).
 # Version 1's keys read on the population axis (statement 1, §1): the role's name in each law's form.
 VERSION_1_ROLE = MappingProxyType({PROTON_LAW: "proton", NEUTRAL_LAW: "role"})
@@ -2084,6 +2087,15 @@ def _check_population_axis(spec, declaration):
     proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
     if proton is None:  # the row named H, as in a world with no closure (never skipped).
         proton = "H" if "H" in m.species_ids else None
+    picked = dict(getattr(m, "heat_bookings", ())).get(KIND_ID)
+    if picked == TRAPEZOID_BOOKING:  # K2: the booking's contract, a non-negative power per state.
+        for t in declaration:
+            if cycle_form(t.law).kinetics == "net_flow":
+                raise ConfigError(
+                    f"transporter {t.id!r}: {TRAPEZOID_BOOKING} books a non-negative power at each "
+                    "state, which a net-flow population keeps only within its guard's allowance: "
+                    "refused (its heat stays on the tableau's booking)"
+                )
     for t in declaration:
         where = f"transporter {t.id!r}"
         form, roles = cycle_form(t.law), dict(t.roles)
@@ -2637,5 +2649,8 @@ TRANSPORTER = BUILTIN.register(
         # Version 1's per-law masks: full on the patches, or empty where their law is undeclared
         # (the static dispatch), which F's array-axes check admits for these alone.
         dispatch_masks=("transporter_neutral", "transporter_proton"),
+        # Seam D (K2): the core's trapezoid books this kind's heat fields where a definition picks
+        # it ({"cells.transporter@1": "trapezoid_nonnegative@1"} under heat_bookings).
+        heat_bookings=(TRAPEZOID_BOOKING,),
     )
 )

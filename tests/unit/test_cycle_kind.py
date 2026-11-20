@@ -1055,6 +1055,59 @@ def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
         with pytest.raises(ConfigError, match="monomial_off"):
             parse_spec(hydrolysis_world("seamtest.monomial_off@1"))
 
+
+# ------------------------------------------------------- the trapezoid heat booking (K2)
+
+
+def trapezoid_booked(raw):
+    raw = copy.deepcopy(raw)
+    raw["model"]["heat_bookings"] = {transporter.KIND_ID: transporter.TRAPEZOID_BOOKING}
+    return raw
+
+
+@pytest.mark.parametrize("layout", ("version 1", "population axis"))
+def test_the_trapezoid_books_the_kinds_heat_and_leaves_every_other_field(layout):
+    """Seam D's trapezoid_nonnegative@1, picked for the kind: four steps under the tableau and
+    under the trapezoid give every field but the heat bitwise equal, the heat non-decreasing, and
+    every ledger closed (the energy ledger with the trapezoid's heat)."""
+    raw = tk.held_world() if layout == "version 1" else tk.held_world(general(tk.population()))
+    heat = "transporter_dissipated_energy_pJ"
+    if layout != "version 1":
+        heat = "cycle_dissipated_energy_pJ"
+    ends = {}
+    for name, world in (("tableau", raw), ("trapezoid", trapezoid_booked(raw))):
+        with scoped():
+            spec = parse_spec(copy.deepcopy(world))
+            impl = get_model(spec.model)
+            state, p = impl.initial_values(spec)
+            control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+            states = [state]
+            for _ in range(4):
+                state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+                assert bool(valid)
+                states.append(state)
+            history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+            impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+            ends[name] = (spec, states)
+    (_, tableau), (booked, trapezoid) = ends["tableau"], ends["trapezoid"]
+    assert booked.model.heat_bookings == ((transporter.KIND_ID, transporter.TRAPEZOID_BOOKING),)
+    for name in type(tableau[-1])._fields:
+        if name != heat:
+            assert np.array_equal(getattr(tableau[-1], name), getattr(trapezoid[-1], name)), name
+    assert not np.array_equal(getattr(tableau[-1], heat), getattr(trapezoid[-1], heat))
+    assert np.all(np.diff(np.stack([getattr(s, heat) for s in trapezoid]), axis=0) >= 0)
+
+
+def test_the_trapezoid_pick_is_refused_for_a_net_flow_population_and_an_unadmitting_kind():
+    """A net-flow population's heat is non-negative only within its guard's allowance, so the
+    pick is refused where one is declared; planted: the kind without the declaration refuses it."""
+    with scoped(), pytest.raises(ConfigError, match="only within its guard's allowance"):
+        parse_spec(trapezoid_booked(exchange_world(exchanger(law="seamtest.net_exchange@1"))))
+    plain = dataclasses.replace(transporter.TRANSPORTER, heat_bookings=())
+    with tk.scoped(plain), pytest.raises(ConfigError, match="admits no heat booking"):
+        parse_spec(trapezoid_booked(tk.held_world()))
+
+
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
 
 M2 = {"log": 1.0, "exp": 2.0, "expm1": 4.0, "log1p": 2.0}
