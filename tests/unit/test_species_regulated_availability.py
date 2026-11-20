@@ -1525,3 +1525,32 @@ def test_version_2_reads_a_site_population_on_a_channel_at_the_control_view():
     effective = model.control_view(control, state, p, xp=np)
     scheduled = np.asarray(model.inner.inner_control(control).channel)
     assert float(np.asarray(effective.channel)[k]) == float(scheduled[k] * factors["channel"][k])
+
+
+def test_version_2_reads_the_newcomers_occupancy_after_its_reset():
+    """FR-26's exact reads (D244; the lead's ruling: the reads-stay-exact branch, NumPy). cell_0,
+    holding r0 (theta0 0.4) and the routed production of X0, is replaced at 10 ms; W resets r0 to
+    its newcomer's template occupancy 0.8. W has only an event part, and events run before every
+    split part's first half, so at the step leaving t_e the routed factor is the newcomer's,
+    0.1 + 0.9 theta(after the events), from the target's first half on (a writer with a split part
+    would need R3's order check extended to writers)."""
+    raw = site_routed(theta0=0.4)
+    turnover = next(b for b in raw["model"]["operators"] if b["law"] == sfx.TURNOVER)
+    turnover["templates"] = [dict(template_id="T", rates={"make_x0": PRODUCTION})]
+    raw = sfx.with_replacement(
+        raw, [sfx.template(raw, "cell_0", "T")], [(0.01, "cell_0", "T", "n")]
+    )
+    raw = ofx.with_occupant(raw, {"T": {"r0": (0.8, 1.0, None)}})
+    spec, model, state, p, coupling = _site_model(raw)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.01])))
+    after = state
+    for op in model.events:
+        after, ok = op.event(after, control, p, xp=np)
+        assert ok is None or bool(ok)
+    reader = model.quantity_reader(coupling, p, xp=np)
+    theta = _theta(after, p)[0]
+    assert theta == pytest.approx(0.8, rel=1e-15) and _theta(state, p)[0] == pytest.approx(0.4)
+    factor, ok = coupling.rate_factors(
+        after, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=reader
+    )
+    assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta
