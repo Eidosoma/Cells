@@ -1629,7 +1629,11 @@ def route_keys(spec, declaration):
 
 def check_replaced_operator_elements(spec, declaration):
     """Version 2: refuse an operator target's element on a slot replacement@1 replaces (its source
-    is read in that cell, which a newcomer would take over)."""
+    is read in that cell, which a newcomer would take over), unless its source is a species of
+    that cell or a site population (FR-26's part C′, D244): replacement@1 swaps the cell's species
+    and site_occupant_replacement@1 resets its populations, so the factor reads the newcomer's
+    state. A state source there stays refused (part C, a newcomer's regulatory state, is not
+    built)."""
     _, events = common.replacement_of(spec)
     replaced = {v.slot for v in events}
     if not replaced:
@@ -1639,12 +1643,16 @@ def check_replaced_operator_elements(spec, declaration):
         target = coupling.target
         if type(target) is not OperatorTarget or target.operator not in declared:
             continue
+        if coupling.source_kind in ("species", "site"):  # Part C′.
+            continue
         op, target_declaration = declared[target.operator]
         for element, cell in op.routable_elements(target_declaration, target.control):
             if element in target.ids and cell in replaced:
                 raise ConfigError(
                     f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}'s {element}, "
-                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces (refused in version 2)"
+                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces, from a state; a "
+                    "newcomer's regulatory state is not built (a species or a site source is "
+                    "admitted there)"
                 )
 
 

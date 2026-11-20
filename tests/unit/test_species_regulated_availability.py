@@ -714,6 +714,44 @@ def _with_junction_target(raw):
     return raw
 
 
+def routed_replaced(**kwargs):
+    """routed() with replacement@1 replacing cell_0 at 10 ms by a newcomer from template T (cell_0's
+    declared state), whose production of X0 the turnover's template gives (D150's occupant rule):
+    the routed element make_x0 sits in a replaced cell (FR-26's part C′)."""
+    raw = routed(**kwargs)
+    turnover = next(b for b in raw["model"]["operators"] if b["law"] == sfx.TURNOVER)
+    turnover["templates"] = [dict(template_id="T", rates={"make_x0": PRODUCTION})]
+    template = crfx.template_from_cell(raw, "cell_0", "T")  # With the cell's channel gates.
+    return sfx.with_replacement(raw, [template], [(0.01, "cell_0", "T", "c0_new")])
+
+
+REFUSALS.update(
+    {
+        "v2 C′: a state source in a replaced cell": (
+            lambda: _with_state_source(
+                routed_replaced(states=[rf.state("s", ["cell_0"], [STATE_INPUT])])
+            ),
+            "state s is declared in cell_0",
+        ),
+    }
+)
+
+
+def _with_state_source(raw):
+    _from_state(raw)
+    return raw
+
+
+def test_version_2_routes_an_element_in_a_replaced_cell_from_a_species_source():
+    """FR-26's part C′ (D244): @2 admits an operator target's element in a cell replacement@1
+    replaces when its source is a species of that cell, since replacement swaps the cell's species
+    and the factor then reads the newcomer's. (A site source there is admitted likewise, with
+    site_occupant_replacement@1 resetting the population: the acceptance world.) Parse only."""
+    spec = parse_spec(routed_replaced())
+    declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == LAW_V2)
+    assert declaration.couplings[0].source_kind == "species"
+
+
 @pytest.mark.parametrize("case", sorted(REFUSALS))
 def test_refusals(case):
     make, message = REFUSALS[case]
