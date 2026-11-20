@@ -108,6 +108,15 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-23 landed: a timed bath dose beside binding sites on other nodes (20 November 2026,
+  development).** Merge 4e3d1899, tag `fr23-landed-2026-11-20` (D244, option A). `site_occupancy@1`
+  declares its outside reads scoped to the nodes its populations face, and a scheduled dose below a
+  ligand's trace is refused. The development run
+  ([evidence](/mnt/workspaces/Cells/operators-fr23-20261120/)) passed every criterion written before
+  it: the arms bitwise up to the dose; the dose booked as the held content's change, bit for bit;
+  bound material unchanged at the dose and rising after it. Gate: crossrev 11 of 11 identical, tiers
+  613/0, G1 113 of 113, FR's set passed.
+
 - **FR-8 rung 1, §6: N2 alone on H2's slow phase; a gain of 5, the registered 10 missed (20 November
   2026).** RUNG1 §10.19 on branch fr8-rung1, tag `fr8-rung1-n2c-registered-2026-11-20`
   ([records](/mnt/workspaces/Cells/fr8-rung1-20261119/stage-a/), `stage-a.json`).
