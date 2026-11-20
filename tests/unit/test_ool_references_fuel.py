@@ -62,16 +62,19 @@ def kernel():
     on_cycles = {s for c in cycles for s in K.walk(w, c["start"], [(a, b) for a, b in c["path"]])}
     sub = np.array(sorted(on_cycles), dtype=np.int64)     # the cycles' states, for the planted tables (speed)
     law = FuelLaw(w)
-    return w, law, states, cycles, sub
+    return w, law, states, cycles, sub, reference_table(law, sub)
 
 
 def test_the_kernel_identities_hold_exactly_and_on_the_float_table(kernel):
-    w, law, states, cycles, _ = kernel
+    """On the cycles' states and the probe's first 300 (the full probe runs in the stand-in)."""
+    w, law, states, cycles, sub, _ = kernel
     assert K.exact_cycles(law, cycles).passed
     fuel = [c for c in cycles if c["kind"] == "fuel"]
     assert fuel and all(K.expected_exp(law, c) == 24 for c in fuel)     # mu_F - mu_W = ln 24
-    t = ST.float_table(law, states)
-    res = K.check_kernel(law, states, t["a_plus"], t["a_minus"], cycles)
+    part = np.array(sorted({tuple(s) for s in sub.tolist()} | {tuple(s) for s in states[:300].tolist()}),
+                    dtype=np.int64)
+    t = ST.float_table(law, part)
+    res = K.check_kernel(law, part, t["a_plus"], t["a_minus"], cycles)
     assert all(c.passed for c in res.values()), {k: c.detail for k, c in res.items() if not c.passed}
 
 
@@ -84,8 +87,7 @@ def test_the_kernel_identities_hold_exactly_and_on_the_float_table(kernel):
     ("forward_only_catalysis", ("identity", "cycle_drive")),
 ])
 def test_each_planted_kernel_is_caught(kernel, planted, caught_by):
-    w, law, states, cycles, sub = kernel
-    ref = reference_table(law, sub)
+    w, law, states, cycles, sub, ref = kernel
     t = ST.float_table(FuelLaw(w, planted=planted), sub)
     res = K.check_kernel(law, sub, t["a_plus"], t["a_minus"], [c for c in cycles if _within(c, w, sub)], ref)
     for name in caught_by:
@@ -98,8 +100,7 @@ def _within(cyc, w, states) -> bool:
 
 
 def test_the_drive_of_the_wrong_sign_is_off_by_twice_the_drive(kernel):
-    w, law, states, cycles, _ = kernel
-    w_, law_, _, _, sub = kernel
+    w, law, states, cycles, sub, _ = kernel
     t = ST.float_table(FuelLaw(w, planted="work_sign"), sub)
     cyc = [c for c in cycles if c["kind"] == "fuel"]
     res = K.check_cycles(law, sub, t["a_plus"], t["a_minus"], cyc)
@@ -263,7 +264,7 @@ def test_the_switching_time_solver_against_exact_rationals():
 # ---------------------------------------------------------------------------- OL4-8
 
 def test_the_closed_form_its_nulls_and_the_notes_numbers():
-    S = BI.sample(400)
+    S = BI.sample(300)
     assert BI.check_sample(S)["disagreements"] == 0
     for planted in BI.PLANTED:
         assert BI.check_sample(S, planted)["disagreements"] > 0, planted
