@@ -1569,3 +1569,30 @@ in X2: its count rule is registered, so a change to it is the user's.
 
 **How they run:** detached units with memory caps on the light CPUs at nice 10, with their scripts
 in the @3 owner's workspace and the scripts' hashes recorded with the results.
+
+**Amendment 1 to §9.3 (20 November 2026).** This comes after part A's split, its two controls at
+5 µV, the two-cycle arm's split and the FR-8 arm ran, and before the runs it adds. Part B ran
+unchanged.
+- **What was found.**
+  - The split holds: on (P-b) it sums to R within 3.5 × 10⁻¹⁸ pJ.
+  - **The removal rule cannot pick the source.** Each active term carries its own change, 10⁻⁸ to
+    10⁻⁷ pJ a step at 5 mV, which the half steps also carry whole and which cancels only in R. So
+    removing any active term raises R's median |e| by orders of magnitude.
+  - **The control at a millionth of the binders is refused at its first step** by the validity
+    flag ("trial/endpoint domain failure", dt·rate 0.01, unattributed). It gives no e.
+  - **The buffered control at 5 µV keeps the floor:** median |e| 8.0 × 10⁻¹³ pJ at a thousandth
+    of (P-b)'s offset.
+- **The changes.**
+  - **The source is identified by each term's rounding scale.**
+    - At every 20th state of (P-b)'s run at 0.01, each term is evaluated twice: on the device (the
+      split's compiled program) and on the host (numpy, with the same formulas, and each kind's
+      ledger terms with xp=np).
+    - The source is the term whose two evaluations differ, at the median, within a factor of three
+      of R's median |e|. Every other term's must differ by at most a hundredth of it.
+  - **The control's binders go to a thousandth** of their declared values, at 5 µV.
+    - The buffer then still holds about 400 times the free H at the cell and about 38 times at the
+      lumen, and its bulk term falls about a thousandfold.
+    - The source is confirmed if the median |e| falls at least a hundredfold.
+    - If this world is also refused before its first step's result, a hundredth is run instead,
+      confirmed by a tenfold fall.
+- **What does not change:** part A's other runs and their readings, and part B.
