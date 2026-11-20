@@ -39,6 +39,7 @@ from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import (
     SHARED_POOL,
     checkpoints,
+    division,
     model,
     population,
     runner,
@@ -317,6 +318,13 @@ def refusal(case):
         replacement["pool"] = pool_of(d, S=0)
     elif case == "a shared time":
         d["experiment"]["schedules"].append(dict(replacement, index=2))
+    elif case == "a shear at its time":
+        d["model"]["world"]["division"] = {"law": division.SHEAR_FISSION}
+        d["experiment"]["schedules"].append({"index": 2, "kind": "shear", "k": 2,
+                                              "times_s": [PULSE]})  # fmt: skip
+    elif case == "a transfer at its time":
+        d["experiment"]["schedules"].append({"index": 2, "kind": "transfer", "times_s": [PULSE],
+                                              "K_keep": 1, "fresh_pool": pool_of(d)})  # fmt: skip
     return d
 
 
@@ -326,6 +334,8 @@ REFUSALS = {
     "solutes above c_ext": "exceed c_ext",
     "a held species the vesicles take up": "could never be washed out",
     "a shared time": "shares the time",
+    "a shear at its time": "shares the time",
+    "a transfer at its time": "shares the time",
 }
 
 
