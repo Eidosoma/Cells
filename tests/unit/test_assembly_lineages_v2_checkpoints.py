@@ -19,8 +19,9 @@ Each claim with a planted error it must catch (D187):
   order), a changed world, a new branch word, a single-lineage start or stop (rung S), a stop
   outside its range, and a checkpoint whose file, source or state changed.
 
-World-compiling cost: one population program (two worlds of one structure, K = 6), about 20 runs.
-Reason: the claim is the runs' own bitwise continuation.
+World-compiling cost: one population program (two worlds of one structure, K = 6) and about 20
+runs, 70.01 s for the whole file on the timed lane. Reason: the claim is the runs' own bitwise
+continuation.
 """
 
 import dataclasses
