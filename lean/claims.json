@@ -11,13 +11,115 @@
     "cell-physiology": "Cell physiology"
   },
   "law_categories": {
+    "cells.adenylate_kinase@1": "reactions-and-binding",
     "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "mitochondrial-kinase-supply": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.adenylate_kinase@1", "cells.held_reductant_supply@1", "cells.rapid_binding@1"],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Adenylate kinase stoichiometry and Mg prefactor": "src/cells/laws/cycles/adenylate_kinase.py#L51",
+        "Held reductant stoichiometry and phosphate prefactor": "src/cells/laws/cycles/held_reductant_supply.py#L43",
+        "Free ligand and nucleotide forms": "src/cells/laws/reactions/rapid_binding.py#L347",
+        "Monomial forward and reverse rates": "src/cells/laws/cycles/forms.py#L1468",
+        "Material movement and held chemical work": "src/cells/kinds/transporter.py#L1956",
+        "Registered component rate evaluator": "validation/mitochondria/component_comparison.py#L273",
+        "Finite matrix and intermembrane-space fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Reference activities and model parameters": "tests/unit/mito_component_center_rows.json",
+        "Kinase and redox measurements": "lean/checks/data/mitochondrial_reaction_measurements.json"
+      },
+      "driver": "lean/checks/mitochondrial_reactions.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
+    "junction-cx43-polarity": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.junction_voltage_relaxation@1"],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Intrinsic gate kinetics and clamp solution": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
+        "Tissue junction transport and gate dynamics": "src/cells/models/surface_pump_v3.py#L733",
+        "Voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
+        "Independent clamp solution": "validation/betse/junction_gate/reference.py#L9",
+        "Cell-pair fixture": "validation/tissue/surface_pump_v3_fixtures.py",
+        "Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"
+      },
+      "driver": "lean/checks/junction_gate.py",
+      "record": "lean/PROGRESS.md#cx43-series-gates"
+    },
+    "mitochondrial-seven-cycle-stalls": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Full-turn affinity from free concentrations and voltage": "src/cells/kinds/transporter.py#L1809",
+        "Monomial affinity shares": "src/cells/laws/cycles/forms.py#L1468",
+        "Reversible rate near stall": "src/cells/laws/cycles/forms.py#L1512",
+        "Heat and cycle derivatives": "src/cells/kinds/transporter.py#L1966",
+        "Public cycle probe": "src/cells/kinds/transporter.py#L2362",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Independent decimal component equations": "validation/mitochondria/appendix_check.py#L87",
+        "Seven populations selected explicitly for the shared fixture": "lean/checks/mitochondrial_cycles.py#L16",
+        "ATP synthase stall measurements": "lean/checks/data/mitochondrial_stall.json"
+      },
+      "driver": "lean/checks/mitochondrial_stall.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
+    "mitochondrial-seven-cycle-material": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Complex I": "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py#L20",
+        "Complex III": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L35",
+        "Complex IV": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L37",
+        "ATP synthesis": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py#L35",
+        "Nucleotide exchange": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L34",
+        "Phosphate import": "src/cells/laws/cycles/phosphate_proton_symport.py#L28",
+        "Potassium–proton exchange": "src/cells/laws/cycles/potassium_proton_exchange.py#L16",
+        "Material ledger by species and side": "src/cells/kinds/transporter.py#L2128",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Independent stoichiometry by cycle and side": "lean/checks/mitochondrial_cycles.py#L20"
+      },
+      "driver": "lean/checks/mitochondrial_cycles.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
     "cell-replacement-boundary-repair": {
       "kind": "engine",
       "models": [
@@ -1681,6 +1783,91 @@
   },
   "claims": [
     {
+      "id": "mitochondrial-adenylate-kinase",
+      "category": "reactions-and-binding",
+      "title": "Magnesium shifts the apparent equilibrium of adenylate kinase",
+      "statement": "One signed extent of 2 ADP ⇌ ATP + AMP conserves adenylates, phosphate groups and Mg-free base-form charge. At free Mg concentration m, the total-nucleotide equilibrium quotient equals K_base (1 + m/a)/(1 + m/d)². For d ≥ 2a it reaches its maximum at m = d − 2a.",
+      "assumptions": [
+        "ATP and ADP each bind one Mg with positive dissociation constants a and d in the same units as m. AMP remains free. The enabled reaction reads positive free nucleotide activities and includes the ATP binding factor in its kinetic prefactor.",
+        "The quotient is [ATP]_total [AMP]/[ADP]_total². The equilibrium formula extends to zero Mg by continuity. The engine's log-activity evaluator uses positive inputs."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.adenylate_kinase@1"], "theorems": {
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_inventories": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_free_flux": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_rate_on_totals": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_gap": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_bound": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["mitochondrial-kinase-supply"], "result": "Across 21 Mg and nucleotide loads, the largest flux discrepancy was 7.04 × 10⁻¹⁵ of the forward rate. The three nucleotide changes followed their signed extents in two tissue steps. With the declared binding constants the predicted maximum is 1.5104 at 0.299 mM free Mg. At the 3.809 mM buffer match, omitting the Mg prefactor reduced the nonzero flux by a factor of 159.69."},
+      "biology": {
+        "status": "open",
+        "observable": "Total-nucleotide equilibrium quotient as a function of free Mg in a defined preparation.",
+        "unit": "dimensionless quotient and mM free Mg",
+        "finding": "Two enzyme assays support a magnesium-dependent equilibrium. The position of the predicted maximum and its transfer to the cardiac intermembrane space remain open.",
+        "evidence": [
+          {
+            "dataset_id": "lawson1979_myokinase@1",
+            "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+            "citation": "Lawson and Veech (1979)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36398/",
+            "locator": "Abstract, myokinase equilibrium on total nucleotides at 0 and 1 mM free Mg.",
+            "context": "pH 7.0, 38 °C, ionic strength 0.25 M. Cells uses its declared 25 °C constants.",
+            "role": "descriptive",
+            "uncertainty": "The abstract gives neither pointwise uncertainties nor the method for establishing zero free Mg.",
+            "assessment": "The measured quotient rose from 0.391 to 1.05. The model gives 0.3890 in the zero-Mg limit and 1.1013 at 1 mM.",
+            "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+          },
+          {
+            "dataset_id": "kleczkowski1991_maize_kinase@1",
+            "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+            "citation": "Kleczkowski and Randall (1991)",
+            "doi": "10.1093/jxb/42.4.537",
+            "locator": "Abstract, apparent equilibrium at 1.8–1.9 mM free Mg.",
+            "context": "Purified maize-leaf adenylate kinase.",
+            "role": "descriptive",
+            "uncertainty": "The authors report ±0.10. The abstract does not specify the type of uncertainty.",
+            "assessment": "The reported quotient was 0.76 ± 0.10. Cells gives 0.744–0.772 over the reported free-Mg range.",
+            "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitochondrial-reductant-supply",
+      "category": "reactions-and-binding",
+      "title": "The held reductant supply has a pH-dependent stall and balances work in either direction",
+      "statement": "The enabled supply stalls exactly when free matrix NADH/NAD equals the held reduced-to-oxidized donor ratio times the reference proton concentration divided by the free matrix proton concentration. At any signed flux, work supplied by the held pair equals the dissipated heat plus chemical work delivered to NAD, NADH and H⁺.",
+      "assumptions": [
+        "The matrix reaction is S_red + NAD ⇌ S_ox + NADH + H⁺. Both donor rows are held. The reaction has no charge transfer across the membrane.",
+        "Free activities and the kinetic prefactor are positive. Cells assigns zero standard drive at its reference proton concentration of 10⁻⁷ M. Work and heat refer to instantaneous chemical power."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.held_reductant_supply@1"], "theorems": {
+        "CellsProofs.Chemistry.MitochondrialReactions.supply_stall": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.supply_work": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["mitochondrial-kinase-supply"], "result": "Across 24 pH, phosphate and NADH loads the largest net-flux discrepancy was 1.23 × 10⁻¹⁴ of the forward rate. For a held ratio of 3.63858 the stalled NADH/NAD ratio was 4.5807 at pH 7.1 and 9.1397 at pH 7.4. The two-step tissue run kept the donor amounts fixed, recorded opposite donor receipts and moved NAD and NADH with opposite signs. Held work matched heat plus delivered chemical work within a relative tolerance of 2 × 10⁻¹² at positive and negative flux."},
+      "biology": {
+        "status": "open",
+        "observable": "Dependence of the free NADH/NAD equilibrium ratio on proton activity and the reduced-to-oxidized donor ratio. The absolute stall and heat require a specified donor.",
+        "unit": "dimensionless activity ratio, M for the measured equilibrium quotient, pJ/s for the model heat",
+        "finding": "A named ketone-body donor exhibits the one-proton equilibrium dependence. The absolute stall ratio and heat for the Cells donor remain unmeasured.",
+        "evidence": [{
+          "dataset_id": "williamson1967_hydroxybutyrate@1",
+          "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+          "citation": "Williamson, Lund and Krebs (1967)",
+          "doi": "10.1042/bj1030514",
+          "locator": "Table 3, equilibrium of D-β-hydroxybutyrate dehydrogenase.",
+          "context": "The β-hydroxybutyrate/acetoacetate donor pair at 38 °C, ionic strength 0.255 M and pH 6.84–7.16.",
+          "role": "descriptive",
+          "uncertainty": "SEM of 25 determinations.",
+          "assessment": "The quotient [acetoacetate][NADH][H⁺]/([β-hydroxybutyrate][NAD⁺]) was (4.94 ± 0.086) × 10⁻⁹ M. This measures the proton dependence and equilibrium for this specific donor pair.",
+          "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+        }]
+      }
+    },
+    {
       "id": "mitochondrial-stall-heat",
       "category": "pumps-and-cotransport",
       "title": "Mitochondrial cycles reverse at zero free energy and dissipate power in either direction",
@@ -1723,7 +1910,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-stall-heat"
+          "mitochondrial-stall-heat",
+          "mitochondrial-seven-cycle-stalls"
         ],
         "result": "All 49 physical settings agreed with the independent component equations on NumPy and compiled CPU JAX, including both sides of stall for all seven laws. The worst net-flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The worst residual ΔG/(RT) at a calculated stall was 2.85 × 10⁻¹⁴. The rate kernel also preserved the signs at ±2⁻⁶⁰ and returned zero at an exact zero input. The probe and the stage agreed on flux and instantaneous dissipated power."
       },
@@ -1787,7 +1975,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-cycle-accounting"
+          "mitochondrial-cycle-accounting",
+          "mitochondrial-seven-cycle-material"
         ],
         "result": "All seven registered columns were checked against independently written material balances. Per forward turnover the respiratory complexes added 4, 2 and 8 net charges on P, while each added four explicit P protons. In two checked steps of a finite-matrix/lumen world, the redox, adenine and phosphate changes matched predictions from the measured extents within 8.28 × 10⁻²⁵ fmol."
       },
@@ -1855,7 +2044,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-cycle-accounting"
+          "mitochondrial-cycle-accounting",
+          "mitochondrial-seven-cycle-material"
         ],
         "result": "The synthesized ATP, nucleotide exchange, phosphate import and K/H exchange carry −3, −1, 0 and 0 net charge equivalents on P per turn. All seven populations carried nonzero extents in two checked 1 ms steps. The independently calculated combined material postings matched the engine ledger. Global charge error stayed below 1.0 × 10⁻³³ C."
       },
@@ -3727,6 +3917,38 @@
       "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "finding": "Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)", "unit": "fmol/s", "evidence": []}
     },
     {
+      "id": "junction-series-amplitudes",
+      "category": "channels-and-junctions",
+      "title": "The proposed two-gate junction constrains its decay amplitudes",
+      "statement": "At fixed voltage, multiplying two independent relaxing gate factors gives a plateau P and terms at the fast rate, the slow rate and their sum. Their signed amplitudes satisfy P × A_mixed = A_fast × A_slow. With a nonzero plateau, measuring the fast and slow amplitudes determines the mixed amplitude.",
+      "assumptions": [
+        "Each gate relaxes exponentially toward its own fixed plateau. Junction conductance is proportional to the product of the two factors with a common time origin.",
+        "The reported conductance can be divided by a common reference. Any additive background has been removed. Interpreting the three amplitudes separately requires distinct positive gate rates and a trace that resolves them."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.JunctionGate.series_clamp_expansion": "lean/CellsProofs/Transport/JunctionGate.lean",
+          "CellsProofs.Transport.JunctionGate.series_amplitudes": "lean/CellsProofs/Transport/JunctionGate.lean"
+        },
+        "sources": {
+          "FR-30 product of independent gate factors at constant voltage": "docs/JUNCTION_TWO_RELAXATION_DESIGN.md#L174"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [],
+        "result": "FR-30 is a proposed extension to resolved_pump_tissue@3. A numerical comparison requires its two-gate implementation."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Plateau and amplitudes at the fast, slow and summed rates in the same wild-type Cx43 conductance trace at a fixed voltage.",
+        "finding": "In wild-type rat Cx43 oocyte pairs, a −100 mV step gave fast and slow fitted time constants of 417 ± 175 ms and 7.06 ± 1.28 s, with a fast-to-slow amplitude ratio of 3. Figure 3 shows the voltage series for six pairs (mean ± SEM). The two-component fit leaves the mixed amplitude open. [Revilla et al., Fig. 3 and p. 1377](https://doi.org/10.1016/S0006-3495(99)76986-9)",
+        "unit": "conductance normalized to a common reference",
+        "evidence": []
+      }
+    },
+    {
       "id": "junction-gate",
       "category": "channels-and-junctions",
       "title": "Junction conductance relaxes toward a voltage-dependent target",
@@ -3740,11 +3962,25 @@
         "CellsProofs.Transport.JunctionGate.clamp_bounds": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.clamp_add": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.clamp_polarity": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.polarity_error_bound": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.single_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
       }},
-      "numerical": {"status": "checked", "comparisons": ["junction-gate"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol."},
-      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
+      "numerical": {"status": "checked", "comparisons": ["junction-gate", "junction-cx43-polarity"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol. At −80 and +80 mV the intrinsic steady target was 0.1003927 at each polarity."},
+      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": [
+        {
+          "dataset_id": "revilla1999_cx43_polarity@1",
+          "manifest": "lean/checks/data/revilla1999_cx43.json",
+          "citation": "Revilla, Castro and Barrio (1999)",
+          "doi": "10.1016/S0006-3495(99)76986-9",
+          "locator": "Table 1, RCx43–RCx43 row, and Fig. 3C.",
+          "context": "Homotypic wild-type rat Cx43 in paired Xenopus oocytes, with conductance normalized to a 10 mV prepulse.",
+          "role": "descriptive",
+          "uncertainty": "Table 1 reports rounded parameters for both fitted curves. Uncertainties for those parameters and their covariance are unavailable.",
+          "assessment": "At −80 and +80 mV the published fits give 0.48745 and 0.38171. A model predicting the same value at both voltages must miss at least one fit by 0.05287 in normalized conductance (rounded). A significance test on paired observations remains open.",
+          "report": "lean/PROGRESS.md#cx43-series-gates"
+        }
+      ]}
     },
     {
       "id": "channel-gate-bounds",
