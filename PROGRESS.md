@@ -108,6 +108,38 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning).** Each
+  was gated in full and passed the lead's merged check.
+  - `monomial-kernel-landed-2026-11-20` (d9342fcf): the cycle kind's fourth kinetic form, `monomial`
+    (K6's kernel).
+    - Exact closed-form slopes; read roles; references to registry forms under the binding owner's
+      three conditions; a one-sided domain x <= 80; k built at parse from a cited free energy.
+    - An invariance trace of five general-layout worlds caught one jaxpr break before landing. Crossrev
+      holds no general-layout world, which is a gate-tooling follow-up.
+  - `binding-sets-followup-landed-2026-11-20` (11dc95c5): a named potential set requires its moieties,
+    records and checks its proton buffers, and versions its derivation.
+  - `kinds-seam-e-landed-2026-11-20` (e658a8fd): a monomial mode's cited rate constant emits its seam-E
+    entry in kJ/mol form. k and the entry share one value.
+  - `x2-floor-fix-landed-2026-11-20` (4802dc9a): the general binding closure's booked energy term is
+    formed from increments through the closure's dual (D148: states bitwise).
+    - It removes a rounding floor that failed X2's order condition in buffered worlds: R's median
+      |e| falls from 9e-13 to 1.4e-17 pJ.
+    - FR-8's worlds never met the floor.
+  - **FR-8 rung 1's control** (from d03ca463; analysis registered). Largest passing steps under the
+    parity caps:
+    - H2's calm stretch, 20 ms, held by charge stability, also from the calm state at 1000 s (section
+      10.8's probe);
+    - H2 through the cue, 1 ms, by the location rule;
+    - W0, 5 ms, by the junction-gate bound.
+    - X2 refused nothing. Its sensitivity is shown at each world's largest step, and FR-3's plant is
+      caught.
+    - Cost per simulated second: H2 calm 0.020 s, H2 full 0.34 s, W0 0.32 s.
+    - The choice between D232's rules is the user's.
+  - **P1' (the @3 owner, on its branch):** both hosts are accurate in the delta-psi mode and give
+    branch E under X2 with the floor fix. At the source's synthase activity, explicit steps cost
+    1,000-30,000 CPU-hours per 300 s, and lowering the activity ruins the fit beyond 4-7 times. An
+    implicit block or a rapid-equilibrium synthase is being priced for the user's host ruling.
+
 - **The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork).** Each was
   gated (tiers 1+2 with 0 changed, G1, crossrev, IDs, FR's set where it applies) and passed the lead's
   merged check against main.
