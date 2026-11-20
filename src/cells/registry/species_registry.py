@@ -1180,7 +1180,8 @@ def check_moieties(spec):
     kind's role_species (entity_modes), its net change over both ends being its chemistry, each
     entry's stoichiometry, and each move of an operator's species_moieties, sum w nu = 0 exactly
     for every moiety; naming the mover, the mode, entry or move, the moiety and its change. A model
-    without moieties is not checked."""
+    without moieties is not checked: a known limit, since its operators' species_moieties are then
+    not read, and the hook's shape is not checked there either."""
     model = declared(spec)
     if model is None or not model.moieties:
         return

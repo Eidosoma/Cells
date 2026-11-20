@@ -1375,6 +1375,14 @@ default (). It reports two things:
 - Material in transit sits in the operator's own pools. Its own conversion ledger closes it, as the
   producer's `unit_chain` does.
 
+**As built (G3; the lead's ruling of 20 November 2026): moves only.**
+- The hook reports each move's net row change per unit of progress, not separate weights.
+- A weight the operator assumes that differs from the model's moiety still shows. The move then
+  changes the moiety, and `check_moieties` refuses it by name, for example "Operator
+  templated_polymerisation@1's move chain tx: it changes moiety phosphorus by -1 per turnover".
+- **A known limit:** a model that declares no moieties is not checked, so there the hook is not
+  read and its shape is not checked.
+
 **D152** can report its reactions through the same hook, which ends its private moiety authority
 (one authority, the registry's). Whether that lands with A, or at D152's next version under
 crossrev, is the operators owner's call.

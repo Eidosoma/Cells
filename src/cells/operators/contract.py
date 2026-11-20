@@ -175,7 +175,9 @@ Declarations (class attributes):
 * Species identity and the step (registry/species_registry.py, D176): ``IDENTITY_ROLE``
   ("author" for an operator that declares the species it writes, "user" for one that refers to
   species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
-  process moves inside the inner step, which an operator with ``PROCESS`` declares.
+  process moves inside the inner step, which an operator with ``PROCESS`` declares;
+  ``species_moieties``, the net row change of each move it makes, which the registry's
+  check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
