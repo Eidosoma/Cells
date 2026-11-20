@@ -41,17 +41,45 @@ So region-selective loss is already named, by node (docs/LABELLED_PROTEIN_READOU
 | **C. A passive tracer beside the row** | Cohort shares driven by the movers' per-step records: turnover's cleared and produced amounts, exchange's moved amounts, the reactions' consumed and produced amounts, @3's face and junction transfers | R1 with no law touched, and R4 trivially | Not R2: the tracer changes no flux |
 | **D. Declared label families, and an ageing route** | The registry declares rows as labels of one species, and a new operator moves material between them at first order | R1, R2, R3, R4, R5, under laws that act on each row alone and linearly | A saturable or mass-action law on a family member would saturate per row, not on the total. Version 1 refuses that at the definition |
 
-**C, host-side.** A validation tool reads each window's per-step history (the runner's
-`RunResult.history`, one row per accepted step). At each step:
-- a node's losses and its outgoing transfers split over the cohorts by the node's composition at the
-  step's start (well mixed, age-independent);
-- a transfer carries its source node's composition;
+**C, host-side** (built: `validation/regions/readouts.py`, `trace`). A validation tool reads each
+window's per-step history (the runner's `RunResult.history`, one row per accepted step). At each
+step:
+- a node's losses and its outgoing transfers split over the cohorts by the node's mean composition
+  over the step (well mixed, age-independent);
+- a transfer carries its source node's split;
 - new material joins the cohort the study's label schedule names.
 
-This is exact for first-order laws, except for the split of inflows within a step, which is first
-order in dt. `validation/gene_regulation/cohort.py` (on the gene regulation lane) is its one-pool
-case. An in-step tracer operator would need to read other operators' accumulators within the step.
-That is a contract question for the operators owner, and R1 does not need it.
+**C's limits:**
+- **Only one-way records.** C is right only where the per-step records carry the direction of every
+  labelled movement. Turnover's and exchange's do, since each route moves one way. A two-way law's
+  net record does not.
+  - **The case** (a review finding, 20 November 2026): two equal nodes exchanging by diffusion keep
+    both totals, and the face's net flux, at 0, while labelled material crosses one way and
+    unlabelled the other. A tracer of net records saw no movement and kept 0.1 fmol of label on
+    the right, where an explicit label row reaches 0.299999 (0.3 by the closed form).
+  - **So the built tracer refuses, at setup,** any face, junction or patch that moves the species,
+    any operator but turnover and exchange that declares it, and any kind that names it
+    (`check_movers`).
+- **The split.** At a node with no inflow it is exact for first-order laws. Where material flows in
+  during a step, a split by the step's starting composition would be first order in dt. The built
+  tracer splits by the mean of the start and end compositions, the trapezoid, which is second
+  order. Its error is set by the inflow within a step relative to the node's amount: 1.3e-6
+  against the closed form at a 1 ms step, where the node first receives its own amount each step
+  (tests/unit/test_region_readouts.py).
+- **Label switches** must fall on step boundaries; the tracer refuses one that does not.
+
+**Tracing through two-way transport is engine work:**
+- **The label carried by the transport law itself.** Label rows (A, or D's families) do this today
+  for faces, junctions and patches: each row diffuses or permeates down its own gradient. D1 would
+  check that a family's rows carry equal transport coefficients, about 0.5 day more. A net flux on
+  Fick's law has no gross components, so for diffusion this is the only way.
+- **Directional records from a two-way law** that has them: the forward and backward extents of
+  `local_species_reactions@1`'s passive routes, booked separately, about 1 day for the operators
+  owner, plus the tracer reading them.
+
+`validation/gene_regulation/cohort.py` (on the gene regulation lane) is C's one-pool case. An
+in-step tracer operator would need to read other operators' accumulators within the step. That is
+a contract question for the operators owner, and R1 does not need it.
 
 **D, in three parts:**
 - **D1: label families in the species registry.** A family is {id, rows}. The registry checks equal

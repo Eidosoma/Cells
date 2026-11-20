@@ -276,7 +276,9 @@
   "/mnt/workspaces/Cells/operators-fr23-20261120/gate-e7a54539/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/exchange-depletion-20261120/tiers/measured-dee83958/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e0dc3cfd/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-54ddcf78/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-285a8f8e/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2334,6 +2336,22 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e3bb05c1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T20:28:16+00:00"
+  },
+  {
+   "git_revision": "54ddcf78218e6023df552f51df440cbce495202c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/snapshot-head-54ddcf78",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:24:32+00:00"
+  },
+  {
+   "git_revision": "285a8f8e97e4d1304cce4ed158c108440ee39425",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/snapshot-head-285a8f8e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:42:12+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6254,6 +6272,14 @@
     }
    },
    {
+    "file": "tests/unit/test_compartment_transfer_example.py",
+    "seconds": 27.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
     "file": "tests/unit/test_continuity_gpu.py",
     "seconds": 22.81,
     "exit_code": 0,
@@ -6836,6 +6862,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 80
+    }
+   },
+   {
+    "file": "tests/unit/test_region_readouts.py",
+    "seconds": 40.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {
