@@ -8,7 +8,9 @@ loaded in the cell at a resolved level and at a trace elsewhere.
 
 * cell: that composite definition, with the membrane state and no producer;
 * route, with_producer: a route entry, and the operator's block with its schedule;
-* with_supply: D150's turnover supplying the precursor in the cell, the second writer of its row.
+* with_supply: D150's turnover supplying the precursor in the cell, the second writer of its row;
+* with_template_route: a template species in the cell, and species_regulated_availability@2
+  routing a Hill factor of it onto the producer's assembly rate (B1′), declared before it.
 """
 
 import copy
@@ -20,6 +22,8 @@ from validation.tissue import pump_water_fixtures as wfx
 LAW = "population_unit_turnover@1"
 STATE = "membrane_entity_state@1"
 TURNOVER = "scheduled_species_turnover@1"
+COUPLING_2 = "species_regulated_availability@2"
+TEMPLATE = "template"
 PRECURSOR = "subunit"  # The heredity cell already declares a species P.
 CELL = "cell_0"
 DENSITY = 1e13  # units/m^2: every population's reference density (10 per µm²).
@@ -143,4 +147,59 @@ def with_supply(raw, changes, *, node=CELL, name="supply"):
     out["experiment"]["turnover_controls"] = [
         dict(route_id=name, carrier_id=node, schedule=[dict(time=t, rate=v) for t, v in changes])
     ]
+    return out
+
+
+def with_template_route(
+    raw,
+    route_ids=("kir_units",),
+    *,
+    template_mM=1e-3,
+    half_saturation_mM=1e-3,
+    hill_coefficient=2.0,
+    basal=0.1,
+    operating_range=(0.0, 1.0),
+    enabled=1,
+    coupling_first=True,
+):
+    """raw (with a producer) and a template species loaded in the cell, with @2 routing a Hill
+    activation of its concentration onto the producer's assembly rate of `route_ids`, declared
+    before the producer (coupling_first; a route's source precedes its target)."""
+    out = add_inventory_species(
+        raw,
+        TEMPLATE,
+        trace_mM=TRACE_mM,
+        diffusivity_m2_per_s=DIFFUSIVITY,
+        floor_fmol=FLOOR_FMOL,
+        concentrations_mM={CELL: template_mM},
+    )
+    block = dict(
+        law=COUPLING_2,
+        species=identity(TEMPLATE),
+        states=[],
+        couplings=[
+            dict(
+                id="c_template",
+                target=dict(
+                    operator=LAW,
+                    control="unit_assembly_rate",
+                    ids=list(route_ids),
+                    evaluation="target_half_steps",
+                    operating_range=list(operating_range),
+                ),
+                source={"species": TEMPLATE},
+                law="hill_activation",
+                half_saturation_mM=half_saturation_mM,
+                hill_coefficient=hill_coefficient,
+                basal=basal,
+            )
+        ],
+    )
+    operators = out["model"]["operators"]
+    at = next(i for i, op in enumerate(operators) if op["law"] == LAW)
+    operators.insert(at if coupling_first else at + 1, block)
+    out["experiment"]["coupling_controls"] = [
+        dict(coupling_id="c_template", schedule=[dict(time=0.0, enabled=enabled)])
+    ]
+    out["experiment"]["regulatory_writes"] = []
     return out

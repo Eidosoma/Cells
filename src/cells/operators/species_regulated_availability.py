@@ -67,7 +67,8 @@ programs included. Every @2 target declares its evaluation:
 * an inner target is "step_view", as @1's: held through @3's step.
 * an operator target {operator, control, ids, evaluation: "target_half_steps",
   operating_range: [low, high]} names a target law and control of RATE_ROUTES (the turnover's
-  turnover_rate by route ID; the reactions' reaction_multiplier by reaction ID, every site).
+  turnover_rate by route ID; the reactions' reaction_multiplier by reaction ID, every site; the
+  unit producer's unit_assembly_rate by route ID, at its population's cell).
   Its factor, the same F = b + (1 - b) f, is evaluated at the start of each of the target's
   half-steps, from the state that half-step receives (pump_composite._half_step), and multiplies
   the scheduled rate, which is the maximum. Its source, a concentration (mM) or a state's
@@ -175,6 +176,8 @@ OPERATOR_TABLES = MappingProxyType(
     {
         ("scheduled_species_turnover@1", "turnover_rate"): "coupling_turnover_rate_routes",
         ("local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
+        # FR-7's unit producer (F3), a recorded exception naming the operators owner.
+        ("population_unit_turnover@1", "unit_assembly_rate"): "coupling_unit_assembly_rate_routes",
     }
 )
 LAYOUT_FIELDS_V2 = (
