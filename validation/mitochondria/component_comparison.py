@@ -193,15 +193,18 @@ ENGINE = {
     ),
     "complex_IV": EngineSpec(
         "cells.cytochrome_c_oxygen_proton_cycle@1", "reduction", "X_C4",
+        parameters=(("k_O2", "k_O2"),),
         roles=(("O2", "O2"), ("c_red", "cytc_red"), ("c_ox", "cytc_ox"), ("H", "H")),
     ),
     "atp_synthase": EngineSpec(
         "cells.proton_coupled_atp_synthesis_cycle@1", "synthesis", "X_F1",
+        parameters=(("K_MgADP", "K_MgADP"), ("K_MgATP", "K_MgATP")),
         roles=(("ADP", "ADP"), ("Pi", "Pi"), ("ATP", "ATP"), ("H", "H")),
     ),
     "nucleotide_exchange": EngineSpec(
         "cells.electrogenic_nucleotide_exchange@1", "exchange", "X_ANT",
-        parameters=(("theta_P", "theta_P"),), roles=(("ATP", "ATP"), ("ADP", "ADP")),
+        parameters=(("theta_P", "theta_P"), ("k_mADP", "k_mADP")),
+        roles=(("ATP", "ATP"), ("ADP", "ADP")),
     ),
     "phosphate_carrier": EngineSpec(
         "cells.phosphate_proton_symport@1", "import", "X_PiHt",
@@ -278,13 +281,14 @@ class MonomialAdapter:
         return (self._form_monomial(self.form_by_id[reference.form], reference.end),)
 
     def _log_k(self, rate):
-        """As the kind builds it (kinds/transporter.cited_log_k): a CitedConstant's or a
-        RateConstant's log k at T, with a CitedConstant's rt_term; a number as given."""
-        k = rate.log_k
-        if isinstance(k, (self.forms.CitedConstant, self.forms.RateConstant)):
-            terms = k.protons * math.log(1e7) + getattr(k, "rt_term", 0.0)
-            return k.offset - k.scale * (1000.0 * k.dg_kj_mol / self.rt + terms)
-        return float(k)
+        """The kind's own log k (kinds/transporter.cited_log_k, which builds a CitedConstant, a
+        RateConstant or a number), at this harness's T: one function, never a copy."""
+        from types import SimpleNamespace
+
+        from cells.kinds import transporter
+
+        world = SimpleNamespace(model=SimpleNamespace(temperature_K=self.T))
+        return transporter.cited_log_k(world, rate.log_k)
 
     def rate(self, plant=None):
         rate = self.form.monomial.rates[self.index]
