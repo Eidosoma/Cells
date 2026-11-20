@@ -103,7 +103,14 @@ COMBINED = {
     "frame_s_consistent": ({"J_F1": "eq11_with_proton_term", "J_PiHt": "eq16_symport_total_pi"}, {},
                            "one frame, S: MR1's Eq. 11 with the frame-S Eq. 16; Eq. 24 restored"),
     "frame_b_restored_eq24": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced"}, {},
-                              "one frame, B: the appendix's Eqs. 11 and 16 with Eq. 24 restored (the form the curves support)"),
+                              "frame B's rate laws (the appendix's Eqs. 11 and 16, Eq. 24 restored) on Eq. 22's printed proton row, "
+                              "which leaves phosphate proton-free: rate laws and bookkeeping in different frames"),
+    "frame_b_restored_eq24_pi_protons": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                                          "H_x_row": "pi_protons_counted"}, {},
+                                         "one frame, B, consistent: the same rate laws, and Eq. 22's proton row counting the protons on phosphate"),
+    "appendix_all_pi_protons": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                                 "J_C3": "eq24_appendix_balanced", "H_x_row": "pi_protons_counted"}, {},
+                                "the appendix's balanced Eqs. 11, 16 and 24 with frame B's proton row"),
 }
 
 

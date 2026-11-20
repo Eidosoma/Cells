@@ -237,7 +237,7 @@
     "J_PiHt": {"options": ["eq16_printed", "eq16_symport", "eq16_appendix_balanced", "eq16_symport_total_pi"], "published": "eq16_printed", "what": "Q03; the further options are compared in repairs.py"},
     "DGo_ATP_sign": {"options": [1, -1], "published": 1, "what": "Q01: +1 takes Table 2's +36.03; -1 takes the text's -36.03"},
     "cytc_volume": {"options": ["V_x", "V_i"], "published": "V_x", "what": "Q05; steady states do not depend on it"},
-    "H_x_row": {"options": ["pdf", "stale_web_xml"], "published": "pdf", "what": "Q06; the web XML's row is a planted control"}
+    "H_x_row": {"options": ["pdf", "stale_web_xml", "pi_protons_counted"], "published": "pdf", "what": "Q06; the web XML's row is a planted control; 'pi_protons_counted' is frame B's matrix proton inventory (Eq. 22's coefficients, with the protons on phosphate counted; repairs.py)"}
   },
   "conditions": {
     "bose_steady_states": {"provenance": "B05 'Simulation of isolated mitochondria'",
