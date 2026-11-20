@@ -39,13 +39,15 @@ Reading notes (each checked at the typeset image, not a text layer):
   Alberty 2003's tables, at conditions the source does not print. In base forms (ATP4-, ADP3-,
   AMP2-; no proton in the reaction) under the source's binding set it is K_AK (1 + [Mg]_i/K_MgADP)^2
   / (1 + [Mg]_i/K_MgATP), which depends on the free Mg2+ it is matched at: 0.153 at 1 mM, 0.389 at
-  3.81 mM (a 5 mM Mg, 1.3 mM ADP buffer), 0.491 at 5 mM. That match is a declared choice.
+  3.81 mM (a 5 mM Mg, 1.3 mM ADP buffer), 0.491 at 5 mM. The lead's ruling (D236) matches it at
+  the state-3 buffer's free Mg2+, 3.8086 mM (ak_match_free_Mg_mM), so K_base = 0.38896.
 - No temperature, gas constant or Faraday constant is printed. DECLARED below holds ours. The
   temperature is 298.15 K by the lead's ruling of 20 November 2026 (isolated-organelle worlds):
   the code-blind whole-organelle reference (MR1) reproduces the source's published curves at
-  298.15 K (rms z 1.98) and not at 310.15 K (rms z 25.9). The appendix at tag
-  mito-laws-appendix-2026-11-20 states 310.15 K; its next tag takes 298.15 K (its constants, its
-  1 M conversions and its free-energy table change; its laws, mismatches and stall points do not).
+  298.15 K (rms z 1.98) and not at 310.15 K (rms z 25.9). The appendix's first tag,
+  mito-laws-appendix-2026-11-20, stated 310.15 K; the appendix now states 298.15 K.
+- The user's repairs ruling (D236) is in RULED: frame B, Eq. 24 as phi_Pi x Eq. 7, the supply on
+  a held neutral reductant pair at reference matrix pH 7.10, and the kinase in base forms.
 
 Units are the source's: concentrations in M (mol per litre of the compartment's water) unless a
 row says mM; fluxes in mol s^-1 per litre of total mitochondrial volume; potentials in mV with
@@ -207,8 +209,25 @@ DECLARED = dict(
         O2=0,
         cytc_ox=3,
         cytc_red=2,
+        S_red=0,
+        S_ox=0,
     ),  # fmt: skip
 )
+
+# The user's repairs ruling, D236 (20 November 2026), and the lead's rulings it carries.
+RULED = dict(
+    decision="D236",
+    frame="B",  # base forms, every proton counted, phosphate's protons included in Eq. 22's row
+    supply_reference_pH_N=7.10,  # the held reductant pair puts Eq. 1's target r at this matrix pH
+    matrix_Mg_total_mM=5.0,
+    ak_buffer=dict(Mg_total_mM=5.0, ADP_total_mM=1.3),  # the state-3 buffer K_AK is matched at
+)
+
+# Declared reactions beside Table 2's (pH-7 basis, kJ/mol, scalar protons produced).
+DECLARED_REACTIONS = {
+    # The supply's held neutral reductant pair (D236; the binding owner's set beard2005@1).
+    "S": Reaction(0.0, +1, "S_red + NAD -> S_ox + NADH + H+ (declared)"),
+}
 
 
 def RT_J_mol(temperature_K=None):
@@ -247,6 +266,62 @@ def quinol_oxygen_per_O2_kJ_mol():
     """The lumped QH2:O2 cycle per O2 (host C's reduction): 2 QH2 + O2 -> 2 Q + 2 H2O. Twice
     (C3 + C4); its scalar protons cancel, so the pH-7 and 1 M values agree."""
     return 2.0 * (TABLE_2["C3"].dG0_kJ_mol + TABLE_2["C4"].dG0_kJ_mol)
+
+
+def held_pair_ratio(*, pi_control=True):
+    """[S_ox]/[S_red] of the supply's held pair (D236): the balanced supply's equilibrium is the
+    source's [NADH]/[NAD] = r at the reference matrix pH, so with dG°(pH 7) = 0 it is
+    10^(pH_ref - 7) / r."""
+    return 10.0 ** (RULED["supply_reference_pH_N"] - 7.0) / parameter("r", pi_control=pi_control)
+
+
+def ak_match_free_Mg_mM():
+    """The free Mg2+ at which K_AK (on totals) is matched to base forms (the lead's ruling,
+    D236): that of the source's state-3 buffer, 5.0 mM total Mg with 1.3 mM ADP and no ATP, ADP
+    binding Mg with K_MgADP (the only Mg binder there): m + A m/(K + m) = M_tot, the positive
+    root of m^2 + (K + A - M_tot) m - K M_tot = 0, in mM."""
+    k = parameter("K_MgADP") * 1e3
+    total, adp = RULED["ak_buffer"]["Mg_total_mM"], RULED["ak_buffer"]["ADP_total_mM"]
+    b = k + adp - total
+    return (-b + math.sqrt(b * b + 4.0 * k * total)) / 2.0
+
+
+def ak_base_constant(free_Mg_mM=None):
+    """Eq. 18's constant in base forms, [ATP4-][AMP2-]/[ADP3-]^2 at equilibrium, from K_AK on
+    totals under the source's binding set (Mg on ATP and ADP only): K_AK (1 + m/K_MgADP)^2 /
+    (1 + m/K_MgATP), at the matched free Mg2+ unless another is given."""
+    m = (ak_match_free_Mg_mM() if free_Mg_mM is None else free_Mg_mM) * 1e-3
+    return parameter("K_AK") * (1 + m / parameter("K_MgADP")) ** 2 / (1 + m / parameter("K_MgATP"))
+
+
+ZERO_REFERENCES = ("H", "K", "Mg", "O2", "NAD", "Q", "cytc_ox", "ADP", "HPO4", "S_ox")
+
+
+def standard_potentials_RT(temperature_K=None):
+    """mu°/RT at 1 M of every species and form (the binding owner's convention for the named set
+    beard2005@1, extended with AMP for @2): ZERO_REFERENCES at 0, water never a row; then each
+    reaction determines one species, in this order, from its pH-7 value moved to 1 M:
+    complex IV per O2 -> cytc_red, III -> QH2, I -> NADH, synthesis (total Pi's term included)
+    -> ATP, the supply's declared reaction -> S_red, adenylate kinase (K_base) -> AMP; the forms
+    from their dissociation constants, mu°_f = mu°_base + sum n mu°_L + ln K_d (K_d in M)."""
+    rt = RT_J_mol(temperature_K)
+    ln7 = math.log(1e7)
+
+    def x(reaction, table=TABLE_2, multiple=1.0):
+        r = table[reaction]
+        return multiple * (1000.0 * r.dG0_kJ_mol / rt + r.scalar_protons * ln7)
+
+    mu = dict.fromkeys(ZERO_REFERENCES, 0.0)
+    mu["cytc_red"] = -x("C4", multiple=2.0) / 4.0
+    mu["QH2"] = 2.0 * mu["cytc_red"] - x("C3")
+    mu["NADH"] = mu["QH2"] - x("C1")
+    mu["ATP"] = x("ATP") - math.log1p(1e-7 / parameter("k_dH"))
+    mu["S_red"] = mu["NADH"] - x("S", DECLARED_REACTIONS)
+    mu["AMP"] = -math.log(ak_base_constant()) - mu["ATP"]
+    mu["MgATP"] = mu["ATP"] + math.log(parameter("K_MgATP"))
+    mu["MgADP"] = mu["ADP"] + math.log(parameter("K_MgADP"))
+    mu["H2PO4"] = mu["HPO4"] + math.log(parameter("k_dH"))
+    return mu
 
 
 def matrix_buffer_capacity_M():

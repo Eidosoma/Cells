@@ -8,14 +8,15 @@ each turnover's equilibrium:
 - every declared law is J = S (1 - e^x) with S > 0, so J x <= 0 and J = 0 at x = 0;
 - each printed law that factors (Eqs. 3, 7, 9, 14 and 21) equals its declared form at every
   state (relative difference below 1e-40);
-- each printed law that fails (Eqs. 11, 16 and 24) has a mismatch d = ln(B/A)/kappa - x equal to
-  the appendix's closed form at every state, not constant, and runs against its own free energy
-  at some states;
+- each printed law that does not (Eqs. 1, 11, 16, 18 and 24) has a mismatch d = ln(B/A)/kappa - x
+  equal to the appendix's closed form at every state, not constant, and runs against its own free
+  energy at some states; the declared forms are D236's (frame B; Eq. 24 as phi_Pi x Eq. 7; the
+  supply on a held reductant pair; adenylate kinase in base forms);
 - two planted errors are caught: complex I's charge with the wrong sign, and the exchanger's
   voltage shares not summing to one;
-- the appendix's typed parameters equal the organism file's, and its free-energy table equals
-  the entries at the temperature the appendix states; the entries at the organism file's
-  temperature are reported, for the appendix's next tag;
+- the appendix's typed parameters equal the organism file's; its free-energy table, potentials
+  table and band terms equal those computed at the temperature the appendix states; the potential
+  convention reproduces the binding owner's values at 310.15 K and the source's entries;
 - every turnover's integer counts conserve charge with the declared valences and move the charge
   q the appendix states (planted: one count changed);
 - each law's S in the family proposed for the engine's form, anchored on the turnover's own
@@ -110,16 +111,24 @@ def c3_eq7(s):
     return a - b, a * (ONE - exp(x / 2)), x, D("0.5"), a, b
 
 
+def phi_pi(s):
+    """Eq. 24's phosphate activation, on total matrix Pi."""
+    pi_tot = s["HPO4_N"] * (ONE + s["H_N"] / K_DH)
+    return (ONE + pi_tot / (P["k_Pi3"] * MM)) / (ONE + pi_tot / (P["k_Pi4"] * MM))
+
+
 def c3_eq24(s):
-    """Complex III with phosphate control, Eq. 24: the 2RT ln([H+]_x/1e-7) term is dropped."""
+    """Complex III with phosphate control. Printed (Eq. 24): the 2RT ln([H+]_x/1e-7) term is
+    dropped, and its two terms (a, b) give the mismatch. Declared (D236): Eq. 24 restored as
+    phi_Pi x Eq. 7, the model as the source ran it."""
     u, hn, hp, x = s["u"], s["H_N"], s["H_P"], _c3_x(s)
     dgh = u + ln(hp / hn)
-    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)  # total matrix Pi
-    phi = (ONE + pi_tot / (P["k_Pi3"] * MM)) / (ONE + pi_tot / (P["k_Pi4"] * MM))
+    phi = phi_pi(s)
     expo = G_PH7["C3"] + 4 * dgh - 2 * u + ln(s["Q"] / s["QH2"])
     a = P["X_C3"] * phi * exp(-expo / 2) * s["cox"]
     b = P["X_C3"] * phi * s["cred"]
-    return a - b, a * (ONE - exp(x / 2)), x, D("0.5"), a, b
+    a7 = phi * c3_eq7(s)[4]
+    return a - b, a7 * (ONE - exp(x / 2)), x, D("0.5"), a, b
 
 
 def c4(s):
@@ -193,6 +202,39 @@ def kh(s):
     return a - b, a * (ONE - exp(x)), x, ONE, a, b
 
 
+H_REF = D(10) ** D(repr(-source.RULED["supply_reference_pH_N"]))  # the supply's reference h_N
+
+
+def supply(s):
+    """The NADH supply. Printed (Eq. 1): X phi (r [NAD] - [NADH]), relaxing to r at every pH.
+    Declared (D236): S_red + NAD -> S_ox + NADH + H+ with a held neutral pair at [S_ox]/[S_red] =
+    10^(pH_ref - 7)/r, so x = ln([NADH]/(r [NAD])) + ln(h_N/h_ref), and J = A (1 - e^x) with A the
+    printed forward term."""
+    pi_tot = s["HPO4_N"] * (ONE + s["H_N"] / K_DH)
+    phi = (ONE + pi_tot / (P["k_Pi1"] * MM)) / (ONE + pi_tot / (P["k_Pi2"] * MM))
+    x = ln(s["NADH"] / (P["r"] * s["NAD"])) + ln(s["H_N"] / H_REF)
+    a = P["X_DH"] * phi * P["r"] * s["NAD"]
+    b = P["X_DH"] * phi * s["NADH"]
+    return a - b, a * (ONE - exp(x)), x, ONE, a, b
+
+
+K_BASE = D(repr(source.ak_base_constant()))
+
+
+def ak(s):
+    """Adenylate kinase at P. Printed (Eq. 18): on totals with K_AK. Declared (D236): in base
+    forms, X_AK (K_base [ADP3-]^2 - [AMP2-][ATP4-]), K_base matched at the state-3 buffer's free
+    Mg2+."""
+    mg = s["Mg_P"]
+    atp_tot = s["ATP_P"] * (ONE + mg / P["K_MgATP"])
+    adp_tot = s["ADP_P"] * (ONE + mg / P["K_MgADP"])
+    x = ln(s["ATP_P"] * s["AMP_P"] / (K_BASE * s["ADP_P"] ** 2))
+    a = P["X_AK"] * P["K_AK"] * adp_tot**2
+    b = P["X_AK"] * s["AMP_P"] * atp_tot
+    declared_a = P["X_AK"] * K_BASE * s["ADP_P"] ** 2
+    return a - b, declared_a * (ONE - exp(x)), x, ONE, a, b
+
+
 # The appendix's closed forms of each failing law's mismatch, d = ln(B/A)/kappa - x.
 def d_eq24(s):
     return -2 * ln(s["H_N"] / D("1e-7"))
@@ -211,10 +253,20 @@ def d_eq16(s):
     return 2 * ln(s["H_P"] / s["H_N"])
 
 
+def d_eq1(s):
+    return -ln(s["H_N"] / H_REF)
+
+
+def d_eq18(s):
+    mg = s["Mg_P"]
+    return ln((ONE + mg / P["K_MgATP"]) / (ONE + mg / P["K_MgADP"]) ** 2) + ln(K_BASE / P["K_AK"])
+
+
 PASSING = {"C1 (Eq. 3)": c1, "C3 (Eq. 7)": c3_eq7, "C4 (Eq. 9)": c4, "ANT (Eq. 14)": ant,
            "KH (Eq. 21)": kh}  # fmt: skip
 FAILING = {"F1 (Eq. 11)": (f1, d_eq11, "H_N"), "PiHt (Eq. 16)": (piht, d_eq16, "H_N"),
-           "C3 (Eq. 24)": (c3_eq24, d_eq24, "H_N")}  # fmt: skip
+           "C3 (Eq. 24)": (c3_eq24, d_eq24, "H_N"), "Supply (Eq. 1)": (supply, d_eq1, "H_N"),
+           "AK (Eq. 18)": (ak, d_eq18, "Mg_P")}  # fmt: skip
 
 
 # ------------------------------------------------------------------ the turnovers' counts
@@ -234,7 +286,9 @@ TURNOVERS = {
     "ANT": ({("ATP", "N"): -1, ("ATP", "P"): 1, ("ADP", "P"): -1, ("ADP", "N"): 1}, -1),
     "PiHt": ({("HPO4", "P"): -1, ("HPO4", "N"): 1, ("H", "P"): -2, ("H", "N"): 2}, 0),
     "KH": ({("K", "P"): -1, ("K", "N"): 1, ("H", "N"): -1, ("H", "P"): 1}, 0),
-    "DH": ({("NAD", "N"): -1, ("NADH", "N"): 1, ("H", "N"): 1}, 0),
+    "Supply": ({("S_red", "N"): -1, ("NAD", "N"): -1, ("S_ox", "N"): 1, ("NADH", "N"): 1,
+                ("H", "N"): 1}, 0),
+    "AK": ({("ADP", "P"): -2, ("ATP", "P"): 1, ("AMP", "P"): 1}, 0),
 }  # fmt: skip
 
 
@@ -276,13 +330,13 @@ def instances(s):
            * (s["QH2"] / s["Q"]).sqrt() * exp(-u))  # fmt: skip
     out["C3 (Eq. 7)"] = (a * _share(x, 2), [P["X_C3"] * s["cred"] * exp(-x / 2) * _share(x, 2),
                                             fwd * _share(x, 2)])  # fmt: skip
-    _, _, x, _, a, _ = c3_eq24(s)
-    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)
-    act = (ONE + pi_tot / (P["k_Pi3"] * MM)) * _logistic(pi_tot / (P["k_Pi4"] * MM))
-    out["C3 (Eq. 24, balanced)"] = (
-        a * _share(x, 2),
-        [P["X_C3"] * act * s["cred"] * hn * D(10) ** 7 * exp(-x / 2) * _share(x, 2)],
-    )
+    _, declared, x, _, _, _ = c3_eq24(s)
+    phi = phi_pi(s)
+    out["C3 (Eq. 24 as phi x Eq. 7)"] = (
+        declared / (ONE - exp(x)),
+        [phi * P["X_C3"] * s["cred"] * exp(-x / 2) * _share(x, 2),
+         phi * c3_eq7(s)[4] * _share(x, 2)],
+    )  # fmt: skip
     _, _, x, _, a, _ = c4(s)
     sat = _logistic(P["k_O2"] / s["O2"]) * _logistic(s["cox"] / s["cred"])
     fwd = (P["X_C4"] * sat * exp(-G_PH7["C4"] / 2) * D(10) ** 7 * s["cred"] * hn**2 / hp
@@ -308,6 +362,13 @@ def instances(s):
     out["PiHt (balanced)"] = (a, [P["X_PiHt"] * hn * _logistic(P["k_PiHt"] * MM / h2_p)])
     _, _, x, _, a, _ = kh(s)
     out["KH"] = (a, [P["X_KH"] * s["K_P"] * hn])
+    _, _, x, _, a, _ = supply(s)
+    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)
+    act = (ONE + pi_tot / (P["k_Pi1"] * MM)) * _logistic(pi_tot / (P["k_Pi2"] * MM))
+    out["Supply (held pair)"] = (a, [P["X_DH"] * act * s["NADH"] * hn / H_REF * exp(-x)])
+    _, declared, x, _, _, _ = ak(s)
+    out["AK (base forms)"] = (declared / (ONE - exp(x)), [P["X_AK"] * s["AMP_P"] * s["ATP_P"]
+                                                          * exp(-x)])  # fmt: skip
     return out
 
 
@@ -338,6 +399,7 @@ def state(rng):
         Mg_N=_log_uniform(rng, 1e-4, 5e-3),
         HPO4_N=_log_uniform(rng, 1e-4, 2e-2), HPO4_P=_log_uniform(rng, 1e-4, 2e-2),
         K_N=_log_uniform(rng, 1e-2, 2e-1), K_P=_log_uniform(rng, 1e-2, 2e-1),
+        Mg_P=_log_uniform(rng, 1e-4, 5e-3), AMP_P=_log_uniform(rng, 1e-6, 1e-3),
     )  # fmt: skip
     for side in ("N", "P"):
         total = _log_uniform(rng, 1e-4, 1e-2)
@@ -351,7 +413,8 @@ def near_equilibrium(law, s, target):
     """s with one concentration moved so that the law's declared x equals target (an exact
     solve: x is linear in the moved log concentration with coefficient nu)."""
     moved = {c1: ("NAD", 1), c3_eq7: ("Q", 1), c3_eq24: ("Q", 1), c4: ("O2", -1), f1: ("ATP_N", 1),
-             ant: ("ATP_P", 1), piht: ("HPO4_N", 1), kh: ("K_N", 1)}[law]  # fmt: skip
+             ant: ("ATP_P", 1), piht: ("HPO4_N", 1), kh: ("K_N", 1), supply: ("NADH", 1),
+             ak: ("AMP_P", 1)}[law]  # fmt: skip
     key, nu = moved
     out = dict(s)
     x = law(out)[2]
@@ -438,6 +501,18 @@ def check(n_states=400, seed=20261120):
     report["temperatures_K"] = dict(organism_file=t_world, appendix=t_appendix)
     entries = entries_RT(t_world)
     report[f"entries_RT_at_{t_world}_K"] = {k: f"{v:.6f}" for k, v in entries.items()}
+    direct = direct_entries_RT(t_world)
+    gap = max(abs(entries[k] - direct[k]) for k in entries)
+    report["entries_convention_vs_source"] = f"{gap:.3e}"
+    ok &= gap < D("1e-9")
+    mu310 = potentials(310.15)
+    gap = max(abs(mu310[k] - D(v)) for k, v in CONVENTION_310.items())
+    report["convention_file_at_310.15_K"] = f"{gap:.3e}"
+    ok &= gap < D("1e-9")
+    report[f"potentials_RT_at_{t_world}_K"] = {
+        k: f"{v:.9f}" for k, v in potentials(t_world).items()
+    }
+    report[f"band_terms_at_{t_world}_K"] = {k: f"{v:.3f}" for k, v in band_terms(t_world).items()}
     return ok, report
 
 
@@ -445,25 +520,66 @@ def _number(text):
     return float(text.replace("\u2212", "-").replace("+", "").replace("\u2014", "nan"))
 
 
+# Each entry's net conversion (the transport legs cancel; water is never a row).
+ENTRIES = {
+    "§1.1, per NADH": {"NADH": -1, "Q": -1, "H": -1, "NAD": 1, "QH2": 1},
+    "§1.2, per QH₂": {"QH2": -1, "cytc_ox": -2, "Q": 1, "cytc_red": 2, "H": 2},
+    "§1.3, per O₂": {"O2": -1, "cytc_red": -4, "H": -4, "cytc_ox": 4},
+    "§1.4, per O₂": {"QH2": -2, "O2": -1, "Q": 2},
+    "§2, per ATP": {"ADP": -1, "HPO4": -1, "H": -1, "ATP": 1},
+    "§6, per NADH": {"S_red": -1, "NAD": -1, "S_ox": 1, "NADH": 1, "H": 1},
+    "§7, per 2 ADP": {"ADP": -2, "ATP": 1, "AMP": 1},
+}  # fmt: skip
+
+
+def potentials(temperature_K):
+    """The species' mu°/RT at 1 M (the organism file's convention), as Decimals."""
+    return {k: D(repr(v)) for k, v in source.standard_potentials_RT(temperature_K).items()}
+
+
 def entries_RT(temperature_K):
-    """The appendix's free-energy entries (its §7 table, in RT) at a temperature in K."""
+    """The appendix's free-energy entries (its §8 table, in RT, every species at 1 M) at a
+    temperature in K, from the convention's potentials."""
+    mu = potentials(temperature_K)
+    return {key: sum(n * mu[sp] for sp, n in nu.items()) for key, nu in ENTRIES.items()}
+
+
+def direct_entries_RT(temperature_K):
+    """The same entries straight from the source's values (Table 2 at pH 7 moved to 1 M, the
+    synthesis matched at pH 7 through k_dH, the supply's declared 0 at pH 7, K_base): the
+    convention must reproduce them."""
     rt = D(repr(source.DECLARED["gas_constant_J_mol_K"])) * D(repr(temperature_K))
     g = {name: D(str(r.dG0_kJ_mol)) * 1000 / rt for name, r in source.TABLE_2.items()}
     g1 = {name: g[name] + r.scalar_protons * LN1E7 for name, r in source.TABLE_2.items()}
-    return {"per NADH": g1["C1"], "per QH₂": g1["C3"], "§1.3, per O₂": 2 * g1["C4"],
+    return {"§1.1, per NADH": g1["C1"], "§1.2, per QH₂": g1["C3"], "§1.3, per O₂": 2 * g1["C4"],
             "§1.4, per O₂": 2 * (g["C3"] + g["C4"]),
-            "per ATP": g["ATP"] - LN1E7 - (ONE + D("1e-7") / K_DH).ln()}  # fmt: skip
+            "§2, per ATP": g["ATP"] - LN1E7 - (ONE + D("1e-7") / K_DH).ln(),
+            "§6, per NADH": LN1E7, "§7, per 2 ADP": -K_BASE.ln()}  # fmt: skip
+
+
+def band_terms(temperature_K):
+    """The band term M of each law's mode (the references' rounding scale for x): sum over its
+    rows, each end counted, of |nu| (|mu°|/RT + ln 1000), at the convention's potentials."""
+    mu, ln1000 = potentials(temperature_K), D(1000).ln()
+    return {law: sum(abs(n) * (abs(mu[sp]) + ln1000) for (sp, _), n in nu.items())
+            for law, (nu, _) in TURNOVERS.items()}  # fmt: skip
+
+
+# The binding owner's convention file (beard2005@1, 20 November 2026), its values at 310.15 K.
+CONVENTION_310 = dict(cytc_red="39.955405547706", QH2="60.289353662720", NADH="103.308282037566",
+                      S_red="87.190186386608", ATP="-2.592286211096", MgATP="-13.229742938712",
+                      MgADP="-7.966185778017", H2PO4="-15.542437799191")  # fmt: skip
 
 
 def appendix_temperature_K(path=APPENDIX):
     """The temperature the appendix states (its §0: "T = ... K")."""
-    return float(re.search(r"^- T = ([0-9.]+) K\.", path.read_text(), re.M).group(1))
+    return float(re.search(r"^- (?:\*\*)?T = ([0-9.]+) K", path.read_text(), re.M).group(1))
 
 
 def appendix_errors(path=APPENDIX):
     """The appendix's typed numbers against this check's and the organism file's: every row of
     its parameter table (both columns), and the RT column of its free-energy table at the
-    temperature the appendix itself states (the organism file's may differ until its next tag)."""
+    temperature the appendix itself states (the organism file's may differ between tags)."""
     text, out = path.read_text(), []
     block = text.split("<!-- parameters -->")[1].split("<!-- /parameters -->")[0]
     rows = re.findall(r"^\| `(\w+)` \| [^|]+ \| ([^|]+) \| ([^|]+) \|", block, re.M)
@@ -477,16 +593,31 @@ def appendix_errors(path=APPENDIX):
                 out.append(f"{name} (pi_control={column}): appendix {typed}, organism file {value}")
     if len(rows) < 20:
         out.append(f"the parameter table has {len(rows)} rows")
-    for key, value in entries_RT(appendix_temperature_K(path)).items():
-        line = next(
-            (ln_ for ln_ in text.splitlines() if ln_.startswith("| §") and key in ln_), None
-        )
+    t = appendix_temperature_K(path)
+    for key, value in entries_RT(t).items():
+        line = next((ln_ for ln_ in text.splitlines() if ln_.startswith(f"| {key} |")), None)
         if line is None:
             out.append(f"the free-energy table has no row {key!r}")
             continue
         typed = _number(line.rstrip(" |").rsplit("|", 1)[1].strip())
         if abs(typed - float(value)) > 5e-5:
             out.append(f"free energy {key}: appendix {typed} RT, computed {float(value):.4f}")
+    if "<!-- potentials -->" in text:
+        block = text.split("<!-- potentials -->")[1].split("<!-- /potentials -->")[0]
+        typed_mu = dict(re.findall(r"^\| `(\w+)` \| ([^|]+) \|", block, re.M))
+        mu = potentials(t)
+        if set(typed_mu) != set(mu):
+            out.append(f"the potentials table lists {sorted(typed_mu)}, not {sorted(mu)}")
+        for sp, value in typed_mu.items():
+            if sp in mu and abs(_number(value.strip()) - float(mu[sp])) > 2e-9:
+                out.append(f"potential {sp}: appendix {value.strip()}, computed {float(mu[sp])}")
+    if "<!-- bands -->" in text:
+        block = text.split("<!-- bands -->")[1].split("<!-- /bands -->")[0]
+        typed_m = dict(re.findall(r"^\| (\w+) \| ([0-9][0-9.]*) \|", block, re.M))
+        bands = band_terms(t)
+        for law, value in typed_m.items():
+            if law not in bands or abs(_number(value.strip()) - float(bands[law])) > 5e-3:
+                out.append(f"band M {law}: appendix {value.strip()}, computed {bands.get(law)}")
     return out
 
 
