@@ -200,9 +200,10 @@ def readouts(spec, states):
         )
         g0 = g if g0 is None else g0
         put("G_minus_G0", g - g0)
-    if "X" not in rows:  # A1-M's worlds: the release rate over the final window (§5.2).
-        ribosome = any(c.template_species for c in block.chains)
-        window = float(sheet.A1M["window_rib" if ribosome else "window_pol"])
+    ribosome = any(c.template_species for c in block.chains)
+    window = float(sheet.A1M["window_rib" if ribosome else "window_pol"])
+    full = float(sheet.A1M["t_end_rib" if ribosome else "t_end_pol"])
+    if "X" not in rows and times[-1] == full:  # A1-M's release rate over its final window (§5.2).
         k_end, k_start = len(times) - 1, times.index(times[-1] - window)
         for c in block.chains:
             q = out[f"int_Q_{c.id}"]

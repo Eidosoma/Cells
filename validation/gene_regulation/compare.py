@@ -2,9 +2,9 @@
 (engine_run.py) against G2's code-blind references, read from their interface alone. Development,
 not judged: G6 registers the tolerances.
 
-G2's interface is data: validation/gene_regulation/references/interface/*.json at the tag
-gr1-references-2026-11-20, read through `git show` (never the references' code). Each engine run is
-paired with G2's potential set of the same four symbols, matched by value:
+G2's interface is data: validation/gene_regulation/references/interface/*.json, as tagged
+gr1-references-2026-11-20 and landed in the tree, read as files (never the references' code). Each
+engine run is paired with G2's potential set of the same four symbols, matched by value:
 - the two test instances (sets 0 and 1) on G2's full output grids;
 - the sixteen corners (sets 2 to 17) on every tenth output (trajectories_edge_sets.json);
 - the 32 interior points (sets 18 to 49) at t_end, and A1's also at t_off (endpoints.json).
@@ -20,7 +20,6 @@ Run: python -m validation.gene_regulation.compare RUN_DIR [RUN_DIR_2] --out FILE
 import argparse
 import json
 import math
-import subprocess
 from decimal import Decimal
 from pathlib import Path
 
@@ -33,15 +32,8 @@ FLOOR = 1e-14  # A gap below this, relative, is rounding: no order is read from 
 
 
 def interface(name):
-    """One of G2's interface files, from the tag (data only)."""
-    text = subprocess.run(
-        ["git", "show", f"{TAG}:{INTERFACE}/{name}"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    return json.loads(text)
+    """One of G2's interface files, from the tree (data only)."""
+    return json.loads((ROOT / INTERFACE / name).read_text())
 
 
 def symbols_kJ(potentials):

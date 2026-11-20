@@ -1,7 +1,6 @@
 """templated_polymerisation@1's kernel (gene regulation's option A, G4), on its own half-steps in
-NumPy: no world is compiled. Each row integrates a world of validation/gene_regulation/worlds.py
-for a few seconds of model time, two half-steps of dt/2 per step as the composite's split step
-takes them, with the inner model inert for these rows (impermeant, no channel).
+NumPy (validation/gene_regulation/kernel.py): no world is compiled. Each row advances a world of
+validation/gene_regulation/worlds.py for a few seconds of model time.
 
 - One route live: its heat is the whole booked heat and equals -dG, G from the state alone at 60
   digits (engine_run.free_energy), never from extents or bookings.
@@ -14,60 +13,21 @@ takes them, with the inner model inert for these rows (impermeant, no channel).
 """
 
 import copy
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.operators import OPERATORS
 from cells.registry import kind_registry
 from cells.registry.models import get_model
-from validation.gene_regulation import engine_run, worlds
+from validation.gene_regulation import engine_run, kernel, worlds
 
-OP = OPERATORS[worlds.POLYMERISATION]
-
-
-def _block(raw):
-    (block,) = [o for o in raw["model"]["operators"] if o["law"] == worlds.POLYMERISATION]
-    return block
+EPS = np.finfo(float).eps
 
 
-def _controls(raw, block, only=None):
-    """The world's rates at time 0 by route, every route but `only`'s at zero when it is given."""
-    rate = {c["route_id"]: c["schedule"][0]["value"] for c in raw["experiment"][
-        "polymerisation_controls"]}  # fmt: skip
-
-    def values(routes):
-        return np.array([rate[r.id] if only in (None, r.id) else 0.0 for r in routes])
-
-    return SimpleNamespace(
-        polymerisation_initiation_rate=values(block.chains),
-        polymerisation_degradation_rate=values(block.degradations),
-        polymerisation_transfer_capacity=values(block.transfers),
-    )
-
-
-def _integrate(raw, *, steps, dt=0.5, only=None, record=False):
-    """(start, end, p, spec, per-half-step route-heat increments) of `steps` steps."""
-    spec = parse_spec(raw)
-    state, p = get_model(spec.model).initial_values(spec)
-    state = type(state)(*(np.asarray(v) for v in state))
-    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
-    control = _controls(raw, block, only)
-    start, increments = state, []
-    for _ in range(2 * steps):
-        new, ok = OP.half_step(state, dt / 2, control, p, xp=np)
-        assert bool(ok)
-        if record:
-            increments.append(
-                np.concatenate([
-                    new.poly_chain_heat_pJ - state.poly_chain_heat_pJ,
-                    new.poly_degradation_heat_pJ - state.poly_degradation_heat_pJ,
-                ])
-            )  # fmt: skip
-        state = new
-    return start, state, p, spec, increments
+def _ends(raw, *, only=None, record=False):
+    spec, p, states, increments = kernel.run(raw, only=only, record=record)
+    return states[0], states[max(states)], p, spec, increments
 
 
 def _G(state, p, spec):
@@ -99,22 +59,22 @@ def _with_amount(raw, row, mM):
     return out
 
 
-# One route live: (world, its edit, the route, steps).
+# One route live: (world, its edit, the route, seconds).
 ONE_ROUTE = [
-    ("pol T=5", None, "tx", 40),
-    ("pol T=5", ("R", 1e-4), "deg_R", 20),
-    ("pol T=5", None, "recharge", 20),
-    ("rib n_R=10", None, "tl", 40),
-    ("rib n_R=10", ("P", 1e-4), "deg_P", 20),
+    ("pol T=5", None, "tx", 20.0),
+    ("pol T=5", ("R", 1e-4), "deg_R", 10.0),
+    ("pol T=5", None, "recharge", 10.0),
+    ("rib n_R=10", None, "tl", 20.0),
+    ("rib n_R=10", ("P", 1e-4), "deg_P", 10.0),
 ]
 
 
-@pytest.mark.parametrize(("world", "edit", "route", "steps"), ONE_ROUTE)
-def test_one_live_route_books_the_whole_heat_and_it_is_minus_dG(world, edit, route, steps):
-    raw = worlds.world(world)
+@pytest.mark.parametrize(("world", "edit", "route", "seconds"), ONE_ROUTE)
+def test_one_live_route_books_the_whole_heat_and_it_is_minus_dG(world, edit, route, seconds):
+    raw = kernel.truncated(worlds.world(world), seconds)
     if edit is not None:
         raw = _with_amount(raw, *edit)
-    start, end, p, spec, _ = _integrate(raw, steps=steps, only=route)
+    start, end, p, spec, _ = _ends(raw, only=route)
     heats = np.concatenate([end.poly_chain_heat_pJ, end.poly_degradation_heat_pJ,
                             end.poly_transfer_heat_pJ])  # fmt: skip
     total = float(np.sum(end.poly_dissipated_energy_pJ))
@@ -124,23 +84,23 @@ def test_one_live_route_books_the_whole_heat_and_it_is_minus_dG(world, edit, rou
     assert others[0] == pytest.approx(total, rel=1e-13, abs=1e-15)
     (g1, size), (g0, _) = _G(end, p, spec), _G(start, p, spec)
     bookings = float(np.sum(end.poly_energy_magnitude_pJ))
-    assert abs(total + float(g1 - g0)) <= 64 * np.finfo(float).eps * (size + bookings)
+    assert abs(total + float(g1 - g0)) <= 64 * EPS * (size + bookings)
 
 
 @pytest.mark.parametrize("world", ["A1", "two-gene"])
 def test_every_route_live_sums_to_the_heat_and_one_sided_routes_never_cool(world):
-    _, end, _, _, increments = _integrate(worlds.world(world), steps=60, record=True)
+    raw = worlds.a1(end=30.0) if world == "A1" else kernel.truncated(worlds.world(world), 30.0)
+    _, end, _, _, increments = _ends(raw, record=True)
     routes = sum(float(np.sum(getattr(end, k))) for k in (
         "poly_chain_heat_pJ", "poly_degradation_heat_pJ", "poly_transfer_heat_pJ"))  # fmt: skip
     total = float(np.sum(end.poly_dissipated_energy_pJ))
     magnitude = float(np.sum(end.poly_energy_magnitude_pJ))
-    assert abs(routes - total) <= 64 * np.finfo(float).eps * magnitude
+    assert abs(routes - total) <= 64 * EPS * magnitude
     assert min(float(np.min(x)) for x in increments) >= 0.0
 
 
 def test_zero_rates_leave_the_state_bit_for_bit():
-    raw = worlds.world("pol T=5")
-    start, end, _, _, _ = _integrate(raw, steps=3, only="no route")
+    start, end, _, _, _ = _ends(kernel.truncated(worlds.world("pol T=5"), 1.5), only="no route")
     for a, b in zip(start, end, strict=True):
         assert np.array_equal(np.asarray(a), np.asarray(b))
 
@@ -151,7 +111,7 @@ def test_a_product_above_one_molar_at_a_chain_in_use_is_refused():
     state, p = get_model(spec.model).initial_values(spec)
     state = type(state)(*(np.asarray(v) for v in state))
     (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
-    _, ok = OP.half_step(state, 0.25, _controls(raw, block), p, xp=np)
+    _, ok = kernel.OP.half_step(state, 0.25, kernel.controls(raw, block), p, xp=np)
     assert not bool(ok)
 
 
@@ -169,7 +129,7 @@ REFUSALS = [
 @pytest.mark.parametrize(("edit", "words"), REFUSALS)
 def test_the_declaration_refuses(edit, words):
     raw = worlds.a1(end=60.0)
-    edit(_block(raw))
+    edit(kernel.block(raw))
     with pytest.raises(ConfigError, match=words):
         parse_spec(raw)
 
@@ -177,7 +137,7 @@ def test_the_declaration_refuses(edit, words):
 def test_the_cited_entries_reach_the_registry_which_refuses_a_perturbed_one():
     raw = worlds.a1(end=60.0)
     (block,) = [d for d in parse_spec(raw).model.operators if d.law == worlds.POLYMERISATION]
-    entries = OP.standard_free_energies(block)
+    entries = kernel.OP.standard_free_energies(block)
     assert [e.stoichiometry for e in entries] == [
         (("R", -1), ("M", 1200)),
         (("P", -1), ("A", 400)),
@@ -186,6 +146,6 @@ def test_the_cited_entries_reach_the_registry_which_refuses_a_perturbed_one():
     assert entries[0].dG_basis == kind_registry.TEMPERATURE_INDEPENDENT
     assert entries[2].dG_RT is not None and entries[2].dG_kJ_mol is None
     bad = copy.deepcopy(raw)
-    _block(bad)["degradations"][0]["standard_free_energy"]["dG_kJ_mol"] *= 1 + 1e-9
+    kernel.block(bad)["degradations"][0]["standard_free_energy"]["dG_kJ_mol"] *= 1 + 1e-9
     with pytest.raises(ConfigError, match="one authority for each standard free energy"):
         parse_spec(bad)
