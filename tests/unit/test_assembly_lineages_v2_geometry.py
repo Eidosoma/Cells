@@ -572,6 +572,34 @@ def test_a_shell_s_rates_follow_its_declared_conductance_alone():
     assert run.closure["holds"] and run.verdict == verdict
 
 
+def test_a_shell_run_records_the_shell_probe_in_both_modes(tmp_path, monkeypatch):
+    """A review finding of 20 November: a shell's population run took the bilayer's probe. Now a
+    single-lineage run and a one-slot population run of shell_world() each record the shell probe's
+    verdict, in the run and in run.json's check.probe after a write and a read, and neither writes
+    the bilayer's footprint rows. Planted: the bilayer's probe in population mode is caught. Two
+    short compiled runs (0.001 s, capacity 64), since the verdict is the run's own record."""
+    verdict = balance.shell_verdict()
+
+    def population_spec():
+        w = shell_world()
+        slot = {k: v for k, v in w["founder"].items() if not k.endswith("@pool")}
+        w["founder"] = {k: (v if k.endswith("@pool") else 0) for k, v in w["founder"].items()}
+        w["population"] = {"structure": SHARED_POOL, "slots": 1, "founders": [slot]}
+        d = definition(w, molecules=64, horizon=0.001, event_limit=500)
+        d["execution"]["mode"] = "population"
+        return parse_spec(d)
+
+    single = parse_spec(definition(shell_world(), molecules=64, horizon=0.001, event_limit=500))
+    for name, spec in (("single", single), ("population", population_spec())):
+        run = runner.run(spec).check()
+        records.write_run(tmp_path / name, run)
+        _, run_json, arrays = records.read(tmp_path / name)
+        assert run.verdict == verdict and run_json["check"]["probe"] == verdict, name
+        assert "membrane_footprint_quanta" not in arrays, name
+    monkeypatch.setattr(balance, "shell_verdict", balance.geometry_verdict)  # planted
+    assert runner.run(population_spec()).check().verdict != verdict
+
+
 SHELL_REFUSALS = {
     "a join on a shell": (
         lambda w: w["steps"].append({"id": "join", "locus": "membrane",
