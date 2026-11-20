@@ -2285,7 +2285,18 @@ def probe(read, potentials, control, p, *, xp=np):
         modes.pi_plus = xp.where(is_diagram, xp.exp(d.log_plus), nan)
         modes.pi_minus = xp.where(is_diagram, xp.exp(d.log_minus), nan)
         modes.share = xp.where(is_diagram, xp.exp(d.log_share), nan)
-        carriers = xp.exp(xp.log(xp.maximum(p.cycle_capacity_fmol_s * control.cycle_availability, 1e-300)) - p.cycle_dg_log_scale)
+        # ln(k a) as the material path reads it where k a is not a normal number (ln k + ln a under
+        # its switch); ln(k a) itself elsewhere, so every ordinary world keeps its bits. A floor at
+        # 1e-300 here over-reported a 1e-302 population's turnover a hundredfold (the Lean
+        # project's eight-state record, 20 November 2026).
+        k, a = p.cycle_capacity_fmol_s, control.cycle_availability
+        normal = k * a >= np.finfo(np.float64).tiny
+        log_ka = xp.where(
+            normal,
+            xp.log(xp.where(normal, k * a, 1.0)),
+            xp.log(xp.where(e.enabled, k, 1.0)) + xp.log(xp.where(e.enabled, a, 1.0)),
+        )
+        carriers = xp.exp(log_ka - p.cycle_dg_log_scale)
         carriers = xp.where(e.enabled, carriers, 0.0)  # The solver's switch: off carries nothing.
         modes.j_minus_diagram = xp.where(is_diagram, carriers[None] * xp.exp(d.log_minus + d.log_share), nan)
         n_edges = p.cycle_dg_edge_present.shape[0]

@@ -547,6 +547,23 @@ def test_the_probe_is_the_runs_own_arithmetic_with_its_slopes_against_difference
     off = transporter.probe(state, v, control, closed, xp=np)
     assert not np.any(off.modes.j) and not np.any(off.edges.net_fmol_s)
     assert not np.any(np.nan_to_num(off.modes.j_minus_diagram))
+    # The diagram's carriers read k a as the material path does (the Lean project's eight-state
+    # finding): at this world's k a, the formula before the fix, bit for bit; at k a = 1e-302 the
+    # reverse cycle flux is the material J-, where the old floor at 1e-300 read it 100 times over.
+    diagram = transporter._evaluate(state, v, control, p, xp=np).diagram
+    dg = (p.cycle_form == transporter.FORM_CODES["diagram"])[None, :] & p.cycle_mode_present
+    per_carrier = np.exp(diagram.log_minus + diagram.log_share)
+
+    def floored(ka):
+        return np.exp(np.log(np.maximum(ka, 1e-300)) - p.cycle_dg_log_scale)[None, :] * per_carrier
+
+    ka = p.cycle_capacity_fmol_s * control.cycle_availability
+    np.testing.assert_array_equal(pr.modes.j_minus_diagram[dg], floored(ka)[dg])
+    low = p._replace(cycle_capacity_fmol_s=np.full_like(p.cycle_capacity_fmol_s, 1e-302))
+    tiny = transporter.probe(state, v, control, low, xp=np)
+    np.testing.assert_allclose(tiny.modes.j_minus_diagram[dg], tiny.modes.j_minus[dg], rtol=1e-9)
+    planted = floored(1e-302 * control.cycle_availability)[dg] / tiny.modes.j_minus[dg]
+    np.testing.assert_allclose(planted, 100.0, rtol=1e-9)
     fd_modes = p.cycle_form[None, :] != transporter.FORM_CODES["net_flow"]
     on = fd_modes & p.cycle_mode_present
     gap = np.abs(np.where(on, pr.modes.j_plus - pr.modes.j_minus - pr.modes.j, 0.0))
