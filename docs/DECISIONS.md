@@ -8123,3 +8123,23 @@ lead with the advisor.
 4. **FR-30 is raised to high.** FR-16's connexin catalogue (F3 of the gap-junction cancer replication)
    names per-connexin constants, homotypic and heterotypic, and the preprint turns on heterotypic
    Cx43/Cx45, so FR-30 inherits D225 as part of FR-16. D248 is corrected accordingly.
+
+## D250: FR-7's Kir2.1 comparison registers a band over the Kir share
+
+2026-11-20, about 21:34 UTC. The Kir2.1 source gives the abundance-to-current link (Fig. 3E
+against Fig. 3G), but not the Kir share of the resting conductance. The lead offered two options:
+(a) register a band over that share, or (b) calibrate the background on wild type's voltage. The
+user: "lets go with your and adivsor recommendatoin for the Kir".
+
+- **The choice is (a).** The registration fixes a band [s_lo, s_hi] over the Kir share and the
+  background's reversal E_b before any computation. The prediction is then a band on the
+  K346T-minus-wild-type voltage contrast. It fails only if the published contrast (about −5.5 mV,
+  combined SEM about 1.0 mV) falls outside the band.
+- **This keeps D241's terms:** the abundance-to-conductance conversion uses neither voltage mean.
+  It is fixed from Fig. 3G's current ratio (2.03) against Fig. 3E's abundance ratio (1.64), with
+  both arms given the same rectification.
+- **Registered first:** the test of abundance against current, which needs no voltage. It is
+  disclosed as retrospective, since both ratios were computed while planning, and it can fail only
+  for a discrepancy above about 2.9-fold.
+- **The judged run stays pending** on the protein-to-surface-unit mapping and FR-8's timing (D241).
+  A steady-state start, with the engine run as a drift check, avoids the latter.
