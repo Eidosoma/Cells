@@ -326,4 +326,5 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
     `node:pool` and `sink:discard`, and, per species with a count, a `removes_to` edge from
     `node:pool` to the sink and a `supplies` edge from the source to `node:pool`, each weighed by
     its count at the event (mode `event`);
-  - a world without a replacement writes none of these.
+  - a world without a replacement writes none of these, but for the `row_kind` legend in
+    `run.json`, which lists `replacement` for every population.

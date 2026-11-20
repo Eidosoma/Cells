@@ -162,6 +162,19 @@ def parse_schedules(raw, world):
             stress = finite_number(entry["stress_Pa"], "experiment: schedule stress_Pa")
         out.append(Schedule(index, "shear", k, times, rate, stress))
     out.sort(key=lambda s: s.index)
+    # FR-20: a replacement never shares a declared time with another stop, since cells.relations
+    # has no order between same-time events (the lead's condition of 20 November).
+    for s in out:
+        if s.kind != "replacement":
+            continue
+        for other in out:
+            shared = set(s.times) & set(other.times or ()) if other is not s else set()
+            if shared:
+                raise ConfigError(
+                    f"experiment: replacement {s.index} shares the time {min(shared)} s with "
+                    f"schedule {other.index} ({other.kind}); relations have no order between "
+                    "same-time events, so a replacement stands alone in time"
+                )
     first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
     for s in out:
         index = s.index

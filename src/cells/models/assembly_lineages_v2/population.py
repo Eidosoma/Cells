@@ -485,6 +485,7 @@ def run(spec, *, start=None, stop=None):
     founders = world.population["founders"]
     horizon = spec.experiment.time_horizon_s
     plan, schedule_draws = single._plan(spec, layout.base_key)
+    _refuse_shared_replacements(spec, plan)
     world_f = _energy(spec, layout)
     if admitted is None:
         slots = np.zeros((K, P), dtype=np.int64)
@@ -736,6 +737,19 @@ def _transfer(spec, layout, state, ctx, world_f, time, schedule, n_events):
     ctx.stops.append((n_events, TRANSFER, time, state.copy(), ctx.extra.copy()))
 
 
+def _refuse_shared_replacements(spec, plan):
+    """FR-20: a replacement stands alone in time. Declared times are refused at parse
+    (division.parse_schedules); a Poisson shear drawn at a replacement's time is refused here, on
+    the grouped plan, before the first event."""
+    kinds = {s.index: s.kind for s in spec.experiment.schedules}
+    for time, events in plan:
+        if len(events) > 1 and any(kinds[e[1]] == "replacement" for e in events):
+            raise ConfigError(
+                f"A replacement shares the time {time} s with another stop (a Poisson shear); "
+                "relations have no order between same-time events"
+            )
+
+
 def _replace(spec, state, ctx, world_f, time, schedule, n_events):
     """A pool replacement on the host (replacement.py): every slot kept as it stands; the pool's
     finite places take the declared composition; the sink takes F of the old pool, the schedule's
@@ -743,6 +757,11 @@ def _replace(spec, state, ctx, world_f, time, schedule, n_events):
     from cells.models.assembly_lineages_v2 import replacement, transfer
 
     world = spec.model.world
+    if any(record["time_s"] == time for record in ctx.lyses):
+        raise ConfigError(
+            f"A lysis at {time} s, the time of replacement {schedule.index}: relations have no "
+            "order between same-time events"
+        )
     empty = state.copy()
     empty.alive[:] = False
     old_f, old = world_f(empty), state.pool.copy()
