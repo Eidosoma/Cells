@@ -8,15 +8,28 @@ volume, exp(0.2) at +20% with s = 1 (Lew et al. 1991), about 5x with s = 0.12
 capacity and back. NumPy and JAX agree; invalid inputs fail domain_valid. The
 independent reduced reference's transcription (validation/tissue/
 pump_water_reference.kcc_cycles) gives the same cycles.
+
+The operator's step bound (one table, each row a claim with its plant; the independent Lean
+project's finding of 19 November 2026, lean/PROGRESS.md): a finite outside node's concentrations
+and volume enter the route's relaxation rate, each volume its own, a held bath adds nothing, and
+routes that share a node add their rates there.
 """
+
+import contextlib
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from cells.definitions.pump_composite_spec import frozen_definition
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.runner import timeline
 from cells.laws.electrochemistry import R
 from cells.laws.routes import k_anion_symport as law
+from cells.operators import k_anion_symport as operator
+from cells.registry.models import get_model
+from validation.tissue import pump_water_fixtures as fixture
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -104,3 +117,201 @@ def test_reference_transcription_gives_the_same_cycles():
         *c, volume, dict(capacity_fmol_s_mM2=k, set_volume_pL=0.75, steepness=s, availability=a)
     )
     np.testing.assert_allclose(engine.cycles_fmol_s, expected, rtol=1e-13, atol=0)
+
+
+# ------------------------------------------------------------------ the step bound and its plants
+
+# The Lean finding's closed pair: (K_i, A_i, K_o, A_o) in mM, one 1 pL cell and one outside node.
+NEAR_STALL = (4.0, 4.0, 128.0, 0.125 - 2.0**-20)
+ORDINARY = (40.0, 15.0, 10.0, 20.0)
+REFUSED = "Symport rate exceeds the explicit-rate bound"
+
+
+def closed_pair(concentrations, steps, *, duration=0.01, capacity=2.5, volumes=(1.0, 1.0),
+                held=False, routes=1):  # fmt: skip
+    """The pair of lean/checks/potassium_anion_symport.py: water and every other membrane transfer
+    closed, a route of steepness 10 on each of `routes` identical patches between the cell and the
+    outside node (the second without a pump or channels). The outside node is finite (and the
+    gauge), or the cell's held bath; each node's amounts are its concentrations times its volume
+    (pL)."""
+    dt = duration / steps
+    raw = fixture.heredity_cell("D", dt=dt, end_time=duration, observation_times=[0.0, duration])
+    model, experiment = raw["model"], raw["experiment"]
+    cell, outside = model["cells"][0], model["extracellular"][0]
+    for i in range(1, routes):
+        model["membranes"].append(dict(model["membranes"][0], id=f"membrane_{i}", pump=None))
+        experiment["membrane_controls"].append(
+            dict(membrane_id=f"membrane_{i}", schedule=[dict(time=0.0, availability=0.0)])
+        )
+    raw["execution"]["membrane_capacity"] = routes
+    if not held:
+        outside["reservoir"] = False
+        model["closure"]["gauge_reference"] = outside["id"]
+    ki, ai, ko, ao = concentrations
+    for node, k, a, v in ((cell, ki, ai, volumes[0]), (outside, ko, ao, volumes[1])):
+        node.update(
+            volume_pL=v,
+            initial_amount_fmol=dict(Na=30.0 * v, K=k * v, M=a * v, P=30.0 * v),
+            fixed_charge_equivalent_fmol=(a - k) * v,
+            initial_charge_C=0.0,
+        )
+    for key in ("membrane_controls", "channel_controls", "pump_controls"):
+        for control in experiment[key]:
+            control["schedule"][0]["availability"] = 0.0
+    raw = fixture.with_symport(fixture.with_water(raw, availability=0.0), steepness=10.0)
+    for route in raw["model"]["symport"]["routes"]:
+        route["capacity_fmol_s_mM2"] = capacity
+    return parse_spec(frozen_definition(raw))
+
+
+def admitted(spec):
+    """The runner's grid check (timeline): True, or False on the symport's refusal (any other
+    refusal is raised, so a row tests this bound alone)."""
+    try:
+        timeline(spec)
+    except ConfigError as error:
+        if REFUSED not in str(error):
+            raise
+        return False
+    return True
+
+
+def rate(spec):
+    return operator.route_rate(spec, get_model(spec.model))
+
+
+def factor_at_maximum(spec):
+    """f at the declared maximum volume (with_water's 2 V_i), as the bound reads it."""
+    route = spec.model.operators[-1].routes[0]
+    q = law.Parameters(route.capacity_fmol_s_mM2, route.set_volume_pL, route.steepness)
+    return float(law.volume_factor(2.0 * spec.model.cells[0].volume_pL, q, xp=np))
+
+
+def inside_only_rate(spec):
+    """The bound as it landed before 20 November 2026: k f (K_i + A_i) / V_i, transcribed."""
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    cells = np.asarray(p.membrane_cell)
+    k, a = int(p.symport_potassium_species), int(p.symport_anion_species)
+    ci = (p.amount_reference + state.amount_increment) / p.volume
+    vmax = p.water_maximum_volume_pL[cells]
+    f = np.exp((vmax - p.symport_set_volume_pL) / (p.symport_steepness * p.symport_set_volume_pL))
+    rate = p.symport_capacity_fmol_s_mM2 * f * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
+    return np.max(np.where(p.symport_route & p.membrane_active, rate, 0.0), initial=0.0)
+
+
+def outside_sums(state, p, k, a, mask):
+    """[membrane] K_o + A_o (mM) at each patch's outside node where mask holds, else 0."""
+    volume = np.where(mask, p.extracellular_volume, 1.0)
+    co = (p.extracellular_amount_reference + state.extracellular_amount_increment) / volume
+    return np.where(mask, co[k] + co[a], 0.0)[np.asarray(p.membrane_outside)]
+
+
+def no_outside_term(state, p, k, a):  # Planted: the inside-only rate (the finding's bound).
+    return np.zeros(np.shape(p.membrane_outside))
+
+
+def cell_volume_term(state, p, k, a):  # Planted: the equal-volume form, (K_o + A_o) / V_i.
+    finite = np.asarray(p.outside_active & ~p.reservoir)
+    return outside_sums(state, p, k, a, finite) / p.volume[np.asarray(p.membrane_cell)]
+
+
+def unmasked_term(state, p, k, a):  # Planted: a held bath's concentrations counted.
+    active = np.asarray(p.outside_active)
+    return (
+        outside_sums(state, p, k, a, active)
+        / np.where(active, p.extracellular_volume, 1.0)[np.asarray(p.membrane_outside)]
+    )
+
+
+def per_route_sums(scale, p):  # Planted: each route alone, as if no node were shared.
+    return scale, scale
+
+
+@contextlib.contextmanager
+def replaced(name, replacement):
+    """An operator function replaced for the block (a plant)."""
+    saved = getattr(operator, name)
+    setattr(operator, name, replacement)
+    try:
+        yield
+    finally:
+        setattr(operator, name, saved)
+
+
+def close(a, b, ulps):
+    """|a - b| <= ulps ulps of the larger (0: bit for bit), never at a NaN or an inf."""
+    a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+    if not ulps:
+        return a.tobytes() == b.tobytes()
+    spacing = np.spacing(np.maximum(np.abs(a), np.abs(b)))
+    return bool(np.all(np.isfinite(a) & np.isfinite(b) & (np.abs(a - b) <= ulps * spacing)))
+
+
+def bound_failures(row):
+    """The claims a row breaks, by name, with the operator as it stands."""
+    out = []
+    if row == "lean_pair":
+        # One 10 ms step: h x rate = 0.01 x 2.5 f(2 V) x (4 + 4 + 128 + 0.125 - 2^-20) / 1 pL, about
+        # 3.76 (3.40 at the set volume, the note's value), so refused; 32 steps over 10 ms admitted.
+        one, many = closed_pair(NEAR_STALL, 1), closed_pair(NEAR_STALL, 32)
+        expected = 2.5 * factor_at_maximum(one) * sum(NEAR_STALL) / 1.0
+        if not close(rate(one), expected, 4):
+            out.append(f"rate {rate(one)!r} against {expected!r}")
+        if admitted(one):
+            out.append("one 10 ms step admitted")
+        if not admitted(many):
+            out.append("32 steps refused")
+    elif row == "unequal_volumes":
+        # V_i = 1 pL, V_o = 0.25 pL: (K_i + A_i) / V_i + (K_o + A_o) / V_o = 55 + 120 = 175 per pL,
+        # against 85 if V_o were V_i. The step puts h x rate at 1.2: refused, and 1.2 x 85 / 175 =
+        # 0.58 under the equal-volume form.
+        probe = closed_pair(ORDINARY, 1, volumes=(1.0, 0.25))
+        per_pL = (40.0 + 15.0) / 1.0 + (10.0 + 20.0) / 0.25
+        expected = 2.5 * factor_at_maximum(probe) * per_pL
+        if not close(rate(probe), expected, 4):
+            out.append(f"rate {rate(probe)!r} against {expected!r}")
+        step = 1.2 / expected
+        if admitted(closed_pair(ORDINARY, 1, duration=step, volumes=(1.0, 0.25))):
+            out.append("h x rate = 1.2 admitted")
+        if not admitted(closed_pair(ORDINARY, 1, duration=0.8 / expected, volumes=(1.0, 0.25))):
+            out.append("h x rate = 0.8 refused")
+    elif row == "shared_node":
+        # Two identical routes on one cell and one finite node: each node's term carries both
+        # routes' k f, so the rate is twice one route's. The step puts h x rate at 1.2: refused,
+        # and 0.6 if each route were counted alone.
+        probe = closed_pair(NEAR_STALL, 1, routes=2)
+        expected = 2.0 * 2.5 * factor_at_maximum(probe) * sum(NEAR_STALL) / 1.0
+        if not close(rate(probe), expected, 4):
+            out.append(f"rate {rate(probe)!r} against {expected!r}")
+        if admitted(closed_pair(NEAR_STALL, 1, duration=1.2 / expected, routes=2)):
+            out.append("h x rate = 1.2 admitted")
+        if not admitted(closed_pair(NEAR_STALL, 1, duration=0.8 / expected, routes=2)):
+            out.append("h x rate = 0.8 refused")
+    elif row == "held_bath":
+        # The same pair with the cell's held bath outside: the rate is the inside-only bound's, bit
+        # for bit (every registered symport world faces held baths, 20 November 2026).
+        for concentrations, volumes in ((ORDINARY, (1.0, 0.25)), (NEAR_STALL, (1.0, 1.0))):
+            spec = closed_pair(concentrations, 1, volumes=volumes, held=True)
+            if not close(rate(spec), inside_only_rate(spec), 0):
+                out.append(
+                    f"held bath {concentrations}: {rate(spec)!r} != {inside_only_rate(spec)!r}"
+                )
+    return out
+
+
+BOUND = (  # Each plant a context: an operator function replaced.
+    pytest.param("lean_pair", lambda: replaced("outside_term", no_outside_term), id="lean_pair"),
+    pytest.param(
+        "unequal_volumes", lambda: replaced("outside_term", cell_volume_term), id="unequal_volumes"
+    ),
+    pytest.param("shared_node", lambda: replaced("node_sums", per_route_sums), id="shared_node"),
+    pytest.param("held_bath", lambda: replaced("outside_term", unmasked_term), id="held_bath"),
+)
+
+
+@pytest.mark.parametrize("row, plant", BOUND)
+def test_the_step_bound_reads_a_finite_outside_node_and_each_plant_breaks_it(row, plant):
+    assert bound_failures(row) == []
+    with plant():
+        assert bound_failures(row) != []
