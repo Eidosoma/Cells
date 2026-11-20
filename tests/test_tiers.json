@@ -266,7 +266,8 @@
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json",
   "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
-  "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json"
+  "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json",
+  "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-09659867/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2249,6 +2250,14 @@
    "root": ".claude/worktrees/kcc-overflow-log",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T18:27:13+00:00"
+  },
+  {
+   "git_revision": "096598677b601e3197e9e28e9ab37953ef8465eb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-09659867/snapshot-head-09659867",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T17:28:58+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6230,6 +6239,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_exchange_current_area_runs.py",
+    "seconds": 29.41,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
