@@ -434,6 +434,13 @@ test("the gathering reads a verdict's own count, day and revision, and the recor
     assert.deepEqual([named.verdict.passed, named.verdict.count.passed, named.verdict.count.of, named.verdict.snapshot.revision], [true, 2, 2, "4".repeat(40)]);
     assert.deepEqual([parts.verdict.passed, parts.verdict.count.passed, parts.verdict.count.of], [false, 1, 2]);
     assert.deepEqual(parts.verdict.count.from.files, [["part-a", "Q1.json"], ["part-b", "Q2.json"]]);
+    // A comparison's own numbers (FR-7's F4): each named table's compared and failed, or each quantity's, summed; its
+    // day and its snapshot's revision as its RUN.txt writes them; the record's "All 11 rows" confirms the count.
+    const compared = fr1.record[5];
+    assert.deepEqual([compared.verdict.passed, compared.verdict.count.passed, compared.verdict.count.of, compared.verdict.count.unit], [true, 11, 11, "compared rows"]);
+    assert.match(compared.verdict.count.from.field, /^arm_a\.quantities and arm_b\.quantities and persistence: each quantity's compared and failed numbers, summed/);
+    assert.deepEqual(compared.verdict.count.confirmed_by.map((item) => item.says), ["All 11 rows"]);
+    assert.deepEqual([compared.verdict.day.date, compared.verdict.snapshot.revision], ["2026-11-10", "4".repeat(40)]);
     // The gathering lists the record's judged entries by their leads, the registration among them, for placing.
     const listed = JSON.parse(readFileSync(path.join(folder, "readings.json"), "utf8")).judged_entries;
     assert.ok(listed.includes("A fixture qualification: FAIL (10 November).") && listed.some((lead) => lead.startsWith("The fixture's protocol registered")), listed.join(" | "));
@@ -509,6 +516,11 @@ test("the gathering refuses a path of a machine in words it would carry, a parag
       const file = path.join(folder, "source.json");
       writeFileSync(file, readFileSync(file, "utf8").replace('"within": ["judged", "run-a"]', '"within": ["judged/run-a"]'));
     }, /folder by folder/],
+    // A comparison that says it passed while a table it counts states a failed row.
+    [(folder) => {
+      const file = path.join(folder, "evidence", "fixture-compared", "comparison.json");
+      writeFileSync(file, readFileSync(file, "utf8").replace('"y": {"compared": 2, "failed": 0', '"y": {"compared": 2, "failed": 1'));
+    }, /passes with 1 rows failed/],
   ];
   for (const [change, refusal] of cases) {
     const folder = fixtureCopy(change);

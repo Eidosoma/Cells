@@ -421,10 +421,10 @@ def overall_of(obj):
     return None
 
 
-READERS = ("criteria", "items", "list", "named", "rows", "tally", "one")
+READERS = ("criteria", "items", "list", "named", "rows", "tally", "compared", "one")
 
 
-def counted(data, how: str, at: str | None, where: str, tally=None):
+def counted(data, how: str, at: str | None, where: str, tally=None, tables=None):
     """A verdict's own tally: (passed, of, not evaluable, the field it came from, the run passed). Each reader counts what
     its layout of verdict file holds and nothing else:
     criteria  a list of criteria, those whose judged is true;
@@ -433,6 +433,8 @@ def counted(data, how: str, at: str | None, where: str, tally=None):
     named     a mapping of names to a verdict, each "pass"/"fail" or an object with its verdict (the rest skipped);
     rows      a mapping of rows, with its tally;
     tally     the file's own passed, failed and not evaluable numbers (`tally` names its fields);
+    compared  a comparison's own tables (`tables`, dotted paths): each table's `compared` and `failed` numbers, or,
+              in a table of quantities, each quantity's; of is their compared, passed their compared less failed;
     one       a single verdict: one judged item."""
     prefix = f"{at}." if at and how not in ("list", "named") else (f"{at}: " if at else "")
     obj = dig(data, at, where) if (at and how not in ("list", "named")) else data
@@ -490,6 +492,30 @@ def counted(data, how: str, at: str | None, where: str, tally=None):
         overall = overall_of(obj)
         if overall is True and (failed or not_evaluable):
             raise Breach(f"{where}: the verdict passes with {failed} failed")
+    elif how == "compared":
+        # A comparison file that states, per table or per quantity of a table, how many rows it compared and how many
+        # failed (FR-7's F4: closed.quantities, clamped.quantities, persistence). Only those numbers are counted.
+        if not tables:
+            raise Breach(f"{where}: the compared reader names its tables")
+        compared = failed = 0
+        for name in tables:
+            table = dig(data, name, where)
+            if not isinstance(table, dict):
+                raise Breach(f"{where}: {name} is not a table")
+            rows = [table] if "compared" in table else list(table.values())
+            for row in rows:
+                if not (isinstance(row, dict) and all(isinstance(row.get(key), int) and not isinstance(row.get(key), bool) for key in ("compared", "failed"))):
+                    raise Breach(f"{where}: {name} states no compared and failed numbers")
+                if not 0 <= row["failed"] <= row["compared"]:
+                    raise Breach(f"{where}: {name} fails {row['failed']} of {row['compared']}")
+                compared += row["compared"]
+                failed += row["failed"]
+        passed = compared - failed
+        judged = range(compared)  # its length is the count; a list of that many items is never built
+        field = " and ".join(tables) + ": " + ("each quantity's" if any("compared" not in dig(data, name, where) for name in tables) else "its") + " compared and failed numbers, summed (passed: compared less failed)"
+        overall = overall_of(data)
+        if overall is True and failed:
+            raise Breach(f"{where}: the comparison passes with {failed} rows failed")
     elif how == "one":
         judged = [obj]
         overall = overall_of(obj)
@@ -501,7 +527,7 @@ def counted(data, how: str, at: str | None, where: str, tally=None):
         raise Breach(f"{where}: the verdict states no passed")
     if not judged:
         raise Breach(f"{where}: nothing judged")
-    if how != "tally" and overall != (passed == len(judged)):
+    if how not in ("tally", "compared") and overall != (passed == len(judged)):
         raise Breach(f"{where}: the verdict says passed {overall} with {passed} of {len(judged)}")
     return passed, len(judged), not_evaluable, field, overall
 
@@ -577,7 +603,7 @@ def gather_entry(locator, roots, main, evidence: Evidence | None, repository: Re
         datas = [read_json(evidence.path(run["evidence"], run["within"], name, where)) for name in files]
         if len(datas) == 1:
             data = datas[0]
-            passed, of, not_evaluable, field, overall = counted(data, verdict["read"], verdict.get("at"), where, verdict.get("tally"))
+            passed, of, not_evaluable, field, overall = counted(data, verdict["read"], verdict.get("at"), where, verdict.get("tally"), verdict.get("tables"))
         else:
             # Several files, each one verdict (at `at`): the count is of the files whose verdict passed.
             data = datas[0]

@@ -3,11 +3,11 @@
  "note": "The Experiments landing's cards, built by tools/build_cards.py from data/replays/cards.source.json (what is typed), the Engine map's overlay, the catalogue's overlay and selection, the model-system entries, and data/replays/cards.readings.json (what was read from the record). Not edited by hand: schema/EXPERIMENT_CARDS.md.",
  "built_from": {
   "map": {
-   "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
-   "as_of": "2026-11-19"
+   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+   "as_of": "2026-11-20"
   },
   "record": {
-   "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
   }
  },
  "bands": [
@@ -50,6 +50,7 @@
     "fr4",
     "fr5",
     "fr6",
+    "fr7",
     "fr10",
     "mg0",
     "mg0c",
@@ -123,83 +124,98 @@
     "label": "Gap-junction networks and tumour tissue (development)",
     "status": null,
     "level": null,
-    "as_of": "2026-11-19",
-    "says": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. On 19 November 2026 charged species in the species operators, which the work's microRNA needs, were scheduled into the core pass as a general feature, starting with a diagnosis (FR-15's F2 part; D226, D228 item 4). Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
+    "as_of": "2026-11-20",
+    "says": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. On 19 November 2026 charged species in the species operators, which the work's microRNA needs, were scheduled into the core pass as a general feature, starting with a diagnosis (FR-15's F2 part; D226, D228 item 4). By 20 November 2026 its first two steps had landed as general features: charged species in the reactions operator, where every reaction conserves charge, and a charged constant-field route law on the passive routes, on membranes first; hosting it on junctions waits for two answers from the tissue model's owner. Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
     "sources": [
      {
       "path": "PROGRESS.md",
       "where": "The gap-junction replication's first stage, on main (17 November 2026, evening; D207)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
       "where": "Status: development work, not judged (D138).",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D207: The gap-junction replication has the highest priority",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Landed on main, 17 November",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "F1, narrower than first reported.",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The gap-junction tissue threshold, rerun after FR-19's fix (17 November 2026, night)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D213: The tissue search reruns now; the core pass restarts through retire, then move 2",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The gap-junction tissue line, dense records, and the sheet (17 November 2026, night)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The coupling ladder",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D219: The gap-junction replication's next bundle and two judged comparisons",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/GAP_JUNCTION_CANCER_REPLICATION.md",
       "where": "The user's answers (18 November 2026; D219).",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D222: Core and FRs first",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "crossrev's replication set, merged at 460d766d",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CORE_SEAMS_DESIGN.md",
       "where": "The replication set's baseline is fixed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D228: Gaps found by real use cases are prioritised as general engine features",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "F2's direction (the lead's rulings of 19 November 2026): S1 + P2.",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr15-p2-landed-2026-11-20",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [],
@@ -352,32 +368,32 @@
      {
       "path": "visualizer/docs/ORIGIN_OF_LIFE.md",
       "where": "Its opening: the user's request of 16 November 2026; Decided; and Status",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/GARD_DESIGN.md",
       "where": "Status: DECIDED, 16 November 2026 (D192)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D192, the design choices; D194, the order; D197, GARD is one law set, for comparison only",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "GARD's G1, part 1, merged into main (17 November 2026, afternoon)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "GARD's G1, part 2, on main (17 November 2026, evening)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D199: The origin-of-life engine's first decisions, and relationship tracking",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ]
    },
@@ -431,21 +447,21 @@
      {
       "path": "PROGRESS.md",
       "where": "E07-v1 judged (13–14 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/E07_V1_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -476,7 +492,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "E07-v1 judged (13–14 November): under donor-copy turnover the written disc did not renew",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -526,72 +542,72 @@
     "sources": [
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.1 Version 1.1: refusal 4 for the admitted kinds",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.2 Version 1.2: the routing door's source kinds",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-1 judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Judged (numerically qualified, CPU only, each within its scope line)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "Qualified, 18 November 2026.",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "The later doors (creation, division, fission and fusion, retirement) with seam B and the mitochondria work",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.4 Version 1.3: refusal 4 per move",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.5 Refusal 5 version 1.2",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -602,14 +618,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-1 judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: cell_owned_compartments@1 with exchange@1, turnover@1 and local_species_reactions@1 as built at 05a8d193: the neutral first version, ARS at 1 ms and RK4 at 0.1 ms. V_b's orientation is not shown, and a dropped -1 in G has power only in C6.",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-1 judged: passed (18 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -653,7 +669,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-1 judged: passed (18 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "44 of 44 judged criteria"
         }
        ]
@@ -712,41 +728,41 @@
     "sources": [
      {
       "path": "docs/SITE_OCCUPANCY_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-3",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-3's independent site-occupancy references landed (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-3 judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Judged (numerically qualified, CPU only, each within its scope line)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/SITE_OCCUPANCY_DESIGN.md",
       "where": "Qualified, 18 November 2026.",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_site_occupancy_estimate.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [
@@ -759,14 +775,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-3 judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: site_occupancy@1 as built at 1b838d75, version 1's face-free first acceptance (one neutral, impermeant ligand; patch populations outward and inward; site-conserving internalisation; a static alpha; ARS(2,2,2) at 1 ms). Not shown: contact populations in a run, composition with D150's or D152's operators, faces, RK4, site occupancy beside a bath schedule (refused), the per-law R-dG test and the references' zero-power cases.",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-3 judged: passed (18 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -810,7 +826,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-3 judged: passed (18 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "51 of 51 judged criteria"
         }
        ]
@@ -869,96 +885,96 @@
     "sources": [
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-4",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/INNER_MODEL_V4_DESIGN.md",
       "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4's and the passive law's independent references landed (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/compartment_ph/REFERENCES_USAGE.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round on the evening of 15 November 2026",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Now, after the landing, in order",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "README.md",
       "where": "Where things stand (17 November 2026): Engine restructure",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
       "where": "7.3 The implicit patch: design",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Feature requests (D157–D167)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
       "where": "FR-4 is built and on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4 and FR-5 judged: both passed (17 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Judged (numerically qualified, CPU only, each within its scope line)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "Done: fr4-acidification-v1 judged on 17 November 2026",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -970,14 +986,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-4",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: cell_owned_compartments@1 as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-4 and FR-5 judged: both passed (17 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -1013,7 +1029,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-4",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "21 of 21 judged criteria"
         }
        ]
@@ -1078,101 +1094,101 @@
     "sources": [
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-5",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D176: The modular rework proceeds, with FR-4 and FR-5 as its priority consumers",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/INNER_MODEL_V4_DESIGN.md",
       "where": "15.4 What FR-4, FR-5 and Track E's M3 each wait on",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-5's and the finite-fuel case's independent references landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/compartment_ph/REFERENCES_USAGE.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Now, after the landing, in order",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "core-next merged into main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "fr45-next merged into main (16 November 2026, evening): FR-4 and FR-5 on the landed core",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
       "where": "16. FR-5 on the kind interface",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.2 Version 1.2: the routing door's source kinds",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.3 Refusal 5 version 1.1: the charge anchor where charged routes are admitted",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/COMPARTMENT_PH_TRANSFER_DESIGN.md",
       "where": "built and on main since fr45-next merged (16 November), for development, not judged",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "README.md",
       "where": "Engine restructure",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-5's dt study: the development reading passes (16 November 2026, late evening)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4's and FR-5's protocols registered (17 November 2026, late afternoon), before any judged",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4's and FR-5's rehearsals pass, on registered dry-run copies (17 November 2026",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-4 and FR-5 judged: both passed (17 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Judged (numerically qualified, CPU only, each within its scope line)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "fr5-transfer-v1, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -1184,14 +1200,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-5",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: cell_owned_compartments@1 as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1).",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-4 and FR-5 judged: both passed (17 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -1227,7 +1243,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-4 and FR-5 judged: both passed (17 November 2026); FR-5",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "51 of 51"
         }
        ]
@@ -1288,91 +1304,101 @@
      "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
     },
     "as_of": "2026-11-18",
-    "says": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Its core prerequisites, B1's lifecycle driven by roles and the kinds' declarations, landed on 19 November 2026; nothing of the loop is built, and building it is next.",
+    "says": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Its core prerequisites, B1's lifecycle driven by roles and the kinds' declarations, landed on 19 November 2026, and the loop's pieces followed on 19 and 20 November 2026: the coupling operator's version 2, with the rate route and a population's abundance as a source, and a unit producer. FR-7's first closed loop was judged on 20 November 2026 and passed (a part of its own, Abundance to function (FR-7)); that verdict is FR-7's, in its own scope, and adds nothing to this part's scope line.",
     "sources": [
      {
       "path": "docs/INVENTORY_COUPLING_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The coupling operator `species_regulated_availability@1` is numerically qualified (judged,",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The coupling operator `species_regulated_availability@1` (D155/D156): milestone 1 landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Combined landing (14 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The inventory-coupling design (D155 item 1, scoped by D156) is accepted",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D155 and D156",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Status on 14 November 2026, and the working order (D156)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-6",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "qualified for gate-free channel populations",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-6's A5″ judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/INVENTORY_COUPLING_DESIGN.md",
       "where": "A5″ qualified, 18 November 2026 (FR-6 items 1 and 3)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
       "where": "Status: proposed, 18 November 2026, for the lead and the user (D216)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "Amended 18 November (the lead). FR-7's design note found that B1 as written covers",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D218: D145's hold, narrowed again: physical production feedback through the one routing door",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
       "where": "9. The user's answers (18 November 2026; D217, D218)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-7",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -1383,14 +1409,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-6's A5″ judged: passed (18 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: species_regulated_availability@1 with hill_regulated_two_state@1 and D150's turnover as built at 555d8771: two pump-free 2 pL cells over 2 s, synthetic values, CPU only. Zero power: a state reading the other cell's regulator (both cells get the same dose) and the references' basal control in V at 1 and 0.5 ms. Not covered: gated channels (A5′), the routing door, leak and pump targets, any biological comparison.",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-6's A5″ judged: passed (18 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -1434,7 +1460,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-6's A5″ judged: passed (18 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "18 of 18 judged criteria"
         }
        ]
@@ -1475,14 +1501,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "The scope: CPU only, in version 1; A4 starts from the reference's state at 50 ms and sits at the explicit-rate bound's edge; the horizons are 2 s and 1 s; no pumps or gated channels; A10 is out of scope.",
       "source": {
        "path": "PROGRESS.md",
        "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026); The scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -1513,7 +1539,7 @@
         {
          "path": "PROGRESS.md",
          "where": "The coupling operator species_regulated_availability@1 is numerically qualified (judged, 15 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "all 47 judged criteria"
         }
        ]
@@ -1551,6 +1577,244 @@
    "rerun": null
   },
   {
+   "id": "fr7",
+   "band": "judged",
+   "kind": "standing",
+   "title": "FR-7: abundance to function, in a closed loop",
+   "asks": "Can a transient template change a protein's abundance, and so a measurable response, in a loop that feeds back on itself?",
+   "standing": {
+    "from": "map",
+    "part": "fr.abundance_to_function",
+    "label": "Abundance to function (FR-7)",
+    "status": "qualified",
+    "level": {
+     "label": "Qualified or judged",
+     "says": "Numerically qualified (a registered protocol passed) or judged (used in a registered experiment), in its declared scope."
+    },
+    "as_of": "2026-11-20",
+    "says": "Judged in one scope only: FR-7's first closed loop, its comparison F4 against the code-blind reference R-loop, passed on 20 November 2026; F3's six-world comparison against its own references is queued, and every piece of the loop is development, not judged, on its own part. The request: the amount of a protein in the composite sets how a membrane population conducts, and a declared species can drive the rate at which it is made, so that a transient template changes a measurable response that may or may not outlive it (feature request FR-7). The user's answers of 18 November 2026 set the first loop's unit, admitted the loop through the one routing door, and ruled that a closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut (D217, D218). Its pieces landed on 19 and 20 November 2026: the unit producer, whose removal of units inside itself is a scoped exception to D177 that the user accepted (D232); the coupling operator's version 2, with a factor on another operator's rate and a population's abundance as a source; the producer's assembly rate as a target (F3); declared initial units per maturation pool; and the comparison code, the mappers and comparisons of the chain and of the loop, which has no test of its own. For the closed loop, under the user's delegation, the Na/K pump with Na-leak units at a declared synthetic time scale was chosen (D231), and its world scales the template's half-saturation and dose five-fold (D233). Its world, as its mapper declares it: one cell of the composite over the tissue model @3, with the Na/K pump on held fuel, membrane state's K-leak and Na-leak populations, species turnover, the coupling operator's version 2 and the unit producer. The judged run, from a frozen snapshot of main with the registered interface, ran both arms, closed and clamped: every compared row is within its band, the cut's applied factor is within its registered bound, the clearance row equals the registered 260 s, all 30 persistence rows pass, and the pump's rate read from the engine's own readouts matches its cumulative ledger. Its values are synthetic and labelled so.",
+    "sources": [
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/FEATURE_REQUESTS.md",
+      "where": "FR-7 — Abundance-to-function, exposed in the composite",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D218: D145's hold, narrowed again: physical production feedback through the one routing door",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D231: FR-7's first closed loop and FR-8 rung 1's three choices",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D233: FR-7's closed-loop world scales its template five-fold",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr7-f3-landed-2026-11-20",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "fr7-comparisons-landed-2026-11-20",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "validation/fr7/loop_mapper.py",
+      "where": "The composite resolved_pump_composite@1 over resolved_pump_tissue@3, holding:",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "validation/fr7/loop_comparison.py",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     }
+    ],
+    "tests": []
+   },
+   "record": [
+    {
+     "says": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).",
+     "item": "The arms: both, closed and clamped. Every compared row is within its band; the clamped arm's largest is s at 0.42 of a band.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026); The arms",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     "scope": {
+      "says": "Still to come: F3's six-world comparison against R-chain and R-clear is queued from the same snapshot.",
+      "source": {
+       "path": "PROGRESS.md",
+       "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026); Still to come",
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+      }
+     },
+     "verdict": {
+      "run": {
+       "evidence": "fr7-loop-20261119",
+       "within": [
+        "judged-90392025",
+        "f4"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 1164,
+       "of": 1164,
+       "unit": "compared rows",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "f4_comparison.json"
+        ],
+        "field": "closed.quantities and clamped.quantities: each quantity's compared and failed numbers, summed (passed: compared less failed)"
+       },
+       "confirmed_by": []
+      },
+      "day": {
+       "date": "2026-11-20",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "RUN.txt"
+        ],
+        "field": "the date of the first line matching '\\\\blaunched\\\\b'"
+       }
+      },
+      "snapshot": {
+       "revision": "90392025b4b102dcd18dab0e7c2de4b66191f1c8",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "RUN.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    },
+    {
+     "says": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).",
+     "item": "Persistence: all 30 rows pass; the rise in units at 560 s is 93.390 against 93.389.",
+     "source": {
+      "path": "PROGRESS.md",
+      "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026); Persistence",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     "verdict": {
+      "run": {
+       "evidence": "fr7-loop-20261119",
+       "within": [
+        "judged-90392025",
+        "f4"
+       ]
+      },
+      "protocol": null,
+      "passed": true,
+      "count": {
+       "passed": 30,
+       "of": 30,
+       "unit": "compared rows",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "f4_comparison.json"
+        ],
+        "field": "persistence: its compared and failed numbers, summed (passed: compared less failed)"
+       },
+       "confirmed_by": [
+        {
+         "path": "PROGRESS.md",
+         "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026); Persistence",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+         "says": "all 30 rows"
+        }
+       ]
+      },
+      "day": {
+       "date": "2026-11-20",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "RUN.txt"
+        ],
+        "field": "the date of the first line matching '\\\\blaunched\\\\b'"
+       }
+      },
+      "snapshot": {
+       "revision": "90392025b4b102dcd18dab0e7c2de4b66191f1c8",
+       "from": {
+        "evidence": "fr7-loop-20261119",
+        "within": [
+         "judged-90392025",
+         "f4"
+        ],
+        "file": [
+         "RUN.txt"
+        ],
+        "field": "its revision, as the file writes it"
+       }
+      }
+     }
+    }
+   ],
+   "rerun": null
+  },
+  {
    "id": "fr10",
    "band": "judged",
    "kind": "standing",
@@ -1571,37 +1835,37 @@
      {
       "path": "PROGRESS.md",
       "where": "Combined landing (14 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/BATH_SCHEDULE_DESIGN.md",
       "where": "7. Milestone 1 as built (14 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-10",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-1 milestone 1, FR-10 milestone 2 and FR-3 milestone 1 landed (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/BATH_SCHEDULE_DESIGN.md",
       "where": "8. Milestone 2: the step refusal and the species cap (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-10 judged: passed (17 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/BATH_SCHEDULE_DESIGN.md",
       "where": "Qualified, 17 November 2026.",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -1612,14 +1876,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-10 judged: passed (17 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: scheduled_bath_composition@1 as built at 407ba164. It covers neutral formula units only, held baths only, and steps only inside the measured region. It is judged under ARS at 1 ms and RK4 at 0.1 ms. The step rule bounds the face rate but not the membrane rate; the rehearsal found that the run-time energy guard holds there (R12's neighbour, disclosed).",
       "source": {
        "path": "PROGRESS.md",
        "where": "FR-10 judged: passed (17 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -1666,7 +1930,7 @@
         {
          "path": "PROGRESS.md",
          "where": "FR-10 judged: passed (17 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "31 of 31 judged criteria"
         }
        ]
@@ -1728,17 +1992,17 @@
      {
       "path": "PROGRESS.md",
       "where": "MG0a morphogen gradient passes; MG0b bistable domain wall passes",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -1749,7 +2013,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "MG0a morphogen gradient passes (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -1796,7 +2060,7 @@
         {
          "path": "PROGRESS.md",
          "where": "MG0a morphogen gradient passes (9 November)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "All 12 criteria"
         }
        ],
@@ -1836,7 +2100,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "MG0b bistable domain wall passes (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -1866,7 +2130,7 @@
         {
          "path": "PROGRESS.md",
          "where": "MG0b bistable domain wall passes (9 November)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "All 19 criteria"
         }
        ]
@@ -1924,41 +2188,41 @@
      {
       "path": "PROGRESS.md",
       "where": "MG0c judged: the reactions operator `local_species_reactions@1` (D152 v1) is numerically",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D152 v1 milestone 3 landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/morphogenesis/protocols/mg0c_turing_v1.json",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "MG0c (D152): the protocol after its rehearsal on main and the final check",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Combined landing (14 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Status on 14 November 2026, and the working order (D156)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -1969,14 +2233,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "The scope is driven mass action of orders 0, 1 and 3 (Schnakenberg) at outside nodes, with @3's species transport on faces in the composite, on CPU. The items not judged are listed in the verdict.",
       "source": {
        "path": "PROGRESS.md",
        "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026); The scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -2007,7 +2271,7 @@
         {
          "path": "PROGRESS.md",
          "where": "MG0c judged: the reactions operator local_species_reactions@1 (D152 v1) is numerically qualified within MG0c's scope (15 November 2026)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "all 55 judged criteria"
         }
        ]
@@ -2065,7 +2329,7 @@
      {
       "path": "PROGRESS.md",
       "where": "MG1 qualified and landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -2076,7 +2340,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "MG1 qualified and landed (11–12 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2106,7 +2370,7 @@
         {
          "path": "PROGRESS.md",
          "where": "MG1 qualified and landed (11–12 November)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "57 of 57 criteria"
         }
        ]
@@ -2145,7 +2409,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "MG1 (2-D vertex mechanics) judged run: FAIL (11 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2175,7 +2439,7 @@
         {
          "path": "PROGRESS.md",
          "where": "MG1 (2-D vertex mechanics) judged run: FAIL (11 November)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "52 of 57 criteria"
         }
        ]
@@ -2234,21 +2498,21 @@
      {
       "path": "PROGRESS.md",
       "where": "Secreted-species transport (D150 v1) is numerically qualified",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/SECRETED_SPECIES_TRANSPORT_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -2259,14 +2523,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Secreted-species transport (D150 v1) is numerically qualified: every item of its registered protocol passed (14 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope, as the qualified statement carries it: @3's faces with exact radial conductances, and turnover's first-order clearance, with a held-bath source, in the composite. Exchange, turnover's production and the occupant rule entered only through Q5's test files.",
       "source": {
        "path": "PROGRESS.md",
        "where": "Secreted-species transport (D150 v1) is numerically qualified: every item of its registered protocol passed (14 November); Scope, as the qualified statement carries it",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -2348,37 +2612,37 @@
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Gate: lifecycle operators",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "S5a is qualified",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D141: Cell division, high priority",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CELL_DIVISION_PLAN.md",
       "where": "Xenopus early cleavage first, from 1 to 4 cells.",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -2389,14 +2653,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "S5a is qualified: every judged item passed (14 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "What this qualifies: partition, bridge closure, insertion@2 and lumen@2 in division worlds. Q7(b), S3's egg on @2, is deferred to its own registered variant.",
       "source": {
        "path": "PROGRESS.md",
        "where": "S5a is qualified: every judged item passed (14 November); What this qualifies",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -2476,7 +2740,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Stage S3 judged: the engine's cleft egg agrees with R-full (13 November; registered protocol 486cc60; verdict pass)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2536,7 +2800,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Current injection: first acceptance passed (Rm1 on the uncleaved egg against R-full; 12 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2596,7 +2860,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     },
     {
@@ -2604,7 +2868,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Cell division S0b: the registered J1 combination round is parked (13 November; development, judged by its own registered criteria)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -2631,21 +2895,21 @@
      {
       "path": "PROGRESS.md",
       "where": "Plan table",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/BETSE_CAPABILITY_ROADMAP.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -2656,7 +2920,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "First BETSE parity of Cells' own physics: default world passes (8 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2718,7 +2982,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity rung 1 (mammal ion profile): pre-registered FAIL (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2799,7 +3063,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity rung 1 v2 passes (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2880,7 +3144,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity rungs P2 and P4 pass (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2932,7 +3196,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity P3 (scheduled interventions, first subset) passes (10 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -2992,7 +3256,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity P4b, the heredity carrier channels, passes (10 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3052,7 +3316,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Parity on the L4: variants registered (11 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3131,7 +3395,7 @@
      {
       "path": "PROGRESS.md",
       "where": "Osmotic water and volume qualified and landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -3143,7 +3407,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Osmotic water and volume qualified and landed (11 November); W1 judge: 25 of 25 pass,",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3173,7 +3437,7 @@
         {
          "path": "PROGRESS.md",
          "where": "Osmotic water and volume qualified and landed (11 November); W1 judge: 25 of 25 pass,",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "25 of 25"
         }
        ]
@@ -3213,7 +3477,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Osmotic water and volume qualified and landed (11 November); resolved_pump_water@2",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3243,7 +3507,7 @@
         {
          "path": "PROGRESS.md",
          "where": "Osmotic water and volume qualified and landed (11 November); resolved_pump_water@2",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "24 of 24"
         }
        ]
@@ -3284,7 +3548,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3314,7 +3578,7 @@
         {
          "path": "PROGRESS.md",
          "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "25 of 25 items"
         }
        ]
@@ -3356,7 +3620,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3386,7 +3650,7 @@
         {
          "path": "PROGRESS.md",
          "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "24 of 24"
         }
        ]
@@ -3446,17 +3710,17 @@
      {
       "path": "PROGRESS.md",
       "where": "Cell replacement qualified and landed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -3468,14 +3732,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Cell replacement qualified and landed (11 November); Judged run G2-Q1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Limits: in-place swap only (no vacancy); the donor copy does not halve the parent; the water inner model and finite extracellular worlds are stage 3.",
       "source": {
        "path": "PROGRESS.md",
        "where": "Cell replacement qualified and landed (11 November); Limits",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -3507,7 +3771,7 @@
         {
          "path": "PROGRESS.md",
          "where": "Cell replacement qualified and landed (11 November); Judged run G2-Q1",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "All 7 items"
         }
        ]
@@ -3549,7 +3813,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; G2-Q1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3644,14 +3908,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); The judged run",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Its scope. The verdict holds in the declared flagged mode only (D168, D181). C's Q7 failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged mode's run-to-run term stays as measured.",
       "source": {
        "path": "PROGRESS.md",
        "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); Its scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -3737,32 +4001,32 @@
      {
       "path": "docs/CURRENT_PLAN.md",
       "where": "Status on 14 November 2026, and the working order (D156)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The composite's L4 agreement",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D168: G2-Q1's Q7 on the L4: a deterministic setting first, then a tolerance item if needed",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D181: The round's end game: E07-v1's re-run held, and the L4 block run under the deterministic flag",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -3774,7 +4038,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3804,7 +4068,7 @@
         {
          "path": "PROGRESS.md",
          "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "25 of 25 items"
         }
        ]
@@ -3846,7 +4110,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -3876,7 +4140,7 @@
         {
          "path": "PROGRESS.md",
          "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; W1",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "24 of 24"
         }
        ]
@@ -3918,7 +4182,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The composite's L4 judged run C (14 November): W1 and W2 pass; G2-Q1 passes Q1–Q6 and fails Q7; G2-Q1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -4013,14 +4277,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); The judged run",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Its scope. The verdict holds in the declared flagged mode only (D168, D181). C's Q7 failure stays C's verdict, because the protocol judges once and retries nothing. The unflagged mode's run-to-run term stays as measured.",
       "source": {
        "path": "PROGRESS.md",
        "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag (16 November 2026; resolved_pump_replacement@1, resolved_pump_tissue@3); Its scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -4106,17 +4370,17 @@
      {
       "path": "PROGRESS.md",
       "where": "Stationary-state analysis (E) qualified",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's end game, paused for a planned machine restart",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "D172's round landed on main",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -4127,7 +4391,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Stationary-state analysis (E) qualified (9 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -4156,7 +4420,7 @@
         {
          "path": "PROGRESS.md",
          "where": "Stationary-state analysis (E) qualified (9 November)",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "all 16 criteria"
         }
        ]
@@ -4214,7 +4478,7 @@
      {
       "path": "PROGRESS.md",
       "where": "Projective (C) qualification qual-01: FAIL",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": []
@@ -4225,7 +4489,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Projective (C) qualification qual-01: FAIL (9–10 November)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -4313,7 +4577,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Heredity turnover under the literature newcomer rule: no disc renewed, and B1 failed in all 21 arms, as predicted (11–13 November; development pre-screen, not judged)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -4415,26 +4679,26 @@
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-11",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "README.md",
       "where": "Looping replay packages per species",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/LOOPING_REPLAY_DESIGN.md",
       "where": "9. The lead's rulings (16 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_replay_packages.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [
@@ -4448,7 +4712,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "The run-view writer merged into main (16 November 2026, evening): run-view-d154, cells.run_view@1; FR-11's first looping run",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -4499,35 +4763,35 @@
      {
       "path": "PROGRESS.md",
       "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026).",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "On 18 November: OL1's origin-of-life laws (`cells.assembly_lineages@2`), verified 6 of 6",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
       "where": "0.2a The lead's rulings for OL1 (17 November 2026; D215)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
       "where": "2.1 The event-pair contract",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
       "where": "2.4 Catalysis that keeps detailed balance",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_assembly_lineages_v2_registration.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_assembly_lineages_v2_kernel.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [
@@ -4542,14 +4806,14 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Verified against code-blind references",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "scope": {
       "says": "Scope: the stochastic family with general stoichiometry over places, regular mixing, catalysis on the common state and exact ledgers. Geometry, an osmotic lumen and division come in OL2 and OL3. Nothing is judged under a registered protocol, and nothing is compared with experiment.",
       "source": {
        "path": "PROGRESS.md",
        "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Scope",
-       "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+       "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
       }
      },
      "verdict": {
@@ -4576,7 +4840,7 @@
         {
          "path": "PROGRESS.md",
          "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); Verified against code-blind references",
-         "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+         "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
          "says": "6 of 6 rows"
         }
        ]
@@ -4612,7 +4876,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "OL1 landed: the origin-of-life laws, cells.assembly_lineages@2 (18 November 2026); The first harness run failed one row on a record rule",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      "verdict": {
       "run": {
@@ -4808,61 +5072,61 @@
      {
       "path": "PROGRESS.md",
       "where": "On 19 November: FR-2 version 1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-2 version 1 against its code-blind references (19 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "The third external review's five findings, fixed (19 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-2",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/MEMBRANE_RETRIEVAL_DESIGN.md",
       "where": "12. The user's answers and the lead's rulings (18 November 2026; D217)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
       "where": "3.4.5 Refusal 5 version 1.2",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking_laws.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking_comparison.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking_runs.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking_batch.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_membrane_trafficking_sheet.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [
@@ -4880,7 +5144,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows; run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -4901,58 +5165,78 @@
      "label": "Implemented and guarded",
      "says": "On main with its tests and guards: the plan's 'implemented' and 'guarded' levels. Not yet qualified by a registered protocol."
     },
-    "as_of": "2026-11-19",
-    "says": "Development, not judged. The measurements and the harness that come before a long-duration mode is chosen (feature request FR-8), all on today's fine engine. Stage 0 landed on main on 19 November 2026: five measurements, each with its criteria registered before its run, and the harness, a world of an hour whose cue at its midpoint switches a cell for good, run at three steps. Stage 0 makes no qualification claim, since its references are the engine's own runs. A ladder of rungs was then decided, with the user's agreement (D224): rung 0 first, to explain why the fine engine's order of accuracy drops through a switch, before any later rung is registered, and every later accuracy study judged against it. Rung 0 ran the same day, on the tissue model alone. Its registered verdict is \"instrument not validated\": its control for the slow phase had no power, so no cause is identified. Under an amendment registered blind before the main windows were read, the weaker evidence, the instruments pass and the cause is the transient before the step's order settles: the observed orders climb toward 2 as the step halves. Rung 1 comes after the energy check X2 lands. Implemented and guarded: on main, with tests of the harness's judge and of the measurements M1, M2, M4 and M5, M1's on a registered world. M3, a measurement of cost, has no test of its own, and neither has rung 0's driver, which the engine's guard for restarts lists as a development tool.",
+    "as_of": "2026-11-20",
+    "says": "Development, not judged. The measurements and the harness that come before a long-duration mode is chosen (feature request FR-8), all on today's fine engine. Stage 0 landed on main on 19 November 2026: five measurements, each with its criteria registered before its run, and the harness, a world of an hour whose cue at its midpoint switches a cell for good, run at three steps. Stage 0 makes no qualification claim, since its references are the engine's own runs. A ladder of rungs was then decided, with the user's agreement (D224): rung 0 first, to explain why the fine engine's order of accuracy drops through a switch, before any later rung is registered, and every later accuracy study judged against it. Rung 0 ran the same day, on the tissue model alone. Its registered verdict is \"instrument not validated\": its control for the slow phase had no power, so no cause is identified. Under an amendment registered blind before the main windows were read, the weaker evidence, the instruments pass and the cause is the transient before the step's order settles: the observed orders climb toward 2 as the step halves. The energy check X2 landed on 19 November 2026 (a part of its own). Rung 1's registered control, today's integrator with X2 on, then ran first, as the user chose (D232): its largest passing steps under the parity caps were 20 ms on the harness's calm stretch, held by charge stability, 1 ms through the cue, by the location rule, and 5 ms on a second world, by the junction-gate bound, and X2 refused nothing. By D232's rules a method was chosen on 20 November 2026 (D235): N2, the design note's linearly implicit step, as rung 1 as registered, then C, a fine-window executor, required and not optional. Rung 0's official verdict stays inconclusive (D232), and the fourth external review's fix makes its reader check each arm's identity, step and grid. Implemented and guarded: on main, with tests of the harness's judge and of the measurements M1, M2, M4 and M5, M1's on a registered world. M3, a measurement of cost, has no test of its own, and neither has rung 0's driver, which the engine's guard for restarts lists as a development tool.",
     "sources": [
      {
       "path": "docs/FEATURE_REQUESTS.md",
       "where": "FR-8",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-8 rung 0: the fine engine's order through a switch (19 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "FR-8's stage 0, the long-duration methods measured (development, not judged)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/long_duration/RESULTS_20261118.md",
       "where": "Stage 0 makes no qualification claim",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/long_duration/RUNG0_20261119.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "validation/long_duration/REGISTRATION_20261118.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_long_duration_harness.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_long_duration_m1.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "tests/unit/test_long_duration_m2_m4_m5.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "FR-8 rung 1's control",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "docs/DECISIONS.md",
+      "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+     },
+     {
+      "path": "PROGRESS.md",
+      "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).",
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [
@@ -4967,7 +5251,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "FR-8 rung 0: the fine engine's order through a switch (19 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -4991,26 +5275,26 @@
      {
       "path": "PROGRESS.md",
       "where": "Heredity pilot W1",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/HEREDITY_FIRST_EXPERIMENT.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "G2-Q1's Q7 passes on the L4 under the deterministic flag",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Its comparison with the predictions written before the run is development analysis, still to do",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [],
@@ -5023,7 +5307,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Heredity pilot W1: the cue writes discs; fresh discs hold for 70 min (10–11 November; development, not judged)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     },
     {
@@ -5031,7 +5315,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Heredity pilot W1, water arms: held discs also hold under water; the osmotically balanced start, not water itself, makes the marginal loss 3× earlier (11–12 November; development, not judged)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -5055,21 +5339,21 @@
      {
       "path": "PROGRESS.md",
       "where": "Track E (excitable tissue, D155): the design note accepted narrowly",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/DECISIONS.md",
       "where": "D156, and D170: Track E's design note accepted narrowly, for M1 and M2 on @3",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "docs/EXCITABLE_TISSUE_DESIGN.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "PROGRESS.md",
       "where": "Landed: the note, its equations appendix and the probe driver",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ],
     "tests": [],
@@ -5082,7 +5366,7 @@
      "source": {
       "path": "PROGRESS.md",
       "where": "Track E (excitable tissue, D155): the design note accepted narrowly, for M1 and M2 on @3 (D170, 14 November 2026)",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     }
    ],
@@ -5105,11 +5389,11 @@
     "sources": [
      {
       "path": "visualizer/schema/QUANTITY_LAYERS.md",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      },
      {
       "path": "visualizer/tools/make_run_fixture.py",
-      "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565"
+      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
      }
     ]
    },

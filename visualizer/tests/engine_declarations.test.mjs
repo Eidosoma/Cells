@@ -34,6 +34,20 @@ test("the composite's operators drawn are the manifest's, and nothing else is dr
   const declared = manifest.pieces.filter((piece) => piece.piece === "operator" && piece.interface === "cells.operator@1").map((piece) => piece.declared_id);
   const drawn = scene.entities.filter((entity) => entity.kind === "operator").map((entity) => entity.id.replace(/^op\./, ""));
   assert.deepEqual([...drawn].sort(), [...declared].sort());
+  // A module may declare two operators (species_regulated_availability@1 and @2 since main 93fc8c2c): its file stays the
+  // part of the first the manifest lists, whose imports it draws, and each operator's detail names that operator only.
+  for (const entity of scene.entities.filter((item) => item.kind === "operator")) {
+    const named = /^(?:Operator )?([a-z_][a-z0-9_]*@\d+)\b/.exec(entity.detail || "")?.[1];
+    if (named) assert.equal(named, entity.id.slice(3), `${entity.id}: its detail is another operator's`);
+  }
+  const modules = new Map();
+  for (const piece of manifest.pieces.filter((item) => item.piece === "operator" && item.interface === "cells.operator@1")) modules.set(piece.module_path, [...(modules.get(piece.module_path) || []), piece.declared_id]);
+  const users = new Set(scene.relations.filter((relation) => relation.kind === "uses").map((relation) => relation.from));
+  for (const [file, laws] of modules) {
+    if (laws.length < 2) continue;
+    assert.ok(users.has(`op.${laws[0]}`), `${file}: the first operator, ${laws[0]}, keeps the file's imports`);
+    for (const law of laws.slice(1)) assert.ok(!users.has(`op.${law}`), `${file}: ${law} draws no import of a file that is another's part`);
+  }
 });
 
 test("a model, law, kind or family operator is drawn as declared only if the manifest declares it; the older families' IDs are not drawn", () => {

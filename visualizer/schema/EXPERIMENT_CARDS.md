@@ -79,13 +79,16 @@ A change of the map's words alone (same revision) needs only `python3 tools/buil
 - **A verdict** (`record[].verdict`): read from the run's own file in the saved run folders, named by
   its folder (`run.evidence`) and its folders one by one (`run.within`), never by a path.
   - `count`: `passed` of `of`, in the record's own unit (`judged criteria`, `criteria`, `judged items`,
-    `items`, `rows`, `cases`, `protocols`, `judged runs`, `judged quantities` …), with `from` (the file and
+    `items`, `rows`, `cases`, `protocols`, `judged runs`, `judged quantities`, `compared rows` …), with `from` (the file and
     the field it was counted from; `from.files`, optional, where one verdict is read from several files,
     `from.file` then naming the first). The readers, one for each layout of verdict file: `criteria`
     (the entries whose `judged` is true), `items` (a mapping, the judged ones where any says), `list` (a
     list of items), `named` (names each with a verdict), `rows` (with its tally), `tally` (the file's own
-    passed, failed and not-evaluable numbers; `count.not_evaluable`, optional, holds the last), `one` (a
-    single verdict), and several files of one verdict each. The gathering confirms the count against
+    passed, failed and not-evaluable numbers; `count.not_evaluable`, optional, holds the last), `compared`
+    (a comparison's own tables, named in `tables` as dotted paths: each table's `compared` and `failed`
+    numbers, or in a table of quantities each quantity's, summed; `of` is their compared rows and `passed`
+    their compared rows less the failed, and a file that says it passed with a failed row is refused; FR-7's
+    F4 since 20 November 2026), `one` (a single verdict), and several files of one verdict each. The gathering confirms the count against
     the run's `reading.json` or its registered protocol's entries where the source names one, and
     against any count the PROGRESS.md entry words in the same noun (`confirmed_by`).
     - Where the entry words a different count and nothing confirms the file's, `count` is null and
@@ -199,8 +202,8 @@ own files under `visualizer/`), a place in its words, and a revision of main in 
   source's place is not.
 - A rerun, when one is filled in, says it is a rerun and never calls itself the judged run.
 - One command moves the record forward (`--revision`), writing the new revision into the source file.
-- The gathering, on small fixtures (`tests/cards-fixtures/`): judged rows only are counted; the layouts `tally`, `named`
-  and several files are read; a count worded otherwise is left off, and stands where the protocol's
+- The gathering, on small fixtures (`tests/cards-fixtures/`): judged rows only are counted; the layouts `tally`, `named`,
+  `compared` and several files are read, and a comparison that passes with a failed row is refused; a count worded otherwise is left off, and stands where the protocol's
   entries confirm it, with the record's words beside it and the tool's note on a criterion judged in
   parts; the judged entries are listed; a snapshot off main names no revision; a day is the named line's; a
   clock time leaves a heading; the paragraph is read at its revision; the full check fails when a run's

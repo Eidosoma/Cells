@@ -207,6 +207,11 @@ test("each verdict stands as the record has it: passed or failed, its own count 
       assert.equal(verdicts[k].count, entry.verdict.count ? `${entry.verdict.count.passed} of ${entry.verdict.count.of}${entry.verdict.count.unit ? ` ${entry.verdict.count.unit}` : ""}${entry.verdict.count.not_evaluable ? `, ${entry.verdict.count.not_evaluable} not evaluable` : ""}` : null, card.id);
     });
   }
+  // FR-7's closed loop (20 November 2026): one judged run read twice, its two arms' compared rows and its persistence
+  // rows, each with its own count and day, never summed into one; its scope line is the record's.
+  const fr7 = cards.cards.find((card) => card.id === "fr7");
+  assert.deepEqual(verdictsOf(fr7).map((verdict) => [verdict.passed, verdict.count, verdict.day, verdict.scope?.text ?? null]), [[true, "1164 of 1164 compared rows", "2026-11-20", "Still to come: F3's six-world comparison against R-chain and R-clear is queued from the same snapshot."], [true, "30 of 30 compared rows", "2026-11-20", null]]);
+  assert.equal(fr7.standing.part, "fr.abundance_to_function");
   // A failed verdict stands beside the passes (the file holds some), each by its own word, not by a colour.
   assert.ok(cards.cards.some((card) => verdictsOf(card).some((verdict) => verdict.passed === false)));
   assert.equal(countWords(null), null, "a count the file withholds shows no number");
