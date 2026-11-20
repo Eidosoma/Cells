@@ -38,6 +38,8 @@ Fitting only the first two points of one zebrafish microtubule-stalk trace gives
 | 23 | 0.55 | 0.00 | 0.32 |
 | 24 | 0.25 | 0.00 | 0.29 |
 
+Search also found direct electrical measurements on 15 HeLa sister pairs with visible midbody bridges. The reported mean conductance was **32 ± 6 nS**, ranging from below 1 to 70 nS. The authors report original recordings in section 5 of their review and leave the error statistic unspecified. The recording times follow the voltage ramp. In a starfish embryo, electrodes left in place across the first cleavage detected coupling during partial cleavage and lost it after completion. Search found no verified series pairing radius and electrical conductance over time in the same normally dividing bridge. [Antanavičiūtė et al., Fig. 2A–D](https://pmc.ncbi.nlm.nih.gov/articles/PMC6174351/#medicina-54-00053-f002) · [Tupper et al., Figs. 2–3](https://doi.org/10.1083/jcb.46.1.187)
+
 The comparisons used `resolved_pump_composite@1` with `resolved_pump_tissue@3` on CPU float64 at engine revision `b30e3298523e49bd6c33bba01aa11561f8fba449`. Lean 4.19.0 checked all 20 new theorems with the three standard axioms. The five relevant engine test files and eight repository guards passed 372 tests. The strict trafficking reproducer exits 1 on the recorded engine. [Compartment and trafficking driver](checks/compartment_trafficking.py) · [Division and bridge driver](checks/division_bridge.py)
 
 ## 20 November 2026 · Surface channel populations
