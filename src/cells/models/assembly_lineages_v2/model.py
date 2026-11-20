@@ -17,7 +17,7 @@ import math
 import numpy as np
 
 from cells.models.assembly_lineages import ledger as v1_ledger
-from cells.models.assembly_lineages_v2 import MODEL_ID, streams
+from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, streams
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.kernel import ENTRIES, Layout, Structure, Tables
 from cells.registry import laws as law_registry
@@ -45,6 +45,7 @@ def structure(spec):
         chunk=x.chunk_events,
         unroll=x.unroll,
         uniforms=e.uniforms,
+        geometry=None if world.geometry is None else world.geometry[0],
     )
 
 
@@ -69,8 +70,8 @@ def place_arrays(world, capacity):
         species = world.species_by_id(place.species)
         phase[i] = world_rules.PHASE_INDEX[place.phase]
         mu0[i] = species.mu(place.phase)
-        if place.phase in world_rules.DILUTE:
-            log_X[i] = log_extent(world, place.phase)
+        if place.phase in world_rules.DILUTE and world.volume(place.phase) is not None:
+            log_X[i] = log_extent(world, place.phase)  # An osmotic lumen's X is 1 (lumen.py).
         if place.held:
             held[i] = True
             log_activity[i] = math.log(place.held_mM / c0)
@@ -129,8 +130,8 @@ def layout(spec):
         real = (alpha[r] + beta[r]) > 0
         log_ratio[r] = _fold(nu[k] * mu0[place[r, k]] for k in range(ENTRIES) if real[k])
         locus_membrane[r] = step.locus == world_rules.MEMBRANE
-        if not locus_membrane[r]:
-            extent[r] = log_extent(world, step.locus)
+        if not locus_membrane[r] and world.volume(step.locus) is not None:
+            extent[r] = log_extent(world, step.locus)  # An osmotic lumen's: X(V(m))^0 = 1.
         work[r] = -_fold(
             nu[k] * held_mu[place[r, k]] for k in range(ENTRIES) if real[k] and held[place[r, k]]
         )
@@ -172,6 +173,56 @@ def layout(spec):
         base_key=streams.base_key_data(x.seed, x.environment, x.lineage, x.branch),
         horizon=np.float64(e.time_horizon_s),
         event_limit=np.int64(e.event_limit),
+        geometry=geometry_layout(world, P, R, place) if world.geometry is not None else (),
+    )
+
+
+def geometry_layout(world, P, R, place):
+    """OL2's geometry arrays, in kernel.GEOMETRY_FIELDS' order (geometry.py)."""
+    from cells.models.assembly_lineages_v2 import MEMBRANE_PERMEATION, PHASE_EXCHANGE
+    from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+    quanta = geometry_rules.place_quanta(world, P)
+    entry_quanta = quanta[place]
+    _, alpha, beta = entries(world, R)
+    step_quanta = np.sum(entry_quanta * (beta - alpha), axis=1).astype(np.int64)
+    encounter = np.zeros(R, dtype=np.int32)
+    radius = world.conventions.exchange_encounter == "diffusion_radius"
+    for r, step in enumerate(world.steps):
+        if step.law == PHASE_EXCHANGE:
+            encounter[r] = 2 if radius else 1
+        elif step.law == MEMBRANE_PERMEATION:
+            encounter[r] = 1  # permeation_area, whatever the exchange token (§0.2b rule 6)
+    c_area, c_radius = geometry_rules.log_constants(world)
+    return (
+        quanta,
+        entry_quanta.astype(np.int64),
+        step_quanta,
+        encounter,
+        np.float64(c_area),
+        np.float64(c_radius),
+        np.int64(geometry_rules.floor_quanta(world)),
+        *lysis_layout(world, P),
+    )
+
+
+def lysis_layout(world, P):
+    """OL2 milestone 2's lysis arrays (kernel.GEOMETRY_FIELDS after floor_quanta): the lumen
+    mask, the tension's constants and sigma_max. A world without an osmotic lumen cannot lyse:
+    sigma_max is +inf there, so no event lyses and OL2 milestone 1's worlds run as before."""
+    from cells.models.assembly_lineages_v2 import lumen as lumen_rules
+
+    mask = np.asarray([i < len(world.places) and world.places[i].phase == world_rules.LUMEN
+                       for i in range(P)], dtype=np.int64)  # fmt: skip
+    kT, q = np.float64(world.units.kT_J), np.float64(world.geometry[1]["area_quantum_m2"])
+    if world.conventions.lumen_volume != "osmotic":
+        return mask, np.zeros(4, dtype=np.float64), np.float64(np.inf), kT, q
+    return (
+        mask,
+        np.asarray(lumen_rules.constants(world), dtype=np.float64),
+        np.float64(world.geometry[1]["sigma_max_N_per_m"][0]),
+        kT,
+        q,
     )
 
 
@@ -202,4 +253,7 @@ def components(spec):
     laws += [law_id for law_id, _ in world.terms]
     if world.rate_factor is not None:
         laws.append(world.rate_factor[0])
-    return {"model": MODEL_ID, "laws": laws, "operators": []}
+    if world.geometry is not None:
+        laws.append(world.geometry[0])
+    operators = [] if world.division is None else [SHEAR_FISSION]  # OL3 (division.py)
+    return {"model": MODEL_ID, "laws": laws, "operators": operators}

@@ -259,7 +259,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-6a464348/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-perf/measured-395b80a4/measured.json",
   "/mnt/workspaces/Cells/fine-window-20261120/gate/gate-2f55f225/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/fine-window-20261120/gate/gate-51d01264/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/fine-window-20261120/gate/gate-51d01264/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-09f4cb58/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2190,6 +2191,13 @@
    "root": "/mnt/workspaces/Cells/fine-window-20261120/gate/snapshot-51d01264",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T13:52:34+00:00"
+  },
+  {
+   "git_revision": "09f4cb58a4600fef64b4cd26e35d9acd773ef8c9",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-09f4cb58",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T13:48:59+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2552,7 +2560,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 7.54,
+    "seconds": 7.59,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5872,6 +5880,22 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_v2_division.py",
+    "seconds": 33.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
+    "seconds": 28.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 20
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
     "seconds": 43.32,
     "exit_code": 0,
@@ -5885,6 +5909,22 @@
     "exit_code": 0,
     "counts": {
      "passed": 6
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_lumen.py",
+    "seconds": 28.15,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_population.py",
+    "seconds": 69.4,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
     }
    },
    {
