@@ -231,11 +231,13 @@ class MonomialRate(NamedTuple):
 
 
 class MonomialForm(NamedTuple):
-    """The monomial kinetics' data: one MonomialRate per mode, in the modes' order, and its read
-    roles ((role, valence or None), ...): roles its references may name that have no row."""
+    """The monomial kinetics' data: one MonomialRate per mode, in the modes' order; its read roles
+    ((role, valence or None), ...), roles its references may name that have no row; and c° (mM),
+    the standard state of its activities a = c/c° (1 M, as the diagram's)."""
 
     rates: tuple
     read_roles: tuple = ()
+    standard_state_mM: float = 1000.0
 
 
 def _named(value):
@@ -1026,6 +1028,8 @@ def monomial_errors(form):
     ):
         return ["its read roles are distinct (role, valence or None) pairs"]
     out = []
+    if not (_finite(m.standard_state_mM) and m.standard_state_mM > 0):
+        out.append("its standard state is positive")
     names, read_names = set(form.role_names), {r[0] for r in reads}
     if read_names & names:
         out.append(f"read roles {sorted(read_names & names)} are also its rows' roles")
@@ -1417,6 +1421,14 @@ def monomial_logs(t, ln_a, psi, x, *, xp=jnp):
     d_ln_a = t.orders - xp.sum(weight[:, :, :, None] * t.term_q, axis=(1, 2))
     d_psi = t.zeta - xp.sum(weight * t.term_eta, axis=(1, 2))
     return MonomialLogs(log_s, d_ln_a, d_psi, d_x)
+
+
+def slots_on_rows(d_ln_a, slot_row, slot_is_row, rows, *, xp=jnp):
+    """A monomial form's slopes over its free slots [M, R, P] summed onto the population's rows
+    [M, K, P] (K = rows): each slot that is a row (its species at its end) adds to that row, so a
+    ligand a total's form reads lands on the row it is."""
+    hit = (slot_row[:, None, :] == xp.arange(rows)[None, :, None]) & slot_is_row[:, None, :]
+    return xp.sum(xp.where(hit[None], d_ln_a[:, :, None, :], 0.0), axis=1)
 
 
 def sign_exact_flux(log_plus, x, *, xp=jnp):

@@ -851,6 +851,150 @@ def test_a_held_availability_is_the_capacity_times_it_in_every_kinetic_form(form
     assert float(np.sum(np.abs(at[0.0].cycle_count))) == 0.0  # Unavailable: no cycle at all.
 
 
+# ------------------------------------------------------- the monomial form on the kind (K6)
+
+# A closure-free monomial exchanger: X+ from N to P against Y from P to N, its S a monomial in X at
+# N and Y at P with a voltage term, one saturating factor on X at N, and a share of 2.
+MONO = law_registry.CycleLaw(
+    "seamtest.monomial_exchange@1",
+    (),
+    (),
+    None,
+    None,
+    cycle=CycleForm(
+        kinetics="monomial",
+        roles=(("X", 1), ("Y", 0)),
+        rows=(("X", "N"), ("X", "P"), ("Y", "N"), ("Y", "P")),
+        modes=(("exchange", (-1, 1, 1, -1)),),
+        monomial=forms.MonomialForm((
+            forms.MonomialRate(
+                log_k=math.log(2.0),
+                orders=((forms.Reference("X", "N"), 1.0), (forms.Reference("Y", "P"), 1.0)),
+                zeta=0.5,
+                factors=(forms.MonomialFactor(1.0, (
+                    forms.MonomialTerm(10.0, ((forms.Reference("X", "N"), 1.0),)),
+                )),),
+                share=2,
+            ),
+        )),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only monomial law (K6), never shipped",
+)  # fmt: skip
+
+
+@contextlib.contextmanager
+def mono_scoped(*laws):
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(*TEST_LAWS, MONO, *laws)):
+        yield
+
+
+def mono_world():
+    return exchange_world(exchanger(law=MONO.law_id))
+
+
+def mono_probe(spec, state, p, control, potentials):
+    return transporter.probe(state, potentials, control, p, xp=np)
+
+
+def test_a_monomial_population_runs_its_closed_form_with_exact_row_slopes():
+    with mono_scoped():
+        spec = parse_spec(mono_world())
+        structure, state, p, control = start(spec)
+        entry = dict(structure.kinds)[transporter.KIND_ID]
+        bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+        assert set(transporter.MONOMIAL_FIELDS) <= set(bound.layout_fields)
+        volts = -0.03
+        potentials = potentials_for(p, volts)
+        e = transporter._evaluate(state, potentials, control, p, xp=np)
+    ids = list(spec.model.species_ids)
+    cell, bath = spec.model.cells[0], spec.model.extracellular[0]
+
+    def c(node, s):
+        return node.initial_amount_fmol[ids.index(s)] / node.volume_pL
+
+    a_x, a_y = c(cell, "X") / 1000.0, c(bath, "W") / 1000.0  # N is the cell; activities at 1 M.
+    psi = F * volts / (R * spec.model.temperature_K)
+    x = float(e.x[0, 0])
+    log_s = math.log(2.0 * a_x * a_y) + 0.5 * psi - math.log1p(10.0 * a_x)
+    log_s -= math.log(1.0 + math.exp(x / 2))  # The share, n = 2.
+    terms = abs(math.log(2.0 * a_x * a_y)) + abs(0.5 * psi) + 2 + abs(x)
+    assert float(e.log_s[0, 0]) == pytest.approx(log_s, rel=0, abs=32 * U * terms)
+    j = float(e.j[0, 0])
+    assert j * x <= 0 and float(e.j_plus[0, 0]) > 0  # The contract's sign, exactly.
+    # The rows' slopes against central differences of J: X at N is read twice (the monomial and the
+    # factor) and through x; Y at N only through x. Planted: X at N's factor slope dropped.
+    with mono_scoped():
+        numeric = {}
+        for k, (row, node) in enumerate((("X", 0), ("X", 1), ("W", 0), ("W", 1))):
+            numeric[k] = _row_difference(spec, state, p, control, potentials, ids.index(row), node)
+            assert float(e.d_j_d_ln_c[0, k, 0]) == pytest.approx(numeric[k], rel=1e-6, abs=1e-12)
+        h = 1e-6
+        up = mono_probe(spec, state, p, control, potentials_for(p, volts + h)).modes.j[0, 0]
+        down = mono_probe(spec, state, p, control, potentials_for(p, volts - h)).modes.j[0, 0]
+        dpsi = (float(up) - float(down)) / (2 * h * F / (R * spec.model.temperature_K))
+        assert float(e.d_j_d_psi[0, 0]) == pytest.approx(dpsi, rel=1e-6, abs=1e-12)
+    no_factor = float(e.d_j_d_ln_c[0, 0, 0]) + j * 10.0 * a_x / (1 + 10.0 * a_x)
+    assert abs(no_factor - numeric[0]) > 1e-3 * abs(numeric[0])  # Caught at 1e-6.
+
+
+def _row_difference(spec, state, p, control, potentials, species, node, h=1e-6):
+    """dJ/d ln c of one species at one node (0: the cell, 1: the outside node), by central
+    differences of its amount at the probe's own arithmetic."""
+    out = []
+    for sign in (1.0, -1.0):
+        if node == 0:
+            inc = state.amount_increment.copy()
+            total = p.amount_reference[species, 0] + inc[species, 0]
+            inc[species, 0] += sign * h * total
+            moved = state._replace(amount_increment=inc)
+        else:
+            inc = state.extracellular_amount_increment.copy()  # bath_0, the outside node.
+            total = p.extracellular_amount_reference[species, 0] + inc[species, 0]
+            inc[species, 0] += sign * h * total
+            moved = state._replace(extracellular_amount_increment=inc)
+        out.append(float(transporter.probe(moved, potentials, control, p, xp=np).modes.j[0, 0]))
+    return (out[0] - out[1]) / (math.log1p(h) - math.log1p(-h))
+
+
+def test_the_monomial_domain_is_one_sided_and_its_bare_terms_fail_closed():
+    """x far below -80 is admitted for the monomial form and refused for the factored form it
+    is not; without potentials its charged slope has no bound, so the bare stage term is +inf."""
+    with mono_scoped():
+        spec = parse_spec(mono_world())
+        structure, state, p, control = start(spec)
+        deep = potentials_for(p, 2.4)  # psi ~ +90: x ~ -86 for X+ from N to P.
+        e = transporter._evaluate(state, deep, control, p, xp=np)
+        assert float(e.x[0, 0]) < -80 and bool(e.valid[0])
+        assert np.isinf(transporter.stage_term(state, None, control, p, xp=np)).any()
+        assert np.all(np.isfinite(transporter.stage_term(state, deep, control, p, xp=np)))
+    with scoped():
+        spec2 = parse_spec(exchange_world(exchanger(law="seamtest.net_exchange@1")))
+        _, state2, p2, control2 = start(spec2)
+        e2 = transporter._evaluate(state2, potentials_for(p2, 2.4), control2, p2, xp=np)
+        assert float(e2.x[0, 0]) < -80 and not bool(e2.valid[0])  # |x| <= 80 there.
+        # The other forms keep their fields: no monomial field in a world that runs none.
+        entry = dict(surface_pump_v3.structure(spec2.model).kinds)[transporter.KIND_ID]
+        bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+        assert not set(transporter.MONOMIAL_FIELDS) & set(bound.layout_fields)
+
+
+def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions():
+    """A total, or a named form, is read only where a declared closure holds the row; a row with
+    no declared forms has none to read (the binding owner's conditions 1 and 2)."""
+    rate = MONO.cycle.monomial.rates[0]
+    for form_name, reason in (("total", "read only where a closure holds the row"),
+                              ("Mg", "read only where a closure holds the row")):
+        total = rate._replace(orders=((forms.Reference("X", "N", form_name), 1.0),))
+        law = dataclasses.replace(
+            MONO, law_id=f"seamtest.monomial_{form_name.lower()}@1",
+            cycle=MONO.cycle._replace(monomial=MONO.cycle.monomial._replace(rates=(total,))),
+        )  # fmt: skip
+        with mono_scoped(law), pytest.raises(ConfigError, match=reason):
+            parse_spec(exchange_world(exchanger(law=law.law_id)))
+
+
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
 
 M2 = {"log": 1.0, "exp": 2.0, "expm1": 4.0, "log1p": 2.0}

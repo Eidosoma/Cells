@@ -861,6 +861,15 @@ def domain(state, p, *, xp):
 # that changes a species at P without changing it at N (chemistry at P) is refused, though
 # complexes III and IV will need it (cytochrome c is on the P side); held rows are neutral, so a
 # charged held row (seam C's ATP4- with forms included) is out of scope.
+# The monomial form (K6, the lead's rulings of 20 November 2026; forms.py) runs on the same axis:
+# - its fields (MONOMIAL_FIELDS) exist only where a declared law runs it, so every other world keeps
+#   its fields and programs;
+# - its references resolve at the parse into free slots (a species at an end): read roles are
+#   bound like roles and never moved, and a registry form or a total is read only where a declared
+#   closure holds the row, with beta from the species registry alone (the binding owner's three
+#   conditions); its log k's CitedConstant is converted once, at the world's T (cited_log_k);
+# - its slopes land on rows by species and end, its domain is one-sided (x <= 80), and its bare
+#   stage and material terms (no potentials) fail closed, since its S reads psi.
 
 MARK = "cycle_host"  # The population axis's first layout field: the traced hooks' static switch.
 GENERAL_FIELDS = (
@@ -874,7 +883,7 @@ GENERAL_FIELDS = (
     "held_rows",
 )
 ENDS = ("a", "b")  # A host's ends: a patch's cell (a) and its outside node (b).
-FORM_CODES = MappingProxyType({"factored": 0, "diagram": 1, "net_flow": 2})
+FORM_CODES = MappingProxyType({"factored": 0, "diagram": 1, "net_flow": 2, "monomial": 3})
 MAX_ABS_AFFINITY_OVER_RT = 80.0  # Per mode, as version 1's laws (§3.2).
 # Version 1's keys read on the population axis (statement 1, §1): the role's name in each law's form.
 VERSION_1_ROLE = MappingProxyType({PROTON_LAW: "proton", NEUTRAL_LAW: "role"})
@@ -935,6 +944,26 @@ GENERAL_LAYOUT_FIELDS = (
     "cycle_band_present",  # [B, P]
     *(f"cycle_dg_{name}" for name in DIAGRAM_FIELDS),
     *(f"cycle_nf_{name}" for name in NET_FLOW_FIELDS),  # [M, U, P], counts [M, U, K, P]
+)
+# The monomial form's fields (K6), only where a declared law runs it (declared_fields), so a
+# definition without one keeps today's fields and programs: its free slots (each a species at an
+# end, R), and each mode's tables over them (forms.monomial_tables; Q factors, G terms each).
+MONOMIAL_FIELDS = (
+    "cycle_mono_slot_species",  # [R, P]
+    "cycle_mono_slot_at_n",  # [R, P]
+    "cycle_mono_slot_present",  # [R, P]
+    "cycle_mono_slot_row",  # [R, P]: the row a slot is (its species at its end), else 0
+    "cycle_mono_slot_is_row",  # [R, P]
+    "cycle_mono_log_k",  # [M, P]
+    "cycle_mono_orders",  # [M, R, P]
+    "cycle_mono_zeta",  # [M, P]
+    "cycle_mono_power",  # [M, Q, P]
+    "cycle_mono_term_log_k",  # [M, Q, G, P]
+    "cycle_mono_term_q",  # [M, Q, G, R, P]
+    "cycle_mono_term_eta",  # [M, Q, G, P]
+    "cycle_mono_term_present",  # [M, Q, G, P]
+    "cycle_mono_share",  # [M, P]
+    "cycle_mono_ln_standard",  # [P]: ln c° of the form's activities
 )
 GENERAL_CONTROL_FIELDS = ("cycle_availability",)
 GENERAL_READOUT_COLUMNS = (
@@ -1063,12 +1092,14 @@ def _parse_general(raw, base, patches, valence, taken):
         raise ConfigError(f'{where}: orientation is {{"N": "a"}} or {{"N": "b"}} (the host end that is N)')
     capacity = finite_number(raw["capacity_fmol_s"], f"{where}: capacity_fmol_s")
     roles = raw["roles"]
-    if not (isinstance(roles, dict) and set(roles) == set(form.role_names)):
-        raise ConfigError(f"{where}: roles binds each of {', '.join(form.role_names)} to a species row")
-    species = [roles[role] for role in form.role_names]
+    reads = form.monomial.read_roles if form.monomial is not None else ()  # Never moved (K6).
+    named = (*form.role_names, *(role for role, _ in reads))
+    if not (isinstance(roles, dict) and set(roles) == set(named)):
+        raise ConfigError(f"{where}: roles binds each of {', '.join(named)} to a species row")
+    species = [roles[role] for role in named]
     if any(s not in valence for s in species) or len(set(species)) != len(species):
         raise ConfigError(f"{where}: each role binds a distinct species row of the model")
-    for role, z in form.roles:
+    for role, z in (*form.roles, *reads):
         if z is not None and valence[roles[role]] != z:
             raise ConfigError(f"{where}: {law}'s role {role} has valence {z:+d}, not {roles[role]}'s")
     values = raw["parameters"]
@@ -1093,7 +1124,7 @@ def _parse_general(raw, base, patches, valence, taken):
         law,
         orientation["N"],
         capacity,
-        tuple((role, roles[role]) for role in form.role_names),
+        tuple((role, roles[role]) for role in named),
         tuple((p.name, values[p.name]) for p in form.parameters),  # As declared.
         held,
         patch.inside,
@@ -1211,10 +1242,23 @@ def declared_fields(entry):
     """The kind's fields for its structure entry (§7.4 (n) 5): version 1's for today's entry, with
     the population axis's own hooks absent; the population axis's for CycleAxis."""
     if isinstance(entry, CycleAxis):
+        layout = GENERAL_LAYOUT_FIELDS + (MONOMIAL_FIELDS if _declares_monomial(entry) else ())
         return KindFields(
-            GENERAL_STATE_AXES, GENERAL_LAYOUT_FIELDS, GENERAL_CONTROL_FIELDS, GENERAL_READOUT_COLUMNS
+            GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, GENERAL_READOUT_COLUMNS
         )
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
+
+
+def _declares_monomial(entry):
+    """Whether a declared law of the population axis runs the monomial form (K6)."""
+    hosted = hosted_laws()
+    found = (getattr(hosted.get(qualified(law)), "cycle", None) for law in entry.laws)
+    return any(form is not None and form.kinetics == "monomial" for form in found)
+
+
+def _mono(p):
+    """Static: whether the layout holds the monomial form's fields (a declared monomial law)."""
+    return "cycle_mono_log_k" in type(p)._fields
 
 
 # ---------------------------------------------------------------------------- its layout
@@ -1328,6 +1372,8 @@ def _population_initial(spec, declaration):
             v["cycle_band_present"][b, j] = True
     v |= _diagram_layout(declaration, all_forms, K, M)
     v |= _net_flow_layout(spec, declaration, all_forms, K, M)
+    if any(f.kinetics == "monomial" for f in all_forms):  # declared_fields' test (K6).
+        v |= _monomial_layout(spec, declaration, all_forms, v, M)
     state = dict(
         cycle_count=np.zeros((M, P)),
         cycle_dissipated_energy_pJ=np.zeros(P),
@@ -1422,6 +1468,144 @@ def _diagram_layout(declaration, all_forms, K, M):
     out = {f"cycle_dg_{name}": value for name, value in o.items()}
     assert set(out) == names
     return out
+
+
+def cited_log_k(spec, constant):
+    """A CitedConstant's log k at the world's temperature, the one place the pH-7 standard free
+    energy is converted (the lead's ruling 7): offset - scale (1000 dG / (R T) + protons ln 1e7).
+    A number is its own log k."""
+    if not isinstance(constant, forms.CitedConstant):
+        return float(constant)
+    dg_rt = 1000.0 * constant.dg_kj_mol / (R * spec.model.temperature_K)
+    return constant.offset - constant.scale * (dg_rt + constant.protons * math.log(1e7))
+
+
+def _closure_rows(model):
+    """{(species, node ID)} of the rows a declared general closure holds (its declaration's
+    closure_rows): where a named form or a total may be read (the binding owner's condition 2)."""
+    return {
+        (row[0], row[1])
+        for _, declaration in getattr(model, "kinds", ())
+        for row in getattr(declaration, "closure_rows", ())
+    }
+
+
+def monomial_reader(spec, t, form, slots):
+    """read(reference) for population t (forms.expand_rate's reader): each reference as monomials
+    of free slots, a species at an end, registered in `slots` {(species index, "N"|"P"): index}.
+    "free" (or the species' own ID) is its free slot; a registry form or "total" resolves through
+    the species registry's form_log_constants only (the binding owner's conditions: a declared
+    form, where a closure holds the row, beta from the registry alone), each form f as
+    a_base beta_f prod a_L^n_L (c°/c0)^(sum n_L), its ligands' free slots at the same end."""
+    m = spec.model
+    ids, roles = list(m.species_ids), dict(t.roles)
+    node = {"N": t.inside if t.n_end == "a" else t.outside}
+    node["P"] = t.outside if t.n_end == "a" else t.inside
+    held = _closure_rows(m)
+    ln_std = math.log(form.monomial.standard_state_mM)
+    where = f"transporter {t.id!r}"
+
+    def slot(species, end):
+        return slots.setdefault((ids.index(species), end), len(slots))
+
+    def read(reference):
+        species, end = roles[reference.role], reference.end
+        if reference.form in ("free", species):
+            return (forms.Monomial(0.0, ((slot(species, end), 1.0),)),)
+        if (species, node[end]) not in held:
+            raise ConfigError(
+                f"{where}: {reference.form} of {species} at {node[end]} is read only where a "
+                "closure holds the row; elsewhere the stored row is the total, with no speciation"
+            )
+        found = species_registry.forms_of(spec, species)  # Refuses a row with no declared forms.
+        logs, c0 = species_registry.form_log_constants(spec, species)
+        shift = ln_std - math.log(c0)
+
+        def monomial(i):
+            counts = found[i][1]
+            terms = ((slot(species, end), 1.0), *((slot(lig, end), float(n)) for lig, n in counts))
+            return forms.Monomial(logs[i] + sum(n for _, n in counts) * shift, terms)
+
+        if reference.form == "total":
+            return tuple(monomial(i) for i in range(len(found)))
+        named = [f[0] for f in found]
+        if reference.form not in named[1:]:
+            raise ConfigError(f"{where}: {species} declares no form {reference.form!r}")
+        return (monomial(named.index(reference.form)),)
+
+    return read
+
+
+def monomial_expanded(spec, t, form):
+    """Population t's monomial rates over its free slots: ([ExpandedRate per mode], slots), each
+    refusal a ConfigError naming the population (the parse's check and the layout share it)."""
+    slots = {}
+    read = monomial_reader(spec, t, form, slots)
+    expanded = []
+    for rate in form.monomial.rates:
+        try:
+            expanded.append(forms.expand_rate(rate, read, cited_log_k(spec, rate.log_k)))
+        except ValueError as error:
+            raise ConfigError(f"transporter {t.id!r}: {error}") from None
+    return expanded, slots
+
+
+def _monomial_layout(spec, declaration, all_forms, v, M):
+    """The monomial form's fields (MONOMIAL_FIELDS), padded across populations; zeros where a
+    population runs another form."""
+    P = len(declaration)
+    built = []
+    for t, form in zip(declaration, all_forms, strict=True):
+        if form.kinetics != "monomial":
+            built.append(None)
+            continue
+        expanded, slots = monomial_expanded(spec, t, form)
+        built.append((forms.monomial_tables(expanded, len(slots)), slots, form))
+    used = [b for b in built if b is not None]
+    R = max(len(b[1]) for b in used)
+    Q = max(b[0].power.shape[1] for b in used)
+    G = max(b[0].term_log_k.shape[2] for b in used)
+    o = dict(
+        cycle_mono_slot_species=np.zeros((R, P), dtype=np.int64),
+        cycle_mono_slot_at_n=np.zeros((R, P), dtype=bool),
+        cycle_mono_slot_present=np.zeros((R, P), dtype=bool),
+        cycle_mono_slot_row=np.zeros((R, P), dtype=np.int64),
+        cycle_mono_slot_is_row=np.zeros((R, P), dtype=bool),
+        cycle_mono_log_k=np.zeros((M, P)), cycle_mono_orders=np.zeros((M, R, P)),
+        cycle_mono_zeta=np.zeros((M, P)), cycle_mono_power=np.zeros((M, Q, P)),
+        cycle_mono_term_log_k=np.zeros((M, Q, G, P)), cycle_mono_term_q=np.zeros((M, Q, G, R, P)),
+        cycle_mono_term_eta=np.zeros((M, Q, G, P)),
+        cycle_mono_term_present=np.zeros((M, Q, G, P), dtype=bool),
+        cycle_mono_share=np.ones((M, P), dtype=np.int64), cycle_mono_ln_standard=np.zeros(P),
+    )  # fmt: skip
+    for j, b in enumerate(built):
+        if b is None:
+            continue
+        tables, slots, form = b
+        rows = {
+            (int(v["cycle_row_species"][k, j]), "N" if v["cycle_row_at_n"][k, j] else "P"): k
+            for k in range(len(form.rows))
+        }
+        for (species, end), r in slots.items():
+            o["cycle_mono_slot_species"][r, j] = species
+            o["cycle_mono_slot_at_n"][r, j] = end == "N"
+            o["cycle_mono_slot_present"][r, j] = True
+            if (species, end) in rows:
+                o["cycle_mono_slot_row"][r, j] = rows[(species, end)]
+                o["cycle_mono_slot_is_row"][r, j] = True
+        m_n, r_n = tables.orders.shape
+        q_n, g_n = tables.term_log_k.shape[1:]
+        o["cycle_mono_log_k"][:m_n, j] = tables.log_k
+        o["cycle_mono_orders"][:m_n, :r_n, j] = tables.orders
+        o["cycle_mono_zeta"][:m_n, j] = tables.zeta
+        o["cycle_mono_power"][:m_n, :q_n, j] = tables.power
+        o["cycle_mono_term_log_k"][:m_n, :q_n, :g_n, j] = tables.term_log_k
+        o["cycle_mono_term_q"][:m_n, :q_n, :g_n, :r_n, j] = tables.term_q
+        o["cycle_mono_term_eta"][:m_n, :q_n, :g_n, j] = tables.term_eta
+        o["cycle_mono_term_present"][:m_n, :q_n, :g_n, j] = tables.term_present
+        o["cycle_mono_share"][:m_n, j] = tables.share
+        o["cycle_mono_ln_standard"][j] = math.log(form.monomial.standard_state_mM)
+    return o
 
 
 def _net_flow_layout(spec, declaration, all_forms, K, M):
@@ -1546,6 +1730,26 @@ def _evaluate(read, potentials, control, p, *, xp):
         log_s = xp.where(is_diagram, diagram.log_s, log_s)
         d_log_s = xp.where(is_diagram[:, None, :], diagram.d_log_s_d_ln_c, d_log_s)
         d_log_s_psi = xp.where(is_diagram, diagram.d_log_s_d_psi, d_log_s_psi)
+    slots_ok = True
+    if _mono(p):  # Static: a monomial form is declared (K6).
+        slot_node = xp.where(p.cycle_mono_slot_at_n, n_node[None, :], p_node[None, :])
+        c_slot = conc[p.cycle_mono_slot_species, slot_node]  # [R, P], free (the stage's read)
+        live = p.cycle_mono_slot_present
+        slot_positive = xp.isfinite(c_slot) & (c_slot > 0)
+        ln_c_slot = xp.log(xp.where(live & slot_positive, c_slot, 1.0))
+        ln_a = xp.where(live, ln_c_slot - p.cycle_mono_ln_standard[None, :], 0.0)
+        table = SimpleNamespace(
+            **{n: getattr(p, f"cycle_mono_{n}") for n in forms.MonomialTables._fields}
+        )
+        mono = forms.monomial_logs(table, ln_a, psi, x, xp=xp)
+        is_mono = form == FORM_CODES["monomial"]
+        on_rows = forms.slots_on_rows(
+            mono.d_ln_a, p.cycle_mono_slot_row, p.cycle_mono_slot_is_row, nu.shape[1], xp=xp
+        )  # Slopes on rows by (species, node); the share's d/dx carries dx/d ln c = nu.
+        log_s = xp.where(is_mono, mono.log_s, log_s)
+        d_log_s = xp.where(is_mono[:, None, :], on_rows + mono.d_x[:, None, :] * nu, d_log_s)
+        d_log_s_psi = xp.where(is_mono, mono.d_psi - q * mono.d_x, d_log_s_psi)  # dx/dpsi = -q
+        slots_ok = xp.all(xp.where(live, slot_positive, True), axis=0)
     on = modes & enabled[None, :]
     log_plus = log_ka[None, :] + log_s
     j_fd = xp.where(on, forms.sign_exact_flux(log_plus, x, xp=xp), 0.0)
@@ -1595,7 +1799,10 @@ def _evaluate(read, potentials, control, p, *, xp):
     # The domain at the stage: positive finite reads, |x| <= 80, the declared pH bands, finite
     # kinetics; only where the population's host is active (an inactive host moves nothing).
     rows_ok = xp.all(xp.where(present, positive, True), axis=0)
-    x_ok = xp.all(xp.where(modes, xp.abs(x) <= MAX_ABS_AFFINITY_OVER_RT, True), axis=0)
+    within = xp.abs(x) <= MAX_ABS_AFFINITY_OVER_RT
+    if _mono(p):  # Static (K6): the monomial form's domain is one-sided, x <= 80.
+        within = xp.where(form == FORM_CODES["monomial"], x <= MAX_ABS_AFFINITY_OVER_RT, within)
+    x_ok = xp.all(xp.where(modes, within, True), axis=0)
     finite = xp.all(xp.where(on, xp.isfinite(j) & xp.isfinite(scale), True), axis=0)
     if p.cycle_band_row.shape[0]:  # Static: a pH band is declared.
         cols = xp.arange(host.shape[0])
@@ -1604,7 +1811,10 @@ def _evaluate(read, potentials, control, p, *, xp):
         bands_ok = xp.all(xp.where(p.cycle_band_present, inside, True), axis=0)
     else:
         bands_ok = True
-    valid = xp.where(active, rows_ok & x_ok & finite & bands_ok, True)
+    ok = rows_ok & x_ok & finite & bands_ok
+    if _mono(p):  # Static: a world without the monomial form keeps today's program.
+        ok = ok & slots_ok
+    valid = xp.where(active, ok, True)
     # The guard (statement 1, §5.2; amendment 2): G = sum_m J x <= A.
     guard = entity_sum(j * x, axis=0, xp=xp)
     rows_count = entity_sum(present, axis=0, xp=xp)[None, :]
@@ -1688,7 +1898,9 @@ def _conductance(e, p, *, xp):
 
 def _population_stage_term(read, potentials, control, p, *, xp):
     """[cells, then outside nodes] each population's conductance at both ends of its host. Called
-    bare (no potentials), at zero voltage and at each mode's static head, x = 0: dJ/dpsi = q J+."""
+    bare (no potentials), at zero voltage and at each mode's static head, x = 0: dJ/dpsi = q J+.
+    A charged monomial population (K6) has no voltage-free bound there, since its S reads psi, so
+    the bare term fails closed for it: +inf (FR-15 P2's ruling for a potential-free path)."""
     from cells.modules import host_node_conductance
 
     e = _evaluate(read, potentials, control, p, xp=xp)
@@ -1697,6 +1909,10 @@ def _population_stage_term(read, potentials, control, p, *, xp):
         at_head = p.cycle_charge_moved * xp.where(flow, 0.0, e.j_plus)
         e = e._replace(d_j_d_psi=xp.where(flow, e.d_j_d_psi, at_head))
     slope = xp.where(e.active, _conductance(e, p, xp=xp), 0.0)
+    if potentials is None and _mono(p):  # Static (K6).
+        charged = xp.any(p.cycle_mode_present & (p.cycle_charge_moved != 0), axis=0)
+        bare = (p.cycle_form == FORM_CODES["monomial"]) & charged & e.active
+        slope = xp.where(bare, xp.inf, slope)
     return host_node_conductance(slope, p.cycle_host, p, xp=xp)
 
 
@@ -1711,6 +1927,9 @@ def material_term(read, potentials, control, p, *, xp):
     neutral = p.cycle_row_present & ~p.cycle_row_held & ~p.cycle_row_charged
     per_row = entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)  # [K, P] fmol/s per ln c
     slope = xp.where(neutral & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
+    if potentials is None and _mono(p):  # Static (K6): S reads psi, so no bound without it.
+        bare = (p.cycle_form == FORM_CODES["monomial"])[None, :] & neutral & e.active[None, :]
+        slope = xp.where(bare, xp.inf, slope)
     species = read.amount_increment.shape[0]
     nodes = _flat_scatter(slope, p.cycle_row_species, e.row_node, (species, n + o), xp=xp)
     return xp.max(nodes, axis=0)
@@ -1840,8 +2059,9 @@ def cycle_checks(spec):
 
 def _check_population_axis(spec, declaration):
     """The population axis's refusals at the definition: a registry potential for every species a
-    mode converts, the form's temperature domain, §5.2's boundary for moved fuel, and Wegscheider's
-    condition on every diagram cycle (statement 1, §5.1), each naming the population."""
+    mode converts, the form's temperature domain, §5.2's boundary for moved fuel, Wegscheider's
+    condition on every diagram cycle (statement 1, §5.1), and every monomial reference resolving
+    under the binding owner's three conditions (K6), each naming the population."""
     m = spec.model
     from cells.modules import moved_nodes
 
@@ -1854,6 +2074,8 @@ def _check_population_axis(spec, declaration):
     for t in declaration:
         where = f"transporter {t.id!r}"
         form, roles = cycle_form(t.law), dict(t.roles)
+        if form.kinetics == "monomial":  # K6: each reference resolves, or the parse refuses.
+            monomial_expanded(spec, t, forms.resolved(form, dict(t.parameters)))
         counts = _counts(form, dict(t.parameters))
         stoichiometries = [*counts, *(term.counts for terms in form.flux_terms for term in terms)]
         for row_counts in stoichiometries:
@@ -2213,9 +2435,19 @@ _STRUCTURAL = {
     "cycle_dg_state_present": False,
     "cycle_nf_counts": 0,
     "cycle_nf_present": False,
+    "cycle_mono_slot_species": 0,
+    "cycle_mono_slot_at_n": False,
+    "cycle_mono_slot_present": False,
+    "cycle_mono_slot_row": 0,
+    "cycle_mono_slot_is_row": False,
+    "cycle_mono_term_present": False,
+    "cycle_mono_share": 1,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
-_PER_ENTITY = (*LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *GENERAL_CONTROL_FIELDS)
+_PER_ENTITY = (
+    *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
+    *GENERAL_CONTROL_FIELDS,
+)  # fmt: skip
 PARTITION_ROLES = MappingProxyType(
     {
         **{name: PartitionRole("history") for name, _ in (*STATE_AXES, *GENERAL_STATE_AXES)},
@@ -2246,6 +2478,9 @@ _AXIS = MappingProxyType(  # The population axis's shapes' letters (GENERAL_LAYO
         "X": "cycle_edge_end",
         "S": "cycle_state",
         "U": "cycle_flux_term",
+        "R": "cycle_read",  # The monomial form's free slots (K6).
+        "Q": "cycle_mono_factor",
+        "G": "cycle_mono_term",
     }
 )
 _SHAPES = {
@@ -2266,6 +2501,11 @@ _SHAPES = {
     "cycle_nf_counts": "MUKP",
     **{f"cycle_nf_{n}": "MUP" for n in ("weight", "standard_RT", "charge", "shift", "present")},
     "cycle_availability": "P",
+    **{f"cycle_mono_{n}": "RP" for n in ("slot_species", "slot_at_n", "slot_present", "slot_row")},
+    "cycle_mono_slot_is_row": "RP", "cycle_mono_log_k": "MP", "cycle_mono_orders": "MRP",
+    "cycle_mono_zeta": "MP", "cycle_mono_power": "MQP", "cycle_mono_term_log_k": "MQGP",
+    "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
+    "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {
