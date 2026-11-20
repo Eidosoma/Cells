@@ -2110,7 +2110,7 @@ def _closure_slopes(e, sensitivity, p, *, xp):
     cross = xp.abs(d[species[:, None, :], species[None, :, :], node[None, :, :]])  # [K_i, K_k, P]
     same = (node[:, None, :] == node[None, :, :]) & present[:, None, :] & present[None, :, :]
     cross = xp.where(same, cross, 0.0)
-    through = xp.sum(xp.abs(e.d_j_d_ln_c)[:, :, None, :] * cross[None], axis=1)  # [M, K_k, P]
+    through = entity_sum(xp.abs(e.d_j_d_ln_c)[:, :, None, :] * cross[None], axis=1, xp=xp)
     if e.mono_slots is not None:  # Static (K6): slots no row holds move with the totals too.
         d_ln_a, slot_node = e.mono_slots
         off_row = p.cycle_mono_slot_present & ~p.cycle_mono_slot_is_row  # [R, P]
@@ -2119,7 +2119,7 @@ def _closure_slopes(e, sensitivity, p, *, xp):
         slot_cross = xp.abs(d[slot_species[:, None, :], species[None, :, :], node[None, :, :]])
         at_node = (slot_node[:, None, :] == node[None, :, :]) & off_row[:, None, :]
         slot_cross = xp.where(at_node, slot_cross, 0.0)  # [R, K_k, P]
-        through = through + xp.sum(slopes[:, :, None, :] * slot_cross[None], axis=1)
+        through = through + entity_sum(slopes[:, :, None, :] * slot_cross[None], axis=1, xp=xp)
     return entity_sum(xp.abs(p.cycle_nu) * through, axis=0, xp=xp), on_closure
 
 
