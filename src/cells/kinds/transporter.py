@@ -17,10 +17,13 @@ as complexes III and IV convert cytochrome c on the P side. Its rows move at P's
 charge there enters the field as charge at N does, and its standard part joins the population's
 booking. Where a population declares such a mode, the material term also bounds the charged rows a
 mode changes at P only (the field cycle_row_p_chemistry, which exists only there); proton rows
-changed at both ends stay on the charge rule. The membrane flux reads every P-side change as a
-crossing, so the patch's current stays F q J, the charge the field sees: a conversion at P appears
-as its forms crossing in opposite directions, the electron's charge written in them, and is no
-transport (the lead's convention for MT-1; a charge-only term is a recorded follow-up).
+changed at both ends stay on the charge rule. A proton row changed at P only (a P-side consumer
+releasing H+) is among the bounded rows: at a buffered node its slope divides by free h, so its
+bound is tighter than the buffered row needs, by the buffer's capacity (fail-closed). The membrane
+flux reads every P-side change as a crossing, so the patch's current stays F q J, the charge the
+field sees: a conversion at P appears as its forms crossing in opposite directions, the electron's
+charge written in them, and is no transport (the lead's convention for MT-1; a charge-only term is
+a recorded follow-up).
 
 **Availability schedules on the population axis** (D228 item 5; the core's gap-6 schedules, §7.4
 (l)): the experiment key `transporter_controls`, optional, each population at most once, an

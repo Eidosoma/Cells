@@ -1475,20 +1475,29 @@ def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
     far smaller); the membrane flux reads every P-side change as a crossing, so its charge is the
     patch's current, -q J outward with N at the bath. Four steps: the P rows move at the cell by
     their counts and every ledger closes, the energy ledger with the conversions' standard parts
-    (planted: the P-side change booked at N, which the cell's material ledger refuses)."""
+    (planted: the P-side change booked at N, which the cell's material ledger refuses; and, stepped
+    once, the population's g° shifted by 1, which the energy ledger refuses)."""
 
-    with p_redox_scoped():
-        spec = parse_spec(p_redox_world())
-        impl = get_model(spec.model)
-        state, p = impl.initial_values(spec)
-        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    def run(impl, spec, p, control, steps=4):
+        state, _ = impl.initial_values(spec)
         states = [state]
-        for _ in range(4):
+        for _ in range(steps):
             state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
             assert bool(valid)
             states.append(state)
         history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
         impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states, history
+
+    with p_redox_scoped():
+        spec = parse_spec(p_redox_world())
+        impl = get_model(spec.model)
+        _, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states, history = run(impl, spec, p, control)
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
+            run(impl, spec, shifted, control, steps=1)
     with p_redox_scoped(law=p_redox(forms=None)), pytest.raises(ConfigError, match="base forms"):
         parse_spec(p_redox_world())
     booked_at_n = dataclasses.replace(
