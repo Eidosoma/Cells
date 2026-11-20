@@ -904,13 +904,17 @@ physiological loops. Low copy in a loop. Mouse data from subscription papers.
 - It needs no new door in D218, being open loop. It needs only a narrow, explicit lift of D145 for
   polymerisation laws (F10).
 
-**The biological comparison** is registered separately, as D151 keeps every reviewed candidate.
-[Pending §4.6's check: the target, its calibrate and predict split, and its licence.]
+**The biological comparison** is registered separately, as D151 keeps every reviewed candidate. Its
+target, its split between calibration and prediction, and its licence are in §4.1.
 
 **Then D and B, by different owners.** D is the first feedback loop under D218, with the EMT switch
 as F6's network. B gives the occupancy source.
 
 **Then C,** when Syn3A's Stage 4 or a bistable network asks for it.
+
+**The layer as a whole** is A, B, C and D: about 38–58 agent-days (estimate), beyond the owners'
+pieces they wait on. A comes first because every other piece builds on it, not because the layer
+stops there.
 
 ## 5. Consumers
 
@@ -954,7 +958,8 @@ Each question has a recommendation (S).
      question 10 in one design (D217).
    - *Recommended:* both.
 5. **Charge.** Nucleotides and RNA as neutral formula units in version 1, declared, with charged rows
-   later through FR-15 S1 and the nucleotide forms? *Recommended:* yes.
+   later through FR-15 S1 and the nucleotide forms? The cost: until then an expression world does
+   not share its ATP rows with a mitochondria world (§1.5). *Recommended:* yes.
 6. **Data licences.** Cells is commercial open source (D173).
    - Judged results rest on permissive data (CC BY or CC0, and the deposit's own terms checked).
      Non-commercial data serve analysis only and are never committed. Bare published numbers are
