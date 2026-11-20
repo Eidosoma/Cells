@@ -264,7 +264,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-7c0947aa/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-c562be5f/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json",
+  "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2233,6 +2234,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-99770fce",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T16:53:02+00:00"
+  },
+  {
+   "git_revision": "ba8743ad0e649a116e81bf8beb977fbba944a7a3",
+   "dirty": false,
+   "root": ".claude/worktrees/bath-recipe-order",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2651,10 +2659,10 @@
    },
    {
     "file": "tests/unit/test_bath_schedule.py",
-    "seconds": 4.43,
+    "seconds": 4.38,
     "exit_code": 0,
     "counts": {
-     "passed": 36
+     "passed": 44
     }
    },
    {
