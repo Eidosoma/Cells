@@ -1,12 +1,17 @@
-"""Compare the tissue transporter's compiled rates to the frozen ATP-cycle panels."""
+"""Compare ATP-cycle rates with frozen references and yeast vacuole reversal measurements."""
 
 import json
+import math
+from pathlib import Path
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+from scipy.optimize import brentq
 
 from cells.kinds import transporter
+from cells.laws.electrochemistry import F, R
+from cells.laws.pumps import proton_pump
 from tests.unit import test_cycle_kind_references as fixture
 from validation.core_seams.references import design, exact
 
@@ -131,6 +136,63 @@ def check_panel(law):
     }
 
 
+def pump_stall_mV(inputs, params, expected_mV):
+    def flux(v):
+        state = inputs._replace(voltage_V=v)
+        assert proton_pump.domain_valid(state, params, 1, xp=np)
+        return float(proton_pump.kinetics(state, params, 1, xp=np).cycles_fmol_s)
+
+    center = expected_mV / 1000
+    root = brentq(flux, center - 0.01, center + 0.01, xtol=1e-14)
+    assert flux(root - 1e-6) < 0 < flux(root + 1e-6)
+    assert abs(1000 * root - expected_mV) < 0.2
+    return 1000 * root
+
+
+def vacuole_reversals():
+    data = json.loads((Path(__file__).parent / "data/kettner2003_vacuole.json").read_text())
+    fuel = data["fuel_mM"]
+    # The paper's rounded E_H column uses 59.2 mV per pH unit. At 25 °C it is 59.16.
+    temperature = 298.15
+    rt = R * temperature
+    atp, adp, pi = (fuel[key] for key in ("ATP", "ADP", "Pi"))
+    log_q = math.log(adp * pi / (atp * proton_pump.STANDARD_STATE_mM))
+    output = []
+    for cyt, lumen, e_atp, e_h, relation, observed, se, trials in data["rows"]:
+        inputs = proton_pump.Inputs(
+            10 ** (3 - cyt), 10 ** (3 - lumen), 0, atp, adp, pi, temperature
+        )
+        # Supply the paper's effective fuel energy. Its value is shared across a cytosolic pH
+        # group and uses no observed reversal. The positive capacity and saturations set scale.
+        dg0 = F * e_atp / 1000 - rt * log_q
+        roots = []
+        for n in range(1, 5):
+            params = proton_pump.Parameters(1, n, 1e-4, 0.1, dg0, cyt, 0.1)
+            roots.append(pump_stall_mV(inputs, params, e_atp / n + e_h))
+        output.append(
+            dict(
+                cytosol_pH=cyt,
+                lumen_pH=lumen,
+                relation=relation,
+                observed_mV=observed,
+                SE_mV=se,
+                trials=trials,
+                E_H_mV=e_h,
+                engine_stall_mV_by_n=roots,
+            )
+        )
+    fixed_cytosol = {row["lumen_pH"]: row for row in output if row["cytosol_pH"] == 7.5}
+    a, b = fixed_cytosol[4.1], fixed_cytosol[6.0]
+    shifts = np.subtract(b["engine_stall_mV_by_n"], a["engine_stall_mV_by_n"])
+    np.testing.assert_allclose(shifts, shifts[0], atol=1e-8, rtol=0)
+    return dict(
+        rows=output,
+        measured_shift_mV=b["observed_mV"] - a["observed_mV"],
+        table_E_H_shift_mV=b["E_H_mV"] - a["E_H_mV"],
+        engine_shifts_mV=shifts.tolist(),
+    )
+
+
 if __name__ == "__main__":
     jax.config.update("jax_enable_x64", True)
     laws = {law["id"]: law for law in fixture.LAWS}
@@ -149,6 +211,7 @@ if __name__ == "__main__":
                 "columns": ["dG_RT", "cycles_fmol_s", "heat_pJ_s", "work_pJ_s"],
                 "allowed_floors": fixture.FLOORS,
                 "panels": panels,
+                "yeast_vacuole": vacuole_reversals(),
             },
             indent=2,
             allow_nan=False,

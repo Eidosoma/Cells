@@ -108,6 +108,22 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-7 item 3: the releasing compartment, judged and passed (20 November 2026).** Under the
+  registration `fr7-u2-compartment-registered-2026-11-20` (95b7b3e0), from a frozen snapshot of main
+  439f54fd; tag `fr7-u2-judged-2026-11-20`
+  ([verdict](/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/judged-439f54fd/VERDICT.json),
+  `passed: true`; RUN.txt beside it).
+  - Both worlds ran 1,000,000 steps to 1000 s with no refusal.
+  - **C2, a releasing compartment:** J1's t_clear 680 s (registered 680 s); J2, the compartment left
+    out, 620 s (registered 620 s); the sealed compartment counted, 680 s (information).
+  - **C5, release stopped at 300 s:** J1 460 s (registered 460 s); J2, the sealed compartment counted,
+    not cleared (registered not cleared); the compartment left out, 460 s (information).
+  - The brackets agree with R-clear's to about 1e-10, and c* is within 1e-8 of R-clear's exact rows on
+    every row above D150's mean-field floor. The template's account closes to 8e-13 fmol and the
+    chain's total is constant to 2e-17 fmol. The engine rows equal the development runs' exactly.
+  - C5 took 11,561 s of wall time because its CPU was shared until about 19:15 UTC; the world was not
+    the cause.
+
 - **FR-8 rung 1: C, the fine-window executor, judged and passed (20 November 2026).** Under RUNG1
   §10.10, on H2 from 0 to 3600 s at 20 ms with a 1 ms window over [1799.98, 1802.0] s and X2 on
   (tag `fr8-c-judged-2026-11-20`; C landed at 54cb3195, the driver at fr8-rung1 e48c14b1).

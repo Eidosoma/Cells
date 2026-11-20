@@ -53,9 +53,9 @@ def worst(spec, states=60):
 # ------------------------------------------------------------------ planted laws
 
 
-def _at_state(z, factor_layout, view, xp):
+def _at_state(factor_state, factor_layout, view, xp):
     """Planted: the factor at the firing state n, not the pair's common state m."""
-    (beta,) = factor_layout
+    z = factor_state[0]
     n = view.membrane_total.astype(np.float64) + xp.zeros_like(z)
     g = xp.where(n > 0, 1.0 + z / xp.where(n > 0, n, 1.0), 1.0)
     return xp.log(xp.maximum(g, 1e-300))
@@ -240,6 +240,23 @@ def closed_world(*, catalysis, law=None):
     return out
 
 
+def contact_world():
+    """The Lean proofs project's world (19 November 2026): A <-> B at 1e9 /s, equal potentials, with
+    contacts of +20 k_BT for A and B and -20 for C, from one A and one C."""
+    sp = [{"id": x, "moieties": {"x": 1}, "standard_mu_RT": {"bilayer": 0.0}, "catalogue": None,
+           "evidence": None} for x in ("A", "B", "C")]  # fmt: skip
+    out = closed_world(catalysis=True)
+    out["species"], out["phases"] = sp, {"membrane": {"species": ["A", "B", "C"]}}
+    out["steps"] = [step("iso", {"A": 1}, {"B": 1}, 1e9, phase="membrane")]
+    out["free_energy"] = [{"law": "cells.ideal_mixing@1"}]
+    out["founder"] = {"A@membrane": 1, "B@membrane": 0, "C@membrane": 1}
+    contacts = (("A", 20.0), ("B", 20.0), ("C", -20.0))
+    out["rate_factor"]["entries"] = [
+        {"catalyst": x, "step": "iso", "ddG_kT": v} for x, v in contacts
+    ]
+    return out
+
+
 def stationary_tv(spec):
     """TV between the stationary law of the kernel's own rates on the closed world's states and
     exp(−F)/Z (an exact linear solve; every state with x-moiety 8)."""
@@ -283,6 +300,19 @@ def test_catalysis_is_kinetic_only_and_a_factor_at_each_direction_is_caught():
     with scoped(at_state):
         planted = spec_of(closed_world(catalysis=True, law="tests.at_state_factor@1"))
         assert stationary_tv(planted) > 1e-3
+    # Extreme contacts (the Lean proofs project's finding, 19 November 2026): the pair's only common
+    # catalyst is C, so both directions carry e^-20, 2.06 /s at 1e9 /s. The cached form gave 0 to
+    # both, and the run stopped inert; the count-weighted mean keeps them.
+    contact = spec_of(contact_world())
+    structure, layout = model.structure(contact), model.layout(contact)
+    a, b = (contact.model.world.place_index(f"{x}@membrane") for x in ("A", "B"))
+    for there, step_ in ((a, 0), (b, structure.steps)):  # forward from (A, C), reverse from (B, C)
+        counts = np.zeros(structure.places, dtype=np.int64)
+        counts[[there, contact.model.world.place_index("C@membrane")]] = 1
+        totals = kernel.totals_of(counts, layout, np)
+        fs, ts = kernel.states(counts, totals, layout, structure, np)
+        rate = kernel.rates(counts, totals, fs, ts, layout, structure, np)[step_]
+        assert rate == pytest.approx(1e9 * math.exp(-20.0), rel=1e-12)
 
 
 def test_doubling_every_rate_constant_halves_every_time_exactly():

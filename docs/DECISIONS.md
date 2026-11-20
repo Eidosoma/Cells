@@ -8048,3 +8048,47 @@ the timing measurments".
    - this U5 answer.
 
    OL5's fuel references are written from the note at tag `ol4-fuel-note-2026-11-20` alone.
+
+## D248: Missed wet-lab comparisons are investigated, not tuned away; FR-29 to FR-33
+
+2026-11-20, about 21:10 UTC. The lead checked the Lean project's biological review: its four
+drivers, run at main, reproduce its numbers. The user: "all go on the list but you decide with
+adviser on the priority". Then, with three requests, the user gave a rule for every comparison with
+wet-lab data, and added "add this to your lists".
+
+**The rule, in the user's words:**
+- "Use every missed wet-lab comparison to investigate the simulator, the biological model and the
+  measurement. Preserve the original prediction, comparator, units, threshold and score. Record
+  what the investigation established, who owns the open question and which observation could
+  resolve it."
+- "One experimental source is enough to propose and prototype a missing mechanism. State what the
+  mechanism predicts, give a competing explanation, and identify a fresh measurement on which they
+  would differ."
+- "Call an observation corroborated when at least two independently collected datasets agree on
+  the same quantity under comparable conditions. A paper, its supplement and a later paper reusing
+  its samples count as one source. Even independent studies can share an assay bias."
+
+**The list.** The priorities were set by the lead with the advisor. Each item starts as a design
+note by an existing owner, with no new agent.
+- **FR-29, an optional proton-return mode for ATP-driven proton pumps: normal, started first.**
+  - It has the strongest evidence: −13.0 mV measured against −112.40 mV predicted.
+  - A held-out test exists in the same table.
+  - It goes to the kinds owner after the mitochondria laws' second head.
+- **FR-30, Cx43 junctions with two relaxation times: normal, after N2.**
+  - The gap-junction replication's gate models Cx45, not Cx43, so it is not raised under D225.
+  - A prediction needs a voltage series.
+- **FR-31, vesicle rupture during a steady tension hold: low (D230).**
+  - Its note comes before OL9 registers, since a rupture is extinction in both readings.
+  - It is blocked on rupture rates against tension, and on OL6.
+- **FR-32, a DOPC swelling validation record for the water operator: low.** It is folded into the
+  next water-operator landing.
+- **FR-33, regional labelled-protein readouts: high (D228).** A study is waiting on it. Its first
+  step is identifying any missing export field.
+- **Not listed:** two signals the review itself called easy to overfit.
+
+**The other two requests:**
+- **The turnover defect** is repaired and landed (b4273772). The Lean project's reproducer and its
+  six controls at biological rates are being run at main.
+- **The protein export for A1** joins FR-25's backlog, beside the RNA readout, with how to recover
+  protein made in a chosen window that survives to sampling. The references record that protein
+  completed in minutes 60–90 was 7.46 times the net increase.

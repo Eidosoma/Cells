@@ -24,7 +24,13 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 ## Numerical comparison
 
-**Failed.** The first event has reference tension 0.0008412963098275772 N/m. At thresholds about 3 × 10⁻¹⁸ N/m below and above it, the 60-quanta representation ruptured both times and the equivalent 1,920-quanta representation remained intact both times. Both matched the reference at thresholds 1% away. Computing physical area first recovered both close decisions in float64.
+**Checked.** The repaired tension calculation matched the independent reference in all eight compiled decisions. Both 60 and 1,920 area quanta gave rupture just below 0.0008412963098275772 N/m and survival just above it, including offsets of about 3 × 10⁻¹⁸ N/m. The older comparisons preserve the disagreement that led to the repair.
+
+**Engine** `cells.assembly_lineages@2`, `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`, `cells.ideal_mixing@1`, `cells.phase_exchange@1`
+
+[Repaired tension at the cap](https://github.com/Eidosoma/Cells/blob/6318b7d4f8d33251760834b6079aa27d88a81831/src/cells/models/assembly_lineages_v2/lumen.py#L170) · [Tension test at each event](https://github.com/Eidosoma/Cells/blob/6318b7d4f8d33251760834b6079aa27d88a81831/src/cells/models/assembly_lineages_v2/kernel.py#L340) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/78acb6bccc69cabbd8639a22975d87b5eabb42a2/lean/checks/vesicle.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/78acb6bccc69cabbd8639a22975d87b5eabb42a2/lean/PROGRESS.md#biological-model-review)
+
+[Tested engine 6318b7d4f8d3](https://github.com/Eidosoma/Cells/commit/6318b7d4f8d33251760834b6079aa27d88a81831) · [Evidence checkpoint 78acb6bccc69](https://github.com/Eidosoma/Cells/commit/78acb6bccc69cabbd8639a22975d87b5eabb42a2)
 
 **Engine** `cells.assembly_lineages@2`, `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`, `cells.ideal_mixing@1`, `cells.phase_exchange@1`
 
@@ -52,7 +58,7 @@ Pure DOPC giant unilamellar vesicles with matched sugar concentrations under a c
 
 The published series reports 20 vesicles per temperature, but the plotted steps do not resolve those denominators. Fractions and times are approximate, and no pointwise errors are given.
 
-At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. An instantaneous, fixed threshold acting alone cannot explain the continuing declines at constant tension. [Dataset manifest](../checks/data/vesicle_rupture_holds.json) · [Comparison verdict](../PROGRESS.md#vesicle-threshold-hold)
+At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. The published rupture rates were 0.0073 and 0.024 s⁻¹. Surviving vesicles continued to rupture at unchanged tension. [Dataset manifest](../checks/data/vesicle_rupture_holds.json) · [Comparison verdict](../PROGRESS.md#biological-model-review)
 
 ### shibly2016_dopc_hold@1
 
@@ -62,6 +68,6 @@ Pure DOPC vesicles at 25 ± 1 °C with an initial osmolarity difference of 2.8 m
 
 Two time points in the same cohort, read from the plotted steps. Fig. 1B has no pointwise error bars. Osmotic tension was inferred in addition to the applied aspiration tension.
 
-Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. Six of eight early survivors ruptured during the next 70 s. Any constant survival fraction misses at least one reading by 3/19, or 15.8 percentage points. The measured hold supplies no choice between numerical area quanta. [Dataset manifest](../checks/data/vesicle_rupture_holds.json) · [Comparison verdict](../PROGRESS.md#vesicle-threshold-hold)
+Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. A constant survival fraction misses at least one reading by 3/19. A rupture rate of 0.0216 s⁻¹ fitted to the first count predicts 1.76 survivors at the second time in the same cohort. [Dataset manifest](../checks/data/vesicle_rupture_holds.json) · [Comparison verdict](../PROGRESS.md#biological-model-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

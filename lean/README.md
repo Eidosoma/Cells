@@ -12,9 +12,9 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 7 of 7 | 7 checked | 7 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 14 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 13 checked · 3 failed | 14 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -23,6 +23,10 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 ## Biological evidence
+
+The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
+
+Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
@@ -133,6 +137,12 @@ For mitochondrial respiration and ATP delivery, check the seven reaction columns
 "$cells_python" -B checks/mitochondrial_cycles.py
 ```
 
+Check the stall conditions of all seven cycles, compare instantaneous heat and flux with the independent component equations on both CPU backends, and reproduce the yeast synthase load comparison. [Thresholds, measurements and limits](PROGRESS.md#mitochondrial-stall-heat)
+
+```bash
+"$cells_python" -B checks/mitochondrial_stall.py
+```
+
 For the conditioned kidney-cell voltage, check the two-dose extrapolation on three synthetic Na/K/Cl membranes and reproduce the fixed C3 prediction and its figure-reading bounds. [C3 results](PROGRESS.md#conditioned-voltage-bounds)
 
 ```bash
@@ -186,7 +196,7 @@ For vesicle exchange, compare lipid insertion and neutral solute permeation agai
 "$cells_python" -B checks/shared_pool.py --declared-only
 ```
 
-For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. It also reports measured deflation, swelling and survival during fixed-tension holds. The full run exits with status 1 if either near-threshold rupture decision disagrees with the reference. [Physical results](PROGRESS.md#bilayer-footprint) · [Rupture timing and numerical retest](PROGRESS.md#vesicle-threshold-hold)
+For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. The repaired engine agrees on all eight threshold decisions. The driver also compares measured deflation, swelling and survival during fixed-tension holds. [Physical results](PROGRESS.md#bilayer-footprint) · [Earlier threshold finding](PROGRESS.md#vesicle-threshold-hold) · [Repair and measured rupture timing](PROGRESS.md#biological-model-review)
 
 ```bash
 "$cells_python" -B checks/vesicle.py --controls-only
@@ -297,7 +307,7 @@ For proton leak, check the reversal voltage, instantaneous heat, the small-volta
 "$cells_python" -B checks/proton_leak.py
 ```
 
-For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. [ATP driver](checks/atp_cycle.py) · [Numerical and biological results](PROGRESS.md#19-november-2026--atp-driven-transport)
+For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. It also finds the proton pump's stall voltage for each of the eight yeast vacuole assay conditions at all four supported couplings. [ATP driver](checks/atp_cycle.py) · [Tissue results](PROGRESS.md#19-november-2026--atp-driven-transport) · [Vacuole results](PROGRESS.md#biological-model-review)
 
 ```bash
 "$cells_python" -B checks/atp_cycle.py
