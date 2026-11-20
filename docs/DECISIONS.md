@@ -7874,3 +7874,67 @@ agent", "then as you see fit".
   OL5's probe roles, then OL6.
 - **Everything else is the lead's call,** within D230 and D242. Core and feature requests keep
   their claim on seats and lanes, and origin of life may get more as seats free.
+
+## D244: FR-21, FR-23, FR-24 and FR-26 decided by the lead with the advisor; two corrections
+
+2026-11-20, about 19:07 UTC. The operators owner's design notes were merged the same evening:
+[OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md) and
+[ASSEMBLY_SHELL_DESIGN.md](ASSEMBLY_SHELL_DESIGN.md). The lead put five questions to the user. The
+user: "lets go and all the FR question as you and adviser see fit check in with them again". So
+the lead decided all five with the advisor, under that delegation.
+
+The advisor saw the options, prices and questions, FR-21's §4.1 and rule 3, but not the notes'
+bitwise, test or acceptance sections. The operators owner's own advisor reviewed the notes up to
+1952f141. Nobody reviewed the W-or-L comparison.
+
+1. **FR-23: option A.**
+   - The site operator's reads are scoped to the outside nodes its populations face, and a
+     scheduled dose may not set a ligand below its trace.
+   - "Distinct finite nodes" is the lead's reading: a held bath is dosed, and the sites face other,
+     finite nodes. The bath schedule can dose held baths only.
+   - **Not covered:** a dose into a finite compartment, such as a wash of a well. An outside review
+     request is that case, and its gap is being named.
+   - The evidence is development evidence, with no judged protocol.
+2. **FR-24: the occupied fraction, and amounts as concentrations in the cell (mM),** read through
+   quantities the site operator declares in the contract (the note's R3).
+   - Coupling @2's programs gain empty site-route arrays.
+   - So FR-24 lands after FR-7's judged verdicts are tagged, with a D148 statement and a short A/B of
+     FR-7's C2 and C5 worlds on main showing their values bitwise.
+3. **FR-26: W, a replacement writer for site populations, unless L is ruled first.**
+   - L is one lifecycle for cell replacement and cell division. It is compared in FR-7's division
+     note, which D238 already owes, and as a new system it goes to the user.
+   - If L is ruled before FR-26's turn, it replaces W. FR-26 waits behind FR-23 and FR-24 on
+     `site_occupancy.py`.
+   - **Included:** part C′, a linked reaction in a replaced cell.
+   - **Not in version 1:**
+     - part C, the coupling's states;
+     - contact populations, which stay refused;
+     - donor copies, which come in version 1.1;
+     - templates that change capacity or constants.
+4. **Multipliers follow the occupant** (D150). This is a version-1 limit: a newcomer's multipliers
+   are constant, so a timed intervention does not reach replaced cells.
+5. **FR-21: all of it, sites first.**
+   - **Rule 3 is amended** to admit exactly the binding shape (one pool molecule and one declared site
+     forming one complex in the wall) under the existing `cells.stochastic_mass_action@1` with
+     `count_on_m`. A named law with the same rates would be a second law for one mechanism (D175,
+     D210). A named encounter law comes only with a diffusion-limited form.
+   - **The shell starts only after the site step lands,** since that step has never run with a
+     geometry or in a population.
+   - **The shell's own design:**
+     - its own entry law, `cells.shell_permeation@1`, with P_s times the declared area;
+     - a prescribed wall;
+     - one shell type per world;
+     - a gated shell gets the gate factor over the gate's own forms, or is refused in version 1.
+   - **Sites on bilayer vesicles take area.**
+   - **Who builds it:** the first origin-of-life builder, after FR-20.
+
+**Corrections:**
+- **D242:** GARD's pair-consistent leave did not land. The in-place repair moved registered @1 bits:
+  part 1's `binomial_second.0` and the kernel probe's leave arrays. It was reverted (3dc3b7aa), and
+  the revert's message corrects the original commit's claim.
+  - The accurate leave becomes `cells.gard_catalysis_pair_consistent@2`, with @1 untouched. Its
+    design is a double-double cache, O(C) per event, priced at 1.5–2 agent-days.
+  - It is the one Lean finding still open. The first builder builds it after FR-20, while FR-20's
+    gates run, and before FR-21.
+- **D243:** on the first builder, FR-21 (and GARD's version 2) come before slice 5, the population
+  runs, OL5's probe roles and OL6.
