@@ -1,5 +1,44 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Changing the composition of a held bath
+
+<a id="scheduled-bath-exchange"></a>
+
+**A dose to the bath and a supply to the tissue measure different transfers.** In `cells.scheduled_bath_composition@1` each recipe sets a target relative to the original bath. Lean reuses the integer stoichiometry proof to show that any signed mixture of neutral formula units preserves the bath’s charge. For an equal KCl-for-NaCl swap it also proves that chloride and total ideal particle concentration stay fixed. For a sequence of events, the cumulative dose and the bath’s free-energy change each telescope to the difference between the final and initial states. Work delivered to tissue depends on *when* solute crosses. Lean proves that updating the work record at each change of bath potential gives the same result as summing signed supply at each interval’s own potential. [Lean proofs](CellsProofs/Tissue/BathSchedule.lean) · [Engine event map](../src/cells/operators/bath_schedule.py#L456) · [Reservoir work correction](../src/cells/operators/bath_schedule.py#L498)
+
+On engine `94327ec434ee49f543d2b2e046c6ddb2eaa5e902`, two compiled `resolved_pump_composite@1` worlds around `resolved_pump_tissue@3` connected a 1 pL held bath to a 1 pL finite pool. A neutral solute began at 0.9765625 µM in the bath and at 75% of that in the pool. Every 15.625 ms the bath switched to 2, 0.5, 1.5 and finally 1 times its starting concentration. Flow reversed during the schedule. At the end the net dose added to the bath was exactly zero. Its recorded energy change was within 5.21 × 10⁻¹⁸ pJ of zero. The tissue had received **1.3955 × 10⁻⁴ fmol**, and the reservoir work correction was **2.5987 × 10⁻⁴ pJ**. Omitting that work when the original bath returns would lose the contribution from supply at the intermediate concentrations. [Pulse and independent comparisons](checks/bath_schedule.py#L24)
+
+| Solver and step | Maximum finite-pool error (fmol) | Maximum work-correction error using the engine’s supply (pJ) | Maximum work-correction error using continuous reference supply (pJ) |
+| --- | ---: | ---: | ---: |
+| ARS(2,2,2), 0.977 ms | 4.46 × 10⁻¹⁰ | 1.70 × 10⁻²¹ | 1.03 × 10⁻⁹ |
+| RK4, 0.0610 ms | 2.17 × 10⁻¹⁹ | 5.43 × 10⁻²⁰ | 1.36 × 10⁻¹⁹ |
+
+The comparisons use 14 observations per solver, including the boundary and the first accepted row after each switch. The independent face solution predicts how much solute reaches the finite pool. A separate 50-digit calculation evaluates the dose energy and sums work by interval. [Face solution](../validation/fr10/references/faces.py#L150) · [Independent event records and work](../validation/fr10/references/records.py#L140)
+
+**A measured response to a potassium bath change.** Search verified the reversal voltages of the cromakalim-induced current in adult guinea-pig ventricular myocytes. Randle et al. replaced NaCl with an equal amount of KCl and measured reversal at four bath concentrations. A compiled Cells schedule reached all four concentrations. At each one we found the voltage giving zero flux through the engine’s K-selective membrane law at fixed intracellular K. The reported 33–35 °C range fixes the temperature scale. Using its midpoint, 34 °C, requires no fitted voltages. [Measured means and Fig. 3a](https://doi.org/10.1111/j.1476-5381.1991.tb09865.x) · [Experimental inputs and group sizes](checks/data/randle1991_potassium.json) · [Engine voltage scan](checks/bath_schedule.py#L148)
+
+| Extracellular K⁺ change (mM) | Observed reversal means (mV, ± SEM) | Difference of group means (mV) | Predicted shift (mV) |
+| --- | --- | ---: | ---: |
+| 1 → 2.5 | −131.5 ± 1.8 → −104.6 ± 6.9 | +26.9 | +24.25 |
+| 2.5 → 5.4 | −104.6 ± 6.9 → −87.2 ± 1.9 | +17.4 | +20.38 |
+| 5.4 → 12 | −87.2 ± 1.9 → −65.8 ± 2.2 | +21.4 | +21.14 |
+
+The four means include 4/9, 9/18, 12/14 and 7/9 recorded cells with clear reversal. These are differences between group means. For the 5.4 → 12 mM swap the prediction spans +21.07 to +21.20 mV across the reported temperature range. This tests the steady voltage response to the prepared solution. The experiment supplies no local bath exchange time or reservoir-work measurement. In a separate apparatus, Koh et al. measured about 30 ms between 10% and 90% of the local concentration change with a tracer electrode 200 µm from the manifold. The Cells boundary changes at the scheduled time. [Randle et al., methods and results](https://pmc.ncbi.nlm.nih.gov/articles/PMC1907795/) · [Koh et al., Fig. 5](https://doi.org/10.1016/j.jneumeth.2011.04.023)
+
+<a id="bath-recipe-order"></a>
+
+**Engine finding for the bath-schedule owner.** The order of entries in one `formula_units_mM` object can change a valid dose from its requested amount to zero. The host adds each unit’s per-species contribution to a float64 running total. If a small positive term falls between a large positive term and its exact negative, it can round away before the target is built. Both orders pass the definition checks and run to completion. The compiled event then faithfully applies the rounded target. Lean proves order independence for arbitrary permutations over the reals. [Target construction](../src/cells/operators/bath_schedule.py#L229) · [Order and residual proofs](CellsProofs/Tissue/BathSchedule.lean#L42) · [Full-world reproducer](checks/bath_schedule.py#L118)
+
+Each test uses three neutral formula units containing one, two or three copies of the same solute. In a 1 pL bath their contributions are `+A`, `+d` and `−A` in mM. Each input and product is exactly representable in float64. The expected dose is `d` fmol in either order.
+
+| Starting bath (mM) | Opposing terms ±A (mM) | Intended dose d (fmol) | Booked as +A, −A, +d (fmol) | Booked as +A, +d, −A (fmol) |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.0009765625 | 24 | 0.00048828125 | 0.00048828125 | 0.00048828125 |
+| 0.0009765625 | 13,194,139,533,312 | 0.00048828125 | 0.00048828125 | **0** |
+| 2⁻⁴⁹ | 24 | 2⁻⁴⁹ | 2⁻⁴⁹ | **0** |
+
+The second row uses extreme cancelling inputs for an ordinary net dose. The third uses ±24 mM contributions to double a trace concentration. The exact rational sum and `math.fsum` both recover the intended result for these three-product examples. The full driver exits with status 1 on the ordering discrepancy. With `--controls-only` it checks the ordinary recipe, the four-switch bath and the K⁺ voltage shifts. All 12 new Lean theorem declarations built with the standard axioms. The 217 selected bath, reference and repository guard tests passed. [Reproducer](checks/bath_schedule.py)
+
 ## 20 November 2026 · Regulated channel availability and turnover rates
 
 <a id="regulated-state-response"></a>
