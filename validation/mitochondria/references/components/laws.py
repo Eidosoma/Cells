@@ -1,0 +1,833 @@
+"""The appendix's six declared laws, written from its equations alone.
+
+Source: docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20 (sections 0-7).
+Every function is generic over a backend ``B`` (``hp.DEC`` or ``hp.F64``), a parameter dict
+``P`` of strings (``hp.parameters``), constants ``C`` (``hp.constants``) and a state ``s``:
+a dict of concentrations in M, free h_N and h_P in M, and ``dpsi_mV`` (phi_P - phi_N).
+
+Each law is computed along separate paths that the checks compare:
+1. ``x_terms``: x = dG/RT from the turnover's table alone, (species, side, nu, z) and dG0 at
+   1 M: x = dG0/RT + sum(nu ln a) + q u, with q = sum over P-side legs of nu z.
+2. ``printed``: the source's printed equation, transcribed term by term in its own pH-7 form
+   (each scalar proton as RT ln(h_N/1e-7 M)), returning its forward and backward terms.
+3. ``dG_appendix``: the law's free energy as the appendix writes it in its section.
+4. ``S_closed`` and ``backward_closed``: the appendix's stated closed forms of S and of the
+   balanced backward term.
+5. ``slopes_lnA`` and ``slopes_lnB``: hand-derived log-slopes, checked against numerical
+   differentiation of paths 1 and 2.
+
+The declared form is J = S (1 - e^x). With J = A (1 - e^{x/n}) for n = kappa_inv (1, 2 or 4),
+S = A / sum_{j<n} e^{j x/n}. A balanced law keeps the printed forward term A.
+"""
+from __future__ import annotations
+
+TEN_M7 = "1e-7"  # the source's pH-7 proton concentration, M
+
+
+def _u(C, s):
+    return C["F_RT_per_mV"] * s["dpsi_mV"]
+
+
+def _sum(xs):
+    it = iter(xs)
+    total = next(it)
+    for v in it:
+        total = total + v
+    return total
+
+
+class Law:
+    """A thermodynamic cycle law J = S (1 - e^x)."""
+
+    key = ""
+    law_id = ""
+    section = ""
+    title = ""
+    legs: tuple = ()  # (state key or None for water at activity 1, side, nu, z)
+    kappa_inv = 1
+    column = "with"
+    reads_S: tuple = ()  # literal "Reads" of S, without dpsi_mV
+    reads_x: tuple = ()  # literal "Reads" of x, without dpsi_mV
+    printed_eq = ""
+    printed_fails = False
+    has_flux = True
+    scalar_protons = 0  # nu_H of the pH-7 conversion: dG0(1 M) = dG0(pH 7) + nu_H RT ln 1e7
+
+    # --- stoichiometry ------------------------------------------------------------------------
+    def legs_(self, P):
+        return self.legs
+
+    def nu(self, P) -> dict:
+        out = {}
+        for k, _side, nu, _z in self.legs_(P):
+            if k is not None:
+                out[k] = out.get(k, 0) + nu
+        return out
+
+    def q(self, P) -> int:
+        return sum(nu * z for _k, side, nu, z in self.legs_(P) if side == "P")
+
+    def q_N(self, P) -> int:
+        return sum(nu * z for _k, side, nu, z in self.legs_(P) if side == "N")
+
+    def reads(self):
+        out = []
+        for v in tuple(self.reads_S) + tuple(self.reads_x):
+            if v not in out:
+                out.append(v)
+        return out
+
+    def dG0_pH7(self, B, P):
+        raise NotImplementedError
+
+    def dG0_1M(self, B, P, C):
+        return self.dG0_pH7(B, P) + B.n(self.scalar_protons) * C["RT_ln_1e7"]
+
+    # --- path 1 -------------------------------------------------------------------------------
+    def x_terms(self, B, P, C, s):
+        terms = [("dG0", self.dG0_1M(B, P, C) / C["RT"])]
+        for k, _side, nu, _z in self.legs_(P):
+            if k is None:
+                continue
+            terms.append((k, B.n(nu) * B.ln(s[k])))
+        terms.append(("u", B.n(self.q(P)) * _u(C, s)))
+        return terms
+
+    def x(self, B, P, C, s):
+        return _sum(v for _k, v in self.x_terms(B, P, C, s))
+
+    # --- the rest is per law ------------------------------------------------------------------
+    def printed(self, B, P, C, s):
+        raise NotImplementedError
+
+    def dG_appendix(self, B, P, C, s):
+        raise NotImplementedError
+
+    def S_closed(self, B, P, C, s):
+        raise NotImplementedError
+
+    def slopes_lnA(self, B, P, C, s) -> dict:
+        raise NotImplementedError
+
+    def slopes_lnB(self, B, P, C, s) -> dict:
+        raise NotImplementedError
+
+    @staticmethod
+    def _dGH(B, C, s):
+        """dG_H = F dpsi + RT ln(h_P/h_N), J/mol, with F dpsi = RT u."""
+        return C["RT"] * (_u(C, s) + B.ln(s["h_P"] / s["h_N"]))
+
+
+# ============================================================================================
+# Section 1: redox_driven_proton_cycle@1
+# ============================================================================================
+class ComplexI(Law):
+    key = "complex_I"
+    law_id = "redox_driven_proton_cycle@1"
+    section = "1.1"
+    title = "Complex I, per NADH (Eqs. 2-5)"
+    legs = (
+        ("NADH_N", "N", -1, -2),
+        ("Q_N", "N", -1, 0),
+        ("NAD_N", "N", 1, -1),
+        ("QH2_N", "N", 1, 0),
+        ("h_N", "N", -5, 1),
+        ("h_P", "P", 4, 1),
+    )
+    scalar_protons = -1
+    reads_S = ("NADH_N", "NAD_N", "Q_N", "QH2_N", "h_N", "h_P")
+    reads_x = ("NADH_N", "NAD_N", "Q_N", "QH2_N", "h_N", "h_P")
+    printed_eq = "Eq. 3"
+
+    def dG0_pH7(self, B, P):
+        return B.n(P["dG0_C1_pH7"])
+
+    def printed(self, B, P, C, s):
+        RT = C["RT"]
+        dGH = self._dGH(B, C, s)
+        expo = -(
+            B.n(P["dG0_C1_pH7"])
+            + 4 * dGH
+            - RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            - RT * B.ln(s["Q_N"] / s["QH2_N"])
+        ) / RT
+        X = B.n(P["X_C1"])
+        return X * B.exp(expo) * s["NADH_N"], X * s["NAD_N"]
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return (
+            B.n(P["dG0_C1_pH7"])
+            + RT * B.ln(s["NAD_N"] * s["QH2_N"] / (s["NADH_N"] * s["Q_N"]))
+            - RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            + 4 * self._dGH(B, C, s)
+        )
+
+    def S_closed(self, B, P, C, s):
+        # S = X_C1 e^{-dG0_C1/RT} 1e7 [NADH][Q][QH2]^-1 h_N^5 h_P^-4 e^{-4u}
+        return (
+            B.n(P["X_C1"])
+            * B.exp(-B.n(P["dG0_C1_pH7"]) / C["RT"])
+            * B.n("1e7")
+            * s["NADH_N"]
+            * s["Q_N"]
+            / s["QH2_N"]
+            * s["h_N"] ** 5
+            / s["h_P"] ** 4
+            * B.exp(-4 * _u(C, s))
+        )
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        return {"NADH_N": n(1), "NAD_N": n(0), "Q_N": n(1), "QH2_N": n(-1), "h_N": n(5),
+                "h_P": n(-4), "u": n(-4)}
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        return {"NADH_N": n(0), "NAD_N": n(1), "Q_N": n(0), "QH2_N": n(0), "h_N": n(0),
+                "h_P": n(0), "u": n(0)}
+
+
+class _ComplexIII(Law):
+    law_id = "redox_driven_proton_cycle@1"
+    section = "1.2"
+    legs = (
+        ("QH2_N", "N", -1, 0),
+        ("Q_N", "N", 1, 0),
+        ("c3_P", "P", -2, 3),
+        ("c2_P", "P", 2, 2),
+        ("h_N", "N", -2, 1),
+        ("h_P", "P", 4, 1),
+    )
+    scalar_protons = 2
+    kappa_inv = 2
+
+    def dG0_pH7(self, B, P):
+        return B.n(P["dG0_C3_pH7"])
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return (
+            B.n(P["dG0_C3_pH7"])
+            + RT * B.ln(s["Q_N"] * s["c2_P"] ** 2 / (s["QH2_N"] * s["c3_P"] ** 2))
+            + 2 * RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            + 4 * self._dGH(B, C, s)
+            - 2 * RT * _u(C, s)
+        )
+
+
+class ComplexIIIEq7(_ComplexIII):
+    key = "complex_III_eq7"
+    title = "Complex III without phosphate control, per QH2 (Eqs. 6, 7)"
+    column = "without"
+    reads_S = ("QH2_N", "Q_N", "c3_P", "c2_P", "h_N", "h_P")
+    reads_x = ("QH2_N", "Q_N", "c3_P", "c2_P", "h_N", "h_P")
+    printed_eq = "Eq. 7"
+
+    def printed(self, B, P, C, s):
+        RT = C["RT"]
+        Fdpsi = RT * _u(C, s)
+        expo = -(
+            B.n(P["dG0_C3_pH7"])
+            + 4 * self._dGH(B, C, s)
+            + 2 * RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            - 2 * Fdpsi
+            + RT * B.ln(s["Q_N"] / s["QH2_N"])
+        ) / (2 * RT)
+        X = B.n(P["X_C3"])
+        return X * B.exp(expo) * s["c3_P"], X * s["c2_P"]
+
+    def S_closed(self, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        return A / (1 + B.exp(self.x(B, P, C, s) / 2))
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        return {"QH2_N": n("0.5"), "Q_N": n("-0.5"), "c3_P": n(1), "c2_P": n(0), "h_N": n(1),
+                "h_P": n(-2), "u": n(-1)}
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        return {"QH2_N": n(0), "Q_N": n(0), "c3_P": n(0), "c2_P": n(1), "h_N": n(0),
+                "h_P": n(0), "u": n(0)}
+
+
+class ComplexIIIEq24(_ComplexIII):
+    key = "complex_III_eq24"
+    title = "Complex III with phosphate control, per QH2 (Eq. 24)"
+    column = "with"
+    reads_S = ("QH2_N", "Q_N", "c3_P", "c2_P", "h_N", "h_P", "Pi_N")
+    reads_x = ("QH2_N", "Q_N", "c3_P", "c2_P", "h_N", "h_P")
+    printed_eq = "Eq. 24"
+    printed_fails = True
+
+    @staticmethod
+    def phi(B, P, s):
+        k3 = B.n(P["k_Pi3_mM"]) / 1000
+        k4 = B.n(P["k_Pi4_mM"]) / 1000
+        return (1 + s["Pi_N"] / k3) / (1 + s["Pi_N"] / k4)
+
+    def printed(self, B, P, C, s):
+        RT = C["RT"]
+        Fdpsi = RT * _u(C, s)
+        expo = -(
+            B.n(P["dG0_C3_pH7"])
+            + 4 * self._dGH(B, C, s)
+            - 2 * Fdpsi
+            + RT * B.ln(s["Q_N"] / s["QH2_N"])
+        ) / (2 * RT)
+        Xphi = B.n(P["X_C3"]) * self.phi(B, P, s)
+        return Xphi * B.exp(expo) * s["c3_P"], Xphi * s["c2_P"]
+
+    def S_closed(self, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        return A / (1 + B.exp(self.x(B, P, C, s) / 2))
+
+    def backward_closed(self, B, P, C, s):
+        """The balanced backward term as the appendix states it: X_C3 phi [c2+] h_N/1e-7."""
+        return B.n(P["X_C3"]) * self.phi(B, P, s) * s["c2_P"] * s["h_N"] / B.n(TEN_M7)
+
+    def d_closed(self, B, P, C, s):
+        """Eq. 24's mismatch d = 2 ln(B/A) - x = -2 ln(h_N/1e-7)."""
+        return -2 * B.ln(s["h_N"] / B.n(TEN_M7))
+
+    def _phi_slope(self, B, P, s):
+        k3 = B.n(P["k_Pi3_mM"]) / 1000
+        k4 = B.n(P["k_Pi4_mM"]) / 1000
+        Pi = s["Pi_N"]
+        return Pi / (k3 + Pi) - Pi / (k4 + Pi)
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        return {"QH2_N": n("0.5"), "Q_N": n("-0.5"), "c3_P": n(1), "c2_P": n(0), "h_N": n(2),
+                "h_P": n(-2), "Pi_N": self._phi_slope(B, P, s), "u": n(-1)}
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        return {"QH2_N": n(0), "Q_N": n(0), "c3_P": n(0), "c2_P": n(1), "h_N": n(0),
+                "h_P": n(0), "Pi_N": self._phi_slope(B, P, s), "u": n(0)}
+
+
+class ComplexIV(Law):
+    key = "complex_IV"
+    law_id = "redox_driven_proton_cycle@1"
+    section = "1.3"
+    title = "Complex IV, per O2 (Eqs. 8, 9)"
+    legs = (
+        ("O2_N", "N", -1, 0),
+        ("c2_P", "P", -4, 2),
+        ("c3_P", "P", 4, 3),
+        ("h_N", "N", -8, 1),
+        ("h_P", "P", 4, 1),
+        (None, "N", 2, 0),  # 2 H2O at activity 1
+    )
+    scalar_protons = -4
+    kappa_inv = 4
+    reads_S = ("O2_N", "c2_P", "c3_P", "h_N", "h_P")
+    reads_x = ("O2_N", "c2_P", "c3_P", "h_N", "h_P")
+    printed_eq = "Eq. 9"
+
+    def dG0_pH7(self, B, P):
+        return 2 * B.n(P["dG0_C4_pH7_half_O2"])
+
+    @staticmethod
+    def _pref(B, P, s, ctot=None):
+        f_O2 = 1 / (1 + B.n(P["k_O2"]) / s["O2_N"])
+        c_tot = s["c3_P"] + s["c2_P"] if ctot is None else ctot
+        return B.n(P["X_C4"]) * f_O2 * (s["c2_P"] / c_tot)
+
+    def printed_per_two_electrons(self, B, P, C, s, ctot=None):
+        RT = C["RT"]
+        expo = -(
+            B.n(P["dG0_C4_pH7_half_O2"])
+            + 2 * self._dGH(B, C, s)
+            - 2 * RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            - RT * B.ln(s["O2_N"]) / 2
+        ) / (2 * RT)
+        pref = self._pref(B, P, s, ctot)
+        return pref * B.exp(expo) * s["c2_P"], pref * B.exp(_u(C, s)) * s["c3_P"]
+
+    def printed(self, B, P, C, s):
+        A9, B9 = self.printed_per_two_electrons(B, P, C, s)
+        return A9 / 2, B9 / 2  # J = J_C4/2 per O2
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return (
+            2 * B.n(P["dG0_C4_pH7_half_O2"])
+            + RT * B.ln(s["c3_P"] ** 4 / (s["c2_P"] ** 4 * s["O2_N"]))
+            - 4 * RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            + 4 * self._dGH(B, C, s)
+            + 4 * RT * _u(C, s)
+        )
+
+    def S_closed(self, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        x = self.x(B, P, C, s)
+        return A / (1 + B.exp(x / 4) + B.exp(x / 2) + B.exp(3 * x / 4))
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        c_tot = s["c2_P"] + s["c3_P"]
+        kO2 = n(P["k_O2"])
+        return {
+            "O2_N": n("0.25") + kO2 / (s["O2_N"] + kO2),
+            "c2_P": 1 + s["c3_P"] / c_tot,
+            "c3_P": -s["c3_P"] / c_tot,
+            "h_N": n(2),
+            "h_P": n(-1),
+            "u": n(-1),
+        }
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        c_tot = s["c2_P"] + s["c3_P"]
+        kO2 = n(P["k_O2"])
+        return {
+            "O2_N": kO2 / (s["O2_N"] + kO2),
+            "c2_P": s["c3_P"] / c_tot,
+            "c3_P": s["c2_P"] / c_tot,
+            "h_N": n(0),
+            "h_P": n(0),
+            "u": n(1),
+        }
+
+
+class LumpedQuinolOxygen(Law):
+    """Section 1.4: stoichiometry and free energy only; the source prints no kinetics."""
+
+    key = "lumped_QO"
+    law_id = "redox_driven_proton_cycle@1"
+    section = "1.4"
+    title = "Lumped quinol-to-oxygen cycle, per O2 (no kinetics)"
+    legs = (
+        ("QH2_N", "N", -2, 0),
+        ("Q_N", "N", 2, 0),
+        ("O2_N", "N", -1, 0),
+        ("h_N", "N", -12, 1),
+        ("h_P", "P", 12, 1),
+        (None, "N", 2, 0),
+    )
+    scalar_protons = 0
+    reads_S = ()
+    reads_x = ("QH2_N", "Q_N", "O2_N", "h_N", "h_P")
+    has_flux = False
+
+    def dG0_pH7(self, B, P):
+        return 2 * (B.n(P["dG0_C3_pH7"]) + B.n(P["dG0_C4_pH7_half_O2"]))
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return (
+            self.dG0_pH7(B, P)
+            + RT * B.ln(s["Q_N"] ** 2 / (s["QH2_N"] ** 2 * s["O2_N"]))
+            + 12 * self._dGH(B, C, s)
+        )
+
+
+# ============================================================================================
+# Section 2: proton_coupled_atp_synthesis_cycle@1
+# ============================================================================================
+class ATPSynthase(Law):
+    key = "atp_synthase"
+    law_id = "proton_coupled_atp_synthesis_cycle@1"
+    section = "2"
+    title = "ATP synthesis, per ATP (Eqs. 10, 11)"
+    reads_S = ("MgADP_N", "Pi_N", "h_N", "h_P")
+    reads_x = ("ATP4_N", "ADP3_N", "HPO4_N", "h_N", "h_P")
+    printed_eq = "Eq. 11"
+    printed_fails = True
+
+    def legs_(self, P):
+        nA = int(P["n_A"])
+        return (
+            ("ADP3_N", "N", -1, -3),
+            ("HPO4_N", "N", -1, -2),
+            ("ATP4_N", "N", 1, -4),
+            (None, "N", 1, 0),  # H2O
+            ("h_N", "N", nA - 1, 1),
+            ("h_P", "P", -nA, 1),
+        )
+
+    def dG0_pH7(self, B, P):
+        return B.n(P["dG0_ATP_pH7"])
+
+    def dG0_1M(self, B, P, C):
+        """dG0_F = dG0_ATP + RT ln(1e-7) - RT ln(1 + 1e-7 M/k_dH) (appendix section 2)."""
+        RT = C["RT"]
+        t = B.n(TEN_M7)
+        return B.n(P["dG0_ATP_pH7"]) + RT * B.ln(t) - RT * B.ln(1 + t / B.n(P["k_dH"]))
+
+    def printed(self, B, P, C, s):
+        RT = C["RT"]
+        nA = B.n(int(P["n_A"]))
+        expo = -(B.n(P["dG0_ATP_pH7"]) - nA * self._dGH(B, C, s)) / RT
+        X = B.n(P["X_F1"])
+        ratio = B.n(P["K_MgADP"]) / B.n(P["K_MgATP"])
+        return X * B.exp(expo) * ratio * s["MgADP_N"] * s["Pi_N"], X * B.n(1) * s["MgATP_N"]
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        nA = B.n(int(P["n_A"]))
+        return (
+            self.dG0_1M(B, P, C)
+            + RT * B.ln(s["ATP4_N"] / (s["ADP3_N"] * s["HPO4_N"] * s["h_N"]))
+            - nA * self._dGH(B, C, s)
+        )
+
+    def x_source_frame(self, B, P, C, s):
+        """x in the source's own frame: total Pi as one species, Eq. 10's scalar proton."""
+        RT = C["RT"]
+        nA = B.n(int(P["n_A"]))
+        return (
+            B.n(P["dG0_ATP_pH7"])
+            + RT * B.ln(s["ATP4_N"] / (s["ADP3_N"] * s["Pi_N"]))
+            - RT * B.ln(s["h_N"] / B.n(TEN_M7))
+            - nA * self._dGH(B, C, s)
+        ) / RT
+
+    def S_closed(self, B, P, C, s):
+        nA = int(P["n_A"])
+        return (
+            B.n(P["X_F1"])
+            * B.exp(-B.n(P["dG0_ATP_pH7"]) / C["RT"])
+            * (B.n(P["K_MgADP"]) / B.n(P["K_MgATP"]))
+            * s["MgADP_N"]
+            * s["Pi_N"]
+            * s["h_P"] ** nA
+            / s["h_N"] ** nA
+            * B.exp(B.n(nA) * _u(C, s))
+        )
+
+    def backward_closed(self, B, P, C, s):
+        """X_F1 (1 M)[MgATP] (1e-7/h_N)(1 + h_N/k_dH)/(1 + 1e-7/k_dH): binding at equilibrium."""
+        t = B.n(TEN_M7)
+        k = B.n(P["k_dH"])
+        return B.n(P["X_F1"]) * s["MgATP_N"] * (t / s["h_N"]) * (1 + s["h_N"] / k) / (1 + t / k)
+
+    def d_closed(self, B, P, C, s):
+        """Eq. 11's mismatch ln(B/A) - x = ln(h_N/1e-7) - ln[(1 + h_N/k_dH)/(1 + 1e-7/k_dH)]."""
+        t = B.n(TEN_M7)
+        k = B.n(P["k_dH"])
+        return B.ln(s["h_N"] / t) - B.ln((1 + s["h_N"] / k) / (1 + t / k))
+
+    def d_closed_source_frame(self, B, P, C, s):
+        return B.ln(s["h_N"] / B.n(TEN_M7))
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        nA = n(int(P["n_A"]))
+        return {"MgADP_N": n(1), "Pi_N": n(1), "h_N": -nA, "h_P": nA, "ATP4_N": n(0),
+                "ADP3_N": n(0), "HPO4_N": n(0), "u": nA}
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        return {"MgATP_N": n(1), "MgADP_N": n(0), "Pi_N": n(0), "h_N": n(0), "h_P": n(0),
+                "ATP4_N": n(0), "ADP3_N": n(0), "HPO4_N": n(0), "u": n(0)}
+
+
+# ============================================================================================
+# Section 3: electrogenic_nucleotide_exchange@1
+# ============================================================================================
+class NucleotideExchange(Law):
+    key = "nucleotide_exchange"
+    law_id = "electrogenic_nucleotide_exchange@1"
+    section = "3"
+    title = "Adenine nucleotide exchange, ATP out for ADP in (Eq. 14)"
+    legs = (
+        ("ATP4_N", "N", -1, -4),
+        ("ATP4_P", "P", 1, -4),
+        ("ADP3_P", "P", -1, -3),
+        ("ADP3_N", "N", 1, -3),
+    )
+    reads_S = ("ATP4_N", "ADP3_N", "ATP4_P", "ADP3_P")
+    reads_x = ("ATP4_N", "ADP3_N", "ATP4_P", "ADP3_P")
+    printed_eq = "Eq. 14"
+
+    def dG0_pH7(self, B, P):
+        return B.n(0)
+
+    def _abcd(self, B, P, C, s):
+        u = _u(C, s)
+        a = s["ADP3_P"]
+        b = s["ATP4_P"] * B.exp(-B.n(P["theta_P"]) * u)
+        c = s["ADP3_N"]
+        d = s["ATP4_N"] * B.exp(B.n(P["theta_N"]) * u)
+        g = 1 / (1 + B.n(P["k_mADP"]) / a)
+        return a, b, c, d, g
+
+    def printed_literal(self, B, P, C, s):
+        """Eq. 14 exactly as printed: X {a/(a+b) - c/(c+d)} / (1 + k_mADP/a)."""
+        a, b, c, d, g = self._abcd(B, P, C, s)
+        return B.n(P["X_ANT"]) * (a / (a + b) - c / (c + d)) * g
+
+    def printed(self, B, P, C, s):
+        a, b, c, d, g = self._abcd(B, P, C, s)
+        den = (a + b) * (c + d)
+        X = B.n(P["X_ANT"])
+        return X * g * a * d / den, X * g * b * c / den
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return RT * B.ln(s["ATP4_P"] * s["ADP3_N"] / (s["ATP4_N"] * s["ADP3_P"])) - RT * _u(C, s)
+
+    def S_closed(self, B, P, C, s):
+        u = _u(C, s)
+        tP, tN = B.n(P["theta_P"]), B.n(P["theta_N"])
+        num = s["ADP3_P"] * s["ATP4_N"] * B.exp(tN * u)
+        den = (s["ADP3_P"] + s["ATP4_P"] * B.exp(-tP * u)) * (s["ADP3_N"] + s["ATP4_N"] * B.exp(tN * u))
+        return B.n(P["X_ANT"]) * num / den / (1 + B.n(P["k_mADP"]) / s["ADP3_P"])
+
+    def slopes_lnA(self, B, P, C, s):
+        a, b, c, d, _g = self._abcd(B, P, C, s)
+        km = B.n(P["k_mADP"])
+        tP, tN = B.n(P["theta_P"]), B.n(P["theta_N"])
+        return {
+            "ADP3_P": km / (a + km) + b / (a + b),
+            "ATP4_P": -b / (a + b),
+            "ADP3_N": -c / (c + d),
+            "ATP4_N": c / (c + d),
+            "u": tN * c / (c + d) + tP * b / (a + b),
+        }
+
+    def slopes_lnB(self, B, P, C, s):
+        a, b, c, d, _g = self._abcd(B, P, C, s)
+        km = B.n(P["k_mADP"])
+        tP, tN = B.n(P["theta_P"]), B.n(P["theta_N"])
+        return {
+            "ADP3_P": km / (a + km) - a / (a + b),
+            "ATP4_P": a / (a + b),
+            "ADP3_N": d / (c + d),
+            "ATP4_N": -d / (c + d),
+            "u": -tP * a / (a + b) - tN * d / (c + d),
+        }
+
+
+# ============================================================================================
+# Section 4: phosphate_proton_symport@1
+# ============================================================================================
+class PhosphateCarrier(Law):
+    key = "phosphate_carrier"
+    law_id = "phosphate_proton_symport@1"
+    section = "4"
+    title = "Phosphate carrier, one phosphate into N (Eqs. 15, 16)"
+    legs = (
+        ("HPO4_P", "P", -1, -2),
+        ("HPO4_N", "N", 1, -2),
+        ("h_P", "P", -2, 1),
+        ("h_N", "N", 2, 1),
+    )
+    reads_S = ("H2PO4_P", "h_N")
+    reads_x = ("HPO4_N", "HPO4_P", "h_N", "h_P")
+    printed_eq = "Eq. 16"
+    printed_fails = True
+
+    def dG0_pH7(self, B, P):
+        return B.n(0)
+
+    @staticmethod
+    def _k(B, P):
+        return B.n(P["k_PiHt_mM"]) / 1000
+
+    def printed(self, B, P, C, s):
+        X = B.n(P["X_PiHt"])
+        den = s["H2PO4_P"] + self._k(B, P)
+        return X * s["H2PO4_P"] * s["h_N"] / den, X * s["H2PO4_N"] * s["h_P"] / den
+
+    def dG_appendix(self, B, P, C, s):
+        return C["RT"] * B.ln(s["HPO4_N"] * s["h_N"] ** 2 / (s["HPO4_P"] * s["h_P"] ** 2))
+
+    def dG_appendix_H2PO4(self, B, P, C, s):
+        return C["RT"] * B.ln(s["H2PO4_N"] * s["h_N"] / (s["H2PO4_P"] * s["h_P"]))
+
+    def S_closed(self, B, P, C, s):
+        return B.n(P["X_PiHt"]) * s["H2PO4_P"] * s["h_N"] / (s["H2PO4_P"] + self._k(B, P))
+
+    def backward_closed(self, B, P, C, s):
+        """X_PiHt [H2PO4]_N h_N^2/(h_P ([H2PO4]_P + k_PiHt)): binding at equilibrium."""
+        return (
+            B.n(P["X_PiHt"]) * s["H2PO4_N"] * s["h_N"] ** 2
+            / (s["h_P"] * (s["H2PO4_P"] + self._k(B, P)))
+        )
+
+    def d_closed(self, B, P, C, s):
+        """Eq. 16's mismatch ln(B/A) - x = 2 ln(h_P/h_N)."""
+        return 2 * B.ln(s["h_P"] / s["h_N"])
+
+    def slopes_lnA(self, B, P, C, s):
+        k = self._k(B, P)
+        n = B.n
+        return {"H2PO4_P": k / (s["H2PO4_P"] + k), "h_N": n(1), "HPO4_N": n(0),
+                "HPO4_P": n(0), "h_P": n(0), "u": n(0)}
+
+    def slopes_lnB(self, B, P, C, s):
+        k = self._k(B, P)
+        n = B.n
+        return {"H2PO4_N": n(1), "h_P": n(1), "H2PO4_P": -s["H2PO4_P"] / (s["H2PO4_P"] + k),
+                "h_N": n(0), "HPO4_N": n(0), "HPO4_P": n(0), "u": n(0)}
+
+
+# ============================================================================================
+# Section 5: potassium_proton_exchange@1
+# ============================================================================================
+class PotassiumProtonExchange(Law):
+    key = "k_h_exchange"
+    law_id = "potassium_proton_exchange@1"
+    section = "5"
+    title = "K+/H+ exchange, one K+ into N (Eq. 21)"
+    legs = (
+        ("K_P", "P", -1, 1),
+        ("K_N", "N", 1, 1),
+        ("h_N", "N", -1, 1),
+        ("h_P", "P", 1, 1),
+    )
+    reads_S = ("K_N", "K_P", "h_N", "h_P")
+    reads_x = ("K_N", "K_P", "h_N", "h_P")
+    printed_eq = "Eq. 21"
+
+    def dG0_pH7(self, B, P):
+        return B.n(0)
+
+    def printed(self, B, P, C, s):
+        X = B.n(P["X_KH"])
+        return X * s["K_P"] * s["h_N"], X * s["K_N"] * s["h_P"]
+
+    def dG_appendix(self, B, P, C, s):
+        return C["RT"] * B.ln(s["K_N"] * s["h_P"] / (s["K_P"] * s["h_N"]))
+
+    def S_closed(self, B, P, C, s):
+        return B.n(P["X_KH"]) * s["K_P"] * s["h_N"]
+
+    def slopes_lnA(self, B, P, C, s):
+        n = B.n
+        return {"K_P": n(1), "h_N": n(1), "K_N": n(0), "h_P": n(0), "u": n(0)}
+
+    def slopes_lnB(self, B, P, C, s):
+        n = B.n
+        return {"K_N": n(1), "h_P": n(1), "K_P": n(0), "h_N": n(0), "u": n(0)}
+
+
+# ============================================================================================
+# Section 6: driven_redox_supply@1 (not a cycle)
+# ============================================================================================
+class NADHSupply:
+    key = "nadh_supply"
+    law_id = "driven_redox_supply@1"
+    section = "6"
+    title = "NADH supply, driven (Eq. 1)"
+    legs = (("NAD_N", "N", -1, -1), ("NADH_N", "N", 1, -2), ("h_N", "N", 1, 1))
+    reads = ("NAD_N", "NADH_N", "Pi_N")
+    column = "with"
+    has_flux = True
+    printed_eq = "Eq. 1"
+
+    def q(self, P):
+        return sum(nu * z for _k, side, nu, z in self.legs if side == "P")
+
+    def charge_sum(self):
+        return sum(nu * z for _k, _side, nu, z in self.legs)
+
+    @staticmethod
+    def phi(B, P, s):
+        k1 = B.n(P["k_Pi1_mM"]) / 1000
+        k2 = B.n(P["k_Pi2_mM"]) / 1000
+        return (1 + s["Pi_N"] / k1) / (1 + s["Pi_N"] / k2)
+
+    def evaluate(self, B, P, C, s):
+        X = B.n(P["X_DH"])
+        phi = self.phi(B, P, s)
+        r = B.n(P["r"])
+        Jp = X * phi * r * s["NAD_N"]
+        Jm = X * phi * s["NADH_N"]
+        J = X * phi * (r * s["NAD_N"] - s["NADH_N"])
+        k1 = B.n(P["k_Pi1_mM"]) / 1000
+        k2 = B.n(P["k_Pi2_mM"]) / 1000
+        Pi = s["Pi_N"]
+        phi_slope = Pi / (k1 + Pi) - Pi / (k2 + Pi)
+        return {
+            "J": J,
+            "J_plus": Jp,
+            "J_minus": Jm,
+            "dG_conc_J_per_mol": C["RT"] * B.ln(s["NADH_N"] * s["h_N"] / s["NAD_N"]),
+            "slopes_J": {"NAD_N": Jp, "NADH_N": -Jm, "Pi_N": J * phi_slope},
+        }
+
+
+CYCLE_LAWS = (
+    ComplexI(),
+    ComplexIIIEq7(),
+    ComplexIIIEq24(),
+    ComplexIV(),
+    LumpedQuinolOxygen(),
+    ATPSynthase(),
+    NucleotideExchange(),
+    PhosphateCarrier(),
+    PotassiumProtonExchange(),
+)
+SUPPLY = NADHSupply()
+LAWS_BY_KEY = {law.key: law for law in CYCLE_LAWS}
+LAWS_BY_KEY[SUPPLY.key] = SUPPLY
+
+
+# ============================================================================================
+# Evaluation of a declared, balanced or printed form
+# ============================================================================================
+def kappa_parts(B, n, x):
+    """E_j = e^{j x/n}, Z = sum E_j, w = d ln Z/dx and dw/dx (the variance of j/n)."""
+    E = [B.exp(B.n(j) * x / B.n(n)) for j in range(n)]
+    Z = _sum(E)
+    m1 = _sum(B.n(j) / B.n(n) * E[j] for j in range(n)) / Z
+    m2 = _sum((B.n(j) / B.n(n)) ** 2 * E[j] for j in range(n)) / Z
+    return E, Z, m1, m2 - m1 * m1
+
+
+def evaluate(law, B, P, C, s, form="declared"):
+    """All compared quantities of ``law`` at state ``s`` in ``form``.
+
+    ``form`` is "declared" (the law passes as printed; declared = printed), "balanced" (the
+    declared replacement of a failing printed equation) or "printed" (the failing equation as
+    printed). Slopes are d ln(.)/d ln(input) for concentrations and h, and d/du for u.
+    """
+    out = {}
+    xt = law.x_terms(B, P, C, s)
+    x = _sum(v for _k, v in xt)
+    RT, F = C["RT"], C["F"]
+    q = law.q(P)
+    FRT = C["F_RT_per_mV"]
+    out["x"] = x
+    out["dG_J_per_mol"] = RT * x
+    out["affinity_J_per_mol"] = -RT * x
+    if q != 0:
+        out["static_head_mV"] = s["dpsi_mV"] - x / (B.n(q) * FRT)
+    if not law.has_flux:
+        return out
+    A, Bp = law.printed(B, P, C, s)
+    n = law.kappa_inv
+    nu = law.nu(P)
+    sA = law.slopes_lnA(B, P, C, s)
+    reads = list(law.reads()) + ["u"]
+    if form == "printed":
+        sB = law.slopes_lnB(B, P, C, s)
+        J = A - Bp
+        # The printed terms may read forms outside "Reads" (Eq. 11's MgATP, Eq. 16's H2PO4 at N).
+        reads_pr = reads + [k for k in list(sA) + list(sB) if k not in reads]
+        out.update(S=A, J_minus=Bp, J=J, A_term=A, B_term=Bp)
+        out["lnB_over_A"] = B.ln(Bp / A)
+        out["slopes_lnA"] = {v: sA.get(v, B.n(0)) for v in reads_pr}
+        out["slopes_lnB"] = {v: sB.get(v, B.n(0)) for v in reads_pr}
+        dJ = {v: A * sA.get(v, B.n(0)) - Bp * sB.get(v, B.n(0)) for v in reads_pr}
+    else:
+        E, Z, w, _dw = kappa_parts(B, n, x)
+        S = A / Z
+        Jm = S * B.exp(x)
+        J = -S * B.expm1(x)
+        out.update(S=S, J_minus=Jm, J=J, A_term=A, B_term=A * E[1] if n > 1 else Jm)
+        nu_u = {**nu, "u": q}
+        sS = {v: sA.get(v, B.n(0)) - w * B.n(nu_u.get(v, 0)) for v in reads}
+        out["slopes_lnS"] = sS
+        dJ = {v: J * sS[v] - Jm * B.n(nu_u.get(v, 0)) for v in reads}
+    out["slopes_J"] = dJ
+    out["I_A_per_L"] = B.n(q) * F * J
+    out["dissipation_W_per_L"] = -J * RT * x
+    out["dI_ddpsi_A_per_L_per_mV"] = B.n(q) * F * dJ["u"] * FRT
+    return out

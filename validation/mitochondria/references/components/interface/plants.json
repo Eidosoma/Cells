@@ -1,0 +1,6047 @@
+{
+ "kind": "cells.mito_component_reference_plants@1",
+ "plants": {
+  "ANT_shares_0.35_0.60": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "3.25E+12"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "2.93E+12"
+      },
+      "I_A_per_L": {
+       "caught": 45,
+       "max_margin": "3.25E+12"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "3.25E+12"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "2.93E+12"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "3.25E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "3.12E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "2.75E+12"
+      },
+      "slopes_J": {
+       "caught": 196,
+       "max_margin": "3.21E+12"
+      },
+      "slopes_lnS": {
+       "caught": 151,
+       "max_margin": "1.22E+13"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=-3",
+     "max_margin": "1.22E+13",
+     "max_quantity": "slopes_lnS.ATP4_N",
+     "min_at": "corner:dpsi_mV=0,R_N=1e3,R_P=1e-3,Mg_N=1e-4,Mg_P=1e-4",
+     "min_margin_where_caught": "5.61E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "Section 8: exchange shares that do not sum to one (theta_P 0.35, theta_N 0.60)",
+   "kind": "thermodynamic",
+   "law": "nucleotide_exchange",
+   "section_8_named": true
+  },
+  "ANT_shares_swapped": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "5.63E+13"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "2.00E+13"
+      },
+      "I_A_per_L": {
+       "caught": 43,
+       "max_margin": "5.63E+13"
+      },
+      "J": {
+       "caught": 43,
+       "max_margin": "5.63E+13"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "2.00E+13"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "5.63E+13"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 57,
+       "max_margin": "3.34E+13"
+      },
+      "dissipation_W_per_L": {
+       "caught": 43,
+       "max_margin": "4.71E+13"
+      },
+      "slopes_J": {
+       "caught": 237,
+       "max_margin": "3.44E+13"
+      },
+      "slopes_lnS": {
+       "caught": 241,
+       "max_margin": "9.60E+13"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=250,R_N=1e-3,R_P=1e3,Mg_N=1e-4,Mg_P=5e-3",
+     "max_margin": "9.60E+13",
+     "max_quantity": "slopes_lnS.ATP4_P",
+     "min_at": "corner:dpsi_mV=250,R_N=1e3,R_P=1e-3,Mg_N=1e-4,Mg_P=1e-4",
+     "min_margin_where_caught": "4.02E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "corner:dpsi_mV=0,R_N=1e-3,R_P=1e-3,Mg_N=1e-4,Mg_P=1e-4",
+      "corner:dpsi_mV=0,R_N=1e-3,R_P=1e-3,Mg_N=5e-3,Mg_P=5e-3",
+      "corner:dpsi_mV=0,R_N=1e3,R_P=1e3,Mg_N=1e-4,Mg_P=1e-4",
+      "corner:dpsi_mV=0,R_N=1e3,R_P=1e3,Mg_N=5e-3,Mg_P=5e-3"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "shares swapped, theta_P 0.65 and theta_N 0.35 (they still sum to one)",
+   "kind": "kinetic",
+   "law": "nucleotide_exchange",
+   "section_8_named": false
+  },
+  "ANT_totals": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "1.09E+14"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "4.76E+13"
+      },
+      "I_A_per_L": {
+       "caught": 56,
+       "max_margin": "8.14E+13"
+      },
+      "J": {
+       "caught": 56,
+       "max_margin": "8.14E+13"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "4.76E+13"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "1.09E+14"
+      },
+      "affinity_J_per_mol": {
+       "caught": 33,
+       "max_margin": "7.12E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 33,
+       "max_margin": "7.12E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "5.60E+13"
+      },
+      "dissipation_W_per_L": {
+       "caught": 56,
+       "max_margin": "8.52E+24"
+      },
+      "slopes_J": {
+       "caught": 305,
+       "max_margin": "5.74E+13"
+      },
+      "slopes_lnS": {
+       "caught": 305,
+       "max_margin": "1.82E+14"
+      },
+      "static_head_mV": {
+       "caught": 33,
+       "max_margin": "7.12E+12"
+      },
+      "x": {
+       "caught": 33,
+       "max_margin": "7.12E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "8.52E+24",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,R_N=1e3,R_P=1e-3,Mg_N=1e-4,Mg_P=1e-4",
+     "min_margin_where_caught": "1.30E+11",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "total ATP and ADP in place of the Mg-free forms",
+   "kind": "binding",
+   "law": "nucleotide_exchange",
+   "section_8_named": false
+  },
+  "C1_dG0_display": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "5.44E+7"
+      },
+      "I_A_per_L": {
+       "caught": 49,
+       "max_margin": "9.48E+7"
+      },
+      "J": {
+       "caught": 49,
+       "max_margin": "9.48E+7"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "5.44E+7"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.06E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.06E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "6.30E-48"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "8.98E+15"
+      },
+      "slopes_J": {
+       "caught": 53,
+       "max_margin": "5.02E+7"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.06E+8"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "1.06E+8"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "8.98E+15",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_NAD=0.01,f_Q=0.99",
+     "min_margin_where_caught": "8.31E+7",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0 at 1 M as section 7 displays it, -110.934 kJ/mol",
+   "kind": "free-energy entry",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "C1_q_reversed": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "3.44E+44"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "5.77E-47"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "3.31E+44"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "3.31E+44"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "5.77E-47"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "3.44E+44"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "7.78E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "7.78E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 45,
+       "max_margin": "3.27E+44"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "6.45E+50"
+      },
+      "slopes_J": {
+       "caught": 286,
+       "max_margin": "3.28E+44"
+      },
+      "slopes_lnS": {
+       "caught": 61,
+       "max_margin": "4.50E+14"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.02E+14"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "7.78E+13"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "6.45E+50",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_NAD=0.01,f_Q=0.01",
+     "min_margin_where_caught": "4.50E+14",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "Section 8: complex I with -4u in place of +4u (q = -4)",
+   "kind": "thermodynamic",
+   "law": "complex_I",
+   "section_8_named": true
+  },
+  "C1_scalar_proton_dropped": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "5.42E+11"
+      },
+      "I_A_per_L": {
+       "caught": 56,
+       "max_margin": "7.09E+11"
+      },
+      "J": {
+       "caught": 56,
+       "max_margin": "7.09E+11"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "5.42E+11"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.12E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.12E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "1.14E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "6.35E+23"
+      },
+      "slopes_J": {
+       "caught": 57,
+       "max_margin": "5.37E+11"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "3.12E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "3.12E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "6.35E+23",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "interior:3",
+     "min_margin_where_caught": "1.08E+11",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "complex I's dG without its scalar proton term -RT ln(h_N/1e-7)",
+   "kind": "thermodynamic",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "C3_eq24_dG0_display": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.63E+8"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "3.21E+8"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "3.21E+8"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "2.20E+8"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "1.52E+8"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "3.12E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.03E+17"
+      },
+      "slopes_J": {
+       "caught": 291,
+       "max_margin": "3.21E+8"
+      },
+      "slopes_lnS": {
+       "caught": 679,
+       "max_margin": "3.04E+8"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.03E+17",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "min_margin_where_caught": "2.82E+8",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "3.21E+8"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "3.39E+8"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.99,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "3.39E+8",
+     "max_quantity": "static_head_mV",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "min_margin_where_caught": "2.82E+8",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol",
+   "kind": "free-energy entry",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "C3_eq24_kappa_one": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 95,
+       "max_margin": "4.28E+18"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.21E+18"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.21E+18"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "2.21E+18"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "4.28E+18"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 95,
+       "max_margin": "5.52E+17"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "2.18E+18"
+      },
+      "slopes_J": {
+       "caught": 764,
+       "max_margin": "2.19E+18"
+      },
+      "slopes_lnS": {
+       "caught": 679,
+       "max_margin": "1.41E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "4.28E+18",
+     "max_quantity": "S",
+     "min_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,f_Q=0.99,f_c=0.01,Pi_N=2e-2",
+     "min_margin_where_caught": "1.31E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "J = A (1 - e^x) in place of A (1 - e^{x/2})",
+   "kind": "kinetic",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "C3_eq24_other_form": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 95,
+       "max_margin": "2.17E+13"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.08E+13"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.08E+13"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "8.41E+18"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "4.28E+18"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "2.14E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "1.53E+13"
+      },
+      "slopes_J": {
+       "caught": 287,
+       "max_margin": "2.06E+13"
+      },
+      "slopes_lnS": {
+       "caught": 679,
+       "max_margin": "1.41E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_Q=0.99,f_c=0.01,Pi_N=1e-4",
+     "max_margin": "8.41E+18",
+     "max_quantity": "J_minus",
+     "min_at": "near_eq:B:x=-3",
+     "min_margin_where_caught": "3.46E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 95,
+       "max_margin": "2.10E+13"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.10E+13"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.10E+13"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "2.24E+13"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.64E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "7.03E-45"
+      },
+      "dissipation_W_per_L": {
+       "caught": 93,
+       "max_margin": "1.37E+13"
+      },
+      "slopes_J": {
+       "caught": 287,
+       "max_margin": "4.45E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=6.5,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "4.45E+14",
+     "max_quantity": "slopes_J.h_N",
+     "min_at": "coincidence:x=0.5",
+     "min_margin_where_caught": "6.45E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "Eq. 24 printed judged against balanced, or balanced against printed",
+   "kind": "printed vs balanced",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "C3_eq24_phi_inverted": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "2.90E+12"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.52E+12"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.90E+12"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.90E+12"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "1.03E+12"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.90E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "2.82E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "2.69E+12"
+      },
+      "slopes_J": {
+       "caught": 774,
+       "max_margin": "4.08E+12"
+      },
+      "slopes_lnS": {
+       "caught": 97,
+       "max_margin": "2.53E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "interior:6",
+     "max_margin": "2.53E+14",
+     "max_quantity": "slopes_lnS.Pi_N",
+     "min_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,f_c=0.01,Pi_N=1e-4",
+     "min_margin_where_caught": "1.42E+14",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "2.90E+12"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.95E+13"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "1.95E+13"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "1.95E+13"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "1.95E+13"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.90E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "2.82E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 93,
+       "max_margin": "1.33E+13"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "2.51E-47"
+      },
+      "slopes_J": {
+       "caught": 774,
+       "max_margin": "2.45E+13"
+      },
+      "slopes_lnA": {
+       "caught": 97,
+       "max_margin": "2.53E+14"
+      },
+      "slopes_lnB": {
+       "caught": 97,
+       "max_margin": "2.53E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "interior:6",
+     "max_margin": "2.53E+14",
+     "max_quantity": "slopes_lnA.Pi_N",
+     "min_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,f_c=0.01,Pi_N=1e-4",
+     "min_margin_where_caught": "1.42E+14",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "phosphate control inverted: (1 + Pi/k_Pi4)/(1 + Pi/k_Pi3)",
+   "kind": "kinetic",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "C3_eq7_dG0_display": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "1.79E+8"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "3.21E+8"
+      },
+      "J": {
+       "caught": 61,
+       "max_margin": "3.21E+8"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "2.34E+8"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "1.67E+8"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.39E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.39E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "6.32E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "1.03E+17"
+      },
+      "slopes_J": {
+       "caught": 61,
+       "max_margin": "1.48E+8"
+      },
+      "slopes_lnS": {
+       "caught": 427,
+       "max_margin": "3.04E+8"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "3.39E+8"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "3.39E+8"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.03E+17",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99",
+     "min_margin_where_caught": "2.82E+8",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol",
+   "kind": "free-energy entry",
+   "law": "complex_III_eq7",
+   "section_8_named": false
+  },
+  "C4_ctot_parameter": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 6,
+       "max_margin": "1.16E+12"
+      },
+      "B_term": {
+       "caught": 6,
+       "max_margin": "6.14E+11"
+      },
+      "I_A_per_L": {
+       "caught": 6,
+       "max_margin": "1.16E+12"
+      },
+      "J": {
+       "caught": 6,
+       "max_margin": "1.16E+12"
+      },
+      "J_minus": {
+       "caught": 6,
+       "max_margin": "2.55E+11"
+      },
+      "S": {
+       "caught": 6,
+       "max_margin": "1.16E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 6,
+       "max_margin": "1.13E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 6,
+       "max_margin": "1.03E+12"
+      },
+      "slopes_J": {
+       "caught": 142,
+       "max_margin": "2.87E+12"
+      },
+      "slopes_lnS": {
+       "caught": 122,
+       "max_margin": "1.40E+14"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_c=0.01,O2=3e-4",
+     "max_margin": "1.40E+14",
+     "max_quantity": "slopes_lnS.c3_P",
+     "min_at": "near_eq:A:x=1e-3",
+     "min_margin_where_caught": "1.59E+12",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "center",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=6.5,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=6.5,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=6.5,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=6.5,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_c=0.99,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=3e-4",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.99,O2=1e-7",
+      "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.99,O2=3e-4",
+      "near_eq:A:x=-3",
+      "near_eq:A:x=-1",
+      "near_eq:A:x=-0.1",
+      "near_eq:A:x=-1e-3",
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:A:x=1e-3",
+      "near_eq:A:x=0.1",
+      "near_eq:A:x=1",
+      "near_eq:A:x=3",
+      "near_eq:B:x=-3",
+      "near_eq:B:x=-1",
+      "near_eq:B:x=-0.1",
+      "near_eq:B:x=-1e-3",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6",
+      "near_eq:B:x=1e-3",
+      "near_eq:B:x=0.1",
+      "near_eq:B:x=1",
+      "near_eq:B:x=3"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "c_tot = Table 1's cytC_tot in place of the clamped [c3+] + [c2+]",
+   "kind": "kinetic",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "C4_dG0_display": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "1.26E+7"
+      },
+      "I_A_per_L": {
+       "caught": 49,
+       "max_margin": "1.98E+7"
+      },
+      "J": {
+       "caught": 49,
+       "max_margin": "1.98E+7"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "1.92E+7"
+      },
+      "S": {
+       "caught": 49,
+       "max_margin": "1.48E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.32E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.32E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 49,
+       "max_margin": "2.28E+6"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "3.91E+14"
+      },
+      "slopes_J": {
+       "caught": 193,
+       "max_margin": "7.68E+6"
+      },
+      "slopes_lnS": {
+       "caught": 329,
+       "max_margin": "1.96E+7"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.32E+7"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.32E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "3.91E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.83E+7",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0 at 1 M as section 7 displays it, -412.137 kJ/mol",
+   "kind": "free-energy entry",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "C4_kappa_half": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 59,
+       "max_margin": "2.49E+16"
+      },
+      "I_A_per_L": {
+       "caught": 58,
+       "max_margin": "6.51E+15"
+      },
+      "J": {
+       "caught": 58,
+       "max_margin": "6.51E+15"
+      },
+      "J_minus": {
+       "caught": 58,
+       "max_margin": "6.51E+15"
+      },
+      "S": {
+       "caught": 60,
+       "max_margin": "1.28E+16"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 60,
+       "max_margin": "1.30E+15"
+      },
+      "dissipation_W_per_L": {
+       "caught": 58,
+       "max_margin": "6.43E+15"
+      },
+      "slopes_J": {
+       "caught": 332,
+       "max_margin": "1.63E+15"
+      },
+      "slopes_lnS": {
+       "caught": 366,
+       "max_margin": "7.03E+13"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=1e-7",
+     "max_margin": "2.49E+16",
+     "max_quantity": "B_term",
+     "min_at": "near_eq:A:x=-1",
+     "min_margin_where_caught": "7.77E+11",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "kappa = 1/2 per O2 in place of 1/4",
+   "kind": "kinetic",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "C4_per_half_O2": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "2.99E+12"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "1.36E+12"
+      },
+      "I_A_per_L": {
+       "caught": 59,
+       "max_margin": "2.99E+12"
+      },
+      "J": {
+       "caught": 59,
+       "max_margin": "2.99E+12"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "5.18E+11"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "2.99E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "2.90E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 59,
+       "max_margin": "2.86E+12"
+      },
+      "slopes_J": {
+       "caught": 366,
+       "max_margin": "2.94E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_c=0.99,O2=3e-4",
+     "max_margin": "2.99E+12",
+     "max_quantity": "A_term",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.77E+12",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "the per-electron-pair J_C4 used as the per-O2 flux",
+   "kind": "stoichiometry",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "DH_phi_inverted": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "J": {
+       "caught": 15,
+       "max_margin": "3.36E+13"
+      },
+      "J_minus": {
+       "caught": 15,
+       "max_margin": "3.37E+13"
+      },
+      "J_plus": {
+       "caught": 15,
+       "max_margin": "3.37E+13"
+      },
+      "dG_conc_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 45,
+       "max_margin": "3.37E+13"
+      }
+     },
+     "caught": 15,
+     "max_at": "corner:Pi_N=2e-2,f_NAD=0.01,pH_N=6.8",
+     "max_margin": "3.37E+13",
+     "max_quantity": "J_minus",
+     "min_at": "corner:Pi_N=1e-4,f_NAD=0.01,pH_N=6.8",
+     "min_margin_where_caught": "2.00E+13",
+     "rows": 15,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "Eq. 1's phosphate factor inverted",
+   "kind": "kinetic",
+   "law": "nadh_supply",
+   "section_8_named": false
+  },
+  "DH_r_on_NADH": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "J": {
+       "caught": 15,
+       "max_margin": "1.22E+14"
+      },
+      "J_minus": {
+       "caught": 15,
+       "max_margin": "1.26E+14"
+      },
+      "J_plus": {
+       "caught": 15,
+       "max_margin": "2.75E+13"
+      },
+      "dG_conc_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 45,
+       "max_margin": "1.26E+14"
+      }
+     },
+     "caught": 15,
+     "max_at": "corner:Pi_N=1e-4,f_NAD=0.99,pH_N=6.8",
+     "max_margin": "1.26E+14",
+     "max_quantity": "J_minus",
+     "min_at": "corner:Pi_N=1e-4,f_NAD=0.01,pH_N=6.8",
+     "min_margin_where_caught": "1.26E+14",
+     "rows": 15,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "r applied to NADH in place of NAD",
+   "kind": "kinetic",
+   "law": "nadh_supply",
+   "section_8_named": false
+  },
+  "F1_dG0_ATP_text_sign": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "3.24E+24"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.61E-46"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "3.02E+24"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "3.02E+24"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "2.61E-46"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "3.24E+24"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "2.58E+24"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.76E+38"
+      },
+      "slopes_J": {
+       "caught": 485,
+       "max_margin": "2.99E+24"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.76E+38",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "min_margin_where_caught": "2.29E+24",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "3.24E+24"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "2.98E+24"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "2.98E+24"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "3.24E+24"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "2.94E+24"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "2.71E+26"
+      },
+      "lnB_over_A": {
+       "caught": 97,
+       "max_margin": "5.73E+13"
+      },
+      "slopes_J": {
+       "caught": 485,
+       "max_margin": "2.97E+24"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "6.94E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=-0.1",
+     "max_margin": "2.71E+26",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "min_margin_where_caught": "2.29E+24",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0_ATP = -36.03 kJ/mol, the text's sign under Eq. 11, in place of Table 2's +36.03",
+   "kind": "free-energy entry",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "F1_dG0_display": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "8.99E+7"
+      },
+      "I_A_per_L": {
+       "caught": 89,
+       "max_margin": "1.60E+8"
+      },
+      "J": {
+       "caught": 89,
+       "max_margin": "1.60E+8"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "8.99E+7"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "1.56E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "2.55E+16"
+      },
+      "slopes_J": {
+       "caught": 548,
+       "max_margin": "1.60E+8"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "2.55E+16",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "1.26E+8",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "1.60E+8"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.85E+8"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=1e-4",
+     "max_margin": "1.85E+8",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "1.26E+8",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG0_F at 1 M as section 2 displays it, -6.685 kJ/mol",
+   "kind": "free-energy entry",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "F1_other_form": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 95,
+       "max_margin": "1.02E+12"
+      },
+      "I_A_per_L": {
+       "caught": 93,
+       "max_margin": "1.79E+12"
+      },
+      "J": {
+       "caught": 93,
+       "max_margin": "1.79E+12"
+      },
+      "J_minus": {
+       "caught": 95,
+       "max_margin": "1.02E+12"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "1.54E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 93,
+       "max_margin": "1.02E+12"
+      },
+      "slopes_J": {
+       "caught": 576,
+       "max_margin": "2.15E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "2.15E+12",
+     "max_quantity": "slopes_J.MgADP_N",
+     "min_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "2.72E+11",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 95,
+       "max_margin": "2.30E+14"
+      },
+      "I_A_per_L": {
+       "caught": 93,
+       "max_margin": "2.30E+14"
+      },
+      "J": {
+       "caught": 93,
+       "max_margin": "2.30E+14"
+      },
+      "J_minus": {
+       "caught": 95,
+       "max_margin": "2.30E+14"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "4.26E-44"
+      },
+      "dissipation_W_per_L": {
+       "caught": 91,
+       "max_margin": "1.60E+14"
+      },
+      "slopes_J": {
+       "caught": 576,
+       "max_margin": "2.96E+15"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "max_margin": "2.96E+15",
+     "max_quantity": "slopes_J.ATP4_N",
+     "min_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=1e-4",
+     "min_margin_where_caught": "3.55E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "Eq. 11 printed judged against balanced, or balanced against printed",
+   "kind": "printed vs balanced",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "F1_q_reversed": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "2.05E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "1.07E-46"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "2.83E+12"
+      },
+      "J": {
+       "caught": 65,
+       "max_margin": "2.15E+12"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "1.07E-46"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "2.05E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 65,
+       "max_margin": "1.89E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "1.54E+26"
+      },
+      "slopes_J": {
+       "caught": 352,
+       "max_margin": "2.57E+12"
+      },
+      "slopes_lnS": {
+       "caught": 97,
+       "max_margin": "4.22E+14"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.51E+14"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.54E+26",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "4.22E+14",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "2.05E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "4.84E+13"
+      },
+      "J": {
+       "caught": 65,
+       "max_margin": "1.95E+12"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "2.05E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 65,
+       "max_margin": "1.97E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "3.06E+14"
+      },
+      "lnB_over_A": {
+       "caught": 65,
+       "max_margin": "9.55E+13"
+      },
+      "slopes_J": {
+       "caught": 356,
+       "max_margin": "4.34E+12"
+      },
+      "slopes_lnA": {
+       "caught": 97,
+       "max_margin": "4.22E+14"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.51E+14"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "1.12E+14"
+      }
+     },
+     "caught": 97,
+     "max_at": "center",
+     "max_margin": "4.22E+14",
+     "max_quantity": "slopes_lnA.u",
+     "min_at": "center",
+     "min_margin_where_caught": "4.22E+14",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "q = +n_A in place of -n_A",
+   "kind": "thermodynamic",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "F1_total_Pi_in_dG": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "5.68E+11"
+      },
+      "I_A_per_L": {
+       "caught": 94,
+       "max_margin": "1.01E+12"
+      },
+      "J": {
+       "caught": 94,
+       "max_margin": "1.01E+12"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "5.68E+11"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "2.60E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.38E+24"
+      },
+      "slopes_J": {
+       "caught": 572,
+       "max_margin": "2.15E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.38E+24",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "5.90E+10",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "1.37E+12"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.58E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=1e-4",
+     "max_margin": "1.58E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "5.90E+10",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG from total Pi, not HPO4(2-)",
+   "kind": "binding",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "F1_totals_in_dG": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.49E+13"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "2.07E+13"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "2.07E+13"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "1.49E+13"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "4.12E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.03E+26"
+      },
+      "slopes_J": {
+       "caught": 580,
+       "max_margin": "2.07E+13"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "1.03E+26",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "min_margin_where_caught": "2.51E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "4.97E+12"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "6.14E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=5e-3",
+     "max_margin": "6.14E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=1e-4",
+     "min_margin_where_caught": "2.44E+12",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "dG from total ATP and ADP, not the Mg-free forms",
+   "kind": "binding",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "FRT_display/atp_synthase": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.00E-46"
+      },
+      "I_A_per_L": {
+       "caught": 64,
+       "max_margin": "3.59E+7"
+      },
+      "J": {
+       "caught": 64,
+       "max_margin": "3.59E+7"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "2.00E-46"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 73,
+       "max_margin": "3.66E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "5.79E+14"
+      },
+      "slopes_J": {
+       "caught": 320,
+       "max_margin": "3.56E+7"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "5.06E+7"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "5.79E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=1e-4",
+     "min_margin_where_caught": "3.94E+5",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "J": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 84,
+       "max_margin": "3.66E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "3.59E+7"
+      },
+      "lnB_over_A": {
+       "caught": 65,
+       "max_margin": "3.19E+7"
+      },
+      "slopes_J": {
+       "caught": 325,
+       "max_margin": "3.56E+7"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "5.06E+7"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "3.73E+7"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "max_margin": "5.06E+7",
+     "max_quantity": "static_head_mV",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=1e-4",
+     "min_margin_where_caught": "1.42E+6",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "FRT_display/complex_I": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "2.72E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.18E-46"
+      },
+      "I_A_per_L": {
+       "caught": 37,
+       "max_margin": "2.62E+7"
+      },
+      "J": {
+       "caught": 37,
+       "max_margin": "2.62E+7"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "2.18E-46"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "2.72E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "2.60E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "2.60E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 53,
+       "max_margin": "2.52E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "4.31E+14"
+      },
+      "slopes_J": {
+       "caught": 222,
+       "max_margin": "2.60E+7"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "3.39E+7"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "2.60E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "4.31E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_NAD=0.01,f_Q=0.99",
+     "min_margin_where_caught": "5.35E+5",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "FRT_display/complex_III_eq24": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "1.69E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.09E-46"
+      },
+      "I_A_per_L": {
+       "caught": 63,
+       "max_margin": "1.70E+7"
+      },
+      "J": {
+       "caught": 63,
+       "max_margin": "1.70E+7"
+      },
+      "J_minus": {
+       "caught": 63,
+       "max_margin": "5.58E+6"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "1.74E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 95,
+       "max_margin": "1.39E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "2.11E+14"
+      },
+      "slopes_J": {
+       "caught": 441,
+       "max_margin": "1.65E+7"
+      },
+      "slopes_lnS": {
+       "caught": 455,
+       "max_margin": "1.62E+7"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.31E+7"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "2.11E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "min_margin_where_caught": "1.14E+6",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 65,
+       "max_margin": "1.69E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 63,
+       "max_margin": "1.66E+7"
+      },
+      "J": {
+       "caught": 63,
+       "max_margin": "1.66E+7"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 65,
+       "max_margin": "1.69E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "1.46E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 65,
+       "max_margin": "1.70E+7"
+      },
+      "lnB_over_A": {
+       "caught": 65,
+       "max_margin": "1.45E+7"
+      },
+      "slopes_J": {
+       "caught": 453,
+       "max_margin": "1.66E+7"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.31E+7"
+      },
+      "x": {
+       "caught": 65,
+       "max_margin": "1.80E+7"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_Q=0.99,f_c=0.01,Pi_N=1e-4",
+     "max_margin": "3.31E+7",
+     "max_quantity": "static_head_mV",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=2e-2",
+     "min_margin_where_caught": "1.30E+6",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "FRT_display/complex_III_eq7": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "1.99E+7"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.33E-46"
+      },
+      "I_A_per_L": {
+       "caught": 44,
+       "max_margin": "1.96E+7"
+      },
+      "J": {
+       "caught": 44,
+       "max_margin": "1.96E+7"
+      },
+      "J_minus": {
+       "caught": 44,
+       "max_margin": "5.88E+6"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "1.97E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "1.80E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "1.80E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 60,
+       "max_margin": "1.62E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "2.11E+14"
+      },
+      "slopes_J": {
+       "caught": 264,
+       "max_margin": "1.85E+7"
+      },
+      "slopes_lnS": {
+       "caught": 315,
+       "max_margin": "1.62E+7"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "3.31E+7"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "1.80E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "2.11E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99",
+     "min_margin_where_caught": "1.14E+6",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "complex_III_eq7",
+   "section_8_named": false
+  },
+  "FRT_display/complex_IV": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "1.70E+7"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "7.50E+6"
+      },
+      "I_A_per_L": {
+       "caught": 45,
+       "max_margin": "2.79E+7"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "2.79E+7"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "1.96E+7"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "2.46E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "2.88E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "2.88E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "1.47E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "7.77E+14"
+      },
+      "slopes_J": {
+       "caught": 270,
+       "max_margin": "1.67E+7"
+      },
+      "slopes_lnS": {
+       "caught": 269,
+       "max_margin": "2.79E+7"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "4.70E+7"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "2.88E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "7.77E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_c=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.33E+7",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "FRT_display/lumped_QO": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "3.25E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "3.25E+7"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "4.47E+7"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "3.25E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,f_Q=0.99,O2=3e-4",
+     "max_margin": "4.47E+7",
+     "max_quantity": "static_head_mV",
+     "min_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_Q=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.46E+7",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "lumped_QO",
+   "section_8_named": false
+  },
+  "FRT_display/nucleotide_exchange": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "3.40E+7"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "3.07E+7"
+      },
+      "I_A_per_L": {
+       "caught": 45,
+       "max_margin": "3.40E+7"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "3.40E+7"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "3.07E+7"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "3.40E+7"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "3.42E+7"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "3.42E+7"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "3.25E+7"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "1.06E+14"
+      },
+      "slopes_J": {
+       "caught": 225,
+       "max_margin": "2.84E+7"
+      },
+      "slopes_lnS": {
+       "caught": 225,
+       "max_margin": "1.04E+8"
+      },
+      "static_head_mV": {
+       "caught": 53,
+       "max_margin": "6.18E+7"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "3.42E+7"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "1.06E+14",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,R_N=1e-3,R_P=1e-3,Mg_N=5e-3,Mg_P=5e-3",
+     "min_margin_where_caught": "1.52E+6",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "F/RT = 0.0374158 per mV, section 0's display",
+   "kind": "constant",
+   "law": "nucleotide_exchange",
+   "section_8_named": false
+  },
+  "KH_proton_sides_swapped": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "3.40E+14"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "1.90E+13"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "8.33E+13"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "1.90E+13"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "3.40E+14"
+      },
+      "affinity_J_per_mol": {
+       "caught": 45,
+       "max_margin": "5.24E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 45,
+       "max_margin": "5.24E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 37,
+       "max_margin": "9.09E+25"
+      },
+      "slopes_J": {
+       "caught": 180,
+       "max_margin": "1.17E+14"
+      },
+      "slopes_lnS": {
+       "caught": 90,
+       "max_margin": "2.81E+14"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "5.24E+13"
+      }
+     },
+     "caught": 45,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "9.09E+25",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "2.81E+14",
+     "rows": 45,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "H+ sides swapped in S and in dG",
+   "kind": "stoichiometry",
+   "law": "k_h_exchange",
+   "section_8_named": false
+  },
+  "PiHt_k_in_M": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 49,
+       "max_margin": "8.94E+12"
+      },
+      "B_term": {
+       "caught": 49,
+       "max_margin": "2.52E+12"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 47,
+       "max_margin": "8.87E+12"
+      },
+      "J_minus": {
+       "caught": 49,
+       "max_margin": "2.52E+12"
+      },
+      "S": {
+       "caught": 49,
+       "max_margin": "8.94E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 47,
+       "max_margin": "6.63E+12"
+      },
+      "slopes_J": {
+       "caught": 243,
+       "max_margin": "8.19E+12"
+      },
+      "slopes_lnS": {
+       "caught": 49,
+       "max_margin": "2.55E+14"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 49,
+     "max_at": "corner:pH_N=6.8,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "2.55E+14",
+     "max_quantity": "slopes_lnS.H2PO4_P",
+     "min_at": "corner:pH_N=8.2,pH_P=7.6,Pi_N=1e-4,Pi_P=1e-4",
+     "min_margin_where_caught": "5.31E+12",
+     "rows": 49,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 49,
+       "max_margin": "8.94E+12"
+      },
+      "B_term": {
+       "caught": 49,
+       "max_margin": "6.73E+12"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 47,
+       "max_margin": "8.75E+12"
+      },
+      "J_minus": {
+       "caught": 49,
+       "max_margin": "6.73E+12"
+      },
+      "S": {
+       "caught": 49,
+       "max_margin": "8.94E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "6.46E+12"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "3.66E-47"
+      },
+      "slopes_J": {
+       "caught": 196,
+       "max_margin": "8.39E+12"
+      },
+      "slopes_lnA": {
+       "caught": 49,
+       "max_margin": "2.55E+14"
+      },
+      "slopes_lnB": {
+       "caught": 49,
+       "max_margin": "1.34E+14"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 49,
+     "max_at": "corner:pH_N=6.8,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "2.55E+14",
+     "max_quantity": "slopes_lnA.H2PO4_P",
+     "min_at": "corner:pH_N=6.8,pH_P=7.6,Pi_N=1e-4,Pi_P=1e-4",
+     "min_margin_where_caught": "7.32E+12",
+     "rows": 49,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "k_PiHt read in M (0.45082 M), not mM",
+   "kind": "unit",
+   "law": "phosphate_carrier",
+   "section_8_named": false
+  },
+  "PiHt_one_proton": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 47,
+       "max_margin": "1.18E+14"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 47,
+       "max_margin": "5.11E+13"
+      },
+      "J_minus": {
+       "caught": 47,
+       "max_margin": "1.18E+14"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 47,
+       "max_margin": "7.38E+24"
+      },
+      "slopes_J": {
+       "caught": 239,
+       "max_margin": "9.74E+13"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      }
+     },
+     "caught": 49,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "7.38E+24",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "coincidence:x=0.5",
+     "min_margin_where_caught": "1.15E+12",
+     "rows": 49,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "6.90E+12"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 47,
+       "max_margin": "1.32E+13"
+      }
+     },
+     "caught": 47,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=2e-2,Pi_P=2e-2",
+     "max_margin": "1.32E+13",
+     "max_quantity": "x",
+     "min_at": "interior:4",
+     "min_margin_where_caught": "1.08E+11",
+     "rows": 49,
+     "zero_power": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "one proton in place of two with HPO4(2-)",
+   "kind": "stoichiometry",
+   "law": "phosphate_carrier",
+   "section_8_named": false
+  },
+  "PiHt_other_form": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 47,
+       "max_margin": "6.02E+15"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 47,
+       "max_margin": "2.61E+15"
+      },
+      "J_minus": {
+       "caught": 47,
+       "max_margin": "6.02E+15"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 47,
+       "max_margin": "1.47E+15"
+      },
+      "slopes_J": {
+       "caught": 245,
+       "max_margin": "2.53E+15"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 49,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=2e-2,Pi_P=2e-2",
+     "max_margin": "6.02E+15",
+     "max_quantity": "J_minus",
+     "min_at": "corner:pH_N=6.8,pH_P=7.6,Pi_N=1e-4,Pi_P=1e-4",
+     "min_margin_where_caught": "2.00E+12",
+     "rows": 49,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 47,
+       "max_margin": "2.45E+14"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 47,
+       "max_margin": "2.37E+14"
+      },
+      "J_minus": {
+       "caught": 47,
+       "max_margin": "2.45E+14"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "1.94E+14"
+      },
+      "slopes_J": {
+       "caught": 245,
+       "max_margin": "2.35E+16"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 49,
+     "max_at": "corner:pH_N=6.8,pH_P=7.6,Pi_N=2e-2,Pi_P=1e-4",
+     "max_margin": "2.35E+16",
+     "max_quantity": "slopes_J.h_N",
+     "min_at": "corner:pH_N=6.8,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "min_margin_where_caught": "4.59E+12",
+     "rows": 49,
+     "zero_power": [],
+     "zero_power_values_only": [
+      "coincidence:x=-0.5",
+      "coincidence:x=0.5"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "Eq. 16 printed judged against balanced, or balanced against printed",
+   "kind": "printed vs balanced",
+   "law": "phosphate_carrier",
+   "section_8_named": false
+  },
+  "RT_display/atp_synthase": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "2.44E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.82E-46"
+      },
+      "I_A_per_L": {
+       "caught": 71,
+       "max_margin": "2.27E+5"
+      },
+      "J": {
+       "caught": 71,
+       "max_margin": "2.27E+5"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "2.82E-46"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.44E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 71,
+       "max_margin": "2.10E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "2.00E+9"
+      },
+      "slopes_J": {
+       "caught": 355,
+       "max_margin": "2.25E+5"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "2.55E+5"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "2.00E+9",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "interior:1",
+     "min_margin_where_caught": "1.68E+4",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "2.44E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 78,
+       "max_margin": "2.24E+5"
+      },
+      "J": {
+       "caught": 78,
+       "max_margin": "2.24E+5"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.44E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 83,
+       "max_margin": "2.10E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "2.36E+5"
+      },
+      "lnB_over_A": {
+       "caught": 97,
+       "max_margin": "2.11E+5"
+      },
+      "slopes_J": {
+       "caught": 411,
+       "max_margin": "2.23E+5"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.28E+5"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "2.55E+5"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=7.6,R_N=1e3,Pi_N=1e-4,Mg_N=1e-4",
+     "max_margin": "3.28E+5",
+     "max_quantity": "static_head_mV",
+     "min_at": "interior:1",
+     "min_margin_where_caught": "1.68E+4",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "RT_display/complex_I": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "2.52E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.36E-46"
+      },
+      "I_A_per_L": {
+       "caught": 48,
+       "max_margin": "2.52E+5"
+      },
+      "J": {
+       "caught": 48,
+       "max_margin": "2.52E+5"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "3.36E-46"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "2.52E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.29E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.29E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 48,
+       "max_margin": "2.59E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "1.06E+9"
+      },
+      "slopes_J": {
+       "caught": 288,
+       "max_margin": "2.51E+5"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.29E+5"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.39E+5"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "1.06E+9",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "near_eq:B:x=-0.1",
+     "min_margin_where_caught": "1.48E+4",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "RT_display/complex_III_eq24": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "1.38E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.79E-46"
+      },
+      "I_A_per_L": {
+       "caught": 89,
+       "max_margin": "1.38E+5"
+      },
+      "J": {
+       "caught": 89,
+       "max_margin": "1.38E+5"
+      },
+      "J_minus": {
+       "caught": 89,
+       "max_margin": "4.81E+4"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "1.39E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 87,
+       "max_margin": "1.54E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "3.88E+8"
+      },
+      "slopes_J": {
+       "caught": 613,
+       "max_margin": "1.35E+5"
+      },
+      "slopes_lnS": {
+       "caught": 651,
+       "max_margin": "1.30E+5"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.48E+5"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "3.88E+8",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "9.11E+3",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "1.38E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 91,
+       "max_margin": "1.38E+5"
+      },
+      "J": {
+       "caught": 91,
+       "max_margin": "1.38E+5"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "1.38E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 95,
+       "max_margin": "1.54E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.53E+5"
+      },
+      "lnB_over_A": {
+       "caught": 97,
+       "max_margin": "1.17E+5"
+      },
+      "slopes_J": {
+       "caught": 661,
+       "max_margin": "1.35E+5"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "2.71E+5"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.48E+5"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "2.71E+5",
+     "max_quantity": "static_head_mV",
+     "min_at": "near_eq:A:x=3",
+     "min_margin_where_caught": "1.83E+4",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "RT_display/complex_III_eq7": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "1.65E+5"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.05E-46"
+      },
+      "I_A_per_L": {
+       "caught": 57,
+       "max_margin": "1.65E+5"
+      },
+      "J": {
+       "caught": 57,
+       "max_margin": "1.65E+5"
+      },
+      "J_minus": {
+       "caught": 57,
+       "max_margin": "5.11E+4"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "1.65E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.71E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.71E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 56,
+       "max_margin": "1.84E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "3.88E+8"
+      },
+      "slopes_J": {
+       "caught": 342,
+       "max_margin": "1.62E+5"
+      },
+      "slopes_lnS": {
+       "caught": 413,
+       "max_margin": "1.30E+5"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.71E+5"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "1.48E+5"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "3.88E+8",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "9.85E+3",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "complex_III_eq7",
+   "section_8_named": false
+  },
+  "RT_display/complex_IV": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "5.25E+5"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "8.27E+4"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "5.25E+5"
+      },
+      "J": {
+       "caught": 61,
+       "max_margin": "5.25E+5"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "2.73E+5"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "5.25E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.63E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.63E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "5.30E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "1.27E+10"
+      },
+      "slopes_J": {
+       "caught": 360,
+       "max_margin": "5.16E+5"
+      },
+      "slopes_lnS": {
+       "caught": 292,
+       "max_margin": "1.23E+5"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.63E+5"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "4.40E+5"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "1.27E+10",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.89E+5",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "RT_display/k_h_exchange": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 39,
+       "max_margin": "3.18E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 39,
+       "max_margin": "3.18E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 39,
+       "max_margin": "4.41E+4"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 39,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,K_N=2e-1,K_P=1e-2",
+     "max_margin": "3.18E+5",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=-1e-3",
+     "min_margin_where_caught": "4.89E+1",
+     "rows": 45,
+     "zero_power": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "k_h_exchange",
+   "section_8_named": false
+  },
+  "RT_display/lumped_QO": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.41E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.41E+5"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.41E+5"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "4.35E+5"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,O2=3e-4",
+     "max_margin": "4.35E+5",
+     "max_quantity": "x",
+     "min_at": "near_eq:B:x=3",
+     "min_margin_where_caught": "5.85E+3",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "lumped_QO",
+   "section_8_named": false
+  },
+  "RT_display/nucleotide_exchange": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "3.75E+5"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "3.39E+5"
+      },
+      "I_A_per_L": {
+       "caught": 45,
+       "max_margin": "3.75E+5"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "3.75E+5"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "3.39E+5"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "3.75E+5"
+      },
+      "affinity_J_per_mol": {
+       "caught": 53,
+       "max_margin": "6.81E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 53,
+       "max_margin": "6.81E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "3.59E+5"
+      },
+      "dissipation_W_per_L": {
+       "caught": 57,
+       "max_margin": "1.28E+10"
+      },
+      "slopes_J": {
+       "caught": 225,
+       "max_margin": "3.12E+5"
+      },
+      "slopes_lnS": {
+       "caught": 225,
+       "max_margin": "1.15E+6"
+      },
+      "static_head_mV": {
+       "caught": 53,
+       "max_margin": "6.81E+5"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "3.77E+5"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "1.28E+10",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,R_N=1e-3,R_P=1e-3,Mg_N=5e-3,Mg_P=5e-3",
+     "min_margin_where_caught": "1.68E+4",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "nucleotide_exchange",
+   "section_8_named": false
+  },
+  "RT_display/phosphate_carrier": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 43,
+       "max_margin": "2.83E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 43,
+       "max_margin": "2.83E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 43,
+       "max_margin": "5.02E+4"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 43,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "2.83E+5",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=1e-3",
+     "min_margin_where_caught": "2.41E+1",
+     "rows": 49,
+     "zero_power": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ]
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 43,
+       "max_margin": "2.83E+5"
+      },
+      "dG_J_per_mol": {
+       "caught": 43,
+       "max_margin": "2.83E+5"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 41,
+       "max_margin": "4.89E+4"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 43,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "2.83E+5",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=1e-3",
+     "min_margin_where_caught": "2.41E+1",
+     "rows": 49,
+     "zero_power": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=-1e-6",
+      "near_eq:A:x=0",
+      "near_eq:A:x=1e-6",
+      "near_eq:B:x=-1e-6",
+      "near_eq:B:x=0",
+      "near_eq:B:x=1e-6"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "RT = 2578.7306 J/mol, section 0's display",
+   "kind": "constant",
+   "law": "phosphate_carrier",
+   "section_8_named": false
+  },
+  "T_298/atp_synthase": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "1.46E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.75E-46"
+      },
+      "I_A_per_L": {
+       "caught": 90,
+       "max_margin": "1.46E+12"
+      },
+      "J": {
+       "caught": 90,
+       "max_margin": "1.46E+12"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "3.75E-46"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "1.46E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 89,
+       "max_margin": "1.57E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "6.08E+22"
+      },
+      "slopes_J": {
+       "caught": 448,
+       "max_margin": "1.45E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.40E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "6.08E+22",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "interior:1",
+     "min_margin_where_caught": "8.84E+10",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "1.46E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 94,
+       "max_margin": "1.46E+12"
+      },
+      "J": {
+       "caught": 94,
+       "max_margin": "1.46E+12"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "1.46E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 95,
+       "max_margin": "1.57E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.91E+12"
+      },
+      "lnB_over_A": {
+       "caught": 97,
+       "max_margin": "1.15E+12"
+      },
+      "slopes_J": {
+       "caught": 475,
+       "max_margin": "1.45E+12"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.72E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "1.40E+12"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=250,pH_N=6.8,pH_P=7.6,R_N=1e3,Pi_N=2e-2,Mg_N=5e-3",
+     "max_margin": "1.91E+12",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "interior:1",
+     "min_margin_where_caught": "8.84E+10",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "T_298/complex_I": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "2.49E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "3.26E-46"
+      },
+      "I_A_per_L": {
+       "caught": 57,
+       "max_margin": "2.49E+12"
+      },
+      "J": {
+       "caught": 57,
+       "max_margin": "2.49E+12"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "3.26E-46"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "2.49E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.21E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.21E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 57,
+       "max_margin": "2.61E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "3.31E+22"
+      },
+      "slopes_J": {
+       "caught": 342,
+       "max_margin": "2.48E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.21E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "1.31E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "3.31E+22",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "near_eq:B:x=-0.1",
+     "min_margin_where_caught": "7.79E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "T_298/complex_III_eq24": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "1.97E-46"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "2.32E+11"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "9.71E+11"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "9.79E+11"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "1.10E+22"
+      },
+      "slopes_J": {
+       "caught": 679,
+       "max_margin": "8.43E+11"
+      },
+      "slopes_lnS": {
+       "caught": 679,
+       "max_margin": "7.53E+11"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "8.10E+11"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.10E+22",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "5.04E+10",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "8.56E+11"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "9.79E+11"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "8.02E+11"
+      },
+      "lnB_over_A": {
+       "caught": 97,
+       "max_margin": "6.37E+11"
+      },
+      "slopes_J": {
+       "caught": 679,
+       "max_margin": "8.43E+11"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "1.42E+12"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "8.10E+11"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=8.2,pH_P=6.5,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "1.42E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=3",
+     "min_margin_where_caught": "1.00E+11",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "T_298/complex_III_eq7": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "1.03E+12"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "2.13E-46"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "1.03E+12"
+      },
+      "J": {
+       "caught": 61,
+       "max_margin": "1.03E+12"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "2.47E+11"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "1.06E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.42E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.42E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "1.17E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "1.10E+22"
+      },
+      "slopes_J": {
+       "caught": 366,
+       "max_margin": "1.01E+12"
+      },
+      "slopes_lnS": {
+       "caught": 427,
+       "max_margin": "7.53E+11"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.42E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "8.10E+11"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "1.10E+22",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "center",
+     "min_margin_where_caught": "5.45E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "complex_III_eq7",
+   "section_8_named": false
+  },
+  "T_298/complex_IV": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 61,
+       "max_margin": "4.81E+12"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "5.49E+11"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "4.81E+12"
+      },
+      "J": {
+       "caught": 61,
+       "max_margin": "4.81E+12"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "4.89E+11"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "4.81E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.38E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.38E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "4.97E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "5.93E+23"
+      },
+      "slopes_J": {
+       "caught": 366,
+       "max_margin": "4.74E+12"
+      },
+      "slopes_lnS": {
+       "caught": 366,
+       "max_margin": "6.06E+11"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.38E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.41E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "5.93E+23",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.01,O2=1e-7",
+     "min_margin_where_caught": "1.40E+12",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "T_298/k_h_exchange": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 43,
+       "max_margin": "1.67E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 43,
+       "max_margin": "1.67E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 43,
+       "max_margin": "2.32E+11"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 43,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,K_N=2e-1,K_P=1e-2",
+     "max_margin": "1.67E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=-1e-6",
+     "min_margin_where_caught": "2.57E+5",
+     "rows": 45,
+     "zero_power": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "k_h_exchange",
+   "section_8_named": false
+  },
+  "T_298/lumped_QO": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.27E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "1.27E+12"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "1.27E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.38E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,O2=3e-4",
+     "max_margin": "2.38E+12",
+     "max_quantity": "x",
+     "min_at": "near_eq:B:x=3",
+     "min_margin_where_caught": "3.08E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "lumped_QO",
+   "section_8_named": false
+  },
+  "T_298/nucleotide_exchange": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 45,
+       "max_margin": "2.26E+12"
+      },
+      "B_term": {
+       "caught": 45,
+       "max_margin": "1.54E+12"
+      },
+      "I_A_per_L": {
+       "caught": 45,
+       "max_margin": "2.26E+12"
+      },
+      "J": {
+       "caught": 45,
+       "max_margin": "2.26E+12"
+      },
+      "J_minus": {
+       "caught": 45,
+       "max_margin": "1.54E+12"
+      },
+      "S": {
+       "caught": 45,
+       "max_margin": "2.26E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 53,
+       "max_margin": "3.58E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 53,
+       "max_margin": "3.58E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 61,
+       "max_margin": "2.15E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 57,
+       "max_margin": "3.68E+23"
+      },
+      "slopes_J": {
+       "caught": 225,
+       "max_margin": "1.83E+12"
+      },
+      "slopes_lnS": {
+       "caught": 225,
+       "max_margin": "6.20E+12"
+      },
+      "static_head_mV": {
+       "caught": 53,
+       "max_margin": "3.58E+12"
+      },
+      "x": {
+       "caught": 45,
+       "max_margin": "2.06E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:A:x=0",
+     "max_margin": "3.68E+23",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=0,R_N=1e-3,R_P=1e-3,Mg_N=5e-3,Mg_P=5e-3",
+     "min_margin_where_caught": "9.18E+10",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "nucleotide_exchange",
+   "section_8_named": false
+  },
+  "T_298/phosphate_carrier": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.49E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.49E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 47,
+       "max_margin": "2.64E+11"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 47,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "1.49E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=1e-6",
+     "min_margin_where_caught": "1.27E+5",
+     "rows": 49,
+     "zero_power": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ]
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.49E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 47,
+       "max_margin": "1.49E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 45,
+       "max_margin": "2.57E+11"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 47,
+     "max_at": "corner:pH_N=8.2,pH_P=6.5,Pi_N=1e-4,Pi_P=2e-2",
+     "max_margin": "1.49E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "near_eq:A:x=1e-6",
+     "min_margin_where_caught": "1.27E+5",
+     "rows": 49,
+     "zero_power": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ],
+     "zero_power_values_only": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ]
+    }
+   },
+   "caught": true,
+   "description": "T = 298.15 K in place of 310.15 K",
+   "kind": "constant",
+   "law": "phosphate_carrier",
+   "section_8_named": false
+  },
+  "activity_mM/atp_synthase": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.21E+12"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.15E+12"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.15E+12"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "1.21E+12"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "1.56E-47"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "6.35E+25"
+      },
+      "slopes_J": {
+       "caught": 576,
+       "max_margin": "2.15E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "6.35E+25",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "2.34E+13",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "2.97E+13"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "3.43E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,R_N=1e-3,Pi_N=2e-2,Mg_N=1e-4",
+     "max_margin": "3.43E+13",
+     "max_quantity": "x",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,R_N=1e-3,Pi_N=1e-4,Mg_N=5e-3",
+     "min_margin_where_caught": "2.34E+13",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "atp_synthase",
+   "section_8_named": false
+  },
+  "activity_mM/complex_I": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "6.19E+11"
+      },
+      "I_A_per_L": {
+       "caught": 56,
+       "max_margin": "1.08E+12"
+      },
+      "J": {
+       "caught": 56,
+       "max_margin": "1.08E+12"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "6.19E+11"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "8.34E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "8.34E+12"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "6.43E-48"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "8.06E+24"
+      },
+      "slopes_J": {
+       "caught": 57,
+       "max_margin": "5.72E+11"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "8.34E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "8.34E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "8.06E+24",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_NAD=0.01,f_Q=0.99",
+     "min_margin_where_caught": "6.55E+12",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "complex_I",
+   "section_8_named": false
+  },
+  "activity_mM/complex_III_eq24": {
+   "by_form": {
+    "balanced": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "1.53E+15"
+      },
+      "I_A_per_L": {
+       "caught": 97,
+       "max_margin": "3.02E+15"
+      },
+      "J": {
+       "caught": 97,
+       "max_margin": "3.02E+15"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "1.02E+18"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.61E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "1.27E-44"
+      },
+      "dissipation_W_per_L": {
+       "caught": 97,
+       "max_margin": "6.32E+28"
+      },
+      "slopes_J": {
+       "caught": 291,
+       "max_margin": "3.02E+15"
+      },
+      "slopes_lnS": {
+       "caught": 679,
+       "max_margin": "1.43E+14"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "6.32E+28",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=2e-2",
+     "min_margin_where_caught": "1.23E+15",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    },
+    "printed": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "I_A_per_L": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "J_minus": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "S": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "affinity_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "2.09E+13"
+      },
+      "lnB_over_A": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_J": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnA": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "slopes_lnB": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      },
+      "x": {
+       "caught": 97,
+       "max_margin": "2.20E+13"
+      }
+     },
+     "caught": 97,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.99,f_c=0.99,Pi_N=1e-4",
+     "max_margin": "2.20E+13",
+     "max_quantity": "x",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99,Pi_N=1e-4",
+     "min_margin_where_caught": "1.84E+13",
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
+  "activity_mM/complex_III_eq7": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "1.68E+15"
+      },
+      "I_A_per_L": {
+       "caught": 61,
+       "max_margin": "3.02E+15"
+      },
+      "J": {
+       "caught": 61,
+       "max_margin": "3.02E+15"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "1.09E+18"
+      },
+      "S": {
+       "caught": 61,
+       "max_margin": "3.20E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.20E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.20E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 0,
+       "max_margin": "9.33E-45"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "6.32E+28"
+      },
+      "slopes_J": {
+       "caught": 61,
+       "max_margin": "1.39E+15"
+      },
+      "slopes_lnS": {
+       "caught": 427,
+       "max_margin": "1.44E+14"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.20E+13"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.20E+13"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "6.32E+28",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,f_c=0.99",
+     "min_margin_where_caught": "1.36E+15",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "complex_III_eq7",
+   "section_8_named": false
+  },
+  "activity_mM/complex_IV": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "B_term": {
+       "caught": 61,
+       "max_margin": "1.36E+12"
+      },
+      "I_A_per_L": {
+       "caught": 60,
+       "max_margin": "2.14E+12"
+      },
+      "J": {
+       "caught": 60,
+       "max_margin": "2.14E+12"
+      },
+      "J_minus": {
+       "caught": 61,
+       "max_margin": "5.18E+11"
+      },
+      "S": {
+       "caught": 60,
+       "max_margin": "6.86E+22"
+      },
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.17E+13"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "2.17E+13"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 60,
+       "max_margin": "2.47E+11"
+      },
+      "dissipation_W_per_L": {
+       "caught": 61,
+       "max_margin": "3.95E+25"
+      },
+      "slopes_J": {
+       "caught": 238,
+       "max_margin": "8.31E+11"
+      },
+      "slopes_lnS": {
+       "caught": 366,
+       "max_margin": "1.84E+14"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "2.17E+13"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "2.17E+13"
+      }
+     },
+     "caught": 61,
+     "max_at": "near_eq:B:x=0",
+     "max_margin": "3.95E+25",
+     "max_quantity": "dissipation_W_per_L",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_c=0.99,O2=1e-7",
+     "min_margin_where_caught": "1.71E+13",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "complex_IV",
+   "section_8_named": false
+  },
+  "activity_mM/lumped_QO": {
+   "by_form": {
+    "declared": {
+     "by_quantity": {
+      "affinity_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.39E+12"
+      },
+      "dG_J_per_mol": {
+       "caught": 61,
+       "max_margin": "3.39E+12"
+      },
+      "static_head_mV": {
+       "caught": 61,
+       "max_margin": "3.39E+12"
+      },
+      "x": {
+       "caught": 61,
+       "max_margin": "3.39E+12"
+      }
+     },
+     "caught": 61,
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,O2=3e-4",
+     "max_margin": "3.39E+12",
+     "max_quantity": "dG_J_per_mol",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.01,O2=1e-7",
+     "min_margin_where_caught": "2.55E+12",
+     "rows": 61,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "activities as c/(1 mM) in dG",
+   "kind": "unit",
+   "law": "lumped_QO",
+   "section_8_named": false
+  }
+ },
+ "power_margin": "3",
+ "status": "proposed, not registered"
+}
