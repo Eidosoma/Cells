@@ -248,13 +248,16 @@ class MonomialFactor(NamedTuple):
 
 class MonomialRate(NamedTuple):
     """One mode's S (module docstring): log k (a number, a CitedConstant or a RateConstant), the
-    orders ((Reference, o), ...), zeta, the factors and the affinity share n."""
+    orders ((Reference, o), ...), zeta, the factors and the affinity share n; and `constants`, each
+    a positive parameter (its name or a Scaled one) that multiplies S, so a source's fitted
+    constant is a population's value, never the law's (D144): log k gains sum ln K."""
 
     log_k: object = 0.0
     orders: tuple = ()
     zeta: object = 0.0
     factors: tuple = ()
     share: int = 1
+    constants: tuple = ()
 
 
 class MonomialForm(NamedTuple):
@@ -631,7 +634,10 @@ def _resolved_monomial(form, values):
 
     rates = tuple(
         r._replace(
-            orders=orders(r.orders), zeta=number(r.zeta), factors=tuple(map(factor, r.factors))
+            orders=orders(r.orders),
+            zeta=number(r.zeta),
+            factors=tuple(map(factor, r.factors)),
+            constants=tuple(map(constant, r.constants)),
         )
         for r in form.monomial.rates
     )
@@ -1143,6 +1149,14 @@ def monomial_errors(form):
             out.append(f"{where}: zeta is a finite number or an Affine of a parameter")
         if not (_int(rate.share) and 1 <= rate.share <= MAX_SHARE):
             out.append(f"{where}: its share is an integer from 1 to {MAX_SHARE}")
+        if not (
+            isinstance(rate.constants, tuple)
+            and all((_named(c) or isinstance(c, Scaled)) and k_ok(c) for c in rate.constants)
+        ):
+            out.append(
+                f"{where}: its constants are positive parameters, each by its name or Scaled, "
+                "never a number (a source's fitted value is a population's, D144)"
+            )
         factors = rate.factors if isinstance(rate.factors, tuple) else (None,)
         constants = (RateConstant, CitedConstant)
         if any(
@@ -1209,6 +1223,7 @@ def expand_rate(rate, read, log_k):
       the term's only total, refused otherwise (ValueError, the kind's parse turns it into a
       refusal)."""
     orders, factors = {}, []
+    log_k += sum(math.log(c) for c in rate.constants)  # Resolved: each a positive number.
     for reference, o in rate.orders:
         found = read(reference)
         base = found[0]

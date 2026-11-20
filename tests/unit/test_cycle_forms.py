@@ -571,6 +571,7 @@ def test_a_monomial_form_keeps_its_contract_and_refuses_its_plants_by_name():
             factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(forms.Scaled("nobody")),)),)
         ),
         "log k is a finite": rate._replace(log_k=forms.CitedConstant(1.0, rt_term=math.inf)),
+        "never a number": rate._replace(constants=(2.5,)),  # A fitted value: a parameter's.
     }
     for reason, plant in plants.items():
         found = "; ".join(form._replace(monomial=form.monomial._replace(rates=(plant,))).errors())
@@ -592,6 +593,12 @@ def test_a_monomial_form_keeps_its_contract_and_refuses_its_plants_by_name():
     assert with_scaled.errors() == []
     (r,) = forms.resolved(with_scaled, {"theta": 0.35, "K1": 2.5}).monomial.rates
     assert r.factors[0].terms[0].k == 1000.0 / 2.5
+    # A rate's constants: parameters multiplying S, resolved to their values and into log k.
+    constants = rate._replace(constants=("K1", forms.Scaled("K1", 2.0, -1)))
+    with_constants = form._replace(monomial=form.monomial._replace(rates=(constants,)))
+    assert with_constants.errors() == []
+    (r,) = forms.resolved(with_constants, {"theta": 0.35, "K1": 2.5}).monomial.rates
+    assert r.constants == (2.5, 2.0 / 2.5)
 
 
 @pytest.mark.parametrize("seed", range(4))

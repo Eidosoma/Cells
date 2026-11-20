@@ -12,7 +12,9 @@ Each claim with its plant (D187):
   rate-only constant emits none and never moves its x. Planted: the same constant as a
   CitedConstant is refused by the registry's check, and a RateConstant as a factor's K by the form;
 - the comparison harness's adapter (validation/mitochondria/component_comparison, the lane's)
-  evaluates each law as the kind does: log S, x and J at the world's start agree;
+  evaluates each law as the kind does: log S, x and J at the world's start agree. The harness
+  assembles x itself, from potential_set_values; the kind's own world-level x is this world's,
+  so this tie, not the harness, covers it;
 - a handful of registered rows, each law's center row of the component references (tag
   mito-components-registration-2026-11-20), have x, S, J and J- in band. Planted: complex I with
   -4u for +4u misses.
@@ -47,9 +49,11 @@ LAWS = {  # population ID: (law, roles, parameters)
            dict(QH2="QH2", Q="Q", c_ox="cytc_ox", c_red="cytc_red", H="H", Pi="Pi"),
            dict(k_Pi3=0.19172, k_Pi4=25.310)),
     "c4": ("cytochrome_c_oxygen_proton_cycle@1",
-           dict(O2="O2", c_red="cytc_red", c_ox="cytc_ox", H="H"), {}),
-    "f1": ("proton_coupled_atp_synthesis_cycle@1", dict(ADP="ADP", Pi="Pi", ATP="ATP", H="H"), {}),
-    "ant": ("electrogenic_nucleotide_exchange@1", dict(ATP="ATP", ADP="ADP"), dict(theta_P=0.35)),
+           dict(O2="O2", c_red="cytc_red", c_ox="cytc_ox", H="H"), dict(k_O2=1.20e-4)),
+    "f1": ("proton_coupled_atp_synthesis_cycle@1", dict(ADP="ADP", Pi="Pi", ATP="ATP", H="H"),
+           dict(K_MgADP=347.0e-6, K_MgATP=24.0e-6)),
+    "ant": ("electrogenic_nucleotide_exchange@1", dict(ATP="ATP", ADP="ADP"),
+            dict(theta_P=0.35, k_mADP=3.5e-6)),
     "pic": ("phosphate_proton_symport@1", dict(Pi="Pi", H="H"), dict(k_PiHt=0.45082)),
     "khe": ("potassium_proton_exchange@1", dict(K="K", H="H"), {}),
 }  # fmt: skip

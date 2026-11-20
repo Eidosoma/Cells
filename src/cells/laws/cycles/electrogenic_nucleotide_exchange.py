@@ -8,7 +8,7 @@ S = X ([ATP]_N/[ADP]_N) e^(theta_N u) / ((1 + ([ATP]_P/[ADP]_P) e^(-theta_P u))
     (1 + ([ATP]_N/[ADP]_N) e^(theta_N u)) (1 + k_mADP/[ADP]_P)).
 The voltage shares are one parameter, theta_P, and theta_N = 1 - theta_P is written into the
 exponents. So a pair that does not sum to one, the condition under which Eq. 14 passes, cannot be
-declared."""
+declared. k_mADP is a population parameter in M (Table 1: 3.5e-6), never the law's (D144)."""
 
 from cells.laws.cycles.forms import (
     Affine,
@@ -25,7 +25,6 @@ from cells.modules import CycleLaw
 
 LAW_ID = "electrogenic_nucleotide_exchange@1"
 DECLARED_ID = f"cells.{LAW_ID}"  # As definitions write it; a module-level name, for the manifest.
-K_MADP = 3.5e-6  # M, Table 1 (2006), both columns.
 THETA_P = Affine("theta_P")  # e^(-theta_P u) = e^(theta_P psi)
 MINUS_THETA_N = Affine("theta_P", 1.0, -1.0)  # -theta_N = theta_P - 1: e^(theta_N u)
 RATIO_P = ((Reference("ATP", "P"), 1.0), (Reference("ADP", "P"), -1.0))
@@ -35,7 +34,10 @@ CYCLE = CycleForm(
     roles=(("ATP", -4), ("ADP", -3)),
     rows=(("ATP", "N"), ("ATP", "P"), ("ADP", "P"), ("ADP", "N")),
     modes=(("exchange", (-1, 1, -1, 1)),),
-    parameters=(Parameter("theta_P", "1", low=0.0, high=1.0),),  # Eq. 14: 0.35.
+    parameters=(
+        Parameter("theta_P", "1", low=0.0, high=1.0),  # Eq. 14: 0.35.
+        Parameter("k_mADP", "M", positive=True),  # Table 1: 3.5e-6.
+    ),
     monomial=MonomialForm(
         (
             MonomialRate(
@@ -44,7 +46,9 @@ CYCLE = CycleForm(
                 factors=(
                     MonomialFactor(1.0, (MonomialTerm(1.0, RATIO_P, THETA_P),)),
                     MonomialFactor(1.0, (MonomialTerm(1.0, RATIO_N, MINUS_THETA_N),)),
-                    MonomialFactor(1.0, (MonomialTerm(K_MADP, ((Reference("ADP", "P"), -1.0),)),)),
+                    MonomialFactor(
+                        1.0, (MonomialTerm("k_mADP", ((Reference("ADP", "P"), -1.0),)),)
+                    ),
                 ),
             ),
         )
