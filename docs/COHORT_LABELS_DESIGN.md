@@ -49,11 +49,35 @@ step:
 - a transfer carries its source node's split;
 - new material joins the cohort the study's label schedule names.
 
-At a node with no inflow this is exact for first-order laws. Where material flows in during a step,
-a split by the step's starting composition would be first order in dt. The built tracer splits by
-the mean of the start and end compositions, the trapezoid, which is second order: 9.5e-7 against
-the closed form at a 1 ms step (tests/unit/test_region_readouts.py).
-`validation/gene_regulation/cohort.py` (on the gene regulation lane) is its one-pool case. An
+**C's limits:**
+- **Only one-way records.** C is right only where the per-step records carry the direction of every
+  labelled movement. Turnover's and exchange's do, since each route moves one way. A two-way law's
+  net record does not.
+  - **The case** (a review finding, 20 November 2026): two equal nodes exchanging by diffusion keep
+    both totals, and the face's net flux, at 0, while labelled material crosses one way and
+    unlabelled the other. A tracer of net records saw no movement and kept 0.1 fmol of label on
+    the right, where an explicit label row reaches 0.299999 (0.3 by the closed form).
+  - **So the built tracer refuses, at setup,** any face, junction or patch that moves the species,
+    any operator but turnover and exchange that declares it, and any kind that names it
+    (`check_movers`).
+- **The split.** At a node with no inflow it is exact for first-order laws. Where material flows in
+  during a step, a split by the step's starting composition would be first order in dt. The built
+  tracer splits by the mean of the start and end compositions, the trapezoid, which is second
+  order. Its error is set by the inflow within a step relative to the node's amount: 1.3e-6
+  against the closed form at a 1 ms step, where the node first receives its own amount each step
+  (tests/unit/test_region_readouts.py).
+- **Label switches** must fall on step boundaries; the tracer refuses one that does not.
+
+**Tracing through two-way transport is engine work:**
+- **The label carried by the transport law itself.** Label rows (A, or D's families) do this today
+  for faces, junctions and patches: each row diffuses or permeates down its own gradient. D1 would
+  check that a family's rows carry equal transport coefficients, about 0.5 day more. A net flux on
+  Fick's law has no gross components, so for diffusion this is the only way.
+- **Directional records from a two-way law** that has them: the forward and backward extents of
+  `local_species_reactions@1`'s passive routes, booked separately, about 1 day for the operators
+  owner, plus the tracer reading them.
+
+`validation/gene_regulation/cohort.py` (on the gene regulation lane) is C's one-pool case. An
 in-step tracer operator would need to read other operators' accumulators within the step. That is
 a contract question for the operators owner, and R1 does not need it.
 
