@@ -108,6 +108,24 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-8 rung 1, §6: N2 alone on H2's slow phase; a gain of 5, the registered 10 missed (20 November
+  2026).** RUNG1 §10.19 on branch fr8-rung1, tag `fr8-rung1-n2c-registered-2026-11-20`
+  ([records](/mnt/workspaces/Cells/fr8-rung1-20261119/stage-a/), `stage-a.json`).
+  - **The run:** `imex_ars222_implicit_conductances_n2_alone@0` from 0 to 1790 s at 100 ms with X2,
+    all 17,900 steps, at the engine of badc86ac.
+  - **X2 passes with no refusal:** 8,030 steps counted, 3 held against a cap of 161, integration
+    error at most 7.8e-4 against 2e-3.
+  - **Against R3:** it passes the parity caps at all 180 rows (0.63 µV, 4.0e-5 relative), and fails
+    the adequacy budgets in start-up, which is reported only. Today's integrator at 100 ms is refused
+    at its first step.
+  - **The miss:** N2 alone reaches 100 ms, a gain of 5 over today's 20 ms; D238's target of 10 needs
+    200 ms, which N2 alone does not reach. From t = 0 the dissipation check refuses the third step,
+    and after a 100 ms start-up X2's out-of-band count refuses it. 125 ms is not offered, since it
+    would be a tuned rung.
+  - **Next, registered as §10.20 before it runs:** N2 with C on the final ID. The arm is H2 from 0 to
+    3600 s at 100 ms, with a 1 ms window around the cue, 38,079 steps. It predicts a step gain of
+    about 94.5 over 1 ms, after the junction gate's update (a) and N2's landing.
+
 - **FR-7 item 3: the releasing compartment, judged and passed (20 November 2026).** Under the
   registration `fr7-u2-compartment-registered-2026-11-20` (95b7b3e0), from a frozen snapshot of main
   439f54fd; tag `fr7-u2-judged-2026-11-20`
