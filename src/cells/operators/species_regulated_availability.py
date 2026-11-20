@@ -842,7 +842,7 @@ def declaration_to_dict(declaration):
             dict(
                 id=c.id,
                 target=_target_to_dict(c.target, declaration.law),
-                source={c.source_kind: c.source},
+                source=_source_to_dict(c),
                 law=c.law,
                 basal=c.basal,
                 **(
@@ -855,12 +855,29 @@ def declaration_to_dict(declaration):
                         hill_coefficient=c.hill_coefficient,
                     )
                     if c.source_kind == "population"
+                    else _site_half_saturation(c)
+                    if c.source_kind == "site"
                     else {}
                 ),
             )
             for c in declaration.couplings
         ],
     )
+
+
+def _source_to_dict(coupling):
+    if type(coupling) is SiteCoupling:  # FR-24.
+        return {"site_population": coupling.source, "quantity": coupling.quantity}
+    return {coupling.source_kind: coupling.source}
+
+
+def _site_half_saturation(coupling):
+    """FR-24: a site coupling's half-saturation in its quantity's unit, with its Hill coefficient;
+    none for the fraction's own laws."""
+    if coupling.half_saturation is None:
+        return {}
+    key = "half_saturation" if coupling.quantity == "occupied_fraction" else "half_saturation_mM"
+    return {key: coupling.half_saturation, "hill_coefficient": coupling.hill_coefficient}
 
 
 def slots(declaration):
