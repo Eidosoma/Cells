@@ -108,6 +108,7 @@ src/cells) composes from them, never from private names.
 
 import math
 from dataclasses import dataclass
+from decimal import Decimal
 from types import MappingProxyType, SimpleNamespace
 from typing import NamedTuple
 
@@ -1470,14 +1471,26 @@ def _diagram_layout(declaration, all_forms, K, M):
     return out
 
 
+def cited_offset(constant):
+    """A CitedConstant's temperature-free part in RT units, its scalar protons' nu_H ln 10^7: the
+    seam-E entry's dG_RT_offset."""
+    return constant.protons * math.log(1e7)
+
+
+def cited_dg_RT(spec, constant):
+    """A CitedConstant's dG°/RT at the world's temperature, computed as the species registry
+    converts the law's seam-E entry (1000 dG / (R T) + dG_RT_offset, in Decimal, rounded once), so
+    k and the entry carry one value (the lead's ruling 7)."""
+    rt = Decimal(R) * Decimal(spec.model.temperature_K)
+    return float(Decimal(constant.dg_kj_mol) * 1000 / rt + Decimal(cited_offset(constant)))
+
+
 def cited_log_k(spec, constant):
-    """A CitedConstant's log k at the world's temperature, the one place the pH-7 standard free
-    energy is converted (the lead's ruling 7): offset - scale (1000 dG / (R T) + protons ln 1e7).
-    A number is its own log k."""
+    """A CitedConstant's log k at the world's temperature: offset - scale dG°/RT, its dG°/RT the
+    seam-E entry's (cited_dg_RT). A number is its own log k."""
     if not isinstance(constant, forms.CitedConstant):
         return float(constant)
-    dg_rt = 1000.0 * constant.dg_kj_mol / (R * spec.model.temperature_K)
-    return constant.offset - constant.scale * (dg_rt + constant.protons * math.log(1e7))
+    return constant.offset - constant.scale * cited_dg_RT(spec, constant)
 
 
 def _closure_rows(model):
@@ -2538,15 +2551,42 @@ def standard_free_energies(declaration):
     over the species its roles bind, dG°/RT and c0 in mM, and the law and the mode of its form that
     produced it, so the binding owner's check computes its band from that form. The species
     registry's check compares each with its own sum of nu mu°/RT, as Wegscheider's condition did at
-    parse. Factored and net-flow laws have no constants of their own, and version 1's laws are
-    factored: ()."""
-    from cells.modules import FreeEnergyEntry
+    parse. A monomial mode whose k is a CitedConstant (K6) and that converts a species gives its
+    cited dG° the same way, in kJ/mol with its pH-7 offset (dG_kJ_mol, dG_basis and dG_RT_offset,
+    F's form), at its form's standard state: the value k is built from (cited_dg_RT). Factored and
+    net-flow laws have no constants of their own, and version 1's laws are factored: ()."""
+    from cells.modules import TEMPERATURE_INDEPENDENT, FreeEnergyEntry
 
     if not isinstance(declaration, PopulationAxis):
         return ()
     hosted, out = hosted_laws(), []
     for t in declaration:
         form = forms.resolved(hosted[t.law].cycle, dict(t.parameters))  # Its declared rates.
+        if form.kinetics == "monomial":
+            roles = dict(t.roles)
+            counts = _counts(form, dict(t.parameters))
+            for (mode, _), rate, row_counts in zip(
+                form.modes, form.monomial.rates, counts, strict=True
+            ):
+                if not isinstance(rate.log_k, forms.CitedConstant):
+                    continue
+                net = {}
+                for (role, _), n in zip(form.rows, row_counts, strict=True):
+                    net[roles[role]] = net.get(roles[role], 0) + int(n)
+                stoichiometry = tuple((s, n) for s, n in net.items() if n)
+                if stoichiometry:  # A pure transport mode converts nothing: no entry.
+                    out.append(
+                        FreeEnergyEntry(
+                            stoichiometry,
+                            c0=form.monomial.standard_state_mM,
+                            law_id=t.law,
+                            mode=mode,
+                            dG_kJ_mol=rate.log_k.dg_kj_mol,
+                            dG_basis=TEMPERATURE_INDEPENDENT,
+                            dG_RT_offset=cited_offset(rate.log_k),
+                        )
+                    )
+            continue
         if form.kinetics != "diagram":
             continue
         roles = dict(t.roles)

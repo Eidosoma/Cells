@@ -995,6 +995,66 @@ def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions(
             parse_spec(exchange_world(exchanger(law=law.law_id)))
 
 
+
+def hydrolysis(dg_kj_mol, law_id="seamtest.monomial_hydrolysis@1"):
+    """A converting monomial law at N, ATP -> ADP + Pi, its k from a cited dG° (K6)."""
+    return law_registry.CycleLaw(
+        law_id,
+        (),
+        (),
+        None,
+        None,
+        cycle=CycleForm(
+            kinetics="monomial",
+            roles=(("ATP", 0), ("ADP", 0), ("Pi", 0)),
+            rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+            modes=(("hydrolysis", (-1, 1, 1)),),
+            monomial=forms.MonomialForm((
+                forms.MonomialRate(
+                    log_k=forms.CitedConstant(dg_kj_mol, protons=0, scale=0.5, offset=0.25),
+                    orders=((forms.Reference("ATP", "N"), 1.0),),
+                ),
+            )),
+        ),
+        host=transporter.KIND_ID,
+        provenance="calibrated",
+        source="a test-only converting monomial law (K6), never shipped",
+    )  # fmt: skip
+
+
+def hydrolysis_world(law_id):
+    return tk.held_world(
+        dict(
+            id="hydrolysis_0", host="membrane_0", law=law_id, orientation={"N": "a"},
+            capacity_fmol_s=0.01, roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi"}, parameters={},
+            held_rows=[],
+        )  # fmt: skip
+    )
+
+
+def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
+    """The world's registry gives ADP's potential so that dG° = -30.5 kJ/mol (tk.DRIVE0_J_MOL): a
+    law citing it is admitted, its entry carries the kJ form, and its k is built from the same
+    converted value, bit for bit; a law citing -35 kJ/mol is refused by the registry's check."""
+    from decimal import Decimal
+
+    from cells.modules import TEMPERATURE_INDEPENDENT
+
+    cited = tk.DRIVE0_J_MOL / 1000.0
+    with mono_scoped(hydrolysis(cited)):
+        spec = parse_spec(hydrolysis_world("seamtest.monomial_hydrolysis@1"))
+        (entry,) = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
+        _, _, p, _ = start(spec)
+    assert entry.dG_kJ_mol == cited and entry.dG_basis == TEMPERATURE_INDEPENDENT
+    assert entry.dG_RT_offset == 0.0 and entry.c0 == 1000.0 and entry.mode == "hydrolysis"
+    assert dict(entry.stoichiometry) == {"ATP": -1, "ADP": 1, "Pi": 1}
+    rt = Decimal(R) * Decimal(spec.model.temperature_K)
+    converted = float(Decimal(cited) * 1000 / rt + Decimal(0.0))  # The registry's own arithmetic.
+    assert float(p.cycle_mono_log_k[0, 0]) == 0.25 - 0.5 * converted  # One value, bit for bit.
+    with mono_scoped(hydrolysis(-35.0, "seamtest.monomial_off@1")):
+        with pytest.raises(ConfigError, match="monomial_off"):
+            parse_spec(hydrolysis_world("seamtest.monomial_off@1"))
+
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
 
 M2 = {"log": 1.0, "exp": 2.0, "expm1": 4.0, "log1p": 2.0}
