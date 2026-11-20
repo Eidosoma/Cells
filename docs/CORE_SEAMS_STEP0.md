@@ -1191,3 +1191,20 @@ in the result.
 - **The windows' width is 16 steps,** an execution choice that changes no row. With JAX's persistent
   compilation cache, every rung of one arm and reading then reuses one compiled program. It is
   recorded with the run.
+
+**Amendment 2 to §9.1 (20 November 2026), committed before host P's ladders run.**
+- **What was found.** A second development smoke, on (P-b) at off-ladder rungs 0.03 and 0.04 in
+  reading (a), was refused by the host's dissipation check: "Resolved pump dissipation cannot be
+  negative or decrease". The first smoke's X2 refusal, on (P-a) at 0.03, saw flows of 40.5 pJ after
+  one 9 µs step.
+- **What dominates host P's world: the face's gradient, not the cycle.**
+  - P1's host P lumen keeps FR-4's lumen composition (Na 10, K 140, Cl 10 mM), while the bath holds
+    Na 145, K 5 and Cl 110 mM.
+  - So its face carries a large initial gradient. The lumen exchanges with the bath at
+    D·A/(L·V) = 1.5 × 10⁴ /s, with a diffusion potential behind it.
+  - That transient is the outer membrane's own and has nothing to do with the ΔΨ mode. An IMS
+    equilibrated with its buffer, MT-1's host P, has no such gradient.
+- **The change, for (P-b) only.** Its lumen starts at the bath's Na, K and Cl, the rows its face
+  moves. Its H and its binder keep the lumen's values, and the face moves neither.
+  - (P-b) then isolates the ΔΨ mode on host P.
+  - (P-a) stays P1's world exactly, the comparison with P1.
