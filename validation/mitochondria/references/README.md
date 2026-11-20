@@ -38,6 +38,7 @@ repository. Only bare numbers are committed, each with its citation (D227).
 | `digitize.py`, `published_targets.json` | The published model curves of Figs. 2–5, read from the article's rasters with pixel uncertainties, and the text's numbers. `digitize.py --targets` regenerates the file. |
 | `sources.py` | Table 1, re-read from both XMLs: all 140 cells match the model file. |
 | `proposal.json` | Proposed comparison rows, bands and plants for a first engine milestone. It is a proposal, not a registration. |
+| `xf1_scaling.py`, `xf1_scaling.json`, `xf1_scaling.md` | The F1F0 activity X_F1 scaled down (x1/30 to x1/9000) and up (x10, x100) on the published arm and on frame B with Eq. 24 restored. For each scale: fit, departures, and whether the steady state exists and is unique; also the largest scale-down within 10% of each arm's fit. |
 | `repairs.py`, `repairs_table.json`, `repairs_table.md` | MR1's candidate repairs of Eqs. 1, 11, 16 and 24, set beside the engine appendix's. Each is checked for consistency in two frames, fitted to the published curves, and measured for its departure from the published arm. For the user's ruling; nothing is registered. |
 
 Tests: `tests/unit/test_mito_references_integrity.py` (fast, about 2 s) and
