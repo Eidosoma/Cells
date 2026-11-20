@@ -10,7 +10,67 @@
     "tissue-and-conservation": "Tissue transport and conservation",
     "cell-physiology": "Cell physiology"
   },
+  "law_categories": {
+    "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.membrane_permeation@1": "membrane-transport",
+    "cells.osmotic_lumen@1": "membrane-transport",
+    "cells.phase_exchange@1": "molecular-assembly",
+    "cells.shared_pool@1": "molecular-assembly"
+  },
   "comparisons": {
+    "cleft-bath-fill": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.membrane_entity_state@1",
+        "cells.scheduled_membrane_insertion@1",
+        "cells.scheduled_membrane_insertion@2",
+        "cells.restricted_cleft_lumen@1",
+        "cells.restricted_cleft_lumen@2",
+        "cells.isopotential_partition@1"
+      ],
+      "engine_revision": "d16976560e255eba8ff600068a326a0946e22f62",
+      "record_revision": "e106a3da24cbd8443c3b3cb60091e4820b8a1375",
+      "sources": {
+        "Area target for one patch": "src/cells/operators/restricted_lumen.py#L229",
+        "Supply from the held bath and volume booking": "src/cells/operators/restricted_lumen.py#L292",
+        "Observed volume and concentration": "src/cells/operators/restricted_lumen.py#L527",
+        "Area summed over live facing patches": "src/cells/operators/restricted_lumen_v2.py#L201",
+        "Partition event map": "src/cells/operators/partition.py#L879"
+      },
+      "driver": "lean/checks/restricted_lumen.py",
+      "record": "lean/PROGRESS.md#cleft-bath-fill"
+    },
+    "cleft-mixing-heat": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.membrane_entity_state@1",
+        "cells.scheduled_membrane_insertion@1",
+        "cells.scheduled_membrane_insertion@2",
+        "cells.restricted_cleft_lumen@1",
+        "cells.restricted_cleft_lumen@2"
+      ],
+      "engine_revision": "d16976560e255eba8ff600068a326a0946e22f62",
+      "record_revision": "e106a3da24cbd8443c3b3cb60091e4820b8a1375",
+      "sources": {
+        "Entropy term at a fractional concentration change": "src/cells/operators/restricted_lumen.py#L242",
+        "Mixing heat and pressure work": "src/cells/operators/restricted_lumen.py#L251",
+        "Version 1 finite-heat guard": "src/cells/operators/restricted_lumen.py#L329",
+        "Version 2 call to the shared heat calculation": "src/cells/operators/restricted_lumen_v2.py#L236",
+        "Version 2 finite-heat guard": "src/cells/operators/restricted_lumen_v2.py#L261"
+      },
+      "driver": "lean/checks/restricted_lumen.py",
+      "record": "lean/PROGRESS.md#cleft-mixing-heat"
+    },
     "scheduled-bath-exchange": {
       "kind": "engine",
       "models": [
@@ -783,6 +843,130 @@
     }
   },
   "claims": [
+    {
+      "id": "cleft-bath-fill",
+      "category": "tissue-and-conservation",
+      "title": "Fluid from a held bath dilutes a growing cleft in proportion to its added volume",
+      "statement": "Filling a well-mixed cleft conserves solute. Its concentration stays between the original cleft and bath concentrations, and its excess above the bath scales with the retained volume fraction. Subdividing the fill gives the same endpoint. Dividing a facing patch between daughter cells preserves its total contribution to cleft volume.",
+      "assumptions": [
+        "The cleft has positive initial volume. Added volume is nonnegative and arrives at the held bath concentration. The solute has no other source or sink during the fill.",
+        "Gap width stays fixed. The two daughter patches inherit the same fractions of current area and onset area, and replace the parent in the sum over live patches.",
+        "In the compiled comparison a neutral tracer is impermeant and face diffusion is zero. The account records the completed fill. The observer also includes the most recent half-step of membrane growth."
+      ],
+      "uses": [],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.restricted_cleft_lumen@1",
+          "cells.restricted_cleft_lumen@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RestrictedLumen.material_balance": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.mixed_pos": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.dilution": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.mixed_bounds": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.fills_compose": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.split_volume": "lean/CellsProofs/Tissue/RestrictedLumen.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "cleft-bath-fill"
+        ],
+        "result": "Five compiled controls checked all seven rows for volume, bath supply, tracer concentration and cumulative heat. When 0.010 pL at 4 mM grew to 0.020 pL from a 1 mM bath, both versions and a 60:40 patch split in version 2 gave 2.5 mM. The maximum concentration error was 4.45 × 10⁻¹⁶ mM."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cleft width and bath access. A test of dilution during growth requires a paired cleft-volume and tracer-concentration time series.",
+        "unit": "µm",
+        "evidence": [
+          {
+            "dataset_id": "spring1979_cleft_geometry@1",
+            "manifest": "lean/checks/data/cleft_measurements.json",
+            "citation": "Spring and Hope (1979), Tables I and III",
+            "doi": "10.1085/jgp.73.3.287",
+            "locator": "Table I and pp. 291–292 give lateral area and assigned interspace volume. Table III gives pooled control volume per border length.",
+            "context": "Live Necturus gallbladder epithelium in NaCl Ringer. The optically resolved area omits fine membrane folds.",
+            "role": "calibration",
+            "fit": [
+              "Resting lateral area and assigned interspace volume per cell"
+            ],
+            "uncertainty": "Area was 3,540 ± 150 µm² per cell (SEM, n = 32). Assigned interspace volume was about 2,080 µm³ per cell. Volume per border length was 41.1 ± 4.7 µm³/µm (SEM, n = 19).",
+            "assessment": "The resting geometry gives an effective full gap width of 1.18 µm. The section-based estimate of 1.19 µm reuses the same images.",
+            "report": "lean/PROGRESS.md#cleft-bath-fill"
+          },
+          {
+            "dataset_id": "dolega2021_intercellular_space@1",
+            "manifest": "lean/checks/data/cleft_measurements.json",
+            "citation": "Dolega et al. (2021), Appendix 1, Figs. 3–4",
+            "doi": "10.7554/eLife.63258",
+            "locator": "Appendix 1, sections C.1–C.2, reports the layer width and size-dependent access.",
+            "context": "Neighbouring cells in living CT26 spheroids. Confocal dye profiles measured width and bath tracers probed access to the extracellular matrix.",
+            "role": "descriptive",
+            "observed": 0.9,
+            "uncertainty": "Reported width was 0.9 ± 0.1 µm across 132 profiles, with a correction for 0.27 µm optical resolution.",
+            "assessment": "Tracers of 4.4 and 5.8 nm radius entered the space. Tracers above 14.8 nm were largely excluded. Access therefore depends on the solute.",
+            "report": "lean/PROGRESS.md#cleft-bath-fill"
+          },
+          {
+            "dataset_id": "ikonomov1985_cleft_ions@1",
+            "manifest": "lean/checks/data/cleft_measurements.json",
+            "citation": "Ikonomov, Simon and Frömter (1985)",
+            "doi": "10.1007/BF00583604",
+            "locator": "The abstract reports the result under the three bath and current conditions.",
+            "context": "Ion-selective micropuncture of lateral spaces in Necturus gallbladder epithelium.",
+            "role": "descriptive",
+            "uncertainty": "The authors report no reliable ion-concentration difference between lateral spaces and bath. A tracer-specific detection threshold and a mixing time are unavailable from this comparison.",
+            "assessment": "Local ion measurements support bath-like concentrations under those conditions. Dilution during growth remains untested.",
+            "report": "lean/PROGRESS.md#cleft-bath-fill"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cleft-mixing-heat",
+      "category": "tissue-and-conservation",
+      "title": "Mixing two solutions of unequal positive concentration releases heat in the cleft",
+      "statement": "For each species in an ideal isothermal fill, mixing heat is the bath’s chemical and pressure work minus the cleft’s free-energy increase. Heat vanishes at equal concentration and is strictly positive for a positive addition of a different concentration. Both concentration ratios in the entropy formula remain positive.",
+      "assumptions": [
+        "Initial volume, both concentrations and temperature are positive. The added bath volume is nonnegative. Strictly positive heat also requires positive added volume and unequal concentrations.",
+        "The comparison uses an isolated neutral tracer and a bath at 310 K. The energy reference evaluates the endpoint ideal-solution expression to 75 decimal digits."
+      ],
+      "uses": [
+        "cleft-bath-fill",
+        "scheduled-bath-exchange"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.restricted_cleft_lumen@1",
+          "cells.restricted_cleft_lumen@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RestrictedLumen.phi_nonneg": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.residual_ratios": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.heat_nonneg": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.heat_pos": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.heat_same": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.heat_entropy": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
+          "CellsProofs.Tissue.RestrictedLumen.energy_booking": "lean/CellsProofs/Tissue/RestrictedLumen.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "cleft-mixing-heat"
+        ],
+        "result": "At 1 and 2⁻⁶⁰ mM, in either orientation, the heat evaluator rounds one fractional deviation to −1 and produces NaN. Both versions refuse the first fill. The reference gives +0.00245660 or +0.00618054 pJ. Replacing only nonfinite heat with the direct positive-ratio form in memory lets all four complete, within 2.09 × 10⁻¹⁷ pJ of cumulative reference heat."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Heat released on mixing, with independently measured cleft and added volumes, solute concentrations and temperature. A local calorimetric measurement is still needed.",
+        "unit": "pJ",
+        "evidence": []
+      }
+    },
     {
       "id": "scheduled-bath-exchange",
       "category": "tissue-and-conservation",

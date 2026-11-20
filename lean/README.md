@@ -6,16 +6,16 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [12 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [32 of 37 laws](COVERAGE.md#registered-laws) and [14 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 6 of 6 | 6 checked | 6 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 5 | 6 of 6 | 6 checked | 6 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 9 of 9 | 9 checked | 9 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 7 | 8 of 8 | 6 checked · 2 failed | 6 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 9 of 9 | 7 checked · 2 failed | 7 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 10 | 8 of 8 | 6 checked · 2 failed | 6 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 11 of 11 | 8 checked · 3 failed | 8 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
 <!-- /generated -->
@@ -120,11 +120,19 @@ mkdir -p .lake/tmp .lake/cache
 export TMPDIR="$PWD/.lake/tmp" XDG_CACHE_HOME="$PWD/.lake/cache"
 export PYTHONPATH="../src:.." PYTHONDONTWRITEBYTECODE=1
 export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 cells_python=${CELLS_PYTHON:-python}
 ```
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For a restricted cleft, the controls follow tracer dilution and mixing heat through membrane growth and a 60:40 patch split. The full comparison also tests a positive trace concentration on each side. It exits with status 1 when the engine refuses a valid fill. [Geometry, tracer measurements and heat finding](PROGRESS.md#cleft-bath-fill)
+
+```bash
+"$cells_python" -B checks/restricted_lumen.py --controls-only
+"$cells_python" -B checks/restricted_lumen.py
+```
 
 For the held bath, follow the controller’s dose and the tissue’s supply through four solution changes, then compare potassium reversal shifts with measured cardiac currents. The full driver also runs equivalent recipes in two orders and exits with status 1 when their booked doses differ. The second command runs the ordinary controls. [Bath accounting and biological evidence](claims/scheduled-bath-exchange.md) · [Recipe-order finding](claims/bath-recipe-order.md)
 
