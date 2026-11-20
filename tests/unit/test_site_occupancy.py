@@ -198,11 +198,15 @@ def test_definition_refusals(name):
 
 
 def test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted():
+    """FR-26 (D244, W): a patch population on a replaced slot is admitted with
+    site_occupant_replacement@1 and refused without it, naming it; a contact population incident
+    to a replaced slot stays refused."""
     inward = sfx.population("w1", patch="wall_cell_1", face="inside")
-    with pytest.raises(ConfigError, match="replaces; version 1 has no occupant rule"):
+    with pytest.raises(ConfigError, match="its occupants need site_occupant_replacement@1"):
         parse_spec(two_cells([inward], replaced=True))
+    parse_spec(sfx.with_occupant(two_cells([inward], replaced=True), {"T": {"w1": (0.2, 1, None)}}))
     on_contact = sfx.population("k0", contact="j0", side="first")
-    with pytest.raises(ConfigError, match="replaces; version 1 has no occupant rule"):
+    with pytest.raises(ConfigError, match="a contact population there is refused in version 1"):
         parse_spec(two_cells([on_contact], replaced=True))
     parse_spec(two_cells([sfx.population("w0", patch="wall_cell_0", face="inside")], replaced=True))
     parse_spec(two_cells([on_contact]))  # A contact population, no replacement.

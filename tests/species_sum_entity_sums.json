@@ -985,6 +985,16 @@
    "operators/population_unit_turnover.py",
    "own_magnitudes",
    "entity_sum(xp.abs(row.unit_pool_units), axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_replacement_free_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(row.site_replacement_energy_magnitude_pJ, axis=None, xp=xp)"
   ]
  ]
 }
