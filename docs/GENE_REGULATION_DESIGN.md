@@ -93,7 +93,7 @@ Sources.
    group 2, FR-7's precursor, and machines' U4.
 9. **The user's decisions** (§6): which part of D145's hold to lift; whether D218's door covers
    transcription-factor feedback; fuel; the one route from state to production; data licences.
-10. **Effort (estimate):** A about 9–13 agent-days; B 8–12; C 14–22; D 6–9 on top of A.
+10. **Effort (estimate):** A about 9–13 agent-days; B 9–14; C 14–22; D 6–9 on top of A.
 
 ## 1. Gene regulation as physics
 
@@ -186,10 +186,11 @@ Sources.
   by many sites, or by decoys, follows from the closure as it stands. Reading its result into a rate
   is the one new piece (§2.3).
 - **Non-specific DNA as a second binder gives the classic weak-promoter form (S).** With R
-  repressors, N_NS non-specific sites and a specific binding energy Δε, the fraction repressed is
-  (R/N_NS)e^{−βΔε} / (1 + (R/N_NS)e^{−βΔε}). That is a Hill inhibition with n = 1 in total R, with
-  K_eff = N_NS e^{βΔε} (named from memory, not read). So the same form also runs through B1′'s Hill
-  factor, as long as titration does not matter.
+  repressors, N_NS non-specific sites and a binding energy Δε of the operator relative to
+  non-specific DNA, the fraction repressed is w/(1 + w), with w = (R/N_NS) e^{−Δε/k_BT}. The
+  expression left is 1/(1 + R/K_eff), with K_eff = N_NS e^{Δε/k_BT}: a Hill inhibition with n = 1
+  in total R (named from memory, not read). So the same form also runs through B1′'s Hill factor,
+  as long as titration does not matter.
 
 **Kinetic: the two-state (telegraph) promoter.**
 - The mean occupancy of a single promoter, with c(t) given, obeys ds/dt = k_a c (1 − s) − k_d s
@@ -208,7 +209,7 @@ Sources.
 | Block | Equilibrium or kinetic | Bound factor leaves the free pool | Host | Status on main | What a promoter would need |
 | --- | --- | --- | --- | --- | --- |
 | B1′'s Hill factor of a species (`hill_activation`, `hill_inhibition`) | Equilibrium, all-or-none | No | A rate route on any routable target | `@1` judged for channels and junctions; `@2`'s rate routes are development | Nothing for the weak-promoter form. It cannot express titration |
-| `rapid_binding@1`, the closure | Equilibrium | **Yes** | A node, through a kind | Compared, not judged. "No built-in law moves a closure row" (roadmap, Family 4) | An operator's read of a form fraction. A ligand may not have forms of its own (`species_registry.py`:36), so a repressor bound by an inducer cannot also be a promoter's ligand |
+| `rapid_binding@1`, the closure | Equilibrium | **Yes** | A node, through a kind | Compared, not judged. "No built-in law moves a closure row" (roadmap, Family 4) | First, seam C's mover rule. Today a row with forms stays inert: any operator that names it is refused, the coupling's reads included (`species_registry.py`:783–813) **(code)**. Then an operator's read of a form fraction. A ligand may not have forms of its own (`species_registry.py`:36), so a repressor bound by an inducer cannot also be a promoter's ligand |
 | `hill_regulated_two_state@1`, the regulatory state | Kinetic | No | One state per cell | Judged within the coupling's scope | Mass action only in its linear regime. It holds slow, chromatin-like states well: retention 1/k_off, writes at events |
 | `site_occupancy@1` | Kinetic | **Yes** | Patches and contacts only (`operators/site_occupancy.py`:4–6) | Judged (FR-3, 51 of 51) | A node owner, for sites on DNA in a cell |
 
@@ -216,7 +217,10 @@ Sources.
 - If promoters and decoy sites are few against the factor, it does not. B1′'s Hill factor or the
   regulatory state serve, and both are on main.
 - If they are many, or the factor is scarce, it does. Then the closure (at equilibrium) or the sites
-  (kinetic) are needed, and both need one new piece.
+  (kinetic) are needed. The sites need a node owner. The closure needs more: seam C's rule for laws
+  that declare the forms they move (CORE_SEAMS §5.2), and then a read.
+- A ligand row has no forms, so the refusal does not reach it. A transcription factor that turnover
+  or synthesis writes can still be the closure's ligand (S, from `species_registry.py`:793–797).
 
 **Two misfits of the closure.**
 - **Its envelope.** Rapid equilibrium must be fast against the processes that read it. Operator
@@ -311,6 +315,10 @@ Sources.
   MITOCHONDRIA_DESIGN §1.3).
   - Today `scheduled_species_turnover@2`, for charged clearance, is unbuilt.
   - FR-7's producer refuses a charged precursor (`population_unit_turnover.py`:71).
+- **Version 1 worlds therefore do not compose with mitochondria's rows.** Each species has one
+  authority, so ATP cannot be a neutral lump in one operator and a charged row with H⁺ and Mg²⁺
+  forms in the same world (S). An expression cell beside MT-1's nucleotide rows waits for the
+  charged path.
 
 ### 1.6 What the products act on
 
@@ -373,7 +381,7 @@ keeping apart (S).
 | `population_unit_turnover@1` (FR-7 F1; development) | A neutral precursor becomes channel units through m ≤ 8 maturation pools (`MAX_POOLS`, :110). The half-steps are exact by uniformization, with Λ dt ≤ 1 refused otherwise (:113). There are ν molecules per unit, two ledgers, and signed work for the precursor. One precursor per route. No fuel, no machine. Its refusal is simulation-wide (D232) | The pattern the synthesis operator generalises | A soluble product with a potential; a machine pool; monomers drawn along the chain; fuel in the stoichiometry; degradation that returns monomers; several monomer roles per route |
 | `species_regulated_availability@1` (judged) and `@2` (B1′; development) | A Hill factor of a species, or a regulatory state, sets @3's channel or junction availability, or a routable rate in its target's own half-steps. F lies in [b, 1], the scheduled rate is the maximum, and each route declares an operating range | Initiation's regulation | A new target is one row in `OPERATOR_TABLES` (:149–154). FR-7's F3 added its producer that way on its branch (cf7145ad, not on main), as a recorded exception naming the operators owner |
 | `local_species_reactions@1` (judged within MG0c's scope) | Driven mass action and Michaelis–Menten with Hill factors; passive detailed balance; integer moieties. A passive reaction has molecularity at most 3 on each side, and a driven one an order of at most 3 (`MAX_MOLECULARITY`, :156, :535–548); 16 species | Recharging (NMP to NTP, PPi to Pi); small phenomenological networks | It cannot carry polymerisation: a product takes 10²–10⁴ monomers, an order far above 3. Degradation to L monomers is admissible as a driven reaction of order 1, since products are not capped, but a driven route books its ΔG as signed work, not heat (S) |
-| `rapid_binding@1` (compared) | A multi-ligand closure over binders whose forms the registry declares | Equilibrium occupancy | A read of form fractions by an operator; nested binders, for induction |
+| `rapid_binding@1` (compared) | A multi-ligand closure over binders whose forms the registry declares | Equilibrium occupancy | Seam C's mover rule, since no operator may name a row with forms today (`species_registry.py`:783–813); then a read of form fractions; nested binders, for induction |
 | `site_occupancy@1` (judged) | Kinetic Langmuir binding with the sites conserved, on patches and contacts | Kinetic occupancy | A node owner |
 | `hill_regulated_two_state@1` (judged within the coupling's scope) | ds/dt = k_on u (1 − s) − k_off s, with exact half-steps | A kinetic promoter in its linear regime; slow chromatin-like states | — |
 | `scheduled_species_turnover@1` (clearance judged with D150's faces; production guarded only) | Production P with no material origin, and first-order clearance; `turnover_rate` is routable (:437) | The regulator's supply; today's phenomenological stand-in for expression | Material origin and fuel, by design |
@@ -419,7 +427,9 @@ keeping apart (S).
 3. **An occupancy source in the coupling operator.** A closure's form fraction, or a site
    population's occupancy, becomes a B1′ source, as FR-7's population-abundance source (b) was
    designed. So one mechanism still carries every route from state to production. This is D218's
-   "one coupling and rate-routing mechanism", and the coupling note's §6.4 Q5.
+   "one coupling and rate-routing mechanism", and the coupling note's §6.4 Q5. For the closure it
+   waits on seam C's mover rule, the binding owner's, since the registry refuses the coupling's
+   reads of a row with forms today.
 4. **A count-based stochastic block** (§3).
 
 ### 2.4 Composition, ownership and seats
@@ -464,11 +474,15 @@ rates is bitwise idle, as the producer is.
     admitted 0.25 s (SHARED_INVENTORY_REACTIONS §4.1).
   - For templated synthesis the bound is Λ dt ≤ 1, with Λ the largest chain rate m v/L.
   - With ions moving, 1 ms holds (D231's FR-7 world).
-- **Two worked cases, with m = 8.**
+- **Two worked cases, with m = 8.** The dt below is only the producer's stability rule, an upper
+  bound. Other checks may bind first: the gap-junction replication's runs held dt × rate ≤ 0.1, and
+  one of its steps was limited by @3's energy check, not by stability (its §4). The capability probe
+  reports which check binds (§4.1).
   - *Bacterial-like:* 1,000 nt at 50 nt/s and 300 aa at 15 aa/s. Each chain is 20 s, so κ = 0.4 s⁻¹
-    and dt ≤ 2.5 s. A 5 h horizon at 1 s is 18,000 steps.
+    and dt ≤ 2.5 s at most. A 5 h horizon at 1 s is 18,000 steps; at dt × κ ≤ 0.1 it is 72,000.
   - *Mammalian-like:* 10 kb at 50 nt/s and 500 aa at 5 aa/s, so κ = 0.04 s⁻¹ and 0.08 s⁻¹. Five
-    median protein half-lives (46 h) make 230 h, which is 8.3 × 10⁵ steps at 1 s.
+    median protein half-lives (46 h) make 230 h, which is 8.3 × 10⁵ steps at 1 s. That step keeps
+    dt × κ below 0.1.
   - At 1 ms, one hour is 3.6 × 10⁶ steps.
 - **Cost.** D152's species-only chain cost 2.2–2.7 ms per step at 32 nodes, on one CPU core with
   host checks (SHARED_INVENTORY_REACTIONS §4.7). At that rate 8.3 × 10⁵ steps take about 30–40
@@ -513,6 +527,9 @@ nodes or a stochastic treatment."
   (MOLECULAR_MACHINES §3.1, point 1).
 - **So an open-loop expression chain is exact in the mean at any copy number,** when the regulator
   is given and the machines and monomers are abundant.
+- **"Given" matters.** A two-gene cascade, in which gene 1's product regulates gene 2, is not exact
+  even without feedback: gene 2's initiation is a nonlinear function of a low-copy, fluctuating
+  input (S).
 - **Machine sharing is nonlinear.** With machines and monomers at 10³ copies or more, its
   mean-field error should be small (S). The references measure it (§3.4, step 1).
 
@@ -616,6 +633,8 @@ The milestone labels **GR-1A** to **GR-1D** are this note's.
 **Scope.**
 - One cell, one or two genes. Transcription and translation run as two routes of
   `templated_polymerisation@1`, each with its machine pool and its chain.
+- A second gene is only a partner that shares the machines. Neither gene's product regulates the
+  other, which would leave the exact-in-mean regime (§3.1).
 - mRNA and protein are degraded, and their monomers are returned. NMP recharging and fuel
   regeneration run as D152 reactions.
 - An inducer or transcription factor, made and cleared in the cell by D150's turnover on a declared
@@ -663,7 +682,28 @@ of declared equations).
 **Planted controls.** A wrong stage count m, a wrong speed v, a dropped fuel term, a machine not
 returned, a factor applied twice, and a wrong residue count L. Each must fail a judged item.
 
-**The biological target.** [Pending the validation check of 20 November; §4.6.]
+**What its judged run covers.** Two blocks it runs are development, not judged: B1′'s rate route
+(`@2`) and, in A2, FR-7's producer.
+- A1's protocol judges the route's factor on initiation within A1's own scope, as the coupling's
+  protocol judged `@1`'s factors.
+- A2 is reported as development until FR-7's own protocol judges the producer (its F2–F4).
+
+**The biological target.** The test of independence: no input may be derived from the quantity it
+predicts.
+- **Ruled out by that test:**
+  - Weber et al. 2023's per-gene initiation and elongation rates (CC BY). They were derived from the
+    same mRNA and protein copies, half-lives and ribosome densities, so predicting those abundances
+    from them is circular **(checked**, abstract).
+  - Burgos et al. 2020's half-lives (CC BY), which are fitted to the pulse-chase they would be
+    compared with.
+  - A steady-state ratio of two expression levels. The chain after initiation cancels in it, so it
+    tests occupancy (option B), not synthesis.
+- **The class that passes: a closed batch of cell-free expression.** The components are defined
+  inputs, and the exhaustion of precursors and fuel is the measured response. Calibrate on one
+  condition, one template or energy level. Predict the others: saturation by finite machines, and
+  the plateau that the fuel budget sets. [CANDIDATE]
+- **If no permissive candidate exists,** A's first acceptance is numerical only, and the first
+  biological prediction arrives with option D's period.
 
 **Rows, steps, molecules, fuel.**
 - **Rows:** 13 for one gene, 15 for two (§2.1).
@@ -699,7 +739,11 @@ per-residue potentials' sources, and the 16-row cap, which forces lumping.
 `site_occupancy@1` on a node host.
 
 **What it needs from the engine.**
-- An operator's read of a closure's form fraction: the binding owner's seam C and the operators
+- **The closure's first mover or reader.** Today any operator that names a row with forms is
+  refused, the coupling's reads included (`species_registry.py`:783–813). Seam C's §5.2 admits a
+  law that declares its stoichiometry in base forms with every ligand written out. That rule is the
+  binding owner's.
+- Then an operator's read of a closure's form fraction: the binding owner's seam C and the operators
   owner's contract.
 - The occupancy source in the coupling module.
 - A node owner for site populations.
@@ -725,7 +769,7 @@ out; the total promoter used in place of the free fraction.
 **Owners and seats.** The binding and operators owners, both on D234's critical path, plus two
 seats.
 
-**Effort (estimate): 8–12 agent-days.**
+**Effort (estimate): 9–14 agent-days,** including about 1–2 for seam C's mover rule.
 
 **Main risk.** Contention with mitochondria's binding work (D234). Then *E. coli* as a data-only
 organism (D179 added it for the FEP track only), the closure's envelope against slow operator
@@ -791,8 +835,12 @@ bitwise idleness) must hold beside a stochastic block, and statistical verdicts 
 **Engine models it runs.** Option A's models, with the feedback route under D218's conditions. F6
 adds B's occupancy source.
 
-**What it needs from the engine.** Option A, and the cut-feedback control, which exists (the
-coupling's `coupling_controls` switches).
+**What it needs from the engine.**
+- Option A, and the cut-feedback control, which exists (the coupling's `coupling_controls`
+  switches).
+- For F6, more than B's read. The mRNA becomes a binder with forms, and the synthesis operator makes
+  and degrades it. The registry refuses any operator that names such a row
+  (`species_registry.py`:783–813), so F6 waits for seam C's mover rule (CORE_SEAMS §5.2).
 
 **Code-blind references.** The chain version's linear stability, which gives the Hopf threshold and
 the period at onset (S: the characteristic equation of an m-stage chain); an independent ODE or DDE
@@ -834,13 +882,13 @@ physiological loops. Low copy in a loop. Mouse data from subscription papers.
 | | A | B | C | D (after A) |
 | --- | --- | --- | --- | --- |
 | Proves first | Synthesis as physics, one account | Occupancy as binding | Low copy | Feedback and delay |
-| New engine pieces | One operator | Closure read, occupancy source, node host | Count block, contract change | Feedback route evidence |
+| New engine pieces | One operator | Seam C's mover rule, closure read, occupancy source, node host | Count block, contract change | Feedback route evidence; for F6, seam C's mover rule |
 | Rows of 16 | 13–15 | 8 | Counts outside rows | 12 |
 | Steps | 10⁴–10⁶ at 1 s; A2 at 1 ms | 10² | Events | 10³–10⁴ |
 | Fuel | Finite, as stoichiometry | None | None one way | Finite |
 | Core owners touched | One table row; the producer (A2) | Binding, operators | Operators, run view | As A |
 | Seats | 2 | 2 | 2 | As A |
-| Effort (estimate) | 9–13 | 8–12 | 14–22 | 6–9 more |
+| Effort (estimate) | 9–13 | 9–14 | 14–22 | 6–9 more |
 | D145 and D218 asks | Lift D145 for polymerisation laws (F10); D218 unchanged (open loop) | Lift D145 for occupancy | Lift D145 for the low-copy regime | Lift D145 for networks; confirm D218 covers TF feedback |
 | Biological target | Pending (§4.6) | Pending (§4.6) | smFISH, with a held-out condition | Hes1's period |
 
@@ -871,7 +919,7 @@ as F6's network. B gives the occupancy source.
 | **The heredity work** | An expression carrier: "Ca/CaV plus a slow regulator", a parallel Stage D of 12–20 days (HEREDITY_FIRST_EXPERIMENT). Regulatory state among the causal carriers (CURRENT_PLAN). FR-7's U1 junction-channel unit | A with FR-7's producer, then D | The slow regulator is the regulatory state, on main. Inheritance at division is the partition's |
 | **Syn3A's Stage 4** | F10, polymerisation laws, and F11, a stochastic regime. F8, metabolism past 16 species, and F9, fuel made and spent | A gives F10; C gives F11 | mRNA is about one per gene (§3.1). For *M. pneumoniae*'s Stage 4a, Burgos 2020 and Weber 2023 are CC BY, and their PRIDE deposits CC0 **(checked)** |
 | **The Xenopus lane's XC1** | The butyrate route: SLC5A8 uptake, then HDAC inhibition, then expression, then incidence. Its gap list asks for an occupancy-to-state read (G-L8) and a response path to cell behaviour (G-O2) | B, for butyrate bound to HDAC sites; A, for the expression it changes | D226: the first bundle does not need it. Until then the response is the validation side's observation model |
-| **The gap-junction replication's F6** | "The modified Hill (lambda) form and the microRNA-target binding partition as checked laws, with the regulatory coordinates' physical scale and time unit declared" | The λ form is B1′'s basal level, on main; the partition needs B's occupancy source; D carries the network | The switch already runs on D152 sources, as development (its §3) |
+| **The gap-junction replication's F6** | "The modified Hill (lambda) form and the microRNA-target binding partition as checked laws, with the regulatory coordinates' physical scale and time unit declared" | The λ form is B1′'s basal level, on main. The partition needs seam C's mover rule, since its mRNA is a binder that synthesis writes, and then B's occupancy source. D carries the network | The switch already runs on D152 sources, as development (its §3) |
 | **The REVERT plan's group 2** | "A gene-regulation layer with sourced kinetics, coupled to cells" | D's declared networks | Group 1's Boolean reproduction runs out of process with approval (D138). No patient-specific rule set becomes an engine model (D136) |
 | **FR-7** | Its precursor, today a declared pool or D150's supply | A2: the translated protein becomes the precursor | The producer's refusal of other authors changes (§4.1) |
 | **Machines** | U4: the ribosome and RNA polymerase, held under D145 (D209) | A, as aggregate machine pools; individuals with FR-13's M4 after C | — |
