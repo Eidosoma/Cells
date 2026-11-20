@@ -112,6 +112,28 @@
     ],
     "decimal_places": 1,
     "reader": "second_reader"
+   },
+   "S2B": {
+    "file": "supp_ddu201_ddu201supp.pdf, page 9, embedded image 0 (838 x 524 JPEG, extracted with pdfimages, not rendered)",
+    "x_px": [
+     465,
+     729
+    ],
+    "x_tick_values": [
+     -150,
+     -50
+    ],
+    "y_px": [
+     126,
+     370
+    ],
+    "tick_values": [
+     0,
+     -40
+    ],
+    "decimal_places": 1,
+    "reader": "second_reader",
+    "note": "points read as marker centres (filled disks by erosion, open circles as rings) at the drawn axis's -140 to -30 mV; SEM from the error-bar tip farther from the zero line, left empty where the bar ends inside its marker; WT at -80 mV is hidden behind K346T's marker and read from its connecting line"
    }
   },
   "second_reader": "Fig. 3G's two rows (reader second_reader in the CSV) were read by the FR-7 lane on 20 November 2026 by the same method, from the same JPEG (its SHA-256 checked against this manifest), with no other source: each mean is a bar's bottom edge (the bars hang down from 0), each SEM tip its error-bar cap, and the ticks are the axis's 0 and -25 marks. The rows marked first_reader are the user's (D241)."
