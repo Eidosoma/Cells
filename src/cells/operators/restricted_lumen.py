@@ -80,6 +80,8 @@ ONSET_VOLUME_RTOL = 1e-12  # The declared onset volume against w A_on / 2.
 NEUTRALITY_RTOL = 1e-12  # |sum z c| against sum |z| c of a source's declared composition.
 FILL_FLOOR_FMOL = 1e-12  # Floor of the fill ledger (plus the per-step rounding).
 SERIES_BELOW = 1e-4  # phi(1 + e) by its series for |e| below this (it never rounds negative).
+# phi(r) from the ratio r = 1 + e itself, formed as c / c', below this (mixing's docstring).
+RATIO_BELOW = 2.0**-40
 
 STATE_AXES = {
     "lumen_volume_increment_pL": ["extracellular_slot"],  # V - V_on at lumen nodes.
@@ -239,13 +241,28 @@ def potentials(p, *, xp):
     return R * p.temperature * xp.log(co) + p.valence * F * p.boundary_V
 
 
-def mixing(e, *, xp):
-    """phi(1 + e) = (1 + e) ln(1 + e) - e >= 0 for e > -1, by its series near e = 0."""
+def mixing(e, ratio=None, *, xp):
+    """phi(1 + e) = (1 + e) ln(1 + e) - e >= 0 for e > -1: by its series near e = 0, from e
+    elsewhere, and from the ratio r = 1 + e itself, formed directly as a quotient of positive
+    concentrations (fill_energy), where r < RATIO_BELOW: phi(r) = r ln r - r + 1, with r ln r = 0
+    at r = 0. There e lies within about 4000 ulps of -1 and can round to -1 or below, where
+    log1p reads -1 and (1 + e) log1p(e) is 0 x (-inf), NaN; the independent Lean project found
+    it at 1 mM against 2^-60 mM, where r is 9.5e-19 (lean/PROGRESS.md "cleft mixing heat", 20
+    November 2026). Above RATIO_BELOW the e-form keeps about eps |ln r| of phi. Every registered
+    world's lumens start at their source bath's composition, r = 1 (32 worlds, 20 November
+    2026), far from it. The choice reads the ratio only; each branch not taken reads 1. Without
+    a ratio (a caller holding e alone) it is the series and the e-form, as before."""
     small = xp.abs(e) < SERIES_BELOW
-    safe = xp.where(small, 1.0, e)
-    direct = (1.0 + safe) * xp.log1p(safe) - safe
     series = e * e * (0.5 - e * (1.0 / 6.0 - e * (1.0 / 12.0 - e / 20.0)))
-    return xp.where(small, series, direct)
+    if ratio is None:
+        safe = xp.where(small, 1.0, e)
+        return xp.where(small, series, (1.0 + safe) * xp.log1p(safe) - safe)
+    tiny = ratio < RATIO_BELOW
+    safe = xp.where(small | tiny, 1.0, e)
+    direct = (1.0 + safe) * xp.log1p(safe) - safe
+    r = xp.where(tiny, ratio, 1.0)
+    from_ratio = r * xp.log(xp.where(r > 0, r, 1.0)) - r + 1.0
+    return xp.where(small, series, xp.where(tiny, from_ratio, direct))
 
 
 def fill_energy(amounts, volume, bath, dv, p, *, xp):
@@ -256,7 +273,8 @@ def fill_energy(amounts, volume, bath, dv, p, *, xp):
     W - dG of the fill (W = sum mu_b dn - Pi_b dV, its chemical parts) is
     H = RT sum_s c'_s [V phi(c_s / c'_s) + dV phi(c_b,s / c'_s)] >= 0; the arguments are
     1 + e with e = dV (c - c_b) / (V' c') and 1 + e_b with e_b = V (c_b - c) / (V' c'),
-    formed without cancellation.
+    formed without cancellation; mixing also takes the ratios c / c' and c_b / c' themselves, for
+    the arguments within rounding of -1.
     """
     rt = 1e-3 * R * p.temperature
     lumen = p.lumen_node & (dv > 0)
@@ -268,7 +286,8 @@ def fill_energy(amounts, volume, bath, dv, p, *, xp):
     c1 = (n + cb * dv) / v1
     e = dv * (c - cb) / (v1 * c1)
     eb = v * (cb - c) / (v1 * c1)
-    heat = rt * species_sum(c1 * (v * mixing(e, xp=xp) + dv * mixing(eb, xp=xp)), xp=xp)
+    terms = v * mixing(e, c / c1, xp=xp) + dv * mixing(eb, cb / c1, xp=xp)
+    heat = rt * species_sum(c1 * terms, xp=xp)
     fluid = -rt * species_sum(cb, xp=xp) * dv
     return xp.where(lumen, heat, 0.0), xp.where(lumen, fluid, 0.0)
 
