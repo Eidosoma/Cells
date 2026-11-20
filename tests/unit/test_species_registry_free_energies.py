@@ -26,7 +26,9 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   world's temperature and at 310.15 K (the lane's appendix's column), and a form's ln K_d carries
   no temperature. Planted: a set row edited after the set was applied, and the world's temperature
   changed, are each refused at the definition; the helper refuses a row whose potential comes from
-  elsewhere, and a second set;
+  elsewhere, and a second set. The set's moieties over the rows present are required, and its
+  proton buffer is checked as the set's rows are (planted, each refused: a set moiety dropped, one
+  edited, and the buffer's protonated form moved);
 - an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
   temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
   3 K warmer is refused, its dG°/RT moved by 1 %. Table 2's four reactions as source-derived
@@ -301,6 +303,29 @@ def a_set_re_tempered(monkeypatch):
     return raw, contextlib.nullcontext()
 
 
+def a_set_moiety_dropped(monkeypatch):
+    raw = species_registry.with_potential_set(set_world(), BEARD)
+    raw["model"]["moieties"] = [m for m in raw["model"]["moieties"] if m["id"] != "phosphorus"]
+    return raw, contextlib.nullcontext()
+
+
+def a_set_moiety_edited(monkeypatch):
+    raw = species_registry.with_potential_set(set_world(), BEARD)
+    (adenine,) = [m for m in raw["model"]["moieties"] if m["id"] == "adenine"]
+    adenine["weights"]["ATP"] = 2
+    return raw, contextlib.nullcontext()
+
+
+def a_buffer_edited(monkeypatch):
+    """The matrix buffer's protonated form moved after the set was applied: recorded under
+    proton_buffers, so checked like the set's rows."""
+    raw = species_registry.with_potential_set(set_world(), BEARD, proton_buffers={"Buf": 7.4})
+    assert raw["model"]["proton_buffers"] == {"Buf": 7.4}
+    (form,) = next(e for e in raw["model"]["species"] if e["id"] == "Buf")["forms"]
+    form["standard_mu_RT"] += 0.1
+    return raw, contextlib.nullcontext()
+
+
 def with_moieties(raw, *weights):
     raw["model"]["moieties"] = [dict(id=name, weights=dict(w)) for name, w in weights]
     return raw
@@ -463,6 +488,20 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a named set at another temperature": (
         a_set_re_tempered,
         r"species NADH \(potential set beard2005@1\): .* at 311\.0 K",
+    ),
+    "a named set's moiety dropped": (
+        a_set_moiety_dropped,
+        r"potential set beard2005@1: its moiety phosphorus over the rows present, .* is declared "
+        "as None: a named set's moieties are required",
+    ),
+    "a named set's moiety edited": (
+        a_set_moiety_edited,
+        r"potential set beard2005@1: its moiety adenine over the rows present, .* is declared as "
+        r"\{'ATP': 2, 'ADP': 1\}",
+    ),
+    "a named set's proton buffer edited": (
+        a_buffer_edited,
+        r"proton buffer Buf \(potential set beard2005@1, pK 7\.4\): its potentials .* are not",
     ),
     "a moiety naming no row": (an_unknown_moiety_row, r"moiety glucose: 'Glc' is not a species"),
     "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),

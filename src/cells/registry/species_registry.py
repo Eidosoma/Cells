@@ -123,9 +123,15 @@ from its values, so its potentials hold together only as a whole:
   under ``potential_set``. check_potential_set then refuses, at the definition, a named set's row
   whose valence, potential or forms differ from the set's at the world's temperature and c0: a hand
   edit, a mixed value, or a temperature changed after the set was applied. Rows the set does not
-  name are the world's. A declared one-site proton buffer takes the set's proton reference through
-  with_potential_set (proton_buffers {row: pK}): its base at 0, its protonated form at
-  -pK ln 10 + mu°_H/RT, at 1 M.
+  name are the world's. The set's moieties, over the rows present, are required (the limit above
+  rests on them); the world's other moieties stay its own. A declared one-site proton buffer takes
+  the set's proton reference through with_potential_set (proton_buffers {row: pK}, recorded under
+  the model's ``proton_buffers``): its base at 0, its protonated form at -pK ln 10 + mu°_H/RT, at
+  1 M, checked at the definition like the set's rows.
+* **A set's name versions its derivation:** check_potential_set compares the doubles exactly, so
+  the name covers the derivation's arithmetic as well as the set's data. Any change to
+  potential_set_values or to a set's values is a new version (beard2005@2), never an edit of an
+  existing one, so no recorded world that names a set is refused by a later revision.
 * **Not potentials:** a closure's binding rates (k_on) are the world's, declared in its block; the
   source's X_MgA is class C, set large. Each set's notes say what its sources leave to it.
 
@@ -223,13 +229,15 @@ class Entry:
 @dataclass(frozen=True)
 class Declared:
     """The registry the model declares: its entries, in the model's species order; its moieties
-    (Moiety, ...), in declared order; and the named potential set its potentials come from, or
-    None (module docstring)."""
+    (Moiety, ...), in declared order; the named potential set its potentials come from, or None;
+    and the proton buffers applied on that set's proton reference, ((row, pK), ...) (module
+    docstring)."""
 
     entries: tuple
     standard_concentration_mM: float | None
     moieties: tuple = ()
     potential_set: str | None = None
+    proton_buffers: tuple = ()
 
     def entry(self, species):
         return next((e for e in self.entries if e.id == species), None)
@@ -283,6 +291,7 @@ REGISTRY_KEYS = ("identity", "standard_mu_RT", "protonated_standard_mu_RT", "bac
 MODEL_KEY = "standard_concentration_mM"
 MOIETIES_KEY = "moieties"  # The model's conserved moieties (module docstring), optional.
 SET_KEY = "potential_set"  # The named potential set the model's potentials come from, optional.
+BUFFERS_KEY = "proton_buffers"  # {row: pK} applied on the named set's proton reference, optional.
 MOIETY_KEYS = ("id", "weights")
 FORM_KEYS = ("id", "counts", "standard_mu_RT")  # A form's required keys; "valence" is optional.
 
@@ -416,10 +425,28 @@ def _parse_moieties(raw, rows):
     return tuple(out)
 
 
-def build(raw_entries, standard_concentration_mM=None, moieties=None, potential_set=None):
+def _parse_buffers(raw, rows, potential_set):
+    """The model's proton buffers, {row: pK}, as ((row, pK), ...) in declared order: only beside a
+    named potential set, each row one of the model's and outside the set, each pK finite."""
+    if potential_set is None:
+        raise ConfigError(f"The model's {BUFFERS_KEY} are applied on a named {SET_KEY} only")
+    if not isinstance(raw, dict) or not raw:
+        raise ConfigError(f"The model's {BUFFERS_KEY} map each buffer row to its pK")
+    set_rows = dict(POTENTIAL_SETS[potential_set].rows)
+    for row, pk in raw.items():
+        if row not in rows or row in set_rows:
+            raise ConfigError(f"proton buffer {row!r}: a species of the model outside {SET_KEY}")
+        if isinstance(pk, bool) or not isinstance(pk, (int, float)) or not math.isfinite(pk):
+            raise ConfigError(f"proton buffer {row}: its pK is a finite number")
+    return tuple((row, float(pk)) for row, pk in raw.items())
+
+
+def build(
+    raw_entries, standard_concentration_mM=None, moieties=None, potential_set=None, buffers=None
+):
     """The registry of entries {id, any of REGISTRY_KEYS}, in the model's species order, at c0
-    (mM; required when an entry declares a potential), with the model's moieties and named
-    potential set where it declares them (module docstring)."""
+    (mM; required when an entry declares a potential), with the model's moieties, named potential
+    set and proton buffers where it declares them (module docstring)."""
     entries = []
     for raw in raw_entries:
         name = raw["id"]
@@ -467,7 +494,11 @@ def build(raw_entries, standard_concentration_mM=None, moieties=None, potential_
             f"The model's {SET_KEY} {potential_set!r} is not a named potential set: one of "
             f"{sorted(POTENTIAL_SETS)}"
         )
-    return Declared(tuple(entries), standard_concentration_mM, moieties or (), potential_set)
+    if buffers is not None:
+        buffers = _parse_buffers(buffers, {e.id for e in entries}, potential_set)
+    return Declared(
+        tuple(entries), standard_concentration_mM, moieties or (), potential_set, buffers or ()
+    )
 
 
 def parse_entries(raw_model):
@@ -483,13 +514,15 @@ def parse_entries(raw_model):
     c0 = raw_model.pop(MODEL_KEY, None)
     moieties = raw_model.pop(MOIETIES_KEY, None)
     named = raw_model.pop(SET_KEY, None)
-    if c0 is None and moieties is None and named is None and not any(k for _, k in popped):
+    buffers = raw_model.pop(BUFFERS_KEY, None)
+    if (c0, moieties, named, buffers) == (None,) * 4 and not any(k for _, k in popped):
         return None
     return build(
         [dict(id=raw.get("id") if isinstance(raw, dict) else None, **keys) for raw, keys in popped],
         c0,
         moieties,
         named,
+        buffers,
     )
 
 
@@ -531,6 +564,8 @@ def to_entries(declared_registry):
         ]
     if declared_registry.potential_set is not None:
         keys[SET_KEY] = declared_registry.potential_set
+    if declared_registry.proton_buffers:
+        keys[BUFFERS_KEY] = dict(declared_registry.proton_buffers)
     return species, keys
 
 
@@ -937,7 +972,9 @@ def potential_set_values(name, *, temperature_K, standard_concentration_mM):
     evaluated at FREE_ENERGY_DIGITS digits and rounded once (module docstring): a reaction's
     dG°/RT at temperature_K with its basis's logarithms (the scalar protons' nu_H ln(1 M / h_ref),
     and each total's nu ln P(h_ref), P the row's proton binding polynomial), a form's ln K_d, and
-    every value moved to c0 by ln(c0 / 1 M)."""
+    every value moved to c0 by ln(c0 / 1 M). Its arithmetic is part of every set's version: a
+    change here is a new version of each set (beard2005@2), since check_potential_set compares the
+    doubles exactly."""
     s = POTENTIAL_SETS[name]
     problems = potential_set_errors(s)
     if problems:
@@ -1024,18 +1061,14 @@ def with_potential_set(raw, name, *, proton_buffers=None):
         forms = _set_forms(s, row, values)
         if forms:
             entry["forms"] = forms
-    shift = math.log(c0 / SET_C0_MM)
     for row, pk in buffers.items():
         if row in valence or row not in declared:
             raise ValueError(
                 f"proton buffer {row}: a declared species outside potential set {name}"
             )
-        entry, proton = declared[row], values[s.proton] - shift
-        entry["standard_mu_RT"] = shift
-        entry["forms"] = [
-            dict(id=f"H{row}", counts={s.proton: 1},
-                 standard_mu_RT=proton - pk * math.log(10.0) + shift, valence=entry["valence"] + 1)
-        ]  # fmt: skip
+        entry = declared[row]
+        entry["standard_mu_RT"], form = _buffer_potentials(s, values, c0, row, pk, entry["valence"])
+        entry["forms"] = [form]
     moieties = list(m.get(MOIETIES_KEY) or [])
     taken = {item.get("id") for item in moieties if isinstance(item, dict)}
     for moiety, weights in s.moieties:
@@ -1048,14 +1081,35 @@ def with_potential_set(raw, name, *, proton_buffers=None):
     if moieties:
         m[MOIETIES_KEY] = moieties
     m[SET_KEY] = name
+    if buffers:
+        m[BUFFERS_KEY] = dict(buffers)
     return out
+
+
+def _buffer_potentials(s, values, c0, row, pk, valence):
+    """(base mu°/RT, its protonated form as declared) of a proton buffer on set s's proton
+    reference, at c0: the base at 0 and the form H<row> at mu°_H/RT - pK ln 10, both at 1 M, then
+    moved to c0 (values are the set's at c0). The one code with_potential_set writes them with and
+    check_potential_set checks them with."""
+    shift = math.log(c0 / SET_C0_MM)
+    proton = values[s.proton] - shift
+    form = dict(
+        id=f"H{row}",
+        counts={s.proton: 1},
+        standard_mu_RT=proton - pk * math.log(10.0) + shift,
+        valence=valence + 1,
+    )
+    return shift, form
 
 
 def check_potential_set(spec):
     """Refuse a definition naming a potential set whose rows depart from it (module docstring):
     each species of the model that the set names has the set's valence, and the set's potential
     and forms at the model's temperature and c0, exactly (a hand edit, a value from elsewhere, or
-    a temperature changed after the set was applied). Rows the set does not name are the world's."""
+    a temperature changed after the set was applied); each of the set's moieties over the rows
+    present is declared, with the set's weights (the guard of the references' limit, so required);
+    and each recorded proton buffer has the potentials with_potential_set gives it, exactly. Rows
+    the set does not name are the world's, and so are its other moieties."""
     model = declared(spec)
     if model is None or model.potential_set is None:
         return
@@ -1089,6 +1143,29 @@ def check_potential_set(spec):
                 f"{where}: its potentials {given} are not the set's {wanted} at "
                 f"{m.temperature_K!r} K and {c0!r} mM: a named set's rows take their potentials "
                 "from it alone, at the world's temperature"
+            )
+    declared_moieties = {moiety.id: dict(moiety.weights) for moiety in model.moieties}
+    for moiety, weights in s.moieties:
+        present = {row: w for row, w in weights if row in ids}
+        if present and declared_moieties.get(moiety) != present:
+            raise ConfigError(
+                f"potential set {s.name}: its moiety {moiety} over the rows present, {present}, "
+                f"is declared as {declared_moieties.get(moiety)}: a named set's moieties are "
+                "required, since its references hold only for reactions that conserve them"
+            )
+    for row, pk in model.proton_buffers:
+        entry = model.entry(row)
+        base, form = _buffer_potentials(s, values, c0, row, pk, ids[row])
+        given = (
+            entry.standard_mu_RT,
+            entry.protonated_standard_mu_RT,
+            [(f.id, dict(f.counts), f.standard_mu_RT, f.valence) for f in entry.forms],
+        )
+        wanted = (base, None, [tuple(form.values())])
+        if given != wanted:
+            raise ConfigError(
+                f"proton buffer {row} (potential set {s.name}, pK {pk!r}): its potentials {given} "
+                f"are not {wanted}, on the set's proton reference at {c0!r} mM"
             )
 
 
