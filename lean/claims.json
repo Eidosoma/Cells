@@ -18,6 +18,66 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "scheduled-cell-replacement": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Simultaneous donor and template state": "src/cells/operators/cell_replacement.py#L245",
+        "Charge, field and electrode work": "src/cells/operators/cell_replacement.py#L301",
+        "Once-per-generation schedule": "src/cells/operators/cell_replacement.py#L327"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#scheduled-cell-replacement"
+    },
+    "cell-replacement-water": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Gross volume, donor copy and water booking": "src/cells/operators/cell_replacement_v2.py#L99",
+        "Per-node water free energy": "src/cells/operators/osmotic_water.py#L299",
+        "Equal donor compartment admission": "src/cells/operators/cell_replacement_v2.py#L186"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#cell-replacement-water"
+    },
+    "cell-replacement-volume-boundary": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "4638694ac13bedae5f93aa56d77cf8820e687ec1",
+      "record_revision": "ddb723080dee6544576464afaf5314a3b95e2b06",
+      "sources": {
+        "Strict declared interval": "src/cells/operators/cell_replacement_v2.py#L186",
+        "Template stored as an offset": "src/cells/operators/cell_replacement_v2.py#L107",
+        "Strict runtime water domain": "src/cells/numerics/osmotic_water.py#L96",
+        "Newcomer domain check during definition admission": "src/cells/operators/cell_replacement.py#L510"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#cell-replacement-volume-boundary"
+    },
     "size-threshold-fission": {
       "kind": "engine",
       "models": [
@@ -1104,6 +1164,156 @@
     }
   },
   "claims": [
+    {
+      "id": "scheduled-cell-replacement",
+      "category": "tissue-and-conservation",
+      "title": "Simultaneous replacement books the old and arriving species, charge and electrical work",
+      "statement": "At each due site the previous occupant leaves and a template or a copy of a pre-event donor enters. Gross supply minus gross removal equals the tissue change for each species. Valence weights give the signed charge. The equal shares of field energy less electrode work sum to one field adjustment.",
+      "assumptions": [
+        "A finite set of tissue sites is replaced simultaneously. Sites outside that set retain their amounts. Copying a donor uses its pre-event amounts, including when that donor is also due.",
+        "Field-energy sharing requires at least one due site. Capacitor energy and held-electrode work enter the formal result as signed inputs. The numerical comparison computes each independently for a sheet with one membrane and one held bath per cell."
+      ],
+      "uses": [],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.simultaneous_copy": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.gross_balance": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.booked_charge": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.shared_field_energy": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "scheduled-cell-replacement"
+        ],
+        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time between basal-layer exit and compensating local division, and the species amounts in the departing and arriving cells at one site.",
+        "unit": "days and fmol per cell",
+        "evidence": [
+          {
+            "dataset_id": "mesa2018_epidermal_neighbor_fates@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Mesa et al. (2018), Fig. 3C",
+            "doi": "10.1016/j.stem.2018.09.005",
+            "locator": "Figure 3C follows neighboring fates after a basal cell differentiates.",
+            "context": "Intravital recordings covered two 90 × 90 µm fields of adult mouse epidermis and counted 524 divisions and 529 differentiations.",
+            "role": "descriptive",
+            "uncertainty": "The main panel shows one mouse. The 1.8-day estimate is a fitted coordination time scale.",
+            "assessment": "Neighboring division followed differentiation on a 1.8-day time scale. Cells takes its schedule as an input. The assay leaves the identity and ion inventory of an immediate same-site arrival open.",
+            "report": "lean/PROGRESS.md#scheduled-cell-replacement"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cell-replacement-water",
+      "category": "tissue-and-conservation",
+      "title": "Replacement over water accounts for incoming volume and composition-dependent free energy",
+      "statement": "For a donor copy, transfer of the donor's volume increment preserves its physical volume when reference volumes agree. Adding the water term to the chemical energy at the declared volume evaluates all tracked species at the physical volume. A composition change can give nonzero water free energy even at zero net volume transfer.",
+      "assumptions": [
+        "All cell volumes and the reference volume are positive. The finite-species ideal chemical identity assumes positive amounts. Each site keeps its own elastic pressure law and fixed extra impermeant amount.",
+        "The donor and receiver have the same declared water compartment and initial reference volume. Species amounts and physical volume are read at the two endpoints of the event."
+      ],
+      "uses": [
+        "scheduled-cell-replacement",
+        "osmotic-water"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.gross_balance": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.donor_volume": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.ideal_at_volume": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.physical_endpoint": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.water_jump": "lean/CellsProofs/Tissue/CellReplacement.lean",
+          "CellsProofs.Tissue.CellReplacement.same_volume_water_jump": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "cell-replacement-water"
+        ],
+        "result": "The copy stayed at 0.788048 pL, gained 1.1003 fmol of tracked osmoles and booked −0.138369 pJ of water free energy. The template changed both amount and volume at the other site. The largest combined energy discrepancy was 4.32 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked run reproduced both gross volume bookings."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired volume before removal and after arrival at the same site, with intracellular osmoles and mechanical or osmotic work.",
+        "unit": "pL per cell, µm³ per division, % of baseline volume and pJ per event",
+        "evidence": [
+          {
+            "dataset_id": "xie2020_paired_epidermal_volumes@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Xie and Skotheim (2020), Fig. S2L",
+            "doi": "10.1016/j.cub.2019.12.062",
+            "locator": "Supplement page 4, panel marked S2L. Eleven line segments pair the mitotic parent with both daughters at the next frame.",
+            "context": "Mouse basal epidermal cells were followed in vivo at 12-hour intervals. The register stores the paired figure readings in µm³.",
+            "role": "descriptive",
+            "uncertainty": "The paired changes had a sample SD of 100 µm³. The authors report 9.1 ± 8.6% repeat-segmentation error overall. Imaging spans a full frame interval.",
+            "assessment": "Mean volume was 770 µm³ for each parent and 677 µm³ for the sum of its daughters, with nine of eleven pairs decreasing. The paired change averaged −94 µm³. This measures division and leaves the same-site replacement volume and work open.",
+            "report": "lean/PROGRESS.md#cell-replacement-water"
+          },
+          {
+            "dataset_id": "mitchell2025_extruding_cell_volume@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Mitchell et al. (2025), Fig. 1l",
+            "doi": "10.1038/s41586-025-09514-w",
+            "locator": "Figure 1l and the accompanying results give the change in GFP-derived cytoplasmic volume.",
+            "context": "MDCKII epithelial monolayers experienced a 20% hypertonic shock. Cells were grouped by subsequent extrusion or retention.",
+            "role": "descriptive",
+            "uncertainty": "Values are mean ± SEM. The caption reports n = 5.",
+            "assessment": "Cells subsequently extruded lost 20 ± 3% of baseline volume and retained cells lost 11 ± 2.5%. The assay measures outgoing shrinkage. Incoming absolute volume, osmole counts and work remain open.",
+            "report": "lean/PROGRESS.md#cell-replacement-water"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cell-replacement-volume-boundary",
+      "category": "tissue-and-conservation",
+      "title": "Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic",
+      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.",
+      "assumptions": [
+        "The water volume interval is open at both endpoints. The exact theorem uses a common real-valued reference for storing and reconstructing the target.",
+        "The admission comparison uses a single template with the slot's own species amounts. Water flow is disabled and all other inputs are held fixed."
+      ],
+      "uses": [
+        "cell-replacement-water"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_cell_replacement@2"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.template_volume_interior": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "cell-replacement-volume-boundary"
+        ],
+        "result": "At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.",
+        "unit": "pL",
+        "evidence": []
+      }
+    },
     {
       "id": "size-threshold-fission",
       "category": "molecular-assembly",

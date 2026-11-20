@@ -51,7 +51,7 @@
     "cells.population_unit_turnover@1": "src/cells/operators/population_unit_turnover.py#L751",
     "cells.restricted_cleft_lumen@1": "src/cells/operators/restricted_lumen.py#L401",
     "cells.restricted_cleft_lumen@2": "src/cells/operators/restricted_lumen_v2.py#L298",
-    "cells.scheduled_bath_composition@1": "src/cells/operators/bath_schedule.py#L541",
+    "cells.scheduled_bath_composition@1": "src/cells/operators/bath_schedule.py#L552",
     "cells.scheduled_cell_replacement@1": "src/cells/operators/cell_replacement.py#L613",
     "cells.scheduled_cell_replacement@2": "src/cells/operators/cell_replacement_v2.py#L346",
     "cells.scheduled_membrane_insertion@1": "src/cells/operators/membrane_insertion.py#L468",
