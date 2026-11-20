@@ -13,6 +13,11 @@ Each claim with a planted error it must catch (D187):
   replays its trace from the saved uniforms (planted: a reverse weight changes the replay);
 - OL1's worlds carry no geometry: no layout leaf, no key written, OL1's verdict;
 - every refusal of §0.2b-§0.2c that this version owns.
+
+World-compiling cost: two runs of the lumen world at 128 molecules (the ledger's, and the
+bundle's with its uniforms recorded), 31.62 s for the whole file on the timed lane; the rate
+tables, the probe and the refusals are host arithmetic. Reason: the ledger's closure and the
+oracle's replay need the device's run.
 """
 
 import copy

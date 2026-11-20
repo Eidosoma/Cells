@@ -20,7 +20,7 @@ Each claim with a planted error it must catch (D187):
   and cells.relations@2 carries the lysed life (planted: relations@1 refuses it);
 - D6: the refusals this milestone owns, §0.2d item 9's among them.
 
-World-compiling cost: one program (three runs of one structure), 39.88 s for the whole file on the
+World-compiling cost: one program (three runs of one structure), 37.64 s for the whole file on the
 timed lane; D1, D2 and D6 are host arithmetic. Reason: the clock rule and the booking need the
 device's run.
 """

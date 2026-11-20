@@ -13,7 +13,7 @@ Each claim with a planted error it must catch (D187):
 - L5: c_ext's refusal and the drift report; every refusal of §0.2c rules 6–8 this milestone owns.
 
 World-compiling cost: one program (the lysis world, run twice, with a finite and a held pool),
-30.42 s for the whole file on the timed lane before the held row; the rest is host arithmetic.
+30.11 s for the whole file on the timed lane; the rest is host arithmetic.
 Reason: the lysis booking is the only claim that needs the device's run.
 """
 
