@@ -268,7 +268,8 @@
   "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
   "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-09659867/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e70dd2ec/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e70dd2ec/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2267,6 +2268,13 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-e70dd2ec",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T17:58:02+00:00"
+  },
+  {
+   "git_revision": "aaee25826be6f9ce7485fd6ebb4f06af7ef860af",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-aaee2582",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T19:01:36+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5934,7 +5942,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 30.83,
+    "seconds": 30.89,
     "exit_code": 0,
     "counts": {
      "passed": 7
@@ -5982,7 +5990,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 43.32,
+    "seconds": 55.26,
     "exit_code": 0,
     "counts": {
      "passed": 9
