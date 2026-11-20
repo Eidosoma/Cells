@@ -220,7 +220,7 @@ identity for the worlds it already admits.
 | Operator | Changes | Reads | Note |
 | --- | --- | --- | --- |
 | D150's exchange and turnover, the coupling operator | none | volumes and masks at their routes' cells and nodes; exchange's `membrane_area` at its patches; all `fixed` | |
-| `site_occupancy@1` (FR-3) | none | its `CONFLICTS_VIEW` fields at its populations' patches and contacts and their facing pools, `fixed` | Admits it beside the bath schedule |
+| `site_occupancy@1` (FR-3) | none | its `CONFLICTS_VIEW` fields at its populations' patches and contacts and their facing pools, `fixed` | Admits it beside the bath schedule. **Built for FR-23 (20 November 2026, D244):** its outside anchors and volumes, `fixed`, at the outside nodes its populations face |
 | `scheduled_membrane_insertion@1` | masks and `extracellular_amount_reference` at its onset patches and nodes, `replace`, `event` | `membrane_capacitance`, `current` | Admits it beside the bath schedule |
 | `scheduled_cell_replacement@1` | its five channel and pump fields at the replaced slots' patches and populations, `replace`, `event` | volumes and `membrane_area` at the replaced slots, `fixed` | |
 | The lumens, @1 and @2 | `extracellular_volume` at lumen nodes, `replace`, `split` | **new:** the source bath's `extracellular_amount_reference`, `fixed` (an undeclared read today, PUMP_COMPOSITE.md) | Only with insertion@1's narrowing for lumen@1, and insertion@2's (its closures at onset slots) for lumen@2, in the same commit: otherwise each lumen is refused beside the insertion it requires |
