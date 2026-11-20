@@ -4,10 +4,12 @@ import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.ReservoirExchange
+import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
 import CellsProofs.Chemistry.SpeciesTurnover
 import CellsProofs.Chemistry.Vesicle
+import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.MembraneInsertion
