@@ -115,6 +115,8 @@ def write_interface(out: Path, sets: list, prov: dict) -> None:
         "sheet": {"tag": sheet.SHEET_TAG, "path": sheet.SHEET_PATH,
                   "commit": git("rev-parse", sheet.SHEET_TAG + "^{commit}") or None},
         "provenance": prov,
+        "invocations": [json.loads(p.read_text())
+                        for p in sorted((out / "invocations").glob("*.json"))],
         "declared": {"A1": sheet.A1, "A1M": sheet.A1M, "SWEEP_T": sheet.SWEEP_T,
                      "SWEEP_NR": sheet.SWEEP_NR, "moieties": sheet.MOIETIES},
         "constants": {"RT_kJ_mol": derived["RT_kJ_mol"], "c_1_mM": derived["c_1"],
@@ -144,16 +146,20 @@ def write_interface(out: Path, sets: list, prov: dict) -> None:
     sizes["inputs.json"] = _write(iface / "inputs.json", inputs)
 
     # ---- trajectories ---------------------------------------------------------------------
-    traj = {"kind": "cells.gene_regulation.references.trajectories@1", "set": 0,
-            "potentials": sets[0].as_dict(), "units": UNITS, "worlds": {}}
-    for w in wn:
-        ro = refs[(0, w)]["readouts"]
-        traj["worlds"][w] = {"t": ro["t"].tolist(), "readouts": _readouts_for_json(ro)}
-    sizes["trajectories_test_instance.json"] = _write(iface / "trajectories_test_instance.json",
-                                                      traj)
+    n_full = min(2, len(sets))  # the test instance and the same with Spirin's E_pep
+    traj = {"kind": "cells.gene_regulation.references.trajectories@1", "units": UNITS,
+            "sets": {}}
+    for i in range(n_full):
+        traj["sets"][str(i)] = {"potentials": sets[i].as_dict(), "worlds": {}}
+        for w in wn:
+            ro = refs[(i, w)]["readouts"]
+            traj["sets"][str(i)]["worlds"][w] = {"t": ro["t"].tolist(),
+                                                 "readouts": _readouts_for_json(ro)}
+    sizes["trajectories_test_instances.json"] = _write(
+        iface / "trajectories_test_instances.json", traj)
     edge = {"kind": "cells.gene_regulation.references.trajectories_edge@1", "units": UNITS,
             "stride": STRIDE, "readout_prefixes": list(EDGE_READOUT_PREFIXES), "sets": {}}
-    for i in range(1, ne):
+    for i in range(n_full, ne):
         edge["sets"][str(i)] = {"potentials": sets[i].as_dict(), "worlds": {}}
         for w in wn:
             ro = refs[(i, w)]["readouts"]
@@ -278,10 +284,14 @@ def write_interface(out: Path, sets: list, prov: dict) -> None:
     for (i, w), rec in sorted(refs.items(), key=lambda kv: (kv[0][0], wn.index(kv[0][1]))):
         lv = rec["identity_levels"]
         ro = rec["readouts"]
-        rate_min = {k[5:]: float(np.min(v)) for k, v in ro.items() if k.startswith("rate_")}
+        # Heats (§3.4): each class's smallest step increment over its t_end total, and its
+        # smallest rate at the outputs over its largest; both must be ≥ −1e-12.
+        inc_rel = {h: v / ro[h][-1] for h, v in rec["heat_min_increment"].items()}
+        rate_rel = {k[5:]: float(np.min(v) / np.max(np.abs(v))) for k, v in ro.items()
+                    if k.startswith("rate_")}
         row = {"set": i, "world": w, "identity_levels": _sig(lv),
-               "heat_min_increment": _sig(rec["heat_min_increment"]),
-               "heat_rate_min_at_outputs": _sig(min(rate_min.values())),
+               "heat_min_increment_rel": _sig(inc_rel),
+               "heat_rate_min_rel": _sig(rate_rel),
                "domain_max": {k: _sig(v, 6) for k, (v, t) in rec["domain_steps"].items()}}
         if i == 0:
             row["identity_scales"] = rec["identity_scales"]
@@ -295,8 +305,10 @@ def write_interface(out: Path, sets: list, prov: dict) -> None:
             if max(rl.values()) > rad_worst[0]:
                 rad_worst = (max(rl.values()), f"{w}, set {i}, {max(rl, key=rl.get)}")
         acc_rows.append(row)
-    heats_ok = all(min(r["heat_min_increment"].values()) >= 0 for r in acc_rows) and all(
-        r["heat_rate_min_at_outputs"] >= 0 for r in acc_rows)
+    heat_floor = -sheet.TOL_IDENTITY
+    inc_min = min(v for r in acc_rows for v in r["heat_min_increment_rel"].values())
+    rate_min_all = min(v for r in acc_rows for v in r["heat_rate_min_rel"].values())
+    heats_ok = inc_min >= heat_floor and rate_min_all >= heat_floor
     dom_ok = all(v <= sheet.X_DOM for r in acc_rows for v in r["domain_max"].values())
     account = {"kind": "cells.gene_regulation.references.r_account@1",
                "judge": f"{PRIMARY[0]} rtol {PRIMARY[1]}",
@@ -307,6 +319,10 @@ def write_interface(out: Path, sets: list, prov: dict) -> None:
                "summary": {"worst_identity_level": worst[0], "where": worst[1],
                            "all_within_tolerance": worst[0] <= sheet.TOL_IDENTITY,
                            "heats_nonnegative_nondecreasing": heats_ok,
+                           "heat_rule": "every class's smallest step increment over its t_end "
+                                        "total, and smallest output rate over its largest, "
+                                        "≥ −1e-12",
+                           "heat_min_increment_rel": inc_min, "heat_rate_min_rel": rate_min_all,
                            "domain_respected": dom_ok, "x_max": rep["x_max"],
                            "radau": {"worst_identity_level": rad_worst[0], "where": rad_worst[1],
                                      "newton_tol": RADAU_NEWTON_TOL,

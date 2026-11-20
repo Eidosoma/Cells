@@ -11,7 +11,7 @@ set and reported as:
 - each item the sheet names for the plant, with its margin (measure over tolerance).
 The sheet declares no tolerance for judging an engine's trajectory (G6 sets it). A trajectory
 item's margin is reported against the references' own resolution, 10⁻⁹ of the scale, and, for
-scale, against ε_A1.
+scale, against ε_A1; it counts as failing only at a margin above RESOLVED = 10.
 """
 
 from __future__ import annotations
@@ -21,6 +21,9 @@ import numpy as np
 from . import sheet
 
 SKIP = ("t", "u")
+# A trajectory change counts as a plant's failure only beyond ten times the references' own
+# resolution, 10⁻⁹ of the scale (the judge and its 100× tighter check differ by less).
+RESOLVED = 10
 
 
 def _sheet_plants() -> list[dict]:
@@ -137,7 +140,7 @@ def verdicts(plant: dict, ch: dict, ids: dict, gaps: dict, world: str) -> list[d
                         "tolerance": sheet.TOL_TRAJECTORY,
                         "margin": None if m is None else m / sheet.TOL_TRAJECTORY,
                         "margin_vs_eps_A1": None if m is None else m / sheet.EPS_A1,
-                        "fails": m is not None and m > sheet.TOL_TRAJECTORY})
+                        "fails": m is not None and m > RESOLVED * sheet.TOL_TRAJECTORY})
         elif kind == "identity":
             m = ids.get(name)
             if m is None:

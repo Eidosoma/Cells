@@ -4,9 +4,9 @@
            [--sets all|edge|test] [--potentials G_ATP E_pd E_pep E_rc_RT]
 
 Stages (each writes under DIR and resumes from what is there; `assemble` writes DIR/interface):
-  refs      every world at every potential set: DOP853 at rtol 1e-11 (the judge, on which the
-            identities are judged), again at 1e-13 (the sheet's 100× check), and Radau at 1e-11
-            at the 18 edge sets (a second, stiff method)
+  refs      every world at every potential set: DOP853 at rtol 2.5e-12 (the judge, on which the
+            identities are judged), again at 2.5e-14 (the sheet's 100× check), and Radau at
+            1e-11 at the 18 edge sets (a second, stiff method)
   closed    §5.1's and §5.2's closed forms at every set, at 50 digits and again at 70
   plants    every plant at the 18 edge sets (model.SHEET_EDITS, model.OWN_EDITS)
   noise     R-noise at the test instance (the first set)
@@ -36,8 +36,10 @@ import scipy
 
 from . import closed_forms, model, noise, plants, sheet
 
-PRIMARY = ("DOP853", 1e-11)
-CHECK = ("DOP853", 1e-13)
+# The judge and the sheet's 100× tighter check. 2.5e-14 sits just above scipy's floor of
+# 100 × machine epsilon; at 1e-11/1e-13 a corner reached 8.3e-10 of the 1e-9 allowed.
+PRIMARY = ("DOP853", 2.5e-12)
+CHECK = ("DOP853", 2.5e-14)
 CROSS = ("Radau", 1e-11)
 COARSE_RTOL = 1e-8
 RADAU_NEWTON_TOL = max(10 * np.finfo(float).eps / CROSS[1], min(0.03, CROSS[1] ** 0.5))
@@ -252,9 +254,11 @@ def provenance() -> dict:
     snap = snapshot_manifest()
     if snap:
         path, man = snap
+        # The checkout's own location is not recorded: the revision, the selected files'
+        # status and the patch identify the source.
         source = {"snapshot": str(path), "git_revision": man["git_revision"],
                   "selected_status": man["selected_status_porcelain_v1_z"] or None,
-                  "patch_sha256": man["patch_sha256"], "repository": man["repository"]}
+                  "patch_sha256": man["patch_sha256"]}
     else:
         source = {"snapshot": None, "git_revision": git("rev-parse", "HEAD") or None,
                   "selected_status": git("status", "--porcelain", "--", str(HERE)) or None}
@@ -315,9 +319,14 @@ def main(argv=None) -> None:
     args = ap.parse_args(argv)
     sets = potential_sets(args.sets, args.potentials)
     args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "run_inputs.json").write_text(json.dumps(
-        {"argv": sys.argv, "sets": [p.as_dict() for p in sets], "provenance": provenance()},
-        indent=1))
+    # Every invocation keeps its own record, so a stage re-run later cannot hide which source
+    # produced the earlier stages; assemble carries all of them into inputs.json.
+    record = {"argv": sys.argv[1:], "stages": args.stage, "sets": [p.as_dict() for p in sets],
+              "provenance": provenance()}
+    inv = args.out / "invocations"
+    inv.mkdir(exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    (inv / f"{stamp}.json").write_text(json.dumps(record, indent=1))
     for stage in args.stage:
         if stage == "assemble":
             from . import assemble

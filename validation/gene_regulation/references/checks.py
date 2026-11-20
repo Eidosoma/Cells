@@ -18,7 +18,7 @@ import numpy as np
 from . import sheet
 
 INTERFACE = Path(__file__).resolve().parent / "interface"
-FILES = ("inputs", "trajectories_test_instance", "trajectories_edge_sets", "endpoints",
+FILES = ("inputs", "trajectories_test_instances", "trajectories_edge_sets", "endpoints",
          "r_chain", "r_machine", "r_account", "r_noise", "plants", "convergence")
 SHEET_PLANT_IDS = ("A1-1", "A1-2", "A1-3", "A1-4", "A1-5", "A1-6", "A1M-1", "A1M-2")
 OWN_PLANT_IDS = ("own-1", "own-2", "own-3", "own-4", "own-5")
@@ -77,19 +77,23 @@ def check_complete(data: dict) -> None:
     require(inp["edge_sets"] == list(range(18)), "edge sets: expected the first 18")
     worlds = _worlds(data)
     require(len(worlds) == 16, f"worlds: {len(worlds)}, expected 16")
-    traj = data["trajectories_test_instance"]["worlds"]
-    require(set(traj) == set(worlds), "test-instance trajectories: worlds differ from inputs")
-    for name, w in worlds.items():
-        n_t = int(round(w["t_end"] / w["dt"])) + 1
-        t = traj[name]["t"]
-        require(len(t) == n_t and t[0] == 0 and t[-1] == w["t_end"], f"{name}: output grid")
-        ro = traj[name]["readouts"]
-        for k in expected_readouts(w):
-            require(k in ro, f"{name}: readout {k} missing")
-            if not k.startswith("J_bar_"):
-                require(len(ro[k]) == n_t, f"{name}: readout {k} has {len(ro[k])} points")
+    full = data["trajectories_test_instances"]["sets"]
+    require(sorted(full) == ["0", "1"], "full trajectories: the two test instances")
+    for i, rec in full.items():
+        traj = rec["worlds"]
+        require(set(traj) == set(worlds), f"set {i} trajectories: worlds differ from inputs")
+        for name, w in worlds.items():
+            n_t = int(round(w["t_end"] / w["dt"])) + 1
+            t = traj[name]["t"]
+            require(len(t) == n_t and t[0] == 0 and t[-1] == w["t_end"],
+                    f"set {i} {name}: output grid")
+            ro = traj[name]["readouts"]
+            for k in expected_readouts(w):
+                require(k in ro, f"set {i} {name}: readout {k} missing")
+                if not k.startswith("J_bar_"):
+                    require(len(ro[k]) == n_t, f"set {i} {name}: readout {k} has {len(ro[k])}")
     edge = data["trajectories_edge_sets"]["sets"]
-    require(sorted(edge, key=int) == [str(i) for i in range(1, 18)], "edge-set trajectories")
+    require(sorted(edge, key=int) == [str(i) for i in range(2, 18)], "edge-set trajectories")
     for i, rec in edge.items():
         require(set(rec["worlds"]) == set(worlds), f"edge set {i}: worlds")
     ends = data["endpoints"]["sets"]
@@ -166,11 +170,12 @@ def check_identities(data: dict, tol: float = sheet.TOL_IDENTITY) -> dict:
     worlds = _worlds(data)
     moieties = data["inputs"]["declared"]["moieties"]
     out = {}
-    for name, rec in data["trajectories_test_instance"]["worlds"].items():
-        lv = identity_levels(name, worlds[name], rec["readouts"], moieties)
-        for k, v in lv.items():
-            require(v <= tol, f"{name}: identity {k} at {v:.3e} > {tol:g}")
-        out[name] = lv
+    for i, full in data["trajectories_test_instances"]["sets"].items():
+        for name, rec in full["worlds"].items():
+            lv = identity_levels(name, worlds[name], rec["readouts"], moieties)
+            for k, v in lv.items():
+                require(v <= tol, f"set {i} {name}: identity {k} at {v:.3e} > {tol:g}")
+            out[(i, name)] = lv
     return out
 
 
@@ -178,14 +183,16 @@ def check_window(data: dict) -> None:
     for name, w in _worlds(data).items():
         if not w["window"]:
             continue
-        ro = data["trajectories_test_instance"]["worlds"][name]["readouts"]
         k_end = int(round(w["t_end"] / w["dt"]))
         k_w = int(round((w["t_end"] - w["window"]) / w["dt"]))
-        for r in w["routes"]:
-            q = ro[f"int_Q_{r['name']}"]
-            jb = (q[k_end] - q[k_w]) / w["window"]
-            stored = ro[f"J_bar_{r['name']}"][0]
-            require(abs(jb - stored) <= 1e-12 * abs(jb), f"{name}: J̄_{r['name']} {stored} ≠ {jb}")
+        for i, full in data["trajectories_test_instances"]["sets"].items():
+            ro = full["worlds"][name]["readouts"]
+            for r in w["routes"]:
+                q = ro[f"int_Q_{r['name']}"]
+                jb = (q[k_end] - q[k_w]) / w["window"]
+                stored = ro[f"J_bar_{r['name']}"][0]
+                require(abs(jb - stored) <= 1e-12 * abs(jb),
+                        f"set {i} {name}: J̄_{r['name']} {stored} ≠ {jb}")
 
 
 # ---- closed forms, recomputed in floats --------------------------------------------------------
@@ -286,7 +293,7 @@ def check_chain(data: dict, rel: float = 1e-12) -> None:
                 f"R-chain: n_R({t}) differs from §5.1's formula")
         require(abs(float(ti["closed_form"]["E_tx"][k]) - E) <= 1e-11 * abs(E),
                 f"R-chain: E_tx({t}) differs from §5.1's formula")
-    ro = data["trajectories_test_instance"]["worlds"]["A1"]["readouts"]
+    ro = data["trajectories_test_instances"]["sets"]["0"]["worlds"]["A1"]["readouts"]
     stored = data["r_chain"]["sets"][0]["gaps"]
     for key in ("n_R", "n_P", "E_tx", "E_tl"):
         cf = np.array([float(x) for x in ti["closed_form"][key]])
@@ -317,6 +324,7 @@ def check_noise(data: dict) -> None:
 def check_plants(data: dict) -> None:
     rows = data["plants"]["rows"]
     tol = {"trajectory": sheet.TOL_TRAJECTORY, "identity": sheet.TOL_IDENTITY}
+    factor = {"trajectory": 10}  # a trajectory change counts beyond 10× the resolution
     for r in rows:
         for v in r["verdicts"]:
             kind = v["item"].split()[0]
@@ -325,7 +333,8 @@ def check_plants(data: dict) -> None:
             if v["measure"] is not None:
                 require(abs(v["margin"] - v["measure"] / t) <= 1e-12 * v["margin"],
                         f"plant {r['id']}: margin of {v['item']}")
-                require(v["fails"] == (v["measure"] > t), f"plant {r['id']}: verdict {v['item']}")
+                require(v["fails"] == (v["measure"] > factor.get(kind, 1) * t),
+                        f"plant {r['id']}: verdict {v['item']}")
             name = v["item"].split(" ", 1)[1]
             if kind == "trajectory":
                 require(v["measure"] == r["changes"].get(name), f"plant {r['id']}: {name}")
@@ -352,8 +361,9 @@ def check_summaries(data: dict) -> None:
     require(acc["all_within_tolerance"], f"R-account: identity at {acc['worst_identity_level']}")
     require(acc["heats_nonnegative_nondecreasing"], "R-account: a heat class decreased")
     rows = data["r_account"]["rows"]
-    require(all(min(r["heat_min_increment"].values()) >= 0 and r["heat_rate_min_at_outputs"] >= 0
-                for r in rows), "R-account: a heat increment or rate is negative")
+    require(all(min(r["heat_min_increment_rel"].values()) >= -sheet.TOL_IDENTITY
+                and min(r["heat_rate_min_rel"].values()) >= -sheet.TOL_IDENTITY for r in rows),
+            "R-account: a heat class decreased, or a heat rate is negative, beyond rounding")
     require(all(v <= sheet.X_DOM for r in rows for v in r["domain_max"].values()),
             "R-account: a one-sided move left the domain")
     require(acc["domain_respected"], "R-account: the domain was left")
