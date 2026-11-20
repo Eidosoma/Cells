@@ -416,6 +416,14 @@ def _population_record(run):
         "schedule_columns[c] (source:shear/<index> or source:transfer/<index>); shear_work_kT is "
         "the shears' total, and at every row the columns sum to it plus the transfers' work"
     )
+    if "replacements" in report:  # FR-20, when declared (replacement.py)
+        out["replacements"] = report["replacements"]
+        out["payers"] = (
+            "schedule_work_kT's column c is paid by the schedule whose declared index is "
+            "schedule_columns[c] (source:shear/<index>, source:transfer/<index> or "
+            "source:replacement/<index>); shear_work_kT is the shears' total, and at every row "
+            "the columns sum to it plus the transfers' and replacements' work"
+        )
     return out
 
 
@@ -488,21 +496,50 @@ def population_tables(directory, run):
         for life in lives
         if life.end_reason == "lysed"
     ]  # fmt: skip
+    from cells.models.assembly_lineages_v2.replacement import POOL_REPLACEMENT
+
+    by = {"shear": SHEAR_FISSION, "transfer": SERIAL_TRANSFER, "replacement": POOL_REPLACEMENT}
+    replacements = run.population.get("replacements", [])
+    events += [
+        rel.Event(r["id"], r["time_s"], "replacement", POOL_REPLACEMENT, scheduled=True, step=-1,
+                  at=POOL, source=f"source:replacement/{r['schedule']}")
+        for r in replacements
+    ]  # fmt: skip
     slots = run.population["slots"]
     nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
+    edges = []
+    if replacements:  # FR-20: the pool as a node, its old content removed, its fresh supplied
+        nodes += [rel.Node(POOL, "node", SHARED_POOL), rel.Node(SINK, "sink", POOL_REPLACEMENT)]
+        species = {p.name: p.species for p in run.spec.model.world.places}
+        for r in replacements:
+            source = f"source:replacement/{r['schedule']}"
+            moves = (("removes_to", r["removed"], (POOL, SINK)),
+                     ("supplies", r["supplied"], (source, POOL)))  # fmt: skip
+            for relation, counts, ends in moves:
+                edges += [
+                    rel.Edge(relation, *ends, POOL_REPLACEMENT, event=r["id"],
+                             species=species[place], weight=float(count), mode="event")
+                    for place, count in sorted(counts.items())
+                    if count
+                ]  # fmt: skip
     sources, records = [], {}
     if run.population["schedule_columns"]:
         sources = [
             rel.Source(f"source:{s.kind}/{s.index}", "schedule",
-                       "energy" if s.kind == "shear" else "substrate",
-                       SHEAR_FISSION if s.kind == "shear" else SERIAL_TRANSFER,
+                       "energy" if s.kind == "shear" else "substrate", by[s.kind],
                        payer_of="schedule_work_kT")
             for s in run.spec.experiment.schedules
         ]  # fmt: skip
         records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
                                  times="row_time")  # fmt: skip
-    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
-            "records": records}  # fmt: skip
+    out = {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+           "records": records}  # fmt: skip
+    if edges:
+        out["edges"] = edges
+    return out
+
+
+POOL = "node:pool"  # FR-20: the shared pool as a node of cells.relations@2
 
 
 SINK = "sink:discard"
