@@ -12,8 +12,8 @@ composition's one view reader; and the compartment's template follows n0 exp(-ka
 import's rate constant sets from the area it reads (the declared one, bit for bit, since nothing
 writes the areas).
 
-Its cost and reason (D224): about 40 s on one CPU, almost all of it the compile, measured 42 s on a
-light CPU under load at the engine head 1ec77911; the reason is above.
+Its cost and reason (D224): about 30 s on one CPU, almost all of it the compile (28.8 s on the timed
+lane, 42 s as a workspace probe on a loaded light CPU); the reason is above.
 """
 
 import numpy as np
@@ -48,7 +48,7 @@ def test_the_compiled_import_reads_the_area_through_the_view():
     n0 = float(np.asarray(p.extracellular_amount_reference)[species, node])
     dt = spec.execution.dt
     wanted = {int(round(float(t) / dt)) for t in spec.experiment.observation_times}
-    seen = 0
+    seen = set()  # Adjacent windows share one endpoint (EventGrid.windows): count steps, not rows.
     for window in iter_windows(spec, WindowPolicy(window_steps=100, recording="observations")):
         for i, _ in enumerate(np.asarray(window.times)):
             k = window.start_step + i
@@ -58,5 +58,5 @@ def test_the_compiled_import_reads_the_area_through_the_view():
             n = n0 + float(increment[species, node])
             exact = n0 * np.exp(-KAPPA * k * dt)
             assert abs(n - exact) <= 1e-12 * exact, (k, n, exact)
-            seen += 1
-    assert seen == len(wanted)
+            seen.add(k)
+    assert seen == wanted
