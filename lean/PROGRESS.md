@@ -1,5 +1,43 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Surface channel populations
+
+<a id="surface-population-turnover"></a>
+
+**From precursor to surface.** Lean proves that routes on the same precursor share its first-order consumption, including when they need different numbers of molecules to make one unit. For any number of maturation pools, every unit assembled or initially in transit ends up in a pool, on the membrane or in the removal ledger. An initially filled pair of identical sequential pools has cumulative arrival `U [1 − (1 + kt) exp(−kt)]`. Its initial arrival rate is zero and some units have arrived at any positive time. [Chain balance](CellsProofs/Chemistry/PopulationUnits.lean#L34) · [Pulse solution](CellsProofs/Chemistry/PopulationUnits.lean#L76) · [Engine half-step](../src/cells/operators/population_unit_turnover.py#L636)
+
+In an eight-step checked `resolved_pump_composite@1` world, one route inserted units directly at two molecules per unit and another used three maturation pools at seven molecules per unit. They consumed **3.11278 × 10⁻⁶** and **5.18797 × 10⁻⁶ fmol** in the scheduled 12:20 rate ratio. At every observed step the largest discrepancy from the independent 50-digit matrix exponential was 4.55 × 10⁻¹³ units (tolerance 2 × 10⁻¹⁰). The largest weighted chain imbalance was 9.10 × 10⁻¹³ molecules. The model represents functional units continuously. In a separate pulse, **10.82448 of 120 units** reached the membrane in 12.5 ms with two 40/s stages and no new precursor consumption. [Checked world and pulse](checks/population_units.py#L34) · [Matrix-exponential reference](../tests/unit/test_population_unit_turnover.py#L60)
+
+Search found a slow acetylcholine-receptor cohort in ten innervated mouse hindlimbs. Fitting first-order loss to the day-7 baseline and the reading seven days later gave **0.05721/day**. With assembly off, the compiled loss operator gave the following predictions at times excluded from the fit. The last reading lies above the predicted retention. The mice and normalization are shared, and the caption and methods disagree over whether the bars denote SD or SEM. [Strack et al., Fig. 3D](https://doi.org/10.1371/journal.pone.0020524.g003) · [Measurements and fit](checks/data/surface_population_measurements.json) · [Compiled cohort](checks/population_units.py#L198)
+
+| Days after baseline | Measured retention (% of baseline) | Plotted bar (%) | Predicted retention (%) |
+| ---: | ---: | ---: | ---: |
+| 14 | 48 | 43–52 | 44.89 |
+| 16 | 43 | 37–49 | 40.04 |
+| 18 | 42 | 39–46 | 35.71 |
+
+In cultured chick muscle, few labelled receptors appeared at the surface during the first three hours. By 3.5 hours nearly all receptors entering the membrane carried the label. This supports a maturation delay. Pool count, individual transit times and precursor stoichiometry remain open. [Devreotes et al., p. 365](https://doi.org/10.1016/0092-8674(77)90023-X)
+
+<a id="membrane-population-flow"></a>
+
+**What an active membrane population contributes.** At fixed gating, voltage, concentrations and reference density, Lean proves that whole-patch flow is proportional to the surface unit count. Area changes affect density. In a one-patch model with 3,072 and 1,536 declared units, changing area to 1.4 or 1.8 times its initial value preserved each populated channel's potassium flow. Halving each count halved its flow. NumPy and compiled CPU readouts agreed with those predictions to 4.45 × 10⁻¹⁶ relative. The comparison held capacitance fixed to isolate the abundance readout. [Abundance proof](CellsProofs/Chemistry/PopulationUnits.lean#L126) · [Cells membrane state](../src/cells/operators/membrane_state.py#L151) · [Channel flux comparison](checks/population_units.py#L145)
+
+At lizard muscle endplates, the control had 18,000 available receptor sites/µm² and a 7.5 nA mean miniature current. Scaling the control current by available site density predicted **3.42 and 2.88 nA** in two other conditions. The measured amplitudes were **4.0 ± 0.7 and 2.5 ± 0.5 nA**. These comparisons assume comparable effective area and drive. The study reports binding-site density and a synaptic peak current, so it cannot establish a functional unit count or the response to changing area at fixed count. [Land et al., Table 1](https://people.ece.cornell.edu/land/Papers/PNAS1980.pdf#page=2) · [Measurements and uncertainties](checks/data/surface_population_measurements.json)
+
+<a id="empty-surface-flow"></a>
+
+**Engine finding for the membrane-state owner.** Withdrawing exactly all 3,072 units leaves a count of exactly zero on both backends. The abundance calculation adds two separately rounded terms. In a domain-admissible state with area scaled by 1.4 it returned **−1.11022 × 10⁻¹⁶** and a potassium flux of **−2.19124 × 10⁻¹⁸ fmol/s** through the empty channel population. At 1.8 times the area the residual changed sign, giving +2.81730 × 10⁻¹⁸ fmol/s. At the reference area both quantities were zero. The full composite rate readout accepted all three states. This is a rounding-level residual measured in controlled states. Its effect on a complete trajectory has not been established. The exact-zero reproducer returns status 1 on this revision. [Exact zero](CellsProofs/Chemistry/PopulationUnits.lean#L143) · [Two-term abundance](../src/cells/operators/membrane_state.py#L158) · [Reproducer](checks/population_units.py#L145)
+
+The comparisons ran on CPU float64 with clean engine and test sources at `5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93`. Lean 4.19.0 checked the eleven new theorems with the standard axioms. The four relevant engine test files and eight repository guards passed **199 tests**. An existing invalid-input potassium test emitted one divide-by-zero warning. [Comparison driver](checks/population_units.py) · [Engine tests](../tests/unit/test_population_unit_turnover.py)
+
+<a id="bath-order-repair"></a>
+
+**Bath recipe finding closed on the tested cases.** The original six checked worlds all delivered the intended doses. Two entry orders both booked 0.00048828125 fmol with large opposing contributions. At a trace concentration both booked 1.7763568394002505 × 10⁻¹⁵ fmol even with opposing contributions of ±24 mM. The engine's regression also checks all six permutations of the trace recipe. The earlier failed record remains pinned to its engine revision. [Original reproducer](checks/bath_schedule.py#L118) · [Accurate per-species sum](../src/cells/operators/bath_schedule.py#L230) · [Six-order regression](../tests/unit/test_bath_schedule.py#L404) · [Original failure](#bath-recipe-order)
+
+<a id="potassium-affinity-repair"></a>
+
+**Potassium–anion overflow finding closed on the tested cases.** At an outside concentration of 2⁻⁵¹⁰ mM for each ion, the compiled route returned finite affinity and heat agreeing with independent references of **1,836,599.47 J/mol** and **4,701.69 pJ/s**. Both extreme ratios and all 27 ordinary component controls passed. The checked closed-volume world still refused the original 10 ms wrong-direction step at its declared bound of 3.761. Dividing the interval into 32 then 64 steps reduced the extent error by a factor of 4.17. The moving-water comparison also refused the coarse step and passed both refinements. [Moving-water reference](checks/osmotic_water.py#L129) · [Overflow-safe affinity](../src/cells/laws/routes/k_anion_symport.py#L75) · [Reference and compiled cases](checks/potassium_anion_symport.py#L44) · [Earlier retest](#six-numerical-retests)
+
 ## 20 November 2026 · Scheduled cell replacement
 
 <a id="scheduled-cell-replacement"></a>
