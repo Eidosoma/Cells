@@ -14,8 +14,11 @@ The two forms. For a state n with N = sum_i n_i and (beta n)_i = sum_j beta_ij n
   join from n carries b_i(n) and its reverse leave from n + e_i carries b_i(n + e_i): the
   arriving molecule catalyses its own leaving through the kept diagonal, and every weight is
   diluted from 1/N to 1/(N + 1). Declared driven: in a closed two-type world this kernel
-  generically fails Kolmogorov's cycle criterion (a rank-one catalysis matrix is the exception:
-  that chain is reversible, with a shifted equilibrium), so it is not microscopically
+  generically fails Kolmogorov's cycle criterion (the exception is a rank-one 1 + beta, one added
+  to every entry, 1 + beta_ij = u_i v_j with positive factors: that chain is reversible, with a
+  shifted equilibrium; a rank-one beta alone is not enough. GARD_DESIGN §2.5, corrected on 19
+  November 2026 from the Lean proofs project's proof and its exact 81/80 square at beta_11 = 1),
+  so it is not microscopically
   reversible there. The finding concerns this single-event kernel in a closed world. The
   original authors' kernel is not established either way: their papers state the rate law but
   no event rates. The preprint's vector-Poisson contracts were not tested, and its driven runs

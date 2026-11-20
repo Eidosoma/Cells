@@ -35,7 +35,7 @@ The closure, at every saved row t, with n_0 the founder:
 
 Proof. Within a growth the heat telescopes: q = Phi(n') - Phi(n) for every event of a passive
 law (its rate ratio is the measure's ratio). At a fission the slot's state jumps from P to the
-followed daughter D, and Phi(D) - Phi(P) = -[Phi(P) - Phi(D) - Phi(D')] + Phi(D') = -W - S; so
+followed daughter D, and Phi(D) - Phi(P) = -[Phi(P) - Phi(D) - Phi(D')] - Phi(D') = -W + S; so
 Phi(n_t) - Phi(n_0) = heat - work + sink over the lineage, which is the identity.
 
 - For a passive law (the exchange law alone, or with a passive rate factor) the residual
