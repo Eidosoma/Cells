@@ -1,0 +1,210 @@
+"""junction_series_gates@1: a junction's conductance through two voltage gates in series, each a
+two-state gate with a residual conductance (FR-30; docs/JUNCTION_TWO_RELAXATION_DESIGN.md, option
+(A), as the lead ruled on 20 November 2026).
+
+**One gate.** Its state is its conductance factor c in [r, 1], where r is its residual and x its
+open fraction: c = r + (1 − r)·x. Then dc/dt = α(1 − c) − β(c − r), which is
+junction_voltage_relaxation@1's right-hand side with r in place of its minimum. So that law is the
+one-gate case, and every gate keeps its `Rates` (alpha, beta, the steady c as target, and α + β as
+relaxation) and its exact constant-voltage step.
+
+**Two kinds of gate,** fixed per gate (`kinds`, static):
+- `relaxation_betse`: junction_voltage_relaxation@1's own rates and parameters (a threshold and a
+  minimum), reused as they are; BETSE v1.5.0's rates are cited in that module;
+- `boltzmann_eyring`: a two-state gate in |V|, for cited constants.
+  - With u = A·(|V| − V0), α = λ·exp(−δ·u) opens and β = λ·exp((1 − δ)·u) closes.
+  - So α/β = exp(−u): detailed balance. The steady open fraction is the Boltzmann 1/(1 + exp(u)),
+    with midpoint V0 and slope A.
+  - δ in [0, 1] splits the voltage dependence between the two directions. It is a kinetic choice,
+    and it never moves the steady state.
+  - A is a fitted slope and nothing more. The source this law was designed against prints no unit
+    for it, so no gating charge is derived from it (the lead's ruling).
+
+**Two gates in series,** fast and slow (`GATES`). The junction's relative conductance is
+g = c_fast · c_slow.
+- **Consistency.** The gates are independent, so the pair is a product of two two-state chains. It
+  keeps detailed balance, and its four-state cycle passes Kolmogorov's test exactly.
+- **The exact step.** At a fixed voltage each c_i relaxes exactly. So the pair's exact step is two
+  of junction_voltage_relaxation@1's `advance_clamped`, and its decay holds three exponentials:
+  k_fast, k_slow and their sum.
+
+**Routes** keep tracer transfer apart from electrical coupling. `open_fractions` gives each gate's
+x. A route declares its own residual ρ_i per gate, and its factor is Π_i (ρ_i + (1 − ρ_i)·x_i).
+Ions take ρ_i = r_i, which gives g; a large tracer may take ρ_i = 0. A route never takes g as a
+tracer's factor.
+
+**Not yet a registered law.** Its declaration (a cells.junction_law@1 with gate_count 2 and this
+module's `conductance`) and its registration come with @3's integration, after N2 lands. Until then,
+@3's parser accepts only junction_voltage_relaxation@1.
+"""
+
+from typing import Any, NamedTuple
+
+import jax.numpy as jnp
+
+from cells.laws.junctions import junction_voltage_relaxation as relaxation
+
+LAW_ID = "junction_series_gates@1"
+GATES = ("fast", "slow")
+GATE_COUNT = len(GATES)
+KINDS = ("relaxation_betse", "boltzmann_eyring")
+MAX_ABS_VOLTAGE_V = relaxation.MAX_ABS_VOLTAGE_V
+MAX_EXPONENT = 80.0  # the largest |u| admitted on the domain, so every rate stays finite
+Rates = relaxation.Rates
+
+
+class BoltzmannEyring(NamedTuple):
+    """A boltzmann_eyring gate's parameters: a numeric pytree, broadcast over [..., edge]."""
+
+    rate_per_s: Any  # λ: α = β = λ at the midpoint
+    slope_per_V: Any  # A: a fitted slope (the source prints no unit), never a gating charge
+    midpoint_V: Any  # V0: the steady open fraction is one half at |V| = V0
+    split: Any  # δ in [0, 1]: the share of the voltage dependence in the opening rate
+    residual: Any  # r in [0, 1]: the closed state's relative conductance
+
+
+def _check_kinds(kinds):
+    kinds = tuple(kinds)
+    if len(kinds) != GATE_COUNT or any(kind not in KINDS for kind in kinds):
+        raise ValueError(f"{LAW_ID} has {GATE_COUNT} gates, each one of {KINDS}, not {kinds}")
+    return kinds
+
+
+def boltzmann_eyring_kinetics(voltage, parameters, *, xp=jnp):
+    """A boltzmann_eyring gate's Rates at a junction voltage (V, s), the steady c as target."""
+    lam, slope, midpoint, split, residual = parameters
+    u = slope * (xp.abs(voltage) - midpoint)
+    alpha = lam * xp.exp(-split * u)
+    beta = lam * xp.exp((1.0 - split) * u)
+    open_steady = xp.exp(-xp.logaddexp(0.0, u))  # 1/(1 + exp(u)), stable at both ends
+    return Rates(alpha, beta, residual + (1.0 - residual) * open_steady, alpha + beta)
+
+
+def gate_kinetics(kind, voltage, parameters, *, xp=jnp):
+    """One gate's Rates: junction_voltage_relaxation@1's kinetics, or boltzmann_eyring's."""
+    if kind == "relaxation_betse":
+        return relaxation.kinetics(voltage, parameters, xp=xp)
+    if kind == "boltzmann_eyring":
+        return boltzmann_eyring_kinetics(voltage, parameters, xp=xp)
+    raise ValueError(f"A gate's kind is one of {KINDS}, not {kind!r}")
+
+
+def residual_of(kind, parameters):
+    """A gate's residual r: relaxation_betse's minimum, or boltzmann_eyring's residual."""
+    if kind == "relaxation_betse":
+        return parameters.minimum_open_fraction
+    if kind == "boltzmann_eyring":
+        return parameters.residual
+    raise ValueError(f"A gate's kind is one of {KINDS}, not {kind!r}")
+
+
+def kinetics(voltage, parameters, *, kinds, xp=jnp):
+    """Each gate's Rates, in GATES order (parameters: one NamedTuple per gate)."""
+    kinds = _check_kinds(kinds)
+    pairs = zip(kinds, parameters, strict=True)
+    return tuple(gate_kinetics(k, voltage, p, xp=xp) for k, p in pairs)
+
+
+def rhs(gates, voltage, parameters, *, kinds, xp=jnp):
+    """Each gate's dc/dt = α(1 − c) − β(c − r): one physical-time derivative per gate."""
+    kinds = _check_kinds(kinds)
+    out = []
+    for c, kind, p in zip(gates, kinds, parameters, strict=True):
+        rate = gate_kinetics(kind, voltage, p, xp=xp)
+        out.append(rate.alpha_per_s * (1 - c) - rate.beta_per_s * (c - residual_of(kind, p)))
+    return tuple(out)
+
+
+def advance_clamped(gates, voltage, parameters, dt_s, *, kinds, xp=jnp):
+    """The exact step over an interval of constant voltage: each gate's own exact step, the
+    formula of junction_voltage_relaxation@1's advance_clamped (that function itself for a
+    relaxation_betse gate). Like it, this is not a solver for a freely varying voltage."""
+    kinds = _check_kinds(kinds)
+    out = []
+    for c, kind, p in zip(gates, kinds, parameters, strict=True):
+        if kind == "relaxation_betse":
+            out.append(relaxation.advance_clamped(c, voltage, p, dt_s, xp=xp))
+            continue
+        rate = gate_kinetics(kind, voltage, p, xp=xp)
+        out.append(c + (rate.target - c) * (-xp.expm1(-rate.relaxation_per_s * dt_s)))
+    return tuple(out)
+
+
+def conductance(gates, *, xp=jnp):
+    """The junction's relative conductance: the product of its gates' factors."""
+    out = xp.ones_like(gates[0])
+    for c in gates:
+        out = out * c
+    return out
+
+
+def steady(voltage, parameters, *, kinds, xp=jnp):
+    """The steady relative conductance at a constant voltage: the product of the gates' targets."""
+    return conductance(tuple(r.target for r in kinetics(voltage, parameters, kinds=kinds, xp=xp)),
+                       xp=xp)  # fmt: skip
+
+
+def open_fractions(gates, parameters, *, kinds, xp=jnp):
+    """Each gate's open fraction x = (c − r)/(1 − r); a gate whose residual is 1 never closes, so
+    its x is 1."""
+    kinds = _check_kinds(kinds)
+    out = []
+    for c, kind, p in zip(gates, kinds, parameters, strict=True):
+        r = residual_of(kind, p)
+        span = 1.0 - r
+        out.append(xp.where(span > 0, (c - r) / xp.where(span > 0, span, 1.0), 1.0))
+    return tuple(out)
+
+
+def route_factor(gates, parameters, route_residuals, *, kinds, xp=jnp):
+    """A route's factor through the gates: Π_i (ρ_i + (1 − ρ_i)·x_i), with ρ_i the route's own
+    residual at gate i (ions: the gate's r, which gives conductance(); a large tracer: 0)."""
+    out = 1.0
+    for x, rho in zip(open_fractions(gates, parameters, kinds=kinds, xp=xp), route_residuals,
+                      strict=True):  # fmt: skip
+        out = out * (rho + (1.0 - rho) * x)
+    return out
+
+
+def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, xp=jnp):
+    """The junction's domain, per gate: relaxation_betse's own, and for boltzmann_eyring λ > 0,
+    A ≥ 0 with every exponent within MAX_EXPONENT on the voltage domain, δ and r in [0, 1], and c
+    in [r, 1]; the voltage, availability and interval as junction_voltage_relaxation@1's."""
+    kinds = _check_kinds(kinds)
+    ok = (
+        xp.isfinite(voltage)
+        & (xp.abs(voltage) <= MAX_ABS_VOLTAGE_V)
+        & xp.isfinite(availability)
+        & (availability >= 0)
+        & (availability <= 1)
+        & xp.isfinite(dt_s)
+        & (dt_s >= 0)
+    )
+    for c, kind, p in zip(gates, kinds, parameters, strict=True):
+        if kind == "relaxation_betse":
+            ok = ok & relaxation.domain_valid(c, voltage, p, availability, dt_s, xp=xp)
+            continue
+        lam, slope, midpoint, split, residual = p
+        finite = (
+            xp.isfinite(lam)
+            & xp.isfinite(slope)
+            & xp.isfinite(midpoint)
+            & xp.isfinite(split)
+            & xp.isfinite(residual)
+            & xp.isfinite(c)
+        )
+        bound = slope * (MAX_ABS_VOLTAGE_V + xp.abs(midpoint))
+        ok = (
+            ok
+            & finite
+            & (lam > 0)
+            & (slope >= 0)
+            & (bound <= MAX_EXPONENT)
+            & (split >= 0)
+            & (split <= 1)
+            & (residual >= 0)
+            & (residual <= 1)
+            & (c >= residual)
+            & (c <= 1)
+        )
+    return ok
