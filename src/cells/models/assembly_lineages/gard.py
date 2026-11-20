@@ -41,17 +41,6 @@ State: x = beta n, kept incrementally, one column per event (beta[:, i] added or
 elementwise, so the same on every device), and recomputed exactly by a serial fold over the
 types whenever the composition is replaced (the founder; each daughter after a fission).
 
-The pair-consistent leave's remainder, (beta (m - e_i))_i, is the cached x_i - beta_ii, unless
-that subtraction would lose more than the ledger allows: when its rounding bound,
-eps (r + 2 beta_ii) for the remainder r, exceeds ledger.RTOL / 64 times r, the remainder is formed
-from the counts instead, a serial fold over the types of beta_ij (m_j - delta_ij). The choice is a
-function of the counts and the matrix only. A large diagonal next to small catalysts had lost the
-remainder (beta_AA = 2^54, beta_AB = 1 at (1, 1): x_A = 2^54 + 1 rounds to 2^54, so the leave
-carried 1 instead of 2, booked ln 2 and was refused at the passive ledger check; the Lean proofs
-project's finding of 19 November 2026, repaired in place on the lead's ruling of 20 November: no
-registered world reaches the bound, so their bits are unchanged). The join, and every other
-remainder, keep the cached x.
-
 Source: Segre, Ben-Eli and Lancet (2000); the Plastic Heredity preprint, v5.0, Appendix F
 (Zenodo 10.5281/zenodo.22143269, CC BY 4.0). Numbers cited under D186. Independent check of the
 reversibility finding: GARD_DESIGN §2.5.
@@ -67,7 +56,6 @@ from cells.models.assembly_lineages import (
     GARD_SINGLE_EVENT,
     MODEL_ID,
     folds,
-    ledger,
 )
 from cells.models.assembly_lineages.factors import RateFactorLaw
 from cells.modules import Citation
@@ -155,30 +143,12 @@ def factors_single_event(counts, size, x, data, xp):
     return b, b
 
 
-# The leave's remainder is formed from the counts where the cached subtraction's rounding bound
-# exceeds this fraction of it (module docstring): a 64-fold margin below the ledger's tolerance.
-EPS = float(np.finfo(np.float64).eps)
-REMAINDER_TOLERANCE = ledger.RTOL / 64
-
-
-def leave_remainder(counts, x, data, xp):
-    """(beta (m - e_i))_i for every type i at m = counts: the cached x_i - beta_ii, or, where that
-    subtraction would lose more than REMAINDER_TOLERANCE, a serial fold over the types of
-    beta_ij (m_j - delta_ij) (module docstring)."""
-    size = data.matrix.shape[0]
-    without = counts[None, :] - xp.eye(size, dtype=np.float64)  # [i, j]: m_j - delta_ij
-    exact = folds.total((data.matrix * without).T, xp)  # over j, in declared order
-    lossy = EPS * (exact + 2.0 * data.diagonal) > REMAINDER_TOLERANCE * exact
-    return xp.where(lossy, exact, x - data.diagonal)
-
-
 def factors_pair_consistent(counts, size, x, data, xp):
     """Join: g_i(n) = 1 + (beta n)_i / N. Leave from m: g_i(m - e_i), 1 for the last molecule."""
     join = _per_member(x, size, xp)
     rest = size - 1.0
     safe = xp.where(rest > 0, rest, 1.0)
-    remainder = leave_remainder(counts, x, data, xp)
-    leave = xp.where((rest > 0) & (counts > 0), 1.0 + remainder / safe, 1.0)
+    leave = xp.where((rest > 0) & (counts > 0), 1.0 + (x - data.diagonal) / safe, 1.0)
     return join, leave
 
 

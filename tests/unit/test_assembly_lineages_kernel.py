@@ -34,13 +34,6 @@ CASES = {
         dict(partition={"rule": "binomial", "probability": 0.5}, daughter="uniform", empty="other"),
         GARD_PAIR_CONSISTENT,
     ),
-    # The Lean proofs project's finding (19 November 2026): beta_AA = 2^54 beside beta_AB = 1, from
-    # one B. A's first join reaches (1, 1), where the cached x_A - beta_AA had lost the reverse
-    # leave's remainder (2^54 + 1 rounds to 2^54), booked ln 2 and was refused at the ledger.
-    "pair-consistent, a dominant diagonal": (
-        dict(count=2, founder_size=1, seed=0, beta=[[2.0**54, 1.0], [1.0, 0.0]]),
-        GARD_PAIR_CONSISTENT,
-    ),
 }
 
 

@@ -30,10 +30,8 @@ def world(
     transfer_constant=3.0,
     supply=None,
     leave_rate=1.0,
-    beta=None,
 ):
-    """A world of `count` types splitting at `size`, with a lognormal catalysis matrix, or the
-    given one (`beta`, count x count)."""
+    """A world of `count` types splitting at `size`, with a lognormal catalysis matrix."""
     rng = np.random.default_rng(seed)
     founder = np.bincount(rng.integers(0, count, founder_size), minlength=count)
     result = {
@@ -54,8 +52,7 @@ def world(
         },
     }
     if matrix:
-        drawn = np.exp(-1.0 + sigma * rng.standard_normal((count, count)))
-        beta = drawn if beta is None else np.asarray(beta, dtype=np.float64)
+        beta = np.exp(-1.0 + sigma * rng.standard_normal((count, count)))
         result["law_data"] = {"catalysis_matrix": beta.tolist()}
     return result
 
