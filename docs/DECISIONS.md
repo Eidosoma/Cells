@@ -7991,3 +7991,36 @@ delegation. The advisor saw the hand-backs and the fuel note's §2.3, §2.4, §9
   - Development probes of fuel-driven worlds ran before the line was drawn. They count as prior
     exposure for OL9's registration, which uses fresh matrices and seeds, and their results are not
     used.
+
+## D246: FR-27's design, GARD's version 2 and FR-21's admission key (the lead's rulings)
+
+2026-11-20, about 19:50 UTC. These are the lead's rulings. FR-27's design questions fall under
+the user's delegation for FR questions (D244), as the lead reads it, and were decided with the
+advisor. The others are the lead's own calls on the builders' questions. None is the user's
+approval.
+
+1. **FR-27, the wash of a finite compartment** ([note](COMPARTMENT_WASH_DESIGN.md) on its branch):
+   - **One mechanism, two executions.** A liquid exchange at constant volume:
+     - a fraction f of the well-mixed liquid leaves as a recorded sample;
+     - the same volume of a declared buffer enters;
+     - everything not dissolved stays.
+
+     FR-20's pool replacement is its whole-exchange execution in exact counts, if FR-20's builder
+     confirms the f = 1 booking against `replacement.py` as built.
+   - **Ions are declared, never silently left:** version 1 requires `same_as_compartment` ions. The
+     sample and supply records list every species.
+   - **The mixing heat is computed** in the cleft fix's small-ratio form, not taken as the ledger's
+     remainder. A host check holds it non-negative at every event.
+   - **The buffer sits at the species' trace.** Faces at an exchanged node stay refused until they
+     are measured.
+   - **The name is `scheduled_compartment_wash@1`.**
+2. **GARD's version 2,** `cells.gard_catalysis_pair_consistent@2` (D244's correction):
+   - **The cache:** a double-word cache of βn, exact within a proven 106-bit budget.
+   - **Refused at parse** when a world's fission size needs more, through an optional `domain`
+     field on rate-factor laws. @1's bits stay unchanged.
+   - **Experiments that draw matrices** record each refused draw, and never fall back silently to
+     @1.
+   - **The Lean project's own driver stays on @1** until that project points it at @2.
+3. **FR-21's site binding** is admitted only for a declared site species and a declared complex
+   species, never by stoichiometry alone. OL5's registered refusal worlds therefore stay refused.
+   OL5's reference parser needs its own amendment before an FR-21 world is registered.
