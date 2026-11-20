@@ -20,11 +20,12 @@ The requests are logged in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md) (FR-23, FR
 | | FR-23 | FR-24 | FR-26 |
 | --- | --- | --- | --- |
 | **Today** | Refused at the structure check. Site occupancy reads `extracellular_amount_reference` as declared on every slot, and the bath schedule provides it | No source kind reads a site population. The contract has no declared read of another operator's owned state | Refused at the definition: site populations, D152 cell routes and coupling states on replaced slots |
-| **Recommended** | Door S narrowing: site occupancy's fixed reads scoped to the outside nodes its populations face. Also, the trace rule applied to scheduled compositions | A site-population source on coupling @2: the occupied fraction, and amounts as concentrations. It is read through quantities the owner declares in the contract | One occupant rule. A replacement writer of site populations goes through the site operator's accepted writes, with D152's occupant rule for cell routes. The coupling's states are optional |
-| **Bitwise** | Every registered world, at all three levels (§1) | Values in every world without a site route; @1 and the site operator at all levels. @2's programs gain empty arrays, so this lands after FR-7's judged run | Every registered world, at all three levels |
-| **Development price** | 1–1.25 agent-days | 2.75–3.75 | 3.25–4.75 |
+| **Recommended** | Door S narrowing: site occupancy's fixed reads scoped to the outside nodes its populations face. Also, the trace rule applied to scheduled compositions | A site-population source on coupling @2: the occupied fraction, and amounts as concentrations. It is read through quantities the owner declares in the contract | One occupant rule. A replacement writer of site populations goes through the site operator's accepted writes, with D152's occupant rule for cell routes. The coupling's part is needed only where a link sits in a replaced cell (§5) |
+| **Bitwise** | Every registered world, at all three levels (§1) | Values in every world without a site route; @1 and the site operator at all levels. @2's programs gain empty arrays (§3.6) | Every registered world, at all three levels |
+| **Development price** | 1–1.25 agent-days | 2.75–3.75 | 3.5–5.25 |
 
 The prices exclude gates. References and judged protocols are priced separately in each note.
+FR-23's admission was probed on the engine (§2.1); the rest is read, not run.
 
 ## 1. "Bitwise", and the sets each note is checked against
 
@@ -44,7 +45,9 @@ The prices exclude gates. References and judged protocols are priced separately 
 - **D152's MG0c** (`mg0c-turing-v1`, judged 15 November 2026).
 - **Replacement@1's frozen guards** (`validation/tissue/composite_guard.py`) and its tests.
 - **FR-7's compartment registration** (`validation/fr7/compartment_registration.json`). Its C2 and
-  C5 run coupling @2. They were registered on 20 November and the judged run is still to come.
+  C5 run coupling @2. Their judged run was launched at 17:27 UTC on 20 November, from a frozen
+  snapshot of main 439f54fd, and was still running at 18:04 UTC
+  (`/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/judged-439f54fd/RUN.txt`).
 
 ## 2. FR-23: timed bath changes beside binding sites on distinct finite nodes
 
@@ -74,6 +77,21 @@ composition matrix tags it **nominal** (`docs/PUMP_COMPOSITE.md:279`; cells 17�
 - **So the slots never meet.** SCOPED_COMPOSITION_DESIGN.md §5 already lists this narrowing, at
   :223: "Admits it beside the bath schedule". D152 made the same narrowing
   (`src/cells/operators/species_reactions.py:1302–1308`; `read_slots`, :1448–1451).
+
+**Probed on the engine, 20 November 2026** (CPU 7; `probe_fr23.py` and its output under
+`/mnt/workspaces/Cells/operators-20261120/`). Option A's declarations (§2.3) were patched onto the
+site operator inside the probe's process only; no file was edited. The world is the bath schedule's
+`dosed_world`, with an outward population at θ0 = 0.5 on `contact_0` and a ×10 step of the neutral
+species at the bath at t_e.
+- **Before the patch:** both orders are refused at the structure check, and the definition is
+  refused at parse with the message above.
+- **After it:**
+  - both orders pass the structure check;
+  - the definition parses and its model builds, the per-slot check included;
+  - the twin beside insertion@1 is still refused.
+- **At the event boundary, in NumPy:** the event map is valid and leaves every site field bitwise
+  unchanged. The dose record is 1 ulp from V_b·a (relative 1.9e-16), since it is the held content's
+  change, n_new − n_old (§2.8).
 
 ### 2.2 Reading "distinct finite nodes"
 
@@ -137,7 +155,8 @@ volumes and the masks. So water, insertion and the closers stay refused, as toda
 
 ### 2.6 Files and owners
 
-- **The operators owner** (this seat):
+- **The operators owner** (this seat). `site_occupancy.py` is not in CORE_SEAMS_STEP0.md §4.2's
+  table; this seat takes it under the lead's brief, as it takes the coupling module in §3.7.
   - `src/cells/operators/site_occupancy.py`: the declarations, the trace rule and the docstring
     (:39–40);
   - `validation/tissue/site_occupancy_fixtures.py`: a world builder with a face;
@@ -159,8 +178,9 @@ volumes and the masks. So water, insertion and the closers stay refused, as toda
 - **One uncompiled event-boundary row.**
   - **Its world:** a held bath dosed by the schedule, a face to a finite node, and an occupied
     outward population facing that node.
-  - **The checks:** the composite's event maps at t_e, with `xp=np`, book the dose exactly and
-    leave every site field bitwise unchanged.
+  - **The checks:** the composite's event maps at t_e, with `xp=np`, book the dose as the held
+    content's change and leave every site field bitwise unchanged. The probe (§2.1) ran exactly
+    this check.
   - **Its cost:** tier 1, no compile, about a second. It goes in `test_site_occupancy.py`.
 - **No new compiled test.** The response through the face is development evidence (§2.8), outside
   the suite.
@@ -169,7 +189,9 @@ volumes and the masks. So water, insertion and the closers stay refused, as toda
 ### 2.8 Acceptance, from the request
 
 At the event boundary:
-1. **The bath records the dose:** `bath_dose_fmol` equals V_b Σ_f a_f ν_f exactly (FR-10's B4).
+1. **The bath records the dose:** `bath_dose_fmol` equals the change of the bath's held content,
+   n_new − n_old, bit for bit. That change equals V_b Σ_f a_f ν_f to rounding: 1 ulp in the probe
+   (§2.1).
 2. **Occupied sites keep their bound material:** the event map changes no site field, bit for bit.
 
 **The development run** (a record, not a test), with its criterion written first:
@@ -344,26 +366,29 @@ occupied fraction θ = B/S.
 ### 3.6 What stays bitwise
 
 - **Coupling @1:** untouched, at all three levels (A5″ is judged and is in crossrev's set).
-- **Site occupancy @1:** its readable quantities are a class declaration and a host function. Its
-  values, programs and structure are unchanged, so FR-3's judged worlds and crossrev are too.
+- **Site occupancy @1:** its readable quantities are a class declaration and a function that runs
+  on the device. That function is traced only where a read is declared, so its values, programs and
+  structure are unchanged in every other world. FR-3's judged worlds and crossrev are among them.
 - **D152:** untouched.
 - **Coupling @2:**
   - **Values:** bitwise in every world without a site route. The site-route arrays are static by
     shape, as F2's population arrays are.
   - **Programs:** they gain empty site-route layout arrays, as @2's population source did on 19
     November (de65d033).
-  - **Sequencing.** FR-7's registered C2 and C5 run @2. So the landing either waits for FR-7's
-    judged run, or carries an A/B comparison of C2 and C5 that shows their values bitwise. The lead
-    decides.
-  - **The alternative, a version @3,** would avoid this, at the cost of a new law version.
-    Composition's decision (D191) prefers none.
+  - **FR-7's C2 and C5 run @2.** Their judged run uses a frozen snapshot of 439f54fd (§1), so this
+    landing cannot touch its verdict. The landing carries an A/B comparison of C2 and C5 on main
+    that shows their values bitwise. If the lead has added either to crossrev by then, its record is
+    renewed.
+  - **A version @3** would leave @2's programs alone, at the cost of a new law version. Composition's
+    decision (D191) prefers none, and nothing here needs it.
 - **The contract and the composite:** new declarations with empty defaults, so every other
   operator's program is unchanged.
 
 ### 3.7 Files and owners
 
-- **The operators owner** (CORE_SEAMS_STEP0.md §4.2 gives this seat `contract.py` and the
-  composite):
+- **The operators owner.** CORE_SEAMS_STEP0.md §4.2 gives this seat `contract.py` and the
+  composite. The coupling module and `site_occupancy.py` are outside that table, and this seat takes
+  them under the lead's brief.
   - `src/cells/operators/species_regulated_availability.py`: the source kind;
   - `src/cells/operators/site_occupancy.py`: the readable quantities;
   - `src/cells/operators/contract.py` and `src/cells/models/pump_composite.py`: R3;
@@ -374,7 +399,7 @@ occupied fraction θ = B/S.
     PUMP_COMPOSITE.md's operator and contract tables.
 - **The F owner, optionally:** `src/cells/registry/declarations.py`, if the declarations manifest
   should list readable quantities (D185). Nothing requires it.
-- **The lead and the FR-7 lane:** the sequencing against FR-7's judged run, and the tier rows.
+- **The lead:** the tier rows, and crossrev's record if it holds C2 or C5 by then (§3.6).
 
 ### 3.8 Tests (D224)
 
@@ -445,7 +470,6 @@ and a 457-line test file of 21 tests, about 25 s.
 
 1. **The amounts:** Q1, Q2, Q3 or Q4 (§3.2)? Recommended: θ and Q2.
 2. **The read path:** R3, or the cheaper R1 or R2 (§3.3)?
-3. **The sequencing:** land after FR-7's judged run, or as a version @3 (§3.6)?
 
 ## 4. FR-26: owned state when a cell is replaced
 
@@ -500,11 +524,13 @@ and active reactions.
 | --- | --- | --- | --- | --- |
 | @3, through replacement@1 | Cytosolic amounts (`replacement_removed_fmol`) | The template's amounts, gates and route values | Outside nodes; neighbours | Built (D139) |
 | `site_occupancy@1`: patch populations of the slot, either face | Bound B, with the site free energy | The template's arrival occupancy θ′; in version 1 the same unit, copies, sites per copy, α and constants | Free ligand at the facing node (an outside node is environment; the cytosol is replacement's); the records of net binding, internalisation, heat and work | **Lifted** (§4.3, W) |
+| `site_occupancy@1`: the binding and internalisation multipliers (`site_controls`) of those populations | The founder's schedule ends at its death | The template's multipliers, held through the newcomer's life in version 1 (a newcomer's own schedule is version 1.1) | — | **Lifted** with W; built on the host (§4.3) |
 | `site_occupancy@1`: contact populations incident to the slot | §5.2 resets them, but where the material bound on the neighbour's side goes needs a ruling (§4.11) | — | — | Stays refused |
 | `local_species_reactions@1`: cell routes at the slot | Nothing material; the records are history | The template's per-site multipliers (rates follow the occupant) | Extent, produced and consumed, heat, work, its standard-potential term | **Lifted**, at the definition only |
 | `local_species_reactions@1`: outside routes | — | — | Environment | Composes today |
 | D150's turnover and exchange: cell-side routes | Rates | The template's rates | Outside-node routes are environment | Built (D150 §5.2) |
-| The coupling, @1 and @2: states and targets at the slot | The state s (kinetic, with no ledger) | The template's s′ | The crossing record and the input integral, as slot diagnostics | Optional (part C) |
+| The coupling, @1 and @2: targets and operator-target elements at the slot, whose source is a species or a site population | Nothing: the source is already the occupant's | — | — | Lifted only for a link in a replaced cell (part C′, §4.3) |
+| The coupling, @1 and @2: regulatory states at the slot | The state s (kinetic, with no ledger) | The template's s′ | The crossing record and the input integral, as slot diagnostics | Optional (part C) |
 | Membrane state, with insertion, trafficking and the unit producer | — | — | — | Stays refused: replacement and membrane state both provide `channel_abundance` (a real matrix refusal) |
 | `cell_owned_compartments@1`: an owner's compartments | — | — | — | Stays refused (door R, CLOSED_COMPARTMENT_DESIGN.md §1.5) |
 | Water, and replacement@2 | — | — | — | Out of scope: sites and D152 read the declared volumes, and replacement@2 is a later version |
@@ -530,20 +556,51 @@ and active reactions.
   ID, which is D150's form.
 - **The composite already admits it:** "an entity write targets inner state or a field an earlier
   operator accepts" (`pump_composite.py:650–659`).
+- **W would be the first writer of the site pools (S).**
+  - The site operator's accepted writes are declared and tested with no writer
+    (`tests/unit/test_site_occupancy.py`, its docstring at :11).
+  - The path itself is exercised by four writers: insertion@2, trafficking, the partition and
+    replacement@2. Replacement@2 is W's closest precedent: its event writes water's accepted state
+    at a replacement (`src/cells/operators/cell_replacement_v2.py:472–481`).
+  - **The risk** is the site operator's own ledgers taking external terms for the first time. W's
+    price allows for it (§4.10).
 
-**Recommended: W for the sites, D152's occupant rule, and the coupling's states as an option.**
+**The site multipliers follow the occupant** (D150 §5.2: a carrier's schedule applies while it
+occupies a slot).
+- **The founder** keeps today's `site_controls` entry, which ends at its death; a change after the
+  death is refused.
+- **A newcomer** takes the binding and internalisation multipliers that W's templates declare, held
+  through its life in version 1. A newcomer's own schedule is version 1.1.
+- **It is built on the host:** the site operator's control construction reads W's declaration, as
+  `check_template_traces` reads replacement's. Its declaration and schedule keys are unchanged.
+- **The alternative** keeps the slot's schedule across occupants, as an intervention on the slot. It
+  departs from D150's rule (§4.11).
+
+**Recommended: W for the sites and D152's occupant rule.** The coupling's part C′ is added where a
+link sits in a replaced cell, and part C is optional.
 
 **D152's part (S).**
 - **Its owned state is records only:** extent, produced and consumed, heat, work and its
   standard-potential term (`species_reactions.py:168–182`). They stay with the slot.
-- **So its occupant rule is about rates:**
-  - per-site multipliers are keyed by carrier;
+- **So its occupant rule is about rates, on the sites' pattern:**
+  - the founder's per-site multipliers keep today's schedule, which ends at its death;
   - a newcomer from a template takes its template's multipliers, through
-    `species_common.route_tables` (D150's mechanism, used read-only);
+    `species_common.route_tables` (D150's mechanism, used read only);
   - the refusal is lifted for every cell route these cover.
-- **It is definition-time only.** The new `templates` key is optional and absent from `to_dict`
-  when empty: `_fields` requires the exact key set (`src/cells/definitions/specs.py:74–82`), so
-  every registered definition still parses and round-trips identically.
+- **It is definition-time only.**
+  - The new `templates` key is optional and absent from `to_dict` when empty. `_fields` requires the
+    exact key set (`src/cells/definitions/specs.py:74–82`), so every registered definition still
+    parses and round-trips identically.
+  - Version 1 adds no carrier key to `reaction_controls`, whose entries are also exact-match
+    (`species_reactions.py:714`). A newcomer's own schedule is version 1.1, with that key optional.
+
+**Part C′, a link in a replaced cell.**
+- **Today's refusal.** @2's element check refuses an operator target's element in a replaced cell
+  (`species_regulated_availability.py:1347–1366`), and @1's check refuses targets there (:1290–1320).
+  So an occupancy-linked reaction in a replaced cell is refused even once W and D152's rule exist.
+- **The change.** The refusal is lifted where the source is a species of that cell or a site
+  population. Replacement already swaps the species, and W already resets the population, so the
+  factor reads the newcomer's state. No state is needed: it is definition-time only.
 
 **Part C, the coupling's states (optional).**
 - **The rule** is its §1.5's: an event at replacement's steps.
@@ -552,6 +609,7 @@ and active reactions.
 - **The diagnostics stay the slot's.** The crossing record and the input integral are slot
   diagnostics, so a state with a crossing level on a replaced slot stays refused.
 - **A donor copy's s depends on state,** so donor copies stay refused.
+- **A link whose source is a state** in a replaced cell needs part C as well as C′.
 
 **Contacts.** §5.2's reset of a contact population needs a ruling on where the material bound from
 the neighbour's side goes:
@@ -586,28 +644,32 @@ Version 1 keeps contact populations incident to a replaced slot refused.
 ### 4.5 What stays bitwise
 
 - **Replacement@1:** no file changes.
-- **`site_occupancy@1`:** structure and programs unchanged. Its replaced-slot refusal narrows at the
-  definition only: populations that W covers are admitted. Worlds refused today become new
-  definitions.
+- **`site_occupancy@1`:** structure and programs unchanged.
+  - Its replaced-slot refusal narrows at the definition only: populations that W covers are
+    admitted. Worlds refused today become new definitions.
+  - Its control tables read W's declaration on the host, and they are identical in every world
+    without W.
 - **D152:** values and programs unchanged in every world without a covered cell route on a replaced
   slot. That includes MG0c and crossrev's FR-1 C7. Its structure is unchanged too: the optional key
   is absent.
-- **The coupling (part C):** writes derived on the host only. The programs are unchanged in worlds
-  without replacement; FR-7's C2 and C5 have none.
+- **The coupling.** Part C′ is definition-time only, and part C adds writes derived on the host. So
+  the programs are unchanged in every world without replacement, A5″ and FR-7's C2 and C5 among
+  them.
 - **What changes:** W is a new law, so the composition matrix gains its row and column.
 
 ### 4.6 Files and owners
 
-- **The operators owner:**
-  - `site_occupancy.py`: W, and the narrowed `check_slots`;
+- **The operators owner.** `site_occupancy.py` and the coupling module are outside CORE_SEAMS_STEP0.md
+  §4.2's table, and this seat takes them under the lead's brief.
+  - `site_occupancy.py`: W, the narrowed `check_slots` and the multiplier tables;
   - `species_reactions.py`: the occupant rule;
-  - `species_regulated_availability.py`: part C, if chosen;
+  - `species_regulated_availability.py`: parts C′ and C, where chosen;
   - `validation/tissue/site_occupancy_fixtures.py`: a world builder with a replaced slot;
   - the tests in §4.7 and the regenerated matrix;
   - the docs: SITE_OCCUPANCY_DESIGN.md §5.2 (as built), SHARED_INVENTORY_REACTIONS_DESIGN.md's door
     (§2.1, Q6), INVENTORY_COUPLING_DESIGN.md §1.5's row, CELL_REPLACEMENT.md and PUMP_COMPOSITE.md.
 - **Read only, no edit:**
-  - `species_common.py`, which D150's operators share and which is hands-off now;
+  - `species_common.py`, which is shared with D150's operators, hands-off now;
   - `cell_replacement.py` and `src/cells/definitions/cell_replacement_spec.py`;
   - `compartments.py`, whose door R is unchanged.
 - **The F owner: nothing.** A new law class in an existing module registers itself
@@ -688,12 +750,13 @@ The request's three clauses:
 
 | Part | Agent-days |
 | --- | --- |
-| W: parse and templates, the occupant tables, the event map with its counter, records, ledger and magnitude terms, energy, summary, the narrowed `check_slots` | 1.5–2 |
+| W: parse and templates, the occupant tables, the event map with its counter, records, ledger and magnitude terms, energy, summary, the narrowed `check_slots`, the multiplier tables; the upper end allows for the first writer of the site pools | 1.75–2.5 |
 | Its matrix row and column | 0.25 |
 | D152's occupant rule | 0.5–1 |
 | Tests | 0.75–1 |
 | Docs | 0.25–0.5 |
-| **Development, recommended** | **3.25–4.75** |
+| **Development, recommended** | **3.5–5.25** |
+| Part C′, a link in a replaced cell (needed only for that case, §5) | +0.25–0.5 |
 | Optional: part C, the coupling's states | +0.75–1 |
 | Optional: contact populations, after the ruling | +0.5–1 |
 | Optional: donor copies | +0.5–1 |
@@ -713,14 +776,35 @@ Calibration: D150's occupant rule was built with no new state from the same host
 4. **Donor copies with site populations:** version 1.1?
 5. **Templates:** may a template change a population's capacity or constants (copies, α, k_on,
    k_off), or only its occupancy, as in version 1?
+6. **The site and reaction multipliers at a replacement:** the newcomer's from its template (D150's
+   rule; recommended), or the slot's schedule carried across occupants as an intervention on the
+   slot?
 
-## 5. Order, and the three together
+## 5. Order, and the three in one world
 
+**One requester sent all three** (D239), so the likely world holds a bath dose, binding sites, an
+occupancy-linked reaction and a replacement together. After version 1:
+
+| In one world | After version 1 | What it needs |
+| --- | --- | --- |
+| A bath dose beside binding sites | Composes | FR-23 |
+| A reaction rate from a site population's occupancy | Composes | FR-24 |
+| A replacement with occupied sites and reactions in the replaced cell | Composes | FR-26's W and D152's rule |
+| A bath dose beside a replacement | Composes today (matrix 3↔17 ✓) | Nothing |
+| The linked reaction in a replaced cell, its source a site population or a species of that cell | Refused by @2's element check (`species_regulated_availability.py:1347–1366`) | Part C′ (§4.3): definition-time, no state |
+| The same, with a regulatory state as its source | Refused | Part C as well |
+| All four together | Composes | FR-23, FR-24, W, D152's rule and C′; C as well if a state is a source |
+
+So C′ is not optional for the one-world case.
+
+**The order:**
 - **FR-23 first:** it is the smallest and independent.
-- **FR-24 after FR-7's judged run** (§3.6).
+- **FR-24 next.** FR-7's judged run uses a frozen snapshot, so FR-24 does not wait for it (§3.6).
 - **FR-26.** W touches `site_occupancy.py`, as FR-23 and FR-24 do, so the three take that file one
-  branch at a time. D152's part and part C are on other files and can run in parallel.
-- **All three as recommended:** 7–9.75 agent-days of development, excluding gates, before the
-  options, references and protocols.
-- **Each lands behind tiers 1 and 2,** with crossrev's FR set and G1. Integration grants no
-  acceptance (D143).
+  branch at a time. D152's part and parts C′ and C are on other files and can run in parallel.
+
+**The price of all three as recommended:** 7.25–10.25 agent-days of development, excluding gates;
+7.5–10.75 with C′ for the one-world case. That is before the options, references and protocols.
+
+**Each lands behind tiers 1 and 2,** with crossrev's FR set and G1. Integration grants no
+acceptance (D143).
