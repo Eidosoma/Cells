@@ -6,17 +6,17 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [20 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [22 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 9 of 9 | 9 checked | 9 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 4 checked · 1 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 13 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 14 of 14 | 10 checked · 4 failed | 10 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 14 of 14 | 11 checked · 3 failed | 10 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 1 of 2 | 2 checked | 2 |
 
 <!-- /generated -->
 
@@ -127,6 +127,13 @@ cells_python=${CELLS_PYTHON:-python}
 <details>
 <summary>Commands for individual comparisons</summary>
 
+For membrane populations, follow precursor into maturing, active and removed units, then read the potassium flow at several patch areas. The driver also evaluates published receptor retention and endplate currents. The second command isolates the recorded rounding residual at exactly zero units. [Turnover and maturation](PROGRESS.md#surface-population-turnover) · [Current and surface count](PROGRESS.md#membrane-population-flow) · [Empty-population finding](PROGRESS.md#empty-surface-flow)
+
+```bash
+"$cells_python" -B checks/population_units.py
+"$cells_python" -B checks/population_units.py --require-empty
+```
+
 For scheduled cell replacement, compare simultaneous donor and template arrivals, including a volume-preserving copy with nonzero water free energy. The optional second command isolates the v2 definition that refuses a strictly interior volume and returns a failure while the refusal persists. [Material and charge](PROGRESS.md#scheduled-cell-replacement) · [Water and measured cell volumes](PROGRESS.md#cell-replacement-water) · [Boundary reproducer](PROGRESS.md#cell-replacement-volume-boundary)
 
 ```bash
@@ -168,7 +175,7 @@ For a restricted cleft, the controls follow tracer dilution and mixing heat thro
 "$cells_python" -B checks/restricted_lumen.py
 ```
 
-For the held bath, follow the controller’s dose and the tissue’s supply through four solution changes, then compare potassium reversal shifts with measured cardiac currents. The full driver also runs equivalent recipes in two orders and exits with status 1 when their booked doses differ. The second command runs the ordinary controls. [Bath accounting and biological evidence](claims/scheduled-bath-exchange.md) · [Recipe-order finding](claims/bath-recipe-order.md)
+For the held bath, follow the controller’s dose and the tissue’s supply through four solution changes, then compare potassium reversal shifts with measured cardiac currents. The full comparison verifies that both entry orders preserve an intended trace dose. The second command runs the ordinary controls. [Bath accounting and biological evidence](claims/scheduled-bath-exchange.md) · [Recipe-order repair and retest](PROGRESS.md#bath-order-repair)
 
 ```bash
 "$cells_python" -B checks/bath_schedule.py
@@ -336,7 +343,7 @@ For the eight-state two-sodium carrier, compare each edge with an independent st
 "$cells_python" -B checks/sodium_anion_diagram.py --controls-only
 ```
 
-For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The latest retest confirmed that the engine refuses the earlier wrong-direction step. The full comparison still reports the extreme concentration-ratio overflow. The controls use smaller steps and finite product ratios. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Retest](PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
+For the potassium–anion operator, compare a closed two-compartment run with the exact concentration trajectory. The full comparison checks admission of the coarse step and finite chemical affinity and heat at extreme concentration ratios. The second command runs the smaller-step controls. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Overflow repair and retest](PROGRESS.md#potassium-affinity-repair)
 
 ```bash
 "$cells_python" -B checks/potassium_anion_symport.py
