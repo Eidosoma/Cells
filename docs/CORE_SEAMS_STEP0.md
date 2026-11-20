@@ -1208,3 +1208,15 @@ in the result.
   moves. Its H and its binder keep the lumen's values, and the face moves neither.
   - (P-b) then isolates the ΔΨ mode on host P.
   - (P-a) stays P1's world exactly, the comparison with P1.
+
+**Amendment 3 to §9.1 (20 November 2026), execution only, committed before any rung's result.**
+Two first launches were stopped by the @3 owner before any rung finished. Their folders are kept as
+stopped.
+- **Why.** The light CPUs are oversubscribed tonight. The probe's process got about a tenth of its
+  CPU. The 0.0025 reference arm (8,460 steps, every step recorded) could not finish within 900 s.
+- **The changes:**
+  - each rung's limit rises to 3,600 s, and a timeout is still not a result;
+  - the reference arms are recorded every 4 steps, which holds every rung's record times;
+  - the windows are 128 steps wide;
+  - (P-b) runs before (P-a), since it isolates the ΔΨ mode.
+- **What does not change:** the worlds, the ladder, the readings and the rules.
