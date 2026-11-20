@@ -150,22 +150,22 @@ CASES = {
 
 
 def case_world(name):
+    """The case's world: its initial pools declared (initial_pool_units, bound into the state),
+    and its written units planted on membrane state's increment."""
     entries, assembly, removal, pools0, written = CASES[name]
     routes = [
-        fx.route(f"r{i}", pop, pools=m, tau=None if m == 0 else m / kappa)
+        fx.route(f"r{i}", pop, pools=m, tau=None if m == 0 else m / kappa, initial=pools0[i])
         for i, (pop, m, kappa) in enumerate(entries)
     ]
     controls = {f"r{i}": [(0.0, assembly[i], removal[i])] for i in range(len(entries))}
     spec, model, op, state, p = bound(routes, controls)
-    depth = max(m for _, m, _ in entries)
-    pools = np.zeros((len(entries), depth))
     for i, values in enumerate(pools0):
-        pools[i, : len(values)] = values
+        assert list(np.asarray(state.unit_pool_units)[i, : len(values)]) == values  # Bound.
     increment = np.array(state.population_abundance_increment, dtype=float)
     channels = [c.id for c in spec.model.channels]
     for i, (pop, _, _) in enumerate(entries):
         increment[channels.index(pop)] = written[i]
-    state = state._replace(unit_pool_units=pools, population_abundance_increment=increment)
+    state = state._replace(population_abundance_increment=increment)
     return spec, model, op, state, p
 
 
@@ -271,10 +271,11 @@ def test_removal_of_the_written_units_only_fails_the_exact_chain_row(monkeypatch
 
 
 def test_the_account_and_the_untouched_rows():
+    """The account from the bound start, its declared initial pools included (D232's W5
+    ruling)."""
     spec, model, op, state, p = case_world("shared")
     _, assembly, removal, _, _ = CASES["shared"]
-    # The account is cumulative from the bound start, where every pool is empty.
-    state = state._replace(unit_pool_units=np.zeros_like(state.unit_pool_units))
+    assert float(np.asarray(p.unit_route_initial_units)[0]) == 25.0  # Route r0's one pool.
     new, ok = step(op, state, p, assembly, removal)
     assert bool(ok)
     species = list(spec.model.species_ids)
@@ -298,6 +299,18 @@ def test_the_account_and_the_untouched_rows():
         assert np.all(np.abs(ledgers[name]) <= bound_), name
     assert np.all(np.abs(ledgers["population_abundance_entity"]) <= 1e-9)
     assert np.all(np.abs(ledgers["local"][row]) <= 1e-20)
+
+
+def test_an_initial_pool_missing_from_the_account_fails_the_chain_ledger():
+    """The plant leaves the declared initial units in transit out of the account (D232's W5
+    ruling): the chain ledger is off by them."""
+    spec, model, op, state, p = case_world("shared")
+    _, assembly, removal, _, _ = CASES["shared"]
+    p = p._replace(unit_route_initial_units=np.zeros_like(p.unit_route_initial_units))
+    new, _ = step(op, state, p, assembly, removal)
+    ledgers = model.balances(new, p)
+    bound_ = op.own_bounds(op.own_magnitudes(new, p, xp=np), 1)[0]
+    assert np.max(np.abs(ledgers["unit_chain"])) > 1e6 * np.max(bound_)
 
 
 def test_a_moved_amount_booked_twice_fails_the_conversion_ledger():
@@ -387,6 +400,22 @@ REFUSALS = {
         "neutral species only",
     ),
     "unknown key": (lambda b: b["routes"][0].update(stray=1), "stray"),
+    "initial pools not a list": (
+        lambda b: b["routes"][0].update(initial_pool_units=0.0),
+        "initial_pool_units is an explicit list of its 2 maturation pools",
+    ),
+    "initial pools of the wrong length": (
+        lambda b: b["routes"][0].update(initial_pool_units=[1.0]),
+        "initial_pool_units is an explicit list of its 2 maturation pools",
+    ),
+    "a negative initial pool": (
+        lambda b: b["routes"][0].update(initial_pool_units=[1.0, -1.0]),
+        "initial_pool_units entry must be finite and nonnegative",
+    ),
+    "initial pools left out": (
+        lambda b: b["routes"][0].pop("initial_pool_units"),
+        "initial_pool_units",
+    ),
 }
 
 
@@ -528,8 +557,10 @@ def test_a_d152_reaction_on_the_precursor_and_an_in_step_mover_are_refused(monke
 
 def test_turnover_supplies_the_precursor_and_the_bound_reads_the_supply():
     routes, controls = base_routes()
+    routes[0]["initial_pool_units"] = [300.0, 200.0]  # Counted in the bound (D232's W5 ruling).
     raw = fx.with_supply(definition(routes, controls), [(0.0, 0.0), (0.015, 1e-3)])
     spec = parse_spec(raw)  # Two writers of one row, admitted (Q3).
+    assert parse_spec(composite_spec.to_dict(spec)).model.operators == spec.model.operators
     laws = [d.law for d in spec.model.operators]
     assert laws.index(fx.TURNOVER) < laws.index(put.LAW_ID)
     declaration = spec.model.operators[laws.index(put.LAW_ID)]
@@ -538,7 +569,7 @@ def test_turnover_supplies_the_precursor_and_the_bound_reads_the_supply():
     area = next(m for m in spec.model.membranes if m.id == kir.membrane_id).area_m2
     row = list(spec.model.species_ids).index(fx.PRECURSOR)
     pool = spec.model.cells[0].initial_amount_fmol[row] + 1e-3 * spec.experiment.end_time
-    units = kir.abundance * area * fx.DENSITY + (6.02214076e23 * 1e-15 / 4) * pool
+    units = kir.abundance * area * fx.DENSITY + 500.0 + (6.02214076e23 * 1e-15 / 4) * pool
     got = next(c for c in checked.model.channels if c.id == "kir_0").abundance
     assert got == pytest.approx(units / (area * fx.DENSITY), rel=1e-15)
 
