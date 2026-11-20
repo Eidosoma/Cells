@@ -39,6 +39,20 @@ def same_instant(a, b):
     return abs(a - b) <= ROUNDING_ULPS * math.ulp(max(abs(a), abs(b)))
 
 
+GRID_ID = "zero_anchored_event_split"  # The run manifests' name for this clock.
+
+
+def manifest_numerics(spec):
+    """The clock's entries in a run manifest's numerics (records/io.py and records/window_io.py):
+    its name, and with declared fine windows their method (numerics.fine_windows), so a manifest
+    without the block keeps its bytes."""
+    entries = {"grid": GRID_ID}
+    windows = getattr(spec, "fine_windows", None)
+    if windows is not None:
+        entries["fine_windows"] = windows.method
+    return entries
+
+
 def require_scalar_path(spec, admitted):
     """Refuse declared fine windows off the scalar runner and its windows. admitted: the caller is
     that path (runner.timeline and windows._plan_windows_metadata pass the flag with which they
