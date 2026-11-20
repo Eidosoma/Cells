@@ -29918,12 +29918,80 @@
    "size": {
     "shape": "sphere",
     "across_um": [
-     17.18
+     10
     ],
+    "held": true,
+    "words": "near the size of a HeLa nucleus inside the cell",
+    "file": "data/catalogue/held_sizes.json",
     "label": "Nucleus",
     "text": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
     "sources": [
      "human:lherbette2017"
+    ],
+    "why": "The picture is drawn at the size inside the cell, smaller than these nuclei, which were measured taken out of the cell."
+   }
+  },
+  {
+   "id": "lysosome",
+   "species": "human",
+   "label": "Lysosome",
+   "named": {
+    "text": "Human's species file: its cell holds lysosomes.",
+    "part": "lysosome",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.56
+    ],
+    "label": "Lysosome",
+    "text": "single lysosomes of HeLa cells, each measured on its own by electron microscopy guided by fluorescence: one “a spherical shape with an approximate diameter of 560 nm” (0.56 µm), others 0.56 × 0.56 × 0.51 µm, 0.55 × 0.58 × 0.62 µm and 0.66 × 0.69 × 0.50 µm. These are single examples, not a measure of many",
+    "sources": [
+     "human:loginov2022"
+    ]
+   }
+  },
+  {
+   "id": "copi-vesicle",
+   "species": "human",
+   "label": "COPI vesicle",
+   "named": {
+    "text": "Human's species file: its cell holds COPI vesicles.",
+    "part": "copi-vesicle",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.126
+    ],
+    "label": "COPI vesicle",
+    "text": "dots containing COPI (coatomer) in HeLa cells, seen by STED fluorescence microscopy and sized by fitting each image (a 2D Lorentzian), were 126 ± 15 nm (0.126 µm), n = 181: an apparent size from a light microscope's fit, not an electron microscope's; COPI vesicles made in vitro measured 114 ± 11 nm (n = 64) the same way",
+    "sources": [
+     "human:pellett2013"
+    ]
+   }
+  },
+  {
+   "id": "peroxisome",
+   "species": "human",
+   "label": "Peroxisome",
+   "named": {
+    "text": "Human's species file: its cell holds peroxisomes.",
+    "part": "peroxisome",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.1,
+     1
+    ],
+    "label": "Peroxisome",
+    "text": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
+    "sources": [
+     "human:wikipedia-peroxisome"
     ]
    }
   },
@@ -29947,7 +30015,7 @@
     "part": "golgi",
     "file": "data/species/human.json"
    },
-   "no_size": "Looked for on 20 November 2026: the width of a cisterna or of a stack of the Golgi apparatus in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026: the width of a cisterna or of a stack of the Golgi apparatus in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape. One paper read gives a stack of transfected HeLa cells 4.9 ± 1.4 cisternae (Dunlop and others 2017, Nature Communications 8:432), and no stack's width."
   },
   {
    "id": "mitochondrion",

@@ -483,6 +483,39 @@
    ]
   },
   {
+   "id": "lysosome",
+   "label": "Lysosome",
+   "group": "organelles",
+   "drawn_at": "lysosome",
+   "plain": "A sac of digestive enzymes in an acid lumen, bounded by one membrane, where the cell breaks down what it takes in and its own worn parts.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "copi-vesicle",
+   "label": "COPI vesicle",
+   "group": "organelles",
+   "drawn_at": "copi vesicle",
+   "plain": "A small vesicle coated with coatomer (COPI) that carries cargo between the Golgi's cisternae and back to the endoplasmic reticulum.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "peroxisome",
+   "label": "Peroxisome",
+   "group": "organelles",
+   "drawn_at": "peroxisome",
+   "plain": "A small organelle of one membrane where fatty acids are broken down and hydrogen peroxide is made and destroyed.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
    "id": "tat-translocase",
    "label": "Tat translocase",
    "group": "membranes",
@@ -4226,10 +4259,31 @@
    "class": "permissive",
    "accessed": "2026-11-20"
   },
+  "human:loginov2022": {
+   "text": "Loginov SV and others (2022) Correlative Organelle Microscopy: Fluorescence Guided Volume Electron Microscopy of Intracellular Processes. Frontiers in Cell and Developmental Biology 10:829545. Sections 3.3 (the spherical lysosome), 3.4 and 3.5. Read as Europe PMC full text PMC9035751.",
+   "doi": "10.3389/fcell.2022.829545",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:pellett2013": {
+   "text": "Pellett PA and others (2013) Inter-Golgi transport mediated by COPI-containing vesicles carrying small cargoes. eLife 2:e01296. Results, “Inter-Golgi transport intermediates are the size of COPI vesicles and contain coatomer”; Methods, “Size measurement method”. Read as Europe PMC full text PMC3787390.",
+   "doi": "10.7554/eLife.01296",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
   "human:shami2021": {
    "text": "Shami GJ and others (2021) Three-dimensional ultrastructure of giant mitochondria in human non-alcoholic fatty liver disease. Scientific Reports 11:3319. Results, the sentence that begins “On average GM were 3.5 × longer”, which gives the widths and lengths of the giant (GM) and normal (NM) mitochondria; the Methods give the data as total means ± S.D. combining the measurements from each patient, four cells from each (16 cells in total). Read on the journal's page.",
    "doi": "10.1038/s41598-021-82884-z",
    "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:wikipedia-peroxisome": {
+   "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
+   "url": "https://en.wikipedia.org/wiki/Peroxisome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
    "class": "permissive",
    "accessed": "2026-11-20"
   },
@@ -4283,6 +4337,13 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "planarian:dutta2025": {
+   "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
+   "doi": "10.3389/fcell.2025.1611516",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
   },
   "syn3a:genbank": {
    "text": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2, annotation of 12 April 2018.",
@@ -4345,7 +4406,7 @@
   "human": {
    "file": "catalogue/human.json",
    "machines": 33,
-   "organelles": 4
+   "organelles": 7
   },
   "mouse": {
    "file": "catalogue/mouse.json",

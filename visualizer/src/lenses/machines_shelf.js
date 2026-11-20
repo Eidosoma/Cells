@@ -34,6 +34,12 @@ export const MODELS = {
   mitochondrion: { part: "mitochondria", hue: "bioMito", mode: "schematic", sets: "capsule", one: true, words: "one mitochondrion as the Cell view draws those cut open at the cell's surface: its outer membrane opened from above, its matrix and the folds of its inner membrane" },
 };
 
+/**
+ * An organelle the Cell view has no model of stands as a plain shape at its size (a sphere, or a capsule where its size gives a
+ * length), as a machine with a size and no structure does: an illustration. Its colour, a token of the page's palette.
+ */
+export const PLAIN = { lysosome: "bioSignal", "copi-vesicle": "bioGolgi", peroxisome: "bioFuel", "early-endosome": "bioWound", centriole: "edge" };
+
 /** The size an organelle is drawn at, in the view's units (one is ten nanometres), from its catalogue entry's size; null where none is in hand. */
 export function drawnSize(size) {
   if (!size) return null;

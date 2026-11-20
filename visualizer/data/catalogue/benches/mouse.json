@@ -14725,7 +14725,7 @@
     "part": "nucleus",
     "file": "data/species/mouse.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026: a nucleus of whole primary mouse beta cells was read (102 to 150 µm³, Müller and others, J Cell Biol 220:e202010039, CC BY 4.0), but the mouse's species file is built by its own tool, which does not yet carry it; until it does, a card, not a shape."
   },
   {
    "id": "endoplasmic-reticulum",

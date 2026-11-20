@@ -15,6 +15,7 @@ import { Catalogue, CATALOGUE_FORMAT, pageId, kindOf } from "../src/lenses/machi
 import { describe, describePart, sections, doorsFor, doorWords, textSections, textDescribe, present, recordLines, levelsOf, lookedFor } from "../src/lenses/machines_card.js";
 import { layoutOf, shapeOf, UNIT_NM, CARD } from "../src/lenses/machines_layout.js";
 import { MachinesLens, MARKS } from "../src/lenses/machines.js";
+import { organelles as organellesOfCell } from "../src/lenses/cell_structures.js";
 
 const read = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
 // The catalogue's core (what the page carries) and its species' benches (read beside the page), read together here.
@@ -1064,7 +1065,7 @@ test("a kind's forms stand in its panel and are no machines; the vault says each
 // About 0.2 s: it builds the human's organelles once with the Cell view's own builders (no WebGL), to hold their sizes.
 test("the organelles on the shelf: no machines, sized by their species' file's facts, drawn by the Cell view's models, and said with the map's status", () => {
   const shelf = catalogue.organellesOf("human");
-  assert.deepEqual(shelf.map((item) => item.id), ["organelle:nucleus", "organelle:endoplasmic-reticulum", "organelle:golgi-apparatus", "organelle:mitochondrion"]);
+  assert.deepEqual(shelf.map((item) => item.id), ["organelle:nucleus", "organelle:lysosome", "organelle:copi-vesicle", "organelle:peroxisome", "organelle:endoplasmic-reticulum", "organelle:golgi-apparatus", "organelle:mitochondrion"]);
   assert.ok(catalogue.of("human").every((item) => !item.organelle) && catalogue.counts("human").machines === catalogue.of("human").length, "no organelle is a machine or in a count of machines");
   const human = read("data/species/human.json");
   for (const item of shelf.filter((value) => value.size)) {
@@ -1075,8 +1076,9 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
   assert.ok(shelf.filter((value) => !value.size).every((item) => /^Looked for on \d+ [A-Z][a-z]+ \d{4}: /.test(item.entry.no_size)), "one with no size says what was looked for");
   for (const item of shelf) {
     const panel = describe(catalogue, "human", item.id, { scene });
-    const map = scene.entities.find((entity) => entity.id === item.kind.map_part), status = scene.statuses.find((value) => value.id === map.status);
-    assert.equal(panel.sections[0].items[0].detail, status.label, `${item.id}: the map's own status of its part, read from the scene`);
+    const map = scene.entities.find((entity) => entity.id === item.kind.map_part), status = map && scene.statuses.find((value) => value.id === map.status);
+    if (map) assert.equal(panel.sections[0].items[0].detail, status.label, `${item.id}: the map's own status of its part, read from the scene`);
+    else assert.match(panel.note, /^No part of the map stands at it/, `${item.id}: nothing said of what Cells models of it`);
     // The map's own words are quoted as the map's; the files it rests on are named as they are, headings and all.
     const words = JSON.stringify({ ...panel, sources: [] }).replace(/In the map's own words: “[^”]*”/g, "");
     assert.ok(!CLAIMED.test(words), `${item.id}: ${words.match(CLAIMED)?.[0]}`);
@@ -1084,7 +1086,16 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
   const { lens } = lensFor("human");
   const drawn = lens.ensureShelf().layout.items;
   const at = (id) => drawn.find((entry) => entry.id === id);
-  assert.ok(Math.abs(at("organelle:nucleus").w - 1718) < 2, `the nucleus 17.18 µm across: ${at("organelle:nucleus").w}`);
+  assert.ok(Math.abs(at("organelle:nucleus").w - 1000) < 2, `the nucleus drawn 10 µm across, by its held size: ${at("organelle:nucleus").w}`);
+  // An organelle the Cell view has no model of: a plain shape at its size (the lysosome's single example, 0.56 µm; the peroxisome at
+  // the middle of an encyclopedia's range); listed in the species' file's `cell.parts.shelf`, which the Cell view does not read.
+  assert.ok(at("organelle:lysosome").type === "shape" && Math.abs(at("organelle:lysosome").w - 56) < 0.5 && Math.abs(at("organelle:peroxisome").w - 55) < 0.5);
+  assert.deepEqual(organellesOfCell(human.cell.parts), ["er", "golgi", "mitochondria"], "the Cell view's own list of what it draws is as it was");
+  // The page says the nucleus's drawn size and its basis in words; no number of the held paper, its name or its licence's class.
+  const nucleusPanel = JSON.stringify(describe(catalogue, "human", "organelle:nucleus", { scene }));
+  const held = read("data/catalogue/held_sizes.json").species.human.nucleus;
+  assert.ok(/Drawn about 10 µm across, near the size of a HeLa nucleus inside the cell, on a published measurement that the project's files cite and this page does not show/.test(nucleusPanel) && /visualizer\/data\/catalogue\/held_sizes.json/.test(nucleusPanel));
+  for (const word of [held.source.doi, "Iida", "510 ± 121", "non-commercial"]) assert.ok(!nucleusPanel.includes(word), word);
   assert.ok(Math.abs(at("organelle:mitochondrion").w - 118) < 1 && Math.abs(at("organelle:mitochondrion").h - 55) < 1, "the mitochondrion 1.18 µm long and 0.55 µm wide");
   assert.deepEqual(drawn.filter((entry) => entry.type === "card").map((entry) => entry.id), ["organelle:endoplasmic-reticulum", "organelle:golgi-apparatus"]);
   assert.ok(lens.shelf.root.visible === false && lens.cost().triangles < 40000, "at the bench's stop the shelf is not drawn, and the bench costs what it did");
@@ -1092,7 +1103,7 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
   // Every bench, a row each (20 November 2026, round 2): the organelles its species' cell holds, sized where a permissive number was read,
   // else a card that says what was looked for; a species whose cell holds none has no shelf, no rail and no page scale bar.
   const ROWS = {
-    human: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    human: ["nucleus", "lysosome", "copi-vesicle", "peroxisome", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     mouse: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],

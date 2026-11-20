@@ -1,0 +1,30 @@
+{
+ "format": "cells.visualizer.held_sizes@1",
+ "note": "Sizes that set how an organelle is drawn on the Machines view's shelf and rest on a paper whose licence is non-commercial: held here, in the project's files, and never carried by the page. tools/build_catalogue.py reads this file and writes into a bench only the size drawn and the words for its basis; the scene, the benches, the catalogue's core and every file the export publishes carry none of these numbers and no name of these papers (tests/licence_classes.test.mjs). The contract is schema/MACHINE_CATALOGUE.md, \"Organelles\".",
+ "decided": "On 20 November 2026 the owner ruled that numbers from papers under non-commercial licences may be cited in the project's files and may set how a thing is drawn, and are not shown in the page.",
+ "species": {
+  "human": {
+   "nucleus": {
+    "shape": "sphere",
+    "drawn_um": [10],
+    "page_words": "near the size of a HeLa nucleus inside the cell",
+    "read": {
+     "by": "the visualizer coordinator",
+     "on": "2026-11-20",
+     "as": "Europe PMC full text PMC9166292",
+     "results": "“The nuclear volume increased 2.47 times from G1 (510 ± 121 μm3) to late S-G2 phase (1263 ± 129 μm3)”",
+     "figure": "The legend of Fig. 3E: “means ± SE”; mean volumes 658 μm3 (asynchronous, n = 32 cells), 510 μm3 (G1, n = 36 cells), 1263 μm3 (late S-G2, n = 37 cells)",
+     "method": "Formaldehyde-fixed HeLa cells, DAPI-stained nuclei, confocal image stacks, surfaces by Imaris (its Methods, “Nuclear volume measurement”)"
+    },
+    "working": "Ours, not the paper's: a sphere of 510 μm3 is 9.9 µm across and one of 658 μm3 is 10.8 µm; drawn 10 µm.",
+    "source": {
+     "text": "Iida S and others (2022) Science Advances 8:eabn5626. Read by the visualizer coordinator as Europe PMC full text PMC9166292 on 20 November 2026.",
+     "doi": "10.1126/sciadv.abn5626",
+     "licence": "“Creative Commons Attribution NonCommercial License 4.0”, as the article states",
+     "class": "non-commercial",
+     "accessed": "2026-11-20"
+    }
+   }
+  }
+ }
+}

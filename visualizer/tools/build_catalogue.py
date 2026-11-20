@@ -186,12 +186,31 @@ def organelle_entry(item, entry, species, species_file, species_path, where, cit
     parts = species_file["cell"].get("parts") or {}
     named = item.get("named") or {}
     part = named.get("part")
-    held = bool(parts.get("nucleus")) if part == "nucleus" else part in (parts.get("organelles") or [])
+    # Held where the species' file says so: the nucleus, its `organelles` (which the Cell view draws), or its `shelf` (organelles the
+    # Cell view does not draw, which stand on the Machines view's shelf alone and which the Cell view ignores).
+    held = bool(parts.get("nucleus")) if part == "nucleus" else part in (parts.get("organelles") or []) or part in (parts.get("shelf") or [])
     if not part or not held or not named.get("words"):
         raise Breach(f"{where}: an organelle is named by its species' file's cell.parts, with its words: {part!r} is not held there")
     out = {**entry, "named": {"text": f"{species_file['label']}'s species file: its cell holds {named['words']}.", "part": part, "file": rel(species_path)}}
     size = item.get("size")
-    if size and "part" in size:
+    if size and "held" in size:
+        # A size that rests on a paper under a non-commercial licence (the owner's ruling of 20 November 2026): read from the held file,
+        # which the page never carries; into the bench go only the size drawn, the words for its basis and the file's path.
+        held_path = ROOT / "data" / "catalogue" / "held_sizes.json"
+        held_file = read(held_path)
+        if held_file.get("format") != "cells.visualizer.held_sizes@1":
+            raise Breach(f"{rel(held_path)} is not cells.visualizer.held_sizes@1")
+        entry_held = ((held_file.get("species") or {}).get(species) or {}).get(size["held"])
+        keys = ORGANELLE_SIZES.get(size.get("shape"))
+        if not entry_held or not keys or entry_held.get("shape") != size["shape"] or size.get("across_um") != entry_held.get("drawn_um"):
+            raise Breach(f"{where}: the held file gives no size {size['held']!r} of this shape drawn at {size.get('across_um')}")
+        if (entry_held.get("source") or {}).get("class") != "non-commercial":
+            raise Breach(f"{where}: a held size rests on a non-commercial source; a permissive one belongs in the species' file")
+        out["size"] = {"shape": size["shape"], "across_um": size["across_um"], "held": True, "words": entry_held["page_words"], "file": rel(held_path)}
+        if size.get("fact"):
+            found = fact(species_file, size["fact"], where)
+            out["size"].update({"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), **({"why": size["fact_why"]} if size.get("fact_why") else {})})
+    elif size and "part" in size:
         # The size its species' file states for that part of its cell (cell.parts.organelle_sizes), with its sources: never a second number.
         stated = ((parts.get("organelle_sizes") or {}).get(size["part"]) or {})
         if size.get("shape") not in ORGANELLE_SIZES or "across_um" not in stated:

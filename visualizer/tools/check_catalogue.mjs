@@ -880,6 +880,103 @@ try {
       return { loupe: lens.loupe, label: lens.loupe ? lens.item(lens.loupe.organelle)?.label || null : null, view: lens.loupe ? lens.organelleView(lens.loupe.organelle).distance : null, magnified: labels.find((text) => /magnified/.test(text)) || null, actual: labels.find((text) => /at its true size/.test(text)) || null }; })()`);
     check("a real press on the proteasome's door Hold it beside the nucleus holds it in a loupe beside the nucleus; the travel ends at the shelf, where it is named at its true size and magnified", Boolean(door) && loupe.loupe?.machine === "machine:proteasome" && loupe.loupe?.organelle === "organelle:nucleus" && Boolean(loupe.label) && door.words.toLowerCase().includes(loupe.label.toLowerCase()) && s.stop === "shelf" && s.band === "shelf" && !s.travel && Math.abs(s.d - loupe.view) <= 0.02 * loupe.view && Boolean(loupe.magnified) && Boolean(loupe.actual), JSON.stringify({ door, doors, loupe, s }));
     await shot(`${NAME}-loupe`);
+    // 6b. Leaving the loupe (asked for on 20 November 2026): its panel's first door, the label's own control, Escape, a stop of the rail.
+    const holdAgain = async () => {
+      await evaluate(`${V}.select("machine:proteasome", { fly: true })`);
+      await settle();
+      const again = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => button.textContent.startsWith("Hold it beside the"))`);
+      if (again) await click(again.x, again.y, 900);
+      await settle();
+      return Boolean(again) && (await evaluate(`Boolean(${V}.current.loupe)`));
+    };
+    const firstDoor = (await state()).doors[0] || "";
+    const control = await placeOf(`root.querySelector('[data-loupe="off"]')`);
+    if (control?.x) await click(control.x, control.y, 900);
+    await settle();
+    s = await at();
+    const back = await evaluate(`(() => { const lens = ${V}.current; return { loupe: lens.loupe, selected: ${V}.state.selected, stop: lens.stop }; })()`);
+    check("leaving the loupe: its panel's first door reads Put it back on the bench, and a real press on the label's own control (Put it back) ends it: the proteasome still chosen, the camera at the bench", /^Put it back on the bench/.test(firstDoor) && Boolean(control?.x) && !back.loupe && back.selected === "machine:proteasome" && back.stop === "bench" && s.d < 0.2 * s.shelf, JSON.stringify({ firstDoor, control, back, s }));
+    const heldForEscape = await holdAgain();
+    await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door button")][0]?.focus()`);
+    await page("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    await page("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+    await sleep(700);
+    const afterEscape = await evaluate(`Boolean(${V}.current.loupe)`);
+    let afterStop = null, heldForStop = null;
+    if (!narrow) {
+      // On a wide window, with the panel open the rail is folded behind its button: a real press on the button, then on the bench's stop.
+      heldForStop = await holdAgain();
+      await press(".rail-toggle");
+      await sleep(400);
+      await press('.rail button[data-stop="bench"]');
+      await settle();
+      afterStop = await evaluate(`({ loupe: Boolean(${V}.current.loupe), stop: ${V}.current.stop })`);
+    }
+    check("Escape ends the loupe where the camera stands; on a wide window a real press on a stop of the rail ends it and travels there", heldForEscape && !afterEscape && (narrow || (heldForStop && afterStop && !afterStop.loupe && afterStop.stop === "bench")), JSON.stringify({ heldForEscape, afterEscape, heldForStop, afterStop }));
+    // 6c. A chosen organelle stays drawn and in the frame (the owner's finding of 20 November 2026: the mitochondrion, chosen, vanished,
+    // since the shelf was drawn by the camera's distance alone): by its name above the bench, the List, the address and a press on it at
+    // the shelf; at once, three seconds later, and after the panel is closed.
+    const drawnAt = (id) => evaluate(`(() => { const v = ${V}, lens = v.current, h = lens.shelf?.holders.get(${JSON.stringify(id)})?.holder; if (!h) return { drawn: false };
+      let shown = true; for (let n = h; n; n = n.parent) if (!n.visible) shown = false;
+      const b = { min: [Infinity, Infinity], max: [-Infinity, -Infinity] }, p = lens.root.position.clone();
+      const e = lens.shelf.layout.items.find((item) => item.id === ${JSON.stringify(id)});
+      for (const x of [e.x - e.w / 2, e.x + e.w / 2]) for (const y of [0, e.h]) for (const z of [e.z - e.d / 2, e.z + e.d / 2]) { const q = v.stage.project(p.set(x, y, z), p.clone()); b.min = [Math.min(b.min[0], q.x), Math.min(b.min[1], q.y)]; b.max = [Math.max(b.max[0], q.x), Math.max(b.max[1], q.y)]; }
+      const { left = 0, right = 0, bottom = 0 } = v.stage.insets || {};
+      return { drawn: shown, inside: b.min[0] >= left - 2 && b.max[0] <= v.stage.width - right + 2 && b.min[1] >= 0 && b.max[1] <= v.stage.height - bottom + 2, box: b.min.concat(b.max).map(Math.round) }; })()`);
+    const twice = async (id) => { const now = await drawnAt(id); await sleep(3000); const later = await drawnAt(id); return { now, later, ok: now.drawn && now.inside && later.drawn && later.inside }; };
+    const ways = {};
+    for (const id of ["organelle:mitochondrion", "organelle:lysosome"]) {
+      // By its name above the bench (a wide window shows every name; a phone only the first, so there the List's way stands in).
+      await evaluate(`${V}.select(null)`);
+      await evaluate(`${V}.current.goToScale("bench", true)`);
+      await sleep(900);
+      const name = narrow ? null : await placeOf(`root.querySelector('[data-label="${id}"]')`);
+      if (name?.x) await click(name.x, name.y, 900);
+      else await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
+      await settle();
+      ways[`${id} by its name`] = await twice(id);
+      await evaluate(`${V}.select(null)`);
+      await sleep(900);
+      ways[`${id} after the panel closed`] = await twice(id);
+      // By the List (the page's select with a flight, as a row of the List does).
+      await evaluate(`${V}.current.goToScale("bench", true)`);
+      await sleep(600);
+      await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
+      await settle();
+      ways[`${id} by the List`] = await twice(id);
+      // By a real press on it at the shelf's stop.
+      await evaluate(`${V}.select(null)`);
+      await evaluate(`${V}.current.goToScale("shelf", true)`);
+      await sleep(900);
+      const spot = await evaluate(`(() => { const v = ${V}, e = v.current.shelf.layout.items.find((i) => i.id === ${JSON.stringify(id)}); const p = v.current.root.position.clone().set(e.x, e.h / 2, e.z + e.d * 0.4); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y, id: v.stage.pick(r.left + q.x, r.top + q.y, v.current.pickRoots)?.id || null }; })()`);
+      if (spot.id === id) await click(spot.x, spot.y, 900);
+      await settle();
+      ways[`${id} by a press at the shelf`] = { ...(await twice(id)), pressed: spot.id };
+    }
+    // By the address.
+    await open("lens=machines&entry=human&select=organelle:mitochondrion");
+    await settle();
+    ways["organelle:mitochondrion by the address"] = await twice("organelle:mitochondrion");
+    check("a chosen organelle stays drawn and inside the picture's free area, at once and three seconds later, chosen by its name above the bench, by the List, by a press on it at the shelf (and after its panel is closed), and by the address: the mitochondrion and the lysosome", Object.values(ways).every((way) => way.ok), JSON.stringify(ways));
+    // 6d. A group frames its tray (asked for on 20 November 2026): from the shelf's stop, a real press on a group's row of the legend (else
+    // the card's Group) travels down and ends with that tray inside the picture's free area at the bench's scale; All groups, the bench.
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.goToScale("shelf", true)`);
+    await sleep(900);
+    const row = await placeOf(`root.querySelector("cells-legend .swatch-mach-g-atp")?.closest("button")`);
+    if (row?.x) await click(row.x, row.y, 900);
+    else await evaluate(`${V}.current.setMark("atp")`);
+    await settle();
+    const tray = await evaluate(`(() => { const v = ${V}, lens = v.current, t = lens.layout.trays.find((item) => item.group === "atp"), p = lens.root.position.clone(); const xs = [], ys = [];
+      for (const x of [t.x - t.w / 2, t.x + t.w / 2]) for (const z of [t.z - t.d / 2, t.z + t.d / 2]) { const q = v.stage.project(p.set(x, 0, z), p.clone()); xs.push(q.x); ys.push(q.y); }
+      const { left = 0, right = 0, bottom = 0 } = v.stage.insets || {}; const bar = v.shadowRoot.querySelector(".scalebar-text")?.textContent || "";
+      return { inside: Math.min(...xs) >= left - 2 && Math.max(...xs) <= v.stage.width - right + 2 && Math.min(...ys) >= 0 && Math.max(...ys) <= v.stage.height - bottom + 2, wide: Math.round(Math.max(...xs) - Math.min(...xs)), bar, stop: lens.stop }; })()`);
+    await evaluate(`${V}.current.setMark("all")`);
+    await settle();
+    const all = await evaluate(`(() => { const v = ${V}, lens = v.current, b = lens.layout.bounds, p = lens.root.position.clone(); const xs = [], ys = [];
+      for (const x of [b.minX, b.maxX]) for (const z of [b.minZ, b.maxZ]) { const q = v.stage.project(p.set(x, 0, z), p.clone()); xs.push(q.x); ys.push(q.y); }
+      return { inside: Math.min(...xs) >= -2 && Math.max(...xs) <= v.stage.width + 2 && Math.min(...ys) >= 0 && Math.max(...ys) <= v.stage.height + 2 }; })()`);
+    check("from the shelf's stop, a press on a group (Making ATP) travels down and frames its tray in the picture's free area at the bench's scale; All groups frames the whole bench", Boolean(row?.x || narrow) && tray.inside && tray.wide > 120 && /nm$/.test(tray.bar) && tray.stop === "bench" && all.inside, JSON.stringify({ row, tray, all }));
     // 7. Less motion: the rail's stop is reached at once, with no travel.
     await media([{ name: "prefers-color-scheme", value: theme }, { name: "prefers-reduced-motion", value: "reduce" }]);
     await open("lens=machines&entry=human", 2500);

@@ -215,7 +215,15 @@
   "loop": "planarian-loop--planarian-b08af640"
  },
  "cell": {
-  "facts": [],
+  "facts": [
+   {
+    "label": "Nucleus",
+    "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+    "sources": [
+     "dutta2025"
+    ]
+   }
+  ],
   "parts": {
    "membranes": 1,
    "wall": false,
@@ -235,6 +243,13 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "dutta2025": {
+   "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
+   "doi": "10.3389/fcell.2025.1611516",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
   }
  }
 }

@@ -25,7 +25,7 @@ import { catalogueOf, describe as describeItem, describePart, sections as listSe
 import { h } from "../ui/dom.js";
 import { loadShape, buildShape } from "./machine_shape.js";
 import { layoutOf, bodiesAt, membraneOf, partOfChain, shelfOf, CARD, TRAY, BENCH, UNIT_NM, SHELF } from "./machines_layout.js";
-import { organelleModels, placeModel, scaleFor, drawnSize, paintModel, MODELS as SHELF_MODELS } from "./machines_shelf.js";
+import { organelleModels, placeModel, scaleFor, drawnSize, paintModel, MODELS as SHELF_MODELS, PLAIN } from "./machines_shelf.js";
 
 /** The look this view asks of the stage (core/look.js), as the Laws library's: natural colours under filmic light. */
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
@@ -338,6 +338,14 @@ export class MachinesLens {
     const placed = [], made = new Map();
     for (const item of this.organelles) {
       const model = models.get(item.kind.id), scale = model ? scaleFor(model, drawnSize(item.size)) : null;
+      // No model in the Cell view, a size in hand: a plain shape at that size (a sphere, or a capsule where it has a length).
+      const plain = !model && item.size ? drawnSize(item.size) : null;
+      if (plain?.across) {
+        const long = plain.long || plain.across;
+        made.set(item.id, { plain: { across: plain.across, long } });
+        placed.push({ id: item.id, item, w: long, d: plain.across, h: plain.across });
+        continue;
+      }
       if (!scale) {
         placed.push({ id: item.id, item });
         continue;
@@ -356,7 +364,17 @@ export class MachinesLens {
     const holders = new Map();
     for (const entry of layout.items) {
       const own = made.get(entry.id);
-      if (own) {
+      if (own?.plain) {
+        const { across, long } = own.plain;
+        const geometry = long > across ? new THREE.CapsuleGeometry(across / 2, long - across, 8, 24).rotateZ(Math.PI / 2) : new THREE.SphereGeometry(across / 2, 32, 20);
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.05 }));
+        mesh.material.userData = { own: true, plain: true, hue: PLAIN[entry.item.kind.id] || "ghost" };
+        (this.shelfCards ??= new Set()).add(mesh.material);
+        mesh.position.set(entry.x, across / 2, entry.z);
+        mesh.userData.pick = entry.id;
+        root.add(mesh);
+        holders.set(entry.id, { holder: mesh });
+      } else if (own) {
         const { holder } = placeModel(own.model, { scale: own.scale, turn: FACING[entry.item.kind.id] || 0, at: new THREE.Vector3(entry.x, 0, entry.z) });
         holder.userData.pick = entry.id;
         paintModel(own.model, this.stage.palette || {});
@@ -401,7 +419,15 @@ export class MachinesLens {
   placeShelfVisibility() {
     if (!this.shelf) return;
     const distance = this.stage.rig?.distance;
-    this.shelf.root.visible = this.organelles.length > 0 && distance !== undefined && (distance > 1.6 * this.benchView().distance || Boolean(this.travel && this.travel.to.distance > this.travel.from.distance));
+    // Drawn while the camera stands well out from the bench, while it travels up, while an organelle is chosen, and while it looks at
+    // the shelf from any distance (a small organelle framed close brings it as near as the bench's own stop: 20 November 2026).
+    this.shelf.root.visible = this.organelles.length > 0 && distance !== undefined && (distance > 1.6 * this.benchView().distance || Boolean(this.travel && this.travel.to.distance > this.travel.from.distance) || Boolean(organelleKind(this.selected)) || this.lookingAtShelf());
+  }
+
+  /** Whether the camera looks at the shelf: its target lies behind the bench's back edge, where the shelf stands. */
+  lookingAtShelf() {
+    const target = this.stage.rig?.target;
+    return Boolean(this.shelf && this.layout && target && target.z < this.layout.bounds.minZ - SHELF.gap / 2);
   }
 
   /** The views of the bench's and the shelf's stops, for the screen as it is (kept until the insets, the size or the layout change). */
@@ -510,6 +536,8 @@ export class MachinesLens {
       return;
     }
     if (!["bench", "shelf"].includes(id) && !/^nm\d+$/.test(id || "")) return;
+    this.endLoupe(); // a stop of the rail leaves the loupe
+    this.focused = null; // and supersedes a framing still waiting on a panel's insets (a phone's sheet closing after a choice)
     this.stop = id;
     if (this.active) this.travelTo(this.homeView(), { immediate });
     this.onChrome?.();
@@ -563,7 +591,7 @@ export class MachinesLens {
     this.lastDistance = distance;
     this.placeShelfVisibility();
     const { bench, shelf } = this.layout ? this.stopViews() : {};
-    const band = shelf && distance > Math.sqrt(bench.distance * shelf.distance) ? "shelf" : "bench";
+    const band = shelf && (distance > Math.sqrt(bench.distance * shelf.distance) || this.lookingAtShelf()) ? "shelf" : "bench";
     if (band !== this.band) {
       this.band = band;
       this.buildLabels();
@@ -990,7 +1018,7 @@ export class MachinesLens {
     if (id === BENCH_ID) return this.describeBench();
     if (organelleKind(id)) {
       const panel = describeItem(this.catalogue, this.species, id, { scene: this.model.raw, drawn: this.drawnWords(id) });
-      return panel ? { ...panel, doors: [...(panel.doors || []), ...this.loupeDoors(id)] } : null;
+      return panel ? { ...panel, doors: this.withLoupeDoors(panel.doors, id) } : null;
     }
     const owner = this.partOf(id);
     if (owner && this.built.get(owner)?.measured) return describePart(this.catalogue, this.species, owner, id.slice(owner.length + 1), { scene: this.model.raw });
@@ -1006,12 +1034,19 @@ export class MachinesLens {
     const panel = describeItem(this.catalogue, this.species, id, { scene: this.model.raw, level: built?.level ?? null });
     // Where its shape file could not be read, its "Its shape" line says why instead (the card's words say what it is).
     if (panel && built?.surfaceWords) panel.facts = (panel.facts || []).map((fact) => (fact[0] === "Its shape" ? ["Its shape", built.surfaceWords] : fact));
-    return panel ? { ...panel, doors: [...(panel.doors || []), ...this.loupeDoors(id)] } : panel;
+    return panel ? { ...panel, doors: this.withLoupeDoors(panel.doors, id) } : panel;
+  }
+
+  /** A panel's doors with the loupe's: its way back first while a machine is held, else the way in after the panel's own. */
+  withLoupeDoors(doors = [], id) {
+    const loupe = this.loupeDoors(id);
+    return loupe[0]?.value === "loupe:off" ? [...loupe, ...doors] : [...doors, ...loupe];
   }
 
   /** How an organelle is drawn, in words: the Cell view's own model of it, and which of its widths the paper's size sets. */
   drawnWords(id) {
     const item = this.item(id), model = SHELF_MODELS[item?.kind?.id];
+    if (!model && item?.size) return `A plain ${item.size.long_um ? "capsule" : "sphere"} at the size above: the Cell view has no model of it. An illustration, at the bench's one scale.`;
     if (!model) return item ? "No model of it in the Cell view: a card on the shelf, not to scale." : null;
     if (!item.size) return `No size in hand: a card on the shelf, not to scale. The Cell view draws it as ${model.words}.`;
     const sets = {
@@ -1059,18 +1094,44 @@ export class MachinesLens {
       const organelle = sized.find((item) => item.id === this.lastOrganelle) || sized[0];
       if (!(this.loupe?.machine === id && this.loupe?.organelle === organelle.id)) doors.push({ label: `Hold it beside the ${organelle.label.toLowerCase()}, in a loupe`, lens: "machines", value: `loupe:${id}@${organelle.id}` });
     }
-    if (this.loupe && (this.loupe.machine === id || this.loupe.organelle === id)) doors.push({ label: "Put the loupe away", lens: "machines", value: "loupe:off" });
+    // While a machine is held, the way back stands first: it ends the loupe and puts the machine back on the bench, still chosen.
+    if (this.loupe && (this.loupe.machine === id || this.loupe.organelle === id)) return [{ label: "Put it back on the bench", lens: "machines", value: "loupe:off" }];
     return doors;
+  }
+
+  /**
+   * Ends the loupe where the visitor goes (Escape, the panel closed, a stop of the rail, the bench's mark, anything else chosen):
+   * the speck and the lens are taken away, and the camera goes where it was asked to, or stays.
+   */
+  endLoupe() {
+    if (!this.loupe) return false;
+    this.lastLoupe = this.loupe;
+    this.loupe = null;
+    this.buildLoupe();
+    this.buildLabels();
+    this.onOpen?.();
+    return true;
+  }
+
+  /** "Put it back": the loupe ends, and the machine is chosen on the bench and travelled to. */
+  putBack() {
+    const held = this.loupe || this.lastLoupe;
+    this.endLoupe();
+    if (!held) return;
+    this.stop = "bench";
+    this.onShown?.(held.machine);
+    this.focus(held.machine);
+  }
+
+  /** Escape: the loupe ends first, where the camera stands; otherwise the page's own Escape. */
+  escape() {
+    return this.endLoupe();
   }
 
   /** A machine held beside an organelle (`machine@organelle`), or the loupe put away (`off`): the camera travels to it. */
   holdLoupe(spec) {
     if (spec === "off") {
-      const organelle = this.loupe?.organelle;
-      this.loupe = null;
-      this.buildLoupe();
-      this.buildLabels();
-      if (organelle) this.onShown?.(organelle);
+      this.putBack();
       return;
     }
     const [machine, organelle] = String(spec).split("@");
@@ -1412,15 +1473,32 @@ export class MachinesLens {
   shelfLabels(labels) {
     this.shelf.layout.items.forEach((entry, index) => labels.add({ id: entry.id, text: entry.item.label, anchor: new THREE.Vector3(entry.x, entry.h + 8, entry.z + (entry.type === "card" ? 0 : entry.d * 0.1)), priority: 800, kind: "part", lift: 6 + (index % 2) * 28 }));
     const range = this.benchRange(), bounds = this.layout.bounds;
-    labels.add({ id: BENCH_ID, text: `↓ The bench: ${this.counts.machines.toLocaleString("en-US")} machines${range ? `, ${lengthWords(range[0])} to ${lengthWords(range[1])}` : ""}`, anchor: new THREE.Vector3(0, 4, (bounds.minZ + bounds.maxZ) / 2), priority: 900, kind: "part", lift: 6 });
+    labels.add({ id: BENCH_ID, text: `↓ The bench: ${this.counts.machines.toLocaleString("en-US")} machines${range ? `, ${lengthWords(range[0])} to ${lengthWords(range[1])}` : ""}`, anchor: new THREE.Vector3(0, 4, (bounds.minZ + bounds.maxZ) / 2), priority: 900, kind: "part", lift: (this.stage.width || 1600) >= 761 ? 44 : 6 }); // on a wide window lifted clear of the hint line at the picture's foot; on a phone low, where it would cover the small organelles above the bench
     const info = this.loupeInfo;
     if (info && this.loupeGroup) {
       labels.add({ id: info.entry.id, text: `${info.entry.item.label}, at its true size`, anchor: info.speckAt.clone().setY(info.entry.h + 2), priority: 1200, kind: "part", lift: 10 });
-      labels.add({ text: `In the loupe: magnified ${info.factor.toLocaleString("en-US")} times`, anchor: info.lensAt.clone().add(new THREE.Vector3(0, 4, info.radius)), priority: 1300, kind: "part", lift: 4 });
+      const lens = labels.add({ text: `In the loupe: magnified ${info.factor.toLocaleString("en-US")} times · Put it back ×`, anchor: info.lensAt.clone().add(new THREE.Vector3(0, 4, info.radius)), priority: 1300, kind: "part", lift: 4 });
+      // The label is the loupe's own control: a press, Enter or Space puts the machine back on the bench.
+      const element = lens?.element;
+      if (element?.addEventListener) {
+        element.setAttribute("role", "button");
+        element.tabIndex = 0;
+        element.setAttribute("aria-label", "Put it back on the bench: end the loupe");
+        element.dataset.loupe = "off";
+        element.addEventListener("click", () => this.putBack());
+        element.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            this.putBack();
+          }
+        });
+      }
     }
   }
 
   setSelection(id) {
+    // Choosing anything but what the loupe holds, or letting go (the panel closed), ends the loupe.
+    if (this.loupe && id !== this.loupe.machine && id !== this.loupe.organelle) this.endLoupe();
     // An organelle on the shelf, or the bench as a stop: chosen, and the camera travels to it (a press on its name, the List).
     if (id === BENCH_ID || organelleKind(id)) {
       const before = this.selected;
@@ -1481,7 +1559,16 @@ export class MachinesLens {
 
   setHover() {}
 
-  setIsolate() {}
+  /**
+   * The legend's rows (the page's isolate): a group's row frames that group's tray, as the card's Group does; the organelles' row
+   * travels to the shelf. Asked for on 20 November 2026 ("Making ATP" should zoom in to the right level).
+   */
+  setIsolate(id) {
+    if (!this.active || !id) return;
+    if (id === SWATCH.organelle && this.organelles.length) this.goToScale("shelf");
+    const group = /^mach-g-(.+)$/.exec(id)?.[1];
+    if (group) this.setMark(group);
+  }
 
   /** The card's Detail: the level a chosen machine with a closer view is drawn at. */
   setMode(value) {
@@ -1501,8 +1588,12 @@ export class MachinesLens {
     this.focusGroup = value && value !== "all" ? value : null;
     this.onChrome?.();
     if (!this.active) return;
+    // Framed on the bench, from wherever the camera stands (from the shelf it travels down, each power of ten in the same time).
+    this.endLoupe();
+    this.stop = "bench";
     const tray = this.layout.trays.find((item) => item.group === this.focusGroup);
     if (tray) this.flyToBox(new THREE.Box3(new THREE.Vector3(tray.x - tray.w / 2, 0, tray.z - tray.d / 2), new THREE.Vector3(tray.x + tray.w / 2, 4, tray.z + tray.d / 2)));
+    else if (this.organelles.length) this.travelTo(this.benchView());
     else this.stage.rig?.flyTo?.(this.homeView(), 900);
   }
 
@@ -1604,7 +1695,7 @@ export class MachinesLens {
     this.materials.bench.color.copy(tone(palette.dark ? palette.bg : palette.plate, "#eef2f5"));
     this.materials.scale.color.copy(tone(palette.fg, "#12283a"));
     // A shelf's card: the organelle's own colour of the Cell view, light, so that it stands out on the shelf and reads as no shape.
-    for (const material of this.shelfCards || []) material.color.copy(tone(palette[material.userData.hue] || palette.ghost)).lerp(tone(palette.bg, "#ffffff"), 0.45);
+    for (const material of this.shelfCards || []) material.color.copy(tone(palette[material.userData.hue] || palette.ghost)).lerp(tone(palette.bg, "#ffffff"), material.userData.plain ? 0 : 0.45);
     if (this.loupeInfo) this.materials.loupeBody.color.copy(tone(palette[GROUP_HUE[this.loupeInfo.entry.group]] || palette.ghost));
     this.materials.loupeFrame?.color.copy(tone(palette.fg, "#12283a"));
     this.materials.loupeGlass?.color.copy(tone(palette.accent, "#1f6fd0"));

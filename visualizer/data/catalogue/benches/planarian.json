@@ -20424,7 +20424,18 @@
     "part": "nucleus",
     "file": "data/species/planarian.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     3,
+     4
+    ],
+    "label": "Nucleus",
+    "text": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+    "sources": [
+     "planarian:dutta2025"
+    ]
+   }
   },
   {
    "id": "endoplasmic-reticulum",

@@ -232,6 +232,17 @@ catalogue never says their count.
   - *How it is drawn*: the Cell view's own model of it, built by the Cell view's builders (`src/lenses/machines_shelf.js`, `MODELS`)
     and scaled so that the one measure its size sets (a width, a sheet's thickness, a cisterna's width) is the paper's; every other
     proportion is the Cell view's, and the panel says so. An illustration.
+  - *A held size* (the owner's ruling of 20 November 2026: numbers from papers under non-commercial licences may be cited in the
+    project's files and may set how a thing is drawn, and are not shown in the page). `size: { held, shape, across_um, fact?, fact_why? }`
+    names an entry of `data/catalogue/held_sizes.json` (`cells.visualizer.held_sizes@1`: the paper's number as read, by whom and
+    where, its source of class `non-commercial`, and the working, said as ours, to `drawn_um`). The tool checks the drawn size against
+    it and writes into the bench only the size drawn, the held file's words for its basis and its path; the panel says "Drawn about
+    … across, <words>, on a published measurement that the project's files cite and this page does not show", links the held file at
+    the viewer's revision, and gives a permissive source's own measure where the entry names a `fact`, with why the picture differs.
+    No file the page carries holds the held paper's numbers, name or source (`tests/licence_classes.test.mjs`).
+  - *A plain shape*: an organelle the Cell view has no model of (the lysosome, a COPI vesicle, the peroxisome) is named by the species'
+    file's `cell.parts.shelf`, a list the Cell view does not read, and stands as a sphere (or a capsule where its size gives a length)
+    at its size, as a machine with a size and no structure does: an illustration, and its panel says so.
   - *Where machines sit in it*: not stated. The catalogue states no `where` for a machine, so no organelle lists machines.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
