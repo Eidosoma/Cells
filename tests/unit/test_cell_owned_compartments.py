@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import ClassVar
 
+import numpy as np
 import pytest
 
 from cells.definitions import pump_composite_spec as cs
@@ -48,6 +49,7 @@ from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 from cells.registry.models import get_model
 from tests import kind_fixtures
+from validation.fr7 import unit_turnover_fixtures as ufx
 from validation.tissue import compartment_fixtures as cfx
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -1255,6 +1257,103 @@ def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
     assert {comp.STATE_LAW, "scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
 
 
+# ------------------------------------------------------------------ FR-7's releasing compartment
+
+PRODUCER, EXCHANGE = "population_unit_turnover@1", "scheduled_species_exchange@1"
+KAPPA = 0.5  # 1/s: the release's rate constant out of the compartment, synthetic.
+
+
+def producing(*, release=True):
+    """FR-7's U2 world in miniature (validation/fr7/unit_turnover_fixtures): the unit producer on
+    kir_0 with species_regulated_availability@2 routing the template onto its assembly rate, a
+    compartment of the cell holding template, and with `release` an exchange import releasing it
+    into the cell at KAPPA."""
+    raw = ufx.with_producer(
+        ufx.cell(end=END), [ufx.route("kir_units", "kir_0")], {"kir_units": [(0.0, 0.02, 0.01)]}
+    )
+    raw = ufx.with_compartment(ufx.with_template_route(raw), amounts_fmol={ufx.TEMPLATE: 1e-5})
+    if release:
+        raw = ufx.with_release(raw, [(0.0, ufx.release_velocity(KAPPA))])
+    return raw
+
+
+def entry(law, writes=()):
+    """An entry of the composite's (operator, declaration, schedule) list for the wall's rule."""
+    return SimpleNamespace(LAW_ID=law, ENTITY_WRITES=dict.fromkeys(writes, ())), None, ()
+
+
+def test_the_unit_producer_and_coupling_v2_compose_beside_a_compartment():
+    """The lead's rulings of 20 November 2026 (FR-7's U2 world with a releasing compartment,
+    D217): the producer and the coupling's version 2 are on the admitted list, and the wall's door
+    admits membrane state beside a compartment when its only writers are trafficking or the
+    producer, which writes units only. Planted: membrane state with no admitted writer, and a
+    third writer of its fields beside the producer, each refused with its reason."""
+    for release in (False, True):
+        spec = parse_spec(producing(release=release))
+        laws = [d.law for d in spec.model.operators]
+        assert laws[:4] == [comp.STATE_LAW, "species_regulated_availability@2", PRODUCER, LAW]
+        assert (EXCHANGE in laws) is release
+    assert {PRODUCER, "species_regulated_availability@2"} <= set(ADMITTED_AT_IMPORT)
+    units = "population_abundance_increment"
+    comp.refuse_unwritten_state([entry(comp.STATE_LAW), entry(PRODUCER, [units])])
+    with pytest.raises(ConfigError, match=rf"only together with {comp.TRAFFICKING_LAW} or"):
+        comp.refuse_unwritten_state([entry(comp.STATE_LAW), entry(LAW)])
+    for field in comp.STATE_FIELDS:
+        writers = [entry(comp.STATE_LAW), entry(PRODUCER, [field]), entry("a_writer@1", [field])]
+        with pytest.raises(ConfigError, match=rf"a_writer@1 writes its {field} \(fails closed\)"):
+            comp.refuse_unwritten_state(writers)
+        comp.refuse_unwritten_state(writers[:2])
+
+
+def test_exchange_reads_the_current_area_beside_membrane_state():
+    """D191's current-area read (the lead's ruling of 20 November 2026): beside membrane state,
+    which provides the areas, exchange is a door S view reader and its import takes the view's
+    area at the half-step; at a zero increment that is the declared area, so the half-step is
+    bitwise the declared-area one, and a doubled area doubles the rate constant. With no provider
+    (W) it receives no view (C1). Planted: a second patch joining a route's cell and node is
+    refused where a provider is composed, and admitted without one."""
+    spec = parse_spec(producing())
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    exchange = next(op for op in model.operators if op.LAW_ID == EXCHANGE)
+    assert exchange in model.view_readers
+    assert not get_model(parse_spec(w()).model).view_readers
+    control = SimpleNamespace(
+        exchange_rate=np.array([ufx.release_velocity(KAPPA)]), exchange_saturation_mM=np.zeros(1)
+    )
+    h = 0.5e-3
+    viewed, ok = model._half_step(exchange, state, h, control, p, xp=np)
+    declared, ok_declared = exchange.half_step(state, h, control, p, xp=np)
+    assert ok and ok_declared
+    for name, a, b in zip(type(state)._fields, viewed, declared, strict=True):
+        assert np.asarray(a).tobytes() == np.asarray(b).tobytes(), name
+    species = list(spec.model.species_ids).index(ufx.TEMPLATE)
+    node = [o.id for o in spec.model.extracellular].index(ufx.NODE)
+    held = float(np.asarray(p.extracellular_amount_reference)[species, node])
+    slot = [m.id for m in spec.model.membranes].index(ufx.BOUNDING)
+    increment = np.zeros_like(np.asarray(state.membrane_area_increment_m2))
+    increment[slot] = np.asarray(p.membrane_area)[slot]  # The bounding patch at twice its area.
+    doubled, ok = model._half_step(
+        exchange, state._replace(membrane_area_increment_m2=increment), h, control, p, xp=np
+    )
+    moved = -float(np.asarray(doubled.exchange_moved_fmol)[0])
+    assert ok and abs(moved - held * -np.expm1(-2 * KAPPA * h)) <= 1e-14 * moved
+    twin = fx.world(
+        cells=(("cell_0", 1.0),),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_0", "ecs_0")),
+        faces=(("face_0", "ecs_0", "bath", 1e-10, 1e-5),),
+        concentrations_mM=dict(cell_0=1e-3, ecs_0=5e-4),
+    )
+    twin = fx.with_exchange(
+        twin, [("take", "contact_0", "import", "first_order")], [("take", "cell_0", [(0.0, 1e-4)])]
+    )
+    parse_spec(twin)  # The declared area: no lookup by the pair.
+    twin["model"]["operators"].insert(0, dict(law=comp.STATE_LAW, populations=[]))
+    with pytest.raises(ConfigError, match=r"'contact_0' is one of 2 declared patches joining"):
+        parse_spec(twin)
+
+
 # ------------------------------------------------------------------ refusal 5, version 1.2
 
 # Version 1.1's message, as FR-1's judged refusal record (run-05a8d193, C1_refusals) holds it.
@@ -1376,6 +1475,12 @@ STRUCTURE_ADMITTED = (
     ("scheduled_cell_replacement@1",),
     ("scheduled_bath_composition@1",),
     (STATE,),  # Its areas and capacitances are reference reads; the definition wants trafficking.
+    # FR-7's U2 world with a releasing compartment (the lead's rulings of 20 November 2026): the
+    # coupling's version 2, the unit producer, and exchange reading the areas current (D191).
+    ("species_regulated_availability@2",),
+    (STATE, "population_unit_turnover@1"),
+    (STATE, "scheduled_species_exchange@1"),
+    (STATE, "population_unit_turnover@1", "scheduled_species_exchange@1"),
 )
 
 

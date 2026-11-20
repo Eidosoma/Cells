@@ -7741,3 +7741,46 @@ the order of that landing is put to the user.
 6. the gap-junction pricing note;
 7. FR-21's design note;
 8. further origin-of-life building.
+
+## D239: FR-23 to FR-26 join the high-priority feature requests; the bath recipe's six-order regression
+
+2026-11-20, about 17:24 UTC. The user pasted a verified bug report and four feature requests, and
+said "high priority feature request".
+
+**The bug:** `scheduled_bath_composition@1`'s per-species running sum loses a small dose between
+large opposite contributions, so its result depends on order. In a 1 pL bath, "+24, −24, +2⁻⁴⁹ mM"
+records 2⁻⁴⁹ fmol, but "+24, +2⁻⁴⁹, −24" records 0.
+- **The fix**, already in hand (`math.fsum` per species, D148 in place; no registered world
+  changes), gains the user's regression test: all six orders give the exact expected target and
+  dose.
+
+**The requests** are logged in docs/FEATURE_REQUESTS.md at high priority, beside FR-20 to FR-22
+(D237):
+- **FR-23:** timed bath changes beside binding sites on distinct finite nodes;
+- **FR-24:** binding-site occupancy as an input to reaction rates;
+- **FR-25:** a reusable one-gene expression unit, folded into gene regulation's option A (D235);
+- **FR-26:** owned state when a cell is replaced.
+
+Each becomes a design note before code (D142) and a general feature (D144).
+
+## D240: FR-20's design approved; the user runs FR-7's data search
+
+2026-11-20, about 17:37 UTC. The user, on the lead's two questions: "1. Small new operator as you
+suggest", "2. I'm doing the search myself".
+
+1. **FR-20, the pulse and washout: the design note's recommendation is approved**
+   (docs/ASSEMBLY_WASHOUT_DESIGN.md). A new operator, `cells.pool_replacement@1`: a host stop that
+   draws nothing, keeps every assembly as it stands, and replaces the pool from a declared source. It
+   records the old pool to the sink and the fresh pool from its source, with their free energies,
+   and gives relations a pool node. The note's five answers:
+   - **Q1:** the wash bath has the pool's own volume.
+   - **Q2:** a pulse is a replacement with tracer-containing solution, not an addition.
+   - **Q3:** a held tracer concentration is refused.
+   - **Q4:** the transfer's osmotic refusal is kept as it is.
+   - **Q5:** the name is `cells.pool_replacement@1`.
+
+   The cost is about 2–2.5 agent-days. The origin-of-life builder builds it now, ahead of its own
+   repairs (D237's priority). An exposed site that binds in one step is FR-21's ground.
+2. **FR-7's measured response (D238 item 4): the user does the search for an openly licensed
+   dataset of measured channel lifetimes.** The agents' search was stopped by a safeguard and is
+   not retried by any route. FR-7's item 4 waits for the user's source.

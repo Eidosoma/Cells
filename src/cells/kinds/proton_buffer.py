@@ -748,6 +748,32 @@ def _general_change(state, p, xp):
     return xp.where(xp.any(held, axis=0), xp.where(defined, change, xp.nan), 0.0)
 
 
+def free_log_sensitivity(read, p, *, xp):
+    """The general closure's d ln c_free / d n_total at a stage, for a kind's material term (the
+    kinds owner's K3b; exported through cells.modules): (D [S, S, n + o] in 1/fmol, held
+    [S, n + o]) from the read the kinds' hooks receive, D[i, k] the derivative of ln of what the
+    read writes into row i (a free ligand or a binder's free base form) by row k's stored total at
+    the same node, exactly 0 off the closure's rows and at inactive nodes
+    (rapid_binding.free_log_sensitivity_block). Its domain is a valid read's, whose held free
+    ligands are positive; an empty binder's own 1/T_B is left out there. None, decided statically,
+    where the layout holds no general closure: version 1's buffer is outside it (the lead's
+    ruling)."""
+    if not _is_general(p):
+        return None
+    amounts = _amounts(read, p, xp)
+    volume, active = _nodes(p, xp)
+    safe_v = xp.where(active, volume, 1.0)
+    nl, rows = p.binding_held.shape[0], p.binding_rows
+    held = p.binding_held & active[None, :]
+    member = p.binding_member & active[None, :]
+    free = amounts[rows] / safe_v
+    u = xp.log(xp.where(held, free[:nl], 1.0))
+    return binding.free_log_sensitivity_block(
+        u, free[nl:], p.binding_log_beta, p.binding_counts, p.binding_present, held, member,
+        safe_v, rows, amounts.shape[0], xp=xp,
+    )  # fmt: skip
+
+
 def _general_read(state, p, xp):
     """The stage's read: each held ligand row holds its free ligand x V, each held binder row its
     free base form c_base V, for the rates; every other row as stored."""

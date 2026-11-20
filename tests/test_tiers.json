@@ -261,6 +261,9 @@
   "/mnt/workspaces/Cells/fine-window-20261120/gate/gate-2f55f225/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fine-window-20261120/gate/gate-51d01264/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-09f4cb58/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-7c0947aa/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-c562be5f/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json"
  ],
  "measured_provenance": [
@@ -2201,6 +2204,30 @@
    "utc": "2026-11-20T13:48:59+00:00"
   },
   {
+   "git_revision": "7c0947aaa0e2e28d0895cac250b56c4e48c2c5ec",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-7c0947aa",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T13:20:44+00:00"
+  },
+  {
+   "git_revision": "c562be5f497605b0384418ffccf53241c3a8137e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-c562be5f/snapshot-c562be5f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T12:02:46+00:00"
+  },
+  {
+   "git_revision": "1ec77911ed2753d6f5eb2b1c8ff657263b966bae",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/snapshot-head-1ec77911",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T15:33:27+00:00"
+  },
+  {
    "git_revision": "99770fce4dce60d23d523b5b3cd1b4f3b4ae3832",
    "dirty": false,
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-99770fce",
@@ -2894,10 +2921,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 9.59,
+    "seconds": 12.79,
     "exit_code": 0,
     "counts": {
-     "passed": 199
+     "passed": 205
     }
    },
    {
@@ -4748,10 +4775,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_kernel.py",
-    "seconds": 8.59,
+    "seconds": 9.59,
     "exit_code": 0,
     "counts": {
-     "passed": 78
+     "passed": 85
     }
    },
    {
@@ -4900,7 +4927,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 4.66,
+    "seconds": 5.38,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -6119,10 +6146,10 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 34.02,
+    "seconds": 42.37,
     "exit_code": 0,
     "counts": {
-     "passed": 47
+     "passed": 49
     }
    },
    {
@@ -6648,7 +6675,7 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 20.32,
+    "seconds": 21.21,
     "exit_code": 0,
     "counts": {
      "passed": 22

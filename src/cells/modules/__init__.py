@@ -37,6 +37,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   EXPLICIT_STEP_BOUND (models/surface_pump.py);
 - the array helpers kinds use: scatter (numerics/extracellular_field.py), species_sum and
   entity_sum (numerics/species_sums.py), and physical_amounts (models/surface_tissue.py).
+- the general closure's free_log_sensitivity, d ln c_free / d n_total at a stage, for a kind's
+  material term (kinds/proton_buffer.py, the binding owner's).
 
 **Not here yet**, with the work that brings them:
 - Module, Registry and BUILTIN, and with them a registration entry, in module stage 1
@@ -117,6 +119,7 @@ HOMES = MappingProxyType(
             "host_index",
             "moved_nodes",
         ),
+        "cells.kinds.proton_buffer": ("free_log_sensitivity",),
     }
 )
 _HOME = {name: home for home, names in HOMES.items() for name in names}
@@ -184,6 +187,7 @@ __all__ = (
     "declared_hosts",
     "host_index",
     "moved_nodes",
+    "free_log_sensitivity",  # The general closure's derivative, for a kind's material term.
 )
 
 
