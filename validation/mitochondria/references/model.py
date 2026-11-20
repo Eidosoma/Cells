@@ -116,6 +116,7 @@ class Arm:
     column: str = "with"
     table: str = "e8"
     J_DH: str = "eq1"
+    J_AK: str = "eq18"
     J_C3: str = "eq24_with_eq7_proton_term"   # Q02: what the published curves were computed with
     J_F1: str = "eq11"
     J_PiHt: str = "eq16_printed"
@@ -137,7 +138,7 @@ class Arm:
 
     def label(self) -> str:
         ref = Arm.published() if self.column == "with" else Arm.without_control()
-        diff = [f"{k}={getattr(self, k)}" for k in ("table", "J_DH", "J_C3", "J_F1", "J_PiHt", "DGo_ATP_sign",
+        diff = [f"{k}={getattr(self, k)}" for k in ("table", "J_DH", "J_AK", "J_C3", "J_F1", "J_PiHt", "DGo_ATP_sign",
                                                     "cytc_volume", "H_x_row", "T")
                 if getattr(self, k) != getattr(ref, k)]
         diff += [f"{k}={v:g}" for k, v in sorted(self.overrides.items())]

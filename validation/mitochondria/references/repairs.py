@@ -117,9 +117,16 @@ COMBINED = {
                             "the arm for the user's repairs question (host P, D235): frame B (the appendix's balanced Eqs. 11 and 16, "
                             "the protons on phosphate counted), Eq. 24 restored (phi_Pi x Eq. 7), the balanced NADH supply at "
                             "reference pH 7.10; 298.15 K, matrix Mg2+ 5 mM"),
+    "host_p_question_arm_ak_base": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                                     "H_x_row": "pi_protons_counted", "J_DH": "eq1_balanced_supply",
+                                     "J_AK": "eq18_base_forms"},
+                                    {"h_ref_DH": 10.0 ** -7.10, "K_base_AK": 0.389},
+                                    "host_p_question_arm with Eq. 18 in base forms, 2 ADP3- -> ATP4- + AMP2-, K_base = 0.389 "
+                                    "(matched to K_AK = 0.4331 at free Mg2+ 3.81 mM); the effective K on totals follows the "
+                                    "IMS's free Mg2+"),
 }
 
-FULL_CHECK = ("host_p_question_arm",)
+FULL_CHECK = ("host_p_question_arm", "host_p_question_arm_ak_base")
 
 
 def process_dgs(comp, y, h):
@@ -137,6 +144,9 @@ def process_dgs(comp, y, h):
     dg["J_MgATPi"] = RT * ln(S["mATP_i"] * p["K_MgATP"] / (fATP_i * h["Mg_i"])) if min(S["mATP_i"], fATP_i) > 0 else float("nan")
     dg["J_MgADPi"] = RT * ln(S["mADP_i"] * p["K_MgADP"] / (fADP_i * h["Mg_i"])) if min(S["mADP_i"], fADP_i) > 0 else float("nan")
     dg["J_AMPt"] = RT * ln(S["AMP_i"] / h["AMP_e"]) if S["AMP_i"] > 0 and h["AMP_e"] > 0 else float("nan")
+    if comp.arm.J_AK == "eq18_base_forms":   # 2 ADP3- -> ATP4- + AMP2-, base forms at K_base
+        dg["J_AK"] = (RT * ln(fATP_i * S["AMP_i"] / (p["K_base_AK"] * fADP_i * fADP_i))
+                      if min(fATP_i, fADP_i, S["AMP_i"]) > 0 else float("nan"))
     return dg
 
 
@@ -430,6 +440,16 @@ def table(runs: Path, out: Path):
                   "dissipation_random_states_binding_at_equilibrium", "dissipation_random_states_binding_random"):
             if k in f:
                 row.setdefault("full_check", {})[k] = f[k]
+        if key == "host_p_question_arm_ak_base" and "sweeps" in f and (runs / "host_p_question_arm.json").exists():
+            q = json.loads((runs / "host_p_question_arm.json").read_text())
+            row["departure_from_host_p_question_arm"] = departure(f, q)
+            run_ = R.Runner(M.Arm.published(**sw, overrides=dict(ov)), mg_x_total=MG_RECOMMENDED)
+            row["ims_free_mg_mM"] = {st: {f"{pi:g}": 1e3 * run_.held(ADP_e=adp, Pi_e=pi * 1e-3)["Mg_i"] for pi in R.PI_KNOTS}
+                                     for st, adp in (("state4", 0.0), ("state3", 1.3e-3))}
+            p_ = run_.comp.params
+            mg3 = run_.held(ADP_e=1.3e-3)["Mg_i"]
+            row["effective_K_on_totals_state3"] = (p_["K_base_AK"] * (1 + mg3 / p_["K_MgATP"])
+                                                   / (1 + mg3 / p_["K_MgADP"]) ** 2)
         rows.append(row)
     doc = {"kind": "cells.validation.mito_reference_repairs@1",
            "base": "MR1's published arm (2006 Table 1; Eq. 24 restored; Eqs. 11 and 16 printed; 298.15 K) at the recommended matrix Mg2+ total, 5 mM; matrix charge anchored to Fig. 4D's pH at [Pi]e = 0",
