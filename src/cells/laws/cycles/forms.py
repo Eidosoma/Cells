@@ -194,7 +194,24 @@ class Reference(NamedTuple):
 class CitedConstant(NamedTuple):
     """A rate constant's log built at parse from a cited standard free energy at pH 7 (kJ/mol)
     and its scalar protons' offset to the 1 M basis, at the world's temperature T (the lead's
-    ruling 7): log k = offset - scale (1000 dg_kj_mol / (R T) + protons ln 1e7)."""
+    ruling 7): log k = offset - scale (1000 dg_kj_mol / (R T) + protons ln 1e7 + rt_term). Its mode
+    emits the cited value as its seam-E entry. rt_term is a temperature-free part in RT units, such
+    as -ln K of an equilibrium constant cited dimensionless (the kinase's K_base), so the entry
+    carries it unrounded (the law modules' addition (b), 20 November 2026)."""
+
+    dg_kj_mol: float
+    protons: int = 0
+    scale: float = 1.0
+    offset: float = 0.0
+    rt_term: float = 0.0
+
+
+class RateConstant(NamedTuple):
+    """A rate-only constant (the lead's ruling 3 on the law modules, 20 November 2026): its log is
+    built at the world's T as a CitedConstant's, log k = offset - scale (1000 dg_kj_mol / (R T) +
+    protons ln 1e7), but it emits no seam-E entry, and it is admitted only as a monomial mode's log
+    k. So it scales S and never enters x, which stays entirely the registry's: the synthase's
+    Delta G°_ATP, cited at pH 7 on total phosphate, is such a constant inside its forward term."""
 
     dg_kj_mol: float
     protons: int = 0
@@ -202,9 +219,19 @@ class CitedConstant(NamedTuple):
     offset: float = 0.0
 
 
+class Scaled(NamedTuple):
+    """A factor term's K from a positive population parameter, in the form's units: factor x
+    value^power (1e-3 turns a constant printed in mM into M; power -1 a constant that divides, as
+    1 + c/k). The law modules' addition (a): Table 1's two columns differ in such constants."""
+
+    parameter: str
+    factor: float = 1.0
+    power: int = 1
+
+
 class MonomialTerm(NamedTuple):
-    """One term of a monomial factor's sum: K prod a_r^q e^(eta psi), K a positive number or a
-    positive parameter's name, each q and eta a number or an Affine."""
+    """One term of a monomial factor's sum: K prod a_r^q e^(eta psi), K a positive number, a
+    positive parameter's name or a Scaled one, each q and eta a number or an Affine."""
 
     k: object
     orders: tuple = ()  # ((Reference, q), ...)
@@ -220,14 +247,17 @@ class MonomialFactor(NamedTuple):
 
 
 class MonomialRate(NamedTuple):
-    """One mode's S (module docstring): log k (a number or a CitedConstant), the orders ((Reference,
-    o), ...), zeta, the factors and the affinity share n."""
+    """One mode's S (module docstring): log k (a number, a CitedConstant or a RateConstant), the
+    orders ((Reference, o), ...), zeta, the factors and the affinity share n; and `constants`, each
+    a positive parameter (its name or a Scaled one) that multiplies S, so a source's fitted
+    constant is a population's value, never the law's (D144): log k gains sum ln K."""
 
     log_k: object = 0.0
     orders: tuple = ()
     zeta: object = 0.0
     factors: tuple = ()
     share: int = 1
+    constants: tuple = ()
 
 
 class MonomialForm(NamedTuple):
@@ -588,6 +618,9 @@ def _resolved_monomial(form, values):
         if _named(value):
             named.append(value)
             return float(values[value])
+        if isinstance(value, Scaled):
+            named.append(value)
+            return value.factor * float(values[value.parameter]) ** value.power
         return value
 
     def orders(pairs):
@@ -601,7 +634,10 @@ def _resolved_monomial(form, values):
 
     rates = tuple(
         r._replace(
-            orders=orders(r.orders), zeta=number(r.zeta), factors=tuple(map(factor, r.factors))
+            orders=orders(r.orders),
+            zeta=number(r.zeta),
+            factors=tuple(map(factor, r.factors)),
+            constants=tuple(map(constant, r.constants)),
         )
         for r in form.monomial.rates
     )
@@ -1067,24 +1103,43 @@ def monomial_errors(form):
     def cited_ok(k):
         return (
             isinstance(k, CitedConstant)
+            and all(map(_finite, (k.dg_kj_mol, k.scale, k.offset, k.rt_term)))
+            and _int(k.protons)
+        )
+
+    def rate_only_ok(k):
+        return (
+            isinstance(k, RateConstant)
             and all(map(_finite, (k.dg_kj_mol, k.scale, k.offset)))
             and _int(k.protons)
         )
 
+    def k_ok(value):
+        if isinstance(value, Scaled):
+            p = by_name.get(value.parameter)
+            return (
+                p is not None
+                and p.positive
+                and _finite(value.factor)
+                and value.factor > 0
+                and _int(value.power)
+                and value.power != 0
+            )
+        k = by_name.get(value) if _named(value) else None
+        return (_finite(value) and value > 0) or (k is not None and k.positive)
+
     def term_ok(x):
         if not isinstance(x, MonomialTerm):
             return False
-        k = by_name.get(x.k) if _named(x.k) else None
-        positive = (_finite(x.k) and x.k > 0) or (k is not None and k.positive)
-        return positive and orders_ok(x.orders) and exponent_ok(x.eta)
+        return k_ok(x.k) and orders_ok(x.orders) and exponent_ok(x.eta)
 
     for (mode_id, _), rate in zip(form.modes, m.rates, strict=True):
         where = f"mode {mode_id}"
         if not isinstance(rate, MonomialRate):
             out.append(f"{where}'s rate is a MonomialRate")
             continue
-        if not (_finite(rate.log_k) or cited_ok(rate.log_k)):
-            out.append(f"{where}: log k is a finite number or a CitedConstant")
+        if not (_finite(rate.log_k) or cited_ok(rate.log_k) or rate_only_ok(rate.log_k)):
+            out.append(f"{where}: log k is a finite number, a CitedConstant or a RateConstant")
         if not orders_ok(rate.orders):
             out.append(
                 f"{where}: its orders are distinct (Reference, exponent) pairs on its roles and "
@@ -1094,7 +1149,28 @@ def monomial_errors(form):
             out.append(f"{where}: zeta is a finite number or an Affine of a parameter")
         if not (_int(rate.share) and 1 <= rate.share <= MAX_SHARE):
             out.append(f"{where}: its share is an integer from 1 to {MAX_SHARE}")
+        if not (
+            isinstance(rate.constants, tuple)
+            and all((_named(c) or isinstance(c, Scaled)) and k_ok(c) for c in rate.constants)
+        ):
+            out.append(
+                f"{where}: its constants are positive parameters, each by its name or Scaled, "
+                "never a number (a source's fitted value is a population's, D144)"
+            )
         factors = rate.factors if isinstance(rate.factors, tuple) else (None,)
+        constants = (RateConstant, CitedConstant)
+        if any(
+            isinstance(term.k, constants)
+            for f in factors
+            if isinstance(f, MonomialFactor) and isinstance(f.terms, tuple)
+            for term in f.terms
+            if isinstance(term, MonomialTerm)
+        ):
+            out.append(
+                f"{where}: a RateConstant or a CitedConstant is a mode's log k only, never a "
+                "factor's K (a rate-only constant scales S and never enters x)"
+            )
+            continue
         for f in factors:
             if not (
                 isinstance(f, MonomialFactor)
@@ -1106,7 +1182,8 @@ def monomial_errors(form):
                 out.append(
                     f"{where}: each factor is a MonomialFactor, its power a number or an Affine "
                     "and its terms one or more MonomialTerms (K positive, a number or a positive "
-                    "parameter; distinct orders on its roles; eta a number or an Affine)"
+                    "parameter, plain or Scaled; distinct orders on its roles; eta a number or an "
+                    "Affine)"
                 )
     return out
 
@@ -1146,6 +1223,7 @@ def expand_rate(rate, read, log_k):
       the term's only total, refused otherwise (ValueError, the kind's parse turns it into a
       refusal)."""
     orders, factors = {}, []
+    log_k += sum(math.log(c) for c in rate.constants)  # Resolved: each a positive number.
     for reference, o in rate.orders:
         found = read(reference)
         base = found[0]

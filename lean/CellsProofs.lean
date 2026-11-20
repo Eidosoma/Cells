@@ -4,6 +4,9 @@ import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
+import CellsProofs.Chemistry.MitochondrialCycles
+import CellsProofs.Chemistry.MitochondrialStall
+import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
@@ -15,11 +18,14 @@ import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CellReplacement
 import CellsProofs.Tissue.CurrentInjection
+import CellsProofs.Tissue.DivisionBridge
 import CellsProofs.Tissue.MembraneInsertion
+import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Tissue.RestrictedLumen
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation
+import CellsProofs.Transport.ConditionedVoltage
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.ElectrogenicPumps
 import CellsProofs.Transport.InwardRectifier

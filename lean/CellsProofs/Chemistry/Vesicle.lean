@@ -173,6 +173,22 @@ theorem refinement_outcome (count weight : S → ℕ) (r : ℕ) {q q' : ℝ} (sc
   rw [area_refine count weight r scale]
   simp
 
+/-- A vesicle that passed the strict threshold cannot newly rupture while every
+later check sees tension at or below the original value. Its own threshold is fixed. -/
+theorem no_new_rupture {Time : Type*} {initial limit : ℝ} {stress : Time → ℝ}
+    (intact : ¬ limit < initial) (hold : ∀ t, stress t ≤ initial) (t : Time) :
+    ¬ limit < stress t := not_lt.mpr ((hold t).trans (le_of_not_gt intact))
+
+/-- Any time-independent surviving fraction misses at least one of two
+readings by at least half their observed fall. -/
+theorem fixed_survival_error (early late prediction : ℝ) :
+    (early - late) / 2 ≤ max |early - prediction| |late - prediction| := by
+  have h₁ := (le_abs_self (early - prediction)).trans
+    (le_max_left |early - prediction| |late - prediction|)
+  have h₂ := (neg_le_abs (late - prediction)).trans
+    (le_max_right |early - prediction| |late - prediction|)
+  linarith
+
 end
 
 end CellsProofs.Chemistry.Vesicle
