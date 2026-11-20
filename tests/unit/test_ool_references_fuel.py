@@ -22,9 +22,9 @@ from fractions import Fraction as Fr
 import numpy as np
 import pytest
 
+from validation.ool.references.common import RecordFormatError
 from validation.ool.references.detailed_balance import reference_table
 from validation.ool.references.fuel import bistability as BI
-from validation.ool.references.fuel import chem as C
 from validation.ool.references.fuel import design as DS
 from validation.ool.references.fuel import kernel as K
 from validation.ool.references.fuel import ledger as LG
@@ -33,8 +33,6 @@ from validation.ool.references.fuel import standin as SI
 from validation.ool.references.fuel import stationary as ST
 from validation.ool.references.fuel import vesicle as V
 from validation.ool.references.fuel.law import FuelLaw, parse_fuel_world
-from validation.ool.references.common import RecordFormatError
-
 
 # ---------------------------------------------------------------------------- registration
 

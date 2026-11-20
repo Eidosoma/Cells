@@ -23,7 +23,13 @@ import numpy as np
 
 from ..common import RecordFormatError
 from ..records import write_manifest
-from ..ssa_oracle import SELECT_FIRST_PREFIX_GT, TAU_NEG_LOG_U1, ChannelTable, FloatRates, run_host_ssa
+from ..ssa_oracle import (
+    SELECT_FIRST_PREFIX_GT,
+    TAU_NEG_LOG_U1,
+    ChannelTable,
+    FloatRates,
+    run_host_ssa,
+)
 from . import design as DS
 from . import ledger as LG
 from . import registered as R

@@ -40,14 +40,9 @@ import math
 from fractions import Fraction as Fr
 from pathlib import Path
 
-import numpy as np
-
 from ..ol2 import N_A, Channel
 from . import chem as C
-from . import kernel as K
-from . import stationary as STAT
 from . import vesicle as V
-from .law import parse_fuel_world
 
 DESIGN_DIR = Path(__file__).resolve().parent / "designs"
 PROBE_SEED = 2026112002

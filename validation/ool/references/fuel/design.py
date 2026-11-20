@@ -21,7 +21,6 @@ import numpy as np
 
 from ..common import ALPHA, MIN_POWER, CheckResult
 from ..ledger import check_ledger
-from ..world import Conventions
 from . import bistability as BI
 from . import chem as C
 from . import kernel as K

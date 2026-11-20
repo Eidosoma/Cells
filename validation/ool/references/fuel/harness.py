@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -45,7 +44,6 @@ from . import stationary as ST
 from . import vesicle as V
 from .design import ROWS
 from .law import FuelLaw
-
 
 
 def _phys(meta: dict) -> Conventions:
@@ -129,6 +127,20 @@ def _load_vprobe(d: Path):
         return meta, {k: z[k] for k in z.files}
 
 
+def _registered_run(meta: dict, rec: dict, w, spec: dict, where: str) -> None:
+    """The run is the registered one: its world's initial state, its event count, and rows every
+    ``row_every`` events and the last (otherwise status 2: a shorter run, or one saving fewer
+    rows, would be judged at a design never registered)."""
+    if w.state_from(meta["initial_state"]) != w.state_from(w.initial_state):
+        raise RecordFormatError(f"{where}: the run does not start at the registered initial state")
+    E = len(rec["event_channel"])
+    if E != spec["max_events"]:
+        raise RecordFormatError(f"{where}: {E} events, {spec['max_events']} registered")
+    rows = sorted(set(range(0, E + 1, spec["row_every"])) | {E})
+    if [int(v) for v in np.asarray(rec["row_event"])] != rows:
+        raise RecordFormatError(f"{where}: rows are not every {spec['row_every']} events and the last")
+
+
 def row_ledger(root: Path, which: str) -> list:
     out = []
     for run_id, spec in DS.LEDGER_RUNS.items():
@@ -146,8 +158,7 @@ def row_ledger(root: Path, which: str) -> list:
         for k in ("event_channel", "row_event", "counts", "heat_kT", "work_kT", "supplied"):
             if k not in rec:
                 raise MissingRecord(f"runs/{run_id}: records.npz lacks {k}")
-        if len(rec["event_channel"]) != spec["max_events"]:
-            raise RecordFormatError(f"runs/{run_id}: {len(rec['event_channel'])} events, {spec['max_events']} registered")
+        _registered_run(meta, rec, w, spec, f"runs/{run_id}")
         n0 = w.state_from(meta["initial_state"])
         if which == "closure":
             c = LG.check_closure(law, table, n0, rec["event_channel"], rec["row_event"], rec["counts"], rec["heat_kT"],
@@ -209,11 +220,11 @@ def row_long_run(root: Path, cache: dict) -> list:
     for k in ("event_channel", "event_time", "heat_kT", "row_event", "counts"):
         if k not in rec:
             raise MissingRecord(f"runs/{spec['id']}: records.npz lacks {k}")
-    if meta.get("end_reason") != "max_events" or len(rec["event_channel"]) != spec["max_events"]:
-        return [("long_run", CheckResult("long_run", False, dict(problem="the run is not the registered one",
-                                                                  end_reason=meta.get("end_reason"),
-                                                                  events=len(rec["event_channel"]))))]
+    if meta.get("end_reason") != "max_events":
+        return [("long_run", CheckResult("long_run", False, dict(problem="the run did not end at max_events",
+                                                                  end_reason=meta.get("end_reason"))))]
     w = R.registered_world(wid)
+    _registered_run(meta, rec, w, spec, f"runs/{spec['id']}")
     law = FuelLaw(w)
     states = DS.closed_inputs(wid)
     ref = cache.setdefault(wid, ST.reference_solution(law, states))
@@ -288,6 +299,9 @@ def run_rows(root, rows=None) -> dict:
                                checks=[c.as_dict() for _, c in checks])
         except (MissingRecord, RecordFormatError) as exc:
             report[row] = dict(title=ROWS[row], passed=False, missing_or_malformed=str(exc), checks=[])
+        except (ValueError, ZeroDivisionError, RuntimeError, ArithmeticError) as exc:
+            # a record the checks cannot even evaluate (a reducible generator, a one-way edge): the row fails
+            report[row] = dict(title=ROWS[row], passed=False, error=f"{type(exc).__name__}: {exc}", checks=[])
     return report
 
 

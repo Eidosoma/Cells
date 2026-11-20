@@ -257,6 +257,8 @@ def flux_and_heat(world: World, states, a_plus, a_minus, pi, step: str = "f1") -
             if a > 0:
                 j = idx[add(n, nu)]
                 b = am[j, q_]
+                if not (b > 0 and math.isfinite(a) and math.isfinite(b)):
+                    return dict(J=J, J_forward_only=J_forward_only, heat_rate=math.inf)
                 heat += (pi[k] * a - pi[j] * b) * (math.log(a) - math.log(b))
     return dict(J=J, J_forward_only=J_forward_only, heat_rate=heat)
 
