@@ -108,6 +108,21 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-8 rung 1: C, the fine-window executor, judged and passed (20 November 2026).** Under RUNG1
+  §10.10, on H2 from 0 to 3600 s at 20 ms with a 1 ms window over [1799.98, 1802.0] s and X2 on
+  (tag `fr8-c-judged-2026-11-20`; C landed at 54cb3195, the driver at fr8-rung1 e48c14b1).
+  - **(a) Intervention reading:** H2's reading under the parity caps, with the event criteria,
+    passes on all 3,831 rows.
+    - Largest |ΔVm| 3.3 µV against 20 µV; |Δc|/c 1.4 × 10⁻⁶ against 2 × 10⁻⁴.
+    - The peak is within 0.80 µV of the 74 µV criterion's reference, and the crossing within 2.2 µs.
+  - **(b) X2:** passes with no refusal. 230 counted steps, median ratio 4.016, 2 held of 8.
+  - **(c) Gain:** 19.8 in steps over 1 ms throughout (181,919 against 3.6 × 10⁶). The timed cost
+    ratio, 13.6, is reported beside it.
+  - **N2:** I3 passed by its rules on N2 alone (badc86ac). Its plant and cap controls never reach
+    N2's implicit path, so §10.15 adds charged-world controls on H2 and W0, registered before §6 is
+    read. D238 keeps the registered gain of 10.
+  - **Records:** /mnt/workspaces/Cells/fr8-rung1-20261119/c-arm/.
+
 - **FR-7's six chain worlds, F3 against R-chain and R-clear: judged, passed (20 November 2026).**
   From a frozen snapshot of main b9d6452d (tag `fr7-chains-judged-2026-11-20`), with main's own
   references interface.
