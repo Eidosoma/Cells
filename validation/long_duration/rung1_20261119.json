@@ -984,6 +984,103 @@
    "verdict": "both pass: refused with the cap's message at k_r <= k*, no earlier refusal of another kind",
    "deviation": "I3's 200-step windows, not one 1,000-step window, to keep the cleft egg clear of the trace-budget preflight; the refusal step does not depend on the window's width",
    "then": "I3 complete under N2 alone; section 6 opens"
+  },
+  {
+   "entry": "10.19",
+   "entry_utc": "2026-11-20T21:16Z",
+   "title": "section 6 read, and the miss against D238's target recorded",
+   "arm": {
+    "world": "H2 slow phase",
+    "span_s": [
+     0,
+     1790
+    ],
+    "step_ms": 100,
+    "id": "imex_ars222_implicit_conductances_n2_alone@0",
+    "source": "a frozen merge of the driver at 10a9ad4c onto badc86ac (engine badc86ac's exactly)",
+    "rows": 180,
+    "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/stage-a/"
+   },
+   "reading": {
+    "steps": 17900,
+    "x2": {
+     "decision": "passes",
+     "counted": 8030,
+     "median_q": 3.79,
+     "held": 3,
+     "held_cap": 161,
+     "integration_error_max": 0.00078
+    },
+    "B_P": "pass at every row (voltage 0.63 uV, concentration 4.0e-5 relative; gate 6.4e-6, information)",
+    "B_A": "first breach: concentration at 10 s, 4.0e-5 against 2e-5 (the start-up), reported",
+    "today_at_100ms": "refused by its own step check on [0, 0.1] s (charge-stability ceiling)"
+   },
+   "miss": {
+    "gain_reached": 5,
+    "against": "today's 20 ms (sections 10.3, 10.8)",
+    "registered_gain": 10,
+    "why": "200 ms is not reached: from t = 0 the dissipation check refuses the third step (wrong-signed Na through nav_0); after a 100 ms start-up X2's out-of-band count refuses (876 against 114), the deficit 4 - q growing as dt (section 10.14)",
+    "not_offered": "125 ms (a tuned rung, D238)",
+    "note": "section 6 enters no dt*; N2 with (a) and N2 with C are read on their own"
+   },
+   "information": "the out-of-band start is not N2's alone; under N2 it lasts longer and lies further out (W0 at 5 ms: five steps, q 2.05-12.03, against one, q 3.26)"
+  },
+  {
+   "entry": "10.20",
+   "entry_utc": "2026-11-20T21:16Z",
+   "title": "N2 with C, a new dated arm, registered before it runs",
+   "id": "imex_ars222_implicit_conductances@1 (N2 with (a)), the final ID",
+   "source": "the first main revision carrying both C (54cb3195) and the final N2 ID, named in a dated entry at launch",
+   "order": [
+    "section 6",
+    "(a)",
+    "N2's landing with its full gate",
+    "this arm"
+   ],
+   "arm": {
+    "world": "H2",
+    "span_s": [
+     0,
+     3600
+    ],
+    "coarse_ms": 100,
+    "fine_ms": 1,
+    "window_s": [
+     1799.9,
+     1802.0
+    ],
+    "window_ends": "17999 x 0.1 and 18020 x 0.1, the grid's products",
+    "cue_off_edge": "18003 x 0.1 = 1800.3000000000002 (the grid's value)",
+    "cue_on_edge": "18000 x 0.1 = 1800.0",
+    "steps": {
+     "coarse": 35979,
+     "fine": 2100,
+     "total": 38079
+    },
+    "max_steps_at_least": 38087,
+    "rows": "R3's kept rows that are points of the arm's clock, read off EventGrid(spec)",
+    "x2": "on at the registered cap"
+   },
+   "acceptance": {
+    "a": "(I) under B_P with the event criteria, as section 10.10 (a); B_A reported",
+    "b": "X2 passes, no refusal of any kind; sensitivity standard: binding shown, eps* reported, no threshold; the plant is section 10.7's inside H2 at T = 1000 s at 100 ms",
+    "eps_star_seen": {
+     "H2 at 100 ms": 1.06e-06,
+     "W0 at 5 ms": 1.98e-06
+    },
+    "c": "step-count gain over today's 1 ms at least 10; the timed cost against H2-full-1's 0.341 s reported beside it, rows checked bitwise"
+   },
+   "predictions": {
+    "step_gain": 94.5,
+    "steps_vs_C_alone": "4.8x fewer (181,919)",
+    "cost_vs_C_alone": "about 3.8x lower (N2 adds about 26% per step)",
+    "cost_ratio_vs_1ms": 52,
+    "risk": "the first 100 ms steps after the window closes at 1802.0 s (gates changing within a coarse step, section 10.13)"
+   },
+   "record": [
+    "C's section 10.10 was judged on today's integrator at 20 ms (it passes)",
+    "the out-of-band start under N2 is information, not a criterion"
+   ]
   }
  ]
 }
