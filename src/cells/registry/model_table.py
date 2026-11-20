@@ -86,6 +86,7 @@ MODELS = MappingProxyType(
                 "cells.laws.routes.logmean_electrodiffusion",
                 "cells.laws.routes.passive_permeation",
                 "cells.laws.routes.inward_rectifier_linear_driving_force",  # The kinds owner's.
+                "cells.laws.routes.constant_field_permeation",  # FR-15 P2 (the operators owner's).
                 "cells.laws.transport.proton_leak",
                 # The transporter's two laws' modules: their declarations move in as inert LAWs
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.

@@ -243,7 +243,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-967922e6/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/mito-references-20261119/gate-a9aac583/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-f3/measured-cf7145ad/measured.json",
-  "/mnt/workspaces/Cells/kir-ratio-20261119/tiers/measured-79aa4ec4/measured.json"
+  "/mnt/workspaces/Cells/kir-ratio-20261119/tiers/measured-79aa4ec4/measured.json",
+  "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-f2cf3cfb/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2049,6 +2050,14 @@
    "root": ".claude/worktrees/kir-ratio",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T00:10:21+00:00"
+  },
+  {
+   "git_revision": "f2cf3cfbefa102f77c6c357ff89c8e1882a9a05b",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-operators-3-20261119/snapshot-head-f2cf3cfb",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T22:05:59+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2737,10 +2746,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 9.74,
+    "seconds": 9.79,
     "exit_code": 0,
     "counts": {
-     "passed": 191
+     "passed": 199
     }
    },
    {
@@ -3422,10 +3431,10 @@
    },
    {
     "file": "tests/unit/test_fr45_proton_laws.py",
-    "seconds": 2.18,
+    "seconds": 2.32,
     "exit_code": 0,
     "counts": {
-     "passed": 36
+     "passed": 40
     }
    },
    {
@@ -6203,7 +6212,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 21.92,
+    "seconds": 21.42,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -6371,10 +6380,10 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 52.38,
+    "seconds": 68.0,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 17
     }
    },
    {

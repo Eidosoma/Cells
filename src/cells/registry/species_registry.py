@@ -1036,7 +1036,15 @@ def check_stage_read_rows(spec):
     for kind_id, declaration in getattr(m, "kinds", ()):
         kind = registry.lookup(kind_id)
         if kind.stage_read is not None and kind.stage_rows is not None:
-            rows = tuple(kind.stage_rows(declaration))
+            # Each row as (species, node), normalized here: mixed list and tuple rows from one kind,
+            # or two rows of one (species, node) whose third items are None and a law ID, made
+            # sorted(rows) below raise TypeError. A malformed row is @3's to refuse
+            # (_check_stage_rows), which in a composite runs first, in the inner parse.
+            rows = tuple(
+                tuple(row[:2])
+                for row in kind.stage_rows(declaration)
+                if isinstance(row, (tuple, list)) and len(row) in (2, 3)
+            )
             if rows:  # A read that rewrites no row (an identity read) stores nothing.
                 reads.append((kind_registry.qualified(kind_id), rows))
     if not reads:
@@ -1072,16 +1080,74 @@ def check_stage_read_rows(spec):
                     )
 
 
+# Route laws that read their row's amounts at both ends, never a closure's free forms (FR-15 P2:
+# passive_constant_field_permeation@1; the lead's ruling of 19 November 2026, option (a)). The
+# charged law is listed because its flux and its material slope |dJ/dn| are taken against the
+# stored amount, which at a closure row is the total, not the free species: the wrong derivative.
+# Any future route law with a material term must be checked against this list. The proton leak is
+# not one: it reads free h through B4's closure.
+AMOUNT_READING_ROUTE_LAWS = ("passive_constant_field_permeation@1",)
+
+
+def check_amount_reading_routes(spec):
+    """A route law that reads amounts (AMOUNT_READING_ROUTE_LAWS), refused at a row a declared
+    kind's closure holds, fail-closed (FR-15 P2): a stage read's stage_rows (B4's proton and buffer
+    rows at its buffered nodes) or a general closure's closure_rows, at either end of the route.
+    The stored total there is not the free species the law would read. Beside check_closure_rows
+    and check_stage_read_rows, which hold the same rows for the other movers; per (species, node),
+    from each declared kind's moved rows (the core's join, inner_movers). A world with no closure
+    is not checked, and its movers are not built (no new path in a closure-free world). A general
+    closure's rows refuse such a route earlier, in check_closure_rows (a route law declares no
+    reads, so its reads [] lack the closure's read), so this rule's own message fires at held rows
+    outside any closure_rows: today, B4's stage rows."""
+    m = _inner_model(spec)
+    kinds = getattr(m, "kinds", ())
+    if not kinds:
+        return
+    from cells.registry.kind_registry import active, qualified
+
+    registry, held = active(), {}
+    for kind_id, declaration in kinds:
+        kind = registry.lookup(kind_id)
+        rows = ()
+        if kind.stage_read is not None and kind.stage_rows is not None:
+            rows = tuple(kind.stage_rows(declaration))
+        rows += tuple(getattr(declaration, "closure_rows", ()))
+        for row in rows:  # A malformed row (not species, node[, law]) is @3's to refuse, later.
+            if isinstance(row, (tuple, list)) and len(row) in (2, 3):  # @3 admits list rows too.
+                held.setdefault((row[0], row[1]), qualified(kind_id))
+    if not held:
+        return
+    reading = {qualified(law) for law in AMOUNT_READING_ROUTE_LAWS}
+    _, movers = inner_movers(spec)
+    moves = [
+        (species, law, kind, node)
+        for species, entries in movers.items()
+        for kind, law, nodes in entries
+        if kind not in INNER_MOVERS and qualified(law) in reading
+        for node in nodes
+    ]
+    for species, law, kind, node in moves:
+        if (species, node) in held:
+            raise ConfigError(
+                f"species {species} at {node} is held by {held[(species, node)]}, which owns its "
+                f"free/total split: {kind} moves it under {law}, which reads amounts, not free "
+                "forms: refused (FR-15)"
+            )
+
+
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
     model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
-    the movers at a general closure's rows, the operators beside a stage read, then operators'
-    potentials and the reaction-level standard free energies of operators and kinds."""
+    the movers at a general closure's rows, the operators beside a stage read, the amount-reading
+    route laws at a closure's rows, then operators' potentials and the reaction-level standard free
+    energies of operators and kinds."""
     check_background(spec)
     check_two_form_rows(spec)
     check_forms(spec)
     check_closure_rows(spec)
     check_stage_read_rows(spec)
+    check_amount_reading_routes(spec)
     check_potentials(spec)
     check_free_energies(spec)
 
