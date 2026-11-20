@@ -7,7 +7,11 @@ and the lead's rulings for F1 (19 November 2026):
 * removal lives here, with a declared rate and a booked sink. This departs from D177, which put
   FR-7's removal under FR-2; it is the design note's own alternative, "or a turnover of units".
   FR-2's version 1 internalises units into a silent record that recycling returns, so it gives no
-  unit a finite lifetime;
+  unit a finite lifetime. D232 (the user, 19 November 2026) admits it as a scoped exception to
+  D177, covering both this producer's surface insertion and its irreversible removal;
+* the declared lifetime 1/k_r applies to every unit of a routed population, including the units
+  present at the start (membrane state's declared units), not only to the units this producer
+  inserts (D232);
 * the assembly and trafficking delay is a chain of m first-order pools (the linear chain trick,
   MacDonald 1978, Time Lags in Biological Models: named from memory and not read);
 * the precursor is a declared pool, which D150's scheduled_species_turnover@1 may also supply.
@@ -79,15 +83,16 @@ Refused at the definition, each with its reason: an undeclared or charged precur
 with a membrane, junction or channel route (parse_species); an unknown population, or one named
 by two routes; a listed species no route consumes; ν not an integer >= 1; m outside [0,
 MAX_POOLS]; τ not positive with pools, or given without them; an identity that differs from the
-registry's; more than the species cap; another writer of a population's units (FR-2's
-trafficking among them: every unit here, declared ones included, is removed at k_r, so a second
-writer's moves would mix with it); a precursor row that a D152 reaction writes, another author of
-the precursor other than turnover, and an in-step mover of it; dt Λ > 1 anywhere in the schedule;
-a schedule that does
-not start at 0, changes off the dt grid or outside 0 < t < end, or holds a negative or
-non-finite rate; and every provider of volumes and closer of masks (CONFLICTS_VIEW, D150's
-static-tissue list). membrane_entity_state@1 precedes it (REQUIRES). At run time: non-finite
-values, a negative pool, N or rate, and a precursor amount that would not stay positive.
+registry's; more than the species cap; another writer of population units anywhere in the
+simulation, even on a population no route names (D232: the refusal is simulation-wide, so it
+excludes FR-2's recycling, membrane insertion and division, whose moves would mix with this
+removal of every unit, the declared ones included, at k_r); a precursor row that a D152 reaction
+writes, another author of the precursor other than turnover, and an in-step mover of it; dt Λ > 1
+anywhere in the schedule; a schedule that does not start at 0, changes off the dt grid or
+outside 0 < t < end, or holds a negative or non-finite rate; and every provider of volumes and
+closer of masks (CONFLICTS_VIEW, D150's static-tissue list). membrane_entity_state@1 precedes it
+(REQUIRES). At run time: non-finite values, a negative pool, N or rate, and a precursor amount
+that would not stay positive.
 
 Idle: no route, statically idle; no positive flux in a half-step, the start state is selected,
 so zero rates are bitwise idle and @3's other rows are untouched.
@@ -389,7 +394,8 @@ def check_writers(spec, declaration):
                 f"{LAW_ID}: {op.LAW_ID} also writes population units. This operator removes every "
                 "unit of its populations at k_r, the declared ones included, so a second writer's "
                 "moves (FR-2's trafficking, insertion) would mix with that removal; version 1 is "
-                "their one writer"
+                "their one writer, simulation-wide (D232): FR-2's recycling, membrane insertion "
+                "and division are excluded even on populations no route names"
             )
         if op.LAW_ID == species_reactions.LAW_ID:
             hit = sorted(rows & set(species_reactions.written(other)))

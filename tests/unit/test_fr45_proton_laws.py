@@ -13,6 +13,7 @@ import pytest
 from cells.laws.electrochemistry import F, R
 from cells.laws.pumps import proton_pump as pump
 from cells.laws.reactions import rapid_proton_buffer as buf
+from cells.laws.routes import constant_field_permeation as cfp
 from cells.laws.routes import passive_permeation as passive
 from cells.laws.transport import proton_leak as leak
 
@@ -67,8 +68,13 @@ def test_unbuffered_node_reads_h_equal_to_its_total():
 
 
 def test_inadmissible_states_are_invalid():
-    for total, b, k in ((0.0, 40.0, 1e-3), (-1.0, 40.0, 1e-3), (1.0, -1.0, 1e-3), (1.0, 4.0, 0.0),
-                        (float("nan"), 4.0, 1e-3)):
+    for total, b, k in (
+        (0.0, 40.0, 1e-3),
+        (-1.0, 40.0, 1e-3),
+        (1.0, -1.0, 1e-3),
+        (1.0, 4.0, 0.0),
+        (float("nan"), 4.0, 1e-3),
+    ):
         _, ok = buf.free_proton(np.array([total]), np.array([[b]]), np.array([[k]]), xp=np)
         assert not ok.any(), (total, b, k)
 
@@ -158,8 +164,9 @@ def test_stage_read_over_cells_and_outside_nodes():
     total_lumen = h_lumen + 40.0 * h_lumen / (h_lumen + k[0])
     cell = np.array([[1e-4 * v[0]], [0.0]])
     outside = np.array([[total_lumen * v[1]], [40.0 * v[1]]])
-    p = buf.ReadLayout(volume_pL=v, k_mM=k, k_on_per_mM_s=np.array([1e7]), c0_mM=1000.0,
-                       temperature_K=T)
+    p = buf.ReadLayout(
+        volume_pL=v, k_mM=k, k_on_per_mM_s=np.array([1e7]), c0_mM=1000.0, temperature_K=T
+    )
     values, valid = buf.evaluate(structure, cell, outside, p, xp=np)
     assert valid.all()
     assert values["h"][0] == pytest.approx(1e-4, rel=1e-12)
@@ -187,13 +194,26 @@ H_REST = 1000.0 * 10.0 ** (-7.2)
 
 
 def pump_inputs(h_in=H_REST, h_out=H_REST, v=0.0):
-    return pump.Inputs(h_in_mM=h_in, h_out_mM=h_out, voltage_V=v, atp_mM=3.0, adp_mM=0.3,
-                       pi_mM=3.0, temperature_K=T)
+    return pump.Inputs(
+        h_in_mM=h_in,
+        h_out_mM=h_out,
+        voltage_V=v,
+        atp_mM=3.0,
+        adp_mM=0.3,
+        pi_mM=3.0,
+        temperature_K=T,
+    )
 
 
-PUMP = pump.Parameters(capacity_fmol_s=8.3027e-3, protons_per_cycle=2.0, km_proton_mM=1e-4,
-                       km_atp_mM=0.1, delta_g0_prime_J_mol=-30500.0, fuel_ph_ref=7.2,
-                       fuel_ph_band=0.05)
+PUMP = pump.Parameters(
+    capacity_fmol_s=8.3027e-3,
+    protons_per_cycle=2.0,
+    km_proton_mM=1e-4,
+    km_atp_mM=0.1,
+    delta_g0_prime_J_mol=-30500.0,
+    fuel_ph_ref=7.2,
+    fuel_ph_band=0.05,
+)
 
 
 def test_the_held_fuel_drive_is_the_note_value():
@@ -276,8 +296,13 @@ def test_a_start_at_zero_amount_books_finite_heat():
     mu2 = passive.divided_potential_RT(20.0, 20.0 - moved, v2, xp=np)
     heat = passive.route_heat_pJ(moved, mu1, mu2, T, xp=np)
     assert np.isfinite(heat) and heat > 0
-    exact = (R * T * 1e-3) * ((20.0 * (math.log(20.0 / v2) - 1)) - (
-        moved * (math.log(moved / v1) - 1) + (20.0 - moved) * (math.log((20.0 - moved) / v2) - 1)))
+    exact = (R * T * 1e-3) * (
+        (20.0 * (math.log(20.0 / v2) - 1))
+        - (
+            moved * (math.log(moved / v1) - 1)
+            + (20.0 - moved) * (math.log((20.0 - moved) / v2) - 1)
+        )
+    )
     assert heat == pytest.approx(exact, rel=1e-10)
 
 
@@ -300,6 +325,46 @@ def test_proton_leak_is_zero_at_electrochemical_equilibrium_and_dissipative_else
     assert leak.heat_pJ_s(j, h_in, h_out, 0.0, T, xp=np) > 0
 
 
+@pytest.mark.parametrize("valence", [-2, -1, 1, 2])
+def test_the_charged_route_law_is_the_leaks_flux_at_any_valence(valence):
+    """FR-15 P2's kernel (laws/routes/constant_field_permeation.py; host side): zero flux at
+    electrochemical equilibrium and dissipative elsewhere; at z = +1 the leak's flux bit for bit;
+    the max-side conductance bounds the current's slope at every voltage tried; and the material
+    slope at each end is the flux's |dJ/dn| (central differences)."""
+    area, perm, c_in, c_out, v_in, v_out = 7.854e-10, 6e-7, 1e-3, 3e-3, 0.8, 2.5
+    v_eq = R * T / (valence * F) * math.log(c_out / c_in)
+    j0 = cfp.flux_fmol_s(c_in, c_out, v_eq, valence, T, area, perm, 1.0, xp=np)
+    for v in (-0.12, 0.0, 0.07):
+        j = cfp.flux_fmol_s(c_in, c_out, v, valence, T, area, perm, 1.0, xp=np)
+        assert abs(j0) < 1e-12 * abs(j)
+        assert cfp.heat_pJ_s(j, c_in, c_out, v, valence, T, xp=np) > 0
+        if valence == 1:
+            assert j == leak.flux_fmol_s(c_in, c_out, v, T, area, perm, 1.0, xp=np)
+        dv = 1e-7
+        current = [
+            valence
+            * F
+            * 1e-15
+            * cfp.flux_fmol_s(c_in, c_out, u, valence, T, area, perm, 1.0, xp=np)
+            for u in (v - dv, v + dv)
+        ]
+        slope = abs(current[1] - current[0]) / (2 * dv)
+        bound = cfp.conductance_S(c_in, c_out, v, valence, T, area, perm, 1.0, xp=np)
+        assert slope <= bound * (1 + 1e-6)
+        rates = cfp.material_slope_per_s(v, valence, T, area, perm, 1.0, v_in, v_out, xp=np)
+        dn = 1e-5  # J is linear in each amount, so the central difference is exact to rounding.
+        for k, (volume, before, after) in enumerate(
+            (
+                (v_in, (c_in - dn / v_in, c_out), (c_in + dn / v_in, c_out)),
+                (v_out, (c_in, c_out - dn / v_out), (c_in, c_out + dn / v_out)),
+            )
+        ):
+            change = cfp.flux_fmol_s(
+                *after, v, valence, T, area, perm, 1.0, xp=np
+            ) - cfp.flux_fmol_s(*before, v, valence, T, area, perm, 1.0, xp=np)
+            assert abs(change) / (2 * dn) == pytest.approx(float(rates[k]), rel=1e-6), (k, volume)
+
+
 def test_planted_sign_error_in_the_leak_heat_is_caught():
     h_in, h_out = ph_to_h(7.2), ph_to_h(5.0)
     j = leak.flux_fmol_s(h_in, h_out, 0.0, T, 7.854e-10, 6e-7, 1.0, xp=np)
@@ -317,8 +382,9 @@ def test_envelope_ignores_a_buffer_row_absent_at_the_node():
     rate = 0.1 * buf.buffer_capacity(h, b, k, xp=np) / LN10
     assert buf.envelope_valid(h, b, k, np.array([[1e5], [1e5]]), rate, DECL2, xp=np).all()
     assert not buf.envelope_valid(h, b, k, np.array([[1e-3], [1e5]]), rate, DECL2, xp=np).any()
-    unbuffered = buf.relaxation_rate(h, np.zeros((2, 1)), k, np.array([[1e5], [1e5]]),
-                                     np.zeros((2, 1), bool), xp=np)
+    unbuffered = buf.relaxation_rate(
+        h, np.zeros((2, 1)), k, np.array([[1e5], [1e5]]), np.zeros((2, 1), bool), xp=np
+    )
     assert np.isinf(unbuffered).all()
 
 
@@ -343,8 +409,10 @@ def test_loop_rates_match_finite_differences_at_both_nodes():
     def cycles(h_in, h_out):
         return pump.kinetics(base._replace(h_in_mM=h_in, h_out_mM=h_out), PUMP, 1.0, xp=np)[0]
 
-    for which, got, h0, q, v in (("in", inside, base.h_in_mM, q_in, v_in),
-                                 ("out", outside, base.h_out_mM, q_out, v_out)):
+    for which, got, h0, q, v in (
+        ("in", inside, base.h_in_mM, q_in, v_in),
+        ("out", outside, base.h_out_mM, q_out, v_out),
+    ):
         dh = 1e-7 * h0
         if which == "in":
             d = (cycles(h0 + dh, base.h_out_mM) - cycles(h0 - dh, base.h_out_mM)) / (2 * dh)
@@ -360,10 +428,16 @@ def test_domain_refuses_the_fuel_node_outside_its_ph_band():
 
 def test_the_read_closes_over_its_structure_and_takes_the_published_arguments():
     read = buf.make_read(
-        buf.ReadStructure(proton_row=0, buffer_rows=(1,), declared=((False, True),)))
+        buf.ReadStructure(proton_row=0, buffer_rows=(1,), declared=((False, True),))
+    )
     v = np.array([1.0, 0.5])
-    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(6.0)]), k_on_per_mM_s=np.array([1e7]),
-                       c0_mM=1000.0, temperature_K=T)
+    p = buf.ReadLayout(
+        volume_pL=v,
+        k_mM=np.array([ph_to_h(6.0)]),
+        k_on_per_mM_s=np.array([1e7]),
+        c0_mM=1000.0,
+        temperature_K=T,
+    )
     values, valid = read.evaluate(np.array([[2e-4], [0.0]]), np.array([[10.0], [20.0]]), p, xp=np)
     assert read.read_id == "rapid_proton_buffer@1" and valid.all()
     assert values["h"][0] == pytest.approx(2e-4, rel=1e-13)
@@ -373,8 +447,18 @@ def test_declared_term_at_an_unbuffered_node_is_minus_rt_ln_c0_per_proton():
     # mu°(H+) = 0 at c0 = 1000 mM, while the inner model's row term is referenced to 1 mM, so the
     # declared term is -RT ln(1000) per proton, not zero: it must be evaluated on every H node.
     n, v = 2e-5, 0.5
-    term, ok = buf.declared_term_pJ(np.array([n]), np.zeros((1, 1)), v, np.array([[1e-3]]), 0.0,
-                                    np.zeros((1, 1)), np.zeros((1, 1)), T, c0_mM=1000.0, xp=np)
+    term, ok = buf.declared_term_pJ(
+        np.array([n]),
+        np.zeros((1, 1)),
+        v,
+        np.array([[1e-3]]),
+        0.0,
+        np.zeros((1, 1)),
+        np.zeros((1, 1)),
+        T,
+        c0_mM=1000.0,
+        xp=np,
+    )
     assert ok.all()
     assert term[0] == pytest.approx(-1e-3 * R * T * n * math.log(1000.0), rel=1e-12)
 
@@ -397,11 +481,17 @@ def test_planted_registry_c0_conversion_gives_the_same_k():
 
 def test_planted_an_undeclared_trace_leaves_h_bitwise_unchanged():
     # B_L declared in the lumen only; a B_L trace in the cytosol is a free row there, not a buffer.
-    structure = buf.ReadStructure(proton_row=0, buffer_rows=(1, 2), declared=((True, False),
-                                                                              (False, True)))
+    structure = buf.ReadStructure(
+        proton_row=0, buffer_rows=(1, 2), declared=((True, False), (False, True))
+    )
     v = np.array([4.18879, 0.0654498])
-    p = buf.ReadLayout(volume_pL=v, k_mM=np.array([ph_to_h(7.2), ph_to_h(6.0)]),
-                       k_on_per_mM_s=np.array([1e7, 1e7]), c0_mM=1000.0, temperature_K=T)
+    p = buf.ReadLayout(
+        volume_pL=v,
+        k_mM=np.array([ph_to_h(7.2), ph_to_h(6.0)]),
+        k_on_per_mM_s=np.array([1e7, 1e7]),
+        c0_mM=1000.0,
+        temperature_K=T,
+    )
     cell = np.array([[30.0 * v[0]], [50.0 * v[0]], [0.0]])
     lumen = np.array([[20.0 * v[1]], [0.0], [40.0 * v[1]]])
     base, ok = buf.evaluate(structure, cell, lumen, p, xp=np)

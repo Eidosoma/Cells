@@ -1887,7 +1887,11 @@ class Composition:
         return (*inner, *own)
 
     def ledger_limits(self, row, p, tol, rtol, *, steps, magnitudes, xp=np):
-        count = len(self.inner.LEDGERS)
+        # magnitudes() holds the inner model's magnitudes, then one per own ledger of each
+        # operator. The inner model's are what is left once the operators' are counted from the
+        # end: they can be fewer than its ledgers, since a kind's own ledgers are bounded by its
+        # ledger_bounds, without magnitudes (E, CORE_SEAMS §7.3; the fourth review's finding 1).
+        count = len(magnitudes) - sum(len(op.LEDGERS) for op in self.own_ledger_operators)
         flows, bounds = self.inner.ledger_limits(
             row,
             p,
@@ -1953,7 +1957,11 @@ class Composition:
                     for (name, value), key, bound in zip(
                         values.items(), op.LEDGER_DIAGNOSTICS, bounds, strict=True
                     ):
-                        if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
+                        if (
+                            not np.isfinite(value).all()
+                            or not np.isfinite(bound).all()  # The fourth review's finding 2.
+                            or np.any(np.abs(value) > bound)
+                        ):
                             raise NumericalError(op.LEDGER_MESSAGE + name)
                         key = "max_" + key
                         extra[key] = max(extra[key], float(np.max(np.abs(value), initial=0)))

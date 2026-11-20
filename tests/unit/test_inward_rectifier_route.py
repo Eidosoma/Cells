@@ -17,12 +17,28 @@ by contact_0, the cell at K 140 and Na 10 mM) with one rectifier route on contac
   bound without its V_h term);
 - the kind: above E the cell's K falls and the route's transfer is negative, another species at
   zero at an end keeps the flux and heat finite, the domain refuses K at zero, and a run passes
-  every host ledger (material, charge and energy, with the heat never negative).
+  every host ledger (material, charge and energy, with the heat never negative);
+- extreme but finite declarations: (b g_ref, b^2 K_ref) is one route. Each row is a claim with
+  its plant, the law's concentration factor replaced:
+  - at ordinary K_ref the kernels keep the bits of the unguarded sqrt(c_o / K_ref), in numpy and
+    compiled (planted: the split form everywhere, and a selected divisor in the direct form);
+  - (2^-8, 2^-14 mM) matches (1, 4 mM) bit for bit, in the kernels and in a run (planted:
+    c_o / K_ref without its root);
+  - (2^-512, 2^-1022 mM) overflows c_o / K_ref and is admitted, and (2^510, 5 2^1020 mM) at c_o
+    below 1.25 mM underflows it, which compiled code turned into a silent zero current. Each
+    matches its ordinary twin within ULPS (planted: the unguarded root);
+  - the derivatives in c_i, c_o, V and the opening, forward and reverse, are finite at both
+    extremes and match the twins within ULPS (planted: a single where, whose reverse derivative
+    in c_o is NaN at the underflow).
 """
 
+import contextlib
 import copy
+import functools
 import math
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -319,3 +335,217 @@ def test_the_kind_moves_k_out_above_e_keeps_its_domain_and_a_run_closes_every_le
     result = run(parse_spec(raw))
     final = result.final.state
     assert final.passive_transferred[k, 0] < 0 and final.passive_dissipated_energy_pJ[0] > 0
+
+
+# ------------------------------------------------------------------ extreme but finite declarations
+
+# A few ulps: the split form's two roots and its division, carried through the kernels' products.
+# Measured on 19 November 2026: at most 3 on the values and 4 on the derivatives.
+ULPS = 8
+KERNELS = ("current_A", "flux_fmol_s", "heat_pJ_s", "slope_conductance_S", "slope_bound_S")
+FACTOR = law.concentration_factor
+# Each extreme declaration (g_ref, K_ref) with its ordinary twin and the c_o values (mM) it is read
+# at; a twin is the same route, (b g_ref, b^2 K_ref) from (g_ref, K_ref).
+TWINS = {  # Three c_o each, so one compiled function serves a row's twin and its extreme.
+    "b_minus_8": ((1.0, 4.0), (2.0**-8, 2.0**-14), (5.0, 50.0, 140.0)),
+    "b_minus_512_overflow": ((1.0, 4.0), (2.0**-512, 2.0**-1022), (5.0, 50.0, 140.0)),
+    "b_510_underflow": ((1.0, 5.0), (2.0**510, 5.0 * 2.0**1020), (1e-10, 3e-7, 0.25)),
+}
+RUNS = ("b_minus_8", "b_minus_512_overflow")  # The rows also compared in a run of the pair.
+
+
+def unguarded(c_out_mM, k_ref_mM, *, xp):
+    """The concentration factor as the law landed (0ef9cb71): sqrt(c_o / K_ref), unguarded."""
+    return xp.sqrt(c_out_mM / k_ref_mM)
+
+
+def split_everywhere(c_out_mM, k_ref_mM, *, xp):  # Planted: the split form at every input.
+    return xp.sqrt(c_out_mM) / xp.sqrt(k_ref_mM)
+
+
+def selected_divisor(c_out_mM, k_ref_mM, *, xp):
+    """Planted: the law with its direct form's divisor selected too, which compiled code no longer
+    divides as a product with K_ref's reciprocal (an ulp off at some ordinary states)."""
+    quotient = c_out_mM / k_ref_mM
+    info = xp.finfo(xp.result_type(quotient))
+    split = (c_out_mM >= info.tiny) & (k_ref_mM >= info.tiny)
+    split = split & ((quotient < info.tiny) | (quotient > info.max))
+    direct = xp.sqrt(xp.where(split, 1.0, c_out_mM) / xp.where(split, 1.0, k_ref_mM))
+    return xp.where(split, FACTOR(c_out_mM, k_ref_mM, xp=xp), direct)
+
+
+def rootless(c_out_mM, k_ref_mM, *, xp):  # Planted: c_o / K_ref without its root.
+    return c_out_mM / k_ref_mM
+
+
+def single_where(c_out_mM, k_ref_mM, *, xp):  # Planted: the direct form on its raw inputs.
+    quotient = c_out_mM / k_ref_mM
+    info = xp.finfo(xp.result_type(quotient))
+    normal = (quotient >= info.tiny) & (quotient <= info.max)
+    return xp.where(normal, xp.sqrt(quotient), FACTOR(c_out_mM, k_ref_mM, xp=xp))
+
+
+@contextlib.contextmanager
+def factor(replacement):
+    """The law's concentration factor replaced for the block (a plant, or the unguarded root)."""
+    saved = law.concentration_factor
+    law.concentration_factor = replacement
+    try:
+        yield
+    finally:
+        law.concentration_factor = saved
+
+
+def kernels(args, xp):
+    """The five kernels stacked, at the current's arguments (the bound drops V)."""
+    values = [getattr(law, name)(*args, xp=xp) for name in KERNELS[:-1]]
+    return xp.stack([*values, law.slope_bound_S(*args[:2], *args[3:], xp=xp)])
+
+
+def in_numpy(args):
+    with np.errstate(over="ignore", invalid="ignore"):  # A plant's overflow is a finding here.
+        return np.asarray(kernels(args, np))
+
+
+def compiled():
+    """The kernels compiled afresh: a new function, so a plant is traced, never a cached law."""
+    function = jax.jit(lambda *a: kernels(a, jnp))
+    return lambda args: np.asarray(function(*args))
+
+
+def states(declaration, c_out):
+    """The current's arguments at c_i 140 mM, each c_o, the opening 0.6 or 1, and V at 0 V and at
+    four drives about E: 310 K, 1e-10 m^2, V_h 0.1 V and s 0.05 V."""
+    rows = []
+    for c_o, opening in [(c, m) for c in c_out for m in (0.6, 1.0)]:
+        e = float(law.reversal_V(140.0, c_o, 310.0, xp=np))
+        rows += [(140.0, c_o, v, opening) for v in (0.0, e - 0.12, e - 0.015, e + 0.015, e + 0.12)]
+    c_in, c_o, volts, opening = np.array(rows).T
+    return (c_in, c_o, volts, 310.0, 1e-10, *declaration, 0.1, 0.05, opening)
+
+
+def ordinary_states(seed=13):
+    """Random ordinary arguments in the kind's layout ([species, route], each coefficient per
+    route, g_ref nonzero at one row a route) and as flat vectors: compiled code divides by a
+    broadcast K_ref as a product with its reciprocal, and by a full one exactly. A divisor that
+    loses that rewrite moves about one conducting value in nine by an ulp, so the kind's layout
+    holds 96 routes."""
+    rng = np.random.default_rng(seed)
+    s, r, n = 4, 96, 64
+
+    def uniform(low, high, shape):
+        return rng.uniform(low, high, shape)
+
+    g = np.zeros((s, r))
+    g[rng.integers(0, s, r), np.arange(r)] = uniform(0.1, 3.0, r)
+    kind = (uniform(1.0, 200.0, (s, r)), uniform(0.5, 50.0, (s, r)), uniform(-0.15, 0.1, r), 310.0,
+            uniform(1e-12, 1e-9, r), g, uniform(0.3, 20.0, r), uniform(-0.05, 0.05, r),
+            uniform(0.005, 0.05, r), uniform(0.1, 1.0, r))  # fmt: skip
+    flat = (uniform(1.0, 200.0, n), uniform(0.5, 50.0, n), uniform(-0.15, 0.1, n),
+            uniform(280.0, 320.0, n), uniform(1e-12, 1e-9, n), uniform(0.1, 3.0, n),
+            uniform(0.3, 20.0, n), uniform(-0.05, 0.05, n), uniform(0.005, 0.05, n),
+            uniform(0.1, 1.0, n))  # fmt: skip
+    return kind, flat
+
+
+def derivatives():
+    """d/d(c_i, c_o, V, m) of the current and the heat at each state, forward (jacfwd) and reverse
+    (grad), compiled afresh (as compiled) with every coefficient an argument: [current/heat and
+    mode, argument, state]."""
+
+    def one(c_i, c_o, v, t, area, g, k_ref, v_half, slope, m):
+        out = []
+        for name in ("current_A", "heat_pJ_s"):
+
+            def value(c_i, c_o, v, m, name=name):
+                return getattr(law, name)(c_i, c_o, v, t, area, g, k_ref, v_half, slope, m)
+
+            for mode in (jax.jacfwd, jax.grad):
+                out.append(jnp.stack(mode(value, argnums=(0, 1, 2, 3))(c_i, c_o, v, m)))
+        return jnp.stack(out)
+
+    axes = (0, 0, 0, None, None, None, None, None, None, 0)  # The states' axes: c_i, c_o, V, m.
+    function = jax.jit(jax.vmap(one, in_axes=axes))
+    return lambda args: np.moveaxis(np.asarray(function(*args)), 0, -1)
+
+
+def close(a, b, ulps):
+    """Bit for bit at 0 ulps; else |a - b| <= ulps ulps of the larger, never at a NaN or an inf."""
+    a, b = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
+    if not ulps:
+        return a.tobytes() == b.tobytes()
+    spacing = np.spacing(np.maximum(np.abs(a), np.abs(b)))
+    return bool(np.all(np.isfinite(a) & np.isfinite(b) & (np.abs(a - b) <= ulps * spacing)))
+
+
+@functools.cache
+def pair_run(declaration):
+    """K's transfer (fmol) and the route's heat (pJ) at the end of the closed pair's run with one
+    route of (g_ref, K_ref), or the refusal's text."""
+    g, k_ref = declaration
+    try:
+        spec = parse_spec(closed_pair(route(g_ref_S_per_m2=g, k_ref_mM=k_ref)))
+    except ConfigError as err:
+        return str(err)
+    final = run(spec).final.state
+    k = list(spec.model.species_ids).index("K")
+    return np.array([final.passive_transferred[k, 0], final.passive_dissipated_energy_pJ[0]])
+
+
+def admitted(declaration):
+    g, k_ref = declaration
+    try:
+        parse_spec(closed_pair(route(g_ref_S_per_m2=g, k_ref_mM=k_ref)))
+    except ConfigError:
+        return False
+    return True
+
+
+def extreme_failures(row, *, runs=True):
+    """The claims a row breaks, by name, with the law's concentration factor as it stands. Without
+    runs, a run row checks admission alone (a plant is never run: runs are compiled once)."""
+    out = []
+    if row == "ordinary":
+        for args in ordinary_states():
+            with factor(unguarded):
+                old = dict(numpy=in_numpy(args), compiled=compiled()(args))
+            new = dict(numpy=in_numpy(args), compiled=compiled()(args))
+            out += [f"the unguarded bits ({b})" for b in old if not close(old[b], new[b], 0)]
+        return out
+    if row == "derivatives":
+        evaluate = derivatives()
+        for name in ("b_minus_512_overflow", "b_510_underflow"):
+            twin, extreme, c_out = TWINS[name]
+            if not close(evaluate(states(twin, c_out)), evaluate(states(extreme, c_out)), ULPS):
+                out.append(f"derivatives ({name})")
+        return out
+    twin, extreme, c_out = TWINS[row]
+    ulps = 0 if row == "b_minus_8" else ULPS
+    for backend, evaluate in (("numpy", in_numpy), ("compiled", compiled())):
+        if not close(evaluate(states(twin, c_out)), evaluate(states(extreme, c_out)), ulps):
+            out.append(f"kernels ({backend})")
+    if row in RUNS and not runs and not admitted(extreme):
+        out.append("admitted")
+    if row in RUNS and runs:
+        ran = pair_run(extreme)
+        if isinstance(ran, str) or not close(pair_run(twin), ran, ulps):
+            out.append(f"run: {ran}")
+    return out
+
+
+EXTREME = (  # Each row with its plants.
+    pytest.param("ordinary", (split_everywhere, selected_divisor), id="ordinary"),
+    pytest.param("b_minus_8", (rootless,), id="b_minus_8"),
+    pytest.param("b_minus_512_overflow", (unguarded,), id="b_minus_512_overflow"),
+    pytest.param("b_510_underflow", (unguarded,), id="b_510_underflow"),
+    pytest.param("derivatives", (single_where,), id="derivatives"),
+)
+
+
+@pytest.mark.filterwarnings("ignore:overflow encountered in divide:RuntimeWarning")  # The host's.
+@pytest.mark.parametrize("row, plants", EXTREME)
+def test_equivalent_declarations_are_one_route_at_extreme_finite_coefficients(row, plants):
+    assert extreme_failures(row) == []
+    for plant in plants:
+        with factor(plant):
+            assert extreme_failures(row, runs=False) != [], plant.__name__

@@ -25,6 +25,14 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   an effective-charge net-flow law, the basis law with a wrong sign and a planted factored
   evaluation (S - 0.05) are refused;
 - Wegscheider at the definition: a diagram whose constants are off by 1e-9 is refused;
+- availability schedules (D228 item 5): `transporter_controls` parses, writes back and reads back
+  to the same schedule, its breakpoint a step boundary; without the key there is no schedule and
+  the change records are today's, by value and type; it is refused with its reason (an unknown or
+  repeated population, a value outside [0, 1], a breakpoint past the horizon, the key on version
+  1's layout); the held value is right-continuous (planted: a left-continuous read), J+ scales
+  with it, and a breakpoint to 0 stops the cycles there, every ledger closing; in every kinetic
+  form (neutral and charged factored, diagram, net flow) a held availability is the capacity
+  times it, and 0 runs no cycle;
 - M2 (amendment 2): log, exp, expm1 and log1p within 1, 2, 4 and 2 ulp under jit on this device and
   in NumPy, against 60-digit decimals.
 """
@@ -53,7 +61,8 @@ from cells.registry.models import get_model
 from tests.unit import test_cycle_forms as tf
 from tests.unit import test_transporter_kind as tk
 
-U = np.finfo(float).eps / 2
+EPS = np.finfo(float).eps
+U = EPS / 2
 
 
 # ------------------------------------------------------------------ worlds and laws
@@ -247,12 +256,14 @@ def test_version_1_form_keeps_todays_entry_fields_and_hooks():
     assert bound.control_fields == transporter.CONTROL_FIELDS
     assert bound.readout_columns == transporter.READOUT_COLUMNS
     assert bound.material_term is None and bound.view_sets is None  # Today's hooks, exactly,
-    # with role_species, §5.2's admission's reading, which both layouts carry (host-side).
+    # with role_species, §5.2's admission's reading, which both layouts carry (host-side), and the
+    # schedule's two definition-time hooks (D228 item 5): parse_schedule returns None without its
+    # key and refuses it on version 1's layout, so its programs and change records are today's.
     hooks = [f.name for f in dataclasses.fields(bound) if callable(getattr(bound, f.name))]
     assert sorted(hooks) == sorted(
         ["parse", "to_dict", "structure_entry", "initial", "control_values", "rates",
          "stage_term", "bound_rate", "held_rows", "ledger_terms", "domain", "readouts",
-         "moved_rows", "check_definition", "role_species"]
+         "moved_rows", "check_definition", "role_species", "parse_schedule", "schedule_to_dict"]
     )  # fmt: skip
     # Planted: an entry that keeps the axis's hooks gives version 1 a material_term.
     def keeps(entry):
@@ -454,6 +465,23 @@ def test_the_population_axis_step_terms_are_version_1s_for_the_proton_law():
     np.testing.assert_allclose(b2, b1, rtol=64 * U * 100, atol=0.0)
     np.testing.assert_allclose(s2, s1, rtol=64 * U * 100, atol=0.0)
     assert r2 == pytest.approx(r1, rel=1e-13, abs=0)
+    # Planted: a held row's steep saturation (the proton law's ATP factor at Hill 4, K 1e100 mM)
+    # makes (K/c)^h overflow a float, which raised OverflowError; the bound, in log space, admits
+    # it with that population's term at e^(-huge) = 0 (D148's recorded widening).
+    form = transporter.PROTON.cycle
+    steep_factors = (form.saturation[0][0], Saturation(("ATP", "N"), "km_atp_mM", 4))
+    steep = dataclasses.replace(
+        transporter.PROTON,
+        law_id="tests.steep_fuel@1",
+        cycle=form._replace(saturation=(steep_factors,)),
+    )
+    raw = tk.charged_world()
+    entry = general(raw["model"]["transporters"][0])
+    entry["law"], entry["parameters"]["km_atp_mM"] = "tests.steep_fuel@1", 1e100
+    raw["model"]["transporters"] = [entry]
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(law_registry.BUILTIN.extended(steep)):
+        spec = parse_spec(raw)
+        assert transporter.bound_rate(spec, dict(spec.model.kinds)[transporter.KIND_ID]) == 0.0
 
 
 # ------------------------------------------------------------------ finite fuel's population
@@ -660,6 +688,372 @@ def test_an_inconsistent_diagram_is_refused_at_the_definition():
         with pytest.raises(ConfigError, match="fails Wegscheider's condition"):
             parse_spec(exchange_world(exchanger(law="seamtest.slip_off@1")))
 
+
+# ------------------------------------------------------- availability schedules (D228 item 5)
+
+BREAK_S = 0.002  # A step boundary inside held_world's 4 ms.
+
+
+def scheduled(entries=None, *population):
+    """held_world's general-layout population, with `transporter_controls` where given."""
+    raw = tk.held_world(*(population or (general(tk.population()),)))
+    if entries is not None:
+        raw["experiment"][transporter.SCHEDULE_KEY] = entries
+    return raw
+
+
+def series(*points):
+    return [{"time": t, "availability": a} for t, a in points]
+
+
+def test_an_availability_schedule_parses_writes_back_and_without_the_key_keeps_todays_records():
+    from cells.definitions.surface_pump_v3_spec import KindChange
+
+    entries = [dict(transporter_id="transporter_0", schedule=series((0.0, 1.0), (BREAK_S, 0.25)))]
+    with scoped():
+        spec = parse_spec(scheduled(entries))
+        schedule = kind_registry.declared_schedule(spec, transporter.KIND_ID)
+        assert schedule.series == (("transporter_0.availability", ((0.0, 1.0), (BREAK_S, 0.25))),)
+        records = spec.experiment._held_availabilities()
+        assert BREAK_S in [r.time for r in records]  # Its breakpoint: a step boundary.
+        assert all(isinstance(r, KindChange) for r in records)
+        written = spec.to_dict()["experiment"][transporter.SCHEDULE_KEY]
+        assert written == entries  # Written back whole, and read back to the same schedule.
+        again = parse_spec(spec.to_dict())
+        assert kind_registry.declared_schedule(again, transporter.KIND_ID) == schedule
+        # Without the key: no schedule, and the change records are today's, by value and type.
+        plain = parse_spec(scheduled())
+        assert kind_registry.declared_schedule(plain, transporter.KIND_ID) is None
+        today = plain.experiment._held_availabilities()
+        assert not any(isinstance(r, KindChange) for r in today)
+        assert transporter.SCHEDULE_KEY not in plain.to_dict()["experiment"]
+
+
+@pytest.mark.parametrize(
+    "entries,population,reason",
+    [
+        ([dict(transporter_id="nobody", schedule=series((0.0, 1.0)))], None, "unknown transporter"),
+        ([dict(transporter_id="transporter_0", schedule=series((0.0, 1.0)))] * 2, None, "twice"),
+        ([dict(transporter_id="transporter_0", schedule=series((0.0, 1.5)))], None, r"\[0, 1\]"),
+        ([dict(transporter_id="transporter_0", schedule=series((0.0, 1.0), (0.01, 0.5)))], None,
+         "past the horizon"),
+        ([dict(transporter_id="transporter_0", schedule=series((0.0, 1.0)))], "version 1",
+         "version 1's layout holds each patch's availability at 1"),
+    ],
+)  # fmt: skip
+def test_an_availability_schedule_refuses_with_its_reason(entries, population, reason):
+    raw = scheduled(entries, *((tk.population(),) if population else ()))
+    with scoped(), pytest.raises(ConfigError, match=reason):
+        parse_spec(raw)
+
+
+def test_the_held_availability_scales_j_and_a_breakpoint_to_zero_stops_the_cycles():
+    entries = [dict(transporter_id="transporter_0", schedule=series((0.0, 1.0), (BREAK_S, 0.0)))]
+    quarter = [dict(transporter_id="transporter_0", schedule=series((0.0, 0.25)))]
+    with scoped():
+        spec = parse_spec(scheduled(entries))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        times = [0.0, 0.001, BREAK_S, 0.003]
+        held = [float(v[0]) for v in control_values(spec, times).cycle_availability]
+        # Right-continuous: the new value from its breakpoint on, the old one just before it (a
+        # planted left-continuous read would give 1 at the breakpoint).
+        assert held == [1.0, 1.0, 0.0, 0.0]
+        before = control_values(spec, [BREAK_S - 1e-9]).cycle_availability
+        assert float(before[0, 0]) == 1.0
+        full = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        spec4 = parse_spec(scheduled(quarter))
+        part = impl.Control(*(v[0] for v in control_values(spec4, [0.0])))
+        one = transporter.probe(state, potentials_for(p), full, p, xp=np).modes
+        four = transporter.probe(state, potentials_for(p), part, p, xp=np).modes
+        # J+ = exp(ln k + ln a + ln S): within a few roundings of its exponent (as for k alone).
+        allowed = 4 * EPS * (abs(math.log(float(one.j_plus[0, 0]))) + 4)
+        expected = 0.25 * float(one.j_plus[0, 0])
+        assert float(four.j_plus[0, 0]) == pytest.approx(expected, rel=allowed, abs=0)
+        # The run's own rule: each step holds the value at its start (the change times).
+        states = [state]
+        for k in range(4):
+            control = impl.Control(*(v[0] for v in control_values(spec, [k * spec.execution.dt])))
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        cycles = [float(np.sum(s.cycle_count)) for s in states]
+        assert cycles[1] > 0 and cycles[2] > cycles[1]  # Available: the cycles run.
+        assert cycles[2] == cycles[3] == cycles[4]  # Unavailable from the breakpoint: none.
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+
+
+def _charged_general(**over):
+    raw = tk.charged_world(**over)
+    raw["model"][transporter.MODEL_KEY] = [general(e) for e in raw["model"][transporter.MODEL_KEY]]
+    return raw
+
+
+def _neutral(**over):
+    return scheduled(None, general(tk.population(**over)))
+
+
+def _net_flow(**over):
+    return exchange_world(exchanger(law="seamtest.net_exchange@1", **over))
+
+
+FORMS = {  # Each kinetic form's world, its population and the kinds it needs.
+    "neutral factored": (_neutral, "transporter_0", ()),
+    "charged factored": (_charged_general, "transporter_0", tk.CHARGED_KINDS),
+    "diagram": (lambda **over: exchange_world(exchanger(**over)), "exchanger_0", ()),
+    "net flow": (_net_flow, "exchanger_0", ()),
+}
+
+
+def four_steps(raw, kinds):
+    """The states after four of @3's own IMEX steps at dt 1e-4 (a step every form admits), with
+    every step valid and every ledger closing."""
+    raw = copy.deepcopy(raw)
+    raw["execution"]["dt"] = 1e-4
+    with scoped(*kinds):
+        spec = parse_spec(raw)
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(4):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))
+    return state
+
+
+@pytest.mark.parametrize("form", list(FORMS))
+def test_a_held_availability_is_the_capacity_times_it_in_every_kinetic_form(form):
+    """The availability enters every form only through k a: a schedule at 0.3 gives the steps of
+    the capacity times 0.3 with none (within J+'s log-space rounding, ln k + ln a against ln(k a)),
+    and a schedule at 0 runs no cycle."""
+    build, pid, kinds = FORMS[form]
+    raw = build()
+    (entry,) = raw["model"][transporter.MODEL_KEY]
+    k = entry["capacity_fmol_s"]
+    at = {}
+    for a in (0.3, 0.0):
+        given = copy.deepcopy(raw)
+        given["experiment"][transporter.SCHEDULE_KEY] = [
+            dict(transporter_id=pid, schedule=series((0.0, a)))
+        ]
+        at[a] = four_steps(given, kinds)
+    scaled = four_steps(build(capacity_fmol_s=k * 0.3), kinds)
+    cycles = float(np.sum(at[0.3].cycle_count))
+    assert cycles != 0 and cycles == pytest.approx(
+        float(np.sum(scaled.cycle_count)), rel=1e-12, abs=0
+    )
+    np.testing.assert_allclose(at[0.3].amount_increment, scaled.amount_increment, rtol=1e-12)
+    assert float(np.sum(np.abs(at[0.0].cycle_count))) == 0.0  # Unavailable: no cycle at all.
+
+
+# ------------------------------------------------------- the monomial form on the kind (K6)
+
+# A closure-free monomial exchanger: X+ from N to P against Y from P to N, its S a monomial in X at
+# N and Y at P with a voltage term, one saturating factor on X at N, and a share of 2.
+MONO = law_registry.CycleLaw(
+    "seamtest.monomial_exchange@1",
+    (),
+    (),
+    None,
+    None,
+    cycle=CycleForm(
+        kinetics="monomial",
+        roles=(("X", 1), ("Y", 0)),
+        rows=(("X", "N"), ("X", "P"), ("Y", "N"), ("Y", "P")),
+        modes=(("exchange", (-1, 1, 1, -1)),),
+        monomial=forms.MonomialForm((
+            forms.MonomialRate(
+                log_k=math.log(2.0),
+                orders=((forms.Reference("X", "N"), 1.0), (forms.Reference("Y", "P"), 1.0)),
+                zeta=0.5,
+                factors=(forms.MonomialFactor(1.0, (
+                    forms.MonomialTerm(10.0, ((forms.Reference("X", "N"), 1.0),)),
+                )),),
+                share=2,
+            ),
+        )),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only monomial law (K6), never shipped",
+)  # fmt: skip
+
+
+@contextlib.contextmanager
+def mono_scoped(*laws):
+    with tk.scoped(), law_registry.scope(law_registry.BUILTIN.extended(*TEST_LAWS, MONO, *laws)):
+        yield
+
+
+def mono_world():
+    return exchange_world(exchanger(law=MONO.law_id))
+
+
+def mono_probe(spec, state, p, control, potentials):
+    return transporter.probe(state, potentials, control, p, xp=np)
+
+
+def test_a_monomial_population_runs_its_closed_form_with_exact_row_slopes():
+    with mono_scoped():
+        spec = parse_spec(mono_world())
+        structure, state, p, control = start(spec)
+        entry = dict(structure.kinds)[transporter.KIND_ID]
+        bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+        assert set(transporter.MONOMIAL_FIELDS) <= set(bound.layout_fields)
+        volts = -0.03
+        potentials = potentials_for(p, volts)
+        e = transporter._evaluate(state, potentials, control, p, xp=np)
+    ids = list(spec.model.species_ids)
+    cell, bath = spec.model.cells[0], spec.model.extracellular[0]
+
+    def c(node, s):
+        return node.initial_amount_fmol[ids.index(s)] / node.volume_pL
+
+    a_x, a_y = c(cell, "X") / 1000.0, c(bath, "W") / 1000.0  # N is the cell; activities at 1 M.
+    psi = F * volts / (R * spec.model.temperature_K)
+    x = float(e.x[0, 0])
+    log_s = math.log(2.0 * a_x * a_y) + 0.5 * psi - math.log1p(10.0 * a_x)
+    log_s -= math.log(1.0 + math.exp(x / 2))  # The share, n = 2.
+    terms = abs(math.log(2.0 * a_x * a_y)) + abs(0.5 * psi) + 2 + abs(x)
+    assert float(e.log_s[0, 0]) == pytest.approx(log_s, rel=0, abs=32 * U * terms)
+    j = float(e.j[0, 0])
+    assert j * x <= 0 and float(e.j_plus[0, 0]) > 0  # The contract's sign, exactly.
+    # The rows' slopes against central differences of J: X at N is read twice (the monomial and the
+    # factor) and through x; Y at N only through x. Planted: X at N's factor slope dropped.
+    with mono_scoped():
+        numeric = {}
+        for k, (row, node) in enumerate((("X", 0), ("X", 1), ("W", 0), ("W", 1))):
+            numeric[k] = _row_difference(spec, state, p, control, potentials, ids.index(row), node)
+            assert float(e.d_j_d_ln_c[0, k, 0]) == pytest.approx(numeric[k], rel=1e-6, abs=1e-12)
+        h = 1e-6
+        up = mono_probe(spec, state, p, control, potentials_for(p, volts + h)).modes.j[0, 0]
+        down = mono_probe(spec, state, p, control, potentials_for(p, volts - h)).modes.j[0, 0]
+        dpsi = (float(up) - float(down)) / (2 * h * F / (R * spec.model.temperature_K))
+        assert float(e.d_j_d_psi[0, 0]) == pytest.approx(dpsi, rel=1e-6, abs=1e-12)
+    no_factor = float(e.d_j_d_ln_c[0, 0, 0]) + j * 10.0 * a_x / (1 + 10.0 * a_x)
+    assert abs(no_factor - numeric[0]) > 1e-3 * abs(numeric[0])  # Caught at 1e-6.
+
+
+def _row_difference(spec, state, p, control, potentials, species, node, h=1e-6):
+    """dJ/d ln c of one species at one node (0: the cell, 1: the outside node), by central
+    differences of its amount at the probe's own arithmetic."""
+    out = []
+    for sign in (1.0, -1.0):
+        if node == 0:
+            inc = state.amount_increment.copy()
+            total = p.amount_reference[species, 0] + inc[species, 0]
+            inc[species, 0] += sign * h * total
+            moved = state._replace(amount_increment=inc)
+        else:
+            inc = state.extracellular_amount_increment.copy()  # bath_0, the outside node.
+            total = p.extracellular_amount_reference[species, 0] + inc[species, 0]
+            inc[species, 0] += sign * h * total
+            moved = state._replace(extracellular_amount_increment=inc)
+        out.append(float(transporter.probe(moved, potentials, control, p, xp=np).modes.j[0, 0]))
+    return (out[0] - out[1]) / (math.log1p(h) - math.log1p(-h))
+
+
+def test_the_monomial_domain_is_one_sided_and_its_bare_terms_fail_closed():
+    """x far below -80 is admitted for the monomial form and refused for the factored form it
+    is not; without potentials its charged slope has no bound, so the bare stage term is +inf."""
+    with mono_scoped():
+        spec = parse_spec(mono_world())
+        structure, state, p, control = start(spec)
+        deep = potentials_for(p, 2.4)  # psi ~ +90: x ~ -86 for X+ from N to P.
+        e = transporter._evaluate(state, deep, control, p, xp=np)
+        assert float(e.x[0, 0]) < -80 and bool(e.valid[0])
+        assert np.isinf(transporter.stage_term(state, None, control, p, xp=np)).any()
+        assert np.all(np.isfinite(transporter.stage_term(state, deep, control, p, xp=np)))
+    with scoped():
+        spec2 = parse_spec(exchange_world(exchanger(law="seamtest.net_exchange@1")))
+        _, state2, p2, control2 = start(spec2)
+        e2 = transporter._evaluate(state2, potentials_for(p2, 2.4), control2, p2, xp=np)
+        assert float(e2.x[0, 0]) < -80 and not bool(e2.valid[0])  # |x| <= 80 there.
+        # The other forms keep their fields: no monomial field in a world that runs none.
+        entry = dict(surface_pump_v3.structure(spec2.model).kinds)[transporter.KIND_ID]
+        bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+        assert not set(transporter.MONOMIAL_FIELDS) & set(bound.layout_fields)
+
+
+def test_a_monomial_reference_resolves_only_under_the_binding_owners_conditions():
+    """A total, or a named form, is read only where a declared closure holds the row; a row with
+    no declared forms has none to read (the binding owner's conditions 1 and 2)."""
+    rate = MONO.cycle.monomial.rates[0]
+    for form_name, reason in (("total", "read only where a closure holds the row"),
+                              ("Mg", "read only where a closure holds the row")):
+        total = rate._replace(orders=((forms.Reference("X", "N", form_name), 1.0),))
+        law = dataclasses.replace(
+            MONO, law_id=f"seamtest.monomial_{form_name.lower()}@1",
+            cycle=MONO.cycle._replace(monomial=MONO.cycle.monomial._replace(rates=(total,))),
+        )  # fmt: skip
+        with mono_scoped(law), pytest.raises(ConfigError, match=reason):
+            parse_spec(exchange_world(exchanger(law=law.law_id)))
+
+
+
+def hydrolysis(dg_kj_mol, law_id="seamtest.monomial_hydrolysis@1"):
+    """A converting monomial law at N, ATP -> ADP + Pi, its k from a cited dG° (K6)."""
+    return law_registry.CycleLaw(
+        law_id,
+        (),
+        (),
+        None,
+        None,
+        cycle=CycleForm(
+            kinetics="monomial",
+            roles=(("ATP", 0), ("ADP", 0), ("Pi", 0)),
+            rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N")),
+            modes=(("hydrolysis", (-1, 1, 1)),),
+            monomial=forms.MonomialForm((
+                forms.MonomialRate(
+                    log_k=forms.CitedConstant(dg_kj_mol, protons=0, scale=0.5, offset=0.25),
+                    orders=((forms.Reference("ATP", "N"), 1.0),),
+                ),
+            )),
+        ),
+        host=transporter.KIND_ID,
+        provenance="calibrated",
+        source="a test-only converting monomial law (K6), never shipped",
+    )  # fmt: skip
+
+
+def hydrolysis_world(law_id):
+    return tk.held_world(
+        dict(
+            id="hydrolysis_0", host="membrane_0", law=law_id, orientation={"N": "a"},
+            capacity_fmol_s=0.01, roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi"}, parameters={},
+            held_rows=[],
+        )  # fmt: skip
+    )
+
+
+def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
+    """The world's registry gives ADP's potential so that dG° = -30.5 kJ/mol (tk.DRIVE0_J_MOL): a
+    law citing it is admitted, its entry carries the kJ form, and its k is built from the same
+    converted value, bit for bit; a law citing -35 kJ/mol is refused by the registry's check."""
+    from decimal import Decimal
+
+    from cells.modules import TEMPERATURE_INDEPENDENT
+
+    cited = tk.DRIVE0_J_MOL / 1000.0
+    with mono_scoped(hydrolysis(cited)):
+        spec = parse_spec(hydrolysis_world("seamtest.monomial_hydrolysis@1"))
+        (entry,) = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
+        _, _, p, _ = start(spec)
+    assert entry.dG_kJ_mol == cited and entry.dG_basis == TEMPERATURE_INDEPENDENT
+    assert entry.dG_RT_offset == 0.0 and entry.c0 == 1000.0 and entry.mode == "hydrolysis"
+    assert dict(entry.stoichiometry) == {"ATP": -1, "ADP": 1, "Pi": 1}
+    rt = Decimal(R) * Decimal(spec.model.temperature_K)
+    converted = float(Decimal(cited) * 1000 / rt + Decimal(0.0))  # The registry's own arithmetic.
+    assert float(p.cycle_mono_log_k[0, 0]) == 0.25 - 0.5 * converted  # One value, bit for bit.
+    with mono_scoped(hydrolysis(-35.0, "seamtest.monomial_off@1")):
+        with pytest.raises(ConfigError, match="monomial_off"):
+            parse_spec(hydrolysis_world("seamtest.monomial_off@1"))
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
 

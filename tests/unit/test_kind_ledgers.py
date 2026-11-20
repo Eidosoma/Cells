@@ -11,7 +11,10 @@ kind's ledger_terms under its own name and bounded by its ledger_bounds at check
   material, charge and energy ledgers close (its production record carries the wrong count).
   Both check paths hold it: the host's check of every row, and the device's row checks
   (WindowPolicy row_checks="device"), which decide the world's windows themselves. A composite
-  takes the ledger from its inner model's lists, with no edit of its own, and runs with it.
+  takes the ledger from its inner model's lists, with no edit of its own, and runs with it; beside
+  an operator with ledgers of its own, its device checks hold it too.
+- A bound that is not finite fails its ledger, balanced or not (the fourth review's finding 2): a
+  kind's own on the host and in the device's row checks, @1's and an operator's own on the host.
 - Refused at the definition: a declared ledger the kind's ledger_terms does not value; a ledger
   or diagnostic named for one of @1's ten; a malformed hook result. The structure itself refuses
   an undeclared kind, two kinds unsorted or one kind twice, a repeated name, a name of @1's or of
@@ -37,6 +40,7 @@ from cells.registry.models import get_model
 from tests import kind_fixtures
 from tests.unit.test_transporter_kind import held_world, scoped
 from tests.window_row_check_fixtures import windows
+from validation.tissue import bath_schedule_fixtures as bfx
 
 PRODUCER_ID = "tests.producer@1"
 PRODUCER_KEY = "test_producer"
@@ -143,7 +147,17 @@ def world(*, adp=1, rate=1e-3):
     return raw
 
 
-def test_a_kind_declared_ledger_closes_in_a_run_and_its_off_by_one_plant_fails():
+def nonfinite_bound(value):
+    """PRODUCER with its adenine bound planted at value, +inf or NaN (the fourth review's
+    finding 2)."""
+
+    def bounds(row, p, tol, steps, *, xp):
+        return (_ledger_bounds(row, p, tol, steps, xp=xp)[0] * 0.0 + value,)
+
+    return dataclasses.replace(PRODUCER, ledger_bounds=bounds)
+
+
+def test_a_kind_declared_ledger_closes_in_a_run_and_its_off_by_one_plant_fails(monkeypatch):
     assert kind_registry.declaration_errors(PRODUCER) == []
     with scoped(PRODUCER):
         spec = parse_spec(world())
@@ -159,17 +173,70 @@ def test_a_kind_declared_ledger_closes_in_a_run_and_its_off_by_one_plant_fails()
         # energy close; only the moiety does not.
         with pytest.raises(NumericalError, match="accounting failed: adenine"):
             run(parse_spec(world(adp=2)))
-
-
-def test_the_device_row_checks_hold_the_kind_ledger_too():
+    # A bound that is not finite fails its ledger, balanced or not (the fourth review's finding
+    # 2), on the start row without a compile: the kind's own (+inf, NaN) on the host and in the
+    # device's row checks, and @1's own (NaN) on the host.
+    for value in (np.inf, np.nan):
+        with scoped(nonfinite_bound(value)):
+            spec = parse_spec(world())
+            model = get_model(spec.model)
+            state, p = model.initial_values(spec)
+            with pytest.raises(NumericalError, match="accounting failed: adenine"):
+                model.check_values(state, spec)
+            constants = model.device_check_constants(spec)
+            failed, _ = model.device_checks(state, state, p, constants, 0)
+            assert bool(np.asarray(failed)[model.DEVICE_CHECKS.index("adenine")])
     with scoped(PRODUCER):
         spec = parse_spec(world())
+        model = get_model(spec.model)
+        state, _ = model.initial_values(spec)
+        lists = surface_pump_v3.ledger_lists(model.structure)  # The one the host check reads.
+        real, work = lists.ledger_limits, surface_pump.LEDGERS.index("metabolic_work")
+
+        def nan_work(*args, **kwargs):  # @1's metabolic-work bound, planted NaN.
+            flows, bounds = real(*args, **kwargs)
+            return flows, (*bounds[:work], np.nan, *bounds[work + 1 :])
+
+        monkeypatch.setattr(lists, "ledger_limits", nan_work)
+        with pytest.raises(NumericalError, match="accounting failed: metabolic_work"):
+            model.check_values(state, spec)
+
+
+def composite_world(*, adp=1):
+    """world() in a composite beside an idle scheduled bath, an operator with ledgers of its own:
+    its device checks split the magnitudes between @3's ten and the operator's (the fourth
+    review's finding 1)."""
+    raw = cs.frozen_definition(world(adp=adp))
+    return bfx.with_bath_schedule(raw, ["bath_0"], {"Yu": {"Y": 1}}, [])
+
+
+@pytest.mark.parametrize("make", [world, composite_world], ids=["@3", "composite"])
+def test_the_device_row_checks_hold_the_kind_ledger_too(make):
+    with scoped(PRODUCER):
+        spec = parse_spec(make())
+        model = get_model(spec.model)
+        if getattr(model, "own_ledger_operators", ()):  # The split, on distinct magnitudes.
+            state, p = model.initial_values(spec)
+            ((op,), inner) = model.own_ledger_operators, model.inner_magnitudes(state, p)
+            planted = tuple(float(k + 1) for k in range(len(op.LEDGERS)))
+            tol = np.asarray(spec.execution.material_balance_atol_fmol)
+            magnitudes = (*inner, *planted)
+            _, bounds = model.ledger_limits(state, p, tol, 0.0, steps=7, magnitudes=magnitudes)
+            assert len(inner) < len(model.inner.LEDGERS)  # The adenine ledger has no magnitude.
+            assert bounds[len(model.inner.LEDGERS) :] == op.own_bounds(planted, 7)
+            # An operator's own bound that is not finite fails its ledger on the host (the fourth
+            # review's finding 2); the device leaves it (row_checks states the gap).
+            with pytest.MonkeyPatch.context() as patch:
+                infinite = (np.inf,) * len(op.LEDGERS)
+                patch.setattr(type(op), "own_bounds", lambda self, magnitudes, steps: infinite)
+                with pytest.raises(NumericalError, match="Bath schedule accounting failed"):
+                    model.check_values(state, spec)
         device = windows(spec, 4, "device")
         assert any(w.row_checks.decided_by == "device" for w in device)
         for window in device:
             assert window.diagnostics["max_adenine_moiety_error_fmol"] <= 1e-12
         with pytest.raises(NumericalError, match="accounting failed: adenine"):
-            windows(parse_spec(world(adp=2)), 4, "device")
+            windows(parse_spec(make(adp=2)), 4, "device")
 
 
 def test_a_composite_takes_the_kind_ledger_from_its_inner_model():

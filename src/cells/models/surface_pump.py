@@ -718,8 +718,11 @@ def checked_rows(
             for (name, value), key, bound in zip(
                 b.items(), ledgers.LEDGER_DIAGNOSTICS, limits, strict=True
             ):
+                # A bound that is not finite would admit any residual (|r| > NaN or +inf is
+                # false), so where it is used, it fails its ledger (the fourth review's finding 2).
                 if not np.isfinite(value).all() or (
-                    name != unbound and np.any(np.abs(value) > bound)
+                    name != unbound
+                    and (not np.isfinite(bound).all() or np.any(np.abs(value) > bound))
                 ):
                     raise NumericalError(LEDGER_MESSAGE + name)
                 key = "max_" + key

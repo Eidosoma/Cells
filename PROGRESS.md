@@ -108,6 +108,98 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning).** Each
+  was gated in full and passed the lead's merged check.
+  - `monomial-kernel-landed-2026-11-20` (d9342fcf): the cycle kind's fourth kinetic form, `monomial`
+    (K6's kernel).
+    - Exact closed-form slopes; read roles; references to registry forms under the binding owner's
+      three conditions; a one-sided domain x <= 80; k built at parse from a cited free energy.
+    - An invariance trace of five general-layout worlds caught one jaxpr break before landing. Crossrev
+      holds no general-layout world, which is a gate-tooling follow-up.
+  - `binding-sets-followup-landed-2026-11-20` (11dc95c5): a named potential set requires its moieties,
+    records and checks its proton buffers, and versions its derivation.
+  - `kinds-seam-e-landed-2026-11-20` (e658a8fd): a monomial mode's cited rate constant emits its seam-E
+    entry in kJ/mol form. k and the entry share one value.
+  - `x2-floor-fix-landed-2026-11-20` (4802dc9a): the general binding closure's booked energy term is
+    formed from increments through the closure's dual (D148: states bitwise).
+    - It removes a rounding floor that failed X2's order condition in buffered worlds: R's median
+      |e| falls from 9e-13 to 1.4e-17 pJ.
+    - FR-8's worlds never met the floor.
+  - **FR-8 rung 1's control** (from d03ca463; analysis registered). Largest passing steps under the
+    parity caps:
+    - H2's calm stretch, 20 ms, held by charge stability, also from the calm state at 1000 s (section
+      10.8's probe);
+    - H2 through the cue, 1 ms, by the location rule;
+    - W0, 5 ms, by the junction-gate bound.
+    - X2 refused nothing. Its sensitivity is shown at each world's largest step, and FR-3's plant is
+      caught.
+    - Cost per simulated second: H2 calm 0.020 s, H2 full 0.34 s, W0 0.32 s.
+    - The choice between D232's rules is the user's.
+  - **P1' (the @3 owner, on its branch):** both hosts are accurate in the delta-psi mode and give
+    branch E under X2 with the floor fix. At the source's synthase activity, explicit steps cost
+    1,000-30,000 CPU-hours per 300 s, and lowering the activity ruins the fit beyond 4-7 times. An
+    implicit block or a rapid-equilibrium synthase is being priced for the user's host ruling.
+
+- **The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork).** Each was
+  gated (tiers 1+2 with 0 changed, G1, crossrev, IDs, FR's set where it applies) and passed the lead's
+  merged check against main.
+  - `kir-ratio-landed-2026-11-20` (e3026388): the inward rectifier's sqrt(c_o/K_ref) formed
+    overflow-safe, in place (D148). The Lean project found it; the equivalent declarations now agree
+    bit for bit. d/dK_ref is undefined at split points, and the engine never takes it.
+  - `kcc-step-bound-landed-2026-11-20` (2e2dc62f): the KCC step bound counts a finite outside node,
+    summed per cell and per node. This closes a silent wrong-direction step, also found by the Lean
+    project. Every registered world faces held baths and keeps its bits. The quotient-overflow fix
+    stays held until its evidence covers every execution path.
+  - `symporter-v2-landed-2026-11-20` (99bff0ed): `na2_anion_symport_diagram@1` (D228 item 1).
+  - `fr15-p2-landed-2026-11-20` (ce39c904): `passive_constant_field_permeation@1` on the
+    passive-routes kind. One file timed out under load; it passed on rerun.
+  - `fr7-f3-landed-2026-11-20` (5dc63d38) and `fr7-pools-landed-2026-11-20` (549b1b6c): FR-7 F3, the
+    producer's assembly rate as a B1' target; and declared initial units per maturation pool (W5).
+  - `kinds-schedules-landed-2026-11-20` (ef76795e): the cycle kind's availability schedules
+    (D228 item 5), and the population bound in log space (D148).
+  - `mito-references-landed-2026-11-20` (bd29e2ae): MR1, the code-blind Beard 2005 reference.
+    Six unrelated engine tests timed out under load; on rerun, five passed and one failed only by
+    its CLI subprocess's timeout.
+  - `binding-mito-landed-2026-11-20` (aa847046): B1's `beard2005@1` named potential set, B2's
+    moieties, and FreeEnergyEntry's kJ/mol form with `dG_RT_offset` (F's, merged unedited).
+  - **FR-7:** F4's engine run from the registered R-loop start drifts by at most 1e-10 relative over
+    10 s. Its dosed closed arm peaks at N/N0 2.459, matching the reference's 2.46. F3's six-world
+    comparison and F4's comparison are still running as development runs.
+  - **Mitochondria (D234):** the laws' appendix is tagged `mito-laws-appendix-2026-11-20`.
+    - The code-blind component references are built and await registration.
+    - MR1's repair table shows Beard's printed Eq. 24 is a typo: the restored form is what the
+      paper ran.
+    - @3's P1′ finds both hosts accurate in the ΔΨ mode. At the source's synthase activity, explicit
+      steps are out of reach, and X2's count rule shows a floor, being traced.
+    - The host and the repairs are for the user's ruling.
+
+- **The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).**
+  - Merge a740b856, tag `review4-fixes-landed-2026-11-20`: the external review's four findings,
+    each a recorded exception with a test row.
+    - The composite's device checks split ledger magnitudes at the operators' count.
+    - A bound that is not finite fails its ledger.
+    - FR-8 rung 0's reader checks each arm's identity, step and grid.
+    - @3's batch signature carries each kind's axis sizes.
+    - Gates: tiers 595 files with 0 changed, crossrev 11 of 11, IDs +2, FR's set, R1 (274
+      fingerprints equal); the lead's merged check on trial 2816efb0 (527 passed).
+  - Merge 73d73bf8, tag `fr7-f2-landed-2026-11-20`: FR-7 F2 (development).
+    - `species_regulated_availability@2` reads a population's abundance as its source.
+    - `population_unit_turnover@1` states D232's scoped exception to D177.
+    - Gates: tiers 597 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +21, FR's set,
+      R1; the lead's merged check on trial a72e1f10 (271 passed).
+  - Merge 9dd869c6, tag `fr7-references-landed-2026-11-20`: FR-7's code-blind references, R-chain,
+    R-clear and R-loop. Each was tagged before any engine output (69932dfc, 1b257cf3, d55e39b4).
+    - R-loop follows D233's five-fold template, with its floor-sensitivity table registered.
+    - design.py's regeneration check was loosened after R-chain's tag; no registered value changed.
+    - Gates (no src change): tiers 601 files with 0 changed, IDs +15.
+  - Decisions D233 (FR-7's template ×5) and D234 (the roadmap's Option 2; gene regulation's design
+    begins). docs/CORE_LAWS_ROADMAP.md landed docs-only (7ebfab70).
+  - **Tagged, not yet landed:** the code-blind Beard 2005 mitochondria reference, MR1
+    (`mito-references-model-2026-11-19`, a9aac583).
+    - It reproduces the published curves to about digitisation precision.
+    - Its audit finds Eq. 11 (F1F0) dissipating negatively at the paper's own state-3 points.
+    - Its registration waits for the user's ruling on the declared departures.
+
 - **Seam E's checks and F's cleanup (19 November 2026).**
   - Merge bd9881d5, tag `binding-item5-landed-2026-11-19`: the species registry checks every declared
     `FreeEnergyEntry` against its own sum of ν μ°/RT, within the form's band. Gates: tiers 594 files

@@ -1147,11 +1147,12 @@ class _ControlViewReader(sra.SpeciesRegulatedAvailabilityV2):
 def test_a_factor_operator_reads_the_control_view_only_where_it_declares_it():
     """R2 (FR-7's request; development, not judged): a factor operator's current read at stage
     inner gets view=, the reader view of its fields (C4) as a function of state, in its three
-    control-view hooks; a routed half-step's factor_record gets none. Without such a read, as for
-    @2 itself, the composite passes nothing (static). Host only, about 3 s."""
+    control-view hooks; a routed half-step's factor_record gets none. @2 itself declares the read
+    for its population source (FR-7's part (b)), and without a population route it never calls
+    the view (test_regulated_availability_population.py). Host only, about 3 s."""
     spec = parse_spec(routed(inner=(0.0, 1.0)))
     model = get_model(spec.model)
-    assert model.factor_fields == {}
+    assert {o.LAW_ID: f for o, f in model.factor_fields.items()} == {LAW_V2: ("channel_abundance",)}
     check_declarations(_ControlViewReader)
     planted = _ControlViewReader()
     reading = pump_composite.Composition(

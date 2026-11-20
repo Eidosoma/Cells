@@ -739,8 +739,10 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         LEAK: ("stage_term",),
         NEUTRAL_ROUTE: ("material_bound",),
         "inward_rectifier_linear_driving_force@1": ("stage_term",),  # The rectifier (RECTIFIER).
+        "passive_constant_field_permeation@1": ("stage_term", "material_term"),  # FR-15 P2.
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
+        "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     from validation.compartment_ph_engine import definitions as defs

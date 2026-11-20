@@ -51,6 +51,7 @@ from cells.laws.channels import (
     kv1p4_mh,
     kv1p6_mh,
 )
+from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
@@ -219,6 +220,8 @@ def test_cycle_and_route_laws_name_their_step_terms():
         (passive_routes.LEAK_LAW_ID, "stage_term"): "conductance_S",
         (passive_routes.LAW_ID, "material_bound"): "bound_rate_per_s",
         (passive_routes.RECTIFIER_LAW_ID, "stage_term"): "slope_conductance_S",
+        (passive_routes.CHARGED_LAW_ID, "stage_term"): "conductance_S",  # FR-15 P2.
+        (passive_routes.CHARGED_LAW_ID, "material_term"): "material_slope_per_s",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
     }
 
@@ -253,11 +256,13 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         transporter.NEUTRAL_LAW: transporter.NEUTRAL,
         transporter.PROTON_LAW: transporter.PROTON,
         symport.DECLARED_ID: symport.LAW,
+        symport2.DECLARED_ID: symport2.LAW,
     }
     assert passive_routes.hosted_laws() == {
         passive_routes.LAW_ID: passive_routes.NEUTRAL,
         passive_routes.LEAK_LAW_ID: passive_routes.LEAK,
         passive_routes.RECTIFIER_LAW_ID: passive_routes.RECTIFIER,
+        passive_routes.CHARGED_LAW_ID: passive_routes.CHARGED,  # FR-15 P2.
     }
     builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()

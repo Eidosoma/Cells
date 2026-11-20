@@ -23,6 +23,12 @@ exactly where u = 0, its sign is that of u, and at fixed u it scales as the squa
   (u - V_h)/s, q (1 - q) <= 1/4 and |w| q (1 - q) < 0.225 for all w, so
   |dI/dV| <= m A g_ref (c_o/K_ref)^(1/2) (5/4 + |V_h| / (4 s)).
 - **Domain:** c_o > 0 and c_i > 0, finite, at both ends of every route that conducts (g_ref > 0).
+- **Its concentration factor** (c_o/K_ref)^(1/2) (concentration_factor) is sqrt(c_o / K_ref)
+  wherever that quotient is a normal float, as it always was. Where c_o and K_ref are normal and
+  their quotient is not, it is sqrt(c_o) / sqrt(K_ref), within a few ulps. A quotient is not
+  normal when it overflows, or when it falls below the smallest normal float, which compiled CPU
+  code flushes to zero. So (b g_ref, b^2 K_ref) declares the same route at extreme finite b too.
+  The independent Lean project (lean/) found b = 2^-512 (K_ref 2^-1022 mM) refused before this.
 
 **Its coefficients are the route's declaration, never the law's:** g_ref (S/m^2, >= 0; 0 is a
 closed route), K_ref (mM, > 0), V_h (V, finite) and s (V, > 0: q falls as u rises, so the route
@@ -59,6 +65,28 @@ def rectification(u_V, v_half_V, slope_V, *, xp=jnp):
     return q, e / ((1.0 + e) * (1.0 + e))
 
 
+def concentration_factor(c_out_mM, k_ref_mM, *, xp=jnp):
+    """(c_o / K_ref)^(1/2), overflow-safe (the module docstring). The split form serves only
+    where c_o and K_ref are at least the smallest normal float and their quotient is not normal;
+    every other input keeps sqrt(c_o / K_ref) bit for bit. A subnormal operand keeps it too, since
+    compiled CPU code reads one as zero.
+
+    The double where: the split form reads 1 for both operands where the direct form is taken,
+    and the direct form reads 1 for c_o where the split form is taken. So the branch not taken
+    puts no inf or NaN into a value, or into a derivative in c_o. The direct form keeps K_ref
+    itself as its divisor, since compiled code divides by a broadcast K_ref as a product with its
+    reciprocal, and a selected divisor would change those bits. K_ref is a declared coefficient
+    that the engine never differentiates. Its derivative is not finite at a split point, nor,
+    as before, wherever K_ref^-2 overflows."""
+    quotient = c_out_mM / k_ref_mM
+    info = xp.finfo(xp.result_type(quotient))
+    split = (c_out_mM >= info.tiny) & (k_ref_mM >= info.tiny)
+    split = split & ((quotient < info.tiny) | (quotient > info.max))
+    direct = xp.sqrt(xp.where(split, 1.0, c_out_mM) / k_ref_mM)
+    roots = xp.sqrt(xp.where(split, c_out_mM, 1.0)) / xp.sqrt(xp.where(split, k_ref_mM, 1.0))
+    return xp.where(split, roots, direct)
+
+
 def _terms(c_in_mM, c_out_mM, voltage_V, temperature_K, area_m2, g_S_per_m2, k_ref_mM, v_half_V,
            slope_V, availability, *, xp):
     """(scale S, q, q (1 - q), u V), with every row that does not conduct (g = 0) read at c = 1 mM,
@@ -68,7 +96,7 @@ def _terms(c_in_mM, c_out_mM, voltage_V, temperature_K, area_m2, g_S_per_m2, k_r
     c_out = xp.where(on, c_out_mM, 1.0)
     u = voltage_V - reversal_V(c_in, c_out, temperature_K, xp=xp)
     q, q1q = rectification(u, v_half_V, slope_V, xp=xp)
-    scale = availability * area_m2 * g_S_per_m2 * xp.sqrt(c_out / k_ref_mM)
+    scale = availability * area_m2 * g_S_per_m2 * concentration_factor(c_out, k_ref_mM, xp=xp)
     return scale, q, q1q, u
 
 

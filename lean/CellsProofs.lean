@@ -1,4 +1,5 @@
 import CellsProofs.Accounting.Transfer
+import CellsProofs.Chemistry.AssemblyKinetics
 import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
@@ -9,8 +10,11 @@ import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.ElectrogenicPumps
+import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.NeutralPermeation
+import CellsProofs.Transport.PotassiumAnionSymport
 import CellsProofs.Transport.ProtonLeak
+import CellsProofs.Transport.SodiumAnionSymport

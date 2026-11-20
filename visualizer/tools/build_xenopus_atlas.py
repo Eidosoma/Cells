@@ -320,8 +320,10 @@ def stages(d):
         raise SystemExit(f"the two-cell stage's time is {by_id['two-cell']['time']}, not the first division's as its source gives it")
     if not all(words in by_id["four-cell"]["note"] for words in STAGE_NUMBERS_SAID):
         raise SystemExit("the four-cell stage's note no longer gives its time from the first division as its source does")
-    if "opens_on" in block:
-        raise SystemExit("the stages name a stage to open on: the frog opens on its adult until it is decided otherwise")
+    # Decided on 19 November 2026: the frog opens on its fertilised egg. Its adult, the form this file describes, is a
+    # press away on the strip. Any other opening stage, or none, is refused here until it is decided again.
+    if block.get("opens_on") != "egg":
+        raise SystemExit(f"the stages open on {block.get('opens_on', 'the file\'s own stage')!r}: the frog opens on its fertilised egg, as decided")
     return block, sources
 
 
