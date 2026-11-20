@@ -24,8 +24,8 @@ Each claim with a planted error it must catch (D187):
 - around a wash (FR-22): a cut at the last event before each replacement and at the first after
   it, resumed bitwise; and the definition's round trip keeps its fingerprint.
 
-World-compiling cost: one population program (K = 2) and about 14 runs. Reason: the claims are
-the runs' own stops, books and events.
+World-compiling cost: one population program (K = 2) and about 14 runs, 51.4 s for the whole file
+on the timed lane. Reason: the claims are the runs' own stops, books and events.
 """
 
 import copy
