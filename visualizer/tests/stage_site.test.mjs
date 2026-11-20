@@ -101,19 +101,23 @@ test("a release holds the staged page but for the declared insertions and the tw
     assert.ok(head.startsWith(`<title>${TITLE}</title><meta name="description" content="${DESCRIPTION}"><link rel="canonical" href="${SITE}">`));
     for (const [name, value] of [["og:url", SITE], ["og:image", `${SITE}r/v1/${SHARE}`], ["og:image:width", "1200"], ["og:image:height", "630"], ["og:title", TITLE], ["twitter:card", "summary_large_image"]]) assert.ok(head.includes(`="${name}" content="${value}"`), name);
     assert.ok(!/twitter:(site|creator)/.test(head), "no account is named");
-    // The structured data: the site and its source code, each value true of the tree, and nobody named.
+    // The structured data: the site and its source code, each value true of the tree; the one name in it is the credit's
+    // organisation, the site's publisher and the source code's author, and nothing more.
     const data = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(head)[1]);
     assert.deepEqual(data, structuredData(words));
     assert.deepEqual(data["@graph"].map((item) => [item["@type"], item.name]), [["WebSite", "Cells"], ["SoftwareSourceCode", "Cells"]]);
     assert.equal(data["@graph"][0].url, SITE);
     assert.equal(data["@graph"][1].codeRepository, "https://github.com/Eidosoma/Cells");
     assert.equal(data["@graph"][1].license, `https://github.com/Eidosoma/Cells/blob/${REVISION}/LICENSE`, "the licence at the map's revision");
-    assert.ok(!/"(author|publisher|creator|copyrightHolder|maintainer|contributor|funder|sponsor)"/.test(JSON.stringify(data)), "no author and no publisher until the owner says who is named");
+    const by = { "@type": "Organization", name: ABOUT.credit.organisation };
+    assert.deepEqual([data["@graph"][0].publisher, data["@graph"][1].author], [by, by]);
+    assert.deepEqual([data["@graph"][0].author, data["@graph"][1].publisher], [undefined, undefined]);
+    assert.ok(!/"(creator|copyrightHolder|maintainer|contributor|funder|sponsor|email|telephone|sameAs|logo)"|"Person"/.test(JSON.stringify(data)), "no other name, contact or address of anyone");
     // The text without script: the About words whole, the source code in a new tab, the six views by the page's own names.
-    for (const words_ of [...ABOUT.lead, ...ABOUT.reading, ...ABOUT.views].map((item) => item.text)) assert.ok(text.includes(words_), words_.slice(0, 40));
+    for (const words_ of [...ABOUT.lead, ...ABOUT.reading, ...ABOUT.views, ABOUT.credit].map((item) => item.text)) assert.ok(text.includes(words_), words_.slice(0, 40));
     assert.ok(text.startsWith('<section id="cells-text"') && text.includes('<h1 id="cells-text-title">Cells</h1>'));
     assert.ok(text.includes('<a href="https://github.com/Eidosoma/Cells" target="_blank" rel="noopener noreferrer">Source code</a>'));
-    assert.ok(text.includes(`<a href="https://github.com/Eidosoma/Cells/blob/${REVISION}/LICENSE" target="_blank" rel="noopener noreferrer">MIT licence</a>`));
+    assert.ok(!/LICENSE|licence/.test(text), "no licence link, as the page's About has none");
     assert.deepEqual([...text.matchAll(/<a href="https:\/\/cells\.eidosoma\.ai\/\?lens=([a-z]+)">([^<]+)<\/a>/g)].map((match) => [match[1], match[2]]), VIEWS);
     assert.ok(text.includes("Map: As of 19 Nov 2026 · main abc12345. Release: v1."), "what the page knows of itself");
     assert.ok(!/<script/.test(text), "the text runs nothing");
@@ -155,7 +159,7 @@ test("a release holds the staged page but for the declared insertions and the tw
     assert.equal(await readFile(path.join(release, "sitemap.xml"), "utf8"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${SITE}</loc><lastmod>2026-11-19</lastmod></url>\n</urlset>\n`);
     const llms = await readFile(path.join(release, "llms.txt"), "utf8");
     assert.ok(llms.startsWith(`# Cells\n\n> ${DESCRIPTION}\n`));
-    for (const line of [`- [Scope](${SITE}?lens=cell): `, `[release.json](${SITE}r/v1/release.json)`, `[cards.json](${SITE}r/v1/cards.json)`, "- FR-1: a closed compartment. Level: Qualified or judged. Verdict: passed, 44 of 44 judged criteria, 18 Nov 2026.", `- cells.visualizer.replay@1: [runs/sheet--a.json](${SITE}r/v1/runs/sheet--a.json)`, "- [EXPERIMENT_CARDS.md](https://github.com/Eidosoma/Cells/blob/visualizer/visualizer/schema/EXPERIMENT_CARDS.md)", `- [Source code](https://github.com/Eidosoma/Cells): MIT licence ([LICENSE](https://github.com/Eidosoma/Cells/blob/${REVISION}/LICENSE))`]) assert.ok(llms.includes(line), line);
+    for (const line of [`- [Scope](${SITE}?lens=cell): `, `[release.json](${SITE}r/v1/release.json)`, `[cards.json](${SITE}r/v1/cards.json)`, "- FR-1: a closed compartment. Level: Qualified or judged. Verdict: passed, 44 of 44 judged criteria, 18 Nov 2026.", `- cells.visualizer.replay@1: [runs/sheet--a.json](${SITE}r/v1/runs/sheet--a.json)`, "- [EXPERIMENT_CARDS.md](https://github.com/Eidosoma/Cells/blob/visualizer/visualizer/schema/EXPERIMENT_CARDS.md)", "- [Source code](https://github.com/Eidosoma/Cells), under the MIT licence", `\n${ABOUT.credit.text}\n`]) assert.ok(llms.includes(line), line);
     // The staged folder is only read, and no path of the machine stands in any file written.
     assert.deepEqual(await snapshot(staged), before);
     const places = [folder, ROOT, os.homedir(), "/home/", "/mnt/", "/Users/"];

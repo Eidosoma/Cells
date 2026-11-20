@@ -275,12 +275,16 @@ export async function sharePicture({ file = SHARE_FILE, record = SHARE_RECORD } 
   return { bytes, ...size, alt: said.alt.trim(), sha256: said.sha256 };
 }
 
-/** The structured data of the site and of its source code (schema.org, as JSON-LD): no author and no publisher. */
+/**
+ * The structured data of the site and of its source code (schema.org, as JSON-LD). The one name of anyone in it is the
+ * credit's organisation (data/site/about.json, `credit`): the site's publisher and the source code's author, by name alone.
+ */
 export function structuredData(words) {
   const { about } = words;
+  const by = about.credit?.organisation ? { "@type": "Organization", name: about.credit.organisation } : null;
   const graph = [
-    { "@type": "WebSite", name: about.name, url: SITE, description: about.description, inLanguage: "en" },
-    { "@type": "SoftwareSourceCode", name: about.name, description: about.lead[0], codeRepository: about.source.url, url: about.source.url, ...(words.licence ? { license: words.licence } : {}) },
+    { "@type": "WebSite", name: about.name, url: SITE, description: about.description, inLanguage: "en", ...(by ? { publisher: by } : {}) },
+    { "@type": "SoftwareSourceCode", name: about.name, description: about.lead[0], codeRepository: about.source.url, url: about.source.url, ...(words.licence ? { license: words.licence } : {}), ...(by ? { author: by } : {}) },
   ];
   return { "@context": "https://schema.org", "@graph": graph };
 }
@@ -323,15 +327,16 @@ const away = (url, words) => `<a href="${escapeHtml(url)}" target="${NEW_TAB.tar
 
 /** The text a reader with no script gets: the About words as HTML, ahead of the page, put away by the page once it has drawn. */
 export function siteText(id, words) {
-  const { about, views, meta, licence } = words;
+  const { about, views, meta } = words;
   const facts = pageFacts(meta, { release: id }, formatDate);
   const extra = [...about.links, ...(about.contact ? [about.contact] : [])];
   return [
     `<section id="${TEXT_ELEMENT}" aria-labelledby="${TEXT_ELEMENT}-title">`,
     `<h1 id="${TEXT_ELEMENT}-title">${escapeHtml(about.name)}</h1>`,
     ...about.lead.map((words_, k) => `<p${k ? "" : ' class="lead"'}>${escapeHtml(words_)}</p>`),
-    `<p>${away(about.source.url, about.source.label)}${about.source.licence ? ` · ${licence ? away(licence, `${about.source.licence.name} licence`) : escapeHtml(`${about.source.licence.name} licence`)}` : ""}</p>`,
-    about.credit ? `<p>${escapeHtml(about.credit)}</p>` : "",
+    // The source code in a new tab, as the page's About has it (its licence is not linked there).
+    `<p>${away(about.source.url, about.source.label)}</p>`,
+    about.credit ? `<p>${escapeHtml(about.credit.text)}</p>` : "",
     extra.length ? `<ul>${extra.map((link) => `<li>${/^mailto:/.test(link.url) ? `<a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a>` : away(link.url, link.label)}</li>`).join("")}</ul>` : "",
     `<h2>Views</h2>`,
     `<ul>${views.map((view) => `<li><a href="${viewAddress(view.id)}">${escapeHtml(view.label)}</a>: ${escapeHtml(about.views.find((item) => item.id === view.id).text)}</li>`).join("")}</ul>`,
@@ -357,11 +362,11 @@ export const sitemapText = (date) => `<?xml version="1.0" encoding="UTF-8"?>\n<u
  * repository, and the source. `files`: the release's files with their formats; `schemas`: the contracts' file names.
  */
 export function llmsText(id, words, { cards = null, files = [], schemas = [] } = {}) {
-  const { about, views, meta, licence } = words;
+  const { about, views, meta } = words;
   const md = (text) => String(text).replace(/\s+/g, " ").trim();
   const at = (name) => `${SITE}r/${id}/${name}`;
   const lines = [`# ${about.name}`, "", `> ${md(about.description)}`, "", ...about.lead.flatMap((words_) => [md(words_), ""]), ...about.reading.flatMap((words_) => [md(words_), ""])];
-  if (about.credit) lines.push(md(about.credit), "");
+  if (about.credit) lines.push(md(about.credit.text), "");
   for (const [label, value] of pageFacts(meta, { release: id }, formatDate)) lines.push(`- ${label}: ${value}`);
   lines.push(`- Address: ${SITE} (the views below are addresses of it)`, "");
   lines.push("## Views", "", ...views.map((view) => `- [${view.label}](${viewAddress(view.id)}): ${md(about.views.find((item) => item.id === view.id).text)}`), "");
@@ -392,7 +397,7 @@ export function llmsText(id, words, { cards = null, files = [], schemas = [] } =
   if (own && schemas.length) {
     lines.push("## Contracts", "", `What each format holds, one page each, under [schema/](${own.replace("/blob/", "/tree/")}visualizer/schema) in the repository:`, "", ...schemas.map((name) => `- [${name}](${own}visualizer/schema/${name})`), "");
   }
-  lines.push("## Source", "", `- [${about.source.label}](${about.source.url})${about.source.licence ? `: ${about.source.licence.name} licence${licence ? ` ([${about.source.licence.path}](${licence}))` : ""}` : ""}`);
+  lines.push("## Source", "", `- [${about.source.label}](${about.source.url})${about.source.licence ? `, under the ${about.source.licence.name} licence` : ""}`);
   for (const link of [...about.links, ...(about.contact ? [about.contact] : [])]) lines.push(`- [${md(link.label)}](${link.url})`);
   return `${lines.join("\n")}\n`;
 }

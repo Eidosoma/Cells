@@ -202,6 +202,9 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .look-switch .seg-row { grid-template-columns: auto 124px; }
 .look-note { max-width: 250px; font-size: 11.5px; line-height: 1.4; text-align: right; color: var(--muted); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
+/* The note lies over the whole picture, the panel's place included, and stands after the panel: it lets a press through, so
+   that a part's panel and About's can be pressed where no 3D is drawn. Nothing in the note is pressed. */
+.fallback { pointer-events: none; }
 
 /* ---------------------------------------------------------------- replay: the run's card */
 .run-card { width: 268px; gap: 7px; }

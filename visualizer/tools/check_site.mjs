@@ -20,9 +20,11 @@
 // visit. What the site says of itself is held too, on both pages:
 //   - the head: the title and description of the About words, the site's address as canonical and as og:url, the share
 //     picture as og:image (the release's own, a JPEG of 1200 by 630 within 200 kB), the large-image card, and structured
-//     data for the site and its source code with no author and no publisher;
+//     data for the site and its source code whose one name of anyone is the About words' credit (data/site/about.json):
+//     the site's publisher and the source code's author, an organisation by name;
 //   - the text without script: with script switched off, the About words stand whole as HTML (a heading, the paragraphs,
-//     the source code in a new tab, each view a link), and nothing is fetched from another host; with script, the page puts
+//     the credit, the source code in a new tab and no licence link, each view a link), and nothing is fetched from
+//     another host; with script, the page puts
 //     them away once it has drawn;
 //   - the root files, served as --release will put them at the root (the release's own, before the pointer moves):
 //     robots.txt lets every reader read everything and never closes /r/, and names the sitemap; the sitemap lists the
@@ -42,6 +44,7 @@ import zlib from "node:zlib";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { ROOT } from "./lib/build_page.mjs";
 import { COMPRESSIBLE, ROOT_FILES, SHARE, SHARE_SIZE, SITE, contentType, jpegSize, sitePolicy } from "./stage_site.mjs";
+const CREDIT = JSON.parse(await readFile(path.join(ROOT, "data", "site", "about.json"), "utf8")).credit; // what names anyone
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -156,7 +159,8 @@ for (const [which, at] of [["the root page", "/"], ["the release's page", `/r/${
   const title = /<title>([^<]*)<\/title>/.exec(head)?.[1] ?? null, description = attribute(head, "name", "description");
   check(`${which}: its head has a title and a description, and the site's address as canonical and og:url`, title && description && head.includes(`<link rel="canonical" href="${SITE}">`) && attribute(head, "property", "og:url") === SITE && attribute(head, "property", "og:title") === title && attribute(head, "property", "og:description") === description, JSON.stringify({ title, canonical: /<link rel="canonical" href="([^"]*)">/.exec(head)?.[1] }));
   check(`${which}: its link preview is the large-image card with the release's own picture, ${SHARE_SIZE.width} by ${SHARE_SIZE.height}, within ${SHARE_SIZE.most / 1000} kB`, image === `${SITE}r/${ID}/${SHARE}` && attribute(head, "name", "twitter:card") === "summary_large_image" && picture && picture.length <= SHARE_SIZE.most && JSON.stringify(jpegSize(picture)) === JSON.stringify({ width: SHARE_SIZE.width, height: SHARE_SIZE.height }) && attribute(head, "property", "og:image:width") === String(SHARE_SIZE.width) && attribute(head, "property", "og:image:height") === String(SHARE_SIZE.height) && !/twitter:(site|creator)/.test(head), JSON.stringify({ image, bytes: picture?.length, size: picture && jpegSize(picture) }));
-  check(`${which}: its structured data names the site and its source code (name, description, repository, licence, address), and no author or publisher`, site?.name && site.url === SITE && unescape(site.description) === unescape(description) && code?.name && code.description && /^https:\/\//.test(code.codeRepository || "") && /\/LICENSE$/.test(code.license || "") && !/"(author|publisher|creator|copyrightHolder|maintainer|contributor|funder|sponsor)"/.test(JSON.stringify(data)), JSON.stringify({ types: graph.map((item) => item["@type"]), license: code?.license }));
+  const by = JSON.stringify({ "@type": "Organization", name: CREDIT?.organisation });
+  check(`${which}: its structured data names the site and its source code (name, description, repository, licence, address), and its one name of anyone is the credit's organisation, the site's publisher and the code's author`, site?.name && site.url === SITE && unescape(site.description) === unescape(description) && code?.name && code.description && /^https:\/\//.test(code.codeRepository || "") && /\/LICENSE$/.test(code.license || "") && JSON.stringify(site.publisher) === by && JSON.stringify(code.author) === by && !site.author && !code.publisher && !/"(creator|copyrightHolder|maintainer|contributor|funder|sponsor|email|telephone|sameAs|logo)"|"Person"/.test(JSON.stringify(data)), JSON.stringify({ types: graph.map((item) => item["@type"]), license: code?.license, publisher: site?.publisher, author: code?.author }));
   said.pages[at] = { title, description, image, data };
 }
 const served = {};
@@ -320,8 +324,8 @@ try {
     for (const list of [asked, hosts, outside, errors]) list.length = 0;
     await tab("Page.navigate", { url: `${origin}${at}` });
     await sleep(2500);
-    const text = await evaluate(`(() => { const t = document.getElementById("cells-text"); if (!t) return null; const r = t.getBoundingClientRect(), style = getComputedStyle(t); const links = [...t.querySelectorAll("a")]; return { shown: style.display !== "none" && style.visibility !== "hidden" && r.width > 0 && r.height > 0, heading: t.querySelector("h1")?.textContent || null, paragraphs: t.querySelectorAll("p").length, words: t.textContent.length, source: links.filter((a) => a.textContent.trim() === "Source code").map((a) => ({ href: a.href, target: a.target, rel: a.rel })), views: links.filter((a) => /[?]lens=/.test(a.getAttribute("href"))).map((a) => a.textContent), scrolls: t.scrollHeight > t.clientHeight ? getComputedStyle(t).overflowY : "fits" }; })()`).catch((error) => ({ error: error.message }));
-    check(`${which}, with script switched off: the About words stand as HTML, a heading, the paragraphs, the source code in a new tab, each view a link`, text?.shown && text.heading === "Cells" && text.paragraphs >= 5 && text.source.length === 1 && text.source[0].target === "_blank" && text.source[0].rel === "noopener noreferrer" && text.views.length === 6 && ["auto", "scroll", "fits"].includes(text.scrolls), JSON.stringify(text));
+    const text = await evaluate(`(() => { const t = document.getElementById("cells-text"); if (!t) return null; const r = t.getBoundingClientRect(), style = getComputedStyle(t); const links = [...t.querySelectorAll("a")]; return { shown: style.display !== "none" && style.visibility !== "hidden" && r.width > 0 && r.height > 0, heading: t.querySelector("h1")?.textContent || null, paragraphs: t.querySelectorAll("p").length, words: t.textContent.length, source: links.filter((a) => a.textContent.trim() === "Source code").map((a) => ({ href: a.href, target: a.target, rel: a.rel })), licence: links.filter((a) => /licen[cs]e/i.test(a.textContent + a.href)).length, credit: t.textContent.includes(${JSON.stringify(CREDIT?.text || "")}), views: links.filter((a) => /[?]lens=/.test(a.getAttribute("href"))).map((a) => a.textContent), scrolls: t.scrollHeight > t.clientHeight ? getComputedStyle(t).overflowY : "fits" }; })()`).catch((error) => ({ error: error.message }));
+    check(`${which}, with script switched off: the About words stand as HTML, a heading, the paragraphs, the credit, the source code in a new tab and no licence link, each view a link`, text?.shown && text.heading === "Cells" && text.paragraphs >= 5 && text.credit && text.licence === 0 && text.source.length === 1 && text.source[0].target === "_blank" && text.source[0].rel === "noopener noreferrer" && text.views.length === 6 && ["auto", "scroll", "fits"].includes(text.scrolls), JSON.stringify(text));
     check(`${which}, with script switched off: no request to any host but the site's own`, !outside.length, outside.slice(0, 3).join(", ") || `${hosts.length} requests`);
     await tab("Emulation.setScriptExecutionDisabled", { value: false });
     const ready = await open(at);

@@ -1,6 +1,6 @@
 {
  "format": "cells.visualizer.about@1",
- "note": "The viewer's About words, written once: the page's About panel and first-visit line (src/ui/about.js), and the site's title, description, text without script and llms.txt (tools/stage_site.mjs) all read them. The page carries them in its scene as `about` (tools/lib/build_page.mjs), and the site's staging reads them from the staged page. Every sentence names the place it was taken from (`from`); none says more of Cells than that place does. Nobody is named: a credit line, a contact and further links are added here alone (`credit`, `contact`, `links`), and every reader of this file shows them where they are given.",
+ "note": "The viewer's About words, written once: the page's About panel and first-visit line (src/ui/about.js), and the site's title, description, text without script, structured data and llms.txt (tools/stage_site.mjs) all read them. The page carries them in its scene as `about` (tools/lib/build_page.mjs), and the site's staging reads them from the staged page. Every sentence names the place it was taken from (`from`); none says more of Cells than that place does. What names anyone is `credit` alone (its words, and the organisation the structured data names as the source code's author and the site's publisher); a contact and further links are added here alone (`contact`, `links`), and every reader of this file shows them where they are given.",
  "name": "Cells",
  "title": {
   "text": "Cells: a map of a physics simulator for biology",
@@ -79,7 +79,11 @@
    "from": "the repository's LICENSE, its first line (\"MIT License\")"
   }
  },
- "credit": null,
+ "credit": {
+  "text": "Made by Eidosoma.",
+  "organisation": "Eidosoma",
+  "from": "the owner's answer of 20 November 2026: the page names Eidosoma, an organisation, and no person"
+ },
  "contact": null,
  "links": []
 }

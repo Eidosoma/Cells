@@ -911,6 +911,16 @@ certificates or accounts.
   opens the root page and `/r/<id>/` at three addresses each in headless Chrome, and holds five things: no request to
   another host, no missing file, no console error, the host profile read, and a tab press that keeps the address. It
   records bytes as sent beside raw.
+- **What the site says of itself** (20 November 2026, for Version 53). Each release's `index.html` and `root.html` carry,
+  from the About words the staged page carries (`data/site/about.json`, which the staging holds equal to the tracked file),
+  a title and a description; `https://cells.eidosoma.ai/` as canonical (`SITE` in `tools/stage_site.mjs`, the one place the
+  address is stated); link-preview tags with the release's own `share.jpg` (1200 by 630, the page's scene with no words);
+  structured data for the site and its source code, whose one name is Eidosoma, an organisation, as the site's publisher
+  and the code's author; and the About text as HTML ahead of the page for a reader with no script (the source code linked,
+  its licence not), put away once the page has drawn. Each release holds `robots.txt` (everything allowed, `/r/` never
+  closed, the sitemap named), `sitemap.xml` (the root) and `llms.txt` (the site for an agent); `--release` writes those three
+  at the site's root before the pointer, each beside and moved into place, and removes them where a release has none.
+  `tools/check_site.mjs` holds each of them, on both pages.
 - **`deploy/`** is an example container (Caddy with a rate-limit module, in two forms: behind a proxy, or with its own
   certificate). It has not been validated or started.
 - **`tests/stage_site.test.mjs`** runs in `npm test`, in about a second.

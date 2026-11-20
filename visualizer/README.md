@@ -32,6 +32,21 @@ A view can also stand on a page of its own (`node tools/build_view_page.mjs <vie
 the Laws library and the origin-of-life view each have such a page beside their place
 here.
 
+**About and the first visit** (the owner, 20 November 2026). The bar's About button, after
+List, and the name Cells in its corner open About in the side panel's place (a sheet on a
+phone): what the page is, in words taken from the repository's README, the site's
+description and the map's caveat, each view as a door, the source code in a new tab, the
+credit line ("Made by Eidosoma."), and what the page knows of itself (the map's stamp; on
+the site, its release). The words are written once, in `data/site/about.json`, which the
+page carries in its scene as `about` (`src/ui/about.js`); what names anyone is its
+`credit` alone. `#about` in the address opens it, in the artifact's frame too. On a first
+visit a line under the bar says what the page is, with About, the source code and a close
+button; closed, it stays closed in that browser. On a window 760 px or wider it stands in
+the first band under the bar that covers no card, control or note and none of the view's
+names (it keeps from a name the clearance a name keeps from a card); elsewhere, and on
+every phone, it waits out of sight. Every check is a first visit (each run has a new
+browser profile), so the line stands in their pictures where it finds room.
+
 Three things are encoded, and kept apart:
 
 - **Status**: qualified or judged, implemented and guarded, established, designed, planned,
@@ -1181,6 +1196,19 @@ document):
 - `node tools/check_site.mjs --site SITE --id vNN` holds that a visit asks no other host;
 - `node tools/stage_site.mjs --site SITE --id vNN --release` moves the pointer;
 - the release is recorded in `artifacts.json` and the commit tagged, then `--retain 3 --remove`.
+
+Each release's pages carry the site's own head: the About words' title and description,
+`https://cells.eidosoma.ai/` as canonical (the one place `tools/stage_site.mjs` states the
+site's address), link-preview tags with `share.jpg` (the tracked `data/site/share.jpg`, the
+page's own scene with no words, made by `tools/make_share.mjs`), and structured data for the
+site and its source code, whose one name is the credit's organisation (the site's
+publisher, the code's author). Ahead of the page stands the About text as HTML for a reader
+with no script (the source code linked, its licence not), put away once the page has
+drawn. Each release also holds `robots.txt` (every reader may read everything; `/r/` is
+never closed), `sitemap.xml` and `llms.txt` (the site for an agent: the words, the views,
+the cards with their levels and verdicts, the release's files by format, the contracts,
+the source), which `--release` puts at the site's root with the pointer. The staging
+refuses a page whose About words are not the tracked file's.
 
 `deploy/` holds an example of the server's container; the owner sets the machine up.
 

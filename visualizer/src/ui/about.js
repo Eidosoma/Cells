@@ -48,7 +48,8 @@ export function aboutOf(scene) {
     reading: said(about.reading),
     views: (Array.isArray(about.views) ? about.views : []).filter((view) => text(view?.id) && text(view?.text)).map((view) => ({ id: view.id, text: view.text.trim() })),
     source: { label: text(about.source.label) || "Source code", url: about.source.url, licence: text(about.source.licence?.name) ? { name: about.source.licence.name.trim(), path: text(about.source.licence.path) } : null },
-    credit: text(about.credit?.text),
+    // What names anyone: the credit's words, and the organisation they name (the structured data's author and publisher).
+    credit: text(about.credit?.text) ? { text: about.credit.text.trim(), organisation: text(about.credit.organisation) } : null,
     contact: about.contact && text(about.contact.label) && outside(about.contact.url) ? { label: about.contact.label.trim(), url: about.contact.url } : null,
     links: (Array.isArray(about.links) ? about.links : []).filter((link) => text(link?.label) && outside(link?.url)).map((link) => ({ label: link.label.trim(), url: link.url })),
   };
@@ -92,15 +93,19 @@ export function keepIntroClosed(store = () => globalThis.localStorage) {
 
 /**
  * Where the first-visit line stands, in the frame's coordinates: in the first band from `top` (under the bar) down to
- * `reach` of the frame's height where a box of `size` comes within `gap` of none of `taken` (the rectangles of what the
- * page has put over the picture), within `side` of the frame's edges, as near the frame's middle as that band allows.
- * Null where no band holds it: the line then waits, out of sight.
+ * `depth` below it (and never past `reach` of the frame's height: it stays under the bar, never among a view's names further
+ * down) where a box of `size` comes within `gap` of none of `taken` (the rectangles of what the
+ * page has put over the picture; a rectangle may carry its own clearance, `gapX` across and `gapY` up and down), within
+ * `side` of the frame's edges, as near the frame's middle as that band allows. Null where no band holds it: the line then
+ * waits, out of sight.
  */
-export function placeIntro({ width, height, top, taken = [], size, gap = 8, side = 16, step = 4, reach = 0.5 }) {
+export function placeIntro({ width, height, top, taken = [], size, gap = 8, side = 16, step = 2, reach = 0.5, depth = Infinity }) {
   if (!(size?.width > 0 && size?.height > 0) || size.width > width - 2 * side) return null;
-  for (let y = Math.ceil(top); y + size.height <= height * reach; y += step) {
-    const low = y - gap, high = y + size.height + gap;
-    const blocks = taken.filter((rect) => rect.top < high && rect.bottom > low).map((rect) => [rect.left - gap, rect.right + gap]).sort((a, b) => a[0] - b[0]);
+  for (let y = Math.ceil(top); y + size.height <= height * reach && y <= top + depth; y += step) {
+    const blocks = taken
+      .filter((rect) => rect.top < y + size.height + (rect.gapY ?? gap) && rect.bottom > y - (rect.gapY ?? gap))
+      .map((rect) => [rect.left - (rect.gapX ?? gap), rect.right + (rect.gapX ?? gap)])
+      .sort((a, b) => a[0] - b[0]);
     const free = [];
     let x = side;
     for (const [from, to] of blocks) {
@@ -225,15 +230,18 @@ export class AboutPart {
     // (Not the species' dropdown: it opens over everything for a moment, the line under it.)
     const elements = [viewer.legend, viewer.viewCard, viewer.viewToggle, viewer.backButton, viewer.rail, viewer.railToggle, viewer.panel, viewer.index, viewer.timeline, viewer.sweepCard, viewer.scaleBar, viewer.caveat, viewer.hint, viewer.atlasNav?.trail, viewer.atlasNav?.map, viewer.landingView?.box];
     const rects = elements.filter(seen).map((element) => element.getBoundingClientRect());
-    // The names on the picture the view shows now: the line yields to them, so that none is hidden for it.
-    for (const label of viewer.labelBox?.querySelectorAll(".label:not(.is-off)") || []) rects.push(label.getBoundingClientRect());
+    // The names on the picture the view shows now: the line yields to them, so that none is hidden for it. It keeps from a
+    // name the clearance a name keeps from a card (src/core/labels.js: 6 px across, 2 px up and down).
+    const names = [...(viewer.labelBox?.querySelectorAll(".label:not(.is-off)") || [])].map((label) => label.getBoundingClientRect());
     // Where no 3D can be drawn, the page's note says so in a line of words at the head of its box, which reaches the foot.
     if (seen(viewer.fallback)) {
       const range = document.createRange();
       range.selectNodeContents(viewer.fallback);
       rects.push(range.getBoundingClientRect());
     }
-    return rects.filter((rect) => rect.width > 0 && rect.height > 0).map((rect) => ({ left: rect.left - frame.left, top: rect.top - frame.top, right: rect.right - frame.left, bottom: rect.bottom - frame.top }));
+    const inFrame = (rect, more = {}) => ({ left: rect.left - frame.left, top: rect.top - frame.top, right: rect.right - frame.left, bottom: rect.bottom - frame.top, ...more });
+    const real = (rect) => rect.width > 0 && rect.height > 0;
+    return [...rects.filter(real).map((rect) => inFrame(rect)), ...names.filter(real).map((rect) => inFrame(rect, { gapX: 6, gapY: 2 }))];
   }
 
   /** Put the line where it covers nothing, or out of sight while no band holds it and while a panel or a sheet is open. */
@@ -248,8 +256,9 @@ export class AboutPart {
       const frame = viewer.frame.getBoundingClientRect();
       const size = { width: Math.ceil(line.offsetWidth), height: Math.ceil(line.offsetHeight) };
       const bar = viewer.bar.getBoundingClientRect();
-      // Close under the bar (4 px), so that it keeps as little as it can of the picture's head, where a view's names may stand.
-      spot = placeIntro({ width: frame.width, height: frame.height, top: bar.bottom - frame.top + 4, taken: this.taken(), size });
+      // Close under the bar (2 px below its box, whose own padding keeps the bar's controls 12 px above), and no deeper than
+      // about three rows of names under it: it keeps as little as it can of the picture's head, and never stands in the picture.
+      spot = placeIntro({ width: frame.width, height: frame.height, top: bar.bottom - frame.top + 2, taken: this.taken(), size, depth: 96 });
     }
     const key = spot ? `${spot.left},${spot.top}` : "none";
     if (key === this.placed) return;
@@ -290,7 +299,6 @@ export class AboutPart {
     if (this.made) return this.made;
     const viewer = this.viewer, about = this.about, meta = viewer.model?.meta || {};
     const facts = pageFacts(meta, viewer.host, formatDate);
-    const licence = about.source.licence ? licenceUrl(about, meta) : null;
     const views = viewer.views.map((view) => ({ id: view.id, label: view.label, text: about.views.find((item) => item.id === view.id)?.text || null }));
     // A door does what its tab does when pressed (the Experiments tab, pressed in a view of its own, goes back to its landing).
     const door = (id) => {
@@ -309,13 +317,9 @@ export class AboutPart {
       "div",
       { class: "panel-body about-body" },
       about.lead.map((words, k) => h("p", { class: k ? "about-text" : "panel-plain" }, words)),
-      h(
-        "p",
-        { class: "about-source" },
-        newTab(about.source.url, about.source.label, { class: "about-source-link" }),
-        about.source.licence ? [h("span", { class: "about-dot", "aria-hidden": "true" }, " · "), licence ? newTab(licence, `${about.source.licence.name} licence`) : `${about.source.licence.name} licence`] : null
-      ),
-      about.credit ? h("p", { class: "about-text" }, about.credit) : null,
+      // The source code, in a new tab (its licence is not linked here: the owner, 20 November 2026).
+      h("p", { class: "about-source" }, newTab(about.source.url, about.source.label, { class: "about-source-link" })),
+      about.credit ? h("p", { class: "about-text about-credit" }, about.credit.text) : null,
       about.contact || about.links.length ? h("ul", { class: "about-links" }, [...about.links, ...(about.contact ? [about.contact] : [])].map((link) => h("li", {}, /^mailto:/.test(link.url) ? h("a", { href: link.url }, link.label) : newTab(link.url, link.label)))) : null,
       h("h3", {}, "Views"),
       h(
@@ -335,7 +339,7 @@ export class AboutPart {
 export const ABOUT_CSS = /* css */ `
 .brand-button { display: inline-flex; align-items: baseline; border-radius: 6px; }
 .brand-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.intro { position: absolute; left: 0; top: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 2px 14px; width: max-content; max-width: min(640px, calc(100% - 32px)); padding: 3px 4px 3px 14px; border-radius: 12px; background: color-mix(in srgb, var(--bg-raised) 96%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); font-size: 13px; line-height: 1.35; transition: opacity .25s ease; }
+.intro { position: absolute; left: 0; top: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 2px 14px; width: max-content; max-width: min(640px, calc(100% - 32px)); padding: 2px 4px 2px 14px; border-radius: 12px; background: color-mix(in srgb, var(--bg-raised) 96%, transparent); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -18px rgb(0 0 0 / .45); font-size: 13px; line-height: 1.35; transition: opacity .25s ease; }
 /* Its words let a press through to the picture under them, as the hint and the caveat do; only its three controls take one. */
 .intro { pointer-events: none; }
 .intro button, .intro a { pointer-events: auto; }
@@ -344,20 +348,16 @@ export const ABOUT_CSS = /* css */ `
 .intro-actions { display: flex; align-items: center; gap: 2px 12px; flex: none; }
 .intro-about { font-weight: 600; }
 .intro a { color: var(--accent); text-underline-offset: 3px; }
-.intro-close { width: 24px; height: 24px; font-size: 18px; }
+.intro-close { width: 22px; height: 22px; font-size: 18px; }
 .about-quiet { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .about-away { width: .78em; height: .78em; margin-left: 3px; vertical-align: -1px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .about-text { font-size: 13px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
 .about-source { font-size: 14px; font-weight: 500; }
 .about-source a, .about-links a { color: var(--accent); text-underline-offset: 3px; }
 .about-source .about-source-link { font-weight: 600; }
-.about-dot { color: var(--muted); }
 .about-links { display: grid; gap: 4px; font-size: 13px; }
 .about-views { display: grid; gap: 10px; }
 .about-views .about-text { margin-top: 1px; }
-/* Where no 3D can be drawn, the page's note on that lies over the whole picture, the panel's place included: it lets a press
-   through, so that About's panel (and a part's) can be pressed there. Nothing in the note is pressed. */
-.fallback { pointer-events: none; }
 .about-head h2:focus { outline: none; }
 .about-head h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 759px) {

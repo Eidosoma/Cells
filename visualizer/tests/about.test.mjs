@@ -18,7 +18,7 @@ const WORDS = JSON.parse(readFileSync(path.join(ROOT, "data", "site", "about.jso
 const VIEWER = readFileSync(path.join(ROOT, "src", "ui", "viewer.js"), "utf8");
 const VIEW_IDS = [...VIEWER.slice(VIEWER.indexOf("const LENSES = ["), VIEWER.indexOf("];", VIEWER.indexOf("const LENSES = ["))).matchAll(/\{ id: "([a-z]+)"/g)].map((match) => match[1]);
 
-test("the words: whole, each with the place it was taken from, every view's, the source and its licence, and nobody named", () => {
+test("the words: whole, each with the place it was taken from, every view's, the source and its licence, and what names anyone is the credit alone", () => {
   assert.equal(WORDS.format, ABOUT_FORMAT);
   const said = [WORDS.title, WORDS.description, WORDS.line, ...WORDS.lead, ...WORDS.reading, ...WORDS.views];
   for (const item of said) assert.ok(item.text?.trim() && item.from?.trim(), `${item.text?.slice(0, 40)}: its words and where they were taken from`);
@@ -27,17 +27,22 @@ test("the words: whole, each with the place it was taken from, every view's, the
   // The repository's LICENSE (the folder above this one) is the licence the words name.
   const licence = readFileSync(path.join(ROOT, "..", WORDS.source.licence.path), "utf8").split("\n")[0];
   assert.equal(licence, `${WORDS.source.licence.name} License`);
-  // Nobody is named until the owner says who is (20 November 2026): no credit, no contact, no further links, no address.
-  assert.deepEqual([WORDS.credit, WORDS.contact, WORDS.links], [null, null, []]);
+  // What names anyone is the credit alone (20 November 2026): its words and the organisation they name; no contact, no
+  // further links, no address, no preprint, and no other words of the file that name the organisation.
+  assert.deepEqual({ text: WORDS.credit.text, organisation: WORDS.credit.organisation }, { text: `Made by ${WORDS.credit.organisation}.`, organisation: WORDS.credit.organisation });
+  assert.ok(WORDS.credit.organisation && WORDS.credit.from);
+  assert.deepEqual([WORDS.contact, WORDS.links], [null, []]);
   const all = said.map((item) => item.text).join(" ");
-  assert.ok(!/@|mailto:|doi|preprint|bioRxiv|Bjarnason|Eidosoma\b(?!\/)/i.test(all.replace("github.com/Eidosoma", "")), "no person, organisation, address or preprint in the words");
+  assert.ok(!all.replaceAll(WORDS.source.url, "").includes(WORDS.credit.organisation), "the organisation is named by the credit and nowhere else in the words");
+  assert.ok(!/@|mailto:|https?:|doi|preprint|bioRxiv/i.test(all), "no address, contact or preprint in the words");
   assert.ok(!/\b(first|best|only|unique|revolutionary|will|soon)\b/i.test(all), "no superlative and no promise");
   const read = aboutOf({ about: WORDS });
   assert.equal(read.line, WORDS.line.text);
   assert.equal(read.views.length, VIEW_IDS.length);
   // A credit, a contact and further links are added in the data file alone, and read where they are given.
+  assert.deepEqual(read.credit, { text: WORDS.credit.text, organisation: WORDS.credit.organisation });
   const more = aboutOf({ about: { ...WORDS, credit: { text: "A line of credit." }, contact: { label: "Write", url: "mailto:someone@example.org" }, links: [{ label: "More", url: "https://example.org/" }, { label: "Not a link", url: "javascript:void 0" }] } });
-  assert.deepEqual([more.credit, more.contact, more.links], ["A line of credit.", { label: "Write", url: "mailto:someone@example.org" }, [{ label: "More", url: "https://example.org/" }]]);
+  assert.deepEqual([more.credit, more.contact, more.links], [{ text: "A line of credit.", organisation: null }, { label: "Write", url: "mailto:someone@example.org" }, [{ label: "More", url: "https://example.org/" }]]);
   for (const broken of [null, {}, { ...WORDS, format: "cells.visualizer.about@2" }, { ...WORDS, source: { url: "http://example.org" } }]) assert.equal(aboutOf({ about: broken }), null);
 });
 
@@ -84,6 +89,13 @@ test("the line stands in the first band under the bar that covers nothing the pa
   // Nothing free in the upper half (the landing's cards fill it), or a line wider than the window: it waits.
   assert.equal(placeIntro({ width: 1280, height: 720, top: 64, taken: [{ left: 0, top: 60, right: 1280, bottom: 720 }], size }), null);
   assert.equal(placeIntro({ width: 300, height: 600, top: 64, taken: [], size: { width: 290, height: 40 } }), null);
+  // A name keeps its own clearance (6 px across, 2 px up and down): the line stands 3 px above a name under it.
+  assert.deepEqual(placeIntro({ width: 1280, height: 720, top: 67, taken: [{ left: 16, top: 64, right: 252, bottom: 184 }, { left: 712, top: 100, right: 784, bottom: 120, gapX: 6, gapY: 2 }], size: { width: 518, height: 30 } }), { left: 381, top: 67 });
+  assert.equal(placeIntro({ width: 1280, height: 720, top: 67, reach: 0.15, taken: [{ left: 16, top: 64, right: 252, bottom: 184 }, { left: 712, top: 100, right: 784, bottom: 120 }], size: { width: 518, height: 30 } }), null, "with the 8 px of a card it waits");
+  // It stays under the bar: no deeper than `depth` (the page gives 96 px), never among a view's names further down.
+  const deep = [{ left: 300, top: 60, right: 1000, bottom: 200, gapX: 6, gapY: 2 }];
+  assert.deepEqual(placeIntro({ width: 1280, height: 720, top: 65, taken: deep, size: { width: 518, height: 26 } }), { left: 381, top: 203 });
+  assert.equal(placeIntro({ width: 1280, height: 720, top: 65, taken: deep, size: { width: 518, height: 26 }, depth: 96 }), null);
   // Never within the gap of anything taken, at any place it finds.
   const taken = [{ left: 16, top: 64, right: 300, bottom: 400 }, { left: 900, top: 64, right: 1264, bottom: 300 }, { left: 400, top: 90, right: 600, bottom: 130 }];
   const found = placeIntro({ width: 1280, height: 720, top: 64, taken, size });
