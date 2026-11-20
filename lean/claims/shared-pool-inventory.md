@@ -29,6 +29,12 @@ Uses [Lipid insertion scales with membrane area and diffusion-limited capture sc
 
 **Failed.** Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen.
 
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Shared-pool output assembly](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/models/assembly_lineages_v2/population.py#L735) · [Osmotic volume parameters](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/models/assembly_lineages_v2/lumen.py#L86) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/PROGRESS.md#vesicle-threshold-hold)
+
+[Tested engine 2ae89b5e2cd1](https://github.com/Eidosoma/Cells/commit/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007) · [Evidence checkpoint 84e3078e3fa0](https://github.com/Eidosoma/Cells/commit/84e3078e3fa0f2a010192e4459abc72eee120b92)
+
 **Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.stochastic_mass_action@1`, `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
 
 [Pool and live-slot rates](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L187) · [One pool and one slot updated per event](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L220) · [Counts saved and checked against the device endpoint](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L669) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/PROGRESS.md#shared-pool-inventory)

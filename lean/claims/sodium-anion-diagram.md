@@ -33,7 +33,13 @@ Uses [Sodium coupling sets net charge and the stall voltage of an anion carrier]
 
 ## Numerical comparison
 
-**Failed.** At 10⁻³⁰² fmol/s capacity, the diagnostic edge and reverse fluxes were 100 times their correct values in NumPy and compiled CPU float64. The mode and material rates matched the independent master equation. The 60 ordinary cases, 18 dose points and the tissue booking check passed.
+**Checked.** The capacity repair passed the original controls and all four extreme/zero capacity cases on NumPy and compiled CPU. At 10⁻³⁰² fmol/s the net readouts both gave 7.09691 × 10⁻³⁰⁵ fmol/s and reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The previous 100-fold diagnostic error remains recorded at its tested revision.
+
+**Engine** `resolved_pump_tissue@3`, `cells.na2_anion_symport_diagram@1`
+
+[Diagnostic carrier count at normal, small and zero capacity](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/kinds/transporter.py#L2385) · [Eight-state carrier declaration](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/laws/cycles/na2_anion_symport_diagram.py#L95) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/checks/sodium_anion_diagram.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/PROGRESS.md#sodium-anion-capacity-repair)
+
+[Tested engine 2ae89b5e2cd1](https://github.com/Eidosoma/Cells/commit/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007) · [Evidence checkpoint 84e3078e3fa0](https://github.com/Eidosoma/Cells/commit/84e3078e3fa0f2a010192e4459abc72eee120b92)
 
 **Engine** `resolved_pump_tissue@3`, `na2_anion_symport_diagram@1`
 

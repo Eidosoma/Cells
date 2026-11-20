@@ -210,11 +210,33 @@ def measurements():
     )
     return dict(
         popc=popc_footprint(),
+        rupture_holds=rupture_holds(),
         deflation=deflation,
         first_point_effective_mM=anchored,
         swelling=swelling,
         tension_mN_m=dict(
             fixed_sphere=prediction, measured=tension["estimated_osmotic_tension_mN_m"]
+        ),
+    )
+
+
+def rupture_holds():
+    data = json.loads((DATA / "vesicle_rupture_holds.json").read_text())
+    osmotic = data["shibly2016_dopc_hold@1"]
+    (_, early), (_, late) = osmotic["points"]
+    loss = (early - late) / osmotic["vesicles"]
+    return dict(
+        isosmotic=[
+            dict(
+                temperature_C=row["temperature_C"],
+                min_max_error_constant_fraction=(row["points"][0][1] - row["points"][-1][1]) / 2,
+            )
+            for row in data["karal2015_dopc_hold@1"]["series"]
+        ],
+        osmotic=dict(
+            fraction_lost_from_initial_cohort=loss,
+            fraction_lost_among_early_survivors=(early - late) / early,
+            min_max_error_constant_fraction=loss / 2,
         ),
     )
 

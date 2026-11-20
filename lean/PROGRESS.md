@@ -1,5 +1,77 @@
 # Cells proof comparisons
 
+<a id="mitochondrial-stall-heat"></a>
+
+## 20 November 2026 · Mitochondrial stall, reversal and heat
+
+For all seven mitochondrial cycles, Lean proves that an enabled cycle runs forward when its full-turn free energy ΔG is negative, stalls at zero and runs in reverse when ΔG is positive. For positive RT, the engine's instantaneous dissipated power is positive in either direction and zero at stall or when the population is off. The proof reuses the reversible ATP-cycle flux and Mathlib's geometric sum to show why the half-turn exponent of complex III and the quarter-turn exponent of complex IV preserve the full-turn stall. [Direction and affinity shares](CellsProofs/Chemistry/MitochondrialStall.lean#L37) · [Dissipated power](CellsProofs/Chemistry/MitochondrialStall.lean#L89)
+
+At fixed free activities, five cycles stall when the dimensionless N-minus-P voltage equals the chemical part of ΔG/(RT) divided by the signed charge per turnover. The two neutral carriers stall at an activity ratio. Phosphate requires `Pi_P/Pi_N = (H_N/H_P)²` and K⁺/H⁺ exchange requires `K_P/K_N = H_P/H_N`. The following thresholds apply to the 298.15 K matrix/lumen fixture. Its phosphate row is free HPO₄²⁻. [Stall conditions](CellsProofs/Chemistry/MitochondrialStall.lean#L60) · [Fixture](../tests/unit/test_mito_cycle_laws.py#L64)
+
+| Cycle | Independently calculated stall setting |
+| --- | ---: |
+| Complex I | −186.33 mV, matrix minus lumen |
+| Complex III, with phosphate control | −201.35 mV |
+| Complex IV | −283.51 mV |
+| ATP synthase | −184.50 mV |
+| ATP/ADP exchange | 0.00 mV |
+| Phosphate uptake | 8.34976 mM free lumen phosphate |
+| K⁺/H⁺ exchange | 94.22882 mM free lumen K⁺ |
+
+At engine revision `e4b9588f`, NumPy and compiled CPU JAX each checked seven settings per law at ΔG/(RT) targets of 0, ±2⁻⁴⁰, ±2⁻²⁴ and ±1. The driver clamps the voltage or one free lumen substrate after the binding closure, then calls both the production rate hook and the probe. All 98 backend/setting pairs passed against the independent 50-digit component equations. The largest flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The largest power error was 6.53 × 10⁻¹⁴ in units of RT times that rate converted to pJ/s. The two paths agreed on the instantaneous heat and the derivative entered in the heat ledger. This comparison covers these clamped states. [Engine comparison](checks/mitochondrial_stall.py#L47) · [Independent equations](../validation/mitochondria/appendix_check.py#L86)
+
+Rounding a physical stall setting left at most 2.85 × 10⁻¹⁴ in ΔG/(RT). With exactly supplied drives of zero and ±2⁻⁶⁰, the production flux kernel returned zero and both expected signs at every population's rate scale. Zero availability stopped every cycle at an otherwise nonzero drive. Shifting the voltage by 100 mV left both neutral carriers' flux and heat unchanged at the tested substrate clamp. The separate registered comparison passed all 534 component rows in eight settings, including both complex III formulations. [Float64 and off controls](checks/mitochondrial_stall.py#L129) · [Registered comparisons](../validation/mitochondria/component_comparison.py#L606)
+
+**Biological evidence is partial.** Petersen et al. measured ATP synthesis and hydrolysis in reconstituted yeast mitochondrial ATP synthase. At 60 mV and an ATP/(ADP·Pi) quotient of 5.79, fitted initial ATP turnover was −0.04 s⁻¹ at ΔpH 1.49 and +0.11 s⁻¹ at 1.68. The interpolated stall was 1.57 ± 0.04 pH units, or 1.53 ± 0.04 after correction for uncoupled hydrolysis. Their overall estimate of 2.9 ± 0.2 H⁺/ATP is consistent with the model's three. The experiment measured ATP turnover. [Petersen et al., Figs. 1–4 and Table S4](https://doi.org/10.1073/pnas.1202799109)
+
+At fixed voltage and catalytic-side pH, the three-proton law predicts a stall shift of one third of the change in log₁₀ of the free ATP/(ADP·Pi) quotient. Treating the assay's concentration quotient as proportional to that free quotient, the model predicts a shift of 0.745 pH units between the lowest and highest loads, against 0.74 observed. Using the corrected stall at 5.79 to set the absolute offset, five of the other nine Table S4 rows fall within the sum of the two reported interpolation limits. Four fall outside, at quotients of 0.718, 1.87 (two measurements) and 3.06. Those limits describe the interpolation only. The experimental stall can constrain the model's load dependence without establishing its absolute voltage or turnover rate. [Lean load-shift identity](CellsProofs/Chemistry/MitochondrialStall.lean#L81) · [All ten measurements](checks/data/mitochondrial_stall.json) · [Comparison](checks/mitochondrial_stall.py#L183)
+
+Nakamura and Matsuoka measured a bulk heat pulse in rat liver mitochondria after oxygen exhaustion and estimated an apparent enthalpy of −29 ± 7 kJ per mole of previously added ADP. They attributed it to hydrolysis of ATP made earlier in the preparation. This integrated measurement leaves the individual cycles' instantaneous dissipated power at a known drive open. [Nakamura and Matsuoka, Figs. 5b and 6](https://doi.org/10.1093/oxfordjournals.jbchem.a132117)
+
+## 20 November 2026 · Mitochondrial cycles, voltage prediction and numerical retests
+
+<a id="mitochondrial-cycle-accounting"></a>
+
+**Seven mitochondrial laws in one membrane.** Lean gives the charge on each side of every registered cycle in the engine's base ionic forms. N is the matrix and P the intermembrane space. Oxidizing or reducing cytochrome c on P changes its charge, so counting only explicit protons would give the wrong electrical current for complexes III and IV. [Stoichiometry and valences](CellsProofs/Chemistry/MitochondrialCycles.lean#L25) · [Engine conventions](../src/cells/laws/cycles/mitochondria_source.py)
+
+| Forward cycle, normalized as declared | Free H⁺ added on P | Net charge added on P (elementary-charge equivalents) |
+| --- | ---: | ---: |
+| Complex I per NADH | +4 | +4 |
+| Complex III per QH₂ | +4 | +2 |
+| Complex IV per O₂ | +4 | +8 |
+| ATP synthase per matrix ATP | −3 | −3 |
+| ATP/ADP exchange per ATP exported | 0 | −1 |
+| Phosphate import per HPO₄²⁻ | −2 | 0 |
+| K⁺/H⁺ exchange per K⁺ imported | +1 | 0 |
+
+Restoring the quinone and cytochrome c pools fixes turnover of complexes I, III and IV in the ratio **2:2:1**. The chain consumes two NADH and one O₂, removes 22 free protons from N and adds 20 on P. Synthesis and delivery of one ATP, including nucleotide exchange and phosphate import, returns four net charge equivalents. In this seven-path model with a three-proton synthase, balanced carrier pools and zero net charge transfer imply five delivered ATP per O₂. This is a conditional charge balance. Actual fluxes and yields depend on the operating state and other currents. [Respiratory chain](CellsProofs/Chemistry/MitochondrialCycles.lean#L72) · [ATP delivery and charge balance](CellsProofs/Chemistry/MitochondrialCycles.lean#L95)
+
+In two checked 1 ms steps of `resolved_pump_tissue@3`, all seven populations moved. Their compiled stoichiometric columns matched the independent material calculation for each individual cycle. The combined material ledger matched at both observation times. The largest discrepancy in the ten separately checked redox, adenine and phosphate species across both compartments was 8.28 × 10⁻²⁵ fmol. The global charge discrepancy was below 1.0 × 10⁻³³ C. The extents in this transient were unequal. The engine's separate component comparison passed 534 registered reference rows across eight settings of the seven laws, including both complex III formulations. [Checked world and material balances](checks/mitochondrial_cycles.py#L43) · [Registered component references](../validation/mitochondria/component_comparison.py)
+
+In bovine heart preparations, Galkin et al. reported **4.00 ± 0.05 pumped protons per NADH** for complex I after subtracting one proton consumed by quinone reduction. Jones et al. obtained 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 protons per two electrons from three comparisons on four preparations. These measurements test the complex I count. For ATP synthase, the resolved bovine rotor has eight c-subunits. Tight coupling would give 8/3 protons per matrix ATP and 11/3 proton equivalents per delivered ATP. Cells explicitly fixes three and four respectively in this version. The structure measures the ring count. Testing the combined yield under load would require a flux experiment. [Galkin et al., Fig. 2 and Eq. 3](https://doi.org/10.1016/S0014-5793%2899%2900575-X) · [Jones et al., Table 3](https://doi.org/10.1074/jbc.M116.771899) · [Watt et al., Fig. 1](https://doi.org/10.1073/pnas.1011099107) · [Measurement records](checks/data/mitochondrial_stoichiometry.json)
+
+<a id="conditioned-voltage-bounds"></a>
+
+**What the two kidney-cell voltage readings determine.** At zero total passive current, with external Na + K and external Cl fixed, the exponentiated voltage is an affine function of external K. Two distinct doses determine its two coefficients. At C3 the extrapolation weight is exactly two. Lean proves which two corners of the C1/C2 figure-reading box bound every predicted voltage and its change from the same C1 baseline. It also bounds the signed error against any C3 reading in its assigned interval. The proof bounds the exact expressions. The decimal values below are rounded. [Model reduction](CellsProofs/Transport/ConditionedVoltage.lean#L27) · [C3 bounds](CellsProofs/Transport/ConditionedVoltage.lean#L93)
+
+The frozen protocol predicted **−14.59 mV** against a figure reading near **−18 mV**. With each source reading allowed to vary by ±2 mV, the predicted C3 voltage spans −18.32 to −11.20 mV, the predicted change from C1 spans +18.68 to +29.80 mV, and the signed error spans −2.32 to +8.80 mV. All 81 numerical reading pairs lay inside the bounds. The 12 original 60-digit arithmetic checks agreed within 7.11 × 10⁻¹⁵ mV. The ±2 mV describes figure reading. The biological verdict remains **not assessable** because experiment-level uncertainty and the recording boundary remain unresolved. [Frozen endpoint calculation](../reports/BIO002_CONDITIONED_VOLTAGE.md) · [Bonzanni et al., Fig. 3C](https://doi.org/10.1242/bio.048553) · [Curation closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+We tested the reduction independently on three synthetic Na/K/Cl membranes with rising, flat and falling voltage responses. For each, the currents at 10 and 40 mM external K supplied the fit and 70 mM supplied the third dose. Predicted reversal voltages were −19.188, −5.567 and +4.065 mV, each within 2.05 × 10⁻¹⁴ mV of the independently located engine zero. Checked runs at those voltages carried opposing individual ion currents. Their net magnitude was at most 5.43 × 10⁻¹⁶ of the sum of the individual magnitudes. [Engine and reference comparison](checks/conditioned_voltage.py#L16)
+
+<a id="sodium-anion-capacity-repair"></a>
+
+**Sodium–anion diagnostic repair confirmed.** At capacity 10⁻³⁰² fmol/s, the edge and cycle both gave 7.09691 × 10⁻³⁰⁵ fmol/s and the two reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The earlier 100-fold error is gone. All four capacities including zero passed on NumPy and compiled CPU, together with 60 master-equation cases, 18 dose points and the two-step tissue run. [Reproducer](checks/sodium_anion_diagram.py#L227) · [Repaired carrier normalization](../src/cells/kinds/transporter.py#L2385) · [Original failed comparison](#six-numerical-retests)
+
+<a id="vesicle-threshold-hold"></a>
+
+**Vesicle rupture during a steady hold.** Lean proves that a vesicle which survives a threshold check cannot cross the same threshold at a later check while its tension stays at or below its original value. This applies even if each vesicle has its own fixed threshold. Any constant surviving fraction must miss at least one of two readings by half their observed fall. [Threshold proof and error bound](CellsProofs/Chemistry/Vesicle.lean#L178) · [Engine decision](../src/cells/models/assembly_lineages_v2/kernel.py#L340)
+
+At fixed 8.0 mN/m aspiration tension, the intact fraction of pure DOPC vesicles at 12 °C fell from about 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from about 0.50 at 33 s to 0.111 at 125 s. A time-independent predicted fraction would miss at least one endpoint by about 19 percentage points at either temperature. The plotted fractions have no pointwise error bars. In a separate osmotically preloaded cohort under a 4.3 mN/m applied hold, 8 of 19 were intact at 40 s and 2 of 19 at 110 s. Six of the eight surviving vesicles ruptured during the next 70 s. These measurements limit a fixed threshold as a model of rupture timing. They leave the numerical area-unit comparison to the engine reproducer. [Karal and Yamazaki, Fig. 1a](https://doi.org/10.1063/1.4930108) · [Shibly et al., Fig. 1B](https://doi.org/10.1016/j.bpj.2016.09.043) · [Times, counts and uncertainties](checks/data/vesicle_rupture_holds.json)
+
+The compiled lysis reproducer still gave opposite material outcomes for two equivalent area units at both close thresholds. Both representations agreed with the reference for thresholds 1% away. The shared-pool reporting failure also persists. The two 96-event osmotic populations conserved inventory, but the one-slot fixed-volume case (10⁻²² L) raised a TypeError while assembling the output. [Lysis cases](checks/vesicle.py#L244) · [Shared-pool reproducer](checks/shared_pool.py) · [Earlier fixed-volume finding](#shared-pool-declared-volume)
+
+The engine comparisons used CPU float64 at `2ae89b5e2cd19fdcd4727eb16a4d33cc20339007`. The three numerical retests cover the earlier failures whose referenced engine files had changed at the start of this pass. Lean 4.19.0 checked the 16 new public theorems with standard axioms. The seven relevant engine and reference test files plus eight repository guards passed 194 tests. The five catalog tests also passed. [Mitochondrial comparison](checks/mitochondrial_cycles.py) · [Voltage comparison](checks/conditioned_voltage.py) · [Vesicle comparison](checks/vesicle.py)
+
 ## 20 November 2026 · Cell compartments, membrane trafficking and division
 
 <a id="owned-compartment-inventory"></a>
