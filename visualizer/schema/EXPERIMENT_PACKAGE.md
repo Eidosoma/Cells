@@ -278,7 +278,10 @@ and left out. It refuses a manifest it cannot read so: not `cells.experiment_pac
 packages, a package not read from the folder named as its arm, an arm twice, a sidecar that is not a plain name.
 Nothing else of the manifest is read yet: the experiment's words, the summary's name and whether refused picks are
 shown still come from the viewer's overlay, and visibility and licence are not yet acted on (the next round). The
-adapter does not yet run the validator before it packages.
+adapter does not yet run the validator before it packages. Its own reading stays inside a run's folder all the same:
+a file name that a view or `windows.jsonl` gives must not leave the folder (no part made of dots alone, and nowhere led
+out through a link), a run folder that holds a link is refused before anything of it is read, and a JSON file or a
+manifest that is itself a link is refused. The validator says the same of a whole package, with a code for each.
 
 ## What this contract settled, for the engine's lead to read
 

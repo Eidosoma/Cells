@@ -203,6 +203,9 @@ The last column is what the owner accepted on 19 November 2026.
   and its refused picks, in place of `index.json`, the overlay's `sidecar` and the search of the folder.
   A folder with a manifest is packaged to the same bytes as without one. Nothing else moved: the
   experiment's words still come from the overlay, and no folder written so far has a manifest.
+- **The adapter's own reading stays inside a run's folder**, with or without the check before it: a
+  file name its files give that leaves the folder, a link in a run folder, and a JSON file or a
+  manifest that is a link are each refused. It does not yet run the whole check itself.
 - **How a package is checked:** run the validator on the run folder before the viewer reads it. On a
   folder with no manifest it says so in a note and gives the manifest the folder would need, with `null`
   where the folder does not say (its title, visibility and licence).
