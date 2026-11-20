@@ -162,6 +162,13 @@ def row_checks(
         magnitude = jnp.abs(value)
         bounded = apply_energy or name != "energy"
         if bounded:
+            # Compared, not validated (the fourth review's finding 2, option (b)): a kind's own
+            # bound that is not finite arrives as -inf (_kind_ledger_limits) and fails. The gap
+            # left: an operator's own_bounds or @1's own-ledger bounds, each a finite floor plus
+            # rounding on the row's magnitudes, charges or flows (so binding cannot refuse them),
+            # pass when not finite: +inf on a window the device decides, NaN too where no margin
+            # hands the window to the host (vector windows, projective bursts). Option (a), every
+            # bound validated here, changes every device-check program: the crossrev renewal's.
             failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
         else:
             failed.append(~jnp.all(jnp.isfinite(value)))
