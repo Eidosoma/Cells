@@ -274,7 +274,8 @@
   "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json",
   "/mnt/workspaces/Cells/turnover-net-20261120/tiers/measured-4b39f285/measured.json",
   "/mnt/workspaces/Cells/operators-fr23-20261120/gate-e7a54539/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/exchange-depletion-20261120/tiers/measured-dee83958/measured.json"
+  "/mnt/workspaces/Cells/exchange-depletion-20261120/tiers/measured-dee83958/measured.json",
+  "/mnt/workspaces/Cells/fr30-design-20261120/tiers/measure-4b23f252/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2317,6 +2318,13 @@
    "root": ".claude/worktrees/exchange-limit-kref",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:19:12+00:00"
+  },
+  {
+   "git_revision": "4b23f2520ae4dfd7cc22749ccfc1ffa2f95edfd2",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/fr30-design-20261120/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:23:22+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4060,6 +4068,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_junction_series_gates.py",
+    "seconds": 1.83,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {

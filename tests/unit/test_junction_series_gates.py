@@ -20,7 +20,8 @@ Host arithmetic only (NumPy), with no world compiled. Each claim with a planted 
   declares its conductance (planted: a two-gate declaration without one is refused); the domain's
   refusals.
 
-Cost: about 1–2 s, most of it importing the engine. Reason: the law's claims are host arithmetic.
+Cost: 1.83 s for the whole file on the timed lane (CPU 4 under the timed lock, at 4b23f252), most
+of it importing the engine. Reason: the law's claims are host arithmetic.
 """
 
 import math
