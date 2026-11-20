@@ -376,9 +376,9 @@ occupied fraction θ = B/S.
   - **Programs:** they gain empty site-route layout arrays, as @2's population source did on 19
     November (de65d033).
   - **FR-7's C2 and C5 run @2.** Their judged run uses a frozen snapshot of 439f54fd (§1), so this
-    landing cannot touch its verdict. The landing carries an A/B comparison of C2 and C5 on main
-    that shows their values bitwise. If the lead has added either to crossrev by then, its record is
-    renewed.
+    landing cannot touch its verdict. The landing carries an A/B comparison of C2 and C5 on main,
+    over a short window (the full runs are 1000 s), that shows their values bitwise. If the lead has
+    added either to crossrev by then, its record is renewed.
   - **A version @3** would leave @2's programs alone, at the cost of a new law version. Composition's
     decision (D191) prefers none, and nothing here needs it.
 - **The contract and the composite:** new declarations with empty defaults, so every other
@@ -584,8 +584,10 @@ link sits in a replaced cell, and part C is optional.
   standard-potential term (`species_reactions.py:168–182`). They stay with the slot.
 - **So its occupant rule is about rates, on the sites' pattern:**
   - the founder's per-site multipliers keep today's schedule, which ends at its death;
-  - a newcomer from a template takes its template's multipliers, through
-    `species_common.route_tables` (D150's mechanism, used read only);
+  - a newcomer from a template takes its template's multipliers. The tables are built in the
+    operator from `species_common.occupants` (:442–458), the host table of each slot's occupants
+    that D150's `route_tables` reads. `route_tables` itself keys schedules by carrier, which version
+    1 does not add;
   - the refusal is lifted for every cell route these cover.
 - **It is definition-time only.**
   - The new `templates` key is optional and absent from `to_dict` when empty. `_fields` requires the
@@ -702,6 +704,15 @@ without it, and the contact case stays refused.
 **D152:** `tests/unit/test_species_reactions_refusals.py:467` flips. Cell routes on replaced slots
 are admitted with a template's multipliers and refused without them; outside routes compose, as
 today.
+
+**The multipliers at a replacement** (tier 1, NumPy, on the host's control values):
+- the site multipliers switch from the founder's schedule to the template's at t_e, and a founder's
+  change after its death is refused (in `test_site_occupancy.py`);
+- D152's per-site multipliers do the same (in `test_species_reactions_refusals.py`).
+
+**Part C′,** where chosen: in `test_species_regulated_availability.py`'s `REFUSALS` (:558), an
+element on a replaced slot is admitted with a species or site source and refused with a state source
+unless part C is chosen.
 
 **One compiled acceptance world,** a new id in `tests/unit/test_site_occupancy_runs.py:39` (tier 2):
 - **its world:** replacement@1, an occupied outward population on the replaced cell, and a D152

@@ -18,11 +18,13 @@ FR-21's ground" ([ASSEMBLY_WASHOUT_DESIGN.md](ASSEMBLY_WASHOUT_DESIGN.md) §1, :
 **Engine models it would run:** `cells.assembly_lineages@2`, in single-lineage and population mode,
 with:
 - `cells.shared_pool@1`;
+- `cells.stochastic_mass_action@1` with `count_on_m`, for one-step site binding (§4.1);
 - a new geometry, `cells.prescribed_shell@1`, the second implementation of
   `cells.assembly_geometry@1`;
-- a new step law, `cells.site_binding@1`;
-- the existing `cells.membrane_permeation@1`;
-- and, for FR-20's control, `cells.pool_replacement@1`.
+- a new entry law for a shell, `cells.shell_permeation@1`, beside an unchanged
+  `cells.membrane_permeation@1`;
+- where a shell is gated, a new gate factor over the gate's own forms (§4.3);
+- for FR-20's control, `cells.pool_replacement@1`.
 
 **Code read at 5011ed3d.** The version-2 files were unchanged then. The origin-of-life builder is
 changing them now for FR-20, so line numbers will drift. Paths are under
@@ -34,14 +36,15 @@ derivation.
 | | |
 | --- | --- |
 | **The gap** | A world with a geometry admits only two cross-phase steps, a join and an entry. The entry's encounter is the bilayer's area, computed from the membrane's counts. Each membrane species takes at least one quantum of area, so binding sites add area. Binding from the pool in one step is refused |
-| **Recommended** | Two pieces, built in two steps. First, `cells.site_binding@1`, the declared encounter that rule 3 asks for: an exposed site binds a pool molecule in one step, on any geometry. Second, `cells.prescribed_shell@1`: the shell's area and lumen are declared, and its wall's counts set neither |
+| **Recommended** | Three pieces, in two steps. **First,** one-step site binding: rule 3 admits the existing mass-action law with `count_on_m` for the binding shape, its encounter being the site count. This needs no new law. **Second,** the prescribed shell: a geometry whose area and lumen are declared, with its own entry law, so its conductance follows neither the wall's counts nor the site count. Where the shell is gated, a gate factor that counts only the gate's own forms |
 | **What FR-20 gains** | Its exposed-site control becomes expressible: a pulse loads the sites, and a washout keeps the bound tracer. A closed or open lumen tells retention on sites from capture inside |
-| **Bitwise** | Every existing version-2 world, the invariance gate and OL5's references. No version-2 protocol is registered or judged |
-| **Price** | Development: 4.5–6.5 agent-days for both pieces, or 1.75–2.5 for site binding alone. Gates are excluded |
+| **Bitwise** | Every existing version-2 world, the invariance gate and OL5's references. No registered law's text changes, and no version-2 protocol is registered or judged |
+| **Price** | Development: 5–7.5 agent-days for all three pieces, or 0.75–1.25 for site binding alone. Gates are excluded |
 | **Builder** | The origin-of-life builder owns the version-2 files and is on FR-20 now, so this follows FR-20, unless the lead grants a recorded exception |
 
-## 1. What refuses today, and why
+## 1. What exists today, and what refuses
 
+**In a world with a geometry:**
 - **Rule 3 refuses every other interface.**
   - **The ruling:** in a world that declares a geometry, a cross-phase step takes a geometric
     encounter law, phase exchange for a join and permeation for an entry. "A join from the lumen,
@@ -65,18 +68,38 @@ derivation.
 - **The lumen** is either osmotic or declared.
   - **Osmotic:** its volume comes from the counts, capped by the sphere of area A (`lumen.py:114–121`).
   - **Declared:** one constant `volume_L` per world (`conventions.py:43`; `world.py:296–304`).
+  - **c_ext exists only for an osmotic lumen.** It comes from the osmotic term (`lumen.py:55–60`).
+    The transfer's refusal of fresh solutes above c_ext, which FR-20's replacement keeps, returns
+    early for any other lumen (`transfer.py:60–61`).
   - **A population world with a declared lumen fails** when its rows are assembled.
     `population.py:716–719` calls the osmotic routines unconditionally, and `lumen.py:86–93` needs
-    the outside's osmolarity. The Lean project recorded this as an engine finding
-    (`lean/PROGRESS.md`, its shared-pool declared-volume entry).
+    c_ext. The Lean project recorded this as an engine finding (`lean/PROGRESS.md`, its shared-pool
+    declared-volume entry).
+- **A population needs a geometry,** for its floor: "its floor keeps every vesicle from emptying"
+  (`population.py:59–63`).
 - **The geometry interface is parse-only** (`interfaces.py:99–120`).
   - The bilayer's quantities are module functions, imported directly in `model.py`, `spec.py`,
     `lumen.py`, `runner.py`, `population.py`, `records.py` and `division.py`.
   - The structure keeps the geometry's ID (`kernel.py:130`, `model.py:48`). The kernel uses it only
     as a static presence test, which keeps OL1's programs unchanged (`kernel.py:275–295`, :516). It
     selects no geometry kind.
-- **The capsid models are no base for this** (docs/CAPSID_ASSEMBLY.md). They are a separate family
-  with a prescribed 20-site cage, and they have no free energy, no lumen and no permeation.
+- **The registered laws.** `cells.membrane_permeation@1`'s registered formula reads
+  "A(m) = q W(m)/2" (`permeation.py:32–34`). The Lean project registered a proof for every current
+  law at 5011ed3d.
+
+**In a world without a geometry** (option S0's ground):
+- **One-step binding already runs.** Rule 3's last sentence keeps `count_on_m` on every
+  membrane-locus step there. The mass-action law's membrane factor cancels to the free-site count
+  for a step that turns one site into one complex, so a⁺ = k_f·θ⁺·n_S
+  (`mass_action.py`, its docstring at :1–29, and `membrane_factor`, :76).
+- **But the entry's extent is the membrane's count.** A pool-to-lumen step there has the extent
+  N(m) − c + 1 (`mass_action.py:17`), so its conductance follows the membrane's count, sites
+  included.
+- **Permeation and phase exchange are refused** without a geometry (`spec.py:335–340`), and so is a
+  population (above).
+
+**The capsid models are no base for this** (docs/CAPSID_ASSEMBLY.md). They are a separate family
+with a prescribed 20-site cage, and they have no free energy, no lumen and no permeation.
 
 ## 2. The test every option must pass
 
@@ -88,55 +111,65 @@ declared apart from the others and from any membrane inventory.
 | --- | --- | --- |
 | Area A | q·W(m)/2, from every membrane species' counts | Declared |
 | Lumen volume | Osmotic, from the counts and A; or one declared constant | Declared |
-| Exchange conductance G_s = P_s·A | P_s·A(W), following the inventory | P_s·A_sh, both declared |
+| Exchange conductance G_s = P_s·A | P_s·A(W), following the inventory | P_s·A_sh, both declared, by the shell's own entry law |
 | Binding-site count | A membrane species' count, which adds area | A wall species' count, which sets neither the area nor the volume |
-| Binding from the pool in one step | Refused (rule 3) | Admitted, through a declared encounter |
+| Binding from the pool in one step | Refused (rule 3) | Admitted for the binding shape (§4.1) |
+| A gate on the entry | 1 + z(m)/N(m), diluted by every membrane molecule | Over the gate's own forms (§4.3), so the site count does not dilute it |
 
 ## 3. Options
 
 | Option | What | Passes §2? | For | Against |
 | --- | --- | --- | --- | --- |
-| S0 | No code: a rigid vesicle, the bilayer geometry with a membrane that never exchanges and a declared lumen | No. A follows W, which also carries the sites; there is no one-step binding | Nothing to build | The declared lumen fails in population worlds (§1) |
-| S1 | One-step site binding only, `cells.site_binding@1`, on any geometry | In part. Sites bind in one step, but on a bilayer they still add area | The smallest piece; it gives FR-20's control on vesicles at once | No shell: the lumen and the conductance still follow the inventory |
-| S2 | The shell geometry only, `cells.prescribed_shell@1` | In part: area, lumen and conductance, but no sites | — | No exposed site, so FR-20's control is not served |
-| **S3** | **S1 and S2** | **Yes** | The request whole, and FR-20's control on shells and on vesicles | The largest |
+| S0 | No code and no geometry: one-step binding by mass action, and a declared lumen | No. The entry's extent is the membrane's count, sites included | Runs today, single-lineage | No permeation law and no population mode, so FR-20's control is not served |
+| S0′ | No code, with the bilayer: a rigid vesicle whose membrane never exchanges, with a declared lumen | No. A follows W, which also carries the sites; there is no one-step binding | Nothing to build | The declared lumen fails in population worlds (§1) |
+| S1 | One-step site binding: rule 3 admits the mass-action law with `count_on_m` for the binding shape, on any geometry | In part. Sites bind in one step, but on a bilayer they still add area | The smallest piece, with no new law. It gives FR-20's control on vesicles | No shell: the lumen and the conductance still follow the inventory |
+| S2 | The prescribed shell, with its own entry law | In part: area, lumen and conductance, but no sites | — | No exposed site, so FR-20's control is not served |
+| G | A gate factor over the gate's own forms | Needed only for a gated shell with sites | It is also the right open fraction for a pore on a bilayer | A new factor law |
+| **S3** | **S1 and S2, with G where the shell is gated** | **Yes** | The request whole, and FR-20's control on shells and on vesicles | The largest |
 | S4 | Reuse the capsid family | No | Its prescribed cage | No free energy, lumen or permeation, and another family |
 
-**Recommended: S3, in two steps.** S1 first, since it serves FR-20's control on its own; then S2.
+**Recommended: S3, in two steps.** S1 first, since it serves FR-20's control on its own. Then S2,
+with G if the shell is gated.
 
 ## 4. The design (S3)
 
-### 4.1 `cells.site_binding@1`: the encounter that rule 3 asks for
+### 4.1 One-step site binding: rule 3's door
 
 - **The step.** One molecule of a pool place binds a site place of the wall (the membrane phase),
   forming a complex place in the same phase: X(pool) + S → C. It is declared in this direction only,
   in rule 2's form. Its reverse comes from F, as every reverse in the family does.
-- **The forward.** a⁺(n) = k_on · c0 · θ⁺(n) · n_S(m).
-  - k_on is per site and per concentration (`association_rate_per_mM_per_s`), with its provenance
+- **The law is the existing `cells.stochastic_mass_action@1`, with `count_on_m`.**
+  - For this shape its membrane factor cancels to the free-site count (`mass_action.py`, its
+    docstring). So a⁺ = k_f·θ⁺·n_S, with θ⁺ the pool's activity.
+  - The reverse is the same law applied to the products: a⁻ = k_f·exp(Σνμ°)·n_C, with the complex's
+    potential from the registry (K_d).
+  - k_f is in the activity form (`forward_rate_per_s`), so k_f = k_on·c0. It carries its provenance
     (§0.2e item 3).
-  - θ⁺ is the pool's activity, and n_S the free-site count on the pair's common state.
-- **The reverse:** k⁻ = k_on·c0·exp(Σνμ°), with the complex's potential from the registry (K_d), so
-  detailed balance holds by construction (**S**).
+- **The encounter is the site count, not an area.** Binding is reaction-limited, per site (**S**). A
+  diffusion-limited encounter is an option, at +0.5 (§9).
+- **Rule 3 is amended,** which is the lead's ruling to make.
+  - **Admitted:** an interfacial step of exactly this shape, one pool molecule and one declared site
+    forming one complex in the wall, under `count_on_m`.
+  - **Still refused:** every other interfacial step, a join from the lumen and a pool-to-lumen
+    reaction.
+  - Sites and complexes are declared as such, so the parse checks the shape.
+- **No new law and no kernel change.** The mass-action kernel already computes this form, as it
+  does in worlds without a geometry. The change is the parse's admission (`spec.py:342–349`).
 - **Langmuir from F (S).**
   - The wall's condensed measure is multinomial. With the wall's other species and the site total
     conserved, the free and bound sites' configurational term is ln C(R + B, B), up to a constant.
   - So at a held pool the stationary distribution of B on N sites is binomial with
     p = c/(c + K_d): Langmuir in the mean. A test checks it from the kernel's rates (§7).
-- **Rule 3.** This law is the declared encounter for the interfacial step. A mass-action
-  interfacial step, a join from the lumen and a pool-to-lumen reaction stay refused.
 - **On any geometry.**
   - **On a bilayer,** sites are membrane species with their area quanta: receptors take area, which
     is physical. So on vesicles the site count is not independent of the inventory.
   - **On a shell,** sites set nothing (§4.2).
   - **Sites with no area on a bilayer** would relax §0.2e item 5. That is an option, at +0.5 (§9).
-- **The kernel.** A new encounter code, whose extent is the free-site count. It is set by the step's
-  law, as `model.py:189–195` sets the codes today, so a world without the law traces today's program
-  (**S**).
 - **Labels (rule 17):** a bound tracer keeps its label on the complex place.
 - **Division (rules 9–10):** on a bilayer, sites split with the membrane's molecules, since C3x
   already covers every membrane species. On a shell, division is refused (§4.2).
 
-### 4.2 `cells.prescribed_shell@1`: the second geometry
+### 4.2 `cells.prescribed_shell@1`, and its entry law
 
 - **The declaration.** `geometry: {law: "cells.prescribed_shell@1", area_m2: {value, provenance}}`.
   The lumen uses the existing `lumen_volume: declared`, with `phases.lumen.volume_L`.
@@ -144,13 +177,25 @@ declared apart from the others and from any membrane inventory.
   - Its species (subunits, and free and bound sites) carry no area quanta, so no
     `area_per_leaflet` is declared.
   - Their counts set neither the area nor the lumen.
-- **The conductance is declared.**
-  - Permeation's encounter is the declared area: a⁺ = P_s·A_sh·ρ0·θ⁺.
-  - So the conductance G_s = P_s·A_sh is independent of the wall's counts and of the lumen, and the
-    run reports G_s per species.
-  - One permeation law serves vesicles and shells, with P_s the same quantity, in m/s.
+- **Its own entry law, `cells.shell_permeation@1`.**
+  - **The rate:** a⁺ = P_s·A_sh·ρ0·θ⁺, with A_sh the shell's declared area and P_s in m/s, the
+    bilayer's unit. The reverse is the same law applied to the products, as permeation's is.
+  - **Its encounter is a constant of the world:** a new kernel code, dispatched statically by the
+    geometry kind.
+  - So the conductance G_s = P_s·A_sh is independent of the wall's counts, of the site count and of
+    the lumen. The run reports G_s per species.
+  - **Why a law of its own (D147).** `cells.membrane_permeation@1`'s registered formula reads
+    A(m) = q·W(m)/2, and the Lean project has a registered proof of it. A new law leaves both as they
+    are.
+  - **The alternative** generalises that law's formula to "A from the geometry". It keeps one law
+    for vesicles and shells, but it changes a registered law's text, and the Lean project would then
+    register its proof again (§10).
+- **Joins are refused in version 1:** a prescribed wall takes up no amphiphiles.
+  - But "independent of the membrane's inventory" may mean an inventory that still varies. A shell
+    world could keep an exchanging membrane, with the join's encounter taken from the declared area.
+  - That is the user's question (§10). Its price is +1–1.5.
 - **What a shell refuses,** each at the parse with its reason:
-  - phase exchange, a join: a prescribed wall takes up no amphiphiles;
+  - phase exchange (a join), unless the user's answer keeps an exchanging membrane;
   - `lumen_volume: osmotic`: the wall does not swell;
   - `vesicle_floor`, a closure cost and `sigma_max`: no floor, tension or lysis applies;
   - division and shear events: in version 1 a prescribed shell neither divides nor breaks.
@@ -158,14 +203,14 @@ declared apart from the others and from any membrane inventory.
 
   | Rule | For a shell |
   | --- | --- |
-  | 1, conditional keys | The shell is a value of the existing `geometry` key. When it is absent nothing is written, so OL1's ids and fingerprints do not move. `exchange_encounter` is required with a geometry but moot for a shell, whose joins are refused: a question for the lead (§10) |
-  | 2, directions | Permeation stays an entry. Site binding is declared in one direction only (§4.1) |
-  | 3, interfaces | §4.1 |
-  | 4–5, area quanta and the floor | No quanta and no floor. No step changes the wall's area |
-  | 6–8, the lumen, c_ext and lysis | The lumen is declared. The c_ext check on the pool's declared solutes still applies. There is no lysis |
+  | 1, conditional keys | The shell is a value of the existing `geometry` key. When it is absent nothing is written, so OL1's ids and fingerprints do not move. `exchange_encounter` is required with a geometry: absent in a shell world without joins, and required if the user keeps them (§10) |
+  | 2, directions | Each entry stays an entry. Site binding is declared in one direction only (§4.1) |
+  | 3, interfaces | Amended for the binding shape (§4.1) |
+  | 4–5, area quanta and the floor | No quanta and no floor. No step changes the wall's area. A population needs a geometry so that no vesicle empties (`population.py:59–63`). A prescribed wall cannot empty, since nothing leaves it, so that check is widened to admit the shell (**S**) |
+  | 6–8, the lumen, c_ext and lysis | The lumen is declared, so there is no c_ext. Rule 6's check and the transfer's refusal do not apply (`lumen.py:55–60`; `transfer.py:60–61`), and no c_ext drift is reported. There is no lysis |
   | 9–10, division | Refused |
   | 14, streams | No new draws |
-  | §0.2e item 3, provenance | `area_m2` and k_on carry their provenance |
+  | §0.2e item 3, provenance | `area_m2`, P_s and k_f carry their provenance |
 
 - **Dispatch.** The kernel already tests the structure's geometry ID statically, for presence
   (§1). Extending that test to the kind, at the bilayer's direct-import sites, lets bilayer worlds
@@ -176,7 +221,26 @@ declared apart from the others and from any membrane inventory.
   - The declared-lumen row failure (§1) is fixed first.
 - **FR-22's checkpoints carry over,** since the state stays integer counts.
 
-### 4.3 What it lets FR-20's exposed-site control do
+### 4.3 A gate on a shell
+
+- **The problem.** The transition-state factor's denominator is every wall molecule,
+  g = 1 + z(m)/N(m) (`transition_state.py:130–140`). With sites in the wall, two shells that differ
+  only in their site count get different gated entry rates. So a gate breaks the independence the
+  request asks for.
+- **F does not couple them (S).** With the gate's forms and the sites each conserved, the wall's
+  multinomial term splits into one binomial for each, up to a constant. Only the factor's
+  denominator couples them.
+- **Options:**
+
+  | Option | What | For | Against |
+  | --- | --- | --- | --- |
+  | G1 | Sites in a phase of their own, so N(m) excludes them | Sites without area on a bilayer come with it | The binding step leaves `count_on_m`'s membrane locus, so it needs its own encounter and phase rules: +1–1.5 |
+  | **G2** | A gate factor whose denominator is the gate's own forms, g = 1 + z(m)/(n_open + n_closed)(m). It is a new factor law beside the transition-state factor, applied to both directions as that one is, so detailed balance is kept (**S**) | It is also the right open fraction for a pore on a bilayer | A new factor law: +0.5–1 |
+  | G3 | A declared limit: the independence holds for an ungated entry only | Nothing to build | The requester uses the gate |
+
+  **Recommended: G2,** built with S2 where the shell is gated.
+
+### 4.4 What it lets FR-20's exposed-site control do
 
 - **Today.** Binding from the pool needs a join into the membrane, then a membrane-locus step: two
   steps, with the sites adding area. So "tracer captured on an exposed-site control" is FR-20's
@@ -187,17 +251,22 @@ declared apart from the others and from any membrane inventory.
   - a washout, tracer-free, keeps every slot's places, and so keeps the bound tracer
     (ASSEMBLY_WASHOUT_DESIGN.md §1, :26–27);
   - the tracer then unbinds into the finite wash bath, from which it can bind again (:35–37).
-- **With S2 as well,** the control is a shell whose lumen is closed (P_s = 0) or open. Retention on
-  sites and capture in a lumen are then told apart, with the site count, the area and the
-  conductance each declared alone.
-- **FR-20's operator needs no change:** "Nothing in it is specific to a bilayer"
-  (ASSEMBLY_WASHOUT_DESIGN.md:51–52).
+- **With S2 as well,** and G where gated, the control is a shell whose lumen is closed (P_s = 0) or
+  open. Retention on sites and capture in a lumen are then told apart, with the site count, the area
+  and the conductance each declared alone.
+- **FR-20's operator needs no change.**
+  - "Nothing in it is specific to a bilayer" (ASSEMBLY_WASHOUT_DESIGN.md:51–52).
+  - Its c_ext refusal is skipped for a declared lumen (`transfer.py:60–61`).
 
 ## 5. What stays bitwise
 
-- **Every existing version-2 world**, in values, programs and structure. No new key is written
-  unless declared, and the new code paths are dispatched statically on the geometry's ID and on the
-  step's law.
+- **Every existing version-2 world**, in values, programs and structure.
+  - No new key is written unless declared.
+  - The new code paths are dispatched statically, on the geometry's kind and on the step's law.
+  - Rule 3's admission adds no kernel path.
+- **No registered law's text changes.** The mass-action law is reused as it is, and permeation and
+  the transition-state factor are left alone. The shell's entry law and the gate factor are new
+  IDs; the Lean project's own generator lists them as new, which is that project's work.
 - **The invariance gate** (`scripts/assembly_lineages_invariance.sh`) stays unchanged: @1's freeze
   test, its part-1 references and probe sets, G2's ten rows and OL1's probe set. No OL2 world is in
   it.
@@ -212,20 +281,23 @@ declared apart from the others and from any membrane inventory.
 - **The builder.** The origin-of-life builder owns the version-2 files (§0.2c rule 16;
   CORE_SEAMS_DESIGN.md §18) and is changing them now for FR-20. So FR-21 is built after FR-20 lands:
   by that builder, or by another seat under a recorded exception from the lead.
-- **New:** `site_binding.py` and `prescribed_shell.py`, in the version-2 package.
+- **New, in the version-2 package:** `prescribed_shell.py`, `shell_permeation.py`, and a module for
+  G2's gate factor.
 - **Changed:**
   - `__init__.py`: the law IDs;
-  - `spec.py`: rule 3's admission of site binding, and the shell's refusals;
-  - `model.py` and `kernel.py`: the encounter codes, dispatched statically;
-  - `world.py`: a wall without area quanta;
+  - `spec.py`: rule 3's admission for the binding shape, the shell's refusals, and the population's
+    geometry check widened to the shell;
+  - `model.py` and `kernel.py`: the shell's encounter code, dispatched statically;
+  - `world.py`: a wall without area quanta, and the declared sites and complexes;
   - the bilayer's import sites, for the dispatch: `lumen.py`, `runner.py`, `population.py` (with the
     declared-lumen fix), `records.py` and `division.py`;
   - `interfaces.py`, if the geometry interface gains methods.
 - **`src/cells/registry/model_table.py`:** the version-2 rows. The builder edits them, and the F
   owner owns the table's structure (CORE_SEAMS_DESIGN.md §18).
-- **Docs:** `validation/assembly_lineages_v2/FORMAT_OL2.md` gains a section, and
-  `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` gains the rules' rows for the shell and for site binding, as
-  a §0.2 ruling entry.
+- **Docs:**
+  - `validation/assembly_lineages_v2/FORMAT_OL2.md` gains a section;
+  - `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` gains rule 3's amendment and the shell's rows, as a §0.2
+    ruling entry.
 - **Not edited here:** `lean/registry.json` and `lean/COVERAGE.md`. They follow from the Lean
   project's own generator (`lean/scripts/generate_claims.py`), and that project is another agent's.
 
@@ -233,27 +305,31 @@ declared apart from the others and from any membrane inventory.
 
 **Tier 1, rows only:**
 - **`tests/unit/test_assembly_lineages_v2_spec.py`** (2 s):
-  - site binding is admitted as rule 3's declared encounter;
-  - a mass-action interfacial step is still refused;
+  - the binding shape is admitted in a world with a geometry;
+  - every other interfacial step is still refused, as are a join from the lumen and a
+    pool-to-lumen reaction;
   - the shell's refusals, one row each: a join, an osmotic lumen, `area_per_leaflet`, a floor,
     `sigma_max`, division and shear.
-- **`tests/unit/test_assembly_lineages_v2_registration.py`** (7.6 s): the law and the geometry in its
-  exact sets.
+- **`tests/unit/test_assembly_lineages_v2_registration.py`** (7.6 s): the new laws and the geometry
+  in its exact sets.
 
-**Tier 2, two compiled rows**, each with its seconds and reason stated at the landing:
+**Tier 2, three compiled rows,** each with its seconds and reason stated at the landing:
+- **In `test_assembly_lineages_v2_kernel.py`** (43 s today), S1:
+  - site binding's forward and reverse propensities, against k_f·θ⁺·n_S and k_f·exp(Σνμ°)·n_C;
+  - at a held pool, the stationary binomial, from the rates' ratio (detailed balance);
+  - about 15–25 s more.
 - **In `test_assembly_lineages_v2_geometry.py`** (28.85 s today; it holds the permeation
-  closed-form test):
+  closed-form test), S2:
   - a shell's entry propensity equals P_s·A_sh·ρ0·θ⁺ at two wall compositions and two site counts,
     and it is the same in all four;
   - doubling A_sh while halving P_s leaves it equal to rounding;
   - about 15–25 s more.
-- **In `test_assembly_lineages_v2_kernel.py`** (43 s today):
-  - site binding's forward and reverse propensities, against k_on·c0·θ⁺·n_S and its reverse from F;
-  - at a held pool, the stationary binomial, from the rates' ratio (detailed balance);
-  - about 15–25 s more.
+- **In the same file,** G: two gated shells that differ only in their site count have equal gated
+  entry propensities. About 10–20 s more, if it shares the S2 row's program.
 - **Planted errors (D187):**
   - a reverse without the site term: the binomial check fails;
-  - a shell whose permeation reads W: the equal-conductance check fails.
+  - a shell whose entry reads W: the equal-conductance check fails;
+  - the transition-state factor in G2's place: the equal-gated check fails.
 
 **FR-20's test file** (the builder's, in progress) **takes one row:** a pulse and washout on a
 shell population with exposed sites keeps the bound tracer at the replacement and then releases it
@@ -265,21 +341,24 @@ into the finite wash bath. About 20–30 s.
    G_s = P_s·A_sh are the declared values, whatever the wall's counts and the site count.
 2. **Independent of the membrane's inventory and of its binding-site count.** Changing the wall's
    composition or its site count leaves the entry propensity and the lumen volume unchanged, bit for
-   bit.
+   bit. With a gated entry this holds through G2's factor (§4.3).
 3. **For FR-20:** an exposed site binds tracer in one step, and a washout keeps the bound tracer.
 
 ## 9. Price (S)
 
 | Part | Agent-days |
 | --- | --- |
-| S1, `cells.site_binding@1`: rule 3's door (parse, kernel code, the reverse from F, labels, registration) | 1–1.5 |
-| S2: the geometry dispatch made real at the bilayer's import sites, static by ID | 1–1.5 |
-| S2, `cells.prescribed_shell@1`: parse and refusals, the encounter, the run's reports | 1–1.5 |
+| S1: rule 3's admission for the binding shape, the declared sites and complexes, the parse checks | 0.5–0.75 |
+| S2: the geometry dispatch made real at the bilayer's import sites, static by kind | 1–1.5 |
+| S2, `cells.prescribed_shell@1`: parse and refusals, the population check, the run's reports | 1–1.5 |
+| S2, `cells.shell_permeation@1`: the law, its kernel code, registration | 0.5–0.75 |
 | The declared-lumen fix in population rows, unless the builder's repairs carry it | 0.25–0.5 |
+| G2: the gate factor over the gate's own forms, for a gated shell | 0.5–1 |
 | Tests | 0.75–1 |
 | Docs and FORMAT_OL2.md | 0.5 |
-| **S3 in all, development** | **4.5–6.5** |
-| S1 alone, with its tests and docs | 1.75–2.5 |
+| **All, development** | **5–7.5** |
+| S1 alone, with its tests and docs | 0.75–1.25 |
+| Optional: an exchanging membrane under the shell, with joins at the declared area | +1–1.5 |
 | Optional: sites with no area on a bilayer | +0.5 |
 | Optional: per-slot shells, with heterogeneous sizes in one population | +1–1.5 |
 | Optional: a diffusion-limited site encounter (4πD·r per site) | +0.5 |
@@ -294,13 +373,17 @@ built the bilayer geometry, phase exchange and permeation together (ORIGIN_OF_LI
 
 **For the user:**
 1. S3 in two steps, S1 first, or S1 alone for now?
-2. The conductance: P_s with a declared shell area (recommended: one permeation law for vesicles and
-   shells), or a declared G_s per species?
-3. One shell type per world in version 1, or per-slot shells?
-4. Exposed sites on bilayer vesicles too, with S1 on any geometry (recommended)? And should those
-   sites take area?
+2. The shell's entry: a law of its own (recommended), or `cells.membrane_permeation@1` generalised,
+   which keeps one law but changes a registered law's text? And P_s with a declared area
+   (recommended), or a declared G_s per species?
+3. Does a shell world keep an exchanging membrane, with the join's encounter from the declared area,
+   or is its wall prescribed, as recommended for version 1?
+4. One shell type per world in version 1, or per-slot shells?
+5. Exposed sites on bilayer vesicles too (recommended)? And should those sites take area?
 
 **For the lead:**
-5. Who builds, and when: the origin-of-life builder after FR-20, or another seat under a recorded
+6. Rule 3's amendment for the binding shape (§4.1).
+7. Who builds, and when: the origin-of-life builder after FR-20, or another seat under a recorded
    exception?
-6. Rule 1's `exchange_encounter` in a shell world, whose joins are refused: required, or absent?
+8. Rule 1's `exchange_encounter` in a shell world: absent without joins, and required if question 3
+   keeps them?
