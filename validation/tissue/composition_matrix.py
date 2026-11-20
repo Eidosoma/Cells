@@ -497,19 +497,8 @@ def _tags():
             "node's volume (not shown nominal)",
             (),
         )
-    tags[("reads", SITES, BATH, "extracellular_amount_reference")] = (
-        NOMINAL,
-        "The sites read the outside anchors only at their facing pools, which are finite nodes "
-        "(a population facing a held bath is refused: parse_population; pool_amounts), and the "
-        "bath schedule provides the declared array off its baths and schedules held baths only "
-        "(held_view, parse_declaration): the slots are disjoint",
-        (
-            OPS + "site_occupancy.py::parse_population",
-            OPS + "site_occupancy.py::pool_amounts",
-            OPS + "bath_schedule.py::held_view",
-            OPS + "bath_schedule.py::parse_declaration",
-        ),
-    )
+    # The sites beside the bath schedule are admitted since FR-23 (D244): both declare their slots
+    # (door S), the sites' anchor reads at their facing finite nodes and the dose at held baths.
     for name in ("extracellular_amount_reference", "membrane_active", "outside_active"):
         tags[("reads", SITES, INSERTION_1, name)] = (
             REAL,

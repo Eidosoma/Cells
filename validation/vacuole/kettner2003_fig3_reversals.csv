@@ -1,0 +1,9 @@
+panel,pH_cyt,pH_vac,read_reversal_mV,reading_spread_low_mV,reading_spread_high_mV,zero_row_shift_mV,slope_at_reversal_mA_per_m2_per_mV,table2_reversal_mV,table2_SE_mV,table2_trials,read_minus_table2_mV,read_minus_table2_in_SE,gap_times_slope_mA_per_m2,note
+A,5.0,5.0,,,,,,<-80,,5,,,,no crossing from -80 to +60 mV; lowest column reading +4.5 mA/m2
+A,6.0,5.0,-55.1,-55.7,-54.5,+0.7,0.315,-59.8,3,9,+4.7,+1.6,1.48,
+A,7.5,5.0,-30.7,-31.3,-30.2,+0.6,0.425,-34.0,4,14,+3.3,+0.8,1.40,
+A,8.5,5.0,-15.5,-15.8,-15.1,+0.5,0.517,-17.5,5,6,+2.0,+0.4,1.03,
+B,7.5,7.5,,,,,,<-80,,4,,,,no crossing from -80 to +60 mV; lowest column reading +6.2 mA/m2
+B,7.5,6.0,-35.8,-36.9,-34.7,+0.4,0.321,-38.6,9,3,+2.8,+0.3,0.90,
+B,7.5,4.1,-23.2,-23.6,-22.9,+0.2,0.521,-25.6,1,4,+2.4,+2.4,1.25,
+,7.5,3.1,,,,,,>+40,,3,,,,"Table 2's row from Fig. 2 (pH_vac 3.1), not shown in Fig. 3"

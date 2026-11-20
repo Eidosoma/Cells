@@ -27,7 +27,13 @@ Uses [Lipid insertion scales with membrane area and diffusion-limited capture sc
 
 ## Numerical comparison
 
-**Failed.** Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen.
+**Checked.** Two 96-event osmotic populations conserved one lipid and one solute across every recorded row. All six slot permutations preserved the corresponding rates. The repaired reporter also returned the one-event population with its declared 10⁻²² L lumen. The earlier records retain the reporting failure.
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.stochastic_mass_action@1`, `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Population records for osmotic and declared lumens](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/models/assembly_lineages_v2/population.py#L824) · [Volume and tension columns](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/models/assembly_lineages_v2/population.py#L846) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine dd085e36e9ce](https://github.com/Eidosoma/Cells/commit/dd085e36e9ced2edfed88c7194e970bd335f3ad0) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
 
 **Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
 

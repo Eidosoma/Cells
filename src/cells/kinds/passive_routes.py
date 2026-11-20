@@ -240,6 +240,11 @@ def _parse_rectifier(raw, rid, patches, m):
         raise ConfigError(f"{MODEL_KEY} {rid}: g_ref_S_per_m2 is >= 0 (0: a closed route)")
     if not k_ref > 0:
         raise ConfigError(f"{MODEL_KEY} {rid}: k_ref_mM is positive")
+    if k_ref < np.finfo(np.float64).tiny:
+        raise ConfigError(
+            f"{MODEL_KEY} {rid}: k_ref_mM is a normal float, at least 2.2250738585072014e-308 mM "
+            "(compiled CPU code reads a subnormal K_ref as 0, and sqrt(c_o / K_ref) as inf)"
+        )
     if not slope > 0:
         raise ConfigError(
             f"{MODEL_KEY} {rid}: slope_V is positive (q falls as V - E rises: inward rectification)"

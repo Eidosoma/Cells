@@ -1,0 +1,9 @@
+quantity,condition,mean,sem,n,unit,where,note
+resting_membrane_potential,IN cells (polarised; 24 h after a wound assay),-31.7,1.4,54,mV,Results,whole-cell perforated patch (nystatin)
+resting_membrane_potential,OUT cells (polarised; 24 h after a wound assay),-34.7,1.7,33,mV,Results,26 of the 33 OUT cells showed no inward or outward rectifying currents
+membrane_resistance,cells with constitutive currents,0.72,0.07,46,GOhm,Table 2,
+membrane_capacitance,cells with constitutive currents,29.9,3.2,46,pF,Table 2,
+membrane_capacitance,cells without currents,9,,,pF,Discussion,about 9 pF with no n or error; no membrane resistance given for these cells
+kir41_barium_sensitive_max_conductance,cells with barium-sensitive Kir4.1 current,3.5,0.7,17,nS,Results,
+kir41_barium_sensitive_reversal_potential,cells with barium-sensitive Kir4.1 current,-69.2,1.1,17,mV,Results,
+liquid_junction_potential,the recording solutions,8.8,,,mV,Methods,temperature not stated

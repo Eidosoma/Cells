@@ -79,6 +79,15 @@ and any written amount that would not stay positive; each half-step returns the 
 positivity of both amounts it wrote, and the operator's own domain re-checks its species rows. The
 stationary analysis does not admit the composite, and version 1 keeps it so (§8).
 
+Resolution near depletion. Amounts are stored as an anchor (the declared amount) plus an increment,
+so a pool's representable remainders are the anchor's grid: about 1.11e-16 fmol apart for a 1 fmol
+anchor. The stored remainder is the grid point nearest the exact one (from 1 fmol to e^-35 fmol it
+stores 6.661e-16 fmol for 6.305e-16, 5.65% high), and a remainder below half a spacing rounds to 0
+and is refused at run time: the step fails closed. Conservation holds to rounding. Forming the
+remainder another way cannot change this, since it is stored on the same grid; a finer resolution
+needs a representation change, such as re-anchoring a depleted pool or a scale per node, which is
+@3's state layout (the independent Lean project's finding, lean/PROGRESS.md, 20 November 2026).
+
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero. The face diffusivity that carries the species
 between nodes is the effective (FRAP) kind (§6).
