@@ -11,6 +11,7 @@ Choose a claim for its assumptions, theorems, numerical results and sources. Par
 | Claim | Lean proof | Numerical check | Biological measurements and limits |
 | --- | --- | --- | --- |
 | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | **Partial evidence.** Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) |
+| [Ion charge sets permeation reversal and bounds the current–voltage slope](claims/charged-permeation.md) | Proved | Checked | **Mixed.** At −59 mV, the one-voltage fit predicted −1.97 mA/g Hb against −1.17 ± 0.13 measured. The ratio of reported mean slope conductances was 3.67. At the inferred fixed chloride concentrations the model permits a local slope ratio up to 1.49. [Freedman and Novak, Figs. 5–6 and Table I](https://doi.org/10.1085/jgp.109.2.201) The predicted reversal was −59.16 mV against −59.8 mV measured. At −110 mV the same fitted permeability gave −3.84 nA against approximately −13.5 nA measured. [Pfeffermann et al., Fig. 2c](https://doi.org/10.1039/D5NR04234H) |
 | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | **Partial evidence.** In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) |
 | [Water potential sets flow, heat and osmometric equilibrium](claims/osmotic-water.md) | Proved | Checked | **Partial evidence.** A stiffness fitted to 1.7% swelling predicted 2.57% on the second bath against 2.6 ± 0.1% measured. [Shibly et al., Fig. 2B](https://doi.org/10.1016/j.bpj.2016.09.043) At 184 mOsm/L the ideal model predicted 111.4 fL for ghosts (109.0 ± 1.0 measured) and 122.6 fL for intact cells (111.5 ± 1.2 measured). [Kwant and Seeman, Tables I–II](https://doi.org/10.1085/jgp.55.2.208) One measured pressure step predicted reversed water flow of 4.82 nL/s outward on the second step. The measured flow was 5.3 nL/s outward. [Wendler and Zimmermann, Fig. 2A](https://doi.org/10.1104/pp.69.5.998) Measured osmole changes imply water changes of −0.375 and +0.078 g/g in two baths, against −0.37 and +0.06 measured. Multiple transport pathways contribute. [Guizouarn et al., Table 1](https://doi.org/10.1111/j.1469-7793.2000.t01-1-00147.x) |
 
@@ -32,6 +33,8 @@ Choose a claim for its assumptions, theorems, numerical results and sources. Par
 <a name="category-pumps-and-cotransport"></a>
 
 ## Pumps and cotransport
+
+**Awaiting a direct Lean proof** [`cells.na2_anion_symport_diagram@1`](../src/cells/laws/cycles/na2_anion_symport_diagram.py#L95)
 
 | Claim | Lean proof | Numerical check | Biological measurements and limits |
 | --- | --- | --- | --- |
@@ -88,7 +91,7 @@ Choose a claim for its assumptions, theorems, numerical results and sources. Par
 
 ## Registered laws
 
-Direct Lean claims cover 30 of 32 registered laws. Recorded numerical comparisons exercise 30. A run can exercise a law while checking a different property.
+Direct Lean claims cover 31 of 32 registered laws. Recorded numerical comparisons exercise 31. A run can exercise a law while checking a different property.
 
 | Law | Direct Lean claims | Recorded comparisons |
 | --- | --- | --- |
@@ -115,7 +118,7 @@ Direct Lean claims cover 30 of 32 registered laws. Recorded numerical comparison
 | [`cells.nak_atp_mass_action_positive@1`](../src/cells/laws/pumps/nak_atp_mass_action_positive.py#L153) | [Stall voltages and net charge of the sodium–potassium and calcium pumps](claims/electrogenic-pump-charge.md) | [electrogenic-pump-charge](https://github.com/Eidosoma/Cells/blob/970598abe12fa2c19fd001f4bf32ec52a21d3d35/lean/PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge) |
 | [`cells.naleak_always_open@1`](../src/cells/laws/channels/naleak_always_open.py#L13) | [Channel opening scales the signed transfer of sodium or potassium](claims/channel-ion-transfer.md) | [ion-channels](https://github.com/Eidosoma/Cells/blob/a45e076f2af4828a29058c06d40cdbafb7081db0/lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws) |
 | [`cells.nav1p2_m3h_regularized@1`](../src/cells/laws/channels/nav1p2_m3h_regularized.py#L47) | [Voltage-gated channel openings stay between zero and one](claims/channel-gate-bounds.md) · [Channel opening scales the signed transfer of sodium or potassium](claims/channel-ion-transfer.md) | [ion-channels](https://github.com/Eidosoma/Cells/blob/a45e076f2af4828a29058c06d40cdbafb7081db0/lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws) |
-| [`cells.passive_constant_field_permeation@1`](../src/cells/laws/routes/constant_field_permeation.py#L141) | Open | Open |
+| [`cells.passive_constant_field_permeation@1`](../src/cells/laws/routes/constant_field_permeation.py#L141) | [Ion charge sets permeation reversal and bounds the current–voltage slope](claims/charged-permeation.md) | [charged-permeation](https://github.com/Eidosoma/Cells/blob/5f6437c5fead7445109dcd24aaf3b0d458d379d6/lean/PROGRESS.md#20-november-2026--charged-constant-field-permeation) |
 | [`cells.passive_neutral_permeation@1`](../src/cells/laws/routes/passive_permeation.py#L97) | [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | [neutral-permeation](https://github.com/Eidosoma/Cells/blob/b6c7108c22c4c3ea3366672932f3d49ca8b8a3c8/lean/PROGRESS.md#19-november-2026--passive-neutral-permeation) |
 | [`cells.proton_atp_mass_action_positive@1`](../src/cells/laws/pumps/proton_pump.py#L257) | [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | [atp-cycle](https://github.com/Eidosoma/Cells/blob/5f39e089a5f84fa4c2414d72536de844d0bd2503/lean/PROGRESS.md#19-november-2026--atp-driven-transport) |
 | [`cells.proton_constant_field_leak@1`](../src/cells/laws/transport/proton_leak.py#L58) | [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | [proton-leak](https://github.com/Eidosoma/Cells/blob/252cb83542e368e5572328d7eb0266ca8bd7417f/lean/PROGRESS.md#19-november-2026--passive-proton-leak) |

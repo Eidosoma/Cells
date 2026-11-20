@@ -6,21 +6,21 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [30 of 32 laws](COVERAGE.md#registered-laws) and [5 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [31 of 32 laws](COVERAGE.md#registered-laws) and [5 of 24 operators](COVERAGE.md#registered-operators).
 
-| Category | Claims | Lean proved | Numerical checks | Claims with biological evidence |
+| Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 | 3 | 3 checked | 3 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 8 | 8 | 7 checked · 1 failed | 8 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 4 | 4 | 3 checked · 1 failed | 4 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 | 3 | 3 checked | 3 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 8 | 8 | 6 checked · 2 failed | 6 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 6 | 6 | 5 checked · 1 failed | 6 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | 1 | 0 | 1 checked | 1 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 4 of 4 | 4 checked | 4 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 7 checked · 1 failed | 8 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 5 of 6 | 4 of 4 | 3 checked · 1 failed | 4 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 3 of 3 | 3 checked | 3 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 7 | 8 of 8 | 6 checked · 2 failed | 6 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 6 of 6 | 5 checked · 1 failed | 6 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
 <!-- /generated -->
 
-Each category opens its detailed claim table on GitHub. The last column above counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [Engine law coverage](COVERAGE.md) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 ## Biological evidence
 
@@ -29,6 +29,8 @@ The catalog gives each measurement, its primary source and the part of the law i
 ## Maintaining the claims
 
 Edit the claims register. A stable `id` gives each claim its note under `claims/`. Set `category` to a key from the register’s `categories` map. The key keeps the section link stable when its display title changes. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
+
+Laws inherit the topic of their direct proofs. Use `law_categories` to put a law awaiting its first proof in the right section, or to choose its primary topic when proofs span several categories. Newly registered laws awaiting classification appear together in the overview.
 
 In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
 
@@ -86,6 +88,8 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
   Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
+  Mathlib.Analysis.Calculus.Deriv.MeanValue Mathlib.Analysis.Calculus.Deriv.Pow \
+  Mathlib.Analysis.SpecialFunctions.ExpDeriv \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -168,6 +172,12 @@ For neutral permeation, compare the compiled inward flux and the final amounts i
 
 ```bash
 "$cells_python" -B checks/neutral_permeation.py
+```
+
+For charged permeation, compare the CPU flux, heat and slopes with 60-digit arithmetic, follow charge through a finite tissue pair, and reproduce the two experimental current–voltage comparisons. [Charged-route driver](checks/charged_permeation.py)
+
+```bash
+"$cells_python" -B checks/charged_permeation.py
 ```
 
 For proton leak, check the reversal voltage, instantaneous heat, the small-voltage branch and the free H⁺ read in a buffered tissue cell. The driver also resolves the polynomial’s reversal ratio at 80-digit precision. [Proton driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10)
