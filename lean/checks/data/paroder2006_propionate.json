@@ -1,0 +1,17 @@
+{
+  "dataset_id": "paroder2006_propionate@1",
+  "doi": "10.1073/pnas.0602365103",
+  "source": "https://www.pnas.org/cms/10.1073/pnas.0602365103/asset/8db3b584-e74f-476f-a04e-ca1f2aa51515/assets/graphic/zpq0180620940003.jpeg",
+  "locator": "Fig. 3C, filled points",
+  "preparation": "Human SMCT in Xenopus oocytes under two-electrode voltage clamp, 21 ± 1 °C. External sodium was present. Its assay concentration is unspecified.",
+  "voltage_mV": -50,
+  "external_propionate_uM": [0, 50, 100, 200, 500, 1000, 2000, 4000],
+  "inward_current_magnitude_nA": [0, 10.7, 15.9, 22.6, 30.7, 33.5, 35.7, 37.3],
+  "fit_uM": [100, 1000],
+  "evaluation_uM": [50, 200, 500, 2000, 4000],
+  "reading_precision_nA": 0.6,
+  "low_dose_reading_precision_uM": 15,
+  "reported_half_saturation_uM": 162,
+  "reported_plus_minus_uM": 26,
+  "mapping": "Positive inward current evoked by propionate. Read the symbols independently of the drawn fit. In the 843 px wide publisher image the horizontal calibration is 597.5 px at zero and 56 px/mM. The first three nonzero centers read roughly 45, 98 and 188 µM, assigned nominal doses of 50, 100 and 200 µM. The figure has no 250 µM point. The caption gives n = 3 for the kinetic analysis. Aggregation of the symbols, pointwise errors and the statistic behind ±26 µM are unspecified. The estimated reading precisions describe the figure only."
+}

@@ -31,6 +31,14 @@ Direct proof subject `cells.scheduled_membrane_insertion@1`, `cells.scheduled_me
 
 **Operators** `scheduled_membrane_insertion@1`, `scheduled_membrane_insertion@2`, `membrane_entity_state@1`
 
+[Fixed-charge energy and plate charge](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/models/pump_composite_adapter.py#L966) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/membrane_insertion.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `scheduled_membrane_insertion@1`, `scheduled_membrane_insertion@2`, `membrane_entity_state@1`
+
 [Fixed-charge field, heat and image charge](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/src/cells/models/pump_composite_adapter.py#L959) · [Version 1 heat sign check](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/src/cells/operators/membrane_insertion.py#L424) · [Version 2 heat sign check](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/src/cells/operators/membrane_insertion_v2.py#L244) · [One-patch fixture](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/tests/membrane_insertion_fixtures.py#L28) · [One-patch reference and tolerance](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/tests/unit/test_membrane_insertion.py#L144) · [Two-version comparison](https://github.com/Eidosoma/Cells/blob/06e25525a39f3a2995bd5aa26a7e38bd67b211c3/tests/unit/test_membrane_insertion_v2.py#L203) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/checks/membrane_insertion.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/6c495445518af429c1c163a374a3a25abef4c062/lean/PROGRESS.md#19-november-2026--membrane-insertion-heat)
 
 [Tested engine 06e25525a39f](https://github.com/Eidosoma/Cells/commit/06e25525a39f3a2995bd5aa26a7e38bd67b211c3) · [Evidence checkpoint 6c495445518a](https://github.com/Eidosoma/Cells/commit/6c495445518af429c1c163a374a3a25abef4c062)

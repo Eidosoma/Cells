@@ -1,5 +1,83 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Site occupancy, electrode pulses and mixed-ion reversal
+
+The comparisons below ran on CPU in float64 with Cells main at `b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc`. The two operators ran in `resolved_pump_composite@1` around `resolved_pump_tissue@3`. The mixed-ion membrane ran in `resolved_pump_tissue@3`.
+
+<a id="site-occupancy-stages"></a>
+
+**Two populations sharing a finite ligand pool.** Each site is free or bound. Binding consumes free ligand, release returns it, and internalisation delivers cargo to the cell and frees the site. Lean proves that an admitted SSPRK(3,3) half-step preserves each population’s capacity and keeps both counts nonnegative. The stage limit is ½ on the total fractional loss from each site or pool. In exact arithmetic a pool starting at `y > 0` retains at least `29y/48` at the end of the half-step. The proof allows gains to depend on the other pools and sites. [Lean proof](CellsProofs/Chemistry/SiteOccupancy.lean) · [Engine stages and guard](../src/cells/operators/site_occupancy.py#L812) · [Reproduce](checks/site_occupancy.py)
+
+In a 40 ms `resolved_pump_composite@1` run, both populations gained bound ligand while the first also delivered cargo into the cell. Free plus bound matched capacity on every stored row, and the largest discrepancy in total ligand across the outside pool, sites and cell was 2.17 × 10⁻¹⁹ fmol. Halving the step from 5 to 2.5 ms reduced maximum final error against an independent DOP853 solution from 5.59 × 10⁻⁹ to 6.77 × 10⁻¹⁰ fmol, a factor of 8.26. In a separate competition case, each population alone passed with a load of 0.300. Together they reached 0.600 and the operator refused that half-step.
+
+<a id="electrode-pulse-ledgers"></a>
+
+**Electrode charge and work.** An electrode delivers charge `Ih × Σf`, where the carrier fractions are `f`. Lean proves equality to `Ih` at exact normalization and bounds the relative discrepancy by the fraction-sum tolerance for either polarity. In a one-cell, one-patch world held against a +25 mV bath, the test applies +1 pA for 2 ms followed by −1 pA for 2 ms, with passive current and pumps closed. It checks each supplied and removed species, the opposite image charge on the clamp, and the source and clamp work against a 60-digit ideal-solution and capacitor calculation. For the nominal 0.4912/0.5088 mixture, the booked charge was +2 fC on the first pulse, clamp work was −5.0000 × 10⁻⁵ pJ and source work was −3.34077 × 10⁻⁵ pJ. The reverse pulse undid the signed work and charge. The half-and-half control also passed. [Lean proof](CellsProofs/Tissue/CurrentInjection.lean) · [Engine booking](../src/cells/operators/current_injection.py#L168) · [Reproduce](checks/current_injection.py)
+
+**Engine contract detail for review.** The parser admits a fraction sum within 10⁻⁹ of one and uses the declared values directly. With 0.4912 and 0.5088000005 the runner accepted the pulse and booked 2.000000001 fC for the nominal 2 fC. The ion and work ledgers agreed with the actual delivery. The exact-charge wording in the module would be accurate with an explicit normalization condition. [Definition check](../src/cells/operators/current_injection.py#L107)
+
+<a id="mixed-membrane-reversal"></a>
+
+**One Na⁺/K⁺/Cl⁻ membrane.** For fixed concentrations and permeabilities, Lean factors the sum of the three signed currents and proves that its unique analytic zero is the GHK voltage. Chloride contributes its inside concentration to the numerator and its outside concentration to the denominator. The existing single-ion proof supplies the Bernoulli identity. The engine’s real-arithmetic evaluator agrees at zero and outside its near-zero polynomial interval. The table includes a numerical test inside that interval. Outward electrical current is positive. [Lean proof](CellsProofs/Transport/MixedMembrane.lean) · [Cells membrane-current sum](../src/cells/models/surface_pump_v3.py#L874) · [Driver and independent current calculation](checks/mixed_membrane.py)
+
+| Relative permeabilities Na/K/Cl | Analytic reversal (mV) | Outward Na (pA) | Outward K (pA) | Outward Cl (pA) |
+| --- | ---: | ---: | ---: | ---: |
+| 0.1 / 1 / 0.4 | −47.168248 | −0.557437 | +0.491856 | +0.065581 |
+| 4 / 1 / 0.5 | +20.168659 | −5.327922 | +3.505212 | +1.822710 |
+| 2 / 1 / 1 | 0 | −4.672666 | +2.336333 | +2.336333 |
+| 2.00002 / 1 / 1 | +0.000210 | −4.672690 | +2.336344 | +2.336346 |
+
+The roots of the actual `resolved_pump_tissue@3` current agreed with the formula within 2 × 10⁻¹⁵ V. The maximum absolute total at the four analytic roots was 1.68 × 10⁻²⁷ A. All three currents were also checked at ±5 mV around each root. In the first case their signed material transfers through two compiled steps agreed with the initial directions and magnitudes.
+
+Search verified resting squid-axon measurements against the original scan of Hodgkin and Katz. For two potassium-enriched artificial seawater solutions (B and C) and a diluted seawater solution (E), the Cells reversals shifted by **+2.10, +4.03 and −1.58 mV**. The observed mean shifts were **+2, +4 and −2 mV**, converted to inside-minus-outside. We used the authors’ resting permeability ratios and a temperature of 21 °C from their Table 3. Table 7 gives rounded mean shifts without row-specific temperatures or uncertainties. The authors selected those ratios using their observations. This reconstructs a measured voltage response and leaves the three separate biological currents open. [Original Table 7](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/5941/1392331/376be7ea1f34/jphysiol01475-0080.png) · [Hodgkin and Katz](https://doi.org/10.1113/jphysiol.1949.sp004310) · [Inputs and sign convention](checks/data/hodgkin_katz1949_rest.json)
+
+<a id="smct1-independent-propionate"></a>
+
+**Independent human SMCT1 dose response.** Search found a second propionate-current series at −50 mV. Using the same two nominal calibration doses (100 and 1,000 µM) on Paroder’s own current scale gives an amplitude of 38.20 nA and half-saturation of 140.2 µM. At the nearest measured dose to 250 µM, nominally 200 µM, the prediction was **22.45 nA** and the symbol read **22.6 nA**. Varying the two calibration readings by ±0.6 nA gave 21.77–23.13 nA at fixed nominal doses. The horizontal reading uncertainty at low doses is about ±15 µM. The figure caption gives n = 3 for the kinetic analysis. How the symbols aggregate the recordings and the pointwise uncertainty are unspecified. Paroder reports half-saturation of 162 ± 26 µM. Separately, Coady reports 128 ± 4 µM (SEM, n = 9) at −50 mV. These measurements support saturation on a similar concentration scale. A direct replication of Miyauchi’s 17.8 nA residual requires a measured 250 µM point with biological uncertainty. [Paroder et al., Fig. 3C](https://doi.org/10.1073/pnas.0602365103) · [Digitized symbols](checks/data/paroder2006_propionate.json) · [Coady et al., Fig. 3A](https://doi.org/10.1113/jphysiol.2004.063859) · [Miyauchi et al., Fig. 2A](https://doi.org/10.1074/jbc.C400059200)
+
+<a id="six-numerical-retests"></a>
+
+**Retest of the six recorded numerical failures on main.** The original inputs and earlier results remain in their pinned claim records. Each row below includes the ordinary controls and the original stress case.
+
+| Claim | Controls | Stress case on main |
+| --- | --- | --- |
+| [Inward rectifier](checks/inward_rectifier.py) | 360 current and derivative comparisons passed | **Passed.** All three equivalent normalizations delivered 0.5520533 pA and the same one-step transfer and heat after the [owner’s fix](https://github.com/Eidosoma/Cells/commit/21592c3b). NumPy emitted an overflow warning when testing which evaluation branch to use. |
+| [Membrane insertion, both versions](checks/membrane_insertion.py) | Six ordinary capacitance ratios passed per version | At ΔC/C = 1.7 × 10¹⁶ both refused. The expected heat was +0.0516031 pJ and the booking gave −0.0430370 pJ. Substituting heat alone still failed the electrode ledger. Substituting heat and image charge passed. |
+| [GARD pair heat](checks/gard_catalysis.py) | Ordinary rate and replay controls passed | Both high-contrast self-catalysis cases still refused. The larger reported 0.693147 kT for an exact zero heat. |
+| [Assembly transition state](checks/assembly_kinetics.py) | Both ordinary clocks passed | Opposed contacts still gave zero events at an expected rate of 2.06115 s⁻¹. The other stress case kept four events with a relative rate error of 2.00 × 10⁻⁸. |
+| [Potassium–anion symport](checks/potassium_anion_symport.py) | Ordinary refinement and finite-product controls passed | The earlier wrong-direction step remained guarded. At the 2⁻⁵¹⁰ outside scale, affinity and heat still overflowed. |
+| [Eight-state sodium–anion transporter](checks/sodium_anion_diagram.py) | The stationary solve, dose and tissue checks passed | At 10⁻³⁰² fmol/s capacity, edge and reverse diagnostics remained 100 times their reference values in NumPy and compiled CPU. The material rate agreed. |
+
+The 12 new public theorems build with warnings as errors. The operator, passive-route and repository guard tests passed (165 tests). Collection on the shared checkout rose from 20,555 to 20,556 tests when the engine lane landed its cytochrome-c test. Both collections reported the same five missing archived inputs.
+
+## 20 November 2026 · Eight-state sodium–anion cotransport
+
+**Engine finding for the transporter owner.** On revision `b9da010327ce52327feb86e07e76d823e2202d96`, the diagnostic probe overreported both edge turnover and reverse cycle flux by a factor of 100 at a positive capacity of 10⁻³⁰² fmol/s and full availability. The mode rate and the anion row agreed with the independent 50-digit master equation. The probe floors capacity × availability at 10⁻³⁰⁰ when counting carriers for these two diagnostic fields. The mode evaluator takes the logs of both positive factors separately. The discrepancy reproduced in NumPy and compiled CPU float64, with all four reported rates above the smallest normal float64 value. This affected the readout at an extreme capacity. [Probe normalization](../src/cells/kinds/transporter.py#L2288) · [Mode normalization](../src/cells/kinds/transporter.py#L1776) · [Reproducer](checks/sodium_anion_diagram.py#L227)
+
+| Declared capacity (fmol/s) | Material cycle flux (fmol/s) | First edge flux in probe (fmol/s) | Probe consistency |
+| ---: | ---: | ---: | --- |
+| 10⁻²⁹⁹ | 7.09691 × 10⁻³⁰² | 7.09691 × 10⁻³⁰² | Passed |
+| 10⁻³⁰⁰ | 7.09691 × 10⁻³⁰³ | 7.09691 × 10⁻³⁰³ | Passed |
+| 10⁻³⁰² | 7.09691 × 10⁻³⁰⁵ | 7.09691 × 10⁻³⁰³ | Failed |
+| 0 | 0 | 0 | Passed |
+
+**Lean proofs.** On a ring, deleting any one transition leaves a tree directed towards a chosen carrier state. Normalizing the sums of tree weights gives positive state occupancies that sum to one. Every edge carries the same net flux. With exact detailed balance, the eight-state flux equals the host’s thermodynamic cycle rate and has the same stall voltage as the two-sodium factored carrier. The proof also gives the residual when declared rates satisfy detailed balance only to a tolerance. At stall the slope of net flux with respect to dimensionless voltage is minus the forward one-way flux. The 12 new theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/SodiumAnionDiagram.lean) · [Eight ordered transitions](../src/cells/laws/cycles/na2_anion_symport_diagram.py#L67) · [Earlier two-sodium result](claims/sodium-anion-symport.md)
+
+**Engine comparison.** Sixty compiled CPU cases covered two allocations of the electrical work, both membrane orientations, five voltages around stall and three route availabilities. Against a 50-digit stationary master equation, the maximum absolute occupancy error was 1.22 × 10⁻¹⁵ and the maximum relative stall-slope error was 3.33 × 10⁻¹⁵. Eighteen further dose cases at −50 and −150 mV spanned both sides of half-saturation and matched the proven response within 6.3 × 10⁻¹⁵ relative. A two-step `resolved_pump_tissue@3` run imported 7.38045 × 10⁻¹⁰ fmol of sodium and 3.69022 × 10⁻¹⁰ fmol of anion, booked 4.29798 × 10⁻⁹ pJ of heat, and reported zero global charge residual. [Driver and inputs](checks/sodium_anion_diagram.py) · [Independent master-equation solve](../tests/unit/test_cycle_forms.py#L314)
+
+**Biological dose response from Search.** Only one forward transition binds external anion. For the detailed-balanced cycle at fixed voltage, sodium and internal substrate, subtracting the zero-substrate limiting current gives exactly `A x / (K + x)` for positive external substrate concentration x. In a representative human SMCT1 oocyte recording, we used the 100 and 1,000 µM propionate points at −50 mV to fit A = 395.5 nA and K = 129.9 µM. The paper reports 127 ± 14 µM. These are effective parameters of a concentration curve. The microscopic rate constants remain undetermined. [Miyauchi et al., Fig. 2A](https://doi.org/10.1074/jbc.C400059200) · [Original figure](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819639839-gr2.jpg) · [Digitized inputs](checks/data/miyauchi2004_propionate.json)
+
+| Held-out propionate (µM) | Observed inward magnitude (nA) | Predicted (nA) | Prediction range from reading the two calibration points to ±5 nA |
+| ---: | ---: | ---: | ---: |
+| 50 | 97 | 109.9 | 105.1–114.9 |
+| 250 | 278 | 260.2 | 254.6–265.9 |
+| 500 | 324 | 313.9 | 308.5–319.3 |
+| 2,500 | 371 | 375.9 | 368.3–383.8 |
+
+At 250 µM the 17.8 nA discrepancy exceeded the estimated reading precision even after varying both calibration points. The series represents one oocyte with no pointwise biological uncertainties. A separate lactate experiment gave about −0.68 and −1.40 µA at −50 and −150 mV after subtraction of the substrate-free trace. Its 2.06-fold change is a reference for voltage kinetics. The internal activities and transition parameters needed for a preparation-specific prediction remain open. [Coady et al., Fig. 5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/#fig5) · [Voltage inputs](checks/data/coady2007_lactate_voltage.json)
+
+The full comparison took 19 seconds on four CPU cores and exits with status 1 for the diagnostic discrepancy. Its ordinary controls passed separately. The 35 diagram, cycle-form and law-registry tests and the 82 repository guard tests passed. Before and after collection returned the same 20,555 test IDs and the same five errors from unavailable archived inputs.
+
 ## 20 November 2026 · Charged constant-field permeation
 
 **Lean and engine.** Nine theorems cover the signed-valence Nernst reversal and nonnegative heat for the analytic flux, the exact change in flux when either compartment gains material at fixed voltage, and the voltage response of the engine’s two-branch evaluator. With equal concentrations its electrical current is linear in voltage. With unequal concentrations its slope lies between the lower and higher concentrations times the common factor APm(zF)²/(RT). The derivative proof excludes the two branch-switch voltages. The finite-interval bound applies when the interval stays within one branch. All nine theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/ChargedPermeation.lean) · [Engine law](../src/cells/laws/routes/constant_field_permeation.py#L56) · [Earlier near-reversal analysis](claims/proton-leak.md)

@@ -10,10 +10,177 @@
     "tissue-and-conservation": "Tissue transport and conservation",
     "cell-physiology": "Cell physiology"
   },
-  "law_categories": {
-    "cells.na2_anion_symport_diagram@1": "pumps-and-cotransport"
-  },
   "comparisons": {
+    "site-occupancy-stages": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Pool and site loss coefficients": "src/cells/operators/site_occupancy.py#L812",
+        "Three stages and weighted bookings": "src/cells/operators/site_occupancy.py#L845",
+        "Free, bound and internalised update": "src/cells/operators/site_occupancy.py#L964",
+        "Finite ligand-pool fixture": "validation/tissue/site_occupancy_fixtures.py#L92"
+      },
+      "driver": "lean/checks/site_occupancy.py",
+      "record": "lean/PROGRESS.md#site-occupancy-stages"
+    },
+    "electrode-pulses": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.electrode_current_injection@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Fraction-sum tolerance": "src/cells/operators/current_injection.py#L107",
+        "Cell, carrier reservoir and clamp bookings": "src/cells/operators/current_injection.py#L168",
+        "Ideal chemical and capacitor energies": "src/cells/models/pump_composite_adapter.py#L825"
+      },
+      "driver": "lean/checks/current_injection.py",
+      "record": "lean/PROGRESS.md#electrode-pulse-ledgers"
+    },
+    "mixed-ion-reversal": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.passive_constant_field_permeation@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Signed ion flux": "src/cells/laws/routes/constant_field_permeation.py#L56",
+        "Area, opening and orientation of each passive route": "src/cells/kinds/passive_routes.py#L550",
+        "Sum of the outward membrane currents": "src/cells/models/surface_pump_v3.py#L874"
+      },
+      "driver": "lean/checks/mixed_membrane.py",
+      "record": "lean/PROGRESS.md#mixed-membrane-reversal"
+    },
+    "inward-rectifier-nov20": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Overflow-safe concentration factor": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L69"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
+    "membrane-insertion-heat-nov20": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "scheduled_membrane_insertion@1",
+        "scheduled_membrane_insertion@2",
+        "membrane_entity_state@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Fixed-charge energy and plate charge": "src/cells/models/pump_composite_adapter.py#L966"
+      },
+      "driver": "lean/checks/membrane_insertion.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
+    "gard-pair-heat-nov20": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@1",
+        "cells.gard_catalysis_single_event@1"
+      ],
+      "operators": [
+        "cells.size_threshold_fission@1",
+        "cells.daughter_continuation@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Reverse pair factor": "src/cells/models/assembly_lineages/gard.py#L143"
+      },
+      "driver": "lean/checks/gard_catalysis.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
+    "assembly-transition-state-factor-nov20": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Transition-state factor": "src/cells/models/assembly_lineages_v2/transition_state.py#L130"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
+    "potassium-anion-symport-nov20": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "k_anion_symport_mass_action@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Concentration products and chemical affinity": "src/cells/laws/routes/k_anion_symport.py#L66"
+      },
+      "driver": "lean/checks/potassium_anion_symport.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
+    "sodium-anion-diagram-nov20": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "na2_anion_symport_diagram@1"
+      ],
+      "engine_revision": "b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc",
+      "record_revision": "b4353f85b18d489a277818bfe43e20c8416b6066",
+      "sources": {
+        "Diagnostic carrier normalization": "src/cells/kinds/transporter.py#L2323"
+      },
+      "driver": "lean/checks/sodium_anion_diagram.py",
+      "record": "lean/PROGRESS.md#six-numerical-retests"
+    },
     "junction": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -225,6 +392,23 @@
       "driver": "lean/checks/inward_rectifier.py",
       "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
       "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
+    "sodium-anion-diagram": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["na2_anion_symport_diagram@1"],
+      "engine_revision": "b9da010327ce52327feb86e07e76d823e2202d96",
+      "record_revision": "ba3d6091cf5ac501099949b6a36a81d261c1dd72",
+      "sources": {
+        "Declared cycle and rate assignments": "src/cells/laws/cycles/na2_anion_symport_diagram.py#L67",
+        "Detailed-balance check": "src/cells/laws/cycles/forms.py#L923",
+        "Stationary occupancies and rates": "src/cells/laws/cycles/forms.py#L1346",
+        "Capacity in the mode evaluator": "src/cells/kinds/transporter.py#L1776",
+        "Capacity in the edge probe": "src/cells/kinds/transporter.py#L2288",
+        "Independent 50-digit master equation": "tests/unit/test_cycle_forms.py#L314"
+      },
+      "driver": "lean/checks/sodium_anion_diagram.py",
+      "record": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
     },
     "sodium-anion-symport": {
       "kind": "engine",
@@ -469,6 +653,140 @@
     }
   },
   "claims": [
+    {
+      "id": "site-occupancy-stages",
+      "category": "reactions-and-binding",
+      "title": "Competing binding sites retain capacity through an SSPRK step",
+      "statement": "Each population keeps its total of free and bound sites. Both site counts stay nonnegative, and an initially positive shared ligand pool stays positive through the three-stage update.",
+      "assumptions": [
+        "Free and bound counts start nonnegative and sum to capacity. Forward binding, release and internalisation have nonnegative rates.",
+        "At each stage the step length times every outgoing loss coefficient is at most one half. Populations drawing on the same ligand pool contribute to one summed coefficient.",
+        "The proof uses exact arithmetic and the SSPRK(3,3) weights. The comparison uses two populations at fixed volumes with one internalisation route."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.site_occupancy@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.SiteOccupancy.site_guards": "lean/CellsProofs/Chemistry/SiteOccupancy.lean",
+          "CellsProofs.Chemistry.SiteOccupancy.shared_pool_guard": "lean/CellsProofs/Chemistry/SiteOccupancy.lean",
+          "CellsProofs.Chemistry.SiteOccupancy.ssprk_bounds": "lean/CellsProofs/Chemistry/SiteOccupancy.lean",
+          "CellsProofs.Chemistry.SiteOccupancy.network_step": "lean/CellsProofs/Chemistry/SiteOccupancy.lean",
+          "CellsProofs.Chemistry.SiteOccupancy.site_capacity_step": "lean/CellsProofs/Chemistry/SiteOccupancy.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "site-occupancy-stages"
+        ],
+        "result": "In the finite-pool run both populations gained bound ligand. The largest ligand residual was 2.17 × 10⁻¹⁹ fmol and halving the step reduced the final ODE error by a factor of 8.26. Each route alone passed at load 0.300. Their combined loss load of 0.600 was refused."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time-matched free ligand, occupancy of each of two competing site populations, and internalised cargo in a finite volume.",
+        "unit": "fmol",
+        "evidence": []
+      }
+    },
+    {
+      "id": "electrode-pulses",
+      "category": "tissue-and-conservation",
+      "title": "Signed electrode pulses deliver the declared carrier charge",
+      "statement": "A pulse delivers the time-integrated current times the sum of the carrier fractions. For fractions summing to one this equals Ih at either polarity. On a single clamped patch the source books the change in chemical and capacitor energy less the clamp work.",
+      "assumptions": [
+        "Current is constant over the interval h. Each active carrier has nonzero signed charge per fmol and the cell can supply every amount removed.",
+        "The tolerance theorem assumes the exact sum of the represented fractions is within the bound. The parser tests their floating-point sum. The one-patch energy identity assumes fixed capacitance and bath potential.",
+        "The physical comparison closes the background transport and uses an ideal solution at fixed cell volume."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.electrode_current_injection@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CurrentInjection.booked_charge": "lean/CellsProofs/Tissue/CurrentInjection.lean",
+          "CellsProofs.Tissue.CurrentInjection.pulse_charge": "lean/CellsProofs/Tissue/CurrentInjection.lean",
+          "CellsProofs.Tissue.CurrentInjection.charge_error": "lean/CellsProofs/Tissue/CurrentInjection.lean",
+          "CellsProofs.Tissue.CurrentInjection.single_patch_work": "lean/CellsProofs/Tissue/CurrentInjection.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "electrode-pulses"
+        ],
+        "result": "Three carrier mixtures passed opposite 1 pA pulses. All material, charge and work ledgers matched the independent calculation. A fraction sum of 1.0000000005 delivered 2.000000001 fC for a nominal 2 fC."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Calibrated delivered current, the carrier-specific supply and removal, and clamp work on the same cell and pulse interval.",
+        "unit": "C, fmol and pJ",
+        "evidence": []
+      }
+    },
+    {
+      "id": "mixed-ion-reversal",
+      "category": "membrane-transport",
+      "title": "Three passive ions set one zero-current membrane voltage",
+      "statement": "For monovalent Na⁺, K⁺ and Cl⁻ the analytic sum of the outward constant-field currents vanishes exactly at the Goldman–Hodgkin–Katz voltage. The chloride concentrations enter in the opposite order to sodium and potassium.",
+      "assumptions": [
+        "The concentrations, effective permeabilities and temperature are fixed during the voltage comparison, the thermal voltage RT/F is positive and both permeability-weighted concentration sums are positive.",
+        "The membrane carries only these three passive ions. The analytic identity agrees with the engine’s real-arithmetic evaluator at zero and outside its near-zero series interval. We also compare float64 at one nonzero reversal inside that interval."
+      ],
+      "uses": [
+        "charged-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.passive_constant_field_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.MixedMembrane.current_factorization": "lean/CellsProofs/Transport/MixedMembrane.lean",
+          "CellsProofs.Transport.MixedMembrane.reversal_iff": "lean/CellsProofs/Transport/MixedMembrane.lean",
+          "CellsProofs.Transport.MixedMembrane.engine_current_eq": "lean/CellsProofs/Transport/MixedMembrane.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mixed-ion-reversal"
+        ],
+        "result": "Four roots of the Cells membrane current matched the analytic voltage within 2 × 10⁻¹⁵ V. At −47.168248 mV, outward Na, K and Cl currents were −0.557437, +0.491856 and +0.065581 pA. All three also matched on both sides of reversal and in a two-step run."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Resting voltage shifts under known ion substitutions and separate currents for each ion at the same reversal.",
+        "unit": "mV",
+        "evidence": [
+          {
+            "dataset_id": "hodgkin_katz1949_rest@1",
+            "manifest": "lean/checks/data/hodgkin_katz1949_rest.json",
+            "citation": "Hodgkin and Katz (1949), Table 7",
+            "doi": "10.1113/jphysiol.1949.sp004310",
+            "locator": "Resting rows B, C and E in the original printed table.",
+            "context": "Resting squid giant axon in two potassium-enriched artificial seawater solutions and one diluted seawater solution. Shifts use inside-minus-outside voltage.",
+            "role": "descriptive",
+            "fit": [
+              "Published resting permeability ratios chosen using the experimental series"
+            ],
+            "evaluation": [
+              "Three resting shifts against the appropriate baseline bath"
+            ],
+            "excluded": [
+              "Action potential, afterpotential and individual ionic currents"
+            ],
+            "observed": 4,
+            "predicted": 4.03,
+            "uncertainty": "Table 7 gives means rounded to mV without row-specific uncertainties. The calculation adopts 21 °C from Table 3.",
+            "assessment": "For B, C and E, observed shifts were +2, +4 and −2 mV. The reconstructed Cells shifts were +2.10, +4.03 and −1.58 mV. The displayed pair is solution C. The three ionic currents were unmeasured.",
+            "report": "lean/PROGRESS.md#mixed-membrane-reversal"
+          }
+        ]
+      }
+    },
     {
       "id": "junction-flux-reversal",
       "category": "channels-and-junctions",
@@ -857,7 +1175,14 @@
         "CellsProofs.Tissue.MembraneInsertion.one_patch_heat": "lean/CellsProofs/Tissue/MembraneInsertion.lean",
         "CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero": "lean/CellsProofs/Tissue/MembraneInsertion.lean"
       }},
-      "numerical": {"status": "failed", "comparisons": ["membrane-insertion"], "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner."},
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "membrane-insertion-heat-nov20",
+          "membrane-insertion"
+        ],
+        "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner."
+      },
       "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.", "finding": "Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
     },
     {
@@ -908,7 +1233,14 @@
         "CellsProofs.Chemistry.GardCatalysis.singleton_factors": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
         "CellsProofs.Chemistry.GardCatalysis.pair_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean"
       }},
-      "numerical": {"status": "failed", "comparisons": ["gard-catalysis"], "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."},
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "gard-pair-heat-nov20",
+          "gard-catalysis"
+        ],
+        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."
+      },
       "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
     },
     {
@@ -1137,7 +1469,10 @@
       },
       "numerical": {
         "status": "failed",
-        "comparisons": ["assembly-kinetics"],
+        "comparisons": [
+          "assembly-transition-state-factor-nov20",
+          "assembly-kinetics"
+        ],
         "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
       },
       "biology": {
@@ -1181,11 +1516,12 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "inward-rectifier-nov20",
           "inward-rectifier"
         ],
-        "result": "A 360-state compiled panel passed against 60-digit currents and derivatives. Two equivalent reference settings produced identical one-step transfer and heat. A third, also finite, had the same 0.5520533 pA reference current but overflowed in c_out/K_ref and was refused during definition validation."
+        "result": "The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision."
       },
       "biology": {
         "status": "mixed",
@@ -1214,6 +1550,104 @@
             "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport",
             "observed": -0.59,
             "predicted": -0.385
+          }
+        ]
+      }
+    },
+    {
+      "id": "sodium-anion-diagram",
+      "category": "pumps-and-cotransport",
+      "title": "The eight-state sodium–anion carrier shares a cycle flux and saturates with external substrate",
+      "statement": "Each edge of a steady ring carries the same net flux. For the declared two-sodium, one-anion cycle, exact detailed balance gives the host’s thermodynamic turnover and stall. For an active population at fixed voltage, sodium and internal substrate, the increase in inward current over its zero-substrate limit has the form A x / (K + x) for positive A and K.",
+      "assumptions": [
+        "The carrier is at steady state on the single eight-edge ring with positive microscopic rates. Its forward and backward directions each bind the two sodium ions and the anion in the declared order. One net positive charge enters per forward cycle.",
+        "Equality with the thermodynamic rate assumes equal products of the base rate constants and a net electrical coefficient of −1 in the forward direction. A separate theorem retains the constant and voltage residuals for populations admitted within the engine’s detailed-balance tolerance.",
+        "The current comparison requires positive capacity and availability. The saturation result holds at fixed temperature, voltage, availability, all other activities and rate parameters. External substrate changes only its one forward binding rate. The reference current at zero substrate is the boundary value of the mass-action expression. The observed current is the measured steady current after subtracting its substrate-free baseline."
+      ],
+      "uses": ["sodium-anion-symport"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.na2_anion_symport_diagram@1"],
+        "theorems": {
+          "CellsProofs.Transport.SodiumAnionDiagram.stationary_edge": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_pos": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.occupancy_normalized": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_affine": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_slope_pos": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.substrate_response": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.ordered_substrate_edge": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.ordered_dose_response": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.product_with_residual": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.cycle_flux_eq_host": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.cycle_stall": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.stall_slope": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "sodium-anion-diagram-nov20",
+          "sodium-anion-diagram"
+        ],
+        "result": "At 10⁻³⁰² fmol/s capacity, the diagnostic edge and reverse fluxes were 100 times their correct values in NumPy and compiled CPU float64. The mode and material rates matched the independent master equation. The 60 ordinary cases, 18 dose points and the tissue booking check passed."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Baseline-subtracted steady current as external monocarboxylate concentration or clamped voltage changes. The dose series tests the functional form. A biological assignment for the individual transition rates and voltage coefficients remains open.",
+        "unit": "nA inward magnitude (propionate), µA signed current (lactate)",
+        "finding": "In an independent human SMCT oocyte series at −50 mV, the propionate half-saturation concentration was 128 ± 4 µM (SEM, n = 9). This pooled estimate constrains affinity. [Coady et al., Fig. 3A](https://doi.org/10.1113/jphysiol.2004.063859)",
+        "evidence": [
+          {
+            "dataset_id": "miyauchi2004_propionate@1",
+            "manifest": "lean/checks/data/miyauchi2004_propionate.json",
+            "doi": "10.1074/jbc.C400059200",
+            "citation": "Miyauchi et al., Fig. 2A",
+            "locator": "The data are the six filled symbols in the main propionate panel.",
+            "context": "Human SLC5A8 in one representative Xenopus oocyte at −50 mV, 100 mM external sodium and pH 7.5. The inward current is measured relative to the substrate-free baseline.",
+            "role": "held_out_from_fitting",
+            "fit": ["100 µM propionate", "1,000 µM propionate"],
+            "evaluation": ["50 µM propionate", "250 µM propionate", "500 µM propionate", "2,500 µM propionate"],
+            "uncertainty": "The approximate graph-reading precision is ±5 nA. Per-point biological uncertainties and the measurement temperature are unspecified. The paper reports similar results from three additional oocytes.",
+            "assessment": "Two calibration points gave K = 130 µM. At 250 µM the proven curve predicted 260 nA against 278 nA measured. At 2,500 µM it predicted 376 nA against 371 nA. The figure provides too little biological uncertainty for a population verdict.",
+            "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
+          },
+          {
+            "dataset_id": "coady2007_lactate_voltage@1",
+            "manifest": "lean/checks/data/coady2007_lactate_voltage.json",
+            "doi": "10.1529/biophysj.107.108555",
+            "citation": "Coady et al., Fig. 5",
+            "locator": "Subtract the substrate-free ibuprofen-sensitive trace from the 1 mM lactate trace at each negative voltage.",
+            "context": "Human SMCT1 in a Xenopus oocyte, 96 mM external sodium, approximately 24 °C and pH 7.6.",
+            "role": "descriptive",
+            "evaluation": ["−50 mV with 1 mM lactate", "−150 mV with 1 mM lactate"],
+            "excluded": ["Positive-voltage currents dominated by an anion leak"],
+            "uncertainty": "One representative experiment, approximate reading precision ±0.03 µA. Intracellular activities and kinetic parameters for this preparation are unavailable.",
+            "assessment": "The inward current rose from about 0.68 to 1.40 µA in magnitude between −50 and −150 mV. Predicting that voltage dependence requires the transition kinetics.",
+            "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
+          },
+          {
+            "dataset_id": "paroder2006_propionate@1",
+            "manifest": "lean/checks/data/paroder2006_propionate.json",
+            "citation": "Paroder et al. (2006), Fig. 3C",
+            "doi": "10.1073/pnas.0602365103",
+            "locator": "Filled symbols of the human propionate dose response at −50 mV.",
+            "context": "Independent human SMCT oocyte series. The same two nominal calibration doses were used on this experiment’s current scale.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "100 µM and 1,000 µM points"
+            ],
+            "evaluation": [
+              "50, 200, 500, 2,000 and 4,000 µM points"
+            ],
+            "excluded": [
+              "Zero-substrate baseline",
+              "250 µM, absent from the series"
+            ],
+            "observed": 22.6,
+            "predicted": 22.45,
+            "uncertainty": "The caption gives n = 3 for the kinetic analysis. Pointwise biological errors and how the symbols aggregate the recordings are unspecified. Estimated figure precision is ±0.6 nA and about ±15 µM at low dose.",
+            "assessment": "At nominal 200 µM, 22.6 nA was observed and 22.45 nA predicted. The two-point fit gave half-saturation of 140.2 µM and the paper reports 162 ± 26 µM. The original 250 µM residual remains untested in this independent series.",
+            "report": "lean/PROGRESS.md#smct1-independent-propionate"
           }
         ]
       }
@@ -1336,7 +1770,13 @@
         }
       },
       "numerical": {
-        "status": "failed", "comparisons": ["potassium-anion-symport-retest", "osmotic-water", "potassium-anion-symport"],
+        "status": "failed",
+        "comparisons": [
+          "potassium-anion-symport-nov20",
+          "potassium-anion-symport-retest",
+          "osmotic-water",
+          "potassium-anion-symport"
+        ],
         "result": "The 20 November retest refused the 10 ms step that previously ran in the wrong direction. Its updated bound was 3.761 against a limit of 1, with water fixed or moving. The 32- and 64-step runs completed and converged in each case. All 27 ordinary component checks passed. The remaining failure is at component level, where an extreme concentration ratio still produces infinite affinity and heat against finite references."
       },
       "biology": {

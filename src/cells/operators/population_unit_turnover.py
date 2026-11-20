@@ -102,6 +102,7 @@ import math
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -652,6 +653,13 @@ def unit_half_step(state, assembly, removal, h, p, *, xp=jnp):
     _, i_pools, i_n = chain_integrals(
         q0, pools, n0, a, kappa, removal, h, present, last, direct, xp=xp
     )
+    if xp is jnp and pools.shape[1]:  # Static: compiled, with maturation pools.
+        # Materialize the series' integrals once. Every state field's select below reads them
+        # (through `flowing`), and with pools XLA's fusion duplicated the 21-term series into each
+        # consumer: a compile of over 10 minutes and steps 8 times slower (FR-7's chain worlds,
+        # m = 3, 20 November 2026). The barrier changes no operation, only where XLA may fuse;
+        # m = 0 programs are unchanged (static).
+        i_pools, i_n = jax.lax.optimization_barrier((i_pools, i_n))
     removed = removal * i_n
     if pools.shape[1] == 0:  # Static: no route has a pool.
         inserted, new_pools = assembled, pools

@@ -9,9 +9,21 @@ each running its law's general form (laws/cycles/forms.py) in one generic progra
 energy the kind's from the species registry. An entry in the general form (keys id, host, law,
 orientation, capacity_fmol_s, roles, parameters, held_rows) is never in version 1's form; entries
 in today's keys on the population axis are read through a one-to-one map, and each entry writes
-back in the form it was declared in. This pass's limits on the axis: hosts are membrane patches; a
-mode that converts a species at P is refused (complexes III and IV will need it); held rows are
-neutral (charged held rows, seam C's ATP4- with forms included, are out of scope).
+back in the form it was declared in. This pass's limits on the axis: hosts are membrane patches;
+held rows are neutral (charged held rows, seam C's ATP4- with forms included, are out of scope).
+
+**Chemistry at P** (K3; D235, host P): a mode may change a species at P without changing it at N,
+as complexes III and IV convert cytochrome c on the P side. Its rows move at P's node, so its
+charge there enters the field as charge at N does, and its standard part joins the population's
+booking. Where a population declares such a mode, the material term also bounds the charged rows a
+mode changes at P only (the field cycle_row_p_chemistry, which exists only there); proton rows
+changed at both ends stay on the charge rule. A proton row changed at P only (a P-side consumer
+releasing H+) is among the bounded rows: at a buffered node its slope divides by free h, so its
+bound is tighter than the buffered row needs, by the buffer's capacity (fail-closed). The membrane
+flux reads every P-side change as a crossing, so the patch's current stays F q J, the charge the
+field sees: a conversion at P appears as its forms crossing in opposite directions, the electron's
+charge written in them, and is no transport (the lead's convention for MT-1; a charge-only term is
+a recorded follow-up).
 
 **Availability schedules on the population axis** (D228 item 5; the core's gap-6 schedules, §7.4
 (l)): the experiment key `transporter_controls`, optional, each population at most once, an
@@ -393,7 +405,8 @@ def structure_entry(declaration):
     """Value-free: the declared laws and fuel kinds, sorted; on the population axis, CycleAxis."""
     if isinstance(declaration, PopulationAxis):
         asks = any(t.proton_readout is not None for t in declaration)
-        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks)
+        at_p = any(_p_chemistry_rows(t).any() for t in declaration)
+        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, at_p)
     return (
         tuple(sorted({t.law for t in declaration})),
         tuple(sorted({t.fuel_kind for t in declaration})),
@@ -869,10 +882,9 @@ def domain(state, p, *, xp):
 # not traced. Every free energy is the kind's, from the species registry:
 #     x_m = g°_m + sum_k nu_mk ln c_k - q_m psi,   psi = F (phi_N - phi_P) / RT,
 #     J+ = k a S,   J = J+ (1 - e^x) (sign-exact),   J- = J+ e^x.
-# This pass's limits (the lead's conditions on statement 1): hosts are membrane patches; a mode
-# that changes a species at P without changing it at N (chemistry at P) is refused, though
-# complexes III and IV will need it (cytochrome c is on the P side); held rows are neutral, so a
-# charged held row (seam C's ATP4- with forms included) is out of scope.
+# This pass's limits (the lead's conditions on statement 1): hosts are membrane patches; held rows
+# are neutral, so a charged held row (seam C's ATP4- with forms included) is out of scope. Chemistry
+# at P, a mode changing a species at P without changing it at N, is admitted (K3; module docstring).
 # The monomial form (K6, the lead's rulings of 20 November 2026; forms.py) runs on the same axis:
 # - its fields (MONOMIAL_FIELDS) exist only where a declared law runs it, so every other world keeps
 #   its fields and programs;
@@ -996,6 +1008,10 @@ PROTON_READOUT_FIELDS = (
     "cycle_pmf_species",  # [P]: the population's free-proton species row
     "cycle_pmf_present",  # [P]: the population asks for the readouts
 )
+# K3: the rows a mode changes at P without changing their species at N (chemistry at P), moved,
+# only where a population declares such a mode (declared_fields): the material term bounds them
+# though charged.
+P_CHEMISTRY_FIELDS = ("cycle_row_p_chemistry",)  # [K, P]
 PROTON_READOUT_COLUMNS = (
     "cycle_membrane_potential_V",  # [P]: delta psi = phi_P - phi_N
     "cycle_proton_motive_force_V",  # [P]: delta p = delta psi + (RT/F) ln(h_P / h_N)
@@ -1008,11 +1024,13 @@ LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 
 
 class CycleAxis(NamedTuple):
-    """The population axis's structure entry: its declared laws, sorted (value-free), and whether a
-    population asks for the proton readouts (K4)."""
+    """The population axis's structure entry: its declared laws, sorted (value-free), whether a
+    population asks for the proton readouts (K4), and whether a mode changes a species at P without
+    changing it at N (K3)."""
 
     laws: tuple
     proton_readout: bool = False
+    p_chemistry: bool = False
 
 
 class CyclePopulation(NamedTuple):
@@ -1200,13 +1218,6 @@ def _check_population(t, form, law, valence, where):
         charge = sum(int(valence[roles[r]]) * int(n) for (r, _), n in zip(form.rows, row_counts))
         if charge != 0:
             raise ConfigError(f"{where}: mode {mode} moves charge {charge:+d}: every mode conserves charge")
-        at_n = {r for (r, e), n in zip(form.rows, row_counts) if e == "N" and n}
-        for (role, end), n in zip(form.rows, row_counts):
-            if end == "P" and n and role not in at_n:
-                raise ConfigError(
-                    f"{where}: mode {mode} changes {role} at P without changing it at N (chemistry at "
-                    "P is refused in this pass)"
-                )
 
 
 def _parse_population_axis(entries, base):
@@ -1290,8 +1301,23 @@ def declared_fields(entry):
         columns = GENERAL_READOUT_COLUMNS
         if entry.proton_readout:  # K4: only where a population asks.
             layout, columns = layout + PROTON_READOUT_FIELDS, columns + PROTON_READOUT_COLUMNS
+        if entry.p_chemistry:  # K3: only where a mode changes a species at P alone.
+            layout = layout + P_CHEMISTRY_FIELDS
         return KindFields(GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, columns)
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
+
+
+def _p_chemistry_rows(t):
+    """K3: [rows] whether each of population t's law's rows is at P, moved, and changed by a mode
+    that does not change its role at N (chemistry at P; each role binds one species, Q8)."""
+    form = cycle_form(t.law)
+    out = np.zeros(len(form.rows), dtype=bool)
+    for row_counts in _counts(form, dict(t.parameters)):
+        at_n = {r for (r, e), n in zip(form.rows, row_counts) if e == "N" and n}
+        for k, ((role, end), n) in enumerate(zip(form.rows, row_counts)):
+            if end == "P" and n and role not in at_n and (role, end) not in t.held_rows:
+                out[k] = True
+    return out
 
 
 def _declares_monomial(entry):
@@ -1419,6 +1445,11 @@ def _population_initial(spec, declaration):
     v |= _net_flow_layout(spec, declaration, all_forms, K, M)
     if any(f.kinetics == "monomial" for f in all_forms):  # declared_fields' test (K6).
         v |= _monomial_layout(spec, declaration, all_forms, v, M)
+    if any(_p_chemistry_rows(t).any() for t in declaration):  # structure_entry's test (K3).
+        v["cycle_row_p_chemistry"] = np.zeros((K, P), dtype=bool)
+        for j, t in enumerate(declaration):
+            rows = _p_chemistry_rows(t)
+            v["cycle_row_p_chemistry"][: rows.size, j] = rows
     if any(t.proton_readout is not None for t in declaration):  # Its test (K4).
         v["cycle_pmf_species"] = np.array(
             [0 if t.proton_readout is None else ids.index(t.proton_readout) for t in declaration],
@@ -2012,12 +2043,16 @@ def _population_stage_term(read, potentials, control, p, *, xp):
 def material_term(read, potentials, control, p, *, xp):
     """[cells, then outside nodes] the kind's material slope (1/s; D4): per node, the largest over
     the neutral moved rows there of sum over populations and modes of |nu dJ/dn| (statement 1, §2:
-    an upper bound of the row's own slope even where modes add). Version 1's entry has none."""
+    an upper bound of the row's own slope even where modes add). Where a mode changes a species at
+    P alone (K3), its rows there count though charged: a redox pool at P turns over without a
+    crossing charge, so the charge rule does not bound it. Version 1's entry has none."""
     e = _evaluate(read, potentials, control, p, xp=xp)
     n, o = p.active.size, p.outside_active.size
     volume = xp.concatenate((xp.where(p.active, p.volume, 1.0), xp.where(p.outside_active, p.extracellular_volume, 1.0)))
     amount = e.c * volume[e.row_node]  # [K, P] fmol
     neutral = p.cycle_row_present & ~p.cycle_row_held & ~p.cycle_row_charged
+    if P_CHEMISTRY_FIELDS[0] in type(p)._fields:  # Static (K3): only where such a mode is declared.
+        neutral = neutral | p.cycle_row_p_chemistry
     per_row = entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)  # [K, P] fmol/s per ln c
     slope = xp.where(neutral & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
     if potentials is None and _mono(p):  # Static (K6): S reads psi, so no bound without it.
@@ -2598,11 +2633,12 @@ _STRUCTURAL = {
     "cycle_mono_share": 1,
     "cycle_pmf_species": 0,
     "cycle_pmf_present": False,
+    "cycle_row_p_chemistry": False,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
-    *PROTON_READOUT_FIELDS, *GENERAL_CONTROL_FIELDS,
+    *PROTON_READOUT_FIELDS, *P_CHEMISTRY_FIELDS, *GENERAL_CONTROL_FIELDS,
 )  # fmt: skip
 PARTITION_ROLES = MappingProxyType(
     {
@@ -2662,7 +2698,7 @@ _SHAPES = {
     "cycle_mono_zeta": "MP", "cycle_mono_power": "MQP", "cycle_mono_term_log_k": "MQGP",
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
-    "cycle_pmf_species": "P", "cycle_pmf_present": "P",
+    "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_p_chemistry": "KP",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {

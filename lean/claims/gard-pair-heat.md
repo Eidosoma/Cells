@@ -31,6 +31,14 @@ Uses [Single-molecule exchange heat equals the change in assembly log weight](as
 
 **Operators** `cells.size_threshold_fission@1`, `cells.daughter_continuation@1`
 
+[Reverse pair factor](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/models/assembly_lineages/gard.py#L143) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/gard_catalysis.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@1`, `cells.gard_catalysis_single_event@1`
+
+**Operators** `cells.size_threshold_fission@1`, `cells.daughter_continuation@1`
+
 [Single-event factor](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/src/cells/models/assembly_lineages/gard.py#L137) · [Pair-consistent reverse and terminal factors](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/src/cells/models/assembly_lineages/gard.py#L143) · [Event heat using reverse rates at arrival](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/src/cells/models/assembly_lineages/kernel.py#L299) · [Passive ledger refusal](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/src/cells/models/assembly_lineages/runner.py#L894) · [Compiled rate probe](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/validation/assembly_lineages/probes.py#L210) · [Independent rational propensities](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/validation/gard/references/kernels.py#L279) · [Rate products around a square](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/validation/gard/references/detailed_balance.py#L132) · [Rank-one condition in the finite-reservoir reference](https://github.com/Eidosoma/Cells/blob/f7767ad79edf2f972b78999e64b40f0c294bcf88/validation/gard/references/closed_world.py#L202) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/checks/gard_catalysis.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/f382628833be3f23b53cd95ac0a52ec15a76e6ca/lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
 
 [Tested engine f7767ad79edf](https://github.com/Eidosoma/Cells/commit/f7767ad79edf2f972b78999e64b40f0c294bcf88) · [Evidence checkpoint f382628833be](https://github.com/Eidosoma/Cells/commit/f382628833be3f23b53cd95ac0a52ec15a76e6ca)

@@ -38,6 +38,14 @@ Direct proof subject `cells.k_anion_symport_mass_action@1`
 
 **Operators** `k_anion_symport_mass_action@1`
 
+[Concentration products and chemical affinity](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/k_anion_symport.py#L66) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `k_anion_symport_mass_action@1`
+
 [Finite outside and shared-node step bound](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/k_anion_symport.py#L173) · [Step admission](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/k_anion_symport.py#L286) · [Concentration-product affinity](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/laws/routes/k_anion_symport.py#L66) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
 
 [Tested engine 93fc8c2cd217](https://github.com/Eidosoma/Cells/commit/93fc8c2cd217dbac9c2f6381d201f5acdb020265) · [Evidence checkpoint ec0c89db3342](https://github.com/Eidosoma/Cells/commit/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743)

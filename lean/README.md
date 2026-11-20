@@ -1,21 +1,21 @@
 # Cells proofs
 
-Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [November 19 review of 30 laws and their biological evidence](PROGRESS.md#19-november-2026--law-and-evidence-review)
+Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [Latest comparisons and engine findings](PROGRESS.md)
 
 ## Proof index
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [31 of 32 laws](COVERAGE.md#registered-laws) and [5 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [7 of 24 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 4 of 4 | 4 checked | 4 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 7 checked · 1 failed | 8 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 5 of 6 | 4 of 4 | 3 checked · 1 failed | 4 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 3 of 3 | 3 checked | 3 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 5 of 5 | 5 checked | 5 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 8 checked | 8 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 4 of 4 | 4 checked | 3 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 7 | 8 of 8 | 6 checked · 2 failed | 6 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 6 of 6 | 5 checked · 1 failed | 6 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 7 of 7 | 6 checked · 1 failed | 6 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
 <!-- /generated -->
@@ -90,6 +90,8 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
   Mathlib.Analysis.Calculus.Deriv.MeanValue Mathlib.Analysis.Calculus.Deriv.Pow \
   Mathlib.Analysis.SpecialFunctions.ExpDeriv \
+  Mathlib.Algebra.BigOperators.Fin Mathlib.Algebra.BigOperators.Field Mathlib.Data.List.Rotate \
+  Mathlib.Algebra.Order.BigOperators.GroupWithZero.List \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -123,6 +125,14 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+The site driver follows two binding populations and their shared free ligand. The electrode driver compares both pulse polarities with independent charge and work calculations. The mixed-ion driver resolves the three currents at zero total current and reconstructs three measured squid-axon voltage shifts. [Site occupancy](claims/site-occupancy-stages.md) · [Electrode pulses](claims/electrode-pulses.md) · [Mixed membrane](claims/mixed-ion-reversal.md)
+
+```bash
+"$cells_python" -B checks/site_occupancy.py
+"$cells_python" -B checks/current_injection.py
+"$cells_python" -B checks/mixed_membrane.py
+```
 
 For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
 
@@ -242,12 +252,19 @@ For stochastic encounters and transition-state catalysis, compare the two direct
 "$cells_python" -B checks/confined_binding.py
 ```
 
-The inward-rectifier driver checks the bound on the current–voltage slope, a change of reference concentration, and Kir4.1 currents at matched driving voltage. Its full comparison exits with status 1 if an equivalent reference setting fails. The symport driver checks all four sodium counts and compares the two-sodium carrier with measured charge, particle flux and voltage shifts. [Experimental comparisons and engine finding](PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+The inward-rectifier driver checks the current–voltage slope, equivalent concentration normalizations and Kir4.1 currents at matched driving voltage. All three normalizations now produce the same current, transfer and heat. The symport driver checks all four sodium counts and compares the two-sodium carrier with measured charge, particle flux and voltage shifts. [Original experimental comparisons](PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport) · [Retest of all six numerical findings](PROGRESS.md#six-numerical-retests)
 
 ```bash
 "$cells_python" -B checks/inward_rectifier.py
 "$cells_python" -B checks/inward_rectifier.py --controls-only
 "$cells_python" -B checks/sodium_anion_symport.py
+```
+
+For the eight-state two-sodium carrier, compare each edge with an independent stationary master equation and test the predicted dose response against measured propionate currents. The full run reports an extreme-capacity discrepancy in the diagnostic probe and exits with status 1 while it persists. The second command runs the ordinary controls. [Proof and biological comparison](claims/sodium-anion-diagram.md)
+
+```bash
+"$cells_python" -B checks/sodium_anion_diagram.py
+"$cells_python" -B checks/sodium_anion_diagram.py --controls-only
 ```
 
 For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The latest retest confirmed that the engine refuses the earlier wrong-direction step. The full comparison still reports the extreme concentration-ratio overflow. The controls use smaller steps and finite product ratios. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Retest](PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
