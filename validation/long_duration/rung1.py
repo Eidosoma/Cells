@@ -31,6 +31,7 @@ analyse OUTPUT ROOT INSTR    the readings (§4, §5, §10); refuses unless INSTR
 timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR's, bitwise.
 plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check under §10.6).
 calm-run STEP_MS SOURCE_DIR OUT_DIR   §10.8's calm probe at a step (development).
+step-change OUT_DIR [--no-window]     §10.9's step change, 20 ms to 1 ms and back (development).
 calm-read OUTPUT ROOT SOURCE_DIR       its reading (development, information).
 inworld-plant ARM OUTPUT [AT_MS]
                              §10.7's plant in the arm's world at its step (AT_MS: development).
@@ -1547,6 +1548,126 @@ def calm_read(output, root, source_dir):
     return 0
 
 
+# ------------------------------------------------------------- §10.9's step change (development)
+
+STEP_COARSE_MS, STEP_FINE_MS = 20, 1
+STEP_WINDOW_MS = (1_799_980, 1_802_000)  # Holds the cue's edges and the crossing.
+STEP_END_MS = 1_830_000
+
+
+def step_change(out_dir, window=True):
+    """§10.9 (development): H2 at a nominal 20 ms with 1 ms steps inside STEP_WINDOW_MS, made by
+    no-op schedule entries (kir_0's availability kept at 1), with X2 on; X2's per-step record
+    (EnergyRows) is kept for every step, and its whole-run decision at the end."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.execution import energy_check as energy
+    from cells.execution.grid import EventGrid
+    from cells.execution.windows import WindowPolicy, iter_windows
+    from validation.long_duration import harness, worlds
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=False)
+    dt = float(f"{STEP_COARSE_MS}e-3")
+    n_end = STEP_END_MS // STEP_COARSE_MS
+    raw = worlds.h2(dt)
+    e, x = raw["experiment"], raw["execution"]
+    end = n_end * dt
+    e["end_time"] = end
+    for group in e["channel_controls"]:
+        group["schedule"] = [c for c in group["schedule"] if c["time"] <= end]
+    fine = []
+    if window:
+        lo, hi = STEP_WINDOW_MS
+        fine = [m * 1e-3 for m in range(lo + STEP_FINE_MS, hi, STEP_FINE_MS) if m % STEP_COARSE_MS]
+        kir = next(g for g in e["channel_controls"] if g["channel_id"] == "kir_0")
+        kir["schedule"] = kir["schedule"] + [dict(time=t, availability=1.0) for t in fine]
+    e["observation_times"] = [0.0, end]
+    x["max_steps"] = n_end + len(fine) + 8
+    x["energy_check"] = x2_block()
+    (out / "definition.json").write_text(json.dumps(raw) + "\n")
+    spec = parse_spec(raw)
+    grid = EventGrid(spec)
+    record = dict(study="FR-8 rung 1, §10.9 (development): X2 across a step change",
+                  window_ms=list(STEP_WINDOW_MS) if window else None, coarse_ms=STEP_COARSE_MS,
+                  fine_ms=STEP_FINE_MS, extras=len(grid.extras), energy_check=x2_block(),
+                  snapshot_revision=harness.snapshot_revision(),
+                  started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
+    started = time.perf_counter()
+    keys = ("counted", "q", "out_band", "ratio", "relative")
+    steps = {key: [] for key in ("t0", "dt", *keys)}
+    policy = WindowPolicy(window_steps=registration()["window_steps"], row_checks="device")
+    last = None
+    try:
+        for w in iter_windows(spec, policy):
+            last = w
+            rows = w.final.energy_check.rows if w.final.energy_check is not None else None
+            if rows is None:
+                continue
+            times = np.asarray(w.times, dtype=float)
+            n = len(rows.q)
+            steps["t0"].append(times[:n])
+            steps["dt"].append(np.diff(times)[:n])
+            for key in keys:
+                steps[key].append(np.asarray(getattr(rows, key))[:n])
+        record["status"] = "complete"
+        record["summary"] = energy.summary(last.final.energy_check) if last else None
+    except Exception as error:  # A refusal is a result, kept.
+        record.update(status="refused", error_type=type(error).__name__, error=str(error),
+                      refusal=refusal_of(dict(error_type=type(error).__name__, error=str(error)))[
+                          "cause"])  # fmt: skip
+    record["seconds"] = time.perf_counter() - started
+    arrays = {k: np.concatenate(v) if v else np.zeros(0) for k, v in steps.items()}
+    np.savez_compressed(out / "steps.npz", **arrays)
+    record["regimes"] = step_regimes(arrays, window)
+    record["switches"] = step_switches(arrays) if window else None
+    (out / "run.json").write_text(json.dumps(record, indent=1, default=float) + "\n")
+    print(json.dumps({k: record.get(k) for k in ("status", "error")}))
+    return 0
+
+
+def step_regimes(a, window):
+    """Per regime: counted steps, held out-of-band, the median counted q, the largest per-row ratio
+    and relative integration error."""
+    lo, hi = (m * 1e-3 for m in STEP_WINDOW_MS)
+    masks = {"20 ms before": a["t0"] < lo - 1e-9, "1 ms inside": (a["t0"] >= lo - 1e-9)
+             & (a["t0"] < hi - 1e-9), "20 ms after": a["t0"] >= hi - 1e-9} if window else {
+             "20 ms throughout": np.ones(len(a["t0"]), bool)}  # fmt: skip
+    out = {}
+    for name, m in masks.items():
+        counted = a["counted"][m].astype(bool)
+        q = a["q"][m][counted]
+        out[name] = dict(
+            steps=int(m.sum()),
+            step_sizes_s=sorted({round(float(v), 9) for v in a["dt"][m]})[:4],
+            counted=int(counted.sum()),
+            held_out_of_band=int(a["out_band"][m].astype(bool).sum()),
+            median_q=float(np.median(q)) if len(q) else None,
+            q_outside_band=int(((q < 3.5) | (q > 4.6)).sum()),
+            largest_ratio=float(np.max(a["ratio"][m], initial=0.0)),
+            largest_relative=float(np.max(a["relative"][m], initial=0.0)),
+        )
+    return out
+
+
+def step_switches(a, before=5, after=12):
+    """At each switch, the steps around it: start, size, counted, q, held out of band, ratio."""
+    out = {}
+    for name, ms in (("to 1 ms", STEP_WINDOW_MS[0]), ("back to 20 ms", STEP_WINDOW_MS[1])):
+        i = int(np.searchsorted(a["t0"], ms * 1e-3 - 1e-9))
+        rows = []
+        for j in range(max(0, i - before), min(len(a["t0"]), i + after)):
+            rows.append(dict(t0=float(a["t0"][j]), dt=float(a["dt"][j]),
+                             counted=bool(a["counted"][j]),
+                             q=float(a["q"][j]) if np.isfinite(a["q"][j]) else None,
+                             held_out_of_band=bool(a["out_band"][j]),
+                             ratio=float(a["ratio"][j])))  # fmt: skip
+        out[name] = rows
+    return out
+
+
 SMOKES = (  # Development only: no registered window, horizon or row.
     ("H2-WA-k0", dict(span=(600_000, 600_050))),
     ("H2-WA-k3", dict(span=(600_000, 600_050))),
@@ -1583,6 +1704,8 @@ def main(argv):
         return calm_run(argv[1], argv[2], argv[3])
     if len(argv) == 4 and argv[0] == "calm-read":
         return calm_read(argv[1], argv[2], argv[3])
+    if len(argv) in (2, 3) and argv[0] == "step-change":
+        return step_change(argv[1], window="--no-window" not in argv[2:])
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
