@@ -1791,3 +1791,36 @@ question.
   limits are also given as absolute steps.
 - **How:** two detached units on light CPUs at nice 10: (P-b) then the two-cycle arm on one, arm S
   on the other. Each rung has 3,600 s, and a timeout is re-run once and is never a result.
+
+**Results of the rerun (20 November 2026): reading (b) gives branch E on both hosts.**
+- **The runs.**
+  - Two units on light CPUs 22 and 23 at nice 10, from the clean snapshot of 264bca94, 05:35–06:16
+    UTC. Every rung finished at its first attempt.
+  - The evidence is in `rerunb-1b0446c3/` ((P-b) and the two-cycle arm) and `reruns-1b0446c3/` (arm
+    S), under `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/`.
+  - Each arm is read by `reading_b.py`, whose hash is in `SHA256SUMS`.
+- **The trajectories are unchanged.** Every error matches P1′'s on e8e1c973 to the printed digits:
+  (P-b) 7.90 × 10⁻⁶ at 0.01; the two-cycle arm 1.03 × 10⁻⁵; S150 1.29 × 10⁻⁵.
+
+| Arm | X2 in reading (b) | L_eff(X2), set by | Branch | Step at L_eff(X2) |
+| --- | --- | --- | --- | --- |
+| (P-b), host P | admits 0.01–0.28: medians 3.72–4.03, at most 1 held; integration error at most 8.0 × 10⁻⁴ of the flows | 0.1, the error (5.8 × 10⁻⁴ at 0.1, 2.3 × 10⁻³ at 0.2) | E | 30 µs at ΣG/C 3.29 × 10³ /s |
+| Two-cycle arm, host C | admits 0.01–0.1: medians 4.02–4.25, none held | 0.05, the error (2.7 × 10⁻⁴ at 0.05, 1.13 × 10⁻³ at 0.1) | E, exactly at the threshold | 12 µs at ΣG/C 4.04 × 10³ /s (start) |
+| S150 | admits 0.01 and 0.05: medians 4.02, 4.08 | 0.05, the kind's bound (0.28 refused at definition) | E | 0.29 µs at 1.7 × 10⁵ /s |
+| S180 | admits 0.01 and 0.05: medians 4.03, 4.16 | 0.05, the kind's bound | E | 10 ns at 5 × 10⁶ /s |
+
+- **The definition-time bounds are as before.** The kind's bound refuses 0.5 and up on (P-b), 0.2
+  and up on the two-cycle arm, and 0.28 in arm S.
+- **No other check refuses.** No arm has a stage-rule, validity or ledger refusal.
+- **Branch I is not indicated, and branch X is not indicated,** on (P-b), on the two-cycle arm, or
+  in arm S.
+- **For MT-1:** §9.2's reading (a) columns of the MT-1 table now hold for reading (b), its own
+  configuration, with that table's caveat on units.
+  - Host P at 0.1: 1.7, 17 and 170 h per 300 s for J₁ = 1, 10 and 100 mM/s.
+  - Host C at 0.05: 3.3, 33 and 330 h.
+- **At the source's own activity (arm S),** branch E holds by the rules, at steps of 0.29 µs and
+  10 ns. 300 s still costs about 1,000 to 30,000 CPU-hours at the note's 3.6 ms a step. So branch I,
+  or a declared lower activity, is still needed on cost.
+- **The host question.** On P1′'s own criterion the hosts still come out equal for the ΔΨ mode.
+  Host P's outer-membrane costs (§9.2 and §9.4) and host C's departures are unchanged by this
+  rerun.
