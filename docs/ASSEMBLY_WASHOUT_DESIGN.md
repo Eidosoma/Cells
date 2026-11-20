@@ -137,8 +137,9 @@ pool species that also has a membrane or lumen place, a held lipid supply includ
   The engine cannot tell a tracer from any other such species, so version 1 refuses them all.
 - **The books** would close either way, since a held place is a reservoir. The reason is physical,
   not bookkeeping.
-- **What a world does instead:** it declares such a species finite, with its count in `pool`. The
-  same count as before keeps it unchanged through the wash.
+- **What a world does instead:** it declares such a species finite, with its count in `pool`. Each
+  wash then restores that count, and between washes the species depletes as the assemblies take it
+  up, which a held species never does.
 
 **Non-claims and status:**
 - tracer captured on an exposed-site control is not claimed until FR-21;
