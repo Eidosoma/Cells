@@ -7,25 +7,31 @@ execution/grid.py; docs/LONG_DURATION_MODE_DESIGN.md §4.2, §4.4 and §4.5).
   (dt, fine dt) pairs near t = 1800 s, and for three windows of which two touch. Every step is a
   whole coarse step or a fine one; none is tiny. FR-8's arm (20 ms, 1 ms inside [1799.98,
   1802.00] s of 3600 s) takes 179,899 coarse and 2,020 fine steps. Without the block a definition
-  serializes as before (the gate's crossrev and G1 hold the runs bitwise). Every refusal, one row
-  each, with a branch that changes the windows and the batch and vector paths.
+  serializes as before, and a run manifest's numerics name the windows' method only where they
+  are declared (the gate's crossrev, G1 and FR's set hold runs and manifests bitwise). Every
+  refusal, one row each, with a branch that changes the windows and the batch and vector paths.
 - One compiled @3 world with X2 on: X2's own test world (the gap-junction network at dt/16, a
   resolved_pump_tissue@3 definition as FR-8's H2 is), a window at a quarter of its step, a
   membrane cue at a fine-only instant and a row observed at another. X2 passes across both
   switches; a restart from a checkpoint inside the window continues bit for bit (rows and X2's
-  record) on the same compiled program; the run's resources record the window. Its no-op twin
-  (no block, no-op schedule entries at the fine points) feeds the compiled rollout the same
-  inputs: the same clock, control table, initial checkpoint, parameters and X2 event steps.
+  record) on the same compiled program; device row checks (WindowPolicy row_checks="device") give
+  the host run bit for bit, each window decided on the device; the run's resources record the
+  window. Its no-op twin (no block, no-op schedule entries at the fine points) feeds the compiled
+  rollout the same inputs: the same clock, control table, initial checkpoint, parameters and X2
+  event steps.
 - One compiled composite world with a dose inside a window (scheduled_bath_composition@1, FR-10's
   dose leg under ARS(2,2,2) at its declared 1 ms, a fine step of 0.25 ms), without X2, which the
   block does not require: every check passes on every row, a row is observed at a fine-only
-  instant, and the dose's step starts at its own time inside the window.
+  instant, and the dose's step starts at its own time inside the window. Written through the
+  windowed writer, its manifest names the windows' method and records them.
 
-A new file for a new feature (D224, the lead's ruling). Two compiles: X2's doubled window program
-of the @3 world, which the restart reuses, and the composite's window program.
+A new file for a new feature (D224, the lead's ruling). Two window programs, X2's doubled one of
+the @3 world (the restart and the device run reuse it) and the composite's (its writer run reuses
+it), and the device row checks' program.
 """
 
 import dataclasses
+import json
 import math
 from types import SimpleNamespace
 
@@ -35,12 +41,14 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution import energy_check as energy
-from cells.execution.grid import EventGrid
+from cells.execution.grid import EventGrid, manifest_numerics
 from cells.execution.runner import branch_checkpoint, timeline
 from cells.execution.schedule import control_values
 from cells.execution.state import initialise
 from cells.execution.windows import WindowPolicy, _plan_windows_metadata, iter_windows, run_windowed
+from cells.records.window_io import write_windowed_run
 from cells.registry.models import get_model
+from tests.window_row_check_fixtures import assert_agreement, assert_same_windows
 from validation.gap_junction_tissue import worlds
 from validation.tissue import bath_schedule_fixtures as bfx
 
@@ -156,6 +164,10 @@ def test_fr8_arm_clock_and_no_block_serialization():
     assert plain.fine_windows is None and "fine_windows" not in plain.to_dict()["execution"]
     assert plain.fingerprint == dataclasses.replace(spec, fine_windows=None).fingerprint
     assert len(EventGrid(plain)) - 1 == 180_000 and not EventGrid(plain).spans
+    # The run manifests' clock entries (records/io.py and records/window_io.py): the windows'
+    # method only where they are declared, so a manifest without the block keeps its bytes.
+    assert manifest_numerics(spec) == dict(grid="zero_anchored_event_split", fine_windows=METHOD)
+    assert manifest_numerics(plain) == dict(grid="zero_anchored_event_split")
 
 
 def _changed(change):
@@ -361,6 +373,16 @@ def test_a_restart_inside_the_window_continues_bit_for_bit(runs):
         assert [np.asarray(v)[j].tobytes() for v in w.history] == rows[t]
 
 
+def test_device_row_checks_under_the_window(runs):
+    """WindowPolicy row_checks="device" on the windowed X2 world: every window bit for bit as the
+    host run (times, histories, observations, X2's record), each decided on the device with the
+    host's diagnostics (tests/window_row_check_fixtures.py, X2's own criteria)."""
+    spec, windows, _ = runs
+    device = list(iter_windows(spec, WindowPolicy(WIDTH, "checkpoints", "device")))
+    assert_same_windows(windows, device)
+    assert assert_agreement(spec, windows, device) == len(device)
+
+
 def test_the_no_op_twin_feeds_the_rollout_the_same_inputs(runs):
     spec, _, _ = runs
     twin = parse_spec(x2_world(windowed=False))
@@ -389,7 +411,7 @@ DOSE_FINE = DOSE_DT / 4
 DOSE_WINDOW = (0.01, 0.015)
 
 
-def test_a_dose_inside_a_window_on_the_composite_without_x2():
+def test_a_dose_inside_a_window_on_the_composite_without_x2(tmp_path):
     """scheduled_bath_composition@1's dose leg (bath_schedule_fixtures.dosed_world), the dose at a
     coarse point inside the window. The block does not require X2: @3's own checks (every ledger,
     today's energy bound) pass on every row of the two-rate clock."""
@@ -415,3 +437,7 @@ def test_a_dose_inside_a_window_on_the_composite_without_x2():
     held = np.asarray(window.history.bath_held_amount_fmol)
     moved = [k for k in range(1, len(held)) if not np.array_equal(held[k], held[k - 1])]
     assert moved == [j + 1]  # The step leaving the dose applies it, at its own time.
+    write_windowed_run(tmp_path / "run", spec, WindowPolicy(64, "checkpoints"))
+    manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
+    assert manifest["numerics"]["fine_windows"] == METHOD
+    assert manifest["resources"]["fine_windows"] == result.resources["fine_windows"]
