@@ -295,3 +295,27 @@ def regular_times(period, count, *, start=None):
     """`count` declared times, one every `period` seconds from `start` (default `period`)."""
     first = period if start is None else start
     return [first + period * i for i in range(count)]
+
+
+def kept_line(the_world, *, times, gap):
+    """D247's induced arm, undriven: a population of two slots whose transfer keeps one vesicle
+    right after each shear. Returns (the population world, its schedules).
+
+    Each cycle the one vesicle divides in two (k = 2, into the free slot), and `gap` seconds later a
+    transfer keeps one of the two by a uniform draw and removes the other. So the kept vesicles form
+    a single lineage with uniform continuation, and population_lines reads it as the only survivor's
+    line of descent. Two things differ from a single-lineage world: the two daughters share the pool
+    for `gap` seconds, and each transfer replaces the pool with the founder's (its fresh pool). A
+    pulse that induces a break comes through FR-20's pool replacement, which works in population
+    mode only, once it lands. No fuel step: the world is the one given, undriven or held-amphiphile.
+    """
+    times = [float(t) for t in times]
+    if not gap > 0 or any(t + gap >= u for t, u in zip(times, times[1:], strict=False)):
+        raise ValueError("Each transfer falls after its shear and before the next one")
+    founder = {p: v for p, v in the_world["founder"].items() if p in vesicle_places(the_world)}
+    w = population(the_world, [founder], 2)
+    schedules = [
+        shear(0, times=times),
+        transfer(1, times=[t + gap for t in times], keep=1, fresh=fresh_pool(w)),
+    ]
+    return w, schedules
