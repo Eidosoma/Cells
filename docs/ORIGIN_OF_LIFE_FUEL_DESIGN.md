@@ -90,7 +90,8 @@ Option (b1) would add one new reaction law (§3).
    - Or it can be a feed's supersaturation with no fuel at all, which works only while the
      vesicles grow. That is a no-fuel variant, (d0).
    - Option 0, (a) and (c) lack the autocatalytic stoichiometry. They give one stable composition
-     in any vesicle that grows or holds its size; two appeared only in shrinking, dissolving ones.
+     in every sampled set whose vesicle grows or holds its size. Two appeared only in shrinking,
+     dissolving ones (the largest γ at such a stable state was −0.0005).
    - Vasas, Szathmáry and Santos 2010 found one dominant steady state for GARD's deterministic
      dynamics, which agrees.
 3. **Chosen: option (d)** (D245), a full fuel-to-waste cycle with the activation catalysed and the
@@ -297,14 +298,15 @@ fraction at equilibrium with S. The inequality then reads
     - to 10⁵, beyond 10³⁰⁰⁰. A 100 nm vesicle holds about 2 × 10⁵ molecules (§1.2).
   - **No spontaneous break at real size.** In this model a lineage of real size never switches on
     its own.
-    - A switch within twelve fissions has a chance above 5% only up to about 6 (F1), 16 (C4) or 24
-      (C4b) amphiphiles at birth.
+    - By this note's arithmetic on C8 (twelve over the generations to a switch), a switch within
+      twelve fissions has a chance above 5% only up to about 6 (F1), 16 (C4) or 24 (C4b)
+      amphiphiles at birth.
     - At real size a break must be induced, for example by a pulse of the other amphiphile through
       FR-20's replacement. The renewal is then the lineage's settling into a state.
   - **The checks.** A host SSA of the same chain matched the exact times within 3 standard errors at
-    two small sizes per set (C8a). The exact solves are used only up to τ ≈ 10¹², where τ·λ_min
-    lies within 0.1% of 1. The extrapolation assumes the exponential scaling continues beyond
-    M_0 = 64–256.
+    two small sizes per set (C8a). The largest exact times used were 4 × 10⁸ to 3 × 10⁹, where
+    τ·λ_min lies within 0.1% of 1; larger sizes failed the accuracy rule. The extrapolation assumes
+    the exponential scaling continues beyond M_0 = 64–256.
 - **The limits.**
   - The model is reduced: B and S are pinned, and the amphiphiles never leave the membrane.
   - The stochastic part is this one chain. The engine's own events, and the stationary law's two
@@ -465,9 +467,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - Turnover gives each membrane species a finite lifetime. The composition is renewed constantly,
     as a steady state of making against unmaking.
   - Protection selects the species that protects itself, as A5's Fmoc-E and A9's droplets show.
-  - In a vesicle that grows or holds its size, protection cannot outweigh a supply that favours the
-    minority: **one composition** (§2.3). It selects; it does not hold alternatives. Two
-    compositions appeared only in shrinking, dissolving membranes (C7).
+  - In every sampled vesicle that grows or holds its size, protection did not outweigh a supply
+    that favours the minority: **one composition** (§2.3). It selects; it does not hold
+    alternatives. Two compositions appeared only in shrinking, dissolving membranes (C7).
 - **What the engine needs.**
   - Spontaneous destruction inside the membrane needs nothing new: hydrolysis is an all-membrane
     step, with the factor.
@@ -512,10 +514,18 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - In a population, vesicles of the two kinds compete for the shared B, which gives selection at
     each transfer. Exchange of L through the pool couples them, weakly when L's CAC is low.
 - **Registration** (D245). (d) is registered with its own nulls, zero drive and β = 0, in the same
-  world, and H is taken over the amphiphiles only.
-  - The probe makes "zero drive" precise: it must mean true equilibrium, with the cycle's affinity
-    zero *and* the feed at its aggregation threshold (ρ = 1, no growth).
-  - At zero affinity a supersaturated feed can still split the mixture (C4).
+  world, and H is taken over the amphiphiles only. The probe shows that "zero drive" needs care
+  (question L6 for the lead).
+  - **At zero affinity a strongly supersaturated feed can still split the mixture** (C4, ρ < ½).
+    Zero affinity alone is therefore not a null.
+  - **True equilibrium** (zero affinity *and* ρ = 1) holds one composition, but a vesicle that
+    does not grow never divides. It is OL5's stationary-law control (§5, check 4), not a lineage
+    arm.
+  - **A null that divides: zero affinity with ½ ≤ ρ < 1.**
+    - The vesicles grow and divide, and they hold one composition, since A* > ln 2ρ ≥ 0 (C2).
+    - A post-run check on 1,016 sampled sets found none bistable, and γ > 0 in every one (the
+      smallest 1.0 × 10⁻³; the probe's `null_check.py`).
+    - This note proposes it as (d)'s zero-drive lineage arm, beside β = 0.
 - **What the engine needs.**
   - Every step exists today: the pool step, the joins and two all-membrane steps, with the factor
     on the autocatalytic step.
@@ -525,6 +535,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - Nothing else is new. The first builder adds the refusal it relies on (§6, L1).
   - A held B, §3.1's "activated monomers, held", is the simplest first world and needs no fuel
     species. Finite fuel can be refilled by each transfer's `fresh_pool`.
+  - **Neither a held-B world nor (d0) may run before registration.** Both share (d)'s core step,
+    so running either early spends the blindness of (d)'s references. Whether D245's fuel line
+    covers them is question L6.
   - For fuel reacting at the membrane instead of upstream, add (b1) or (b2).
 - **A no-fuel variant, (d0)** (found by the probe, §2.3).
   - The same autocatalytic step and factor, driven by the feed's supersaturation instead of fuel:
@@ -532,7 +545,8 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - It needs no fuel species, and it holds two compositions only while the vesicles grow. A finite
     pool runs down toward equilibrium between transfers, so its compositions last only while the
     feed is renewed. Fuel's affinity also holds them in a vesicle that does not grow.
-  - Beside (d), it is the natural control arm: the same world, without the fuel.
+  - Beside (d), it is the natural control arm: the same world, without the fuel. It falls under
+    the same no-run-before-registration rule.
 - **The drive.** μ_F − μ_W per turn, or μ_B − μ_S with a held block. It must exceed the threshold
   of §2.3.
 - **Anchors.**
@@ -567,9 +581,10 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
 ## 4. Recommendation
 
 **Option (d), with the fuel recharging the building block in the pool, and (d0) beside it.** The
-user chose (d) through the lead and the advisor (D245); the probe confirmed it.
-- It is the only option that holds two stable compositions in vesicles that grow or hold their
-  size (§2.3, checked by the desk probe).
+lead decided (d) with the advisor, under the user's delegation (D245), before the probe had
+reported. The probe then confirmed its condition.
+- It is the only option that held two stable compositions in sampled vesicles that grow or hold
+  their size (§2.3, checked by the desk probe).
 - It carries its own control arms: true equilibrium, β = 0, and (d0), the same world without fuel.
   - (d0) holds the two compositions only while its vesicles grow.
   - So comparing (d) with (d0) shows what fuel adds: compositions held without growth.
@@ -617,10 +632,13 @@ Each check below is followed by its planted error, which it must catch (D187).
    drive (Schnakenberg 1976, cited from memory, not verified). Planted: the flux counted without
    its reverse events.
 
-**The order** (D242): no fueled world runs before OL5's references for it are registered.
-1. The user rules.
-2. OL5 writes and registers its fuel references: designs and inputs, before any engine output.
-3. The builder runs the probe driver on the registered inputs and compares the outputs.
+**The order** (D242, D245): no fueled world runs before OL5's references for it are registered.
+That includes (d0) and held-B worlds, which share (d)'s core step.
+1. Option (d) was chosen (D245), and the desk probe confirmed it.
+2. This note is merged and tagged.
+3. OL5 writes its fuel references from the tag alone, and registers them: designs and inputs,
+   before any engine output.
+4. The builder runs the probe driver on the registered inputs and compares the outputs.
 
 ## 6. Files and owners
 
@@ -786,6 +804,11 @@ were 4–6 there.
 - **L4 (ruled: approved, host only; done).** The desk probe of §2.3.
 - **L5 (ruled: not now).** A per-species transfer record. The fuel reader closes the moiety books
   across a transfer from the diagnostic record.
+- **L6 (new).** Two questions on D245's "zero drive" and fuel line.
+  - D245 names the null "zero drive". Should (d)'s dividing null be zero affinity with ½ ≤ ρ < 1
+    (§3 (d), Registration), with true equilibrium kept as OL5's stationary control?
+  - Does D245's fuel line cover held-B worlds and (d0)? They share (d)'s core step, so this note
+    treats them as falling under the no-run-before-registration rule.
 
 ## 11. What this note could not verify
 
@@ -833,11 +856,13 @@ the fetched text stated them (D186, D201, D227). Nothing was copied into the rep
 
 **Engine documents and code read:**
 - AGENTS.md;
-- DECISIONS.md: D152, D197, D199, D212, D215, D242 and D243 in full; D237–D241 by their headings;
+- DECISIONS.md: D152, D197, D199, D212, D215 and D242–D245 in full (D244 only for its context);
+  D237–D241 by their headings;
 - ORIGIN_OF_LIFE_ENGINE_DESIGN.md: §0.1–§0.2e, §1–§10;
 - ORIGIN_OF_LIFE_OL2_OL3_CHECK.md: §1.6, §1.7 and §4;
 - SHARED_INVENTORY_REACTIONS_DESIGN.md: §2 and §3.1–§3.3;
-- ASSEMBLY_WASHOUT_DESIGN.md, GARD_DESIGN.md §2.1, and FEATURE_REQUESTS.md's FR-20 to FR-22;
+- ASSEMBLY_WASHOUT_DESIGN.md, GARD_DESIGN.md §2.1 and §8, and FEATURE_REQUESTS.md's FR-20 to
+  FR-22;
 - in `src/cells/models/assembly_lineages_v2/`:
   - in full: `world.py`, `ledger.py`, `mass_action.py`, `transition_state.py`, `spec.py`,
     `kernel.py`, `interfaces.py`, `model.py`, `exchange.py` and `permeation.py`;
@@ -852,3 +877,6 @@ the fetched text stated them (D186, D201, D227). Nothing was copied into the rep
 
 The references' code under `validation/ool/references/` was not read. Only the frozen exports of
 registered inputs were read, for the sweep in §7.
+
+**The desk probe's tools:** Python 3.13.5, NumPy 2.5.3 and SciPy 1.18.1, from the project's CPU
+virtual environment, on CPUs 6 and 7 at nice 10. Its record is in the probe's `README.md`.
