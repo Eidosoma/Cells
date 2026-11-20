@@ -1393,7 +1393,12 @@ d'' = s/4 + e: s is the integration error, and e is the part the half steps carr
   shows the same, three times larger (3 × 10⁻¹² pJ).
 - **It needs a moving state.** At the pump's static head it is absent (2 × 10⁻¹⁹ pJ,
   `diag_noise.py`).
-- **Its source is not traced.** At about 10⁻¹¹ of M it lies far above rounding.
+- **Its source is not traced.** It is about 4 × 10⁴ eps M.
+  - M is built from flows and increments. So rounding at the scale of the stored totals is not
+    excluded; a buffered row's total is tens of thousands of times its free amount.
+  - The static head does not exclude it either, since identical inputs round identically.
+  - If it is that rounding, it may not be removable at its source, and the count rule's floor is
+    the remedy.
 - **(P-a) passes X2 at 0.01 and 0.02,** counting only a tenth of its steps (211 of 2,115). Its
   face's flows, 62 pJ by the first step at 0.05, put the count threshold above 10⁻¹¹ pJ, over the
   floor.
@@ -1412,9 +1417,17 @@ d'' = s/4 + e: s is the integration error, and e is the part the half steps carr
   rung in (b). Reading (a) gives L_eff = 0.05, set by the error.
 - **Branch I is not indicated on either host.** No arm had a per-stage or validity refusal, and the
   ΔΨ mode's own error binds only at 0.1 (P-b) and at 0.05 (the two-cycle arm).
-- **Branch X is not indicated.**
-  - The ledger never refused on (P-b) or on the two-cycle arm. On (P-a) the error binds first.
-  - X2's per-row cap refused only on (P-a), at 0.05, after the error.
+- **Branch X: indicated on (P-a) by the rule's own wording, and on no other arm.**
+  - On (P-a) the ledger is the first check to refuse in (a), at 0.05. In (b), X2's first refusal is
+    its per-row cap, also at 0.05. The stage rule never refuses. This is §8's "ledger first".
+  - The error binds below both. But the error is a measurement, not a check that refuses, and the
+    rule as written does not ask which of L_eff's terms binds first.
+  - **The @3 owner's attribution:** both refusals fall in the face's start transient, not in the ΔΨ
+    mode. (b)'s comes at accepted step 1, and (a)'s within the first window of 128 steps, before
+    any record. (P-b) has the same ΔΨ mode without the face's gradient, and its ledger stays under
+    0.4 of the tolerance up to 0.28.
+  - Whether this triggers A3 (branch X) is the lead's ruling.
+  - The ledger and X2's cap never refused on (P-b) or on the two-cycle arm.
 - **The kind's bound** lies at rung 0.289 on (P-b), where 0.28 runs and 0.5 is refused; between 0.1
   and 0.2 on the two-cycle arm; and at about 0.14 in arm S's units.
 - **If X2's floor is lifted** and reading (b) then follows (a), both hosts give branch E: 0.1 on host
@@ -1429,6 +1442,13 @@ the step and the cost of 300 s of protocol at 3.6 ms a step, before X2's two ext
 | 10 | 5.5 × 10³ /s | < 1.8 µs: > 170 h | 9 µs: 33 h | 18 µs: 17 h |
 | 100 | 5.5 × 10⁴ /s | < 0.18 µs: > 1,700 h | 0.9 µs: 330 h | 1.8 µs: 170 h |
 
+- **The table does not separate the hosts.** The factor of two between its last two columns is the
+  ladder's spacing and its units.
+  - Interpolated at second order, the error limits are about 0.13 on (P-b) and 0.095 on the
+    two-cycle arm, in the rungs' units, ΣG/C at the start.
+  - At the operating point, (P-b)'s rate is 0.47 times its start's and the two-cycle arm's is 2.1
+    times. In those units the limits are about 0.06 and 0.2.
+
 - **At the source's own activity (arm S), branch E is out of reach on either host.**
   - In arm S the kind's bound alone caps the step at 0.8 µs at 150 mV and 27 ns at 180 mV. 300 s
     then takes 3.7 × 10⁸ to 1.1 × 10¹⁰ steps, about 370 to 11,000 CPU-hours. At 0.05 the steps are
@@ -1436,7 +1456,9 @@ the step and the cost of 300 s of protocol at 3.6 ms a step, before X2's two ext
   - Bringing E to hours or tens of hours needs J₁ declared at the table's 1–10 mM/s, 30 to 9,000
     times lower: a departure for the user. Otherwise MT-1 needs branch I.
 - **Host P's outer membrane caps the step by itself.**
-  - The face's explicit bound is 1/(2 max_s p_s A_OM/V_IMS), with A_OM/V_IMS = γ/V_i.
+  - The face's explicit bound is 1/(2 max_s p_s A_OM/V_IMS). A_OM/V_IMS = γ/V_i is the @3 owner's
+    reading of the source's Eq. 13, which was not read here; the mitochondria lane should confirm
+    it.
   - At the source's p_Pi = 327 µm/s, γ = 5.99 µm⁻¹ and V_i = 0.0715
     (`validation/mitochondria/beard2005_cardiac.py`, mito-lane 1eaf2310), it is
     1/(2 × 2.7 × 10⁴ /s) = 18 µs. For p_A = 85 µm/s it is 70 µs.
@@ -1469,6 +1491,9 @@ respiration.
 2. **At the source's activity, E is out of reach on both hosts.**
    - Arm S ran on host P's world. The limits it meets, the kind's bound and the step's scale, belong
      to the law and to ΣG/C, so they hold on host C as well.
+   - The rules, which are dimensionless, do not indicate branch I: the ΔΨ mode is handled accurately
+     up to 0.05–0.1 of its rate. At the source's activity that rate is so high that explicit steps
+     cost hundreds to thousands of CPU-hours. So branch I is needed on cost, not by the rules.
    - So MT-1 needs branch I or a declared lower activity.
    - Branch I's implicit cycle block is local on host C. On host P it needs the global form, another
      solver ID, unbuilt (MITOCHONDRIA_DESIGN §2.3).
@@ -1476,6 +1501,12 @@ respiration.
    - a face path for closure rows (option 1, 2–4 days) or a departure;
    - a step cap of about 18 µs at the source's permeabilities;
    - in P1's own face world, a first-order error that binds below rung 0.01.
+
+   Neither host-P arm is MT-1's host P. (P-a)'s face starts with a gradient, and (P-b)'s is 100
+   times slower than the source's outer membrane. So the third cost is untested in MT-1's case. One
+   information-only run would test it: (P-a)'s face with the lumen at the bath, rungs 0.005 to 0.05
+   in (a), about 15 minutes of one light CPU. It is offered, not run. Reason 3 stands without it, on
+   the closure rows and the step cap.
 
 Host P stays the topology of the isolated organelle and of bacteria, and it handles the ΔΨ mode as
 well as host C. If the lead prefers it for MT-1, it needs option 1 or 3 for the outer membrane, the
