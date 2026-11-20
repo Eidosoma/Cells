@@ -13,6 +13,7 @@ import CellsProofs.Chemistry.Vesicle
 import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Tissue.BathSchedule
+import CellsProofs.Tissue.CellReplacement
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport

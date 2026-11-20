@@ -1,5 +1,36 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Scheduled cell replacement
+
+<a id="scheduled-cell-replacement"></a>
+
+**Material, charge and electrical work.** Both operator versions replace the contents of a fixed tissue site from a template or a donor. Lean proves that the tissue's change in each species equals gross supply minus gross removal, and that valence-weighting gives the signed charge. All donors are read before any replacement at that time. The field-energy change less electrode work is shared among the due sites and enters the total exactly once. [Proofs](CellsProofs/Tissue/CellReplacement.lean#L29) · [Engine event and electrical booking](../src/cells/operators/cell_replacement.py#L245)
+
+In a seven-cell sheet, A copied B while B received a template at the same timestamp. The compiled events supplied A with B's old amounts, removed each site's own amounts, and left every replacement ledger unchanged on replay. A held bath at 0.01 V and two small ionic charge changes made both electrical terms measurable. The field changed by −0.00154843 pJ and the largest individual electrode work was 0.000289456 pJ in magnitude. Across the two due sites and five undisturbed sites, v1's largest energy discrepancy from a calculation using physical amounts and capacitor charges was 2.21 × 10⁻¹³ pJ (rounded up). The tolerance was 2 × 10⁻¹¹ pJ. [Comparison and fixture](checks/cell_replacement.py#L24)
+
+Search located a time-resolved example of ordinary epithelial turnover. In two mouse epidermal fields, 524 divisions and 529 differentiations gave a fitted time scale of **1.8 days** for coordination of neighboring fates. Cells supplies its replacement times as inputs. The measurement constrains interpreting an instantaneous exchange as a whole tissue-turnover event. The paper does not identify an incoming carrier's species inventory at the same site. [Mesa et al., Fig. 3C](https://doi.org/10.1016/j.stem.2018.09.005) · [Measurement records](checks/data/cell_replacement_measurements.json)
+
+<a id="cell-replacement-water"></a>
+
+**Water volume and free energy.** Version 2 books the old and arriving volumes. Lean proves that copying a donor's volume increment recovers its physical volume exactly when both sites have the same volume reference. The change in water free energy contains a composition term as well as the volume and elastic terms. In the compiled example A stayed at **0.788048 pL** and gained **1.1003 fmol** of tracked osmoles. Its water booking was **−0.138369 pJ**. At B, the template changed both volume and composition. The largest v2 discrepancy for the combined chemical, water and electrical booking was 4.32 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. [Endpoint and jump proofs](CellsProofs/Tissue/CellReplacement.lean#L83) · [Engine water booking](../src/cells/operators/cell_replacement_v2.py#L99) · [Independent energy calculation](checks/cell_replacement.py#L41)
+
+Two measurements describe parts of the volume change. In living mouse epidermis, 11 measured mitotic parents averaged **770 µm³** and their two daughters together averaged **677 µm³** in the next image, 12 hours later. The paired change was **−94 ± 100 µm³** (sample SD), with decreases in 9 of 11 divisions. Search recovered the paired coordinates and the comparison reproduces the statistics from the supplement. In a separate MDCKII assay under 20% hypertonic shock, cells later extruded lost **20 ± 3%** of their baseline volume and cells that stayed lost **11 ± 2.5%** (SEM, figure caption n = 5). Neither study measured immediate one-for-one incoming volume, species transfer or replacement work. The biological comparison for v2 remains open. [Xie and Skotheim, Fig. S2L](https://doi.org/10.1016/j.cub.2019.12.062) · [Mitchell et al., Fig. 1l](https://doi.org/10.1038/s41586-025-09514-w) · [Figure readings and extraction method](checks/data/cell_replacement_measurements.json)
+
+Both versions also passed three steps of the normal checked solver on `resolved_pump_composite@1`. Its histories recorded a single generation change per due site and the expected gross supplies and removals. The targeted engine tests and eight repository guards passed **94 tests**. Lean 4.19.0 checked the ten theorems using only standard axioms. The CPU float64 comparison used engine `4638694ac13bedae5f93aa56d77cf8820e687ec1`. [Driver](checks/cell_replacement.py) · [Existing water and rollback tests](../tests/unit/test_cell_replacement_v2_runs.py)
+
+<a id="cell-replacement-volume-boundary"></a>
+
+**Engine finding for the operators owner.** A v2 template strictly inside its declared water-volume interval can be refused during definition checking. At a reference volume of 0.7505222518670602 pL, storing `target − reference` and adding the reference back rounds the first admissible target down to the excluded lower bound. With water flow disabled and all other inputs fixed, the following controls isolate the refusal. [Exact-volume identity](CellsProofs/Tissue/CellReplacement.lean#L64) · [Template admission](../src/cells/operators/cell_replacement_v2.py#L186) · [Offset storage](../src/cells/operators/cell_replacement_v2.py#L107) · [Strict water domain](../src/cells/numerics/osmotic_water.py#L96)
+
+| Declared lower bound (pL) | Declared target (pL) | Reconstructed volume (pL) | Definition admission |
+| ---: | ---: | ---: | --- |
+| 0.18763056296676506 | 0.18763056296676506 | 0.18763056296676506 | Refused at the declared bound |
+| 0.18763056296676506 | 0.18763056296676509 | 0.18763056296676506 | **Refused inside the interval** |
+| 0.18763056296676506 | 0.18763056296676510 | 0.18763056296676517 | Admitted |
+| 0.18763056296676503 | 0.18763056296676509 | 0.18763056296676506 | Admitted |
+
+The one-step interior target is 2.78 × 10⁻¹⁷ pL above the limit. This is a refusal before simulation. The driver prints all four outcomes. With `--boundary-only --require-interior` it exits with status 1 on the tested revision. [Four-case reproducer](checks/cell_replacement.py#L176)
+
 ## 20 November 2026 · Size-triggered fission and daughter continuation
 
 <a id="size-threshold-fission"></a>

@@ -1,0 +1,44 @@
+{
+  "mesa2018_epidermal_neighbor_fates@1": {
+    "source": "https://doi.org/10.1016/j.stem.2018.09.005",
+    "figure": "3C, fate imbalance among the six nearest cells following a basal-layer differentiation event",
+    "organism": "Adult mouse epidermis in vivo",
+    "field_count": 2,
+    "field_side_um": 90,
+    "mice_in_panel": 1,
+    "divisions": 524,
+    "differentiations": 529,
+    "fitted_coordination_days": 1.8,
+    "interpretation": "A fitted time scale for neighboring cell fates. The assay supplies neither the state of an incoming carrier nor its time of arrival at the departing cell's site."
+  },
+  "xie2020_paired_epidermal_volumes@1": {
+    "source": "https://doi.org/10.1016/j.cub.2019.12.062",
+    "supplement": "https://ars.els-cdn.com/content/image/1-s2.0-S0960982219316951-mmc1.pdf#page=4",
+    "figure": "Supplement page 4, panel labelled S2L in the graphic and cited as S2L in the main text",
+    "organism": "Mouse basal epidermis in vivo",
+    "cadence_h": 12,
+    "unit": "µm³",
+    "columns": ["mitotic_parent", "sum_of_both_daughters_next_frame"],
+    "paired_volumes": [
+      [1005.7, 740.4], [956.1, 795.3], [730.5, 572.3], [667.3, 513.8],
+      [618.3, 600.3], [720.5, 546.0], [658.8, 714.6], [779.5, 773.4],
+      [885.9, 758.5], [631.7, 648.8], [820.4, 781.4]
+    ],
+    "extraction": "Convert PDF page 4 using pdftocairo -f 4 -l 4 -svg. The orange stroke with eleven M–L segments connects each parent to its daughters. Transform its raw y to page y as 452.1348 minus raw y. Page y values 453.0684 and 517.9707 correspond to 1000 and 600 µm³. Interpolate linearly and round each endpoint to 0.1 µm³.",
+    "uncertainty": "The digitized decimal records figure precision. The authors give an overall repeat-segmentation difference of 9.1 ± 8.6%. The paired change spans two imaging frames.",
+    "interpretation": "The outgoing volume is a rounded mitotic parent and the incoming volume is the combined volume of both daughters. This measures division. A scheduled one-for-one replacement can have a different volume change."
+  },
+  "mitchell2025_extruding_cell_volume@1": {
+    "source": "https://doi.org/10.1038/s41586-025-09514-w",
+    "figure": "1l and accompanying results",
+    "preparation": "MDCKII epithelial monolayers after a 20% hypertonic shock",
+    "observable": "Positive magnitude of cytoplasmic GFP volume loss relative to each cell's baseline",
+    "unit": "% of baseline",
+    "extruded_mean": 20,
+    "extruded_sem": 3,
+    "maintained_mean": 11,
+    "maintained_sem": 2.5,
+    "caption_n": 5,
+    "interpretation": "Volume loss in cells classified by their subsequent fate. Absolute incoming volume, exchanged species and mechanical or osmotic work were unmeasured."
+  }
+}
