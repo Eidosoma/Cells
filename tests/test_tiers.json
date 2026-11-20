@@ -271,7 +271,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e70dd2ec/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured.json",
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-2b572f87/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json"
+  "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json",
+  "/mnt/workspaces/Cells/turnover-net-20261120/tiers/measured-4b39f285/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2292,6 +2293,13 @@
    "root": ".claude/worktrees/replacement-volume-bound",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T20:24:14+00:00"
+  },
+  {
+   "git_revision": "4b39f28586b7ba4d9784d289bc62b74503fdaeb7",
+   "dirty": false,
+   "root": ".claude/worktrees/turnover-net",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:27+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5347,10 +5355,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 3.57,
+    "seconds": 8.34,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 23
     }
    },
    {
