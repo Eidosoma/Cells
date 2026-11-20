@@ -1585,9 +1585,13 @@ def parse_occupant(raw, base):
                     f"{OCCUPANT_LAW}: template {tid}'s population {pid} gives initial_occupancy "
                     "and binding_multiplier, and internalisation_multiplier where it internalises"
                 )
-            theta = _number(values["initial_occupancy"], f"{tid}'s occupancy of {pid}", low=0.0)
-            if theta > 1:
-                raise ConfigError(f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in [0, 1]")
+            theta = _number(values["initial_occupancy"], f"{tid}'s occupancy of {pid}")
+            if not 0 < theta < 1:
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: "
+                    "site_occupancy@1's site free energy reads an exactly empty pool, reached from "
+                    "a positive anchor, as 0 x log1p(-1)"
+                )
             binding = _number(values["binding_multiplier"], f"{tid}'s binding of {pid}", low=0.0)
             internal = values.get("internalisation_multiplier")
             if internal is not None:
