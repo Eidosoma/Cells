@@ -229,7 +229,9 @@ class Kind:
     - schedule (§7.4 (l)): `experiment_keys`, the kind's own keys in the definition's experiment
       (each optional in a definition); `parse_schedule(raw, base, declaration)` -> a Schedule,
       `raw` being {key: value} for the keys the definition gives (possibly none: the kind's
-      default); `schedule_to_dict(schedule, declaration)` -> the {key: value} to write back (the
+      default), or None where it gives none of them: no schedule, so the definition keeps
+      today's change records by value and type (the lead's ruling (A), 19 November 2026);
+      `schedule_to_dict(schedule, declaration)` -> the {key: value} to write back (the
       kind omits its default, so a definition that omits a key keeps its form). The schedule's
       breakpoints join the change times (each a step boundary) and its values the change records.
       @3 evaluates `control_values` once per change record, at the change times, and holds each
