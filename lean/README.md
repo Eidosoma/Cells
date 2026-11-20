@@ -6,23 +6,27 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [26 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 4 checked · 1 failed | 5 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 13 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 13 checked · 3 failed | 14 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 2 of 3 | 3 checked | 3 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 ## Biological evidence
+
+The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
+
+Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
@@ -127,6 +131,24 @@ cells_python=${CELLS_PYTHON:-python}
 <details>
 <summary>Commands for individual comparisons</summary>
 
+For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
+
+```bash
+"$cells_python" -B checks/mitochondrial_cycles.py
+```
+
+Check the stall conditions of all seven cycles, compare instantaneous heat and flux with the independent component equations on both CPU backends, and reproduce the yeast synthase load comparison. [Thresholds, measurements and limits](PROGRESS.md#mitochondrial-stall-heat)
+
+```bash
+"$cells_python" -B checks/mitochondrial_stall.py
+```
+
+For the conditioned kidney-cell voltage, check the two-dose extrapolation on three synthetic Na/K/Cl membranes and reproduce the fixed C3 prediction and its figure-reading bounds. [C3 results](PROGRESS.md#conditioned-voltage-bounds)
+
+```bash
+"$cells_python" -B checks/conditioned_voltage.py
+```
+
 For cell compartments and membrane recycling, follow each owner's species and lumen voltage, then compare how much membrane area and channel cargo return. The strict command checks whether an engine run can observe a nearly depleted channel population. It exits 1 on the recorded engine revision. [Compartment and recycling results](PROGRESS.md#owned-compartment-inventory) · [Reachable zero-count refusal](PROGRESS.md#trafficking-empty-surface)
 
 ```bash
@@ -174,7 +196,7 @@ For vesicle exchange, compare lipid insertion and neutral solute permeation agai
 "$cells_python" -B checks/shared_pool.py --declared-only
 ```
 
-For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. It also reports measured deflation and swelling. The full run exits with status 1 if either near-threshold rupture decision disagrees with the reference. [Physical results, biological measurements and rupture finding](PROGRESS.md#bilayer-footprint)
+For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. The repaired engine agrees on all eight threshold decisions. The driver also compares measured deflation, swelling and survival during fixed-tension holds. [Physical results](PROGRESS.md#bilayer-footprint) · [Earlier threshold finding](PROGRESS.md#vesicle-threshold-hold) · [Repair and measured rupture timing](PROGRESS.md#biological-model-review)
 
 ```bash
 "$cells_python" -B checks/vesicle.py --controls-only
@@ -285,7 +307,7 @@ For proton leak, check the reversal voltage, instantaneous heat, the small-volta
 "$cells_python" -B checks/proton_leak.py
 ```
 
-For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. [ATP driver](checks/atp_cycle.py) · [Numerical and biological results](PROGRESS.md#19-november-2026--atp-driven-transport)
+For ATP-driven transport, compare compiled tissue rates against the four frozen proton and neutral cargo panels. The driver reports free energy, cycle flux, heat and work errors, then checks the voltage response and both off switches. It also finds the proton pump's stall voltage for each of the eight yeast vacuole assay conditions at all four supported couplings. [ATP driver](checks/atp_cycle.py) · [Tissue results](PROGRESS.md#19-november-2026--atp-driven-transport) · [Vacuole results](PROGRESS.md#biological-model-review)
 
 ```bash
 "$cells_python" -B checks/atp_cycle.py
@@ -349,7 +371,7 @@ The inward-rectifier driver checks the current–voltage slope, equivalent conce
 "$cells_python" -B checks/sodium_anion_symport.py
 ```
 
-For the eight-state two-sodium carrier, compare each edge with an independent stationary master equation and test the predicted dose response against measured propionate currents. The full run reports an extreme-capacity discrepancy in the diagnostic probe and exits with status 1 while it persists. The second command runs the ordinary controls. [Proof and biological comparison](claims/sodium-anion-diagram.md)
+For the eight-state two-sodium carrier, compare each edge with an independent stationary master equation and test the predicted dose response against measured propionate currents. The full run also checks whether the diagnostic flux agrees with the material flux down to 10⁻³⁰² fmol/s capacity and at zero. The original extreme-capacity case passes on the repaired engine. [Proof and biological comparison](claims/sodium-anion-diagram.md) · [Repair verification](PROGRESS.md#sodium-anion-capacity-repair)
 
 ```bash
 "$cells_python" -B checks/sodium_anion_diagram.py

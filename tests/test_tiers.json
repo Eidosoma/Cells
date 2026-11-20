@@ -268,7 +268,10 @@
   "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
   "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-09659867/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e70dd2ec/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e70dd2ec/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-2b572f87/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2267,6 +2270,28 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-e70dd2ec",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T17:58:02+00:00"
+  },
+  {
+   "git_revision": "aaee25826be6f9ce7485fd6ebb4f06af7ef860af",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-aaee2582",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T19:01:36+00:00"
+  },
+  {
+   "git_revision": "2b572f8704ecfd27edc62988456f32876abb74e5",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-2b572f87",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T13:24:46+00:00"
+  },
+  {
+   "git_revision": "d1a0b86bec9208b150c1b0f916dd7ca2dc35476f",
+   "dirty": false,
+   "root": ".claude/worktrees/replacement-volume-bound",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T20:24:14+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2971,7 +2996,7 @@
    },
    {
     "file": "tests/unit/test_cell_replacement_v2.py",
-    "seconds": 4.13,
+    "seconds": 5.03,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -5250,10 +5275,10 @@
    },
    {
     "file": "tests/unit/test_species_registry_free_energies.py",
-    "seconds": 4.17,
+    "seconds": 4.78,
     "exit_code": 0,
     "counts": {
-     "passed": 27
+     "passed": 32
     }
    },
    {
@@ -5934,7 +5959,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 30.83,
+    "seconds": 30.89,
     "exit_code": 0,
     "counts": {
      "passed": 7
@@ -5982,7 +6007,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 43.32,
+    "seconds": 55.26,
     "exit_code": 0,
     "counts": {
      "passed": 9

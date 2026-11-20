@@ -910,6 +910,18 @@ explored.
   membrane-join step is not presumed kinetically equivalent. FR-20's timed replacement can proceed
   independently, preserving every slot-owned place as designed.
 - **Next:** a design note before any code (D142).
+- **The site step's acceptance (the requester, relayed by the user on 20 November 2026; D244,
+  D246).** In `cells.assembly_lineages@2`, a particle with geometry supports X@pool + S@membrane ⇌
+  XS@membrane through `cells.stochastic_mass_action@1`. It is admitted only when the site and the
+  complex are declared, and undeclared pairs stay refused. Built from the one-particle fixture of
+  `tests/unit/test_assembly_lineages_v2_population.py`, with FR-20's timed wash:
+  1. Immediately before the wash: 8 free X in the pool, 4 vacant sites and 2 occupied sites.
+  2. After replacing the pool with an equal volume of X-free liquid:
+     - the removal record holds 8 X;
+     - the fresh pool holds 0 X;
+     - the particle keeps 4 vacant and 2 occupied sites.
+  3. One release gives 1 free X, 5 vacant sites and 1 occupied site. A rebinding restores the
+     post-wash counts.
 
 ## FR-22 — Checkpoint and resume for the stochastic assembly runner
 
@@ -946,6 +958,28 @@ explored.
 - **Where it stands:** this is gene regulation's option A (D235). The equation sheet is tagged
   (`gr1-sheet-2026-11-20`), and its code-blind references are under way. G4's operator is built
   as this reusable component.
+- **Backlog: per-cell readouts of new RNA (a reviewer's follow-up, relayed by the user on 20
+  November 2026).** A runnable example that reports, for each cell and gene, total RNA and the
+  transcripts started, completed and degraded. For a chosen time window, it also reports how many
+  transcripts completed in that window are still present when sampled, like a pulse label. Raw
+  per-cell values are kept, so each assay can apply its own detection rule. A documented
+  calculation from existing outputs is enough. It names its Cells revision, units and sampling
+  times. Two controls make the readout checkable:
+  1. **RNA turnover.** Start with 100 unlabelled copies, a one-hour half-life and steady
+     production of 100·ln 2 copies per hour. Mark every transcript completed in the first hour,
+     then continue production unmarked.
+     - Total RNA stays at 100.
+     - Of the 69.31 copies expected in the marked hour, 50 remain at its end and 25 an hour later.
+  2. **Responding cells.** Two groups make [0, 0, 20, 20] and [10, 10, 10, 10] new copies per cell.
+     - Both average 10.
+     - At a threshold of one new copy, 50% against 100% of cells are positive.
+     - The positive cells average 20 against 10 copies.
+
+  The development build already shows two effects:
+  - a gene's initial regulatory state changes its output under identical input, and disabling
+    that link erases the difference;
+  - after new starts are switched off, chains already in progress finish another 2.46 expected
+    copies in the next minute.
 
 ## FR-26 — Owned state when a cell is replaced
 

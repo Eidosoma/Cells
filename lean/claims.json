@@ -18,6 +18,171 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "vacuolar-pump-reversal": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.proton_atp_mass_action_positive@1"],
+      "engine_revision": "6318b7d4f8d33251760834b6079aa27d88a81831",
+      "record_revision": "78acb6bccc69cabbd8639a22975d87b5eabb42a2",
+      "sources": {
+        "Free energy for pumping at fixed coupling": "src/cells/laws/pumps/proton_pump.py#L73",
+        "Signed proton pump flux": "src/cells/laws/pumps/proton_pump.py#L91",
+        "Stoichiometry and fuel in the tissue population": "src/cells/laws/pumps/proton_pump.py#L223"
+      },
+      "driver": "lean/checks/atp_cycle.py",
+      "record": "lean/PROGRESS.md#biological-model-review"
+    },
+    "vesicle-lysis-repair": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.bilayer_geometry@1", "cells.osmotic_lumen@1", "cells.ideal_mixing@1", "cells.phase_exchange@1"],
+      "engine_revision": "6318b7d4f8d33251760834b6079aa27d88a81831",
+      "record_revision": "78acb6bccc69cabbd8639a22975d87b5eabb42a2",
+      "sources": {
+        "Repaired tension at the cap": "src/cells/models/assembly_lineages_v2/lumen.py#L170",
+        "Tension test at each event": "src/cells/models/assembly_lineages_v2/kernel.py#L340"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#biological-model-review"
+    },
+    "mitochondrial-stall-heat": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "e4b9588fdc80aa8e764e09c70a39a5b2f2db64cf",
+      "record_revision": "f0783ad9cb9c9f1ca581dfacee23ac8b5411268e",
+      "sources": {
+        "Full-turn affinity from free concentrations and voltage": "src/cells/kinds/transporter.py#L1809",
+        "Monomial affinity shares": "src/cells/laws/cycles/forms.py#L1468",
+        "Reversible rate near stall": "src/cells/laws/cycles/forms.py#L1512",
+        "Heat and cycle derivatives": "src/cells/kinds/transporter.py#L1966",
+        "Public cycle probe": "src/cells/kinds/transporter.py#L2362",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L64",
+        "Independent decimal component equations": "validation/mitochondria/appendix_check.py#L87"
+      },
+      "driver": "lean/checks/mitochondrial_stall.py",
+      "record": "lean/PROGRESS.md#mitochondrial-stall-heat"
+    },
+    "mitochondrial-cycle-accounting": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Complex I": "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py#L20",
+        "Complex III": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L35",
+        "Complex IV": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L37",
+        "ATP synthesis": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py#L35",
+        "Nucleotide exchange": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L34",
+        "Phosphate import": "src/cells/laws/cycles/phosphate_proton_symport.py#L28",
+        "Potassium–proton exchange": "src/cells/laws/cycles/potassium_proton_exchange.py#L16",
+        "Material ledger by species and side": "src/cells/kinds/transporter.py#L2128",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L63",
+        "Independent registered component comparisons": "validation/mitochondria/component_comparison.py#L1"
+      },
+      "driver": "lean/checks/mitochondrial_cycles.py",
+      "record": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+    },
+    "conditioned-voltage-series": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.passive_constant_field_permeation@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Individual passive fluxes": "src/cells/laws/routes/constant_field_permeation.py#L56",
+        "Summed membrane current": "src/cells/kinds/passive_routes.py#L550",
+        "Two-dose fit and reading corners": "tests/reference_conditioned_voltage.py#L76",
+        "Fixture for the passive membrane routes": "tests/unit/test_passive_routes_kind.py#L286"
+      },
+      "driver": "lean/checks/conditioned_voltage.py",
+      "record": "lean/PROGRESS.md#conditioned-voltage-bounds"
+    },
+    "sodium-anion-capacity-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.na2_anion_symport_diagram@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Diagnostic carrier count at normal, small and zero capacity": "src/cells/kinds/transporter.py#L2385",
+        "Eight-state carrier declaration": "src/cells/laws/cycles/na2_anion_symport_diagram.py#L95"
+      },
+      "driver": "lean/checks/sodium_anion_diagram.py",
+      "record": "lean/PROGRESS.md#sodium-anion-capacity-repair"
+    },
+    "vesicle-lysis-hold-recheck": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Tension from the capped lumen": "src/cells/models/assembly_lineages_v2/lumen.py#L164",
+        "Strict rupture test at a state": "src/cells/models/assembly_lineages_v2/kernel.py#L340"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#vesicle-threshold-hold"
+    },
+    "shared-pool-report-recheck": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Shared-pool output assembly": "src/cells/models/assembly_lineages_v2/population.py#L735",
+        "Osmotic volume parameters": "src/cells/models/assembly_lineages_v2/lumen.py#L86"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#vesicle-threshold-hold"
+    },
     "owned-compartment-inventory": {
       "kind": "engine",
       "models": [
@@ -1415,6 +1580,205 @@
   },
   "claims": [
     {
+      "id": "mitochondrial-stall-heat",
+      "category": "pumps-and-cotransport",
+      "title": "Mitochondrial cycles reverse at zero free energy and dissipate power in either direction",
+      "statement": "Each enabled mitochondrial cycle runs forward at negative full-turn ΔG, reverses at positive ΔG and stalls at zero. The five electrogenic cycles have a stall voltage set by free activities. Phosphate uptake and K⁺/H⁺ exchange have voltage-independent stall ratios. At positive temperature, instantaneous dissipated power is positive in either direction and vanishes exactly at stall or when the population is off.",
+      "assumptions": [
+        "Each reaction uses the declared free species and signed charge, with N the matrix and P the intermembrane space. Free activities are positive. The dimensionless voltage is F(φ_N − φ_P)/(RT).",
+        "An enabled population has a positive finite forward kinetic prefactor. Complex III uses a half-turn exponent and complex IV a quarter-turn exponent. ΔG refers to a full turnover in both cases.",
+        "Heat here is the model's instantaneous chemical free-energy dissipation. Flux is in fmol/s and RT in J/mol. An assay of integrated whole-mitochondrion enthalpy measures a different observable."
+      ],
+      "uses": [
+        "atp-cycle",
+        "mitochondrial-respiratory-balance",
+        "mitochondrial-atp-delivery"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.nadh_ubiquinone_proton_cycle@1",
+          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cytochrome_c_oxygen_proton_cycle@1",
+          "cells.proton_coupled_atp_synthesis_cycle@1",
+          "cells.electrogenic_nucleotide_exchange@1",
+          "cells.phosphate_proton_symport@1",
+          "cells.potassium_proton_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialStall.rate_disabled": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.rate_eq_fractional": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.direction": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.voltage_stall": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.neutral_carrier_stalls": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.synthase_load_shift": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_nonneg": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_zero_iff": "lean/CellsProofs/Chemistry/MitochondrialStall.lean"
+        },
+        "sources": {
+          "Mathlib geometric sum used to recover the fractional exponent": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GeomSum.lean#L239"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-stall-heat"
+        ],
+        "result": "All 49 physical settings agreed with the independent component equations on NumPy and compiled CPU JAX, including both sides of stall for all seven laws. The worst net-flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The worst residual ΔG/(RT) at a calculated stall was 2.85 × 10⁻¹⁴. The rate kernel also preserved the signs at ±2⁻⁶⁰ and returned zero at an exact zero input. The probe and the stage agreed on flux and instantaneous dissipated power."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Net turnover on either side of a measured mitochondrial stall, the shift in ATP synthase stall with phosphorylation load, and dissipated power at known cycle affinity.",
+        "unit": "turnovers per enzyme per second, pH units, H⁺/ATP, pJ/s per population",
+        "evidence": [
+          {
+            "dataset_id": "petersen2012_yeast_stall@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Petersen et al. (2012), Figs. 1–4 and Tables S2 and S4",
+            "doi": "10.1073/pnas.1202799109",
+            "locator": "Yeast traces in Fig. 1, corrected stall in Fig. 2, fitted coupling in Fig. 4 and all ten corrected stall entries in Table S4.",
+            "context": "Purified yeast mitochondrial ATP synthase in proteoliposomes at an imposed 60 mV.",
+            "role": "descriptive",
+            "uncertainty": "The example rates are fitted initial slopes. The equilibrium ΔpH was interpolated. One measured stall sets the offset for comparing shifts at the other loads. The comparison adds the reported interpolation limits and assumes the assay's concentration quotient is proportional to the free activity quotient.",
+            "assessment": "ATP turnover changed sign across stall, and the inferred coupling was 2.9 ± 0.2 H⁺/ATP. The model's three protons predict a 0.745 pH-unit endpoint shift against 0.74 observed. Five of nine other entries are within the combined interpolation limits using the stall at Q = 5.79 as the reference. Four intermediate entries fall outside.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          },
+          {
+            "dataset_id": "nakamura1978_mitochondrial_heat@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Nakamura and Matsuoka (1978), Figs. 5b and 6",
+            "doi": "10.1093/oxfordjournals.jbchem.a132117",
+            "locator": "The anaerobic bulk heat pulse in Fig. 5b and its dependence on the initial ADP in Fig. 6.",
+            "context": "Rat liver mitochondria following aerobic ATP production and oxygen exhaustion.",
+            "role": "descriptive",
+            "uncertainty": "The apparent enthalpy was −29 ± 7 kJ per mole of previously added ADP. The authors inferred an ATP hydrolysis contribution.",
+            "assessment": "Bulk calorimetry integrates heat from the preparation. The instantaneous dissipated power of each individual mitochondrial cycle remains experimentally open.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitochondrial-respiratory-balance",
+      "category": "pumps-and-cotransport",
+      "title": "Restoring both respiratory carriers fixes the turnover ratio and outward charge",
+      "statement": "For signed extents of mitochondrial complexes I, III and IV, restoring reduced quinone and reduced cytochrome c fixes their turnover in the ratio 2:2:1. Two NADH and one oxygen then give twenty outward charge equivalents, with every intermediate redox carrier restored.",
+      "assumptions": [
+        "N is the matrix and P the intermembrane space. The tracked species use the registered base forms, with explicit protons. Water is implicit.",
+        "The complete-chain ratio assumes no other source or sink for the two intermediate carriers. The per-cycle identities hold for arbitrary signed extents, including a transient."
+      ],
+      "uses": [
+        "reaction-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.nadh_ubiquinone_proton_cycle@1",
+          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cytochrome_c_oxygen_proton_cycle@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.carrier_balance_iff": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.respiratory_net": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-cycle-accounting"
+        ],
+        "result": "All seven registered columns were checked against independently written material balances. Per forward turnover the respiratory complexes added 4, 2 and 8 net charges on P, while each added four explicit P protons. In two checked steps of a finite-matrix/lumen world, the redox, adenine and phosphate changes matched predictions from the measured extents within 8.28 × 10⁻²⁵ fmol."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Protons transported per NADH, including correction for proton consumption by quinone reduction, and net charge transport during a carrier-balanced respiratory sequence.",
+        "unit": "H⁺ per NADH or two electrons, charge equivalents per O₂",
+        "evidence": [
+          {
+            "dataset_id": "galkin1999_complex_i@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Galkin et al. (1999), Fig. 2 and Eq. 3",
+            "doi": "10.1016/S0014-5793(99)00575-X",
+            "locator": "Fig. 2, right panel, and the scalar-proton correction in Eq. 3.",
+            "context": "NADH-driven quinone reduction in inside-out bovine heart submitochondrial particles.",
+            "role": "descriptive",
+            "uncertainty": "The authors report 4.00 ± 0.05, estimated from initial rates after correcting for one proton consumed by quinone reduction.",
+            "assessment": "The observed 4.00 ± 0.05 transported protons per two electrons agrees with the four on P per forward complex I turnover. The full three-complex charge balance needs additional measurements.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          },
+          {
+            "dataset_id": "jones2017_complex_i@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Jones et al. (2017), Table 3 and Fig. 3",
+            "doi": "10.1074/jbc.M116.771899",
+            "locator": "Bovine estimates in Table 3 derived from the paired flux measurements in Fig. 3.",
+            "context": "Four bovine heart submitochondrial preparations. The three comparisons match ATP synthesis rates to approximate equal proton leak.",
+            "role": "descriptive",
+            "uncertainty": "Reported propagated errors. All three comparisons use the same four preparations.",
+            "assessment": "The estimates were 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 H⁺/2e⁻. They support a value near four for complex I. They do not directly measure the three-complex net charge.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitochondrial-atp-delivery",
+      "category": "pumps-and-cotransport",
+      "title": "ATP synthesis and delivery return four charge equivalents in the declared three-proton model",
+      "statement": "One ATP synthesis, nucleotide exchange and phosphate import restore the matrix ATP, ADP and phosphate rows and deliver one ATP on P. Their net P-side charge is −4. Potassium–proton exchange swaps one K for one H with zero net charge. At balanced respiratory carriers and zero net charge transfer the seven paths imply five ATP deliveries per oxygen.",
+      "assumptions": [
+        "The registered synthase has three translocated protons per matrix ATP. Nucleotides and phosphate use the declared base forms and all proton rows are explicit.",
+        "The five-per-O₂ identity assumes matched turnovers of synthesis, ATP export and phosphate import, and no additional electrogenic paths. It is an ideal stoichiometric ratio."
+      ],
+      "uses": [
+        "mitochondrial-respiratory-balance",
+        "electrogenic-pump-charge"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.proton_coupled_atp_synthesis_cycle@1",
+          "cells.electrogenic_nucleotide_exchange@1",
+          "cells.phosphate_proton_symport@1",
+          "cells.potassium_proton_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.delivery_net": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.delivered_charge": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.potassium_proton_swap": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_balance_iff": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-cycle-accounting"
+        ],
+        "result": "The synthesized ATP, nucleotide exchange, phosphate import and K/H exchange carry −3, −1, 0 and 0 net charge equivalents on P per turn. All seven populations carried nonzero extents in two checked 1 ms steps. The independently calculated combined material postings matched the engine ledger. Global charge error stayed below 1.0 × 10⁻³³ C."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Rotor proton count and ATP turnover for synthesis, plus the energetic cost of delivering ATP across the mitochondrial inner membrane.",
+        "unit": "c-subunits per rotor, H⁺ per matrix ATP, charge equivalents per delivered ATP",
+        "evidence": [
+          {
+            "dataset_id": "watt2010_bovine_rotor@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Watt et al. (2010), Fig. 1 and Discussion",
+            "doi": "10.1073/pnas.1011099107",
+            "locator": "The bovine c-ring in Fig. 1 and the authors' coupling interpretation.",
+            "context": "Structure of the bovine mitochondrial F1–c-ring complex.",
+            "role": "descriptive",
+            "uncertainty": "The 3.5 Å structure resolves eight c-subunits. The stoichiometric interpretation assumes tight coupling and three ATP per full rotation.",
+            "assessment": "The bovine structure implies 8/3 H⁺ per matrix ATP under tight coupling, and the authors infer 11/3 proton equivalents per delivered ATP. The current Cells model fixes 3 and 4. The structural result identifies a preparation-specific limit of that choice. It does not measure ATP flux under load.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          }
+        ]
+      }
+    },
+    {
       "id": "owned-compartment-inventory",
       "category": "tissue-and-conservation",
       "title": "Each compartment belongs to one cell and its charge sets its lumen voltage",
@@ -2371,6 +2735,7 @@
       "numerical": {
         "status": "failed",
         "comparisons": [
+          "shared-pool-report-recheck",
           "shared-pool-inventory",
           "shared-pool-declared-volume"
         ],
@@ -2556,10 +2921,11 @@
       "id": "vesicle-lysis-threshold",
       "category": "molecular-assembly",
       "title": "Changing molecular area units preserves the exact vesicle rupture decision",
-      "statement": "When molecular areas and the physical floor are preserved, two choices of area quantum give identical physical area, capped volume, tension and strict rupture verdict for the same post-event counts.",
+      "statement": "When molecular areas and the physical floor are preserved, two choices of area quantum give identical physical area, capped volume, tension and strict rupture verdict for the same post-event counts. A vesicle that has survived a fixed threshold stays intact under that rule while every subsequent check sees no higher tension.",
       "assumptions": [
         "Only the area unit and all associated integer weights and floor are rescaled. Solute count, temperature, bath, physical area and rupture threshold remain fixed.",
-        "The synthetic founder has five membrane lipids and four trapped osmoles. The only possible first event detaches one lipid. The comparison observes the outcome of that event."
+        "The synthetic founder has five membrane lipids and four trapped osmoles. The only possible first event detaches one lipid. The comparison observes the outcome of that event.",
+        "The hold argument fixes each vesicle's threshold through time. The survival measurements track the same cohort after an applied tension is established."
       ],
       "uses": [
         "bilayer-footprint",
@@ -2572,21 +2938,50 @@
           "cells.osmotic_lumen@1"
         ],
         "theorems": {
-          "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean"
+          "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.no_new_rupture": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.fixed_survival_error": "lean/CellsProofs/Chemistry/Vesicle.lean"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "vesicle-lysis-repair",
+          "vesicle-lysis-hold-recheck",
           "vesicle-lysis-threshold"
         ],
-        "result": "The first event has reference tension 0.0008412963098275772 N/m. At thresholds about 3 × 10⁻¹⁸ N/m below and above it, the 60-quanta representation ruptured both times and the equivalent 1,920-quanta representation remained intact both times. Both matched the reference at thresholds 1% away. Computing physical area first recovered both close decisions in float64."
+        "result": "The repaired tension calculation matched the independent reference in all eight compiled decisions. Both 60 and 1,920 area quanta gave rupture just below 0.0008412963098275772 N/m and survival just above it, including offsets of about 3 × 10⁻¹⁸ N/m. The older comparisons preserve the disagreement that led to the repair."
       },
       "biology": {
         "status": "open",
-        "observable": "Rupture at known membrane area, trapped solute and bath conditions. The dependence on the numerical area unit is assessed by rerunning an identical physical state.",
-        "unit": "N/m",
-        "evidence": []
+        "observable": "Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.",
+        "unit": "mN/m, seconds and fraction intact",
+        "evidence": [
+          {
+            "dataset_id": "karal2015_dopc_hold@1",
+            "manifest": "lean/checks/data/vesicle_rupture_holds.json",
+            "citation": "Karal and Yamazaki (2015), Fig. 1a",
+            "doi": "10.1063/1.4930108",
+            "locator": "Fig. 1a, open circles at 12 °C and open squares at 32 °C.",
+            "context": "Pure DOPC giant unilamellar vesicles with matched sugar concentrations under a constant 8.0 mN/m aspiration tension. Time starts at the hold.",
+            "role": "descriptive",
+            "uncertainty": "The published series reports 20 vesicles per temperature, but the plotted steps do not resolve those denominators. Fractions and times are approximate, and no pointwise errors are given.",
+            "assessment": "At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. The published rupture rates were 0.0073 and 0.024 s⁻¹. Surviving vesicles continued to rupture at unchanged tension.",
+            "report": "lean/PROGRESS.md#biological-model-review"
+          },
+          {
+            "dataset_id": "shibly2016_dopc_hold@1",
+            "manifest": "lean/checks/data/vesicle_rupture_holds.json",
+            "citation": "Shibly et al. (2016), Fig. 1B",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Open circles in Fig. 1B at the 4.3 mN/m aspiration setting. The results give n = 19.",
+            "context": "Pure DOPC vesicles at 25 ± 1 °C with an initial osmolarity difference of 2.8 mM, followed after osmotic equilibration.",
+            "role": "descriptive",
+            "uncertainty": "Two time points in the same cohort, read from the plotted steps. Fig. 1B has no pointwise error bars. Osmotic tension was inferred in addition to the applied aspiration tension.",
+            "assessment": "Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. A constant survival fraction misses at least one reading by 3/19. A rupture rate of 0.0216 s⁻¹ fitted to the first count predicts 1.76 survivors at the second time in the same cohort.",
+            "report": "lean/PROGRESS.md#biological-model-review"
+          }
+        ]
       }
     },
     {
@@ -3246,7 +3641,7 @@
         "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction-gate"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol."},
-      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
+      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
     },
     {
       "id": "channel-gate-bounds",
@@ -3422,7 +3817,7 @@
       "id": "atp-cycle",
       "category": "pumps-and-cotransport",
       "title": "Free energy sets ATP-driven transport direction and stall",
-      "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
+      "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). At fixed fuel, temperature and coupling, changing the pH gradient shifts stall by exactly the change in the proton equilibrium voltage. Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
       "assumptions": ["One tightly coupled mode hydrolyses one ATP on side N and moves n cargo units from N to P. Cargo valence is +1 for free protons and zero for the neutral role. Voltage is V_N − V_P.", "Activities and absolute temperature are positive. In an enabled population, capacity, availability and the saturation factor are positive. Lean represents their product by its finite logarithm and uses real arithmetic."],
       "formal": {"status": "proved", "about": ["cells.proton_atp_mass_action_positive@1", "cells.atp_driven_transporter_mass_action_positive@1"], "theorems": {
         "CellsProofs.Transport.ATPCycle.flux_disabled": "lean/CellsProofs/Transport/ATPCycle.lean",
@@ -3432,10 +3827,28 @@
         "CellsProofs.Transport.ATPCycle.stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.heat_nonneg": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.proton_stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.proton_stall_shift": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.neutral_voltage_independent": "lean/CellsProofs/Transport/ATPCycle.lean"
       }},
-      "numerical": {"status": "checked", "comparisons": ["atp-cycle"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work."},
-      "biology": {"status": "open", "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.", "finding": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
+      "numerical": {"status": "checked", "comparisons": ["atp-cycle", "vacuolar-pump-reversal"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work. For the eight yeast assay conditions, the registered proton law also bracketed 32 stall voltages. At fixed fuel the pH-induced shift was −112.40 mV for every supported coupling."},
+      "biology": {
+        "status": "open",
+        "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.",
+        "finding": "Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)",
+        "unit": "mV for reversal, fmol/s for signed cargo flux",
+        "evidence": [{
+          "dataset_id": "kettner2003_vacuolar_pump@1",
+          "manifest": "lean/checks/data/kettner2003_vacuole.json",
+          "citation": "Kettner et al. (2003), Fig. 3 and Table 2",
+          "doi": "10.1016/S0006-3495(03)74789-4",
+          "locator": "ATP-dependent difference currents in Fig. 3 and five resolved reversals plus three bounds in Table 2.",
+          "context": "Voltage-clamped yeast vacuoles with ATP, ADP and phosphate supplied to the cytosolic side.",
+          "role": "descriptive",
+          "uncertainty": "At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.",
+          "assessment": "Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism.",
+          "report": "lean/PROGRESS.md#biological-model-review"
+        }]
+      }
     },
     {
       "id": "electrogenic-pump-charge",
@@ -3988,12 +4401,13 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "sodium-anion-capacity-repair",
           "sodium-anion-diagram-nov20",
           "sodium-anion-diagram"
         ],
-        "result": "At 10⁻³⁰² fmol/s capacity, the diagnostic edge and reverse fluxes were 100 times their correct values in NumPy and compiled CPU float64. The mode and material rates matched the independent master equation. The 60 ordinary cases, 18 dose points and the tissue booking check passed."
+        "result": "The capacity repair passed the original controls and all four extreme/zero capacity cases on NumPy and compiled CPU. At 10⁻³⁰² fmol/s the net readouts both gave 7.09691 × 10⁻³⁰⁵ fmol/s and reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The previous 100-fold diagnostic error remains recorded at its tested revision."
       },
       "biology": {
         "status": "open",
@@ -4340,10 +4754,33 @@
       "id": "rptec-voltage-c3",
       "category": "cell-physiology",
       "title": "Membrane voltage in kidney epithelial cells under condition C3",
-      "statement": "Fit a conditioned voltage equation on C1 and C2 and predict the membrane voltage under the higher-potassium C3 solution.",
-      "assumptions": ["The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents."],
-      "formal": {"status": "open", "theorems": {}},
-      "numerical": {"status": "checked", "comparisons": ["bio002-endpoint"], "result": "The conditioned reference calculation agreed with an independent 60-digit calculation within 7.11 × 10⁻¹⁵ mV across twelve scalar checks."},
+      "statement": "In the fixed Na/K substitution series, two passive reversal voltages determine the higher-potassium C3 prediction. The assigned figure-reading intervals bound the prediction, its change from the shared C1 baseline and the signed error.",
+      "assumptions": [
+        "The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents.",
+        "External Na plus K and external Cl stay fixed. The two fitting doses are distinct. The exact C3 extrapolation has weight two, with a positive log argument throughout the assigned reading box."
+      ],
+      "uses": ["mixed-ion-reversal"],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Transport.ConditionedVoltage.bath_affine": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.reversal_iff_affine": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.two_point_fit": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.coefficients_unique": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.argument_pos_of_rising": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.extrapolation_bounds": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.c3_reading_bounds": "lean/CellsProofs/Transport/ConditionedVoltage.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "bio002-endpoint",
+          "conditioned-voltage-series"
+        ],
+        "result": "The fixed reference predicted −14.59 mV. All 81 sampled fit-reading pairs respected the proved corner bounds and twelve 60-digit crosschecks agreed within 7.11 × 10⁻¹⁵ mV. On three synthetic membranes with rising, flat and falling responses, the third-dose predictions agreed with the independent engine reversal within 2.05 × 10⁻¹⁴ mV."
+      },
       "biology": {
         "status": "not_assessable", "observable": "Whole-cell resting membrane voltage after application of extracellular solution C3.", "unit": "mV",
         "evidence": [{
