@@ -7853,3 +7853,24 @@ done".
   A repair is done when the Lean project's own reproducers pass at the landed head.
 - **Priority:** D230 stands until the user answers one question: whether origin of life now queues
   on equal terms with the core and feature-request work.
+
+## D243: Origin of life gets one more agent; the rest is the lead's call
+
+2026-11-20, about 18:29 UTC. The lead asked whether origin of life should now compete for agents
+and test lanes on equal terms with the core and feature-request work. The user: "just add one more
+agent", "then as you see fit".
+
+- **One more agent works on origin of life:** a second builder, beside the first builder and the
+  fuel desk agent (D242).
+- **The second builder's work** is the break-and-renew development pieces in files that no open
+  origin-of-life head touches:
+  - the F12 reader for @2's records;
+  - the world that combines catalysis with vesicles, division and the pool;
+  - F12's restored futures, through a single-lineage checkpoint (rung S) and a branch rule.
+
+  It starts with the plan and price the lead had asked of the first builder. After the fuel note is
+  ruled, it builds OL4.
+- **The first builder keeps** FR-20 and the Lean repairs, then slice 5, the population runs and
+  OL5's probe roles, then OL6.
+- **Everything else is the lead's call,** within D230 and D242. Core and feature requests keep
+  their claim on seats and lanes, and origin of life may get more as seats free.
