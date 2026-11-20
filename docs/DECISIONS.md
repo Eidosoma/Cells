@@ -8273,3 +8273,33 @@ from all the user/reviewer reqeuest today".
   - FR-29's design note, by the kinds owner after its second mitochondria head;
   - FR-34, Kir2.1 and the Ratto data, by the FR-7 lane;
   - the robustness fixes.
+
+## D256: Mitochondria pause too; Fig. S2B read, and FR-7 item 4's options for the user
+
+2026-11-20, about 22:08 UTC. The user: "same with mitochondria, keep tests going and suh but lets
+focus on core and fr tonight while I sleep".
+
+1. **Mitochondria pause until tomorrow, beside origin of life and gene regulation (D255).** Running
+   gates and runs continue, and heads that pass still land. The kinds owner turns to FR-29's design
+   note.
+2. **Fig. S2B, read as numbers** by the FR-7 lane as a second reader (from the supplement's embedded
+   image, its SHA-256 checked; rows merged at c97f1ab1). This completes D254's record.
+   - **These are the six-cell means:** the values at −100 mV equal Fig. 3G's (wild type −7.25 against
+     −7.3; K346T −14.70 against −14.8 pA/pF), although the legend says "representative".
+   - **The points sit on the command steps** (−140 to −30 mV) within 0.2 mV, so the axis is most likely
+     the command voltage, with no 15 mV adjustment.
+   - **So it most likely shows barium-subtracted Kir current,** whose true zero crossings (about −88
+     and −92 mV) lie near E_K. This doesn't revive item 4: it checks E_K and gives Kir's shape, not its
+     share of the resting conductance.
+   - **The K346T-to-wild-type ratio** is flat near 1.9 on the inward limb. A fit scaling wild type's
+     shape could fail only for an outward ratio above about 5–6 or below 0.5, so the test has little
+     power.
+3. **D254's chloride point** (nystatin pores letting Cl⁻ into Ratto's cells) is the FR-7 lane's
+   inference, made without reading Ratto's paper, and is labelled so.
+4. **FR-7 item 4's options, for the user's decision tomorrow.**
+   - **Close it:** D238's item 4 is then recorded as unmet, not passed, with a PROGRESS entry and the
+     open question's owner.
+   - **Change the endpoint** to current at imposed voltages. This is retrospective, has low power,
+     and is the user's call, since D241 set voltage.
+   - **Get the missing measurement:** each line's barium-induced voltage shift, or mock-cell voltage
+     and resistance in Ambrosini's solutions, with Fig. 3F's configuration.
