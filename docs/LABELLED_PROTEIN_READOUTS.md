@@ -55,9 +55,9 @@ receiver rises only under transfer, and the cumulative loss only under destructi
 
 1. **The region's node list**, and which compartment stands for which synapse or imaged patch.
 2. **One export per output row** of inside, outside, whole cell, cumulative loss per node and
-   cumulative transfer per route, read together. The example exports one donor and one receiver.
-   For a region of several nodes the same reads are summed over the list, at about half a day's
-   work in `validation/`, with no engine change.
+   cumulative transfer per route, read together. `validation/regions/readouts.py` (`region_rows`)
+   gives it for any region of one cell's nodes, with each node's amount beside it, and with no
+   engine change.
 3. **Every other way out of the cell, named.** Secretion to a node the cell does not own also lowers
    the whole-cell total. Cells books it as a transfer (`exchange_moved_fmol` to that node), not as a
    loss, so the two stay apart, which imaging alone cannot do.
