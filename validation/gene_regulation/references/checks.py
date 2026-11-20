@@ -2,8 +2,8 @@
 
 Each check recomputes something from the stored numbers and the world descriptions in
 inputs.json, and raises CheckError with a message naming what disagrees. Light by design (json,
-math and numpy only), so that tests/unit/test_gene_regulation_references.py runs in about a
-second. Used by that test and by the run before it writes the interface.
+math and numpy only), so that tests/unit/test_gene_regulation_references.py, which uses it, runs in
+about a second.
 """
 
 from __future__ import annotations

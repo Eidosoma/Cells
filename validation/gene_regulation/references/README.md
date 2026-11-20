@@ -288,6 +288,9 @@ python -m validation.gene_regulation.references.run --out DIR --potentials G_ATP
 
 The first command regenerates everything. The second runs every stage at one named set of the four
 symbols, refused outside §3.3's ranges.
+- **Always give a fresh `--out`.** Stages resume from the results already in the folder, keyed by
+  set index alone. A `--potentials` run into a folder that holds another run's results would
+  silently reuse them.
 - Run it from a source snapshot (`validation/source_snapshot.py`), detached
   (`scripts/run_detached.sh`).
 - The committed interface came from revision `cea05359`, by snapshot, as one invocation of all
