@@ -68,6 +68,10 @@ Host only: no world runs here.
   - the selection is refused for each planted fault (stopped, failed, old or missing map, src/);
   - the nightly run takes the free lane, and publishes its map or stops selection;
   - gate.sh runs only the selection's files, and CHECKS drops crossrev and G1.
+- **Hermetic:** every tool runs here with the tools' own variables and git's dropped from the
+  environment, then only what each test sets. A landing gate runs this file with its own
+  ADDITIONS_FROM, LANE and the rest (T66, 20 November): planted in this process's environment, they
+  reach neither a test's gate nor its stack, and the list covers every variable the tools read.
 """
 
 import fcntl
@@ -75,6 +79,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -97,6 +102,37 @@ def load():
 
 
 steps = load()
+
+# Every variable the gate tools read from the environment (gate.sh, stack.sh, nightly_tiers.sh,
+# gate_steps.py and the recorder; a row below keeps the list whole), with git's own, is dropped from
+# every invocation here, and from this process for the steps run in it. Each test then sets only
+# what it means to (T66, 20 November 2026: the landing gate's ADDITIONS_FROM reached the tests' gates).
+TOOL_ENV = frozenset((
+    "ADDITIONS_FROM", "BASELINE", "BASE_S", "C1", "CELLS_SCOPE_LOG", "CELLS_SCOPE_ROOT", "CHECKS",
+    "CPUS_A", "CPUS_B", "CROSSREV_EXPECTED", "CROSSREV_SETS", "FREEZE", "GATE_CACHE", "GATE_CPUS",
+    "GATE_LOCK", "HOSTPY", "LANE", "LOCK_A", "LOCK_B", "NIGHTLY", "POLL", "PRELOCK", "PRELOCK_CPU",
+    "PRELOCK_NICE", "PRELOCK_ONLY", "PRELOCK_TEST_SECONDS", "PRE_CPU", "PY", "REC", "REMOVED_OK_FILE",
+    "REPO", "RESTACK", "SELECT", "SELECTION_STOPPED", "TIERS", "WAIT_FREE"))
+LOCALS = frozenset(("TR", "GD"))  # gate.sh's and stack.sh's own, assigned before they are expanded
+
+
+def scrubbed(name):
+    return name in TOOL_ENV or name.startswith("GIT_")
+
+
+def clean_env(*parts, **extra):
+    """This process's environment without the tools' variables and git's, then PARTS and EXTRA."""
+    env = {k: v for k, v in os.environ.items() if not scrubbed(k)}
+    for part in parts:
+        env.update(part)
+    env.update(extra)
+    return env
+
+
+@pytest.fixture(autouse=True)
+def hermetic(monkeypatch):
+    for name in [n for n in os.environ if scrubbed(n)]:
+        monkeypatch.delenv(name)
 EMPTY = steps.EMPTY_PATCH
 GUARD_TEXT = "def test_guard():\n    pass\n"
 
@@ -645,7 +681,7 @@ def gate(world):
     py.write_text(f'#!/bin/bash\nexec "{sys.executable}" -I "{tmp / "stub.py"}" "$@"\n')
     py.chmod(0o755)
     cpu = str(sorted(os.sched_getaffinity(0))[0])
-    env = dict(os.environ, **world["env"], LANE="custom", GATE_LOCK=str(tmp / "lane.lock"),
+    env = dict(world["env"], LANE="custom", GATE_LOCK=str(tmp / "lane.lock"),
                GATE_CPUS=cpu, PRELOCK_CPU=cpu, PRELOCK_NICE="0", PY=str(py),
                HOSTPY=sys.executable, GATE_CACHE=str(tmp / "cache"), STUB_LOG=str(tmp / "calls"),
                CROSSREV_SETS="kinds")
@@ -654,7 +690,7 @@ def gate(world):
 
 
 def run_gate(world, out, **extra):
-    env = dict(world["envs"], **extra)
+    env = clean_env(world["envs"], extra)
     (world["tmp"] / "calls").write_text("")
     done = subprocess.run(["bash", str(GATE), str(world["head"]), str(world["base"]), str(out)],
                           env=env, capture_output=True, text=True, timeout=120)
@@ -742,7 +778,7 @@ def test_a_used_out_is_refused_and_left_as_it_was(gate):
     (out / "done").write_text("0\n")
     (out / "locked.done").write_text("0\n")  # A stale verdict must never be reported again.
     done = subprocess.run(["bash", str(GATE), str(gate["head"]), str(gate["base"]), str(out)],
-                          env=gate["envs"], capture_output=True, text=True, timeout=60)
+                          env=clean_env(gate["envs"]), capture_output=True, text=True, timeout=60)
     assert done.returncode == 2 and "was used before" in done.stderr
     assert sorted(p.name for p in out.iterdir()) == ["done", "locked.done"]
 
@@ -754,7 +790,7 @@ def test_a_killed_flock_runs_nothing_under_the_lock(gate):
     with open(lock, "w") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
         run = subprocess.Popen(["bash", str(GATE), str(gate["head"]), str(gate["base"]), str(out)],
-                               env=dict(gate["envs"], PRELOCK="lane"), start_new_session=True)
+                               env=clean_env(gate["envs"], PRELOCK="lane"), start_new_session=True)
         try:
             os.kill(flock_child(run.pid, lock), signal.SIGTERM)
             code = run.wait(timeout=60)
@@ -836,7 +872,7 @@ def run_stack(stack, heads, name="out", **extra):
     decl.write_text(json.dumps({"main": "main", "heads": heads}))
     (stack["tmp"] / "calls").write_text("")
     done = subprocess.run(["bash", str(STACK), str(decl), str(out)], capture_output=True,
-                          text=True, timeout=300, env=dict(stack["envs"], **extra))
+                          text=True, timeout=300, env=clean_env(stack["envs"], extra))
     calls = (stack["tmp"] / "calls").read_text().splitlines()
     return done.returncode, calls, out, json.loads((out / "stack.json").read_text())
 
@@ -1066,7 +1102,7 @@ def scope_map(tmp_path_factory):
                           "tests/test_tiers.json", "--tier", "1", "2", "--out", str(tmp / "run"),
                           "--cpus", cpu, "--cap", "120", "--scope-map", str(tmp / "run" / "scope")],
                          cwd=snap, capture_output=True, text=True, timeout=300,
-                         env=dict(os.environ, PYTHONPATH=str(snap / "src")))
+                         env=clean_env(PYTHONPATH=str(snap / "src")))
     assert run.returncode == 0, run.stdout + run.stderr
     return {"tmp": tmp, "snap": snap, "doc": scope.build(tmp / "run", snap, sys.executable)}
 
@@ -1126,7 +1162,7 @@ def test_a_planted_read_of_a_repository_file_pulls_its_test_in(scope_map, tmp_pa
     subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", "run", "--tiers",
                     "tests/test_tiers.json", "--tier", "1", "--out", str(tmp_path / "run"), "--cpus", cpu,
                     "--scope-map", str(tmp_path / "run" / "scope")], cwd=snap, check=True,
-                   capture_output=True, timeout=300, env=dict(os.environ, PYTHONPATH=str(snap / "src")))
+                   capture_output=True, timeout=300, env=clean_env(PYTHONPATH=str(snap / "src")))
     doc = scope.build(tmp_path / "run", snap, sys.executable)
     head = scope_snapshot(tmp_path / "head2", dict(planted, **changed), rev="h" * 40)
     after = scope.select(head, snap, doc, "tests/test_tiers.json", "none")[1]["files"]
@@ -1184,7 +1220,7 @@ def test_the_recorder_keeps_what_os_supports_says_of_its_wrappers(tmp_path):
             " os.lstat in os.supports_dir_fd, shutil.rmtree.avoids_symlink_attacks)")
     seen = []
     for on in (False, True):
-        env = dict(os.environ, PYTHONPATH=str(GATES / "scope_inject"))
+        env = clean_env(PYTHONPATH=str(GATES / "scope_inject"))
         if on:
             env.update(CELLS_SCOPE_LOG=str(tmp_path / "log"), CELLS_SCOPE_ROOT=str(tmp_path))
         seen.append(subprocess.run([sys.executable, "-B", "-c", code], env=env, capture_output=True,
@@ -1222,7 +1258,7 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
     cache, cpu = tmp_path / "cache", str(sorted(os.sched_getaffinity(0))[0])
     cache.mkdir()
     (cache / "scope-map.json").write_text("{\"kind\": \"the last passing map\"}\n")
-    env = dict(os.environ, GATE_CACHE=str(cache), PY=sys.executable, HOSTPY=sys.executable,
+    env = clean_env(GATE_CACHE=str(cache), PY=sys.executable, HOSTPY=sys.executable,
                PRE_CPU=cpu, CPUS_A=cpu, CPUS_B=cpu, LOCK_A=str(tmp_path / "a.lock"),
                LOCK_B=str(tmp_path / "b.lock"), POLL="1", WAIT_FREE="60")
     with open(tmp_path / "a.lock", "w") as held:
@@ -1259,3 +1295,47 @@ def test_a_gate_with_a_selection_runs_only_its_files_and_may_drop_crossrev_and_g
     assert sorted(r["file"] for r in subset["tiers"]["1"]) == sorted(steps.GUARDS)
     code, calls, log = run_gate(gate, gate["tmp"] / "out2", SELECT=str(gate["tmp"] / "absent.json"))
     assert code == 0 and "selection not used (exit 3)" in log and "tiers: the selection" not in log
+
+
+# ------------------------------------------------------------------------------------- hermetic
+
+OUTER = {"ADDITIONS_FROM": "tests/unit/test_gates_gate.py", "LANE": "A", "TIERS": "tests/absent.json",
+         "REMOVED_OK_FILE": "/absent/removed-ok.txt", "CROSSREV_EXPECTED": "/absent/expected.txt",
+         "CHECKS": "g1", "PRELOCK_ONLY": "1", "SELECT": "auto", "BASE_S": "/absent/base",
+         "GIT_DIR": "/absent/repo.git"}
+
+
+@pytest.mark.parametrize("tool", ["gate", "stack"])
+def test_the_outer_environment_never_reaches_a_tests_gate_or_stack(stack, monkeypatch, tool):
+    """A landing gate runs this file with its own ADDITIONS_FROM, LANE and the rest (T66): planted
+    in this process's environment after the fixtures, each is ignored. Undropped, ADDITIONS_FROM
+    names a file the synthetic head lacks (preflight refuses), PRELOCK_ONLY stops before the lock,
+    TIERS and CHECKS are refused, BASE_S is not main and GIT_DIR moves every git call."""
+    h1 = add_head(stack, "h1", H1) if tool == "stack" else None
+    for name, value in OUTER.items():
+        monkeypatch.setenv(name, value)
+    if tool == "gate":
+        code, calls, log = run_gate(stack, stack["tmp"] / "out")
+        declared = "additions from none; removals listed in none; "
+    else:  # stack.sh sets the union of the heads' declarations itself.
+        code, calls, out, doc = run_stack(stack, [
+            {"name": "h1", "rev": h1, "additions_from": ["tests/unit/test_h1.py"]}])
+        log = (out / "gate" / "gate.log").read_text()
+        assert doc["verdict"] == "passed", (out / "stack.log").read_text()
+        declared = f"additions from tests/unit/test_h1.py; removals listed in {out}/decl-1/removed-ok.txt; "
+    assert code == 0 and "lock held" in log and "g1 compare" in calls, log
+    assert "; lane custom, " in log and "; tiers tests/test_tiers.json; " in log
+    assert declared + "crossrev differences declared in none; " in log
+    assert "; checks crossrev tiers g1; selection off; " in log
+
+
+def test_every_variable_the_tools_read_is_dropped_from_the_tests():
+    bash = re.compile(r"\$\{([A-Z][A-Z0-9_]*)(?::?[-+?=])")  # ${NAME:-...}, ${NAME-...}, ${NAME:?...}
+    py = re.compile(r"(?:environ|env)(?:\.get\(|\[)\s*[\"']([A-Z][A-Z0-9_]*)[\"']")
+    read = set()
+    for name in ("gate.sh", "stack.sh", "nightly_tiers.sh"):
+        read |= set(bash.findall((GATES / name).read_text()))
+    for name in ("gate_steps.py", "scope.py", "scope_inject/sitecustomize.py"):
+        read |= set(py.findall((GATES / name).read_text()))
+    assert {"ADDITIONS_FROM", "LANE", "TIERS", "BASE_S", "PRE_CPU", "CELLS_SCOPE_LOG"} <= read
+    assert read - LOCALS <= TOOL_ENV, sorted(read - LOCALS - TOOL_ENV)
