@@ -27,6 +27,9 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   no temperature. Planted: a set row edited after the set was applied, and the world's temperature
   changed, are each refused at the definition; the helper refuses a row whose potential comes from
   elsewhere, and a second set;
+- an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
+  temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
+  3 K warmer is refused, its dG°/RT moved by 1 %;
 - the moieties (B2): a moiety naming no row is refused; the ATP-driven law's fuel mode conserves
   phosphorus and adenine, and §7.3's planted error, the same mode with Pi +2, is refused naming the
   moiety, as is an entry with Pi +2.
@@ -50,7 +53,7 @@ from cells.laws.cycles import forms
 from cells.operators.species_reactions import LocalSpeciesReactions
 from cells.registry import laws as law_registry
 from cells.registry import species_registry
-from cells.registry.kind_registry import FreeEnergyEntry
+from cells.registry.kind_registry import TEMPERATURE_INDEPENDENT, FreeEnergyEntry
 from tests.unit import test_cycle_forms as tf
 from tests.unit import test_cycle_kind as ck
 from tests.unit import test_kinds_lifecycle_declarations as kl
@@ -337,6 +340,28 @@ def an_entry_off_by_one(monkeypatch):
     return with_moieties(pump_world(), PHOSPHORUS), kind_scope((planted,))
 
 
+def in_kJ(temperature_K):
+    """The honest pump entry given in kJ/mol at the world's declared temperature (F's kJ form,
+    TEMPERATURE_INDEPENDENT): dG°/RT x R T / 1000, R laws/electrochemistry's."""
+    honest = entry()
+    value = honest.dG_RT * GAS * temperature_K / 1000.0
+    return honest._replace(dG_RT=None, dG_kJ_mol=value, dG_basis=TEMPERATURE_INDEPENDENT)
+
+
+def a_kJ_entry(monkeypatch):
+    raw = pump_world()
+    return raw, kind_scope((in_kJ(raw["model"]["temperature_K"]),))
+
+
+def a_kJ_entry_at_another_temperature(monkeypatch):
+    """The same kJ entry, the world 3 K warmer: converted at the world's temperature, its dG°/RT
+    moves by 1 %, far beyond the form's band, so the conversion is shown to read it."""
+    raw = pump_world()
+    planted = in_kJ(raw["model"]["temperature_K"])
+    raw["model"]["temperature_K"] += 3.0
+    return raw, kind_scope((planted,))
+
+
 def an_entry_naming_water(monkeypatch):
     planted = entry()._replace(stoichiometry=(*HYDROLYSIS, ("H2O", -1)))
     return pump_world(), kind_scope((planted,))
@@ -405,6 +430,12 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
         a_fuel_mode_off_by_one,
         r"Kind cells\.transporter@1's move under seamtest\.atp_pi_off_by_one@1, mode cycle: it "
         r"changes moiety phosphorus by \+1 per turnover",
+    ),
+    "an entry in kJ/mol at the world's temperature": (a_kJ_entry, None),
+    "an entry in kJ/mol at another temperature": (
+        a_kJ_entry_at_another_temperature,
+        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
+        r"313\.0 K\) .* beyond its law's form's band",
     ),
     "an entry with Pi off by one": (
         an_entry_off_by_one,

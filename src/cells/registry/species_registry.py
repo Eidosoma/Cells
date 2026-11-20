@@ -85,6 +85,10 @@ than its band, naming the declarer and the entry:
 * any other entry (one that names no law, or a law whose form gives no band) takes
   check_potentials' rounding: POTENTIAL_ULPS ulps of sum |nu mu°/RT| + |dG°/RT| + |(sum nu)
   ln(c0_registry / c0)|, to which a species' potential at nu = 1 reduces.
+An entry may give dG° in kJ/mol with its basis instead (F's FreeEnergyEntry, D234's option (b)): a
+law writes no temperature, so the registry converts it at the world's, dG°/RT = 1000 dG° / (R T)
+with R laws/electrochemistry's (the one conversion; TEMPERATURE_INDEPENDENT is today's one basis),
+and the entry's band gains one ulp of the converted value, the conversion's own rounding.
 The residual is evaluated at FREE_ENERGY_DIGITS digits from the declared doubles, so its verdict
 does not depend on the order of its terms. An entry naming a species that is not a row of the model
 is refused: water, at unit activity, is omitted, never named. An entry with a row the registry gives
@@ -673,10 +677,13 @@ def check_free_energies(spec):
     band, naming the declarer and the entry (module docstring). The band of an entry naming a
     cycle law whose form gives one is that form's for its mode: Wegscheider's B_W plus one ulp of
     the mode's implied dG°/RT, the entry's one rounding, so every law Wegscheider's condition
-    admits, this check admits. Any other entry's is check_potentials' rounding. Every declared
-    entry is read through F's checks, in a world without a registry too; an entry with a species
-    the registry gives no potential is not compared."""
-    rows = set(_inner_model(spec).species_ids)
+    admits, this check admits. Any other entry's is check_potentials' rounding. An entry in kJ/mol
+    is converted first, dG°/RT = 1000 dG° / (R T) at the model's temperature (its basis,
+    TEMPERATURE_INDEPENDENT, the one today), and its band gains one ulp of that value, the
+    conversion's own rounding. Every declared entry is read through F's checks, in a world without
+    a registry too; an entry with a species the registry gives no potential is not compared."""
+    model = _inner_model(spec)
+    rows = set(model.species_ids)
     for where, entries in declared_free_energies(spec):
         for index, entry in enumerate(entries):
             at = f"{where}, entry {index}"
@@ -697,24 +704,41 @@ def check_free_energies(spec):
             )
             with localcontext() as ctx:
                 ctx.prec = FREE_ENERGY_DIGITS
+                dg_rt, given = _entry_dG_RT(entry, model.temperature_K, at, law)
                 net = sum(Decimal(nu) for nu, _ in terms)
                 shift = net * (Decimal(c0_registry).ln() - Decimal(entry.c0).ln())
                 registry_sum = sum(Decimal(nu) * Decimal(mu) for nu, mu in terms)
-                converted = Decimal(entry.dG_RT) + shift
+                converted = dg_rt + shift
                 residual = converted - registry_sum
                 band, source = _law_band(entry, terms, c0_registry, at), "its law's form's band"
                 if band is None:
                     magnitude = sum(abs(Decimal(nu) * Decimal(mu)) for nu, mu in terms)
-                    magnitude += abs(Decimal(entry.dG_RT)) + abs(shift)
+                    magnitude += abs(dg_rt) + abs(shift)
                     band, source = POTENTIAL_ULPS * Decimal(EPS) * magnitude, "the rounding bound"
+                if entry.dG_kJ_mol is not None:  # The conversion's own rounding.
+                    band += Decimal(math.ulp(float(dg_rt)))
                 if abs(residual) <= band:
                     continue
             raise ConfigError(
-                f"{at}{law}: dG°/RT {entry.dG_RT!r} at {entry.c0!r} mM is {float(converted)!r} at "
-                f"the registry's {c0_registry!r} mM, where the species registry's sum of nu "
-                f"mu°/RT gives {float(registry_sum)!r}: {float(residual):.3e} apart, beyond "
-                f"{source} {float(band):.3e}: one authority for each standard free energy"
+                f"{at}{law}: {given} at {entry.c0!r} mM is {float(converted)!r} at the registry's "
+                f"{c0_registry!r} mM, where the species registry's sum of nu mu°/RT gives "
+                f"{float(registry_sum)!r}: {float(residual):.3e} apart, beyond {source} "
+                f"{float(band):.3e}: one authority for each standard free energy"
             )
+
+
+def _entry_dG_RT(entry, temperature_K, at, law):
+    """(dG°/RT as a Decimal, its words for a refusal) of a free-energy entry: its dG_RT, or its
+    dG_kJ_mol converted at the model's temperature, 1000 dG° / (R T), R laws/electrochemistry's.
+    A basis this conversion does not know is refused (F's reader admits only DG_BASES')."""
+    from cells.registry.kind_registry import TEMPERATURE_INDEPENDENT
+
+    if entry.dG_kJ_mol is None:
+        return Decimal(entry.dG_RT), f"dG°/RT {entry.dG_RT!r}"
+    if entry.dG_basis != TEMPERATURE_INDEPENDENT:
+        raise ConfigError(f"{at}{law}: the registry converts no dG_basis {entry.dG_basis!r}")
+    value = Decimal(entry.dG_kJ_mol) * 1000 / (_gas_constant() * Decimal(temperature_K))
+    return value, f"dG° {entry.dG_kJ_mol!r} kJ/mol (dG°/RT {float(value)!r} at {temperature_K!r} K)"
 
 
 # ------------------------------------------------------------------ named potential sets (B1)
