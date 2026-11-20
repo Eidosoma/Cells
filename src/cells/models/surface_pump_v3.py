@@ -1538,15 +1538,15 @@ def implicit_route_heat(drift, stage, weights, potential, p, *, xp=jnp, kinds=()
 
 def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), structure=None):
     """(N2's ConductanceWeights frozen for the step, the prediction's validity), from the step's
-    start (`start`: readouts at the state) at the tableau's operator time where that is stable:
+    start (`start`: readouts at the state) at the tableau's operator time, as the face weights:
     - the amounts advanced over operator_time x dt by the start derivative, the face weights'
-      prediction, here for cells too (a step's charge moves a tiny fraction of an amount);
-    - the channel gates by their exponential update over that time at the start kinetics;
-    - the junction gates likewise, at the start's junction voltages (their law's relaxation);
-    - the node potentials of the start itself. The charge mode is the stiff one N2 puts in the
-      operator, so an explicit prediction of it would overshoot at the steps N2 is for. The
-      split's order does not depend on where its slopes are frozen.
-    The prediction must keep every concentration positive and every slope finite."""
+      prediction, here for cells too;
+    - the channel gates by their exponential update over that time at the start kinetics, and the
+      junction gates likewise at the start's junction voltages (their law's relaxation), so a fast
+      gate is never carried past its target;
+    - the node potentials the field gives the predicted amounts' charges.
+    The prediction must keep every concentration positive, its field finite and converged, and
+    every slope finite."""
     state, derivative, potential = start.state, start.values.derivative, start.potential
     theta = p.imex_operator_time * dt
     gate = gates.advance(
@@ -1576,7 +1576,20 @@ def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), struc
     ci, co = physical_amounts(read, p)
     valid = valid & xp.all(xp.where(p.active, xp.isfinite(ci) & (ci > 0), True))
     valid = valid & xp.all(xp.where(p.outside_active, xp.isfinite(co) & (co > 0), True))
-    weights = conductance_weights(ahead, read, potential, control, p, xp=xp, structure=structure)
+    from cells.execution.schedule import SurfaceControl
+
+    values = _field_values(
+        ahead,
+        read,
+        SurfaceControl(control.membrane, control.junction * ahead.junction_gate),
+        p,
+        xp=xp,
+    )
+    ahead_potential = values.potential_V
+    valid = valid & xp.all(xp.isfinite(ahead_potential)) & values.converged
+    weights = conductance_weights(
+        ahead, read, ahead_potential, control, p, xp=xp, structure=structure
+    )
     for value in weights:
         valid = valid & xp.all(xp.isfinite(value))
     return weights, valid
