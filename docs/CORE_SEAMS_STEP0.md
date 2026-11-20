@@ -1702,3 +1702,40 @@ at 1.5 × 10⁴ /s, with the lumen at the bath's composition.
 - **So the third of §9.2's host-P costs shrinks to that untested case.** The other two stand: the
   closure rows across the face (§9.2's options), and the face's step bound (rung 0.108 here; about
   18 µs at the source's p_Pi, by the @3 owner's reading of Eq. 13).
+
+### 9.5 The fix's evidence: the closure's booked term from increments (264bca94)
+
+**Criterion (20 November 2026), written and committed before the run.** The binding owner built
+the fix that §9.4 preferred, on branch `core-pass-binding-x2floor` at 264bca94.
+- **What it changes:** the general closure's ledger term (`proton_buffer.ledger_terms`) is now
+  formed from increments by `rapid_binding.booked_change_pJ`, with the start's free ligands in a new
+  layout field, `binding_initial_u`.
+- **What it leaves alone:** the read, the solve, every state, and version 1's buffer.
+- The lead asks the @3 owner for its evidence.
+
+**Source.**
+- Clean snapshots of 264bca94, and of its parent d9342fcf as the baseline. The baseline isolates
+  the fix from main's other changes since e8e1c973.
+- §9.3's scripts are used unchanged (`diag_split.py`, `p1p_probe.py` and their imports, at their
+  recorded hashes).
+
+**Runs, each on both snapshots:**
+1. §9.3's split on (P-b) at rung 0.01, from the same start: per-step s and e, R's median |e|, X2's
+   count threshold, and the split's sum against R.
+2. The control: the same at 5 µV, where the floor was 8.0 × 10⁻¹³ pJ.
+3. X2 itself: (P-b) at rung 0.01 in reading (b), with the probe's registered configuration (cap
+   2 × 10⁻³, device row checks).
+
+**The reading.**
+- **The fix removes the floor** if, on 264bca94, R's median |e| on (P-b) is at most 10 eps M (M at
+  its median), a hundredfold under the count threshold. The baseline is expected to keep the floor,
+  about 9 × 10⁻¹³ pJ, near 4 × 10⁴ eps M.
+- **X2's order condition holds as registered** if run 3 is admitted on 264bca94. If X2 refuses it,
+  the condition is named.
+- **The states are unchanged** if, between the two snapshots, every term but the closure's stored
+  term has the same per-step d within 10⁻¹⁸ pJ, at every step.
+- **The control is information.** Its median |e| is reported against eps M and against
+  8.0 × 10⁻¹³ pJ. Its signal is about 10⁻¹⁹ pJ, and §9.4 found a residual near 800 eps M at a
+  thousandth of the binders.
+
+**How it runs:** one detached unit on a light CPU at nice 10, with the scripts' hashes in its log.
