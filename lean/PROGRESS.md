@@ -1,5 +1,160 @@
 # Cells proof comparisons
 
+## 19 November 2026 · Potassium and anion cotransport
+
+**Engine finding for the operators owner.** The `k_anion_symport_mass_action@1` step-size check can admit a step that transports both ions in the wrong direction. The normal CPU float64 runner for `resolved_pump_composite@1` completed a 10 ms step with 2.141 × 10⁻⁶ fmol **inward**. The exact trajectory gives 0.867 × 10⁻⁶ fmol **outward**. The reported global material and charge errors were both zero. [Reproducer](checks/potassium_anion_symport.py) · [Operator step check](../src/cells/operators/k_anion_symport.py#L252) · [Proof](CellsProofs/Transport/PotassiumAnionSymport.lean)
+
+The fixture has one cell and one finite outside compartment, each 1 pL, with water and other membrane transfers disabled. One cycle moves one K⁺ and one monovalent anion. The inside concentrations were 4 and 4 mM. The outside concentrations were 128 and 0.125 − 2⁻²⁰ mM. The capacity was 2.5 fmol/(s mM²), availability was one, and the cell was at its set volume. These inputs test the integration near equilibrium. [World definition](checks/potassium_anion_symport.py#L65)
+
+For equal fixed volumes, let D be the initial inside product minus the outside product, S the sum of **all four** starting concentrations, V the common volume and k the active rate scale. The outward extent is V(D/S)(1 − exp(−λt)), with λ = kS/V. The engine bounds the rate using the inside concentration sum and the largest allowed volume factor. In this example it obtained h × bound = 0.221, below the limit of 1, while hλ = 3.403. On this linear problem the explicit ARS(2,2,2) stages give hJ₀(1 − hλ/2), which reverses sign when hλ exceeds 2. The correction belongs in the step-size bound for finite outside compartments. The proof also gives the dependence on each volume when the two volumes differ. [Rate used in the bound](../src/cells/operators/k_anion_symport.py#L152) · [Tableau](../src/cells/numerics/surface_imex.py#L52) · [Applied transfer and heat](../src/cells/models/surface_pump_v3.py#L1436)
+
+| Steps over the same 10 ms | Booked outward transfer (fmol) | Exact outward transfer (fmol) |
+| ---: | ---: | ---: |
+| 1 | −2.1409988 × 10⁻⁶ | +8.6691746 × 10⁻⁷ |
+| 32 | +8.6670944 × 10⁻⁷ | +8.6691746 × 10⁻⁷ |
+| 64 | +8.6686762 × 10⁻⁷ | +8.6691746 × 10⁻⁷ |
+
+The 32- and 64-step runs converged with an error reduction of 4.17. An ordinary 20-step world agreed with the independent tableau calculation, and 27 component cases agreed with the 60-digit rate, affinity, activation and heat calculations. A separate **component-only** check found overflow in the concentration-product quotient. With 16 mM for both inside ions and 2⁻⁵¹⁰ mM for both outside ions, both products are normal float64 numbers. The domain check accepts them, but the kernel returns infinite affinity and heat. The reference gives 1.83660 × 10⁶ J/mol and 4701.69 pJ/s. The scale of this second case is far outside physiological concentrations. [Range check](checks/potassium_anion_symport.py#L44) · [Kernel](../src/cells/laws/routes/k_anion_symport.py#L79)
+
+**Biological measurements.** Search checked the original erythrocyte studies. In rabbit red cells the measured outward K:Cl flux ratio was 1.12 ± 0.26 (SD, five preparations), consistent with the 1:1 booking. In sheep red cells with pH and volume clamped, normalized reversal versus chloride ratio had fitted slopes of 1.12 and 1.08 at normal and low internal magnesium. Cells predicts 1. The study used Rb for inward flux and reported no uncertainty for the slopes. Earlier swollen sheep cells gave apparent reversal near 24 mM external Rb at 37 °C, against about 12 mM from equal products. That assay used chloride medium without a chloride-minus-nitrate subtraction, leaving the contribution of other K fluxes unresolved. Human red-cell swelling measurements used one-way K influx and leave the instantaneous exponential law for net flux open. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/) · [Lauf and Adragna, Fig. 8](https://pmc.ncbi.nlm.nih.gov/articles/PMC2229324/) · [Reversal data](checks/data/lauf1996_kcc_reversal.json) · [Delpire and Lauf, Fig. 4](https://pmc.ncbi.nlm.nih.gov/articles/PMC2216477/) · [Kaji, Fig. 1 and Table I](https://pmc.ncbi.nlm.nih.gov/articles/PMC2228857/)
+
+```json
+{
+  "engine_revision": "d6532edeb1bb06127ddf398adb23ab41b2f396c7",
+  "model": "resolved_pump_composite@1", "operator": "k_anion_symport_mass_action@1",
+  "backend": "cpu", "dtype": "float64", "component_cases": 27,
+  "near_stall_steps": [1, 32, 64], "duration_s": 0.01,
+  "reference_outward_fmol": 8.669174564376788e-7,
+  "booked_outward_fmol": [-2.140998803980456e-6, 8.667094436883358e-7, 8.668676212784617e-7],
+  "full_exit": 1, "controls_only_exit": 0
+}
+```
+
+## 19 November 2026 · Law and evidence review
+
+We rebuilt all 22 Cells Lean modules from source into an empty output directory using the pinned Lean 4.19.0 compiler and compiled Mathlib dependencies. All 153 distinct theorems named in the register resolved in their declared modules. Lean reported only `propext`, `Classical.choice` and `Quot.sound` as transitive axioms. The optional `grn-lean` Hill proofs and ATOMS Lab dimensional check also compiled. The live inventory contains 30 laws and 24 operators. Direct claims cover all 30 laws and three operators. Each claim gives the property and assumptions that were proved. [Claim register](claims.json) · [Registry coverage](COVERAGE.md) · [Theorem check](scripts/CheckClaims.lean)
+
+The 20 registered engine comparisons ran on CPU float64 with `resolved_pump_tissue@3`, `resolved_pump_composite@1` and both versions of `cells.assembly_lineages` (1 and 2). Sixteen passed. All four recorded failures reproduced, with the following outcomes.
+
+| Comparison | Result on this engine revision |
+| --- | --- |
+| [Membrane insertion](checks/membrane_insertion.py) | Both versions rejected a valid step with expected heat 0.0516031 pJ. Substituting the one-patch heat alone still failed. Substituting both heat and image charge completed the step. |
+| [GARD catalysis](checks/gard_catalysis.py) | Two extreme catalyst ratios broke forward/reverse agreement. The ledger refused both steps. |
+| [Transition-state catalysis](checks/assembly_kinetics.py) | The two correct rates were 2.06115 s⁻¹. Both computed rates were zero, and the world reported inert with zero events. |
+| [Inward rectification](checks/inward_rectifier.py) | An equivalent conductance normalization produced a finite reference current of 0.552053 pA. The engine refused it at initialization. |
+
+The separate BIO-002 reference calculation reproduced the +3.41 mV held-out C3 error and its not-assessable biological verdict. All 170 comparison links resolved to files and, where specified, lines or headings at their recorded revisions. [BIO-002 reference](../reports/BIO002_CONDITIONED_VOLTAGE.md) · [Comparison drivers and pinned records](claims.json)
+
+Search independently checked all six measurement files in `checks/data/`, the priority channel comparisons and the PGI worksheet, and spot-checked the pump and RPTEC results. The evidence corrections below preserve the existing biological verdicts.
+
+- Coady used sodium steps of 96 to 48 and 48 to 24 mM, each paired with a substrate change from 1 to 0.5 mM. The revised driver gives an isolated shift ratio of 2 for each pair. The whole-oocyte means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. In the separate Gopal series, observed charge exceeded the prediction for all four human points by about 65–85 pmol. [Coady, Fig. 4](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/) · [Gopal, Fig. 9A](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819709016-gr9.jpg) · [Revised comparison](checks/sodium_anion_symport.py#L105)
+- The Shaw fits reproduced across 23 distinct printed compositions. The Parker crystal onset lies 20.4 percentage points above Shaw’s highest composition. Parker gives 23 °C for equilibration before fluorescence measurements. The temperature for the microscopy endpoint is unspecified. [Shaw, Table S1](https://ars.els-cdn.com/content/image/1-s2.0-S0006349523001017-mmc1.pdf) · [Parker, Methods and Fig. 3](https://www.phys.ttu.edu/~huang24/Amanda.pdf)
+- The Kir4.1 inward-conductance fit and matched-drive currents come from the same patch series. The Shon two- and three-partner classes were withheld from our one-partner fit within one experiment. The PGI worksheet reports soluble-pool concentrations in mM, while the proof concerns amounts. [Kir4.1 comparison](claims/inward-rectifier.md) · [Confined-binding comparison](claims/assembly-stochastic-encounter.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md)
+
+```json
+{
+  "engine_revision": "e01fa24bb315b641bb17b43fdd82d9a5086039c4",
+  "registered_engine_drivers": 20, "passed": 16,
+  "failed": ["membrane-insertion", "gard-catalysis", "assembly-kinetics", "inward-rectifier"],
+  "reference_drivers_passed": 1, "registered_theorems": 153,
+  "smct1_sodium_pairs_mM": [[96, 48], [48, 24]],
+  "smct1_isolated_shift_ratios": [1.9999999999999956, 1.999999999999998]
+}
+```
+
+## 19 November 2026 · Inward rectification and sodium-anion symport
+
+Both comparisons run `resolved_pump_tissue@3`. The inward rectifier reverses at the monovalent Nernst potential. With driving voltage u = V − E and positive conductance, the current has the sign of u and releases heat Iu ≥ 0. The host bounds the **magnitude** of the current’s voltage derivative when choosing a step. Lean derives that derivative and proves the host’s voltage-free bound for every voltage. Writing w = (u − V½)/s, the logistic fraction q satisfies |w| q(1 − q) ≤ ¼. This yields the bound G(5/4 + |V½|/(4s)), where G includes area and opening. [Rectifier proofs](CellsProofs/Transport/InwardRectifier.lean) · [Engine current and stage bound](../src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L75)
+
+**Engine finding for the lead.** A change of reference concentration can make a valid potassium route fail the initial domain check. Multiplying its reference conductance by b and its reference concentration by b² preserves the entire current–voltage curve. The same tissue patch had 140 mM potassium inside and 5 mM outside in all three cases below. At 0 mV, the 60-digit calculation gave the same outward current, **0.5520533 pA**, each time. The last declaration uses extreme, finite reference coefficients. The engine forms 5/Kref before taking its square root, so that intermediate overflows. With these inputs, taking the two square roots before division gives the finite effective conductance. [Proof of reference invariance](CellsProofs/Transport/InwardRectifier.lean) · [Reproducer](checks/inward_rectifier.py#L79) · [Engine evaluation](../src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L71) · [Initial domain check](../src/cells/models/surface_pump_v3.py#L1558)
+
+| Reference conductance (S/m²) | Reference K (mM) | Compiled 1 ms tissue run |
+| ---: | ---: | --- |
+| 1 | 4 | Outward transfer 5.682053 × 10⁻⁶ fmol, heat 4.728381 × 10⁻⁵ pJ |
+| 2⁻⁸ | 4 × 2⁻¹⁶ | Same transfer and heat, bit for bit |
+| 2⁻⁵¹² | 2⁻¹⁰²² | Refused during definition validation |
+
+The compiled CPU law agreed with a 60-digit reference for current, inward flux, heat and the slope magnitude over 360 ordinary states. The reference obtained the derivative with dual numbers. The largest error divided by the respective unrectified physical scale was 6.47 × 10⁻¹⁶ or less. The voltage-free bound covered all 360 states, including 64 with negative differential conductance. [Comparison and scales](checks/inward_rectifier.py#L20) · [Independent derivative arithmetic](../validation/core_seams/references/exact.py#L88)
+
+**Kir4.1 measurements.** For cloned rat Kir4.1 channels in HEK293T cells at about 25 °C, lowering external potassium from 153 to 15 mM shifted reversal by approximately −60 mV. Cells predicted −59.67 mV. The authors fitted a 0.51 concentration exponent to the *inward slope conductance*. To test current at the *same driving voltage*, we read each reversal from Fig. 4C, moved 60 mV below it, and interpolated the current in Fig. 4B(b). Only the 153 mM current set the scale. At fixed drive, every choice of the same logistic parameters and availability predicts the square-root ratio. Cells underestimated the inward current magnitude at all four lower concentrations. The figure gives means of three patches with no numerical uncertainties for these points. [Tada et al., Fig. 4B–D](https://www.jstage.jst.go.jp/article/jjphysiol/48/1/48_1_71/_pdf/-char/ja#page=6) · [Figure readings and assumptions](checks/data/tada1998_kir41.json)
+
+| External K (mM) | Current read from figure (pA) | Cells at V − E = −60 mV (pA) |
+| ---: | ---: | ---: |
+| 15 | −0.59 | −0.385 |
+| 21 | −0.80 | −0.456 |
+| 35 | −1.04 | −0.588 |
+| 63 | −1.16 | −0.789 |
+| 153 | −1.23 | −1.230 (calibration) |
+
+**Sodium–anion symport.** Each forward cycle carries n sodium ions and one monovalent anion from P to N. This moves n − 1 positive charges and n + 1 particles. With n = 1 the rate is independent of voltage. With n > 1 an enabled carrier imports below its unique stall voltage and exports above it. Capacity and the two source-side Hill factors set the rate scale. The proof reuses the factored transporter rate and gives a direct experimental observable. Halving external sodium shifts the carrier’s stall voltage n times as far as halving the substrate at fixed internal concentrations. A common nonzero conductance weighting cancels from the ratio. [Symport proofs](CellsProofs/Transport/SodiumAnionSymport.lean) · [Cycle declaration](../src/cells/laws/cycles/na_anion_symport_factored.py#L42) · [Host rate evaluation](../src/cells/kinds/transporter.py#L1407)
+
+The host comparison covered all four admitted sodium counts, both orientations, three availabilities and five voltages. Against independent 60-digit calculations, all 120 stages agreed on free energy, saturation, one-way and net rates, and heat. Twelve active cases were at their predicted stall. The maximum error was 0.220 of one estimated roundoff floor, with an acceptance limit of 64 floors. A compiled two-step run transported 8.621772 × 10⁻⁵ fmol lactate, equal to its cycle total, with zero reported global charge error. [Host comparison](checks/sodium_anion_symport.py) · [Rate tolerance](../validation/core_seams/references/design.py#L39)
+
+**SMCT1 measurements.** The Cells declaration cites Coady et al. for n = 2 in human SMCT1. In that study the measured net charge per lactate was 1.04 ± 0.07, compared with 1 from the host’s transported rows. Independent volume/current measurements gave 3.1 ± 0.1 osmolytes per charge, compared with 3. The ratios of zero-current shifts after sodium and substrate halving were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate (means ± SE, 11 and 7 oocytes). The model predicted 2. Its **isolated** voltage shifts at 24 °C were −35.50 and −17.75 mV. The measured whole-oocyte shifts also depend on other conductances, including an anion leak. The absolute stall, Hill constants and turnover rates remain open experimentally. [Coady et al., Figs. 1, 2 and 4–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/) · [Observables and protocol](checks/data/coady2007_smct1.json) · [Computed shifts](checks/sodium_anion_symport.py#L105)
+
+Gopal et al. provide a separate laboratory’s charge and lactate measurements. For the four human SMCT1 points in Fig. 9A, uptake was approximately 225, 285, 300 and 370 pmol. With n = 2 those numbers also give the predicted pmol of net positive charge. The measured charges were about 290, 360, 385 and 450 pmol. These retrospective figure readings are rounded to 5 pmol. Individual errors are unavailable. [Gopal et al., Fig. 9A](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819709016-gr9.jpg) · [Paired readings](checks/data/gopal2004_lactate.json)
+
+```json
+{
+  "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+  "model": "resolved_pump_tissue@3", "backend": "cpu", "dtype": "float64",
+  "rectifier": {"states": 360, "negative_slopes": 64, "max_scaled_error": 6.462348535570529e-16,
+    "scale_exponents": [0, -8, -512], "admitted": [true, true, false],
+    "reference_current_A": 5.52053308618338e-13},
+  "symport": {"states": 120, "active_stalls": 12, "max_error_in_roundoff_floors": 0.21907374518353304,
+    "isolated_shift_mV": [-35.49801595309584, -17.749007976547958],
+    "cycles_fmol": 8.621772032950217e-05, "global_charge_error_C": 0}
+}
+```
+
+All 22 public theorems compiled with only `propext`, `Classical.choice` and `Quot.sound`. The full rectifier comparison reproduced the refusal in 21.97 s and returned status 1. Its controls passed in 33.58 s. The symport comparison passed in 18.66 s. Each used two CPU cores. The nine existing tests for these two laws and the 82 repository guards passed. [Rectifier host tests](../tests/unit/test_inward_rectifier_route.py) · [Symport host tests](../tests/unit/test_na_anion_symport_factored.py)
+
+The live registry now has direct proofs and recorded numerical comparisons for all 30 laws. The rectifier comparison is recorded as failed. Full test discovery returned the same 20,308 IDs and the same five missing-fixture errors before and after the proof checkpoint. All five documentation-generator tests passed. [Coverage register](COVERAGE.md) · [Proof and evidence checkpoint](https://github.com/Eidosoma/Cells/commit/40dfe4de2a04559196bddef7e32c01cffc056e7b)
+
+## 19 November 2026 · Stochastic encounters and transition-state catalysis
+
+In `cells.assembly_lineages@2`, drawing two copies of one molecule with count n gives n(n − 1) ordered choices. For a general reaction the finite-place draws are falling factorials. Lean proves that their log, including the membrane normalization and dilute concentration scales, equals the change of ideal energy less the reactants’ standard potentials. On regular, finite two-way edges, log(forward rate / reverse rate) is the initial free energy minus the final free energy plus held-reservoir work. The proof also covers the cancelled membrane denominator for full consumption under the offset-one measure. If a membrane participant survives on both sides at the singular boundary, the numerator is positive and the denominator is zero. [Lean proofs](CellsProofs/Chemistry/AssemblyKinetics.lean) · [Encounter law](../src/cells/models/assembly_lineages_v2/mass_action.py#L74) · [Mathlib factorial identity](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368)
+
+For catalysis, the common state is the componentwise minimum of the two endpoint counts. A nonempty common membrane has a factor equal to its count-weighted mean of exp(ΔΔG‡), which is strictly positive even for inhibition. An empty common membrane has factor 1. On a positive two-way edge the original rate ratio survives exactly when both directions receive the same multiplier. The same equilibrium weights then satisfy detailed balance. These results allow shared reactants and products. [Factor and rate-ratio proofs](CellsProofs/Chemistry/AssemblyKinetics.lean#L96) · [Engine factor](../src/cells/models/assembly_lineages_v2/transition_state.py#L130)
+
+**Engine finding for the lead.** A valid two-molecule world stops as `inert` with both directions of an enabled reaction at zero. A ⇌ B has equal standard potentials, a base rate of 10⁹ s⁻¹, and one stationary C molecule. A and B have contact energies +20 kBT, C has −20 kBT, all within the declared range. In either direction C is the only common molecule. The exact rate is therefore 10⁹ exp(−20) = **2.0611536224 s⁻¹**. C contributes −1 + exp(−20) to the cached sum. Adding this to the large moving-molecule contribution rounds away exp(−20). Subtracting that moving term gives −1 on the common state, and adding 1 gives zero. The world passes its own balance probe (107 pairs, maximum residual 1.07 × 10⁻¹⁴ kBT). A zero forward rate is skipped by that probe. The 60 s compiled run records zero events and a passing ledger. [Two-state input and clock check](checks/assembly_kinetics.py#L90) · [Cached subtraction](../src/cells/models/assembly_lineages_v2/transition_state.py#L130) · [Balance probe](../src/cells/models/assembly_lineages_v2/balance.py#L87) · [Inert status](../src/cells/models/assembly_lineages_v2/kernel.py#L459)
+
+Absorbing the exact constant factor into the rate gives the identical two-state process on the reachable compositions. This control fires four alternating events, reaching the chosen event limit, with its first at **0.3459699807 s** on the same random draw. Moderate contacts of ±2 kBT also pass. At zero contact energy for the movers, retaining C at −20 kBT restores four events but the rate is still low by 2.00 × 10⁻⁸ relative. The remaining subtraction is in 1 + expm1(−20). A numerical reference for the operator owner is to form the positive weighted mean directly on the remaining integer counts, with weight 1 for unspecified species. [Exact common-state mean](CellsProofs/Chemistry/AssemblyKinetics.lean#L112) · [Reference-rate tolerance](../validation/ool/references/detailed_balance.py#L191)
+
+The ordinary comparison used the 592 registered OL1 states and two additional states with a single remaining inhibitor. Catalysed and bare rates matched the independent reference for both measures, including the zero and singular patterns. Across 1,925 two-way edges, the forward and reverse multipliers agreed with the reference common-state factor within 6.11 × 10⁻¹⁶ in log units. The six-state boundary world checked both orientations of a last leave and a two-copy leave under three token combinations. With extinction enabled those three rates were 0.125, 0.25 and 1 s⁻¹. The kept rule suppressed all three. The full driver exits with status 1 on the two clock discrepancies. [CPU driver](checks/assembly_kinetics.py) · [Independent rates](../validation/ool/references/laws.py#L222) · [Boundary world](../validation/ool/references/designs/ol1_boundary.world.json)
+
+**Biological measurements.** Shon and Cohen measured the probability that one labelled molecule binds a partner in a sealed chamber containing exactly one, two or three partners. We read the experimental bars in Fig. 4f for the 250 nm radius and used the one-partner measurement to set the equilibrium odds. Cells’ pool reaction R + G ⇌ D predicted the other two probabilities from their counts. The Lean result eliminates the unknown chamber volume from this comparison. [Shon and Cohen, Fig. 4f and Table 1](https://cohenweb.rc.fas.harvard.edu/Publications/Shon_Cohen_Dimples_JACS.pdf) · [Measurements and uncertainties](checks/data/shon2012_confined_binding.json) · [Engine comparison](checks/confined_binding.py)
+
+| Available partners | Observed bound probability (figure reading) | From one-partner odds | From bulk Kd, geometry volume | From bulk Kd, loading volume |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.48 | 0.48 (calibration) | 0.432 | 0.269 |
+| 2 | 0.64 | 0.649 | 0.603 | 0.424 |
+| 3 | 0.67 | 0.735 | 0.695 | 0.525 |
+
+For the last two columns we used the independently measured bulk Kd of 57 ± 12 nM. A cylinder with the reported radius and the midpoint of the measured depth range gives 38.29 aL. A separate loading experiment implies 79.07 aL from its mean occupancy at the nominal bath concentration. The assay’s effective volume remains uncertain. The comparison uses the measured association constant to set the time unit. It cancels from the equilibrium predictions. Numerical uncertainties for the individual bars are unavailable. These are two distinct reactants. Live-cell measurements of receptor homodimer kinetics report a 91 ± 16 ms lifetime, with surface densities in place of fixed small integer counts. The repeated-reactant count law remains open experimentally. [Shon and Cohen, Figs. 2c and 4f](https://doi.org/10.1021/ja3062425) · [Kasai et al., Figs. 4–6](https://doi.org/10.1083/jcb.201009128)
+
+For the catalyst claim, Leventis and Silvius measured cholesterol exchange between vesicles at 37 °C. The relaxation half-time fell from 195 ± 13 minutes to about 3.4 minutes with 1 mM β-cyclodextrin, approximately a 57-fold speedup. A separate equilibrium series at 0.5 mM gave a partition coefficient of 0.91 ± 0.06 for the same lipid pair. Matched forward and reverse rates with and without the catalyst remain open. These data concern a soluble transfer catalyst. The engine evaluates contact fractions on the membrane. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0)
+
+```json
+{
+  "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+  "model": "cells.assembly_lineages@2", "backend": "cpu", "dtype": "float64", "seed": 1,
+  "laws": ["cells.stochastic_mass_action@1", "cells.transition_state_factor@1"],
+  "states_per_measure": 594, "reversible_edges": [963, 962], "singular_rates": [0, 2],
+  "factor_range": [0.5, 2.5], "max_log_factor_error": 6.106226635438361e-16,
+  "opposed_contacts": {"expected_rate_per_s": 2.061153622438558, "rates_per_s": [0, 0],
+    "horizon_s": 60, "events": 0, "status": "inert", "ledger_holds": true},
+  "same_draw_control": {"first_event_s": 0.3459699806783901, "events": 4},
+  "neutral_movers_relative_rate_error": 2.0033979697409166e-8,
+  "measured_bound_probabilities_approx": [0.48, 0.64, 0.67],
+  "held_out_bound_probabilities": [0.648648648648649, 0.7346938775510207]
+}
+```
+
+The 18 public theorems compiled with only `propext`, `Classical.choice` and `Quot.sound`. The full comparison took 31.21 s on two CPU cores, the controls-only comparison passed in 33.06 s, and the confined-binding comparison took 2.31 s. The nine existing assembly kernel tests and the 82 repository guards passed. [Existing kernel tests](../tests/unit/test_assembly_lineages_v2_kernel.py) · [Confined-binding driver](checks/confined_binding.py)
+
+Test discovery returned the same 20,308 test IDs and the same five missing-fixture errors before and after the proof checkpoint. The live registry resolved both new claims, and all five documentation-generator tests passed. [Proof and evidence checkpoint](https://github.com/Eidosoma/Cells/commit/cb4194144bdccd3c4ce4fc24c28979d91a3943a8)
+
 ## 19 November 2026 · Ideal and regular assembly mixing
 
 For the two mixing laws in `cells.assembly_lineages@2`, adding one molecule of species A costs an ideal mixing energy whose exponential, relative to the membrane standard state, is (a + 1)/(N + 1 − c). Here a is the count of A, N is the total membrane count, and c is 0 or 1 for the two registered measures. The formula holds for N ≥ c. Lean also checks the empty membrane, the first molecule’s energy and the cost of transferring one molecule from a finite dilute pool. At positive N the two membrane free energies differ by ln N. Event admission at extinction follows the world's boundary rule. [Lean derivation](CellsProofs/Chemistry/AssemblyMixing.lean) · [Ideal energy and increment](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64)
@@ -8,7 +163,7 @@ For regular mixing, symmetry of the interaction matrix makes the engine’s incr
 
 The CPU comparison used the seven-step OL1 probe world, with its declared interactions and again with only ideal mixing. For each measure and variant, the host kernel and ledger were compared with the exact-factorial reference on the same 592 compositions. The check includes zero and singular rate patterns, reversible edge heats and closed cycles. On four compiled 80-event trajectories the independent reference replayed the counts and rebooked heat and reservoir work at every saved row. The largest state-energy error was 2.14 × 10⁻¹⁴ kBT. [CPU comparison](checks/assembly_mixing.py) · [World](../validation/ool/references/designs/ol1_wa.world.json) · [Reference and edge tolerances](../validation/ool/references/detailed_balance.py#L155) · [Trajectory tolerance](../validation/ool/references/ledger.py#L85)
 
-**Biological evidence.** Shaw et al. measured equilibrium cholesterol activity in protein-free DOPC vesicles across 5.4–45.6 mol% cholesterol. Unit activity refers to crystalline cholesterol. For cholesterol mole fraction x we fitted A = s x for ideal mixing and A = s x exp[χ(1 − x)²] for regular mixing. Each model fitted its own reference-state scale s. We used all 25 readings, fitting ln(A/x) with each of the 23 distinct compositions held out in turn. Repeated readings at one composition stayed together. The table gives activity errors on these withheld readings. The parameter estimates use all rows. [Shaw et al., Fig. 2A](https://pmc.ncbi.nlm.nih.gov/articles/PMC10111267/) · [Table S1, printed p. 13](https://ars.els-cdn.com/content/image/1-s2.0-S0006349523001017-mmc1.pdf) · [Transcribed numbers and reference state](checks/data/shaw2023_dopc.json) · [Fit and engine comparison](checks/cholesterol_activity.py)
+**Biological evidence.** Shaw et al. measured equilibrium cholesterol activity in protein-free DOPC vesicles across 5.4–45.6 mol% cholesterol. Unit activity refers to crystalline cholesterol. For cholesterol mole fraction x we fitted A = s x for ideal mixing and A = s x exp[χ(1 − x)²] for regular mixing. Each model fitted its own reference-state scale s. We used all 25 readings, fitting ln(A/x) with each of the 23 distinct composition values printed in Table S1 held out in turn. Readings with the same printed value stayed together. The table gives activity errors on these withheld readings. The parameter estimates use all rows. [Shaw et al., Fig. 2A](https://pmc.ncbi.nlm.nih.gov/articles/PMC10111267/) · [Table S1, printed p. 13](https://ars.els-cdn.com/content/image/1-s2.0-S0006349523001017-mmc1.pdf) · [Transcribed numbers and reference state](checks/data/shaw2023_dopc.json) · [Fit and engine comparison](checks/cholesterol_activity.py)
 
 | Model | Scale s | χ (kBT) | Held-out activity RMSE | Predicted activity at 45.6 mol% |
 | --- | ---: | ---: | ---: | ---: |

@@ -7541,3 +7541,51 @@ review):
    - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
      that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
      per-trace criterion.
+
+## D233: FR-7's closed-loop world scales its template five-fold
+
+2026-11-19, about 23:02 UTC. The user, choosing among the lead's options after the advisor's review
+and the references' measurement: "lets do option 2".
+
+- **F4, R-loop's world (D231), scales the template's half-saturation K and its dose together, ×5:**
+  K 0.05 mM and dose 0.5 mM. n 2, the 20 s half-life, basal b_T 0.2 and ε 2 × 10⁻⁶ are unchanged.
+  Only c/K drives the cell, so F_T(t), t_clear (260 s) and every non-template row are unchanged. The
+  references show that identity before they register.
+- **Why:** in F4's 7.5 fL cell, R-chain's template falls under D150 §1.3's mean-field floor (about
+  10² molecules per cell) at 243 s, before the cut at t_d = 260 s. Clearance (D ≤ ε) then comes at
+  about 64 molecules. The references measured how far replacing that sub-floor tail (set to zero, or
+  held at 10² molecules) moves the judged effect, the closed arm minus the cut arm:
+  - up to 9.5% at ×1 (R, 10 s after the cut);
+  - at most 6 × 10⁻⁵ at ×5. There the floor comes at 289 s, after the cut, clearance comes at about
+    320 molecules, and the cut's applied factor F* no longer depends on the tail.
+- **The tail is registered as a bounded term.** Both sides run the same mean-field tail, and neither
+  applies a floor. The comparison would detect a different treatment: even at ×5, up to about 10
+  bands on s at late rows. R-loop registers the ×5 floor table with its rows.
+- **The lead's earlier rule is withdrawn.** "1% of the tightest band" was the wrong yardstick: the
+  bands measure numerical agreement between two codes running the same equations. The judged effect
+  is the yardstick.
+
+## D234: Option 2 of the core-laws roadmap, and gene regulation's design begins
+
+2026-11-19, about 23:29 UTC. The user, choosing among the lead's options after the advisor's review
+of the core-laws roadmap (branch core-laws-roadmap): "option 2 as you suggest, lets start gene
+regulation as well".
+
+1. **Option 2.** The energy groundwork and mitochondria go to the kinds and binding owners and a new
+   mitochondria lane. The operators, F and @3 owners keep D222's order for FR-1 to FR-10 and the
+   Xenopus lane (D225).
+   - **Kinds owner:** land symporter version 2 and the schedules, and the net-flow step-bound
+     follow-up. Then: moved fuel at closure nodes, the cycle kind's trapezoid booking, the Δp readout
+     and, for host P's per-complex respiration, chemistry at P.
+   - **Binding owner:** registry entries for the nucleotides and the respiratory carriers, then the
+     registry moieties.
+   - **A new mitochondria lane** writes the mitochondrial laws (new files under `laws/cycles/`, D209)
+     and `validation/mitochondria/`. Its first milestone, MT-1, is one isolated cardiac mitochondrion,
+     lumped, on @3.
+   - **References:** the code-blind Beard 2005 reference, already running, serves MT-2. Fresh
+     code-blind agents write the component references, from the laws' appendix of declared
+     equations.
+   - **Agents stay within the cap of seven.** New origin-of-life work waits for a free seat (D230).
+2. **Gene regulation begins with a design note.** D145's hold is lifted for the design: transcription
+   and translation as physics, regulatory networks as declared laws, and how they are verified. Its
+   options come to the user before any engine code is written. D218's door is unchanged until then.

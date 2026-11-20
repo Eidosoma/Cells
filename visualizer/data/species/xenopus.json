@@ -194,6 +194,7 @@
    ]
   },
   "times_after": "fertilisation",
+  "opens_on": "egg",
   "list": [
    {
     "id": "egg",

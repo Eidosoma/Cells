@@ -44,7 +44,7 @@ Direct proof subject `cells.ideal_mixing@1`
 Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol. Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths. [Shaw et al. (2023), Fig. 2A and Table S1](https://doi.org/10.1016/j.bpj.2023.02.009)
 
 - **Evidence role** descriptive
-- **Evaluation** Leave one of 23 distinct cholesterol compositions out at a time. Keep repeated readings at the same composition together.
+- **Evaluation** Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together.
 
 Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.
 
@@ -52,7 +52,7 @@ Holding out each composition in turn gave a root-mean-square activity error of 0
 
 ### parker2004_dopc_crystal_onset@1
 
-Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy detected cholesterol monohydrate. Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6)
+Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified. Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series. [Parker et al. (2004), Fig. 3](https://doi.org/10.1016/S0006-3495(04)74221-6)
 
 - **Evidence role** held out from fitting
 - **Fit** Shaw Table S1 DOPC activity curve
@@ -60,6 +60,6 @@ Hydrated DOPC/cholesterol samples equilibrated at 23 °C. Optical microscopy det
 
 The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.
 
-At the independently measured crystal onset (66 ± 2 mol%), the fixed fit predicts activity 1.119. The expected value is 1 if the crystal references match. [Dataset manifest](../checks/data/parker2004_dopc_saturation.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
+Extrapolating from the highest fitted composition (45.6 mol%) to the independently measured crystal onset (66 ± 2 mol%) gives activity 1.119. The expected value is 1 if the crystal references match. [Dataset manifest](../checks/data/parker2004_dopc_saturation.json) · [Comparison verdict](../PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

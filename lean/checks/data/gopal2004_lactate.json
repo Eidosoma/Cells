@@ -1,0 +1,11 @@
+{
+  "dataset_id": "gopal2004_lactate@1",
+  "citation": "Gopal et al., Journal of Biological Chemistry 279 (2004), 44522–44532",
+  "doi": "10.1074/jbc.M405365200",
+  "source": "https://ars.els-cdn.com/content/image/1-s2.0-S0021925819709016-gr9.jpg",
+  "series": "Fig. 9A, four distinguishable square markers for human SMCT expressed in Xenopus oocytes. The circles are mouse measurements. The fitted line combines species.",
+  "lactate_uptake_pmol": [225, 285, 300, 370],
+  "net_positive_charge_pmol": [290, 360, 385, 450],
+  "reading": "Approximate paired readings, rounded to the nearest 5 pmol from the publisher's figure. The axes show integrated charge on x and uptake on y. Individual experimental uncertainties are unavailable.",
+  "evaluation": "Fix n=2 from the Coady study, use measured human lactate uptake to predict net charge, and compare with the independently measured charge. The mouse series and propionate are excluded."
+}

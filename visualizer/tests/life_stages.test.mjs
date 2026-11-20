@@ -134,14 +134,20 @@ test("every species file of the repository but the frog has no stages, and is gi
   for (const name of files) {
     const species = freeze(JSON.parse(readFileSync(path.join(folder, name), "utf8")));
     if (name === "xenopus.json") {
-      // The frog (decided on 19 November 2026): its block sound, opening on its adult, its file the very same at its own stage.
+      // The frog (decided on 19 November 2026): its block sound, opening on its fertilised egg, its file the very same at its own stage.
       assert.deepEqual(stageProblems(species), []);
-      assert.equal(openingStage(species), "adult");
+      assert.equal(openingStage(species), "egg");
       assert.equal(speciesAt(species), species);
       assert.equal(speciesAt(species, "adult"), species);
       assert.equal(speciesAt(species, "two-cell"), null, "a named stage cannot be entered");
       assert.deepEqual(stripOf(species).map((mark) => mark.id), ["egg", "two-cell", "four-cell", "tadpole", "froglet", "adult"]);
+      // An address that names no stage shows the egg; the adult's address names it, and the egg's names nothing.
+      assert.deepEqual(stageFromAddress("", species), { stage: "egg", open: null });
       assert.deepEqual(stageFromAddress("egg", species), { stage: "egg", open: null });
+      assert.deepEqual(stageFromAddress("adult", species), { stage: "adult", open: null });
+      assert.deepEqual(stageFromAddress("tadpole", species), { stage: "egg", open: "tadpole" }, "a named stage's card opens at the egg");
+      assert.equal(stageToAddress(species, "adult"), "adult");
+      assert.equal(stageToAddress(species, "egg"), null);
       continue;
     }
     assert.equal(species.stages, undefined, `${name} carries no stages block`);

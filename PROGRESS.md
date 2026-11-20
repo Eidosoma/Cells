@@ -108,6 +108,33 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).**
+  - Merge a740b856, tag `review4-fixes-landed-2026-11-20`: the external review's four findings,
+    each a recorded exception with a test row.
+    - The composite's device checks split ledger magnitudes at the operators' count.
+    - A bound that is not finite fails its ledger.
+    - FR-8 rung 0's reader checks each arm's identity, step and grid.
+    - @3's batch signature carries each kind's axis sizes.
+    - Gates: tiers 595 files with 0 changed, crossrev 11 of 11, IDs +2, FR's set, R1 (274
+      fingerprints equal); the lead's merged check on trial 2816efb0 (527 passed).
+  - Merge 73d73bf8, tag `fr7-f2-landed-2026-11-20`: FR-7 F2 (development).
+    - `species_regulated_availability@2` reads a population's abundance as its source.
+    - `population_unit_turnover@1` states D232's scoped exception to D177.
+    - Gates: tiers 597 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +21, FR's set,
+      R1; the lead's merged check on trial a72e1f10 (271 passed).
+  - Merge 9dd869c6, tag `fr7-references-landed-2026-11-20`: FR-7's code-blind references, R-chain,
+    R-clear and R-loop. Each was tagged before any engine output (69932dfc, 1b257cf3, d55e39b4).
+    - R-loop follows D233's five-fold template, with its floor-sensitivity table registered.
+    - design.py's regeneration check was loosened after R-chain's tag; no registered value changed.
+    - Gates (no src change): tiers 601 files with 0 changed, IDs +15.
+  - Decisions D233 (FR-7's template ×5) and D234 (the roadmap's Option 2; gene regulation's design
+    begins). docs/CORE_LAWS_ROADMAP.md landed docs-only (7ebfab70).
+  - **Tagged, not yet landed:** the code-blind Beard 2005 mitochondria reference, MR1
+    (`mito-references-model-2026-11-19`, a9aac583).
+    - It reproduces the published curves to about digitisation precision.
+    - Its audit finds Eq. 11 (F1F0) dissipating negatively at the paper's own state-3 points.
+    - Its registration waits for the user's ruling on the declared departures.
+
 - **Seam E's checks and F's cleanup (19 November 2026).**
   - Merge bd9881d5, tag `binding-item5-landed-2026-11-19`: the species registry checks every declared
     `FreeEnergyEntry` against its own sum of ν μ°/RT, within the form's band. Gates: tiers 594 files

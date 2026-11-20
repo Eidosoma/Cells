@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-19",
-  "generated_at": "2026-11-19T19:30:56Z",
+  "generated_at": "2026-11-19T21:49:53Z",
   "revision": "1ca5eada",
   "revision_date": "2026-11-19",
   "dirty": false,
@@ -4815,6 +4815,7 @@
      ]
     },
     "times_after": "fertilisation",
+    "opens_on": "egg",
     "list": [
      {
       "id": "egg",

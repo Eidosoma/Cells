@@ -1,0 +1,357 @@
+{
+ "kind": "cells.fr7_reference_loop_inputs@1",
+ "registered": "2026-11-19",
+ "constants": {
+  "avogadro_per_mol": 6.02214076e+23,
+  "faraday_C_per_mol": 96485.33212331001,
+  "gas_J_per_mol_K": 8.31446261815324
+ },
+ "step": {
+  "dt_s": 0.001
+ },
+ "clearance": {
+  "epsilon": 2e-06,
+  "drive": "R-clear's: D = c^n/(K^n + c^n), c = n_T/V"
+ },
+ "power": {
+  "margin": 3.0
+ },
+ "loop_band_rules": {
+  "note": "R-chain's rule, band = bound + max(rel max(|x|, floor scale), abs), at dt = 1 ms. The clamped arm's bands add the propagated F* allowance (loop_design.py).",
+  "template": {
+   "rel": 1e-09,
+   "floor": 1e-09,
+   "abs": 0.0,
+   "quantities": [
+    "n_T_fmol"
+   ]
+  },
+  "drive": {
+   "rel": 4e-09,
+   "floor": 1e-12,
+   "abs": 0.0,
+   "quantities": [
+    "D"
+   ]
+  },
+  "factor": {
+   "rel": 1e-09,
+   "floor": 1.0,
+   "abs": 0.0,
+   "quantities": [
+    "F_T"
+   ]
+  },
+  "chain": {
+   "rel": 3e-07,
+   "floor": 0.01,
+   "abs": 0.0,
+   "quantities": [
+    "n_P_fmol",
+    "N_units",
+    "PA_units_m3_s",
+    "W_fmol",
+    "R_units",
+    "C_P_fmol"
+   ]
+  },
+  "material_total": {
+   "rel": 1e-09,
+   "floor": 1.0,
+   "abs": 0.0,
+   "quantities": [
+    "total_fmol"
+   ]
+  },
+  "regulator": {
+   "rel": 0.0,
+   "floor": 0.0,
+   "abs": 1e-08,
+   "quantities": [
+    "s"
+   ]
+  },
+  "voltage": {
+   "rel": 0.0,
+   "floor": 0.0,
+   "abs": 1e-06,
+   "quantities": [
+    "V_V"
+   ]
+  },
+  "amounts": {
+   "rel": 1e-06,
+   "floor": 1.0,
+   "abs": 0.0,
+   "quantities": [
+    "Na_fmol",
+    "K_fmol",
+    "M_fmol"
+   ]
+  },
+  "pump": {
+   "rel": 1e-06,
+   "floor": 1.0,
+   "abs": 0.0,
+   "quantities": [
+    "pump_fmol_per_s"
+   ]
+  }
+ },
+ "loop": {
+  "registered": "2026-11-19",
+  "source": "the FR-7 lane's export of the probe world, input values only, relayed by the lead: interface/loop_world_export.json",
+  "synthetic": "every value marked synthetic is this world's own synthetic choice (D217); the heredity cell H's declared values are the engine's fixture values, then scaled as stated",
+  "setting": {
+   "volume_per_area_scale": 100.0,
+   "volume_per_area_nm": 23.013174422536753,
+   "phi": 1.0,
+   "precursor": "held (a fast-cleared supply, below)",
+   "labelled": "synthetic",
+   "note": "D231 as the lead registered it: scale 100 (ions relax in about 50 s), phi = 1 (the units carry the cell's whole Na leak), the held precursor"
+  },
+  "cell": {
+   "species": [
+    "Na",
+    "K",
+    "M",
+    "P"
+   ],
+   "valence": [
+    1,
+    1,
+    -1,
+    -1
+   ],
+   "bath_mM": [
+    145.0,
+    5.0,
+    140.0,
+    10.0
+   ],
+   "volume_pL": 0.007505222518670602,
+   "patch_area_m2": 3.261272165616906e-10,
+   "capacitance_F": 1.6306360828084532e-11,
+   "leak_permeability_m_s": [
+    0.0,
+    1.333333333333334e-10,
+    1.333333333333334e-10,
+    0.0
+   ],
+   "temperature_K": 310.0,
+   "fixed_populations": [
+    {
+     "id": "kir_0",
+     "law": "gate-free K leak (kleak_always_open@1), K only",
+     "permeability_m_s": 1e-08,
+     "relative_permeability": [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     "units": 3261.272165616906,
+     "reference_density_per_m2": 10000000000000.0
+    }
+   ],
+   "fixed_charge_fmol": 1.586795405084107e-07,
+   "initial_amounts_fmol": [
+    0.044540198780315746,
+    1.022001158140796,
+    0.053470928460557454,
+    1.0132050400205312
+   ],
+   "initial_note": "state H scaled: where the steady-state settle begins, not the start"
+  },
+  "pump": {
+   "law": "nak_atp_mass_action_positive@1 (docs/KINETIC_PUMP_PROCESS.md; SPEC-010 / D111's mass-action cycle)",
+   "capacity_fmol_cycles_per_s": 0.03261272165616906,
+   "capacity_mol_per_s": 3.2612721656169065e-17,
+   "km_na_mM": 12.0,
+   "km_k_mM": 0.2,
+   "km_atp_mM": 0.5,
+   "atp_mM": 1.5,
+   "adp_mM": 0.1,
+   "pi_mM": 0.1,
+   "deltaG0_J_per_mol": -37000.0,
+   "standard_state_mM": 1000.0,
+   "availability": 1.0,
+   "fuel": "maintained reservoirs (held pools), declared with the standard state"
+  },
+  "units": {
+   "id": "naleak_0",
+   "law": "gate-free Na leak (naleak_always_open@1), Na only",
+   "permeability_m_s": 5.3333333333333356e-11,
+   "relative_permeability": [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "reference_density_per_m2": 10000000000000.0,
+   "N0": 3261.272165616906,
+   "phi": 1.0,
+   "producer_law": "population_unit_turnover@1",
+   "nu": 4,
+   "units_per_fmol": 150553519.0,
+   "assembly_per_s": 0.02,
+   "stages": 0,
+   "maturation_per_s": null,
+   "removal_per_s": 0.011552453009332421,
+   "half_life_s": 60.0
+  },
+  "precursor": {
+   "clearance_per_s": 1.0,
+   "regime": "held: a supply S_P and a fast first-order clearance k_P under D150's turnover, so n_P relaxes in about 1 s to S_P/(k_P + k_a F) and the units' sensitivity to F, k_P/(k_P + k_a F), is at least 0.987 at any F (0.9974 at the start)"
+  },
+  "regulator": {
+   "law": "hill_regulated_two_state@1",
+   "K_mM": 6.0,
+   "n": 4.0,
+   "k_on_per_s": 1.0,
+   "k_off_per_s": 1.0,
+   "route": {
+    "law": "state_complement",
+    "basal": 0.0,
+    "target": "the producer's assembly rate k_a (B1', target_half_steps), operating range [0, 1] of the state's fraction"
+   },
+   "with_the_template": "both routes stand on the same element (the route naleak_units) of the producer's assembly rate, so the effective rate is k_a x F_T x F_loop, the product in declared order (the template's coupling first), each evaluated at the start of each of the producer's half-steps from the state that half-step receives"
+  },
+  "template": {
+   "n0_fmol": 0.003752611259335301,
+   "dose_mM": 0.5,
+   "clearance_per_s": 0.03465735902799726,
+   "half_life_s": 20.0,
+   "production": [
+    [
+     0.0,
+     0.0
+    ]
+   ],
+   "factor": {
+    "law": "hill_activation",
+    "K_mM": 0.05,
+    "n": 2.0,
+    "basal": 0.2,
+    "factor": "F_T = b + (1 - b) c^n/(K^n + c^n), c = n_T/V"
+   },
+   "operating_range_mM": [
+    0.0,
+    1.0
+   ],
+   "scale": {
+    "ruling": "D233",
+    "K_mM": 0.05,
+    "dose_mM": 0.5,
+    "export_K_mM": 0.01,
+    "export_dose_mM": 0.1,
+    "note": "D233: F4's template scales its half-saturation K and its dose together, x5 (K 0.05 mM, dose 0.5 mM; n, the 20 s half-life, b_T 0.2 and epsilon unchanged). Only c/K drives the cell, so F_T(t), t_clear (260 s) and every non-template row are unchanged; the template's tail crosses D150's mean-field floor (10^2 molecules in 7.5 fL) at 289.3 s instead of 242.8 s, after the cut at t_d = 260 s, and clearance (D <= epsilon) comes at about 320 molecules, above the floor"
+   }
+  },
+  "horizon_s": 560.0,
+  "rows_s": [
+   0.0,
+   1.0,
+   2.0,
+   5.0,
+   10.0,
+   20.0,
+   30.0,
+   40.0,
+   50.0,
+   60.0,
+   70.0,
+   80.0,
+   90.0,
+   100.0,
+   110.0,
+   120.0,
+   130.0,
+   140.0,
+   150.0,
+   160.0,
+   170.0,
+   180.0,
+   190.0,
+   200.0,
+   210.0,
+   220.0,
+   230.0,
+   240.0,
+   250.0,
+   260.0,
+   270.0,
+   280.0,
+   290.0,
+   300.0,
+   310.0,
+   320.0,
+   330.0,
+   340.0,
+   350.0,
+   360.0,
+   370.0,
+   380.0,
+   390.0,
+   400.0,
+   410.0,
+   420.0,
+   430.0,
+   440.0,
+   450.0,
+   460.0,
+   470.0,
+   480.0,
+   490.0,
+   500.0,
+   510.0,
+   520.0,
+   530.0,
+   540.0,
+   550.0,
+   560.0
+  ],
+  "dt_s": 0.001,
+  "arms": {
+   "t_d_s": 260.0,
+   "cut_control": "the lead's accepted form: from t_d the loop's coupling is switched off (F_loop exactly 1) and the producer's scheduled k_a is stepped to k_a F*, F* the engine's own applied loop factor from the coupling's record at the closed arm's row t_d, at the same dt",
+   "F_star": 0.6407314862146465,
+   "ds_dt_at_t_d_per_s": -0.0002724865617430017,
+   "F_star_bound": 2.824865617430017e-07,
+   "F_star_bound_note": "|F*_engine - F*_reference| <= |ds/dt(t_d)| dt + the s band: a full step's lag (twice the half step the engine's applied factor can lag) plus the engine's allowed error in s"
+  },
+  "start": {
+   "amounts_fmol": [
+    0.04550011141913236,
+    0.9969049110950123,
+    0.04356991311655548,
+    1.0132050400205304
+   ],
+   "V": -0.08502646501647974,
+   "background_fmol": 1.586795405084107e-07,
+   "s": 0.3379038759118215,
+   "n_P_fmol": 9.44907522796258e-05,
+   "supply_fmol_per_s": 9.474100012301186e-05,
+   "M_units": [],
+   "N_units": 3261.272165616906
+  },
+  "start_report": {
+   "u0": 0.5103547107713006,
+   "s_star_check": 0.3379038759118215,
+   "F_loop0": 0.6620961240881784,
+   "F0": 0.13241922481763568,
+   "production_units_per_s": 37.675693443933085,
+   "removal_units_per_s": 37.675693443933085,
+   "stationarity_residual_fmol_per_s": 5.39260384428426e-18,
+   "charge_rate_fmol_per_s": 4.006344771882185e-18,
+   "s_rate_per_s": 1.1102230246251565e-16,
+   "settle_s": 3000.0,
+   "mM": [
+    6.062460014468935,
+    132.82816180533362,
+    5.805279324919071,
+    134.9999999999999
+   ]
+  }
+ }
+}
