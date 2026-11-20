@@ -44,6 +44,19 @@ RT ln of each row's free form, free ligand or free base, in mM. G* = E_c + sum_r
 S_c = E_c - sum_r ideal_r, where ideal_r = RT T_r (ln(T_r/V) - 1) is @3's per-row term; it is
 undefined where a total is <= 0, and phase 1 books it.
 
+Its change from increments (booked_change_pJ; the @3 owner's finding under X2, CORE_SEAMS_STEP0
+§9.4). At the dual's optimum, S_c = -RT [sum_L (V x_L - N_L u_L) + sum_B N_B ln P_B(u) +
+sum_L N_L (ln(N_L/V) - 1)], N the rows' amounts: the binders' ideal terms cancel. Its change since
+the start, every term at the change's own scale (dN the stored increments, du = u - u_s):
+  - the dual's move at the new totals: sum_L (V x_L,s expm1(du_L) - N_L du_L) +
+    sum_B N_B log1p(sum_f p_f,s expm1(n_f.du));
+  - the totals' move at the start's optimum: -sum_L dN_L u_L,s + sum_B dN_B ln P_B,s;
+  - the ligands' ideal terms in @3's stable form: dN (ln(N_s/V) - 1) + N log1p(dN/N_s).
+The dual is stationary at its optimum, so the solves' errors at either end, and the solve's own
+rounding of its totals, enter only at second order. The difference of two bulk values would
+carry their rounding instead (2 to 3 units in the last place of S_c, about 1e-12 pJ at 3,583 pJ),
+far above the change X2 counts. The volume is the node's declared one, held constant.
+
 The envelope (lag_first_order): the closure's first-order lag behind the kinetic binding network,
 per ligand. The unit steps f + L <=> g (g = f + e_L, through declared forms) carry k_on per binding
 and the one-way fluxes F = k_on x_L c_f at the speciation. The linearised network is
@@ -382,6 +395,38 @@ def booked_terms_pJ(u, total_ligand, total_binder, log_beta, counts, present, he
     safe = xp.where(counted & (rows > 0), rows, 1.0)
     ideal = xp.where(counted & (rows > 0), safe * (xp.log(safe / volume_pL) - 1.0), 0.0)
     return e_c, e_c + rt * standard, e_c - rt * xp.sum(ideal, axis=0), xp.all(positive, axis=0)
+
+
+def booked_change_pJ(u, u_start, ligand_start, ligand_increment, binder_start, binder_increment,
+                     log_beta, counts, present, held, member, volume_pL, temperature_K, *, xp):
+    """(S_c now less S_c at the start, defined) per node, pJ: the change formed from increments
+    (module docstring), every term at the change's scale. u and u_start [L, ...] are the free
+    ligands' ln x (mM) now and at the start; ligand_* [L, ...] and binder_* [B, ...] the rows'
+    amounts at the start and their stored increments (fmol); held [L, ...] and member [B, ...] the
+    closure's rows at each node. Defined where every held ligand's amount is > 0 at both ends, as
+    S_c is."""
+    rt = 1e-3 * R * temperature_K
+    d = xp.where(held, u - u_start, 0.0)
+    n_s = xp.where(held, ligand_start, 1.0)
+    dn = xp.where(held, ligand_increment, 0.0)
+    n = n_s + dn
+    b_s = xp.where(member, binder_start, 0.0)
+    db = xp.where(member, binder_increment, 0.0)
+    # A ligand a node does not hold may sit at ln 0 there, so a binder that is not the node's can
+    # carry NaN forms: every binder term is masked to the node's own binders.
+    _, log_p, p = _forms(u_start, log_beta, counts, present, xp=xp)
+    shift = xp.einsum("bfl,l...->bf...", counts, d)
+    moved = xp.log1p(xp.sum(xp.where(p > 0, p * xp.expm1(shift), 0.0), axis=1))
+    free = volume_pL * xp.exp(u_start)
+    dual = xp.sum(xp.where(held, free * xp.expm1(d) - n * d, 0.0), axis=0)
+    dual = dual + xp.sum(xp.where(member, (b_s + db) * moved, 0.0), axis=0)
+    totals = xp.sum(xp.where(held, -dn * u_start, 0.0), axis=0)
+    totals = totals + xp.sum(xp.where(member, db * log_p, 0.0), axis=0)
+    safe = xp.where(held & (n_s > 0), n_s, 1.0)
+    ratio = xp.where(held, dn / safe, 0.0)
+    ideal = xp.where(held, dn * (xp.log(safe / volume_pL) - 1.0) + n * xp.log1p(ratio), 0.0)
+    positive = xp.where(held, (n_s > 0) & (n > 0), True)
+    return -rt * (dual + totals + xp.sum(ideal, axis=0)), xp.all(positive, axis=0)
 
 
 def lag_first_order(u, forms, total_binder, drive_ligand, drive_binder, log_beta, counts, present,
