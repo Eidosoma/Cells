@@ -78,6 +78,7 @@ Columns:
 | `frame_b_restored_eq24_pi_protons` | — | one frame, B, consistent: the same rate laws, and Eq. 22's proton row counting the protons on phosphate | — | — | — | — | 3.46 | 1.20, 0.0140, 0.0156, 0.0038, 2.0% |
 | `appendix_all_pi_protons` | — | the appendix's balanced Eqs. 11, 16 and 24 with frame B's proton row | — | — | — | — | 5.28 | 2.43, 0.0141, 0.0444, 0.0049, 2.7% |
 | `host_p_question_arm` | — | the arm for the user's repairs question (host P, D235): frame B (the appendix's balanced Eqs. 11 and 16, the protons on phosphate counted), Eq. 24 restored (phi_Pi x Eq. 7), the balanced NADH supply at reference pH 7.10; 298.15 K, matrix Mg2+ 5 mM | — | — | — | — | 3.72 | 1.31, 0.0142, 0.0197, 0.0040, 2.1% |
+| `host_p_question_arm_ak_base` | — | host_p_question_arm with Eq. 18 in base forms, 2 ADP3- -> ATP4- + AMP2-, K_base = 0.389 (matched to K_AK = 0.4331 at free Mg2+ 3.81 mM); the effective K on totals follows the IMS's free Mg2+ | — | — | — | — | 3.72 | 1.31, 0.0142, 0.0197, 0.0040, 2.1% |
 
 ### Full check: `host_p_question_arm`
 
@@ -87,4 +88,13 @@ Columns:
   - at the 12 reported states, negative: none;
   - over 2000 random states with Mg2+ binding at equilibrium, negative: none;
   - with random binding, negative: {'J_F1': 146}. This is Q15: Eq. 11 reads the Mg-bound forms while Eq. 22 books its turnover on the free forms, and the rapid binding closure (D1) removes it.
+
+### Full check: `host_p_question_arm_ak_base`
+
+- **Exists:** every reported point integrated, against the 50-digit Newton solve within 4.7e-13 relative; Newton residual 5.0e-43.
+- **Unique:** three far-apart starts with equal inventories (state 3, [Pi]e 3 mM) within 3.4e-13.
+- **Dissipation, every process, frame B:** 17 processes have a defined dG at the reported states. The ATP and AMP effluxes into a buffer held at zero are unbounded and skipped there; 19 processes are counted over random states.
+  - at the 12 reported states, negative: none;
+  - over 2000 random states with Mg2+ binding at equilibrium, negative: none;
+  - with random binding, negative: {'J_AK': 532, 'J_F1': 146}. This is Q15: Eq. 11 reads the Mg-bound forms while Eq. 22 books its turnover on the free forms, and the rapid binding closure (D1) removes it.
 
