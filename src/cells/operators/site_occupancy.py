@@ -1394,6 +1394,13 @@ class SiteOccupancy(Operator):
         own = site_domain_valid(state, p, xp=xp)
         return own if valid is None else valid & own
 
+    def quantity_entities(self, spec, declaration):
+        """R3, host side: its populations in axis order, each with the cell it belongs to."""
+        m = spec.model
+        return {
+            "site_population": tuple((q.id, population_cell(m, q)) for q in declaration.populations)
+        }
+
     def quantities(self, state, p, *, xp):
         """R3: per population its occupied fraction theta = B / (B + R), which the domain's B >= 0
         and R >= 0 keep in [0, 1] exactly (B + R is S to the moiety's rounding); its occupied amount

@@ -59,7 +59,8 @@ Declarations (class attributes):
   routed half-step's ``factor_record`` passes none).
 * Readable quantities (R3, FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): an owner's
   ``QUANTITIES`` ({name: (entity axis, unit)}), each computed by its own ``quantities(state, p)``
-  from its state, so its representation stays its own; a reader's ``QUANTITY_READS`` ({owner law:
+  from its state, so its representation stays its own, with its entities' IDs and cells on each
+  axis, host side (``quantity_entities``); a reader's ``QUANTITY_READS`` ({owner law:
   (names, ...)}), what it may read, and its ``declared_quantity_reads(declaration)``, what a
   definition reads: ((owner law, name, target law or None), ...), the target an operator target's
   route, whose half-steps evaluate the read, or None for a read at the control view. Where an
@@ -616,6 +617,12 @@ class Operator:
 
     def quantities(self, state, p, *, xp):
         """R3, the owner: {name: values} of its QUANTITIES at `state`, each on its entity axis."""
+        return {}
+
+    def quantity_entities(self, spec, declaration):
+        """R3, the owner, host side: {entity axis: ((entity id, its cell id or None), ...)} in the
+        axis' order, for each axis of its QUANTITIES: a reader binds its reads by entity ID and
+        checks where they are read, without importing the owner."""
         return {}
 
     def declared_quantity_reads(self, declaration):
