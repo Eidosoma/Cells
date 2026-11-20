@@ -273,7 +273,8 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-2b572f87/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-4254ccb2/measured-changed.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e6df3aee/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2308,6 +2309,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e3bb05c1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T20:28:16+00:00"
+  },
+  {
+   "git_revision": "e6df3aeecd670b09ca633a2ddc247701756c0cfe",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e6df3aee",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:59:55+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6015,10 +6023,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 28.85,
+    "seconds": 40.14,
     "exit_code": 0,
     "counts": {
-     "passed": 20
+     "passed": 28
     }
    },
    {
@@ -6047,18 +6055,18 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_population.py",
-    "seconds": 81.31,
+    "seconds": 76.33,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 11
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 54.82,
+    "seconds": 64.03,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 14
     }
    },
    {
