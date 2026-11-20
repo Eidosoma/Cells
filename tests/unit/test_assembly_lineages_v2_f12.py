@@ -27,10 +27,10 @@ Each claim with a planted error it must catch (D187):
   and a daughter recorded in the wrong slot refused.
 
 World-compiling cost: two programs (a natural lineage and two futures of one single-lineage
-structure, one lane; and one population run), measured on the timed lane at R4's landing. The
-single-lineage part alone measured 40.25 s at 225b1926; most of it is the osmotic verdict that every
-osmotic world pays once per process, which the population run then shares. Reason: the readers'
-contract is the saved bundle's format, and the futures' checks are the runs' own.
+structure, one lane; and one population run), 45.95 s for the whole file on the timed lane (CPUs 4
+and 5 under the timed lock, at c0ecf1b2). Most of it is the osmotic verdict that every osmotic world
+pays once per process, which the population run shares. Reason: the readers' contract is the saved
+bundle's format, and the futures' checks are the runs' own.
 """
 
 import copy
