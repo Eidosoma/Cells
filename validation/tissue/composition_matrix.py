@@ -58,6 +58,7 @@ TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
 COUPLING_2 = "species_regulated_availability@2"  # @1 plus operator targets (B1′).
 BATH = "scheduled_bath_composition@1"
+WASH = "scheduled_compartment_wash@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
 TRAFFICKING = trafficking_operator.LAW_ID
@@ -589,6 +590,35 @@ def _tags():
         "closure closes only faces at its onset nodes (closures): the slots are disjoint",
         (OPS + "compartments.py::parse_declaration", OPS + "membrane_insertion_v2.py::closures"),
     )
+    # FR-27's compartment wash (wash_schedule.py, D246) reads its nodes' volumes, anchors and
+    # outside mask as declared (wash_schedule.CONFLICTS_VIEW): fixed reads at its event, scoped to
+    # its nodes, so the bath schedule's dose at held baths is admitted beside it (door S).
+    tags[("reads", WASH, WATER, "extracellular_volume")] = (
+        REAL,
+        "The wash exchanges a fraction of its node's declared volume (wash_terms); water changes "
+        "finite nodes' volumes",
+        (),
+    )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", WASH, lumen, "extracellular_volume")] = (
+            REAL,
+            "The wash reads its node's declared volume; a lumen changes its node's volume (not "
+            "shown nominal)",
+            (),
+        )
+    for name in ("extracellular_amount_reference", "outside_active"):
+        tags[("reads", WASH, INSERTION_1, name)] = (
+            REAL,
+            "Insertion@1 opens onset nodes and changes their anchors; a washed node may be one "
+            "(not shown nominal)",
+            (),
+        )
+        tags[("reads-closed", WASH, INSERTION_2, name)] = (
+            REAL,
+            "Insertion@2 closes onset nodes and pads their anchors until their onset; a washed "
+            "node may be one (not shown nominal)",
+            (),
+        )
     anchors = "Insertion@2's closure pads the anchors of its onset nodes until their onset"
     tags[("reads-closed", REACTIONS, INSERTION_2, "extracellular_amount_reference")] = (
         REAL,
@@ -829,8 +859,12 @@ _TRAFFICKING_FIRST = tuple(
 # The producer's own writer rule refuses it beside trafficking before the compartments' list is
 # read (its check runs first in sequence(PRODUCER, TRAFFICKING)), so that rule alone marks it.
 _COMPARTMENTS_FIRST = tuple(
-    pair for pair in _TRAFFICKING_OFF if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair
+    pair
+    for pair in _TRAFFICKING_OFF
+    if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair and WASH not in pair
 )
+# The compartment wash is off both lists too; its pairs with trafficking are refused there first.
+_WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
 # population_unit_turnover@1 refuses every other writer of population units, in either order
 # (population_unit_turnover.check_writers).
@@ -1069,7 +1103,8 @@ RULES = (
         tag=REAL,
         why="A new operator may treat outside nodes as environment (the closed-compartment design "
         "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
-        "it, §4) and stands behind the declarations' refusals of the rest",
+        "it, §4; the compartment wash, off the list until admitted) and stands behind the "
+        "declarations' refusals of the rest",
         marks=_off_list(True),
         behind=_off_list(False),
     ),
@@ -1102,6 +1137,20 @@ RULES = (
         "message. Trafficking's own reason, that sites move with their membrane only from "
         "version 1.1, is a second wall this composition never reaches",
         marks=_COMPARTMENTS_FIRST,
+    ),
+    dict(
+        rule="beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
+        "the compartment wash first",
+        laws=(TRAFFICKING, WASH),
+        level="law",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="Trafficking requires the compartments, whose check runs first, and "
+        "scheduled_compartment_wash@1 is not on their admitted list: the case 'beside the "
+        "compartments' asserts that message. The wash's own refusals at the definition are a "
+        "second wall this composition never reaches",
+        marks=_WASH_FIRST,
     ),
     dict(
         rule="membrane state beside a compartment only together with its admitted writers, "

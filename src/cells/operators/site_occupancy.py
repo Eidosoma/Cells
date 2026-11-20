@@ -41,6 +41,8 @@ check refuses the providers and closers of what it reads as declared (CONFLICTS_
 anchors and volumes are read only at the outside nodes its populations face (door S's scoped fixed
 reads, FR-23, D244), so a change made at other nodes, such as the bath schedule's dose at a held
 bath, is admitted beside it. The stationary analysis refuses the composite by its own ID check.
+A compartment wash's buffers are held to the trace rule as a scheduled bath composition is
+(FR-27, D246).
 """
 
 import math
@@ -73,6 +75,7 @@ DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
 BATH_LAW = "scheduled_bath_composition@1"
+WASH_LAW = "scheduled_compartment_wash@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
 STATE_AXES = {
@@ -528,21 +531,30 @@ def check_template_traces(spec, declaration):
 
 
 def check_schedule_traces(spec, declaration):
-    """§4.3's trace rule on the bath schedule's scheduled compositions (FR-23, D244): a dose may
-    not set a ligand below its declared trace at a held bath, as a declared node or a replacement
-    template may not. The scheduled content is the bath schedule's own parsed program (its held
-    series per bath, the declared content first), read on the host."""
+    """§4.3's trace rule on scheduled compositions: the bath schedule's (FR-23, D244) and the
+    compartment wash's buffers (FR-27, D246). A dose or a wash may not set a ligand below its
+    declared trace, as a declared node or a replacement template may not. Each is read from its
+    operator's own parsed program on the host: the bath schedule's held series per bath (the
+    declared content first) and the wash's events, each with a buffer for every neutral species,
+    the ligands among them."""
     ids = list(spec.model.species_ids)
     volumes = {c.id: c.volume_pL for c in spec.model.extracellular}
     extra = []
     for op, other, schedule in composite_spec.entries(spec):
-        if op.LAW_ID != BATH_LAW:
-            continue
-        for bath, series in zip(other.baths, schedule.held, strict=True):
-            for time, amounts in series[1:]:
+        if op.LAW_ID == BATH_LAW:
+            for bath, series in zip(other.baths, schedule.held, strict=True):
+                for time, amounts in series[1:]:
+                    for ligand in declaration.species:
+                        mM = amounts[ids.index(ligand.identity.id)] / volumes[bath]
+                        extra.append(
+                            (f"scheduled bath {bath} from {time:g} s", ligand.identity.id, mM)
+                        )
+        elif op.LAW_ID == WASH_LAW:
+            for event in schedule.events:
+                buffer = dict(event.buffer_mM)
+                where = f"the buffer of the wash of {event.node} at {event.time:g} s"
                 for ligand in declaration.species:
-                    mM = amounts[ids.index(ligand.identity.id)] / volumes[bath]
-                    extra.append((f"scheduled bath {bath} from {time:g} s", ligand.identity.id, mM))
+                    extra.append((where, ligand.identity.id, buffer[ligand.identity.id]))
     if extra:
         check_traces(spec.model, declaration.species, declaration.populations, extra)
 
