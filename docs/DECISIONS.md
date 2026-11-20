@@ -8189,3 +8189,21 @@ check, not a test. Nothing is tagged.
   questions wait too.
 - **FR-34's engine items, found by the same desk check,** are on the list: current at a declared
   voltage, an effective-availability record, and per-route flux records for the kinds' routes.
+
+## D253: FR-7's Kir2.1 comparison: a search for the background conductance, then a labelled calibration on wild type's voltage
+
+2026-11-20, about 21:45 UTC. D252 offered three ways on. The user: "2. then 3. and note it well".
+
+1. **First, the lead searches for one measurement:** the background, non-Kir conductance or the
+   resting potential of mock-infected or untransfected U251MG cells, in solutions comparable to the
+   Kir2.1 paper's. The lead does this itself, with targeted reads and no agent. If a guard refuses, it
+   stops and reports. Any value found is quoted with its source, conditions and units, and checked
+   for comparability before it narrows the Kir share.
+2. **Then option (b):** the background is calibrated so that wild type rests at its measured −70.1
+   mV, and K346T's voltage is predicted from the abundance-to-current chain.
+   - **This departs from D241,** whose conversion was to use neither voltage mean. Wild type's mean
+     is spent on calibration, so only K346T's voltage, and the K346T-minus-wild-type contrast, remain
+     as the comparison.
+   - **The result is retrospective:** both means were known before the calibration was chosen.
+   - **Every record of this result carries that statement,** its source and its limits: the
+     unstated recording configuration, the room temperature, and the equal-synthesis assumption.
