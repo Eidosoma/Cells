@@ -10,9 +10,10 @@ Its writers are later operators, each booking its contributions in its own accum
 scheduled_membrane_insertion@1 now; partition, mechanics and trafficking later.
 
 View (R2): @3's membrane_area = A0 + dA, membrane_capacitance = C0 + dC and
-channel_abundance = a0 A0 / A + dN / (A rho_ref). Zero increments give the declared values
-bit for bit (R8). A fixed number of units keeps its conductance (P a A = P N / rho_ref)
-whatever the area; only writers add units. The field arrays follow the capacitance through the
+channel_abundance = a0 A0 / A + dN / (A rho_ref), and exactly 0 for an empty population (N = 0;
+abundance's docstring). Zero increments give the declared values bit for bit (R8). A fixed
+number of units keeps its conductance (P a A = P N / rho_ref) whatever the area; only writers
+add units. The field arrays follow the capacitance through the
 adapter's refresh (R3). The capacitor energy at the view is booked against @3's term on the
 declared layout by the writer that changes it (adapter.view_capacitor_terms).
 
@@ -156,13 +157,23 @@ def units(state, p, *, xp):
 
 
 def abundance(state, p, *, xp):
-    """@3's channel_abundance at the current area: a0 A0 / A + dN / (A rho_ref)."""
+    """@3's channel_abundance at the current area: a0 A0 / A + dN / (A rho_ref), and exactly 0
+    where the population's count N (units) is exactly 0.
+
+    The two terms are rounded separately, so at N = 0 with A != A0 they leave a signed residual
+    of about an ulp: the independent Lean project measured -1.1e-16 at 1.4 A0, a potassium flux
+    of -2.2e-18 fmol/s through an empty population, and a refused observation after a retrieval
+    emptied a surface (lean/PROGRESS.md "empty-surface-flow" and "trafficking-empty-surface", 20
+    November 2026). The select reads the count only, so every nonzero count keeps the two-term
+    value bit for bit; no registered world reaches N = 0 (60 worlds run; the eggs by their writers,
+    which only add or share units; 20 November 2026)."""
     patch = p.channel_membranes
     a = area(state, p, xp=xp)[patch]
     value = p.channel_abundance * (p.membrane_area[patch] / a) + (
         state.population_abundance_increment / (a * p.population_reference_density_per_m2)
     )
-    return xp.where(p.channel_active, value, p.channel_abundance)
+    empty = units(state, p, xp=xp) == 0
+    return xp.where(p.channel_active, xp.where(empty, 0.0, value), p.channel_abundance)
 
 
 def domain_valid(state, p, *, xp):
