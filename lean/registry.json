@@ -34,7 +34,7 @@
     "cells.rapid_binding@1": "src/cells/laws/reactions/rapid_binding.py#L672",
     "cells.regular_mixing@1": "src/cells/models/assembly_lineages_v2/regular_mixing.py#L153",
     "cells.reservoir_exchange@1": "src/cells/models/assembly_lineages/exchange.py#L76",
-    "cells.shared_pool@1": "src/cells/models/assembly_lineages_v2/population.py#L114",
+    "cells.shared_pool@1": "src/cells/models/assembly_lineages_v2/population.py#L124",
     "cells.stochastic_mass_action@1": "src/cells/models/assembly_lineages_v2/mass_action.py#L143",
     "cells.transition_state_factor@1": "src/cells/models/assembly_lineages_v2/transition_state.py#L154"
   },

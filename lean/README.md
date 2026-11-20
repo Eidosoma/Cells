@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [16 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [18 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -14,7 +14,7 @@ Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [16 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 9 of 9 | 9 checked | 9 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 14 of 14 | 10 checked · 4 failed | 11 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 13 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 11 of 11 | 8 checked · 3 failed | 8 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
@@ -126,6 +126,12 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For size-triggered fission and daughter continuation, compare fixed-quota and independent partitions, then follow empty and full daughters through the engine. The driver also compares measured bead-count variance with the probability model. To verify the figure readings, run `pdftocairo -f 3 -l 3 -svg article.pdf figure.svg` on the four-page PDF listed as `vector_pdf` and pass `--figure-svg figure.svg` to the driver. [Partition results and measurements](PROGRESS.md#size-threshold-fission) · [Daughter selection](PROGRESS.md#lineage-daughter-continuation) · [Ledger documentation finding](PROGRESS.md#lineage-fission-sink-sign) · [Figure source](checks/data/fornell2017_partition.json)
+
+```bash
+"$cells_python" -B checks/lineage_fission.py
+```
 
 For serial transfer and shear fission, follow an impermeant tracer through successive washes and from each parent to its daughters. The driver also checks discarded material, signed free energy and refused splits. The biological records include measured wash recovery and paired parent–daughter fluorescence. [Transfer results](PROGRESS.md#vesicle-serial-transfer) · [Division results](PROGRESS.md#vesicle-shear-fission)
 
