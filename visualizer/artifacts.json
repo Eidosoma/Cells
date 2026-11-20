@@ -650,6 +650,20 @@
           "note": "The link this page was first published at, the same day. It is not updated from here."
         }
       ]
+    },
+    "organelle_shelf_look": {
+      "title": "Organelle Shelf Look",
+      "url": "https://claude.ai/artifact/TTfyxa8mDrBC6jtTnJ2RRZ",
+      "page": "out/looks/organelle-shelf-look.html (not tracked: 3.6 MB with its pictures inlined; made by out/scratch-coordinator/make_shelf_look.py from the review's pictures)",
+      "sharing": "private to its owner",
+      "note": "A look for the owner at the Machines view's shelf of organelles as first built, before the first test candidate of Version 53 (20 November 2026): the bench with its scale rail, the travel up, the shelf with the nucleus and a mitochondrion at their published sizes, a machine held beside an organelle in a loupe, an organelle's panel, the dark theme and a phone, and what the next round was changing. The owner had asked that day for the organelles to stand on a shelf at the top of the Machines view, with a way to handle the difference in scale between a nucleus and a proteasome. Pictures of a build that was not published; the view has changed since."
+    },
+    "about_share_look": {
+      "title": "About And Share Look",
+      "url": "https://claude.ai/artifact/Ah4K3p5XanT5TyxoQV2Lfq",
+      "page": "out/looks/about-share-look.html (not tracked: 3.1 MB with its pictures inlined; made by out/scratch-coordinator/make_about_look.py from the review's pictures)",
+      "sharing": "private to its owner",
+      "note": "A look for the owner at the About panel, the first-visit line and what search engines and agents get from the site, with four candidates for the picture a shared link shows (20 November 2026). The owner chose the first picture (the Scope view's cell in the light theme), accepted that the first-visit line does not show on a phone, asked that the page name Eidosoma, and asked for the licence link to go from About. Pictures of a build that was not published; the panel has changed since."
     }
   }
 }
