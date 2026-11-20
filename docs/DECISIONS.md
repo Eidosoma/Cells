@@ -7625,3 +7625,16 @@ probably both in the end", "2. Same get adviser and you choose but we're not in 
      registration before any engine output. A also registers what it does not claim, and includes a
      machine-limited arm with its own plant.
    - **The note's other questions remain open.**
+- **Erratum (lead, 20 November 2026, about 11:12 UTC), from the @3 owner's measurement on the N2
+  development head.** Item 1's "H2's ceiling under N2 ... 292 ms" is wrong.
+  - **292 ms is M1's M term:** the passive patches' membrane charge relaxation at definition,
+    3.42 per s. That is a slope conductance, which N2 moves into the operator; M1's ladder says "N2
+    alone removes J, M and Mc".
+  - **Measured under `imex_ars222_implicit_conductances_n2_alone@0`:** the explicit rate is 2.3e-4
+    per s, which admits about 4,384 s. It is set by each species' material relaxation through patches
+    and junctions, which N2 adds to its bound.
+  - **What binds H2 under N2:** X2's cap and order condition, the accuracy budgets and the step's
+    domain checks. None is a definition-time ceiling.
+  - **The stage rule:** under N2 it counts the kinds' terms. Today's rule never counted the pumps'
+    electrogenic currents, and N2 keeps that.
+  - **The choice to build N2 stands.**
