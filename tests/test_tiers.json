@@ -272,7 +272,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured.json",
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-2b572f87/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/measure-e6b7d794/measured-changed.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/measure-e6b7d794/measured-changed.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/measure-51ef1791/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2300,6 +2301,13 @@
    "root": ".claude/worktrees/gene-regulation-g3",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:02:09+00:00"
+  },
+  {
+   "git_revision": "51ef17916a162a567134eb626a5aacbcb6235927",
+   "dirty": false,
+   "root": ".claude/worktrees/gene-regulation-g3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:13:53+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2988,10 +2996,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 12.07,
+    "seconds": 15.84,
     "exit_code": 0,
     "counts": {
-     "passed": 205
+     "passed": 206
     }
    },
    {
