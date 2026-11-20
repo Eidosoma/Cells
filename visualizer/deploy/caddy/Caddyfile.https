@@ -1,0 +1,12 @@
+# The viewer's site with the server obtaining and renewing its own certificate for cells.eidosoma.ai (deploy/README.md).
+# Ports 80 and 443 of the machine reach it directly; the certificates are kept in the container's data volume.
+{
+	admin off
+	persist_config off
+	email {$ACME_EMAIL}
+}
+
+cells.eidosoma.ai {
+	import site.caddy
+	header Strict-Transport-Security "max-age=31536000"
+}

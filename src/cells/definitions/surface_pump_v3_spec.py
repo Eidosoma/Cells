@@ -413,6 +413,8 @@ def _kind_schedules(registry, declared, given, base):
         if not kind.experiment_keys:
             continue
         schedule = kind.parse_schedule(given.get(kind_id, {}), base, declaration)
+        if schedule is None:  # None of its keys given and no schedule: today's records.
+            continue
         if type(schedule) is not kind_registry.Schedule:
             raise ConfigError(f"Kind {kind_id}'s parse_schedule must return a Schedule")
         end = base.experiment.end_time

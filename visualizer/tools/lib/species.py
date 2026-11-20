@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 FORMAT = "cells.visualizer.species@1"
@@ -305,11 +306,12 @@ class Reader:
             problems.append(f"the {name} level's sheet_mark takes band, note, note_at_um and roomy")
         return problems
 
-    def species(self, path):
-        """One species file as the scene carries it, or None with one warning."""
-        where = path.name
+    def species(self, path, given=None, at=None, stages=True):
+        """One species file as the scene carries it, or None with one warning. `given` is a species already parsed, checked
+        as if it were the file at `path` and named `at`; `stages` False for one read through a stage (schema/SPECIES_STAGES.md)."""
+        where = at or path.name
         try:
-            text = path.read_text(encoding="utf-8")
+            text = path.read_text(encoding="utf-8") if given is None else json.dumps(given, ensure_ascii=False)
             data = json.loads(text)
         except (OSError, ValueError) as error:
             self.warn(where, f"it cannot be read ({type(error).__name__}); it is left out")
@@ -569,7 +571,33 @@ class Reader:
         if own_type is not None:
             out["cell_type"] = {key: value.strip() for key, value in own_type.items()}
         out["sources"] = sources
+        # Its life stages (schema/SPECIES_STAGES.md), read where the page reads them: carried whole where the block and the
+        # species read through each of its drawn stages are sound, else left out with a warning, the species as before.
+        if stages and "stages" in data:
+            block = self.stages(path, data, where)
+            if block is not None:
+                out["stages"] = block
         return out
+
+    def stages(self, path, data, where):
+        """The species' stages block, held to its contract by the page's own reader (src/scene/life_stages.js, through
+        node), and every species read through one of its drawn stages held to this file's contract; None with a warning."""
+        read = read_stages(data)
+        if read.get("error"):
+            self.warn(where, f"its stages cannot be read: {read['error']}; the species is shown without them")
+            return None
+        if read["problems"]:
+            first = read["problems"][0]
+            more = f" (and {len(read['problems']) - 1} more: {'; '.join(item['code'] for item in read['problems'][1:4])})" if len(read["problems"]) > 1 else ""
+            self.warn(where, f"its stages are refused, {first['code']}: {first['says']}{more}; the species is shown without them")
+            return None
+        warned = len(self.warnings)
+        for stage in read["drawn"]:
+            self.species(path, given=stage["species"], at=f"{where} at its stage {stage['id']}", stages=False)
+        if len(self.warnings) > warned:
+            self.warn(where, "a species read through one of its stages breaks the species contract (above); the species is shown without its stages")
+            return None
+        return data["stages"]
 
     def run(self):
         found = []
@@ -584,9 +612,56 @@ class Reader:
             self.warn("files", f"exactly one species is the default; {len(defaults)} say so" + (f" ({', '.join(defaults)})" if defaults else ""))
             for item in found:
                 item["default"] = item["id"] == (defaults[0] if defaults else found[0]["id"])
-        used = {entry["shape"]["ref"] for item in found for entry in item["levels"] if entry.get("shape", {}).get("kind") == "outline"}
+        # The outlines its levels name, and those its life stages' levels name (schema/SPECIES_STAGES.md).
+        levels = lambda item: [*item["levels"], *(level for stage in item.get("stages", {}).get("list", []) for level in stage.get("levels", []))]  # noqa: E731
+        used = {entry["shape"]["ref"] for item in found for entry in levels(item) if isinstance(entry.get("shape"), dict) and entry["shape"].get("kind") == "outline"}
         shapes = {name: {key: value for key, value in data.items() if key != "_names"} for name, data in self.shapes.items() if data and name in used}
         return found, shapes
+
+
+# The page's own reader of a species' life stages: the build asks it, so that the block and the species read through a
+# stage are worked out once (schema/SPECIES_STAGES.md). It needs node; where node is missing or the reader throws, the
+# warning says what failed, and for which species and stage.
+LIFE_STAGES = Path(__file__).resolve().parents[2] / "src" / "scene" / "life_stages.js"
+STAGES_SCRIPT = """
+import { readFileSync } from "node:fs";
+const { readStages, speciesAt } = await import(process.argv[1]);
+const species = JSON.parse(readFileSync(0, "utf8"));
+const read = readStages(species);
+const out = { problems: read && !read.ok ? read.problems : [], drawn: [] };
+if (read?.ok) {
+  for (const stage of read.stages) {
+    if (stage.own || stage.missing !== undefined) continue;
+    let composed;
+    try {
+      composed = speciesAt(species, stage.id);
+    } catch (error) {
+      throw new Error(`the reader failed at the stage ${stage.id}: ${error.message}`);
+    }
+    const { stages, stage: _at, ...file } = composed;
+    out.drawn.push({ id: stage.id, species: file });
+  }
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+def read_stages(data):
+    """{problems, drawn: [{id, species}]} from the page's reader, or {error} saying what failed."""
+    try:
+        done = subprocess.run(["node", "--input-type=module", "-e", STAGES_SCRIPT, LIFE_STAGES.as_uri()], input=json.dumps(data), capture_output=True, text=True, timeout=60, check=False)
+    except FileNotFoundError:
+        return {"error": "node is not on this machine, and the build reads stages through src/scene/life_stages.js"}
+    except subprocess.TimeoutExpired:
+        return {"error": "the page's reader (src/scene/life_stages.js, through node) did not answer within a minute"}
+    if done.returncode != 0:
+        lines = [line for line in done.stderr.splitlines() if line.strip()]
+        said = next((line for line in lines if line.startswith("Error")), lines[-1] if lines else f"node ended with {done.returncode}")
+        return {"error": f"the page's reader (src/scene/life_stages.js, through node) failed: {said.strip()[:300]}"}
+    try:
+        return json.loads(done.stdout)
+    except ValueError:
+        return {"error": "the page's reader (src/scene/life_stages.js, through node) gave no answer it could be read by"}
 
 
 def read_species(folder, capabilities, left_out=(), parts=None):

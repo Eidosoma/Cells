@@ -27,7 +27,9 @@ files are timed individually and grouped into tiers:
            its row, its passed count falls below the row's or its skipped count rises
            above it (tests silently lost to collection or a skipif); a passed count
            above the row's is reported in summary.json's count_increases (a stale
-           row to re-measure), not changed
+           row to re-measure), not changed. With --scope-map DIR (the nightly run only,
+           D229), each file's processes also record what they read of the tree, into
+           DIR/<file> (scripts/gates/scope_inject; scripts/gates/scope.py builds the map)
 
 Tier 3 (D187): its rows hold no outcome (they hit the 90 s measuring cap), so each
 landing's final tier-3 table is frozen per test ID in tests/tier3_record.json, and a
@@ -134,7 +136,7 @@ def _test_files():
     return sorted(str(p.relative_to(ROOT)) for p in (ROOT / "tests").rglob("test_*.py"))
 
 
-def _run_file(path, cpu, cap, log_dir):
+def _run_file(path, cpu, cap, log_dir, scope=None):
     """One test file under the standard gate environment.
 
     Scientific code is float64 (JAX_ENABLE_X64), and tests that write outputs or
@@ -156,6 +158,10 @@ def _run_file(path, cpu, cap, log_dir):
         CELLS_OUTPUT_ROOT=str(outputs),
         CELLS_COMPONENT_EVIDENCE=str(evidence),
     )
+    if scope:  # The scope map's recorder (sitecustomize), in this file's processes only.
+        env["PYTHONPATH"] = os.pathsep.join([str(ROOT / "scripts" / "gates" / "scope_inject"),
+                                             env["PYTHONPATH"]])
+        env.update(CELLS_SCOPE_LOG=str(Path(scope) / slug), CELLS_SCOPE_ROOT=str(ROOT))
     log = log_dir / (slug + ".log")
     cmd = [
         "taskset",
@@ -198,7 +204,7 @@ def _run_file(path, cpu, cap, log_dir):
     }
 
 
-def _parallel(files, cpus, cap, out_dir, record_path, header):
+def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None):
     log_dir = out_dir / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     results, free = [], list(cpus)
@@ -206,7 +212,7 @@ def _parallel(files, cpus, cap, out_dir, record_path, header):
     def task(path):
         cpu = free.pop()
         try:
-            return _run_file(path, cpu, cap, log_dir)
+            return _run_file(path, cpu, cap, log_dir, scope)
         finally:
             free.append(cpu)
 
@@ -426,8 +432,12 @@ def run(args):
         "tiers": args.tier,
         "cap_seconds": args.cap,
     }
+    scope = getattr(args, "scope_map", None)  # Callers that build args by hand may omit it.
+    if scope:
+        header["scope_map"] = str(Path(scope).resolve())
     results = _parallel(
-        [r["file"] for r in wanted], args.cpus, args.cap, out, out / "run.json", header
+        [r["file"] for r in wanted], args.cpus, args.cap, out, out / "run.json", header,
+        scope and Path(scope).resolve(),
     )
     changed, increases = compare_with_record(results, {r["file"]: r for r in wanted})
     summary = {
@@ -1035,6 +1045,7 @@ def main(argv=None):
     r.add_argument("--out", required=True)
     r.add_argument("--cpus", type=cpus, default=[4, 5, 6, 7])
     r.add_argument("--cap", type=float, default=300.0)
+    r.add_argument("--scope-map", help="record each file's reads of the tree into this folder")
     c = sub.add_parser("collect", help="the test IDs of finished runs' files, from their tree")
     c.add_argument("--run", required=True, nargs="+", help="run folders on one tree")
     c.add_argument("--out", help="listing to write (default RUN/collected.json)")

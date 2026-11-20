@@ -7541,3 +7541,100 @@ review):
    - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
      that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
      per-trace criterion.
+
+## D233: FR-7's closed-loop world scales its template five-fold
+
+2026-11-19, about 23:02 UTC. The user, choosing among the lead's options after the advisor's review
+and the references' measurement: "lets do option 2".
+
+- **F4, R-loop's world (D231), scales the template's half-saturation K and its dose together, ×5:**
+  K 0.05 mM and dose 0.5 mM. n 2, the 20 s half-life, basal b_T 0.2 and ε 2 × 10⁻⁶ are unchanged.
+  Only c/K drives the cell, so F_T(t), t_clear (260 s) and every non-template row are unchanged. The
+  references show that identity before they register.
+- **Why:** in F4's 7.5 fL cell, R-chain's template falls under D150 §1.3's mean-field floor (about
+  10² molecules per cell) at 243 s, before the cut at t_d = 260 s. Clearance (D ≤ ε) then comes at
+  about 64 molecules. The references measured how far replacing that sub-floor tail (set to zero, or
+  held at 10² molecules) moves the judged effect, the closed arm minus the cut arm:
+  - up to 9.5% at ×1 (R, 10 s after the cut);
+  - at most 6 × 10⁻⁵ at ×5. There the floor comes at 289 s, after the cut, clearance comes at about
+    320 molecules, and the cut's applied factor F* no longer depends on the tail.
+- **The tail is registered as a bounded term.** Both sides run the same mean-field tail, and neither
+  applies a floor. The comparison would detect a different treatment: even at ×5, up to about 10
+  bands on s at late rows. R-loop registers the ×5 floor table with its rows.
+- **The lead's earlier rule is withdrawn.** "1% of the tightest band" was the wrong yardstick: the
+  bands measure numerical agreement between two codes running the same equations. The judged effect
+  is the yardstick.
+
+## D234: Option 2 of the core-laws roadmap, and gene regulation's design begins
+
+2026-11-19, about 23:29 UTC. The user, choosing among the lead's options after the advisor's review
+of the core-laws roadmap (branch core-laws-roadmap): "option 2 as you suggest, lets start gene
+regulation as well".
+
+1. **Option 2.** The energy groundwork and mitochondria go to the kinds and binding owners and a new
+   mitochondria lane. The operators, F and @3 owners keep D222's order for FR-1 to FR-10 and the
+   Xenopus lane (D225).
+   - **Kinds owner:** land symporter version 2 and the schedules, and the net-flow step-bound
+     follow-up. Then: moved fuel at closure nodes, the cycle kind's trapezoid booking, the Δp readout
+     and, for host P's per-complex respiration, chemistry at P.
+   - **Binding owner:** registry entries for the nucleotides and the respiratory carriers, then the
+     registry moieties.
+   - **A new mitochondria lane** writes the mitochondrial laws (new files under `laws/cycles/`, D209)
+     and `validation/mitochondria/`. Its first milestone, MT-1, is one isolated cardiac mitochondrion,
+     lumped, on @3.
+   - **References:** the code-blind Beard 2005 reference, already running, serves MT-2. Fresh
+     code-blind agents write the component references, from the laws' appendix of declared
+     equations.
+   - **Agents stay within the cap of seven.** New origin-of-life work waits for a free seat (D230).
+2. **Gene regulation begins with a design note.** D145's hold is lifted for the design: transcription
+   and translation as physics, regulatory networks as declared laws, and how they are verified. Its
+   options come to the user before any engine code is written. D218's door is unchanged until then.
+
+## D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A
+
+2026-11-20, about 10:53 UTC. The user, on the lead's morning brief: "1. decide with adviser but
+probably both in the end", "2. Same get adviser and you choose but we're not in a hurry per se",
+"3. yes, get adviser also on this". The lead's choices, after the advisor's review:
+
+1. **FR-8: N2 first, then C, both built.** D232's rule 1 holds: charge stability limits H2's calm
+   stretch above 20 ms, also from the calm state at 1000 s (§10.8's probe), and the @3 owner confirmed
+   that N2 removes that refusal.
+   - **N2 is rung 1 as registered.** The @3 owner builds it. H2's ceiling under N2 is the explicit-rate
+     bound on what stays explicit, 292 ms, against 200 ms for the registered gain of 10.
+   - **C is required, not optional.** N2 alone is predicted to gain about 1 on FR-8's acceptance
+     reading through the cue, which the location rule caps at 1 ms. C, the fine-window executor,
+     starts once three things are settled: its files' owner, disjoint from @3's step; X2 across a
+     step change, measured; and a dated registration entry.
+2. **Mitochondria: host P for MT-1 and MT-2,** as MITOCHONDRIA_DESIGN §3.6, §5.2 and §7 recommend.
+   P1′ found no accuracy reason to leave it.
+   - **MT-1** runs on today's solver at declared activities.
+   - **MT-2 at Beard's synthase activity** adds the cycles and faces to N2's operator later.
+   - **The outer membrane and the IMS kinase stay in host P's world.** The code-blind reference
+     found a 577 µM outer-membrane ADP gradient and the IMS kinase at 44 times respiration.
+   - **K3**, chemistry at P, starts now. Host C, with the three complexes, stays the in-cell host
+     (M6).
+   - **Still the user's:** the Beard repairs (D209), put as one question with one combined arm's
+     numbers.
+3. **Gene regulation: option A,** one gene, open loop, deterministic, expression as templated
+   polymerisation with its ATP cost. It is judged against exact references only, and starts when seats
+   free.
+   - **First,** the design note is refreshed against main: the charged ATP set, moieties and moved fuel
+     at closure nodes.
+   - **The operator's moiety hook** lands with it.
+   - **The mitochondria pattern applies:** an equation sheet, a tag, code-blind references, and
+     registration before any engine output. A also registers what it does not claim, and includes a
+     machine-limited arm with its own plant.
+   - **The note's other questions remain open.**
+- **Erratum (lead, 20 November 2026, about 11:12 UTC), from the @3 owner's measurement on the N2
+  development head.** Item 1's "H2's ceiling under N2 ... 292 ms" is wrong.
+  - **292 ms is M1's M term:** the passive patches' membrane charge relaxation at definition,
+    3.42 per s. That is a slope conductance, which N2 moves into the operator; M1's ladder says "N2
+    alone removes J, M and Mc".
+  - **Measured under `imex_ars222_implicit_conductances_n2_alone@0`:** the explicit rate is 2.3e-4
+    per s, which admits about 4,384 s. It is set by each species' material relaxation through patches
+    and junctions, which N2 adds to its bound.
+  - **What binds H2 under N2:** X2's cap and order condition, the accuracy budgets and the step's
+    domain checks. None is a definition-time ceiling.
+  - **The stage rule:** under N2 it counts the kinds' terms. Today's rule never counted the pumps'
+    electrogenic currents, and N2 keeps that.
+  - **The choice to build N2 stands.**

@@ -1,0 +1,87 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "dewkin",
+ "label": "Dewkin",
+ "organism": "Rorida exemplaris",
+ "plain": "A made-up animal for the life stages' check: its file describes the adult, and its stages are read over it. Every name, number and source is made up.",
+ "group": "Made up for a check",
+ "order": 95,
+ "default": false,
+ "made": "2026-11-19",
+ "modelled": {
+  "state": "generic",
+  "text": "A made-up species for a check: Cells models a generic cell and a sheet of such cells, not this animal."
+ },
+ "levels": [
+  {"id": "molecules"},
+  {
+   "id": "cell",
+   "shape": {"kind": "prism", "sides": 6, "radius_um": 10.6, "height_um": 13, "corner_um": 2.4, "edge_um": 1.3},
+   "note": "A made-up cell of the adult's sheet; its shape and sizes are the picture's choice."
+  },
+  {
+   "id": "tissue",
+   "shape": {"kind": "cell sheet", "rings": 6},
+   "note": "A made-up sheet, drawn on the adult's fin for the scales only."
+  },
+  {
+   "id": "organ",
+   "label": "Fin",
+   "shape": {"kind": "outline", "ref": "dewkin", "parts": ["fin"], "context": ["body"]},
+   "note": "A made-up fin, as a placeholder outline.",
+   "sources": ["made"]
+  },
+  {
+   "id": "organism",
+   "label": "Whole dewkin",
+   "shape": {"kind": "outline", "ref": "dewkin"},
+   "note": "A made-up adult, 40 mm long, as a placeholder outline.",
+   "sources": ["made"]
+  }
+ ],
+ "cell": {
+  "facts": [{"label": "The outline's length", "value": "40 mm (made up)", "sources": ["made"]}],
+  "parts": {"membranes": 1, "wall": false, "nucleus": true, "organelles": ["er", "golgi", "mitochondria"]},
+  "capabilities": {}
+ },
+ "stages": {
+  "system": {"id": "ds", "label": "Dewkin stage", "short": "DS", "sources": ["made"]},
+  "times_after": "fertilisation",
+  "opens_on": "egg",
+  "list": [
+   {
+    "id": "egg", "order": 1, "index": "1", "label": "Egg",
+    "plain": "The made-up egg: one cell about a millimetre across, before its first division.",
+    "ends_at": "cell",
+    "no_further_levels": "An egg is one cell: it has no tissue, organ or body yet.",
+    "levels": [
+     {"id": "cell", "label": "The egg", "shape": {"kind": "sphere", "across_um": 1000}, "note": "A made-up egg, 1 mm across: about sixty times any cell drawn before it. It is drawn with the adult's cell's parts, enlarged: what an egg holds is not stated.", "sources": ["made"]}
+    ],
+    "cell": {
+     "facts": [{"label": "Diameter", "value": "1 mm (made up)", "sources": ["made"]}],
+     "capabilities": {"cap.junctions": {"place": "absent", "why": "One cell has no neighbour to share a junction with."}}
+    }
+   },
+   {
+    "id": "two-cell", "order": 2, "index": "2", "label": "Two cells",
+    "time": {"value": 80, "unit": "min", "about": true, "temperature_c": 20, "sources": ["made"], "where": "a made-up table, row 2"},
+    "missing": "No size of the two-cell form is in hand: it is made up only as a name."
+   },
+   {
+    "id": "larva", "order": 3, "index": "30-31", "label": "Larva",
+    "time": {"value": 3, "unit": "d", "temperature_c": 20, "sources": ["made"], "where": "a made-up table, row 30"},
+    "levels": [
+     {"id": "organ", "label": "Fin", "shape": {"kind": "outline", "ref": "dewkin-larva", "parts": ["fin"], "context": ["body"]}, "note": "A made-up larva's fin, as a placeholder outline.", "sources": ["made"]},
+     {"id": "organism", "label": "Whole larva", "shape": {"kind": "outline", "ref": "dewkin-larva"}, "note": "A made-up larva, 8 mm long, as a placeholder outline.", "sources": ["made"]}
+    ]
+   },
+   {"id": "adult", "order": 4, "label": "Adult", "own": true}
+  ],
+  "spans": [
+   {"from": "egg", "to": "two-cell", "fill": {"kind": "prescribed", "run": "e07-v1--stages-check--seed1"}, "note": "A made-up run, for the check only."}
+  ]
+ },
+ "sources": {
+  "made": {"text": "Made up for the life stages' check.", "url": "https://example.org/made-up", "licence": "CC BY 4.0", "class": "permissive", "accessed": "2026-11-19"}
+ }
+}

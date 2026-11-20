@@ -601,7 +601,10 @@ test("the shelves' files keep their size limits, and say that everything in them
 
 const SAVED = existsSync(path.join(EVIDENCE, "requests.json")) && ["interpro-hierarchy-and-go", "terms-upstream-tools"].every((source) => existsSync(path.join(DATASETS, source, "MANIFEST.json")));
 
-test("the build tool reproduces the atlas, the tables, the shelves and the README from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set PLANARIAN_EVIDENCE and PLANARIAN_DATASETS)" }, async () => {
+test("the build tool reproduces the atlas, the tables, the shelves and the README from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set PLANARIAN_EVIDENCE and PLANARIAN_DATASETS)" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*"), path.join(DATASETS, "..", "*", "*")], evidence: [EVIDENCE], env: ["PLANARIAN_DATASETS", "PLANARIAN_EVIDENCE"] })) return;
   const out = await mkdtemp(path.join(os.tmpdir(), "planarian-atlas-"));
   try {
     const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--datasets", DATASETS, "--out-atlas", path.join(out, "planarian.json"), "--out-reference", path.join(out, "planarian")], { encoding: "utf8", timeout: 900000 });

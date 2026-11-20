@@ -23,6 +23,7 @@ off until 15 ms and on after it, serves every run:
 
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
+from typing import NamedTuple
 
 import jax
 import numpy as np
@@ -31,8 +32,11 @@ import pytest
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
+from cells.models import pump_composite
 from cells.operators import membrane_state
 from cells.operators import population_unit_turnover as put
+from cells.operators import species_regulated_availability as sra
+from cells.operators.contract import Operator
 from cells.registry import species_registry
 from cells.registry.inventory_species import add_inventory_species
 from cells.registry.models import get_model
@@ -146,22 +150,22 @@ CASES = {
 
 
 def case_world(name):
+    """The case's world: its initial pools declared (initial_pool_units, bound into the state),
+    and its written units planted on membrane state's increment."""
     entries, assembly, removal, pools0, written = CASES[name]
     routes = [
-        fx.route(f"r{i}", pop, pools=m, tau=None if m == 0 else m / kappa)
+        fx.route(f"r{i}", pop, pools=m, tau=None if m == 0 else m / kappa, initial=pools0[i])
         for i, (pop, m, kappa) in enumerate(entries)
     ]
     controls = {f"r{i}": [(0.0, assembly[i], removal[i])] for i in range(len(entries))}
     spec, model, op, state, p = bound(routes, controls)
-    depth = max(m for _, m, _ in entries)
-    pools = np.zeros((len(entries), depth))
     for i, values in enumerate(pools0):
-        pools[i, : len(values)] = values
+        assert list(np.asarray(state.unit_pool_units)[i, : len(values)]) == values  # Bound.
     increment = np.array(state.population_abundance_increment, dtype=float)
     channels = [c.id for c in spec.model.channels]
     for i, (pop, _, _) in enumerate(entries):
         increment[channels.index(pop)] = written[i]
-    state = state._replace(unit_pool_units=pools, population_abundance_increment=increment)
+    state = state._replace(population_abundance_increment=increment)
     return spec, model, op, state, p
 
 
@@ -267,10 +271,11 @@ def test_removal_of_the_written_units_only_fails_the_exact_chain_row(monkeypatch
 
 
 def test_the_account_and_the_untouched_rows():
+    """The account from the bound start, its declared initial pools included (D232's W5
+    ruling)."""
     spec, model, op, state, p = case_world("shared")
     _, assembly, removal, _, _ = CASES["shared"]
-    # The account is cumulative from the bound start, where every pool is empty.
-    state = state._replace(unit_pool_units=np.zeros_like(state.unit_pool_units))
+    assert float(np.asarray(p.unit_route_initial_units)[0]) == 25.0  # Route r0's one pool.
     new, ok = step(op, state, p, assembly, removal)
     assert bool(ok)
     species = list(spec.model.species_ids)
@@ -294,6 +299,18 @@ def test_the_account_and_the_untouched_rows():
         assert np.all(np.abs(ledgers[name]) <= bound_), name
     assert np.all(np.abs(ledgers["population_abundance_entity"]) <= 1e-9)
     assert np.all(np.abs(ledgers["local"][row]) <= 1e-20)
+
+
+def test_an_initial_pool_missing_from_the_account_fails_the_chain_ledger():
+    """The plant leaves the declared initial units in transit out of the account (D232's W5
+    ruling): the chain ledger is off by them."""
+    spec, model, op, state, p = case_world("shared")
+    _, assembly, removal, _, _ = CASES["shared"]
+    p = p._replace(unit_route_initial_units=np.zeros_like(p.unit_route_initial_units))
+    new, _ = step(op, state, p, assembly, removal)
+    ledgers = model.balances(new, p)
+    bound_ = op.own_bounds(op.own_magnitudes(new, p, xp=np), 1)[0]
+    assert np.max(np.abs(ledgers["unit_chain"])) > 1e6 * np.max(bound_)
 
 
 def test_a_moved_amount_booked_twice_fails_the_conversion_ledger():
@@ -383,6 +400,22 @@ REFUSALS = {
         "neutral species only",
     ),
     "unknown key": (lambda b: b["routes"][0].update(stray=1), "stray"),
+    "initial pools not a list": (
+        lambda b: b["routes"][0].update(initial_pool_units=0.0),
+        "initial_pool_units is an explicit list of its 2 maturation pools",
+    ),
+    "initial pools of the wrong length": (
+        lambda b: b["routes"][0].update(initial_pool_units=[1.0]),
+        "initial_pool_units is an explicit list of its 2 maturation pools",
+    ),
+    "a negative initial pool": (
+        lambda b: b["routes"][0].update(initial_pool_units=[1.0, -1.0]),
+        "initial_pool_units entry must be finite and nonnegative",
+    ),
+    "initial pools left out": (
+        lambda b: b["routes"][0].pop("initial_pool_units"),
+        "initial_pool_units",
+    ),
 }
 
 
@@ -524,8 +557,10 @@ def test_a_d152_reaction_on_the_precursor_and_an_in_step_mover_are_refused(monke
 
 def test_turnover_supplies_the_precursor_and_the_bound_reads_the_supply():
     routes, controls = base_routes()
+    routes[0]["initial_pool_units"] = [300.0, 200.0]  # Counted in the bound (D232's W5 ruling).
     raw = fx.with_supply(definition(routes, controls), [(0.0, 0.0), (0.015, 1e-3)])
     spec = parse_spec(raw)  # Two writers of one row, admitted (Q3).
+    assert parse_spec(composite_spec.to_dict(spec)).model.operators == spec.model.operators
     laws = [d.law for d in spec.model.operators]
     assert laws.index(fx.TURNOVER) < laws.index(put.LAW_ID)
     declaration = spec.model.operators[laws.index(put.LAW_ID)]
@@ -534,9 +569,133 @@ def test_turnover_supplies_the_precursor_and_the_bound_reads_the_supply():
     area = next(m for m in spec.model.membranes if m.id == kir.membrane_id).area_m2
     row = list(spec.model.species_ids).index(fx.PRECURSOR)
     pool = spec.model.cells[0].initial_amount_fmol[row] + 1e-3 * spec.experiment.end_time
-    units = kir.abundance * area * fx.DENSITY + (6.02214076e23 * 1e-15 / 4) * pool
+    units = kir.abundance * area * fx.DENSITY + 500.0 + (6.02214076e23 * 1e-15 / 4) * pool
     got = next(c for c in checked.model.channels if c.id == "kir_0").abundance
     assert got == pytest.approx(units / (area * fx.DENSITY), rel=1e-15)
+
+
+# ------------------------------------------------------------------ B1′: the routable assembly rate
+
+
+class UnitControl(NamedTuple):
+    unit_assembly_rate: np.ndarray
+    unit_removal_rate: np.ndarray
+
+
+class _Planted(Operator):
+    """A planted rate-route source (B1′): a declared factor on the producer's assembly rate and
+    its validity, or no route (factor None)."""
+
+    LAW_ID = "tests.planted_unit_route@1"
+    SPLIT = True
+    RK4 = "split"
+    RATE_ROUTES = ((put.LAW_ID, "unit_assembly_rate"),)
+
+    def __init__(self, factor, valid=True):
+        self.factor, self.valid = factor, valid
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        if self.factor is None:
+            return None
+        return np.asarray(self.factor), np.asarray(self.valid)
+
+
+def _bitwise_but(a, b, skipped=None):
+    for name in type(a)._fields:
+        if name != skipped:
+            assert np.asarray(getattr(a, name)).tobytes() == np.asarray(getattr(b, name)).tobytes()
+
+
+def test_the_assembly_rate_is_routable_and_a_route_multiplies_it_in_the_half_step():
+    """B1′'s target side (docs/INVENTORY_COUPLING_DESIGN.md §2.1): the producer declares its
+    assembly rate routable, and its elements are its routes at their cells. Beside a route source
+    declared before it, the composite's half-step is bitwise the half-step at the product rate.
+    Planted: an invalid evaluation (a range breach) refuses the half-step, and a source with no
+    route in the definition leaves the call unchanged."""
+    spec, model, op, state, p = case_world("shared")
+    _, assembly, removal, _, _ = CASES["shared"]
+    declaration = next(d for d in spec.model.operators if d.law == put.LAW_ID)
+    assert dict(op.ROUTABLE_CONTROLS) == {"unit_assembly_rate": "rate"}
+    cells = op.routable_elements(declaration, "unit_assembly_rate")
+    assert cells == (("r0", fx.CELL), ("r1", fx.CELL))
+    state_op = model.operators[0]
+    factor = np.array([0.5, 0.25])
+    composite = pump_composite.Composition(model.inner, (state_op, _Planted(factor), op))
+    assert composite.rate_routes == {op: ((composite.operators[1], "unit_assembly_rate"),)}
+    control = UnitControl(np.asarray(assembly, dtype=float), np.asarray(removal, dtype=float))
+    routed, ok = composite._half_step(op, state, H, control, p, xp=np)
+    expected, ok_expected = step(op, state, p, np.asarray(assembly) * factor, removal)
+    assert bool(ok) and bool(ok_expected)
+    _bitwise_but(routed, expected)
+    breach = pump_composite.Composition(model.inner, (state_op, _Planted(factor, False), op))
+    _, ok = breach._half_step(op, state, H, control, p, xp=np)
+    assert not bool(ok)
+    idle = pump_composite.Composition(model.inner, (state_op, _Planted(None), op))
+    unrouted, ok = idle._half_step(op, state, H, control, p, xp=np)
+    plain, _ = step(op, state, p, assembly, removal)
+    assert bool(ok)
+    _bitwise_but(unrouted, plain)
+    assert not np.array_equal(routed.unit_consumed_fmol, plain.unit_consumed_fmol)  # It acts.
+
+
+def test_the_coupling_v2_routes_a_template_onto_the_assembly_rate():
+    """F3's code (B1′ on species_regulated_availability@2; development, not judged): a Hill
+    activation of a template species in the cell, F = b + (1 - b) c^n / (K^n + c^n), multiplies the
+    producer's assembly rate in its half-steps. It parses, round trips and binds one route; the
+    routed half-step is bitwise the half-step at the product rate, and records F; switched off
+    (the cut control), F is exactly 1 and the half-step is the scheduled one. Planted, each
+    refused: the producer declared before its route's source, and the template outside the
+    declared operating range while the coupling is on (off, the same breach is admitted)."""
+    routes, controls = base_routes()
+    spec = parse_spec(fx.with_template_route(definition(routes, controls)))
+    again = parse_spec(composite_spec.to_dict(spec))
+    assert again.model.operators == spec.model.operators
+    assert again.experiment.operators == spec.experiment.operators
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    coupling = next(o for o in model.operators if o.LAW_ID == fx.COUPLING_2)
+    producer = next(o for o in model.operators if o.LAW_ID == put.LAW_ID)
+    assert model.rate_routes == {producer: ((coupling, "unit_assembly_rate"),)}
+    assert np.asarray(p.coupling_unit_assembly_rate_routes).tolist() == [[0]]
+    row = list(spec.model.species_ids).index(fx.TEMPLATE)
+    amount = np.asarray(p.amount_reference)[row, 0] + np.asarray(state.amount_increment)[row, 0]
+    c = amount / np.asarray(p.volume)[0]
+    expected = 0.1 + 0.9 * c**2 / (1e-3**2 + c**2)
+    factor, ok = coupling.rate_factors(state, p, put.LAW_ID, "unit_assembly_rate", xp=np)
+    assert bool(ok) and float(factor[0]) == pytest.approx(expected, rel=1e-14) and expected < 1
+    values = composite_spec.control_values(spec, [0.0])
+    control = model.CONTROL_TYPE(*(v[0] for v in values))
+    h = 0.5 * spec.execution.dt
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    routed, ok = model._half_step(producer, state, h, control, p, xp=np)
+    product = control._replace(unit_assembly_rate=control.unit_assembly_rate * factor)
+    by_hand, _ = producer.half_step(state, h, product, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(routed, by_hand, record)
+    assert np.asarray(getattr(routed, record)).tobytes() == np.asarray(factor).tobytes()
+    off = state._replace(coupling_enabled=np.zeros_like(state.coupling_enabled))
+    cut, ok = model._half_step(producer, off, h, control, p, xp=np)
+    plain, _ = producer.half_step(off, h, control, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(cut, plain, record)
+    assert not np.array_equal(routed.unit_consumed_fmol, cut.unit_consumed_fmol)  # It acts.
+    assert np.asarray(getattr(cut, record)).tolist() == [1.0]  # The factor applied: exactly 1.
+    with pytest.raises(ConfigError, match="precedes it"):
+        parse_spec(fx.with_template_route(definition(routes, controls), coupling_first=False))
+    narrow = parse_spec(
+        fx.with_template_route(definition(routes, controls), operating_range=(0.5, 1.0))
+    )
+    model2 = get_model(narrow.model)
+    state2, p2 = model2.initial_values(narrow)
+    producer2 = next(o for o in model2.operators if o.LAW_ID == put.LAW_ID)
+    _, ok = model2._half_step(producer2, state2, h, control, p2, xp=np)
+    assert not bool(ok)
+    off2 = state2._replace(coupling_enabled=np.zeros_like(state2.coupling_enabled))
+    _, ok = model2._half_step(producer2, off2, h, control, p2, xp=np)
+    assert bool(ok)
 
 
 # ------------------------------------------------------------------ one compiled world

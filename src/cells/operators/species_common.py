@@ -11,6 +11,11 @@ are built.
   evidence (the protein catalogue plan's constraint 6), given exactly when a reference is. The
   identity reaches the summary and the definition, never the arrays. Two operators that declare
   one species must declare the same identity.
+* **Charged rows** (FR-15 S1, the lead's rulings of 19 November 2026): the operators act on
+  neutral species, except local_species_reactions@1, whose reactions conserve charge. Every listed
+  species is impermeant on @3's own routes (check_impermeant), except a declared counter-ion that
+  @3's explicit-rate bound covers on each of its routes (check_counter_ion); a charged trace row's
+  permeation is the passive-routes kind's constant-field law.
 * **At most 16 species per world** (§2.6; FR-9 / D165 raised it from 7 on the W4 probe, §13),
   refused in every species operator's definition check, with the reason in the message. The cap
   counts every species, ions included.
@@ -91,8 +96,14 @@ class Occupant:
 # ------------------------------------------------------------------ identity and the cap
 
 
-def parse_species(raw, base, law):
-    """The species list of an operator's declaration (neutral species of the inner model)."""
+def parse_species(raw, base, law, *, charged=False, counter_ions=frozenset(), limit=""):
+    """The species list of an operator's declaration: neutral species of the inner model, or
+    (charged=True: FR-15 S1, local_species_reactions@1) charged ones too.
+
+    Every listed species is impermeant on @3's own routes (check_impermeant), except a declared
+    counter-ion (counter_ions), which is charged and covered by @3's explicit-rate bound on each
+    of its routes (check_counter_ion). limit: the operator's stated reason a charged species is
+    refused (charged=False)."""
     if type(raw) is not list or not raw:
         raise ConfigError(f"{law} declares the species it acts on in a non-empty list")
     m = base.model
@@ -103,12 +114,17 @@ def parse_species(raw, base, law):
         name = identifier(entry["id"])
         if name not in valence:
             raise ConfigError(f"{law} acts on a species the model does not declare: {name!r}")
-        if valence[name] != 0:
+        if valence[name] != 0 and not charged:
             raise ConfigError(
                 f"{law} acts on neutral species only (valence 0); {name!r} has valence "
-                f"{valence[name]}"
+                f"{valence[name]}{limit}"
             )
-        check_impermeant(m, name, law)
+        if name in counter_ions:
+            if valence[name] == 0:
+                raise ConfigError(f"{law}: a counter-ion is charged; {name!r} has valence 0")
+            check_counter_ion(base, name, law)
+        else:
+            check_impermeant(m, name, law)
         identity = registry.parse_identity(entry["catalogue"], entry["evidence"], law)
         species.append(SpeciesIdentity(name, identity.catalogue, identity.evidence))
     if len({s.id for s in species}) != len(species):
@@ -168,7 +184,82 @@ def check_impermeant(model, name, law):
             f"{name!r} has a route through {routes[0]}: @3's explicit-rate bound covers a neutral "
             "species on faces alone, and on membranes and junctions bounds only the z^2-weighted "
             "charge relaxation, so such a species would have no material-rate bound at the "
-            "definition"
+            "definition (a charged trace row likewise: its permeation goes through the "
+            "passive-routes kind's constant-field law; FR-15)"
+        )
+
+
+# FR-15 S1 (the lead's rulings of 19 November 2026): a charged counter-ion row may keep @3's own
+# routes where @3's explicit-rate bound holds its permeation. On each route, the row's own
+# charge-relaxation term in the bound (surface_pump.explicit_rate_bound: slope z^2 P A max(c)/C at
+# the cell, twice on a junction; membrane_rate's channel term alike) must be at least this many
+# times its own material term (neutral_material_rate's form: P A (1/V_a + 1/V_b)). P and A (and a
+# channel's opening) cancel, so the test is slope z^2 max(c) / C >= COVERAGE (1/V_a + 1/V_b) at
+# the declared state the bound reads. 100 leaves room for the constant-field material factor
+# g(u) <= 1 + |u| up to |u| = 99 (2.5 V at z = 1). @3's major ions in a pL cell sit near 5e4; a
+# 1 µM trace row near 0.4 is refused, its permeation the passive-routes kind's.
+COUNTER_ION_COVERAGE = 100.0
+
+
+def counter_ion_margin(base, name):
+    """(the smallest margin over species `name`'s @3 routes of its own charge-relaxation term
+    over its own material term, that route) at the declared state; (inf, None) without a route.
+    Membranes and channels on patches, junctions between cells, as the bound reads them."""
+    from cells.definitions.surface_pump_v3_spec import projection
+    from cells.laws.electrochemistry import F, R
+    from cells.models import surface_kinetic as kinetic
+
+    m = base.model
+    row = m.species_ids.index(name)
+    _, p = kinetic.initial_values(projection(base))
+    z2 = float(np.asarray(p.valence).reshape(-1)[row]) ** 2
+    slope = F * F / (R * float(p.temperature))
+    ci = np.where(p.active, p.amount_reference[row] / p.volume, 0.0)  # mM = mol/m^3.
+    co = np.where(
+        p.outside_active, p.extracellular_amount_reference[row] / p.extracellular_volume, 0.0
+    )
+    n = p.active.size
+    capacitance = np.zeros(n)
+    np.add.at(capacitance, np.asarray(p.membrane_cell), np.asarray(p.membrane_capacitance))
+    cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
+    outside_volume = np.where(
+        p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf
+    )
+    names = [k.id for k in m.membranes]
+    channel_patches = {
+        c.membrane_id
+        for c in m.channels
+        if any(i.species_id == name and i.relative_permeability != 0 for i in c.permeant_ions)
+    }
+    margins = []
+    for k, patch in enumerate(m.membranes):
+        if patch.permeability_m_per_s[row] == 0 and patch.id not in channel_patches:
+            continue
+        i, o = int(p.membrane_cell[k]), int(p.membrane_outside[k])
+        charge = slope * z2 * max(ci[i], co[o]) / capacitance[i]
+        material = 1.0 / cell_volume[i] + 1.0 / outside_volume[o]
+        margins.append((charge / material, f"membrane {names[k]}"))
+    for j, junction in enumerate(m.junctions):
+        if junction.permeability_m_per_s[row] == 0:
+            continue
+        a, b = int(p.junction_sender[j]), int(p.junction_receiver[j])
+        charge = 2 * slope * z2 * max(ci[a], ci[b]) / min(capacitance[a], capacitance[b])
+        material = 1.0 / cell_volume[a] + 1.0 / cell_volume[b]
+        margins.append((charge / material, f"junction {junction.id}"))
+    return min(margins, default=(math.inf, None))
+
+
+def check_counter_ion(base, name, law):
+    """Refuse a counter-ion that @3's explicit-rate bound does not cover on one of its routes
+    (counter_ion_margin below COUNTER_ION_COVERAGE): a charged trace row, whose permeation goes
+    through the passive-routes kind's constant-field law instead."""
+    margin, route = counter_ion_margin(base, name)
+    if margin < COUNTER_ION_COVERAGE:
+        raise ConfigError(
+            f"{law}: counter-ion {name!r} is not covered by @3's explicit-rate bound on {route}: "
+            f"its own charge-relaxation term is {margin:.3g} times its material term there, below "
+            f"{COUNTER_ION_COVERAGE:g} (a charged trace row; its permeation goes through the "
+            "passive-routes kind's constant-field law, FR-15)"
         )
 
 

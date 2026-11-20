@@ -12,7 +12,7 @@ import { ROOT } from "../tools/lib/build_page.mjs";
 import { LAWS_FORMAT, Library, problemsOf, namespaced } from "../src/lenses/laws_data.js";
 import { LawsLens, LAWS_LOOK, LAWS_BLOOM, LAWS_BLOOM_LIGHT, MARKS } from "../src/lenses/laws.js";
 import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
-import { PER_BAND } from "../src/lenses/laws_layout.js";
+import { PER_BAND, layoutOf } from "../src/lenses/laws_layout.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
 import { sections as listSections } from "../src/lenses/laws_card.js";
 import { LAW_PORT_FORMAT, PORT_PHRASES, phraseOf, portLines, portTable } from "../src/lenses/law_port.js";
@@ -355,9 +355,21 @@ test("the law-port table is the tool's reading of the inventory: four facts a ro
     assert.equal(row.has_id, /^[A-Za-z_][A-Za-z0-9_.]*@[0-9]+$/.test(row.law), row.law);
     if (row.mark === "port as is") assert.ok(["a", "b"].includes(row.test_class), `${row.law}: "tested" needs a passing test`);
   }
-  // None of them is declared by the manifest the wall reads.
+  // The inventory is older than the manifest wherever a law was ported after it was made, and the table stays the
+  // inventory's copy. A row whose law the manifest declares since is a port that happened: so it can only be a row
+  // marked "port as is", under a law ID of its own (a law folded into another, or one that is not a port, cannot turn up
+  // declared under its own ID). The page says no mark's words for such a row: its units open the declared law through
+  // a door (held unit by unit in the doors' test below). The documents say how many such rows there are, and are held
+  // to the number here, so that the next one is noticed where it is written.
   const declaredIds = new Set(manifest.pieces.flatMap((piece) => [piece.id, piece.declared_id, namespaced(piece.declared_id)]));
-  for (const row of port.rows) assert.ok(!declaredIds.has(namespaced(row.law)), `${row.law} is declared by an active model now: the table's words for it no longer hold`);
+  const overtaken = port.rows.filter((row) => declaredIds.has(namespaced(row.law)));
+  for (const row of overtaken) assert.ok(row.has_id && row.mark === "port as is", `${row.law} is declared by an active model now, and its row is marked "${row.mark}": those words no longer hold of it`);
+  const spelled = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][overtaken.length] ?? String(overtaken.length);
+  for (const name of ["README.md", "docs/LAWS_LIBRARY.md"]) {
+    const told = /(\w+) of its rows' laws/i.exec(readFileSync(path.join(ROOT, name), "utf8").replace(/\s+/g, " "))?.[1];
+    if (overtaken.length) assert.equal(told?.toLowerCase(), spelled, `${name} says how many of the table's rows the manifest has overtaken (${overtaken.map((row) => row.law).join(", ")})`);
+    else assert.equal(told, undefined, `${name} still speaks of rows whose laws are declared, and the table has none`);
+  }
   // The tool reads only what it copies: rows of the inventory's shape give the table back, byte for byte.
   mkdirSync(path.join(ROOT, "out"), { recursive: true });
   const scratch = mkdtempSync(path.join(ROOT, "out", "law-port-"));
@@ -976,6 +988,48 @@ test("a tall screen stacks the wall in bands that break at shelves, and the fram
   assert.ok(lens.layout.bounds.maxX - lens.layout.bounds.minX < 13, "and the picture is narrow");
 });
 
+test("a rack's rows stand inside its frame at any length: a row too long for a line goes on under it, and the racks stay apart", () => {
+  // The real list, and the same with thirty channel laws on the inner model (more are scheduled): wide and on a tall screen.
+  const inner = library.racks.find((frame) => frame.kind === "inner model");
+  const grownRacks = library.racks.map((frame) => (frame !== inner ? frame : { ...frame, rows: frame.rows.map((row) => (row.role !== "channel law" ? row : { ...row, pieces: Array.from({ length: 30 }, (_, n) => `cells.made_up_${n}@1`), tags: Array.from({ length: 30 }, (_, n) => n), next_code: 30 })) }));
+  const grown = Object.create(library, { racks: { value: grownRacks } });
+  for (const [name, list] of [["the list", library], ["thirty channel laws", grown]]) {
+    for (const narrow of [false, true]) {
+      const at = `${name}, ${narrow ? "a tall screen" : "wide"}`;
+      const frames = layoutOf(list, { narrow }).frames;
+      for (const frame of frames) {
+        const left = frame.x - frame.w / 2, right = frame.x + frame.w / 2, top = frame.y + frame.h;
+        const boxes = frame.rows.flatMap((row) => [...row.slots, ...(row.next ? [row.next] : []), ...row.none]);
+        // Clear of the uprights (0.08 to either side of the frame's edge) and of the rails at its top and foot.
+        for (const box of boxes) {
+          assert.ok(box.x - box.w / 2 >= left + 0.2 && box.x + box.w / 2 <= right - 0.2, `${at}: a slot of ${frame.id} stands between its uprights (${(box.x + box.w / 2 - right).toFixed(2)} from the right one)`);
+          assert.ok(box.y - box.h / 2 > frame.y + 0.1 && box.y + box.h / 2 < top - 0.1, `${at}: a slot of ${frame.id} stands between its top and its foot`);
+        }
+        // No two of a rack's slots lie over one another, and what is written under a slot ends above the slot below it.
+        for (const [n, a] of boxes.entries()) {
+          for (const b of boxes.slice(n + 1)) assert.ok(Math.abs(a.x - b.x) >= (a.w + b.w) / 2 || Math.abs(a.y - b.y) >= (a.h + b.h) / 2, `${at}: two slots of ${frame.id} lie over one another`);
+        }
+        if (frame.kind === "inner model") {
+          const tags = plaquesOf(list, layoutOf(list, { narrow })).filter((plaque) => plaque.kind === "tag" && boxes.some((box) => box.x === plaque.x && Math.abs(box.y - plaque.y) < box.h));
+          assert.ok(tags.length >= frame.rows.reduce((sum, row) => sum + row.slots.filter((slot) => slot.tag !== null).length, 0), `${at}: every code is written`);
+          for (const tag of tags) for (const box of boxes) if (Math.abs(box.x - tag.x) < box.w / 2 && box.y < tag.y) assert.ok(tag.y - tag.h / 2 >= box.y + box.h / 2, `${at}: a code ends above the slot under it`);
+          // Each row starts on a line of its own, under the row before it, and its name stands beside its first line.
+          const tops = frame.rows.map((row) => row.y);
+          assert.deepEqual([...tops].sort((a, b) => b - a), tops, `${at}: the rows stand in order`);
+          for (const row of frame.rows) for (const box of [...row.slots, ...(row.next ? [row.next] : [])]) assert.ok(box.y <= row.y, `${at}: no slot of a row stands above its name`);
+          frame.rows.slice(1).forEach((row, n) => assert.ok(Math.min(...[...frame.rows[n].slots, ...(frame.rows[n].next ? [frame.rows[n].next] : []), ...frame.rows[n].none].map((box) => box.y)) > row.y, `${at}: a row starts under the last line of the row before`));
+        }
+      }
+      // No rack stands in another's place.
+      for (const [n, a] of frames.entries()) for (const b of frames.slice(n + 1)) assert.ok(Math.abs(a.x - b.x) >= (a.w + b.w) / 2 || Math.abs(a.y + a.h / 2 - b.y - b.h / 2) >= (a.h + b.h) / 2, `${at}: ${a.id} and ${b.id} do not overlap`);
+    }
+  }
+  // Today's eleven channel laws and the free socket are two lines of six: the row is not squeezed onto one.
+  const channels = layoutOf(library).frames.find((frame) => frame.kind === "inner model").rows[0];
+  const lines = new Set([...channels.slots, channels.next].map((box) => box.y));
+  assert.equal(lines.size, Math.ceil((channels.slots.length + 1) / 6), "six slots to a line");
+});
+
 test("the Library refuses a list that breaks its contract", () => {
   const broken = JSON.parse(JSON.stringify(raw));
   broken.pieces.push({ ...broken.pieces[0] });
@@ -1055,10 +1109,21 @@ test("on the map's page: the doors into the library open a declared piece, or sa
   }
   // As many units open a piece as name a law the manifest declares (10 of the 48 at 79d23cd5): counted from the manifest, not fixed here.
   assert.equal(opening.length, units.filter((unit) => unitLaws(unit).some((law) => declaredIds.has(namespaced(law)))).length, opening.join("; "));
-  // Every row of the table is said on each unit it names, and the units that say a mark's words are the table's units.
-  assert.deepEqual(said.map(([code, law]) => `${code} ${law}`).sort(), port.rows.flatMap((row) => row.units.map((code) => `${code} ${row.law}`)).sort());
-  assert.deepEqual([...saying].sort(), [...new Set(port.rows.flatMap((row) => row.units))].sort());
-  assert.equal(saying.size, port.counts.units);
+  // Every row of the table whose law is still undeclared is said on each unit it names, and the units that say a mark's
+  // words are those rows' units. A row whose law the manifest declares since the inventory was made is said on none:
+  // each of its units opens that law through a door, and no line of words names it.
+  const standing = port.rows.filter((row) => !declaredIds.has(namespaced(row.law))), overtaken = port.rows.filter((row) => declaredIds.has(namespaced(row.law)));
+  assert.deepEqual(said.map(([code, law]) => `${code} ${law}`).sort(), standing.flatMap((row) => row.units.map((code) => `${code} ${row.law}`)).sort());
+  assert.deepEqual([...saying].sort(), [...new Set(standing.flatMap((row) => row.units))].sort());
+  for (const row of overtaken) {
+    for (const code of row.units) {
+      const doors = doorsFor(units.find((unit) => unit.id === `unit.${code}`), withLaws);
+      assert.ok(doors.some((door) => door.lens === "laws" && door.value === `laws:${library.piece(row.law).id}`), `${code}: ${row.law} is declared, and the unit opens it`);
+      assert.ok(!doors.some((door) => !door.lens && door.label.includes(row.law)), `${code}: no words in a door's place name ${row.law}, which is declared`);
+    }
+  }
+  // The table's units, each either saying a mark's words or opening a law its row marked before it was declared.
+  assert.equal(new Set([...saying, ...overtaken.flatMap((row) => row.units)]).size, port.counts.units);
   // The laws with no row keep the earlier words. The inventory took every law of the units that open no declared piece, so
   // each law it has no row for is on a unit that opens one.
   for (const [code, law] of uncovered) assert.ok(opening.includes(units.find((unit) => unit.id === `unit.${code}`).label), `${code}: ${law}`);

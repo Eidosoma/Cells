@@ -197,7 +197,10 @@ test("the tool cuts the members' files as the lines say, and every member carrie
   }
 });
 
-test("the build tool reproduces the six files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set THALECRESS_DATASETS)" }, async () => {
+test("the build tool reproduces the six files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set THALECRESS_DATASETS)" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*", "*")], env: ["THALECRESS_DATASETS"] })) return;
   const folder = await mkdtemp(path.join(os.tmpdir(), "thalecress-build-"));
   try {
     const built = spawnSync("python3", ["-I", TOOL, "build", "--datasets", DATASETS, "--out-dir", path.join(folder, "thalecress"), "--out-species", path.join(folder, "species.json"), "--out-shapes", path.join(folder, "shapes.json"), "--out-atlas", path.join(folder, "atlas.json")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });

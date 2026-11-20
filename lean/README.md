@@ -1,56 +1,44 @@
 # Cells proofs
 
-This Lean library connects engine laws to their proofs, numerical checks and experimental measurements. Each claim page records the assumptions and links to the code and sources.
-
-## Biological evidence
-
-The last column below gives the experimental result and what it can test. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [November 19 review of 30 laws and their biological evidence](PROGRESS.md#19-november-2026--law-and-evidence-review)
 
 ## Proof index
 
 <!-- generated: claims-index -->
 
-| Claim | Lean proof | Numerical check | Biological measurements and limits |
-| --- | --- | --- | --- |
-| [Reversing a junction reverses its flux](claims/junction-flux-reversal.md) | Proved | Checked | **Partial evidence.** A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
-| [At equal voltage, junction flux follows the concentration gradient](claims/junction-concentration-gradient.md) | Proved | Checked | **Partial evidence.** Near zero junction voltage, a charged tracer moved from the loaded cell to its neighbor. A separate study estimated 226 ± 75 calcein molecules/s per Cx26 channel at a 125 μM gradient, with only the donor voltage-clamped during transfer. [Palacios-Prado and Bukauskas, Fig. 2B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2736430/) · [Zonta et al., Fig. 1A–C](https://doi.org/10.1186/1478-811X-11-15) |
-| [A blocked junction carries zero flux](claims/junction-blocking.md) | Proved | Checked | **Partial evidence.** Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/) |
-| [Junction conductance relaxes toward a voltage-dependent target](claims/junction-gate.md) | Proved | Checked | **Partial evidence.** Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) |
-| [Voltage-gated channel openings stay between zero and one](claims/channel-gate-bounds.md) | Proved | Checked | **Partial evidence.** Rat Kv1.1 decay at −20 mV and 25 °C was 313 ± 82 ms (SD). Cells retained 88% of its peak after 1.5 s and gave a fit of about 8 s from an equilibrated −80 mV hold. Rat Kv1.4 retained under 2% after 3.2 s at 0 mV, versus 0.57% in Cells. Four gate parameters match that paper. Human NaV1.2 rose in 0.38 ± 0.05 ms (10–90%, SEM), versus 0.296 ms in Cells. Its fitted inactivation midpoint was −63.53 ± 0.79 mV, while Cells gave half of its −120 mV reference response at −54.9 mV. [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6) |
-| [Channel opening scales the signed transfer of sodium or potassium](claims/channel-ion-transfer.md) | Proved | Checked | **Partial evidence.** At −60 mV, 100 µM cytoplasmic spermine reduced the Kir2.1 single-channel current magnitude from 2.00 ± 0.04 to 1.40 ± 0.04 pA with no significant change in open probability. A voltage-only gate misses that change in unitary conductance. The two generic leak laws have no assigned molecular isoform or preparation-specific permeability. [Xie et al., Figs. 1–3](https://doi.org/10.1085/jgp.20028576) |
-| [Chloride gradients set leak reversal and inward chloride carries positive outward current](claims/chloride-channel-charge.md) | Proved | Checked | **Partial evidence.** Observed 45 mV. Predicted 60.6 mV. The measured shift is approximate. Lowering nominal outside chloride from 145 to 15 mM in rabbit kidney patches at 37 °C shifted reversal in the predicted positive direction. The channels also passed bromide and showed regulated opening. Absolute permeability remains uncalibrated. [Ling et al., Fig. 1B](https://doi.org/10.1172/JCI117037) |
-| [Passive neutral solute follows its concentration gradient](claims/neutral-permeation.md) | Proved | Checked | **Partial evidence.** Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67) |
-| [Voltage and free proton concentrations set the leak reversal](claims/proton-leak.md) | Proved | Checked | **Partial evidence.** In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878) |
-| [Free energy sets ATP-driven transport direction and stall](claims/atp-cycle.md) | Proved | Checked | **Partial evidence.** In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/) |
-| [Stall voltages and net charge of the sodium–potassium and calcium pumps](claims/electrogenic-pump-charge.md) | Proved | Checked | **Partial evidence.** Squid axons gave 3.05 ± 0.13 Na⁺ per net charge from −60 to −90 mV in Na-free seawater and 2.72 ± 0.09 at 0 mV with 390 mM external Na⁺ (SEM). Cells predicts 3. Red-cell ghosts lost about 3 Na⁺ per ATP. In pig-brain calcium pumps, separate rate measurements imply 1.02 Ca²⁺ per ATP and about +1.4 net charges per ATP after inward H⁺ is included. Cells counts +2 from Ca²⁺ alone. The simulated stall voltages still lack a matched measurement. [Rakowski et al., Table I](https://doi.org/10.1085/jgp.93.5.903) · [Garrahan and Glynn](https://doi.org/10.1113/jphysiol.1967.sp008297) · [Salvador et al., Table I](https://doi.org/10.1074/jbc.273.29.18230) |
-| [Extracellular face flux follows the electrochemical potential drop](claims/extracellular-face-direction.md) | Proved | Checked | **Partial evidence.** Diluting NaCl on opposite sides of a claudin-2 pore shifted its current-reversal voltage in opposite directions. Reversal of an individual ion’s net flux remains unmeasured. [Weber et al., Fig. 6A–B](https://elifesciences.org/articles/09906) |
-| [Passive extracellular face transport dissipates energy](claims/extracellular-face-dissipation.md) | Proved | Checked | **Partial evidence.** Trout gill epithelia supplied two-way sodium tracer flux and voltage measurements. Active transport contributed to the measured flux, so passive heat production cannot be inferred from these data alone. [Galvez et al., Fig. 3 and Tables 1–2](https://www.zoology.ubc.ca/~woodcm/Woodblog/wp-content/uploads/2016/07/Galvez-et-al.-2008-In-Vitro-Cell.pdf) |
-| [Edge orientation preserves each compartment’s transfer balance](claims/transfer-orientation.md) | Proved | Checked | **Partial evidence.** Paired clamp recordings showed equal and opposite junctional currents. Calibrated gain and loss of the same ion in both cells remain unmeasured. [Wang and Veenstra, Fig. 1A and C](https://pubmed.ncbi.nlm.nih.gov/9101407/) |
-| [Only boundary transfers change a region’s inventory during transport](claims/transfer-inventory.md) | Proved | Checked | **Partial evidence.** Perfused rat hearts lost 139 ± 12 μmol of K⁺ per g dry weight in effluent over 40 min. Tissue depletion was measured in separate hearts, leaving the within-heart balance open. [Kuki et al., Figs. 3–4](https://doi.org/10.1161/01.RES.67.2.401) |
-| [Balanced reactions preserve a weighted inventory](claims/reaction-inventory.md) | Proved | Checked | **Partial evidence.** The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip) |
-| [Binding and catalysis conserve enzyme and substrate](claims/enzyme-inventories.md) | Proved | Checked | **Partial evidence.** NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/) |
-| [One-site binding follows the free ligand concentration](claims/single-site-binding.md) | Proved | Checked | **Partial evidence.** For oxygen binding to human myoglobin at 10 °C, two digitized points set the affinity. The other three gave a root-mean-square error of 0.0422 in fractional occupancy. All five come from one figure with unknown pointwise uncertainty. [Rossi-Fanelli and Antonini, Fig. 2](https://pubmed.ncbi.nlm.nih.gov/13584010/) · [Digitized points](https://bi1.caltech.edu/2017/code/t05_nonlinear_regression.html) |
-| [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md) | Proved | Failed | **Partial evidence.** Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712) |
-| [Molecule entry scales with reservoir activity and assembly size, and exit with species count](claims/assembly-reservoir-exit.md) | Proved | Checked | **Partial evidence.** Accessible fluorescent lipid washed out of 310 protein-free vesicles at 0.0108 ± 0.0045 s⁻¹ (24 °C, mean ± SD). The retained fraction was 49.5 ± 8.5%. In a separate sterol assay, adding more equal-sized vesicles increased transfer at 25 °C. The insertion constant fitted at 35 °C was (6.4 ± 0.6) × 10⁷ M⁻¹ s⁻¹ per molar vesicles. Individual vesicle size, free monomer activity and the Cells time scale remain open. [Veit et al., Fig. 2 and Extended Data Fig. 2](https://doi.org/10.1038/s41594-026-01821-8) · [Estronca et al., Fig. 2 and Table 1](https://pmc.ncbi.nlm.nih.gov/articles/PMC2098731/) |
-| [Single-molecule exchange heat equals the change in assembly log weight](claims/assembly-exchange-heat.md) | Proved | Checked | **Measurement sought.** Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions. |
-| [Regional inventory changes by net boundary transfer across a split step](claims/regional-reaction-transport.md) | Proved | Checked | **Partial evidence.** A perfused rat liver study followed labeled carbon in tissue, perfusate, bile and CO₂. Reconstructing the balance requires matched time intervals, sample volumes and coverage of the other tissue pools. [Fausto, Fig. 1](https://doi.org/10.1042/bj1290811) |
-| [Membrane voltage in kidney epithelial cells under condition C3](claims/rptec-voltage-c3.md) | Open | Checked | **Not assessable.** Observed -18 mV. Predicted -14.59 mV. The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized. [Bonzanni et al. (2020)](https://doi.org/10.1242/bio.048553) |
+Direct Lean claims cover [31 of 32 laws](COVERAGE.md#registered-laws) and [5 of 24 operators](COVERAGE.md#registered-operators).
+
+| Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
+| --- | ---: | ---: | --- | ---: |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 4 of 4 | 4 checked | 4 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 7 checked · 1 failed | 8 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 5 of 6 | 4 of 4 | 3 checked · 1 failed | 4 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 3 of 3 | 3 checked | 3 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 7 | 8 of 8 | 6 checked · 2 failed | 6 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 6 of 6 | 5 checked · 1 failed | 6 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
 <!-- /generated -->
 
-Each numerical result applies to the cases in its linked record. The coverage table lists the registered laws and operators that have a direct theorem or appear in an engine comparison. [Engine law coverage](COVERAGE.md) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+## Biological evidence
+
+The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
 ## Maintaining the claims
 
-Edit the claims register. A stable `id` gives each claim its note under `claims/`. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
+Edit the claims register. A stable `id` gives each claim its note under `claims/`. Set `category` to a key from the register’s `categories` map. The key keeps the section link stable when its display title changes. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
+
+Laws inherit the topic of their direct proofs. Use `law_categories` to put a law awaiting its first proof in the right section, or to choose its primary topic when proofs span several categories. Newly registered laws awaiting classification appear together in the overview.
 
 In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
 
-In `biology.observable` and `unit`, name the quantity the claim needs. Use `biology.finding` for a brief published measurement, its scope and its primary citation. The generator puts that finding in the README and the claim page. Formal experimental comparisons go in `biology.evidence`. The index reads their observed and predicted values, assessment and citation directly from those records. A claim awaiting measurements displays its requested observable.
+In `biology.observable` and `unit`, name the quantity the claim needs. Use `biology.finding` for a brief published measurement, its scope and its primary citation. The generator puts that finding in the detailed catalog and the claim page. Formal experimental comparisons go in `biology.evidence`. The catalog reads their observed and predicted values, assessment and citation directly from those records. A claim awaiting measurements displays its requested observable.
 
 The Search agent collects primary biological references in `claims/incoming/`, with the preparation, protocol, measured quantity, uncertainty and figure or table. The Lean lane checks the corresponding engine observable and records the comparison in the register. Enter a biological verdict when a comparison has a documented outcome. [Reviewed measurements and follow-up](PROGRESS.md#19-november-2026--biological-evidence-review) · [Channel voltage-clamp sources](claims/incoming/channel-gating-evidence.md)
 
-A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the index, claim notes and coverage table. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
+A normal `lake build` checks that each named theorem exists in its declared module, then regenerates the topic overview, claim notes and catalog. With `CELLS_PYTHON` set to the Cells Python interpreter, the build also refreshes the registry inventory from the active checkout. A Lean-only build uses the last exported inventory. Commit the generated files alongside edits to the register. The documentation commands below run from `lean/`.
 
 ```bash
 python3 scripts/generate_claims.py
@@ -99,7 +87,9 @@ On the first build, fetch the compiled dependencies for the imported modules. Su
 lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
-  Mathlib.Data.Nat.Factorial.Basic Mathlib.Tactic.Positivity \
+  Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
+  Mathlib.Analysis.Calculus.Deriv.MeanValue Mathlib.Analysis.Calculus.Deriv.Pow \
+  Mathlib.Analysis.SpecialFunctions.ExpDeriv \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -130,6 +120,9 @@ export PYTHONPATH="../src:.." PYTHONDONTWRITEBYTECODE=1
 export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
 cells_python=${CELLS_PYTHON:-python}
 ```
+
+<details>
+<summary>Commands for individual comparisons</summary>
 
 For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
 
@@ -181,6 +174,12 @@ For neutral permeation, compare the compiled inward flux and the final amounts i
 "$cells_python" -B checks/neutral_permeation.py
 ```
 
+For charged permeation, compare the CPU flux, heat and slopes with 60-digit arithmetic, follow charge through a finite tissue pair, and reproduce the two experimental current–voltage comparisons. [Charged-route driver](checks/charged_permeation.py)
+
+```bash
+"$cells_python" -B checks/charged_permeation.py
+```
+
 For proton leak, check the reversal voltage, instantaneous heat, the small-voltage branch and the free H⁺ read in a buffered tissue cell. The driver also resolves the polynomial’s reversal ratio at 80-digit precision. [Proton driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10)
 
 ```bash
@@ -222,6 +221,49 @@ For assembly exchange, compare entry and exit rates at every three-species compo
 "$cells_python" -B checks/reservoir_exchange.py
 ```
 
+For the two GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
+
+```bash
+"$cells_python" -B checks/gard_catalysis.py
+"$cells_python" -B checks/gard_catalysis.py --controls-only
+```
+
+For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
+
+```bash
+"$cells_python" -B checks/assembly_mixing.py
+```
+
+For stochastic encounters and transition-state catalysis, compare the two directional rates with and without the catalyst, then replay a two-state clock on the same random draws. The full run returns status 1 when an expected rate or clock fails. The controls-only run checks the ordinary pairs, boundary cases and two equivalent or well-conditioned clocks. The last command evaluates the confined-binding measurements using the engine’s pool reaction. [Clock reproducer](checks/assembly_kinetics.py) · [Measured occupancies and engine finding](PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis)
+
+```bash
+"$cells_python" -B checks/assembly_kinetics.py
+"$cells_python" -B checks/assembly_kinetics.py --controls-only
+"$cells_python" -B checks/confined_binding.py
+```
+
+The inward-rectifier driver checks the bound on the current–voltage slope, a change of reference concentration, and Kir4.1 currents at matched driving voltage. Its full comparison exits with status 1 if an equivalent reference setting fails. The symport driver checks all four sodium counts and compares the two-sodium carrier with measured charge, particle flux and voltage shifts. [Experimental comparisons and engine finding](PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+
+```bash
+"$cells_python" -B checks/inward_rectifier.py
+"$cells_python" -B checks/inward_rectifier.py --controls-only
+"$cells_python" -B checks/sodium_anion_symport.py
+```
+
+For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The latest retest confirmed that the engine refuses the earlier wrong-direction step. The full comparison still reports the extreme concentration-ratio overflow. The controls use smaller steps and finite product ratios. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Retest](PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
+
+```bash
+"$cells_python" -B checks/potassium_anion_symport.py
+"$cells_python" -B checks/potassium_anion_symport.py --controls-only
+```
+
+For water and potassium–anion transport in changing volumes, compare the CPU engine with two independent numerical integrators. The second command checks vesicle swelling, red-cell volumes, pressure-driven flow and the water change accompanying measured solute transfer in trout red cells. [Proof, experiments and numerical results](claims/osmotic-water.md)
+
+```bash
+"$cells_python" -B checks/osmotic_water.py
+"$cells_python" -B checks/osmometry.py
+```
+
 For the tissue balance, the driver follows A and B through one 50 ms composite step on twelve finite extracellular compartments. It compares the change in their stored amounts at nodes 2 through 5 with the signed transfers on the two boundary faces. Each species also has to account for its share of the local conversion. The same comparison runs on the full chain and with the largest boundary face reversed in the recorded transfers. The existing passive-chain test checks the trajectory against the independent split-step reference. [Regional driver](checks/regional_balance.py) · [Reference comparison](../tests/unit/test_species_reactions_composition.py#L84)
 
 ```bash
@@ -229,3 +271,5 @@ For the tissue balance, the driver follows A and B through one 50 ms composite s
 "$cells_python" -B -m pytest -q -p no:cacheprovider \
   '../tests/unit/test_species_reactions_composition.py::test_guard_2_linear_networks_on_the_chain_run_the_engine_orders_map[passive]'
 ```
+
+</details>

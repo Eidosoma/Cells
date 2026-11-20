@@ -37,7 +37,8 @@ percent off: in a mixed world that passes unseen under the ions' bound, a known 
 Under RK4 the bound is the absolute 2e-8 pJ (no solver tolerance); RK4 is guarded, not refused, and
 keeps exact half-steps around @3's RK4 step ("split").
 
-Refusals. At the definition: a charged species, a production route on an outside node, a route on
+Refusals. At the definition: a charged species (charged turnover routes wait for a turnover@2,
+FR-15 S1: a charged source is a source reaction), a production route on an outside node, a route on
 a held bath, a negative rate, a schedule change off the dt grid, more than 16 species per world
 (FR-9 / D165; species_common), an occupant without its rates, a donor copy whose route values
 differ from the slot's, and every provider or closer of the volumes and activity masks
@@ -68,6 +69,14 @@ from cells.operators import species_common as common
 from cells.operators.contract import Operator
 
 LAW_ID = "scheduled_species_turnover@1"
+# FR-15 S1 (the lead's ruling of 19 November 2026): charged turnover routes are deferred. A charged
+# source with its counter-ion is a source reaction of local_species_reactions@1; exact first-order
+# clearance of a charged row waits for a turnover@2 when a consumer needs it.
+CHARGED_LIMIT = (
+    ": charged turnover routes wait for a scheduled_species_turnover@2 when a consumer needs exact "
+    "first-order clearance of a charged row; a charged source with its counter-ion is a source "
+    "reaction of local_species_reactions@1 (FR-15)"
+)
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
 # A7 (the summation SPEC.md §2; D182): the former row_sum folds, here and in D152's half step,
@@ -122,7 +131,7 @@ def parse_turnover(raw, base):
     _fields(raw, {"law", "species", "routes", "templates"}, "species turnover")
     if raw["law"] != LAW_ID:
         raise ConfigError("Species turnover requires law " + LAW_ID)
-    species = common.parse_species(raw["species"], base, LAW_ID)
+    species = common.parse_species(raw["species"], base, LAW_ID, limit=CHARGED_LIMIT)
     listed = {s.id for s in species}
     m = base.model
     cells = {c.id for c in m.cells}

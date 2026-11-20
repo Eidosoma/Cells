@@ -7,7 +7,11 @@ and the lead's rulings for F1 (19 November 2026):
 * removal lives here, with a declared rate and a booked sink. This departs from D177, which put
   FR-7's removal under FR-2; it is the design note's own alternative, "or a turnover of units".
   FR-2's version 1 internalises units into a silent record that recycling returns, so it gives no
-  unit a finite lifetime;
+  unit a finite lifetime. D232 (the user, 19 November 2026) admits it as a scoped exception to
+  D177, covering both this producer's surface insertion and its irreversible removal;
+* the declared lifetime 1/k_r applies to every unit of a routed population, including the units
+  present at the start (membrane state's declared units), not only to the units this producer
+  inserts (D232);
 * the assembly and trafficking delay is a chain of m first-order pools (the linear chain trick,
   MacDonald 1978, Time Lags in Biological Models: named from memory and not read);
 * the precursor is a declared pool, which D150's scheduled_species_turnover@1 may also supply.
@@ -22,13 +26,18 @@ Declaration: `species`, the precursor species it consumes (D150's identity form:
 @3 with no membrane, junction or channel route); `routes`, each {id, population (a channel
 population of @3), precursor (a listed species), molecules_per_unit ν (an integer >= 1),
 maturation_pools m (an integer, 0 <= m <= MAX_POOLS), maturation_time_s τ (> 0 when m > 0, null
-when m = 0)}. A route acts in its population's cell, the inside of its patch; one route per
-population. Every key is explicit.
+when m = 0), initial_pool_units (a list of m units, each finite and >= 0: the units in transit in
+each maturation pool at the start, zeros explicit; [] when m = 0)}. A route acts in its
+population's cell, the inside of its patch; one route per population. Every key is explicit.
 
 Schedule `unit_turnover_controls`: per route, piecewise-constant assembly_rate_per_s k_a (the
 first-order rate at which the route consumes its precursor) and removal_rate_per_s k_r (the
 first-order removal of the population's units: lifetime 1/k_r), from time 0, changing at exact
 multiples of dt inside the horizon. Per-world control data, never closed-over constants.
+The assembly rate is routable (B1′, docs/INVENTORY_COUPLING_DESIGN.md §2.1): a rate route's
+factor F in [b, 1] multiplies it at the start of each of this operator's half-steps, from the
+state that half-step receives, so the scheduled rate is the maximum and the definition's
+bounds hold. Its elements are the routes, each at its population's cell.
 
 Law, per route i in cell c with precursor P (n_P fmol in c), c_u = N_A 1e-15 / ν units per fmol,
 κ = m / τ, and the population's units N (membrane_entity_state@1's units: declared plus
@@ -52,10 +61,12 @@ Each half-step is the exact solution of this linear chain with its rates frozen 
   precursor positive) refuses the step.
 
 The one material account. Per route: assembled units = c_u x precursor consumed (fmol), and
-assembled = units in the pools + units inserted (this operator's ledgers, unit_conversion and
-unit_chain). Membrane state's population ledger closes with inserted less removed, booked
-through ENTITY_WRITES as insertion books its units, and @3's species ledger with the consumed
-precursor, booked as D152 books a consumed reactant. The removed units stay booked in the sink.
+declared initial units in transit + assembled = units in the pools + units inserted (this
+operator's ledgers, unit_conversion and unit_chain; the initial units are bound into the pools and
+counted from the declaration, so the account closes by construction). Membrane state's
+population ledger closes with inserted less removed, booked through ENTITY_WRITES as insertion
+books its units, and @3's species ledger with the consumed precursor, booked as D152 books a
+consumed reactant. The removed units stay booked in the sink.
 
 Energy. The precursor's removal from its cell is booked as signed work: the exact free-energy
 change of the node from the moved amount (adapter.species_chemical_free_energy_pJ, @3's own
@@ -64,23 +75,24 @@ model, and the metabolic cost of assembly, trafficking and degradation lies outs
 lumps internalisation and degradation into one first-order sink.
 
 Step checks. @3's definition-time bounds (R5) read each routed population at its largest
-possible units: its declared units plus all the precursor its cell can hold over the run
-assembled, the declared amount and turnover's largest production rate over the horizon (no other
-writer supplies it, so that bounds the run).
+possible units: its declared units, its initial units in transit, and all the precursor its cell
+can hold over the run assembled, the declared amount and turnover's largest production rate over
+the horizon (no other writer supplies it, so that bounds the run).
 
 Refused at the definition, each with its reason: an undeclared or charged precursor, or one
 with a membrane, junction or channel route (parse_species); an unknown population, or one named
 by two routes; a listed species no route consumes; ν not an integer >= 1; m outside [0,
 MAX_POOLS]; τ not positive with pools, or given without them; an identity that differs from the
-registry's; more than the species cap; another writer of a population's units (FR-2's
-trafficking among them: every unit here, declared ones included, is removed at k_r, so a second
-writer's moves would mix with it); a precursor row that a D152 reaction writes, another author of
-the precursor other than turnover, and an in-step mover of it; dt Λ > 1 anywhere in the schedule;
-a schedule that does
-not start at 0, changes off the dt grid or outside 0 < t < end, or holds a negative or
-non-finite rate; and every provider of volumes and closer of masks (CONFLICTS_VIEW, D150's
-static-tissue list). membrane_entity_state@1 precedes it (REQUIRES). At run time: non-finite
-values, a negative pool, N or rate, and a precursor amount that would not stay positive.
+registry's; more than the species cap; another writer of population units anywhere in the
+simulation, even on a population no route names (D232: the refusal is simulation-wide, so it
+excludes FR-2's recycling, membrane insertion and division, whose moves would mix with this
+removal of every unit, the declared ones included, at k_r); a precursor row that a D152 reaction
+writes, another author of the precursor other than turnover, and an in-step mover of it; dt Λ > 1
+anywhere in the schedule; a schedule that does not start at 0, changes off the dt grid or
+outside 0 < t < end, or holds a negative or non-finite rate; and every provider of volumes and
+closer of masks (CONFLICTS_VIEW, D150's static-tissue list). membrane_entity_state@1 precedes it
+(REQUIRES). At run time: non-finite values, a negative pool, N or rate, and a precursor amount
+that would not stay positive.
 
 Idle: no route, statically idle; no positive flux in a half-step, the start state is selected,
 so zero rates are bitwise idle and @3's other rows are untouched.
@@ -88,6 +100,7 @@ so zero rates are bitwise idle and @3's other rows are untouched.
 
 import math
 from dataclasses import dataclass, replace
+from types import MappingProxyType
 
 import jax.numpy as jnp
 import numpy as np
@@ -133,6 +146,7 @@ LAYOUT_FIELDS = (
     "unit_route_direct",  # [route] bool: no pool (m = 0).
     "unit_pool_present",  # [route, pool] bool: pool j < m.
     "unit_pool_last",  # [route, pool] bool: pool j = m - 1.
+    "unit_route_initial_units",  # [route] the declared initial units in transit, summed.
 )
 LEDGERS = ("unit_chain", "unit_conversion")
 LEDGER_DIAGNOSTICS = ("unit_chain_balance_error", "unit_conversion_balance_error")
@@ -150,6 +164,7 @@ class Route:
     molecules_per_unit: int
     maturation_pools: int
     maturation_time_s: float | None
+    initial_pool_units: tuple  # Units in transit in each pool at the start (m values).
     cell: str  # The population's cell, the inside of its patch (derived, not declared).
 
 
@@ -200,6 +215,7 @@ def parse_declaration(raw, base):
                 "molecules_per_unit",
                 "maturation_pools",
                 "maturation_time_s",
+                "initial_pool_units",
             },
             f"{LAW_ID} route",
         )
@@ -227,8 +243,17 @@ def parse_declaration(raw, base):
                 )
         else:
             tau = _number(tau, f"{LAW_ID}: route {name}'s maturation_time_s", positive=True)
+        initial = entry["initial_pool_units"]
+        if type(initial) is not list or len(initial) != pools:
+            raise ConfigError(
+                f"{LAW_ID}: route {name}'s initial_pool_units is an explicit list of its {pools} "
+                "maturation pools' units at the start (zeros explicit)"
+            )
+        initial = tuple(
+            _number(v, f"{LAW_ID}: route {name}'s initial_pool_units entry") for v in initial
+        )
         routes.append(
-            Route(name, population, entry["precursor"], nu, pools, tau, cells[population])
+            Route(name, population, entry["precursor"], nu, pools, tau, initial, cells[population])
         )
     if len({r.id for r in routes}) != len(routes):
         raise ConfigError(f"{LAW_ID}: route IDs are unique")
@@ -257,6 +282,7 @@ def declaration_to_dict(declaration):
                 molecules_per_unit=r.molecules_per_unit,
                 maturation_pools=r.maturation_pools,
                 maturation_time_s=r.maturation_time_s,
+                initial_pool_units=list(r.initial_pool_units),
             )
             for r in declaration.routes
         ],
@@ -368,7 +394,8 @@ def check_writers(spec, declaration):
                 f"{LAW_ID}: {op.LAW_ID} also writes population units. This operator removes every "
                 "unit of its populations at k_r, the declared ones included, so a second writer's "
                 "moves (FR-2's trafficking, insertion) would mix with that removal; version 1 is "
-                "their one writer"
+                "their one writer, simulation-wide (D232): FR-2's recycling, membrane insertion "
+                "and division are excluded even on populations no route names"
             )
         if op.LAW_ID == species_reactions.LAW_ID:
             hit = sorted(rows & set(species_reactions.written(other)))
@@ -465,7 +492,8 @@ def check_spec_for(check_spec, spec, declaration):
         area = areas[c.membrane_id]
         declared = m.cells[cells.index(r.cell)].initial_amount_fmol[species.index(r.precursor)]
         precursor = declared + supply.get((r.precursor, r.cell), 0.0) * end
-        units = c.abundance * area * rho[c.id] + conversion(r) * precursor
+        in_transit = math.fsum(r.initial_pool_units)
+        units = c.abundance * area * rho[c.id] + in_transit + conversion(r) * precursor
         abundance[c.id] = units / (area * rho[c.id])
     return replace(
         check_spec,
@@ -515,10 +543,16 @@ def bind(spec, declaration):
         unit_route_direct=np.asarray([r.maturation_pools == 0 for r in routes], dtype=bool),
         unit_pool_present=present,
         unit_pool_last=last,
+        unit_route_initial_units=np.asarray(
+            [math.fsum(r.initial_pool_units) for r in routes], dtype=float
+        ),
     )
     k, n, c = len(routes), x.capacity, x.channel_capacity
+    pools = np.zeros((k, depth))
+    for i, r in enumerate(routes):
+        pools[i, : r.maturation_pools] = r.initial_pool_units
     state = dict(
-        unit_pool_units=np.zeros((k, depth)),
+        unit_pool_units=pools,
         unit_consumed_fmol=np.zeros(k),
         unit_assembled_units=np.zeros(k),
         unit_inserted_units=np.zeros(c),
@@ -716,6 +750,9 @@ class PopulationUnitTurnover(Operator):
     WORK_FIELDS = ("unit_turnover_work_pJ",)
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = ("unit_assembly_rate", "unit_removal_rate")
+    # B1′: the assembly rate, per route, which a rate route may multiply in the half-steps (the
+    # scheduled rate is the maximum).
+    ROUTABLE_CONTROLS = MappingProxyType({"unit_assembly_rate": "rate"})
     EXPERIMENT_KEYS = (EXPERIMENT_KEY,)
     CONFLICTS_VIEW = common.CONFLICTS_VIEW
     ENTITY_WRITES = {
@@ -812,6 +849,11 @@ class PopulationUnitTurnover(Operator):
         removal = np.array([[r for _, r in record] for record in records], dtype=float)
         return assembly[indices], removal[indices]
 
+    def routable_elements(self, declaration, field):
+        """B1′: unit_assembly_rate's elements are the routes, by route ID, each at its
+        population's cell, in control order."""
+        return tuple((route.id, route.cell) for route in declaration.routes)
+
     def species_identities(self, declaration):
         return declaration.species
 
@@ -849,6 +891,7 @@ class PopulationUnitTurnover(Operator):
                     units_per_fmol=conversion(r),
                     maturation_pools=r.maturation_pools,
                     maturation_time_s=r.maturation_time_s,
+                    initial_pool_units=list(r.initial_pool_units),
                 )
                 for r in declaration.routes
             },
@@ -926,7 +969,7 @@ class PopulationUnitTurnover(Operator):
         else:
             transit = 0.0 * row.unit_assembled_units
         return dict(
-            unit_chain=row.unit_assembled_units - transit - inserted,
+            unit_chain=row.unit_assembled_units + p.unit_route_initial_units - transit - inserted,
             unit_conversion=row.unit_assembled_units
             - p.unit_route_conversion * row.unit_consumed_fmol,
         )
@@ -939,7 +982,7 @@ class PopulationUnitTurnover(Operator):
             transit = 0.0 * row.unit_assembled_units
         assembled = xp.abs(row.unit_assembled_units)
         return (
-            assembled + transit + xp.abs(inserted),
+            assembled + p.unit_route_initial_units + transit + xp.abs(inserted),
             assembled + xp.abs(p.unit_route_conversion * row.unit_consumed_fmol),
         )
 

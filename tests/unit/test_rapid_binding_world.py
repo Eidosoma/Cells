@@ -135,6 +135,21 @@ def reading_carrier(*, role=None, hook=True):
                    role_species=role_species if hook else None)  # fmt: skip
 
 
+def binder_world():
+    """FR-4's world under the general closure with B_c held at both its nodes (the lumen's binders
+    gain it), and the planted carrier moving B_c, a binder row with its form HB_c, across the
+    bounding patch between them: a kind's move of a closure's binder row at the closure's own
+    nodes (the kinds owner's K1)."""
+    from tests.unit.test_rapid_binding_parse import general_world
+
+    def edit(m):
+        (read,) = m["stage_reads"]
+        read["binders"][fr.LUMEN] = sorted([*read["binders"][fr.LUMEN], "B_c"])
+
+    raw = general_world(edit=edit)
+    return kind_fixtures.declare_carrier(raw, species="B_c", rate=1e-3, membrane="bounding_0")
+
+
 def carried(*, ledger=True, rate=1e-3, carrier=reading_carrier):
     kind = proton_buffer.PROTON_BUFFER
     if not ledger:
@@ -151,19 +166,31 @@ def carried(*, ledger=True, rate=1e-3, carrier=reading_carrier):
         ("no base forms", r"declares no base forms"),
         ("a form as a row", r"moves the forms \['HB'\] as rows"),
         ("another species", r"which its entities' resolved rows do not hold"),
+        ("a binder row without base forms",
+         r"species B_c has forms \(HB_c beside its base\): .* moves its cell rows, and no law "
+         "declares how it moves the forms"),
     ],
-)
+)  # fmt: skip
 def test_section_5_2s_admission_refuses_each_planted_mover(variant, message):
     """§5.2's admission at a closure row, its charge half, with the read kept beside it (the lead,
     19 November 2026). The reading carrier moving H out of the general closure's cell is admitted
     (the control). Planted, each refused at the definition: a kind that declares no role_species,
     a law that declares no base forms, the role bound to a form (HB), and the role bound to another
-    species than the one its moved_rows names."""
-    law = reads_law(forms=None if variant == "no base forms" else "base")
+    species than the one its moved_rows names. A binder row with forms (the kinds owner's K1,
+    check_two_form_rows deferring to this admission): the carrier moving B_c at the closure's own
+    nodes under a base-form law is admitted (that variant's control), and under a law without base
+    forms the two-form rule still refuses it."""
+    unformed = variant in ("no base forms", "a binder row without base forms")
+    law = reads_law(forms=None if unformed else "base")
     carrier = {"no hook": lambda: reading_carrier(hook=False),
                "a form as a row": lambda: reading_carrier(role="HB"),
                "another species": lambda: reading_carrier(role="K")}.get(variant, reading_carrier)
-    raw = kind_fixtures.declare_carrier(general(buffered_world(quiet=True)), species="H", rate=1e-3)
+    if variant == "a binder row without base forms":
+        raw = binder_world()
+    else:
+        raw = kind_fixtures.declare_carrier(
+            general(buffered_world(quiet=True)), species="H", rate=1e-3
+        )
     registry = laws.active().extended(reads_law())
     with kind_registry.scope(kind_fixtures.registry(reading_carrier(), proton_buffer.PROTON_BUFFER)):
         with laws.scope(registry):

@@ -288,7 +288,10 @@ def test_operator_declarations_are_checked():
     )
     coupling = type(OPERATORS["species_regulated_availability@2"])
     check_declarations(type("Reader", (coupling,), reader))
-    assert not any(factor_reads(op) for op in OPERATORS.values())  # No registered reader yet.
+    # The one registered reader: @2's population source (FR-7's part (b)).
+    assert [op.LAW_ID for op in OPERATORS.values() if factor_reads(op)] == [
+        "species_regulated_availability@2"
+    ]
     for changes, words in (
         (dict(reader, CONTROL_FACTORS=()), "which none of its parts runs at"),
         (

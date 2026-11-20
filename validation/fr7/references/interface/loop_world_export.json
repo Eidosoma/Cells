@@ -1,0 +1,296 @@
+{
+ "kind": "cells.fr7_f4_world_inputs@1",
+ "status": "proposed by the FR-7 lane owner for the lead's check, 2026-11-19; numbers only (no code), for R-loop's code-blind references (D231: the reference sits on the world the probe measured)",
+ "synthetic": "every value marked synthetic is this world's own synthetic choice (D217); the heredity cell H's declared values are the engine's fixture values, then scaled as stated",
+ "units": {
+  "population": {
+   "id": "naleak_0",
+   "law": "gate-free Na leak (naleak_always_open@1), Na only",
+   "permeability_m_per_s": 5.3333333333333356e-11,
+   "reference_density_per_m2": 10000000000000.0,
+   "reference_density_per_um2": 10.0,
+   "N0": 3261.272165616906,
+   "a0": 1.0,
+   "permeability_area_per_unit_m3_per_s": 5.333333333333336e-24,
+   "conductance": "P N / rho_ref (m^3/s), the view's P a A with a = N / (A rho_ref)",
+   "P_N0_over_rho_ref_m3_per_s": 1.739345154995684e-20,
+   "equals_the_patch_declared_Na_leak_P_A": true,
+   "note": "phi = 1: P N0/rho_ref equals the heredity cell's declared Na leak P A (5.3333e-11 m/s x A)"
+  },
+  "producer": {
+   "law": "population_unit_turnover@1",
+   "assembly_rate_per_s": 0.02,
+   "nu": 4,
+   "units_per_fmol": 150553519.0,
+   "stages": 0,
+   "maturation_per_s": null,
+   "mean_maturation_delay_s": 0.0,
+   "removal_per_s": 0.011552453009332421,
+   "unit_half_life_s": 60.0,
+   "labelled": "synthetic",
+   "removal_note": "k_r acts on all of N, the declared N0 included; maturing units are not removed (D232)",
+   "stages_note": "m = 0: units enter N directly. m = 3 with kappa = 0.1/s (R-chain's) is the alternative once the producer can declare initial maturation pools, the same engine gap as R-chain's W5; the lead's choice"
+  },
+  "precursor": {
+   "species": "a neutral cytosolic species (D150's inventory form)",
+   "regime": "held: a supply S_P and a fast first-order clearance k_P under D150's turnover, so n_P relaxes in about 1 s to S_P/(k_P + k_a F) and the units' sensitivity to F, k_P/(k_P + k_a F), is at least 0.987 at any F (0.9974 at the start)",
+   "clearance_per_s": 1.0,
+   "labelled": "synthetic",
+   "computed": "n0 and the supply S_P are not given: the references compute it from the declared inputs (the closed loop's own steady state with no template, N = N0); the references' registered value is the start both sides use, as for A5''. The precursor is held: its supply balances the producer's uptake and its clearance at the start."
+  },
+  "start_balance": {
+   "production_equals_removal": true,
+   "flux_units_per_s": 37.675693443933085,
+   "note": "c_u k_a F_T F_loop n_P = k_r N0 at the start, with F_T = b_T (no template before the dose) and F_loop = 1 - s*; m = 0, so no maturing stage"
+  }
+ },
+ "constants": {
+  "faraday_C_per_mol": 96485.33212331001,
+  "gas_J_per_mol_K": 8.31446261815324,
+  "temperature_K": 310.0,
+  "avogadro_per_mol": 6.02214076e+23,
+  "note": "exact SI (2019), as the engine uses them"
+ },
+ "step": {
+  "dt_s": 0.001
+ },
+ "setting": {
+  "volume_per_area_scale": 100.0,
+  "volume_per_area_nm": 23.013174422536753,
+  "phi": 1.0,
+  "precursor": "held (a fast-cleared supply, below)",
+  "labelled": "synthetic",
+  "note": "D231 as the lead registered it: scale 100 (ions relax in about 50 s), phi = 1 (the units carry the cell's whole Na leak), the held precursor"
+ },
+ "cell": {
+  "species": [
+   "Na",
+   "K",
+   "M",
+   "P"
+  ],
+  "valence": [
+   1,
+   1,
+   -1,
+   -1
+  ],
+  "M_and_P": "M is a permeant monovalent anion; P is an impermeant monovalent anion (permeability 0)",
+  "bath": {
+   "held": true,
+   "reservoir": true,
+   "boundary_potential_V": 0.0,
+   "mM": {
+    "Na": 145.0,
+    "K": 5.0,
+    "M": 140.0,
+    "P": 10.0
+   }
+  },
+  "volume_pL": 0.007505222518670602,
+  "volume_declared_H_pL": 0.7505222518670602,
+  "patch": {
+   "area_m2": 3.261272165616906e-10,
+   "capacitance_F": 1.6306360828084532e-11,
+   "specific_capacitance_F_per_m2": 0.05,
+   "law": "constant-field (GHK) leak per species",
+   "leak_permeability_m_per_s": {
+    "Na": 0.0,
+    "K": 1.333333333333334e-10,
+    "M": 1.333333333333334e-10,
+    "P": 0.0
+   },
+   "leak_note": "phi = 1: the patch's declared Na leak, 5.3333333333333356e-11 m/s, is carried entirely by the Na-leak units, so the patch keeps no Na leak"
+  },
+  "K_population": {
+   "id": "kir_0",
+   "law": "gate-free K leak (kleak_always_open@1), K only",
+   "permeability_m_per_s": 1e-08,
+   "abundance": 1.0,
+   "reference_density_per_m2": 10000000000000.0,
+   "units": 3261.272165616906,
+   "note": "held: no route writes it"
+  },
+  "fixed_charge_equivalent_fmol": 1.586795405084107e-07,
+  "state_H_scaled": {
+   "amounts_fmol": {
+    "Na": 0.044540198780315746,
+    "K": 1.022001158140796,
+    "M": 0.053470928460557454,
+    "P": 1.0132050400205312
+   },
+   "mM": {
+    "Na": 5.934560723484736,
+    "K": 136.17199964403224,
+    "M": 7.124496086230465,
+    "P": 135.0
+   },
+   "charge_anchor_C": -1.297273082385078e-14,
+   "note": "the declared state H divided by the scale. It is NOT the start: the start is protocol.start_state"
+  },
+  "temperature_K": 310.0
+ },
+ "pump": {
+  "id": "pump_0",
+  "law": "nak_atp_mass_action_positive@1 (docs/KINETIC_PUMP_PROCESS.md; SPEC-010 / D111's mass-action cycle)",
+  "stoichiometry": {
+   "Na": -3,
+   "K": 2,
+   "note": "3 Na out, 2 K in per cycle"
+  },
+  "capacity_fmol_cycles_per_s": 0.03261272165616906,
+  "km_na_mM": 12.0,
+  "km_k_mM": 0.2,
+  "km_atp_mM": 0.5,
+  "saturation_orders": {
+   "Na_inside": 3,
+   "K_outside": 2,
+   "ATP": 1
+  },
+  "fuel": {
+   "kind": "maintained chemical reservoirs (held pools)",
+   "atp_mM": 1.5,
+   "adp_mM": 0.1,
+   "pi_mM": 0.1,
+   "delta_g0_J_per_mol": -37000.0,
+   "standard_state_mM": 1000.0,
+   "note": "the hydrolysis drive is dG0 + R T ln(ADP Pi / (ATP x 1 M)), with the pools in mM over the 1 M standard state"
+  },
+  "alpha": "not a declared parameter of this law; its declared values are those above",
+  "availability": [
+   [
+    0.0,
+    1.0
+   ]
+  ],
+  "unchanged_by_scale": "capacity, Km, pools and dG0 are as the heredity cell declares them",
+  "provenance": "the declared values (capacity, Km, pools, dG0, availability) are the heredity cell's declaration; the saturation orders (3, 2, 1) and the 1 M standard state are the law's own constants (its source), not declared values"
+ },
+ "regulator_and_route": {
+  "state": {
+   "law": "hill_regulated_two_state@1",
+   "input": "Hill activation by cytosolic Na",
+   "K_mM": 6.0,
+   "n": 4.0,
+   "k_on_per_s": 1.0,
+   "k_off_per_s": 1.0,
+   "s0_note": "the state's steady value at the start's Na_i: s* = k_on u/(k_on u + k_off), u = Na^n/(K^n + Na^n)",
+   "labelled": "synthetic",
+   "computed": "s0 is not given: the references compute it from the declared inputs (the closed loop's own steady state with no template, N = N0); the references' registered value is the start both sides use, as for A5''"
+  },
+  "route": {
+   "law": "state_complement",
+   "basal": 0.0,
+   "factor": "F_loop = b + (1 - b)(1 - s) = 1 - s",
+   "target": "the producer's assembly rate k_a (B1', target_half_steps), operating range [0, 1] of the state's fraction",
+   "computed": "F_loop0 = 1 - s0 is not given: the references compute it from the declared inputs (the closed loop's own steady state with no template, N = N0); the references' registered value is the start both sides use, as for A5''"
+  },
+  "with_the_template": "both routes stand on the same element (the route naleak_units) of the producer's assembly rate, so the effective rate is k_a x F_T x F_loop, the product in declared order (the template's coupling first), each evaluated at the start of each of the producer's half-steps from the state that half-step receives"
+ },
+ "template": {
+  "intent": "R-chain's template (validation/fr7/references/interface/inputs.json: the dose concentration 0.1 mM, K 0.01 mM, n 2, half-life 20 s, epsilon 2e-6), with one departure: basal b_T = 0.2 instead of R-chain's 0.02",
+  "species": "a neutral cytosolic species under D150's turnover (no membrane route)",
+  "dose_mM": 0.1,
+  "dose_fmol": 0.0007505222518670602,
+  "production": [
+   [
+    0.0,
+    0.0
+   ]
+  ],
+  "clearance_per_s": 0.03465735902799726,
+  "half_life_s": 20.0,
+  "factor": {
+   "law": "hill_activation",
+   "K_mM": 0.01,
+   "n": 2.0,
+   "basal": 0.2,
+   "factor": "F_T = b + (1 - b) c^n/(K^n + c^n), c = n_T/V"
+  },
+  "operating_range_mM": [
+   0.0,
+   1.0
+  ],
+  "operating_range_note": "proposed [0, 1] mM rather than R-chain's registered [1e-7, 1]: the engine refuses a routed half-step whose enabled source leaves its declared range, and the template falls below 1e-7 mM at about 399 s, inside this horizon; the factor is b exactly at c = 0. Pending the lead's ruling (the same point arises in R-chain's worlds)",
+  "labelled": "synthetic",
+  "basal_note": "b_T = 0.2 (synthetic) is chosen so the dose keeps N within a few N0 and the pump within its reserve; R-chain's b = 0.02 would multiply assembly about 50-fold and drive N far beyond, past the pump's reserve. The references compute the actual excursion."
+ },
+ "protocol": {
+  "dt_s": 0.001,
+  "start": "the closed loop's own steady state with no template (F_T = b): the cell at its stationary state with N = N0, s = s*, n_P, M* and N0 balanced; the template's dose at t = 0",
+  "start_state": {
+   "definition": "the closed loop's own steady state with no template (c = 0) and N = N0: not given: the references compute it from the declared inputs (the closed loop's own steady state with no template, N = N0); the references' registered value is the start both sides use, as for A5''",
+   "state_H_is_not_the_start": "the declared state H (cell.state_H_scaled) is the fixture's initial composition; the start is this stationary state of the same cell with N = N0"
+  },
+  "t_d_s": 260.0,
+  "t_d_note": "the cut control's time: the registered t_clear of R-chain's dose worlds (260 s), which this template's concentration trajectory shares (the same c(t) = 0.1 mM 2^(-t/20 s), K, n and epsilon 2e-6)",
+  "cut_control": "the lead's accepted form: from t_d the loop's coupling is switched off (F_loop exactly 1) and the producer's scheduled k_a is stepped to k_a F*, F* the engine's own applied loop factor from the coupling's record at the closed arm's row t_d, at the same dt",
+  "horizon_s": 560.0,
+  "horizon_note": "t_clear plus five unit half-lives (5 x 60 s)",
+  "rows_s": [
+   0.0,
+   1.0,
+   2.0,
+   5.0,
+   10.0,
+   20.0,
+   30.0,
+   40.0,
+   50.0,
+   60.0,
+   70.0,
+   80.0,
+   90.0,
+   100.0,
+   110.0,
+   120.0,
+   130.0,
+   140.0,
+   150.0,
+   160.0,
+   170.0,
+   180.0,
+   190.0,
+   200.0,
+   210.0,
+   220.0,
+   230.0,
+   240.0,
+   250.0,
+   260.0,
+   270.0,
+   280.0,
+   290.0,
+   300.0,
+   310.0,
+   320.0,
+   330.0,
+   340.0,
+   350.0,
+   360.0,
+   370.0,
+   380.0,
+   390.0,
+   400.0,
+   410.0,
+   420.0,
+   430.0,
+   440.0,
+   450.0,
+   460.0,
+   470.0,
+   480.0,
+   490.0,
+   500.0,
+   510.0,
+   520.0,
+   530.0,
+   540.0,
+   550.0,
+   560.0
+  ],
+  "rows_note": "R-chain's grid: 0, 1, 2 and 5 s, then every 10 s to the horizon",
+  "cut_control_F_star_note": "The references take F* from their own closed trajectory at t_d. The engine takes its own applied factor, which lags by up to half a step; the protocol registers a bound on |F*_engine - F*_reference| that covers that lag."
+ },
+ "relayed_by_lead": "2026-11-19: the lead removed the values the engine computed (the start, s0, F_loop0, the precursor's n0 and supply) and the engine-side provenance paths; every remaining number is a declared input"
+}

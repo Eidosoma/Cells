@@ -997,7 +997,7 @@ RULES = (
     ),
     dict(
         rule="a declared rate route's target follows its source",
-        laws=(COUPLING_2, TURNOVER, REACTIONS),
+        laws=(COUPLING_2, TURNOVER, REACTIONS, PRODUCER),
         level="data",
         check="src/cells/models/pump_composite.py::rate_route_definition_errors",
         test=TESTS + "test_species_regulated_availability.py::test_refusals",

@@ -1,0 +1,23 @@
+# The nightly full tiers 1+2 and the scope map (testing plan E; D229 rule 3). Definitions only: the
+# lead installs them (copy both files to ~/.config/systemd/user/, then
+# `systemctl --user daemon-reload` and `systemctl --user enable --now cells-nightly-tiers.timer`).
+# A run on demand: `systemctl --user start --no-block cells-nightly-tiers.service`.
+# Stop it only with `systemctl --user stop cells-nightly-tiers.service`, which stops the whole unit.
+[Unit]
+Description=Cells nightly tiers 1+2 and scope map (scripts/gates/nightly_tiers.sh)
+
+[Service]
+Type=oneshot
+Slice=cells.slice
+WorkingDirectory=/mnt/workspaces/Cells
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/bin/bash %h/Cells/scripts/gates/nightly_tiers.sh
+# The gates' caps: memory as their units (14G, no swap), the run fails alone on a shortage. The two
+# lanes and the light CPUs only: never the timed lane (4, 5, 20, 21) or the visualizer's (12-15,
+# 28-31). The script stays on CPU 23 until it holds a lane's lock, then on that lane's eight CPUs.
+MemoryMax=14G
+MemorySwapMax=0
+OOMPolicy=continue
+OOMScoreAdjust=200
+CPUAffinity=0-3 6-11 16-19 22-27
+TimeoutStartSec=16h
