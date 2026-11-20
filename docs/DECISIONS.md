@@ -8331,3 +8331,23 @@ lane extracted Tables S1, S2 and S6, which are merged as bare cited values in va
   patch-clamped (Table S4's totals, if from single-variant lines, measure total protein only).
 - **Item 4's options are unchanged** (D256): close it as unmet, change the endpoint, or get the
   measurement. The user decides.
+
+## D258: FR-29 reads Kettner's full current-voltage curves before any build
+
+2026-11-20, about 22:50 UTC. The lead explained FR-29's issue with the advisor. The user: "1.".
+- **Established:** a tightly coupled pump is ruled out. A lumen-pH change from 4.1 to 6.0 moved the
+  ATP-dependent reversal by −13.0 mV, where any fixed ratio predicts −112.4 mV.
+- **Weak so far:**
+  - The return mode's first prediction missed two rows. It is preserved as made (D248).
+  - Those rows then shaped the revised form.
+  - The remaining held-out row lies between the two fitted rows, so almost any smooth model passes
+    it, and the zero-gradient bounds only cap the return's strength.
+- **Structural:** the lumen-pH-3.1 bound fails for one saturable return site in every variant. The
+  response is nearly flat from pH 6.0 to 4.1, then rises more than 65 mV from 4.1 to 3.1.
+- **The competing explanation** is variable coupling. ATP use at the reversal separates them, and
+  Kettner does not report it.
+- **The choice:** first read Kettner's Fig. 3, the full ATP-dependent current-voltage curves, after
+  confirming which conditions it shows. It gives many points across voltages at each pH without
+  spending a held-out row. Then decide whether a return mode can work.
+- **Kept:** the build stays held; the pH 3.1 row is not dropped from the mode's domain; variable
+  coupling stays on the backlog.
