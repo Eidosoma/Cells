@@ -48,6 +48,9 @@ outside Python's standard library, and it names no potential set. What it shows:
    - against A1's phase-1 limit and A1-M's closed forms;
    - the largest per-residue affinity of every one-sided move, which must stay at or below
      x_dom = -1;
+   - the residuals at t_end of §4.8's conserved totals on every lane: the machines per pool, and
+     the four moieties over the rows and the residues in transit. They check this file's
+     transcription of §4.7, and must stay below 1e-9 relative;
    - the sheet's typed gaps, bounds and domain against the measurement.
 
    Without --bounds, the check only confirms that the typed bounds are twice the largest typed gap,
@@ -1348,6 +1351,28 @@ def _integrate_batch(np, worlds, names, sets, h):
         u = b + (1 - b) * cX**n_X / (p["K_X"] ** n_X + cX**n_X)
         return phi_tx, phi_tl, -np.expm1(y_R), -np.expm1(y_P), -np.expm1(x_rc / 2), u
 
+    stage_index = np.arange(m_st)  # A stage-j complex holds (j - 1) r residues.
+
+    def totals(Y):
+        """§4.8's conserved totals: the machines per pool, and each moiety over the rows and the
+        residues in transit (§1.4)."""
+        Ctx = Y[:, 1:17].reshape(n_lanes, 2, m_st)
+        Ctl = Y[:, 20:28]
+        W_tx = (r_g[:, :, None] * stage_index * Ctx).sum((1, 2))
+        W_tl = r_tl * (stage_index * Ctl).sum(1)
+        in_R = (L_g * Y[:, 17:19]).sum(1)
+        n = {k: Y[:, 29 + i] for i, k in enumerate(("N", "M", "A", "ATP", "ADP", "Pi"))}
+        return dict(
+            machines_pol=Y[:, 0] + Ctx.sum((1, 2)),
+            machines_rib=Y[:, 19] + Ctl.sum(1),
+            adenine=n["ATP"] + n["ADP"],
+            phosphorus=3 * n["N"] + n["M"] + 3 * n["ATP"] + 2 * n["ADP"] + n["Pi"] + in_R + W_tx,
+            nucleoside=n["N"] + n["M"] + in_R + W_tx,
+            amino_acid=n["A"] + p["L_P"] * Y[:, 28] + W_tl,
+        )
+
+    start_totals = totals(Y)
+
     # A1's limit, frozen at t = 0 (§5.1).
     phi_tx0, phi_tl0, fR0, fP0, _, u0 = factors(Y)
     kap0_tx, kap0_tl = kappa_tx[:, 0] * phi_tx0, kappa_tl * phi_tl0
@@ -1446,10 +1471,15 @@ def _integrate_batch(np, worlds, names, sets, h):
         k4 = rhs(Y + h * k3, PX)
         Y = Y + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
 
+    end_totals = totals(Y)
+    residual = {
+        k: np.abs(end_totals[k] - v) / np.where(v > 0, v, 1) for k, v in start_totals.items()
+    }
     out = []
     for i, (w, s) in enumerate(lanes):
         world = worlds[w]
         row = dict(world=w, set=s, x_max=float(x_max[i]))
+        row["conservation"] = {k: float(v[i]) for k, v in residual.items()}
         if world["kind"] == "A1":
             row["gaps"] = {k: float(gap[k][i]) for k in gap}
         else:
@@ -1490,6 +1520,9 @@ def measure_bounds(h=BOUND_STEP_S):
         names = [w for w, v in worlds.items() if v["kind"] in kinds]
         rows += _integrate_batch(np, worlds, names, sets, h)
     result = dict(step_s=h, arms={}, domain=max((r["x_max"], r["world"], r["set"]) for r in rows))
+    result["conservation"] = {
+        k: max(r["conservation"][k] for r in rows) for k in rows[0]["conservation"]
+    }
     for arm, kinds in (("A1", ("A1",)), ("A1-M", ("pol", "two", "rib"))):
         worst = {}
         for r in rows:
@@ -1576,9 +1609,11 @@ def bounds_report():
         },  # fmt: skip
         domain_at=f"{fine['domain'][1]}, {fine['domain'][2]}",
         largest_relative_change_at_twice_the_step=f"{change:.2e}",
+        conservation_at_t_end={k: f"{v:.2e}" for k, v in fine["conservation"].items()},
         sheet=errors or "agree",
     )
-    return not errors and change < 0.05, report
+    conserved = all(v < 1e-9 for v in fine["conservation"].values())
+    return not errors and change < 0.05 and conserved, report
 
 
 def print_derived():

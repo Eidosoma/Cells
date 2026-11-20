@@ -304,7 +304,7 @@ form's, transformed:
 
 **The neutral form's entries, as FreeEnergyEntry.** Each is on neutral rows, at integer
 stoichiometry per molecule, with c₀ = 1000 mM:
-- (M −1, ATP −2, N +1, ADP +2), with dG_RT = ln 1.05;
+- (M −1, ATP −2, N +1, ADP +2), with dG_RT = E_rc/RT (ln 1.05 in the test instance);
 - (R −1, M +L_R), with dG_kJ_mol = L_R E_pd, the temperature-independent basis and offset 0;
 - (P −1, A +L_P), with dG_kJ_mol = L_P E_pep.
 
@@ -347,8 +347,9 @@ corners.
 **For the registration's choice of E_pep.**
 - Martin's value is glycylglycine's overall hydrolysis, Gly-Gly → 2 Gly.
   - It includes the ionisation of the new termini.
-  - It also includes the dipeptide's own end charges, which sit beside the bond and shift its
-    ionisation. §1.3 leaves a chain's ends uncounted.
+  - It should also include the dipeptide's own end charges, which sit beside the bond and shift
+    its ionisation. That is this sheet's reading of an unread source (S). §1.3 leaves a chain's
+    ends uncounted.
 - A long chain's internal bond has no such neighbouring ends. Spirin's value is one stated for a
   long chain.
 - The direct read says which kind a value is, and the registration says which kind the lump takes.
@@ -720,7 +721,9 @@ form is in fmol: M is the pool as an amount (copies × 10¹⁵/N_A), and J* is i
    - At T ≥ 10 the same edit drives F below zero, and the engine would refuse the step rather
      than yield a wrong J. So it is not registered there.
 2. **A machine is not returned at release.**
-   - The edit: the `Q_tx` column's `F_pol` entry is 0 (§4.7), in every world.
+   - The edit, in every world:
+     - the `Q_tx` column's `F_pol` entry is 0 (§4.7) in the polymerase-limited and two-gene worlds;
+     - the `Q_tl` column's `F_rib` entry is 0 in the ribosome-limited worlds.
    - The pool drains and J̄ falls to about 0. So it fails F + E = M in every world, and the J–T
      curve.
 
@@ -823,6 +826,12 @@ it):
   (§5.2), relative.
 - **The domain:** the largest per-residue affinity of every one-sided move that a world runs, over
   its whole trajectory, at every step.
+- **Conservation, as a check on the measurement itself.** These are §4.8's conserved totals at
+  t_end on every lane: the machines per pool, and the four moieties over the rows and the residues
+  in transit.
+  - They stay within 1.4 × 10⁻¹² of their initial values. That is rounding over up to 86,400 steps;
+    the largest is a polymerase pool, and the moieties stay within 6 × 10⁻¹⁴.
+  - So the measurement's transcription of §4.7 conserves what the move matrix conserves.
 - **Each bound** is twice the largest gap, rounded up to one significant digit.
 
 <!-- bounds -->
@@ -891,7 +900,8 @@ every declared value. The numeric test instance is the one that is run.
       linear in counts, so its mean must equal the deterministic one.
   - **The counts:** the free machines, the complexes per stage, and the mRNA and protein molecules.
   - **The propensities, per second:**
-    - transcription's initiation, λ_tx f_pol;
+    - transcription's initiation, λ f_pol. In A1, λ = λ_tx (§5.3). At T = 10, λ = 10 k_I_tx c₁ with
+      A1-M's k_I_tx and u = 1;
     - translation's initiation, k_I_tl c₁ N_R f_rib;
     - a stage exit, κ₀ c_j;
     - a degradation, k₀ N.
@@ -992,7 +1002,8 @@ summariser of the pages. The publisher pages were not opened.
 - **Spirin AS (1999).** *Ribosomes*, p. 198.
   - Not read. About −0.5 kcal/mol for a peptide bond in a polypeptide of infinite length, read
     through BioNumbers entry 109649.
-  - Not used: it is the alternative for E_pep.
+  - Used in §5.6's measurement as one of its potential sets, and named as the alternative for the
+    registration's E_pep (§3.3).
 - **Wiseman RW et al. (2023).** Creatine kinase equilibration and ΔG_ATP over an extended range of
   physiological conditions. *Int J Mol Sci* 24(17):13244, doi:10.3390/ijms241713244. CC BY 4.0.
   - Read: through a summariser of its PMC page.
