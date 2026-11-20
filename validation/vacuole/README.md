@@ -68,7 +68,8 @@ reading, so any use is retrospective.
 
 **Which curve is which:**
 - **The curves are labelled only at −80 mV.** Every zero crossing lies left of its curve's first
-  overlap with another, so the reversals come from labelled stretches.
+  overlap with another, so the reversals come from labelled stretches (`labelled`: followed
+  continuously from the label, apart from any other curve).
 - **Panel A, right of the overlaps:** curves are followed by slope continuity (`slope_continuity`).
   - These calls are clear:
     - cytosolic pH 6 crosses pH 5 near −24 mV;
@@ -81,6 +82,11 @@ reading, so any use is retrospective.
     - Read as crossing, at +60 mV pH 7.5 reads about +25 and pH 6 about +20 mA m⁻².
     - Swapped, pH 6 reads about +25 and pH 7.5 about +20.
   - At +60 mV the order from the top is pH 7.5 (or 6), 6 (or 7.5), 8.5, then 5.
+- **`overlapping`:** two curves share one dark run. The reading window stops half way between
+  the reader's two paths, so the two values there differ because of where the paths were put, not
+  because of the image. Read such a pair as one value, give or take half their difference. Seven
+  rows in panel A carry it (where pH_cyt 6 meets 5, 6 meets 7.5, and 8.5 meets 5), and six in
+  panel B.
 - **Panel B:**
   - vacuolar pH 6 and 4.1 join just after their zero crossings, near −17 mV (`overlapping`);
   - all three curves join near −5 mV and can't be separated (`not_separable`). Above −5 mV the
@@ -100,16 +106,24 @@ reading, so any use is retrospective.
 
 - **All five crossings lie positive of Table 2's means,** by 2.0 to 4.7 mV, and within 2.4 SE of
   each row.
-- **Each gap times its curve's slope at reversal is nearly constant,** 0.9 to 1.5 mA m⁻² (2 to
-  4 px), while the gaps in voltage run from 2.0 to 4.7 mV. This is an observation, not a cause.
+- **Each gap times its curve's slope at reversal is somewhat steadier than the gaps,** 0.9 to
+  1.5 mA m⁻² (2 to 4 px) against 2.0 to 4.7 mV. The method spread alone moves the 7.5 / 6.0 product
+  from about 0.5 to 1.3. This is an observation, not a cause.
   - Table 2 gives the mean of single recordings' reversals, while Fig. 3 averages the curves
     themselves.
   - A small current offset in the averaged curves or in the drawing would also give it.
 - **The ranges in brackets are spreads between reading methods,** not errors. The methods are a
   bracket between the nearest clear columns and straight-line fits over ±12 and ±25 px, each 3 and
   4 px clear of the axis line.
+- **The gaps are small against the spread between recordings.** Table 2's SE times √n puts that
+  spread at 9 to 16 mV for four rows and 2 mV for 7.5 / 4.1, so only that row's gap is large against
+  it.
 - **The choice of zero adds 0.2 to 0.7 mV.** Taking zero from the tick fit instead of the drawn axis
   would move each crossing that much further positive (`zero_row_shift_mV`).
+
+**A check on the units:** the Results give Fig. 1's example as about 4 pA at 0 mV on a vacuole
+about 9 µm across (about 250 µm²), which is about 16 mA m⁻². The cytosolic pH 7.5 / vacuolar pH 5.0
+curve here reads 12.2 mA m⁻² at 0 mV.
 
 **Attribution:**
 - Readings of Fig. 3 of Kettner C, Bertl A, Obermeyer G, Slayman C, Bihler H (2003),
