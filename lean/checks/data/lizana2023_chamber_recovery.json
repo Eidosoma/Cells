@@ -1,0 +1,19 @@
+{
+  "citation": "Riveros Lizana et al. (2023), Animals 13:2675, Table 1, Figure 4 and supplementary workbook S1",
+  "doi": "10.3390/ani13162675",
+  "workbook_archive": "https://mdpi-res.com/animals/animals-13-02675/article_deploy/animals-13-02675-s001.zip",
+  "locator": "S1, Parameters sheet for imposed rates and volume. Sheets CH1 through CH4, rows 34, 64, 94 and 124, columns C (minutes) and F (measured outlet CO2 in vol%).",
+  "extraction": "One observation per chamber nearest each nominal time. Entries run in CH1–CH4 order. Times and concentrations are rounded to six decimal places. The spread across these four traces is descriptive.",
+  "chamber_volume_L": 980,
+  "exhaust_L_per_min": 20,
+  "injected_mixture_L_per_min": 0.5,
+  "injected_CO2_fraction": 0.65,
+  "ambient_CO2_fraction": 0.0005,
+  "injection_end_min": 60,
+  "observations": [
+    {"nominal_min": 30, "time_min": [29.661017, 30, 30.216667, 30.083333], "outlet_CO2_vol_percent": [0.822975, 0.796400, 0.840859, 0.843966]},
+    {"nominal_min": 60, "time_min": [59.655738, 59.983333, 60.216667, 60.083333], "outlet_CO2_vol_percent": [1.129215, 1.190120, 1.114569, 1.137895]},
+    {"nominal_min": 90, "time_min": [89.666667, 90, 90.233333, 90.100000], "outlet_CO2_vol_percent": [0.684289, 0.584134, 0.599319, 0.707107]},
+    {"nominal_min": 120, "time_min": [119.661017, 120, 120.216667, 120.083333], "outlet_CO2_vol_percent": [0.288992, 0.344670, 0.289241, 0.349883]}
+  ]
+}

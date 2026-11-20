@@ -6,6 +6,7 @@ import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
+import CellsProofs.Chemistry.SpeciesTurnover
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport

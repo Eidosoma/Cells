@@ -1,5 +1,28 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Production and first-order clearance
+
+<a id="scheduled-species-turnover"></a>
+
+`cells.scheduled_species_turnover@1` admits constant production `P` (fmol/s) in a cell and first-order clearance `k` (s⁻¹) in a cell or finite outside pool. Lean proves that the step solves `dn/dt = P − kn`, preserves a positive pool, and books nonnegative production and clearance. At steady state, the pool stays fixed while both gross totals increase by `P × time`. Subdividing an interval with unchanged rates gives the same final amount and total clearance in exact arithmetic. [Lean theorems](CellsProofs/Chemistry/SpeciesTurnover.lean) · [Engine bookings](../src/cells/operators/species_turnover.py#L246)
+
+**Ordinary rates.** On engine `54cb31957d48f488bddefcce7399ca4739dfbcea`, 144 cases on each of NumPy and compiled CPU agreed with a 60-digit calculation within 2.23 × 10⁻¹⁶ of the larger of the starting pool and gross production. Two `resolved_pump_composite@1` runs around `resolved_pump_tissue@3` used a 1 fmol cell and a 0.5 fmol finite outside pool. The cell spent half a second each at steady turnover, production alone, clearance alone and mixed rates. Two simultaneous cell clearances added. At the first switch the cell still held 1 fmol and had both produced and cleared 0.1875 fmol. Across all 26 stored rows at step sizes of 0.25 and 0.125 s, the largest error in any amount or gross booking was 1.12 × 10⁻¹⁶ fmol. Signed turnover work agreed with the change in ideal chemical free energy within 2.14 × 10⁻¹⁶ pJ. [Schedules and independent reference](checks/species_turnover.py#L62)
+
+**Engine finding for the turnover owner.** A one-second run began at 1 fmol with a target of 2 fmol and two half-steps. At `k = 2⁵³ s⁻¹` and `P = 2k` in the corresponding fmol/s units, the runner accepted 2 fmol and booked 0.995667 pJ. Doubling both rates left the target unchanged. The runner then accepted **1 fmol and zero work**. The exact endpoint is `2 − exp(−k × 1 s)` fmol, which rounds to 2 in both cases. At the higher rate, each half-step's rounded gross production and clearance are equal and the engine uses their difference to move the pool. The net identity `(P/k − n) × (1 − exp(−kh))` recovers the 1 fmol change in the same float64 format. The stress case uses extreme turnover rates and a well-resolved pool. The full comparison exits with status 1 on this discrepancy. The ordinary controls pass with `--controls-only`. [State update](../src/cells/operators/species_turnover.py#L256) · [Net-change proof](CellsProofs/Chemistry/SpeciesTurnover.lean#L63) · [Reproducer](checks/species_turnover.py#L150)
+
+**Measured protein clearance.** Dörrbaum et al. followed pulse-labeled GM130 and Lamin B1 in primary rat hippocampal neurons. We fitted each protein's day 0 and day 1 mean puncta count and held out the later dates from the same experiment. During the chase new labeled input is zero. The signal is a proxy for the surviving labeled cohort. These measurements leave total protein production and absolute pool size open. [Figure 2B and source workbook](https://elifesciences.org/articles/34202/figures#fig2) · [Per-group counts and provenance](checks/data/dorrbaum2018_protein_chase.json)
+
+| Protein and chase day | Observed puncta per neuron, mean ± cell SD | Predicted from days 0 and 1 | With measured background |
+| --- | ---: | ---: | ---: |
+| GM130, day 2 | 4.00 ± 1.47 | 4.99 | 5.04 |
+| GM130, day 3 | 3.31 ± 1.42 | 3.85 | 3.99 |
+| Lamin B1, day 3 | 18.20 ± 6.36 | 16.58 | 16.84 |
+| Lamin B1, day 7 | 11.62 ± 3.22 | 5.07 | 5.97 |
+
+The raw early fits give `k = 0.2593 day⁻¹` for GM130 and `0.2964 day⁻¹` for Lamin B1. Fixing the background to the methionine-only control and refitting the same two days still underpredicts late Lamin B1. The SDs describe the spread across individual cells at each time. The comparison uses a proportional readout for the labeled cohort and supplies no calibration from puncta to fmol. [Reproduce the two fits](checks/species_turnover.py#L192)
+
+**Independent physical check with positive input.** Riveros Lizana et al. metered CO₂ into four empty 980 L chambers for 60 minutes, then followed washout. The stated 20 L/min exhaust fixes `k = 20/980 min⁻¹`. The injected mixture and incoming air supply 0.33475 L CO₂/min during injection and 0.010 L/min afterward. These parameters and the 0.05 vol% baseline determine the predicted curve without fitting the outlet measurements. At the four actual sampling times nearest 30, 60, 90 and 120 minutes, the predicted mean outlet percentages were 0.793, 1.194, 0.672 and 0.387. The measured means were 0.826, 1.143, 0.644 and 0.318 vol%, with between-chamber SDs of 0.022, 0.033, 0.061 and 0.034. The calculation assumes that outlet concentration represents the well-mixed chamber. This calibration tests positive input and washout with known flow. The neuronal assay supplies the biological comparison. [Paper, Table 1 and Fig. 4](https://doi.org/10.3390/ani13162675) · [Measured outlet values and workbook locator](checks/data/lizana2023_chamber_recovery.json) · [Calculation at each chamber’s sampling time](checks/species_turnover.py#L222)
+
 ## 20 November 2026 · Saturable uptake from a finite extracellular pool
 
 <a id="saturable-species-exchange"></a>
