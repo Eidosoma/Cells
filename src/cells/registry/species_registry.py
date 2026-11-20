@@ -105,17 +105,19 @@ A source that cites reaction-level standard free energies, not species potential
 potentials only up to one reference per conserved quantity. A named set (PotentialSet; the lead's
 rulings of 20 November 2026, D234's B1) states its references and derives every other potential
 from its values, so its potentials hold together only as a whole:
-* **References:** mu°/RT = 0 at 1 M for one row per conserved quantity (beard2005@1: H+, K+, Mg2+,
-  O2, NAD, Q, cytochrome c oxidised, ADP3-, HPO4 2- and the substrate's oxidised form). Water is
-  never a row: it stands at unit activity with mu = 0 and is omitted from every stoichiometry, so
-  each dG° is at unit water activity.
+* **References:** mu°/RT = 0 at 1 M for one row per conserved quantity (beard2005@1 and @2: H+, K+,
+  Mg2+, O2, NAD, Q, cytochrome c oxidised, ADP3-, HPO4 2- and the substrate's oxidised form). Water
+  is never a row: it stands at unit activity with mu = 0 and is omitted from every stoichiometry,
+  so each dG° is at unit water activity.
 * **Derived:** a form's potential from its dissociation constant (mu°_f = mu°_base + sum n mu°_L +
   ln K_d, with no temperature), and each other row's from one reaction, solved in order: dG°/RT at
   the world's temperature, plus its basis's logarithms, which carry none (a reaction cited at pH 7
   adds nu_H ln(1 M / 1e-7 M) for its scalar protons and nu ln P(1e-7 M) for each total over proton
   forms, P the row's binding polynomial). dG° is treated as independent of temperature, since no
-  dH° is cited: an approximation. Every value is moved to the world's c0 by ln(c0 / 1 M), evaluated
-  at FREE_ENERGY_DIGITS digits and rounded once.
+  dH° is cited: an approximation. A reaction may instead give its equilibrium constant in base
+  forms at 1 M, which, like a K_d, carries no temperature (beard2005@2's adenylate kinase, with the
+  match to its constant on totals recorded and checked: SetMatch). Every value is moved to the
+  world's c0 by ln(c0 / 1 M), evaluated at FREE_ENERGY_DIGITS digits and rounded once.
 * **The limit:** a dG° computed from these potentials is meaningful only for a reaction that
   conserves every reference quantity. check_moieties holds every declared moiety to that.
 * **No mixing:** with_potential_set applies a set whole to a raw definition, every row of it the
@@ -811,21 +813,42 @@ class SetForm(NamedTuple):
     cited: str
 
 
+class SetMatch(NamedTuple):
+    """How a reaction's constant in base forms was matched to a cited constant on totals (D236's
+    adenylate kinase): K_base = K_totals prod_rows P_row^(-nu_row), P_row the row's binding
+    polynomial over the set's own forms at the declared free ligand concentrations (M). The
+    reaction's declared K_base is that value rounded to `digits` significant digits, which
+    potential_set_errors checks; `cited`, where the constant on totals is printed and why the free
+    concentrations are the ones declared."""
+
+    constant_on_totals: float
+    free_M: tuple  # ((ligand row, free concentration in M), ...)
+    digits: int
+    cited: str
+
+
 class SetReaction(NamedTuple):
     """A reaction-level standard free energy that fixes the potential of the one row it
     `determines`: its stoichiometry over base rows, ((row, nu), ...), products positive and water
     omitted (unit activity); its value in kJ/mol, `multiple` times over where the set's turnover is
     a multiple of the cited one; its basis, the set's proton row at proton_reference_M (pH 7:
     1e-7 M) or at 1 M (None), and the rows it counts as totals over their proton forms at that
-    reference (`totals`); and `cited`, where it is printed, or why it is declared."""
+    reference (`totals`); and `cited`, where it is printed, or why it is declared.
+
+    Or, in place of the value in kJ/mol (dG_kJ_mol None), its equilibrium constant in base forms
+    at 1 M, which carries no temperature, as a form's K_d does: dG°/RT = -ln K at every
+    temperature (beard2005@2's adenylate kinase). Such a reaction is on the 1 M basis, with no
+    totals and a multiple of 1; `match` records how its constant was matched, if it was."""
 
     determines: str
     stoichiometry: tuple
-    dG_kJ_mol: float
+    dG_kJ_mol: float | None
     multiple: int
     proton_reference_M: float | None
     totals: tuple
     cited: str
+    equilibrium_constant: float | None = None
+    match: SetMatch | None = None
 
 
 class PotentialSet(NamedTuple):
@@ -910,7 +933,51 @@ BEARD_2005 = PotentialSet(
         "The source's X_MgA (Table 1) is class C, set large.",
     ),
 )
-POTENTIAL_SETS = MappingProxyType({BEARD_2005.name: BEARD_2005})
+_AK_BASE = 0.389  # MR1's K_base_AK (D236), the match's result to its three digits.
+# beard2005@2 (D236): @1 with AMP2-, whose potential adenylate kinase's constant in base forms
+# fixes, and AMP in the adenine and phosphorus moieties. Frame B, Eq. 24 as run and the balanced
+# supply add nothing to the set: phosphate's proton form and the ATP reaction's total phosphate
+# are @1's already, Eq. 7's protons are complex III's scalar protons, and the supply's held pair
+# sets its drive against the declared reaction's anchor, which stays @1's.
+BEARD_2005_V2 = BEARD_2005._replace(
+    name="beard2005@2",
+    rows=(*BEARD_2005.rows, ("AMP", -2)),
+    reactions=(
+        *BEARD_2005.reactions,
+        SetReaction(
+            "AMP", (("ADP", -2), ("ATP", 1), ("AMP", 1)), None, 1, None, (),
+            f"{_BEARD_2005}, Eqs. 17 and 18 (adenylate kinase, 2 ADP -> ATP + AMP), in base forms "
+            "(D236): K_base, MR1's K_base_AK",
+            equilibrium_constant=_AK_BASE,
+            match=SetMatch(
+                0.4331, (("Mg", 3.81e-3),), 3,
+                f"{_BEARD_2005}, Table 1: K_AK, unchanged by the correction, on totals (Eq. 18; "
+                "footnote c: from Alberty 2003's tables, at conditions the source does not "
+                "print), converted with the set's own K_MgADP and K_MgATP at a declared free Mg2+ "
+                "of 3.81 mM, the active-state buffer's (5 mM Mg, 1.3 mM ADP; D236: the source "
+                "never states the IMS's free Mg2+)",
+            ),
+        ),
+    ),  # fmt: skip
+    moieties=tuple(
+        (moiety, (*weights, ("AMP", 1)) if moiety in ("adenine", "phosphorus") else weights)
+        for moiety, weights in BEARD_2005.moieties
+    ),
+    notes=(
+        *BEARD_2005.notes[:2],
+        "The source binds no H+ to the nucleotides, and no Mg2+ to phosphate or to AMP. AMP2-'s "
+        "potential is from adenylate kinase's constant in base forms (D236), whose ln K carries "
+        "no temperature, as a form's ln K_d; its constant on totals follows the free Mg2+ (0.153 "
+        "at 1 mM, 0.491 at 5 mM), so the set records the match it was declared at.",
+        *BEARD_2005.notes[3:],
+        "Frame B (D236): phosphate's protons count as protons, H2PO4- being a form of Pi that "
+        "binds H+, and the ATP reaction's total phosphate is converted with the set's own k_dH, "
+        "as in @1. The supply's declared reaction keeps @1's anchor, dG°' = 0 at pH 7: a world "
+        "holding the supply's neutral reductant pair sets the reference pH through the pair's "
+        "ratio, S_red/S_ox = r h_ref / 1e-7 M (0.794 r at the ruled pH 7.10).",
+    ),
+)
+POTENTIAL_SETS = MappingProxyType({s.name: s for s in (BEARD_2005, BEARD_2005_V2)})
 
 
 def potential_set_errors(potential_set):
@@ -959,6 +1026,7 @@ def potential_set_errors(potential_set):
             out.append(f"reaction for {r.determines}: its multiple is a positive integer")
         if r.totals and (r.proton_reference_M is None or not set(r.totals) <= proton_only - other):
             out.append(f"reaction for {r.determines}: its totals are over proton forms at a pH")
+        out.extend(_constant_errors(s, r, nu))
     if known != set(valence):
         out.append(f"its rows {sorted(set(valence) - known)} have no potential")
     for moiety, weights in s.moieties:
@@ -967,14 +1035,71 @@ def potential_set_errors(potential_set):
     return out
 
 
+def _constant_errors(s, r, nu):
+    """Why a set reaction's value is ill formed: one value, in kJ/mol or as a constant in base
+    forms; a constant finite and positive, on the 1 M basis with no totals and a multiple of 1;
+    a match only on a constant, its constant on totals finite and positive, its free ligands
+    distinct rows of the set at finite positive concentrations, covering every ligand of the
+    reaction's rows' forms, and its result rounding to the declared constant at its digits."""
+    where = f"reaction for {r.determines}"
+    if (r.dG_kJ_mol is None) == (r.equilibrium_constant is None):
+        return [f"{where}: it gives one value, in kJ/mol or as an equilibrium constant"]
+    if r.equilibrium_constant is None:
+        return [f"{where}: a match is made only for an equilibrium constant"] if r.match else []
+    k = r.equilibrium_constant
+    if not (isinstance(k, float) and math.isfinite(k) and k > 0):
+        return [f"{where}: its equilibrium constant is finite and positive"]
+    if r.proton_reference_M is not None or r.totals or r.multiple != 1:
+        return [f"{where}: an equilibrium constant is in base forms at 1 M, its multiple 1"]
+    if r.match is None:
+        return []
+    m, valence = r.match, dict(s.rows)
+    free = dict(m.free_M)
+    if not (
+        isinstance(m.constant_on_totals, float)
+        and math.isfinite(m.constant_on_totals)
+        and m.constant_on_totals > 0
+        and len(free) == len(m.free_M)
+        and all(row in valence and math.isfinite(c) and c > 0 for row, c in free.items())
+        and type(m.digits) is int
+        and m.digits > 0
+    ):
+        return [
+            f"{where}: its match has a finite positive constant on totals, distinct free "
+            "ligand rows at finite positive concentrations and a positive count of digits"
+        ]
+    forms = [f for f in s.forms if f.row in nu]
+    missing = sorted({ligand for f in forms for ligand, _ in f.counts} - set(free))
+    if missing:
+        return [f"{where}: its match declares no free concentration for {missing}"]
+    with localcontext() as ctx:
+        ctx.prec = FREE_ENERGY_DIGITS
+        value = Decimal(m.constant_on_totals)
+        for row, n in nu.items():
+            p = Decimal(1) + sum(
+                math.prod(Decimal(free[ligand]) ** count for ligand, count in f.counts)
+                / Decimal(f.dissociation_M)
+                for f in forms
+                if f.row == row
+            )
+            value *= p**-n
+    if float(f"{value:.{m.digits}g}") != k:
+        return [
+            f"{where}: its match gives {float(value)!r}, which is not {k!r} to {m.digits} "
+            "significant digits"
+        ]
+    return []
+
+
 def potential_set_values(name, *, temperature_K, standard_concentration_mM):
     """{row or form ID: mu°/RT} of the named set at a world's temperature (K) and c0 (mM), each
     evaluated at FREE_ENERGY_DIGITS digits and rounded once (module docstring): a reaction's
-    dG°/RT at temperature_K with its basis's logarithms (the scalar protons' nu_H ln(1 M / h_ref),
-    and each total's nu ln P(h_ref), P the row's proton binding polynomial), a form's ln K_d, and
-    every value moved to c0 by ln(c0 / 1 M). Its arithmetic is part of every set's version: a
-    change here is a new version of each set (beard2005@2), since check_potential_set compares the
-    doubles exactly."""
+    dG°/RT at temperature_K (or -ln K, with no temperature, for one given by its constant) with
+    its basis's logarithms (the scalar protons' nu_H ln(1 M / h_ref), and each total's
+    nu ln P(h_ref), P the row's proton binding polynomial), a form's ln K_d, and every value moved
+    to c0 by ln(c0 / 1 M). Its arithmetic is part of every set's version: a change that moves a
+    set's doubles is a new version of that set, since check_potential_set compares them exactly
+    (beard2005@2's constant path leaves @1's doubles bit for bit)."""
     s = POTENTIAL_SETS[name]
     problems = potential_set_errors(s)
     if problems:
@@ -990,7 +1115,10 @@ def potential_set_values(name, *, temperature_K, standard_concentration_mM):
         mu = {row: Decimal(0) for row in s.references}
         for r in s.reactions:
             nu = dict(r.stoichiometry)
-            x = Decimal(r.dG_kJ_mol) * r.multiple / rt
+            if r.equilibrium_constant is None:
+                x = Decimal(r.dG_kJ_mol) * r.multiple / rt
+            else:  # In base forms at 1 M, with no temperature (SetReaction).
+                x = -Decimal(r.equilibrium_constant).ln()
             if r.proton_reference_M is not None:
                 h = Decimal(r.proton_reference_M)
                 x += nu.get(s.proton, 0) * (1 / h).ln()

@@ -29,6 +29,13 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   elsewhere, and a second set. The set's moieties over the rows present are required, and its
   proton buffer is checked as the set's rows are (planted, each refused: a set moiety dropped, one
   edited, and the buffer's protonated form moved);
+- the set's second version (D236): beard2005@2 is @1, bit for bit on every shared row, with AMP2-,
+  fixed by adenylate kinase's constant in base forms, K_base 0.389, which carries no temperature;
+  the set records its match to K_AK 0.4331 on totals at 3.81 mM free Mg2+ and its contract checks
+  it (the lane's 0.153 at 1 mM and 0.491 at 5 mM agree; planted, 0.389 at 1 mM and the constant
+  on totals unconverted are refused). AMP joins adenine and phosphorus at 1, required as the
+  set's moieties are (planted, AMP at 2 in phosphorus is refused); the kinase's entry beside the
+  set is admitted in base forms and refused on totals;
 - an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
   temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
   3 K warmer is refused, its dG°/RT moved by 1 %. Table 2's four reactions as source-derived
@@ -244,14 +251,14 @@ def expected_RT(name, temperature_K):
     return x - (math.log1p(1e-7 / 1.7783e-7) if name == "F" else 0.0)
 
 
-def set_world(temperature_K=None):
+def set_world(temperature_K=None, potential_set=species_registry.BEARD_2005):
     """Heredity cell D (its Na, K, M and P) with every other row of the set and a declared matrix
     buffer, Buf (valence -1), impermeant, at 1 mM (H at 1e-4 mM), no potentials of their own."""
     raw = water.heredity_cell("D", end_time=0.002)
     if temperature_K is not None:
         raw["model"]["temperature_K"] = temperature_K
     declared = {e["id"] for e in raw["model"]["species"]}
-    for row, z in (*species_registry.BEARD_2005.rows, ("Buf", -1)):
+    for row, z in (*potential_set.rows, ("Buf", -1)):
         if row not in declared:
             mM = 1e-4 if row == "H" else 1.0
             ck.add_species(raw, row, z, 0.0, {"cell_0": mM, "bath_0": mM})
@@ -324,6 +331,72 @@ def a_buffer_edited(monkeypatch):
     (form,) = next(e for e in raw["model"]["species"] if e["id"] == "Buf")["forms"]
     form["standard_mu_RT"] += 0.1
     return raw, contextlib.nullcontext()
+
+
+SECOND = species_registry.BEARD_2005_V2
+KINASE = (("ADP", -2), ("ATP", 1), ("AMP", 1))  # 2 ADP3- -> ATP4- + AMP2-, in base forms.
+
+
+def matched(k, mg_M):
+    """beard2005@2 with its kinase's constant and its match's free Mg2+ replaced (a plant)."""
+    r = SECOND.reactions[-1]
+    planted = r._replace(equilibrium_constant=k, match=r.match._replace(free_M=(("Mg", mg_M),)))
+    return SECOND._replace(reactions=(*SECOND.reactions[:-1], planted))
+
+
+def a_second_version(monkeypatch):
+    """beard2005@2 applied whole, with AMP. Its preconditions: the set keeps its own contract;
+    every row it shares with @1 has @1's double, bit for bit, at the world's temperature and at
+    310.15 K; adenylate kinase's sum of nu mu°/RT is -ln 0.389 at both, its constant carrying no
+    temperature; AMP's moieties are adenine and phosphorus at 1 each. The match is checked by the
+    contract: the lane's own reading, 0.153 at 1 mM free Mg2+ and 0.491 at 5 mM, is admitted, and
+    planted, 0.389 kept at 1 mM, and the constant on totals given unconverted, are refused."""
+    assert species_registry.potential_set_errors(SECOND) == []
+    for temperature in (298.15, 310.15):
+        first, second = (
+            species_registry.potential_set_values(
+                name, temperature_K=temperature, standard_concentration_mM=1000.0
+            )
+            for name in (BEARD, SECOND.name)
+        )
+        assert set(second) - set(first) == {"AMP"}
+        assert all(float.hex(first[k]) == float.hex(second[k]) for k in first), temperature
+        kinase = sum(n * second[row] for row, n in KINASE)
+        assert abs(kinase + math.log(0.389)) <= 1e-12, temperature
+    assert species_registry.potential_set_errors(matched(0.153, 1e-3)) == []
+    assert species_registry.potential_set_errors(matched(0.491, 5e-3)) == []
+    for k, mg in ((0.389, 1e-3), (0.4331, 3.81e-3)):
+        (error,) = species_registry.potential_set_errors(matched(k, mg))
+        assert re.match(r"reaction for AMP: its match gives .* which is not", error), error
+    raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+    moieties = {m["id"]: m["weights"] for m in raw["model"]["moieties"]}
+    assert moieties["phosphorus"]["AMP"] == 1 and moieties["adenine"]["AMP"] == 1
+    spec = parse_spec(raw)
+    assert species_registry.declared(parse_spec(to_dict(spec))) == species_registry.declared(spec)
+    return raw, contextlib.nullcontext()
+
+
+def a_second_version_amp_at_two_phosphorus(monkeypatch):
+    raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+    (phosphorus,) = [m for m in raw["model"]["moieties"] if m["id"] == "phosphorus"]
+    phosphorus["weights"]["AMP"] = 2
+    return raw, contextlib.nullcontext()
+
+
+def the_kinase_beside_the_second_version(k):
+    """beard2005@2 applied, with adenylate kinase's entry declared beside it at the constant k (a
+    planted declarer, as Table 2's): in base forms at 0.389, or the constant on totals."""
+
+    def setup(monkeypatch):
+        raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+        planted = ((KINASE_LAW, (FreeEnergyEntry(KINASE, -math.log(k), 1000.0),)),)
+        monkeypatch.setattr(species_registry, "declared_free_energies", lambda spec: planted)
+        return raw, contextlib.nullcontext()
+
+    return setup
+
+
+KINASE_LAW = "The adenylate kinase law's standard_free_energies"
 
 
 def with_moieties(raw, *weights):
@@ -502,6 +575,20 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a named set's proton buffer edited": (
         a_buffer_edited,
         r"proton buffer Buf \(potential set beard2005@1, pK 7\.4\): its potentials .* are not",
+    ),
+    "the second version applied whole, with AMP": (a_second_version, None),
+    "the second version's AMP at 2 in phosphorus": (
+        a_second_version_amp_at_two_phosphorus,
+        r"potential set beard2005@2: its moiety phosphorus over the rows present, .* is declared "
+        r"as \{.*'AMP': 2\}",
+    ),
+    "adenylate kinase in base forms beside the second version": (
+        the_kinase_beside_the_second_version(0.389),
+        None,
+    ),
+    "adenylate kinase on totals beside the second version": (
+        the_kinase_beside_the_second_version(0.4331),
+        rf"{KINASE_LAW}, entry 0: dG°/RT .* beyond the rounding bound",
     ),
     "a moiety naming no row": (an_unknown_moiety_row, r"moiety glucose: 'Glc' is not a species"),
     "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),
