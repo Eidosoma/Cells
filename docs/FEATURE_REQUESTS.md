@@ -928,6 +928,15 @@ explored.
      - the particle keeps 4 vacant and 2 occupied sites.
   3. One release gives 1 free X, 5 vacant sites and 1 occupied site. A rebinding restores the
      post-wash counts.
+- **The shell's acceptance (the requester, relayed by the user on 20 November 2026).** A model
+  declares the shell's area, its lumen volume and a permeability per tracer. With a neutral tracer
+  at fixed inside and outside concentrations and a fixed gate state:
+  1. doubling the area while halving the permeability preserves both the entry and the exit rate;
+  2. doubling the permeability alone doubles both rates;
+  3. changing only the wall's inventory or the binding-site count preserves both rates and the
+     declared lumen volume.
+
+  The report names the tested revision.
 
 ## FR-22 — Checkpoint and resume for the stochastic assembly runner
 

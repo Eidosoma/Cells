@@ -103,6 +103,8 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.electrogenic_nucleotide_exchange",
                 "cells.laws.cycles.phosphate_proton_symport",
                 "cells.laws.cycles.potassium_proton_exchange",
+                "cells.laws.cycles.held_reductant_supply",
+                "cells.laws.cycles.adenylate_kinase",
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
@@ -167,6 +169,7 @@ MODELS = MappingProxyType(
             operator_homes=(
                 "cells.models.assembly_lineages_v2.division",
                 "cells.models.assembly_lineages_v2.transfer",
+                "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
             ),
             interfaces=(
                 "cells.reaction_law@1",

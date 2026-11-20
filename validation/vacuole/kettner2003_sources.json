@@ -1,0 +1,719 @@
+{
+ "scope": "Fig. 3 of Kettner et al. (2003) read as numbers for FR-29 (D258): the yeast V-ATPase's averaged difference current-voltage curves at seven pH pairs, beside Table 2's reversal rows. Retrospective: Table 2's values were known before the reading.",
+ "readings": "validation/vacuole/kettner2003_fig3_readings.csv",
+ "reversals": "validation/vacuole/kettner2003_fig3_reversals.csv",
+ "table2_rows": "lean/checks/data/kettner2003_vacuole.json, read only; its eight rows agree with Table 2 on the article page",
+ "study": {
+  "authors": "Kettner C, Bertl A, Obermeyer G, Slayman C, Bihler H (2003)",
+  "title": "Electrophysiological Analysis of the Yeast V-Type Proton Pump: Variable Coupling Ratio and Proton Shunt",
+  "journal": "Biophys J 85(6):3730",
+  "doi": "10.1016/S0006-3495(03)74789-4",
+  "pmcid": "PMC1303676",
+  "pmid": "14645064",
+  "license": "(c) 2003 Biophysical Society; free to read at PMC, no CC licence: bare cited values only (D227)",
+  "open_access_mirror": "PMC's Open Access S3 mirror lists no files under PMC1303676 (20 November 2026)",
+  "article_page": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/",
+  "files": [
+   {
+    "name": "biophysj00029777f03_LW.jpg",
+    "what": "Fig. 3, the image the article page links",
+    "url": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/b3e2/1303676/3974abb0b9ae/biophysj00029777f03_LW.jpg",
+    "bytes": 35341,
+    "sha256": "ca3e837f9b49cf2ae0a3b5974a6499a0826a355703f0c401d0635442f0ff96c1",
+    "pixels": [
+     400,
+     774
+    ],
+    "fetched": "2026-11-20"
+   }
+  ]
+ },
+ "figure": {
+  "panels": {
+   "A": "pH_vac 5.0 (pipette); pH_cyt 5, 6, 7.5 and 8.5 (bath)",
+   "B": "pH_cyt 7.5 (bath); pH_vac 7.5, 6 and 4.1 (pipette)"
+  },
+  "fuel": "AAP medium: 5 mM K2-ATP, 5 mM K-ADP, 10 mM KH2PO4 and 125 mM KCl, with 5 mM MgCl2, 0.5 mM EGTA and 5 mM MES titrated with Tris (Methods)",
+  "curves": "averages of at least three recordings per condition of the difference current: energized (AAP) minus non-energized (no ATP), generated as in Figs. 1B-C and 2B",
+  "voltage": "mV, cytoplasmic minus vacuolar potential (Bertl et al. 1992 convention)",
+  "current": "mA m-2: each recording divided by its membrane area from capacitance at 1 uF cm-2; not normalized to a maximum; positive = positive charge from cytosol into the vacuole",
+  "voltage_range_mV": [
+   -80,
+   60
+  ],
+  "error_bars": "none drawn"
+ },
+ "digitization": {
+  "reader": "fr7_lane, 20 November 2026",
+  "method": "Pillow on the JPEG as published; dark = grey below 128. Voltage from a straight line through the eight tick marks of each axis; current from the +-50 ticks, zero at the drawn axis line. In each pixel column a trace's reading is the darkness-weighted centre of dark pixels within 5 px of the reader's path (waypoints below, linearly interpolated), cut half way to a neighbouring path, outside the axis line, tick marks and label boxes. A sample is the median of the columns within +-1 mV (+-2 mV where the vertical axis hides the range). Where a trace runs along the axis line, samples are interpolated between the nearest columns 4 px clear of it. Zero crossings: the midpoint of a bracket between the nearest clear columns and straight-line fits over +-12 and +-25 px, each with readings 3 and 4 px clear of the axis; the quoted spread is between those methods.",
+  "panels": {
+   "A": {
+    "fixed": "pH_vac 5.0",
+    "varied": "pH_cyt",
+    "x_ticks_px": [
+     49,
+     96,
+     144,
+     190,
+     239,
+     288,
+     335,
+     383
+    ],
+    "x_tick_values_mV": [
+     -80,
+     -60,
+     -40,
+     -20,
+     0,
+     20,
+     40,
+     60
+    ],
+    "px_per_mV": 2.3893,
+    "zero_mV_col_px": 239.39,
+    "x_tick_residual_sd_mV": 0.34,
+    "y_ticks_px": {
+     "50": 63.5,
+     "-50": 307.0
+    },
+    "px_per_mA_per_m2": 2.435,
+    "zero_current_row_px": 186.11,
+    "zero_note": "the drawn axis line's centre; a straight line through the three ticks puts zero 0.57 px higher",
+    "label_boxes_px": [
+     [
+      0,
+      70,
+      0,
+      140
+     ],
+     [
+      185,
+      232,
+      50,
+      78
+     ],
+     [
+      265,
+      400,
+      50,
+      92
+     ],
+     [
+      185,
+      232,
+      292,
+      320
+     ],
+     [
+      160,
+      206,
+      204,
+      232
+     ],
+     [
+      268,
+      306,
+      204,
+      232
+     ],
+     [
+      318,
+      352,
+      204,
+      232
+     ],
+     [
+      358,
+      400,
+      204,
+      232
+     ],
+     [
+      288,
+      400,
+      232,
+      268
+     ]
+    ],
+    "waypoints_px": {
+     "5": [
+      [
+       51,
+       176
+      ],
+      [
+       73,
+       171
+      ],
+      [
+       97,
+       168.5
+      ],
+      [
+       133,
+       165
+      ],
+      [
+       163,
+       161.5
+      ],
+      [
+       187,
+       161
+      ],
+      [
+       211,
+       159
+      ],
+      [
+       235,
+       158.5
+      ],
+      [
+       259,
+       157
+      ],
+      [
+       289,
+       157
+      ],
+      [
+       319,
+       157
+      ],
+      [
+       343,
+       160
+      ],
+      [
+       361,
+       160
+      ],
+      [
+       383,
+       158
+      ]
+     ],
+     "6": [
+      [
+       51,
+       199
+      ],
+      [
+       73,
+       196.5
+      ],
+      [
+       91,
+       193.5
+      ],
+      [
+       97,
+       190
+      ],
+      [
+       121,
+       182
+      ],
+      [
+       139,
+       177.5
+      ],
+      [
+       157,
+       171
+      ],
+      [
+       175,
+       166
+      ],
+      [
+       193,
+       160
+      ],
+      [
+       211,
+       158
+      ],
+      [
+       223,
+       153.5
+      ],
+      [
+       247,
+       147.5
+      ],
+      [
+       271,
+       143
+      ],
+      [
+       289,
+       140
+      ],
+      [
+       307,
+       139.5
+      ],
+      [
+       331,
+       136.5
+      ],
+      [
+       361,
+       136
+      ],
+      [
+       383,
+       136
+      ]
+     ],
+     "7.5": [
+      [
+       51,
+       228
+      ],
+      [
+       73,
+       219.5
+      ],
+      [
+       97,
+       213.5
+      ],
+      [
+       121,
+       203.5
+      ],
+      [
+       139,
+       197.5
+      ],
+      [
+       157,
+       190
+      ],
+      [
+       169,
+       182.5
+      ],
+      [
+       187,
+       177
+      ],
+      [
+       211,
+       167.5
+      ],
+      [
+       223,
+       162.5
+      ],
+      [
+       235,
+       158.5
+      ],
+      [
+       247,
+       154.5
+      ],
+      [
+       271,
+       146.5
+      ],
+      [
+       289,
+       139.5
+      ],
+      [
+       307,
+       134
+      ],
+      [
+       331,
+       127.5
+      ],
+      [
+       349,
+       122
+      ],
+      [
+       383,
+       120.5
+      ]
+     ],
+     "8.5": [
+      [
+       51,
+       290
+      ],
+      [
+       73,
+       272
+      ],
+      [
+       97,
+       252
+      ],
+      [
+       121,
+       239.5
+      ],
+      [
+       145,
+       223
+      ],
+      [
+       163,
+       210.5
+      ],
+      [
+       181,
+       198
+      ],
+      [
+       199,
+       188.5
+      ],
+      [
+       211,
+       182.5
+      ],
+      [
+       229,
+       173
+      ],
+      [
+       247,
+       164.5
+      ],
+      [
+       265,
+       158
+      ],
+      [
+       277,
+       155
+      ],
+      [
+       283,
+       151.5
+      ],
+      [
+       295,
+       147
+      ],
+      [
+       319,
+       143
+      ],
+      [
+       343,
+       146
+      ],
+      [
+       383,
+       149
+      ]
+     ]
+    }
+   },
+   "B": {
+    "fixed": "pH_cyt 7.5",
+    "varied": "pH_vac",
+    "x_ticks_px": [
+     46.5,
+     93.5,
+     142,
+     188,
+     236.5,
+     286,
+     333,
+     380.5
+    ],
+    "x_tick_values_mV": [
+     -80,
+     -60,
+     -40,
+     -20,
+     0,
+     20,
+     40,
+     60
+    ],
+    "px_per_mV": 2.3905,
+    "zero_mV_col_px": 237.15,
+    "x_tick_residual_sd_mV": 0.34,
+    "y_ticks_px": {
+     "50": 517.0,
+     "-50": 760.5
+    },
+    "px_per_mA_per_m2": 2.435,
+    "zero_current_row_px": 639.2,
+    "zero_note": "the drawn axis line's centre; a straight line through the three ticks puts zero 0.30 px higher",
+    "label_boxes_px": [
+     [
+      0,
+      70,
+      480,
+      600
+     ],
+     [
+      182,
+      230,
+      505,
+      530
+     ],
+     [
+      262,
+      400,
+      505,
+      545
+     ],
+     [
+      182,
+      230,
+      748,
+      775
+     ],
+     [
+      158,
+      204,
+      656,
+      684
+     ],
+     [
+      266,
+      304,
+      656,
+      684
+     ],
+     [
+      316,
+      350,
+      656,
+      684
+     ],
+     [
+      356,
+      400,
+      656,
+      684
+     ],
+     [
+      286,
+      400,
+      684,
+      720
+     ]
+    ],
+    "waypoints_px": {
+     "7.5": [
+      [
+       49,
+       613
+      ],
+      [
+       60,
+       614
+      ],
+      [
+       76,
+       621
+      ],
+      [
+       104,
+       621
+      ],
+      [
+       128,
+       620
+      ],
+      [
+       152,
+       620
+      ],
+      [
+       168,
+       616
+      ],
+      [
+       184,
+       615
+      ],
+      [
+       200,
+       613.5
+      ],
+      [
+       216,
+       610
+      ],
+      [
+       222,
+       610
+      ]
+     ],
+     "6": [
+      [
+       49,
+       679
+      ],
+      [
+       60,
+       672
+      ],
+      [
+       76,
+       666
+      ],
+      [
+       92,
+       659
+      ],
+      [
+       108,
+       655
+      ],
+      [
+       124,
+       648
+      ],
+      [
+       140,
+       643
+      ],
+      [
+       164,
+       634.5
+      ],
+      [
+       180,
+       630
+      ],
+      [
+       192,
+       627.5
+      ],
+      [
+       208,
+       623.5
+      ],
+      [
+       222,
+       618.5
+      ]
+     ],
+     "4.1": [
+      [
+       49,
+       745
+      ],
+      [
+       56,
+       729
+      ],
+      [
+       76,
+       724
+      ],
+      [
+       88,
+       711
+      ],
+      [
+       104,
+       705
+      ],
+      [
+       112,
+       690
+      ],
+      [
+       128,
+       682.5
+      ],
+      [
+       144,
+       667
+      ],
+      [
+       160,
+       652
+      ],
+      [
+       172,
+       644.5
+      ],
+      [
+       192,
+       634.5
+      ],
+      [
+       200,
+       628
+      ],
+      [
+       212,
+       623
+      ],
+      [
+       222,
+       618.5
+      ]
+     ],
+     "7.5+6+4.1": [
+      [
+       224,
+       612.5
+      ],
+      [
+       240,
+       610.5
+      ],
+      [
+       256,
+       606.5
+      ],
+      [
+       272,
+       604
+      ],
+      [
+       288,
+       602
+      ],
+      [
+       304,
+       598
+      ],
+      [
+       320,
+       598
+      ],
+      [
+       336,
+       597
+      ],
+      [
+       352,
+       594
+      ],
+      [
+       368,
+       594
+      ],
+      [
+       380,
+       592
+      ]
+     ]
+    }
+   }
+  }
+ },
+ "attribution": [
+  "Readings of Fig. 3 of Kettner et al. (2003), Biophys J 85(6):3730, doi:10.1016/S0006-3495(03)74789-4, (c) 2003 Biophysical Society, no CC licence: bare cited values only; no image or text is reproduced."
+ ]
+}

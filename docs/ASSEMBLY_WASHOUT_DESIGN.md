@@ -37,7 +37,8 @@ slot holds its vesicle's membrane and lumen places; the pool holds the exterior'
   pool place, not for a held one (§4, Q3).
 
 **What expresses a gate, bound tracer and an exposed site today.** The requester's model is not
-assumed. A world with a geometry, as every population world is, can declare:
+assumed. A world with a geometry, as every population world is, can declare the following; both
+were checked by parsing an osmotic population world with them (20 November):
 - **a gate:** a membrane species in two forms, joined by a membrane-locus step
   (`count_on_m`), with a rate factor on the common membrane state (`cells.transition_state_factor@1`)
   modulating a permeation or a join;
@@ -47,6 +48,10 @@ assumed. A world with a geometry, as every population world is, can declare:
   site is an interfacial reaction, which §0.2c rule 3 refuses in a world with a geometry until a
   geometric encounter is declared for it. A site count independent of the membrane's inventory is
   FR-21's ground (D237), not this note's.
+
+Under `lumen_volume: osmotic` every membrane and lumen species has a pool place (§0.2c rule 8), so
+the gate's forms, the site and the complex have pool places too, and a replacement's `pool` lists
+them.
 
 Whichever route a world declares, a replacement keeps what the slots hold and acts only on the pool.
 Nothing in it is specific to a bilayer, so a prescribed shell from FR-21 needs no change here.
@@ -111,6 +116,35 @@ in place order.
   remaining work as well: there, `moves_to` edges run between the pool and each slot, weighed by
   one-way join and leave records.
 
+**Two rules** (the lead's conditions of 20 November):
+- **The fresh pool declares every finite pool species.** `pool` has one count per finite pool
+  place, so a species left out changes its length and is refused. Nothing is kept silently.
+- **A replacement never shares its time with another stop**, since cells.relations has no order
+  between same-time events yet. It is refused at three points:
+  - **at parse,** a replacement time equal to a declared time of a shear, a transfer or another
+    replacement;
+  - **at the run's start,** a Poisson shear time drawn equal to a replacement time, on the grouped
+    plan before the first event;
+  - **at the stop,** a lysis whose event committed at the replacement's own time. An event exactly
+    at a stop's time commits before the stop.
+
+**Q3 as built: a declared version-1 limit** (the lead's ruling of 20 November, D244). It is broader
+than its approved words, "a held tracer concentration is refused". A replacement refuses every held
+pool species that also has a membrane or lumen place, a held lipid supply included.
+- **Why.** A replacement replaces the exterior. A held species that the assemblies take up would
+  keep its exterior concentration through every replacement while the assemblies go on exchanging
+  with it, so the wash would be silently partial, which the rule above forbids for finite species.
+  The engine cannot tell a tracer from any other such species, so version 1 refuses them all.
+- **The books** would close either way, since a held place is a reservoir. The reason is physical,
+  not bookkeeping.
+- **What a world does instead:** it declares such a species finite, with its count in `pool`. Each
+  wash then restores that count, and between washes the species depletes as the assemblies take it
+  up, which a held species never does.
+
+**Non-claims and status:**
+- tracer captured on an exposed-site control is not claimed until FR-21;
+- FR-20 lands as development, not as a judged reading, unless the user later asks for one.
+
 ## 4. Questions for the lead
 
 1. **Q1, the bath's volume.** The pool's volume is a world constant, so a replacement keeps it.
@@ -136,14 +170,12 @@ in place order.
 
 ## 5. FR-22's needs from the wash
 
-FR-22's qualification interrupts a run around a wash. A replacement is a host stop, so it gives
-two cut points, before its events and after them.
-- **Before:** the population device has already counted the draw that crossed the stop's time.
-- **After:** the stop's state, as the rows record it.
-
-A resumed run whose first row sits at the replacement's time needs an order between same-time events
-in relations, the requirement collected for relations@2 (RELATIONSHIPS_DESIGN, GARD's case 1). The
-price of the checkpoint itself is in the FR-22 report, not here.
+FR-22's rung P cuts a run only at an exact event count, so a cut around a wash sits at the last event
+before the replacement or at the first event after it, never at the stop's own time. A resumed run
+whose first row sat at the replacement's time would need an order between same-time events in
+relations (RELATIONSHIPS_DESIGN, GARD's case 1), which is not built. The checkpoint carries the
+replacement's host state: the stops applied, the replacements' numbering and the schedule columns
+in the host's bookings.
 
 ## 6. Files
 
@@ -164,33 +196,48 @@ price of the checkpoint itself is in the FR-22 report, not here.
 
 ## 7. Tests
 
-A new file, `tests/unit/test_assembly_lineages_v2_replacement.py`: the population file runs at
-69–77 s against tier 2's 90 s cap. The file uses one compiled population program, with a finite
-tracer place, two slots and a gate. Each claim has a planted error it must catch (D187):
-- **W1 kept and replaced:** every slot's places, keys and lives are bitwise unchanged, the pool's
-  finite places equal `pool`, and the held places are unchanged. Planted: a replacement that also
-  empties the lumen.
-- **W2 the books close:** the sink gains F(old pool), the column gains F(fresh pool), and the
-  residual stays within its bound at every row. Planted: the fresh pool booked as heat, which opens
-  the ledger by F(fresh pool).
-- **W3 the material record:** the removed and supplied counts equal the pool at the replacement's
-  first saved row before it and the pool after it. Planted: removed counts taken after the
+A new file, `tests/unit/test_assembly_lineages_v2_replacement.py`, since the population file runs at
+69–81 s against tier 2's 90 s cap. It uses one compiled population program and one three-phase
+world, which serves W1–W4 in one run:
+- two slots;
+- a two-state gate whose forms catalyse the tracer's permeation;
+- a site that binds tracer in the membrane;
+- a tracer-free founder pool, then a pulse (a replacement whose pool holds tracer), then a wash (a
+  tracer-free replacement), as two schedules.
+
+The file states its seconds and its reason when it lands (D224). Each claim has a planted error it
+must catch (D187):
+- **W1 kept and replaced.** At each replacement, every slot's places, keys and lives, the gate's
+  forms and the bound tracer included, equal those of the same world stopped at the last event
+  before it (FR-22's stop), bitwise. The pool's finite places equal `pool`. Planted: a replacement
+  that also empties the lumen.
+- **W2 the books close.** The sink's increment and the column's increment equal F(old pool) and
+  F(fresh pool), computed apart on the host, and the residual stays within its bound at every row.
+  Planted: the fresh pool left unbooked, which opens the ledger by F(fresh pool).
+- **W3 the material record.** The removed counts equal the pool of the stopped run, and the
+  supplied counts equal the pool after the replacement. Planted: removed counts taken after the
   replacement.
-- **W4 a finite bath:** after a tracer-free replacement, the pool's tracer rises from 0, and
-  re-entry events fire. Planted: the saved rows' re-entry rates recomputed with the pool's tracer
-  pinned at 0, an infinite bath, are 0 at every row.
-- **W5 the transfer unchanged:** a transfer world's arrays are bitwise equal before and after the
-  shared step, compared with arrays saved from the current main.
-- **W6 refusals:**
+- **W4 the rates follow the replaced pool, and released tracer re-enters.**
+  - The first event after each replacement is the host's pick at the replaced pool, with the
+    device's own uniforms.
+  - After the wash, no tracer entry precedes a release, and one follows.
+  - Planted: stale rates (the refresh returning its input after the first call), which pick other
+    events.
+- **W5 the replacement draws nothing.** The schedule draws are the other schedules' alone. Planted:
+  a replacement drawing one uniform per living assembly, as a transfer would, which the draw record
+  shows. That transfer worlds are unchanged bitwise is landing evidence, not a unit claim: the
+  fresh population controls are compared with main's arrays and records.
+- **W6 refusals,** host-only rows:
   - a replacement without a population;
-  - `pool` of the wrong length;
+  - a `pool` of the wrong length, as a species left out gives;
   - solutes above c_ext;
-  - a world whose tracer is held (Q3).
-
-  These are host-only rows.
-
-The file states its seconds and its reason when it lands (D224). FR-22's qualification around a
-replacement joins it as a row once FR-22 exists.
+  - a held pool species with a membrane or lumen place (Q3 as built);
+  - a replacement at the declared time of a shear, a transfer or another replacement.
+- **Around a wash** (FR-22, rows in the same file, reusing its program and its stopped run): a cut
+  at the last event before each replacement and at the first after it, resumed and compared with
+  the uninterrupted run, bitwise.
+- **The round trip:** `parse_spec(spec.to_dict())` keeps the fingerprint of a world with
+  replacements, which a checkpoint's admission relies on.
 
 ## 8. Price
 

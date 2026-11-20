@@ -92,6 +92,42 @@
    },
    "corroboration": "not corroboration of Ambrosini et al. under D248: a different lab",
    "read_by": "the lead, verbatim from PMC (D253); only bare numbers are recorded here"
+  },
+  {
+   "authors": "Ross et al. (2025)",
+   "title": "Large-scale functional assessment of variants of the potassium channel Kir2.1: Clinical and comparative insights",
+   "journal": "J Biol Chem 302(1):110985",
+   "doi": "10.1016/j.jbc.2025.110985",
+   "pmcid": "PMC12775956",
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "source": "the user's browser download of the article's supplementary tables PDF, 20 November 2026; the PMC Open Access mirror's copy has the same size and SHA-256",
+   "public_root": "https://pmc-oa-opendata.s3.amazonaws.com/PMC12775956.1/",
+   "files": [
+    {
+     "name": "mmc2.pdf",
+     "bytes": 214574,
+     "pages": 12,
+     "sha256": "f7de7b7ba84e683c255426166f476b8f9ac28371b737f9c534096441c487b08a"
+    }
+   ],
+   "tables": {
+    "S1": {
+     "pages": "1-3",
+     "values": "validation/fr7/data/kir21_ross_2025_table_s1.csv"
+    },
+    "S2": {
+     "pages": "4",
+     "values": "validation/fr7/data/kir21_ross_2025_table_s2.csv"
+    },
+    "S6": {
+     "pages": "10",
+     "values": "validation/fr7/data/kir21_ross_2025_table_s6.csv"
+    }
+   },
+   "extraction": "the PDF's text layer (word boxes); rows anchored on the first column's variant names, columns by the header words' positions; every cell checked against page renders; surface fitness equals log2(surface/100) to two decimals in 65 of the 69 rows with both values, and the other four are kept as printed",
+   "composition": "S6's currents: stable HEK293 lines that each express one variant (homomeric; the article's Methods as the lead read them). S1's surface: the variant co-expressed with wild type (heteromeric), or alone in its variant-only column. Only D71Y has both a variant-only surface value and a current.",
+   "not_extracted": "Table S4: total expression by flow cytometry and western blot, and Tagg, for 20 variants (8 of S6's 13)",
+   "read_by": "the FR-7 lane, from the supplementary tables PDF only"
   }
  ],
  "digitization": {
@@ -174,6 +210,7 @@
  "attribution": [
   "Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet., doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0.",
   "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0.",
-  "Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3: bare cited numbers only; (c) Springer, no CC licence; no text or figure is reproduced."
+  "Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3: bare cited numbers only; (c) Springer, no CC licence; no text or figure is reproduced.",
+  "Ross et al. (2025), J Biol Chem, doi:10.1016/j.jbc.2025.110985, supplementary Tables S1, S2 and S6, (c) the authors, CC BY 4.0: values as printed; no table image or PDF is committed."
  ]
 }
