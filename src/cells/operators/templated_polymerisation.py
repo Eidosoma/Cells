@@ -22,11 +22,15 @@ Declaration
     back (transcription draws N and releases 2 Pi; translation draws A and 4 ATP and releases 4 ADP
     and 4 Pi);
   - saturation_mM, {drawn row: K}, for every drawn row.
-- `degradations`: each {id, cell, polymer, residues, monomers}, one polymer molecule of L residues
-  hydrolysed to L times `monomers` ({row: count per residue}).
-- `transfers`: each {id, cell, stoichiometry, saturation_mM, share}: the monomers' recharging, NMP +
-  2 ATP -> NTP + 2 ADP as a signed integer {row: nu}, with K for each consumed row and its share n,
-  the number of elementary steps it lumps (2).
+- `degradations`: each {id, cell, polymer, residues, monomers, standard_free_energy}, one polymer
+  molecule of L residues hydrolysed to L times `monomers` ({row: count per residue}).
+- `transfers`: each {id, cell, stoichiometry, saturation_mM, share, standard_free_energy}: the
+  monomers' recharging, NMP + 2 ATP -> NTP + 2 ADP as a signed integer {row: nu}, with K for each
+  consumed row and its share n, the number of elementary steps it lumps (2).
+- `standard_free_energy`: null, or the route's cited dG° per unit of its net move at c0, in one of
+  FreeEnergyEntry's two forms: {"dG_RT"}, or {"dG_kJ_mol", "basis", "dG_RT_offset"} with a basis of
+  kind_registry.DG_BASES. Each is declared to the species registry through standard_free_energies,
+  whose check_free_energies holds it to the registry's potentials (seam E; the sheet's §3.3).
 
 Every key is explicit, every route ID is distinct, and every row a route names is a listed species.
 
@@ -80,6 +84,20 @@ The standard part is held in poly_standard_energy_pJ, an owned free-energy term 
 energy ledger gains standard + heat, which closes against @3's chemical term by construction.
 Machines and templates carry no free energy (declared).
 
+Each route's heat (the sheet's heat classes, per route: poly_chain_heat_pJ,
+poly_degradation_heat_pJ and poly_transfer_heat_pJ) is its extent times minus the
+divided-difference potentials of the rows it moves. This is D152's average-vector-field share
+(McLachlan, Quispel & Robidoux 1999), with mu-bar each row's exact dG over the half-step divided by
+its dn (divided_potential).
+- G is a sum over rows, so the routes' heats sum to the booked heat exactly, up to rounding on the
+  routes' gross moves.
+- A chain's is -[r S (mu°_res + sum net mu-bar) + Q (mu-bar_product - L mu°_res)].
+- Within the one-sided domain each chain's and degradation's increment is non-negative.
+- A known limit: a two-sided transfer's increment may take either sign in a half-step that crosses
+  its equilibrium. There is no work field to absorb a quadrature's difference, and the sum is kept
+  exact.
+- They are diagnostics, outside HEAT_FIELDS: the composite's dissipation check holds the total.
+
 Refused at the definition
 -------------------------
 - a charged, permeable or unlisted row;
@@ -115,7 +133,7 @@ from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators import species_reactions
 from cells.operators.contract import Operator
-from cells.registry import species_registry
+from cells.registry import kind_registry, species_registry
 
 LAW_ID = "templated_polymerisation@1"
 STEP_ID = "ssprk33_stage_condition_exact_bookings@1"
@@ -127,6 +145,7 @@ X_DOM = -1.0  # The one-sided laws' per-residue affinity bound (the sheet's §3.
 THETA = 0.5  # The stage condition h max L <= THETA at every stage.
 RATE_BOUND = 1.0  # dt times a route's largest static rate.
 FLOOR_FMOL = 1e-22  # The own ledgers' floor.
+SERIES_BELOW = 1e-6  # |x| below which mu-bar's ratio (1 + x) log1p(x) / x is a series (D152's).
 POOL_AXIS, CHAIN_AXIS, STAGE_AXIS = "poly_pool", "poly_chain", "poly_stage"
 DEGRADATION_AXIS, TRANSFER_AXIS = "poly_degradation", "poly_transfer"
 INITIATION = "polymerisation_initiation_rate"
@@ -144,6 +163,9 @@ STATE_AXES = {
     "poly_produced_fmol": ["species", "cell_slot"],
     "poly_consumed_fmol": ["species", "cell_slot"],
     "poly_dissipated_energy_pJ": ["cell_slot"],  # Heat: -dG of every move, exact.
+    "poly_chain_heat_pJ": [CHAIN_AXIS],  # Each route's share of it (the sheet's classes).
+    "poly_degradation_heat_pJ": [DEGRADATION_AXIS],
+    "poly_transfer_heat_pJ": [TRANSFER_AXIS],
     "poly_standard_energy_pJ": ["cell_slot"],  # The owned standard term, transit included.
     "poly_energy_magnitude_pJ": ["cell_slot"],  # The bookings' absolute terms (rounding).
 }
@@ -211,12 +233,25 @@ class Chain:
 
 
 @dataclass(frozen=True)
+class CitedFreeEnergy:
+    """A route's cited standard free energy per unit of its net move, at the declaration's c0:
+    dG°/RT, or dG° in kJ/mol with its basis and temperature-free offset (FreeEnergyEntry's two
+    forms)."""
+
+    dG_RT: float | None
+    dG_kJ_mol: float | None
+    basis: str | None
+    offset_RT: float
+
+
+@dataclass(frozen=True)
 class Degradation:
     id: str
     cell: str
     polymer: str
     residues: int
     monomers: tuple  # ((row, count), ...)
+    standard_free_energy: CitedFreeEnergy | None
 
 
 @dataclass(frozen=True)
@@ -226,6 +261,7 @@ class Transfer:
     stoichiometry: tuple  # ((row, nu), ...)
     saturation_mM: tuple  # ((row, K), ...)
     share: int
+    standard_free_energy: CitedFreeEnergy | None
 
 
 @dataclass(frozen=True)
@@ -283,6 +319,37 @@ def _saturations(raw, rows, what):
     if type(raw) is not dict or set(raw) != set(rows):
         raise ConfigError(f"{LAW_ID}: {what} gives K (mM) for exactly the rows {sorted(rows)}")
     return tuple((row, _positive(raw[row], f"{what} for {row!r}")) for row in rows)
+
+
+def _cited(raw, what):
+    """A route's standard_free_energy: None, or one of FreeEnergyEntry's two forms."""
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{LAW_ID}: {what} is null or an object")
+    if set(raw) == {"dG_RT"}:
+        if not _finite(raw["dG_RT"]):
+            raise ConfigError(f"{LAW_ID}: {what}'s dG_RT is a finite number")
+        return CitedFreeEnergy(float(raw["dG_RT"]), None, None, 0.0)
+    if set(raw) != {"dG_kJ_mol", "basis", "dG_RT_offset"}:
+        raise ConfigError(f"{LAW_ID}: {what} gives {{dG_RT}} or {{dG_kJ_mol, basis, dG_RT_offset}}")
+    if not (_finite(raw["dG_kJ_mol"]) and _finite(raw["dG_RT_offset"])):
+        raise ConfigError(f"{LAW_ID}: {what}'s dG_kJ_mol and dG_RT_offset are finite numbers")
+    if raw["basis"] not in kind_registry.DG_BASES:
+        raise ConfigError(f"{LAW_ID}: {what}'s basis is one of {', '.join(kind_registry.DG_BASES)}")
+    return CitedFreeEnergy(None, float(raw["dG_kJ_mol"]), raw["basis"], float(raw["dG_RT_offset"]))
+
+
+def _finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _cited_to_dict(cited):
+    if cited is None:
+        return None
+    if cited.dG_RT is not None:
+        return dict(dG_RT=cited.dG_RT)
+    return dict(dG_kJ_mol=cited.dG_kJ_mol, basis=cited.basis, dG_RT_offset=cited.offset_RT)
 
 
 def parse_declaration(raw, base):
@@ -381,7 +448,8 @@ def parse_declaration(raw, base):
     made = {c.product: c.residues for c in chains}
     degradations = []
     for item in lists["degradations"]:
-        _fields(item, {"id", "cell", "polymer", "residues", "monomers"}, f"{LAW_ID} degradation")
+        _fields(item, {"id", "cell", "polymer", "residues", "monomers", "standard_free_energy"},
+                f"{LAW_ID} degradation")  # fmt: skip
         name = identifier(item["id"])
         if item["cell"] not in cells or item["polymer"] not in listed:
             raise ConfigError(f"{LAW_ID}: degradation {name} names an unknown cell or polymer")
@@ -394,11 +462,14 @@ def parse_declaration(raw, base):
         monomers = _counts(item["monomers"], listed, f"degradation {name}'s monomers")
         if item["polymer"] in dict(monomers):
             raise ConfigError(f"{LAW_ID}: degradation {name}'s polymer is not its monomer")
-        degradations.append(Degradation(name, item["cell"], item["polymer"], residues, monomers))
+        cited = _cited(item["standard_free_energy"], f"degradation {name}'s standard_free_energy")
+        degradations.append(
+            Degradation(name, item["cell"], item["polymer"], residues, monomers, cited)
+        )
     transfers = []
     for item in lists["transfers"]:
-        _fields(item, {"id", "cell", "stoichiometry", "saturation_mM", "share"},
-                f"{LAW_ID} transfer")  # fmt: skip
+        _fields(item, {"id", "cell", "stoichiometry", "saturation_mM", "share",
+                       "standard_free_energy"}, f"{LAW_ID} transfer")  # fmt: skip
         name = identifier(item["id"])
         if item["cell"] not in cells:
             raise ConfigError(f"{LAW_ID}: transfer {name} is in an unknown cell")
@@ -413,6 +484,7 @@ def parse_declaration(raw, base):
                 nu,
                 _saturations(item["saturation_mM"], consumed, f"transfer {name}'s saturation_mM"),
                 _integer(item["share"], f"transfer {name}'s share"),
+                _cited(item["standard_free_energy"], f"transfer {name}'s standard_free_energy"),
             )
         )
     declaration = Polymerisation(
@@ -473,6 +545,7 @@ def declaration_to_dict(d):
                 polymer=x.polymer,
                 residues=x.residues,
                 monomers=dict(x.monomers),
+                standard_free_energy=_cited_to_dict(x.standard_free_energy),
             )
             for x in d.degradations
         ],  # fmt: skip
@@ -483,6 +556,7 @@ def declaration_to_dict(d):
                 stoichiometry=dict(t.stoichiometry),
                 saturation_mM=dict(t.saturation_mM),
                 share=t.share,
+                standard_free_energy=_cited_to_dict(t.standard_free_energy),
             )
             for t in d.transfers
         ],  # fmt: skip
@@ -708,6 +782,9 @@ def bind(spec, declaration):
         poly_produced_fmol=np.zeros((s, c)),
         poly_consumed_fmol=np.zeros((s, c)),
         poly_dissipated_energy_pJ=np.zeros(c),
+        poly_chain_heat_pJ=np.zeros(len(chains)),
+        poly_degradation_heat_pJ=np.zeros(len(degradations)),
+        poly_transfer_heat_pJ=np.zeros(len(transfers)),
         poly_standard_energy_pJ=np.zeros(c),
         poly_energy_magnitude_pJ=np.zeros(c),
     )
@@ -811,6 +888,46 @@ def changes(j_init, j_stage, j_deg, j_tr, p, *, xp):
     return produced - consumed, d_free, d_complexes, produced, consumed
 
 
+def divided_potential(n, dn, volume, p, rt, *, xp):
+    """mu-bar [k, cell], pJ/fmol: each row's divided difference over the half-step of
+    g(n) = RT n (ln(n/V) - 1) + RT (mu°/RT - ln c0) n, in D152's stable form (the series
+    1 + x/2 - x^2/6 for |x| < SERIES_BELOW), so that mu-bar dn is the row's booked dG."""
+    x = dn / n
+    small = xp.abs(x) < SERIES_BELOW
+    ratio = xp.where(
+        small, 1.0 + x / 2 - x * x / 6, (1.0 + x) * xp.log1p(x) / xp.where(small, 1.0, x)
+    )
+    standard = (p.poly_mu_RT - xp.log(p.poly_c0_mM))[:, None]
+    return rt * (xp.log(n / volume[None, :]) + ratio - 1.0 + standard)
+
+
+def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
+    """Each route's heat over the half-step (module docstring, Energy), pJ: (chain [chain],
+    degradation [deg], transfer [transfer]), zero at an inactive cell."""
+    j_init, j_stage, j_deg, j_tr = extents
+    mu_bar = divided_potential(n0, dn, volume, p, rt, xp=xp)  # [k, cell]
+    on = xp.where(active, 1.0, 0.0)
+    s_total = xp.sum(j_stage, axis=1)
+    released = xp.sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1)
+    mu_chain = p.poly_chain_cell @ mu_bar.T  # [chain, k]
+    chain = -(
+        p.poly_chain_r * s_total * xp.sum(p.poly_chain_net * mu_chain, axis=1)
+        + released * xp.sum(p.poly_chain_product * mu_chain, axis=1)
+        + rt * p.poly_chain_residue_mu_RT * d_transit
+    )
+    mu_deg = p.poly_deg_cell @ mu_bar.T
+    degradation = -j_deg * (
+        p.poly_deg_length * xp.sum(p.poly_deg_monomers * mu_deg, axis=1)
+        - xp.sum(p.poly_deg_polymer * mu_deg, axis=1)
+    )
+    transfer = -j_tr * xp.sum(p.poly_tr_nu * (p.poly_tr_cell @ mu_bar.T), axis=1)
+    return (
+        xp.where(p.poly_chain_cell @ on > 0, chain, 0.0),
+        xp.where(p.poly_deg_cell @ on > 0, degradation, 0.0),
+        xp.where(p.poly_tr_cell @ on > 0, transfer, 0.0),
+    )
+
+
 def poly_half_step(state, controls, h, p, *, xp=jnp):
     """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked."""
     rows, active = p.poly_rows, p.active
@@ -864,6 +981,9 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         + species_sum(xp.abs(std_terms), xp=xp)
         + xp.abs(rt * p.poly_chain_residue_mu_RT * d_transit) @ p.poly_chain_cell
     )
+    chain_heat, deg_heat, tr_heat = route_heats(
+        n0, dn, d_transit, extents, volume, active, p, rt, xp=xp
+    )
     full = state.amount_increment.shape[0]
     j_init, j_stage, j_deg, j_tr = extents
     new = state._replace(
@@ -880,6 +1000,9 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         poly_produced_fmol=state.poly_produced_fmol + _on_species(full, rows, produced, xp=xp),
         poly_consumed_fmol=state.poly_consumed_fmol + _on_species(full, rows, consumed, xp=xp),
         poly_dissipated_energy_pJ=state.poly_dissipated_energy_pJ + xp.where(active, heat, 0.0),
+        poly_chain_heat_pJ=state.poly_chain_heat_pJ + chain_heat,
+        poly_degradation_heat_pJ=state.poly_degradation_heat_pJ + deg_heat,
+        poly_transfer_heat_pJ=state.poly_transfer_heat_pJ + tr_heat,
         poly_standard_energy_pJ=state.poly_standard_energy_pJ + xp.where(active, standard, 0.0),
         poly_energy_magnitude_pJ=state.poly_energy_magnitude_pJ
         + xp.where(active, magnitude, 0.0),
@@ -927,7 +1050,14 @@ def own_valid(state, *, xp):
     ):
         value = getattr(state, name)
         valid &= xp.all(xp.isfinite(value)) & xp.all(value >= 0)
-    for name in ("poly_transferred_fmol", "poly_dissipated_energy_pJ", "poly_standard_energy_pJ"):
+    for name in (
+        "poly_transferred_fmol",
+        "poly_dissipated_energy_pJ",
+        "poly_chain_heat_pJ",
+        "poly_degradation_heat_pJ",
+        "poly_transfer_heat_pJ",
+        "poly_standard_energy_pJ",
+    ):
         valid &= xp.all(xp.isfinite(getattr(state, name)))
     return valid
 
@@ -982,6 +1112,9 @@ class TemplatedPolymerisation(Operator):
         "poly_transferred_fmol": "cumulative",
         "poly_produced_fmol": "cumulative",
         "poly_consumed_fmol": "cumulative",
+        "poly_chain_heat_pJ": "cumulative",
+        "poly_degradation_heat_pJ": "cumulative",
+        "poly_transfer_heat_pJ": "cumulative",
         "poly_standard_energy_pJ": "cumulative",
         "poly_energy_magnitude_pJ": "cumulative",
     }
@@ -1083,6 +1216,37 @@ class TemplatedPolymerisation(Operator):
             for s, mu in zip(declaration.species, declaration.mu_RT, strict=True)
         )
 
+    def standard_free_energies(self, declaration):
+        """The cited standard free energies of its degradations and transfers (seam E; the sheet's
+        §3.3 entries), each a FreeEnergyEntry on the route's net move per unit at its c0: a
+        polymer molecule degraded, a transfer turnover. Chains declare none: their dG° follows
+        from the rows' potentials. check_free_energies holds each to the registry's."""
+        out = []
+        for route, cited in (
+            *((d, d.standard_free_energy) for d in declaration.degradations),
+            *((t, t.standard_free_energy) for t in declaration.transfers),
+        ):
+            if cited is None:
+                continue
+            if isinstance(route, Degradation):
+                nu = ((route.polymer, -1),) + tuple(
+                    (row, count * route.residues) for row, count in route.monomers
+                )
+            else:
+                nu = tuple(route.stoichiometry)
+            if cited.dG_RT is not None:
+                entry = kind_registry.FreeEnergyEntry(nu, dG_RT=cited.dG_RT, c0=declaration.c0_mM)
+            else:
+                entry = kind_registry.FreeEnergyEntry(
+                    nu,
+                    c0=declaration.c0_mM,
+                    dG_kJ_mol=cited.dG_kJ_mol,
+                    dG_basis=cited.basis,
+                    dG_RT_offset=cited.offset_RT,
+                )
+            out.append(entry)
+        return tuple(out)
+
     def species_moieties(self, declaration):
         """Each route's net row change per unit (G3's hook; the sheet's §1.4): a finished product
         of a chain (L draws and releases per residue, one product), a polymer molecule degraded,
@@ -1132,8 +1296,8 @@ class TemplatedPolymerisation(Operator):
         x, s = spec.execution, len(spec.model.species_ids)
         (d,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         k, depth = len(d.species), max((c.stages for c in d.chains), default=0)
-        routes = len(d.chains) * (depth + 4) + len(d.pools) + len(d.degradations)
-        routes += len(d.transfers)
+        routes = len(d.chains) * (depth + 5) + len(d.pools) + 2 * len(d.degradations)
+        routes += 2 * len(d.transfers)
         return (6 * s + 8) * x.capacity + routes * (6 * k + 16)
 
     def summary(self, spec, declaration, schedule, history):
