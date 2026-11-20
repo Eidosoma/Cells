@@ -8165,3 +8165,141 @@ the high priority list (with all the other high priority items)".
   - **FR-34 (new):** channel population readouts, meaning surface count, availability and signed
     current at a declared voltage, with sign convention and units. Its control halves availability at
     fixed count and driving force, which must halve the current.
+
+## D252: Correction to D250: the Kir2.1 band cannot fail on today's data
+
+2026-11-20, about 21:44 UTC. D250 said the registered band "fails only if the published contrast
+falls outside the band". The FR-7 lane's registration draft shows that, with the Kir share left as a
+declared ignorance range [0.1, 0.9], the band spans about −15.6 to −1.2 mV. The published contrast
+(about −5.5 mV, 2-SEM interval −7.5 to −3.4 mV) cannot fall outside it. So the band is a consistency
+check, not a test. Nothing is tagged.
+
+- **What the source establishes:** a consistent chain.
+  - The wild-type-to-K346T decay-rate ratio is about 1.7, 1.5 and 2.3 at 3, 6 and 12 h (Fig. 4B).
+  - The membrane-fraction ratio is 1.64 (Fig. 3E), and the current ratio 2.03 (Fig. 3G).
+  - Fig. S2B, read by the lead, shows mean barium-sensitive current density against voltage. It
+    reverses near −85 to −90 mV, consistent with E_K from the solutions, and K346T's current is about
+    twice wild type's at negative voltages and in the small outward hump above E_K.
+  - So slower decay, more surface channels and more current agree. But none of these links tests an
+    engine prediction sharply, and the decay ratios assume equal synthesis.
+- **What remains open:** the Kir share of the resting conductance. A measurement that would resolve
+  it is the background conductance, or resting potential, of mock-infected or untransfected U251MG
+  cells in comparable solutions.
+- **No world is built and no factor source is commissioned** until one link can fail. The mapping
+  questions wait too.
+- **FR-34's engine items, found by the same desk check,** are on the list: current at a declared
+  voltage, an effective-availability record, and per-route flux records for the kinds' routes.
+
+## D253: FR-7's Kir2.1 comparison: a search for the background conductance, then a labelled calibration on wild type's voltage
+
+2026-11-20, about 21:45 UTC. D252 offered three ways on. The user: "2. then 3. and note it well".
+
+1. **First, the lead searches for one measurement:** the background, non-Kir conductance or the
+   resting potential of mock-infected or untransfected U251MG cells, in solutions comparable to the
+   Kir2.1 paper's. The lead does this itself, with targeted reads and no agent. If a guard refuses, it
+   stops and reports. Any value found is quoted with its source, conditions and units, and checked
+   for comparability before it narrows the Kir share.
+2. **Then option (b):** the background is calibrated so that wild type rests at its measured −70.1
+   mV, and K346T's voltage is predicted from the abundance-to-current chain.
+   - **This departs from D241,** whose conversion was to use neither voltage mean. Wild type's mean
+     is spent on calibration, so only K346T's voltage, and the K346T-minus-wild-type contrast, remain
+     as the comparison.
+   - **The result is retrospective:** both means were known before the calibration was chosen.
+   - **Every record of this result carries that statement,** its source and its limits: the
+     unstated recording configuration, the room temperature, and the equal-synthesis assumption.
+
+## D254: FR-7's Kir2.1 comparison stays a consistency check; what would make it a test
+
+2026-11-20, about 21:53 UTC. This carries out D253: "2. then 3. and note it well".
+
+1. **The search (2) found one independent U251 background source.** Ratto et al., Cell Mol Neurobiol
+   2019/2020, doi:10.1007/s10571-019-00776-3, PMC11448950, read verbatim. It is © Springer with no CC
+   licence, so bare cited numbers only (D227).
+   - **Recording:** nystatin-perforated patch; bath 5 mM K+, pipette 140 mM KCl; temperature not
+     stated.
+   - **Cells outside a wound:** Vm −34.7 ± 1.7 mV (n = 33), 26 of 33 without rectifying currents.
+   - **Cells with constitutive currents:** Rm 0.72 GΩ and Cm 29.9 pF (n = 46).
+   - It is a different lab and preparation, so it is not corroboration under D248.
+2. **It does not make the comparison able to fail.** The FR-7 lane's desk analysis:
+   - Nystatin pores pass Cl⁻, so Ratto's cytosol has about 144 mM Cl⁻ against about 17 mM in
+     Ambrosini's dialysed cells. The OUT cells' −34.7 mV is the background's reversal in Ratto's
+     conditions only.
+   - Carried across by a Goldman–Hodgkin–Katz estimate, the background reverses near −37 mV if its
+     non-K part is Na⁺, or near −76 mV if it is Cl⁻.
+   - The resting conductance gives only an upper bound on the background.
+   - With these, option (a)'s band on the K346T-minus-wild-type contrast runs from about −16.6 to 0.0
+     mV. It overlaps the published 2-SEM interval [−7.5, −3.4] mV whatever the data.
+3. **Option (b), the calibration (3).** It spends wild type's −70.1 mV, departs from D241, is
+   retrospective, and carries the configuration (pump taken as 0), temperature and equal-synthesis
+   caveats.
+   - Over the background reversal's honest range (−69 to −37 mV), it predicts a contrast of −0.6 to
+     −7.0 mV. That cannot fail.
+   - Only with a Na-type background assumed (about −35 mV) does it narrow: to −6.4 to −7.9 mV at
+     Fig. 3G's current ratio 2.03, or −4.8 to −5.5 mV at Fig. 3E's abundance ratio 1.64.
+4. **So FR-7 item 4 stays a consistency check.** The chain agrees: slower decay (Fig. 4B), more
+   membrane channel (Fig. 3E, 1.64), more current (Fig. 3G, 2.03; Fig. S2B the same at every
+   voltage), and a more negative rest. No link yet tests an engine prediction. No world is built and
+   no factor source is commissioned (D252).
+   - **What would make it a test:** the U251 background's ionic composition (Na⁺ against Cl⁻), or a
+     background measured in Ambrosini's own solutions; Fig. S2B's outward hump read as numbers; and
+     the configuration of Fig. 3F's recordings.
+   - **If it becomes a test,** the route is the passive rectifier with the kinds owner's factor
+     source, whose hump relative to E_K matches Fig. S2B; `kir2p1_mh2@1`'s outward plateau does not.
+   - Ratto's values join `validation/fr7/data/` as bare cited numbers, with their comparability
+     caveats.
+
+## D255: Origin of life and gene regulation pause until tomorrow; their agents turn to core and FR work
+
+2026-11-20, about 22:07 UTC. The user: "I would like to deprioritze origin of life until tomorrow
+and also gene regulation - do not stop any tests or such - then use the agents for core / FR work
+from all the user/reviewer reqeuest today".
+
+- **No test, gate or run is stopped.** Heads whose gates pass still land. The paused lanes' work
+  resumes tomorrow:
+  - origin of life: break-and-renew, the fuel references, GARD's version 2;
+  - gene regulation: G4 and FR-25's reviewer follow-ups.
+- **FR-20 and FR-21 count as FR work** (D237, with the requester's acceptance given today). The first
+  origin-of-life builder continues them: FR-20's landing, FR-21's site step, then its shell.
+- **The freed agents take today's core and FR requests:**
+  - **the second origin-of-life builder:** FR-30's design note (Cx43's two relaxation times, within
+    FR-16's catalogue), built after N2 lands; then one of FR-34's engine items;
+  - **the gene-regulation agent:** FR-33 (the regional labelled-protein readouts: which export fields
+    exist and which are missing, and the transfer-against-destruction example), taken over from the
+    FR-7 lane;
+  - **the fuel references agent** stops at a clean point and keeps its code-blindness for tomorrow.
+- **Unchanged:**
+  - N2 for FR-8, first;
+  - FR-24, then FR-26 and FR-28, by the operators owner;
+  - FR-29's design note, by the kinds owner after its second mitochondria head;
+  - FR-34, Kir2.1 and the Ratto data, by the FR-7 lane;
+  - the robustness fixes.
+
+## D256: Mitochondria pause too; Fig. S2B read, and FR-7 item 4's options for the user
+
+2026-11-20, about 22:08 UTC. The user: "same with mitochondria, keep tests going and suh but lets
+focus on core and fr tonight while I sleep".
+
+1. **Mitochondria pause until tomorrow, beside origin of life and gene regulation (D255).** Running
+   gates and runs continue, and heads that pass still land. The kinds owner turns to FR-29's design
+   note.
+2. **Fig. S2B, read as numbers** by the FR-7 lane as a second reader (from the supplement's embedded
+   image, its SHA-256 checked; rows merged at c97f1ab1). This completes D254's record.
+   - **These are the six-cell means:** the values at −100 mV equal Fig. 3G's (wild type −7.25 against
+     −7.3; K346T −14.70 against −14.8 pA/pF), although the legend says "representative".
+   - **The points sit on the command steps** (−140 to −30 mV) within 0.2 mV, so the axis is most likely
+     the command voltage, with no 15 mV adjustment.
+   - **So it most likely shows barium-subtracted Kir current,** whose true zero crossings (about −88
+     and −92 mV) lie near E_K. This doesn't revive item 4: it checks E_K and gives Kir's shape, not its
+     share of the resting conductance.
+   - **The K346T-to-wild-type ratio** is flat near 1.9 on the inward limb. A fit scaling wild type's
+     shape could fail only for an outward ratio above about 5–6 or below 0.5, so the test has little
+     power.
+3. **D254's chloride point** (nystatin pores letting Cl⁻ into Ratto's cells) is the FR-7 lane's
+   inference, made without reading Ratto's paper, and is labelled so.
+4. **FR-7 item 4's options, for the user's decision tomorrow.**
+   - **Close it:** D238's item 4 is then recorded as unmet, not passed, with a PROGRESS entry and the
+     open question's owner.
+   - **Change the endpoint** to current at imposed voltages. This is retrospective, has low power,
+     and is the user's call, since D241 set voltage.
+   - **Get the missing measurement:** each line's barium-induced voltage shift, or mock-cell voltage
+     and resistance in Ambrosini's solutions, with Fig. 3F's configuration.

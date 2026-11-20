@@ -18,6 +18,107 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "cell-replacement-boundary-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Template volume placed inside the water bounds": "src/cells/operators/cell_replacement_v2.py#L205",
+        "Stored volume and refusal of the uncorrected offset": "tests/unit/test_cell_replacement_v2.py#L357"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "shared-pool-record-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.stochastic_mass_action@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Population records for osmotic and declared lumens": "src/cells/models/assembly_lineages_v2/population.py#L824",
+        "Volume and tension columns": "src/cells/models/assembly_lineages_v2/population.py#L846"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "scheduled-turnover-net-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Net change during rapid turnover": "src/cells/operators/species_turnover.py#L273",
+        "Stored amount, production, clearance and work": "src/cells/operators/species_turnover.py#L278",
+        "Engine regression at the switch in net calculation": "tests/unit/test_species_turnover.py#L450"
+      },
+      "driver": "lean/checks/species_turnover.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "transition-state-factor-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Choice of the count-weighted mean": "src/cells/models/assembly_lineages_v2/transition_state.py#L143",
+        "Common-state transition factor": "src/cells/models/assembly_lineages_v2/transition_state.py#L170"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "rectifier-reference-domain": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "8f9bc0500f362096155640cd843a69f2dabc6107",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Admitted reference concentration": "src/cells/kinds/passive_routes.py#L242",
+        "Subnormal reference refusal": "tests/unit/test_inward_rectifier_route.py#L135",
+        "Current and conductance factor": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L81"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
     "vacuolar-pump-reversal": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -2322,7 +2423,7 @@
       "id": "cell-replacement-volume-boundary",
       "category": "tissue-and-conservation",
       "title": "Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic",
-      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.",
+      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The numerical comparison tests how v2 binds a target whose float64 offset would reconstruct at the excluded lower bound.",
       "assumptions": [
         "The water volume interval is open at both endpoints. The exact theorem uses a common real-valued reference for storing and reconstructing the target.",
         "The admission comparison uses a single template with the slot's own species amounts. Water flow is disabled and all other inputs are held fixed."
@@ -2340,15 +2441,16 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "cell-replacement-boundary-repair",
           "cell-replacement-volume-boundary"
         ],
-        "result": "At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float."
+        "result": "The repaired v2 definition admitted 0.18763056296676509 pL, the first float above the strict lower bound of 0.18763056296676506 pL. It also admitted the second interior float and refused the bound itself. The binding regression verified that the adjusted offset reconstructs strictly inside. The earlier comparison records the original refusal."
       },
       "biology": {
         "status": "open",
-        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.",
+        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The boundary replay tests numerical admission.",
         "unit": "pL",
         "evidence": []
       }
@@ -2733,13 +2835,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "shared-pool-record-repair",
           "shared-pool-report-recheck",
           "shared-pool-inventory",
           "shared-pool-declared-volume"
         ],
-        "result": "Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen."
+        "result": "Two 96-event osmotic populations conserved one lipid and one solute across every recorded row. All six slot permutations preserved the corresponding rates. The repaired reporter also returned the one-event population with its declared 10⁻²² L lumen. The earlier records retain the reporting failure."
       },
       "biology": {
         "status": "open",
@@ -3362,9 +3465,9 @@
         }
       },
       "numerical": {
-        "status": "failed",
-        "comparisons": ["scheduled-species-turnover"],
-        "result": "144 scalar cases per backend and two ordinary four-phase schedules matched the 60-digit reference. A one-second compiled run at extreme production and clearance accepted 1 fmol and zero work against a reference of 2 fmol and 0.995667 pJ. The two rounded gross bookings erased the net movement. Halving both rates recovered the correct result. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
+        "status": "checked",
+        "comparisons": ["scheduled-turnover-net-repair", "scheduled-species-turnover"],
+        "result": "All 144 scalar cases on each backend and two ordinary four-phase schedules matched the 60-digit reference. Both extreme-rate worlds stored the reference 2 fmol and booked 0.995667 pJ of chemical work. The earlier engine stored 1 fmol and zero work in the larger-rate case. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
       },
       "biology": {
         "status": "open",
@@ -4056,7 +4159,7 @@
           "gard-pair-heat-nov20",
           "gard-catalysis"
         ],
-        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."
+        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The failure is recorded for version 1. An in-place change altered registered results and was reverted. The lead assigned the accurate reverse calculation to version 2. [Version decision](../../docs/DECISIONS.md#L8017) · [Branch replay](../PROGRESS.md#remaining-numerical-findings)"
       },
       "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
     },
@@ -4285,12 +4388,13 @@
         "about": ["cells.transition_state_factor@1"]
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "transition-state-factor-repair",
           "assembly-transition-state-factor-nov20",
           "assembly-kinetics"
         ],
-        "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
+        "result": "The directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In the opposed ±20 kBT contact case, both rates were 2.0611536224/s and the first event occurred at the reference 0.3459699807 s. All four seeded clocks fired four events with closed ledgers. The earlier comparison records the spurious inert state."
       },
       "biology": {
         "status": "open",
@@ -4335,10 +4439,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "rectifier-reference-domain",
           "inward-rectifier-nov20",
           "inward-rectifier"
         ],
-        "result": "The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision."
+        "result": "All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision."
       },
       "biology": {
         "status": "mixed",

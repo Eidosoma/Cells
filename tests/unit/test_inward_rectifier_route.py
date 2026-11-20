@@ -132,6 +132,7 @@ def test_the_law_registers_and_a_route_parses_binds_and_refuses_its_plants():
     for raw, reason in (
         (closed_pair(route(slope_V=0.0)), "slope_V is positive"),
         (closed_pair(route(k_ref_mM=-5.0)), "k_ref_mM is positive"),
+        (closed_pair(route(k_ref_mM=5e-324)), "k_ref_mM is a normal float"),  # Subnormal.
         (closed_pair(route(g_ref_S_per_m2=-1.0)), "g_ref_S_per_m2 is >= 0"),
         (closed_pair(route(v_half_V=math.inf)), "v_half_V is finite"),
         (closed_pair(missing), "declares id, law, patch, species"),

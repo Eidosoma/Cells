@@ -59,6 +59,39 @@
     "half_life_h": 2.6,
     "source": "Results text for Figure 4, rounded as printed"
    }
+  },
+  {
+   "authors": "Ratto et al. (2019/2020)",
+   "journal": "Cell Mol Neurobiol",
+   "doi": "10.1007/s10571-019-00776-3",
+   "pmcid": "PMC11448950",
+   "license": "© Springer; no CC licence: bare cited numbers only (D227)",
+   "cells": "U251",
+   "readings": "validation/fr7/data/u251_background_ratto_2020_values.csv",
+   "recording": {
+    "configuration": "whole-cell perforated patch (nystatin)",
+    "bath_mM": {
+     "NaCl": 140,
+     "KCl": 5,
+     "HEPES": 10,
+     "glucose": 10,
+     "CaCl2": 3,
+     "MgSO4": 1.2,
+     "pH": 7.4
+    },
+    "pipette_mM": {
+     "KCl": 140,
+     "NaCl": 4,
+     "EGTA": 5,
+     "HEPES": 5,
+     "CaCl2": 0.5,
+     "pH": 7.3
+    },
+    "liquid_junction_potential_mV": 8.8,
+    "temperature": "not stated"
+   },
+   "corroboration": "not corroboration of Ambrosini et al. under D248: a different lab",
+   "read_by": "the lead, verbatim from PMC (D253); only bare numbers are recorded here"
   }
  ],
  "digitization": {
@@ -112,12 +145,35 @@
     ],
     "decimal_places": 1,
     "reader": "second_reader"
+   },
+   "S2B": {
+    "file": "supp_ddu201_ddu201supp.pdf, page 9, embedded image 0 (838 x 524 JPEG, extracted with pdfimages, not rendered)",
+    "x_px": [
+     465,
+     729
+    ],
+    "x_tick_values": [
+     -150,
+     -50
+    ],
+    "y_px": [
+     126,
+     370
+    ],
+    "tick_values": [
+     0,
+     -40
+    ],
+    "decimal_places": 1,
+    "reader": "second_reader",
+    "note": "points read as marker centres (filled disks by erosion, open circles as rings) at the drawn axis's -140 to -30 mV; SEM from the error-bar tip farther from the zero line, left empty where the bar ends inside its marker; WT at -80 mV is hidden behind K346T's marker and read from its connecting line"
    }
   },
   "second_reader": "Fig. 3G's two rows (reader second_reader in the CSV) were read by the FR-7 lane on 20 November 2026 by the same method, from the same JPEG (its SHA-256 checked against this manifest), with no other source: each mean is a bar's bottom edge (the bars hang down from 0), each SEM tip its error-bar cap, and the ticks are the axis's 0 and -25 marks. The rows marked first_reader are the user's (D241)."
  },
  "attribution": [
   "Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet., doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0.",
-  "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0."
+  "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0.",
+  "Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3: bare cited numbers only; (c) Springer, no CC licence; no text or figure is reproduced."
  ]
 }
