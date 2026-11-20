@@ -35,7 +35,8 @@ Contract (operators/contract.py), beyond @1's:
   as in @1) and of the capacitances and masks that @1's event map reads from the declared
   layout (CONFLICTS_VIEW); law_steady arrival gates, whose field solve would read the
   declared volumes (decision 11); RK4, since water's coupled part refuses event maps;
-* definition checks: a template's volume strictly inside the slot's water bounds; a donor
+* definition checks: a template's volume strictly inside the slot's water bounds (and bound one
+  step further inward where its stored offset would land on a bound: arrival_volumes); a donor
   copy's water compartment equal to the slot's; the declared impermeant species without a
   route at the replaced slots and donors, and with equal declared amounts across slots,
   donors and templates (so every copy brings the slot's declared content);
@@ -44,6 +45,7 @@ Contract (operators/contract.py), beyond @1's:
   post-event state.
 """
 
+import math
 from dataclasses import dataclass, replace
 from functools import cached_property
 
@@ -62,6 +64,7 @@ from cells.operators import cell_replacement as replacement
 from cells.operators import osmotic_water as water
 
 LAW_ID = "scheduled_cell_replacement@2"
+ARRIVAL_STEPS = 64  # arrival_volumes: the most floats a bound arrival volume moves inward.
 
 VOLUME_STATE_AXES = {
     "replacement_volume_removed_pL": ["cell_slot"],  # Occupants' volumes at their removal.
@@ -166,13 +169,62 @@ def bind(spec, declaration, events):
     state, layout = replacement.bind(spec, declaration, events)
     n = spec.execution.capacity
     state |= {k: np.zeros(n) for k in VOLUME_STATE_AXES}
-    volumes = np.ones(declaration.template_capacity)  # Route-only rows and padding keep 1.0.
-    for k, t in enumerate(declaration.templates):
-        if t.volume_pL is not None:
-            volumes[k] = t.volume_pL
+    volumes = arrival_volumes(spec, declaration, events)
     species = list(spec.model.species_ids)
     impermeant = np.array([s in declaration.impermeant_species for s in species], dtype=bool)
     return state, layout | dict(template_volume_pL=volumes, replacement_impermeant=impermeant)
+
+
+def arrival_volumes(spec, declaration, events):
+    """[template rows] each template's bound arrival volume (pL; 1.0 for route-only rows and
+    padding): its declared volume, or one moved a few floats inward (inward_volume).
+
+    The event stores an arrival at a slot as the offset v - V_ref on the slot's reference volume
+    V_ref, so the slot holds V_ref + (v - V_ref), each rounded: near a bound below V_ref that grid
+    is coarser than v's own. A declared volume strictly inside water's bounds could then be stored
+    on a bound, which water's strict domain refuses before simulation (the independent Lean
+    project's finding, lean/PROGRESS.md "cell replacement volume boundary", 20 November 2026:
+    0.18763056296676509 pL, one float above the lower bound, stored as 0.18763056296676506 at a
+    reference of 0.7505 pL). The volume is valid; the representation should not refuse it."""
+    volumes = np.ones(declaration.template_capacity)  # Route-only rows and padding keep 1.0.
+    cells = {c.id: c.volume_pL for c in spec.model.cells}
+    bounds = {c.compartment_id: c for c in water_of(spec).compartments}
+    slots = {}
+    for v in events:
+        if v.donor is None and v.slot in cells and v.slot in bounds:
+            row = bounds[v.slot]
+            slots.setdefault(v.template, []).append(
+                (cells[v.slot], row.minimum_volume_pL, row.maximum_volume_pL)
+            )
+    for k, t in enumerate(declaration.templates):
+        if t.volume_pL is not None:
+            volumes[k] = inward_volume(t.volume_pL, slots.get(t.id, ()))
+    return volumes
+
+
+def inward_volume(volume, slots):
+    """`volume` if, stored at every (reference, lower, upper) slot as reference + (volume -
+    reference), it lies strictly inside the slot's bounds, as every registered template does
+    (20 November 2026), bit for bit; else the nearest float within ARRIVAL_STEPS of it, toward the
+    bound it would meet, that is stored strictly inside at every slot (at most a step of the
+    offset's grid: 1.1e-16 pL in the Lean case); else `volume`, which water's domain refuses as
+    before (bounds closer than that grid)."""
+
+    def stored(v):
+        return [ref + (v - ref) for ref, _, _ in slots]
+
+    if all(lo < x < hi for x, (_, lo, hi) in zip(stored(volume), slots, strict=True)):
+        return volume
+    low = any(x <= lo for x, (_, lo, _) in zip(stored(volume), slots, strict=True))
+    high = any(x >= hi for x, (_, _, hi) in zip(stored(volume), slots, strict=True))
+    if low == high:
+        return volume
+    v = volume
+    for _ in range(ARRIVAL_STEPS):
+        v = math.nextafter(v, math.inf if low else -math.inf)
+        if all(lo < x < hi for x, (_, lo, hi) in zip(stored(v), slots, strict=True)):
+            return v
+    return volume
 
 
 def water_of(spec):

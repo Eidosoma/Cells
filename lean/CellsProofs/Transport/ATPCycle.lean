@@ -65,6 +65,16 @@ theorem neutral_voltage_independent (enabled : Bool) (logForward fuel n logRatio
     flux enabled logForward (deltaG fuel n 0 logRatio ψ) =
       flux enabled logForward (fuel + n * logRatio) := by simp [deltaG]
 
+/-- With the same fuel drive and coupling, the change in stall voltage in units
+of RT/F equals the change in the log proton-activity ratio. The forward rates
+may differ between clamps. -/
+theorem proton_stall_shift {n : ℝ} (hn : 0 < n) (fuel log₁ log₂ r₁ r₂ ψ₁ ψ₂ : ℝ)
+    (h₁ : flux true log₁ (deltaG fuel n 1 r₁ ψ₁) = 0)
+    (h₂ : flux true log₂ (deltaG fuel n 1 r₂ ψ₂) = 0) :
+    ψ₂ - ψ₁ = r₂ - r₁ := by
+  rw [(proton_stall_iff _ _ _ _ hn).mp h₁, (proton_stall_iff _ _ _ _ hn).mp h₂]
+  ring
+
 end
 
 end CellsProofs.Transport.ATPCycle
