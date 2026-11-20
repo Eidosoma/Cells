@@ -19,6 +19,10 @@ each turnover's equilibrium:
   convention reproduces the binding owner's values at 310.15 K and the source's entries;
 - every turnover's integer counts conserve charge with the declared valences and move the charge
   q the appendix states (planted: one count changed);
+- the kinase's declared law, with the source's rate prefactor (1 + [Mg2+]_P/K_MgATP), equals the
+  source's form on totals with K_tot(Mg) at every state, K_tot is K_AK at the matched Mg2+, and the
+  form without the prefactor is caught; the supply's held ratio reproduces its reduced x, and
+  holding the printed r shifts x by -0.10 ln 10;
 - each law's S in the family proposed for the engine's form, anchored on the turnover's own
   affinity (and, for every law with a standard free energy, on its forward term), equals the
   declared S at every state. The affinity-anchored form agrees only because the free energies here
@@ -221,18 +225,29 @@ def supply(s):
 K_BASE = D(repr(source.ak_base_constant()))
 
 
-def ak(s):
+def ak(s, *, prefactor=True):
     """Adenylate kinase at P. Printed (Eq. 18): on totals with K_AK. Declared (D236): in base
-    forms, X_AK (K_base [ADP3-]^2 - [AMP2-][ATP4-]), K_base matched at the state-3 buffer's free
-    Mg2+."""
+    forms with the source's rate, X_AK (1 + [Mg2+]_P/K_MgATP) (K_base [ADP3-]^2 - [AMP2-][ATP4-]),
+    K_base matched at the state-3 buffer's free Mg2+ (prefactor=False: the planted form without
+    the rate's prefactor)."""
     mg = s["Mg_P"]
     atp_tot = s["ATP_P"] * (ONE + mg / P["K_MgATP"])
     adp_tot = s["ADP_P"] * (ONE + mg / P["K_MgADP"])
     x = ln(s["ATP_P"] * s["AMP_P"] / (K_BASE * s["ADP_P"] ** 2))
     a = P["X_AK"] * P["K_AK"] * adp_tot**2
     b = P["X_AK"] * s["AMP_P"] * atp_tot
-    declared_a = P["X_AK"] * K_BASE * s["ADP_P"] ** 2
+    rate = (ONE + mg / P["K_MgATP"]) if prefactor else ONE
+    declared_a = P["X_AK"] * rate * K_BASE * s["ADP_P"] ** 2
     return a - b, declared_a * (ONE - exp(x)), x, ONE, a, b
+
+
+def ak_totals(s):
+    """The declared kinase in the source's form on totals: X_AK (K_tot [ADP]_tot^2 - [AMP]
+    [ATP]_tot), K_tot = K_base (1 + m/K_MgATP)/(1 + m/K_MgADP)^2 at the IMS free Mg2+ m."""
+    mg = s["Mg_P"]
+    p_atp, p_adp = ONE + mg / P["K_MgATP"], ONE + mg / P["K_MgADP"]
+    k_tot = K_BASE * p_atp / p_adp**2
+    return P["X_AK"] * (k_tot * (s["ADP_P"] * p_adp) ** 2 - s["AMP_P"] * s["ATP_P"] * p_atp)
 
 
 # The appendix's closed forms of each failing law's mismatch, d = ln(B/A)/kappa - x.
@@ -367,8 +382,9 @@ def instances(s):
     act = (ONE + pi_tot / (P["k_Pi1"] * MM)) * _logistic(pi_tot / (P["k_Pi2"] * MM))
     out["Supply (held pair)"] = (a, [P["X_DH"] * act * s["NADH"] * hn / H_REF * exp(-x)])
     _, declared, x, _, _, _ = ak(s)
-    out["AK (base forms)"] = (declared / (ONE - exp(x)), [P["X_AK"] * s["AMP_P"] * s["ATP_P"]
-                                                          * exp(-x)])  # fmt: skip
+    rate = ONE + s["Mg_P"] / P["K_MgATP"]
+    out["AK (base forms)"] = (declared / (ONE - exp(x)),
+                              [P["X_AK"] * rate * s["AMP_P"] * s["ATP_P"] * exp(-x)])  # fmt: skip
     return out
 
 
@@ -505,6 +521,25 @@ def check(n_states=400, seed=20261120):
     gap = max(abs(entries[k] - direct[k]) for k in entries)
     report["entries_convention_vs_source"] = f"{gap:.3e}"
     ok &= gap < D("1e-9")
+    # The kinase's rate (D236): the declared law equals the source's form on totals with K_tot(Mg)
+    # at every state, and at the matched Mg2+ K_tot is K_AK; the form without the prefactor is a
+    # plant that must differ (by the factor 1 + [Mg2+]/K_MgATP).
+    worst, planted = D(0), D(1)
+    for st in states:
+        _, declared, _, _, a, b = ak(st)
+        worst = max(worst, abs(declared - ak_totals(st)) / max(abs(a), abs(b)))
+        no_prefactor = ak(st, prefactor=False)[1]
+        if declared != 0:
+            planted = min(planted, abs(no_prefactor / declared - ONE))
+    m = D(repr(source.ak_match_free_Mg_mM())) * MM
+    k_tot_match = K_BASE * (ONE + m / P["K_MgATP"]) / (ONE + m / P["K_MgADP"]) ** 2
+    report["kinase_rate"] = dict(
+        declared_vs_totals_form=f"{worst:.3e}",
+        k_tot_at_match_minus_K_AK=f"{abs(k_tot_match - P['K_AK']):.3e}",
+        rate_factor_at_match=f"{ONE + m / P['K_MgATP']:.13f}",
+        planted_without_prefactor_least_relative_difference=f"{planted:.3e}",
+    )
+    ok &= worst < TOLERANCE and abs(k_tot_match - P["K_AK"]) < D("1e-15") and planted > D("0.5")
     # The supply's anchor (option A): with the convention's potentials (doubles) and the held ratio
     # S_red/S_ox = 10^-0.10 r, x equals the reduced form; holding the printed r shifts it.
     mu, x_gap, x_shift = potentials(t_world), D(0), set()

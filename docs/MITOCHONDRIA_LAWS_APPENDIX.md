@@ -436,12 +436,27 @@ standard-state term enters.
 - **In frame B** its equilibrium moves with the free Mg²⁺. The mismatch is
   d = ln[(1 + m/K_MgATP)/(1 + m/K_MgADP)²] + ln(K_base/K_AK), zero at the matched m.
 
-**Declared (in base forms; ruled, D236):**
-  J = X_AK (K_base [ADP³⁻]² − [AMP²⁻][ATP⁴⁻]) = S (1 − e^x), with S = X_AK K_base [ADP³⁻]².
-- X_AK is set large (class C), so the reaction stays near equilibrium.
-- D236 reports no change at the source's reported states.
+**Declared (in base forms, with the source's rate; ruled, D236):**
+  J = X_AK (1 + [Mg²⁺]_P/K_MgATP) (K_base [ADP³⁻]² − [AMP²⁻][ATP⁴⁻]) = S (1 − e^x),
+  with S = X_AK (1 + [Mg²⁺]_P/K_MgATP) K_base [ADP³⁻]².
+- **The same law on totals.** At binding equilibrium it is the source's form on totals,
+  X_AK (K_tot [ADP]_P² − [AMP]_P [ATP]_P), with K_tot = K_base (1 + m/K_MgATP)/(1 + m/K_MgADP)²
+  at the IMS's free Mg²⁺ m.
+  - At the matched m, K_tot = K_AK = 0.4331, which is Eq. 18 exactly.
+  - The prefactor (1 + m/K_MgATP) is the ratio of total to Mg-free ATP: 159.69 at the matched m.
+  - The code-blind reference measured the ratio of this law's flux to the form without the
+    prefactor as 159.6897303699054, against 159.6897303699056 predicted.
+- **Why the rate matters.** X_AK is set large (class C), but state 3 does not hold the reaction
+  near equilibrium: the buffer holds ATP and AMP at zero, so the kinase keeps making them in the
+  IMS while the outer membrane drains them.
+  - At the source's rate, the IMS ATP and AMP are about 296 and 281 µM.
+  - Without the prefactor, a rate about 160 times slower, they are about 18 and 8.6 µM (the
+    code-blind reference's values, D236).
+- **A planted control:** the form without the prefactor, X_AK (K_base [ADP³⁻]² −
+  [AMP²⁻][ATP⁴⁻]), has the right equilibrium but a rate too small by the factor
+  (1 + [Mg²⁺]_P/K_MgATP).
 
-**Reads:** the Mg-free ATP⁴⁻ and ADP³⁻, and AMP²⁻, at P.
+**Reads:** the Mg-free ATP⁴⁻ and ADP³⁻, AMP²⁻ and the free Mg²⁺, at P.
 
 ## 8. The outer membrane (Eq. 13)
 
