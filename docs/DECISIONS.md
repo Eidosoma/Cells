@@ -7638,3 +7638,38 @@ probably both in the end", "2. Same get adviser and you choose but we're not in 
   - **The stage rule:** under N2 it counts the kinds' terms. Today's rule never counted the pumps'
     electrogenic currents, and N2 keeps that.
   - **The choice to build N2 stands.**
+
+## D236: Beard's repairs (frame B, Eq. 24 as run, the balanced supply); FR-7's development chains stopped
+
+2026-11-20, about 12:13 UTC. The user, on the lead's two questions: "1. yes as you suggtest", "2. yes as
+you suggst".
+
+1. **FR-7's three development chains are stopped** (cells-fr7-chain-a, -b and -c). Their first worlds
+   have maturation stages (m = 3), which compiled and stepped 6–10 times slower than they should
+   before the FR-7 lane's fix (fr7-perf 395b80a4). The three queued judged units had already been
+   stopped before they started. F3's judged comparison runs from main once the fix lands: about 2–3
+   hours on CPUs 6, 22 and 23. The chains' partial outputs are kept.
+2. **Beard 2005's repairs (D209's departure), the consistent set in frame B:**
+   - **Phosphate:** the appendix's balanced Eqs. 11 and 16, with Eq. 22's proton row counting the
+     protons on phosphate.
+   - **Eq. 24 restored,** φ_Pi × Eq. 7: the model as the paper ran it.
+   - **Eq. 1:** the balanced NADH supply with a held neutral reductant pair, at reference matrix pH
+     7.10.
+   - **Conditions:** 298.15 K and matrix Mg²⁺ total 5 mM, as already ruled.
+   - **The lead's ruling on adenylate kinase,** reported for MT-2: Eq. 18 is written in base forms and
+     matched at 3.81 mM free Mg²⁺ (K_base 0.389). That is derived from the paper's active-state
+     buffer, 5 mM Mg and 1.3 mM ADP; the paper never states the IMS's free Mg²⁺.
+   - **Its cost,** MR1's `host_p_question_arm_ak_base`:
+     - rms z 3.72 against the published curves, against 1.40 for the published arm;
+     - largest departures at the 12 reported states: ΔΨ 1.31 mV, matrix pH 0.014, NADH's reduced
+       fraction 0.020, cytochrome c's 0.004, O₂ flux 2.1%;
+     - dissipation non-negative for every process, at the reported states and at 2,000 random states
+       with binding at equilibrium;
+     - steady states exist and are unique.
+
+     The base-form kinase changes nothing at the reported states.
+   - **Next:**
+     - the lane retags the appendix with the chosen forms;
+     - the component references and MR1 register against that tag;
+     - the binding owner adds AMP in beard2005@2;
+     - the kinds owner writes the law modules after K3 and K3b.
