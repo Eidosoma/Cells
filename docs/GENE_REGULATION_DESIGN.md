@@ -46,7 +46,8 @@ Sources.
      pool that is occupied while it works, monomers and fuel drawn along the chain, and turnover that
      returns the monomers (§2.2).
 2. **Promoter occupancy is binding** (§1.3).
-   - Three blocks on main can carry it:
+   - Four blocks on main can carry it:
+     - B1′'s Hill factor of a species, the all-or-none equilibrium, which cannot express titration;
      - the rapid-equilibrium closure `rapid_binding@1`, whose binding polynomial is the
        thermodynamic model of transcription regulation;
      - the regulatory state `hill_regulated_two_state@1`, which is kinetic and is already B1′'s
@@ -162,10 +163,14 @@ Sources.
 - **What exists today (code).**
   - D150's clearance removes a species with no material return: "Its real metabolic cost
     (synthesis, proteolysis) lies outside the modelled inventory, a declared limit"
-    (`operators/species_turnover.py`:26–28).
+    (`operators/species_turnover.py`:27–28).
   - FR-7's producer removes units into a sink. "The units carry no free energy in the model"
     (`operators/population_unit_turnover.py`:62).
-  - So neither returns material. Returning monomers is new.
+  - So neither returns material.
+  - D152's driven mass action could return them: one polymer to L monomers is order 1, and products
+    are not capped (`operators/species_reactions.py`:544–548). But a driven route books its ΔG as
+    signed work, not as the heat of a downhill hydrolysis (S). Degradation that returns monomers
+    and books heat is new.
 
 ### 1.3 Promoter occupancy as binding
 
@@ -178,7 +183,8 @@ Sources.
   each form's standard potential, from which β follows (`laws/reactions/rapid_binding.py`:11–17;
   `registry/species_registry.py`:28–38) **(code)**.
 - **It conserves the ligand.** The free transcription factor is what the binders leave. So titration
-  by many sites, or by decoys, follows without new code.
+  by many sites, or by decoys, follows from the closure as it stands. Reading its result into a rate
+  is the one new piece (§2.3).
 - **Non-specific DNA as a second binder gives the classic weak-promoter form (S).** With R
   repressors, N_NS non-specific sites and a specific binding energy Δε, the fraction repressed is
   (R/N_NS)e^{−βΔε} / (1 + (R/N_NS)e^{−βΔε}). That is a Hill inhibition with n = 1 in total R, with
@@ -291,17 +297,36 @@ Sources.
 **Charge.**
 - NTPs, PPi and RNA are polyanions, and Mg²⁺ binds them. The engine conserves charge as well as
   material and energy.
-- **Version 1: neutral formula units, declared as such.** This is FR-10's precedent: integer counts
-  over declared species, neutral in integer arithmetic (BATH_SCHEDULE_DESIGN §2).
-  - Each nucleotide or polymer row stands for the anion with its bound counter-cations, as one
-    neutral unit.
+- **Version 1: neutral formula units, declared as such.** FR-10 doses in formula units whose charge
+  is zero in integer arithmetic, and "a neutral species is its own formula unit"
+  (BATH_SCHEDULE_DESIGN §2).
+  - Version 1 declares each nucleotide and polymer row at valence 0. The row stands for the anion
+    with its bound counter-cations, as one neutral unit.
   - It is a declared reduction. An observable that needs the charge, such as Mg²⁺ or pH effects on
     elongation, is refused.
+  - The alternative is FR-10's own shape: charged rows (NTP⁴⁻ and its cations) moved together in
+    neutral units. That needs charged species in the new operator, which is the later path below.
 - **Later: charged rows,** through FR-15 S1 (charged species in D152 reactions, each conserving
   charge) and the binding owner's nucleotide forms (H⁺ and Mg²⁺ on ATP, ADP and Pi;
   MITOCHONDRIA_DESIGN §1.3).
   - Today `scheduled_species_turnover@2`, for charged clearance, is unbuilt.
   - FR-7's producer refuses a charged precursor (`population_unit_turnover.py`:71).
+
+### 1.6 What the products act on
+
+The coupling note asked whether the layer's output should "reach physics only through this
+operator, keeping one route from molecular state to controls" (its §6.4 Q5). Two directions need
+keeping apart (S).
+- **Into production.** Every route from a molecular state to a production rate goes through B1′:
+  a Hill factor, a regulatory state, or occupancy as a new source kind (§2.3). That is D218's "one
+  coupling and rate-routing mechanism".
+- **Out to physiology.** A product acts only through a declared mechanism, never through a parameter
+  read from an expression level:
+  - as material: a subunit that FR-7's producer turns into channel units;
+  - as a source of the coupling operator's factors on channels, junctions or rates;
+  - as a catalyst row that D152's Michaelis–Menten law reads.
+- **Cell behaviour** (proliferation, survival, migration) driven by a state or an expression level
+  is D228 item 7's own design note, in FR-7's family. It is not designed here.
 
 ## 2. Architecture
 
@@ -347,11 +372,11 @@ Sources.
 | --- | --- | --- | --- |
 | `population_unit_turnover@1` (FR-7 F1; development) | A neutral precursor becomes channel units through m ≤ 8 maturation pools (`MAX_POOLS`, :110). The half-steps are exact by uniformization, with Λ dt ≤ 1 refused otherwise (:113). There are ν molecules per unit, two ledgers, and signed work for the precursor. One precursor per route. No fuel, no machine. Its refusal is simulation-wide (D232) | The pattern the synthesis operator generalises | A soluble product with a potential; a machine pool; monomers drawn along the chain; fuel in the stoichiometry; degradation that returns monomers; several monomer roles per route |
 | `species_regulated_availability@1` (judged) and `@2` (B1′; development) | A Hill factor of a species, or a regulatory state, sets @3's channel or junction availability, or a routable rate in its target's own half-steps. F lies in [b, 1], the scheduled rate is the maximum, and each route declares an operating range | Initiation's regulation | A new target is one row in `OPERATOR_TABLES` (:149–154). FR-7's F3 added its producer that way on its branch (cf7145ad, not on main), as a recorded exception naming the operators owner |
-| `local_species_reactions@1` (judged within MG0c's scope) | Driven mass action and Michaelis–Menten with Hill factors; passive detailed balance; integer moieties; molecularity at most 3 per side (:31); 16 species | Recharging (NMP to NTP, PPi to Pi); small phenomenological networks | It cannot carry polymerisation: a product takes 10²–10⁴ monomers |
+| `local_species_reactions@1` (judged within MG0c's scope) | Driven mass action and Michaelis–Menten with Hill factors; passive detailed balance; integer moieties. A passive reaction has molecularity at most 3 on each side, and a driven one an order of at most 3 (`MAX_MOLECULARITY`, :156, :535–548); 16 species | Recharging (NMP to NTP, PPi to Pi); small phenomenological networks | It cannot carry polymerisation: a product takes 10²–10⁴ monomers, an order far above 3. Degradation to L monomers is admissible as a driven reaction of order 1, since products are not capped, but a driven route books its ΔG as signed work, not heat (S) |
 | `rapid_binding@1` (compared) | A multi-ligand closure over binders whose forms the registry declares | Equilibrium occupancy | A read of form fractions by an operator; nested binders, for induction |
 | `site_occupancy@1` (judged) | Kinetic Langmuir binding with the sites conserved, on patches and contacts | Kinetic occupancy | A node owner |
 | `hill_regulated_two_state@1` (judged within the coupling's scope) | ds/dt = k_on u (1 − s) − k_off s, with exact half-steps | A kinetic promoter in its linear regime; slow chromatin-like states | — |
-| `scheduled_species_turnover@1` (judged for faces and clearance) | Production P with no material origin, and first-order clearance; `turnover_rate` is routable (:437) | The regulator's supply; today's phenomenological stand-in for expression | Material origin and fuel, by design |
+| `scheduled_species_turnover@1` (clearance judged with D150's faces; production guarded only) | Production P with no material origin, and first-order clearance; `turnover_rate` is routable (:437) | The regulator's supply; today's phenomenological stand-in for expression | Material origin and fuel, by design |
 | `membrane_entity_state@1` | Units with a ledger; conductance linear in units | Where a product becomes function (through FR-7's producer) | — |
 | Fuel rows (`maintained_held_rows@1`, `finite_fuel_rows@1`) | Held, or moved with stored energy | The ATP pool | `finite-fuel-v1` is not yet judged; seam E's fuel block is not built |
 | The assembly family's kernel and streams (`models/assembly_lineages/kernel.py`, `streams.py`) | The exact direct method in JAX over vmapped lanes; keyed counter-based streams (Threefry, folded from the seed, the world, the carrier, the domain and the counter); event heat | The pattern for the low-copy regime (§3.3) | A home inside the composite |
@@ -388,7 +413,7 @@ Sources.
    - D152's SSPRK(3,3);
    - machines declared abundant, with a per-step cap on the change of the free fraction.
 
-   The references measure the order whichever is chosen (§4.2).
+   The references measure the order whichever is chosen (§4.1, R-share).
 2. **A node host for site populations.** It would give kinetic, conserving promoter occupancy, with
    sites on DNA in a cell.
 3. **An occupancy source in the coupling operator.** A closure's form fraction, or a site
@@ -445,11 +470,16 @@ rates is bitwise idle, as the producer is.
   - *Mammalian-like:* 10 kb at 50 nt/s and 500 aa at 5 aa/s, so κ = 0.04 s⁻¹ and 0.08 s⁻¹. Five
     median protein half-lives (46 h) make 230 h, which is 8.3 × 10⁵ steps at 1 s.
   - At 1 ms, one hour is 3.6 × 10⁶ steps.
+- **Cost.** D152's species-only chain cost 2.2–2.7 ms per step at 32 nodes, on one CPU core with
+  host checks (SHARED_INVENTORY_REACTIONS §4.7). At that rate 8.3 × 10⁵ steps take about 30–40
+  minutes (S): a detached judged run, not a test.
 - **Consequences.**
   - A channel-free expression cell runs real lifetimes on today's engine.
   - Coupling to Vm runs at 1 ms. So it takes synthetic minute-scale lifetimes, labelled as such
     (D217's rule for FR-7), or it waits for FR-8.
   - Tests use short horizons, under the 30-minute rule. Judged runs are detached.
+  - Tests stay lean (D224): one parametrized file for the operator's guards, and each new
+    world-compiling test states its seconds and its reason at landing.
 
 ## 3. The low-copy regime
 
@@ -530,7 +560,7 @@ of the comparison.
    2007; Barrio et al. 2006; named from memory, not read). Stages fit the deterministic
    representation, so the two levels share one declaration.
 7. **Partition at division:** binomial, drawn from a partition stream. GARD's streams already
-   reserve a partition domain (`streams.py`:43).
+   have a partition domain (`streams.py`:36–37).
 8. **Declared representations** (D175). Counts and means are two representations of one mechanism.
    One representation per scope is enforced by the `represents` key, and the counted one is the
    reference.
@@ -588,9 +618,9 @@ The milestone labels **GR-1A** to **GR-1D** are this note's.
   `templated_polymerisation@1`, each with its machine pool and its chain.
 - mRNA and protein are degraded, and their monomers are returned. NMP recharging and fuel
   regeneration run as D152 reactions.
-- An inducer or transcription factor, supplied by D150's turnover or FR-10's schedule, sets
-  initiation through B1′: a Hill factor of its concentration, or a regulatory state. There is no
-  feedback.
+- An inducer or transcription factor, made and cleared in the cell by D150's turnover on a declared
+  schedule, sets initiation through B1′: a Hill factor of its concentration, or a regulatory state.
+  There is no feedback.
 - **Two arms:**
   - **A1:** a channel-free cell. The species' own rates set dt, at seconds, and lifetimes are sourced
     or declared.
@@ -603,10 +633,13 @@ The milestone labels **GR-1A** to **GR-1D** are this note's.
 - `templated_polymerisation@1` (new).
 - `species_regulated_availability@2` (B1′).
 - `local_species_reactions@1`.
-- `scheduled_species_turnover@1`, or `scheduled_bath_composition@1`.
+- `scheduled_species_turnover@1`.
 - A2 adds `membrane_entity_state@1` and `population_unit_turnover@1`.
 
 **What it needs from the engine.**
+- A capability probe first, as Syn3A's P0 and the Xenopus lane's parse-only probe were: a
+  channel-free heredity cell holding the expression rows, admitted at second-scale steps (§2.5 is
+  this note's reading, not yet a measurement).
 - The operator and its law modules: the lane's own new files.
 - One row in the coupling module's routable targets.
 - Registry entries as definition data: lumped monomers, polymers with per-residue potentials, and
@@ -858,8 +891,9 @@ Each question has a recommendation (S).
    - (a) Is a transcription factor acting on its own or another gene's transcription "physical,
      state-mediated production feedback"? D218 was written for FR-7's loops.
    - (b) Should every route from molecular state to production go through B1′, including occupancy
-     as a new source kind? That is the coupling note's §6.4 Q5.
-   - *Recommended:* (a) yes, under D218's conditions per loop, when D is built; (b) yes, one route.
+     as a new source kind? And should products act on physiology only through declared mechanisms:
+     material, the coupling's factors and catalysis (§1.6; the coupling note's §6.4 Q5)?
+   - *Recommended:* (a) yes, under D218's conditions per loop, when D is built; (b) yes to both.
 3. **What already runs.** D152 sources with Hill factors carry the gap-junction replication's EMT
    switch, as development. Are they admitted chemistry, or gene regulation under D145?
    - *Recommended:* admitted for development runs. A judged claim about a gene network goes through
@@ -873,7 +907,7 @@ Each question has a recommendation (S).
    - *Recommended:* both.
 5. **Charge.** Nucleotides and RNA as neutral formula units in version 1, declared, with charged rows
    later through FR-15 S1 and the nucleotide forms? *Recommended:* yes.
-6. **Data licences.**
+6. **Data licences.** Cells is commercial open source (D173).
    - Judged results rest on permissive data (CC BY or CC0, and the deposit's own terms checked).
      Non-commercial data serve analysis only and are never committed. Bare published numbers are
      cited (D173, D227).
@@ -901,7 +935,8 @@ Each question has a recommendation (S).
 - GARD_DESIGN §2.2–§2.4; PAPER_REVIEW_WHOLE_CELL_MINIMAL_CELL §2.3 and §5.
 - GAP_JUNCTION_CANCER_REPLICATION §3–§5; SHIN_2025_REVERT_PLAN; HEREDITY_FIRST_EXPERIMENT;
   CURRENT_PLAN; PROTEIN_CATALOGUE_PLAN's stages; CORTES_POZA_2026_TEST_PLAN; BATH_SCHEDULE_DESIGN §2;
-  docs/lanes/LEVIN_CANCER_XENOPUS.md; the Xenopus lane's gap analysis in the workspace.
+  docs/lanes/LEVIN_CANCER_XENOPUS.md; the Xenopus lane's gap analysis
+  (/mnt/workspaces/Cells/xenopus-lane-20261119/GAP_ANALYSIS.md, its gap register G-L8 and G-O2).
 - **Code:** `operators/population_unit_turnover.py`, `species_regulated_availability.py`,
   `species_reactions.py`, `species_turnover.py`, `site_occupancy.py`, `species_common.py`,
   `__init__.py`; `laws/reactions/rapid_binding.py`, `hill_factors.py`;
