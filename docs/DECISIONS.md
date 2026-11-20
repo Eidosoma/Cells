@@ -8165,3 +8165,27 @@ the high priority list (with all the other high priority items)".
   - **FR-34 (new):** channel population readouts, meaning surface count, availability and signed
     current at a declared voltage, with sign convention and units. Its control halves availability at
     fixed count and driving force, which must halve the current.
+
+## D252: Correction to D250: the Kir2.1 band cannot fail on today's data
+
+2026-11-20, about 21:44 UTC. D250 said the registered band "fails only if the published contrast
+falls outside the band". The FR-7 lane's registration draft shows that, with the Kir share left as a
+declared ignorance range [0.1, 0.9], the band spans about −15.6 to −1.2 mV. The published contrast
+(about −5.5 mV, 2-SEM interval −7.5 to −3.4 mV) cannot fall outside it. So the band is a consistency
+check, not a test. Nothing is tagged.
+
+- **What the source establishes:** a consistent chain.
+  - The wild-type-to-K346T decay-rate ratio is about 1.7, 1.5 and 2.3 at 3, 6 and 12 h (Fig. 4B).
+  - The membrane-fraction ratio is 1.64 (Fig. 3E), and the current ratio 2.03 (Fig. 3G).
+  - Fig. S2B, read by the lead, shows mean barium-sensitive current density against voltage. It
+    reverses near −85 to −90 mV, consistent with E_K from the solutions, and K346T's current is about
+    twice wild type's at negative voltages and in the small outward hump above E_K.
+  - So slower decay, more surface channels and more current agree. But none of these links tests an
+    engine prediction sharply, and the decay ratios assume equal synthesis.
+- **What remains open:** the Kir share of the resting conductance. A measurement that would resolve
+  it is the background conductance, or resting potential, of mock-infected or untransfected U251MG
+  cells in comparable solutions.
+- **No world is built and no factor source is commissioned** until one link can fail. The mapping
+  questions wait too.
+- **FR-34's engine items, found by the same desk check,** are on the list: current at a declared
+  voltage, an effective-availability record, and per-route flux records for the kinds' routes.

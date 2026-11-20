@@ -1115,3 +1115,11 @@ explored.
 - **Where it starts:** the FR-7 lane names today's fields (membrane state's units and abundance, the
   routes' availability and their current records). It then builds the smallest maintained example
   with the control, and records any missing field as engine work.
+- **Engine work found by the FR-7 lane's desk check (D252), each its owner's:**
+  - **Each population's current at a declared voltage,** evaluated from the state, in A, outward
+    positive. Today `channel_flux_fmol_s` gives it only at the cell's actual voltage. It belongs to the
+    @3 owner, after N2, at about 1–1.5 agent-days.
+  - **One record of the effective availability,** the held value times its routed factors. The @3 or
+    operators owner, 0.25–0.5.
+  - **A flux or current record per route for the kinds' routes,** which today record only a cumulative
+    inward transfer. The kinds owner, 0.5–1.
