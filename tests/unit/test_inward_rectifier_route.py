@@ -21,7 +21,7 @@ by contact_0, the cell at K 140 and Na 10 mM) with one rectifier route on contac
 - extreme but finite declarations: (b g_ref, b^2 K_ref) is one route. Each row is a claim with
   its plant, the law's concentration factor replaced:
   - at ordinary K_ref the kernels keep the bits of the unguarded sqrt(c_o / K_ref), in numpy and
-    compiled (planted: the split form everywhere);
+    compiled (planted: the split form everywhere, and a selected divisor in the direct form);
   - (2^-8, 2^-14 mM) matches (1, 4 mM) bit for bit, in the kernels and in a run (planted:
     c_o / K_ref without its root);
   - (2^-512, 2^-1022 mM) overflows c_o / K_ref and is admitted, and (2^510, 5 2^1020 mM) at c_o
@@ -363,6 +363,17 @@ def split_everywhere(c_out_mM, k_ref_mM, *, xp):  # Planted: the split form at e
     return xp.sqrt(c_out_mM) / xp.sqrt(k_ref_mM)
 
 
+def selected_divisor(c_out_mM, k_ref_mM, *, xp):
+    """Planted: the law with its direct form's divisor selected too, which compiled code no longer
+    divides as a product with K_ref's reciprocal (an ulp off at some ordinary states)."""
+    quotient = c_out_mM / k_ref_mM
+    info = xp.finfo(xp.result_type(quotient))
+    split = (c_out_mM >= info.tiny) & (k_ref_mM >= info.tiny)
+    split = split & ((quotient < info.tiny) | (quotient > info.max))
+    direct = xp.sqrt(xp.where(split, 1.0, c_out_mM) / xp.where(split, 1.0, k_ref_mM))
+    return xp.where(split, FACTOR(c_out_mM, k_ref_mM, xp=xp), direct)
+
+
 def rootless(c_out_mM, k_ref_mM, *, xp):  # Planted: c_o / K_ref without its root.
     return c_out_mM / k_ref_mM
 
@@ -416,9 +427,11 @@ def states(declaration, c_out):
 def ordinary_states(seed=13):
     """Random ordinary arguments in the kind's layout ([species, route], each coefficient per
     route, g_ref nonzero at one row a route) and as flat vectors: compiled code divides by a
-    broadcast K_ref as a product with its reciprocal, and by a full one exactly."""
+    broadcast K_ref as a product with its reciprocal, and by a full one exactly. A divisor that
+    loses that rewrite moves about one conducting value in nine by an ulp, so the kind's layout
+    holds 96 routes."""
     rng = np.random.default_rng(seed)
-    s, r, n = 4, 3, 64
+    s, r, n = 4, 96, 64
 
     def uniform(low, high, shape):
         return rng.uniform(low, high, shape)
@@ -520,18 +533,19 @@ def extreme_failures(row, *, runs=True):
     return out
 
 
-EXTREME = (
-    pytest.param("ordinary", split_everywhere, id="ordinary"),
-    pytest.param("b_minus_8", rootless, id="b_minus_8"),
-    pytest.param("b_minus_512_overflow", unguarded, id="b_minus_512_overflow"),
-    pytest.param("b_510_underflow", unguarded, id="b_510_underflow"),
-    pytest.param("derivatives", single_where, id="derivatives"),
+EXTREME = (  # Each row with its plants.
+    pytest.param("ordinary", (split_everywhere, selected_divisor), id="ordinary"),
+    pytest.param("b_minus_8", (rootless,), id="b_minus_8"),
+    pytest.param("b_minus_512_overflow", (unguarded,), id="b_minus_512_overflow"),
+    pytest.param("b_510_underflow", (unguarded,), id="b_510_underflow"),
+    pytest.param("derivatives", (single_where,), id="derivatives"),
 )
 
 
 @pytest.mark.filterwarnings("ignore:overflow encountered in divide:RuntimeWarning")  # The host's.
-@pytest.mark.parametrize("row, plant", EXTREME)
-def test_equivalent_declarations_are_one_route_at_extreme_finite_coefficients(row, plant):
+@pytest.mark.parametrize("row, plants", EXTREME)
+def test_equivalent_declarations_are_one_route_at_extreme_finite_coefficients(row, plants):
     assert extreme_failures(row) == []
-    with factor(plant):
-        assert extreme_failures(row, runs=False) != []
+    for plant in plants:
+        with factor(plant):
+            assert extreme_failures(row, runs=False) != [], plant.__name__
