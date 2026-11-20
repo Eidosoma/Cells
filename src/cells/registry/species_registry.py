@@ -1395,7 +1395,14 @@ def check_two_form_rows(spec):
     declares it among its species (D150's routes, D152's reactions, FR-3's sites, the coupling's
     reads). The row stays inert until a law declares how it moves the forms (§5.2). Operators that
     act on every row alike and name none (a replacement template, a division, a lumen's fill) are
-    not refused here."""
+    not refused here.
+
+    One exception, §5.2's own (the kinds owner's K1; a D148 widening of this check): a declared
+    kind's move of the row at a node where a general closure holds it, under a law that declares
+    its moves in base forms (forms "base"), is not refused here. check_closure_rows' admission
+    holds it instead: the closure's read among its law's reads, the kind's role_species, each
+    resolved mode in base rows with zero charge, and its moved rows the resolved ones. A move of
+    the row at a node no closure holds it at, or under a law without base forms, stays refused."""
     model = declared(spec)
     if model is None:
         return
@@ -1408,9 +1415,12 @@ def check_two_form_rows(spec):
         return
     reason = "no law declares how it moves the forms, so the row stays inert"
     moved = moved_in_step(spec)
+    deferred = _deferred_to_closure(spec)
     for species, label in labels.items():
         for kind in ("cell", "outside"):
             for mover in moved.get(species, {}).get(kind, ()):
+                if mover in deferred.get(species, ()):
+                    continue  # §5.2's admission holds it (check_closure_rows).
                 raise ConfigError(
                     f"species {species} has {label}: {mover} moves its {kind} rows, and {reason}"
                 )
@@ -1423,6 +1433,34 @@ def check_two_form_rows(spec):
 
 
 INNER_MOVERS = ("membrane", "junction", "channel", "face", "pump")
+
+
+def _deferred_to_closure(spec):
+    """{species: {mover, ...}}: the moves check_two_form_rows leaves to check_closure_rows'
+    admission, each named as moved_in_step names it: a declared kind's move of a row at a node
+    where a general closure holds that row (its closure_rows), under a law that declares base
+    forms. {} for a world without a general closure, whose movers are then not built here."""
+    if not any(hasattr(d, "closure_rows") for _, d in getattr(spec.model, "kinds", ())):
+        return {}
+    from cells.registry import laws
+
+    m = _inner_model(spec)
+    held = {
+        row for _, d in getattr(m, "kinds", ()) if hasattr(d, "closure_rows")
+        for row in d.closure_rows
+    }  # fmt: skip
+    _, movers = inner_movers(spec)
+    out = {}
+    for species, entries in movers.items():
+        for kind, law_id, nodes in entries:
+            if kind in INNER_MOVERS or law_id not in laws.active():
+                continue
+            if getattr(laws.active().lookup(law_id), "forms", None) != "base":
+                continue
+            for node in nodes:
+                if (species, node) in held:
+                    out.setdefault(species, set()).add(f"{kind} ({law_id}) at {node}")
+    return out
 
 
 def _law_reads(law_id):
