@@ -98,6 +98,10 @@ two-term form is J = A − B as written.
   plant's change to the printed terms reaches every form. Its literal transcription, above, is
   checked against that to 10⁻⁵⁷.
 - **`restored`** is also checked as φ_Pi times Eq. 7's own class at the With column's X_C3.
+- **What each form reads** is in `inputs.json → laws.<key>.forms.<form>.reads`, beside Δψ.
+  - `base_form_restored` reads [HPO₄²⁻]_N where the law's line has total [Pi]_N.
+  - `subscripts_swapped` reads h_P where it has h_N.
+  - The two-term forms list their backward term's reads too ([MgATP²⁻] for Eq. 11).
 
 **Definitions and displays:**
 - **Definitions:**
@@ -277,6 +281,7 @@ are proposed here.
 | `C3_eq24_as_printed` [balanced, restored] | complex_III_eq24 | form | 194/194 | 190 | 3.4e11 | 0 |
 | `C3_eq24_as_restored` [balanced, printed] | complex_III_eq24 | form | 194/194 | 188 | 9.0e11 | 0 |
 | `C3_eq24_dG0_display` [all three] | complex_III_eq24 | free-energy entry | 291/291 | 194 | 2.8e8 | 0 |
+| `C3_eq24_restored_with_eq7_X_C3` (0.14483) [restored] | complex_III_eq24 | parameter | 97/97 | 95 | 1.6e12 | 0 |
 | `C3_eq24_kappa_one` [balanced, restored] | complex_III_eq24 | kinetic | 194/194 | 190 | 1.3e12 | 0 |
 | `C3_eq24_phi_inverted` [all three] | complex_III_eq24 | kinetic | 291/291 | 285 | 1.4e14 | 0 |
 | `C4_dG0_display` (−412.137) | complex_IV | free-energy entry | 61/61 | 49 | 1.8e7 | 0 |

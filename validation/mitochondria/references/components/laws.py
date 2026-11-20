@@ -106,6 +106,15 @@ class Law:
             return "two_term"
         return self.FORMS[form][0]
 
+    # Per form, what its terms read (dpsi_mV aside), where a form departs from the law's line:
+    # {form: {"A": (...), "B": (...)}}. A kappa form's S also reads x's inputs when kappa < 1.
+    FORM_READS: dict = {}
+
+    def form_reads(self, form):
+        if form in self.FORM_READS:
+            return {k: list(v) for k, v in self.FORM_READS[form].items()}
+        return {"A": list(self.reads_S)}
+
     def form_balanced(self, form):
         return self.FORMS.get(form, ("two_term", False))[1] if form != "printed" else (
             not self.printed_fails)
@@ -303,6 +312,8 @@ class ComplexIIIEq24(_ComplexIII):
     # Eq. 7 at the With column's X_C3 (the lead, 20 November). It keeps the printed backward term.
     FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
              "restored": ("kappa", True)}
+    FORM_READS = {"printed": {"A": ("QH2_N", "Q_N", "c3_P", "h_N", "h_P", "Pi_N"),
+                              "B": ("c2_P", "Pi_N")}}
 
     def form_forward(self, form, B, P, C, s):
         A, _ = self.printed(B, P, C, s)
@@ -517,6 +528,11 @@ class ATPSynthase(Law):
     # at pH 7. It keeps the printed backward term and balances in the declared frame.
     FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
              "proton_restored": ("two_term", False), "base_form_restored": ("kappa", True)}
+    FORM_READS = {
+        "printed": {"A": ("MgADP_N", "Pi_N", "h_N", "h_P"), "B": ("MgATP_N",)},
+        "proton_restored": {"A": ("MgADP_N", "Pi_N", "h_N", "h_P"), "B": ("MgATP_N",)},
+        "base_form_restored": {"A": ("MgADP_N", "HPO4_N", "h_N", "h_P")},
+    }
 
     def form_terms(self, form, B, P, C, s):
         A, Bp = self.printed(B, P, C, s)
@@ -750,6 +766,10 @@ class PhosphateCarrier(Law):
     # matrix proton in the backward term. It balances.
     FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
              "subscripts_swapped": ("kappa", True)}
+    FORM_READS = {
+        "printed": {"A": ("H2PO4_P", "h_N"), "B": ("H2PO4_N", "h_P", "H2PO4_P")},
+        "subscripts_swapped": {"A": ("H2PO4_P", "h_P")},
+    }
 
     def form_forward(self, form, B, P, C, s):
         A, _ = self.printed(B, P, C, s)

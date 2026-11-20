@@ -1768,6 +1768,90 @@
    "law": "complex_III_eq24",
    "section_8_named": false
   },
+  "C3_eq24_restored_with_eq7_X_C3": {
+   "by_form": {
+    "restored": {
+     "by_quantity": {
+      "A_term": {
+       "caught": 97,
+       "max_margin": "2.14E+12"
+      },
+      "B_term": {
+       "caught": 97,
+       "max_margin": "9.91E+11"
+      },
+      "I_A_per_L": {
+       "caught": 95,
+       "max_margin": "2.14E+12"
+      },
+      "J": {
+       "caught": 95,
+       "max_margin": "2.14E+12"
+      },
+      "J_minus": {
+       "caught": 97,
+       "max_margin": "6.45E+11"
+      },
+      "S": {
+       "caught": 97,
+       "max_margin": "2.14E+12"
+      },
+      "affinity_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dG_J_per_mol": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "dI_ddpsi_A_per_L_per_mV": {
+       "caught": 97,
+       "max_margin": "2.06E+12"
+      },
+      "dissipation_W_per_L": {
+       "caught": 95,
+       "max_margin": "1.94E+12"
+      },
+      "slopes_J": {
+       "caught": 774,
+       "max_margin": "2.10E+12"
+      },
+      "slopes_lnS": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "static_head_mV": {
+       "caught": 0,
+       "max_margin": "0"
+      },
+      "x": {
+       "caught": 0,
+       "max_margin": "0"
+      }
+     },
+     "caught": 97,
+     "caught_by_J_alone": 95,
+     "excluded_quantities": [],
+     "max_at": "corner:dpsi_mV=0,pH_N=6.8,pH_P=6.5,f_Q=0.01,f_c=0.01,Pi_N=2e-2",
+     "max_margin": "2.14E+12",
+     "max_quantity": "A_term",
+     "min_at": "corner:dpsi_mV=250,pH_N=8.2,pH_P=7.6,f_Q=0.99,f_c=0.99,Pi_N=1e-4",
+     "min_margin_where_caught": "1.60E+12",
+     "no_power_on_J": [
+      "near_eq:A:x=0",
+      "near_eq:B:x=0"
+     ],
+     "rows": 97,
+     "zero_power": [],
+     "zero_power_values_only": []
+    }
+   },
+   "caught": true,
+   "description": "restored built with Eq. 7's own X_C3 (0.14483, the Without column) in place of 0.091737",
+   "kind": "parameter",
+   "law": "complex_III_eq24",
+   "section_8_named": false
+  },
   "C3_eq7_dG0_display": {
    "by_form": {
     "declared": {

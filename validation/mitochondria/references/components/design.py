@@ -525,7 +525,8 @@ def law_meta():
                 "has_flux": law.has_flux, "kappa": f"1/{law.kappa_inv}",
                 "printed": law.printed_eq, "printed_fails": law.printed_fails,
                 "forms": {f: {"kind": law.form_kind(f),
-                              "balanced": True if f == "declared" else law.form_balanced(f)}
+                              "balanced": True if f == "declared" else law.form_balanced(f),
+                              "reads": law.form_reads(f)}
                           for f in FORMS[law.key]},
             }
             meta[law.key] = m

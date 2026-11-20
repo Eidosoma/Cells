@@ -320,6 +320,10 @@ _add_cross_forms(L["complex_III_eq24"])
 _add("C3_eq24_dG0_display", "complex_III_eq24",
      "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.ComplexIIIEq24, "50599")))
+_add("C3_eq24_restored_with_eq7_X_C3", "complex_III_eq24",
+     "restored built with Eq. 7's own X_C3 (0.14483, the Without column) in place of 0.091737",
+     "parameter", _same_form(L["complex_III_eq24"], P=_P(L["complex_III_eq24"], X_C3="0.14483")),
+     forms=("restored",))
 _add("C3_eq24_kappa_one", "complex_III_eq24", "J = A (1 - e^x) in place of A (1 - e^{x/2})",
      "kinetic", _same_form(C3KappaOne()), forms=("balanced", "restored"))
 _add("C3_eq24_phi_inverted", "complex_III_eq24",

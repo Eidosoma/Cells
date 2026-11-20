@@ -28,19 +28,57 @@
    "forms": {
     "balanced": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "MgADP_N",
+       "Pi_N",
+       "h_N",
+       "h_P"
+      ]
+     }
     },
     "base_form_restored": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "MgADP_N",
+       "HPO4_N",
+       "h_N",
+       "h_P"
+      ]
+     }
     },
     "printed": {
      "balanced": false,
-     "kind": "two_term"
+     "kind": "two_term",
+     "reads": {
+      "A": [
+       "MgADP_N",
+       "Pi_N",
+       "h_N",
+       "h_P"
+      ],
+      "B": [
+       "MgATP_N"
+      ]
+     }
     },
     "proton_restored": {
      "balanced": false,
-     "kind": "two_term"
+     "kind": "two_term",
+     "reads": {
+      "A": [
+       "MgADP_N",
+       "Pi_N",
+       "h_N",
+       "h_P"
+      ],
+      "B": [
+       "MgATP_N"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -112,7 +150,17 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "NADH_N",
+       "NAD_N",
+       "Q_N",
+       "QH2_N",
+       "h_N",
+       "h_P"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -187,15 +235,51 @@
    "forms": {
     "balanced": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "QH2_N",
+       "Q_N",
+       "c3_P",
+       "c2_P",
+       "h_N",
+       "h_P",
+       "Pi_N"
+      ]
+     }
     },
     "printed": {
      "balanced": false,
-     "kind": "two_term"
+     "kind": "two_term",
+     "reads": {
+      "A": [
+       "QH2_N",
+       "Q_N",
+       "c3_P",
+       "h_N",
+       "h_P",
+       "Pi_N"
+      ],
+      "B": [
+       "c2_P",
+       "Pi_N"
+      ]
+     }
     },
     "restored": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "QH2_N",
+       "Q_N",
+       "c3_P",
+       "c2_P",
+       "h_N",
+       "h_P",
+       "Pi_N"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -271,7 +355,17 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "QH2_N",
+       "Q_N",
+       "c3_P",
+       "c2_P",
+       "h_N",
+       "h_P"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -346,7 +440,16 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "O2_N",
+       "c2_P",
+       "c3_P",
+       "h_N",
+       "h_P"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -419,7 +522,15 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "K_N",
+       "K_P",
+       "h_N",
+       "h_P"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -478,7 +589,10 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": []
+     }
     }
    },
    "has_flux": false,
@@ -583,7 +697,15 @@
    "forms": {
     "declared": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "ATP4_N",
+       "ADP3_N",
+       "ATP4_P",
+       "ADP3_P"
+      ]
+     }
     }
    },
    "has_flux": true,
@@ -642,15 +764,38 @@
    "forms": {
     "balanced": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "H2PO4_P",
+       "h_N"
+      ]
+     }
     },
     "printed": {
      "balanced": false,
-     "kind": "two_term"
+     "kind": "two_term",
+     "reads": {
+      "A": [
+       "H2PO4_P",
+       "h_N"
+      ],
+      "B": [
+       "H2PO4_N",
+       "h_P",
+       "H2PO4_P"
+      ]
+     }
     },
     "subscripts_swapped": {
      "balanced": true,
-     "kind": "kappa"
+     "kind": "kappa",
+     "reads": {
+      "A": [
+       "H2PO4_P",
+       "h_P"
+      ]
+     }
     }
    },
    "has_flux": true,
