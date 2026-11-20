@@ -1517,3 +1517,55 @@ activity.
 runs must select X2. Whether MT-1's worlds meet the floor depends on their M: X2's count threshold
 grows with a run's flows. Tracing it needs a buffer-free control and a split of R by term: about
 half a day, and minutes of one light CPU.
+
+### 9.3 Two follow-ups: the floor's trace, and host P's face in MT-1's case
+
+**Criterion (20 November 2026), written and committed before either runs.** These follow the lead's
+go after §9.2. Both are development runs and information. Nothing under `src/` changes, and nothing
+in X2: its count rule is registered, so a change to it is the user's.
+
+**A. The floor under X2's count rule (§9.2).**
+- **R split by term on (P-b).** The whole run at rung 0.01 (2,115 steps) is stepped from the same
+  start, as X2 does it: each step whole and as two half steps, through the model's checked step.
+  - R is split at the step's start and at both ends: the cells' and the outside nodes' chemical
+    terms; the electric term; the dissipation accumulators (membrane, junction, face, channel,
+    pump); the work accumulators (metabolic, reservoir, electrode); and each kind's heat, work and
+    stored terms.
+  - The split must sum to R within 10⁻¹⁵ pJ at every evaluation. Otherwise it is not read.
+  - Each term gets §9.2's s and e. **The source** is the term whose removal from R lowers the run's
+    median |e| at least tenfold.
+- **On the two-cycle arm** (473 steps at 0.01), the closure's stored term is set against the rest
+  of R, in the same way.
+- **The buffer-free control.** (P-b)'s world at a 5 µV offset, so that the pump moves little H
+  against the free pools, is run at rung 0.01 twice:
+  - with the buffers as declared;
+  - with both binders' totals at a millionth of their declared values, and the proton equivalents
+    taken from the same pH.
+
+  The source is confirmed if the median |e| falls at least a hundredfold without the buffers.
+- **One FR-8 arm, a development run: W0 at 1 ms (arm W0-1).** None was named, so this is the @3
+  owner's choice.
+  - It runs from the frozen snapshot of d03ca463, through FR-8 rung 1's own definition and windowed
+    runner (`rung1.definition`, `run_windowed`, row checks on the device). It is the registered
+    control's world, its dose at 20 s and its write at 40 s included.
+  - Each step's values are kept as X2's check receives them (R, R'', F, M).
+  - **It must reproduce the registered summary** (745 counted steps, median 4.006), or it is not
+    read.
+  - **Read per second of the run:** the medians of s and e against 1000 eps M. Does the floor
+    appear in the calm stretches (0–20 s, 22–40 s, 42–60 s), and with what margin under the count
+    threshold?
+- **The fix's shape** is reported with the source. Nothing is changed.
+
+**B. Host P's face in MT-1's case, arm (P-c).**
+- **The world:** (P-a)'s face (D 10⁻¹⁰ m²/s on Na, K, Cl and the traces) with (P-b)'s lumen at the
+  bath's composition.
+- **The rungs:** 0.0025 and 0.005 (the references), 0.01, 0.02 and 0.05, in reading (a). Each runs
+  ten relaxation times, from the same snapshot (e8e1c973) and probe, with amendment 5's records.
+- **Read by §9.1's host-P rules:** the error against its 0.0025 arm, the observed order, L_err, the
+  ledger, and any refusal.
+- **What it decides, as information.** (P-a)'s first-order error, which binds below 0.01, may come
+  from the face's start gradient. Then (P-c) is second order, like (P-b). Or it may come from the
+  face at MT-1's rate. Then it persists in (P-c).
+
+**How they run:** detached units with memory caps on the light CPUs at nice 10, with their scripts
+in the @3 owner's workspace and the scripts' hashes recorded with the results.
