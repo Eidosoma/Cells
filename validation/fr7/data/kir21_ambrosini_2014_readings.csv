@@ -1,0 +1,13 @@
+panel,measure,channel,condition,time_h,unit,n,replicate_unit,mean,sem,bar_center_x_px,mean_y_px,sem_tip_y_px
+3E,membrane_fraction_signal,WT,baseline,,percent_on_published_axis,4,independent_experiments,27.2,11.1,337,404,371
+3E,membrane_fraction_signal,K346T,baseline,,percent_on_published_axis,4,independent_experiments,44.6,7.0,359,352,331
+3F,resting_membrane_potential,WT,baseline,,mV,6,caption_n,-70.1,0.3,549,379,382
+3F,resting_membrane_potential,K346T,baseline,,mV,6,caption_n,-75.6,1.0,571,437,448
+4B,total_protein_remaining,WT,untreated_control,,fold_of_own_control,4,independent_experiments,0.998,0.056,225,735,711
+4B,total_protein_remaining,K346T,untreated_control,,fold_of_own_control,4,independent_experiments,0.989,0.046,281,739,719
+4B,total_protein_remaining,WT,chase,3,fold_of_own_control,4,independent_experiments,0.269,0.030,366,1049,1036
+4B,total_protein_remaining,K346T,chase,3,fold_of_own_control,4,independent_experiments,0.455,0.026,423,969,958
+4B,total_protein_remaining,WT,chase,6,fold_of_own_control,4,independent_experiments,0.121,0.028,514,1113,1101
+4B,total_protein_remaining,K346T,chase,6,fold_of_own_control,4,independent_experiments,0.239,0.016,570,1062,1055
+4B,total_protein_remaining,WT,chase,12,fold_of_own_control,4,independent_experiments,0.007,0.007,654,1162,1159
+4B,total_protein_remaining,K346T,chase,12,fold_of_own_control,4,independent_experiments,0.118,0.009,711,1114,1110
