@@ -199,7 +199,8 @@
       "reaction": "H2PO4-(i) + H+(i) -> H2PO4-(x) + H+(x) (stated 1:1 electroneutral co-transport)", "charge_N_to_P": 0},
     "J_AK": {"eq": 18, "variants": {
         "eq18": "X_AK*(K_AK*ADP_i*ADP_i - AMP_i*ATP_i)",
-        "eq18_base_forms": "X_AK*(K_base_AK*(1 + Mg_i/K_MgATP)/((1 + Mg_i/K_MgADP)*(1 + Mg_i/K_MgADP))*ADP_i*ADP_i - AMP_i*ATP_i)"},
+        "eq18_base_forms": "X_AK*(K_base_AK*(1 + Mg_i/K_MgATP)/((1 + Mg_i/K_MgADP)*(1 + Mg_i/K_MgADP))*ADP_i*ADP_i - AMP_i*ATP_i)",
+        "eq18_base_forms_free": "X_AK*(K_base_AK*fADP_i*fADP_i - AMP_i*fATP_i)"},
       "reaction": "2 ADP -> ATP + AMP (IMS, total pools); 'eq18_base_forms' is 2 ADP3- -> ATP4- + AMP2- at a declared K_base_AK, read on totals through the IMS's free Mg2+", "charge_N_to_P": 0},
     "J_Hle": {"eq": 19, "expr": "X_Hle*(RT/F)*(H_e*exp(u) - H_x)*bern(u)",
       "printed_note": "Eq. 19: X_Hle dPsi (H_e e^u - H_x)/(e^u - 1) with u = F dPsi/RT; written with bern(u) = u/(e^u - 1), bern(0) = 1, identical and defined at dPsi = 0",
@@ -234,7 +235,7 @@
   "switches": {
     "column": {"options": ["with", "without"], "published": "with", "what": "Table 1 column: with or without phosphate control of complex III"},
     "table": {"options": ["e8", "e36"], "published": "e8", "what": "the 2006 corrected Table 1, or the 2005 original (a planted control)"},
-    "J_AK": {"options": ["eq18", "eq18_base_forms"], "published": "eq18", "what": "Eq. 18; the base-form law needs the override K_base_AK (repairs.py)"},
+    "J_AK": {"options": ["eq18", "eq18_base_forms", "eq18_base_forms_free"], "published": "eq18", "what": "Eq. 18; the base-form laws need the override K_base_AK (repairs.py). 'eq18_base_forms' is the printed law on totals with K_tot(Mg); 'eq18_base_forms_free' is the appendix's mass action on the free forms (6df4ac67, section 7): 'eq18_base_forms' = (1 + Mg_i/K_MgATP) x 'eq18_base_forms_free' at binding equilibrium"},
     "J_DH": {"options": ["eq1", "eq1_balanced_supply"], "published": "eq1", "what": "Eq. 1; the balanced supply needs the override h_ref_DH (repairs.py)"},
     "J_C3": {"options": ["eq24_with_eq7_proton_term", "eq24_printed", "eq7", "eq24_appendix_balanced", "eq24_full_affinity"], "published": "eq24_with_eq7_proton_term", "what": "Q02; 'eq7' goes with column 'without'"},
     "J_F1": {"options": ["eq11", "eq11_with_proton_term", "eq11_appendix_balanced", "eq11_proton_in_exponent_base", "eq11_pi_as_h2po4"], "published": "eq11", "what": "Q11; the further options are compared in repairs.py"},

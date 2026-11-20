@@ -124,9 +124,20 @@ COMBINED = {
                                     "host_p_question_arm with Eq. 18 in base forms, 2 ADP3- -> ATP4- + AMP2-, K_base = 0.389 "
                                     "(matched to K_AK = 0.4331 at free Mg2+ 3.81 mM); the effective K on totals follows the "
                                     "IMS's free Mg2+"),
+    "host_p_question_arm_ak_base_k38896": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                                            "H_x_row": "pi_protons_counted", "J_DH": "eq1_balanced_supply",
+                                            "J_AK": "eq18_base_forms"},
+                                           {"h_ref_DH": 10.0 ** -7.10, "K_base_AK": 0.38896},
+                                           "host_p_question_arm_ak_base with K_base at the derived 0.38896 (the root 3.8086 mM)"),
+    "host_p_question_arm_ak_appendix": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                                         "H_x_row": "pi_protons_counted", "J_DH": "eq1_balanced_supply",
+                                         "J_AK": "eq18_base_forms_free"},
+                                        {"h_ref_DH": 10.0 ** -7.10, "K_base_AK": 0.38896},
+                                        "the same with Eq. 18 exactly as the appendix writes it (6df4ac67, section 7): "
+                                        "X_AK (K_base [ADP3-]^2 - [AMP2-][ATP4-]) on the free forms, K_base = 0.38896"),
 }
 
-FULL_CHECK = ("host_p_question_arm", "host_p_question_arm_ak_base")
+FULL_CHECK = ("host_p_question_arm", "host_p_question_arm_ak_base", "host_p_question_arm_ak_appendix")
 
 
 def process_dgs(comp, y, h):
@@ -144,7 +155,7 @@ def process_dgs(comp, y, h):
     dg["J_MgATPi"] = RT * ln(S["mATP_i"] * p["K_MgATP"] / (fATP_i * h["Mg_i"])) if min(S["mATP_i"], fATP_i) > 0 else float("nan")
     dg["J_MgADPi"] = RT * ln(S["mADP_i"] * p["K_MgADP"] / (fADP_i * h["Mg_i"])) if min(S["mADP_i"], fADP_i) > 0 else float("nan")
     dg["J_AMPt"] = RT * ln(S["AMP_i"] / h["AMP_e"]) if S["AMP_i"] > 0 and h["AMP_e"] > 0 else float("nan")
-    if comp.arm.J_AK == "eq18_base_forms":   # 2 ADP3- -> ATP4- + AMP2-, base forms at K_base
+    if comp.arm.J_AK in ("eq18_base_forms", "eq18_base_forms_free"):   # 2 ADP3- -> ATP4- + AMP2-, base forms
         dg["J_AK"] = (RT * ln(fATP_i * S["AMP_i"] / (p["K_base_AK"] * fADP_i * fADP_i))
                       if min(fATP_i, fADP_i, S["AMP_i"]) > 0 else float("nan"))
     return dg
@@ -440,9 +451,12 @@ def table(runs: Path, out: Path):
                   "dissipation_random_states_binding_at_equilibrium", "dissipation_random_states_binding_random"):
             if k in f:
                 row.setdefault("full_check", {})[k] = f[k]
-        if key == "host_p_question_arm_ak_base" and "sweeps" in f and (runs / "host_p_question_arm.json").exists():
+        if key.startswith("host_p_question_arm_ak") and "sweeps" in f and (runs / "host_p_question_arm.json").exists():
             q = json.loads((runs / "host_p_question_arm.json").read_text())
             row["departure_from_host_p_question_arm"] = departure(f, q)
+            if (runs / "host_p_question_arm_ak_base.json").exists() and key != "host_p_question_arm_ak_base":
+                row["departure_from_host_p_question_arm_ak_base"] = departure(
+                    f, json.loads((runs / "host_p_question_arm_ak_base.json").read_text()))
             run_ = R.Runner(M.Arm.published(**sw, overrides=dict(ov)), mg_x_total=MG_RECOMMENDED)
             row["ims_free_mg_mM"] = {st: {f"{pi:g}": 1e3 * run_.held(ADP_e=adp, Pi_e=pi * 1e-3)["Mg_i"] for pi in R.PI_KNOTS}
                                      for st, adp in (("state4", 0.0), ("state3", 1.3e-3))}
