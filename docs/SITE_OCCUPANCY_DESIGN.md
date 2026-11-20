@@ -1016,6 +1016,29 @@ the definition, reading replacement's schedule as D152 does.
 - The door is D150's occupant tables plus an event part of this operator at replacement's event
   steps, as the coupling note's version 1.1 reset is designed.
 
+**Built (FR-26, 20 November 2026; development): W, `site_occupant_replacement@1`** (D244 chose W over
+an event part of this operator; [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)
+§4).
+- **What it is:** a law of its own in this module, declared after this operator and replacement@1.
+  This operator and replacement@1 keep their structure and programs.
+- **What its event map does:** at replacement's event steps, it resets each patch population (either
+  face) of a replaced slot through this operator's accepted writes:
+  - B′ = θ′S, from the newcomer's template (W's `templates`, keyed by replacement template ID);
+  - R′ = S − B′.
+- **What it records:** the departed B, the arrived θ′S and the site free energy's jump (formed from
+  the endpoints).
+- **How its books close:** this operator's bound ledger through W's external terms, and @3's energy
+  ledger through its own term.
+- **The multipliers follow the occupant:** the founder's schedule ends at its death, and a newcomer
+  takes its template's multipliers, held through its life.
+- **Refused in version 1:**
+  - contact populations incident to a replaced slot;
+  - donor copies onto a slot with populations;
+  - a newcomer's occupancy of exactly 0 or 1. This operator's `site_free_energy` reads an exactly
+    empty pool, reached from a positive anchor, as 0 × log1p(−1). That is a finding for its owner;
+    the pool is otherwise unreachable in its dynamics;
+  - templates that change capacity or constants.
+
 ### 5.3 The chain: binding (FR-3), internalisation with membrane (FR-2), delivery (FR-1)
 
 What each step writes, so that the bound pool's identity survives each transfer. This is **S**: FR-1

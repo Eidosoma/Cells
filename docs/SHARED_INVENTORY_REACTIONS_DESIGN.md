@@ -1521,7 +1521,7 @@ ruling, §9 question 8).
 | Closers | S5's living-interval rule (D150 §5.3) |
 | Charged closed reactions (buffering) | Σ_s z_s ν_sr = 0 checked in integers; the field and electrode exactness of D150 §3 re-argued |
 | Stiff kinetics (dt · L > 1) | Sub-steps with a splitting that holds its order where C3 found reduction; or a positive implicit or linearly implicit half-step. Each needs its own order and positivity probes |
-| Cell routes on replaced slots | D150's occupant mechanism, once it lands (Q6) |
+| Cell routes on replaced slots | Built (FR-26, D244): the operator's optional `templates` give a newcomer's multiplier per reaction, the founder's schedule ending at its death; a donor copy there is version 1.1 |
 | Turnover on reacting rows | A measured splitting between turnover and the network, if a consumer needs it (Q3) |
 | Coupled RK4 and the stationary analysis | Operator rates on inner fields in the composite's coupled right-hand side; per-species Newton scaling |
 | Chemostats inside cells | A held species, an open passive law whose partner has a declared potential |
