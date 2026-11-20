@@ -594,6 +594,11 @@ sensing need: a response driven by receptor occupancy.
   factor of θ is held exactly through it. That is the property the coupling note requires of
   instantaneous sources (its §1.4).
 - **It belongs in the coupling note's doors,** beside FR-7(b)'s population-abundance source.
+- **Built (FR-24, 20 November 2026; development):** the source kind exists on
+  `species_regulated_availability@2`, read through this operator's readable quantities (the
+  contract's R3: θ = B/(B + R), B and S per population) as θ, B/V or S/V in the element's cell
+  ([INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md) §2.6). A regulatory state's input
+  from occupancy is not built.
 
 ### 2.7 Per-world data and the batch signature
 

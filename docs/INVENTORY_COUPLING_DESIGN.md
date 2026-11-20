@@ -773,6 +773,78 @@ decision is the user's question 2 (§6.4).
 5. **The field refresh.** The v2 note's option (b), refactorising at declared epochs, needs declared
    times. It does not serve triggered events (W3c, §3.2).
 
+### 2.6 The site source on @2 (FR-24, built 20 November 2026; development, not judged)
+
+FR-24 (D239, decided in D244: the read path R3, θ and Q2;
+[OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md) §3) adds a
+source kind to `species_regulated_availability@2`: a site population of `site_occupancy@1`.
+
+**The read: the contract's R3,** declared readable quantities.
+- **The owner** declares `QUANTITIES` and computes them from its own state (`quantities`), so its
+  representation stays its own. site_occupancy@1 declares, per population, the occupied fraction
+  θ = B/(B + R), the occupied amount B and the accessible capacity S. It also declares its
+  populations' IDs and cells on the host (`quantity_entities`).
+- **The reader** declares what it may read (`QUANTITY_READS`) and, per definition, what it reads
+  (`declared_quantity_reads`).
+- **The composite** passes the reader `quantities=`, a function of state, in its factor hooks and
+  its routed `rate_factors`, only where the owner is composed. The reader calls it only with a site
+  route (static, by shape), so nothing of the owner is traced elsewhere.
+- **The composite refuses:**
+  - a read of a quantity the owner does not declare;
+  - at the definition, a read of an owner the composition lacks;
+  - at the definition, an owner after the route's target.
+
+**The source:** `{"site_population": id, "quantity": q}`.
+
+| q | Read as | Laws |
+| --- | --- | --- |
+| `occupied_fraction` | θ = B/(B + R). The site operator's domain (B ≥ 0, R ≥ 0) keeps it in [0, 1] exactly | `site_fraction` (f = θ), `site_complement` (f = 1 − θ), or a Hill law with a dimensionless `half_saturation` |
+| `occupied_mM` | B/V in the element's cell, at its declared volume | a Hill law with `half_saturation_mM` |
+| `capacity_mM` | S/V likewise. A layout constant in version 1, so the summary reports a constant source | a Hill law with `half_saturation_mM` |
+
+Reading amounts as concentrations keeps §1.3's ruling: a half-saturation is a concentration, never
+a count. Every coupling's F = b + (1 − b) f, in [b, 1], multiplies the scheduled rate. An empty site
+is an ordinary state: a Hill law of 0 gives activation 0 and inhibition 1, with no logarithm of 0.
+
+**Targets, evaluation and order:**
+- **@3's channels** (`step_view`): read at the control view, held through @3's step, which never
+  moves the site pools.
+- **Every operator target** (`target_half_steps`): read at the start of each of the target's
+  half-steps, with the operating range checked there. site_occupancy@1 must precede the target.
+  - θ, B/V and S/V change only in the owner's own half-steps and events. So each read is exact for
+    the target's sub-flow, and the halves stay symmetric about the target.
+  - The robustness agent's diagnosis of the first-order regulated-turnover finding confirms this:
+    only a target that moves its own route's source within its half-step converges at first order.
+    That fix comes after this landing.
+- **Locality:** the population and the element share a cell (the patch's own cell, or the cell on
+  the contact's side).
+- **The loop through the ligand** (the routed target writing the ligand's row at the population's
+  facing pool) is admitted, as D218 admits a species source's: its timing and range are declared,
+  and each loop's verification against a reference is a consumer's item.
+
+**Refused:**
+- **At parsing:** an unknown quantity; a law or half-saturation that does not match it; a junction
+  target (side both would need a population per endpoint: later); a range outside the quantity's.
+- **At binding:** no site_occupancy@1; an unknown population; a population outside the element's
+  cell.
+
+**What stays bitwise (D148):**
+- **@1:** untouched at all three levels. A5″ and the coupling crossrev set are among its worlds.
+- **site_occupancy@1:** its readable quantities are a declaration and a function traced only where
+  a reader calls it. FR-3's worlds, in crossrev's acceptances set, keep their programs.
+- **@2:**
+  - **Values:** bitwise in every world without a site route. Its new layout arrays have shape 0
+    there, and no new kernel runs.
+  - **Programs:** they gain those empty arrays, as @2's population source did on 19 November.
+  - **FR-7's C2 and C5,** @2 worlds outside crossrev: an A/B on main, over their first 2 s
+    (2,001 rows), gives all 50 saved arrays of each world bitwise between main dd085e36 and the
+    site source's head 0ef6da9d. C5's release change at 300 s lies past the window and is cut, so
+    the world over the window is the registered one
+    (`/mnt/workspaces/Cells/operators-fr24-20261120/ab-verdict.json`; frozen snapshots of both).
+  - FR-7's judged runs used a frozen snapshot, so this landing cannot touch their verdicts.
+- **The contract and the composite:** new declarations with empty defaults. A call changes only
+  for a reader whose owner is composed, and the field map gains its `quantities` key only then.
+
 ## 3. Newborn integration and the composition walls on Track R's path
 
 ### 3.1 Today's behaviour, from the code
