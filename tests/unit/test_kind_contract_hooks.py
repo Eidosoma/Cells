@@ -40,12 +40,15 @@ with a planted error it must catch (D187):
   that is no hook, refused at binding);
 - a kind's standard free energies are () by default and checked when read: a tuple of
   FreeEnergyEntry, each naming the law and mode that produced it, a law the kind hosts with a
-  general form and a mode it has, or neither (planted, each refused, naming the entry: a list, a
-  mapping, a bare 3-tuple, refused since every kind declares entries, a four-item tuple, a bare
-  species, a zero coefficient, a repeated species, an empty
-  stoichiometry, a non-finite energy, a zero and a negative c0, a law without its mode, a mode
-  without its law, a law another kind hosts, an unregistered law, a version-1 law, a mode the
-  form lacks, and a hook that is not a callable, refused at registration);
+  general form and a mode it has, or neither, and giving dG° in exactly one form, dG°/RT or, as a
+  law citing kJ/mol does, dG° in kJ/mol with its temperature basis (D234's option (b)) (planted,
+  each refused, naming the entry: a list, a mapping, a bare 3-tuple, refused since every kind
+  declares entries, a four-item tuple, a bare species, a zero coefficient, a repeated species, an
+  empty stoichiometry, a non-finite energy, a zero, a negative and a missing c0, a law without
+  its mode, a mode without its law, a law another kind hosts, an unregistered law, a version-1
+  law, a mode the form lacks, both forms, neither, a kJ/mol value without its basis, an unknown
+  basis, a non-finite and a bool kJ/mol value, a basis beside dG°/RT, and a hook that is not a
+  callable, refused at registration);
 - a kind's role_species is None by default, not refused by its reader, and where set gives one
   EntityBinding per entity: a cycle law the kind hosts, exactly that law's roles bound to species
   IDs (a version-1 law's moves and a general form's "role@end" rows read as their roles), a node
@@ -343,12 +346,22 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
     )
     plain = entry(hydrolysis, -12.3, 1000.0)  # Names no law: an operator's reaction, say.
     coupled = entry(hydrolysis, -12.3, 1000.0, "tests.booked_formed_cycle@1", "coupled")
-    assert (plain.law_id, plain.mode) == (None, None)
+    assert (plain.law_id, plain.mode, plain.dG_kJ_mol, plain.dG_basis) == (None,) * 4
+    # A law citing kJ/mol gives dG° so, with its basis, and no temperature (D234's option (b)).
+    cited = entry(
+        hydrolysis,
+        c0=1000.0,
+        dG_kJ_mol=-30.5,
+        dG_basis=kind_registry.TEMPERATURE_INDEPENDENT,
+        law_id="tests.booked_formed_cycle@1",
+        mode="coupled",
+    )
+    assert cited.dG_RT is None and kind_registry.DG_BASES == ("temperature_independent",)
     assert kind_registry.kind_standard_free_energies(planted(), ()) == ()
-    kind = planted(standard_free_energies=lambda declaration: (plain, coupled))
+    kind = planted(standard_free_energies=lambda declaration: (plain, coupled, cited))
     assert kind_registry.declaration_errors(kind) == []
     with law_registry.scope(law_registry.BUILTIN.extended(formed, version_1, elsewhere)):
-        assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled)
+        assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled, cited)
         plants = (  # Each refused when read, naming the entry.
             ([plain], "returns a tuple of FreeEnergyEntry"),
             (((hydrolysis, -12.3, 1000.0),), "returns a tuple of FreeEnergyEntry"),  # Bare.
@@ -367,6 +380,18 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             ((coupled._replace(law_id="tests.unregistered@1"),), "is not a cycle law it hosts"),
             ((coupled._replace(law_id="tests.booked_cycle@1"),), "is a version-1 law"),
             ((coupled._replace(mode="uncoupled"),), "form has no mode 'uncoupled'"),
+            # Exactly one form: both, neither, and each form's own refusals.
+            ((cited._replace(dG_RT=-12.3),), "entry 0: it gives its dG° in exactly one form"),
+            ((plain._replace(dG_RT=None),), "it gives its dG° in exactly one form"),
+            ((cited._replace(dG_basis=None),), "its dG_kJ_mol gives its basis, one of"),
+            ((cited._replace(dG_basis="vant_hoff"),), "not 'vant_hoff'"),
+            ((cited._replace(dG_kJ_mol=math.nan),), "its dG° in kJ/mol is finite"),
+            ((cited._replace(dG_kJ_mol=True),), "its dG° in kJ/mol is finite"),
+            (
+                (plain._replace(dG_basis=kind_registry.TEMPERATURE_INDEPENDENT),),
+                "qualifies a dG_kJ",
+            ),
+            ((cited._replace(c0=None),), "its c0 is finite and positive"),
         )
         for declared, words in plants:
             planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
