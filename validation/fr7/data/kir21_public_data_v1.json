@@ -59,6 +59,39 @@
     "half_life_h": 2.6,
     "source": "Results text for Figure 4, rounded as printed"
    }
+  },
+  {
+   "authors": "Ratto et al. (2019/2020)",
+   "journal": "Cell Mol Neurobiol",
+   "doi": "10.1007/s10571-019-00776-3",
+   "pmcid": "PMC11448950",
+   "license": "© Springer; no CC licence: bare cited numbers only (D227)",
+   "cells": "U251",
+   "readings": "validation/fr7/data/u251_background_ratto_2020_values.csv",
+   "recording": {
+    "configuration": "whole-cell perforated patch (nystatin)",
+    "bath_mM": {
+     "NaCl": 140,
+     "KCl": 5,
+     "HEPES": 10,
+     "glucose": 10,
+     "CaCl2": 3,
+     "MgSO4": 1.2,
+     "pH": 7.4
+    },
+    "pipette_mM": {
+     "KCl": 140,
+     "NaCl": 4,
+     "EGTA": 5,
+     "HEPES": 5,
+     "CaCl2": 0.5,
+     "pH": 7.3
+    },
+    "liquid_junction_potential_mV": 8.8,
+    "temperature": "not stated"
+   },
+   "corroboration": "not corroboration of Ambrosini et al. under D248: a different lab",
+   "read_by": "the lead, verbatim from PMC (D253); only bare numbers are recorded here"
   }
  ],
  "digitization": {
@@ -140,6 +173,7 @@
  },
  "attribution": [
   "Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet., doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0.",
-  "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0."
+  "Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0.",
+  "Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3: bare cited numbers only; (c) Springer, no CC licence; no text or figure is reproduced."
  ]
 }
