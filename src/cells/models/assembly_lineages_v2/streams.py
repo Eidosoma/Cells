@@ -7,10 +7,13 @@ numbers 0-4 are @1's, with the same meanings, so a world of version 2 that repro
 (the GARD limit, OL6) draws @1's uniforms:
 
     0 initial_composition, 1 events (@1 names it `exchange`: the occupant's event stream),
-    2 partition, 3 continuation, 4 label (reserved, D202), 5 world (reserved for OL2's world-level
-    stream of a shared pool).
+    2 partition, 3 continuation, 4 label (reserved, D202), 5 world (a shared pool's world-level
+    stream, drawn since OL2 milestone 3), and 6 schedule (shear times and transfers, likewise).
 
-A reserved domain is numbered and never drawn: stream_key_data refuses it.
+A reserved domain (RESERVED: `label`) is numbered and never drawn: stream_key_data refuses it.
+Domains 5 and 6 have their own derivation (LATER), and only a run that draws on them states them
+(scheduled_identity). Every other run's identity keeps the table it recorded before they were
+drawn, with `world` among its reserved domains (UNSCHEDULED_RESERVED), so its records do not move.
 """
 
 from types import MappingProxyType
@@ -29,7 +32,10 @@ DOMAINS = MappingProxyType(
         "world": 5,
     }
 )
-RESERVED = ("label", "world")
+RESERVED = ("label",)  # Refused by stream_key_data: no run draws from it yet.
+# The reserved domains an unscheduled run's identity records: OL1's table, kept so its records do
+# not move (domain 5 was reserved until OL2 milestone 3 drew on it).
+UNSCHEDULED_RESERVED = ("label", "world")
 # @1's name for each shared domain: its numbers are @1's, so its derivation is reused as it is.
 V1_NAMES = MappingProxyType(
     {"initial_composition": "initial_composition", "events": "exchange", "partition": "partition",
@@ -45,7 +51,7 @@ def identity(seed, environment, lineage, branch):
     """The stream's identity as a run records it: @1's, with version 2's domain table."""
     out = v1.identity(seed, environment, lineage, branch)
     out["domains"] = dict(DOMAINS)
-    out["reserved_domains"] = list(RESERVED)
+    out["reserved_domains"] = list(UNSCHEDULED_RESERVED)
     out["same_as"] = (
         "cells.assembly_lineages@1's derivation and uniforms; domains 0-4 are @1's numbers "
         "(1, events, is @1's exchange stream)"
@@ -65,7 +71,7 @@ def scheduled_identity(seed, environment, lineage, branch):
     """identity() of a run that draws on domain 5 or 6: both drawn, only `label` reserved."""
     out = identity(seed, environment, lineage, branch)
     out["domains"] = {**dict(DOMAINS), **dict(LATER)}
-    out["reserved_domains"] = ["label"]
+    out["reserved_domains"] = list(RESERVED)
     out["carriers"] = {"world": WORLD_CARRIER, "schedule": "the schedule's declared index"}
     return out
 
