@@ -7,7 +7,8 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   one patch and finite fuel under the neutral law take the population axis; each entry writes
   back in the form it was declared in;
 - the general parse refuses with its reason (unknown host, orientation, roles, valence, ranges,
-  held rows, fuel kinds, a charged held row (Q4), chemistry at P (Q3), duplicate IDs);
+  held rows, fuel kinds, a charged held row (Q4), duplicate IDs), and admits chemistry at P (K3;
+  refused before it, as Q3);
 - the layouts agree (condition 2): at the start, the probe's x, S, J+, J-, J, heat, work, charge
   and conductance, and the proton law's step terms; over steps (@3's own IMEX step on the host, the
   runner's checked step for a declared tableau, without its compile), the cycles, amounts, supply,
@@ -333,8 +334,9 @@ def test_the_general_parse_refuses_a_charged_held_row_chemistry_at_p_and_moved_p
         dict(id="p_0", host="membrane_0", law="seamtest.chemistry_at_p@1", orientation={"N": "a"},
              capacity_fmol_s=0.1, roles={"Z": "Y", "W": "ATP"}, parameters={}, held_rows=[])
     )  # fmt: skip
-    with scoped(), pytest.raises(ConfigError, match="chemistry at P is refused in this pass"):
-        parse_spec(raw)
+    with scoped():  # Chemistry at P (Q3's refusal until K3) is admitted, and flagged.
+        ((_, entry),) = surface_pump_v3.structure(parse_spec(raw).model).kinds
+    assert entry == transporter.CycleAxis(("seamtest.chemistry_at_p@1",), False, True)
     with scoped(), pytest.raises(ConfigError, match="must be unique"):
         parse_spec(tk.held_world(general(tk.population()), general(tk.population())))
 
@@ -1404,6 +1406,151 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
     rt_f = R * spec.model.temperature_K / F
     assert term == pytest.approx(rt_f * math.log(h_ratio(read)), rel=1e-9)  # Free h.
     assert term - rt_f * math.log(h_ratio(states[0])) > 0.3  # Not the stored totals' (planted).
+
+
+# ------------------------------------------------------------------- chemistry at P (K3)
+
+Q_CYCLE = (-1, 1, -2, 2, -2, 4)  # QH2 + 2 Cox+ (P) + 2 H+ (N) -> Q + 2 Cred (P) + 4 H+ (P)
+
+
+def p_redox(forms="base"):
+    """A test-only cytochrome c reducer at P, complex III's net Q cycle on charged cytochrome c
+    forms (Cox+ to Cred), saturating in Cox, its moves in base forms read through rapid_binding@1
+    (never shipped)."""
+    return law_registry.CycleLaw(
+        "seamtest.p_side_redox@1",
+        (),
+        (),
+        None,
+        None,
+        reads=("rapid_binding@1",),
+        forms=forms,
+        cycle=CycleForm(
+            kinetics="factored",
+            roles=(("QH2", 0), ("Q", 0), ("Cox", 1), ("Cred", 0), ("H", 1)),
+            rows=(("QH2", "N"), ("Q", "N"), ("Cox", "P"), ("Cred", "P"), ("H", "N"), ("H", "P")),
+            modes=(("q_cycle", Q_CYCLE),),
+            saturation=((Saturation(("Cox", "P"), 1.0, 1),),),
+        ),
+        host=transporter.KIND_ID,
+        provenance="calibrated",
+        source="a test-only cytochrome c reducer at P (K3), never shipped",
+    )
+
+
+@contextlib.contextmanager
+def p_redox_scoped(*kinds, law=None):
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, law or p_redox())
+    with tk.scoped(*(kinds or tk.CHARGED_KINDS)), law_registry.scope(laws):
+        yield
+
+
+def p_redox_world():
+    """The binding owner's buffered cell under the general closure (H held at the cell; H's
+    potential off 0, HB's with it) with Q, QH2 and cytochrome c's two forms, Cox+ and Cred, at
+    distinct nonzero potentials, and one reducer whose N is the bath (end b): P is the buffered
+    cell, so the mode's P rows meet §5.2's admission at the closure's H row. Its Cox pool is small,
+    so Cox's material slope leads the cell's."""
+    from tests.unit.test_proton_buffer_kind import buffered_world
+    from tests.unit.test_rapid_binding_world import general as closed
+
+    raw = buffered_world(quiet=True)
+    rows = {e["id"]: e for e in raw["model"]["species"]}
+    rows["H"]["standard_mu_RT"] += MU_H_SHIFT
+    rows["B"]["protonated_standard_mu_RT"] += MU_H_SHIFT
+    raw = closed(raw)
+    m = raw["model"]
+    cell, bath = m["cells"][0]["id"], m["extracellular"][0]["id"]
+    redox = (
+        ("QH2", 0, 0.0, 1.0),
+        ("Q", 0, -8.0, 0.5),
+        ("Cox", 1, -3.0, 0.02),
+        ("Cred", 0, 2.0, 0.5),
+    )
+    for sid, z, mu_RT, mM in redox:
+        add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="redox_0",
+            host=m["membranes"][0]["id"],
+            law="seamtest.p_side_redox@1",
+            orientation={"N": "b"},
+            capacity_fmol_s=0.05,
+            roles={"QH2": "QH2", "Q": "Q", "Cox": "Cox", "Cred": "Cred", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    return raw
+
+
+def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
+    """K3: a mode that changes a species at P without changing it at N. Admitted, with its P rows
+    through §5.2's admission at the closure's H row (planted: the law without base forms is
+    refused there). At the start: the material term bounds the charged Cox+ row at P, its slope
+    |nu dJ/dn| from the evaluation's own derivative (planted: without K3's rows the cell's term is
+    far smaller); the membrane flux reads every P-side change as a crossing, so its charge is the
+    patch's current, -q J outward with N at the bath. Four steps: the P rows move at the cell by
+    their counts and every ledger closes, the energy ledger with the conversions' standard parts
+    (planted: the P-side change booked at N, which the cell's material ledger refuses; and, stepped
+    once, the population's g° shifted by 1, which the energy ledger refuses)."""
+
+    def run(impl, spec, p, control, steps=4):
+        state, _ = impl.initial_values(spec)
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states, history
+
+    with p_redox_scoped():
+        spec = parse_spec(p_redox_world())
+        impl = get_model(spec.model)
+        _, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states, history = run(impl, spec, p, control)
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
+            run(impl, spec, shifted, control, steps=1)
+    with p_redox_scoped(law=p_redox(forms=None)), pytest.raises(ConfigError, match="base forms"):
+        parse_spec(p_redox_world())
+    booked_at_n = dataclasses.replace(
+        transporter.TRANSPORTER,
+        ledger_terms=lambda state, p, *, xp: transporter.ledger_terms(
+            state, p._replace(cycle_row_at_n=xp.ones_like(p.cycle_row_at_n)), xp=xp
+        ),
+    )
+    from cells.kinds import proton_buffer
+
+    with p_redox_scoped(booked_at_n, proton_buffer.PROTON_BUFFER):  # Planted: P booked at N.
+        with pytest.raises(NumericalError, match="accounting failed: local"):
+            get_model(spec.model).check_values(history, spec, steps=np.arange(len(states)))
+    entry = dict(impl.structure.kinds)[transporter.KIND_ID]
+    assert entry.p_chemistry and "cycle_row_p_chemistry" in type(p)._fields
+    ids, k = list(spec.model.species_ids), 2  # Row 2 is Cox at P.
+    potentials = potentials_for(p, 0.0, 0.0)
+    read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)  # Free h at the cell.
+    assert bool(read_ok)
+    e = transporter._evaluate(read, potentials, control, p, xp=np)
+    amount = (p.amount_reference + read.amount_increment)[ids.index("Cox"), 0]
+    slope = abs(2.0 * float(e.d_j_d_ln_c[0, k, 0])) / float(amount)
+    term = transporter.material_term(read, potentials, control, p, xp=np)
+    assert float(term[0]) == pytest.approx(slope, rel=1e-12)  # The cell's term is Cox's slope.
+    without = p._replace(cycle_row_p_chemistry=np.zeros_like(p.cycle_row_p_chemistry))
+    assert float(transporter.material_term(read, potentials, control, without, xp=np)[0]) < (
+        1e-3 * slope
+    )
+    rates = transporter.rates(read, potentials, control, p, xp=np)
+    j = float(rates.derivatives["cycle_count"][0, 0])
+    charge = float(np.sum(np.asarray(spec.model.valence) * rates.membrane_flux[:, 0]))
+    assert j > 0 and charge == pytest.approx(-2.0 * j, rel=1e-12)  # q = 2, outward is P to N.
+    cycles = float(states[-1].cycle_count[0, 0])
+    moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
+    for species, n in (("Cox", -2), ("Cred", 2), ("H", 4)):
+        assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
