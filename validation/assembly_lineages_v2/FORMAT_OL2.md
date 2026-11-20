@@ -261,3 +261,38 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   - every crossing draw is discarded at its stop, and the last ends the run when the device ended
     it;
   - `event_group`, the attempts with their slots, the transfer events and the lyses.
+
+## FR-22, rung P: checkpoints of population worlds (`checkpoints.py`)
+
+- **A stop** is a run argument, never a definition key, so no fingerprint moves:
+  `runner.run(spec, stop=k)`, with k from 1 to below `experiment.event_limit`.
+  - The run ends `stopped` after its k-th committed event and that event's own host action (a
+    lysis), before the next draw. Every life is censored at the cut.
+  - Its qualifier folds in `{events: k, fissions: the world's splits}`.
+  - `run.checkpoint()` keeps its state. A cut at a lysing event is refused: the resumed run's
+    first row would sit at the lysis's time, which needs relations' same-time order.
+- **The checkpoint's files:**
+  - `checkpoint.json`: the format `cells.assembly_lineages_v2.checkpoint@1`, the definition and
+    its fingerprint, the stopped run's qualifier, the clock `{time, events, counter}` and the
+    digest;
+  - the host's document: the sub-lineages' counts, the next sub-lineage, the fission and
+    transfer counters, the stops applied, the world's fission and transfer numbering, its splits
+    and the living lives;
+  - the runtime and the source identity;
+  - `lane.npz`: the device lane, verbatim;
+  - `host.npz`: each slot's key, sub-lineage and generation, the host's bookings, and the world's
+    initial F.
+- **A restart** is `runner.run(spec, start=checkpoint)`, with the checkpoint's definition.
+  - Only the horizon, `event_limit`, `trace` and `diagnostic` may differ.
+  - A new branch word is refused in this rung.
+- **The resumed run's records:**
+  - `run.json`'s `run.start` is its start record: the checkpoint's digest, the run that wrote it,
+    the time, the events, the counter, the kind (`restart`) and what differs;
+  - its qualifier folds in `{checkpoint, time}`;
+  - its rows start with the cut's state, and their `row_event` counts from the world's start;
+  - its ledger is referenced to the world's initial F;
+  - its trace, event uniforms and diagnostic draws are its own events;
+  - its `population.numbering` gives the world's events, fission attempts and transfers before
+    it;
+  - in relations@2, the lives alive at the cut are `continued`.
+- **The joining rule** for the two segments' records is `checkpoints.py`'s module docstring.

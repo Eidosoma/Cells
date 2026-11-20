@@ -84,6 +84,14 @@ class WorldRun:
     division: dict | None = None  # OL3: the fission table, the lives and the schedule's report
     diagnostic: dict | None = None  # OL2 milestone 3: §0.2d item 10.5's record (diagnostic.py)
     population: dict | None = None  # OL2 milestone 3: the shared pool's report (population.py)
+    start: object = "fresh"  # FR-22 rung P: "fresh", or a run from a checkpoint's start record
+    resume: dict | None = None  # the host's state a checkpoint keeps, when the run `stopped`
+
+    def checkpoint(self):
+        """The checkpoint of a population run stopped at an exact event count (checkpoints.py)."""
+        from cells.models.assembly_lineages_v2 import checkpoints
+
+        return checkpoints.make(self)
 
     def check(self):
         """Raise if the run was refused (a ledger that did not close)."""
@@ -340,11 +348,18 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
     return jax.device_put(host, device), layout
 
 
-def run(spec):
+def run(spec, *, start=None, stop=None):
+    """One world, fresh or (a population, FR-22 rung P) from a checkpoint `start`, to its end or to
+    an exact stop at `stop` events (population.run)."""
     if spec.execution.mode == "population":  # OL2 milestone 3 (population.py)
         from cells.models.assembly_lineages_v2 import population
 
-        return population.run(spec)
+        return population.run(spec, start=start, stop=stop)
+    if start is not None or stop is not None:
+        raise ConfigError(
+            "Checkpoints, a start or a stop, are built for population runs (FR-22 rung P); a "
+            "single-lineage run's (rung S) waits for a consumer"
+        )
     return _run_single(spec)
 
 

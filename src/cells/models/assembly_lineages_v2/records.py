@@ -316,7 +316,7 @@ def run_record(run, world_id):
         "model": MODEL_ID,
         "engine_models": components,
         "definition_sha256": spec.fingerprint,
-        "run": {"qualifier": run.qualifier, "start": "fresh"},
+        "run": {"qualifier": run.qualifier, "start": run.start},
         "conventions": world_spec.conventions_rules.to_dict(world.conventions),
         "laws": [_law(law_id) for law_id in components["laws"]],
         "check": {"probe": run.verdict, "world": run.world_report},
@@ -390,6 +390,11 @@ def _lifecycle(run):
             "a division found fewer than k - 1 free slots: the run stopped before its draw, every "
             "life censored (§0.2c rule 13)"
         )
+        statuses["stopped"] = (
+            "the run's own stop, an exact event count (a run argument, FR-22): it stopped after "
+            "that event and its own host action, before the next draw, every life censored, its "
+            "state kept for a checkpoint (checkpoints.py)"
+        )
         return {**kernel.LIFECYCLE_OSMOTIC, "statuses": statuses}
     return kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE
 
@@ -460,10 +465,11 @@ def population_tables(directory, run):
 
     lives = [rel.Life(**row) for row in population.lives(run)]
     fissions = run.population["fissions"]
+    before = run.population.get("numbering", {}).get("attempts", 0)  # a resumed run's offset
     events = []
     if fissions is not None:
         events = [
-            rel.Event(f"event:fission/{r}", float(fissions["fission_time"][r]), "fission",
+            rel.Event(f"event:fission/{before + r}", float(fissions["fission_time"][r]), "fission",
                       SHEAR_FISSION, scheduled=True, step=-1,
                       at=keys.carrier_id(int(fissions["fission_parent"][r])),
                       source=f"source:shear/{int(fissions['fission_schedule'][r])}")
