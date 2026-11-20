@@ -234,9 +234,7 @@ def inserted(state, h, control, p, view, *, xp):
     dc = p.insertion_specific_capacitance * area
     units = xp.where(p.channel_active, p.insertion_density * area[p.channel_membranes], 0.0)
     bound = adapter.inner_layout(p)
-    _, image, heat, first_order, second, _, _ = adapter.fixed_charge_change(
-        state, view, dc, bound, xp=xp
-    )
+    _, image, heat, first_order, second, _, _ = v1.charge_change(state, view, dc, bound, xp=xp)
     work = 1e12 * p.boundary_V * image
     moving = area > 0
     count = xp.maximum(entity_sum(moving, axis=None, xp=xp), 1)

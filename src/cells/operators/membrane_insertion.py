@@ -15,6 +15,9 @@ membrane arrives uncharged.
 * The capacitor free energy falls by H >= 0, booked as insertion heat
   (insertion_dissipated_energy_pJ, a declared heat field), so the capacitor energy obeys
   dU = W - H.
+* Where a free node gains more than RATIO_ABOVE times its own capacitance in one half-step,
+  the heat and the image charges are formed without cancellation (charge_change); elsewhere
+  they are fixed_charge_change's, bit for bit.
 * The composite's capacitor energy is the physical 1/2 sum C V^2 - 1/2 sum C0 V0^2 through
   this operator's ledger terms (adapter.view_capacitor_terms), with the matching plate charges
   in @3's electrode ledger; @3's balances stay as they are, on the declared layout. This
@@ -72,6 +75,9 @@ from cells.operators.contract import Operator
 
 LAW_ID = "scheduled_membrane_insertion@1"
 STEP_ID = "fixed_charge_exact_half_steps@1"
+# A free node's capacitance gain in one half-step, as a multiple of its own, above which the heat
+# and the image charges are formed without cancellation (charge_change's docstring).
+RATIO_ABOVE = 2.0**20
 
 STATE_AXES = {
     "insertion_opened": ["membrane_slot"],  # int64: 1 once an onset patch has opened.
@@ -404,6 +410,56 @@ def capacitor_view(state, p, *, xp):
     return adapter.refresh_field(bound._replace(**values), bound, xp=xp), bound
 
 
+def charge_change(state, q, dc, bound, *, xp):
+    """adapter.fixed_charge_change's seven values, with the heat and the image charges formed
+    without cancellation where a free node gains more than RATIO_ABOVE times its own capacitance
+    (the diagonal of q's capacitor matrix) in this half-step.
+
+    There fixed_charge_change's H = first + second subtracts two terms of order dc V^2 that
+    nearly cancel, and its image charges K' delta + dK phi two of order dc V. The independent
+    Lean project found a one-patch cell at dC/C = 1.7e16 booking -0.043037 pJ against +0.051603
+    pJ, and its held bath an image charge of -3.6e-12 C against 0 (lean/PROGRESS.md "Membrane
+    insertion heat", 19 November 2026), so both versions refused the step. There:
+    * H is the sum of squares 1/2 sum [C (V' - V)^2 + dc V'^2] >= 0 (Lean's heat_eq_squares),
+      with V' from a solve at the new capacitances and the same charges, shared among the patches
+      in proportion to their first-order terms as before; first_order is then each patch's share
+      and second 0, so the rounding allowance follows the terms actually summed;
+    * each held node's image charge is its plate charge at that solve less its plate charge
+      before. With a held node at phi_b != 0 its rounding is about eps C' |phi_b|.
+    Elsewhere every value is fixed_charge_change's, bit for bit: below RATIO_ABOVE its heat keeps
+    about eps (1 + dC/C) of H. The choice reads dc and the free nodes' capacitances only."""
+    q1, image, heat, first, second, v, after = adapter.fixed_charge_change(
+        state, q, dc, bound, xp=xp
+    )
+    n, o = q.active.size, q.outside_active.size
+    added = xp.where(q.membrane_active, dc, 0.0)
+    gain = xp.concatenate(
+        (
+            scatter(added, xp.zeros(n), (q.membrane_cell,), xp=xp),
+            scatter(added, xp.zeros(o), (q.membrane_outside,), xp=xp),
+        )
+    )
+    own = xp.diagonal(q.field_capacitor_matrix)
+    extreme = xp.any(~q.field_fixed & (gain > RATIO_ABOVE * own))
+    phi = adapter.node_potentials(state, q, xp=xp)
+    phi1 = adapter.node_potentials(state, q1, xp=xp)
+    v1 = adapter.patch_voltages(phi1, q1, xp=xp)
+    c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
+    squares = 0.5e12 * xp.sum(c * (v1 - v) ** 2 + added * v1**2)
+    total = xp.sum(first)
+    shared = first * (squares / xp.where(total > 0, total, 1.0))
+    plates = (q1.field_capacitor_matrix @ phi1 - q.field_capacitor_matrix @ phi)[n:]
+    return (
+        q1,
+        xp.where(extreme, xp.where(bound.reservoir, plates, 0.0), image),
+        xp.where(extreme, shared, heat),
+        xp.where(extreme, shared, first),
+        xp.where(extreme, 0.0, second),
+        v,
+        xp.where(extreme, v1, after),
+    )
+
+
 def inserted(state, h, control, p, *, xp=jnp):
     """(state after h of insertion, valid) (module docstring)."""
     rate = control.insertion_rate_m2_s
@@ -414,9 +470,7 @@ def inserted(state, h, control, p, *, xp=jnp):
     dc = p.insertion_specific_capacitance * area
     units = xp.where(p.channel_active, p.insertion_density * area[p.channel_membranes], 0.0)
     q, bound = capacitor_view(state, p, xp=xp)
-    _, image, heat, first_order, second, _, _ = adapter.fixed_charge_change(
-        state, q, dc, bound, xp=xp
-    )
+    _, image, heat, first_order, second, _, _ = charge_change(state, q, dc, bound, xp=xp)
     work = 1e12 * p.boundary_V * image
     moving = area > 0
     count = xp.maximum(entity_sum(moving, axis=None, xp=xp), 1)

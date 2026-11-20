@@ -141,11 +141,12 @@ def test_the_capacitor_energy_and_plate_charges_on_two_clamps():
             )
 
 
-def test_one_patch_analytic():
+def test_one_patch_analytic(monkeypatch):
     _, model, state, p = bind(fx.with_operators(fx.one_patch(), IDLE))
     c = float(p.membrane_capacitance[0])
     u0, v0 = capacitor_energy(state, p)
-    for factor in (1e-6, 0.5, 1.0):  # dC / C in one half-step.
+    # dC / C in one half-step; 1.7e16 is the Lean project's stress case (charge_change).
+    for factor in (1e-6, 0.5, 1.0, 1.7e16):
         rate = factor * c / fx.SPECIFIC_CAPACITANCE / (fx.DT / 2)
         new, ok = half_step(model, state, p, [rate])
         assert ok
@@ -160,6 +161,19 @@ def test_one_patch_analytic():
         assert u1 - u0 == pytest.approx(-heat, rel=1e-9)  # dU = W - H with W = 0.
         for name, residual in model.balances(new, p).items():
             assert np.max(np.abs(residual), initial=0.0) < 1e-15, (factor, name)
+    # The stress case compiled, where the cancelling form booked -0.043 pJ (refused) and an image
+    # charge of -3.6e-12 C; and planted, that form at every ratio (0.125 pJ in NumPy: one spacing
+    # of its first term).
+    op, rate = model.operators[1], 1.7e16 * c / fx.SPECIFIC_CAPACITANCE / (fx.DT / 2)
+    control = SimpleNamespace(insertion_rate_m2_s=np.asarray([rate]), insertion_open=np.ones(1))
+    new, ok = jax.jit(lambda s: op.half_step(s, fx.DT / 2, control, p, xp=jax.numpy))(state)
+    dc = float(new.membrane_capacitance_increment_F[0])
+    expected = 0.5e12 * (c * v0[0]) ** 2 * dc / (c * (c + dc))
+    assert ok and float(new.insertion_dissipated_energy_pJ[0]) == pytest.approx(expected, rel=1e-9)
+    assert np.max(np.abs(new.electrode_charge_transferred_C)) <= 1e-26
+    monkeypatch.setattr(insertion, "RATIO_ABOVE", np.inf)
+    new, _ = half_step(model, state, p, [rate])
+    assert float(new.insertion_dissipated_energy_pJ[0]) != pytest.approx(expected, rel=1e-9)
 
 
 def test_two_clamps_image_charge_and_energy():
