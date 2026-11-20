@@ -160,13 +160,24 @@ def test_every_run_refuses_a_threefry_that_is_not_partitionable():
 FOUNDER = {"L@membrane": 8, "S@lumen": 1, "I@lumen": 2}
 
 
-def pop_spec(founders, slots, *, sigma_max=1e3, horizon=5.0, mu_bilayer=-2.0, schedules=None):
+def pop_spec(founders, slots, *, sigma_max=1e3, horizon=5.0, mu_bilayer=-2.0, schedules=None,
+             pool_step=False, mode="population"):  # fmt: skip
     w = osmotic_world(L_pool=30, L_mem=0, S_pool=6, S_lumen=0, I_lumen=0, floor=4 * K_L,
                       sigma_max=sigma_max, mu_bilayer=mu_bilayer)  # fmt: skip
+    if pool_step:  # a pool-locus isomerisation, the pool group's own step (as ol2_shared's iso)
+        from tests.assembly_lineage_v2_fixtures import step
+
+        for name in ("A", "B"):
+            w["species"].append({"id": name, "moieties": {"a": 1}, "standard_mu_RT":
+                                 {"solution": 0.0 if name == "A" else 0.5}, "catalogue": None,
+                                 "evidence": None})  # fmt: skip
+            w["phases"]["pool"]["species"].append({"id": name, "kind": "finite"})
+            w["founder"][f"{name}@pool"] = 6 if name == "A" else 0
+        w["steps"].append(step("iso", {"A": 1}, {"B": 1}, 3.0, phase="pool"))
     w["population"] = {"structure": SHARED_POOL, "slots": slots, "founders": founders}
     d = definition(w, molecules=128, horizon=horizon, event_limit=20000, row_every=20,
                    uniforms=True)  # fmt: skip
-    d["execution"]["mode"] = "population"
+    d["execution"]["mode"] = mode
     if schedules is not None:
         d["model"]["world"]["division"] = {"law": division.SHEAR_FISSION}
         d["experiment"]["schedules"] = schedules
@@ -192,7 +203,7 @@ def test_one_slot_has_the_single_rate_table():
     import jax
     import jax.numpy as jnp
 
-    s1 = pop_spec([FOUNDER], 1)
+    s1 = pop_spec([FOUNDER], 1, pool_step=True)
     structure, layout = model.structure(s1), model.layout(s1)
     pool = model.founder(s1)
     vesicle = (
@@ -211,8 +222,9 @@ def test_one_slot_has_the_single_rate_table():
     f, t = kernel.states(c, totals, layout, structure, np)
     assert np.array_equal(groups.sum(axis=0), kernel.rates(c, totals, f, t, layout, structure, np))
     # Two founders in four slots: the host replays the world's draws through the two-level map.
-    s = pop_spec([FOUNDER, dict(FOUNDER, **{"L@membrane": 6})], 4)
+    s = pop_spec([FOUNDER, dict(FOUNDER, **{"L@membrane": 6})], 4, pool_step=True)
     run = runner.run(s).check()
+    assert (run.trace["event_group"] == 0).any()  # the pool group fires
     layout = model.layout(s)
     stream = streams.stream_key_data(layout.base_key, streams.WORLD_CARRIER, "world")
     count_change, _ = runner.changes(layout, model.structure(s))
@@ -323,6 +335,10 @@ def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
     assert fates.count(diagnostic.DISCARDED) == 1 and fates[-1] == diagnostic.ENDED
     assert arrays["schedule_draw_use"].tolist() == [1, 1, 1]
     assert body["transfer_events"][0]["kept"] == t["kept"]
+    from cells.models.assembly_lineages_v2.spec import stream_identity
+
+    stated = stream_identity(s)  # a population draws on domain 5, a transfer on domain 6
+    assert stated["domains"]["world"] == 5 and stated["domains"]["schedule"] == 6
     layout = model.layout(s)
     key = streams.stream_key_data(layout.base_key, 4, "schedule")
     us = [float(np.asarray(streams.uniforms(key, c, 1))[0]) for c in range(3)]
@@ -345,3 +361,30 @@ def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
         too_many = [dict(schedules[0], fresh_pool=[10**9, 0, 0])]
         pop_spec(founders, 4, schedules=too_many)
     assert transfer.SERIAL_TRANSFER == "cells.serial_transfer@1"
+
+
+REFUSALS = {
+    "population_mode_without_a_population": ({"mode": "single_lineage"}, "exactly when the world"),
+    "a_population_declares_no_continuation": (
+        {"schedules": [{"index": 0, "kind": "shear", "k": 2, "times_s": [1.0]}],
+         "continuation": "first"}, "declares no continuation"),
+    "a_fresh_pool_of_the_wrong_length": (
+        {"schedules": [{"index": 0, "kind": "transfer", "times_s": [1.0], "K_keep": 1,
+                        "fresh_pool": [1]}]}, "one count per finite pool place"),
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("case", sorted(REFUSALS))
+def test_every_refusal_of_the_shared_pool(case):
+    change, message = REFUSALS[case]
+    w = osmotic_world(L_pool=30, L_mem=0, S_pool=6, S_lumen=0, I_lumen=0, floor=4 * K_L)
+    w["population"] = {"structure": SHARED_POOL, "slots": 2, "founders": [FOUNDER]}
+    d = definition(w, molecules=128, horizon=5.0)
+    d["execution"]["mode"] = change.get("mode", "population")
+    if "schedules" in change:
+        d["experiment"]["schedules"] = change["schedules"]
+        d["model"]["world"]["division"] = {"law": division.SHEAR_FISSION}
+    if "continuation" in change:
+        d["model"]["world"]["division"]["continuation"] = change["continuation"]
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(d)

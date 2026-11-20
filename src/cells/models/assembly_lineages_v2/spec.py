@@ -623,6 +623,8 @@ def _mode_refusals(world, mode):
 
 def stream_identity(spec):
     x = spec.execution
-    later = any(s.rate is not None for s in spec.experiment.schedules)  # domain 6 is drawn
+    later = x.mode == POPULATION or any(  # domain 5 is drawn, or domain 6
+        s.rate is not None or s.kind == "transfer" for s in spec.experiment.schedules
+    )
     build = streams.scheduled_identity if later else streams.identity
     return build(x.seed, x.environment, x.lineage, x.branch)

@@ -325,9 +325,7 @@ def run_record(run, world_id):
         "ssa": kernel.SSA_CONVENTION
         if run.division is None
         else {**kernel.SSA_CONVENTION, "draw": SCHEDULED_DRAW},
-        "lifecycle": kernel.LIFECYCLE_OSMOTIC
-        if run.osmotic is not None or run.population is not None
-        else kernel.LIFECYCLE,
+        "lifecycle": _lifecycle(run),
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
         "end": {
@@ -381,6 +379,19 @@ POPULATION_RECORDS = {
                               "diagnostic: the event's three uniforms (u1 tau, u2 the group, u3 "
                               "the channel), from the world's stream (domain 5)"),
 }  # fmt: skip
+
+
+def _lifecycle(run):
+    if run.population is not None:  # a population ends slots_full too; a lysis frees one slot
+        statuses = {**kernel.LIFECYCLE_OSMOTIC["statuses"]}
+        statuses["lysed"] = ("never a population's end: a lysis frees its slot, books one row, "
+                             "and the world goes on")  # fmt: skip
+        statuses["slots_full"] = (
+            "a division found fewer than k - 1 free slots: the run stopped before its draw, every "
+            "life censored (§0.2c rule 13)"
+        )
+        return {**kernel.LIFECYCLE_OSMOTIC, "statuses": statuses}
+    return kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE
 
 
 def _population_record(run):

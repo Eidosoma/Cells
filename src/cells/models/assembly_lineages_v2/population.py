@@ -400,6 +400,7 @@ def run(spec):
     kernel.refuse_unknown(structure)
     osmotic = world.conventions.lumen_volume == "osmotic"
     verdict = balance.osmotic_verdict() if osmotic else balance.geometry_verdict()
+    world_report = balance.world_report(spec)  # each slot's rates are the single assembly's
     P, R = structure.places, structure.steps
     m = masks(world, P, R)
     founders = world.population["founders"]
@@ -411,6 +412,7 @@ def run(spec):
     state = _State(model.founder(spec), slots, alive, keys, np.zeros(P, dtype=np.int64))
     start = state.copy()
     ctx = _Context(spec, layout, state, len(founders))
+    ctx.world_report = world_report
     horizon = spec.experiment.time_horizon_s
     plan, schedule_draws = single._plan(spec, layout.base_key)
     ctx.schedule_draws = list(schedule_draws)
@@ -654,8 +656,10 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
             marks.append((int(np.searchsorted(times, t, side="right")), OBSERVED, t, -1))
     marks += [(n, kind, t, i) for i, (n, kind, t, *_) in enumerate(ctx.stops)]
     marks.append((len(codes), END, end_time, len(ctx.stops)))
-    order = {START: 0, PERIODIC: 1, OBSERVED: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, END: 3}
-    marks.sort(key=lambda x: (x[0], order[x[1]], x[3], x[2]))
+    # In event order, then time order: an observation at or after a stop with no event between
+    # sees the stop's state; at one time, a stop before an observation (as the single lineage).
+    order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, OBSERVED: 3, END: 4}
+    marks.sort(key=lambda x: (x[0], x[2], order[x[1]], x[3]))
     replay, e, applied = start.copy(), 0, 0
     extra = np.zeros_like(ctx.extra)
     rows = []
@@ -784,11 +788,12 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         record = {"body": body, "arrays": arrays}
     return single.WorldRun(
         spec=spec, structure=structure, verdict=verdict,
-        world_report={"population": "the kernel's check on its probe; each slot's rates are the "
-                      "single assembly's (kernel.rates)"},
+        world_report=ctx.world_report,
         status=status, rows=row_arrays, trace=trace, diagnostics=diagnostics, closure=closure,
         qualifier=keys_rules.qualifier(spec.fingerprint, "fresh", None), final=final._asdict(),
-        timings=timings, osmotic=None, division=None, diagnostic=record, population=report,
+        timings=timings, division=None, diagnostic=record, population=report,
+        osmotic=single._osmotic_report(world, row_arrays["pool_count"], None)
+        if world.conventions.lumen_volume == "osmotic" else None,
     )  # fmt: skip
 
 
