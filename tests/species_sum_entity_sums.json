@@ -18,8 +18,23 @@
   ],
   [
    "kinds/transporter.py",
-   "material_term",
+   "_material_slopes",
    "entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(xp.abs(e.d_j_d_ln_c)[:, :, None, :] * cross[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(slopes[:, :, None, :] * slot_cross[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(xp.abs(p.cycle_nu) * through, axis=0, xp=xp)"
   ],
   [
    "kinds/transporter.py",
