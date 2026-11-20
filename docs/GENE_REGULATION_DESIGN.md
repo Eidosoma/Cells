@@ -41,18 +41,28 @@ pattern, the arms, the non-claims and the build plan. Sources.
 **D235 (20 November): option A was chosen.** One gene, open loop, deterministic, expression as
 templated polymerisation with its ATP cost, judged against exact references only, starting when
 seats free. §7 gives its plan:
-- **Charged ATP beside mitochondria is the better answer, but it needs two new pieces** (§7.2). A
-  world can draw its fuel from the named set `beard2005@1`, as MT-1 will. But the set's ATP, ADP and
-  Pi carry forms, and the registry admits only kinds to move such rows today. An operator's
-  admission at the closure's rows is the same piece that options B and F6 need. And the set's
-  required phosphorus moiety counts only its own rows, so passing phosphate to the world's
-  nucleotides breaks it until the moiety can reach them.
+- **Charged ATP beside mitochondria is the better answer, but it needs two new pieces** (§7.2),
+  under `beard2005@2` as under @1.
+  - The set's ATP, ADP and Pi carry forms, and the registry admits only kinds to move such rows
+    today. An operator's admission at the closure's rows is the same piece that options B and F6
+    need.
+  - The set's required phosphorus moiety counts only its own rows. Transcription and recharging pass
+    phosphate to the world's nucleotides, which breaks it until the moiety can reach them.
+  - Translation's fuel stays inside the set.
+  - The charged one-gene world takes 16 of 16 rows once AMP is declared.
+- **A kind cannot host the polymerisation** (§7.3): it holds no state, no machine pool and no
+  transit, and it sits on patches. So the operator stays, and so does G5's first piece.
+- **The built form is fixed at the sheet's tag** (§7.4). A registers the neutral reduction now, and
+  the charged form follows as its own registered arm. The sheet's check shows the reduction is exact
+  while pH and free Mg²⁺ are held.
+- **Settled before the tag** (§7.5): recharging is the operator's own route; stages carry per-residue
+  terms, so the monomial form's share cap stays as it is.
 - **The operator's moiety hook,** `species_moieties(declaration)`, lands with A. It is the operators
-  owner's, and the binding owner's `check_moieties` reads it (§7.3).
-- **The mitochondria pattern** (§7.4): an equation sheet, tagged; code-blind references from the
-  sheet alone, tagged; registration; then engine output.
-- **A machine-limited arm** with its own plants (§7.5), and **the non-claims, registered** (§7.6).
-- **About 10.5–15.5 agent-days** for the neutral build, or 13.5–20 charged (§7.7).
+  owner's, and the binding owner's `check_moieties` reads it (§7.6).
+- **The mitochondria pattern** (§7.7): an equation sheet, symbolic in the potentials and tagged;
+  code-blind references from the sheet alone, tagged; registration; then engine output.
+- **A machine-limited arm** with its own plants (§7.8), and **the non-claims, registered** (§7.9).
+- **About 10.5–15.5 agent-days** for A; the charged arm about 4–6 more (§7.10).
 
 The rest of §0 is the note as written before D235.
 
@@ -298,7 +308,7 @@ The rest of §0 is the note as written before D235.
 - The machines are conserved: free plus engaged equals the total.
 - The registry now holds moieties, and `check_moieties` refuses a kind's mode or a declared
   free-energy entry that changes one. An operator's own moieties stay its own until an
-  operator-contract hook reports them. A's operator brings that hook (§7.3).
+  operator-contract hook reports them. A's operator brings that hook (§7.6).
 
 **Energy (S).**
 - Each stage's ΔG comes from the registry's potentials: the monomers, the fuel, and the polymer per
@@ -1076,9 +1086,10 @@ question 5 has a better answer in §7.2. The others stay open.
 5. **Charge.** Nucleotides and RNA as neutral formula units in version 1, declared, with charged rows
    later through FR-15 S1 and the nucleotide forms? The cost: until then an expression world does
    not share its ATP rows with a mitochondria world (§1.5). *Recommended:* yes.
-   - **Refreshed (§7.2):** charged ATP from `beard2005@1` is now the better answer. It waits on two
-     pieces: an operator admission at the closure's rows, and the set's phosphorus moiety reaching
-     the world's nucleotide rows. The neutral form is its declared fallback.
+   - **Refreshed (§7.2, §7.4):** charged ATP from a named set is now the better answer. It waits on
+     two pieces: an operator admission at the closure's rows, and the set's phosphorus moiety reaching
+     the world's nucleotide rows. So A registers the neutral reduction, shown exact while pH and free
+     Mg²⁺ are held, and the charged form follows as its own registered arm.
 6. **Data licences.** Cells is commercial open source (D173).
    - Judged results rest on permissive data (CC BY or CC0, and the deposit's own terms checked).
      Non-commercial data serve analysis only and are never committed. Bare published numbers are
@@ -1107,67 +1118,202 @@ note against main at e0b1d3b8 and adds what D235 asks for A. Code is cited `file
 | Landing | What it is (code) | What it means for A |
 | --- | --- | --- |
 | **Named potential sets** (8e7a41b3, 11dc95c5) | `beard2005@1`: charged ATP⁴⁻, ADP³⁻ and Pi²⁻, with MgATP, MgADP and H₂PO₄⁻ forms, on references at 0 for H⁺, K⁺, Mg²⁺ and the other conserved quantities. A set is applied whole by `with_potential_set`, with no mixing, and its name versions its derivation. It holds no AMP ("AMP waits for an adenylate kinase law", `registry/species_registry.py`:907–908), no GTP and no other nucleotide | A's fuel can be the mitochondria's own ATP rows (§7.2). Its other rows are the world's |
-| **Registry moieties and `check_moieties`** | The model declares its moieties, and the check refuses a kind's mode or a declared free-energy entry that changes one. "An operator's own moieties (D152's reactions) stay its own until an operator-contract hook reports them (the operators owner's follow-up)" (`species_registry.py`:138–148, :1175) | The hook lands with A (§7.3) |
+| **`beard2005@2`, planned** | @1 plus AMP²⁻, which binds nothing, and K_AK matched in base forms at a declared free Mg²⁺. It lands with the user's repairs ruling: the lead's brief, and the mito lane's reading note (77e13b4a, on branch mito-lane). Not in the registry yet | §7.2 is written against it. The sheet names no set (§7.7) |
+| **Registry moieties and `check_moieties`** | The model declares its moieties, and the check refuses a kind's mode or a declared free-energy entry that changes one. "An operator's own moieties (D152's reactions) stay its own until an operator-contract hook reports them (the operators owner's follow-up)" (`species_registry.py`:138–148, :1175) | The hook lands with A (§7.6) |
 | **`FreeEnergyEntry` in kJ/mol** | `dG_kJ_mol` with its basis and a temperature-free `dG_RT_offset`, converted by the registry at the world's temperature (`registry/kind_registry.py`:593–620) | A's cited reaction energies enter this way: phosphodiester formation, PPi hydrolysis, peptide bonds and ATP hydrolysis. Seam E's check then ties the world's own nucleotide and polymer potentials to the set's references |
 | **Moved fuel at closure nodes, K1** (4704abd1), and **the binder-form deferral** (80f9f837) | A kind's base-form move of a row that a closure holds, ATP with its forms included, passes to §5.2's admission. "Every inner route and every operator" stays refused | Operators, A's included, still cannot move the set's ATP (§7.2) |
 | **The cycle kind's monomial form, K6** (d9342fcf, 7b1ad0dc) | S as a monomial in activities, with saturating factors, and k a number or a constant cited in kJ/mol (`laws/cycles/forms.py`:28–37) | A's stage kinetics can be written as this form's data: an order in the monomer and a factor (1 + a/K)⁻¹ (S). A stage of L/m residues carries its affinity per residue, as the form's affinity share does. The share is capped at 8 (`MAX_SHARE`, :91), so the sheet either takes per-residue terms or asks the kinds owner to raise the cap |
 | **FR-7's F2 and F3, and pools** (de65d033, 5dc63d38, aa4aa9f4) | The population abundance is a B1′ source, the producer's assembly rate is a B1′ target, and the producer declares initial units in transit; all development | A2's path is on main. The routable-target table now has three rows (`operators/species_regulated_availability.py`:175–181). A adds a fourth, as F3 did |
-| **Not yet** | `finite-fuel-v1` has no world (it follows MT-1a); seam E's fuel block; an operator's admission at the closure's rows; a node host for seam A | §7.2, §7.7 |
+| **Not yet** | `finite-fuel-v1` has no world (it follows MT-1a); seam E's fuel block; an operator's admission at the closure's rows; a node host for seam A; `beard2005@2`; K3, chemistry at P, on a branch | §7.2, §7.3, §7.10 |
 
-### 7.2 Charged ATP beside mitochondria: the better answer, and what it needs
+### 7.2 Charged ATP beside mitochondria, against `beard2005@2`
+
+**The set it would use.** `beard2005@2`, as the lead's brief of 20 November describes it, with the
+mito lane's reading note (77e13b4a, on branch mito-lane): @1 plus AMP²⁻, which binds nothing in the
+source, and adenylate kinase's constant K_AK matched in base forms at a declared free Mg²⁺ (0.153
+at 1 mM, 0.389 at 3.81 mM, 0.491 at 5 mM, as the note reads it). It lands with the user's repairs
+ruling and is not in the registry yet. So its moiety weights here are this note's reading (S):
+adenine over ATP, ADP and AMP; phosphorus over Pi, AMP, ADP and ATP, at 1, 1, 2 and 3.
 
 **Yes, in principle.**
-- A world applies `beard2005@1`. Its ATP, ADP, Pi, H⁺, Mg²⁺ and K⁺ rows then carry the set's
-  potentials and forms, as MT-1's will.
-- The expression rows (NTP, NMP, mRNA, amino acid, protein) are the world's own. Their potentials
-  come from the operator's cited entries through seam E, anchored on the set's references.
+- A world applies the set. Its ATP, ADP, Pi, H⁺, Mg²⁺ and K⁺ rows then carry the set's potentials
+  and forms, as MT-1's will, and AMP too where the world declares it.
+- The expression rows (the regulator, NTP, NMP, mRNA, amino acid and protein) are the world's own.
+  Their potentials come from the operator's cited entries through seam E, anchored on the set's
+  references.
 - ATP then has one authority across expression and mitochondria, and §1.5's neutral-lump limit goes.
 
-**Charge per residue (S).**
-- **Translation's fuel,** with AMP folded by adenylate kinase and GTP counted as ATP:
-  4 ATP⁴⁻ → 4 ADP³⁻ + 4 Pi²⁻ + 4 H⁺, water omitted. It conserves charge and the set's adenine and
-  phosphorus moieties.
-- **Transcription:** NTP⁴⁻ plus a chain gives the chain one more residue, with one more negative
-  charge, plus P₂O₇⁴⁻ and H⁺. Then P₂O₇⁴⁻ → 2 HPO₄²⁻.
-- **So the mRNA row carries valence −L.** Whether the field and the ledgers admit a row of valence
-  near −10³ is a question for the capability probe.
+**Charge and moieties per residue (S; water omitted, PPi hydrolysed at once).**
+- **Translation's fuel stays inside the set.**
+  - Aminoacylation: ATP⁴⁻ → AMP²⁻ + 2 Pi²⁻ + 2 H⁺.
+  - The elongation factors' two GTP, counted as ATP: 2 ATP⁴⁻ → 2 ADP³⁻ + 2 Pi²⁻ + 2 H⁺.
+  - With adenylate kinase folded in, the residue's whole draw is 4 ATP⁴⁻ → 4 ADP³⁻ + 4 Pi²⁻ + 4 H⁺.
+  - Each conserves charge and the set's adenine and phosphorus. @1 could carry only the folded
+    form; @2 carries either.
+- **Transcription and recharging still cross the set's boundary.**
+  - Transcription takes the world's NTP⁴⁻ and gives the chain one more residue, with one more
+    negative charge, plus the set's Pi from the PPi, and H⁺. The set's phosphorus rises by 2 per
+    residue.
+  - Recharging, NMP + 2 ATP → NTP + 2 ADP, moves two phosphates from the set's ATP to the world's
+    nucleotide. The set's phosphorus falls by 2.
+  - @2's AMP changes neither, so §7.2's second piece below stands under @2.
+- **The mRNA row carries valence −L,** one charge per phosphodiester. Whether the field and the
+  ledgers admit a row of valence near −10³ is a question for the capability probe.
 
-**Rows (S).** The heredity cell's four (Na⁺, K⁺, M⁻ and P⁻), the set's H⁺, Mg²⁺, ATP, ADP and Pi,
-and six of the world's (the regulator, mRNA, protein, NTP, NMP and amino acid) make 15 of 16, with
-PPi hydrolysed at once.
+**Rows under @2, against the cap of 16 (S).**
 
-**What it needs: an admission for operators at the closure's rows.**
-- The set's ATP, ADP and Pi carry forms, so a closure holds them. The registry refuses every
-  operator that names such a row (`check_two_form_rows`, `species_registry.py`:1392–1432). K1's
-  widening admits kinds only.
-- The protons released are the set's H⁺ row, which the closure also holds where it buffers.
-- **The missing piece is the one options B and F6 need** (§1.3, §4.2): §5.2's base-form admission
-  extended to an operator that declares its moves in base forms with every ligand written out, and
-  a read of the closure's free forms at the operator's half-steps.
-- **With the set, D152 cannot recharge NMP either,** since it would name ATP. Recharging then moves
-  into the expression operator's own routes, or waits for the same admission for D152.
+| World | Ions | The set's rows | The world's rows | Total |
+| --- | --- | --- | --- | --- |
+| A1, one gene, adenylate kinase folded | The heredity cell's four: Na⁺, K⁺, M⁻, P⁻ | H⁺, Mg²⁺, ATP, ADP, Pi | The regulator, mRNA, protein, NTP, NMP, amino acid | 15 |
+| A1, one gene, AMP declared (beside mitochondria's IMS kinase) | Four | The same, and AMP | Six | **16, at the cap** |
+| A1-M polymerase-limited: two templates, transcription only | Four | H⁺, Mg²⁺, ATP, ADP, Pi | mRNA₁, mRNA₂, NTP, NMP | 13 |
+| A1-M ribosome-limited: one mRNA held, swept over amounts | Four | H⁺, Mg²⁺, ATP, ADP, Pi | mRNA, protein, amino acid | 12 |
 
-**It needs a second piece: the set's phosphorus moiety must reach the world's nucleotide rows.**
-- A set's moieties are required over the rows present, and a world may not reuse a set's moiety ID
-  (`with_potential_set`, `species_registry.py`:1072–1082). `beard2005@1`'s phosphorus counts Pi,
-  ADP and ATP only.
-- So a move that passes phosphate between the set's rows and the world's breaks it, and
-  `check_moieties` refuses it (S, from the check's rule). That covers PPi's hydrolysis into the set's
-  Pi, and recharging NMP with ATP. Translation's ATP → ADP + Pi stays within the set and passes.
-- **Two ways:** a new set version that names the nucleotide rows with their weights, derived from
-  cited reaction energies; or a rule that lets a world extend a set's moiety to rows the set does not
-  name, never changing the set's own weights. Only the second also reaches the polymers, each mRNA
-  row carrying L phosphates. Both are the binding owner's.
+- **So the charged build still fits, with no spare row once AMP is declared.** Any further row then
+  goes over: PPi kept as a row, GTP and GDP, or a second gene with its protein.
+- **What changes where a world needs more:** the expression cell carries two background ions (K⁺ and
+  one impermeant anion), not the heredity cell's four. A cell with no channels holds its ions only
+  as inert background. That frees two rows. Otherwise a row must leave, or the cap rises by a D148
+  change with its guard world (D165).
+- The neutral build needs 13 (§2.1).
+
+**AMP's recycling.** If expression made AMP, something in the cell would have to run adenylate
+kinase: chemistry at a node. D152 cannot name ATP once it has forms, and the cycle kind sits on
+patches (§7.3). So expression folds adenylate kinase into its own stoichiometry: a declared
+reduction, exact in net stoichiometry. AMP stays mitochondria's row.
+
+**What it needs: two pieces, as under @1.**
+1. **An admission for operators at the closure's rows.**
+   - The set's ATP, ADP and Pi carry forms, so a closure holds them. The registry refuses every
+     operator that names such a row (`check_two_form_rows`, `species_registry.py`:1392–1432), and
+     K1's widening admits kinds only.
+   - The protons released are the set's H⁺ row, which the closure also holds where it buffers.
+   - This is the piece options B and F6 need (§1.3, §4.2): §5.2's base-form admission extended to
+     an operator that declares its moves in base forms with every ligand written out, and a read of
+     the closure's free forms at the operator's half-steps.
+2. **The set's phosphorus moiety reaching the world's nucleotide and polymer rows.**
+   - A set's moieties are required over the rows present, and a world may not reuse a set's moiety
+     ID (`with_potential_set`, `species_registry.py`:1072–1082).
+   - So a move that passes phosphate between the set's rows and the world's is refused by
+     `check_moieties` (S, from the check's rule). That covers transcription and recharging, as
+     above.
+   - **Two ways:** a new set version naming the nucleotide rows, derived from cited reaction
+     energies; or a rule that lets a world extend a set's moiety to rows the set does not name,
+     never changing the set's own weights. Only the second reaches the polymers, each mRNA row
+     carrying L phosphates. Both are the binding owner's.
 
 **Owners and effort.** The binding owner (`registry/species_registry.py`) and the operators owner
-(`operators/contract.py`). About 3–4.5 agent-days for both pieces (estimate).
+(`operators/contract.py`). About 3–4.5 agent-days for both pieces (estimate). When the built form
+is fixed is §7.4's question.
 
-**Recommendation (S).** Write the sheet once, charged, on `beard2005@1`.
-- If both pieces have landed when A starts, build A charged.
-- Otherwise build the sheet's declared neutral reduction (§1.5), and register it as a reduction. It
-  composes with no world that applies the set.
+### 7.3 Why an operator, not a kind
 
-### 7.3 The operator's moiety hook
+Kinds are now admitted at a closure's rows: K1's moved fuel, and the binder-form deferral, under
+base-form laws that read the closure. Could the cycle kind host templated polymerisation, or its
+fuel-consuming part, and so remove G5's first piece? **Not as the kind stands at e0b1d3b8.**
+1. **State.** A population holds no cycle state. Its lumped forms give a steady-state flux,
+   J = k a S (1 − e^x) per population: "It holds no cycle states" (MOLECULAR_MACHINES §1.2).
+   Templated polymerisation needs state: engaged machines and residues in transit through m stages,
+   whose delay is A's first observable.
+2. **Machine identity.** A population's capacity is a declared k, in fmol of cycles per second,
+   times its scheduled availability (`kinds/transporter.py`:16–28, :64). It is not a conserved pool
+   that complexes draw on and return to. So free plus engaged equals total, and A1-M's saturation
+   J = kTM/(1 + kTτ), cannot be written.
+3. **Transit pools.** Monomers consumed but not yet in a product must be held, with a ledger,
+   between steps. A kind moves rows within the stage it acts in, and holds nothing between steps.
+4. **Hosts.** "This pass's limits on the axis: hosts are membrane patches" (`kinds/transporter.py`:12).
+   A soluble polymerase or ribosome needs a node host (MOLECULAR_MACHINES's N2), which is not built.
+   K3 brings chemistry at P, still on a patch.
+5. **The fuel draw alone.** Splitting the fuel chemistry off into a kind breaks the per-residue
+   coupling. Four ATP per residue is stoichiometry. A kind's rate comes from its own kinetics, and
+   it cannot read the operator's elongation flux, which lives in the operator's half-steps.
+   - Stateless node chemistry that is not tied to each residue could become a kind's on a node host:
+     adenylate kinase, say.
+   - That would not remove the operator's own per-residue draw.
+
+**So G5's first piece stays.** A node host for seam A (N2; 0.5–1 day in MOLECULAR_MACHINES §7) is
+worth naming as a later piece for stateless node chemistry, not as a replacement.
+
+### 7.4 The built form is fixed at the sheet's tag
+
+References and registration come before any engine output. So the form A is judged in is fixed when
+the sheet is tagged, not when G4 starts. Two orders:
+
+| | (i) A registers the neutral reduction; the charged form is a later arm, registered on its own | (ii) A waits for G5 and `beard2005@2`, and is built charged |
+| --- | --- | --- |
+| Starts | When two seats are free | After G5's two pieces and @2 land. They are the binding owner's, on MT-1's path (D234, D235), with no date |
+| References | Written once from the sheet, for both forms, at G2's tag | The same |
+| Registrations | Two: A now, the charged arm later, against G2's tagged references | One |
+| What A's judged items test | The chain, the account and machine sharing. None depends on charge while pH and free Mg²⁺ are held | The same, plus what the charged world lets drift |
+| Composes with mitochondria's worlds | From the charged arm on | From the start |
+| Its risk | The charged arm may find what the neutral form cannot see: pH or Mg²⁺ drift, or a valence of −L | It waits on pieces with no date, for judged items that gain nothing from charge |
+
+**Recommended: (i).** A's judged claims are numerical, and none depends on charge under its declared
+conditions. So waiting buys none of A's claims. The charged arm's content, drift and composition
+with mitochondria, is what (i) registers later, against the same references.
+
+**Either way, the sheet's check shows the reduction is exact (S).**
+- **The potentials.** Each neutral row's standard potential is its charged base form's, transformed
+  at the declared pH and free Mg²⁺: μ′° = μ°(base) − RT ln P(h, [Mg]), P the row's binding
+  polynomial, plus its proton term. These are Alberty's transformed potentials (named from memory,
+  not read), and the registry's named sets make the same split through `dG_RT_offset`.
+- **The free energies.** For every move, the check computes ΔG in both forms over a grid of states at
+  the declared pH and free Mg²⁺, and shows them equal to rounding.
+- **The charge.** Every charged move conserves charge, so a node's charge and the field see no
+  difference.
+- **The rates.** Laws written on totals, or on free forms at a fixed fraction of the total, give the
+  same flux in both forms.
+- **So** every judged quantity is the same in both forms in a world whose pH and free Mg²⁺ are held.
+  The charged arm adds what happens when they are not.
+
+### 7.5 The two equation-shaping choices, settled before the sheet's tag
+
+**Where recharging lives: in the operator, as a route of its own** (recommended, S).
+1. **One account.** It closes the nucleotide loop in the operator's conversion ledger. Residues
+   leave NTP for the chain, return as NMP at degradation, and become NTP again.
+2. **One writer.** It keeps one writer of the NTP and NMP rows, so D152's one-writer rule needs no
+   new ruling.
+3. **The charged arm needs it there.** In the charged form D152 cannot name ATP at all. In the
+   operator, recharging rides on G5's first piece, which A's charged arm needs anyway.
+4. **It stays general.** One phosphoryl-transfer law, NMP + 2 ATP → NTP + 2 ADP, lumps the two
+   kinases. It carries its cited ΔG° as a `FreeEnergyEntry` and the same saturating draws, beside
+   the synthesis and degradation routes.
+- **Against:** chemistry inside a polymerisation operator overlaps D152's role. It is bounded to the
+  operator's own nucleotide rows, and D152 keeps every other reaction.
+- **Fuel regeneration, ADP to ATP, is not the operator's.**
+  - A1 declares finite pools sized so that the draws stay saturated over the horizon, with no
+    regenerator. So no other operator writes the fuel rows, and A needs no two-writer ruling.
+  - A world that adds a regenerator later brings that question back to the lead. That would be D152
+    on the neutral form, or mitochondria's synthase, a kind, on the charged form.
+
+**Per-residue terms, or a raised affinity-share cap: per-residue terms** (recommended, S, from the
+code).
+- **The physics.** One residue added is the elementary step, with affinity x_r. A stage of r = L/m
+  residues lumps r of them, so its net flux carries the per-residue factor (1 − e^{x_r}), not
+  (1 − e^{r x_r}).
+- **The share is the same factor.** The monomial form's share term, −log Σ_{i<n} e^{ix/n}, makes
+  S(1 − e^x) equal S′(1 − e^{x/n}). With n = r the two choices are one law. They differ only in
+  where it lives and what it costs.
+- **A raised cap costs every monomial world as built.**
+  - `monomial_logs` carries the share as a static axis, `xp.arange(MAX_SHARE)`, in an [M, I, P]
+    array for every mode of every monomial population (`laws/cycles/forms.py`:1408–1418).
+  - Raising MAX_SHARE from 8 to r, of order 10²–10³, multiplies that work and memory everywhere. It
+    also changes every monomial program, so crossrev moves: a new ID or a D148 round, on the kinds
+    owner's file.
+  - The geometric sum, Σ_{i<n} e^{ix/n} = (1 − e^x)/(1 − e^{x/n}), would remove the axis. But it is
+    a new kernel, and it needs care near x = 0, where the sum tends to n.
+- **Per-residue terms cost nothing outside A.**
+  - A's own law writes each stage's flux with x_r, and books the moved amounts of r residues with
+    their exact ΔG.
+  - It declares a one-sided domain: x_r below a declared bound. A stage that would run back through
+    initiation is refused, never repaired.
+- **What A can still reuse:** the monomial form's data for its saturating draws (orders, saturating
+  factors, constants cited in kJ/mol), at share 1.
+- **The desk question for the kinds owner, after K3:**
+  1. May an operator call `monomial_logs` at share 1?
+  2. For laws elsewhere with n above 8, is the geometric closed form wanted?
+
+### 7.6 The operator's moiety hook
 
 **What (S).** `species_moieties(declaration)` joins `species_identities`, `species_potentials` and
 `standard_free_energies` in the operator contract (`operators/contract.py`:500–518), with the
@@ -1195,7 +1341,7 @@ crossrev, is the operators owner's call.
 - **A's operator** implements it, as its first consumer.
 - About 0.5–1 agent-day for the hook and the check (estimate).
 
-### 7.4 The mitochondria pattern, for A
+### 7.7 The mitochondria pattern, for A
 
 MT-1's pattern (CORE_LAWS_ROADMAP §2.4):
 - its declared equations, the lane's laws appendix with its own check, tagged
@@ -1216,22 +1362,33 @@ tag before the next starts.
      recharging;
    - the machine identity and the account identities;
    - every declared, uncited value, labelled, and every reduction (the lumps), declared;
-   - the charged form on `beard2005@1`, with the neutral reduction as its declared variant.
+   - both forms: the charged one, and the neutral reduction that A registers (§7.4);
+   - the two choices of §7.5: recharging as the operator's own route, and per-residue terms.
+
+   **It is symbolic in the potentials.** It writes each row's μ° as a symbol and each cited reaction
+   energy with its source, and it names no set version. A world names `beard2005@1` or `@2` only at
+   registration, so G1 does not wait for the user's repairs ruling.
 
    Its own check, `validation/gene_regulation/sheet_check.py` (new), does what `appendix_check.py`
-   does for MT-1: every move conserves charge and every moiety in integers, each entry's ΔG° follows
-   from the declared potentials, and planted errors are caught. **Tag:** `gr1-sheet-<date>`.
+   does for MT-1:
+   - every move conserves charge and every moiety in integers;
+   - each entry's ΔG° follows from the declared potentials;
+   - the reduction is exact, as §7.4 sets out;
+   - planted errors are caught.
+
+   **Tag:** `gr1-sheet-<date>`.
 2. **The code-blind references,** by a fresh agent that reads the sheet alone: no code, no model file
-   and no engine output. They are R-chain, R-account, R-share, R-machine (§7.5) and R-noise, in
-   `validation/gene_regulation/references/` (new). **Tag:** `gr1-references-<date>`, before any
-   engine output.
-3. **Registration** of the protocol (`validation/gene_regulation/protocols/`, new): its judged items
-   and tolerances, its arms and plants, and its non-claims (§7.6). It is registered and tagged before
-   the engine runs any of its worlds.
+   and no engine output. They are R-chain, R-account, R-share, R-machine (§7.8) and R-noise, for both
+   forms, in `validation/gene_regulation/references/` (new). **Tag:** `gr1-references-<date>`,
+   before any engine output.
+3. **Registration** of A's protocol (`validation/gene_regulation/protocols/`, new), in the neutral
+   form (§7.4): its judged items and tolerances, its arms and plants, and its non-claims (§7.9). It is
+   registered and tagged before the engine runs any of its worlds. The charged arm registers later,
+   against the same tagged references.
 4. **The engine work** lands as development, compared against the references in every gate.
 5. **The judged run,** once, from a clean snapshot.
 
-### 7.5 The arms
+### 7.8 The arms
 
 **A1, the expression unit.**
 - One gene, open loop, in a cell with no channels.
@@ -1262,7 +1419,7 @@ tag before the next starts.
 - It waits on the producer admitting a precursor that the operator writes, and on FR-7's own
   protocol.
 
-### 7.6 What A does not claim (registered)
+### 7.9 What A does not claim (registered)
 
 The protocol's scope lists these as non-claims, so that no reader takes them as tested.
 1. **No biological claim.** Every judged item is numerical, against exact references. No dataset is
@@ -1289,7 +1446,7 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
 10. **A2 is development.** It makes no claim on FR-7's loop, on Vm or on FR-8's timescales.
 11. **No gene-network layer.** No regulatory network is judged, and D218's door is not exercised.
 
-### 7.7 The build plan (estimate)
+### 7.10 The build plan (estimate)
 
 | Step | Owner | Files | Agent-days |
 | --- | --- | --- | --- |
@@ -1297,26 +1454,32 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
 | G2. The references; their tag | A fresh references agent (a new seat), reading the sheet only | `validation/gene_regulation/references/` (new) | 2–3 |
 | G3. The moiety hook | The operators owner; the binding owner for `check_moieties` | `operators/contract.py`; `registry/species_registry.py` | 0.5–1 |
 | G4. The operator and its laws | The lane agent | `operators/templated_polymerisation.py` (new). Law modules under `laws/` (new); the F owner says whether they take an interface of their own. One row in `operators/species_regulated_availability.py`, a recorded exception naming the operators owner, as F3's was | 5–7 |
-| G5. Charged fuel (charged build only): operators admitted at the closure's rows, and the set's phosphorus moiety reaching the world's rows | The binding owner; the operators owner | `registry/species_registry.py`; `operators/contract.py` | 3–4.5 |
+| G5. For the later charged arm: operators admitted at the closure's rows, and the set's phosphorus moiety reaching the world's rows | The binding owner; the operators owner | `registry/species_registry.py`; `operators/contract.py` | 3–4.5 |
 | G6. Worlds, the protocol with its non-claims, registration, and the judged run | The lane agent; the lead registers | `validation/gene_regulation/` (new) | 1.5–2.5, plus CPU minutes |
 | A2's producer edit (development) | The operators owner, who carries FR-7 (D234) | `operators/population_unit_turnover.py` | About 0.5 |
 
-**The order.** G1, then G2, each with its tag. G3 and G5 run beside them. The protocol's
-registration (G6) needs only G2's tag, and it comes before any run of the protocol's worlds. So G4's
-development tests use other worlds, and the judged run comes last.
+**The order (§7.4's (i)).**
+- G1, then G2, each with its tag. G3 runs beside them.
+- A's registration, in the neutral form, needs only G2's tag, and comes before any run of its
+  worlds. So G4's development tests use other worlds, and A's judged run comes last.
+- The charged arm follows G5 and `beard2005@2`: its own registration, against G2's tagged
+  references, then its judged run.
 
 **In all:**
-- **Effort:** about 10.5–15.5 agent-days for the neutral build, or 13.5–20 charged.
-- **Elapsed:** about 6–9 working days with two new seats (estimate).
+- **Effort:** about 10.5–15.5 agent-days for A. The charged arm adds G5 and its own registration and
+  run, about 4–6 more (estimate).
+- **Elapsed:** about 6–9 working days for A with two new seats (estimate).
 
 **Seats.** Two new seats: the lane agent (substantial coding) and the fresh references agent. The
 operators and binding owners join part-time. The lead counts them within seven, as D235 says: "starts
 when seats free".
 
-**What the lead rules before G4:**
-- Recharging. The neutral build's D152 recharging needs the two-writer ruling (§2.4). In the charged
-  build, recharging lives in the operator.
-- The sheet's name and its folder.
+**Settled before the sheet's tag (§7.5):** recharging lives in the operator, and A's worlds declare
+no fuel regenerator, so A needs no two-writer ruling. Per-residue terms need no change to the
+monomial form.
+
+**Still the lead's before G1:** the sheet's name and its folder; and the desk question for the kinds
+owner after K3 (§7.5).
 
 **Tests (D224):**
 - the kernels as rows of a parametrized pure-function test;
@@ -1326,8 +1489,8 @@ when seats free".
 
 **Risks:**
 - the numerical method under machine sharing and saturating draws (§2.3);
-- the timing of G5's two pieces, for the charged build;
-- the 16-row cap, at 15 rows charged;
+- the timing of G5's two pieces, for the charged arm;
+- the 16-row cap: the charged arm is at 16 rows with AMP declared (§7.2);
 - the per-residue potentials' sources;
 - a valence of −L on the mRNA row.
 
@@ -1337,8 +1500,12 @@ when seats free".
 - `registry/species_registry.py`: the named sets and `beard2005@1`, the moieties and
   `check_moieties`, `check_two_form_rows` and its deferral to the closure.
 - `registry/kind_registry.py`: `FreeEnergyEntry`.
-- `laws/cycles/forms.py`: the monomial form.
+- `laws/cycles/forms.py`: the monomial form and `monomial_logs`' share axis.
+- `kinds/transporter.py`: the population axis's hosts, capacity and schedules.
 - `operators/contract.py`: the species hooks.
+- `beard2005@2` as the lead's brief of 20 November describes it, with the mito lane's reading note on
+  K_AK (77e13b4a, `validation/mitochondria/beard2005_cardiac.py`, branch mito-lane). The set itself
+  is not in the registry yet.
 - `operators/species_regulated_availability.py`: the routable-target table.
 - The commits 4704abd1 (K1) and 80f9f837 (the deferral), and D235.
 - CORE_LAWS_ROADMAP §2.4, on main.
