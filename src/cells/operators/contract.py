@@ -516,6 +516,17 @@ class Operator:
         declaring those, as today's check reads them."""
         return ()
 
+    def species_moieties(self, declaration):
+        """The net moves of the species rows it converts (docs/GENE_REGULATION_DESIGN.md §7.6):
+        ((move name, ((species, nu), ...)), ...), each move's net change of the model's rows per
+        unit of its progress (a finished product, a molecule degraded, a turnover), nu nonzero
+        integers, products positive; (). Material it holds in its own pools between the rows (a
+        chain's residues in transit) is left out: its own ledgers close it. The species registry's
+        check_moieties refuses a move that changes a declared moiety, naming the operator and the
+        move, as it refuses a kind's mode or a free-energy entry; so a weight the operator assumes
+        (the residues of a polymer row) that differs from the model's moiety shows as a change."""
+        return ()
+
     def view_events(self, spec, declaration, schedule):
         """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
         each entity one {set id: entity id} ("from" optional). The default gives the births and
