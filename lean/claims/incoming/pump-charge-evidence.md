@@ -1,0 +1,25 @@
+# Pump stoichiometry and charge
+
+Take positive ion transfer and positive current as outward from the cytosol. Ion stoichiometry counts molecules transported per ATP. Net transferred charge sums the signed fluxes weighted by their valences.
+
+## Na⁺/K⁺-ATPase
+
+**Rakowski, Gadsby and De Weer (1989), Table I, Na-free seawater block, columns 7–11, and Figures 10–11.** Voltage-clamped, internally dialyzed *Loligo pealei* squid giant axons were studied at 17–18 °C. For the hyperpolarized group (−60 to −90 mV), the simultaneous dihydrodigitoxigenin-sensitive components were **+27.8 ± 1.2 pmol Na⁺ cm⁻² s⁻¹** outward (²²Na efflux) and **+0.93 ± 0.05 μA cm⁻²** outward (clamp current). The paper reports **3.05 ± 0.13 Na⁺ per net elementary charge** from the paired, area-corrected ratios (mean ± SEM, `n = 6` determinations, including two uncorrected points in that column). Figure 10, episode b, shows one −80 mV pairing of +23.0 pmol cm⁻² s⁻¹ and +0.698 μA cm⁻². Its bath contained 10 mM K⁺ and nominally 0 mM Na⁺, while the internal dialysis solution contained 52 mM Na⁺ and 5 mM ATP with ATP-regenerating substrates. [Rakowski et al., Journal of General Physiology](https://rupress.org/jgp/article-abstract/93/5/903/27761/Stoichiometry-and-voltage-dependence-of-the-sodium?redirectedFrom=fulltext)
+
+**Interpretation.** If the measured pump charge is carried by Na⁺ and K⁺ alone in this forward cycle, `I/F = J_Na,out − J_K,in`. The measured ratio implies **1.49 ± 0.03 outward Na⁺ per inward K⁺** (calculated as `r/(r − 1)`, with first-order propagation of the reported SEM). This potassium ratio is inferred. The axon experiment supplied ATP and did not measure its hydrolysis. In a separate preparation, Garrahan and Glynn (1967, abstract result 2) measured ouabain-sensitive Na⁺ loss and ATP hydrolysis in resealed red-cell ghosts with a Na-free, K-containing bath, yielding **about three Na⁺ out per ATP**. Together these measurements support comparing the Cells forward stoichiometry `(Na, K) = (+3, −2)` per ATP and its charge of **+1 e per ATP** with the forward-pump data. A current check alone constrains the difference of the two ion transfers. [Garrahan and Glynn, Journal of Physiology](https://physoc.onlinelibrary.wiley.com/doi/10.1113/jphysiol.1967.sp008297)
+
+At **390 mM external Na⁺ and 0 mV**, Table I reports **2.72 ± 0.09 Na⁺ per net elementary charge** (SEM, `n = 7`, `p ≈ 0.02` versus 3). The authors proposed that residual K⁺-channel current from periaxonal K⁺ reaccumulation after pump block inflated the measured current change. Their estimate that **0.1 μA cm⁻²** would explain the discrepancy is a calculation. The Na-free measurement tests the fixed count ratio, but nominal zero external Na⁺ lies outside the Cells law’s strictly positive activity domain because its electrochemical drive uses `log(a_Na,out)`. [Rakowski et al., Table I and Discussion, pp. 935–936](https://rupress.org/jgp/article-abstract/93/5/903/27761/Stoichiometry-and-voltage-dependence-of-the-sodium?redirectedFrom=fulltext)
+
+## Plasma-membrane Ca²⁺-ATPase
+
+**Salvador et al. (1998), Table I, Control column with calmodulin, and Figures 2–4.** Purified pig-brain synaptosomal PMCA was reconstituted in proteoliposomes at a lipid-to-protein ratio of 150:1 by mass. At 25 °C, pH 7.1, with 5 mM MgCl₂, calmodulin and 0.2 mM external ATP, the initial rates in separate assays were as follows. For the active orientation the ATP-facing bath corresponds to cytosol, and the vesicle lumen corresponds to the extracellular side. [Salvador et al., Journal of Biological Chemistry, Table I and Methods](https://www.jbc.org/article/S0021925818804203/pdf)
+
+| Observable | Rate (μmol mg protein⁻¹ min⁻¹) | Measurement |
+| --- | ---: | --- |
+| ATP consumed | 0.43 ± 0.02 | ATPase activity from coupled NADH absorbance |
+| Ca²⁺ outward, into lumen | +0.44 ± 0.01 | Loss of bath Ca²⁺ from calibrated arsenazo III absorbance |
+| H⁺ inward, out of lumen | −0.26 ± 0.05 | Calibrated intraluminal alkalinization from trapped pyranine fluorescence |
+
+The table gives the displayed uncertainties without specifying their type. Ratios of the reported means give **1.02 Ca²⁺ per ATP** and **0.59 H⁺ per Ca²⁺**, consistent with the authors’ rounded 1:1 ATP/Ca²⁺ and 1:0.6 Ca²⁺/H⁺. Those rates imply **about +1.4 e per ATP** for Ca²⁺ and H⁺ combined. Figure 5 independently records **+19 ± 2.1 mV lumen-positive** at steady state using calibrated oxonol VI. This is a voltage in an assay that includes FCCP. It establishes the direction of net charge displacement under that assay and gives no direct charge-per-ATP value. [Salvador et al., Figures 4–5 and Results](https://www.jbc.org/article/S0021925818804203/pdf)
+
+**Cells comparison.** The Ca²⁺/ATP measurement supports the Cells transfer of **one Ca²⁺ outward per ATP**. The Ca²⁺-only Cells charge ledger is **+2 e per ATP**. The measured inward H⁺ flux reduces the net biological charge in this preparation. A tissue-current comparison needs the proton flux represented in the pump or otherwise accounted for at the same boundary.

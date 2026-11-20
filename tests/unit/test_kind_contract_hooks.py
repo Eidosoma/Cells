@@ -6,7 +6,8 @@ with a planted error it must catch (D187):
   registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
   without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds);
-  today's built-in kinds declare none and register as before;
+  today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
+  (K2), and register as before;
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
   heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
 - a kind's missing partition roles are its state, layout and control fields with none, on a bound
@@ -40,12 +41,16 @@ with a planted error it must catch (D187):
   that is no hook, refused at binding);
 - a kind's standard free energies are () by default and checked when read: a tuple of
   FreeEnergyEntry, each naming the law and mode that produced it, a law the kind hosts with a
-  general form and a mode it has, or neither; today's 3-tuples still read, transitionally, as
-  entries that name no law (planted, each refused, naming the entry: a list, a mapping, a
-  four-item tuple, a bare species, a zero coefficient, a repeated species, an empty
-  stoichiometry, a non-finite energy, a zero and a negative c0, a law without its mode, a mode
-  without its law, a law another kind hosts, an unregistered law, a version-1 law, a mode the
-  form lacks, and a hook that is not a callable, refused at registration);
+  general form and a mode it has, or neither, and giving dG° in exactly one form, dG°/RT or, as a
+  law citing kJ/mol does, dG° in kJ/mol with its temperature basis (D234's option (b)) (planted,
+  each refused, naming the entry: a list, a mapping, a bare 3-tuple, refused since every kind
+  declares entries, a four-item tuple, a bare species, a zero coefficient, a repeated species, an
+  empty stoichiometry, a non-finite energy, a zero, a negative and a missing c0, a law without
+  its mode, a mode without its law, a law another kind hosts, an unregistered law, a version-1
+  law, a mode the form lacks, both forms, neither, a kJ/mol value without its basis, an unknown
+  basis, a non-finite and a bool kJ/mol value, a basis beside dG°/RT, an offset beside dG°/RT,
+  a NaN and a bool offset, and a hook that is not a callable, refused at registration); an entry
+  with a temperature-free offset in RT units beside its kJ/mol value (a pH 7 value's) reads;
 - a kind's role_species is None by default, not refused by its reader, and where set gives one
   EntityBinding per entity: a cycle law the kind hosts, exactly that law's roles bound to species
   IDs (a version-1 law's moves and a general form's "role@end" rows read as their roles), a node
@@ -55,7 +60,14 @@ with a planted error it must catch (D187):
   extra role, a non-string species, an empty role, a form's missing end, a moves-only law's
   missing inside and its missing outside (MOVES_ENDS: its counts land there with the opposite
   sign), a non-string node, a missing count, a string, a bool and an infinite value, and a hook
-  that is not a callable, refused at registration).
+  that is not a callable, refused at registration);
+- a kind's arrays match the axes it declares where the host binds them (D228 item 6): each field
+  with one dimension per declared axis, the host's axes at the host's lengths (axis_sizes), its own
+  and internal axes at one length, and only a dispatch mask empty along them (planted, each
+  refused: dispatch masks that are a list, repeated, not a field, or a scalar; a host field off
+  its axes and two disagreeing on one; a field of the wrong rank, a host axis at another length,
+  an own axis at two lengths, an empty field that is no mask, a mask at a wrong nonzero length,
+  and an internal axis at two lengths).
 """
 
 import math
@@ -63,6 +75,7 @@ import re
 from dataclasses import replace
 from types import MappingProxyType
 
+import numpy as np
 import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
@@ -139,10 +152,13 @@ def test_seam_declarations_are_checked_at_registration():
         assert kind_registry.declaration_errors(kind), name
         with pytest.raises(ValueError, match=PLANTED_ID):
             kind_registry.KindRegistry().register(kind)
-    # Today's built-in kinds declare none, and register on BUILTIN as before.
+    # Today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
+    # (K2), and register on BUILTIN as before.
+    bookings = {"cells.transporter@1": ("trapezoid_nonnegative@1",)}  # K2, D234's Option 2.
     for kind in kind_registry.active().model_keys().values():
         assert kind_registry.declaration_errors(kind) == [], kind.kind_id
-        assert kind.energy_roles == {} and kind.heat_bookings == () and kind.ledgers is None
+        assert kind.heat_bookings == bookings.get(kind.kind_id, ()), kind.kind_id
+        assert kind.energy_roles == {} and kind.ledgers is None, kind.kind_id
 
 
 def test_an_undeclared_field_takes_the_suffix_rule_and_a_declaration_overrides_it():
@@ -335,18 +351,33 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
     )
     plain = entry(hydrolysis, -12.3, 1000.0)  # Names no law: an operator's reaction, say.
     coupled = entry(hydrolysis, -12.3, 1000.0, "tests.booked_formed_cycle@1", "coupled")
-    assert (plain.law_id, plain.mode) == (None, None)
+    assert (plain.law_id, plain.mode, plain.dG_kJ_mol, plain.dG_basis) == (None,) * 4
+    # A law citing kJ/mol gives dG° so, with its basis, and no temperature (D234's option (b)).
+    cited = entry(
+        hydrolysis,
+        c0=1000.0,
+        dG_kJ_mol=-30.5,
+        dG_basis=kind_registry.TEMPERATURE_INDEPENDENT,
+        law_id="tests.booked_formed_cycle@1",
+        mode="coupled",
+    )
+    assert cited.dG_RT is None and kind_registry.DG_BASES == ("temperature_independent",)
+    assert plain.dG_RT_offset == cited.dG_RT_offset == 0  # Temperature-free part: none by default.
+    # A value cited at pH 7: its temperature-free part, here nu_H ln 10^7, beside the kJ part.
+    at_ph7 = cited._replace(dG_RT_offset=math.log(1e7))
     assert kind_registry.kind_standard_free_energies(planted(), ()) == ()
-    kind = planted(standard_free_energies=lambda declaration: (plain, coupled))
+    kind = planted(standard_free_energies=lambda declaration: (plain, coupled, cited, at_ph7))
     assert kind_registry.declaration_errors(kind) == []
     with law_registry.scope(law_registry.BUILTIN.extended(formed, version_1, elsewhere)):
-        assert kind_registry.kind_standard_free_energies(kind, ()) == (plain, coupled)
-        # Transitional, until the kinds owner's transporter hook gives entries: today's 3-tuple
-        # still reads, as an entry that names no law.
-        legacy = planted(standard_free_energies=lambda declaration: ((hydrolysis, -12.3, 1000.0),))
-        assert kind_registry.kind_standard_free_energies(legacy, ()) == (plain,)
+        assert kind_registry.kind_standard_free_energies(kind, ()) == (
+            plain,
+            coupled,
+            cited,
+            at_ph7,
+        )
         plants = (  # Each refused when read, naming the entry.
             ([plain], "returns a tuple of FreeEnergyEntry"),
+            (((hydrolysis, -12.3, 1000.0),), "returns a tuple of FreeEnergyEntry"),  # Bare.
             ((dict(plain._asdict()),), "returns a tuple of FreeEnergyEntry"),
             (((hydrolysis, -12.3, 1000.0, "x"),), "returns a tuple of FreeEnergyEntry"),
             ((plain._replace(stoichiometry=(("ATP",),)),), "entry 0: its stoichiometry"),
@@ -362,6 +393,22 @@ def test_standard_free_energies_are_none_by_default_and_checked_when_read():
             ((coupled._replace(law_id="tests.unregistered@1"),), "is not a cycle law it hosts"),
             ((coupled._replace(law_id="tests.booked_cycle@1"),), "is a version-1 law"),
             ((coupled._replace(mode="uncoupled"),), "form has no mode 'uncoupled'"),
+            # Exactly one form: both, neither, and each form's own refusals.
+            ((cited._replace(dG_RT=-12.3),), "entry 0: it gives its dG° in exactly one form"),
+            ((plain._replace(dG_RT=None),), "it gives its dG° in exactly one form"),
+            ((cited._replace(dG_basis=None),), "its dG_kJ_mol gives its basis, one of"),
+            ((cited._replace(dG_basis="vant_hoff"),), "not 'vant_hoff'"),
+            ((cited._replace(dG_kJ_mol=math.nan),), "its dG° in kJ/mol is finite"),
+            ((cited._replace(dG_kJ_mol=True),), "its dG° in kJ/mol is finite"),
+            (
+                (plain._replace(dG_basis=kind_registry.TEMPERATURE_INDEPENDENT),),
+                "qualifies a dG_kJ",
+            ),
+            ((cited._replace(c0=None),), "its c0 is finite and positive"),
+            # The temperature-free offset: beside dG_kJ_mol alone, finite, not a bool.
+            ((plain._replace(dG_RT_offset=1.0),), "its dG_RT_offset belongs beside a dG_kJ_mol"),
+            ((cited._replace(dG_RT_offset=math.nan),), "its dG_RT_offset is finite"),
+            ((cited._replace(dG_RT_offset=True),), "its dG_RT_offset is finite"),
         )
         for declared, words in plants:
             planted_kind = planted(standard_free_energies=lambda d, declared=declared: declared)
@@ -666,3 +713,70 @@ def test_role_species_binds_each_entity_s_law_and_is_checked_when_read():
                 kind_registry.kind_role_species(planted_kind, ())
     with pytest.raises(ValueError, match=PLANTED_ID):
         kind_registry.KindRegistry().register(planted(role_species=entities))
+
+
+def test_a_kind_s_arrays_match_the_axes_it_declares_where_the_host_binds_them():
+    """F's array-axes check (D228 item 6): where @3 binds a kind's initial state and layout, each
+    field's array has its declared axes, @3's at @3's lengths, the kind's own at one length, and
+    only a dispatch mask may be empty along them."""
+    kind = present_kind(
+        layout_fields=("booked_host", *MASKS, "booked_rate", "booked_scale"),
+        field_axes={
+            "booked_host": ("booked_route",),
+            **dict.fromkeys(MASKS, ("booked_route",)),
+            "booked_rate": ("species", "booked_route"),
+            "booked_scale": (),
+            "booked_availability": (),
+        },
+        dispatch_masks=("booked_open",),
+    )
+    assert kind_registry.declaration_errors(kind) == [] and planted().dispatch_masks == ()
+    for masks, words in (  # Planted, each refused at registration.
+        (["booked_open"], "a tuple of distinct field names"),
+        (("booked_open", "booked_open"), "a tuple of distinct field names"),
+        (("booked_elsewhere",), "dispatch mask booked_elsewhere: one of its state or layout"),
+        (("booked_availability",), "dispatch mask booked_availability: one of its state or"),
+        (("booked_scale",), "dispatch mask booked_scale: one of its state or layout fields"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            kind_registry.KindRegistry().register(replace(kind, dispatch_masks=masks))
+    host = {"amounts": ("species", "cell_slot"), "heat": ("membrane_slot",)}
+    sizes = kind_registry.axis_sizes(host, {"amounts": np.zeros((3, 2)), "heat": np.zeros(4)})
+    assert sizes == {"species": 3, "cell_slot": 2, "membrane_slot": 4}
+    with pytest.raises(ValueError, match=re.escape("amounts has shape (3,), not its axes")):
+        kind_registry.axis_sizes(host, {"amounts": np.zeros(3)})
+    with pytest.raises(ValueError, match="axis species has lengths 3 and 4"):
+        kind_registry.axis_sizes(
+            {"a": ("species",), "b": ("species",)}, {"a": np.zeros(3), "b": np.zeros(4)}
+        )
+    routes, modes = 5, 2
+    state = {"booked_dissipated_energy_pJ": np.zeros((routes, modes))}
+    layout = {
+        "booked_host": np.zeros(routes, dtype=int),
+        **{mask: np.zeros(routes, dtype=bool) for mask in MASKS},
+        "booked_rate": np.zeros((3, routes)),
+    }
+    kind_registry.refuse_misshapen(kind, "initial values", state, layout, sizes)
+    empty = {**layout, "booked_open": np.zeros(0, dtype=bool)}  # A dispatch mask may be empty.
+    kind_registry.refuse_misshapen(kind, "initial values", state, empty, sizes)
+    for changes, words in (  # Planted, each refused, naming the field.
+        (dict(booked_rate=np.zeros(3)), "booked_rate binds shape (3,), not its declared axes"),
+        (dict(booked_rate=np.zeros((2, routes))), "axis species has length 2, not the host's 3"),
+        (dict(booked_present=np.zeros(4, dtype=bool)), "booked_present's axis booked_route has"),
+        (dict(booked_present=np.zeros(0, dtype=bool)), "booked_present's axis booked_route has"),
+        (dict(booked_open=np.zeros(3, dtype=bool)), "booked_open's axis booked_route has length 3"),
+    ):
+        with pytest.raises(ValueError, match=re.escape(words)):
+            kind_registry.refuse_misshapen(
+                kind, "initial values", state, {**layout, **changes}, sizes
+            )
+    with pytest.raises(
+        ValueError, match=re.escape("booked_mode has length 3")
+    ):  # An internal axis.
+        kind_registry.refuse_misshapen(
+            replace(kind, state_axes=(*kind.state_axes, ("booked_work_pJ", ("booked_mode",)))),
+            "initial values",
+            {**state, "booked_work_pJ": np.zeros(3)},
+            layout,
+            sizes,
+        )

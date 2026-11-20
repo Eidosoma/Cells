@@ -4,6 +4,8 @@
 
 /** On a tall screen, how many families stand side by side at most. */
 export const PER_BAND = 6;
+/** A slot's height in the inner model's rack while its lines have room; what is written under a slot shrinks with it below this. */
+export const SLOT_H = 0.42;
 
 export const WIDE = {
   bar: { w: 1.3, d: 0.22, col: 1.5, gap: 0.32, height: 9, pitchMax: 0.3, z: -3, base: 7.8 },
@@ -49,12 +51,23 @@ function frameBoxes(library, narrow) {
       }
       const rows = frame.rows || [];
       if (frame.kind === "inner model") {
-        const rowH = (cursor - y - 0.25) / Math.max(1, rows.length);
-        const labelW = narrow ? 2.4 : 2.7, slotW = narrow ? 0.92 : 1.02, slotH = Math.min(0.42, rowH * 0.62);
+        const labelW = narrow ? 2.4 : 2.7, slotW = narrow ? 0.92 : 1.02, gapW = 0.12;
+        // How many slots stand on a line, between the row's name and the frame's far upright. A row with more (its
+        // free socket counted) goes on onto further lines under its first, and the rack's height is shared by lines,
+        // not by rows: a row of any length stays inside its frame, and the slots keep their width.
+        const perLine = Math.max(1, Math.floor((w - labelW - 0.3 + gapW) / (slotW + gapW)));
+        const linesOf = (row) => Math.max(1, Math.ceil((row.pieces.length + (row.next_code !== undefined ? 1 : 0)) / perLine));
+        const lineH = (cursor - y - 0.25) / Math.max(1, rows.reduce((sum, row) => sum + linesOf(row), 0));
+        const slotH = Math.min(SLOT_H, lineH * 0.62);
+        let line = 0;
         rows.forEach((row, r) => {
-          const cy = cursor - rowH * (r + 0.5);
-          const slots = row.pieces.map((id, index) => ({ id, row: r, index, tag: row.tags?.[index] ?? null, x: left + labelW + index * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH }));
-          const next = row.next_code !== undefined ? { x: left + labelW + row.pieces.length * (slotW + 0.12) + slotW / 2, y: cy, w: slotW, h: slotH, code: row.next_code } : null;
+          const first = line;
+          line += linesOf(row);
+          const at = (n) => ({ x: left + labelW + (n % perLine) * (slotW + gapW) + slotW / 2, y: cursor - lineH * (first + Math.floor(n / perLine) + 0.5) });
+          // The row's name stands beside its first line.
+          const cy = at(0).y;
+          const slots = row.pieces.map((id, index) => ({ id, row: r, index, tag: row.tags?.[index] ?? null, ...at(index), w: slotW, h: slotH }));
+          const next = row.next_code !== undefined ? { ...at(row.pieces.length), w: slotW, h: slotH, code: row.next_code } : null;
           // A row with no entry of its own (a fuel kind): an empty socket wide enough for its name.
           const noneW = Math.min(w - labelW - 0.4, narrow ? 5.6 : 6.2);
           const none = (row.none || []).map((entry, index) => ({ id: entry.id, role: entry.role, x: left + labelW + index * (noneW + 0.12) + noneW / 2, y: cy, w: noneW, h: slotH }));

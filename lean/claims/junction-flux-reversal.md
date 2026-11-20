@@ -31,6 +31,8 @@ Direct proof subject `cells.constant_field@1`
 
 **Open.** Signed transfer rate of the same ion in a cell pair with the endpoint conditions exchanged.
 
+A single Cx43 channel carried about −5 pA at −50 mV and +4.8 to +4.95 pA at +50 mV in symmetric salt. This checks reversal of electrical current. Reversal of one ion’s flux under exchanged concentrations remains open. [Wang and Veenstra, Fig. 1](https://pubmed.ncbi.nlm.nih.gov/9101407/)
+
 **Unit** fmol/s
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

@@ -1,0 +1,43 @@
+{
+ "source_id": "interpro-entries-tree-and-go",
+ "record": {
+  "what": "A cut of InterPro 111.0's entry list for the fixture's entries, with made-up families and a made-up tree",
+  "licence": "Made up for the test"
+ },
+ "files": [
+  {
+   "name": "entry.list",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 2154,
+   "sha256": "a58945884907c14c26cb06db2a51cba4600928300f20e9d2b5ca65ff52a17176",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "ParentChildTreeFile.txt",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 195,
+   "sha256": "a221e008539194b6e51c6994acc871397c54626ec6b7d53bad8c37c3abd79baa",
+   "ok": true,
+   "error": null
+  },
+  {
+   "name": "release_notes.txt",
+   "url": null,
+   "role": "made up for the test",
+   "retrieved_utc": "2026-11-18",
+   "http_status": null,
+   "size_bytes": 95,
+   "sha256": "1da4e9980db8e4909912fbd14e507614e8082acc6806cbad8880154ae85b2238",
+   "ok": true,
+   "error": null
+  }
+ ],
+ "note": "Made up for tests/planarian_scan.test.mjs; not a download."
+}

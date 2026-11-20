@@ -25,7 +25,7 @@ Direct proof subject `cells.scheduled_membrane_insertion@1`, `cells.scheduled_me
 
 ## Numerical comparison
 
-**Failed.** Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish.
+**Failed.** Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
@@ -37,7 +37,9 @@ Direct proof subject `cells.scheduled_membrane_insertion@1`, `cells.scheduled_me
 
 ## Biological evidence
 
-**Open.** Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for. Neher and Marty measured capacitance steps in secreting chromaffin cells. The heat balance would require independent electrical work and energy measurements. [Neher and Marty (1982)](https://doi.org/10.1073/pnas.79.21.6712)
+**Open.** Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.
+
+Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)
 
 **Unit** pJ for heat, C for image charge
 

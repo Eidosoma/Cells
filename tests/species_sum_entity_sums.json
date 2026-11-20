@@ -940,6 +940,36 @@
    "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(total_membrane_d, axis=None, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "ledger_terms",
+   "entity_sum(consumed, axis=1, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "ledger_terms",
+   "entity_sum(row.unit_turnover_work_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "magnitude_terms",
+   "entity_sum(consumed, axis=1, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "magnitude_terms",
+   "entity_sum(row.unit_turnover_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "own_ledgers",
+   "entity_sum(row.unit_pool_units, axis=1, xp=xp)"
+  ],
+  [
+   "operators/population_unit_turnover.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.unit_pool_units), axis=1, xp=xp)"
   ]
  ]
 }

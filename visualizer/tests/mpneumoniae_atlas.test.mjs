@@ -524,7 +524,10 @@ test("every source of the shelves states its terms, and the file makes no claim 
 
 // ---------------------------------------------------------------- rebuilding
 
-test("the build tool reproduces the species file, the atlas, the catalogue, the shelves and the README from the downloads", { skip: absent }, async () => {
+test("the build tool reproduces the species file, the atlas, the catalogue, the shelves and the README from the downloads", { skip: absent }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*"), path.join(DATASETS, "..", "*", "*")], evidence: [EVIDENCE], env: ["MPNEUMONIAE_DATASETS", "MPNEUMONIAE_EVIDENCE"] })) return;
   const out = await mkdtemp(path.join(os.tmpdir(), "mpneumoniae-atlas-"));
   try {
     const run = spawnSync("python3", [TOOL, "build", "--evidence", EVIDENCE, "--datasets", DATASETS, "--out-species", path.join(out, "species.json"), "--out-atlas", path.join(out, "atlas.json"), "--out-catalogue", path.join(out, "catalogue")], { encoding: "utf8", timeout: 600000 });

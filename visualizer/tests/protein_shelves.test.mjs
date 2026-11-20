@@ -291,6 +291,42 @@ test("a family opens to its members once their file is in, and a gathering to th
 
 // ---------------------------------------------------------------- the words
 
+test("a member filed by what a species' own scan added says so, in the file's sentence, with the databases behind it; its family counts such members", () => {
+  // The planarian's shelves (19 November 2026): the mark `scan` names the databases whose signatures reached the entry a
+  // member is filed by, and the file says it in a sentence (`says`), a database that is not plainly permissive with its terms (`words`).
+  const { data, memberFiles } = madeUpFamilies();
+  data.marks.scan = {
+    label: "Filed by", members_label: "Members filed by the species' own scan", values: "text", measured: false,
+    says: "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of {value}; the table's own column does not carry it",
+    words: { CDD: "CDD, which states no terms (used by a made-up decision)" }, source: "made-up-added.tsv, by the signatures of PANTHER, Pfam and CDD", note: "A made-up note.",
+  };
+  const lines = memberFiles["members-00.json"].members;
+  lines[0][7].scan = ["PANTHER"];
+  lines[1][7].scan = ["CDD"];
+  lines[2][7].scan = ["PANTHER", "Pfam"];
+  const shelves = new Shelves(data, { label: "Test worm", links: LINKS, units: UNITS });
+  shelves.addMembers("members-00.json", memberFiles["members-00.json"]);
+  const innexin = shelves.get(keyOf("testworm", "f", "IPR000001"));
+  const [first, second, third, fourth] = shelves.membersOf(innexin);
+  const facts = (member) => shelves.describe(member.key).facts;
+  // Right after what it is filed under, and once.
+  const said = facts(first);
+  const at = said.findIndex(([label]) => label === "Family");
+  assert.deepEqual(said[at + 1], ["Filed by", "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of PANTHER; the table's own column does not carry it"]);
+  assert.equal(said.filter(([label]) => label === "Filed by").length, 1);
+  assert.equal(Object.fromEntries(facts(second))["Filed by"], "what the species' own scan (A made-up tool 1.0, 18 to 19 November 2026) added to its line, by the signatures of CDD, which states no terms (used by a made-up decision); the table's own column does not carry it");
+  assert.match(Object.fromEntries(facts(third))["Filed by"], /by the signatures of PANTHER and Pfam;/);
+  // A member filed by its own column reads as before.
+  assert.equal(Object.fromEntries(facts(fourth))["Filed by"], undefined);
+  assert.ok(shelves.describe(first.key).disclosures.some((more) => more.lines.some((line) => line === "Filed by: A made-up note. Source: made-up-added.tsv, by the signatures of PANTHER, Pfam and CDD.")));
+  // The family, once its members are in, counts them; a family with none says nothing of it.
+  assert.equal(Object.fromEntries(shelves.describe(innexin.key).facts)["Members filed by the species' own scan"], "3 of 8");
+  assert.equal(Object.fromEntries(shelves.describe(keyOf("testworm", "f", "IPR000002")).facts)["Members filed by the species' own scan"], undefined);
+  // A file without the mark reads as before.
+  const before = large();
+  assert.equal(Object.fromEntries(before.describe(before.membersOf(before.get(keyOf("testworm", "f", "IPR000001")))[0].key).facts)["Filed by"], undefined);
+});
+
 test("a protein's panel gives its name, gene, identifier, side and how that is known, its marks, a link out and the sources", () => {
   const shelves = small();
   const said = shelves.describe(keyOf("testbug", "p", "TB_004"));
@@ -357,7 +393,7 @@ test("a protein the atlas lists with a unit only as going with its machine says 
 });
 
 test("every species' shelves name the proteins their atlas lists with a unit only as going with its machine, and the families all of whose such proteins are so", async () => {
-  for (const id of ["fruitfly", "mouse", "thalecress", "planarian"]) {
+  for (const id of ["fruitfly", "mouse", "xenopus", "thalecress", "planarian"]) {
     const shelves = JSON.parse(await readFile(path.join(PROTEINS, id, "shelves.json"), "utf8"));
     const atlas = JSON.parse(await readFile(path.join(PROTEINS, "atlases", `${id}.json`), "utf8"));
     const found = new Map();
@@ -372,9 +408,9 @@ test("every species' shelves name the proteins their atlas lists with a unit onl
 });
 
 test("the atlas's words stand on the law inventory: a unit, protein or family is listed in it or with one of its units, never one Cells has a law for", async () => {
-  // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of 38 of the 48 units are
-  // implemented in older code only. The sources of the atlas's words, and the species files they read.
-  const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
+  // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of most of the 48 units are
+  // implemented in older code only (38 of them then; 33 at main 1ca5eada, after the Kv1 port). The sources of the atlas's words, and the species files they read.
+  const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "xenopus", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
   for (const file of files) {
     if (!existsSync(path.join(ROOT, file))) continue;
     const text = await readFile(path.join(ROOT, file), "utf8");
@@ -661,8 +697,9 @@ const READER = `
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from lib.protein_atlas import read_shelves, shelf_links
-summaries, warnings = read_shelves(sys.argv[2])
-print(json.dumps({"summaries": summaries, "warnings": warnings, "links": shelf_links(json.load(open(sys.argv[3], encoding="utf-8"))["shelves"])}))
+overlay = json.load(open(sys.argv[3], encoding="utf-8"))["shelves"]
+summaries, warnings = read_shelves(sys.argv[2], overlay.get("limits"))
+print(json.dumps({"summaries": summaries, "warnings": warnings, "links": shelf_links(overlay)}))
 `;
 function readShelves(folder) {
   const run = spawnSync("python3", ["-c", READER, path.join(ROOT, "tools"), folder, path.join(PROTEINS, "overlay.json")], { encoding: "utf8" });
@@ -1885,7 +1922,8 @@ test("every shelves file of the repository holds to the contract, as the builder
   for (const summary of summaries) {
     const text = await readFile(path.join(PROTEINS, summary.id, "shelves.json"), "utf8");
     const data = JSON.parse(text);
-    assert.ok(Buffer.byteLength(text) < 1024 * 1024, `${summary.id}: a species' file stays under 1 MB`);
+    // Under 1 MB, or under the bound the overlay gives a species of its own (shelves.limits), with its reason.
+    assert.ok(Buffer.byteLength(text) < (OVERLAY.shelves.limits?.[summary.id]?.shelves_bytes ?? 1024 * 1024), `${summary.id}: a species' file stays under its bound`);
     assert.ok(!MACHINE.test(text), `${summary.id}: a machine path`);
     assert.deepEqual(validateShelves(data), [], summary.id);
     const shelves = new Shelves(data, { label: summary.id, links: OVERLAY.shelves.links, units: UNITS });
@@ -1955,7 +1993,7 @@ test("a large catalogue's members are cut into files by the step it names, and e
     for (const file of files) {
       const text = await readFile(file.source, "utf8");
       bytes += Buffer.byteLength(text);
-      assert.ok(Buffer.byteLength(text) < 1024 * 1024, `${file.path} is over 1 MB`);
+      assert.ok(Buffer.byteLength(text) < (OVERLAY.shelves.limits?.[summary.id]?.members_bytes ?? 1024 * 1024), `${file.path} is over its bound`);
       shelves.addMembers(path.basename(file.path), JSON.parse(text));
     }
     // Every family, part and gathering opens to as many members as it says, each a protein of its own.

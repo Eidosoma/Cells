@@ -42,6 +42,8 @@ __all__ = (
     "MOVES_ENDS",
     "LEDGER_TERM_ROLES",
     "PARTITION_ROLES",
+    "DG_BASES",
+    "TEMPERATURE_INDEPENDENT",
     "WORK_SUFFIX",
     "ConfigError",
     "AXIS_HOST_KINDS",
@@ -66,6 +68,7 @@ __all__ = (
     "energy_role",
     "finite_number",
     "free_energy_entries",
+    "axis_sizes",
     "kind_ledgers",
     "kind_role_species",
     "kind_standard_free_energies",
@@ -74,6 +77,7 @@ __all__ = (
     "law_roles",
     "entity_axes",
     "presence_fields",
+    "misshapen_errors",
     "missing_partition_roles",
     "parse_series",
     "partition_fields",
@@ -227,7 +231,9 @@ class Kind:
     - schedule (§7.4 (l)): `experiment_keys`, the kind's own keys in the definition's experiment
       (each optional in a definition); `parse_schedule(raw, base, declaration)` -> a Schedule,
       `raw` being {key: value} for the keys the definition gives (possibly none: the kind's
-      default); `schedule_to_dict(schedule, declaration)` -> the {key: value} to write back (the
+      default), or None where it gives none of them: no schedule, so the definition keeps
+      today's change records by value and type (the lead's ruling (A), 19 November 2026);
+      `schedule_to_dict(schedule, declaration)` -> the {key: value} to write back (the
       kind omits its default, so a definition that omits a key keeps its form). The schedule's
       breakpoints join the change times (each a step boundary) and its values the change records.
       @3 evaluates `control_values` once per change record, at the change times, and holds each
@@ -341,12 +347,17 @@ class Kind:
       gate lands, the core ANDs each with its entity's host's activity, where a closer is
       declared, before the kind's rates, readouts and stage checks. Until then every kind with an
       entity axis stays refused beside a closer (Q7 (a)), and after it every kind that declares
-      none. entity_axes and presence_fields read them for the core;
+      none. entity_axes and presence_fields read them for the core; `dispatch_masks`, (field,
+      ...): its fields that are either full on their declared axes or empty there (length 0) by
+      static dispatch, as the transporter's per-law masks are where their law is undeclared. The
+      array-axes check admits length 0 for these alone (refuse_misshapen, D228 item 6);
     - `standard_free_energies(declaration)` -> (FreeEnergyEntry, ...), the reaction-level standard
       free energies it declares (§7.1, seam E), each with the cycle law and mode that produced it,
-      a law the kind hosts with a general form, or None for both; () when it declares none. The
-      species registry's check compares each with its own sum of nu mu°/RT
-      (kind_standard_free_energies checks the form; today's 3-tuples still read, transitionally);
+      a law the kind hosts with a general form, or None for both, and its dG° as dG°/RT or, for
+      a law that cites kJ/mol, as dG° in kJ/mol with its temperature basis, which the species
+      registry converts at the world's temperature (D234); () when it declares none. The species
+      registry's check compares each with its own sum of nu mu°/RT (kind_standard_free_energies
+      checks the form);
     - `role_species(declaration)` -> (EntityBinding, ...), one per entity the declaration declares
       (a transporter population, say), in its own entity order: the cycle law the entity runs,
       one the kind hosts; the species each of that law's roles binds, the roles being those its
@@ -415,6 +426,7 @@ class Kind:
     presence: object = MappingProxyType({})  # {entity axis: (bool presence layout field, ...)}
     standard_free_energies: Callable | None = None  # (declaration) -> (FreeEnergyEntry, ...)
     role_species: Callable | None = None  # (declaration) -> (EntityBinding, ...)
+    dispatch_masks: tuple = ()  # Fields full on their axes, or empty there by static dispatch.
 
     @property
     def state_fields(self):
@@ -570,20 +582,42 @@ class EntityBinding(NamedTuple):
     parameters: object = MappingProxyType({})  # {name: value}
 
 
+# How a standard free energy given in kJ/mol depends on temperature (FreeEnergyEntry.dG_basis):
+# TEMPERATURE_INDEPENDENT, its declarer treating the cited dG° as the same at every temperature, so
+# dG°/RT at a world's T is dG° / (R T). The table admits a later basis (one carrying dH°, say) as a
+# new name, never a new meaning for an existing one (D234's option (b), 19 November 2026).
+TEMPERATURE_INDEPENDENT = "temperature_independent"
+DG_BASES = (TEMPERATURE_INDEPENDENT,)
+
+
 class FreeEnergyEntry(NamedTuple):
     """One reaction-level standard free energy a kind or an operator declares (seam E, §7.1;
-    D142): `stoichiometry`, ((species, nu), ...), nu signed, products positive; `dG_RT`, dG°/RT;
-    `c0`, the standard concentration in mM; and `law_id` and `mode`, the cycle law and the mode of
-    its form that produced it, or None where none did (an operator's reaction, say). The species
-    registry's check compares each with its own sum of nu mu°/RT, and the binding owner's check
+    D142): `stoichiometry`, ((species, nu), ...), nu signed, products positive; dG° in exactly one
+    of two forms, `dG_RT`, dG°/RT, or `dG_kJ_mol`, dG° in kJ/mol with its `dG_basis`, how it
+    depends on temperature (one of DG_BASES); `c0`, the standard concentration in mM that either
+    form's dG° is at; and `law_id` and `mode`, the cycle law and the mode of its form that produced
+    it, or None where none did (an operator's reaction, say). A law that cites dG° in kJ/mol (Beard
+    2005's tables, say) gives it so, since no temperature is written into a law: the species
+    registry converts it to dG°/RT at the world's declared temperature, the one conversion (D234's
+    option (b)), and compares each entry with its own sum of nu mu°/RT. `dG_RT_offset`, beside
+    dG_kJ_mol alone (0 by default), is a temperature-free term in RT units that the conversion adds:
+    dG°/RT = 1000 dG_kJ_mol / (R T) + dG_RT_offset. A value cited at pH 7 puts nu_H ln 10^7 there,
+    and, for a total, nu ln P(10^-7 M), so the temperature-scaled and temperature-free parts split
+    as the species registry's named sets split them; the basis refers to the kJ part (the lead's
+    ruling with the binding owner, 20 November 2026). The binding owner's check
     computes each entry's band from the law's form, never from the entry, so no band is
-    self-certified. free_energy_entries checks it."""
+    self-certified. free_energy_entries checks it. Every field after the stoichiometry has a
+    default, so either form is written by keyword; today's (stoichiometry, dG_RT, c0) positions
+    are kept."""
 
     stoichiometry: tuple
-    dG_RT: float
-    c0: float
+    dG_RT: float | None = None
+    c0: float | None = None
     law_id: str | None = None
     mode: str | None = None
+    dG_kJ_mol: float | None = None
+    dG_basis: str | None = None
+    dG_RT_offset: float = 0.0
 
 
 def _named(value):
@@ -597,13 +631,14 @@ def _finite(value):
 def free_energy_entries(entries, hosted, where):
     """The checked entries of a standard_free_energies hook, a kind's or an operator's (`where`
     names it in each refusal): a tuple of FreeEnergyEntry, each with a stoichiometry of distinct
-    named species with signed nonzero coefficients, dG°/RT finite and c0 finite and positive, and
-    law_id and mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle
-    law}; none for an operator, which hosts no law), a law with a general form, and its mode one of
-    that form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has
-    neither. Transitional: an entry may still be today's 3-tuple (stoichiometry, dG°/RT, c0), read
-    as an entry that names no law, until the kinds owner's transporter hook gives entries; remove
-    this reading then."""
+    named species with signed nonzero coefficients, dG° in exactly one form (dG°/RT finite, or
+    dG° in kJ/mol finite with a basis from DG_BASES, and neither a basis nor a nonzero
+    dG_RT_offset beside dG°/RT), a finite dG_RT_offset, c0 finite and positive, and law_id and
+    mode set together or neither. A set law_id is one of `hosted` ({qualified ID: cycle law}; none
+    for an operator, which hosts no law), a law with a general form, and its mode one of that
+    form's modes (the mode column of its registry/laws.cycle_changes): a version-1 law has neither.
+    Every kind declares FreeEnergyEntry since the kinds owner's follow-up 2 (4e6ca60e), so a bare
+    (stoichiometry, dG°/RT, c0) tuple is refused like any other non-entry."""
     from cells.registry import laws as law_registry  # registry/laws imports this module.
 
     if not isinstance(entries, tuple):
@@ -612,9 +647,7 @@ def free_energy_entries(entries, hosted, where):
     for index, entry in enumerate(entries):
         at = f"{where}, entry {index}"
         if not isinstance(entry, FreeEnergyEntry):
-            if not (isinstance(entry, tuple) and len(entry) == 3):  # Transitional (docstring).
-                raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
-            entry = FreeEnergyEntry(*entry)
+            raise ValueError(f"{where} returns a tuple of FreeEnergyEntry")
         stoichiometry = entry.stoichiometry
         if not (
             isinstance(stoichiometry, tuple)
@@ -632,8 +665,29 @@ def free_energy_entries(entries, hosted, where):
             raise ValueError(
                 f"{at}: its stoichiometry is ((species, nu), ...), distinct species, nu nonzero"
             )
-        if not _finite(entry.dG_RT):
-            raise ValueError(f"{at}: its dG°/RT is finite")
+        if (entry.dG_RT is None) == (entry.dG_kJ_mol is None):
+            raise ValueError(f"{at}: it gives its dG° in exactly one form, dG_RT or dG_kJ_mol")
+        if not _finite(entry.dG_RT_offset):
+            raise ValueError(f"{at}: its dG_RT_offset is finite, in RT units")
+        if entry.dG_kJ_mol is None:
+            if not _finite(entry.dG_RT):
+                raise ValueError(f"{at}: its dG°/RT is finite")
+            if entry.dG_basis is not None:
+                raise ValueError(
+                    f"{at}: its dG_basis qualifies a dG_kJ_mol, which it does not give"
+                )
+            if entry.dG_RT_offset != 0:
+                raise ValueError(
+                    f"{at}: its dG_RT_offset belongs beside a dG_kJ_mol, which it does not give"
+                )
+        else:
+            if not _finite(entry.dG_kJ_mol):
+                raise ValueError(f"{at}: its dG° in kJ/mol is finite")
+            if entry.dG_basis not in DG_BASES:
+                raise ValueError(
+                    f"{at}: its dG_kJ_mol gives its basis, one of {', '.join(DG_BASES)}, not "
+                    f"{entry.dG_basis!r}"
+                )
         if not (_finite(entry.c0) and entry.c0 > 0):
             raise ValueError(f"{at}: its c0 is finite and positive")
         if (entry.law_id is None) != (entry.mode is None):
@@ -887,7 +941,28 @@ def declaration_errors(kind):
         out.append("its standard_free_energies is a callable, or None")
     if kind.role_species is not None and not callable(kind.role_species):
         out.append("its role_species is a callable, or None")
-    return out + _axis_errors(kind, static)
+    return out + _axis_errors(kind, static) + _dispatch_mask_errors(kind, static)
+
+
+def _dispatch_mask_errors(kind, static):
+    """Why a kind's dispatch_masks break the contract: distinct names, each, where the kind's
+    fields are static, one of its state or layout fields with at least one declared axis to be
+    empty along."""
+    masks = kind.dispatch_masks
+    if not (isinstance(masks, tuple) and all(map(_named, masks)) and len(set(masks)) == len(masks)):
+        return ["its dispatch_masks are a tuple of distinct field names"]
+    if not static:
+        return []
+    axes = {
+        **(kind.field_axes if isinstance(kind.field_axes, Mapping) else {}),
+        **dict(kind.state_axes),
+    }
+    fields = {*kind.layout_fields, *(name for name, _ in kind.state_axes)}
+    return [
+        f"dispatch mask {mask}: one of its state or layout fields with a declared axis"
+        for mask in masks
+        if mask not in fields or not axes.get(mask)
+    ]
 
 
 def _axis_errors(kind, static):
@@ -1032,6 +1107,70 @@ def _internal_axis_errors(kind, static, used):
         if static and axis not in used:
             out.append(f"internal axis {axis}: no field of the kind's is on it")
     return out
+
+
+def axis_sizes(declared, arrays):
+    """{axis: length} of the axes the host's own fields bind ({field: (axis, ...)} and {field:
+    array}): the host's lengths, read where it binds its kinds' arrays (refuse_misshapen). Raises
+    where one of its fields has a shape other than its axes', or two disagree on an axis."""
+    out = {}
+    for name, axes in declared.items():
+        if name not in arrays:
+            continue
+        shape = tuple(np.shape(arrays[name]))
+        if len(shape) != len(axes):
+            raise ValueError(f"The host's {name} has shape {shape}, not its axes {tuple(axes)}")
+        for axis, size in zip(axes, shape, strict=True):
+            if out.setdefault(axis, size) != size:
+                raise ValueError(f"The host's axis {axis} has lengths {out[axis]} and {size}")
+    return out
+
+
+def misshapen_errors(kind, arrays, sizes):
+    """Why a kind's state and layout arrays ({field: array}) break the axes it declares for them
+    (state_axes; field_axes for a layout field that declares them): each with one dimension per
+    axis, each host axis (in `sizes`, axis_sizes') at the host's length, and each of its own and
+    its laws' internal axes at one length across its fields. A dispatch mask may instead be empty
+    along its axes (length 0, by static dispatch)."""
+    declared = {
+        **(kind.field_axes if isinstance(kind.field_axes, Mapping) else {}),
+        **dict(kind.state_axes),
+    }
+    masks = set(kind.dispatch_masks) if isinstance(kind.dispatch_masks, tuple) else set()
+    out, own = [], {}
+    for name, value in arrays.items():
+        if name not in declared:
+            continue
+        shape, axes = tuple(np.shape(value)), tuple(declared[name])
+        if len(shape) != len(axes):
+            out.append(f"{name} binds shape {shape}, not its declared axes {axes}")
+            continue
+        if name in masks and 0 in shape:
+            continue  # Empty by static dispatch.
+        for axis, size in zip(axes, shape, strict=True):
+            if axis in sizes:
+                if size != sizes[axis]:
+                    out.append(
+                        f"{name}'s axis {axis} has length {size}, not the host's {sizes[axis]}"
+                    )
+            elif own.setdefault(axis, (size, name))[0] != size:
+                out.append(
+                    f"{name}'s axis {axis} has length {size}, {own[axis][1]}'s {own[axis][0]}"
+                )
+    return out
+
+
+def refuse_misshapen(kind, hook, state, layout, sizes):
+    """A kind's state and layout from its `hook`, checked where the host binds them (at @3's
+    initial values) against the axes the kind declares (misshapen_errors), so a field whose array
+    does not match its axes is refused before any step: the lifecycle, the partition and the run
+    view read arrays by those axes. Shapes are static, so one check at binding holds for every
+    step (D228 item 6; the review's finding)."""
+    problems = misshapen_errors(kind, {**state, **layout}, sizes)
+    if problems:
+        raise ValueError(
+            f"Kind {kind.kind_id}'s {hook} break the axes it declares: " + "; ".join(problems)
+        )
 
 
 def refuse_foreign_writes(kind, hook, values, fields, role):

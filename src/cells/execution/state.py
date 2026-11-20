@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import jax
 import numpy as np
 
 from cells.definitions.specs import SimulationSpec
+
+if TYPE_CHECKING:  # The record's module imports the models; this one stays light.
+    from cells.execution.energy_check import EnergyCheckRecord
 
 
 class CellState(NamedTuple):
@@ -431,6 +434,11 @@ class Checkpoint:
     time: float
     step_index: int
     event_index: int
+    # The step-doubled energy check's run-level record (execution/energy_check.py; FR-18's X2,
+    # D224): None unless the definition selects execution.energy_check, so today's checkpoints,
+    # their files and their digests are unchanged. Added by the @3 owner at the lead's word (a
+    # recorded exception in this file).
+    energy_check: EnergyCheckRecord | None = None
 
 
 def cpu_device() -> jax.Device:

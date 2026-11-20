@@ -1,0 +1,40 @@
+ENTRY_AC	ENTRY_TYPE	ENTRY_NAME
+IPR000159	Domain	Ras-associating domain
+IPR001164	Domain	Arf GTPase activating protein
+IPR001356	Domain	Homeodomain
+IPR001611	Repeat	Leucine-rich repeat
+IPR001781	Domain	Zinc finger, LIM-type
+IPR001806	Family	Small GTPase
+IPR002155	Family	Thiolase
+IPR003591	Repeat	Leucine-rich repeat, typical subtype
+IPR005120	Domain	UPF3 domain
+IPR005225	Domain	Small GTP-binding domain
+IPR009057	Homologous_superfamily	Homeodomain-like superfamily
+IPR011524	Domain	SARAH domain
+IPR012677	Homologous_superfamily	Nucleotide-binding alpha-beta plait domain superfamily
+IPR016039	Homologous_superfamily	Thiolase-like
+IPR020610	Active_site	Thiolase, active site
+IPR020613	Conserved_site	Thiolase, conserved site
+IPR020615	Active_site	Thiolase, acyl-enzyme intermediate active site
+IPR020616	Domain	Thiolase, N-terminal
+IPR020617	Domain	Thiolase, C-terminal
+IPR027417	Homologous_superfamily	P-loop containing nucleoside triphosphate hydrolase
+IPR029071	Homologous_superfamily	Ubiquitin-like domain superfamily
+IPR032675	Homologous_superfamily	Leucine-rich repeat domain superfamily
+IPR033614	Family	Ras association domain-containing protein 1-6
+IPR035979	Homologous_superfamily	RNA-binding domain superfamily
+IPR037278	Homologous_superfamily	ARFGAP/RecO-like, zinc finger superfamily
+IPR038508	Homologous_superfamily	ArfGAP domain superfamily
+IPR039722	Family	Nonsense-mediated mRNA decay protein 3
+IPR040050	Family	Zinc finger protein 830-like
+IPR047169	Family	Insulin gene enhancer protein ISL-1/2-like
+IPR050216	Family	Leucine-rich repeat domain-containing protein
+IPR052248	Family	Arf-GAP domain and FG repeat-containing protein
+IPR055414	Domain	Disease resistance R13L4/SHOC-2-like, LRR domain
+IPR900000	Family	Made-up broader family that a line carries
+IPR900001	Family	Made-up family with a Pfam signature
+IPR900002	Family	Made-up family with a PIRSF signature
+IPR900003	Family	Made-up family with a PANTHER signature under IPR900000
+IPR900004	Family	Made-up family the tool's list lacks
+IPR900005	Family	Made-up family with a PANTHER signature and nothing broader
+IPR900006	Family	Made-up family with a Pfam signature under IPR900000

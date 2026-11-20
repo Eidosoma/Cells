@@ -209,8 +209,20 @@ K_i = exp((μ°_R − μ°_A)/RT) for each type (**S**).
 Since b_i > 0, sign(J_i) = sign(A_i). No type's net flux runs against its own gradient, and the
 heat rate RT Σ_i J_i A_i is non-negative term by term. What follows (**S**):
 - **Catalysis is kinetic only.** It scales rates and never the force, so it cannot move an
-  equilibrium. At β = 0 the composition relaxes toward x_i ∝ K_i ρ_i, the reservoir's composition
-  when K is uniform.
+  equilibrium.
+- **What the composition does at β = 0 depends on the leave constants.** Write θ_i = K_i ρ_i.
+  - Zero net exchange, a true fixed point at x_i = θ_i, needs Σ_j θ_j = 1. Otherwise the assembly
+    grows (Σ_j θ_j > 1) or shrinks.
+  - With a common leave constant k_b, as written above, a fraction changes at
+    dx_i/dt = k_b(θ_i − x_i Σ_j θ_j). So the composition relaxes toward θ_i / Σ_j θ_j while N
+    changes: x_i ∝ K_i ρ_i, the reservoir's composition when K is uniform.
+  - Cells also accepts a leave constant per type, k_b,i (`cells.reservoir_exchange@1`'s
+    `leave_rate`). The proportions then depend on the k_b,i as well, and need not stay at
+    θ_i / Σ_j θ_j. For example, counts (1, 1), θ = (1, 1) and k_b = (1, 2): both types grow, yet
+    the first type's fraction starts at ½ and falls at ¼ per nominal time unit. The compiled engine
+    agrees. (Corrected 19 November 2026 from the Lean proofs project's finding, lean/PROGRESS.md
+    and lean/CellsProofs/Chemistry/ReservoirExchange.lean. The earlier wording stated the common-k_b
+    result without its condition.)
 - **With the preprint's numbers nothing can equilibrate.** K_i ρ_i = (1e-2/1e-4)·0.01 = 1 for every
   type, while an equilibrium needs Σ_i K_i ρ_i = 1. Here that sum is 100.
   - Every type's affinity is ln(1/x_i) > 0 unless the assembly holds one type, so every type joins
@@ -305,8 +317,16 @@ enumeration (evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/`).
   single-event kernel fails Kolmogorov's criterion on every unit square for generic β. One
   hand-checkable square gives a cycle ratio of 44/63. The events-only form of T2-02 has the same
   cycle ratios, and so does the preprint's buffered reservoir.
-- **A rank-one β is the exception:** the chain is reversible, with a shifted equilibrium. So
-  "different factors, hence irreversible" holds generically, not always.
+- **The exception is a rank-one 1 + β, with one added to every entry, not a rank-one β.** If
+  1 + β_ij = u_i v_j with positive factors, the single-event kernel's extra heat is a difference of
+  state values and cancels around any closed path, so the chain is reversible, with a shifted
+  equilibrium; the corrected log weight is Φ(n) − ln(Σ_j v_j n_j / N). A rank-one β alone does not
+  suffice: with β_AA = 1 and every other entry 0, the four-step cycle +A, +B, −A, −B at counts
+  (1, 1) has a rate-product ratio of 81/80, not 1. So "different factors, hence irreversible" holds
+  generically, not always. (Corrected 19 November 2026 from the Lean proofs project's proof and
+  exact example, lean/PROGRESS.md and lean/CellsProofs/Chemistry/GardCatalysis.lean; the earlier
+  wording said "a rank-one β". The exact finite-reservoir reference already used the entrywise
+  shift.)
 - **The original authors' kernel is not established either way.** The three papers read (2000,
   2014, 2018) state the rate law but no event rates. The 2000 paper's stochastic scheme draws
   Poisson changes on the net rate. That is a different kernel, irreversible even at β = 0, for a

@@ -1197,6 +1197,13 @@ export class ShelvesView {
     if (label) {
       this.labelLayer.setText(label, this.hotText(key) || "");
       label.anchor.set(node.position.x, node.top + 0.5, node.position.z);
+      // The name under the pointer keeps its marker clear: a name it pushes aside lets another show, and that one must
+      // not come over what is pointed at (19 November 2026: the planarian's shelves, filed anew, put one there).
+      if (label === this.hot?.hovered) {
+        label.clear ||= { at: new THREE.Vector3(), radius: 0 };
+        label.clear.at.set(node.position.x, (node.top + node.position.y) / 2, node.position.z);
+        label.clear.radius = node.radius;
+      }
     }
   }
 

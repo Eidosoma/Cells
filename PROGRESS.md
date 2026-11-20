@@ -108,6 +108,219 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning).** Each
+  was gated in full and passed the lead's merged check.
+  - `monomial-kernel-landed-2026-11-20` (d9342fcf): the cycle kind's fourth kinetic form, `monomial`
+    (K6's kernel).
+    - Exact closed-form slopes; read roles; references to registry forms under the binding owner's
+      three conditions; a one-sided domain x <= 80; k built at parse from a cited free energy.
+    - An invariance trace of five general-layout worlds caught one jaxpr break before landing. Crossrev
+      holds no general-layout world, which is a gate-tooling follow-up.
+  - `binding-sets-followup-landed-2026-11-20` (11dc95c5): a named potential set requires its moieties,
+    records and checks its proton buffers, and versions its derivation.
+  - `kinds-seam-e-landed-2026-11-20` (e658a8fd): a monomial mode's cited rate constant emits its seam-E
+    entry in kJ/mol form. k and the entry share one value.
+  - `x2-floor-fix-landed-2026-11-20` (4802dc9a): the general binding closure's booked energy term is
+    formed from increments through the closure's dual (D148: states bitwise).
+    - It removes a rounding floor that failed X2's order condition in buffered worlds: R's median
+      |e| falls from 9e-13 to 1.4e-17 pJ.
+    - FR-8's worlds never met the floor.
+  - **FR-8 rung 1's control** (from d03ca463; analysis registered). Largest passing steps under the
+    parity caps:
+    - H2's calm stretch, 20 ms, held by charge stability, also from the calm state at 1000 s (section
+      10.8's probe);
+    - H2 through the cue, 1 ms, by the location rule;
+    - W0, 5 ms, by the junction-gate bound.
+    - X2 refused nothing. Its sensitivity is shown at each world's largest step, and FR-3's plant is
+      caught.
+    - Cost per simulated second: H2 calm 0.020 s, H2 full 0.34 s, W0 0.32 s.
+    - The choice between D232's rules is the user's.
+  - **P1' (the @3 owner, on its branch):** both hosts are accurate in the delta-psi mode and give
+    branch E under X2 with the floor fix. At the source's synthase activity, explicit steps cost
+    1,000-30,000 CPU-hours per 300 s, and lowering the activity ruins the fit beyond 4-7 times. An
+    implicit block or a rapid-equilibrium synthase is being priced for the user's host ruling.
+
+- **The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork).** Each was
+  gated (tiers 1+2 with 0 changed, G1, crossrev, IDs, FR's set where it applies) and passed the lead's
+  merged check against main.
+  - `kir-ratio-landed-2026-11-20` (e3026388): the inward rectifier's sqrt(c_o/K_ref) formed
+    overflow-safe, in place (D148). The Lean project found it; the equivalent declarations now agree
+    bit for bit. d/dK_ref is undefined at split points, and the engine never takes it.
+  - `kcc-step-bound-landed-2026-11-20` (2e2dc62f): the KCC step bound counts a finite outside node,
+    summed per cell and per node. This closes a silent wrong-direction step, also found by the Lean
+    project. Every registered world faces held baths and keeps its bits. The quotient-overflow fix
+    stays held until its evidence covers every execution path.
+  - `symporter-v2-landed-2026-11-20` (99bff0ed): `na2_anion_symport_diagram@1` (D228 item 1).
+  - `fr15-p2-landed-2026-11-20` (ce39c904): `passive_constant_field_permeation@1` on the
+    passive-routes kind. One file timed out under load; it passed on rerun.
+  - `fr7-f3-landed-2026-11-20` (5dc63d38) and `fr7-pools-landed-2026-11-20` (549b1b6c): FR-7 F3, the
+    producer's assembly rate as a B1' target; and declared initial units per maturation pool (W5).
+  - `kinds-schedules-landed-2026-11-20` (ef76795e): the cycle kind's availability schedules
+    (D228 item 5), and the population bound in log space (D148).
+  - `mito-references-landed-2026-11-20` (bd29e2ae): MR1, the code-blind Beard 2005 reference.
+    Six unrelated engine tests timed out under load; on rerun, five passed and one failed only by
+    its CLI subprocess's timeout.
+  - `binding-mito-landed-2026-11-20` (aa847046): B1's `beard2005@1` named potential set, B2's
+    moieties, and FreeEnergyEntry's kJ/mol form with `dG_RT_offset` (F's, merged unedited).
+  - **FR-7:** F4's engine run from the registered R-loop start drifts by at most 1e-10 relative over
+    10 s. Its dosed closed arm peaks at N/N0 2.459, matching the reference's 2.46. F3's six-world
+    comparison and F4's comparison are still running as development runs.
+  - **Mitochondria (D234):** the laws' appendix is tagged `mito-laws-appendix-2026-11-20`.
+    - The code-blind component references are built and await registration.
+    - MR1's repair table shows Beard's printed Eq. 24 is a typo: the restored form is what the
+      paper ran.
+    - @3's P1′ finds both hosts accurate in the ΔΨ mode. At the source's synthase activity, explicit
+      steps are out of reach, and X2's count rule shows a floor, being traced.
+    - The host and the repairs are for the user's ruling.
+
+- **The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).**
+  - Merge a740b856, tag `review4-fixes-landed-2026-11-20`: the external review's four findings,
+    each a recorded exception with a test row.
+    - The composite's device checks split ledger magnitudes at the operators' count.
+    - A bound that is not finite fails its ledger.
+    - FR-8 rung 0's reader checks each arm's identity, step and grid.
+    - @3's batch signature carries each kind's axis sizes.
+    - Gates: tiers 595 files with 0 changed, crossrev 11 of 11, IDs +2, FR's set, R1 (274
+      fingerprints equal); the lead's merged check on trial 2816efb0 (527 passed).
+  - Merge 73d73bf8, tag `fr7-f2-landed-2026-11-20`: FR-7 F2 (development).
+    - `species_regulated_availability@2` reads a population's abundance as its source.
+    - `population_unit_turnover@1` states D232's scoped exception to D177.
+    - Gates: tiers 597 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +21, FR's set,
+      R1; the lead's merged check on trial a72e1f10 (271 passed).
+  - Merge 9dd869c6, tag `fr7-references-landed-2026-11-20`: FR-7's code-blind references, R-chain,
+    R-clear and R-loop. Each was tagged before any engine output (69932dfc, 1b257cf3, d55e39b4).
+    - R-loop follows D233's five-fold template, with its floor-sensitivity table registered.
+    - design.py's regeneration check was loosened after R-chain's tag; no registered value changed.
+    - Gates (no src change): tiers 601 files with 0 changed, IDs +15.
+  - Decisions D233 (FR-7's template ×5) and D234 (the roadmap's Option 2; gene regulation's design
+    begins). docs/CORE_LAWS_ROADMAP.md landed docs-only (7ebfab70).
+  - **Tagged, not yet landed:** the code-blind Beard 2005 mitochondria reference, MR1
+    (`mito-references-model-2026-11-19`, a9aac583).
+    - It reproduces the published curves to about digitisation precision.
+    - Its audit finds Eq. 11 (F1F0) dissipating negatively at the paper's own state-3 points.
+    - Its registration waits for the user's ruling on the declared departures.
+
+- **Seam E's checks and F's cleanup (19 November 2026).**
+  - Merge bd9881d5, tag `binding-item5-landed-2026-11-19`: the species registry checks every declared
+    `FreeEnergyEntry` against its own sum of ν μ°/RT, within the form's band. Gates: tiers 594 files
+    with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +11, FR's set; the lead's merged check on
+    trial b50835af.
+  - Merge 985c6a44, tag `f-energies-cleanup-landed-2026-11-19`: a bare 3-tuple from a
+    standard_free_energies hook is now refused, since every hook returns FreeEnergyEntry. Gates:
+    tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +0; the lead's merged check
+    on trial ee082f5d.
+
+- **FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under
+  D148).** Merge ddb52790, tag `fr15-s1-landed-2026-11-19`. Reactions may involve charged species
+  when every reaction conserves charge. A charged row stays impermeant on @3's routes unless it is a
+  declared counter-ion covered by @3's own charge-relaxation bound, 100 times its material term.
+  Charged turnover routes are deferred; exchange stays neutral. Gates: tiers 594 files with 0
+  changed, G1 113 of 113, crossrev 11 of 11 identical (the D148 evidence), FR's set; IDs with one
+  declared rename; X2 checked (admitted; no counted steps, so no power there); the lead's merged
+  check on trial 29c44900.
+
+- **R2, the view into `control_factors` for a factor operator's current reads (19 November 2026;
+  @2 only; FR-7's F2 prerequisite).** Merge 6c501ab3, tag `r2-landed-2026-11-19`. A factor
+  operator may declare a current read at the control view, and the composite passes C4's reader
+  view to its hooks. No registered operator declares one, so no existing program changes. Gates:
+  tiers 594 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +1, FR's set; the lead's
+  merged check on trial 25128f4e.
+
+- **The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;
+  D228 item 2).** Merge 2db46727, tag `rectifier-landed-2026-11-19`. An instantaneous inward
+  rectifier on the passive-routes kind: E_K-referenced rectification, √K_o scaling, coefficients in
+  the route's declaration (unsourced today), weak rectifiers through V_h and s. Kir4.1 for the
+  Xenopus lane's XC0 is its first use. Gates: tiers 594 files with 0 changed, G1 113 of 113,
+  crossrev 11 of 11, IDs +5, FR's set; the lead's merged check on trial 4da4ec58.
+
+- **FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not
+  judged).** Merge 7fb27a92, tag `fr7-f1-landed-2026-11-19`. A finite precursor is consumed at first
+  order into channel units, through m maturation pools, with first-order removal of every unit into
+  a booked sink. The half-step is the chain's exact solution, so the one material account closes by
+  construction. It departs from D177 by holding removal inside the producer. Gates: tiers 593 files
+  with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +40, FR's set; the lead's merged check on
+  trial aa2ef4fa.
+
+- **X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's
+  criterion, D224).** Merge fd894b91, tag `x2-energy-check-landed-2026-11-19`. Selected by
+  `spec.energy_check`, and required of registered and judged runs. Each window compares one step
+  against two half steps, within the registered band. Qualification: 13 rows, each with its saved
+  verdict; FR-3's planted energy error is refused at its step. Overhead about 1.22× per run
+  without compile. Gates: pre-gate, tiers 593 files with 0 changed, G1, crossrev 11 of 11, IDs +9,
+  FR's set; R1 differs only by the declared field default; the lead's merged check on trial
+  050c8f17.
+
+- **B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's
+  part (a), D218; development, not judged).** Merge ee43b082, tag `b1prime-landed-2026-11-19`.
+  Turnover's and reactions' rates may be scaled by a coupling factor F ∈ [b, 1], evaluated at the
+  start of each target half-step, with a declared operating range refused when breached and the
+  applied factor recorded exactly. @1 is untouched, so FR-6's judged result stands. Gates: tiers 593
+  files with 0 changed, G1 113 of 113, crossrev 11 of 11 identical (coupling and acceptances), FR's
+  set; IDs with the contract-enumerating file declared; the lead's merged check on trial 8a482a26.
+
+- **The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,
+  kinds follow-up 2).** Merge 4e6ca60e, tag `kinds-fu2-landed-2026-11-19`. Each entry names its
+  cycle law and mode, and `CycleForm` gives its band from the form. Every kind on main now declares
+  FreeEnergyEntry. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on
+  trials 4361bf5a and 8d4e5f92 (stacked on the symporter's).
+
+- **The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`
+  (19 November 2026; D228 item 1).** Merge 845ee670, tag `symporter-v1-landed-2026-11-19`. A
+  fuel-free factored cycle law on the transporter (n_Na from 1 to 4), cited to Coady et al. 2007
+  (abstract) for 2:1; the Xenopus lane's XC0 world needs it. Refused at a compartment's node, as
+  stated. Gates: the kinds owner's lane A, FR's set and tier 3; the lead's merged checks on trials
+  6875e1bb and 3c923f22.
+
+- **The presence gate hosts channel and face slots (19 November 2026; the operators owner's
+  GATED_SLOT_AXES follow-up).** Merge 79d0fc7c, tag `ops3-gated-slot-axes-landed-2026-11-19`. A kind
+  with presence on channel populations or faces is admitted beside a closer, which closes those
+  populations by their hosts; an own axis without `axis_hosts` stays refused. Gates: tiers 592
+  files with 0 changed, G1, crossrev 11 of 11, IDs +0, FR's set; the lead's merged check on trial
+  2daf2363.
+
+- **The kind contract's array-axes check and `Kind.dispatch_masks` (19 November 2026; D228 item
+  6).** Merge c545be8e, tag `f-axes-check-landed-2026-11-19`. Each kind field's array must match
+  its declared axes where @3 binds it; fields empty by static dispatch are named. With the
+  operators owner's three review changes and the proton leak's docstring correction. Gates: tiers
+  591 files with 0 changed, G1, crossrev 11 of 11, IDs +1, FR's set; the lead's merged check on
+  trial 8b595e5c.
+
+- **Cl⁻ in @3's channel populations: the always-open chloride leak `cells.clleak_always_open@1`
+  (19 November 2026; D228 item 3).** Merge 6ed4b280, tag `f-chloride-leak-landed-2026-11-19`. @3's
+  valence table admits Cl⁻ at −1, and the planted test laws move to code 99. The Xenopus lane's
+  Cl⁻-only patch needs it. Gates: tiers 590 files with 0 changed, G1, crossrev 11 of 11, IDs +3,
+  FR's set; the lead's merged check on trial 7e125758.
+
+- **The third external review's five findings, fixed (19 November 2026).** Merge 560da6a0, tag
+  `review3-fixes-landed-2026-11-19`. Engine models touched: the transporter, passive routes, pH
+  condition and proton buffer kinds; `surface_pump_v3`; `scheduled_membrane_trafficking@1`.
+  - The general closure's proton is declared (proton_row), never inferred from a charge.
+  - FR-2 version 1 holds one receiving pool per cell; two routes of one cell are refused.
+  - @3's trace estimate counts every declared kind's saved rows, and an undercount is refused. FR's
+    landing-set verdict reads the planner's estimate as information.
+  - The transporter's probe reads the solver's own switch for its population-scaled fields.
+  - FR-8 stage 0's judges get their observations, with the registration's amendment 5.
+  - Gates: tiers 591 files with 0 changed, G1 113 of 113, crossrev 11 of 11, IDs +6, FR's set, R1
+    274 of 274; the lead's merged check on trial c3171354.
+
+- **FR-8 rung 0: the fine engine's order through a switch (19 November 2026). Registered verdict:
+  "instrument not validated". Under a blind amendment, the weaker evidence: the cause is the
+  pre-asymptotic transient.**
+  - **Engine model it runs:** `resolved_pump_tissue@3` alone. Development, not judged.
+  - **Evidence:** [the registration and results](validation/long_duration/RUNG0_20261119.md), the
+    windows' inputs (`rung0_20261119.json`) and condensed results (`rung0_results_20261119.json`).
+    Landed at 6cec0fc4, tag `fr8-rung0-landed-2026-11-19`.
+  - **The registered verdict stands:** the slow-phase control had no power, so no cause is
+    identified (§9.1).
+  - **Under amendment 1** (§9.2), a powered control registered blind before the main windows were
+    read: the instruments pass, and the order drop in stage 0's switch transient is (C), the
+    pre-asymptotic transient. The observed orders climb toward 2 as the step halves; NaV activation
+    goes from 1.26 at 1 ms to 1.98. The cue's discontinuity is not implicated.
+  - **Provenance after the fact** (§9.5): the windows start from R3's saved state under the
+    continuity design's rule (b). R3's digest was recorded afterwards, and all 43 importing arms
+    start bitwise equal to R3's rows.
+  - **Next:** rung 1 (N2 with the exponential junction-gate update, opt-in) after X2 lands.
+
 - **FR-2 version 1 against its code-blind references (19 November 2026): run 1, 770 of 782 rows;
   run 2, after a blind erratum, 782 of 782, which is weaker evidence after the failed run 1.**
   - **Engine models it runs:** `scheduled_membrane_trafficking@1`, on `resolved_pump_composite@1`

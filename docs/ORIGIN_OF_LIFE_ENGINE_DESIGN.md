@@ -470,6 +470,52 @@ that refine it.
     `fission_followed`, generalised to k. A missing field is a replay error; the replay never
     assumes daughter 0.
 
+### 0.2e The lead's rulings for OL2's remaining milestones and OL3 (19 November 2026)
+
+These answer the builder's status note of 19 November, after D230 resumed the work. OL5's pinned
+export of the registered OL2 and OL3 inputs, made at main e8759b48, showed what its worlds carry.
+
+1. **What OL2's first milestone is.** ol2-engine 9190ae78 holds `cells.bilayer_geometry@1` (the
+   first `cells.assembly_geometry@1`), `cells.phase_exchange@1` and `cells.membrane_permeation@1`,
+   with §0.2c rule 5's floor and the refusals of rules 2, 3 and 5. A world with a geometry runs with
+   a declared lumen only. It is development: it is not yet compared against OL5's references, which
+   need the probe roles (item 2, step 4).
+   - Still OL2's: the osmotic lumen (σ, σ_max, and c_ext as the total) and lysis; the shared pool;
+     the relations version with `lysed`; the diagnostic record; and §0.2d item 9's refusal.
+2. **The order,** on one branch, `ol3-engine`. Each landing-ready head is named by its milestone,
+   and its landing says whether it was compared against OL5's references or is development only.
+   1. OL2 milestone 2: the osmotic lumen and lysis. Division needs them: each daughter's own
+      volume, the v test, the lumen's terms in the shear work, and lysis at birth.
+   2. OL3 milestone 1: single-lineage division.
+   3. OL2 milestone 3: the shared pool and serial transfer, labels, the diagnostic record and
+      §0.2d item 9.
+   4. OL5's probe roles, from the export.
+3. **Every declared physical value carries its provenance.** A value without a source says so: its
+   provenance begins "unsourced". The registered-inputs mapper copies a registered world's own source
+   text where it has one, and otherwise writes "unsourced; registered OL5 world <id>".
+4. **The floor** is `vesicle_floor = {quanta, provenance}`, with quanta an integer ≥ 1.
+5. **Areas.** The world declares `area_quantum_m2`, and each species `area_per_leaflet = {quanta,
+   provenance}`, with `sourced_m2` and `source` optional and given together.
+   - With a sourced area, §0.2c rule 4's rounding is the nearest quantum: |k − sourced_m2/q| ≤ ½,
+     and either integer is accepted at a tie.
+   - Without one, k is declared directly and no rounding check applies. A mapper never invents a
+     sourced area.
+6. **The closure cost.** The engine accepts the bending moduli κ and κ̄ and computes the closed
+   sphere's closure cost, 8πκ + 4πκ̄ in k_BT, by its declared law, recorded in the footprint. A
+   directly declared `closure_cost_kT = {value, provenance}` stays allowed. A mapper maps fields
+   and computes no physics.
+7. **The rate keys** are `insertion_velocity_m_per_s`, `diffusivity_m2_per_s` and
+   `permeability_m_per_s`, each with its provenance.
+8. **Rule 16's widened exemption, accepted after the fact.** validation/assembly_lineages/
+   compare_probes.py exempts `^files\..*\.json$`: roles.json's checksums of JSON files.
+   - The reason, for each such field: the file it checksums is compared leaf by leaf, so its
+     checksum adds nothing. Array checksums stay compared.
+   - The demonstration: at main e8759b48 the frozen tool's only differences were exactly these 47
+     checksums, and @1's 625 exempted paths are the same under both tools.
+   - It shipped in OL2 milestone 1 on 18 November, so it is recorded there as rule 16's listed
+     amendment. Before that milestone lands, the lead checks that each of the 47 files is in the
+     tool's leaf-compared set.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.

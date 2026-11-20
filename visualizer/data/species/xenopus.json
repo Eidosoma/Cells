@@ -1,0 +1,376 @@
+{
+ "format": "cells.visualizer.species@1",
+ "id": "xenopus",
+ "label": "Frog",
+ "organism": "Xenopus laevis",
+ "taxon": 8355,
+ "plain": "The African clawed frog of the laboratory: 36,429 genes in UniProt's reference proteome, on two sets of chromosomes, L and S, and 35,004 proteins shown, both copies of a gene among them. Its cell is drawn as the mouse's is: one cell of a sheet that stands for skin-like tissue. The frog is drawn as an adult; on the strip of its life stages its fertilised egg is drawn too, and four stages between are named and not drawn.",
+ "group": "Animals",
+ "order": 17,
+ "default": false,
+ "made": "2026-11-19",
+ "modelled": {
+  "state": "generic",
+  "text": "Cells models a generic cell and a sheet of such cells, not this animal. The sheet stands for skin-like tissue and is drawn on a hind foot for the scales only. The foot and the frog are placeholder outlines: nothing at those scales is simulated."
+ },
+ "levels": [
+  {
+   "id": "molecules"
+  },
+  {
+   "id": "cell",
+   "shape": {
+    "kind": "prism",
+    "sides": 6,
+    "radius_um": 10.6,
+    "height_um": 13,
+    "corner_um": 2.4,
+    "edge_um": 1.3
+   },
+   "note": "The cell drawn is one cell of the sheet, which stands for skin-like tissue; it is not a model of a frog's skin cell. Its shape and its sizes are the picture's choice: six flat sides where it meets its neighbours, an outer face and a base, about 20 µm across and as tall as the sheet's cells. The plate under the layer is scenery: Cells models nothing beneath the sheet.",
+   "notes": [
+    {
+     "text": "One cell of the skin-like layer"
+    },
+    {
+     "text": "Its flat-sided shape is the picture's choice",
+     "roomy": true
+    }
+   ],
+   "fade_out_um": [
+    120,
+    190
+   ]
+  },
+  {
+   "id": "tissue",
+   "shape": {
+    "kind": "cell sheet",
+    "rings": 6,
+    "beyond": [
+     [
+      8,
+      0.34
+     ],
+     [
+      10,
+      0.2
+     ],
+     [
+      11,
+      0.1
+     ]
+    ]
+   },
+   "note": "The sheet stands for skin-like tissue: a single layer of cells. It is drawn on the hind foot of the placeholder frog for the scales only; the simulated sheet is not the frog's skin.",
+   "notes": [
+    {
+     "text": "The sheet stands for skin-like tissue: a single layer of cells",
+     "short": "Stands for skin-like tissue"
+    }
+   ],
+   "fade_in_um": [
+    100,
+    190
+   ]
+  },
+  {
+   "id": "organ",
+   "label": "Hind foot",
+   "shape": {
+    "kind": "outline",
+    "ref": "xenopus",
+    "parts": [
+     "left hind foot",
+     "left hind toes"
+    ],
+    "context": [
+     "head and body",
+     "left hind leg"
+    ]
+   },
+   "note": "The outline drawn is a frog's webbed hind foot, as a placeholder: a flat blade from the ankle, widening to the spread of its five toes, laid level so that the sheet of cells, drawn level, can lie on it. The foot is the picture's choice of organ, so that the sheet that stands for skin-like tissue lies on a part of the animal a visitor knows; no foot is modelled, and the foot's own cells are not modelled. The sheet is drawn on the foot so that the scales follow one another; it is not the foot's tissue. The foot's length, its breadth, its thickness and its shape are the picture's choice: no measurement of a foot was read for this file.",
+   "sheet_mark": {
+    "band": 0.15,
+    "note": "The sheet, to scale: drawn on the foot for the scales only",
+    "note_at_um": [
+     0,
+     0,
+     -16000
+    ]
+   },
+   "notes": [
+    {
+     "text": "A frog's hind foot: a placeholder outline"
+    },
+    {
+     "text": "The foot's own cells are not modelled",
+     "lift": -22,
+     "roomy": true
+    }
+   ]
+  },
+  {
+   "id": "organism",
+   "label": "Whole frog",
+   "shape": {
+    "kind": "outline",
+    "ref": "xenopus"
+   },
+   "note": "The outline drawn is an adult frog seen from above, its hind legs bent as in a kick, as a placeholder: 12.1 cm from snout to vent, 5.1 cm wide behind the forelimbs and 6.2 cm in front of the hindlimbs, a thigh 3.4 cm wide, the means that one study measured in 198 adult females (190 for the thigh) kept as laboratory animals. Where along the body the widths are drawn, the height, the head's shape, every limb's length, the feet and the pose are the picture's choice. The sheet of cells is drawn on the left hind foot for the scales only.",
+   "sources": [
+    "boswald2022"
+   ],
+   "view": {
+    "azimuth": 0,
+    "polar": 0.5
+   },
+   "sheet_mark": {
+    "band": 0.22,
+    "note": "Here lies the sheet: too small to see, so its ring is not to scale",
+    "note_at_um": [
+     0,
+     0,
+     -14000
+    ],
+    "roomy": true
+   },
+   "notes": [
+    {
+     "text": "An adult frog: a placeholder outline"
+    }
+   ]
+  }
+ ],
+ "cell": {
+  "facts": [
+   {
+    "label": "Proteins",
+    "value": "36,429 genes in UniProt's reference proteome, with 62,048 entries: 3,523 reviewed by a curator and 58,525 annotated automatically. Both copies of a gene are shown, each as its own protein; where a gene has a reviewed entry, its unreviewed entries in UniProt's gene-by-gene set (1,425) are not shown: 35,004 proteins in all",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Copies",
+    "value": "of the 35,004 proteins shown, UniProt places 20,031 on an L chromosome, 14,296 on an S chromosome, 132 on chromosomes of both sets, and 545 on neither (an unplaced scaffold, or the mitochondrion)",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "Cells' units",
+    "value": "of the 49 units of the law inventory, 43 have proteins of the same family in the frog; the other 6 name no natural protein to look for",
+    "sources": [
+     "uniprot"
+    ]
+   },
+   {
+    "label": "The outline's sizes",
+    "value": "12.1 cm from snout to vent, 5.1 cm wide behind the forelimbs and 6.2 cm in front of the hindlimbs, a thigh 3.4 cm wide: the means of 198 adult females (190 for the thigh) kept as laboratory animals; males were 7.7 cm from snout to vent",
+    "sources": [
+     "boswald2022"
+    ]
+   }
+  ],
+  "parts": {
+   "membranes": 1,
+   "wall": false,
+   "nucleus": true,
+   "organelles": [
+    "er",
+    "golgi",
+    "mitochondria"
+   ]
+  }
+ },
+ "stages": {
+  "system": {
+   "id": "nf",
+   "label": "NF stage",
+   "short": "NF",
+   "sources": [
+    "zahn2022"
+   ]
+  },
+  "times_after": "fertilisation",
+  "opens_on": "egg",
+  "list": [
+   {
+    "id": "egg",
+    "order": 1,
+    "index": "1",
+    "label": "Fertilised egg",
+    "short": "Egg",
+    "plain": "The fertilised egg: one cell, before its first division.",
+    "sources": [
+     "zahn2022"
+    ],
+    "ends_at": "cell",
+    "no_further_levels": "A fertilised egg is one cell: it has no tissue, organ or body yet.",
+    "modelled": {
+     "state": "planned",
+     "text": "The project's record decides that the frog's early cleavage, from one cell to four, is the first subject of its cell-division work (D141, D144, the cell-division plan). That work's design note is on main, and so far the engine has carried an egg-scale cell through prescribed division against independently written references (the Engine view's Cell division S2–S5a). The record's first prediction for the egg itself, J1, its membrane potential at the onset of second cleavage, was made with an independent reference model and misses the measured value (12 November 2026); no engine run of it exists. No model of this egg is registered, so the word here is the lower one the record allows: planned. What is drawn is a generic cell's parts at the egg's size.",
+     "record": [
+      {
+       "path": "docs/DECISIONS.md",
+       "where": "D141: Cell division, high priority"
+      },
+      {
+       "path": "docs/DECISIONS.md",
+       "where": "D144: Qualify the simulator for many uses, not one experiment"
+      },
+      {
+       "path": "docs/CELL_DIVISION_PLAN.md",
+       "where": "Order of work (lead's ranking under D141), item 2: Xenopus early cleavage first, from 1 to 4 cells"
+      },
+      {
+       "path": "docs/CELL_DIVISION_DESIGN.md",
+       "where": "Its status line: draft for review; nothing here is built or qualified"
+      },
+      {
+       "path": "PROGRESS.md",
+       "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference (12 November; development)"
+      }
+     ]
+    },
+    "levels": [
+     {
+      "id": "cell",
+      "label": "The egg",
+      "shape": {
+       "kind": "sphere",
+       "across_um": 1200
+      },
+      "note": "The egg is drawn as a sphere 1.2 mm across, the diameter a review gives the frog's fertilised eggs. What is drawn inside it is not the egg's own structure: its parts are the generic cell's, the parts of the frog's skin-like cell drawn here, enlarged to the egg's size. An egg's yolk, its pigment and the rest of what it holds are not drawn.",
+      "notes": [
+       {
+        "text": "Its parts are a generic cell's, enlarged: not the egg's own; its yolk and pigment are not drawn",
+        "short": "A generic cell's parts, enlarged: not the egg's own"
+       },
+       {
+        "text": "The fertilised egg, 1.2 mm across",
+        "roomy": true
+       }
+      ],
+      "sources": [
+       "sato2025"
+      ]
+     }
+    ],
+    "cell": {
+     "facts": [
+      {
+       "label": "Diameter",
+       "value": "about 1.2 mm, as a review gives the frog's fertilised eggs",
+       "sources": [
+        "sato2025"
+       ]
+      }
+     ],
+     "capabilities": {
+      "cap.junctions": {
+       "place": "absent",
+       "why": "The egg is one cell: it has no neighbour to share a junction with."
+      }
+     }
+    }
+   },
+   {
+    "id": "two-cell",
+    "order": 2,
+    "index": "2",
+    "label": "Two-cell embryo",
+    "short": "Two cells",
+    "time": {
+     "value": 90,
+     "unit": "min",
+     "about": true,
+     "temperature_c": 23,
+     "sources": [
+      "zahn2022"
+     ],
+     "where": "the section \"NF stages 1-6: zygote and cleavage\", paragraph 1, which gives the time of the first cell division"
+    },
+    "note": "The time is that of the first cell division, after which the embryo is in two cells.",
+    "sources": [
+     "zahn2022"
+    ],
+    "missing": "No size of the two-cell embryo is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "four-cell",
+    "order": 3,
+    "index": "3",
+    "label": "Four-cell embryo",
+    "short": "Four cells",
+    "note": "The paper gives this stage's time from the first division, not from fertilisation (20 to 30 minutes after it, at 23 °C), so no time is written for it here.",
+    "sources": [
+     "zahn2022"
+    ],
+    "missing": "No size of the four-cell embryo is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "tadpole",
+    "order": 4,
+    "index": "35-36",
+    "label": "Free-swimming tadpole",
+    "short": "Tadpole",
+    "plain": "The stage at which tadpoles break free of the vitelline membrane and begin to swim.",
+    "sources": [
+     "zahn2022"
+    ],
+    "missing": "No length of a tadpole at this stage is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "froglet",
+    "order": 5,
+    "index": "66",
+    "label": "End of metamorphosis",
+    "short": "Froglet",
+    "plain": "The froglet, its tail fully resorbed.",
+    "sources": [
+     "zahn2022"
+    ],
+    "missing": "No size of the froglet is in hand under usable terms, and nothing of it is drawn."
+   },
+   {
+    "id": "adult",
+    "order": 6,
+    "label": "Adult",
+    "plain": "The adult, as the species' file describes it.",
+    "own": true
+   }
+  ]
+ },
+ "sources": {
+  "uniprot": {
+   "text": "UniProt Consortium, UniProt release 2026_04: the reference proteome UP000186698 (Xenopus laevis (strain J_2021)), its entries, their proteome components and its gene-by-gene set.",
+   "url": "https://www.uniprot.org/proteomes/UP000186698",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  },
+  "boswald2022": {
+   "text": "Böswald LF, Matzek D, Mohr H, Kienzle E, Popper B (2022) Morphometrics of Xenopus laevis Kept as Laboratory Animals. Animals (Basel) 12(21):2986. Its Table 1 gives, for 198 adult females kept as laboratory animals, a snout-vent length of 12.1 ± 1.0 cm, a width directly behind the forelimbs of 5.1 ± 0.5 cm and directly in front of the hindlimbs of 6.2 ± 0.7 cm, and (for 190) a thigh width of 3.4 ± 0.3 cm; for 40 males, a snout-vent length of 7.7 ± 0.3 cm.",
+   "doi": "10.3390/ani12212986",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  },
+  "zahn2022": {
+   "text": "Zahn N, James-Zorn C, Ponferrada VG, Adams DS, Grzymkowski J, Buchholz DR, Nascone-Yoder NM, Horb M, Moody SA, Vize PD, Zorn AM (2022) Normal Table of Xenopus development: a new graphical resource. Development 149(14):dev200356. Its running text names the stages of the standard table of normal development, the NF stages, and gives the first cell division at about 90 min after fertilisation, at 23 °C, and the second 20 to 30 min after it.",
+   "doi": "10.1242/dev.200356",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  },
+  "sato2025": {
+   "text": "Sato KI (2025) The Xenopus Oocyte System: Molecular Dynamics of Maturation, Fertilization, and Post-Ovulatory Fate. Biomolecules 16(1):22. A review: its section 2.1 gives the frog's fertilised eggs a diameter of about 1.2 mm.",
+   "doi": "10.3390/biom16010022",
+   "licence": "CC BY 4.0",
+   "class": "permissive",
+   "accessed": "2026-11-19"
+  }
+ }
+}

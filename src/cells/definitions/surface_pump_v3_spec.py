@@ -152,7 +152,7 @@ def gate_counts():
     return {law_id: len(law.gates) for law_id, law in channel_laws().items()}
 
 
-SPECIES_VALENCE = {"Na": 1, "K": 1}
+SPECIES_VALENCE = {"Na": 1, "K": 1, "Cl": -1}  # Cl⁻ for clleak_always_open@1 (D228 item 3).
 CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): a population's optional factor sources, parsed beside
 # the shared ChannelPopulation dataclass (whose fields and fingerprints other families share).
@@ -413,6 +413,8 @@ def _kind_schedules(registry, declared, given, base):
         if not kind.experiment_keys:
             continue
         schedule = kind.parse_schedule(given.get(kind_id, {}), base, declaration)
+        if schedule is None:  # None of its keys given and no schedule: today's records.
+            continue
         if type(schedule) is not kind_registry.Schedule:
             raise ConfigError(f"Kind {kind_id}'s parse_schedule must return a Schedule")
         end = base.experiment.end_time

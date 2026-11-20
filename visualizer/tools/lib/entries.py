@@ -516,6 +516,14 @@ class Entries:
                 self.warn(where, problems[0] if len(problems) == 1 else f"{problems[0]} (and {len(problems) - 1} more: {'; '.join(problems[1:4])})")
                 continue
             entry = dict(item)
+            # What Cells models of the species at a life stage (schema/SPECIES_STAGES.md): held to the ladder and its record as the
+            # species' own word is; a stage whose word is not sound leaves the species without its stages, with a warning.
+            for stage in (item.get("stages") or {}).get("list", []):
+                said = self.modelled(stage["modelled"], "species", f"{where} at its stage {stage['id']}") if "modelled" in stage else []
+                if said:
+                    self.warn(where, f"its stage {stage['id']}: {said[0]}; the species is shown without its stages")
+                    entry.pop("stages", None)
+                    break
             entry["cell_types"] = [types[own_id], *sorted((value for key, value in types.items() if key != own_id), key=lambda value: (value["order"], value["id"]))]
             entry["default_cell_type"] = default
             out_species.append(entry)

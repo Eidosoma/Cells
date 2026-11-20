@@ -76,7 +76,7 @@ export async function proteinFiles(scene, { proteinsDir = DEFAULT_PROTEINS, memb
       const list = path.join(folder, NAMES_FILE);
       const newest = Math.max(...(await Promise.all(names.map((name) => modified(path.join(folder, name))))));
       if (make && !((await modified(list)) >= newest)) {
-        const failure = await writeNames(id, folder, names).catch((error) => error.message);
+        const failure = await writeNames(id, folder, names, await searchedMarks(shelves)).catch((error) => error.message);
         if (failure) problems.push(`${id}: its proteins' names could not be written (${failure})`);
       }
       if ((await modified(list)) >= newest) own.push({ path: `proteins/${id}/${NAMES_FILE}`, source: list, species: id });
@@ -136,20 +136,32 @@ export async function benchFiles({ benchesDir = DEFAULT_BENCHES } = {}) {
 export const NAMES_FILE = "names.json";
 export const NAMES_FORMAT = "cells.visualizer.species_protein_names@1";
 
+/** The marks a catalogue declares the page's search finds its members by (`search: true`, schema/SPECIES_PROTEINS.md), in its order. */
+async function searchedMarks(shelves) {
+  try {
+    return Object.entries(JSON.parse(await readFile(shelves, "utf8")).marks || {}).filter(([, mark]) => mark?.search === true).map(([name]) => name);
+  } catch {
+    return [];
+  }
+}
+
 /**
  * The names file of a large catalogue: one row for each member, in the members' own order, with
  * its identifier, its gene, its name and its side, in the members' files' order (`files`, with how
  * many each holds in `counts`), so that the page knows each row's file and its place there and finds
- * its line by the same `file` and `at` as the shelves give. Returns what went wrong, or null.
+ * its line by the same `file` and `at` as the shelves give. `searched`: the marks the catalogue says the
+ * search finds a member by, each a column more after the four, with the mark's values joined by ", "
+ * (none for a catalogue that declares none, whose file is as before). Returns what went wrong, or null.
  */
-export async function writeNames(species, folder, files) {
-  const columns = ["id", "gene", "label", "side"];
+export async function writeNames(species, folder, files, searched = []) {
+  const columns = ["id", "gene", "label", "side", ...searched];
   const rows = [], counts = [];
   for (const name of files) {
     const file = JSON.parse(await readFile(path.join(folder, name), "utf8"));
     const at = Object.fromEntries((file.columns || []).map((column, i) => [column, i]));
     if (!("id" in at) || !("label" in at)) return `${name} has no column of identifiers or names`;
-    for (const member of file.members) rows.push([member[at.id], member[at.gene] || "", member[at.label] || "", member[at.side] || "not known"]);
+    const more = (member) => searched.map((mark) => [].concat(member[at.marks]?.[mark] ?? []).join(", "));
+    for (const member of file.members) rows.push([member[at.id], member[at.gene] || "", member[at.label] || "", member[at.side] || "not known", ...more(member)]);
     counts.push(file.members.length);
   }
   // The rows are the members in their files' order: `counts` says how many each file holds, so where a row is needs no column.
@@ -233,12 +245,18 @@ const SKELETON_HEAD =
 export async function bundle(entry, { three = THREE_CDN } = {}) {
   const made = await build({
     entryPoints: [entry],
+    // Each module's path is written from this folder, wherever the build is started from: the same script from the same files.
+    absWorkingDir: ROOT,
     bundle: true,
     format: "esm",
     target: "es2022",
     write: false,
     minify: false,
     legalComments: "none",
+    // A checkout whose node_modules is a link to another folder's: a module is named by the path it is reached by, inside
+    // this folder, never by the folder the link leads to. The bundler writes each module's path above it as a comment, and
+    // by the link's target that comment held a path of the machine the page was built on (found on 19 November 2026).
+    preserveSymlinks: true,
     plugins: [
       {
         name: "three-from-url",
@@ -248,7 +266,11 @@ export async function bundle(entry, { three = THREE_CDN } = {}) {
       },
     ],
   });
-  return made.outputFiles[0].text.replaceAll("</script", "<\\/script");
+  const text = made.outputFiles[0].text;
+  // No module of the page is named by a path that leaves the folder it is built in, or by a path from the machine's root.
+  const outside = text.match(/^\/\/ (?:\.\.\/|\/|[A-Za-z]:[\\/]).*$/m);
+  if (outside) throw new Error(`the page's script names a file outside the folder it is built in: ${outside[0].slice(0, 200)}`);
+  return text.replaceAll("</script", "<\\/script");
 }
 
 /** The Laws library's list (schema/LAWS_LIBRARY.md), carried in the scene as `laws`: the view is offered only with it. */
@@ -468,9 +490,9 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
     .replace("/*__BUNDLE__*/", () => script.trim());
 }
 
-/** The page as a complete document, for a file on disk or the local server. */
-export function wrap(content, { theme = null, head = "" } = {}) {
-  const attribute = theme ? ` data-theme="${theme}"` : "";
+/** The page as a complete document, for a file on disk, the local server or the site's release (`lang`, tools/stage_site.mjs). */
+export function wrap(content, { theme = null, head = "", lang = null } = {}) {
+  const attribute = `${lang ? ` lang="${lang}"` : ""}${theme ? ` data-theme="${theme}"` : ""}`;
   return `<!doctype html><html${attribute}><head>${SKELETON_HEAD}${head}</head><body>\n${content}\n</body></html>\n`;
 }
 

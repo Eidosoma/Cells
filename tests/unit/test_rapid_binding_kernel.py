@@ -16,6 +16,10 @@ values at the tolerances frozen before any read of the values
 - the booked terms E_c, G* and S_c are within 16 eps of their terms, with S4[10]'s S_c undefined.
   The pairs' changes are within twice their floor, and each of the three planted bookings misses by
   its named sum;
+- the booked change formed from increments (booked_change_pJ, the @3 owner's finding under X2) is
+  the bulk difference within its rounding at a 1e-3 change, and S_c's first-order change within
+  second order and rounding at the change's own scale at 1e-9 and 1e-13 (S1, S3, S7). Planted:
+  the bulk difference booked whole misses the 1e-13 change by far more;
 - the registered law declares the general form (seam F's fields), its free_energy G*;
 - P1's nodes: the free amount, the admissible floor and the ladder's equilibrated free amounts,
   where today's predictor turns negative past n_free;
@@ -370,6 +374,58 @@ def test_each_pair_changes_by_dE_c_and_each_planted_booking_misses_by_its_sum(na
             assert abs(abs(miss) - ref) <= floor, (plant, pair["pair"], miss, ref)
             caught[plant] |= abs(miss) > floor
     assert all(caught.values()), caught
+
+
+CHANGE_SCALES = (1e-3, 1e-9, 1e-13)  # Each a relative change of every total.
+
+
+@pytest.mark.parametrize("scale", CHANGE_SCALES)
+@pytest.mark.parametrize("name", ["S1", "S3", "S7"])
+def test_the_booked_change_is_formed_at_its_own_scale(name, scale):
+    """booked_change_pJ (the @3 owner's finding under X2): from each registered state, every
+    total moved by `scale` of its free species' amount (each ligand up by its free amount, each
+    binder down by half its free base form's), so that S_c's first-order change,
+    sum_r RT ln(free_r / total_r) dN_r, is good to that relative order (times a factor bounded
+    here by 1e3, large where a row is nearly all free and its log-ratio near 0). The change formed
+    from increments meets it within that and rounding at the change's own scale, and at 1e-3 it is
+    the bulk difference within the bulk's rounding. Planted: the bulk difference S_c(now) -
+    S_c(start), booked whole, misses the change at 1e-13 by far more (its rounding is S_c's, not
+    the change's)."""
+    ligands, binders, volume, net, tl, tb, held, u, valid = solve(name)
+    lig, bind = mu0p(ligands, binders)
+    member = tb > 0
+    keep = np.all(np.where(held, tl > 0, True), axis=0) & valid
+    x, forms = kernel.speciation(u, tb, net["log_beta"], net["counts"], net["present"], xp=np)
+    n_l, n_b = tl * volume, tb * volume
+    d_l = np.where(held, scale * x * volume, 0.0)
+    d_b = np.where(member, -0.5 * scale * forms[:, 0] * volume, 0.0)
+    tl2, tb2 = (n_l + d_l) / volume, (n_b + d_b) / volume
+    _, comp_l, comp_b = masks(net, tl.shape[1])
+    u2, ok = kernel.free_ligands(tl2, tb2, net["log_beta"], net["counts"], net["present"], held,
+                                 comp_l, comp_b, xp=np)
+    change, defined = kernel.booked_change_pJ(
+        u2, u, n_l, d_l, n_b, d_b, net["log_beta"], net["counts"], net["present"], held, member,
+        volume, T_K, xp=np,
+    )  # fmt: skip
+    rt = 1e-3 * R * T_K
+    base = np.where(member, forms[:, 0], 1.0) / np.where(member, tb, 1.0)
+    ratio = np.where(held & (tl > 0), x / np.where(tl > 0, tl, 1.0), 1.0)  # Totals <= 0 kept out.
+    reference = rt * (np.sum(np.where(held, np.log(ratio) * d_l, 0.0), axis=0)
+                      + np.sum(np.where(member, np.log(base) * d_b, 0.0), axis=0))  # fmt: skip
+    args = (net["log_beta"], net["counts"], net["present"])
+    _, _, s1, _ = kernel.booked_terms_pJ(u, tl, tb, *args, held, lig, bind, volume, T_K, xp=np)
+    _, _, s2, _ = kernel.booked_terms_pJ(u2, tl2, tb2, *args, held, lig, bind, volume, T_K, xp=np)
+    bulk = s2 - s1
+    keep &= ok & defined
+    assert np.any(keep)
+    error = np.abs(change - reference)[keep]
+    if scale == CHANGE_SCALES[0]:  # Second order shows here: the bulk is the reference.
+        assert np.all(np.abs(change - bulk)[keep] <= 64 * EPS * np.abs(s1)[keep])
+    else:
+        allowed = (1e3 * scale + 1e-11) * np.abs(reference)[keep] + 1e-30  # Second order, rounding.
+        assert np.all(error <= allowed), (name, scale, np.max(error / allowed))
+    if scale == CHANGE_SCALES[-1]:  # Planted: the bulk difference, booked whole.
+        assert np.max(np.abs(bulk - reference)[keep]) > 1e3 * np.max(error)
 
 
 def p1_network(node):

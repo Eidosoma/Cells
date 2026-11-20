@@ -64,6 +64,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "MOVES_END",
         "MOVES_ENDS",
         "FreeEnergyEntry",
+        "TEMPERATURE_INDEPENDENT",
         "parse_series",
         "series_to_dict",
         "qualified",

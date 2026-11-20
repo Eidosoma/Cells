@@ -77,17 +77,23 @@ MODELS = MappingProxyType(
                 "cells.laws.channels.kv1p3_mh",
                 "cells.laws.channels.kv1p4_mh",
                 "cells.laws.channels.kv1p6_mh",
+                # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
+                "cells.laws.channels.clleak_always_open",
                 "cells.laws.junctions.junction_voltage_relaxation",
                 "cells.laws.pumps.nak_atp_mass_action_positive",
                 "cells.laws.pumps.ca_atp_mass_action_positive",
                 "cells.laws.routes.constant_field",
                 "cells.laws.routes.logmean_electrodiffusion",
                 "cells.laws.routes.passive_permeation",
+                "cells.laws.routes.inward_rectifier_linear_driving_force",  # The kinds owner's.
+                "cells.laws.routes.constant_field_permeation",  # FR-15 P2 (the operators owner's).
                 "cells.laws.transport.proton_leak",
                 # The transporter's two laws' modules: their declarations move in as inert LAWs
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
                 "cells.laws.pumps.atp_transporter",
                 "cells.laws.pumps.proton_pump",
+                "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 1).
+                "cells.laws.cycles.na2_anion_symport_diagram",  # Its version 2, the same item.
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",

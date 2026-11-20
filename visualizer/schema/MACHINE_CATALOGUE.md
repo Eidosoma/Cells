@@ -195,6 +195,26 @@ catalogue never says their count.
     none picked. The viewer multiplies nothing.
   The group `light` ("Capturing light", from gather.json) has a tray of its own, in the chloroplast's
   green; copying and mending DNA took the Golgi's pink.
+- **Forms the Complex Portal curates** (since 19 November 2026; rule and exceptions in `schema/MACHINE_DOSSIERS.md`, "Forms").
+  The Complex Portal's entries that fit a kind stand beneath it as lines of its panel (`gathered.forms` of its entry), under the
+  head "Forms the Complex Portal curates" with how many there are; the first four stand and the rest open by a press. Each line
+  gives the entry's own name, its identifier (a link to its page at the Complex Portal), how many proteins it holds and how many of
+  the machine's parts they are, its stoichiometry where it gives one, and its evidence in the portal's own term with one plain
+  line (an inferred entry says "Inferred" first and names the species it is taken from). A form is never a machine: it makes no
+  kind, no marker on a bench and no count of machines. Where its stoichiometry differs from a count the panel shows, both stand,
+  each with its source; nothing is reconciled by the page. The portal stands among the sources (CC0 1.0, as its 2022 paper states;
+  taken as enough by the decision of 18 November 2026), through the licence test as it stands. The human's, E. coli's, the mouse's and
+  the fruit fly's benches carry forms; each bench's file grows by what the panel shows and no more.
+- **The vault** (`vault`, the 54th kind, in the group `unknown`, "Particles whose job is not known", the tray colour the page's
+  cytoplasm blue). It is a named exception to how a kind is identified (the Gene Ontology has no term for it and UniProt no
+  keyword): its proteins stand on three footings, each said in its own words on the card and never mixed (by the record, named by
+  a reviewed UniProt entry, by family alone; `schema/MACHINE_DOSSIERS.md`, "The vault"). It stands on the human's, the mouse's
+  and the planarian's benches; where no signature is found in a species it is not on that bench, and the panel that names it
+  there says what was looked for and that this is not an absence. Its size and shape are the viewer's own measure and surface of
+  Protein Data Bank entry 9MXV, a human vault; the card gives the Complex Portal's, the preprint's and the viewer's sizes side by
+  side. A bioRxiv preprint (not peer reviewed) on prokaryotic vaults is named in one passage of its card, each number with its
+  place in the preprint; no prokaryotic vault stands on any bench, and nothing of the preprint's figures is drawn. Each protein
+  of the vault leads to its line in the Protein atlas and back.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
   a species' file draws at another's measure, the shape of that same entry: Syn3A's and M.
@@ -202,7 +222,7 @@ catalogue never says their count.
   (`shapes/<name>.json`), whose it is, its entry and assembly, its definition and setting (a chain
   at 1.0 nm; a ribosome's subunits as solids at 1.6 nm; where a file was made coarser to hold its
   budget, both widths) and its triangles. Every measured machine and unit has one since 18
-  November 2026: E. coli's six, the human's eight, and the animals' 80S and five units. The builder stops where
+  November 2026: E. coli's six, the human's nine (the vault's since 19 November 2026), and the animals' 80S and five units. The builder stops where
   the shape's entry is not the measured one, or a surface names a chain or part the size does not.
   The page asks for a shape file only where the size names one. On every bench, a chosen machine at
   Shape stays within the ceiling: the bench's cost plus its heaviest shape (the innexin channel's
@@ -246,7 +266,11 @@ catalogue never says their count.
 `src/lenses/machines.js`, the second tab, "Machines" (`lens=machines`).
 
 - **The bench.** The machines of the species shown lie on a bench in trays, one for each group,
-  the law inventory's membrane units in one wide tray behind the others. A machine with a size is a
+  the law inventory's membrane units in one wide tray behind the rows of the others. A group whose
+  overlay entry says `stands: "behind"` (with `stands_why`, its dated reason) has its tray at the
+  very back, behind the units' tray: the particles whose job is not known do, since 19 November
+  2026, because the vault is the largest shape on a bench and, in the row before the units' tray,
+  hid their small shapes at the opening view. A machine with a size is a
   simple shape at that size, every one at one scale (one unit of the scene is ten nanometres),
   with a scale bar of 100 nm on the bench; a machine with no size in hand is a card with its name,
   the same size for all. A tray is as wide as its shapes, its cards (three across) or its name (in

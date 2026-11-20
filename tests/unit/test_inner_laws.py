@@ -9,7 +9,7 @@ docs/INNER_MODEL_V4_DESIGN.md §7.4:
   the structure-dependent functions the module's bound once to the structure, plus new names;
 * per-law dispatch: an undeclared law traces no kernel (A4's first test); readouts are today's
   bit for bit, the host keeping today's padding values (§7.4 (b)); the batch signature carries
-  the structure;
+  the structure, and the sizes of a kind's own axes;
 * moved_rows lists every in-step mover of the inner model.
 """
 
@@ -24,7 +24,8 @@ import numpy as np
 import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
-from cells.definitions.specs import parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.kinds import passive_routes
 from cells.laws.channels import potassium_channels, sodium_channels, voltage_gates
 from cells.laws.junctions import junction_gate
 from cells.laws.pumps import calcium_atpase, kinetic_pump
@@ -37,6 +38,7 @@ ARS = "imex_ars222_face_electromigration@1"
 TODAYS = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
 GATED = [law for law in TODAYS.values() if law.gated]  # The Kv1 laws': test_kv1_channel_laws.
 KV1_CODES = {"kv1p1_mh2@1": 5, "kv1p2_mh@1": 6, "kv1p3_mh@1": 7, "kv1p4_mh@1": 8, "kv1p6_mh@1": 9}
+LATER_CODES = {**KV1_CODES, "clleak_always_open@1": 10}  # Registered after today's five.
 INNER_PROTOCOL = (
     "MODEL_ID",
     "STATE_AXES",
@@ -133,9 +135,10 @@ def voltages():
 
 
 def test_channel_declarations_match_todays_tables():
-    # Today's five keep their rows; the Kv1 pilot's five follow, registered with codes 5-9.
-    assert inner_laws.channel_codes() == {**dict(spec3.LAW_CODES), **KV1_CODES}
-    assert list(inner_laws.CHANNEL_LAWS) == [*spec3.TODAYS_CHANNEL_LAWS, *KV1_CODES]
+    # Today's five keep their rows; the Kv1 pilot's five follow, registered with codes 5-9, then
+    # the always-open chloride leak at 10.
+    assert inner_laws.channel_codes() == {**dict(spec3.LAW_CODES), **LATER_CODES}
+    assert list(inner_laws.CHANNEL_LAWS) == [*spec3.TODAYS_CHANNEL_LAWS, *LATER_CODES]
     for law_id, law in TODAYS.items():
         assert law.law_id == law_id
         assert len(law.gates) == spec3.GATE_COUNTS[law_id]
@@ -487,6 +490,31 @@ def test_batch_signature_carries_the_structure():
     assert impl.batch_signature(a.model) == impl.batch_signature(twin.model)
     assert impl.batch_signature(a.model) != impl.batch_signature(other.model)
     assert impl.batch_signature(a.model)[:-1] == surface_pump_v3.batch_signature(a.model)
+    # And a kind's own axes, sized (the fourth review's finding 4): one value-free structure with
+    # one entity or two on an own axis never shares a batch; a twin in IDs and values does.
+    from tests.unit.test_cycle_kind import general
+    from tests.unit.test_passive_routes_kind import P, closed_pair, route
+    from tests.unit.test_transporter_kind import held_world, population, scoped
+
+    def signature(raw):
+        spec = parse_spec(raw)
+        return get_model(spec.model).batch_signature(spec.model)
+
+    with scoped():  # The transporter on its population axis.
+        x, y = (general(population(id=i, capacity_fmol_s=c)) for i, c in (("t", 0.1), ("u", 0.05)))
+        triples = [tuple(map(signature, (held_world(x), held_world(x, y), held_world(y))))]
+    s, t = route("leak_S", P), route("leak_T", P / 2)
+    triples.append(tuple(signature(closed_pair(routes=r)) for r in ([s], [s, t], [t])))  # Routes.
+    for one, two, same_shapes in triples:
+        assert one != two and one == same_shapes
+
+    def reads_execution(spec, declaration):  # Planted: a view set that reads past the model.
+        assert spec.execution is not None
+        return passive_routes.view_sets(spec, declaration)
+
+    with scoped(dataclasses.replace(passive_routes.PASSIVE_ROUTES, view_sets=reads_execution)):
+        with pytest.raises(ConfigError, match="view_sets read more than its declaration"):
+            signature(closed_pair(routes=[s]))
 
 
 def test_a_composition_that_closes_slots_keeps_todays_padding_dynamics():

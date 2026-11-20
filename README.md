@@ -5,7 +5,10 @@
 **Cells is a physics simulator for biology.** It builds cells and tissues from
 explicit physical laws, from electrodiffusion, chemistry and transport to
 mechanics and molecular assembly, with energy, charge and matter accounted for
-at every step. It is multiscale: its models span molecular assembly, cells and
+at every step. A growing set of properties of its laws, such as the direction of
+a flux and the conservation of what it moves, is proved in Lean
+([`lean/`](lean/README.md)) and checked numerically against the engine. It is
+multiscale: its models span molecular assembly, cells and
 tissues, and its runs can be followed through time. It is GPU-native, written in
 **Python and JAX**, so the same models compile for NVIDIA GPUs and for CPUs, and
 the CPU runs serve as independent references. Its first questions are how

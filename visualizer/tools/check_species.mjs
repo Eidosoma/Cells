@@ -760,13 +760,35 @@ try {
 
   // Every species the scene carries, whichever they are: its own levels, its statement, and the
   // switch staying where it stands (the bar or the card) for each of them, in both views.
-  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, text: item.modelled.text || "", model: item.modelled.model || "", levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id), left: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.left_out).map(([id]) => id) }))`);
+  const all = await evaluate(`${V}.model.raw.species.map((item) => ({ id: item.id, label: item.label, state: item.modelled.state, text: item.modelled.text || "", model: item.modelled.model || "", levels: item.levels.map((level) => level.id), machines: (item.machines || []).length, absent: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.place === "absent").map(([id]) => id), left: Object.entries(item.cell.capabilities || {}).filter(([, said]) => said.left_out).map(([id]) => id), own: (item.stages?.list || []).find((stage) => stage.own)?.id ?? null, opens: (() => { const stage = (item.stages?.list || []).find((one) => one.id === item.stages?.opens_on); return stage ? { id: stage.id, ends: stage.ends_at ?? null, state: (stage.modelled || item.modelled).state } : null; })() }))`);
   const places = [];
   for (const item of all) {
     await pressSpecies(item.id);
     s = await state();
     places.push(`${item.id}:${s.inBar ? "bar" : s.inCard ? "card" : "none"}`);
     const stops = { molecules: "molecule", cell: "cell", tissue: "tissue", organ: "organ", organism: "organism" };
+    // A species whose stages open on another stage than the one its file describes (schema/SPECIES_STAGES.md, `opens_on`;
+    // the frog opens on its fertilised egg since 19 November 2026): it opens there, with that stage's levels on the rail
+    // and that stage's own words under the picture. A press on its own stage's stop then shows the form the file
+    // describes, and the checks of the file below are made there.
+    if (item.opens && item.opens.id !== item.own) {
+      // The stage the picture is at, once no change between two stages is under way (a press on a drawn stage's stop
+      // plays the viewer's own plain change, a few seconds long, before the picture is the other stage's).
+      const stageShown = () => evaluate(`(() => { const cell = ${V}.lenses.get("cell"); return cell?.change ? null : cell?.stageId ?? null; })()`);
+      const levelsThere = item.opens.ends ? item.levels.slice(0, item.levels.indexOf(item.opens.ends) + 1) : item.levels;
+      const notInThere = ["proposed", "planned", "designed"].includes(item.opens.state);
+      const there = await stageShown();
+      check(`${item.label}: it opens on the stage its file names, with that stage's levels on the rail and that stage's words under the picture`, s.species === item.id && there === item.opens.id && s.rail.replace("*", "") === levelsThere.map((id) => stops[id]).join(" ") && (notInThere ? /nothing of it is in the engine/.test(s.caveat || "") : Boolean(s.caveat) && !/nothing of it is in the engine/.test(s.caveat || "")), JSON.stringify([there, s.rail, s.caveat]));
+      await press(`cells-timeline .tl-stop[data-stage="${item.own}"]`);
+      // Wait for the change to end and for the picture's words to be the stage's again (the change's own words,
+      // "Illustration: not a run…", stand under the picture while it plays and a moment after).
+      for (let tries = 0; tries < 100; tries++) {
+        if ((await stageShown()) === item.own && !/^Illustration/.test((await state()).caveat || "")) break;
+        await sleep(150);
+      }
+      s = await state();
+      check(`${item.label}: a press on its own stage's stop on the strip shows the form its file describes, and the change's words give way to the stage's`, (await stageShown()) === item.own && s.species === item.id && !/^Illustration/.test(s.caveat || ""), JSON.stringify([await stageShown(), s.rail, s.caveat]));
+    }
     const rail = s.rail.replace("*", "").split(" ");
     const drawnAbsent = item.absent.filter((id) => s.drawn.split(" ").includes(id));
     // A machine that can be looked at closer (schema/MACHINES.md) has a stop of its own, after the molecules.

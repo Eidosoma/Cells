@@ -41,10 +41,15 @@ the species registry declares (``forms``). Version 1's declaration above keeps i
 and code, chosen statically by the declaration's form, so its programs are unchanged. The general
 declaration:
 
-    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"],
+    [{"read_id": "rapid_binding@1", "ligand_rows": ["H", "Mg"], "proton_row": "H",
       "binders": {"matrix": ["ATP", "Pi"]},
       "k_on_per_mM_s": {"ATP": {"H": 1e7, "Mg": 1e5}, "Pi": {"H": 1e7, "Mg": 1e5}}}]
 
+- The proton is declared, never inferred: proton_row, optional, names the ligand row that is the
+  proton (version 1's field), which must be a declared ligand row of valence +1. A charge is no
+  identity: Na+ is a ligand of valence +1 too (the third review's finding 1). Without proton_row
+  the closure has no proton row, so it admits no release step (C5's scope is the proton row's),
+  and the proton leak and the pH condition, which check theirs against it, are refused.
 - At each named node it holds each binder row's total and the total equivalents of every ligand
   those binders bind there (its closure rows); k_on is declared per binding (binder, ligand), one
   for each ligand the binder's forms bind, and every form is reachable from its base by unit steps.
@@ -64,9 +69,17 @@ declaration:
   free amount and each binder's free base form into the rows. The envelope bounds the network's
   first-order lag at the stage's transport (1e-3 in log10 units). The ledger books phase 1's S_c,
   NaN where a held total is <= 0 so that the ledger refuses, beside @3's ideal terms on the rows
-  (CORE_SEAMS §19 as amended). One ligand takes the Newton too: a structure entry sees only the
-  declaration, not the registry's forms, so B4's path cannot be chosen statically here (the
-  kernel's tests show the two agree).
+  (CORE_SEAMS §19 as amended). Its change since the start is formed from the stored increments
+  (rapid_binding.booked_change_pJ: the dual's split, the start's free ligands in the layout's
+  binding_initial_u), so it rounds at the change's scale, not at S_c's (the @3 owner's finding
+  under X2, CORE_SEAMS_STEP0 §9.4; a recorded D148 note on this ledger term alone, the states
+  unchanged). It holds each node's declared volume constant, as the closure's read does: an
+  operator that changes a closure node's volume is refused (today the water law and the lumen's
+  fill, by name in species_registry.check_stage_read_rows, and every closer, which this kind's
+  undeclared partition roles refuse), and a new volume-changing operator must be refused there
+  too before it runs beside a closure. One ligand takes the Newton too: a structure entry sees
+  only the declaration, not the registry's forms, so B4's path cannot be chosen statically here
+  (the kernel's tests show the two agree).
 - The read is valid only where the joint margin t* > 0, the exact joint condition (amendment C4),
   as well as converged. While every held total must be positive (@3's stored rows, and S_c's
   logarithms), t* >= min T_L > 0 always, since the all-base speciation keeps every free ligand at
@@ -101,6 +114,7 @@ FIELDS = ("read_id", "proton_row", "buffers", "k_on_per_mM_s")
 COLUMNS = ("free_proton_mM", "pH")
 GENERAL_READ_ID = "rapid_binding@1"  # The general closure's law and read ID (CORE_SEAMS §19).
 GENERAL_FIELDS = ("read_id", "ligand_rows", "binders", "k_on_per_mM_s")
+GENERAL_PROTON = "proton_row"  # Optional: the declared proton row (module docstring).
 
 
 class Declaration(NamedTuple):
@@ -112,8 +126,9 @@ class Declaration(NamedTuple):
 class GeneralDeclaration(NamedTuple):
     """rapid_binding@1's declaration (module docstring): the ligand rows, sorted; the binder rows at
     each node, ((node ID, (binder row, ...)), ...), sorted; k_on per binding, ((binder row,
-    ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its one ligand of valence +1
-    (the row the passive routes' leak and the pH condition check theirs against), or None."""
+    ((ligand row, k_on in 1/(mM s)), ...)), ...), sorted; and proton, its declared proton_row (the
+    row the release scope, the passive routes' leak and the pH condition check theirs against), or
+    None where it declares none."""
 
     ligands: tuple
     binders: tuple
@@ -146,8 +161,11 @@ class GeneralEntry(NamedTuple):
 
 def _parse_general(entry, m):
     where = f"{MODEL_KEY} ({GENERAL_READ_ID})"
-    if set(entry) != set(GENERAL_FIELDS):
-        raise ConfigError(f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}")
+    if set(entry) - {GENERAL_PROTON} != set(GENERAL_FIELDS):
+        raise ConfigError(
+            f"{where}: a read declares exactly {', '.join(GENERAL_FIELDS)}, and optionally "
+            f"{GENERAL_PROTON}"
+        )
     _, ligands, binders, k_on = (entry[k] for k in GENERAL_FIELDS)
     species = set(m.species_ids)
     if (
@@ -191,9 +209,13 @@ def _parse_general(entry, m):
             value = finite_number(value, f"{where}: k_on of {row} for {ligand}", positive=True)
             values.append((ligand, value))
         rates.append((row, tuple(sorted(values))))
+    proton = entry.get(GENERAL_PROTON)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
-    plus = [ligand for ligand in ligands if valence[ligand] == 1]
-    proton = plus[0] if len(plus) == 1 else None
+    if proton is not None and (proton not in ligands or valence[proton] != 1):
+        raise ConfigError(
+            f"{where}: proton_row {proton!r} is not a declared ligand row of valence +1; the "
+            "proton is the declared row, never inferred from a charge"
+        )
     return GeneralDeclaration(
         tuple(sorted(ligands)), tuple(sorted(pairs)), tuple(sorted(rates)), proton
     )
@@ -253,6 +275,7 @@ def to_dict(declaration):
                 ligand_rows=list(declaration.ligands),
                 binders={node: list(rows) for node, rows in declaration.binders},
                 k_on_per_mM_s={row: dict(rates) for row, rates in declaration.k_on},
+                **({} if declaration.proton is None else {GENERAL_PROTON: declaration.proton}),
             )
         ]
     return [
@@ -489,8 +512,7 @@ def ledger_terms(state, p, *, xp):
     """The declared term's change since the start, as stored free energy (rule (a)). The general
     closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows."""
     if _is_general(p):
-        terms = _general_terms(p, _amounts(state, p, xp), xp)
-        return dict(stored_pJ=terms - p.binding_initial_pJ)
+        return dict(stored_pJ=_general_change(state, p, xp))
     return dict(
         stored_pJ=_declared_terms(p, _amounts(state, p, xp), xp=xp) - p.proton_buffer_initial_pJ
     )
@@ -549,7 +571,11 @@ def _release_scope_error(forms, proton):
     foreign = [step for step in releases if step[1] != proton]
     if foreign:
         f, ligand, g = foreign[0]
-        return f"its release step {f} + {ligand} <-> {g} releases {ligand}, not the proton row"
+        declared = "none declared" if proton is None else proton
+        return (
+            f"its release step {f} + {ligand} <-> {g} releases {ligand}, not the proton row "
+            f"({GENERAL_PROTON}: {declared})"
+        )
     if len(releases) > 1:
         named = ", ".join(f"{f} + {ligand} <-> {g}" for f, ligand, g in releases)
         return f"it has {len(releases)} release steps ({named}), more than one"
@@ -704,6 +730,24 @@ def _general_terms(p, amounts, xp):
     return xp.where(xp.any(held, axis=0), xp.where(defined, s_c, xp.nan), 0.0)
 
 
+def _general_change(state, p, xp):
+    """Phase 1's booked term's change since the start per node (pJ), formed from the stored
+    increments (rapid_binding.booked_change_pJ), so it rounds at the change's scale: NaN where a
+    held total is <= 0, so the ledger refuses, and 0 where the closure holds nothing."""
+    u, _, _, _, held, member, safe_v = _general_solve(_amounts(state, p, xp), p, xp)
+    nl, rows = held.shape[0], p.binding_rows
+    reference = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
+    increment = xp.concatenate(
+        (state.amount_increment, state.extracellular_amount_increment), axis=1
+    )
+    change, defined = binding.booked_change_pJ(
+        u, p.binding_initial_u, reference[rows[:nl]], increment[rows[:nl]],
+        reference[rows[nl:]], increment[rows[nl:]], p.binding_log_beta, p.binding_counts,
+        p.binding_present, held, member, safe_v, p.temperature, xp=xp,
+    )  # fmt: skip
+    return xp.where(xp.any(held, axis=0), xp.where(defined, change, xp.nan), 0.0)
+
+
 def _general_read(state, p, xp):
     """The stage's read: each held ligand row holds its free ligand x V, each held binder row its
     free base form c_base V, for the rates; every other row as stored."""
@@ -797,6 +841,7 @@ def _general_initial(spec, declaration, layout):
         binding_conservation=net["conservation"],
         binding_mu0p=np.asarray(mu0p),
         binding_initial_pJ=np.zeros(n + o),
+        binding_initial_u=np.zeros((len(declaration.ligands), n + o)),
     )
     start = SimpleNamespace(**(dict(layout) | own))
     amounts = np.concatenate((start.amount_reference, start.extracellular_amount_reference), axis=1)
@@ -813,6 +858,7 @@ def _general_initial(spec, declaration, layout):
             "where phase 1 books @3's ideal terms on the closure's rows"
         )
     own["binding_initial_pJ"] = terms
+    own["binding_initial_u"] = u
     _, active = _nodes(start, np)
     px = np.where(held & active[None, :], -np.log10(np.exp(u) / closure.PH_REFERENCE_mM), 0.0)
     state = dict(
@@ -891,6 +937,7 @@ GENERAL_LAYOUT_FIELDS = (
     "binding_conservation",  # [L + B, species]
     "binding_mu0p",  # [L + B]: each row's mu°/RT - ln c0 (@3's 1 mM frame).
     "binding_initial_pJ",  # [node]: the booked term at the start.
+    "binding_initial_u",  # [L, node]: the free ligands' ln x (mM) at the start.
 )
 GENERAL_COLUMNS = ("free_ligand_mM",)
 

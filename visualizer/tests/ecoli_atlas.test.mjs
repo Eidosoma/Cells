@@ -233,7 +233,10 @@ test("the files keep their limits, hold no machine path, and the notes give the 
   assert.match(note, /D179/);
 });
 
-test("the build tool reproduces the five files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set ECOLI_DATASETS)" }, async () => {
+test("the build tool reproduces the five files from the saved downloads", { skip: SAVED ? false : "the folders of saved downloads are not on this machine (set ECOLI_DATASETS)" }, async (t) => {
+  // The quick sweep (npm run test:quick) skips it where it passed before on the same inputs; npm test always runs it.
+  const { passedBefore } = await import("./lib/test_cache.mjs");
+  if (await passedBefore(t, { downloads: [path.join(DATASETS, "*", "*")], env: ["ECOLI_DATASETS"] })) return;
   const folder = await mkdtemp(path.join(os.tmpdir(), "ecoli-build-"));
   try {
     const built = spawnSync("python3", ["-I", TOOL, "build", "--datasets", DATASETS, "--out-dir", path.join(folder, "ecoli"), "--out-species", path.join(folder, "species.json"), "--out-atlas", path.join(folder, "atlas.json")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });

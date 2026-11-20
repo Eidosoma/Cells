@@ -108,6 +108,10 @@ EXEMPT = {
     + " (Track E M1, D170 ruling 5: start_state takes one world's resolved_pump_tissue@3 "
     "checkpoint into a conduction assay's definition; its import record names the source "
     "manifest's digest and identities)",
+    "validation/long_duration/rung0.py": DEVELOPMENT_TOOL
+    + " (FR-8 rung 0's restart windows: checkpoint() takes stage 0's R3 state at each window's "
+    "start from its kept rows.npz, named by path and revision in rung0_20261119.json; the runs "
+    "recorded no source digest, which RUNG0_20261119.md section 9.5 records after the fact)",
     # Same-process restart and independent references.
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",

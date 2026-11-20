@@ -1,7 +1,7 @@
 {
   "format": "cells.visualizer.architecture-overlay@1",
   "title": "Cells architecture",
-  "as_of": "2026-11-18",
+  "as_of": "2026-11-19",
   "source_base_url": "https://github.com/Eidosoma/Cells/blob/main/",
   "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
   "statuses": [
@@ -880,7 +880,7 @@
       "label": "Run-view output",
       "layer": "execution",
       "status": "landed",
-      "plain": "Every run can save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented (D154). The writer merged into main on the evening of 16 November 2026, with its tests. A run that asks for it writes one view file beside its definition, through the shared output paths, and writing it changes no result. It reads what the tissue model, its kinds and the operators declare of themselves, keeps no table of its own for any model, and writes door S's merged view of each field that operators change; what it cannot state it refuses, or lists as unstated. Its first version covers the composite model and the tissue model alone, and refuses the older families. It also writes the loop block of a living-cell loop (FR-11), with a measure of how well the loop closes. Three format items from the viewer's reader follow; the first, each passive route's kind given as a word and its law's ID under its laws, landed with the core fixes on 18 November 2026. Implemented and guarded.",
+      "plain": "Every run can save what a viewer needs to replay it: geometry, identities, record metadata, events and how each layer is represented (D154). The writer merged into main on the evening of 16 November 2026, with its tests. A run that asks for it writes one view file beside its definition, through the shared output paths, and writing it changes no result. It reads what the tissue model, its kinds and the operators declare of themselves, keeps no table of its own for any model, and writes door S's merged view of each field that operators change; what it cannot state it refuses, or lists as unstated. Its first version covers the composite model and the tissue model alone, and refuses the older families. It also writes the loop block of a living-cell loop (FR-11), with a measure of how well the loop closes. Three format items from the viewer's reader follow; the first, each passive route's kind given as a word and its law's ID under its laws, landed with the core fixes on 18 November 2026, and the rest with the tissue model's guard landing by 19 November 2026: what a route's carried species mean, and when a reference constant is written. Since seam D a heat record's claim to be monotone reads its field's declared energy role. Implemented and guarded.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -911,9 +911,20 @@
         {
           "path": "PROGRESS.md",
           "where": "core-fixes carried across move 2 and landed (18 November 2026)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's next landings (18 November late evening to 19 November 2026)"
+        },
+        {
+          "path": "docs/RUN_VIEW_DESIGN.md",
+          "where": "The core seams pass's three format items"
+        },
+        {
+          "path": "tests/unit/test_run_view_formats.py"
         }
       ],
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "src/cells/records/run_view.py"
       ]
@@ -1545,7 +1556,7 @@
       "label": "Long-time methods",
       "layer": "numerics",
       "status": "planned",
-      "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate; its acceptance now includes an intervention applied during the slow phase (feature request FR-8, D164). A design note for FR-8, a long-time path for composite operators, was proposed on 18 November 2026 with options and the user's questions, written before the GH200 numbers (D216). The user answered it the same evening (D217): only its stage 0 is approved, five measurements and a small numerical harness on an existing case of today's fine engine, each measurement's criteria and tolerances declared before its comparison; the method is chosen after stage 0's results and the core's probe of the composite's energy check. Nothing is built.",
+      "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate; its acceptance now includes an intervention applied during the slow phase (feature request FR-8, D164). A design note for FR-8, a long-time path for composite operators, was proposed on 18 November 2026 with options and the user's questions, written before the GH200 numbers (D216). The user answered it the same evening (D217): only its stage 0 is approved, five measurements and a small numerical harness on an existing case of today's fine engine, each measurement's criteria and tolerances declared before its comparison; the method is chosen after stage 0's results and the core's probe of the composite's energy check. Its stage 0, the measurements and the harness on today's fine engine (a part of its own), landed on 19 November 2026, and a ladder of rungs was then decided, with the user's agreement (D224): rung 0 explains the fine engine's order drop through a switch, and ran the same day; rung 1, the first method, the design note's N2, linearly implicit membranes and junctions, with the junction gates updated exponentially, as one new opt-in identifier, comes after the energy check X2 lands; rung 2, a slow integrator, is to be designed inside the existing long-horizon family. No long-duration method is built.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -1566,9 +1577,17 @@
         {
           "path": "docs/LONG_DURATION_MODE_DESIGN.md",
           "where": "11. The user's answers (18 November 2026; D217)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-8 rung 0: the fine engine's order through a switch (19 November 2026)"
         }
       ],
-      "as_of": "2026-11-18"
+      "as_of": "2026-11-19"
     },
     {
       "id": "num.step_context",
@@ -1638,7 +1657,7 @@
         "src/cells/laws/channels/calcium_activated_potassium.py",
         "src/cells/laws/channels/__init__.py"
       ],
-      "plain": "56 sodium, potassium, HCN, calcium and leak channel laws. The heredity channels NaV1.2 and Kir2.1 pass BETSE parity. Since 18 November 2026 the tissue model's five channel laws stand in modules of their own, which this catalogue's modules re-import, and the Kv1 catalogue takes its numbers from the five modules of the Kv1 port pilot; its own formula is kept as a recorded temporary second form, which retires with the older families. Those modules are in the part of the tissue model's declared laws.",
+      "plain": "56 sodium, potassium, HCN, calcium and leak channel laws. The heredity channels NaV1.2 and Kir2.1 pass BETSE parity. Since 18 November 2026 the tissue model's five channel laws stand in modules of their own, which this catalogue's modules re-import, and the Kv1 catalogue takes its numbers from the five modules of the Kv1 port pilot; its own formula is kept as a recorded temporary second form, which retires with the older families. Those modules are in the part of the tissue model's declared laws, and since 19 November 2026 the five Kv1 laws are registered there as the tissue model's own. The same day this catalogue's always-open chloride leak gained a declaration on the tissue model under its own ID, in a module of its own beside them.",
       "sources": [
         {
           "path": "docs/README.md",
@@ -1651,6 +1670,10 @@
         {
           "path": "docs/CORE_SEAMS_DESIGN.md",
           "where": "Ruled: one source for the numbers, rather than one copy of the formula."
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Cl⁻ in @3's channel populations: the always-open chloride leak"
         }
       ]
     },
@@ -1915,7 +1938,7 @@
       "match": [
         "src/cells/laws/reactions/hill_factors.py"
       ],
-      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Nothing of the loop is built.",
+      "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Its core prerequisites, B1's lifecycle driven by roles and the kinds' declarations, landed on 19 November 2026; nothing of the loop is built, and building it is next.",
       "sources": [
         {
           "path": "docs/INVENTORY_COUPLING_DESIGN.md"
@@ -1979,6 +2002,10 @@
         {
           "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md",
           "where": "9. The user's answers (18 November 2026; D217, D218)"
+        },
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-7"
         }
       ]
     },
@@ -2078,11 +2105,15 @@
       "label": "Golgi and trafficking",
       "layer": "laws",
       "status": "planned",
-      "plain": "The pathway that carries new proteins from the ER through the Golgi to the membrane or out of the cell. Planned, not started.",
+      "plain": "The pathway that carries new proteins from the ER through the Golgi to the membrane or out of the cell. Planned, not started. Retrieval and recycling of membrane between a cell's surface and a pool inside it, FR-2's first version, is a part of its own, Membrane retrieval and recycling, on main since 19 November 2026.",
       "sources": [
         {
           "path": "docs/ROADMAP.md",
           "where": "Current development priorities, item 9"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "On 19 November: FR-2 version 1"
         }
       ]
     },
@@ -2091,8 +2122,8 @@
       "label": "Laws as declared pieces",
       "layer": "laws",
       "status": "landed",
-      "as_of": "2026-11-18",
-      "plain": "Before the rework, the tissue model's channel laws were a closed table: every law was computed for every channel population and the right one selected afterwards, even in a world with no channels. Since the rework landed on 16 November 2026, each of its five channel laws, its junction law and its two pump laws is declared once, under a fixed code, and a world's program is built from the laws that world declares: a law that is not declared is absent from the program. A probe had found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. Since 17 November 2026 each is declared on the law template, and since 18 November 2026 each stands in a module of its own, with its kernels: the core pass's seam F, laws as modules. Such a module registers nothing itself; the law registry's loader registers its law and records the module, and the older families' modules re-import the moved names, so that they run the one copy. Five more modules hold the laws of the Kv1 port pilot (D211), held inert and unregistered until the tissue model's parser reads its channel table from the law registry; the older Kv1 catalogue builds its tables from their numbers. The tissue model's own module keeps the tables its readers use, read from the registry, and seam D's switch: for each of the tissue model's classes of mover, channels, junctions, membranes, pumps and calcium pumps, a world may pick the trapezoid booking of heat beside the default, and a world that picks none keeps its programs. New kinds of piece join through the kind interface, and the operators declare what they read, change and book through the operator contract. Implemented and guarded: tests on main hold each law to its module and to the registry, and each of the five Kv1 laws to two references and to the older catalogue's numbers, and the landing's gates held, with no changed outcome in tiers 1 and 2, all 113 saved worlds and crossrev's ten sets.",
+      "as_of": "2026-11-19",
+      "plain": "Before the rework, the tissue model's channel laws were a closed table: every law was computed for every channel population and the right one selected afterwards, even in a world with no channels. Since the rework landed on 16 November 2026, each of its five channel laws, its junction law and its two pump laws is declared once, under a fixed code, and a world's program is built from the laws that world declares: a law that is not declared is absent from the program. A probe had found that separating the laws moves no result: in seven worlds every value at every step stayed the same bit for bit, with smaller programs. Since 17 November 2026 each is declared on the law template, and since 18 November 2026 each stands in a module of its own, with its kernels: the core pass's seam F, laws as modules. Such a module registers nothing itself; the law registry's loader registers its law and records the module, and the older families' modules re-import the moved names, so that they run the one copy. Five more modules hold the laws of the Kv1 port pilot (D211). Since 19 November 2026 the tissue model's parser reads its channel table from the law registry, so all five are registered as its channel laws, codes 5 to 9, and the older Kv1 catalogue builds its tables from their numbers. The same day an always-open chloride leak joined them as code 10, one of the general features that real use cases found missing (D228, item 3): the tissue model's table of valences admits chloride at −1, and a chloride conductance sits on a patch beside its others, switched by the population's availability. The tissue model's own module keeps the tables its readers use, read from the registry, and seam D's switch: for each of the tissue model's classes of mover, channels, junctions, membranes, pumps and calcium pumps, a world may pick the trapezoid booking of heat beside the default, and a world that picks none keeps its programs. New kinds of piece join through the kind interface, and the operators declare what they read, change and book through the operator contract. Implemented and guarded: tests on main hold each law to its module and to the registry, and each of the five Kv1 laws to two references and to the older catalogue's numbers, and the landing's gates held, with no changed outcome in tiers 1 and 2, all 113 saved worlds and crossrev's ten sets. A test holds that a chloride population moves what a chloride patch does, and at the chloride leak's landing tiers 1 and 2 showed no changed outcome and crossrev's eleven sets were identical.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -2158,6 +2189,24 @@
         },
         {
           "path": "tests/unit/test_inner_laws.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Cl⁻ in @3's channel populations: the always-open chloride leak"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+        },
+        {
+          "path": "tests/unit/test_chloride_leak_law.py"
+        },
+        {
+          "path": "tests/unit/test_surface_pump_v3_registry_laws.py"
         }
       ],
       "match": [
@@ -2176,7 +2225,8 @@
         "src/cells/laws/channels/kv1p2_mh.py",
         "src/cells/laws/channels/kv1p3_mh.py",
         "src/cells/laws/channels/kv1p4_mh.py",
-        "src/cells/laws/channels/kv1p6_mh.py"
+        "src/cells/laws/channels/kv1p6_mh.py",
+        "src/cells/laws/channels/clleak_always_open.py"
       ]
     },
     {
@@ -2184,12 +2234,12 @@
       "label": "Kind interface",
       "layer": "laws",
       "status": "landed",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "src/cells/registry/kind_registry.py",
         "src/cells/kinds/__init__.py"
       ],
-      "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. Since the evening of the same day there are two more, for feature request FR-5: the damage of a membrane patch and a pH condition, which act on routes only through the routing door. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Since 18 November 2026 a kind writes only its own resolved, declared fields, its initial values, derivatives and control outputs, and a planted write to another's field is refused where the model is built and where it is traced: one of two boundary fixes that an external adviser's architecture review asked for, landed before move 2 as an exception to D195's order (D214). With the core pass's first landings on 18 November 2026, the kind contract gained the declarations its seams need, each checked at registration: a field's energy role, the heat bookings a kind admits, its partition roles and its ledgers, and the class of a kind's rates, which the tissue model now imports from it; and the core fixes, carried across the second source move, added a kind's material slope to the step's rule: an explicit stage is refused where the step times the largest slope at a node exceeds the explicit step's bound (D4). Today's built-in kinds declare none of the new roles and register as before. Implemented and guarded.",
+      "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. Since the evening of the same day there are two more, for feature request FR-5: the damage of a membrane patch and a pH condition, which act on routes only through the routing door. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Since 18 November 2026 a kind writes only its own resolved, declared fields, its initial values, derivatives and control outputs, and a planted write to another's field is refused where the model is built and where it is traced: one of two boundary fixes that an external adviser's architecture review asked for, landed before move 2 as an exception to D195's order (D214). With the core pass's first landings on 18 November 2026, the kind contract gained the declarations its seams need, each checked at registration: a field's energy role, the heat bookings a kind admits, its partition roles and its ledgers, and the class of a kind's rates, which the tissue model now imports from it; and the core fixes, carried across the second source move, added a kind's material slope to the step's rule: an explicit stage is refused where the step times the largest slope at a node exceeds the explicit step's bound (D4). On 19 November 2026 it gained presence fields, which let a kind stand beside a closer, gated by its host's activity, with the built-in transporter declaring its own so that no kind code changed; the kinds' own ledgers, read into the inner model's checks; and one lifecycle for kinds' state at division and retirement, driven by each field's role. A check that each state field's array matches its declared axes is scheduled (D228, item 6). Implemented and guarded.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -2245,6 +2295,23 @@
         },
         {
           "path": "tests/unit/test_kind_material_term.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "Q2's gate is a presence gate"
+        },
+        {
+          "path": "tests/unit/test_kind_presence_gate.py"
+        },
+        {
+          "path": "tests/unit/test_kind_ledgers.py"
+        },
+        {
+          "path": "tests/unit/test_kind_lifecycle_roles.py"
         }
       ]
     },
@@ -2253,12 +2320,12 @@
       "label": "Law template and registry",
       "layer": "laws",
       "status": "landed",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "src/cells/registry/laws.py",
         "src/cells/registry/__init__.py"
       ],
-      "plain": "How a law is declared and found. Since 17 November 2026 every law declares one record of its interface's type, a channel, membrane cycle, passive route, binding or junction law, with what runs it, where it comes from, a citation where one is cited, and the units and signs of its fields. Laws register on a registry that belongs to one model build, and a kind finds its laws by interface and host; a law that no definition declares changes nothing. The tissue model's ten laws use it. The template stays provisional until a first outside module arrives (D195), and the cycle and binding interfaces until their seams land. Since the evening of 17 November 2026 the set of law interfaces is open to the engine's own families: a family declares its own in the static model table, each a type built on the template that checks its own fields. Since 18 November 2026 a law declared in a module of its own is listed as a law home in the model table, and the loader that registers it records its module; the cycle and route law types carry the step terms that the operators' admission reads, each the name of a kernel or none: a charge slope and a material slope for the step's rule, and bounds at definition for a charged and a neutral row. Declared extension, a law, operator or model that the engine records and checks as an extension of another, is on the backlog, requested and not scoped (FR-14, D205): today a subclass registers under an ID of its own, and nothing records or checks it as an extension. Implemented and guarded.",
+      "plain": "How a law is declared and found. Since 17 November 2026 every law declares one record of its interface's type, a channel, membrane cycle, passive route, binding or junction law, with what runs it, where it comes from, a citation where one is cited, and the units and signs of its fields. Laws register on a registry that belongs to one model build, and a kind finds its laws by interface and host; a law that no definition declares changes nothing. The tissue model's laws use it, sixteen of them rows of its own since 19 November 2026. The template stays provisional until a first outside module arrives (D195). Since the core pass's landings of 18 and 19 November 2026 a cycle law may carry its general form, and a binding law the general closure's kernels, its free energy among them (seams A and C). Since the evening of 17 November 2026 the set of law interfaces is open to the engine's own families: a family declares its own in the static model table, each a type built on the template that checks its own fields. Since 18 November 2026 a law declared in a module of its own is listed as a law home in the model table, and the loader that registers it records its module; the cycle and route law types carry the step terms that the operators' admission reads, each the name of a kernel or none: a charge slope and a material slope for the step's rule, and bounds at definition for a charged and a neutral row. Declared extension, a law, operator or model that the engine records and checks as an extension of another, is on the backlog, requested and not scoped (FR-14, D205): today a subclass registers under an ID of its own, and nothing records or checks it as an extension. Implemented and guarded.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -2305,6 +2372,13 @@
         },
         {
           "path": "tests/unit/test_law_modules.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's next landings (18 November late evening to 19 November 2026)"
+        },
+        {
+          "path": "tests/unit/test_cycle_forms.py"
         }
       ]
     },
@@ -2386,15 +2460,18 @@
       "label": "Transporters and proton buffer",
       "layer": "laws",
       "status": "landed",
-      "as_of": "2026-11-16",
+      "as_of": "2026-11-19",
       "match": [
         "src/cells/kinds/transporter.py",
         "src/cells/kinds/proton_buffer.py",
         "src/cells/laws/pumps/atp_transporter.py",
         "src/cells/laws/pumps/proton_pump.py",
-        "src/cells/laws/reactions/rapid_proton_buffer.py"
+        "src/cells/laws/reactions/rapid_proton_buffer.py",
+        "src/cells/laws/cycles/__init__.py",
+        "src/cells/laws/cycles/forms.py",
+        "src/cells/laws/reactions/rapid_binding.py"
       ],
-      "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded. Both ran in FR-4's judged acceptance on 17 November 2026, which passed all 21 judged criteria; its scope line names the compartment operator as built at 32a1d439.",
+      "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded. Both ran in FR-4's judged acceptance on 17 November 2026, which passed all 21 judged criteria; its scope line names the compartment operator as built at 32a1d439. On 19 November 2026 the core pass gave both a general form, for development, not judged. The transporter became seam A's general cycle kind, which runs any declared cycle law, each law's modes and kinetics given as data by a cycle form, in a module of forms that binds no law of its own; it landed with its comparison against the code-blind references for seam A. The buffer's closure became rapid_binding@1, seam C's rapid-equilibrium binding of several ligands on binders of several forms, run in whole worlds and with its free energy booked. Neither general form ran in a judged acceptance. Tests on main hold the cycle forms, the cycle kind against seam A's references, and the binding closure against seam C's references at every registered state.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -2431,6 +2508,33 @@
         {
           "path": "PROGRESS.md",
           "where": "FR-4 and FR-5 judged: both passed (17 November 2026, 16:12–18:34 UTC)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "3. Seam A: membrane cycles"
+        },
+        {
+          "path": "docs/CORE_SEAMS_DESIGN.md",
+          "where": "5. Seam C: binding"
+        },
+        {
+          "path": "tests/unit/test_cycle_forms.py"
+        },
+        {
+          "path": "tests/unit/test_cycle_kind.py"
+        },
+        {
+          "path": "tests/unit/test_cycle_kind_references.py"
+        },
+        {
+          "path": "tests/unit/test_rapid_binding_kernel.py"
+        },
+        {
+          "path": "tests/unit/test_rapid_binding_world.py"
         }
       ]
     },
@@ -2781,7 +2885,7 @@
         "src/cells/models/surface_pump_v3.py",
         "src/cells/models/surface_pump_checks.py"
       ],
-      "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. A finding of the test audit reached it: one refusal had been missing since a change of 9 November in shared field code (D187). The core's fixes closed it on 16 November 2026, with no registered world affected. On 18 November 2026 its version @3 gained the core pass's host table and seam D's switch for its classes of mover; at each landing tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds and crossrev's sets were identical, and nothing was judged again.",
+      "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. A finding of the test audit reached it: one refusal had been missing since a change of 9 November in shared field code (D187). The core's fixes closed it on 16 November 2026, with no registered world affected. On 18 November 2026 its version @3 gained the core pass's host table and seam D's switch for its classes of mover; at each landing tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds and crossrev's sets were identical, and nothing was judged again. On 19 November 2026 its version @3 gained seam D's heat bookings, a channel table read from the law registry, with the five Kv1 laws and a chloride leak, chloride admitted at −1 in its table of valences, and the third external review's fix of its trace estimate; each merge's message records its gates, and nothing was judged again.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -2806,6 +2910,18 @@
         {
           "path": "PROGRESS.md",
           "where": "The core-seams pass's first landings (18 November 2026, evening)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Cl⁻ in @3's channel populations: the always-open chloride leak"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The third external review's five findings, fixed (19 November 2026)"
         }
       ]
     },
@@ -2862,7 +2978,7 @@
         "src/cells/models/pump_composite.py",
         "src/cells/models/pump_composite_adapter.py"
       ],
-      "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality failed on the judged run, from the GPU's own nondeterminism. Judged alone under a deterministic GPU setting on 16 November 2026, it passed, in that setting only. Since the rework landed on 16 November 2026, its inner model is the modular one, and it merges several operators' changes to one field place by place (door S). Before the landing, in the deterministic setting, the rework's block of GPU runs passed W1, W2 and all seven criteria of G2-Q1. On 17 November 2026 the gap-junction work found that its energy check refuses some worlds of uncharged species crossing junctions at moderate step sizes, well inside the stability bound; this is reported to the core, which reviews the check's tolerance or its advice on step size, and the check is not loosened for one experiment (FR-18).",
+      "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality failed on the judged run, from the GPU's own nondeterminism. Judged alone under a deterministic GPU setting on 16 November 2026, it passed, in that setting only. Since the rework landed on 16 November 2026, its inner model is the modular one, and it merges several operators' changes to one field place by place (door S). Before the landing, in the deterministic setting, the rework's block of GPU runs passed W1, W2 and all seven criteria of G2-Q1. On 17 November 2026 the gap-junction work found that its energy check refuses some worlds of uncharged species crossing junctions at moderate step sizes, well inside the stability bound; this is reported to the core, which reviews the check's tolerance or its advice on step size, and the check is not loosened for one experiment (FR-18). On 19 November 2026 it gained the channel targets that close FR-8's settling gap, and one lifecycle for its kinds' state at division and retirement (B1's last slice); nothing was judged again. The same day FR-18's criterion X2 was adopted as an opt-in energy check that registered and judged runs must select, each registration declaring its own cap, row by row, with no default (D224); it is not built.",
       "sources": [
         {
           "path": "docs/PUMP_COMPOSITE.md"
@@ -2886,6 +3002,14 @@
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "FR-18 — The composite's energy check at moderate step sizes"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
         }
       ]
     },
@@ -2958,9 +3082,9 @@
       "id": "models.core_seams",
       "label": "Core-seams pass",
       "layer": "models",
-      "status": "designed",
-      "as_of": "2026-11-18",
-      "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass was to follow the second source move, which landed on 18 November 2026. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended); the user's answer that evening admitted it, through the one routing door, each loop verified whole with a control in which the feedback is cut, and B1′ stays the operators owner's, after B1 (D218). The pass started the same day, with the lead's rulings at launch: the owner table checked again on the moved tree, the files of the builder of OL2 and OL3 added to it, the owners seated within the seven, and gates added before the first landing under the operators, the kinds or the tissue model @3: quick worlds of the feature-request lane's judged acceptances, compared bit for bit at every core landing, and tier 3 once on the final tree, with G3 and G4. Its first landings followed on the evening of 18 November 2026, each checked again at its merge with main: the core fixes, carried across the second source move with one semantic fix; the code-blind references for seams A and C, registered before either seam's first output; the tissue model's host table, every patch and junction a row with its kind and its two end nodes, the prerequisite of seam A; crossrev's set of the judged acceptances' quick worlds, and a second set of the gap-junction work's, which every core landing must regenerate bit for bit; and seam F's laws as modules, with the step terms the operators' admission reads, the hand-offs to the tissue model's owner and seam D's switch. At the landings whose gates the record states, the core fixes, the references, the host table, the second crossrev set and seam F's laws, tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds, and crossrev's sets were identical. Composition's first milestone, the rules by which an operator reads another's current state, landed the same evening. Three amendments of seam C's references were registered before any output of its general binding. The same evening the user put the core and the feature requests first (D222): the core pass's owners, its verification owner and the references for seams A and C take seats and processors first, and the gate tooling counts as core, decided to move into the repository with tests and not there yet (D220). Gates use both lanes of processors and are sized to what a landing changes (D223). Designed: the design note's own status line still reads proposed, and its seams A, B and C are not built yet.",
+      "status": "landed",
+      "as_of": "2026-11-19",
+      "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass was to follow the second source move, which landed on 18 November 2026. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended); the user's answer that evening admitted it, through the one routing door, each loop verified whole with a control in which the feedback is cut, and B1′ stays the operators owner's, after B1 (D218). The pass started the same day, with the lead's rulings at launch: the owner table checked again on the moved tree, the files of the builder of OL2 and OL3 added to it, the owners seated within the seven, and gates added before the first landing under the operators, the kinds or the tissue model @3: quick worlds of the feature-request lane's judged acceptances, compared bit for bit at every core landing, and tier 3 once on the final tree, with G3 and G4. Its first landings followed on the evening of 18 November 2026, each checked again at its merge with main: the core fixes, carried across the second source move with one semantic fix; the code-blind references for seams A and C, registered before either seam's first output; the tissue model's host table, every patch and junction a row with its kind and its two end nodes, the prerequisite of seam A; crossrev's set of the judged acceptances' quick worlds, and a second set of the gap-junction work's, which every core landing must regenerate bit for bit; and seam F's laws as modules, with the step terms the operators' admission reads, the hand-offs to the tissue model's owner and seam D's switch. At the landings whose gates the record states, the core fixes, the references, the host table, the second crossrev set and seam F's laws, tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds, and crossrev's sets were identical. Composition's first milestone, the rules by which an operator reads another's current state, landed the same evening. Three amendments of seam C's references were registered before any output of its general binding. The same evening the user put the core and the feature requests first (D222): the core pass's owners, its verification owner and the references for seams A and C take seats and processors first, and the gate tooling counts as core, decided to move into the repository with tests (D220), which it did on 19 November 2026. Gates use both lanes of processors and are sized to what a landing changes (D223). Its next landings followed from the late evening of 18 November 2026, each merge's message recording its gates: refusal 4 version 1.3, which admits a compartment's kinds move by move; the first slices of B1, the operators' energy roles and seam E's hook for standard free energies; the tissue model's guard landing with the run view's format items; and seam F's hand-offs to the registry. By the morning of 19 November 2026 seam A, the general cycle kind, with its comparison against the code-blind references, seam C's second stage, the general rapid binding closure in whole worlds, and seam D, the heat bookings, had landed, with the presence gate that admits a kind beside a closer, the predictor for stage reads under a closure, B1's last slice, the lifecycle driven by roles at division and retirement, and the five Kv1 laws as the tissue model's own. The same day the user gave priority to the gaps that real use cases find, as general features scheduled into the pass as its current heads land (D228); the first, a chloride leak among the tissue model's channel laws, landed that day. Implemented and guarded, not judged: what the record says has landed is on main with its tests, named in the sources. That is seam F, seams A and D, seam C to its second stage, the run view's format items, B1 to its last slice, and of seam E the two adopted fixes, the hook for standard free energies and the kinds' own ledgers. The pass is not finished: B1′, the coupling operator's rate route, comes after B1. The design note's own status line still reads proposed.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -3041,6 +3165,39 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D223: Gates use both lanes, and are sized to what a landing changes"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's next landings (18 November late evening to 19 November 2026)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+        },
+        {
+          "path": "tests/unit/test_cycle_kind.py"
+        },
+        {
+          "path": "tests/unit/test_rapid_binding_world.py"
+        },
+        {
+          "path": "tests/unit/test_heat_bookings.py"
+        },
+        {
+          "path": "tests/unit/test_kind_presence_gate.py"
+        },
+        {
+          "path": "tests/unit/test_p1_predictor.py"
+        },
+        {
+          "path": "tests/unit/test_kind_lifecycle_roles.py"
+        },
+        {
+          "path": "tests/unit/test_kind_ledgers.py"
         }
       ]
     },
@@ -3270,8 +3427,8 @@
       "label": "Origin-of-life engine",
       "layer": "models",
       "status": "designed",
-      "as_of": "2026-11-18",
-      "plain": "Cells' own engine for the origin of life, with laws from physical chemistry: catalysis that keeps detailed balance, physical assemblies and explicit sources of free energy, on the general machinery built for GARD (D197). Its first choices were decided on 17 November 2026 (D199): amphiphile assemblies first, then oligomers, then templating; selection through a finite shared pool and serial transfer; one free-energy function for every law; and two experimental anchors to be judged. The whole programme, milestones OL0 to OL9, is built in order. On the evening of 17 November 2026 the user started it (D212): its laws (OL1) and its independent references (OL5) started then, under D199, aimed at the user's first target, a simulation from first principles of lipid assemblies with lipids and chemicals going in and out, and fission: the protocell, in this viewer's words. OL1 first checked, in its design, how its laws fit the assembly family's kernel, frozen that day, without changing any of that family's worlds; OL5 wrote its reference designs in files before any engine output existed. The lead's rulings for OL1, and for the exchange, the lumen, lysis, the floor and division of OL2 and OL3, are written into the design note. It was decided the same evening that the core may change while these first experiments run, and that gates do not (D215): OL1 keeps a package of its own for now, and at OL3 one shared run loop behind the first version's invariance gate is the default. The GARD limit is exact only under the declared measure of GARD's first build (D215, amending D199). OL1 landed on 18 November 2026, for development and not judged: the assembly family's second major, cells.assembly_lineages@2, with four laws, verified 6 of 6 against OL5's references; the laws, the family and the references are each a part of their own on this map. The same day the lead ruled on the design check of OL2 and OL3, the physical assemblies and their division, and on OL5's questions for their references; those references were registered before any of their engine output, and their code comes after the second source move, which landed that day. On the evening of 18 November 2026 the user put the core and the feature requests first (D222): OL2 still lands when its gate passes, and OL3 waits for free seats and lanes. Designed: the design note's own status line still reads proposed, and of the engine only OL1 is built.",
+      "as_of": "2026-11-19",
+      "plain": "Cells' own engine for the origin of life, with laws from physical chemistry: catalysis that keeps detailed balance, physical assemblies and explicit sources of free energy, on the general machinery built for GARD (D197). Its first choices were decided on 17 November 2026 (D199): amphiphile assemblies first, then oligomers, then templating; selection through a finite shared pool and serial transfer; one free-energy function for every law; and two experimental anchors to be judged. The whole programme, milestones OL0 to OL9, is built in order. On the evening of 17 November 2026 the user started it (D212): its laws (OL1) and its independent references (OL5) started then, under D199, aimed at the user's first target, a simulation from first principles of lipid assemblies with lipids and chemicals going in and out, and fission: the protocell, in this viewer's words. OL1 first checked, in its design, how its laws fit the assembly family's kernel, frozen that day, without changing any of that family's worlds; OL5 wrote its reference designs in files before any engine output existed. The lead's rulings for OL1, and for the exchange, the lumen, lysis, the floor and division of OL2 and OL3, are written into the design note. It was decided the same evening that the core may change while these first experiments run, and that gates do not (D215): OL1 keeps a package of its own for now, and at OL3 one shared run loop behind the first version's invariance gate is the default. The GARD limit is exact only under the declared measure of GARD's first build (D215, amending D199). OL1 landed on 18 November 2026, for development and not judged: the assembly family's second major, cells.assembly_lineages@2, with four laws, verified 6 of 6 against OL5's references; the laws, the family and the references are each a part of their own on this map. The same day the lead ruled on the design check of OL2 and OL3, the physical assemblies and their division, and on OL5's questions for their references; those references were registered before any of their engine output, and their code comes after the second source move, which landed that day. On the evening of 18 November 2026 the user put the core and the feature requests first (D222): OL2 still lands when its gate passes, and OL3 waits for free seats and lanes. On 19 November 2026 the user resumed OL2 and OL3 at low priority, behind the core and FR-1 to FR-10 (D230). OL2's first milestone, built on a branch and not on main, holds the bilayer geometry, the exchange between phases and the permeation of membranes, for development and not yet compared with OL5's references; next, on one branch, come OL2's osmotic lumen and lysis, OL3's division of a single lineage, OL2's shared pool and serial transfer, and OL5's probe roles. Designed: the design note's own status line still reads proposed, and of the engine only OL1 is built.",
       "sources": [
         {
           "path": "docs/DECISIONS.md",
@@ -3327,6 +3484,14 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D222: Core and FRs first"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D230: OL2 and OL3 resume, behind core and FR-1 to FR-10"
+        },
+        {
+          "path": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md",
+          "where": "0.2e The lead's rulings for OL2's remaining milestones and OL3 (19 November 2026)"
         }
       ]
     },
@@ -3582,8 +3747,8 @@
       "label": "Operators reading current state",
       "layer": "operators",
       "status": "designed",
-      "as_of": "2026-11-18",
-      "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and the design was decided on 16 November 2026 (D191): one general rule. Each operator declares, for each field, whether it reads the current value or the declared one, and the composite settles each read when the model is built: the current value where some operator of the composition changes the field, the declared value otherwise. Worlds that do not compose keep their programs bit for bit. It is to be qualified numerically only, since no judged experiment needs it yet, and is built in step 3 of the order the user set the same evening (D194). Four is a lower bound until every refusal of the full cycle is collected. Its first milestone was built and landed on 18 November 2026: the composite's rules for current, fixed and reference reads (C1 to C4), with one table of every change of a view field, from which the composite settles each read. Every operator is unchanged, no registered composition is newly refused or admitted, and the four cases wait for the next milestones, after B1. Designed: of its milestones only M1 is built.",
+      "as_of": "2026-11-19",
+      "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and the design was decided on 16 November 2026 (D191): one general rule. Each operator declares, for each field, whether it reads the current value or the declared one, and the composite settles each read when the model is built: the current value where some operator of the composition changes the field, the declared value otherwise. Worlds that do not compose keep their programs bit for bit. It is to be qualified numerically only, since no judged experiment needs it yet, and is built in step 3 of the order the user set the same evening (D194). Four is a lower bound until every refusal of the full cycle is collected. Its first milestone was built and landed on 18 November 2026: the composite's rules for current, fixed and reference reads (C1 to C4), with one table of every change of a view field, from which the composite settles each read. Every operator is unchanged, no registered composition is newly refused or admitted, and the four cases wait for the next milestones, M2 to M5, which follow B1; B1's last slice landed on 19 November 2026. Designed: of its milestones only M1 is built.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -3606,7 +3771,7 @@
         },
         {
           "path": "docs/OPERATOR_COMPOSITION_DESIGN.md",
-          "where": "M1 built, 18 November 2026 (§17)"
+          "where": "M1 landed, 18 November 2026 (§17)"
         },
         {
           "path": "docs/CORE_SEAMS_DESIGN.md",
@@ -3614,6 +3779,10 @@
         },
         {
           "path": "tests/unit/test_composition_order.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's morning landings (19 November 2026"
         }
       ]
     },
@@ -3623,7 +3792,7 @@
       "layer": "operators",
       "status": "qualified",
       "as_of": "2026-11-18",
-      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator. Since the rework landed on 16 November 2026, the operator admits the kinds of piece the engine knows on the compartment's bounding membrane, such as the proton pump and the proton leak, only under the implicit–explicit step whose checks hold their rates, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). Its protocol, fr1-closed-compartment-v1, was registered and judged on 18 November 2026: it passed all 44 judged criteria against independent references written without the engine's code, and it is the exchange operator's first judged acceptance. Numerically qualified, on CPU only, within its scope line: the neutral first version as built at 05a8d193, with the exchange, turnover and reactions operators, no ion route and a zero anchor on the compartment, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms. The later doors, a compartment's creation, division, fission and fusion, and retirement, come with seam B of the core pass and the mitochondria work (D216).",
+      "plain": "A closed compartment inside a cell: a finite node the cell owns, bounded by one patch of its membrane, with its own volume and its own rows of the shared inventory. The user's high priority (14 November 2026). Its design is accepted (D169, 14 November 2026). Its first milestone, the declaration of a compartment, landed on 15 November 2026 as an operator. Since the rework landed on 16 November 2026, the operator admits the kinds of piece the engine knows on the compartment's bounding membrane, such as the proton pump and the proton leak, only under the implicit–explicit step whose checks hold their rates, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). Its protocol, fr1-closed-compartment-v1, was registered and judged on 18 November 2026: it passed all 44 judged criteria against independent references written without the engine's code, and it is the exchange operator's first judged acceptance. Numerically qualified, on CPU only, within its scope line: the neutral first version as built at 05a8d193, with the exchange, turnover and reactions operators, no ion route and a zero anchor on the compartment, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms. The later doors, a compartment's creation, division, fission and fusion, and retirement, come with seam B of the core pass and the mitochondria work (D216). On 18 and 19 November 2026, after its judged runs, refusal 4 version 1.3 landed, which checks each move of a declared kind at the compartment's node against the step terms its law declares, and refusal 5 version 1.2, which admits a charge anchor where an admitted operator's routes charge the compartment, for FR-2; and membrane state now composes beside a compartment, but only together with FR-2's retrieval and recycling. Nothing was judged again, and the scope lines are unchanged.",
       "sources": [
         {
           "path": "docs/CLOSED_COMPARTMENT_DESIGN.md"
@@ -3671,6 +3840,14 @@
         {
           "path": "docs/FEATURE_REQUESTS.md",
           "where": "The later doors (creation, division, fission and fusion, retirement) with seam B and the mitochondria work"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.4 Version 1.3: refusal 4 per move"
+        },
+        {
+          "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+          "where": "3.4.5 Refusal 5 version 1.2"
         }
       ]
     },
@@ -3678,9 +3855,9 @@
       "id": "fr.internalisation",
       "label": "Internalisation of membrane (FR-2)",
       "layer": "operators",
-      "status": "planned",
-      "as_of": "2026-11-18",
-      "plain": "Membrane, with the populations on it, moves inward on a schedule and carries the compartment it forms: the reverse of membrane insertion. Logged; it follows the internal compartment. Its design note was proposed on 18 November 2026, with options and the user's questions, for the user and the lead to discuss: it answers once where retrieval's energy comes from, for three questions that earlier decisions left open (D216). The user answered it on 18 November 2026 (D217): version 1 is the retrieval and recycling of membrane and channels, retrieval following the membrane's charge, with no new explicit fuel drawn by the machinery in version 1, whose omitted cost is a declared limit, and one well-mixed receiving pool per cell, stated as such; fluid-phase uptake comes in version 1.1. It starts when B1's operator part lands, with the split-and-merge kernel. The kernel itself, a pure function, landed with composition's first milestone the same evening, and nothing calls it yet. Nothing of the operator is built.",
+      "status": "landed",
+      "as_of": "2026-11-19",
+      "plain": "Development, not judged. The request: membrane, with the populations on it, moves inward on a schedule and carries the compartment it forms, the reverse of membrane insertion. Version 1, on main, moves membrane into a receiving pool declared with the world, one per cell, and back, and moves no fluid. Logged on 14 November 2026, to follow the internal compartment. Its design note was proposed on 18 November 2026, with options and the user's questions, for the user and the lead to discuss: it answers once where retrieval's energy comes from, for three questions that earlier decisions left open (D216). The user answered it on 18 November 2026 (D217): version 1 is the retrieval and recycling of membrane and channels, retrieval following the membrane's charge, with no new explicit fuel drawn by the machinery in version 1, whose omitted cost is a declared limit, and one well-mixed receiving pool per cell, stated as such; fluid-phase uptake comes in version 1.1. Version 1 landed on main on 19 November 2026 as an operator of its own, Membrane retrieval and recycling, for development, not judged; it moves the charges with the split-and-merge kernel that landed the evening before. Its registered comparison against code-blind references: the first run passed 770 of 782 rows; the second, after a blind correction of the references, all 782, which is weaker evidence after the failed first run. The comparison is on main with its fixtures and checks every row in every gate. The third external review's fix of the same day refuses two routes of one cell, so that each cell has one receiving pool. The design note's own status line still reads proposed, and fluid-phase uptake comes in version 1.1. Implemented and guarded: the operator and its comparison are on main with their tests.",
       "sources": [
         {
           "path": "docs/FEATURE_REQUESTS.md",
@@ -3708,7 +3885,29 @@
         },
         {
           "path": "tests/unit/test_charge_following_transfer.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "On 19 November: FR-2 version 1"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-2 version 1 against its code-blind references (19 November 2026)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The third external review's five findings, fixed (19 November 2026)"
+        },
+        {
+          "path": "tests/unit/test_membrane_trafficking_comparison.py"
+        },
+        {
+          "path": "tests/unit/test_membrane_trafficking.py"
         }
+      ],
+      "match": [
+        "validation/tissue/membrane_trafficking_comparison.py",
+        "validation/tissue/membrane_trafficking_fixtures.py"
       ]
     },
     {
@@ -4107,7 +4306,7 @@
       "layer": "experiments",
       "status": "qualified",
       "as_of": "2026-11-14",
-      "plain": "Prescribed division of the early frog egg, judged against independently written references. Stages through S5a passed. The registered protocols of S3, current injection and S5a were each run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed.",
+      "plain": "Prescribed division of an egg-scale cell, from one cell to two to four, judged against independently written references. Stages through S5a passed. The registered protocols of S3, current injection and S5a were each run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed. The division work's first subject is Xenopus early cleavage, with a frog parameter set (D141, the cell-division plan); what passed is the engine against its references. The record's first prediction for the egg itself, J1, its membrane potential at the onset of second cleavage, was registered before any model computed it and made with the independent reference model, not the engine: it misses the measured value, a fail within its declared ranges (12 November 2026). No engine run of J1 exists, its cause is not isolated, and no model computes the next prediction until a revised model is frozen.",
       "sources": [
         {
           "path": "docs/CURRENT_PLAN.md",
@@ -4124,6 +4323,18 @@
         {
           "path": "PROGRESS.md",
           "where": "D172's round landed on main"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D141: Cell division, high priority"
+        },
+        {
+          "path": "docs/CELL_DIVISION_PLAN.md",
+          "where": "Xenopus early cleavage first, from 1 to 4 cells."
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Cell division S0b: J1 prediction of record and verdict; J1 fails on the reference"
         }
       ]
     },
@@ -4227,11 +4438,11 @@
       "id": "exp.gap_junction",
       "label": "Gap-junction networks and tumour tissue (development)",
       "layer": "experiments",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "validation/gap_junction_tissue/**"
       ],
-      "plain": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
+      "plain": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. On 19 November 2026 charged species in the species operators, which the work's microRNA needs, were scheduled into the core pass as a general feature, starting with a diagnosis (FR-15's F2 part; D226, D228 item 4). Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
       "sources": [
         {
           "path": "PROGRESS.md",
@@ -4288,6 +4499,43 @@
         {
           "path": "docs/CORE_SEAMS_DESIGN.md",
           "where": "The replication set's baseline is fixed"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+        }
+      ]
+    },
+    {
+      "id": "exp.xenopus_lane",
+      "label": "Xenopus bioelectric cancer lane (plan)",
+      "layer": "experiments",
+      "as_of": "2026-11-19",
+      "plain": "A lane the user decided on 19 November 2026, with a first experiment that can fail: the record states none of this map's levels for it. An external review checked into the repository that day proposes a lane for published experiments of Levin and colleagues on tumour-like structures in Xenopus, starting with their suppression by local hyperpolarisation (Chernet and Levin, 2013). The user made it the third of the top three priorities, beside the core pass and the feature requests; its runs are to use Cells' own physics laws, each judged run under a protocol registered before it (D225). The user chose option B of the gap analysis (D226): a first bundle, the physical preparation (XC0) and the first experiment's local transport (XC1) in one-cell and two-cell preparations, a small mosaic and a matched replay of three arms, beside general features that other users need too, charged species in the species operators (FR-15's F2 part) and anatomy as data, with a decision point after the matched replay. XC1's success is defined so that it can fail: its registration lists every published transport-level number it is scored against, and the outcomes that count as failure. An evidence ledger comes first, then a parse-only probe of the carrier, before any protocol is registered or law coded; the ledger found three transport-level numbers that can be scored, none with an uncertainty, and the lane's first result is not to be reported as a replication (D227). What it needs enters the engine only as general features, each to be qualified with its own references before the lane uses it (D228): the always-open chloride leak landed the same day, and is not qualified; a sodium-coupled anion symporter and an instantaneous inward rectifier come first in its order.",
+      "sources": [
+        {
+          "path": "docs/lanes/LEVIN_CANCER_XENOPUS.md",
+          "where": "Recommendation"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D225: The Xenopus bioelectric cancer replication is one of the top three priorities"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D226: The Xenopus lane goes ahead as option B, with a first experiment that can fail"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D227: Bare published numbers may be committed with their citation; one rule for commits in the shared checkout"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "Cl⁻ in @3's channel populations: the always-open chloride leak"
         }
       ]
     },
@@ -4894,11 +5142,11 @@
       "label": "Core-seams references (seams A and C)",
       "layer": "references",
       "status": "landed",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "validation/core_seams/**"
       ],
-      "plain": "Independent references for two of the core pass's seams, membrane cycles (A) and binding (C), written without reading the engine's code: kinetic diagrams, with their cycles found by two methods and Wegscheider's condition decided exactly; cycle laws on a population, with their free energies, fluxes, heat, work and charge; and the binding of several ligands, solved by two routes, with conservation, charge and its free energy. Their worlds and synthetic constants were registered on 18 November 2026, before any engine output for either seam, and each planted error's power is recorded with them; their note says which design text they read, and that an earlier check's figures shaped which plants exist. Three amendments for seam C, its booked energy term, its convergence scale and a kinetic reference for two ligands, were registered the same evening, before any output of the general binding. Their own tests are in the routine gate. Seams A and C are not built yet, so nothing is judged against them.",
+      "plain": "Independent references for two of the core pass's seams, membrane cycles (A) and binding (C), written without reading the engine's code: kinetic diagrams, with their cycles found by two methods and Wegscheider's condition decided exactly; cycle laws on a population, with their free energies, fluxes, heat, work and charge; and the binding of several ligands, solved by two routes, with conservation, charge and its free energy. Their worlds and synthetic constants were registered on 18 November 2026, before any engine output for either seam, and each planted error's power is recorded with them; their note says which design text they read, and that an earlier check's figures shaped which plants exist. Three amendments for seam C, its booked energy term, its convergence scale and a kinetic reference for two ligands, were registered the same evening, before any output of the general binding. Their own tests are in the routine gate. More amendments followed, each registered before the engine's outputs it is checked against: an erratum to A2, release steps in the binding envelope (C5), and F4, C4 and A2. Seam A landed on 19 November 2026 with its comparison against these references, a test of the routine gate, and seam C's general binding landed the same morning; nothing is judged against them.",
       "sources": [
         {
           "path": "validation/core_seams/references/README.md",
@@ -4934,7 +5182,106 @@
         },
         {
           "path": "tests/unit/test_core_seams_references_envelope.py"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "References registered before the outputs they judge"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "The core-seams pass's next landings (18 November late evening to 19 November 2026)"
+        },
+        {
+          "path": "tests/unit/test_cycle_kind_references.py"
         }
+      ]
+    },
+    {
+      "id": "val.long_duration",
+      "label": "Long-duration measurements (FR-8)",
+      "layer": "references",
+      "status": "landed",
+      "as_of": "2026-11-19",
+      "plain": "Development, not judged. The measurements and the harness that come before a long-duration mode is chosen (feature request FR-8), all on today's fine engine. Stage 0 landed on main on 19 November 2026: five measurements, each with its criteria registered before its run, and the harness, a world of an hour whose cue at its midpoint switches a cell for good, run at three steps. Stage 0 makes no qualification claim, since its references are the engine's own runs. A ladder of rungs was then decided, with the user's agreement (D224): rung 0 first, to explain why the fine engine's order of accuracy drops through a switch, before any later rung is registered, and every later accuracy study judged against it. Rung 0 ran the same day, on the tissue model alone. Its registered verdict is \"instrument not validated\": its control for the slow phase had no power, so no cause is identified. Under an amendment registered blind before the main windows were read, the weaker evidence, the instruments pass and the cause is the transient before the step's order settles: the observed orders climb toward 2 as the step halves. Rung 1 comes after the energy check X2 lands. Implemented and guarded: on main, with tests of the harness's judge and of the measurements M1, M2, M4 and M5, M1's on a registered world. M3, a measurement of cost, has no test of its own, and neither has rung 0's driver, which the engine's guard for restarts lists as a development tool.",
+      "sources": [
+        {
+          "path": "docs/FEATURE_REQUESTS.md",
+          "where": "FR-8"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-8 rung 0: the fine engine's order through a switch (19 November 2026)"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-8's stage 0, the long-duration methods measured (development, not judged)"
+        },
+        {
+          "path": "validation/long_duration/RESULTS_20261118.md",
+          "where": "Stage 0 makes no qualification claim"
+        },
+        {
+          "path": "validation/long_duration/RUNG0_20261119.md"
+        },
+        {
+          "path": "validation/long_duration/REGISTRATION_20261118.md"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+        },
+        {
+          "path": "tests/unit/test_long_duration_harness.py"
+        },
+        {
+          "path": "tests/unit/test_long_duration_m1.py"
+        },
+        {
+          "path": "tests/unit/test_long_duration_m2_m4_m5.py"
+        }
+      ],
+      "match": [
+        "validation/long_duration/**"
+      ]
+    },
+    {
+      "id": "val.lean_proofs",
+      "label": "Lean proofs of the laws' properties",
+      "layer": "references",
+      "as_of": "2026-11-19",
+      "plain": "Not engine code: the record states none of this map's levels for it. A library of proofs in Lean, in the repository's lean/ folder since 19 November 2026, kept by a project of its own, the Lean proofs project, which commits to main from the same checkout (D227). In its own words, it connects engine laws to their proofs, numerical checks and experimental measurements, and each claim's page records its assumptions and links to the code and sources. Its index lists 22 claims about properties of the laws, such as the direction of a flux and the conservation of what it moves: 20 marked proved in Lean and 2 open; of their numerical checks against the engine, 20 marked checked, one failed (that inserting uncharged membrane dissipates heat that is not negative) and one open; and its biological evidence is partial for 21 claims and not assessable for one. Its coverage table counts direct Lean claims for 21 of the 28 registered laws and 3 of the 22 registered operators. The map takes none of this as a level of the engine's parts.",
+      "sources": [
+        {
+          "path": "lean/README.md",
+          "where": "This Lean library connects engine laws to their proofs, numerical checks and experimental measurements"
+        },
+        {
+          "path": "lean/README.md",
+          "where": "Proof index"
+        },
+        {
+          "path": "lean/COVERAGE.md",
+          "where": "Direct Lean claims cover 21 of 28 registered laws"
+        },
+        {
+          "path": "lean/COVERAGE.md",
+          "where": "Direct Lean claims cover 3 of 22 registered operators"
+        },
+        {
+          "path": "README.md",
+          "where": "A growing set of properties of its laws"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D227: Bare published numbers may be committed with their citation; one rule for commits in the shared checkout"
+        }
+      ],
+      "match": [
+        "lean/**"
       ]
     },
     {
@@ -4942,16 +5289,17 @@
       "label": "Feature-request references",
       "layer": "references",
       "status": "landed",
-      "as_of": "2026-11-18",
+      "as_of": "2026-11-19",
       "match": [
         "validation/fr1/**",
         "validation/fr3/**",
         "validation/fr6/**",
         "validation/fr10/**",
         "validation/closed_compartment/**",
-        "validation/bath_schedule/**"
+        "validation/bath_schedule/**",
+        "validation/membrane_trafficking/**"
       ],
-      "plain": "Independent references for the feature-request lane (D216), each written without reading the engine's code, on worlds registered before any engine output existed: FR-10's dose schedule, for the bath's faces, its ions and its records; FR-1's closed compartment; FR-3's site occupancy, whose worlds are registered here too; and FR-6's channel driven through a regulatory state from a per-cell prior. Each set has planted controls with their power, a usage note that the protocol calls inside its judged snapshot, and its own tests. Four judged acceptances passed against them: FR-10's on 17 November 2026, and FR-1's, FR-3's and FR-6's A5″ on 18 November 2026. Two inputs files of the lane, copied byte for byte into these references, stand beside them.",
+      "plain": "Independent references for the feature-request lane (D216), each written without reading the engine's code, on worlds registered before any engine output existed: FR-10's dose schedule, for the bath's faces, its ions and its records; FR-1's closed compartment; FR-3's site occupancy, whose worlds are registered here too; and FR-6's channel driven through a regulatory state from a per-cell prior. Each set has planted controls with their power, a usage note that the protocol calls inside its judged snapshot, and its own tests. Four judged acceptances passed against them: FR-10's on 17 November 2026, and FR-1's, FR-3's and FR-6's A5″ on 18 November 2026. FR-2's references, for its first version, were registered on 19 November 2026 before any comparison with the engine's output; their author corrected the floor of one class of checks as a dated erratum, auditing it blind, without seeing any result, and the comparison against them landed on main the same day, after the operator, for development, not judged. As the user's answer on FR-2's floors decided (D224, item 1), the engine's side reads only a named interface file of the floors and planted rows it needs, generated from the references' design file. Two inputs files of the lane, copied byte for byte into these references, stand beside them.",
       "sources": [
         {
           "path": "validation/fr10/references/README.md"
@@ -4972,6 +5320,24 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "D216: An FR completion lane for FR-1 to FR-10, beside origin of life and the core pass"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+        },
+        {
+          "path": "validation/membrane_trafficking/references/interface/comparison_bands.json"
+        },
+        {
+          "path": "validation/membrane_trafficking/references/README.md",
+          "where": "Registered on 2026-11-19"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "FR-2 version 1 against its code-blind references (19 November 2026)"
+        },
+        {
+          "path": "tests/unit/test_membrane_trafficking_references.py"
         }
       ]
     },
@@ -5042,7 +5408,7 @@
         "tests/**",
         "scripts/test_tiers.py"
       ],
-      "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. The audit's tools merged on the evening of 16 November 2026: tier 3's table is frozen test by test, so that a later run of tier 3 is compared test by test instead of running old code again. The user approved the audit's firm list of tests to retire the same evening (D189), and the retire merged early on 17 November 2026: 11 whole files of tier 3 and 40 of tiers 1 and 2 were deleted, and 811 cases were removed from 42 more, while eight rows were held instead, each with its reason. The tiers now hold 327, 152 and 222 files, and tier 3's frozen record holds 218 files and 6,869 tests. The saving is 5.5 processor-hours per run of tier 3 and 2 minutes per gate of tiers 1 and 2. The tree before the retire is tagged, so that every retired test stays recoverable.",
+      "plain": "The routine gate: every test file's outcome is compared with a recorded baseline before code lands. A file counts as changed when its exit code or its count of failures or errors differs, when its count of passing tests falls, or when its count of skipped tests rises. At D172's landing on 16 November 2026, tiers 1 and 2 (492 files) showed no changed outcome. Of tier 3's 229 files, 187 passed, and each of the other 42 was classified, none of them a defect of the round: 23 failures and 16 time-outs that were there before, two tests the round left stale, fixed in the next commit, and one that passes when run alone. The user's rule of the same day (D187) is to test as little as possible but enough for the science: each claim is proved once, at the cheapest level that can prove it, a new test must catch a planted error, and each landing's tier-3 table is frozen as the record the next run is compared with. The audit's tools merged on the evening of 16 November 2026: tier 3's table is frozen test by test, so that a later run of tier 3 is compared test by test instead of running old code again. The user approved the audit's firm list of tests to retire the same evening (D189), and the retire merged early on 17 November 2026: 11 whole files of tier 3 and 40 of tiers 1 and 2 were deleted, and 811 cases were removed from 42 more, while eight rows were held instead, each with its reason. The tiers now hold 327, 152 and 222 files, and tier 3's frozen record holds 218 files and 6,869 tests. The saving is 5.5 processor-hours per run of tier 3 and 2 minutes per gate of tiers 1 and 2. The tree before the retire is tagged, so that every retired test stays recoverable. On 19 November 2026 the user set the suite's policy on cost (D224): a fix adds a row to an existing parametrized test or nothing, a new test that compiles or runs a world states its seconds and its reason at landing, and tests no longer needed are removed in batches, each with a removal list. Tiers 1 and 2 then held 589 files, 172 processor-minutes in all. The tier record's tools gained a fold and a merge, which put a landing's measured rows onto main's record.",
       "sources": [
         {
           "path": "AGENTS.md",
@@ -5085,6 +5451,17 @@
         {
           "path": "docs/TEST_AUDIT_RETIRE_LIST.md",
           "where": "approved by the user (D189), retired at 6ac27c38"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+        },
+        {
+          "path": "scripts/gates/README.md",
+          "where": "scripts/test_tiers.py holds the tier record's tools"
+        },
+        {
+          "path": "tests/unit/test_tier_fold.py"
         }
       ]
     },
@@ -5093,8 +5470,8 @@
       "label": "Results gate",
       "layer": "references",
       "status": "landed",
-      "as_of": "2026-11-18",
-      "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) ran at the landing and is not repeated for each lane: a lane whose comparison of saved worlds is bit for bit moves no registered result. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). Since 18 November 2026 a gate is sized to what a landing changes: one that changes the engine's source runs the full gate, as before: tiers 1 and 2, G1's 113 worlds, crossrev's eleven sets and the IDs; one that does not always runs tiers 1 and 2 and the IDs, and G1 and crossrev only where a changed file is in their harnesses' import closures, computed at the landing's head (D223). The gate tooling is to move into the repository with its tests (D220, D222); it is not there yet. The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
+      "as_of": "2026-11-19",
+      "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) ran at the landing and is not repeated for each lane: a lane whose comparison of saved worlds is bit for bit moves no registered result. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). Since 18 November 2026 a gate is sized to what a landing changes: one that changes the engine's source runs the full gate, as before: tiers 1 and 2, G1's 113 worlds, crossrev's eleven sets and the IDs; one that does not runs G1 and crossrev only where a changed file is in their harnesses' import closures, computed at the landing's head (D223). On 19 November 2026 the gate tooling moved into the repository (D220, D222): the lane check, the snapshot freeze, the feature-request lane's bitwise landing set, crossrev's set runner, which fails closed, and the fingerprint check through a move map, each tool with tests that plant failures. The same day the user amended the sizing (D229): a landing that changes no engine source runs the files of tiers 1 and 2 it can reach, found from recorded imports and file reads, an always-run set of guards and the IDs, and tiers 1 and 2 run in full each night; once the plan's fail-fast steps are in, queued heads may be gated together as a stack of two or three. The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
       "sources": [
         {
           "path": "docs/ARCHITECTURE.md",
@@ -5161,7 +5538,34 @@
         {
           "path": "docs/DECISIONS.md",
           "where": "The gate tooling counts as core."
+        },
+        {
+          "path": "scripts/gates/README.md",
+          "where": "Every tool has tests with planted failures"
+        },
+        {
+          "path": "PROGRESS.md",
+          "where": "the gate tools move into the repository (D220)"
+        },
+        {
+          "path": "docs/DECISIONS.md",
+          "where": "D229: The testing plan's three decisions: the compile measurement, stacked gates, and selection for non-src landings"
+        },
+        {
+          "path": "tests/unit/test_gates_lane_busy.py"
+        },
+        {
+          "path": "tests/unit/test_gates_crossrev_sets.py"
+        },
+        {
+          "path": "tests/unit/test_gates_fr_landing_set.py"
+        },
+        {
+          "path": "tests/unit/test_gates_fingerprints.py"
         }
+      ],
+      "match": [
+        "scripts/gates/**"
       ]
     },
     {
@@ -5345,11 +5749,15 @@
         "label": "Membrane state",
         "status": "qualified",
         "as_of": "2026-11-14",
-        "plain": "Makes membrane area, capacitance and channel numbers into state that other operators can change.",
+        "plain": "Makes membrane area, capacitance and channel numbers into state that other operators can change. Since 19 November 2026 it composes beside a compartment a cell owns, but only together with FR-2's retrieval and recycling, the one writer there of the bounding patch's area and capacitance (the membrane-state wall's door); nothing was judged again.",
         "sources": [
           {
             "path": "docs/CURRENT_PLAN.md",
             "where": "Gate: lifecycle operators, status of 14 November"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "The membrane-state wall's door"
           }
         ]
       },
@@ -5642,7 +6050,7 @@
         "label": "Cell-owned compartments",
         "status": "qualified",
         "as_of": "2026-11-18",
-        "plain": "A compartment that a cell owns, declared with its own identity and role: the first step toward closed compartments inside cells. Its first milestone landed on 15 November 2026 (feature request FR-1): the declaration alone, which leaves every existing run unchanged. Since the rework landed on 16 November 2026 it admits the kinds of piece the engine knows on a compartment's bounding membrane, under the implicit–explicit step only, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). It records the first form of the compartment identity map, as information only. Its judged acceptances passed on 17 November 2026 in FR-4's and FR-5's protocols, 21 of 21 and 51 of 51 judged criteria, and on 18 November 2026 in FR-1's own, a closed compartment that exchanges species with its cell, 44 of 44, each against independent references written without the engine's code. Numerically qualified, on CPU only, within each scope line: for FR-4 and FR-5 the operator as built at 32a1d439, with refusal 4 version 1.2 and refusal 5 version 1.1; for FR-1 the neutral first version as built at 05a8d193, with the exchange, turnover and reactions operators, no ion route and a zero anchor on the compartment, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms.",
+        "plain": "A compartment that a cell owns, declared with its own identity and role: the first step toward closed compartments inside cells. Its first milestone landed on 15 November 2026 (feature request FR-1): the declaration alone, which leaves every existing run unchanged. Since the rework landed on 16 November 2026 it admits the kinds of piece the engine knows on a compartment's bounding membrane, under the implicit–explicit step only, and refuses any other kind. Since the evening of the same day it also admits FR-5's damage and pH condition, and a compartment whose admitted routes charge it can resume from its own checkpoint, in those worlds only (refusal 4 version 1.2, refusal 5 version 1.1). It records the first form of the compartment identity map, as information only. Its judged acceptances passed on 17 November 2026 in FR-4's and FR-5's protocols, 21 of 21 and 51 of 51 judged criteria, and on 18 November 2026 in FR-1's own, a closed compartment that exchanges species with its cell, 44 of 44, each against independent references written without the engine's code. Numerically qualified, on CPU only, within each scope line: for FR-4 and FR-5 the operator as built at 32a1d439, with refusal 4 version 1.2 and refusal 5 version 1.1; for FR-1 the neutral first version as built at 05a8d193, with the exchange, turnover and reactions operators, no ion route and a zero anchor on the compartment, under the implicit–explicit step (ARS) at 1 ms and RK4 at 0.1 ms. On 18 and 19 November 2026, after its judged runs, refusal 4 version 1.3 landed, which checks each move of a declared kind at the compartment's node against the step terms its law declares, and refusal 5 version 1.2, which admits a charge anchor where an admitted operator's routes charge the compartment, for FR-2; and membrane state now composes beside a compartment, but only together with FR-2's retrieval and recycling. Nothing was judged again, and the scope lines are unchanged.",
         "sources": [
           {
             "path": "PROGRESS.md",
@@ -5691,6 +6099,17 @@
           {
             "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
             "where": "Qualified, 18 November 2026."
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "3.4.4 Version 1.3: refusal 4 per move"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "3.4.5 Refusal 5 version 1.2"
+          },
+          {
+            "path": "tests/unit/test_cell_owned_compartments.py"
           }
         ]
       },
@@ -5726,6 +6145,60 @@
           },
           {
             "path": "tests/unit/test_site_occupancy_estimate.py"
+          }
+        ]
+      },
+      "scheduled_membrane_trafficking@1": {
+        "label": "Membrane retrieval and recycling",
+        "status": "landed",
+        "as_of": "2026-11-19",
+        "plain": "Development, not judged. Membrane moves between a cell's plasma membrane and a receiving pool inside the cell, a compartment the cell owns, and back, with the charges following the membrane: version 1 of feature request FR-2, on main since 19 November 2026 (D217). The retrieved membrane keeps its charge, no fluid moves, the pool is one well-mixed compartment per cell, channel units taken in are silent and held in the operator's record until they return, and no fuel is drawn for the machinery, so the version claims no total energy of trafficking. The charge, heat and work of every move are booked, and the energy ledger closes. Its registered comparison against independent references written without its code ran twice on 19 November 2026: the first run passed 770 of its 782 rows; after a blind correction of the references' floor for one class of checks, the second passed all 782, which is weaker evidence after the failed first run. The comparison is on main and checks every row in every gate. The third external review's fix of the same day refuses two routes of one cell. Implemented and guarded: tests on main check its laws, its runs on batches and sheets, and every row of the comparison.",
+        "sources": [
+          {
+            "path": "PROGRESS.md",
+            "where": "On 19 November: FR-2 version 1"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "FR-2 version 1 against its code-blind references (19 November 2026)"
+          },
+          {
+            "path": "PROGRESS.md",
+            "where": "The third external review's five findings, fixed (19 November 2026)"
+          },
+          {
+            "path": "docs/FEATURE_REQUESTS.md",
+            "where": "FR-2"
+          },
+          {
+            "path": "docs/DECISIONS.md",
+            "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1"
+          },
+          {
+            "path": "docs/MEMBRANE_RETRIEVAL_DESIGN.md",
+            "where": "12. The user's answers and the lead's rulings (18 November 2026; D217)"
+          },
+          {
+            "path": "docs/CLOSED_COMPARTMENT_DESIGN.md",
+            "where": "3.4.5 Refusal 5 version 1.2"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking.py"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking_laws.py"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking_comparison.py"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking_runs.py"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking_batch.py"
+          },
+          {
+            "path": "tests/unit/test_membrane_trafficking_sheet.py"
           }
         ]
       }
@@ -7777,6 +8250,36 @@
       "to": "ref.replicator_model",
       "kind": "extends",
       "label": "its reference, the authors' model run outside the engine (D221)"
+    },
+    {
+      "from": "fr.internalisation",
+      "to": "op.scheduled_membrane_trafficking@1",
+      "kind": "extends",
+      "label": "version 1, on main since 19 November 2026; its later versions build on it"
+    },
+    {
+      "from": "models.core_seams",
+      "to": "laws.transporters",
+      "kind": "delivers",
+      "label": "seams A and C: the general cycle kind and the general binding closure, landed on 19 November 2026"
+    },
+    {
+      "from": "val.long_duration",
+      "to": "models.pump_tissue",
+      "kind": "runs",
+      "label": "rung 0 runs the tissue model alone; development, not judged"
+    },
+    {
+      "from": "num.long_time",
+      "to": "val.long_duration",
+      "kind": "extends",
+      "label": "its later rungs are judged against rung 0's reference (D224)"
+    },
+    {
+      "from": "exp.xenopus_lane",
+      "to": "laws.declarations",
+      "kind": "extends",
+      "label": "the chloride leak its chloride-only patch needs, landed as a general feature (D228, item 3)"
     }
   ],
   "relation_kinds": [

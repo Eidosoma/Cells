@@ -532,3 +532,25 @@ budget or verdict.
   - ρ was evaluated at every accepted row by the sink from the check's own functions, as
     registered.
   - The host checks would have evaluated every row's ledgers a second time beside the sink's.
+
+### Amendment 5, 12:44 UTC on 19 November 2026: the judges' observation checks, after the third review
+
+An external review (the third, 19 November 2026; its finding 5, confirmed by the review agent)
+found that two judges could pass on too few observations. This amendment follows every run and
+judgment of record. It makes the judges hold §5.3's and §6's registered observations; it changes
+no criterion, budget or window. The lead accepted it as written (19 November 2026).
+- **§5.3's threshold timing.** A timing pair passes only when both crossings are located between
+  rows at most 1 ms apart, to two ulps of the crossing's time (the float labels' rounding: 1 ms
+  rows near 1800 s read up to 2e-13 s over 1 ms). A crossing at a row exactly at the level is
+  located by that row and the one before it. `harness_judge.timing_verdict` had recorded the
+  bracket's spacing and never read it.
+- **§6's settling time.** A row qualifies only when the trace observes its whole hold: its last row
+  lies at or after t + 10 s, to two ulps. `m4_settling.settling_time` had credited a hold that a
+  shortened trace never reached.
+- **The judged records are unchanged by it.** Recomputed from the kept rows with the corrected
+  judges (`d406eeed`), the harness's one crossing per arm (1800.094 s, bracketed by 1 ms rows)
+  gives the record's times and verdicts (`records-24e516c7/harness/judge-14e30b1a.json`), and all
+  sixteen M4 settling times are the record's (`records-c5183aba/m4/judge.json`). No arm is re-run
+  and no judge of record is replaced.
+- **Not covered:** a gap or a thinned run of rows inside a hold, and `recovery_time`'s window
+  against a trace that ends before `recovery_through_s` (reported, not judged).

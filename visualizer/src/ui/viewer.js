@@ -29,12 +29,15 @@ import { Catalogue } from "../replay/catalogue.js";
 import { chartOf, tableOf, armWords, unitSign } from "../replay/sweep.js";
 import { renderAtlasNav } from "./atlas_nav.js";
 import { modelSystemOf, modelSystems, switchRows } from "../scene/entries.js";
+import { speciesAt, stageFromAddress, writeStage } from "../scene/life_stages.js";
 import { makeEntryLens, entryTab } from "./entry_views.js";
 import { makeTissueLens } from "../lenses/tissue_line.js";
 import { isPart, partDoors, openingPart } from "./tissue_part.js";
 import { LandingLens, LANDING_CSS } from "./landing.js";
 import { CARD } from "../replay/landing.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
+import { busyReasons } from "../core/busy.js";
+import { readHost } from "../core/host.js";
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
 // stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
@@ -69,8 +72,11 @@ class CellsViewer extends HTMLElement {
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
-    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null, landing: false };
+    // "stage" is the life stage the Scope view shows the species at, where its file gives stages (schema/SPECIES_STAGES.md).
+    this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null, landing: false, stage: null };
     this.lenses = new Map();
+    // What the page's host allows (src/core/host.js): the site's releases say so in a block of their own; without one, as on the artifact.
+    this.host = readHost(this.ownerDocument);
   }
 
   connectedCallback() {
@@ -274,6 +280,8 @@ class CellsViewer extends HTMLElement {
     // An entry of the switch (schema/ENTRIES.md): `entry=`, or `species=` and `atlas=` as before; `cell=` a cell type of the species shown.
     const entered = query.get("entry") || query.get("species") || query.get("atlas") || (query.get("cell") ? this.state.species : null);
     if (entered) this.setEntry(query.get("cell") && !entered.includes(".") && this.speciesChoices().includes(entered) ? `${entered}.${query.get("cell")}` : entered);
+    // A life stage of the species (`stage=`, schema/SPECIES_STAGES.md), shown when the Scope view is.
+    this.state.stage = query.get("stage") || null;
     // The resting look (core/look.js): "look=plain" is the look as it was, "look=full" holds every
     // effect on; "fps=1" shows the frame rate with a switch for each effect, for judging on a device.
     if (this.stage && query.get("look")) this.stage.look.choose(query.get("look"));
@@ -294,6 +302,9 @@ class CellsViewer extends HTMLElement {
       else if (!own && !(wanted === "experiments" && select && !select.startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     }
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
+    // A stage named and not drawn cannot be entered: its card opens, over the species at the stage it opens on.
+    const named = query.get("stage") && this.lenses.get("cell") ? stageFromAddress(query.get("stage"), this.lenses.get("cell").file).open : null;
+    if (named && this.state.lens === "cell") this.select(`stage:${this.lenses.get("cell").file.id}.${named}`);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
     if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
@@ -354,6 +365,11 @@ class CellsViewer extends HTMLElement {
     this.hint.hidden = true;
   }
 
+  /** What the page is busy with, in words (src/core/busy.js): none at rest. Read-only, for the check tools' waits. */
+  busy() {
+    return busyReasons(this);
+  }
+
   // ------------------------------------------------------------ lenses
 
   setLens(id, fromUser = false) {
@@ -407,10 +423,15 @@ class CellsViewer extends HTMLElement {
         lens.onShown = (shown) => {
           if (this.current === lens && shown) this.select(shown);
         };
+        // The Scope view showed the species at another of its life stages, as the visitor chose on its strip.
+        lens.onStage = (stage) => {
+          if (this.current === lens) this.stageChosen(stage);
+        };
         this.lenses.set(key, lens);
       }
       this.current = this.lenses.get(key);
       this.current.setSpecies?.(this.state.species);
+      if (this.state.stage) this.current.setStage?.(this.state.stage);
       this.current.setCellType?.(this.state.cellType);
       this.current.setAtlas?.(this.state.species);
       this.current.activate();
@@ -424,7 +445,12 @@ class CellsViewer extends HTMLElement {
     if (fromUser && id !== "experiments" && new URLSearchParams(location.search).get("select")?.startsWith(CARD)) this.writeAddress({ select: null });
     if (fromUser && location.hash.slice(1) !== id) {
       try {
-        history.replaceState(null, "", `#${id}`);
+        // The page's own address with only its #name changed, as writeAddress and writeEntry write it: a bare "#name" would
+        // resolve against the page's base address, and under the site's root page (<base href="/r/<release>/">) it would
+        // move the visitor's address into the release's folder.
+        const url = new URL(location.href);
+        url.hash = id;
+        history.replaceState(null, "", url);
       } catch {
         location.hash = id;
       }
@@ -589,6 +615,7 @@ class CellsViewer extends HTMLElement {
    */
   setSpecies(id) {
     if (!this.speciesChoices().includes(id) || id === this.state.species) return;
+    this.state.stage = null; // a life stage is a species' own: another species opens on its own
     this.state.species = this.state.atlas = id;
     this.dataset.species = this.dataset.atlas = id;
     for (const lens of this.lenses.values()) {
@@ -698,9 +725,8 @@ class CellsViewer extends HTMLElement {
     // A run left for the landing lets its drawing go; the runs it keeps (ReplayLens.keep) stay for the way back to it.
     for (const lens of this.lenses.values()) lens.rest?.();
     this.writeAddress({ select: null, views: true });
-    // The keyboard comes back to the card it left from.
-    const card = this.openedCard && this.landingView?.box.querySelector(`[data-card="${CSS.escape(this.openedCard)}"] .landing-open`);
-    card?.focus({ preventScroll: true });
+    // The keyboard comes back to the card it left from, its band open first.
+    this.landingView?.returnTo(this.openedCard);
   }
 
   /**
@@ -772,7 +798,10 @@ class CellsViewer extends HTMLElement {
     button.setAttribute("aria-label", name.label);
   }
 
-  /** The address names the entry chosen (`entry=`), and a cell type that is not its species' default (`cell=`). */
+  /**
+   * The address names the entry chosen (`entry=`), a cell type that is not its species' default (`cell=`), and a life
+   * stage that is not the one the species opens on (`stage=`, schema/SPECIES_STAGES.md).
+   */
   writeEntry() {
     try {
       const url = new URL(location.href);
@@ -780,10 +809,29 @@ class CellsViewer extends HTMLElement {
       url.searchParams.set("entry", this.state.model || this.state.species);
       const cell = this.lenses.get("cell");
       if (!this.state.model && cell?.cellType && !cell.cellType.own) url.searchParams.set("cell", cell.cellType.id);
+      writeStage(url.searchParams, this.state.model ? null : cell?.file, cell?.stageShown);
       history.replaceState(null, "", url);
     } catch {
       // A page in a frame that keeps its address: the choice holds while the page is open.
     }
+  }
+
+  /** The life stage the species is shown at, where it is not its file's own: from the Scope view, or else as the address asks. */
+  stageAt() {
+    const cell = this.lenses.get("cell");
+    if (cell?.file) return cell.species?.stage || null;
+    const file = (this.model?.raw.species || []).find((item) => item.id === this.state.species);
+    const asked = file ? stageFromAddress(this.state.stage, file).stage : null;
+    return asked ? speciesAt(file, asked)?.stage || null : null;
+  }
+
+  /** The visitor chose another life stage on the Scope view's strip: the address and the panel follow it. */
+  stageChosen(stage) {
+    this.state.stage = stage;
+    this.writeEntry();
+    if (this.state.selected && !this.shows(this.state.selected)) this.state.selected = null;
+    this.renderPanel();
+    this.dispatchEvent(new CustomEvent("cells-stage", { detail: { species: this.state.species, stage }, bubbles: true, composed: true }));
   }
 
   /** A model system's own view, once its runs are read, in place of its card; it is given the calls setLens gives a lens. */
@@ -827,6 +875,13 @@ class CellsViewer extends HTMLElement {
     if (chrome.view?.species) out.view = { ...chrome.view, species };
     if (chrome.card) out.card = { ...chrome.card, species };
     if (entry && this.state.lens === "proteins") out.caveat = [`${entry.label} is a model system, not an organism: it has no proteins of a species. The atlas shows the units of Cells' law inventory, as for ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}.`, chrome.caveat].filter(Boolean).join(" ");
+    // At a life stage that is not its file's own, the Protein atlas and the Machines bench say that they are the organism's.
+    const at = !entry ? this.stageAt() : null;
+    if (at && (this.state.lens === "proteins" || this.state.lens === "machines")) {
+      const file = this.model.raw.species?.find((item) => item.id === this.state.species), name = file?.organism || file?.label || "the species";
+      const stage = `${at.label}${at.index && at.system ? ` (${at.system.short} ${at.index})` : ""}`;
+      out.caveat = [this.state.lens === "proteins" ? `The atlas holds the proteins of ${name} as an organism: which of them are made at the stage ${stage} is not in its data.` : `The catalogue holds the machines of ${name} as an organism: which of them a cell holds at the stage ${stage} is not in its data.`, chrome.caveat].filter(Boolean).join(" ");
+    }
     if (entry && this.state.lens === "machines") out.caveat = [`${entry.label} is a model system, not an organism: it has no machines of a species. The catalogue shows ${this.model.raw.species?.find((item) => item.id === this.state.species)?.label || "the species last shown"}'s.`, chrome.caveat].filter(Boolean).join(" ");
     return out;
   }
@@ -834,6 +889,7 @@ class CellsViewer extends HTMLElement {
   toggleIndex(force) {
     this.state.indexOpen = force ?? !this.state.indexOpen;
     this.index.hidden = !this.state.indexOpen;
+    this.frame.classList.toggle("has-index", !this.index.hidden); // on a wide window the landing's cards leave it room
     this.indexButton.setAttribute("aria-pressed", String(this.state.indexOpen));
     this.renderIndex();
     if (this.state.indexOpen) this.index.querySelector("input")?.focus({ preventScroll: true });
@@ -876,6 +932,7 @@ class CellsViewer extends HTMLElement {
     if (!this.stage) {
       this.fallback.hidden = onLanding;
       this.index.hidden = onLanding || !this.state.indexOpen;
+      this.frame.classList.toggle("has-index", !this.index.hidden);
     }
     if (back) this.frame.style.setProperty("--back-width", `${Math.ceil(this.backButton.getBoundingClientRect().width)}px`);
     this.viewToggle.hidden = this.viewCard.hidden;
@@ -917,6 +974,7 @@ class CellsViewer extends HTMLElement {
     // A replay brings its playhead.
     this.timeline.hidden = !chrome.timeline;
     this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
+    this.frame.classList.toggle("has-stages", Boolean(chrome.timeline?.onStop)); // a species' life stages (styles.js)
     if (chrome.timeline) this.timeline.bind(chrome.timeline.player, chrome.timeline);
     else this.timeline.unbind?.();
     if (chrome.view) {

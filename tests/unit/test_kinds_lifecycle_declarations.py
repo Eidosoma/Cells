@@ -26,8 +26,10 @@ Each claim with its plant (D187):
   (intensive, so a split copies them), the patch's presence and each entity's patch slot
   structural; a transporter's capacity extensive, its cycles, heat, work and supply history;
 - seam E's kind hook: a diagram pump's cycle declares the standard free energy its constants imply
-  (ATP's hydrolysis, at the diagram's standard state), equal to the registry's within the band
-  Wegscheider's condition admitted it in; factored, net-flow and transport-only cycles, and version
+  (ATP's hydrolysis, at the diagram's standard state) as F's FreeEnergyEntry naming its law and
+  its mode, equal to the registry's within the band Wegscheider's condition admitted it in, which
+  the form gives the entry's check (CycleForm.free_energy_band: wegscheider's band plus one ulp of
+  the implied value, per mode; none for a factored form; planted: one potential off); factored, net-flow and transport-only cycles, and version
   1's entries, declare none (planted: one rate constant 1e-9 off moves it outside the band).
 - §5.2's admission's reading (F's EntityBinding, role_species, checked by kind_role_species): each
   population, in declared order and in both layouts, binds its law, exactly the roles its change
@@ -234,6 +236,8 @@ def test_a_diagram_pumps_cycle_declares_the_free_energy_its_constants_imply():
     (entry,) = declared
     stoichiometry, value, c0 = entry.stoichiometry, entry.dG_RT, entry.c0
     assert stoichiometry == (("ATP", -1), ("ADP", 1), ("Pi", 1)) and c0 == 1000.0  # H only moves.
+    assert isinstance(entry, kind_registry.FreeEnergyEntry)  # F's entry, no longer a 3-tuple:
+    assert (entry.law_id, entry.mode) == (PUMP.law_id, "pump")  # the law and mode it came from.
     valence = dict(tf.PUMP_ROLES)
     potential = {role: tf.PUMP_MU[(role, "N")] for role in ("ATP", "ADP", "Pi")}
     w = forms.wegscheider(PUMP.cycle, 0, valence, potential, 1000.0)
@@ -242,6 +246,21 @@ def test_a_diagram_pumps_cycle_declares_the_free_energy_its_constants_imply():
     # admitted the law, and the value's own rounding (half an ulp).
     allowed = float(w.band) + math.ulp(value)
     assert abs(Decimal(value) - registry_sum(stoichiometry)) <= Decimal(allowed)
+    # The form's band for this entry (CycleForm.free_energy_band; the binding owner's check, under
+    # ruling (d)): wegscheider's own band, plus one ulp of the implied value (the lead's ruling);
+    # a factored form gives none. Planted: one potential off moves it.
+    terms = tuple((n, tf.PUMP_MU[(s, "N")]) for s, n in stoichiometry)
+    band = PUMP.cycle.free_energy_band(entry.mode, terms, 1000.0)
+    assert band == w.band + Decimal(math.ulp(value))
+    off = ((terms[0][0], terms[0][1] + 1.0), *terms[1:])
+    assert PUMP.cycle.free_energy_band(entry.mode, off, 1000.0) != band
+    assert transporter.PROTON.cycle.free_energy_band("cycle", terms, 1000.0) is None
+    slip = tf.slip_form()  # Each mode reads its own cycle: the slip exchanger's three.
+    valence = dict(tf.SLIP_ROLES)
+    for m, (mode, _) in enumerate(slip.modes):
+        own = forms.wegscheider(slip, m, valence, {}, 1000.0).band
+        implied = forms.implied_free_energy(slip, m)[1]
+        assert slip.free_energy_band(mode, (), 1000.0) == own + Decimal(math.ulp(implied)), mode
     for name in ("version_1", "general", "composed", "net_flow"):  # No constants of their own.
         _, bound, other, _, _, _ = built[name]
         with scoped():

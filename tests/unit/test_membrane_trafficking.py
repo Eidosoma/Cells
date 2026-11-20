@@ -3,10 +3,10 @@ docs/MEMBRANE_RETRIEVAL_DESIGN.md §8, in NumPy on bound worlds (no compile), ea
 planted error it catches.
 
 * T1, identity and refusals. Each refusal of the definition fires with its reason: the
-  requirements, the routes against the compartments' declaration, disjoint routes, the carriers,
-  the populations' enrichments and records, the floors and the schedule's exact area trajectory,
-  the schedule's rules, the composition's admitted list and the declared kinds. The declaration
-  and its schedule round-trip. Each refused case is its own plant.
+  requirements, the routes against the compartments' declaration, disjoint routes and one route
+  per cell (D1), the carriers, the populations' enrichments and records, the floors and the
+  schedule's exact area trajectory, the schedule's rules, the composition's admitted list and the
+  declared kinds. The declaration and its schedule round-trip. Each refused case is its own plant.
 * T2, idleness. Zero rates select the start state bitwise. Planted: a rate of one part in 10^12
   of the patch per half-step moves it.
 * T3, area, capacitance and units, over a retrieval-recycling cycle with both directions at once:
@@ -229,6 +229,16 @@ def refusal_cases():
         "two routes into one compartment",
         fx.with_trafficking(raw, routes, [fx.schedule(r["id"], [(0.0, 0.0)]) for r in routes]),
         "two routes share a compartment",
+    )
+    raw = fx.pooled_cells(2, cleft=True)  # cell_1's pool moved onto cell_0: two pools of cell_0.
+    fx.patch(raw, "pool_membrane_1")["inside"] = "cell_0"
+    block = next(op for op in raw["model"]["operators"] if op["law"] == fx.COMPARTMENTS)
+    block["compartments"][1]["owner"] = "cell_0"
+    routes = [fx.route(raw, 0), fx.route(raw, 1, plasma="furrow_0")]
+    yield (
+        "two routes of one cell",
+        fx.with_trafficking(raw, routes, [fx.schedule(r["id"], [(0.0, 0.0)]) for r in routes]),
+        "two routes fill receiving pools of one cell, 'cell_0'",
     )
     yield (
         "transference numbers that do not sum to 1",

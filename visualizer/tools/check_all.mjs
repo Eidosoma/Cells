@@ -2,7 +2,7 @@
 // Runs every real-click check once, several at a time, and says what passed: the check that
 // stands before a publish, as one command.
 //
-//   node tools/check_all.mjs [--out DIR] [--jobs N] [--only PATTERN] [--limit MINUTES] [--list]
+//   node tools/check_all.mjs [--out DIR] [--jobs N] [--only PATTERN] [--limit MINUTES] [--list] [--suite FILE]
 //
 // Each scenario is one run of one of the check tools, with its own browser. A run takes
 // a place of the browser lock (tools/lib/browser_lock.mjs), so as many run at once as there
@@ -11,6 +11,12 @@
 // costs): it runs after all the others, with no other browser beside it, because measured beside
 // three other browsers a frame's cost says more of them than of the page (on 19 November 2026 the
 // shelves' frame check missed its bound in two of three whole runs and passed each time it ran alone).
+// Every other check that holds a time is a measure (tools/lib/measures.mjs): its value, unit and bound are written in the
+// scenario's log and gathered here into the summary. Beside others (CELLS_MEASURES=beside, set here while several
+// scenarios run at once) a scenario whose measures all stand within their bounds has had them held there, under load;
+// one that passes every check but has a measure over its bound is not judged there: it is sent to the alone phase and
+// run again, and there a measure over its bound fails as a check does. The summary names the scenarios sent there and
+// gives each measure's value both times. A scenario that fails a check beside others stays failed and is not run again.
 // --only runs the scenarios whose names match a regular
 // expression; --list names them and runs nothing. A scenario that has not ended after
 // --limit minutes (40 unless given) is stopped together with its browser and counted as
@@ -25,14 +31,19 @@
 // Before the scenarios start, the page is built once, so that the files of the species'
 // proteins are made by one process and not by several at once. The replays the layer checks
 // read must be there already (README, "Experiment replays"): the command says so if not.
+//
+// --suite FILE runs the scenarios a JSON file lists instead of these (each `{ name, tool, args, env, minutes, alone }`,
+// its tool a path of its own): the runner's own test (tests/check_all_measures.test.mjs) holds its rules so, on made-up
+// scenarios, with no page built.
 
 import { spawn, execFileSync } from "node:child_process";
-import { createWriteStream } from "node:fs";
+import { createWriteStream, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildPage, DEFAULT_RUNS, ROOT } from "./lib/build_page.mjs";
 import { BROWSER_CPUS, places } from "./lib/browser_lock.mjs";
 import { changedLines } from "./lib/git_state.mjs";
+import { measuresIn } from "./lib/measures.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback = null) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -51,6 +62,11 @@ const flux = (name, env, minutes = 4) => ({ name: `flux-${name}`, tool: "check_c
 const SUITE = [
   { name: "species", tool: "check_species.mjs", minutes: 14 },
   { name: "species-model", tool: "check_species.mjs", env: { CASE: "model" }, minutes: 3 },
+  // A species' life stages in the Scope view, on a check-only scene with a made-up species (tools/check_stages.mjs): a wide
+  // window (60 to 90 s on one core) and a phone (60 to 90 s). The wide one is 1280 by 720, the tighter of the two wide sizes
+  // (the strip ran under the look's note there and not at 1440 by 900). The other sizes stay runnable by hand: CASE=wide or CASE=360.
+  { name: "stages-wide", tool: "check_stages.mjs", args: [pictures], env: { CASE: "720", NAME: "stages-wide" }, minutes: 2 },
+  { name: "stages-phone", tool: "check_stages.mjs", args: [pictures], env: { CASE: "phone" }, minutes: 2 },
   // The origin-of-life view on the map's page (tools/check_origin.mjs): wide in both themes, a phone, by address, and the pair of forms on a check-only scene.
   { name: "origin-main", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-main" }, minutes: 2 },
   { name: "origin-dark", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-dark", THEME: "dark" }, minutes: 2 },
@@ -142,6 +158,8 @@ const SUITE = [
   { name: "catalogue-shape-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 2 },
   { name: "catalogue-shape-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 2 },
   { name: "catalogue-shape-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shape", NAME: "catalogue-shape-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 2 },
+  { name: "catalogue-vault", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault", WIDTH: "1440", HEIGHT: "900" }, minutes: 4 },
+  { name: "catalogue-vault-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "vault", NAME: "catalogue-vault-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 4 },
   { name: "catalogue-human-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "human", NAME: "catalogue-human-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 2 },
   // The benches read beside the page (the planarian's by family, the thale cress's with its machines of light, one that cannot be read).
   { name: "catalogue-benches", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches", WIDTH: "1440", HEIGHT: "900" }, minutes: 3 },
@@ -152,6 +170,8 @@ const SUITE = [
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)
   { name: "shelves-planarian", tool: "check_shelves.mjs", args: ["planarian"], minutes: 2 },
+  // The planarian's members filed by what its own scan added (19 November 2026): each says so, with the databases behind it.
+  { name: "shelves-scan", tool: "check_shelves.mjs", args: ["scan"], minutes: 2 },
   { name: "layers-closeup", tool: "check_layers.mjs", args: ["closeup"], env: { RUN: SHEET }, minutes: 2 },
   { name: "shelves-syn3a", tool: "check_shelves.mjs", args: ["syn3a"], minutes: 1 },
   { name: "shelves-nofiles", tool: "check_shelves.mjs", args: ["nofiles"], minutes: 1 },
@@ -159,6 +179,9 @@ const SUITE = [
   { name: "shelves-stack-thalecress", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "thalecress" }, minutes: 1 },
   { name: "shelves-stack-mouse", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "mouse" }, minutes: 1 },
   { name: "shelves-accessory-mouse", tool: "check_shelves.mjs", args: ["accessory"], env: { SPECIES: "mouse" }, minutes: 1 },
+  // The frog (19 November 2026): its stack of six shelves, and a reviewed entry found by the twin of its gene that is not shown.
+  { name: "shelves-stack-xenopus", tool: "check_shelves.mjs", args: ["stack"], env: { SPECIES: "xenopus" }, minutes: 1 },
+  { name: "shelves-twins", tool: "check_shelves.mjs", args: ["twins"], env: { SPECIES: "xenopus" }, minutes: 2 },
   { name: "shelves-trail", tool: "check_shelves.mjs", args: ["trail"], minutes: 2 },
   { name: "shelves-search", tool: "check_shelves.mjs", args: ["search"], minutes: 2 },
   { name: "shelves-map", tool: "check_shelves.mjs", args: ["map"], env: { SPECIES: "thalecress" }, minutes: 1 },
@@ -173,8 +196,9 @@ const SUITE = [
   { name: "layers-example", tool: "check_layers.mjs", args: ["example", DEFAULT_RUNS, pictures], env: { RUN: EXAMPLE }, minutes: 1 },
 ];
 
+const MADE = value("--suite") ? JSON.parse(readFileSync(path.resolve(value("--suite")), "utf8")) : null;
 const only = value("--only") ? new RegExp(value("--only")) : null;
-const chosen = SUITE.filter((item) => !only || only.test(item.name));
+const chosen = (MADE || SUITE).filter((item) => !only || only.test(item.name));
 if (args.includes("--list")) {
   for (const item of chosen) console.log(`${item.name}${item.alone ? "  [alone, after the others]" : ""}  (${item.tool}${item.args?.length ? " " + item.args.map((word) => path.relative(ROOT, word) || word).join(" ") : ""}${Object.keys(item.env || {}).length ? "; " + Object.entries(item.env).map(([key, word]) => `${key}=${word}`).join(" ") : ""})`);
   process.exit(0);
@@ -215,7 +239,7 @@ if (needs && !(runs.includes(DEV) && runs.includes(EXAMPLE))) {
   process.exit(2);
 }
 // One build of the page, so that the species' proteins are written once and not by every scenario at its start.
-await buildPage({});
+if (!MADE) await buildPage({});
 const slots = places().length;
 const jobs = Math.max(1, Math.min(Number(value("--jobs", slots)) || slots, slots));
 console.log(`${chosen.length} scenarios on ${revision ?? "an unknown revision"}${dirty ? " (with uncommitted changes)" : ""}, ${jobs} at a time; logs in ${path.relative(process.cwd(), out) || "."}`);
@@ -226,14 +250,21 @@ const results = new Map();
 const waiting = chosen.filter((item) => !item.alone).sort((a, b) => (b.minutes || 1) - (a.minutes || 1));
 // Those that hold a time bound, for after the others (the head of this file says why).
 const apart = chosen.filter((item) => item.alone);
+// Beside others: while more than one scenario runs at once. A measure over its bound there sends its scenario to the alone
+// phase (the head of this file says why); alone, after the others, or with one scenario at a time, every bound is held.
+const BESIDE = jobs > 1 && waiting.length > 1;
 
 function run(item, attempt = 1) {
   return new Promise((resolve) => {
-    const log = path.join(out, `${item.name}.log`);
+    // A scenario run again alone keeps the log of its run beside others.
+    const log = path.join(out, `${item.name}${item.sent ? ".alone" : ""}.log`);
     const stream = createWriteStream(log);
     const started = Date.now();
     // In a group of its own, so that a scenario over its time is stopped with the Chrome it started.
-    const child = spawn(process.execPath, [path.join(ROOT, "tools", item.tool), ...(item.args || [])], { cwd: ROOT, env: { ...process.env, ...(item.env || {}) }, stdio: ["ignore", "pipe", "pipe"], detached: true });
+    const env = { ...process.env, ...(item.env || {}) };
+    delete env.CELLS_MEASURES; // set only here, never left over from the shell
+    if (BESIDE && !item.alone && !item.sent) env.CELLS_MEASURES = "beside";
+    const child = spawn(process.execPath, [path.resolve(ROOT, "tools", item.tool), ...(item.args || [])], { cwd: ROOT, env, stdio: ["ignore", "pipe", "pipe"], detached: true });
     child.stdout.pipe(stream, { end: false });
     child.stderr.pipe(stream, { end: false });
     let over = false;
@@ -270,23 +301,54 @@ function run(item, attempt = 1) {
         font: /own font: arrived/.test(text) ? "arrived" : /own font: not arrived/.test(text) ? "not arrived" : "not said",
         seconds: Math.round((Date.now() - started) / 1000),
         log: path.relative(out, log),
+        beside: env.CELLS_MEASURES === "beside",
+        // Each bound on time the scenario held (tools/lib/measures.mjs): its value, unit and bound, and whether it stood within.
+        measures: measuresIn(text),
       });
     });
   });
 }
 
+/** A measure as the summary says it: its value, unit and bound, and whether it stood within. */
+const said = (one) => `${one.name}: ${one.value} ${one.unit} (${one.op === "<=" ? "at most" : "under"} ${one.bound})`;
+/** A scenario's measures beside others and alone, paired by name and by their order under one name. */
+function bothTimes(first, again) {
+  const seen = new Map();
+  const key = (one) => {
+    const n = seen.get(one.name) || 0;
+    seen.set(one.name, n + 1);
+    return `${one.name}\u0000${n}`;
+  };
+  const alone = new Map(again.map((one) => [key(one), one]));
+  seen.clear();
+  return first.map((one) => {
+    const other = alone.get(key(one));
+    return { name: one.name, unit: one.unit, bound: one.bound, op: one.op, beside: one.value, alone: other ? other.value : null, within_beside: one.within, within_alone: other ? other.within : false };
+  });
+}
+
 async function worker() {
   for (let item = waiting.shift(); item; item = waiting.shift()) {
-    const result = await run(item);
-    results.set(item.name, result);
+    let result = await run(item);
     const ok = result.exit === 0 && result.checks !== null && result.passed === result.checks;
-    console.log(`${ok ? (result.skipped ? "skip" : "pass") : "FAIL"}  ${item.name}: ${result.skipped && ok ? result.skipped : result.checks === null ? `no count (exit ${result.exit})` : `${result.passed} of ${result.checks}`}, ${result.seconds} s, font ${result.font}`);
+    // Every check held beside others but a measure over its bound: judged again alone, after the others.
+    const over = result.measures.filter((one) => one.deferred);
+    if (result.beside && ok && over.length) {
+      apart.push({ ...item, sent: result });
+      console.log(`again ${item.name}: ${over.length === 1 ? "a measure" : `${over.length} measures`} over ${over.length === 1 ? "its bound" : "their bounds"} beside others (${over.map(said).join("; ")}), ${result.seconds} s; run again alone, after the others`);
+      continue;
+    }
+    if (item.sent) result = { ...result, sent_alone: true, beside_run: { seconds: item.sent.seconds, log: item.sent.log }, both: bothTimes(item.sent.measures, result.measures) };
+    results.set(item.name, result);
+    console.log(`${ok ? (result.skipped ? "skip" : "pass") : "FAIL"}  ${item.name}${item.sent ? " (run again alone)" : ""}: ${result.skipped && ok ? result.skipped : result.checks === null ? `no count (exit ${result.exit})` : `${result.passed} of ${result.checks}`}, ${result.seconds} s, font ${result.font}`);
     for (const line of result.failed.slice(0, 5)) console.log(`      ${line}`);
+    if (item.sent) for (const one of result.both) console.log(`      ${one.name}: ${one.beside} ${one.unit} beside others, ${one.alone ?? "not measured"} ${one.alone === null ? "" : `${one.unit} `}alone (${one.op === "<=" ? "at most" : "under"} ${one.bound})`);
   }
 }
 await Promise.all(Array.from({ length: jobs }, worker));
 if (apart.length) {
-  console.log(`${apart.length === 1 ? "one scenario runs" : `${apart.length} scenarios run`} alone, after the others: ${apart.map((item) => item.name).join(", ")}`);
+  const sent = apart.filter((item) => item.sent).map((item) => item.name);
+  console.log(`${apart.length === 1 ? "one scenario runs" : `${apart.length} scenarios run`} alone, after the others: ${apart.map((item) => item.name).join(", ")}${sent.length ? ` (sent there by a measure over its bound beside others: ${sent.join(", ")})` : ""}`);
   waiting.push(...apart);
   await worker();
 }
@@ -308,6 +370,8 @@ const summary = {
   skipped: list.filter((result) => good(result) && result.skipped).map((result) => result.name),
   failed: bad.map((result) => result.name),
   alone: apart.map((item) => item.name),
+  // The scenarios a measure over its bound beside others sent to the alone phase: each measure's value both times, and the result alone.
+  sent_alone: list.filter((result) => result.sent_alone).map((result) => ({ name: result.name, passed: good(result), measures: result.both })),
   checks: { passed: list.reduce((sum, result) => sum + (result.passed || 0), 0), of: list.reduce((sum, result) => sum + (result.checks || 0), 0) },
 };
 await writeFile(path.join(out, "summary.json"), JSON.stringify(summary, null, 1) + "\n");

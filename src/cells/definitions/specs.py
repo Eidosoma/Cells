@@ -771,6 +771,11 @@ class SimulationSpec:
     # Opt-in coarse projective mode (definitions/projective_spec.py), serialized as
     # execution.projective. None, the default, is the fine engine, unchanged.
     projective: Any = None
+    # Opt-in step-doubled energy check (definitions/energy_check_spec.py; FR-18's X2, D224),
+    # serialized as execution.energy_check. None, the default, keeps today's energy check, and
+    # the definition's serialization and digest are unchanged. Added by the @3 owner at the
+    # lead's word (a recorded exception in this file).
+    energy_check: Any = None
 
     def to_dict(self) -> dict:
         result = self._fine_dict()
@@ -778,6 +783,10 @@ class SimulationSpec:
             from cells.definitions.projective_spec import to_dict as projective_to_dict
 
             result["execution"]["projective"] = projective_to_dict(self.projective)
+        if self.energy_check is not None:
+            from cells.definitions.energy_check_spec import to_dict as energy_check_to_dict
+
+            result["execution"]["energy_check"] = energy_check_to_dict(self.energy_check)
         return result
 
     def _fine_dict(self) -> dict:
@@ -977,6 +986,10 @@ def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    if isinstance(data["execution"], dict) and "energy_check" in data["execution"]:
+        from cells.definitions.energy_check_spec import parse_definition as energy_definition
+
+        return energy_definition(data, parse_spec)
     if isinstance(data["execution"], dict) and "projective" in data["execution"]:
         from cells.definitions.projective_spec import parse_definition
 

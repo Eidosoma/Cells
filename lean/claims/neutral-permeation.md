@@ -35,6 +35,8 @@ Uses [At equal voltage, junction flux follows the concentration gradient](juncti
 
 **Open.** Signed passive transfer rate of an identified neutral solute at measured free concentrations on both sides, with compartment volumes or measured flux per area and the corresponding area.
 
+Urea flux was measured over time in liposomes of three lipid compositions. Comparing a Cells rate requires the gradient, area and permeability for the same preparation. [Lande et al., Fig. 3](https://doi.org/10.1085/jgp.106.1.67)
+
 **Unit** fmol/s
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
