@@ -74,5 +74,7 @@ Columns:
 | `mr1_declared` | — | MR1-declared: Eq. 11 with its proton term, Eq. 16 swapped; Eq. 24 restored | — | — | — | — | 3.76 | 1.27, 0.0078, 0.0230, 0.0051, 2.4% |
 | `appendix_all` | — | the appendix's balanced Eqs. 11, 16 and 24 together | — | — | — | — | 4.73 | 2.43, 0.0079, 0.0440, 0.0054, 2.7% |
 | `frame_s_consistent` | — | one frame, S: MR1's Eq. 11 with the frame-S Eq. 16; Eq. 24 restored | — | — | — | — | 3.96 | 1.30, 0.0087, 0.0226, 0.0056, 3.1% |
-| `frame_b_restored_eq24` | — | one frame, B: the appendix's Eqs. 11 and 16 with Eq. 24 restored (the form the curves support) | — | — | — | — | 3.10 | 0.88, 0.0078, 0.0154, 0.0037, 2.0% |
+| `frame_b_restored_eq24` | — | frame B's rate laws (the appendix's Eqs. 11 and 16, Eq. 24 restored) on Eq. 22's printed proton row, which leaves phosphate proton-free: rate laws and bookkeeping in different frames | — | — | — | — | 3.10 | 0.88, 0.0078, 0.0154, 0.0037, 2.0% |
+| `frame_b_restored_eq24_pi_protons` | — | one frame, B, consistent: the same rate laws, and Eq. 22's proton row counting the protons on phosphate | — | — | — | — | 3.46 | 1.20, 0.0140, 0.0156, 0.0038, 2.0% |
+| `appendix_all_pi_protons` | — | the appendix's balanced Eqs. 11, 16 and 24 with frame B's proton row | — | — | — | — | 5.28 | 2.43, 0.0141, 0.0444, 0.0049, 2.7% |
 
