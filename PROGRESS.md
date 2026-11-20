@@ -108,6 +108,39 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork).** Each was
+  gated (tiers 1+2 with 0 changed, G1, crossrev, IDs, FR's set where it applies) and passed the lead's
+  merged check against main.
+  - `kir-ratio-landed-2026-11-20` (e3026388): the inward rectifier's sqrt(c_o/K_ref) formed
+    overflow-safe, in place (D148). The Lean project found it; the equivalent declarations now agree
+    bit for bit. d/dK_ref is undefined at split points, and the engine never takes it.
+  - `kcc-step-bound-landed-2026-11-20` (2e2dc62f): the KCC step bound counts a finite outside node,
+    summed per cell and per node. This closes a silent wrong-direction step, also found by the Lean
+    project. Every registered world faces held baths and keeps its bits. The quotient-overflow fix
+    stays held until its evidence covers every execution path.
+  - `symporter-v2-landed-2026-11-20` (99bff0ed): `na2_anion_symport_diagram@1` (D228 item 1).
+  - `fr15-p2-landed-2026-11-20` (ce39c904): `passive_constant_field_permeation@1` on the
+    passive-routes kind. One file timed out under load; it passed on rerun.
+  - `fr7-f3-landed-2026-11-20` (5dc63d38) and `fr7-pools-landed-2026-11-20` (549b1b6c): FR-7 F3, the
+    producer's assembly rate as a B1' target; and declared initial units per maturation pool (W5).
+  - `kinds-schedules-landed-2026-11-20` (ef76795e): the cycle kind's availability schedules
+    (D228 item 5), and the population bound in log space (D148).
+  - `mito-references-landed-2026-11-20` (bd29e2ae): MR1, the code-blind Beard 2005 reference.
+    Six unrelated engine tests timed out under load; on rerun, five passed and one failed only by
+    its CLI subprocess's timeout.
+  - `binding-mito-landed-2026-11-20` (aa847046): B1's `beard2005@1` named potential set, B2's
+    moieties, and FreeEnergyEntry's kJ/mol form with `dG_RT_offset` (F's, merged unedited).
+  - **FR-7:** F4's engine run from the registered R-loop start drifts by at most 1e-10 relative over
+    10 s. Its dosed closed arm peaks at N/N0 2.459, matching the reference's 2.46. F3's six-world
+    comparison and F4's comparison are still running as development runs.
+  - **Mitochondria (D234):** the laws' appendix is tagged `mito-laws-appendix-2026-11-20`.
+    - The code-blind component references are built and await registration.
+    - MR1's repair table shows Beard's printed Eq. 24 is a typo: the restored form is what the
+      paper ran.
+    - @3's P1′ finds both hosts accurate in the ΔΨ mode. At the source's synthase activity, explicit
+      steps are out of reach, and X2's count rule shows a floor, being traced.
+    - The host and the repairs are for the user's ruling.
+
 - **The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026).**
   - Merge a740b856, tag `review4-fixes-landed-2026-11-20`: the external review's four findings,
     each a recorded exception with a test row.

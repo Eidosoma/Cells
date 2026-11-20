@@ -246,7 +246,9 @@
   "/mnt/workspaces/Cells/kir-ratio-20261119/tiers/measured-79aa4ec4/measured.json",
   "/mnt/workspaces/Cells/core-pass-operators-3-20261119/gate-f2cf3cfb/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/kcc-step-bound-20261120/bound-only/tiers/measured-f1a7e9f6/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-ac0a939d/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-ac0a939d/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-pools/measured-fd0073c1/measured.json",
+  "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-cce914a6/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2075,6 +2077,21 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-ac0a939d",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T01:39:26+00:00"
+  },
+  {
+   "git_revision": "fd0073c180e49ab71a224a15a7b7bde93ec0b525",
+   "dirty": false,
+   "root": ".claude/worktrees/fr7-pools",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T22:49:01+00:00"
+  },
+  {
+   "git_revision": "cce914a61ec182a640ffec72c8aad35ab9016dfc",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-binding-20261118/snapshot-cce914a6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T01:51:11+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2763,7 +2780,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 9.79,
+    "seconds": 9.59,
     "exit_code": 0,
     "counts": {
      "passed": 199
@@ -3838,7 +3855,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.88,
+    "seconds": 2.72,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -4111,7 +4128,7 @@
    },
    {
     "file": "tests/unit/test_modules_surface.py",
-    "seconds": 2.92,
+    "seconds": 3.07,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -4400,7 +4417,7 @@
    },
    {
     "file": "tests/unit/test_operator_registry.py",
-    "seconds": 2.37,
+    "seconds": 1.97,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5050,10 +5067,10 @@
    },
    {
     "file": "tests/unit/test_species_registry_free_energies.py",
-    "seconds": 3.53,
+    "seconds": 4.18,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 24
     }
    },
    {
@@ -6229,7 +6246,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 21.42,
+    "seconds": 21.27,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -6397,7 +6414,7 @@
    },
    {
     "file": "tests/unit/test_passive_routes_kind.py",
-    "seconds": 68.0,
+    "seconds": 71.87,
     "exit_code": 0,
     "counts": {
      "passed": 17
@@ -6421,10 +6438,10 @@
    },
    {
     "file": "tests/unit/test_population_unit_turnover.py",
-    "seconds": 37.71,
+    "seconds": 57.6,
     "exit_code": 0,
     "counts": {
-     "passed": 42
+     "passed": 45
     }
    },
    {
