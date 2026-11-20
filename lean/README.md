@@ -55,6 +55,17 @@ To compare with today's engine registrations, run the following in the Cells env
 python -B scripts/generate_claims.py --live-registry --check
 ```
 
+### Checking whether the engine code changed
+
+The source check compares the working files with the Git blobs already pinned by each comparison. It reads the engine or reference sources, any tests and fixtures listed alongside them, and the comparison driver at its own evidence revision. It prints JSON naming every affected comparison, claim and path. Run it from `lean/` in a checkout containing the recorded history.
+
+```bash
+python3 -B scripts/generate_claims.py --check-sources
+python3 -B scripts/generate_claims.py --check-sources --since 8f9bc050
+```
+
+The first command includes historical comparisons. The second checks for changes since the reviewed engine commit. Use the previous landing as the baseline in automation, or `HEAD` for uncommitted edits. Exit 0 means all selected files match, 1 means at least one changed, and 2 means the comparison could not be completed. A changed file identifies a driver to review or rerun. Imports and data omitted from a comparison's citations can also affect its result. A replay establishes the current numerical outcome. [Source review and retests](PROGRESS.md#claim-source-review)
+
 These queries list claims with held-out measurements and claims whose comparison exercised a given law.
 
 ```bash
@@ -169,7 +180,7 @@ For membrane populations, follow precursor into maturing, active and removed uni
 "$cells_python" -B checks/population_units.py --require-empty
 ```
 
-For scheduled cell replacement, compare simultaneous donor and template arrivals, including a volume-preserving copy with nonzero water free energy. The optional second command isolates the v2 definition that refuses a strictly interior volume and returns a failure while the refusal persists. [Material and charge](PROGRESS.md#scheduled-cell-replacement) · [Water and measured cell volumes](PROGRESS.md#cell-replacement-water) · [Boundary reproducer](PROGRESS.md#cell-replacement-volume-boundary)
+For scheduled cell replacement, compare simultaneous donor and template arrivals, including a volume-preserving copy with nonzero water free energy. The second command checks that v2 admits the first representable template volume strictly inside the water bound and refuses the bound itself. [Material and charge](PROGRESS.md#scheduled-cell-replacement) · [Water and measured cell volumes](PROGRESS.md#cell-replacement-water) · [Boundary reproducer](PROGRESS.md#cell-replacement-volume-boundary) · [Repair and retest](PROGRESS.md#claim-source-review)
 
 ```bash
 "$cells_python" -B checks/cell_replacement.py
@@ -188,7 +199,7 @@ For serial transfer and shear fission, follow an impermeant tracer through succe
 "$cells_python" -B checks/vesicle_population.py
 ```
 
-For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. Its one-event fixed-volume reproducer exits with status 1 on the recorded engine revision. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Fixed-volume reporting failure](PROGRESS.md#shared-pool-declared-volume)
+For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. The one-event fixed-volume case now returns the declared-lumen records. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Earlier reporting failure](PROGRESS.md#shared-pool-declared-volume) · [Repair and retest](PROGRESS.md#claim-source-review)
 
 ```bash
 "$cells_python" -B checks/vesicle_exchange.py
@@ -224,7 +235,7 @@ For regulated availability, pulse and wash out a ligand in both operator version
 "$cells_python" -B checks/regulated_availability.py --controls-only
 ```
 
-For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run exits with status 1 when the extreme-rate world loses a 1 fmol pool change. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
+For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run also checks that both extreme-rate worlds retain the 1 fmol net change and its chemical work. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
 
 ```bash
 "$cells_python" -B checks/species_turnover.py
@@ -355,7 +366,7 @@ For ideal and regular assembly mixing, one command checks the 592 registered pro
 "$cells_python" -B checks/assembly_mixing.py
 ```
 
-For stochastic encounters and transition-state catalysis, compare the two directional rates with and without the catalyst, then replay a two-state clock on the same random draws. The full run returns status 1 when an expected rate or clock fails. The controls-only run checks the ordinary pairs, boundary cases and two equivalent or well-conditioned clocks. The last command evaluates the confined-binding measurements using the engine’s pool reaction. [Clock reproducer](checks/assembly_kinetics.py) · [Measured occupancies and engine finding](PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis)
+For stochastic encounters and transition-state catalysis, compare the two directional rates with and without the catalyst, then replay a two-state clock on the same random draws. The full run returns status 1 when an expected rate or clock fails. The controls-only run checks the ordinary pairs, boundary cases and two equivalent or well-conditioned clocks. The last command evaluates the confined-binding measurements using the engine’s pool reaction. [Clock reproducer](checks/assembly_kinetics.py) · [Measured occupancies](PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis) · [Opposed-contact clock retest](PROGRESS.md#claim-source-review)
 
 ```bash
 "$cells_python" -B checks/assembly_kinetics.py
