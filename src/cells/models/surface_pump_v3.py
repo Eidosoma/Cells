@@ -1096,7 +1096,8 @@ def explicit_rates(
 ):
     """surface_pump_v2.explicit_rates with the channel currents at the same potentials.
 
-    The gate rate is zero here: IMEX steps set gates by the exponential update.
+    The channel gates' rate is zero here: IMEX steps set them by the exponential update, and
+    under N2 the junction gates' too ((a)).
     With a membrane_process (opt-in) its flux joins the explicit membrane terms
     and the call returns (rates, valid, MembraneProcess); otherwise (rates, valid).
     Under N2 (conductances, the step's frozen ConductanceWeights) the rates are the remainder:
@@ -1176,9 +1177,12 @@ def explicit_rates(
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
-    gate = junction_gate_rhs(
-        state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
-    )
+    if conductances is None:
+        gate = junction_gate_rhs(
+            state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
+        )
+    else:  # N2 ((a), static): imex_step sets the junction gates by their exponential update.
+        gate = xp.zeros_like(state.junction_gate)
     outside_zero = xp.zeros_like(p.boundary_V)
     cell_rate = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
     gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
@@ -1299,10 +1303,20 @@ def implicit_rates(weight, potential, state, p, *, xp=jnp, conductances=None):
 # weight constant-field split (laws/routes/patch_electrodiffusion.py), in this file's sender ->
 # receiver sign (cell -> outside for patches).
 #
+# (a): each junction gate is advanced by its exponential update at the stages, as the channel
+# gates are (stage_junction_gates), not by the tableau, so the junction-gate step bound
+# (GATE_STEP_BOUND) does not apply. The risk it opens, frozen W: W holds the junction gates'
+# operator-time prediction for the whole step, while a gate may now move far within one step.
+# The split stays exact (each stage's remainder is J - W dv at that stage's gate), so material,
+# charge and the heat booking stay exact; what a gate that moves far can cost is accuracy and,
+# at a large step, a transfer's sign. The per-element dissipation check and X2 refuse a
+# wrong-signed transfer or a misbooking (as the channel gates' wrong-signed nav_0 transfer at
+# 200 ms on H2 was refused, RUNG1 §10.13); nothing bounds the junction current's accuracy there.
+#
 # What stays explicit, and its checks. The stage rule (membrane_rate, explicit_only) counts the
 # declared kinds' terms; the definition-time bound (implicit_conductance_rate_bound) counts face
-# diffusion and every species' material relaxation; the calcium, kind and junction-gate bounds
-# stay. A known gap, guarded by X2: the pumps' electrogenic currents stay explicit and no rule
+# diffusion and every species' material relaxation; the calcium and kind bounds stay. A known
+# gap, guarded by X2: the pumps' electrogenic currents stay explicit and no rule
 # counts their slope, as today's never did. Their charge relaxation through dI/dV is
 # 1.2e-4 per s on H2 and 4.8e-4 per s on W0 at the declared states (20 November 2026, a central
 # difference of the pump law), against 1/(10 x 200 ms) = 0.5 per s.
@@ -1623,6 +1637,42 @@ def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
     return xp.where(p.channel_gate_active, advanced, gate), stage[2]
 
 
+def junction_kinetics(potential, p, *, xp=jnp):
+    """(the junction voltages, the junction law's kinetics at them) at the node potentials."""
+    voltage = xp.where(
+        p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
+    )
+    return voltage, junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+def stage_junction_gates(
+    gate, start, potential, availability, fraction, dt, p, *, xp=jnp, structure=None
+):
+    """N2's (a): each junction gate's exponential update from the step start to a stage at
+    fraction * dt, as stage_gates' for the channels (exponential_gates.advance: the mean of the
+    start's and the stage's relaxation rates, the target linear between them), from the law's
+    kinetics at the start's (`start`, junction_gate.Rates) and the stage's junction voltages; with
+    the law's domain at the stage. A gate stays between its start and its targets, in
+    [minimum, 1], at any step, so no junction-gate step bound applies. Without a declared
+    junction law the gates hold, as junction_gate_rhs's zeros hold them today."""
+    if structure is not None and not structure.junction_laws:
+        return gate, True
+    voltage, stage = junction_kinetics(potential, p, xp=xp)
+    advanced = gates.advance(
+        gate,
+        start.target,
+        1.0 / start.relaxation_per_s,
+        stage.target,
+        1.0 / stage.relaxation_per_s,
+        fraction * dt,
+        xp=xp,
+    )
+    advanced = xp.where(p.junction_active, advanced, gate)
+    parameters = kinetic.junction_parameters(p)
+    ok = xp.all(junction_gate.domain_valid(advanced, voltage, parameters, availability, xp=xp))
+    return advanced, ok
+
+
 def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates.
 
@@ -1700,6 +1750,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= dt * material <= EXPLICIT_STEP_BOUND
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
+    start_junction = junction_kinetics(start, p, xp=xp)[1] if n2 else None  # (a)'s start.
     potential, stage = start, state
     for i in range(1, stages):
         known = first._combine(
@@ -1734,6 +1785,19 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             xp=xp,
         )
         stage, valid = stage._replace(channel_gate=gate), valid & ok
+        if n2:  # (a): the junction gates by their exponential update, as the channel gates.
+            junction, ok = stage_junction_gates(
+                state.junction_gate,
+                start_junction,
+                potential,
+                control.junction,
+                entity_sum(explicit_matrix[i], axis=None, xp=xp),
+                dt,
+                p,
+                xp=xp,
+                structure=structure,
+            )
+            stage, valid = stage._replace(junction_gate=junction), valid & ok
         if i < stages - 1:
             rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
             processes += process
@@ -2702,7 +2766,10 @@ class StepChecks(first.StepChecks):
                 raise ConfigError("IMEX step exceeds the explicit calcium pump rate bound")
             if step * self.kind_rate > EXPLICIT_STEP_BOUND:
                 raise ConfigError("IMEX step exceeds a declared kind's explicit-rate bound")
-        if step * self.junction_rate > first.GATE_STEP_BOUND:
+        if (
+            spec.execution.solver not in imex.IMPLICIT_CONDUCTANCE_IDS
+            and step * self.junction_rate > first.GATE_STEP_BOUND
+        ):  # N2's (a) advances the junction gates by their exponential update: no gate bound.
             raise ConfigError("Resolved junction step exceeds conservative kinetic bound")
 
 

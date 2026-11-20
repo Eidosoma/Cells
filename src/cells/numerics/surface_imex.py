@@ -35,11 +35,14 @@ from cells.numerics.extracellular_field import logmean, scatter
 EULER_ID = "imex_euler_face_electromigration@1"
 ARS222_ID = "imex_ars222_face_electromigration@1"
 # N2 (FR-8 rung 1, D235): ARS(2,2,2) with each membrane's and junction's slope conductance in the
-# operator beside the faces', frozen for the step; @3 implements it (models/surface_pump_v3.py) and
-# @3's parse admits it, so it runs wherever the ionic step is @3's (water@1 and the composite too).
-# This development ID carries N2 alone and never lands (RUNG1 §6).
-IMPLICIT_CONDUCTANCES_N2_ALONE_ID = "imex_ars222_implicit_conductances_n2_alone@0"
-IMPLICIT_CONDUCTANCE_IDS = (IMPLICIT_CONDUCTANCES_N2_ALONE_ID,)
+# operator beside the faces', frozen for the step, and each junction gate advanced by its
+# exponential update at the stages, as the channel gates are ((a)), so no junction-gate step bound
+# applies. @3 implements it (models/surface_pump_v3.py) and @3's parse admits it, so it runs
+# wherever the ionic step is @3's (water@1 and the composite too). The development ID without
+# (a), imex_ars222_implicit_conductances_n2_alone@0, ran only from frozen snapshots and never lands
+# (RUNG1 §6, §10.20).
+IMPLICIT_CONDUCTANCES_ID = "imex_ars222_implicit_conductances@1"
+IMPLICIT_CONDUCTANCE_IDS = (IMPLICIT_CONDUCTANCES_ID,)
 _GAMMA = 1.0 - 1.0 / math.sqrt(2.0)
 _DELTA = 1.0 - 1.0 / (2.0 * _GAMMA)
 

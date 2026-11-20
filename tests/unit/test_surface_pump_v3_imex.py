@@ -21,7 +21,7 @@ from cells.registry.models import get_model
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
-N2 = imex.IMPLICIT_CONDUCTANCES_N2_ALONE_ID  # FR-8 rung 1 (D235); it runs only beside X2.
+N2 = imex.IMPLICIT_CONDUCTANCES_ID  # FR-8 rung 1 (D235); it runs only beside X2.
 SOLVERS = (imex.EULER_ID, imex.ARS222_ID, N2)
 CHANNEL_FIELDS = ("channel_gate", "channel_transferred", "channel_dissipated_energy_pJ")
 CHANNEL_OBSERVATIONS = (

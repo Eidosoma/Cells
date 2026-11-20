@@ -1,12 +1,13 @@
-"""N2 (FR-8 rung 1, D235): the membranes' and junctions' slope conductances in @3's IMEX operator.
+"""N2 (FR-8 rung 1, D235): the membranes' and junctions' slope conductances in @3's IMEX operator,
+with each junction gate advanced by its exponential update ((a)).
 
 Host-only rows, no world compiled (about 2 s): the frozen slope against a central difference of the
 constant-field flux; the operator block's symmetry, zero row sums and non-negative conductances;
 the N2 ID admitted by @3's parse (wherever the ionic step is @3's), with its static layout switch;
-X2's guard at the step
-checks; and the definition-time bound, which drops the charge terms N2 makes implicit (H2's 292 ms
-term) and keeps every species' material relaxation. The stepped rows (ledgers, heat against RK4,
-second order) are N2's rows in test_surface_pump_v3_imex.py.
+X2's guard at the step checks; (a)'s lifted junction-gate bound and its stage update against the
+law's exact constant-voltage solution; and the definition-time bound, which drops the charge terms
+N2 makes implicit (H2's 292 ms term) and keeps every species' material relaxation. The stepped
+rows (ledgers, heat against RK4, second order) are N2's rows in test_surface_pump_v3_imex.py.
 """
 
 import copy
@@ -16,14 +17,17 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.laws.junctions import junction_gate
 from cells.laws.junctions.selective import selective_flux
+from cells.models import surface_kinetic as kinetic
+from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as v3
 from cells.numerics import surface_imex as imex
 from validation.long_duration import worlds
 from validation.tissue import surface_pump_v2_fixtures as fixtures_v2
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
-N2 = imex.IMPLICIT_CONDUCTANCES_N2_ALONE_ID
+N2 = imex.IMPLICIT_CONDUCTANCES_ID
 X2 = {"check": "step_doubled_energy@1", "integration_error_cap": 2e-3}
 
 
@@ -92,6 +96,38 @@ def test_n2_runs_only_with_x2_selected():
     selected = copy.deepcopy(raw)
     selected["execution"]["energy_check"] = dict(X2)
     v3.bind_step_checks(parse_spec(selected))(np.array([raw["execution"]["dt"]]))  # Admitted.
+
+
+def test_n2_lifts_the_junction_gate_bound_and_keeps_the_calcium_bound():
+    """(a): N2 advances the junction gates by their exponential update, so the junction-gate step
+    bound (0.125 / 24.1 per s, 5.18 ms on the fixture's junction) does not apply; the calcium
+    pump's explicit bound still does (0.44 at 20 ms, 1.1 at 50 ms)."""
+    raw = at3_world(N2)
+    raw["execution"].update(dt=0.02, max_steps=18, energy_check=dict(X2))
+    raw["experiment"].update(end_time=0.2, observation_times=[0.0, 0.2])
+    checks = v3.bind_step_checks(parse_spec(raw))
+    assert 0.02 * checks.junction_rate > first.GATE_STEP_BOUND  # Today's bound would refuse it.
+    checks(np.array([0.02]))  # Admitted.
+    with pytest.raises(ConfigError, match="calcium pump rate bound"):
+        checks(np.array([0.05]))
+
+
+def test_the_junction_gate_update_is_exact_at_constant_voltage():
+    """(a)'s stage update at a held junction voltage is the law's exact solution (advance_clamped),
+    here at 40 times today's bound, and it leaves inactive slots as they are."""
+    spec = parse_spec(at3_world(N2))
+    state, p = v3.initial_values(spec)
+    potential = np.zeros(p.active.size + p.outside_active.size)
+    potential[p.junction_sender[0]] = -0.031  # -31 mV across junction_0, past its threshold.
+    voltage, start = v3.junction_kinetics(potential, p, xp=np)
+    dt = 40 * first.GATE_STEP_BOUND / float(start.relaxation_per_s[0])
+    gate, availability = np.asarray(state.junction_gate), np.ones(p.junction_active.shape)
+    advanced, ok = v3.stage_junction_gates(gate, start, potential, availability, 1.0, dt, p, xp=np)
+    exact = junction_gate.advance_clamped(gate, voltage, kinetic.junction_parameters(p), dt, xp=np)
+    active = np.asarray(p.junction_active)
+    np.testing.assert_allclose(advanced[active], exact[active], rtol=1e-14, atol=0)
+    np.testing.assert_array_equal(advanced[~active], gate[~active])
+    assert bool(ok) and not np.allclose(advanced[active], gate[active])
 
 
 def stepped(solver, dt, steps):
