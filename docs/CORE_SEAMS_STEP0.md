@@ -1739,3 +1739,37 @@ the fix that §9.4 preferred, on branch `core-pass-binding-x2floor` at 264bca94.
   thousandth of the binders.
 
 **How it runs:** one detached unit on a light CPU at nice 10, with the scripts' hashes in its log.
+
+**Results (20 November 2026).** Every reading the criterion set holds.
+- **The runs.**
+  - Unit `cells-at3-p1prime-fix`, light CPU 22 at nice 10, 05:14–05:33 UTC.
+  - Clean snapshots of 264bca94 and d9342fcf, with empty patches. They were frozen with
+    `validation/source_snapshot.py` from temporary detached checkouts, removed afterwards.
+  - Evidence: `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/fix-4cc53c54/`.
+
+| (P-b) at rung 0.01 | Fix (264bca94) | Parent (d9342fcf) |
+| --- | --- | --- |
+| R's median \|e\|, 5 mV | 1.4 × 10⁻¹⁷ pJ, 0.58 eps M | 9.0 × 10⁻¹³ pJ, 3.7 × 10⁴ eps M |
+| R's median \|e\|, 5 µV (control) | 9.0 × 10⁻²¹ pJ, 0.38 eps M | 8.0 × 10⁻¹³ pJ |
+| X2, reading (b) | admitted: median q 3.768 over 521 counted, none held | refused: the order condition, median 0.9345 over 2,092 |
+
+- **The fix removes the floor.**
+  - R's median |e| falls 64,000 times, to 0.58 eps M, against the criterion's limit of 10 eps M.
+    The parent keeps the floor exactly as on e8e1c973.
+  - At 5 µV it falls 88 million times, to 0.38 eps M. There, the split's own count gives 75
+    counted steps with median q 3.71.
+- **X2's order condition holds as registered.** On the fix, (P-b) at 0.01 is admitted in reading
+  (b).
+  - 521 steps are counted, with median step ratio 3.768; none is held, against a cap of 11.
+  - The largest row ratio is 0.59. The integration error is at most 2.2 × 10⁻⁵ of the flows, against
+    the cap of 2 × 10⁻³.
+  - On the parent, the same rung is refused by the order condition, as in §9.2.
+- **The states are unchanged.**
+  - Between the fix and its parent, every term but the closure's stored term has bitwise equal d
+    and d'' at every step of both arms.
+  - The stored term's per-step changes differ by at most 3.4 × 10⁻¹² pJ, which is the removed
+    rounding.
+  - The split sums to R within 3.5 × 10⁻¹⁸ pJ on both.
+- **Not tested here:** whether §9.4's residual, near 800 eps M at a thousandth of the binders, was
+  the old term's. The other rungs of P1′'s reading (b), on both hosts and in arm S, are not rerun
+  on the fix.
