@@ -1402,7 +1402,11 @@ tag before the next starts.
 1. **The equation sheet** (`docs/TEMPLATED_POLYMERISATION_LAWS.md`, new; S). The lane agent states
    each law's physics only:
    - each move's integer stoichiometry, per stage and per route, with its charge and its moieties;
-   - each cited reaction energy, as a `FreeEnergyEntry` in kJ/mol with its basis, offset and source;
+   - each cited reaction energy, as a `FreeEnergyEntry` with its source:
+     - in kJ/mol with its basis and offset;
+     - or, where the source cites an equilibrium constant, as a temperature-free dG_RT = −ln K. The
+       sheet's recharging entry is entered this way (TEMPLATED_POLYMERISATION_LAWS §3.3; corrected
+       with the sheet, 20 November 2026);
    - the rate laws: initiation, the m-stage chain with its saturating draws, degradation and
      recharging;
    - the machine identity and the account identities;
@@ -1529,7 +1533,9 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
   - its own references, from the same sheet, 1.5–2.5;
   - the operator's charged-form work, 2–3: closure reads at the half-steps, base-form moves, H⁺
     moves, and a valence of −L. G5 covers only the registry and the contract;
-  - its registration and judged run, 1–1.5.
+  - its registration and judged run, 1–1.5;
+  - not priced here: a field-side owner for the charge the operator holds in transit. The node's
+    charge must count the growing mRNA's −1 per residue (TEMPLATED_POLYMERISATION_LAWS §1.3).
 - **Composing with mitochondria** adds the cap's raising (§7.2), which is not estimated here.
 - **Elapsed:** about 6–9 working days for A with two new seats (estimate).
 

@@ -41,7 +41,20 @@ outside Python's standard library, and it names no potential set. What it shows:
    - its entries in RT units;
    - each arm's parameters, and the derived values at the numeric test instance.
 
-Run: python validation/gene_regulation/sheet_check.py [--out FILE]. About ten seconds on one CPU.
+7. With --bounds (NumPy, about six minutes on one CPU), §5.6's measurement:
+   - the full system of §4.7, by RK4 at 0.25 s, checked against a second pass at 0.5 s;
+   - every world of §5.1 and §5.2 at 18 potential sets: the test instance, Spirin's peptide value
+     and the 16 corners of §3.3's ranges;
+   - against A1's phase-1 limit and A1-M's closed forms;
+   - the largest per-residue affinity of every one-sided move, which must stay at or below
+     x_dom = -1;
+   - the sheet's typed gaps, bounds and domain against the measurement.
+
+   Without --bounds, the check only confirms that the typed bounds are twice the largest typed gap,
+   rounded up.
+
+Run: python validation/gene_regulation/sheet_check.py [--bounds] [--out FILE]. Without --bounds,
+about ten seconds on one CPU, with no import outside the standard library.
 
 The transform (neutral_potentials, entry_offset) is also the registration's tool (the design
 note's §7.7, step 3): a world's neutral potentials are computed with it from the source that the
@@ -1198,7 +1211,7 @@ def check():
         passed, entry = part()
         report[name] = dict(passed=bool(passed), **entry)
         ok &= passed
-    errors = sheet_errors()
+    errors = sheet_errors() + bounds_consistency()
     report["6_sheet_numbers"] = errors or "agree"
     ok &= not errors
     plants = {}
@@ -1208,6 +1221,364 @@ def check():
         ok &= bool(found)
     report["6_motion_plants"] = plants
     return ok, report
+
+
+# ------------------------------------------------------------------ the measured bounds (§5.6)
+
+BOUND_MARGIN = 2  # Each bound is twice the largest gap measured, rounded up to one digit.
+BOUND_STEP_S = 0.25  # The RK4 step of the measurement; a second pass at twice it checks it.
+
+
+def potential_sets():
+    """The 18 potential sets of the bounds' measurement (§5.6), each {G_ATP, E_pd, E_pep, E_rc}
+    in RT units at T_K: the test instance, the test instance with Spirin's peptide value, and the
+    16 corners of §3.3's ranges."""
+    e = entries_RT()
+    test = {k: e[k] for k in ("G_ATP", "E_pd", "E_pep", "E_rc")}
+    out = {"test instance": test, "Spirin's E_pep": dict(test, E_pep=D("-0.5") * KCAL / RT)}
+    for g in (-40, -25):
+        for pd in (-30, -15):
+            for pep in (-25, 0):
+                for rc in (-1, 1):
+                    name = f"corner G_ATP {g}, E_pd {pd}, E_pep {pep}, E_rc/RT {rc}"
+                    out[name] = dict(
+                        G_ATP=D(g) / RT, E_pd=D(pd) / RT, E_pep=D(pep) / RT, E_rc=D(rc)
+                    )
+    return out
+
+
+def bound_worlds():
+    """{name: parameters} of the worlds whose closed forms the bounds cover, from §5.1 and §5.2.
+    Amounts are in fmol and concentrations in mM, with V = 1 pL; absent routes are switched off
+    by zero rates, and their rows held at dummy values that no flux touches."""
+    a, m = A1, A1M
+    f = float
+    base = dict(
+        L1=f(a["L_R"]), L2=f(m["L_2"]), kI_tx=f(a["k_I_tx"]), M_pol=f(a["M_pol"]),
+        kI_tl=f(a["k_I_tl"]), M_rib=f(a["M_rib"]), k_R=f(a["k_R"]), k_P=f(a["k_P"]),
+        V_C=f(a["V_C"]), b=f(a["b_X"]), P_on=f(a["P_on"]), k_X=f(a["k_X"]), t_off=f(a["t_off"]),
+        T1=1.0, T2=0.0, horizon=f(a["t_end"]), window=0.0, kind="A1",
+        c0=dict(N=f(a["c_N"]), M=f(a["c_M"]), A=f(a["c_A"]), ATP=f(a["c_ATP"]),
+                ADP=f(a["c_ADP"]), Pi=f(a["c_Pi"]), X=f(a["c_X"]), R1=f(a["c_R"]),
+                R2=f(a["c_R"]), P=f(a["c_P"])),
+    )  # fmt: skip
+    pol = dict(
+        base, kI_tx=f(m["k_I_tx"]), M_pol=f(m["M_pol"]), kI_tl=0.0, M_rib=0.0, k_P=0.0, b=1.0,
+        P_on=0.0, k_X=0.0, t_off=math.inf, horizon=f(m["t_end_pol"]),
+        window=f(m["window_pol"]), kind="pol", c0=dict(base["c0"], N=f(m["c_N"]), A=1.0),
+    )  # fmt: skip
+    worlds = {"A1": base}
+    for T in SWEEP:
+        worlds[f"polymerase-limited T = {T}"] = dict(pol, T1=float(T))
+    worlds["two-gene"] = dict(pol, T1=f(m["T_1"]), T2=f(m["T_2"]), kind="two")
+    for n in SWEEP:
+        worlds[f"ribosome-limited n_R = {n}"] = dict(
+            base, T1=0.0, kI_tx=0.0, M_pol=0.0, kI_tl=f(m["k_I_tl"]), M_rib=f(m["M_rib"]),
+            k_R=0.0, V_C=0.0, b=1.0, P_on=0.0, k_X=0.0, t_off=math.inf,
+            horizon=f(m["t_end_rib"]), window=f(m["window_rib"]), kind="rib",
+            c0=dict(base["c0"], N=1.0, M=1.0, A=f(m["c_A"]), R1=n * float(COPY_FMOL)),
+        )  # fmt: skip
+    return worlds
+
+
+def _integrate_batch(np, worlds, names, sets, h):
+    """RK4 over every (world, set) lane of one horizon: the full system of §4.7 and, beside it,
+    A1's phase-1 limit (§5.1: factors frozen at t = 0, machines abundant). Returns per lane its
+    world, set, A1's phase-1 gaps, A1-M's readouts against their closed forms, and the largest
+    per-residue affinity over the trajectory."""
+    lanes = [(w, s) for w in names for s in sets]
+    n_lanes = len(lanes)
+    c1 = float(COPY_FMOL)  # mM per copy, V = 1 pL.
+
+    def col(key):
+        return np.array([worlds[w][key] for w, _ in lanes], dtype=float)
+
+    def init(key):
+        return np.array([worlds[w]["c0"][key] for w, _ in lanes], dtype=float)
+
+    pots = {s: test_instance_potentials(sets[s]) for s in sets}
+    mu = {
+        k: np.array([float(pots[s][k]) for _, s in lanes])
+        for k in ("ATP", "ADP", "Pi", "N", "M", "A", "R_res", "P_res")
+    }
+    p = {k: float(A1[k]) for k in ("v_tx", "v_tl", "K_N_tx", "K_A_tl", "K_ATP_tl", "K_M_rc",
+                                    "K_ATP_rc", "K_X", "L_P", "m_tl", "m_tx")}  # fmt: skip
+    m_st = int(p["m_tx"])
+    n_X = float(A1["n_X"])
+    T = np.stack([col("T1"), col("T2")], axis=1)
+    L_g = np.stack([col("L1"), col("L2")], axis=1)
+    r_g = L_g / m_st
+    kappa_tx = p["v_tx"] / r_g
+    r_tl = p["L_P"] / p["m_tl"]
+    kappa_tl = p["v_tl"] / r_tl
+    kI_tx, kI_tl, k_R, k_P, V_C = col("kI_tx"), col("kI_tl"), col("k_R"), col("k_P"), col("V_C")
+    k_R_g = k_R[:, None] * (T > 0)  # A gene with no copies keeps its trace.
+    b, P_on, k_X, t_off = col("b"), col("P_on"), col("k_X"), col("t_off")
+    M_pol, M_rib = col("M_pol") * c1, col("M_rib") * c1  # Amounts, fmol.
+    tx_on, tl_on = T.sum(1) > 0, kI_tl > 0
+    degR_on, degP_on = (k_R[:, None] > 0) & (T > 0), (k_P > 0) & tl_on
+
+    nv = 57
+    Y = np.zeros((n_lanes, nv))
+    Y[:, 0] = M_pol
+    Y[:, 17], Y[:, 18] = init("R1"), init("R2")
+    Y[:, 19] = M_rib
+    Y[:, 28] = init("P")
+    for k, key in enumerate(("N", "M", "A", "ATP", "ADP", "Pi", "X")):
+        Y[:, 29 + k] = init(key)
+
+    def affinities(Y):
+        lnc = {k: np.log(Y[:, 29 + i] / 1000) for i, k in enumerate(("N", "M", "A", "ATP", "ADP",
+                                                                     "Pi"))}  # fmt: skip
+        x_tx = mu["R_res"] + 2 * (mu["Pi"] + lnc["Pi"]) - (mu["N"] + lnc["N"])
+        x_tl = (mu["P_res"] + 4 * (mu["ADP"] + lnc["ADP"]) + 4 * (mu["Pi"] + lnc["Pi"])
+                - (mu["A"] + lnc["A"]) - 4 * (mu["ATP"] + lnc["ATP"]))  # fmt: skip
+        y_R = (mu["M"] + lnc["M"] - mu["R_res"])[:, None] - np.log(Y[:, 17:19] / 1000) / L_g
+        y_P = mu["A"] + lnc["A"] - mu["P_res"] - np.log(Y[:, 28] / 1000) / p["L_P"]
+        x_rc = (mu["N"] + lnc["N"] + 2 * (mu["ADP"] + lnc["ADP"]) - (mu["M"] + lnc["M"])
+                - 2 * (mu["ATP"] + lnc["ATP"]))  # fmt: skip
+        return x_tx, x_tl, y_R, y_P, x_rc
+
+    def factors(Y):
+        x_tx, x_tl, y_R, y_P, x_rc = affinities(Y)
+        nN, nA, nATP = Y[:, 29], Y[:, 31], Y[:, 32]
+        phi_tx = nN / (p["K_N_tx"] + nN) * -np.expm1(x_tx)
+        phi_tl = nA / (p["K_A_tl"] + nA) * nATP / (p["K_ATP_tl"] + nATP) * -np.expm1(x_tl)
+        cX = Y[:, 35]
+        u = b + (1 - b) * cX**n_X / (p["K_X"] ** n_X + cX**n_X)
+        return phi_tx, phi_tl, -np.expm1(y_R), -np.expm1(y_P), -np.expm1(x_rc / 2), u
+
+    # A1's limit, frozen at t = 0 (§5.1).
+    phi_tx0, phi_tl0, fR0, fP0, _, u0 = factors(Y)
+    kap0_tx, kap0_tl = kappa_tx[:, 0] * phi_tx0, kappa_tl * phi_tl0
+    k0_R, k0_P = k_R * fR0[:, 0], k_P * fP0
+    J_lim = u0 * kI_tx * c1 * T[:, 0] * M_pol
+    beta = kI_tl * M_rib  # V = 1 pL.
+    Y[:, 47], Y[:, 56] = Y[:, 17], Y[:, 28]
+
+    def rhs(Y, PX):
+        phi_tx, phi_tl, fR, fP, fC, u = factors(Y)
+        Ctx = Y[:, 1:17].reshape(n_lanes, 2, m_st)
+        Ctl = Y[:, 20:28]
+        JI_tx = (u * kI_tx)[:, None] * c1 * T * Y[:, 0][:, None]
+        Jtx = kappa_tx[:, :, None] * Ctx * phi_tx[:, None, None]
+        JI_tl = kI_tl * Y[:, 17] * Y[:, 19]
+        Jtl = kappa_tl * Ctl * phi_tl[:, None]
+        JD_R = k_R_g * Y[:, 17:19] * fR
+        JD_P = k_P * Y[:, 28] * fP
+        nM, nATP = Y[:, 30], Y[:, 32]
+        JC = V_C * nM / (p["K_M_rc"] + nM) * nATP / (p["K_ATP_rc"] + nATP) * fC
+        d = np.empty_like(Y)
+        d[:, 0] = -JI_tx.sum(1) + Jtx[:, :, -1].sum(1)
+        dC = np.empty_like(Ctx)
+        dC[:, :, 0] = JI_tx - Jtx[:, :, 0]
+        dC[:, :, 1:] = Jtx[:, :, :-1] - Jtx[:, :, 1:]
+        d[:, 1:17] = dC.reshape(n_lanes, 2 * m_st)
+        d[:, 17:19] = Jtx[:, :, -1] - JD_R
+        d[:, 19] = -JI_tl + Jtl[:, -1]
+        d[:, 20] = JI_tl - Jtl[:, 0]
+        d[:, 21:28] = Jtl[:, :-1] - Jtl[:, 1:]
+        d[:, 28] = Jtl[:, -1] - JD_P
+        rS_tx = (r_g * Jtx.sum(2)).sum(1)
+        S_tl = Jtl.sum(1)
+        d[:, 29] = -rS_tx + JC
+        d[:, 30] = (L_g * JD_R).sum(1) - JC
+        d[:, 31] = -r_tl * S_tl + p["L_P"] * JD_P
+        d[:, 32] = -4 * r_tl * S_tl - 2 * JC
+        d[:, 33] = 4 * r_tl * S_tl + 2 * JC
+        d[:, 34] = 2 * rS_tx + 4 * r_tl * S_tl
+        d[:, 35] = PX - k_X * Y[:, 35]
+        d[:, 36:38] = Jtx[:, :, -1]
+        d[:, 38] = Jtl[:, -1]
+        lC, lCt = Y[:, 39:47], Y[:, 48:56]
+        fl, fl2 = kap0_tx[:, None] * lC, kap0_tl[:, None] * lCt
+        d[:, 39] = J_lim - fl[:, 0]
+        d[:, 40:47] = fl[:, :-1] - fl[:, 1:]
+        d[:, 47] = fl[:, -1] - k0_R * Y[:, 47]
+        d[:, 48] = beta * Y[:, 47] - fl2[:, 0]
+        d[:, 49:56] = fl2[:, :-1] - fl2[:, 1:]
+        d[:, 56] = fl2[:, -1] - k0_P * Y[:, 56]
+        return d
+
+    # The limit's steady states, the scales of A1's gaps.
+    nR_s = np.where(k0_R > 0, J_lim / np.where(k0_R > 0, k0_R, 1), 1)
+    scale = dict(
+        n_R=nR_s,
+        n_P=np.where(k0_P > 0, beta * nR_s / np.where(k0_P > 0, k0_P, 1), 1),
+        E_tx=J_lim * m_st / kap0_tx,
+        E_tl=np.where(kap0_tl > 0, beta * nR_s * m_st / np.where(kap0_tl > 0, kap0_tl, 1), 1),
+    )
+    gap = {k: np.zeros(n_lanes) for k in scale}
+    track_a1 = all(worlds[w]["kind"] == "A1" for w in names)
+    x_max = np.full(n_lanes, -np.inf)
+    horizon = max(worlds[w]["horizon"] for w in names)
+    steps = int(round(horizon / h))
+    per_output = int(round(60 / h))
+    windows = {}
+    window_worlds = sorted({w for w, _ in lanes if worlds[w]["window"] > 0})
+    for i in range(steps + 1):
+        t = i * h
+        x_tx, x_tl, y_R, y_P, _ = affinities(Y)
+        x_max = np.maximum(x_max, np.where(tx_on, x_tx, -np.inf))
+        x_max = np.maximum(x_max, np.where(tl_on, x_tl, -np.inf))
+        x_max = np.maximum(x_max, np.where(degR_on, y_R, -np.inf).max(1))
+        x_max = np.maximum(x_max, np.where(degP_on, y_P, -np.inf))
+        if track_a1 and i % per_output == 0 and t < float(A1["t_off"]):
+            now = dict(
+                n_R=np.abs(Y[:, 17] - Y[:, 47]),
+                n_P=np.abs(Y[:, 28] - Y[:, 56]),
+                E_tx=np.abs(Y[:, 1:9].sum(1) - Y[:, 39:47].sum(1)),
+                E_tl=np.abs(Y[:, 20:28].sum(1) - Y[:, 48:56].sum(1)),
+            )
+            for k in gap:
+                gap[k] = np.maximum(gap[k], now[k] / scale[k])
+        for w in window_worlds:
+            if abs(t - (worlds[w]["horizon"] - worlds[w]["window"])) < h / 2:
+                windows[("start", w)] = Y[:, 36:39].copy()
+            if abs(t - worlds[w]["horizon"]) < h / 2:
+                windows[("end", w)] = Y.copy()
+        if i == steps:
+            break
+        PX = np.where(t < t_off, P_on, 0.0)  # Constant within the step: t_off is on the grid.
+        k1 = rhs(Y, PX)
+        k2 = rhs(Y + h / 2 * k1, PX)
+        k3 = rhs(Y + h / 2 * k2, PX)
+        k4 = rhs(Y + h * k3, PX)
+        Y = Y + h / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+
+    out = []
+    for i, (w, s) in enumerate(lanes):
+        world = worlds[w]
+        row = dict(world=w, set=s, x_max=float(x_max[i]))
+        if world["kind"] == "A1":
+            row["gaps"] = {k: float(gap[k][i]) for k in gap}
+        else:
+            end, start = windows[("end", w)][i], windows[("start", w)][i]
+            q = (end[36:39] - start) / world["window"]
+            if world["kind"] == "rib":
+                lam = [kI_tl[i] * end[17]]  # The held mRNA's concentration, per free ribosome.
+                tau = [m_st / kap0_tl[i]]
+                M, E, F, J = M_rib[i], [end[20:28].sum()], end[19], [q[2]]
+            else:
+                lam = [kI_tx[i] * c1 * T[i, g] for g in range(2) if T[i, g] > 0]
+                tau = [m_st / (kappa_tx[i, g] * phi_tx0[i]) for g in range(2) if T[i, g] > 0]
+                ctx = end[1:17].reshape(2, m_st)
+                genes = [g for g in range(2) if T[i, g] > 0]
+                M, F = M_pol[i], end[0]
+                E, J = [ctx[g].sum() for g in genes], [q[g] for g in genes]
+            budget = 1 + sum(a * b_ for a, b_ in zip(lam, tau, strict=True))
+            gaps = {}
+            for g, (a, b_) in enumerate(zip(lam, tau, strict=True)):
+                j_star = a * M / budget
+                gaps[f"J{g + 1}"] = abs(J[g] - j_star) / j_star
+                gaps[f"E{g + 1}"] = abs(E[g] - j_star * b_) / (j_star * b_)
+            gaps["F"] = abs(F - M / budget) / (M / budget)
+            row["gaps"] = gaps
+        out.append(row)
+    return out
+
+
+def measure_bounds(h=BOUND_STEP_S):
+    """§5.6: every world of §5.1 and §5.2 at every potential set, batched by horizon. Returns the
+    largest gap per arm and readout with the set it occurs at, and the largest per-residue
+    affinity over every trajectory (§3.5: at most x_dom = -1)."""
+    import numpy as np
+
+    worlds, sets = bound_worlds(), potential_sets()
+    rows = []
+    for kinds in (("A1",), ("pol", "two"), ("rib",)):
+        names = [w for w, v in worlds.items() if v["kind"] in kinds]
+        rows += _integrate_batch(np, worlds, names, sets, h)
+    result = dict(step_s=h, arms={}, domain=max((r["x_max"], r["world"], r["set"]) for r in rows))
+    for arm, kinds in (("A1", ("A1",)), ("A1-M", ("pol", "two", "rib"))):
+        worst = {}
+        for r in rows:
+            if worlds[r["world"]]["kind"] not in kinds:
+                continue
+            for k, v in r["gaps"].items():
+                key = k if arm == "A1" else k.rstrip("12")
+                if v > worst.get(key, (-1.0,))[0]:
+                    worst[key] = (v, r["world"], r["set"])
+        result["arms"][arm] = worst
+    return result
+
+
+def bound_value(gap):
+    """BOUND_MARGIN times the gap, rounded up to one significant digit."""
+    x = BOUND_MARGIN * gap
+    exponent = math.floor(math.log10(x))
+    return math.ceil(x / 10**exponent) * 10**exponent
+
+
+def bound_values(result):
+    """{key of the sheet's bounds table: value} from a measurement."""
+    out = {}
+    for arm, worst in result["arms"].items():
+        for k, (v, _, _) in worst.items():
+            out[f"{arm} {k}"] = v
+    out["eps_A1"] = bound_value(max(v for k, v in out.items() if k.startswith("A1 ")))
+    out["eps_M"] = bound_value(max(v for k, v in out.items() if k.startswith("A1-M ")))
+    out["x_max"] = result["domain"][0]
+    return out
+
+
+def typed_bounds(path=SHEET):
+    block = _marked(path.read_text(), "bounds")
+    if block is None:
+        return None
+    _, rows = _table(block)
+    return {_id(row[0]): row[1] for row in rows}
+
+
+def bounds_consistency(path=SHEET):
+    """The default check's part of §5.6: the typed bounds are BOUND_MARGIN times the largest typed
+    gap, rounded up to one digit, and the typed domain maximum is at most x_dom = -1. (The gaps
+    themselves are measured by --bounds.)"""
+    typed = typed_bounds(path)
+    if typed is None:
+        return ["the sheet has no marked bounds table"]
+    out = []
+    values = {k: float(_number(v)) for k, v in typed.items()}
+    for eps, arm in (("eps_A1", "A1 "), ("eps_M", "A1-M ")):
+        gaps = [v for k, v in values.items() if k.startswith(arm)]
+        if not gaps or eps not in values:
+            out.append(f"the bounds table lacks {eps} or its gaps")
+        elif not math.isclose(values[eps], bound_value(max(gaps)), rel_tol=1e-12):
+            out.append(f"{eps}: typed {values[eps]}, {BOUND_MARGIN} x the largest typed gap rounds "
+                       f"up to {bound_value(max(gaps))}")  # fmt: skip
+    if values.get("x_max", 0) > -1:
+        out.append(f"the domain's largest affinity {values.get('x_max')} is above x_dom = -1")
+    return out
+
+
+def bounds_report():
+    """--bounds: the measurement at the step and at twice it, against the sheet's typed table."""
+    fine, coarse = measure_bounds(BOUND_STEP_S), measure_bounds(2 * BOUND_STEP_S)
+    v_fine, v_coarse = bound_values(fine), bound_values(coarse)
+    gap_keys = [k for k in v_fine if k.startswith("A1")]
+    change = max(abs(v_fine[k] - v_coarse[k]) / v_fine[k] for k in gap_keys)
+    typed = typed_bounds() or {}
+    errors = []
+    for k, v in v_fine.items():
+        if k not in typed:
+            errors.append(f"the bounds table has no {k}")
+        elif not _digits_ok(typed[k], v):
+            errors.append(f"{k}: typed {typed[k]}, measured {v:.4g}")
+    if set(typed) - set(v_fine):
+        errors.append(f"the bounds table has unknown keys {sorted(set(typed) - set(v_fine))}")
+    report = dict(
+        step_s=BOUND_STEP_S,
+        measured={k: f"{v:.4g}" for k, v in v_fine.items()},
+        where={
+            f"{arm} {k}": f"{w}, {s}"
+            for arm, worst in fine["arms"].items()
+            for k, (_, w, s) in worst.items()
+        },  # fmt: skip
+        domain_at=f"{fine['domain'][1]}, {fine['domain'][2]}",
+        largest_relative_change_at_twice_the_step=f"{change:.2e}",
+        sheet=errors or "agree",
+    )
+    return not errors and change < 0.05, report
 
 
 def print_derived():
@@ -1222,11 +1593,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", help="write the report as JSON here")
     parser.add_argument("--print-derived", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--bounds", action="store_true", help="measure §5.6's bounds (NumPy, about 5 minutes)"
+    )
     args = parser.parse_args(argv)
     if args.print_derived:
         print_derived()
         return 0
-    ok, report = check()
+    ok, report = bounds_report() if args.bounds else check()
     text = json.dumps(dict(passed=bool(ok), report=report), indent=1, default=str)
     if args.out:
         with open(args.out, "w") as fh:

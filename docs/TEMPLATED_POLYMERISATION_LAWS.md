@@ -9,8 +9,10 @@ the tag `gr1-sheet-<date>`. Nothing here is registered.*
 - **Its forms.** The built form is the neutral reduction (GENE_REGULATION_DESIGN §7.4). The charged
   form is stated once beside it, and §3.2 shows the reduction is exact while pH and free Mg²⁺ are
   held.
-- **Its potentials.** It is symbolic in the fuel's potentials and names no potential-set version.
-  The registration names that source (§3.3).
+- **Its potentials.** It is symbolic in the potentials and names no potential-set version. Four
+  symbols carry them: the fuel's ATP hydrolysis and three reaction energies of the world's own
+  rows. The references are functions of the four over declared ranges, and the registration names
+  each value after a direct read of its source (§3.3).
 - **Its check.** `validation/gene_regulation/sheet_check.py`.
 
 **Basis.**
@@ -134,6 +136,10 @@ These are the same rows with their real charges.
 **The residues in transit carry their charge.** In the charged form, the node's charge must count
 W_tx's −1 per residue, so the operator's pools are part of the node's charge. This is a requirement
 on the charged arm, not on A.
+- **For the charged arm's pricing:** it needs a field-side owner for the charge held in transit.
+- The operator contract reports the compartments an operator's routes charge
+  (`charged_compartments`). It has no hook for charge an operator holds in its own pools.
+- That piece stands beside G5's two (GENE_REGULATION §7.10) and is not priced there.
 
 ### 1.4 Moieties
 
@@ -265,14 +271,24 @@ form's, transformed:
   transformed potentials at pH 7.0 and m = 1 mM.
 - Through every move they enter as one symbol, ATP hydrolysis:
   ΔG′°_ATP = μ′°_ADP + μ′°_Pi − μ′°_ATP.
+- **At the sheet's own conditions.** Any fuel value named at registration is transformed at this
+  sheet's T = 310.15 K, pH 7.0 and free Mg²⁺ 1 mM, by `world_potentials`.
+  - It enters as the source's base potentials in RT units and its forms' constants, or as kJ/mol
+    values converted at 310.15 K on the source's basis.
+  - The source's own temperature, pH and Mg²⁺ are not carried.
 
 **The world's own rows.**
 - Two references: μ°_M = 0 and μ°_A = 0 (base forms, 1 M).
-- Three cited entries, solved in order: E_rc fixes `N`, E_pd fixes the RNA residue, and E_pep fixes
-  the protein residue.
+- Three entries, solved in order: E_rc fixes `N`, E_pd fixes the RNA residue, and E_pep fixes the
+  protein residue.
+- **Each is a symbol, as ΔG′°_ATP is.** The values below are the test instance's.
+  - They were read second-hand: abstracts through a summariser, or a curated record.
+  - E_pd was obtained in its source by subtracting a value that its abstract does not give.
+  - So the references are functions of all four symbols over the ranges below. The registration
+    names each value after a direct read of its source, at the sheet's T, pH and Mg²⁺ (above).
 
 <!-- entries -->
-| Entry | Reaction, on neutral rows | Cited value | Basis | ΔG°′/RT at 310.15 K | Source |
+| Entry | Reaction, on neutral rows | Test-instance value, as read | Basis | ΔG°′/RT at 310.15 K | Read in |
 | --- | --- | --- | --- | --- | --- |
 | `E_rc` | M + 2 ATP → N + 2 ADP | K_obs = 1.05 for 2 ADP → AMP + ATP, on totals, at pH 7.0 and 1 mM free Mg²⁺, 38 °C | ln K_obs, carried in RT units: temperature-free (dG_RT) | +0.04879016 | Lawson and Veech 1979. The NTP and NMP lumps take adenylate kinase's constant; the diphosphate kinase step is at K = 1 (declared) |
 | `E_pd` | R_res → M, per residue (the chain shortened by one, an NMP released) | −5.3 kcal/mol at 25 °C and pH 7 | kJ/mol, temperature-independent | −8.59926980 | Dickson et al. 2000: a DNA phosphodiester bond's, taken for the RNA lump (declared) |
@@ -280,9 +296,9 @@ form's, transformed:
 | `G_ATP` | ATP → ADP + Pi | The named source's, transformed at registration. −32 kJ/mol in the test instance only | kJ/mol | −12.40920639 | The test instance: Wiseman et al. 2023, at pH 7, pMg 3 and 37 °C |
 <!-- /entries -->
 
-**The cited values' conditions.**
+**The test values' conditions.**
 - Each is taken at the world's pH 7.0 and m = 1 mM. Where a source's conditions differ or are not
-  stated, that is a declared approximation.
+  stated, that is a declared approximation of the test instance.
 - The engine's solutions are ideal: an ionic strength in a source is not carried.
 - kcal is the thermochemical one, 4.184 kJ.
 
@@ -324,6 +340,20 @@ ranges:
 - E_pd in [−30, −15] kJ/mol;
 - E_pep in [−25, 0] kJ/mol;
 - E_rc/RT in [−1, 1].
+
+The registration may name any value within them. §5.6's bounds and domain are measured over their
+corners.
+
+**For the registration's choice of E_pep.**
+- Martin's value is glycylglycine's overall hydrolysis, Gly-Gly → 2 Gly.
+  - It includes the ionisation of the new termini.
+  - It also includes the dipeptide's own end charges, which sit beside the bond and shift its
+    ionisation. §1.3 leaves a chain's ends uncounted.
+- A long chain's internal bond has no such neighbouring ends. Spirin's value is one stated for a
+  long chain.
+- The direct read says which kind a value is, and the registration says which kind the lump takes.
+  The lump's residue sits inside a chain whose ends are uncounted, and its product is a free
+  zwitterion.
 
 ### 3.4 Each move's ΔG, and the account as a state function
 
@@ -602,16 +632,15 @@ B1′. A1's rows are X, N, M, A, ATP, ADP, Pi, R and P.
   - n_R* = J^I_tx/k₀_R;
   - n_P* = β n_R*/k₀_P;
   - E_tx* = J^I_tx τ₀_tx and E_tl* = β n_R* τ₀_tl.
-- **The bound.**
-  - Each closed form (n_R, n_P, E_tx and E_tl) is compared with A1's full ODE on [0, t_off). The
-    tolerance is ε_A1 = 5 × 10⁻³ times the readout's steady state in the limit (n_R*, n_P*, E_tx*
-    and E_tl*).
-  - The bound covers the pools' drift, the machines engaged and the factors' change from their
-    frozen values.
-  - Its sizes are the lane's estimates, not measurements: about 2.5 of 10⁴ polymerases and 170 of
-    10⁶ ribosomes engaged, and drifts of a few 10⁻⁴ in φ.
-  - The references report the actual gap. A gap above the bound resizes the world, which changes
-    this sheet and its tag.
+- **The bound, measured (§5.6).**
+  - Each closed form (n_R, n_P, E_tx and E_tl) is compared with A1's full ODE at the outputs on
+    [0, t_off).
+  - The tolerance is ε_A1 = 2 × 10⁻³ times the readout's steady state in the limit (n_R*, n_P*,
+    E_tx* and E_tl*).
+  - The largest gap measured over §3.3's ranges is 5.1 × 10⁻⁴, in n_P. It comes from the machines
+    engaged, the pools' drift and the factors' change from their frozen values.
+  - The references report the actual gap at the registered values. A gap above ε_A1 would resize
+    the world, which would change this sheet and its tag.
 - **What judges the dynamics.** A1's full ODE, with both phases, finite pools and every factor live.
 
 ### 5.2 A1-M, the machine-limited arm
@@ -675,17 +704,21 @@ form is in fmol: M is the pool as an amount (copies × 10¹⁵/N_A), and J* is i
 - **The readout.** J̄ is the release rate over the final window, in fmol/s:
   J̄ = (∫Q(t_end) − ∫Q(t_end − window))/window, with ∫Q the cumulative releases (§4.8). In the
   two-gene world it is per gene.
-- **The bound.** J̄, E and F at t_end are compared with the closed forms within ε_M = 5 × 10⁻⁴,
-  relative. It covers the draws' drift, which the lane estimates at about 10⁻⁵ to 5 × 10⁻⁵ at
-  these sizes. A miss at G2 changes this sheet and its tag.
+- **The bound, measured (§5.6).**
+  - J̄, E and F at t_end are compared with the closed forms within ε_M = 2 × 10⁻⁴, relative.
+  - The largest gap measured over §3.3's ranges is 5.1 × 10⁻⁵, in F. It comes from the draws'
+    drift.
+  - A gap above ε_M at G2 would change this sheet and its tag.
 - **The transient** comes from R-share's ODE.
 
 **Its two plants.** Each is an exact edit, and each must fail one of the arm's judged items.
 1. **Initiation reads the total machines, not the free ones.**
    - The edit: J^I = λ M_q in place of λ F_q (§4.1).
-   - J has no saturation. At T = 100 it is about 11 times J*, so it fails the J–T curve at its
-     saturated end.
-   - It also drives F below zero, so the engine may refuse the step before it yields a J.
+   - **Registered at T = 5** (λ₁τ₀ ≈ 0.50), where the plant's free pool stays positive:
+     F = M (1 − λ₁ T τ₀) ≈ M/2 at its steady state, and above it on the way.
+   - There it gives J = λ M ≈ 1.5 J*, so it fails J̄ in that world by about 50 %, far beyond ε_M.
+   - At T ≥ 10 the same edit drives F below zero, and the engine would refuse the step rather
+     than yield a wrong J. So it is not registered there.
 2. **A machine is not returned at release.**
    - The edit: the `Q_tx` column's `F_pol` entry is 0 (§4.7), in every world.
    - The pool drains and J̄ falls to about 0. So it fails F + E = M in every world, and the J–T
@@ -771,6 +804,51 @@ need the dynamics, so the references show them.
   - FR-7's own protocol.
 - **What this sheet gives it.** No references and no judged item. A2 is development.
 
+### 5.6 The measured bounds, and the domain
+
+**What was measured** (`sheet_check.py --bounds`, the lane's own tool; the references do not read
+it):
+- **The system:** §4.7's full system, by RK4 at a 0.25 s step. A second pass at 0.5 s changed no
+  measured gap by more than 6 × 10⁻¹⁰ of itself.
+- **The worlds:** every world of §5.1 and §5.2. That is A1, the seven polymerase-limited worlds,
+  the two-gene world and the seven ribosome-limited worlds.
+- **The potential sets,** 18 of them:
+  - the test instance;
+  - the test instance with Spirin's E_pep, −0.5 kcal/mol;
+  - the 16 corners of §3.3's ranges, ΔG′°_ATP ∈ {−40, −25} kJ/mol, E_pd ∈ {−30, −15} kJ/mol,
+    E_pep ∈ {−25, 0} kJ/mol and E_rc/RT ∈ {−1, 1}.
+- **A1's gaps:** the closed forms' phase-1 limit (§5.1), integrated beside the full system, at the
+  outputs every 60 s on [0, t_off). Each gap is relative to the limit's steady state.
+- **A1-M's gaps:** J̄ over the final window, and E and F at t_end, each against its closed form
+  (§5.2), relative.
+- **The domain:** the largest per-residue affinity of every one-sided move that a world runs, over
+  its whole trajectory, at every step.
+- **Each bound** is twice the largest gap, rounded up to one significant digit.
+
+<!-- bounds -->
+| Key | Value | Where the largest occurs |
+| --- | --- | --- |
+| `A1 n_R` | 2.5e-4 | A1, corner ΔG′°_ATP −25, E_pd −30, E_pep 0, E_rc/RT +1 |
+| `A1 n_P` | 5.1e-4 | The same corner |
+| `A1 E_tx` | 4.4e-4 | Corner −25, −30, −25, −1 |
+| `A1 E_tl` | 3.85e-4 | Corner −25, −30, −25, +1 |
+| `A1-M J` | 4.6e-5 | Ribosome-limited n_R = 100, corner −40, −30, 0, −1 |
+| `A1-M E` | 3.1e-5 | Polymerase-limited T = 1, corner −25, −30, −25, +1 |
+| `A1-M F` | 5.1e-5 | Ribosome-limited n_R = 100, corner −40, −30, 0, −1 |
+| `eps_A1` | 2e-3 | ε_A1: twice the largest A1 gap, rounded up |
+| `eps_M` | 2e-4 | ε_M: twice the largest A1-M gap, rounded up |
+| `x_max` | −5.21 | The largest per-residue affinity: ribosome-limited n_R = 1, corner −40, −30, 0, +1 (protein degradation at E_pep = 0) |
+<!-- /bounds -->
+
+**What it shows.**
+- **Peptide energies.** Both candidates for E_pep, and the range's ends, sit inside both bounds.
+  The kinetic effect of E_pep reaches the closed forms only through protein degradation's
+  back-term, e^(y_P).
+  - In A1 it is about 6 × 10⁻⁶ at Martin's value, 10⁻³ at Spirin's and 2 × 10⁻³ at E_pep = 0.
+  - In the ribosome-limited worlds, at 5 mM amino acid, it reaches 5 × 10⁻³ at E_pep = 0.
+- **The domain** holds everywhere with a wide margin: −5.21 against x_dom = −1. The one-sided
+  laws never approach their refusal.
+
 ## 6. What the references compute
 
 Every reference reads this sheet alone. Each is a function of the four symbols in §3.3, and of
@@ -804,7 +882,8 @@ every declared value. The numeric test instance is the one that is run.
     trajectories;
   - the engine's order is measured against it at several steps when the protocol runs (G6).
 - **R-machine:** §5.2's closed forms, with their gap to R-share's ODE at t_end.
-- **R-noise** (reported, not judged): an exact stochastic simulation, in counts.
+- **R-noise:** an exact stochastic simulation, in counts. A1's mean-field gap is reported and not
+  judged; the control world is held to the sampling band.
   - **The worlds:**
     - A1's phase 1 over [0, 10,800 s], with the factors frozen as in §5.1's limit. The machines are
       counted, not taken as abundant;
@@ -824,6 +903,22 @@ every declared value. The numeric test instance is the one that is run.
     sample mean and its standard error beside the deterministic mean of the same frozen system:
     its ODE, with the machines counted, F = M − E. Outputs are every 60 s for A1 and every 30 s for
     T = 10.
+  - **The deterministic mean** starts from the same zero products, not from the traces. The
+    frozen system has no logarithm, so zero is admitted.
+  - **The readouts:** in A1, F_pol, F_rib, E_tx, E_tl, n_R and n_P; at T = 10, F, E and n_R. All
+    are in molecules.
+  - **The sampling band.** At every output and readout,
+    |sample mean − deterministic mean| ≤ 4.5 SE + 10/N.
+    - N = 1,000 replicates, and SE is the sample standard deviation over √N.
+    - The 10/N floor keeps a readout whose replicates are all equal (all zero, early on) from being
+      judged on a zero band.
+    - At 4.5 SE, the normal tails give a false-alarm rate below 1 % over each world's comparisons:
+      about 1,090 in A1 and 360 at T = 10.
+  - **What the band judges.**
+    - The T = 10 control must stay within it at every output. This is the references' own check of
+      their stochastic simulation.
+    - A1's mean-field gap is reported against the band. A gap outside it is a finding about the
+      deterministic approximation, reported and not judged (§7, item 2).
 
 **The tolerances the references must reach.**
 - **ODE trajectories.** A second solve, with tolerances 100 times tighter, changes no readout by
@@ -831,7 +926,8 @@ every declared value. The numeric test instance is the one that is run.
 - **Closed forms:** evaluated to 10⁻¹² relative.
 - **Identities:** residuals within 10⁻¹² of the conserved total.
 - **The limits:** the gap is reported, against ε_A1 and ε_M (§5.1, §5.2).
-- **R-noise:** no tolerance. Its standard errors are reported.
+- **R-noise:** the sampling band above. The T = 10 control is held to it; A1's gap is reported
+  against it.
 
 ## 7. What A does not claim
 
@@ -844,17 +940,25 @@ Registered with A's protocol (GENE_REGULATION §7.9), so that no reader takes th
    - No feedback and no cascade: no product regulates any gene.
    - Occupancy is a given Hill factor.
    - No transcription factor is sequestered.
-4. **No machine physics beyond capacity.** It has no inactivation (the cell-free stall of
-   GENE_REGULATION §4.1), no traffic or queuing on a template, no polysomes, no premature
-   termination, and no proofreading beyond the declared stoichiometry.
+4. **No machine physics beyond capacity.**
+   - There is no inactivation (the cell-free stall of GENE_REGULATION §4.1).
+   - There is no traffic or queuing on a template, and there are no polysomes.
+   - There is no premature termination: a complex on a degraded mRNA finishes its chain.
+   - There is no proofreading beyond the declared stoichiometry.
 5. **No processing.** Splicing, capping, export and folding are not modelled. A delay for any of
    them would be a declared stage, and labelled.
 6. **No growth, dilution or division.**
 7. **No organism.** Rates, lengths and copy numbers are declared, or cited as orders of magnitude.
    Nothing is claimed for any species.
-8. **The lumps are reductions:** one NTP row, one amino-acid row, GTP as ATP equivalents, AMP folded
-   by adenylate kinase, and PPi hydrolysed at once. There is no claim per nucleotide, amino acid or
-   tRNA.
+8. **The lumps and reductions,** each declared (§1.3, §2, §4):
+   - one NTP row, one NMP row and one amino-acid row;
+   - no GTP row: GTP is counted as ATP;
+   - AMP folded by adenylate kinase, and PPi hydrolysed at once;
+   - degradation draws no fuel, and initiation draws none;
+   - a chain's ends (the 5′ triphosphate and the terminal charges) are not counted;
+   - the polymers bind no Mg²⁺.
+
+   There is no claim per nucleotide, amino acid or tRNA.
 9. **Charge.**
    - The neutral reduction claims no electrical or pH effect of expression.
    - The charged form claims no Mg²⁺ or pH dependence of elongation beyond its declared kinetics.
