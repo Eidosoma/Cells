@@ -37,10 +37,24 @@ def _factors(form, counts, size, beta):
     if form == GARD_SINGLE_EVENT:
         return join, join
     leave = [
-        1.0 + (x[i] - beta[i][i]) / (size - 1.0) if size > 1 and counts[i] > 0 else 1.0
+        1.0 + _remainder(i, counts, x, beta) / (size - 1.0) if size > 1 and counts[i] > 0 else 1.0
         for i in range(count)
     ]
     return join, leave
+
+
+def _remainder(i, counts, x, beta):
+    """The pair-consistent leave's remainder, as gard.leave_remainder forms it: x_i - beta_ii, or,
+    past its rounding bound, the serial fold of beta_ij (m_j - delta_ij)."""
+    from cells.models.assembly_lineages.gard import EPS, REMAINDER_TOLERANCE
+
+    count = len(counts)
+    exact = beta[i][0] * (float(counts[0]) - (1.0 if i == 0 else 0.0))
+    for j in range(1, count):
+        exact = exact + beta[i][j] * (float(counts[j]) - (1.0 if i == j else 0.0))
+    if EPS * (exact + 2.0 * beta[i][i]) > REMAINDER_TOLERANCE * exact:
+        return exact
+    return x[i] - beta[i][i]
 
 
 def replay(spec, event_uniforms, partition_uniforms, continuation_uniform):
