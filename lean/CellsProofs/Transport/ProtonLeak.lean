@@ -25,7 +25,7 @@ private theorem inward_formula (factor : NormalizedFactor) (scale hIn hOut x : �
       scale * (hOut * factor.eval x - hIn * factor.eval (-x)) := by
   simp [inward, constantFieldFlux]
 
-private theorem analytic_pos (x : ℝ) : 0 < analyticFactor.eval x := by
+theorem analytic_pos (x : ℝ) : 0 < analyticFactor.eval x := by
   rcases lt_trichotomy x 0 with hx | rfl | hx
   · simpa [analyticFactor, hx.ne] using
       div_pos_of_neg_of_neg hx (sub_neg.mpr (Real.exp_lt_one_iff.mpr hx))
@@ -33,7 +33,7 @@ private theorem analytic_pos (x : ℝ) : 0 < analyticFactor.eval x := by
   · simpa [analyticFactor, hx.ne'] using
       div_pos hx (sub_pos.mpr (Real.one_lt_exp_iff.mpr hx))
 
-private theorem analytic_reverse (x : ℝ) :
+theorem analytic_reverse (x : ℝ) :
     analyticFactor.eval (-x) = Real.exp x * analyticFactor.eval x := by
   by_cases hx : x = 0
   · simp [hx]

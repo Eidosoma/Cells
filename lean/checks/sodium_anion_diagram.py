@@ -274,8 +274,8 @@ def capacity_check():
     return rows
 
 
-def measured_response():
-    data = json.loads((DATA / "miyauchi2004_propionate.json").read_text())
+def measured_dose(filename):
+    data = json.loads((DATA / filename).read_text())
     observed = dict(
         zip(data["external_propionate_uM"], data["inward_current_magnitude_nA"], strict=True)
     )
@@ -301,10 +301,16 @@ def measured_response():
                 reading_sensitivity_nA=[min(limits), max(limits)],
             )
         )
+    return dict(amplitude_nA=amp, half_uM=half, held_out=held)
+
+
+def measured_response():
     iv = json.loads((DATA / "coady2007_lactate_voltage.json").read_text())
     low, high = iv["lactate_induced_current_uA"]
     return dict(
-        amplitude_nA=amp, half_uM=half, held_out=held, observed_lactate_voltage_ratio=high / low
+        **measured_dose("miyauchi2004_propionate.json"),
+        observed_lactate_voltage_ratio=high / low,
+        independent_propionate=measured_dose("paroder2006_propionate.json"),
     )
 
 

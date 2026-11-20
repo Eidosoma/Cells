@@ -5,6 +5,8 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SingleSiteBinding
+import CellsProofs.Chemistry.SiteOccupancy
+import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Transport.ATPCycle
@@ -15,6 +17,7 @@ import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LogMeanFace
+import CellsProofs.Transport.MixedMembrane
 import CellsProofs.Transport.NeutralPermeation
 import CellsProofs.Transport.OsmoticWater
 import CellsProofs.Transport.PotassiumAnionSymport

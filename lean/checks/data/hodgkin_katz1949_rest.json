@@ -1,0 +1,23 @@
+{
+  "dataset_id": "hodgkin_katz1949_rest@1",
+  "doi": "10.1113/jphysiol.1949.sp004310",
+  "source": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/5941/1392331/376be7ea1f34/jphysiol01475-0080.png",
+  "locator": "Original Table 7, p. 67, resting squid giant axon, solutions B, C and E",
+  "ion_order": ["Na", "K", "Cl"],
+  "inside_mM": [72, 345, 61],
+  "relative_permeability": [0.04, 1, 0.45],
+  "outside_mM": {
+    "artificial_seawater": [455, 10, 587],
+    "seawater": [455, 10, 540],
+    "B": [450, 15, 587],
+    "C": [445, 20, 587],
+    "E": [227, 5, 270]
+  },
+  "resting_shifts": {
+    "B": {"baseline": "artificial_seawater", "observed_mV": 2},
+    "C": {"baseline": "artificial_seawater", "observed_mV": 4},
+    "E": {"baseline": "seawater", "observed_mV": -2}
+  },
+  "assumed_temperature_K": 294.15,
+  "mapping": "Each value is the change on replacing the baseline bath by the test bath. The sign is converted from the original outside-minus-inside convention to inside-minus-outside. Table 7 gives mean shifts rounded to mV without row-specific errors or temperatures. We use the 21 °C mean from Table 3. The authors used prior axoplasm assays and chose the resting permeability ratios against their observations on p. 68. Only relative permeabilities enter the reversal."
+}
