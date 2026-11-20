@@ -1197,11 +1197,16 @@ crossrev, is the operators owner's call.
 
 ### 7.4 The mitochondria pattern, for A
 
-MT-1 runs in this order: its declared equations (the lane's laws appendix, with its own check,
-tagged `mito-laws-appendix-2026-11-20` on branch mito-lane); then code-blind references written from
-the appendix and the paper, timestamped before any engine output (`mito-references-model-2026-11-19`);
-then registration (CORE_LAWS_ROADMAP §2.4). A follows the same order. Each step ends with its tag
-before the next starts.
+MT-1's pattern (CORE_LAWS_ROADMAP §2.4):
+- its declared equations, the lane's laws appendix with its own check, tagged
+  `mito-laws-appendix-2026-11-20` on branch mito-lane;
+- code-blind component references, written from the appendix and the paper alone;
+- a whole-organelle reference written from the paper alone, timestamped by a tag before any engine
+  output (MR1, `mito-references-model-2026-11-19`);
+- registration before the judged run.
+
+A has no paper model, so its references come from the sheet alone. Each step below ends with its
+tag before the next starts.
 
 1. **The equation sheet** (`docs/TEMPLATED_POLYMERISATION_LAWS.md`, new; S). The lane agent states
    each law's physics only:
@@ -1294,7 +1299,11 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
 | G4. The operator and its laws | The lane agent | `operators/templated_polymerisation.py` (new). Law modules under `laws/` (new); the F owner says whether they take an interface of their own. One row in `operators/species_regulated_availability.py`, a recorded exception naming the operators owner, as F3's was | 5–7 |
 | G5. Charged fuel (charged build only): operators admitted at the closure's rows, and the set's phosphorus moiety reaching the world's rows | The binding owner; the operators owner | `registry/species_registry.py`; `operators/contract.py` | 3–4.5 |
 | G6. Worlds, the protocol with its non-claims, registration, and the judged run | The lane agent; the lead registers | `validation/gene_regulation/` (new) | 1.5–2.5, plus CPU minutes |
-| A2's producer edit (development) | The operators owner, who owns FR-7's producer | `operators/population_unit_turnover.py` | About 0.5 |
+| A2's producer edit (development) | The operators owner, who carries FR-7 (D234) | `operators/population_unit_turnover.py` | About 0.5 |
+
+**The order.** G1, then G2, each with its tag. G3 and G5 run beside them. The protocol's
+registration (G6) needs only G2's tag, and it comes before any run of the protocol's worlds. So G4's
+development tests use other worlds, and the judged run comes last.
 
 **In all:**
 - **Effort:** about 10.5–15.5 agent-days for the neutral build, or 13.5–20 charged.
