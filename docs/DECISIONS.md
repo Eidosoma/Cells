@@ -7589,3 +7589,39 @@ regulation as well".
 2. **Gene regulation begins with a design note.** D145's hold is lifted for the design: transcription
    and translation as physics, regulatory networks as declared laws, and how they are verified. Its
    options come to the user before any engine code is written. D218's door is unchanged until then.
+
+## D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A
+
+2026-11-20, about 10:53 UTC. The user, on the lead's morning brief: "1. decide with adviser but
+probably both in the end", "2. Same get adviser and you choose but we're not in a hurry per se",
+"3. yes, get adviser also on this". The lead's choices, after the advisor's review:
+
+1. **FR-8: N2 first, then C, both built.** D232's rule 1 holds: charge stability limits H2's calm
+   stretch above 20 ms, also from the calm state at 1000 s (§10.8's probe), and the @3 owner confirmed
+   that N2 removes that refusal.
+   - **N2 is rung 1 as registered.** The @3 owner builds it. H2's ceiling under N2 is the explicit-rate
+     bound on what stays explicit, 292 ms, against 200 ms for the registered gain of 10.
+   - **C is required, not optional.** N2 alone is predicted to gain about 1 on FR-8's acceptance
+     reading through the cue, which the location rule caps at 1 ms. C, the fine-window executor,
+     starts once three things are settled: its files' owner, disjoint from @3's step; X2 across a
+     step change, measured; and a dated registration entry.
+2. **Mitochondria: host P for MT-1 and MT-2,** as MITOCHONDRIA_DESIGN §3.6, §5.2 and §7 recommend.
+   P1′ found no accuracy reason to leave it.
+   - **MT-1** runs on today's solver at declared activities.
+   - **MT-2 at Beard's synthase activity** adds the cycles and faces to N2's operator later.
+   - **The outer membrane and the IMS kinase stay in host P's world.** The code-blind reference
+     found a 577 µM outer-membrane ADP gradient and the IMS kinase at 44 times respiration.
+   - **K3**, chemistry at P, starts now. Host C, with the three complexes, stays the in-cell host
+     (M6).
+   - **Still the user's:** the Beard repairs (D209), put as one question with one combined arm's
+     numbers.
+3. **Gene regulation: option A,** one gene, open loop, deterministic, expression as templated
+   polymerisation with its ATP cost. It is judged against exact references only, and starts when seats
+   free.
+   - **First,** the design note is refreshed against main: the charged ATP set, moieties and moved fuel
+     at closure nodes.
+   - **The operator's moiety hook** lands with it.
+   - **The mitochondria pattern applies:** an equation sheet, a tag, code-blind references, and
+     registration before any engine output. A also registers what it does not claim, and includes a
+     machine-limited arm with its own plant.
+   - **The note's other questions remain open.**
