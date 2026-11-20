@@ -1,0 +1,360 @@
+"""The appendix's own check: every law of docs/MITOCHONDRIA_LAWS_APPENDIX.md against Beard 2005 as
+printed, in 50-digit decimal arithmetic, with its numbers read from beard2005_cardiac.py.
+
+It is the lane's check of its own algebra, not an independent reference: the component
+references are written by an agent that reads neither this file nor the engine. What it shows,
+over a random grid of potentials, both sides' pH and concentrations, and states placed next to
+each turnover's equilibrium:
+- every declared law is J = S (1 - e^x) with S > 0, so J x <= 0 and J = 0 at x = 0;
+- each printed law that factors (Eqs. 3, 7, 9, 14 and 21) equals its declared form at every
+  state (relative difference below 1e-40);
+- each printed law that fails (Eqs. 11, 16 and 24) has a mismatch d = ln(B/A)/kappa - x equal to
+  the appendix's closed form at every state, not constant, and runs against its own free energy
+  at some states;
+- two planted errors are caught: complex I's charge with the wrong sign, and the exchanger's
+  voltage shares not summing to one.
+
+Run: PYTHONPATH=src:. python validation/mitochondria/appendix_check.py [--out FILE]. Seconds.
+"""
+
+import argparse
+import json
+import random
+import re
+import sys
+from decimal import Decimal, getcontext
+from pathlib import Path
+
+from validation.mitochondria import beard2005_cardiac as source
+
+getcontext().prec = 50
+D = Decimal
+APPENDIX = Path(__file__).resolve().parents[2] / "docs" / "MITOCHONDRIA_LAWS_APPENDIX.md"
+ONE = D(1)
+LN1E7 = D(10) ** 7
+LN1E7 = LN1E7.ln()
+TOLERANCE = D("1e-40")
+
+
+def ln(v):
+    return D(v).ln()
+
+
+def exp(v):
+    return D(v).exp()
+
+
+def rt_units(kj_mol):
+    return D(str(kj_mol)) * 1000 / D(repr(source.RT_J_mol()))
+
+
+F_OVER_RT_PER_MV = D(repr(source.DECLARED["faraday_C_mol"])) / (
+    D(repr(source.DECLARED["gas_constant_J_mol_K"])) * D(repr(source.DECLARED["temperature_K"]))
+) / 1000
+
+P = {name: D(repr(source.parameter(name))) for name in source.TABLE_1 if source.parameter(name) is not None}
+MM = D("1e-3")  # mM -> M
+G_PH7 = {name: rt_units(r.dG0_kJ_mol) for name, r in source.TABLE_2.items()}
+G_1M = {name: G_PH7[name] + r.scalar_protons * LN1E7 for name, r in source.TABLE_2.items()}
+K_DH = P["k_dH"]
+G_F_BASE = G_PH7["ATP"] - LN1E7 - (ONE + D("1e-7") / K_DH).ln()  # the appendix's law 2 entry
+N_A = int(P["n_A"])
+
+
+# ------------------------------------------------------------------ the laws (appendix, in M)
+
+
+def c1(s, *, charge_sign=1):
+    """Complex I, Eq. 3: (printed J, declared J, x, kappa)."""
+    u, hn, hp = s["u"], s["H_N"], s["H_P"]
+    x = (G_1M["C1"] + ln(s["NAD"] * s["QH2"] / (s["NADH"] * s["Q"])) - ln(hn)
+         + 4 * ln(hp / hn) + charge_sign * 4 * u)  # fmt: skip
+    dgh = u + ln(hp / hn)
+    a = P["X_C1"] * exp(-(G_PH7["C1"] + 4 * dgh - ln(hn / D("1e-7")) - ln(s["Q"] / s["QH2"]))) * s["NADH"]
+    b = P["X_C1"] * s["NAD"]
+    return a - b, a * (ONE - exp(x)), x, ONE, a, b
+
+
+def _c3_x(s):
+    u, hn, hp = s["u"], s["H_N"], s["H_P"]
+    return (G_1M["C3"] + ln(s["Q"] * s["cred"] ** 2 / (s["QH2"] * s["cox"] ** 2)) + 2 * ln(hn)
+            + 4 * ln(hp / hn) + 2 * u)  # fmt: skip
+
+
+def c3_eq7(s):
+    """Complex III without phosphate control, Eq. 7 (kappa 1/2, per QH2)."""
+    u, hn, hp, x = s["u"], s["H_N"], s["H_P"], _c3_x(s)
+    dgh = u + ln(hp / hn)
+    expo = G_PH7["C3"] + 4 * dgh + 2 * ln(hn / D("1e-7")) - 2 * u + ln(s["Q"] / s["QH2"])
+    a = P["X_C3"] * exp(-expo / 2) * s["cox"]
+    b = P["X_C3"] * s["cred"]
+    return a - b, a * (ONE - exp(x / 2)), x, D("0.5"), a, b
+
+
+def c3_eq24(s):
+    """Complex III with phosphate control, Eq. 24: the 2RT ln([H+]_x/1e-7) term is dropped."""
+    u, hn, hp, x = s["u"], s["H_N"], s["H_P"], _c3_x(s)
+    dgh = u + ln(hp / hn)
+    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)  # total matrix Pi
+    phi = (ONE + pi_tot / (P["k_Pi3"] * MM)) / (ONE + pi_tot / (P["k_Pi4"] * MM))
+    expo = G_PH7["C3"] + 4 * dgh - 2 * u + ln(s["Q"] / s["QH2"])
+    a = P["X_C3"] * phi * exp(-expo / 2) * s["cox"]
+    b = P["X_C3"] * phi * s["cred"]
+    return a - b, a * (ONE - exp(x / 2)), x, D("0.5"), a, b
+
+
+def c4(s):
+    """Complex IV, Eq. 9; the declared turnover is one O2 (four electrons), printed per 1/2 O2."""
+    u, hn, hp = s["u"], s["H_N"], s["H_P"]
+    x_half = (G_1M["C4"] + ln(s["cox"] ** 2 / (s["cred"] ** 2 * s["O2"].sqrt())) - 2 * ln(hn)
+              + 2 * ln(hp / hn) + 4 * u)  # fmt: skip
+    x = 2 * x_half  # per O2
+    dgh = u + ln(hp / hn)
+    pre = P["X_C4"] / (ONE + P["k_O2"] / s["O2"]) * s["cred"] / (s["cox"] + s["cred"])
+    expo = G_PH7["C4"] + 2 * dgh - 2 * ln(hn / D("1e-7")) - ln(s["O2"]) / 2
+    a = pre * exp(-expo / 2) * s["cred"]
+    b = pre * exp(u) * s["cox"]
+    printed_per_o2 = (a - b) / 2  # each printed turnover uses 1/2 O2
+    return printed_per_o2, a / 2 * (ONE - exp(x / 4)), x, D("0.25"), a, b
+
+
+def _mg(s):
+    return s["ATP_N"] * s["Mg_N"] / P["K_MgATP"], s["ADP_N"] * s["Mg_N"] / P["K_MgADP"]
+
+
+def f1(s, *, own_frame=False):
+    """F1F0, Eq. 11, with Table 2's +36.03 kJ/mol. x in base forms (the declared entry), or in the
+    source's own frame (total Pi, one scalar proton) when own_frame is set."""
+    u, hn, hp = s["u"], s["H_N"], s["H_P"]
+    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)
+    if own_frame:
+        x = (G_PH7["ATP"] + ln(s["ATP_N"] / (s["ADP_N"] * pi_tot)) - ln(hn / D("1e-7"))
+             - N_A * (ln(hp / hn) + u))  # fmt: skip
+    else:
+        x = G_F_BASE + ln(s["ATP_N"] / (s["ADP_N"] * s["HPO4_N"] * hn)) - N_A * (ln(hp / hn) + u)
+    mg_atp, mg_adp = _mg(s)
+    dgh = u + ln(hp / hn)
+    a = P["X_F1"] * exp(-(G_PH7["ATP"] - N_A * dgh)) * P["K_MgADP"] / P["K_MgATP"] * mg_adp * pi_tot
+    b = P["X_F1"] * ONE * mg_atp
+    return a - b, a * (ONE - exp(x)), x, ONE, a, b
+
+
+def ant(s, *, shares=(D("0.35"), D("0.65"))):
+    """The nucleotide exchanger, Eq. 14 (Mg-free ATP4- and ADP3-)."""
+    u, (sp, sn) = s["u"], shares
+    x = ln(s["ATP_P"] * s["ADP_N"] / (s["ATP_N"] * s["ADP_P"])) - u
+    sigma = ONE / (ONE + P["k_mADP"] / s["ADP_P"])
+    ap, bp = s["ADP_P"], s["ATP_P"] * exp(-sp * u)
+    an, bn = s["ADP_N"], s["ATP_N"] * exp(sn * u)
+    printed = P["X_ANT"] * (ap / (ap + bp) - an / (an + bn)) * sigma
+    s_ = P["X_ANT"] * sigma * ap * bn / ((ap + bp) * (an + bn))
+    return printed, s_ * (ONE - exp(x)), x, ONE, s_, s_ * exp(x)
+
+
+def piht(s):
+    """The phosphate carrier, Eq. 16, as printed ([H+]_x forward, [H+]_e backward)."""
+    hn, hp = s["H_N"], s["H_P"]
+    x = ln(s["HPO4_N"] * hn**2 / (s["HPO4_P"] * hp**2))
+    h2_p, h2_n = hp * s["HPO4_P"] / K_DH, hn * s["HPO4_N"] / K_DH
+    den = h2_p + P["k_PiHt"] * MM
+    a = P["X_PiHt"] * h2_p * hn / den
+    b = P["X_PiHt"] * h2_n * hp / den
+    return a - b, a * (ONE - exp(x)), x, ONE, a, b
+
+
+def kh(s):
+    """The K+/H+ exchanger, Eq. 21."""
+    hn, hp = s["H_N"], s["H_P"]
+    x = ln(s["K_N"] * hp / (s["K_P"] * hn))
+    a = P["X_KH"] * s["K_P"] * hn
+    b = P["X_KH"] * s["K_N"] * hp
+    return a - b, a * (ONE - exp(x)), x, ONE, a, b
+
+
+# The appendix's closed forms of each failing law's mismatch, d = ln(B/A)/kappa - x.
+def d_eq24(s):
+    return -2 * ln(s["H_N"] / D("1e-7"))
+
+
+def d_eq11(s):
+    hn = s["H_N"]
+    return ln(hn / D("1e-7")) - ln((ONE + hn / K_DH) / (ONE + D("1e-7") / K_DH))
+
+
+def d_eq11_own_frame(s):
+    return ln(s["H_N"] / D("1e-7"))
+
+
+def d_eq16(s):
+    return 2 * ln(s["H_P"] / s["H_N"])
+
+
+PASSING = {"C1 (Eq. 3)": c1, "C3 (Eq. 7)": c3_eq7, "C4 (Eq. 9)": c4, "ANT (Eq. 14)": ant,
+           "KH (Eq. 21)": kh}  # fmt: skip
+FAILING = {"F1 (Eq. 11)": (f1, d_eq11, "H_N"), "PiHt (Eq. 16)": (piht, d_eq16, "H_N"),
+           "C3 (Eq. 24)": (c3_eq24, d_eq24, "H_N")}  # fmt: skip
+
+
+# ------------------------------------------------------------------ the grid
+
+
+def _log_uniform(rng, low, high):
+    return D(repr(low * (high / low) ** rng.random()))
+
+
+def state(rng):
+    """One random state (concentrations in M, u = F dPsi / RT) over the screen's domain
+    (docs/CORE_SEAMS_STEP0.md §1.2's Beard ranges)."""
+    def fraction():
+        return D(repr(0.01 + 0.98 * rng.random()))
+
+    nad_tot, q_tot, c_tot = (P[k] * MM for k in ("NAD_tot", "Q_tot", "cytC_tot"))
+    f_nadh, f_qh2, f_red = fraction(), fraction(), fraction()
+    s = dict(
+        u=D(repr(250.0 * rng.random())) * F_OVER_RT_PER_MV,
+        H_N=D(10) ** D(repr(-(6.8 + 1.4 * rng.random()))),
+        H_P=D(10) ** D(repr(-(6.5 + 1.1 * rng.random()))),
+        NADH=nad_tot * f_nadh, NAD=nad_tot * (ONE - f_nadh),
+        QH2=q_tot * f_qh2, Q=q_tot * (ONE - f_qh2),
+        cred=c_tot * f_red, cox=c_tot * (ONE - f_red),
+        O2=_log_uniform(rng, 1e-7, 3e-4),
+        Mg_N=_log_uniform(rng, 1e-4, 5e-3),
+        HPO4_N=_log_uniform(rng, 1e-4, 2e-2), HPO4_P=_log_uniform(rng, 1e-4, 2e-2),
+        K_N=_log_uniform(rng, 1e-2, 2e-1), K_P=_log_uniform(rng, 1e-2, 2e-1),
+    )  # fmt: skip
+    for side in ("N", "P"):
+        total = _log_uniform(rng, 1e-4, 1e-2)
+        ratio = _log_uniform(rng, 1e-3, 1e3)  # ATP/ADP
+        s[f"ATP_{side}"] = total * ratio / (ONE + ratio)
+        s[f"ADP_{side}"] = total / (ONE + ratio)
+    return s
+
+
+def near_equilibrium(law, s, target):
+    """s with one concentration moved so that the law's declared x equals target (an exact
+    solve: x is linear in the moved log concentration with coefficient nu)."""
+    moved = {c1: ("NAD", 1), c3_eq7: ("Q", 1), c3_eq24: ("Q", 1), c4: ("O2", -1), f1: ("ATP_N", 1),
+             ant: ("ATP_P", 1), piht: ("HPO4_N", 1), kh: ("K_N", 1)}[law]  # fmt: skip
+    key, nu = moved
+    out = dict(s)
+    x = law(out)[2]
+    out[key] = out[key] * exp((D(target) - x) / nu)
+    return out
+
+
+# ------------------------------------------------------------------ the checks
+
+
+def check(n_states=400, seed=20261120):
+    rng = random.Random(seed)
+    states = [state(rng) for _ in range(n_states)]
+    targets = ("-3", "-0.5", "-0.01", "0", "0.01", "0.5", "3")
+    report, ok = {}, True
+    all_laws = {**PASSING, **{k: v[0] for k, v in FAILING.items()}}
+    for name, law in all_laws.items():
+        grid = states + [near_equilibrium(law, s, t) for s in states[:60] for t in targets]
+        worst_sign, at_zero, wrong_printed = D(0), D(0), 0
+        for s in grid:
+            printed, declared, x, kappa, a, b = law(s)
+            if declared * x > 0:
+                worst_sign = max(worst_sign, declared * x)
+            if abs(x) < D("1e-30"):  # Relative to the one-way flux: J vanishes at x = 0.
+                at_zero = max(at_zero, abs(declared) / max(abs(a), abs(b)))
+            if printed * x > 0 and abs(x) > D("1e-9"):
+                wrong_printed += 1
+        entry = dict(states=len(grid), declared_wrong_sign=str(worst_sign),
+                     declared_at_zero=f"{at_zero:.3e}", printed_wrong_sign_states=wrong_printed)  # fmt: skip
+        ok &= worst_sign == 0 and at_zero < TOLERANCE
+        if name in PASSING:  # Relative to the one-way fluxes, so no cancellation near x = 0.
+            worst = max(abs(p - d) / max(abs(a), abs(b))
+                        for p, d, _, _, a, b in map(law, grid))  # fmt: skip
+            entry["printed_vs_declared"] = f"{worst:.3e}"
+            ok &= worst < TOLERANCE and wrong_printed == 0
+        else:
+            _, closed, _ = FAILING[name]
+            mismatch, values = D(0), []
+            for s in grid:
+                _, _, x, kappa, a, b = law(s)
+                d = ln(b / a) / kappa - x
+                values.append(d)
+                mismatch = max(mismatch, abs(d - closed(s)))
+            spread = max(values) - min(values)
+            entry |= dict(mismatch_vs_closed_form=f"{mismatch:.3e}", d_spread=f"{spread:.4f}")
+            ok &= mismatch < TOLERANCE and spread > D("0.1") and wrong_printed > 0
+        report[name] = entry
+    # Eq. 11 in the source's own frame (total Pi as one species): the mismatch is one proton.
+    own = max(abs(_own_frame_d(s) - d_eq11_own_frame(s)) for s in states)
+    report["F1 (Eq. 11), the source's frame"] = dict(mismatch_vs_closed_form=f"{own:.3e}")
+    ok &= own < TOLERANCE
+    # Planted errors, each must be caught.
+    planted_c1 = max(abs(p - d) / max(abs(a), abs(b))
+                     for p, d, _, _, a, b in (c1(s, charge_sign=-1) for s in states))  # fmt: skip
+    planted_ant = max(abs(p - d) / max(abs(a), abs(b))
+                      for p, d, _, _, a, b in (ant(s, shares=(D("0.35"), D("0.60"))) for s in states))  # fmt: skip
+    report["planted"] = dict(c1_charge_sign=f"{planted_c1:.3e}", ant_shares_0_95=f"{planted_ant:.3e}")
+    ok &= planted_c1 > D("1e-3") and planted_ant > D("1e-3")
+    errors = appendix_errors()
+    report["appendix_numbers"] = errors or "agree"
+    ok &= not errors
+    report["entries_RT"] = {
+        "C1 per NADH, 1 M": f"{G_1M['C1']:.6f}", "C3 per QH2, 1 M": f"{G_1M['C3']:.6f}",
+        "C4 per O2, 1 M": f"{2 * G_1M['C4']:.6f}", "F1 base forms per ATP, 1 M": f"{G_F_BASE:.6f}",
+        "quinol:O2 per O2": f"{2 * (G_PH7['C3'] + G_PH7['C4']):.6f}",
+    }  # fmt: skip
+    return ok, report
+
+
+def _number(text):
+    return float(text.replace("\u2212", "-").replace("+", "").replace("\u2014", "nan"))
+
+
+def appendix_errors(path=APPENDIX):
+    """The appendix's typed numbers against this check's and the organism file's: every row of
+    its parameter table (both columns) and the RT column of its free-energy table."""
+    text, out = path.read_text(), []
+    block = text.split("<!-- parameters -->")[1].split("<!-- /parameters -->")[0]
+    rows = re.findall(r"^\| `(\w+)` \| [^|]+ \| ([^|]+) \| ([^|]+) \|", block, re.M)
+    for name, with_pi, without in rows:
+        for column, typed in ((True, with_pi), (False, without)):
+            value, typed = source.parameter(name, pi_control=column), _number(typed.strip())
+            if value is None:
+                if typed == typed:  # not nan
+                    out.append(f"{name}: the appendix types {typed} where the source prints a dash")
+            elif abs(typed - value) > 1e-12 * abs(value):
+                out.append(f"{name} (pi_control={column}): appendix {typed}, organism file {value}")
+    if len(rows) < 20:
+        out.append(f"the parameter table has {len(rows)} rows")
+    computed = {"per NADH": G_1M["C1"], "per QH₂": G_1M["C3"], "§1.3, per O₂": 2 * G_1M["C4"],
+                "§1.4, per O₂": 2 * (G_PH7["C3"] + G_PH7["C4"]), "per ATP": G_F_BASE}  # fmt: skip
+    for key, value in computed.items():
+        line = next((ln_ for ln_ in text.splitlines() if ln_.startswith("| §") and key in ln_), None)
+        if line is None:
+            out.append(f"the free-energy table has no row {key!r}")
+            continue
+        typed = _number(line.rstrip(" |").rsplit("|", 1)[1].strip())
+        if abs(typed - float(value)) > 5e-5:
+            out.append(f"free energy {key}: appendix {typed} RT, computed {float(value):.4f}")
+    return out
+
+
+def _own_frame_d(s):
+    _, _, x, _, a, b = f1(s, own_frame=True)
+    return ln(b / a) - x
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--out", help="write the report as JSON here")
+    parser.add_argument("--states", type=int, default=400)
+    args = parser.parse_args(argv)
+    ok, report = check(args.states)
+    text = json.dumps(dict(passed=bool(ok), report=report), indent=1)
+    if args.out:
+        with open(args.out, "w") as fh:
+            fh.write(text + "\n")
+    print(text)
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
