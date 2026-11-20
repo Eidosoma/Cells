@@ -6,4 +6,4 @@ na2_anion_symport_diagram.py; and the mitochondrion's inner-membrane laws from i
 ubiquinol_cytochrome_c_proton_cycle.py, cytochrome_c_oxygen_proton_cycle.py,
 proton_coupled_atp_synthesis_cycle.py, electrogenic_nucleotide_exchange.py,
 phosphate_proton_symport.py and potassium_proton_exchange.py, with the matrix's NADH supply on a
-held pair, held_reductant_supply.py."""
+held pair, held_reductant_supply.py, and the intermembrane space's adenylate_kinase.py."""

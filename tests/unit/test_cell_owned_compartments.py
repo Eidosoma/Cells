@@ -756,6 +756,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
                 "cells.phosphate_proton_symport@1",
                 "cells.potassium_proton_exchange@1",
                 "cells.held_reductant_supply@1",  # The matrix's NADH supply: likewise.
+                "cells.adenylate_kinase@1",  # The intermembrane space's kinase: likewise.
             ),
             (),
         ),

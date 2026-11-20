@@ -1,25 +1,28 @@
 """The mitochondria's cycle laws on cells.transporter@1, the kinds owner's law modules
 (docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b, D236). The first head:
 complexes I, III and IV, the synthase, the nucleotide exchange, the phosphate carrier and the
-K+/H+ exchange. The second: the matrix's NADH supply on a held pair.
+K+/H+ exchange. The second: the matrix's NADH supply on a held pair and the intermembrane
+space's adenylate kinase, with the world on beard2005@2 (AMP2-).
 
 Each claim with its plant (D187):
 - registration: the seven laws register in the built-in registry, each a monomial form hosted by
   the kind, reading rapid_binding@1 in base forms; the supply too, on held fuel only, and its pair
   is held together. Planted: a world that moves the pair, or holds one of it, is refused;
 - a host-P world (FR-4's lumen under the general closure as the IMS, its cell as the matrix, with
-  beard2005@1's rows at 298.15 K) admits every population, at the closures' rows too, and two
-  steps close every ledger. The cited constants' seam-E entries are §9's; the supply cites none,
-  and the synthase's rate-only constant emits none and never moves its x. Planted: the same
-  constant as a CitedConstant is refused by the registry's check, and a RateConstant as a factor's
-  K by the form;
+  beard2005@2's rows at 298.15 K) admits every population, at the closures' rows too, the kinase
+  at P, and two steps close every ledger. The cited constants' seam-E entries are §9's, the
+  kinase's -ln K_base unrounded; the supply cites none, and its held-row work is its pair's
+  upkeep, its heat plus the work it delivers. The synthase's rate-only constant emits none and
+  never moves its x. Planted: the synthase's constant as a CitedConstant is refused by the
+  registry's check, and a RateConstant as a factor's K by the form;
 - the comparison harness's adapter (validation/mitochondria/component_comparison, the lane's)
   evaluates each law as the kind does: log S, x and J at the world's start agree. The harness
   assembles x itself, from potential_set_values; the kind's own world-level x is this world's,
   so this tie, not the harness, covers it;
 - a handful of registered rows, each law's center row of the component references (tag
   mito-components-registration-2026-11-20), have x, S, J and J- in band. Planted: complex I with
-  -4u for +4u misses, and the supply's pair held at r, without 10^-0.10, moves x by -0.10 ln 10.
+  -4u for +4u misses; the supply's pair held at r, without 10^-0.10, moves x by -0.10 ln 10; and
+  the kinase without its prefactor has S too small by exactly (1 + [Mg2+]_P/K_MgATP).
 The full comparison, every registered row with both plants, is the harness's run: landing
 evidence, outside the suite (the lead's ruling 4)."""
 
@@ -64,17 +67,22 @@ SUPPLY = {  # The second head's: the matrix's NADH supply, its pair held (§6).
            dict(S_red="S_red", NAD="NAD", S_ox="S_ox", NADH="NADH", H="H", Pi="Pi"),
            dict(r=4.5807, k_Pi1=0.13413, k_Pi2=0.67668)),
 }  # fmt: skip
-ALL = {**LAWS, **SUPPLY}
+KINASE = {  # The second head's: the intermembrane space's adenylate kinase, every row at P (§7).
+    "ak": ("adenylate_kinase@1", dict(ADP="ADP", ATP="ATP", AMP="AMP", Mg="Mg"),
+           dict(K_MgATP=24.0e-6)),
+}  # fmt: skip
+ALL = {**LAWS, **SUPPLY, **KINASE}
 HELD = {"dh": [["S_red", "N"], ["S_ox", "N"]]}  # population ID: its held rows
+SET = "beard2005@2"  # @1 and AMP2-, whose potential the kinase's K_base fixes (D236).
 MM = dict(K=140.0, Mg=1.0, O2=0.026, NAD=1.5, NADH=1.5, Q=0.7, QH2=0.7, cytc_ox=1.3, cytc_red=1.4,
-          ADP=1.0, ATP=2.0, Pi=5.0, S_ox=1.0)  # fmt: skip
+          ADP=1.0, ATP=2.0, Pi=5.0, S_ox=1.0, AMP=0.1)  # fmt: skip
 MM["S_red"] = 10**-0.10 * SUPPLY["dh"][2]["r"] * MM["S_ox"]  # The declared ratio (§6).
 
 
 def host_p_world(laws=None):
     """FR-4's development world under the general closure (the binding owner's lumen_general): its
     cell is the matrix (N) and its lumen, a finite outside node bounded by the cell, the IMS (P),
-    each under the closure (H and Mg; ADP, ATP, Pi and the node's buffer). beard2005@1's rows
+    each under the closure (H and Mg; ADP, ATP, Pi and the node's buffer). beard2005@2's rows
     replace FR-4's neutral fuel, at 298.15 K. One population of each law sits on the bounding patch
     at a capacity small enough that the arbitrary state's fluxes keep every step bound; the supply
     holds its pair, at the declared ratio."""
@@ -92,13 +100,14 @@ def host_p_world(laws=None):
         raw["execution"]["material_balance_atol_fmol"].pop(sid, None)
     present = {e["id"] for e in m["species"]}
     nodes = [n["id"] for n in (*m["cells"], *m["extracellular"])]
-    for row, z in species_registry.BEARD_2005.rows:
+    rows = dict(species_registry.POTENTIAL_SETS[SET].rows)
+    for row, z in rows.items():
         if row not in present:
             ck.add_species(raw, row, z, 0.0, dict.fromkeys(nodes, MM[row]))
     for e in m["species"]:
-        if e["id"] in dict(species_registry.BEARD_2005.rows):
+        if e["id"] in rows:
             e.pop("standard_mu_RT", None)
-    raw = species_registry.with_potential_set(raw, "beard2005@1")
+    raw = species_registry.with_potential_set(raw, SET)
     m = raw["model"]
     (read,) = m["stage_reads"]
     read["ligand_rows"] = ["H", "Mg"]
@@ -199,7 +208,7 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
     # delivered to the NAD pool, J (mu_NADH + mu_H - mu_NAD) (one node, so no charge term).
     free = free_molar(spec, p, read)
     mu0 = species_registry.potential_set_values(
-        "beard2005@1", temperature_K=T_K, standard_concentration_mM=species_registry.SET_C0_MM
+        SET, temperature_K=T_K, standard_concentration_mM=species_registry.SET_C0_MM
     )
     mu = {row: mu0[row] + math.log(free[f"{cc.SET_INPUT.get(row, row)}_N"]) for row in mu0
           if f"{cc.SET_INPUT.get(row, row)}_N" in free}  # fmt: skip
@@ -213,10 +222,10 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
     assert work == pytest.approx(heat + delivered, rel=1e-9, abs=0.0)
     entries = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
     x0 = {e.law_id: e.dG_kJ_mol * 1000 / (R * T_K) + e.dG_RT_offset for e in entries}
-    expected = {"c1": -44.1016, "c3": 19.1137, "c4": -163.6593}  # §9's free-energy entries.
-    assert sorted(x0) == sorted(f"cells.{LAWS[pid][0]}" for pid in expected)
+    expected = {"c1": -44.1016, "c3": 19.1137, "c4": -163.6593, "ak": 0.9443}  # §9's entries
+    assert sorted(x0) == sorted(f"cells.{ALL[pid][0]}" for pid in expected)
     for pid, value in expected.items():
-        assert round(x0[f"cells.{LAWS[pid][0]}"], 4) == value, pid
+        assert round(x0[f"cells.{ALL[pid][0]}"], 4) == value, pid
     # The synthase's rate-only constant: x is the registry's, whatever the constant.
     base = law_registry.active().lookup(f"cells.{LAWS['f1'][0]}")
     rate = base.cycle.monomial.rates[0]
@@ -272,7 +281,7 @@ def test_the_harness_adapter_evaluates_each_law_as_the_kind_does():
     for j, (pid, (law, roles, parameters)) in enumerate(ALL.items()):
         spec_j = cc.EngineSpec(
             f"cells.{law}", capacity="unit", parameters=tuple(parameters.items()),
-            roles=tuple(roles.items()),
+            roles=tuple(roles.items()), potential_set=SET,
         )  # fmt: skip
         found = law_registry.active().lookup(f"cells.{law}")
         got = cc.MonomialAdapter(found.cycle, spec_j, inputs).evaluate(values, free)
@@ -315,3 +324,10 @@ def test_a_handful_of_registered_rows_are_in_band_and_a_reversed_voltage_term_is
     planted = dict(row["inputs"], S_red_N=cc.parameter(inputs, "r") * row["inputs"]["S_ox_N"])
     got = adapter.evaluate(planted, cc.free_coordinates(planted, inputs))
     assert got["x"] - float(row["ref"]["x"]) == pytest.approx(-0.10 * math.log(10), rel=1e-9)
+    key = "adenylate_kinase"  # Planted: without its prefactor (§7's control), the only factor.
+    adapter, _ = cc.engine_adapter(key, inputs)
+    row = data["rows"][key]
+    free = cc.free_coordinates(row["inputs"], inputs)
+    got = adapter.evaluate(row["inputs"], free, plant="dropped_factor")
+    factor = 1.0 + free["Mg_P"] / cc.parameter(inputs, "K_MgATP")
+    assert float(row["ref"]["S"]) / got["S"] == pytest.approx(factor, rel=1e-9)
