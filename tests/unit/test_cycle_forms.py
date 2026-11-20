@@ -555,7 +555,22 @@ def test_a_monomial_form_keeps_its_contract_and_refuses_its_plants_by_name():
         "its orders are distinct": bad_ref,
         "each factor is a MonomialFactor": bad_k,
         "zeta is a finite number or an Affine": rate._replace(zeta=forms.Affine("nobody")),
-        "log k is a finite number or a CitedConstant": rate._replace(log_k=math.inf),
+        "log k is a finite number, a CitedConstant or a RateConstant": rate._replace(
+            log_k=math.inf
+        ),
+        "a CitedConstant or a RateConstant": rate._replace(  # Rate-only constants scale S alone.
+            log_k=forms.RateConstant(math.nan)
+        ),
+        "a mode's log k only": rate._replace(
+            factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(forms.RateConstant(36.03)),)),)
+        ),
+        "a RateConstant or a CitedConstant is a mode's log k": rate._replace(
+            factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(forms.CitedConstant(1.0)),)),)
+        ),
+        "plain or Scaled": rate._replace(  # A Scaled K names a positive parameter.
+            factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(forms.Scaled("nobody")),)),)
+        ),
+        "log k is a finite": rate._replace(log_k=forms.CitedConstant(1.0, rt_term=math.inf)),
     }
     for reason, plant in plants.items():
         found = "; ".join(form._replace(monomial=form.monomial._replace(rates=(plant,))).errors())
@@ -569,6 +584,14 @@ def test_a_monomial_form_keeps_its_contract_and_refuses_its_plants_by_name():
     assert forms.resolved(numeric, {}) is numeric and numeric.errors() == []
     (r,) = numeric.monomial.rates
     assert r.zeta == pytest.approx(0.65) and r.factors[0].terms[0].k == 2.5
+    # A Scaled K: factor x value^power, a constant printed in mM turned into a K per M.
+    scaled = rate._replace(
+        factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(forms.Scaled("K1", 1000.0, -1)),)),)
+    )
+    with_scaled = form._replace(monomial=form.monomial._replace(rates=(scaled,)))
+    assert with_scaled.errors() == []
+    (r,) = forms.resolved(with_scaled, {"theta": 0.35, "K1": 2.5}).monomial.rates
+    assert r.factors[0].terms[0].k == 1000.0 / 2.5
 
 
 @pytest.mark.parametrize("seed", range(4))
