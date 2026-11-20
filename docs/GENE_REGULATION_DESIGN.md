@@ -86,8 +86,9 @@ Sources.
    - **C,** the low-copy regime first;
    - **D,** a network with feedback: delayed autorepression, with the EMT switch on the same laws.
 
-   **Recommended: A,** with its first acceptance numerical against code-blind references, and its
-   biological comparison registered separately (§4.6).
+   **Recommended: A.** Its first acceptance is numerical, against code-blind references. No
+   permissively licensed dataset passes as its biological check today, so the layer's first
+   biological prediction is D's Hes1 period (§4.6).
 8. **Consumers** (§5): the heredity work's expression carrier, Syn3A's Stage 4 (F10 and F11), the
    Xenopus lane's mediator-to-expression path, the gap-junction replication's F6, the REVERT plan's
    group 2, FR-7's precursor, and machines' U4.
@@ -701,12 +702,31 @@ predicts.
     compared with.
   - A steady-state ratio of two expression levels. The chain after initiation cancels in it, so it
     tests occupancy (option B), not synthesis.
-- **The class that passes: a closed batch of cell-free expression.** The components are defined
-  inputs, and the exhaustion of precursors and fuel is the measured response. Calibrate on one
-  condition, one template or energy level. Predict the others: saturation by finite machines, and
-  the plateau that the fuel budget sets. [CANDIDATE]
-- **If no permissive candidate exists,** A's first acceptance is numerical only, and the first
-  biological prediction arrives with option D's period.
+- **The class that would pass: a closed batch of cell-free expression.** The components are
+  defined inputs, and the exhaustion of precursors and fuel is the measured response. Calibrate on
+  one condition, one template or energy level. Predict the others: saturation by finite machines,
+  and the plateau that the fuel budget sets.
+- **None found that passes all three tests** (a numeric deposit under CC BY or CC0, measured
+  exhaustion, a closed batch) **(checked**, 20 November; Europe PMC with licence filters and
+  Zenodo; figshare and Dryad not searched):
+  - Marshall and Noireaux 2019 (*Sci Rep*, CC BY): extract-based, data "on request", and a fitted
+    model with no held-out test. The project never contacts authors (D173), so "on request" is
+    closed to it.
+  - Doerr et al. 2019 (*Phys Biol*, IOP's standard licence, no deposit): PURE, a defined
+    composition, with NTPs and amino acids measured over 3 h.
+  - Stögbauer et al. 2012 (*Integr Biol*, licence not found) and Karzbrun et al. 2011 (*PRL*, APS
+    licence): no deposit found.
+  - Near misses: Carrara et al. 2018 (*Data*, CC BY article; its dataset's licence unclear; protein
+    traces only, over 27 PURE compositions) and Sato et al. 2024 (*Molecules*, CC BY; ATP measured,
+    data on request).
+- **The same search carries a warning for A.** In PURE, Doerr et al. found that "neither NTPs nor
+  amino acids are depleted significantly enough to explain the observed translation rate
+  profiles". The LMU thesis behind Stögbauer et al. 2012 reports that 4 mM fresh NTPs did not
+  restart synthesis at the plateau, and fresh ribosomes did. So a model whose only limit is
+  exhaustion would fail there, and that failure would name the missing mechanism: machine
+  inactivation (S).
+- **So A's first acceptance is numerical only.** The first biological prediction arrives with
+  option D's period (§4.4).
 
 **Rows, steps, molecules, fuel.**
 - **Rows:** 13 for one gene, 15 for two (§2.1).
@@ -759,7 +779,30 @@ independent Newton solve; kinetic sites relaxing to the closure; titration acros
 **Planted controls.** A wrong binding energy (standard potential); the non-specific binder left
 out; the total promoter used in place of the free fraction.
 
-**The biological target.** [Pending the validation check; §4.6.]
+**The biological target.** The *E. coli* lac series, in which parameters fixed on one condition
+predict others **(checked**, 20 November).
+- **Calibrate:** Garcia and Phillips 2011 (*PNAS*, not CC) fitted the operator binding energies on
+  one strain and predicted the repressor numbers of five others, which immunoblots matched within
+  error. Their supplement's global fit over all strains gives slightly different energies, and
+  later papers use those.
+- **Predict, single site:** Brewster et al. 2014 (*Cell*, Elsevier's open archive, not CC)
+  predicted fold-change against counted repressors "without any free parameters at all", from
+  earlier affinities.
+  - Its single-site points, with Garcia's, are in a public repository under the MIT licence
+    (RPGroup-PBoC/mwc_mutants, `data/Garcia2011_Brewster2014.csv`; the repository's README names
+    CC BY 4.0 for creative works and MIT for software, and does not name data).
+  - **But a Hill factor on main already reproduces single-site fold-change** (§1.3). So this
+    tests B1′'s factor, not the closure.
+- **Predict, titration:** Brewster's multi-copy and competitor-plasmid measurements are the test
+  that needs the closure's conservation. Two of its inputs were fitted (the competitor plasmids'
+  copy distribution, and plasmid copy number per cell-cycle bin). No permissive deposit of them was
+  found, in four of the organisation's 81 repositories. So they serve analysis only, with bare
+  numbers cited (D227).
+- **Predict, induction:** Razo-Mejia et al. 2018 (*Cell Systems*, **CC BY**) fitted the inducer
+  constants on one strain and predicted 17 others with no further fitting. O3 and the two largest
+  repressor numbers deviate systematically. Its data are in RPGroup-PBoC/mwc_induction, under MIT.
+  This is the cleanest permissive test, but it needs nested binders (an inducer-bound repressor as
+  a promoter's ligand), which the registry refuses today.
 
 **Rows, steps, molecules, fuel.**
 - **Rows:** 8.
@@ -802,11 +845,18 @@ with declared power.
 **Planted controls.** A wrong propensity (n against n − 1 for a dimer); a stream shared between
 cells, which plants a correlation; a wrong burst size.
 
-**The biological target.** Single-molecule FISH distributions.
-- Raj et al. 2006 (PLoS Biology, **CC BY**, **(checked)**) measured mammalian mRNA counts and fitted
-  a bursting model. Raising the transcription factor's level increased burst size, not frequency.
-- Its rates are fitted, so a judged comparison needs a held-out condition.
-- [Pending: a series that predicts noise from independently measured parameters; §4.6.]
+**The biological target.** Single-molecule FISH distributions **(checked**, 20 November).
+- **The prediction series:** Jones, Brewster and Phillips 2014 (*Science*, not CC) made what they
+  call "zero-parameter predictions" of the mRNA Fano factor against the mean, for 18 constitutive
+  promoters, for a tuned on-rate and for a tuned off-rate.
+  - Their counts are in RPGroup-PBoC/chann_cap (`data/mRNA_FISH/Jones_Brewster_2014.csv`), under
+    MIT.
+  - Independence is partial. The off-rate is an in vitro single-molecule rate, scaled between
+    operators. The on-rate comes from repressor numbers inferred from the measured mean
+    repression, not counted. Calibration and prediction must be split by condition.
+- **Mammalian:** Raj et al. 2006 (*PLoS Biology*, **CC BY**) measured mRNA counts and fitted a
+  bursting model. Raising the transcription factor's level increased burst size, not frequency.
+  Its rates are fitted, so a judged comparison needs a held-out condition.
 
 **Rows, steps, molecules, fuel.**
 - **Rows:** counts live in the operator.
@@ -893,7 +943,7 @@ physiological loops. Low copy in a loop. Mouse data from subscription papers.
 | Seats | 2 | 2 | 2 | As A |
 | Effort (estimate) | 9–13 | 9–14 | 14–22 | 6–9 more |
 | D145 and D218 asks | Lift D145 for polymerisation laws (F10); D218 unchanged (open loop) | Lift D145 for occupancy | Lift D145 for the low-copy regime | Lift D145 for networks; confirm D218 covers TF feedback |
-| Biological target | Pending (§4.6) | Pending (§4.6) | smFISH, with a held-out condition | Hes1's period |
+| Biological target | None found that passes; numerical first | Lac series: single site permissive but a Hill factor's test; titration analysis only; induction CC BY but needs nested binders | smFISH noise series (MIT data), partly independent | Hes1's period, from bare numbers |
 
 ### 4.6 The recommendation: A, then D and B, then C
 
@@ -907,8 +957,14 @@ physiological loops. Low copy in a loop. Mouse data from subscription papers.
 - It needs no new door in D218, being open loop. It needs only a narrow, explicit lift of D145 for
   polymerisation laws (F10).
 
-**The biological comparison** is registered separately, as D151 keeps every reviewed candidate. Its
-target, its split between calibration and prediction, and its licence are in §4.1.
+**Why not B first.** Its permissive biological test, single-site fold-change, is one a Hill factor on
+main already passes. Its titration test, the one that needs the closure, has no permissive deposit.
+And it needs seam C's mover rule from the binding owner, who is on D234's path (§4.2).
+
+**The biological comparison.** No closed-batch dataset passes today (§4.1). So A's first acceptance
+is numerical, and the first biological prediction is D's Hes1 period. The search is repeated when
+A's protocol is drafted, since figshare and Dryad were not searched. A comparison is registered on
+its own, as D151 keeps every reviewed candidate.
 
 **Then D and B, by different owners.** D is the first feedback loop under D218, with the EMT switch
 as F6's network. B gives the occupancy source.
@@ -969,8 +1025,12 @@ Each question has a recommendation (S).
      cited (D173, D227).
    - May *E. coli*, a data-only organism under D179, supply a general law's biological check, as
      ATP synthase's check uses bacterial enzyme numbers?
+   - Does data in a public code repository under the MIT licence count as a permissive deposit,
+     where the article itself is not CC? The lac and noise counts above sit in such repositories
+     (§4.2, §4.3). Data offered only "on request" stays closed, since the project never contacts
+     authors (D173).
    - Running a paper's own model out of process stays the user's approval per paper (D138).
-   - *Recommended:* yes to all three.
+   - *Recommended:* yes to all four.
 7. **The order.** A first, after D222's core and FR order, the Xenopus lane (D225) and D234's
    mitochondria lane? Its two seats are the lead's count within seven. *Recommended:* yes, when two
    seats are free.
@@ -1026,6 +1086,24 @@ client; publisher pages for Science, Nature, ASM and PNAS refused automated acce
 - Bremer and Dennis (EcoSal Plus, 2008, doi:10.1128/ecosal.5.2.3) and Dennis et al. (2009) *J
   Bacteriol* 191:3740–3746: their rates were read only through BioNumbers entries, not in the
   sources.
+- **The lac series** (publisher pages, PMC copies and the repositories' licence files):
+  - Garcia HG, Phillips R (2011) *PNAS* 108:12173–12178, doi:10.1073/pnas.1015616108. PNAS's
+    licence, not CC. One-strain fit, then five strains predicted.
+  - Brewster RC et al. (2014) *Cell* 156:1312–1323, doi:10.1016/j.cell.2014.02.022. Elsevier's open
+    archive, not CC. No deposit stated.
+  - Razo-Mejia M et al. (2018) *Cell Syst* 6:456–469.e10, doi:10.1016/j.cels.2018.02.004. CC BY 4.0.
+    Code and tidy data in RPGroup-PBoC/mwc_induction, MIT. Zenodo 10.5281/zenodo.1163620's licence
+    field reads "other-open". Its SI on CaltechDATA is CC BY-NC.
+  - Jones DL, Brewster RC, Phillips R (2014) *Science* 346:1533–1536, doi:10.1126/science.1255301.
+    Not CC. Counts in RPGroup-PBoC/chann_cap, MIT.
+  - RPGroup-PBoC/mwc_mutants: Garcia's and Brewster's single-site points, MIT.
+- **Cell-free time courses:** Marshall R, Noireaux V (2019) *Sci Rep* 9:11980,
+  doi:10.1038/s41598-019-48468-8 (CC BY; data on request). Doerr A et al. (2019) *Phys Biol*
+  16:025001, doi:10.1088/1478-3975/aaf33d (IOP standard licence; no deposit). Stögbauer T et al.
+  (2012) *Integr Biol* 4:494–501, doi:10.1039/c2ib00102k (licence not found), and its LMU thesis.
+  Karzbrun E et al. (2011) *PRL* 106:048104, doi:10.1103/PhysRevLett.106.048104 (APS licence; full
+  text refused). Carrara P et al. (2018) *Data* 3:41, doi:10.3390/data3040041. Sato G et al. (2024)
+  *Molecules* 29:2956, doi:10.3390/molecules29132956.
 
 **Also checked, abstracts only (Europe PMC):** Shea MA, Ackers GK (1985) *J Mol Biol* 181:211–230,
 doi:10.1016/0022-2836(85)90086-5; Jahnke T, Huisinga W (2007) *J Math Biol* 54:1–26,
