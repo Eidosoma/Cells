@@ -123,10 +123,9 @@ that is null is said by its meaning (the format page, "The three meanings of nul
 An empty list or object says "the declaration lists none". A nested null keeps the meaning the
 format page gives its field: `rk4_step_s` null is "none: a law with no gate"; `stage_term`,
 `loop_term`, `material_term`, `charge_bound`, `material_bound` and `step_method` null are "none"
-("Each names the kernel that supplies it, or is null where the law has none"); a cycle or route
-law's `forms` null is "none: its moves are not written in base forms", a binding law's "none: its
-binders' forms are not the species registry's", and a value of `forms` is said in the page's words
-("base", "registry"). The step terms and bounds are named as the page names them: "Stage term",
+("Each names the kernel that supplies it, or is null where the law has none"); `forms` null is
+"none" too, since the page says of it only "or null", and a value of `forms` is said in the page's
+words ("base", "registry"). The step terms and bounds are named as the page names them: "Stage term",
 "Material term", "Bound on a charged row", "Bound on a neutral row", "Forms". `declared_host` null says the host is not stated
 as a registered model, kind or operator; a null `module_path` says the module is outside the
 `cells` package, and nothing is linked.

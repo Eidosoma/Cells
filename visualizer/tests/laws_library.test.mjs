@@ -686,7 +686,7 @@ test("a piece's panel says what the manifest states of it, links its files at th
     for (const key of ["stage_term", "material_term", "charge_bound", "material_bound", "forms"]) {
       if (!(key in d.fields)) continue;
       const value = d.fields[key];
-      if (value === null) assert.match(facts.get(named[key]), /^none\b/, `${piece.id}: ${key}`);
+      if (value === null) assert.equal(facts.get(named[key]), "none", `${piece.id}: ${key}`);
       else if (key === "forms") assert.match(facts.get(named[key]), new RegExp(`^${value}: `), `${piece.id}: ${key}`);
       else assert.equal(facts.get(named[key]), value, `${piece.id}: ${key}`);
       assert.ok(!facts.has(key), `${piece.id}: no row under the raw key ${key}`);

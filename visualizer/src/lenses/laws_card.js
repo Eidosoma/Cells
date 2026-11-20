@@ -52,13 +52,9 @@ const FIELD_NULLS = {
   material_term: "none",
   charge_bound: "none",
   material_bound: "none",
-  // `forms`: for a cycle or route law "`"base"` where its moves are written in base forms with every ligand out …, or
-  // null"; a binding law's null is said apart (FORMS_NULL).
-  forms: "none: its moves are not written in base forms",
+  // `forms`: the format page says a value's meaning and of null only "or null", so a null says no more than none.
+  forms: "none",
 };
-
-/** A binding law's null `forms`: "`"registry"` where its binders' forms are the species registry's, or null". */
-const FORMS_NULL = { "cells.binding_law@1": "none: its binders' forms are not the species registry's" };
 
 /** The values of `forms` the format page names, in its words ("Cycle laws", "Binding laws"). */
 const FORMS_WORDS = {
@@ -370,7 +366,7 @@ function describePiece(library, piece, drawn, map) {
       facts.push([FIELD_WORDS.moves, "none of its own: its general form carries them"]);
       continue;
     }
-    facts.push([key === "cycle" ? FORM_TITLE : FIELD_WORDS[key] || key, key === "forms" && value === null && FORMS_NULL[d.interface] ? FORMS_NULL[d.interface] : words(key, value, d.units || {})]);
+    facts.push([key === "cycle" ? FORM_TITLE : FIELD_WORDS[key] || key, words(key, value, d.units || {})]);
   }
   // A status only where the manifest gives one, with the record it was copied from.
   facts.push(["Status", d.status ? `${d.status} (from ${d.status_source})` : "not stated: the engine's declarations give no level for it"]);

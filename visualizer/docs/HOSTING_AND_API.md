@@ -113,7 +113,7 @@ The page is fetched at every address. Beside it:
 | Address | Fetched beside the page | Raw | gzip / brotli | Basis |
 | --- | --- | ---: | ---: | --- |
 | Scope, the site's first entry | the planarian's looping run and the parts its flux draws, about 5 files | about 120 KB (bound 133,000) | about 33 KB / 27 KB | the fetch budget, and the five files the flux draws, from the code |
-| Experiments landing (`lens=experiments`) | `cards.json` and the first band's two stills | 238,040 (3 files) | 95,827 / 90,498 | measured by the gate, 19 November 2026 |
+| Experiments landing (`lens=experiments`) | `cards.json` and the first band's two stills | 263,102 (3 files; bound 289,000) | 101,738 / 96,459 | measured by the gate, 20 November 2026, with its thirtieth card; the cards are 189,140 of it raw, and 27,776 / 22,497 compressed |
 | The tumour tissue's card (`part=gap-junction-tissue-sheet`) | the sheet's and the line's runs and parts | 2,817,063 (10 files) | not measured | measured by the gate |
 | The assembly (`example=gard`) | its two files | 275,894 | 102,181 / 86,765 | the fetch budget, and file sizes |
 | A single run of the networks | its own file | under 40,000 | | the fetch budget |
