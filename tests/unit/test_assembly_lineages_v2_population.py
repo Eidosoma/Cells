@@ -28,7 +28,7 @@ Each claim with a planted error it must catch (D187):
   refused.
 
 World-compiling cost: the division test's program (three runs) and the population program (one
-structure at K = 1, 3 and 4), 66.33 s for the whole file on the timed lane. Reason: the records,
+structure at K = 1, 3 and 4), 69.96 s for the whole file on the timed lane. Reason: the records,
 the selection map and the stops are the runs' own.
 """
 
